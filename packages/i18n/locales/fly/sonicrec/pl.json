@@ -58,5 +58,10 @@
   "sonicrec.msg.recorded": "Nagranie jest zapisane na tym urządzeniu. Zapisz je też na dysku.",
   "sonicrec.note.persist": "Przeglądarka może wyczyścić tę pamięć, gdy dysk jest prawie pełny. Zapisuj nagrania na dysku.",
   "sonicrec.note.memory": "Ta przeglądarka nie potrafi bezpiecznie przechowywać nagrań: zamknięcie karty je traci. Zapisz każde nagranie na dysku zaraz po zakończeniu.",
-  "sonicrec.error.generic": "Problem: {reason}"
+  "sonicrec.error.generic": "Problem: {reason}",
+  "sonicrec.survey.title": "Fly by Sound: kilka pytań",
+  "sonicrec.survey.skip": "Pomiń",
+  "sonicrec.survey.done": "Gotowe",
+  "sonicrec.survey.again": "Powtórz pytanie",
+  "sonicrec.survey.listening": "Słucham: powiedz odpowiedź na głos, potem naciśnij {key}."
 }

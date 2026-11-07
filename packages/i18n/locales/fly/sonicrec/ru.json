@@ -58,5 +58,10 @@
   "sonicrec.msg.recorded": "Запись сохранена на этом устройстве. Сохраните её ещё и на диск.",
   "sonicrec.note.persist": "Браузер может очистить это хранилище, когда диск почти заполнен. Сохраняйте записи на диск.",
   "sonicrec.note.memory": "Этот браузер не умеет надёжно хранить записи: закрытая вкладка их теряет. Сохраняйте каждую запись на диск сразу после окончания.",
-  "sonicrec.error.generic": "Проблема: {reason}"
+  "sonicrec.error.generic": "Проблема: {reason}",
+  "sonicrec.survey.title": "Fly by Sound: несколько вопросов",
+  "sonicrec.survey.skip": "Пропустить",
+  "sonicrec.survey.done": "Готово",
+  "sonicrec.survey.again": "Повторить вопрос",
+  "sonicrec.survey.listening": "Слушаю: скажите ответ вслух, потом нажмите {key}."
 }

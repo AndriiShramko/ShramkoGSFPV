@@ -89,6 +89,8 @@ export interface RecorderDeps {
     minFreeBytes?: number;
     /** how long the app waits for the second press, ms (default 30 000) */
     askMs?: number;
+    /** the survey that runs after every stop (the pilot's T, or a button that passes none of its own) */
+    survey?: (env: SurveyEnv) => Promise<SurveyAnswers | null>;
 }
 
 export interface StopOptions {
@@ -469,9 +471,10 @@ export class Recorder {
         this.setPhase('closing');
         this.deps.say({ key: 'rec.stopped' });
         let answers: SurveyAnswers | null = null;
-        if (options.survey !== undefined && this.sessionId !== null && this.profileAtStart !== null) {
+        const survey = options.survey ?? this.deps.survey;
+        if (survey !== undefined && this.sessionId !== null && this.profileAtStart !== null) {
             try {
-                answers = await options.survey({ now: () => this.clock.now(), sessionId: this.sessionId, profile: this.profileAtStart });
+                answers = await survey({ now: () => this.clock.now(), sessionId: this.sessionId, profile: this.profileAtStart });
             } catch (e) {
                 this.noteProblem(`the survey stopped: ${e instanceof Error ? e.message : String(e)}`);
             }

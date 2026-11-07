@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T15:36:33.469Z",
-    "gitHead": "50b4ca7",
+    "date": "2026-11-07T16:01:27.867Z",
+    "gitHead": "c077e87",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -34,34 +34,46 @@
     "E4: with the agreement ticked Start is enabled, and the helper's click starts the recording at once without the pilot being asked aloud": true,
     "E4: the package says the pilot is under 18 with the guardian confirmed, the nickname and the headphones, and never claims consent to send": true,
     "E4: after a reload the pilot's answers are still there": true,
+    "E6a: after the stop the survey is offered in a dialog named for it, with the package's own question, and the keys are the survey's": true,
+    "E6a: while it runs W, A, R, T and Space reach nothing in the page (swallowed before the key router and keyboard flying), the recording is still closing, and a key after it flows again": true,
+    "E6a: nine answers as given: numbers by key (0 is an answer), one open answer by voice, one skipped, a choice by number": true,
+    "E6a: the open question showed that it was listening, and its answer is stamped where its voice window opened (before the press that ended it)": true,
+    "E6a: the voice went on recording through the survey: it is as long as the whole recording, past the last answer": true,
+    "E6a: no survey answer is written as an answer event (the replay would call it missing); the package reads strictly with survey.json listed": true,
+    "E6a: an answered first-flight survey is remembered, so the next one is the returning pilot's": true,
+    "E6b: the second recording gets the returning pilot's ten questions; all skipped makes a skipped survey": true,
+    "E6c: the offer's buttons are named by their number and answer (1: Yes, 2: No)": true,
+    "E6c: a scale shows one button for every number (0 to 9), its two ends named": true,
+    "E6c: the helper's clicks answer like keys: a number, a skip; \"Hear the question again\" says it once more and answers nothing": true,
+    "E6d: a minor's recording gets the child survey, six questions, with its open question answered by voice": true,
     "E5: with the sound mode off nothing is drawn: no panel, no button": true,
     "E5: the panel in English, Spanish, Polish and Russian shows no missing key": true
   },
   "results": {
     "e1": {
-      "fileName": "fly-by-sound-20261107-153610-HG24qY7l.zip",
-      "bytes": 24703,
+      "fileName": "fly-by-sound-20261107-160036-WNOpvpch.zip",
+      "bytes": 25051,
       "frames": 152,
       "events": 4,
       "voiceBytes": 18462,
       "complete": true,
       "rowAfter": {
-        "id": "HG24qY7lyqjg22ki95Vpbw",
-        "line": "Nov 7, 2026, 4:36 PM, 0:05, 25 KB \u00b7 with voice \u00b7 walls-hall",
+        "id": "WNOpvpchhH5EfjAQlDFZpw",
+        "line": "Nov 7, 2026, 5:00 PM, 0:05, 25 KB \u00b7 with voice \u00b7 walls-hall",
         "state": "Saved on this device. Saved to disk.",
         "buttons": [
           "Save to disk",
           "Delete"
         ]
       },
-      "panelMessageAfter": "Saved as fly-by-sound-20261107-153610-HG24qY7l.zip."
+      "panelMessageAfter": "Saved as fly-by-sound-20261107-160036-WNOpvpch.zip."
     },
     "e2": {
       "cancelledMessage": "Saving was cancelled.",
-      "savedMessage": "Saved as fly-by-sound-20261107-153616-5Gvx3RO3.zip.",
+      "savedMessage": "Saved as fly-by-sound-20261107-160041-wrl8HeAx.zip.",
       "downloads": 0,
       "pickedFiles": 1,
-      "pickedBytes": 16945,
+      "pickedBytes": 17841,
       "frames": 107
     },
     "e3": {
@@ -85,15 +97,15 @@
         }
       ],
       "rowAfterKeep": {
-        "id": "aLm6-OUP0QIjU2WiS9CtQw",
-        "line": "Nov 7, 2026, 4:36 PM, 0:04, 19 KB \u00b7 with voice \u00b7 walls-hall",
+        "id": "dY6UbqNSCwUBnQF-xNgrbQ",
+        "line": "Nov 7, 2026, 5:00 PM, 0:04, 19 KB \u00b7 with voice \u00b7 walls-hall",
         "state": "Kept after an interruption.",
         "buttons": [
           "Save to disk",
           "Delete"
         ]
       },
-      "bytes": 19434,
+      "bytes": 19439,
       "frames": 121,
       "voiceBytes": 14019,
       "complete": false,
@@ -106,7 +118,7 @@
         "rec.started"
       ],
       "consent": {
-        "at": "2026-11-07T15:36:27.608Z",
+        "at": "2026-11-07T16:00:52.916Z",
         "guardianConfirmed": true,
         "minor": true,
         "recording": true,
@@ -115,17 +127,234 @@
         "voice": true
       },
       "pilot": {
-        "id": "xZyD0Hb2QQ8",
+        "id": "u2iKQnH127E",
         "nickname": "Tom"
       },
       "headphones": "wired",
       "profileAfterReload": {
-        "id": "xZyD0Hb2QQ8",
+        "id": "u2iKQnH127E",
         "nickname": "Tom",
         "minor": true,
         "guardianConfirmed": true,
         "headphones": "wired",
         "surveysSeen": []
+      }
+    },
+    "e6a": {
+      "offerQuestion": "Do you want to answer a few questions? Press 1 for yes, 2 for no.",
+      "dialog": {
+        "role": "dialog",
+        "modal": "true",
+        "title": "Fly by Sound: a few questions"
+      },
+      "swallowedKeys": 0,
+      "listening": "Listening: say your answer out loud, then press Enter.",
+      "answers": [
+        {
+          "item": "fun",
+          "value": 4,
+          "via": "key",
+          "t": 4647.399999976158
+        },
+        {
+          "item": "mental",
+          "value": 7,
+          "via": "key",
+          "t": 5067.099999964237
+        },
+        {
+          "item": "frustration",
+          "value": 2,
+          "via": "key",
+          "t": 5488.299999952316
+        },
+        {
+          "item": "fear",
+          "value": 0,
+          "via": "key",
+          "t": 5906.299999952316
+        },
+        {
+          "item": "up-direction",
+          "value": 1,
+          "via": "key",
+          "t": 6324.699999988079
+        },
+        {
+          "item": "ears-tired",
+          "value": 3,
+          "via": "key",
+          "t": 6731.699999988079
+        },
+        {
+          "item": "helped",
+          "value": null,
+          "via": "voice",
+          "t": 6731.899999976158
+        },
+        {
+          "item": "annoyed",
+          "value": null,
+          "via": "skip",
+          "t": 9668.299999952316
+        },
+        {
+          "item": "again",
+          "value": 1,
+          "via": "key",
+          "t": 10080.399999976158
+        }
+      ],
+      "voiceMs": 10080,
+      "lastAnswerT": 10080.399999976158,
+      "surveysSeen": [
+        "first-flight"
+      ]
+    },
+    "e6b": {
+      "surveyId": "returning-pilot",
+      "skipped": true,
+      "vias": [
+        "skip",
+        "skip",
+        "skip",
+        "skip",
+        "skip",
+        "skip",
+        "skip",
+        "skip",
+        "skip",
+        "skip"
+      ]
+    },
+    "e6c": {
+      "offerButtons": [
+        [
+          "1 Yes",
+          "1: Yes"
+        ],
+        [
+          "2 No",
+          "2: No"
+        ]
+      ],
+      "q1Buttons": [
+        [
+          "0",
+          "0: Very easy"
+        ],
+        [
+          "1",
+          "1"
+        ],
+        [
+          "2",
+          "2"
+        ],
+        [
+          "3",
+          "3"
+        ],
+        [
+          "4",
+          "4"
+        ],
+        [
+          "5",
+          "5"
+        ],
+        [
+          "6",
+          "6"
+        ],
+        [
+          "7",
+          "7"
+        ],
+        [
+          "8",
+          "8"
+        ],
+        [
+          "9",
+          "9: Very hard"
+        ],
+        [
+          "Skip",
+          null
+        ],
+        [
+          "Hear the question again",
+          null
+        ]
+      ],
+      "answers": [
+        {
+          "item": "mental",
+          "value": 5,
+          "via": "key",
+          "t": 2727.099999964237
+        },
+        {
+          "item": "temporal",
+          "value": null,
+          "via": "skip",
+          "t": 3140.199999988079
+        },
+        {
+          "item": "performance",
+          "value": null,
+          "via": "skip",
+          "t": 3541.899999976158
+        }
+      ],
+      "mentalSpokenBeforeAndAfterAgain": [
+        3,
+        4
+      ]
+    },
+    "e6d": {
+      "surveyId": "child-again-again",
+      "items": [
+        [
+          "child-fun",
+          5,
+          "key"
+        ],
+        [
+          "child-again-flying",
+          1,
+          "key"
+        ],
+        [
+          "child-again-walls",
+          2,
+          "key"
+        ],
+        [
+          "child-again-rings",
+          3,
+          "key"
+        ],
+        [
+          "child-scary",
+          1,
+          "key"
+        ],
+        [
+          "child-liked-best",
+          null,
+          "voice"
+        ]
+      ],
+      "consent": {
+        "at": "2026-11-07T16:01:19.846Z",
+        "guardianConfirmed": true,
+        "minor": true,
+        "recording": true,
+        "send": false,
+        "speechRecognition": false,
+        "voice": true
       }
     },
     "e5": {

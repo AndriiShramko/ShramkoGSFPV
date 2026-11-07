@@ -55,11 +55,15 @@ const api = {
     /** Builds the session side as the feature does, on a stand-in context. */
     init(options: { mode?: boolean } = {}): void {
         runtime = makeRuntime();
+        (window as unknown as { __pauses: string[] }).__pauses = [];
         const events = new Bus<AppEvents>();
         ctx = {
             events,
             keys: { on: (action: string, h: (e: KeyboardEvent, s: 'key' | 'switch') => void) => { handlers.set(action, h); return () => handlers.delete(action); } },
             sonic: options.mode === false ? undefined : runtime,
+            // the pause stack: the survey holds the flight with 'panel' and lets it go (recorded here for the probe)
+            pause: (reason: string) => (window as unknown as { __pauses: string[] }).__pauses.push(`pause:${reason}`),
+            resume: (reason: string) => (window as unknown as { __pauses: string[] }).__pauses.push(`resume:${reason}`),
             session: { transform: { s: 1, t: [0, 0, 0] } },
             controls: { source: 'keyboard', profile: null },
             renderer: { isWebGPU: false }
@@ -72,6 +76,9 @@ const api = {
             if (target instanceof HTMLTextAreaElement) return;
             if (e.code === 'KeyT') handlers.get('sonic.record')?.(e, 'key');
         });
+        // what the page's own (bubble-phase) key listeners hear: while the survey runs, nothing may reach them
+        (window as unknown as { __keysSeen: string[] }).__keysSeen = [];
+        addEventListener('keydown', (e) => (window as unknown as { __keysSeen: string[] }).__keysSeen.push(e.code));
         // the page's frame loop: one `frame` a display refresh
         frameTimer = setInterval(() => events.emit('frame', { now: performance.now() }), 16);
     },
@@ -116,6 +123,13 @@ const api = {
             panelNote: text(document.querySelector('.sonicrec-note')),
             rows,
             startDisabled: (document.querySelector('[data-action="start"]') as HTMLButtonElement | null)?.disabled ?? null,
+            surveyOpen: document.querySelector('.sonicrec-survey:not([hidden])') !== null,
+            surveyProgress: text(document.querySelector('.sonicrec-survey .sonicrec-progress')),
+            surveyQuestion: text(document.querySelector('.sonicrec-survey .sonicrec-q')),
+            surveyListening: text(document.querySelector('.sonicrec-survey .sonicrec-listening')),
+            surveyButtons: [...document.querySelectorAll('.sonicrec-survey button')].map((b) => ({ text: text(b), label: b.getAttribute('aria-label'), digit: b.getAttribute('data-digit'), action: b.getAttribute('data-action') })),
+            keysSeen: (window as unknown as { __keysSeen?: string[] }).__keysSeen ?? [],
+            pauses: (window as unknown as { __pauses?: string[] }).__pauses ?? [],
             profile: session?.profile() ?? null
         };
     },

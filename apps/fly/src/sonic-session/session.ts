@@ -6,7 +6,7 @@
 //   - nothing is fetched, stored or asked of the browser before the pilot presses T and says yes.
 import type { SessionStores } from './recorder';
 import { Recorder } from './recorder';
-import { MemorySink } from '@shramko/sonic-fpv';
+import { DICTS, MemorySink, createTranslator } from '@shramko/sonic-fpv';
 import type { ChunkStore, Locale, SonicRuntime } from '@shramko/sonic-fpv';
 import { locale, t } from '../i18n';
 import type { FlightContext } from '../app/context';
@@ -16,6 +16,10 @@ import { freeBytes, holdSessionLock, persistStorage, sayVia, sessionIsLocked } f
 import { createPanel } from './panel';
 import type { RecPanel } from './panel';
 import { ResumeOffer } from './resume';
+import { runSurvey } from './survey';
+import { captureSurveyKeys } from './survey-keys';
+import { createSurveyDialog } from './survey-view';
+import type { SurveyDialog } from './survey-view';
 import { listSessionIds, openSessionsRoot, openSessionStore, opfsAvailable, removeSession, type DirectoryLike } from './store';
 import { VoiceCapture, browserMic } from './voice';
 
@@ -159,6 +163,7 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
     const stores = browserStores();
     const nowIso = (): string => new Date().toISOString();
     let panel: RecPanel | null = null;
+    let surveyDialog: SurveyDialog | null = null;
     let lastShown: string | null = null;
     const setProfile = (change: Partial<Omit<PilotProfile, 'id'>>): PilotProfile => {
         profile = withProfile(profile, change);
@@ -178,6 +183,34 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
         persist: persistStorage,
         freeBytes,
         holdLock: holdSessionLock,
+        // after every stop the pilot is offered the short survey, by voice and by number keys, with the voice still recording
+        survey: async (env) => {
+            const translator = createTranslator(locale as Locale, DICTS);
+            const dialog = (surveyDialog ??= createSurveyDialog({ text: (line) => translator.text(line), keyLabel }));
+            const answers = await runSurvey({
+                say: (line, options) => say(line, options),
+                text: (line) => translator.text(line),
+                keyLabel,
+                now: env.now,
+                profile: env.profile,
+                view: dialog,
+                listen: (handler) => {
+                    const offKeys = captureSurveyKeys(handler);
+                    const offDialog = dialog.onInput(handler);
+                    return () => {
+                        offKeys();
+                        offDialog();
+                    };
+                },
+                holdFlight: () => {
+                    ctx.pause('panel');
+                    return () => ctx.resume('panel');
+                }
+            });
+            // a survey that was answered is not offered as the first flight's again; one that was declined is
+            if (!answers.skipped && !profile.surveysSeen.includes(answers.surveyId)) setProfile({ surveysSeen: [...profile.surveysSeen, answers.surveyId] });
+            return answers;
+        },
         onStatus: (s) => {
             panel?.onStatus(s);
             // a recording has just ended: the helper's panel opens on it, so the Save button is in front of them
@@ -244,6 +277,8 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             recorder.dispose();
             panel?.dispose();
             panel = null;
+            surveyDialog?.dispose();
+            surveyDialog = null;
         }
     };
 }

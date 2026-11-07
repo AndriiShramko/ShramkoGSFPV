@@ -10,6 +10,8 @@
 //   E4 helper   Start is disabled until the pilot's agreement is ticked, starts in the click, the pilot's answers (under 18, guardian,
 //               nickname) survive a reload and are in the package; typing T in the nickname field is not a shortcut
 //   E5 texts    the panel in all four languages shows no missing key; with the sound mode off nothing is drawn
+//   E6 survey   after a stop the survey is offered, answered by keys and by clicks, open answers by voice into the recording that is still
+//               running, every other key swallowed meanwhile; first flight, returning pilot and child variants; survey.json in the package
 //   npx tsx tools/bench/src/sonicrec-local.ts       evidence/<date>/sonicrec-local.json and sonicrec-panel.png
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -48,7 +50,7 @@ async function until(page: Page, what: string, pred: (s: Record<string, any>) =>
     for (;;) {
         const s = await state(page);
         if (pred(s)) return s;
-        if (Date.now() - t0 > ms) throw new Error(`timed out waiting for ${what}: ${JSON.stringify({ phase: s.phase, rows: s.rows, panelMessage: s.panelMessage })}`);
+        if (Date.now() - t0 > ms) throw new Error(`timed out waiting for ${what}: ${JSON.stringify({ phase: s.phase, rows: s.rows, panelMessage: s.panelMessage, panelStatus: s.panelStatus, error: s.status?.error })}`);
         await sleep(50);
     }
 }
@@ -72,6 +74,12 @@ async function open(ctx: BrowserContext, init: { mode?: boolean } = {}, query = 
     await page.bringToFront();
     await call(page, 'init', init);
     return page;
+}
+
+/** The survey that follows a stop is offered; the pilot says no (the keys of a pilot who has heard "Press 1 for yes, 2 for no"). */
+async function declineSurvey(page: Page): Promise<void> {
+    await until(page, 'the survey offer', (s) => s.surveyOpen === true);
+    await page.keyboard.press('Digit2');
 }
 
 /** T, T with real key presses; resolves when the recording runs. */
@@ -116,6 +124,7 @@ try {
         await sleep(5000);
         const rec = await state(page);
         await page.keyboard.press('KeyT');
+        await declineSurvey(page);
         const done = await until(page, 'the panel to open on the recording', (s) => s.phase === 'idle' && s.panelOpen === true && s.rows.length === 1, 20000);
         await call(page, 'fly', false);
         const row = done.rows[0];
@@ -161,6 +170,7 @@ try {
         await recordWithKeys(page);
         await sleep(3500);
         await page.keyboard.press('KeyT');
+        await declineSurvey(page);
         await until(page, 'the recording', (s) => s.phase === 'idle' && s.rows.length === 1, 20000);
         await call(page, 'fly', false);
         await page.evaluate(() => { (window as unknown as { __pickerMode: string }).__pickerMode = 'abort'; });
@@ -248,6 +258,7 @@ try {
         const spoken = await call<{ key: string }[]>(page, 'spoken');
         await sleep(2500);
         await page.getByRole('button', { name: 'Stop recording' }).click();
+        await declineSurvey(page);
         const done = await until(page, 'the recording to end', (s) => s.phase === 'idle' && s.rows.length === 1, 20000);
         await call(page, 'fly', false);
         const saved = await downloadFirst(page);
@@ -266,6 +277,138 @@ try {
         checks['E4: with the agreement ticked Start is enabled, and the helper\'s click starts the recording at once without the pilot being asked aloud'] = ready.startDisabled === false && spoken.map((l) => l.key).join() === 'rec.started' && done.rows.length === 1;
         checks['E4: the package says the pilot is under 18 with the guardian confirmed, the nickname and the headphones, and never claims consent to send'] = pkg.manifest.consent.minor === true && pkg.manifest.consent.guardianConfirmed === true && pkg.manifest.consent.send === false && pkg.manifest.pilot.nickname === 'Tom' && pkg.manifest.device.headphones === 'wired' && pkg.problems.length === 0;
         checks['E4: after a reload the pilot\'s answers are still there'] = stored !== null && reloaded.profile?.minor === true && reloaded.profile?.guardianConfirmed === true && reloaded.profile?.nickname === 'Tom' && reloaded.profile?.headphones === 'wired';
+        await call(page, 'deleteAll');
+        await ctx.close();
+    }
+
+    // ---------------------------------------------------------------- E6: the survey after a stop
+    {
+        const ctx = await newContext(NO_PICKER);
+        const page = await open(ctx);
+        await call(page, 'deleteAll');
+        await until(page, 'the toggle', (s) => s.panelBuilt === true);
+        const voiceMsOf = (bytes: Uint8Array): Promise<number> => page.evaluate(async (b) => {
+            const ac = new OfflineAudioContext(1, 1, 48000);
+            const buf = await ac.decodeAudioData(new Uint8Array(b).buffer);
+            return buf.duration * 1000;
+        }, Array.from(bytes));
+        const questionN = (n: number, total: number) => (s: Record<string, any>) => s.surveyProgress === `Question ${n} of ${total}.`; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const recordAndStop = async (seconds: number): Promise<void> => {
+            await call(page, 'fly', true);
+            await recordWithKeys(page);
+            await sleep(seconds * 1000);
+            await page.keyboard.press('KeyT');
+            await until(page, 'the survey offer', (st) => st.surveyOpen === true);
+            await call(page, 'fly', false);
+        };
+        const finished = async (): Promise<void> => void (await until(page, 'the survey to close and the recording to end', (st) => st.surveyOpen === false && st.phase === 'idle', 25000));
+
+        // ---- E6a: the first flight's survey, by keys, with two open answers (one spoken, one skipped)
+        await recordAndStop(4);
+        const offer = await state(page);
+        const dialog = await page.locator('.sonicrec-survey').evaluate((el) => ({ role: el.getAttribute('role'), modal: el.getAttribute('aria-modal'), title: document.getElementById(el.getAttribute('aria-labelledby') ?? '')?.textContent ?? null }));
+        const seenBefore = (await state(page)).keysSeen.length;
+        for (const k of ['KeyW', 'KeyA', 'KeyR', 'KeyT', 'Space']) await page.keyboard.press(k);
+        const swallowed = await state(page);
+        await page.keyboard.press('Digit1');
+        const plan = ['Digit4', 'Digit7', 'Digit2', 'Digit0', 'Digit1', 'Digit3'];
+        for (let i = 0; i < plan.length; i++) {
+            await until(page, `question ${i + 1}`, questionN(i + 1, 9));
+            if (i === 0) await page.screenshot({ path: join(EVIDENCE_REPO, 'evidence', today(), 'sonicrec-survey.png') });
+            await sleep(400);
+            await page.keyboard.press(plan[i] as string);
+        }
+        await until(page, 'question 7', (st) => questionN(7, 9)(st) && st.surveyListening !== '');
+        const listening = (await state(page)).surveyListening;
+        await sleep(1700); // the pilot talks: the voice keeps recording
+        await page.keyboard.press('Enter');
+        await until(page, 'question 8', (st) => questionN(8, 9)(st) && st.surveyListening !== '');
+        await sleep(1200);
+        await page.keyboard.press('Escape'); // skip the second open question
+        await until(page, 'question 9', questionN(9, 9));
+        await sleep(400);
+        await page.keyboard.press('Digit1');
+        await finished();
+        await page.keyboard.press('KeyW');
+        const keysAfter = (await state(page)).keysSeen.length;
+        await until(page, 'the list to show the recording', (st) => st.rows.length === 1 && st.panelOpen === true);
+        const first = await downloadFirst(page);
+        const pkgA = readPackage(first.bytes);
+        const voiceMs = await voiceMsOf(pkgA.voice as Uint8Array);
+        const sA = pkgA.survey;
+        const profileA = JSON.parse((await call<string | null>(page, 'profileStored')) ?? '{}') as { surveysSeen?: string[] };
+        results.e6a = { offerQuestion: offer.surveyQuestion, dialog, swallowedKeys: swallowed.keysSeen.length - seenBefore, listening, answers: sA?.answers, voiceMs: Math.round(voiceMs), lastAnswerT: sA?.answers[8]?.t, surveysSeen: profileA.surveysSeen };
+        checks['E6a: after the stop the survey is offered in a dialog named for it, with the package\'s own question, and the keys are the survey\'s'] = offer.surveyOpen === true && offer.phase === 'closing' && offer.surveyQuestion === 'Do you want to answer a few questions? Press 1 for yes, 2 for no.' && dialog.role === 'dialog' && dialog.modal === 'true' && dialog.title === 'Fly by Sound: a few questions';
+        checks['E6a: while it runs W, A, R, T and Space reach nothing in the page (swallowed before the key router and keyboard flying), the recording is still closing, and a key after it flows again'] = swallowed.keysSeen.length === seenBefore && swallowed.phase === 'closing' && keysAfter === swallowed.keysSeen.length + 1;
+        checks['E6a: nine answers as given: numbers by key (0 is an answer), one open answer by voice, one skipped, a choice by number'] = sA !== null && sA !== undefined && sA.surveyId === 'first-flight' && sA.skipped === false && JSON.stringify(sA.answers.map((a) => [a.item, a.value, a.via])) === JSON.stringify([['fun', 4, 'key'], ['mental', 7, 'key'], ['frustration', 2, 'key'], ['fear', 0, 'key'], ['up-direction', 1, 'key'], ['ears-tired', 3, 'key'], ['helped', null, 'voice'], ['annoyed', null, 'skip'], ['again', 1, 'key']]);
+        checks['E6a: the open question showed that it was listening, and its answer is stamped where its voice window opened (before the press that ended it)'] = listening.startsWith('Listening: say your answer out loud, then press Enter') && (sA?.answers[6]?.t ?? 0) < (sA?.answers[7]?.t ?? 0) - 1500 && (sA?.answers[6]?.t ?? 0) >= (sA?.answers[5]?.t ?? 0);
+        checks['E6a: the voice went on recording through the survey: it is as long as the whole recording, past the last answer'] = voiceMs + 250 >= (sA?.answers[8]?.t ?? Infinity) && voiceMs > 4000 + 5000;
+        checks['E6a: no survey answer is written as an answer event (the replay would call it missing); the package reads strictly with survey.json listed'] = pkgA.events.every((e) => e.kind !== 'answer') && pkgA.problems.length === 0 && pkgA.manifest.files.some((f) => f.name === 'survey.json');
+        checks['E6a: an answered first-flight survey is remembered, so the next one is the returning pilot\'s'] = (profileA.surveysSeen ?? []).includes('first-flight');
+
+        // ---- E6b: the returning pilot's survey, every question skipped
+        await recordAndStop(2);
+        await page.keyboard.press('Digit1');
+        for (let i = 1; i <= 10; i++) {
+            await until(page, `question ${i}`, questionN(i, 10));
+            await sleep(380);
+            await page.keyboard.press('Escape');
+        }
+        await finished();
+        await until(page, 'the list to show the second recording', (st) => st.rows.length === 2);
+        const second = readPackage((await downloadFirst(page)).bytes);
+        results.e6b = { surveyId: second.survey?.surveyId, skipped: second.survey?.skipped, vias: second.survey?.answers.map((a) => a.via) };
+        checks['E6b: the second recording gets the returning pilot\'s ten questions; all skipped makes a skipped survey'] = second.survey?.surveyId === 'returning-pilot' && second.survey.answers.length === 10 && second.survey.answers.every((a) => a.via === 'skip' && a.value === null) && second.survey.skipped === true;
+
+        // ---- E6c: the helper clicks (a yes, a number, a skip, "hear it again"); the rest by Escape; the dialog's buttons are named
+        await recordAndStop(2);
+        const buttons = (await state(page)).surveyButtons as { text: string; label: string | null; digit: string | null; action: string | null }[];
+        await page.locator('.sonicrec-survey [data-digit="1"]').click(); // Yes
+        await until(page, 'question 1', questionN(1, 10));
+        const q1 = await state(page);
+        await sleep(380);
+        const spokenBefore = (await call<{ key: string }[]>(page, 'spoken')).filter((l) => l.key === 'survey.item.mental').length;
+        await page.locator('.sonicrec-survey [data-action="again"]').click();
+        await sleep(100);
+        const spokenAfter = (await call<{ key: string }[]>(page, 'spoken')).filter((l) => l.key === 'survey.item.mental').length;
+        await page.locator('.sonicrec-survey [data-digit="5"]').click();
+        await until(page, 'question 2', questionN(2, 10));
+        await sleep(380);
+        await page.locator('.sonicrec-survey [data-action="skip"]').click();
+        for (let i = 3; i <= 10; i++) {
+            await until(page, `question ${i}`, questionN(i, 10));
+            await sleep(380);
+            await page.keyboard.press('Escape');
+        }
+        await finished();
+        await until(page, 'the list to show the third recording', (st) => st.rows.length === 3);
+        const third = readPackage((await downloadFirst(page)).bytes);
+        results.e6c = { offerButtons: buttons.map((b) => [b.text, b.label]), q1Buttons: q1.surveyButtons.map((b: { text: string; label: string | null }) => [b.text, b.label]), answers: third.survey?.answers.slice(0, 3), mentalSpokenBeforeAndAfterAgain: [spokenBefore, spokenAfter] };
+        checks['E6c: the offer\'s buttons are named by their number and answer (1: Yes, 2: No)'] = buttons.some((b) => b.digit === '1' && b.label === '1: Yes') && buttons.some((b) => b.digit === '2' && b.label === '2: No');
+        checks['E6c: a scale shows one button for every number (0 to 9), its two ends named'] = q1.surveyButtons.filter((b: { digit: string | null }) => b.digit !== null).length === 10 && q1.surveyButtons.some((b: { digit: string | null; label: string | null }) => b.digit === '0' && b.label === '0: Very easy') && q1.surveyButtons.some((b: { digit: string | null; label: string | null }) => b.digit === '9' && b.label === '9: Very hard');
+        checks['E6c: the helper\'s clicks answer like keys: a number, a skip; "Hear the question again" says it once more and answers nothing'] = third.survey?.answers[0]?.item === 'mental' && third.survey.answers[0].value === 5 && third.survey.answers[1]?.via === 'skip' && spokenAfter === spokenBefore + 1;
+
+        // ---- E6d: a minor gets the child survey (the panel opened by itself on the last recording: it is toggled only if closed)
+        if (!(await state(page)).panelOpen) await page.locator('#sonicrec-toggle').click();
+        await page.getByLabel('The pilot is under 18').check();
+        await page.getByLabel('A parent or guardian has signed the consent form, and I confirm it').check();
+        await page.locator('.sonicrec-x').click();
+        await recordAndStop(2);
+        await page.keyboard.press('Digit1');
+        const child = ['Digit5', 'Digit1', 'Digit2', 'Digit3', 'Digit1'];
+        for (let i = 0; i < child.length; i++) {
+            await until(page, `question ${i + 1}`, questionN(i + 1, 6));
+            await sleep(380);
+            await page.keyboard.press(child[i] as string);
+        }
+        await until(page, 'the last question', (st) => questionN(6, 6)(st) && st.surveyListening !== '');
+        await sleep(900);
+        await page.keyboard.press('Enter');
+        await finished();
+        await until(page, 'the list to show the fourth recording', (st) => st.rows.length === 4);
+        const kid = readPackage((await downloadFirst(page)).bytes);
+        results.e6d = { surveyId: kid.survey?.surveyId, items: kid.survey?.answers.map((a) => [a.item, a.value, a.via]), consent: kid.manifest.consent };
+        checks['E6d: a minor\'s recording gets the child survey, six questions, with its open question answered by voice'] = kid.survey?.surveyId === 'child-again-again' && kid.survey.answers.length === 6 && kid.survey.answers[0]?.value === 5 && kid.survey.answers[5]?.via === 'voice' && kid.manifest.consent.minor === true && kid.manifest.consent.send === false && kid.problems.length === 0;
         await call(page, 'deleteAll');
         await ctx.close();
     }

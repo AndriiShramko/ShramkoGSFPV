@@ -58,5 +58,10 @@
   "sonicrec.msg.recorded": "The recording is saved on this device. Save it to disk too.",
   "sonicrec.note.persist": "The browser may clear this storage when the disk is nearly full. Save recordings to disk.",
   "sonicrec.note.memory": "This browser cannot keep recordings safe: a closed tab loses them. Save each recording to disk right after it ends.",
-  "sonicrec.error.generic": "Problem: {reason}"
+  "sonicrec.error.generic": "Problem: {reason}",
+  "sonicrec.survey.title": "Fly by Sound: a few questions",
+  "sonicrec.survey.skip": "Skip",
+  "sonicrec.survey.done": "Done",
+  "sonicrec.survey.again": "Hear the question again",
+  "sonicrec.survey.listening": "Listening: say your answer out loud, then press {key}."
 }

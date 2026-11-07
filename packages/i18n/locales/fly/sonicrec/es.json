@@ -58,5 +58,10 @@
   "sonicrec.msg.recorded": "La grabación está guardada en este dispositivo. Guárdala también en el disco.",
   "sonicrec.note.persist": "El navegador puede borrar este almacenamiento cuando el disco está casi lleno. Guarda las grabaciones en el disco.",
   "sonicrec.note.memory": "Este navegador no puede conservar las grabaciones de forma segura: al cerrar la pestaña se pierden. Guarda cada grabación en el disco justo al terminar.",
-  "sonicrec.error.generic": "Problema: {reason}"
+  "sonicrec.error.generic": "Problema: {reason}",
+  "sonicrec.survey.title": "Fly by Sound: unas preguntas",
+  "sonicrec.survey.skip": "Saltar",
+  "sonicrec.survey.done": "Listo",
+  "sonicrec.survey.again": "Repetir la pregunta",
+  "sonicrec.survey.listening": "Escuchando: di tu respuesta en voz alta y pulsa {key}."
 }
