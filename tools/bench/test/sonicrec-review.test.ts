@@ -63,3 +63,31 @@ describe('F3: the pilot is not told that recording stopped while the microphone 
         expect('It also notes your language, audio settings, the type and name of the input device').not.toMatch(/microphone stays on/);
     });
 });
+
+describe('F5: a recorder problem the helper reads is a sentence of the dictionaries, in the language of the page', () => {
+    // every code the recorder reports (recorder.ts RecorderError) and the details it gives the sentence
+    const CODES: Record<string, string[]> = {
+        'mode-off': [],
+        'storage-low': ['free', 'need'],
+        'voice-start': ['reason'],
+        'voice-write': ['reason'],
+        'voice-stop': ['reason'],
+        store: ['reason'],
+        survey: ['reason'],
+        finish: ['reason'],
+        generic: ['reason']
+    };
+
+    it('every code has its sentence in en, es, pl and ru, naming exactly the details the recorder gives it', () => {
+        for (const [lang, d] of Object.entries(DICTS)) {
+            for (const [code, params] of Object.entries(CODES)) {
+                const text = d[`sonicrec.error.${code}`];
+                expect(text, `${lang} sonicrec.error.${code}`).toBeTypeOf('string');
+                const named = [...(text as string).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+                expect(named, `${lang} sonicrec.error.${code}`).toEqual([...params].sort());
+            }
+        }
+        // control: a code the recorder does not have is not in the dictionaries (a typo would show a key, not a sentence)
+        expect(en['sonicrec.error.no-such-code' as keyof typeof en]).toBeUndefined();
+    });
+});

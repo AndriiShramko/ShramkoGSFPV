@@ -8,7 +8,7 @@
 // Nothing here is drawn while the sound mode is off: the toggle button appears with ctx.sonic.
 import { clear, h } from '../ui/dom';
 import { locale, t } from '../i18n';
-import type { Recorder, RecorderStatus, StopOptions } from './recorder';
+import type { Recorder, RecorderError, RecorderStatus, StopOptions } from './recorder';
 import type { SessionStores } from './recorder';
 import type { PilotProfile } from './consent';
 import { formatBytes, formatClock, formatWhen, setText } from './format';
@@ -139,10 +139,17 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         message.textContent = text;
     };
 
+    /** A recorder problem in the page's language: its sentence of the dictionaries, or the generic one with the detail when a later recorder names a code this page does not know. */
+    const problemText = (e: RecorderError): string => {
+        const key = `sonicrec.error.${e.code}`;
+        const text = t(key, e.params);
+        return text === key ? t('sonicrec.error.generic', { reason: String(e.params['reason'] ?? e.code) }) : text;
+    };
+
     function drawStatus(): void {
         const s = last;
         const time = formatClock(s.elapsedMs);
-        setText(status, s.error !== null && s.phase === 'idle' ? t('sonicrec.error.generic', { reason: s.error }) : t(`sonicrec.status.${s.phase === 'idle' ? 'off' : s.phase}`));
+        setText(status, s.error !== null && s.phase === 'idle' ? problemText(s.error) : t(`sonicrec.status.${s.phase === 'idle' ? 'off' : s.phase}`));
         const running = s.phase === 'recording' || s.phase === 'closing' || s.phase === 'finishing';
         setText(clock, running ? t('sonicrec.clock', { time, frames: s.frames }) : '');
         clock.hidden = !running;

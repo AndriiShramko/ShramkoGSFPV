@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T19:39:21.261Z",
-    "gitHead": "4f375fb",
+    "date": "2026-11-07T19:46:56.818Z",
+    "gitHead": "1036b18",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -19,7 +19,8 @@
     "R1: a steady recording does not rewrite the panel's live status (the clock and the frame counter are not in a live region)": true,
     "R1: an open replay that is not playing does not rewrite its live status line (the same sentence is not written again every 250 ms)": true,
     "R2: while the survey is offered the voice is still being recorded and the pilot has not been told that recording stopped": true,
-    "R2: when the survey is over the pilot hears that recording stopped, and then that the flight is saved": true
+    "R2: when the survey is over the pilot hears that recording stopped, and then that the flight is saved": true,
+    "R3: with too little browser storage the panel says so in the language of the page (Spanish), not in English": true
   },
   "results": {
     "recordingRegions": {},
@@ -42,7 +43,17 @@
       "rec.stopped",
       "rec.saved",
       "send.ask"
-    ]
+    ],
+    "lowStorageInSpanish": {
+      "error": {
+        "code": "storage-low",
+        "params": {
+          "free": 4,
+          "need": 50
+        }
+      },
+      "panel": "Quedan solo 4 MB de almacenamiento del navegador y hacen falta 50 MB, as\u00ed que no se grab\u00f3 nada. Libera espacio, o guarda las grabaciones antiguas y b\u00f3rralas."
+    }
   },
   "note": "headless Chrome, a fake microphone, real OPFS and DOM; the sound runtime, samples and key router are stand-ins until the flight lane lands. A screen reader was not used: what it would read is judged from the live regions that change, not heard."
 }

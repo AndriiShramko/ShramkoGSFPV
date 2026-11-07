@@ -26,6 +26,19 @@ import type { MicResult, VoiceCapture, VoiceSlice } from './voice';
 export type RecorderPhase = 'idle' | 'asking' | 'starting' | 'recording' | 'closing' | 'finishing';
 export type VoiceState = 'off' | 'recording' | 'denied' | 'unavailable' | 'failed';
 
+/**
+ * A problem the helper should read. The recorder has no words of its own (a text for a person lives in the dictionaries, in the four
+ * languages): it names the problem by `code`, the key `sonicrec.error.<code>`, and gives the numbers or the technical detail (the
+ * browser's own error text) that sentence names in `params`.
+ */
+export interface RecorderError {
+    readonly code: 'mode-off' | 'storage-low' | 'voice-start' | 'voice-write' | 'voice-stop' | 'store' | 'survey' | 'finish' | 'generic';
+    readonly params: Readonly<Record<string, string | number>>;
+}
+
+/** An error's name and message, as the technical detail of a sentence. */
+const describe = (e: unknown): string => (e instanceof Error ? `${e.name}: ${e.message}` : String(e));
+
 export interface RecorderStatus {
     readonly phase: RecorderPhase;
     readonly sessionId: string | null;
@@ -41,7 +54,7 @@ export interface RecorderStatus {
     readonly durable: boolean;
     /** navigator.storage.persist() answered yes (true), no (false), or cannot say (null) */
     readonly persisted: boolean | null;
-    readonly error: string | null;
+    readonly error: RecorderError | null;
     /** the last recording that finished here */
     readonly lastSessionId: string | null;
 }
@@ -151,7 +164,7 @@ export class Recorder {
     private voiceState: VoiceState = 'off';
     private sessionId: string | null = null;
     private lastId: string | null = null;
-    private errorText: string | null = null;
+    private errorValue: RecorderError | null = null;
     private persisted: boolean | null = null;
     private sliceMarks = 0;
     private voiceOffsetSet = false;
@@ -188,7 +201,7 @@ export class Recorder {
             voiceBytes: this.deps.voice.bytes,
             durable: this.deps.stores.durable,
             persisted: this.persisted,
-            error: this.errorText,
+            error: this.errorValue,
             lastSessionId: this.lastId
         };
     }
@@ -232,7 +245,7 @@ export class Recorder {
     }
 
     private ask(): void {
-        this.errorText = null;
+        this.errorValue = null;
         this.questionRead = false;
         const token = ++this.askToken;
         this.setPhase('asking');
@@ -264,7 +277,7 @@ export class Recorder {
      */
     startByHelper(): Promise<boolean> {
         if (this.phaseValue !== 'idle') return Promise.resolve(false);
-        this.errorText = null;
+        this.errorValue = null;
         this.setPhase('asking');
         return this.confirm();
     }
@@ -307,14 +320,14 @@ export class Recorder {
         const rt = this.deps.runtime();
         if (rt === null) {
             this.deps.voice.release();
-            this.errorText = 'the sound mode is off';
+            this.errorValue = { code: 'mode-off', params: {} };
             this.setPhase('idle');
             return false;
         }
         const minFree = this.deps.minFreeBytes ?? DEFAULT_MIN_FREE_BYTES;
         if (free !== null && free < minFree) {
             this.deps.voice.release();
-            this.errorText = `only ${Math.floor(free / 1048576)} MB of browser storage are left, ${Math.ceil(minFree / 1048576)} MB are needed`;
+            this.errorValue = { code: 'storage-low', params: { free: Math.floor(free / 1048576), need: Math.ceil(minFree / 1048576) } };
             this.setPhase('idle');
             this.deps.say({ key: 'rec.off' });
             return false;
@@ -363,7 +376,7 @@ export class Recorder {
                 this.pendingSlices = [];
             } catch (e) {
                 this.voiceState = 'failed';
-                this.noteProblem(`the voice could not be recorded: ${e instanceof Error ? e.message : String(e)}`);
+                this.noteProblem('voice-start', e);
                 this.deps.voice.release();
             }
         }
@@ -443,7 +456,7 @@ export class Recorder {
             this.writer?.voice(bytes);
         } catch (err) {
             this.voiceState = 'failed';
-            this.noteProblem(`the voice could not be written: ${err instanceof Error ? err.message : String(err)}`);
+            this.noteProblem('voice-write', err);
         }
     }
 
@@ -468,14 +481,13 @@ export class Recorder {
         void Promise.resolve(store.append('voice-sync.jsonl', utf8Encode(`${JSON.stringify(mark)}\n`))).catch(() => undefined);
     }
 
-    private noteProblem(text: string): void {
-        this.errorText = text;
+    private noteProblem(code: Exclude<RecorderError['code'], 'mode-off' | 'storage-low'>, cause: unknown): void {
+        this.errorValue = { code, params: { reason: describe(cause) } };
         this.emit();
     }
 
     private onWriterError(e: unknown): void {
-        const text = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
-        this.noteProblem(`the recording cannot be stored: ${text}`);
+        this.noteProblem('store', e);
         // the writer has stopped; what it wrote stays in the browser's storage and is offered again at the next start
         if (this.phaseValue === 'recording') void this.abort(e);
     }
@@ -514,7 +526,7 @@ export class Recorder {
             try {
                 answers = await survey({ now: () => this.clock.now(), sessionId: this.sessionId, profile: this.profileAtStart });
             } catch (e) {
-                this.noteProblem(`the survey stopped: ${e instanceof Error ? e.message : String(e)}`);
+                this.noteProblem('survey', e);
             }
         }
         return this.finish(answers);
@@ -530,14 +542,14 @@ export class Recorder {
         try {
             await this.deps.voice.stop();
         } catch (e) {
-            this.noteProblem(`the voice recorder did not stop cleanly: ${e instanceof Error ? e.message : String(e)}`);
+            this.noteProblem('voice-stop', e);
         }
         let manifest: SessionManifest | null = null;
         try {
             if (answers !== null) writer.survey(answers);
             manifest = await writer.finish({ ended: this.deps.nowIso(), complete: true });
         } catch (e) {
-            this.noteProblem(`the recording could not be finished: ${e instanceof Error ? e.message : String(e)}`);
+            this.noteProblem('finish', e);
         }
         const result: FinishedRecording | null = manifest === null ? null : { id, manifest, frames: this.frameCount, events: this.eventCount, refused: this.refusals.total + this.sampler.refused.total };
         this.deps.voice.release();
@@ -557,9 +569,8 @@ export class Recorder {
 
     /** The recording cannot go on (storage failed, the sound mode went away): let go of everything, keep what was written. */
     private async abort(reason: unknown): Promise<void> {
-        const text = reason instanceof Error ? `${reason.name}: ${reason.message}` : String(reason);
         this.clearTimers();
-        if (this.errorText === null) this.errorText = text;
+        if (this.errorValue === null) this.errorValue = { code: 'generic', params: { reason: describe(reason) } };
         try {
             await this.deps.voice.stop();
         } catch {

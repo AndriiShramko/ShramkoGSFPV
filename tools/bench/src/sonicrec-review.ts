@@ -6,6 +6,7 @@
 //                     or a frame counter inside one is read to the helper every second
 //   R2 stop           after the pilot's stop the survey listens with the voice still recording: the pilot is told that recording stopped only when
 //                     the microphone has been let go (after the survey), not at the stop
+//   R3 problems       a problem of the recorder (here: too little browser storage) is read in the language of the page
 //   npx tsx tools/bench/src/sonicrec-review.ts       evidence/<date>/sonicrec-review.json
 import { mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
@@ -179,6 +180,31 @@ try {
         log('after the survey:', JSON.stringify(after));
         checks['R2: while the survey is offered the voice is still being recorded and the pilot has not been told that recording stopped'] = offer.phase === 'closing' && offer.status?.voice === 'recording' && !during.includes('rec.stopped');
         checks['R2: when the survey is over the pilot hears that recording stopped, and then that the flight is saved'] = after.indexOf('rec.stopped') > after.indexOf('rec.started') && after.indexOf('rec.saved') > after.indexOf('rec.stopped');
+        await ctx.close();
+    }
+
+    // ---------------------------------------------------------------- R3: a recorder problem is read in the language of the page
+    {
+        const ctx = await newContext();
+        // the browser says 5 MB are left of 60: the recorder refuses to start (it wants 50 MB)
+        await ctx.addInitScript({ content: 'navigator.storage.estimate = async () => ({ quota: 60000000, usage: 55000000 });' });
+        const page = await ctx.newPage();
+        page.on('pageerror', (e) => console.log('pageerror', e.message));
+        await page.goto(`${served.origin}/en/fly/?lang=es`);
+        await page.waitForFunction(() => (window as unknown as { __loc?: unknown }).__loc !== undefined);
+        await page.bringToFront();
+        await call(page, 'init', {});
+        await call(page, 'deleteAll');
+        await until(page, 'the toggle button', (s) => s.panelBuilt === true && s.toggleHidden === false);
+        await page.locator('#sonicrec-toggle').click();
+        await page.keyboard.press('KeyT');
+        await until(page, 'the question', (s) => s.phase === 'asking');
+        await sleep(120);
+        await page.keyboard.press('KeyT');
+        const refused = await until(page, 'the refusal', (s) => s.phase === 'idle' && s.status?.error !== null);
+        results.lowStorageInSpanish = { error: refused.status?.error, panel: refused.panelStatus };
+        log('low storage, page in Spanish:', JSON.stringify(results.lowStorageInSpanish));
+        checks['R3: with too little browser storage the panel says so in the language of the page (Spanish), not in English'] = /^Quedan solo \d+ MB .* 50 MB/.test(String(refused.panelStatus)) && !/browser storage/.test(String(refused.panelStatus));
         await ctx.close();
     }
 } finally {

@@ -453,7 +453,7 @@ describe('the recorder: T asks, T records, T stops', () => {
         off.rec.pressRecord();
         off.rec.pressRecord();
         await until(() => off.rec.phase === 'idle', 'idle');
-        expect(off.rec.status().error).toMatch(/mode is off/);
+        expect(off.rec.status().error).toEqual({ code: 'mode-off', params: {} });
         expect(off.created).toEqual([]);
         expect(off.mic.stopped).toBe(1); // the microphone it had asked for is let go
     });
@@ -463,7 +463,7 @@ describe('the recorder: T asks, T records, T stops', () => {
         h.rec.pressRecord();
         h.rec.pressRecord();
         await until(() => h.rec.phase === 'idle', 'refusal');
-        expect(h.rec.status().error).toMatch(/10 MB .* 50 MB/);
+        expect(h.rec.status().error).toEqual({ code: 'storage-low', params: { free: 10, need: 50 } });
         expect(keys(h.said)).toEqual(['rec.ask', 'rec.off']);
         expect(h.created).toEqual([]);
         expect(h.mic.stopped).toBe(1);
@@ -563,7 +563,7 @@ describe('the recorder: T asks, T records, T stops', () => {
         fly(h, 1);
         const done = await h.rec.stop({ survey: async () => { throw new Error('survey broke'); } });
         expect(done).not.toBeNull();
-        expect(h.rec.status().error).toMatch(/survey broke/);
+        expect(h.rec.status().error).toMatchObject({ code: 'survey', params: { reason: expect.stringMatching(/survey broke/) } });
         expect((await packageOf(h, done!.id)).frames.length).toBeGreaterThan(25);
     });
 
@@ -602,7 +602,7 @@ describe('what a failure costs', () => {
         fly(h, 2);
         await sleep(80);
         await until(() => h.rec.phase === 'idle', 'the recorder to give up');
-        expect(h.rec.status().error).toMatch(/cannot be stored/);
+        expect(h.rec.status().error).toMatchObject({ code: 'store', params: { reason: expect.any(String) } });
         expect(h.mic.stopped).toBe(1);
         expect(keys(h.said)).toContain('rec.stopped');
         expect(keys(h.said)).not.toContain('rec.saved');
