@@ -16,8 +16,10 @@ losing it is the requirement, so the rules of this module are about order and pr
   needs the pilot's separate confirmation to send), whatever the client says;
 - limits: one package at most SESSION_MAX_BYTES (100 MiB), all packages SESSIONS_CAP_BYTES (2 GiB, uploads in
   progress count), the disk guard (free space under MIN_FREE_GB, or less than the package needs, refuses), a
-  few unfinished uploads per client and in all, abandoned uploads are removed after UPLOAD_TTL_S. Per-client and
-  global request rates are kept by server.py (_rate), which owns the other routes' limits too.
+  few unfinished uploads per client and in all, abandoned uploads are removed after UPLOAD_TTL_S, and one that has
+  held no chunk at all for UPLOAD_IDLE_S gives its reservation back at the next sweep (a reservation that never starts
+  must not hold 100 MiB of the quota for a day). Per-client and global request rates are kept by server.py (_rate),
+  which owns the other routes' limits too.
 
 Storage under DATA_DIR/sessions/:
     index.jsonl            one line per package stored (and a tombstone per deletion): the audit trail
@@ -57,6 +59,8 @@ CHUNK_BYTES = 1 << 20
 MAX_PACKAGE_BYTES = int(os.environ.get("SESSION_MAX_BYTES", str(100 * 1024 * 1024)))
 SESSIONS_CAP_BYTES = int(os.environ.get("SESSIONS_CAP_BYTES", str(2 * 1024 * 1024 * 1024)))
 UPLOAD_TTL_S = 24 * 3600
+UPLOAD_IDLE_S = 15 * 60           # an upload that has held no chunk for this long gives its reservation back (sweep)
+CLAIM_STALE_S = 5 * 60            # a channel that has stood `sending` this long with no worker on it goes back to queued (session_delivery)
 ALIAS_TTL_S = 30 * 24 * 3600      # an alias of a package already stored is a few bytes; its holder may poll the delivery for days
 RETENTION_DAYS = int(os.environ.get("SESSION_RETENTION_DAYS", "1826"))   # the privacy text promises at most five years
 MAX_OPEN_PER_CLIENT = 6
@@ -270,19 +274,26 @@ class SessionStore:
         """Refresh the queue index of one session; True when a channel still has work."""
         sid = meta["id"]
         work: dict[str, float] = {}
+        wake = False
         if meta.get("state") == "stored":
             for name, ch in (meta.get("channels") or {}).items():
                 if ch.get("status") in ("queued", "retrying"):
                     work[name] = float(ch.get("nextAt") or 0)
+                    wake = True
+                # a send that is on its way (`sending`) is looked at again when its claim has stood CLAIM_STALE_S: a worker that wrote
+                # the claim and then could not write the outcome leaves it so, and nothing else would ever look (not work to wake for)
+                if ch.get("status") == "sending":
+                    work[f"{name}:claim"] = float(ch.get("claimedAt") or 0) + CLAIM_STALE_S
                 # a notice about this channel's trouble that could not go through the other channel yet is work too
                 if any(n.get("state") == "pending" for n in (ch.get("notices") or {}).values()):
                     work[f"{name}:notice"] = float(ch.get("noticeAt") or 0)
+                    wake = True
         with self._mu:
             if work:
                 self._due[sid] = work
             else:
                 self._due.pop(sid, None)
-        return bool(work)
+        return wake
 
     def due(self, channel: str, now: float | None = None) -> list[str]:
         """Sessions whose `channel` is waiting and its time has come, the oldest wait first."""
@@ -701,9 +712,24 @@ class SessionStore:
                 pass
         return True
 
+    def _receiving(self, sid: str) -> bool:
+        """A chunk of this upload is arriving right now."""
+        with self._mu:
+            return any(key[0] == sid for key in self._inflight)
+
+    def _drop_idle(self, sid: str) -> bool:
+        """Removes an upload that has held no chunk, looked at again under its lock: a chunk that has just been held, or is arriving, keeps it."""
+        with self._lock(sid):
+            meta = self.get(sid)
+            if meta is None or meta.get("state") != "uploading" or meta.get("held") or self._receiving(sid):
+                return False
+            return self.delete(sid, "idle")
+
     def sweep(self) -> list[str]:
-        """Housekeeping: uploads left unfinished for UPLOAD_TTL_S go; a stored package goes only after RETENTION_DAYS AND only when every
-        channel is done (an undelivered recording is never aged out). Returns the ids removed."""
+        """Housekeeping: uploads left unfinished for UPLOAD_TTL_S go, and so does one that has held no chunk at all for UPLOAD_IDLE_S (its
+        reservation returns to the pool: start is anonymous, so a reservation that never begins must not hold room for a day; a chunk that is
+        arriving this moment is not idle); a stored package goes only after RETENTION_DAYS AND only when every channel is done (an
+        undelivered recording is never aged out). Returns the ids removed."""
         self._ensure_indexed()
         now = self.now()
         gone: list[str] = []
@@ -719,6 +745,9 @@ class SessionStore:
             age = now - float(meta.get("storedTs") or meta.get("ts") or now)
             if meta.get("state") == "uploading" and age > UPLOAD_TTL_S:
                 if self.delete(d.name, "abandoned"):
+                    gone.append(d.name)
+            elif meta.get("state") == "uploading" and not meta.get("held") and age > UPLOAD_IDLE_S:
+                if self._drop_idle(d.name):
                     gone.append(d.name)
             elif meta.get("state") == "duplicate" and age > ALIAS_TTL_S:
                 if self.delete(d.name, "alias"):

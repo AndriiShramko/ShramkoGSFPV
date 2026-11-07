@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import email
 import email.policy
+import errno
 import http.client
 import io
 import json
@@ -329,6 +330,160 @@ class Delivering(unittest.TestCase):
         self.assertEqual(rig.delivery.run_once(), 4)
         self.assertEqual({n: c["error"] for n, c in rig.channels(a).items()}, {"telegram": "package-missing", "email": "package-missing"})
         self.assertEqual(rig.status(b)["delivered"], True)       # the next recording is not held up by it
+
+
+def break_writes(rig: Rig, *calls: int) -> dict:
+    """The store's `update` raises "no space left" on the given calls from now on (1 is the next): the disk full for that one write."""
+    real = rig.store.update
+    state = {"calls": 0, "failed": 0}
+
+    def update(sid, fn):
+        state["calls"] += 1
+        if state["calls"] in calls:
+            state["failed"] += 1
+            raise OSError(errno.ENOSPC, "No space left on device")
+        return real(sid, fn)
+
+    rig.store.update = update
+    return state
+
+
+def stale_s() -> float:
+    """How long a claim may stand `sending` before it is put back (a few minutes: 5)."""
+    import sessions as _sessions
+    return float(getattr(_sessions, "CLAIM_STALE_S", 300))
+
+
+class NoMessageId(unittest.TestCase):
+    """v12-int step 8d: Telegram counts when its answer is ok WITH a message id."""
+
+    def test_an_ok_answer_without_a_message_id_is_not_a_send_it_is_tried_again(self):
+        rig = Rig(self)
+        rig.tg.plan = [("noid",)]
+        sid = rig.stored(package(filler=100))
+        rig.tg_worker.run_once()
+        tg = rig.channels(sid)["telegram"]
+        self.assertEqual((tg["status"], tg["error"], tg["failures"], tg["sentAt"], tg["messageId"]), ("retrying", "telegram-no-id", 1, None, None))
+        self.assertFalse(SessionStore.delivered(rig.store.get(sid)))
+        rig.clock[0] += sd.BACKOFF_S[0]
+        rig.tg_worker.run_once()                               # control: the same call answered with an id counts
+        tg = rig.channels(sid)["telegram"]
+        self.assertEqual((tg["status"], tg["failures"]), ("sent", 0))
+        self.assertIsInstance(tg["messageId"], int)
+        self.assertEqual(len(rig.tg.of("sendDocument")), 2)
+
+    def test_the_same_holds_for_the_message_with_the_admin_link_and_for_a_notice(self):
+        rig = Rig(self, tg_max=10)                             # a package over Telegram's cap goes as a message with the link
+        rig.tg.plan = [("noid",)]
+        sid = rig.stored(package(filler=100))
+        rig.tg_worker.run_once()
+        self.assertEqual(rig.channels(sid)["telegram"]["status"], "retrying")
+        rig.clock[0] += sd.BACKOFF_S[0]
+        rig.tg_worker.run_once()
+        self.assertEqual(rig.channels(sid)["telegram"]["status"], "link")
+        # a notice that Telegram answers ok to with no message is not counted as given: it raises, so the notice stays pending
+        rig.tg.plan = [("noid",)]
+        with self.assertRaises(sd.ChannelError) as cm:
+            rig.telegram.notice("subject", "text")
+        self.assertEqual(cm.exception.reason, "telegram-no-id")
+        rig.telegram.notice("subject", "text")                 # control: with an id it is fine
+
+
+class StuckClaims(unittest.TestCase):
+    """v12-int step 8a: a channel left `sending` by a write that failed after the send is not stuck until a restart."""
+
+    def test_a_claim_left_sending_by_a_failed_write_of_sent_goes_back_after_a_few_minutes_and_is_never_sent_a_third_time(self):
+        rig = Rig(self)
+        sid = rig.stored(package(filler=400))
+        state = break_writes(rig, 2)                           # the claim is the first write, the record of `sent` the second: the disk is full for it
+        rig.tg_worker.run_once()
+        self.assertEqual(state["failed"], 1)
+        self.assertEqual(len(rig.tg.of("sendDocument")), 1)    # copy one went
+        self.assertEqual(rig.channels(sid)["telegram"]["status"], "sending")   # and nothing says so
+        rig.clock[0] += stale_s() - 60                         # not yet: a claim younger than the limit may be a send on its way
+        rig.tg_worker.run_once()
+        self.assertEqual((rig.channels(sid)["telegram"]["status"], len(rig.tg.of("sendDocument"))), ("sending", 1))
+        rig.clock[0] += 120                                    # past it, and no restart: the same store, the same worker
+        rig.tg_worker.run_once()
+        tg = rig.channels(sid)["telegram"]
+        self.assertEqual((tg["status"], tg["recovered"], tg["staleRequeues"]), ("sent", True, 1))
+        self.assertEqual(len(rig.tg.of("sendDocument")), 2)    # copy two, recorded this time
+        self.assertEqual(rig.status(sid), {"channels": {"telegram": "sent", "email": "queued"}, "delivered": False})
+        for _ in range(5):                                     # never a third: not by waiting, not by a restart
+            rig.clock[0] += 86_400
+            rig.tg_worker.run_once()
+        rig.build()
+        rig.delivery.run_once()
+        self.assertEqual(len(rig.tg.of("sendDocument")), 2)
+        self.assertEqual(rig.status(sid), {"channels": {"telegram": "sent", "email": "sent"}, "delivered": True})
+        self.assertEqual(len(rig.smtp.messages), 1)
+
+    def test_the_rule_touches_only_a_claim_that_is_stale_and_still_sending(self):
+        rig = Rig(self)
+        sid = rig.stored(package(filler=400))
+        rig.tg_worker.run_once()                               # sent and recorded, as always
+        rig.store.update(sid, lambda m: m["channels"]["telegram"].update(claimedAt=rig.clock[0] - 10 * stale_s()))     # an old claim time left in a record that says sent
+        rig.clock[0] += 10 * stale_s()
+        rig.tg_worker.run_once()
+        self.assertEqual((rig.channels(sid)["telegram"]["status"], len(rig.tg.of("sendDocument"))), ("sent", 1))
+        sid2 = rig.stored(package(filler=401))                 # a channel waiting for its retry is not a claim either
+        rig.tg.plan = [("status", 500)]
+        rig.tg_worker.run_once()
+        before = dict(rig.channels(sid2)["telegram"])
+        self.assertEqual(before["status"], "retrying")
+        rig.clock[0] += 5                                      # time passes, the retry is not yet due
+        rig.tg_worker.run_once()
+        self.assertEqual(rig.channels(sid2)["telegram"], before)
+
+    def test_a_failed_try_whose_failure_could_not_be_written_is_tried_again_after_the_limit_and_nothing_had_gone(self):
+        rig = Rig(self)
+        rig.tg.plan = [("status", 500)]
+        sid = rig.stored(package(filler=400))
+        break_writes(rig, 2)                                   # the claim is written, the record of the failure is not
+        rig.tg_worker.run_once()
+        self.assertEqual((rig.channels(sid)["telegram"]["status"], len(rig.tg.of("sendDocument"))), ("sending", 1))
+        rig.clock[0] += stale_s() + 1
+        rig.tg_worker.run_once()
+        self.assertEqual(rig.channels(sid)["telegram"]["status"], "sent")
+        self.assertEqual(len(rig.tg.of("sendDocument")), 2)    # the first reached Telegram's fake and failed there; the second went
+
+    def test_a_channel_whose_outcomes_cannot_be_written_is_not_sent_to_again_and_again_it_fails_for_the_owners_resend(self):
+        rig = Rig(self)
+        sid = rig.stored(package(filler=400))
+        # writes: 1 claim, 2 sent (fails); after the limit: 3 requeue, 4 claim, 5 sent (fails); after the limit again: the second stale claim
+        state = break_writes(rig, 2, 5)
+        rig.tg_worker.run_once()
+        rig.clock[0] += stale_s() + 1
+        rig.tg_worker.run_once()
+        self.assertEqual((state["failed"], len(rig.tg.of("sendDocument")), rig.channels(sid)["telegram"]["status"]), (2, 2, "sending"))
+        rig.clock[0] += stale_s() + 1
+        rig.tg_worker.run_once()                               # a second stale claim: no third copy, the owner is told and can resend
+        tg = rig.channels(sid)["telegram"]
+        self.assertEqual((tg["status"], tg["error"]), ("failed", "lost-record"))
+        self.assertEqual(len(rig.tg.of("sendDocument")), 2)
+        for _ in range(3):
+            rig.clock[0] += 86_400
+            rig.delivery.run_once()
+        self.assertEqual(len(rig.tg.of("sendDocument")), 2)
+        notice = [parse(m) for m in rig.smtp.messages if "telegram delivery" in str(parse(m)["Subject"])]
+        self.assertEqual(len(notice), 1)
+        self.assertIn("lost the record of its sends", str(notice[0]["Subject"]))
+        rig.store.resend(sid, "telegram")                      # the owner's resend starts it again
+        rig.tg_worker.run_once()
+        self.assertEqual(rig.channels(sid)["telegram"]["status"], "sent")
+
+    def test_without_the_rule_the_claim_stays_for_good_this_is_what_it_replaces(self):
+        rig = Rig(self)
+        sid = rig.stored(package(filler=400))
+        break_writes(rig, 2)
+        rig.tg_worker.run_once()
+        with mock.patch.object(sd.DeliveryWorker, "_release_stale", lambda self, sid: None):      # the rule taken away
+            for _ in range(4):
+                rig.clock[0] += 86_400
+                rig.tg_worker.run_once()
+        self.assertEqual((rig.channels(sid)["telegram"]["status"], len(rig.tg.of("sendDocument"))), ("sending", 1))
+        rig.build()                                            # only a restart would have moved it (to a second copy)
+        self.assertEqual(rig.channels(sid)["telegram"]["status"], "queued")
 
 
 class Restarting(unittest.TestCase):

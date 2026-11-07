@@ -3,8 +3,8 @@
 // driven by the same client in tools/bench/src/sonicrec-upload.ts. The requirement is not losing a recording, so the claims here are about
 // order and proof: what is believed when, what is never deleted, what is never sent twice, and that "delivered" needs BOTH channels.
 // Every claim has a control that must fail the way the claim says.
-import { describe, expect, it } from 'vitest';
-import { CHANNELS, Transfer, allConfirmed, classify, parseTransfer, readTransfer, writeTransfer } from '../../../apps/fly/src/sonic-session/upload';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { CHANNELS, MIN_UPLINK_BYTES_PER_S, Transfer, allConfirmed, classify, parseTransfer, readTransfer, requestTimeoutFor, writeTransfer } from '../../../apps/fly/src/sonic-session/upload';
 import type { TransferDeps, TransferProgress, TransferRecord } from '../../../apps/fly/src/sonic-session/upload';
 import { packageOf } from '../../../apps/fly/src/sonic-session/registry';
 import { FakeDirectory } from './sonicrec-fixtures';
@@ -588,4 +588,109 @@ describe('the record of a transfer', () => {
         expect(allConfirmed(null)).toBe(false);
         expect(allConfirmed({})).toBe(false);
     });
+});
+
+// ------------------------------------------------------------------ a chunk on a slow uplink (v12-int step 8b)
+
+describe('a request is given time for the bytes it carries: a 1 MiB chunk can finish on a 100 kbit/s uplink', () => {
+    const MIB = 1 << 20;
+    const KBIT100 = 12_500; // bytes a second
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    /**
+     * A package a little over one chunk of 1 MiB, sent through a transport that delivers a body at `rate` bytes a second, on timers the test moves
+     * (the request's own time limit and the transport's slowness are the page's setTimeout; the rig's waits between tries cost nothing). Runs the
+     * transfer for at most `limitS` seconds of that time.
+     */
+    async function slow(extra: Partial<TransferDeps>, rate: number, limitS: number): Promise<{ outcome: string | null; api: FakeApi; r: Rig; seconds: number; made: MadeSession }> {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const made = await makeSession({ voiceBytes: MIB + 150_000 });
+        const api = new FakeApi();
+        api.chunkBytes = MIB;
+        api.maxBytes = 50_000_000;
+        api.faults.push((c) => (c.method === 'POST' && /\/\d+$/.test(c.path) ? { kind: 'throttle', bytesPerSecond: rate } : null));
+        const r = await rig(api, made, extra);
+        let outcome: string | null = null;
+        void r.transfer.run().then((o) => {
+            outcome = o;
+        });
+        let seconds = 0;
+        while (outcome === null && seconds < limitS) {
+            await vi.advanceTimersByTimeAsync(1000);
+            seconds++;
+        }
+        if (outcome === null) r.transfer.stop();
+        return { outcome, api, r, seconds, made };
+    }
+
+    it('the time given grows with the body: the base for nothing, base plus the bytes at the slowest uplink for a chunk (and 100 kbit/s fits)', () => {
+        expect(requestTimeoutFor(0)).toBe(60_000);
+        expect(requestTimeoutFor(MIB)).toBe(Math.round(60_000 + (MIB * 1000) / MIN_UPLINK_BYTES_PER_S));
+        expect(requestTimeoutFor(MIB)).toBeGreaterThan((MIB / KBIT100) * 1000 * 1.5); // 84 s of the line, with half as much again
+        expect(requestTimeoutFor(500_000)).toBeLessThan(requestTimeoutFor(MIB));
+        expect(requestTimeoutFor(MIB, 60_000, Infinity)).toBe(60_000); // no allowance: the old fixed limit
+        expect(requestTimeoutFor(MIB, 30, 8000)).toBe(Math.round(30 + (MIB * 1000) / 8000)); // a test's own base still counts
+    });
+
+    it('a 1 MiB chunk through a 100 kbit/s uplink arrives: delivered, the chunk sent once, nothing given up on the way', async () => {
+        const { outcome, api, r, seconds, made } = await slow({}, KBIT100, 1500);
+        expect(outcome).toBe('delivered');
+        expect(api.callsTo(/^POST \/S-.*\/0$/)).toHaveLength(1); // the first chunk, 84 s on the line, once
+        expect(r.progress.some((p) => p.problem === 'slow')).toBe(false);
+        expect(seconds).toBeGreaterThan(80); // it did take the time the line takes
+        expect(seconds).toBeLessThan(200);
+        const stored = api.stored();
+        expect(stored).toHaveLength(1);
+        expect(sha256((stored[0] as { data: Uint8Array }).data)).toBe(sha256(await made.pack())); // the whole package, byte for byte
+    }, 60000);
+
+    it('control: with the old fixed 60 s the same line never finishes (the chunk is given up and sent again, for ever; the recording stays on the device)', async () => {
+        const { outcome, api, r } = await slow({ uplinkBytesPerSecond: Infinity }, KBIT100, 1800);
+        expect(outcome).toBeNull();
+        expect(api.callsTo(/^POST \/S-.*\/0$/).length).toBeGreaterThanOrEqual(8);
+        expect(r.progress.some((p) => p.problem === 'slow')).toBe(true);
+        expect(api.stored()).toHaveLength(0);
+        expect([...api.sessions.values()][0]?.held.size).toBe(0); // not one byte of the package was kept by the server
+    }, 60000);
+
+    it('the allowance is finite: below 64 kbit/s a 1 MiB chunk is still given up, and a connection that moves nothing is given up after the time for its bytes', async () => {
+        const { outcome, r } = await slow({}, 4000, 1500);
+        expect(outcome).toBeNull();
+        expect(r.progress.some((p) => p.problem === 'slow')).toBe(true);
+        // a hang: the first try of the chunk says nothing at all; it is abandoned at base + bytes / rate (191 s), not before and not never
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const made = await makeSession({ voiceBytes: MIB + 150_000 });
+        const api = new FakeApi();
+        api.chunkBytes = MIB;
+        api.maxBytes = 50_000_000;
+        let hung = 0;
+        api.faults.push((c) => (c.method === 'POST' && /\/\d+$/.test(c.path) && hung++ < 1 ? { kind: 'hang' } : null));
+        const t = await rig(api, made);
+        void t.transfer.run();
+        for (let i = 0; i < 100; i++) await vi.advanceTimersByTimeAsync(1000);
+        expect(api.callsTo(/^POST \/S-.*\/0$/)).toHaveLength(1); // 100 s of silence: the chunk is still given its time
+        for (let i = 0; i < 100; i++) await vi.advanceTimersByTimeAsync(1000);
+        expect(api.callsTo(/^POST \/S-.*\/0$/).length).toBeGreaterThanOrEqual(2); // 200 s: given up, and sent again
+        t.transfer.stop();
+    }, 60000);
+
+    it('a request that carries no body keeps the base: a silent status read is given up after 60 s', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        const made = await makeSession({ voiceBytes: 3000 });
+        const api = new FakeApi();
+        let hung = 0;
+        api.faults.push((c) => (c.method === 'GET' && hung++ < 1 ? { kind: 'hang' } : null));
+        const t = await rig(api, made);
+        void t.transfer.run();
+        for (let i = 0; i < 55; i++) await vi.advanceTimersByTimeAsync(1000);
+        const gets = (): number => api.callsTo(/^GET \/S-/).length;
+        const before = gets();
+        for (let i = 0; i < 10; i++) await vi.advanceTimersByTimeAsync(1000);
+        expect(before).toBe(1);
+        expect(gets()).toBeGreaterThanOrEqual(2);
+        t.transfer.stop();
+    }, 60000);
 });

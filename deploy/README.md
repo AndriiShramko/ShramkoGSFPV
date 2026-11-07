@@ -455,16 +455,20 @@ $SSH "cd $GSFPV_BASE && docker compose up -d --force-recreate gsfpv-api && docke
 ```
 | Channel | What goes | Confirmed when |
 |---|---|---|
-| Telegram | `sendDocument`, the file part read from disk in 256 KB pieces, up to 49 MiB (`SESSION_TG_MAX_BYTES`); over it a message with the admin link, status `link` | Telegram's answer is ok with a message id |
+| Telegram | `sendDocument`, the file part read from disk in 256 KB pieces, up to 49 MiB (`SESSION_TG_MAX_BYTES`); over it a message with the admin link, status `link` | Telegram's answer is ok WITH a message id (an ok that names none is a failure, `telegram-no-id`, tried again) |
 | E-mail | one message to `SESSION_MAIL_TO` (default `GMAIL_USER`, the owner's own address) through the authenticated Gmail SMTP server, the zip as a base64 attachment encoded and written to the socket in about 100 KB pieces, up to `SESSION_MAIL_MAX_BYTES` (15 MiB; Gmail's 25 MB limit counts the base64 text: a 15 MiB package is a message of about 21 MiB); over it a text message with the admin link, status `link` | the SMTP server accepted the message after DATA (there is no read receipt) |
 
 Each channel has its own worker thread, status and retries: a failed try waits 30 s, 2 min, 10 min, 30 min, 2 h, 6 h, 12 h, then 24 h; Telegram's
 `retry_after` is honoured when longer; the 9th failure makes the channel `failed` (the admin's resend, step 9, starts it again). A channel that is not
-set up uses no tries (it looks again each minute). **A channel that fails 3 times is reported through the other** (a Telegram message, or an e-mail
+set up uses no tries (it looks again each minute). **A claim that has stood `sending` for 5 minutes with no worker on it** (what a failed write of `sent`, or of a
+failure, leaves behind when the disk is full at that moment) goes back to `queued` without a restart (a second copy for the owner, which costs nothing where a
+lost recording would); once per channel: when the requeued send also ends with no record, the channel is `failed` (`lost-record`) for the owner's resend
+instead of a third copy, and the owner is told through the other channel. **A channel that fails 3 times is reported through the other** (a Telegram message, or an e-mail
 `[Fly by Sound] telegram delivery of recording S-... failed 3 times`), once, and once more when it gives up; a notice that cannot go is kept pending and
 retried. `delivered` is true only when both channels are `sent` or `link`. Config names (all optional): `SESSION_MAIL_TO`, `SESSION_MAIL_MAX_BYTES`,
 `SESSION_TG_MAX_BYTES`; the Telegram chat and token are those of the owner bot (`TG_OWNER_CHAT_ID`/`TG_CHAT_ID`, `TG_OWNER_BOT_TOKEN`/`TG_BOT_TOKEN`), Gmail
-is `GMAIL_USER` and `GMAIL_APP_PASSWORD`. Housekeeping (every 5 minutes with the counter's) removes uploads left unfinished for 24 h and delivered packages
+is `GMAIL_USER` and `GMAIL_APP_PASSWORD`. Housekeeping (every 5 minutes with the counter's) removes uploads left unfinished for 24 h, an upload that has held no chunk at all for 15
+minutes (its reservation returns to the pool: `start` is anonymous and reserves the whole size; a chunk that is arriving keeps its upload), and delivered packages
 past `SESSION_RETENTION_DAYS`. Checked by `apps/api/tests/test_session_delivery.py` (fake Telegram and a local SMTP server, nothing leaves the machine).
 
 **Sending (step 8).** The page's client (`apps/fly/src/sonic-session/upload.ts`, driven by `send-control.ts`) speaks the routes above; it needs
@@ -474,7 +478,8 @@ helper's Send with the tick set, or a spoken yes where the pilot allowed voice c
 in `X-Session-Token`), then finish; it keeps the package on the device through all of it and after it, resumes from what the server holds (`GET`), waits out
 failures (2 s, 4 s ... five minutes; a rate limit a minute, a full server five) and goes on at the next start of the page, and says "delivered" only when
 the status shows both channels `sent` or `link`. A recording of a minor without the guardian's confirmation is never sent (the page checks the package's own
-consent, and the server refuses it too). `upload.json` in the session's own folder in the browser keeps the server's id and token between visits.
+consent, and the server refuses it too). A request is given 60 s plus the time its bytes take at 8 kB a second (64 kbit/s), so a 1 MiB chunk gets about 3 minutes and an
+uplink of 100 kbit/s, which needs 84 s for it, can finish one (the whole request used to have 60 s whatever it carried, so such a line never could). `upload.json` in the session's own folder in the browser keeps the server's id and token between visits.
 **Local check:** `apps/api/tests/rig_server.py` runs the real handler, store and delivery workers with a fake Telegram and SMTP on 127.0.0.1;
 `tools/bench/src/sonicrec-upload.ts` drives the page against it through `serve-csp.mjs` with `API_PROXY` (the proxy forwards the upload's own headers, as
 this nginx location does). The speech recognition of the voice command is a stand-in there: the real service is not tried.

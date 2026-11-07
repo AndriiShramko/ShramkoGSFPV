@@ -96,9 +96,26 @@ export interface TransferDeps {
     readonly backoffMs?: (failures: number) => number;
     /** the pause before the n-th look (n from 0) at the delivery status, ms */
     readonly pollMs?: (n: number) => number;
-    /** a request that is silent this long is given up and tried again, ms */
+    /** a request that is silent this long is given up and tried again, ms: the time for a request with no body; a chunk is given more (see requestTimeoutFor) */
     readonly requestTimeoutMs?: number;
+    /**
+     * The slowest uplink a chunk must be able to finish on, bytes per second (default MIN_UPLINK_BYTES_PER_S): the time a request with a body
+     * is given is `requestTimeoutMs` plus its bytes at this rate. Infinity: no time for the body (a test of the old fixed limit).
+     */
+    readonly uplinkBytesPerSecond?: number;
     readonly onProgress?: (p: TransferProgress) => void;
+}
+
+/**
+ * The slowest uplink a chunk of the package must be able to finish on: 8 kB a second, 64 kbit/s. A chunk is 1 MiB (the server's `chunkBytes`), which
+ * takes 84 s on a 100 kbit/s uplink; the whole request used to be given 60 s whatever it carried, so on such a line no chunk could ever finish and
+ * the client tried the first one for ever (the recording stayed safe on the device and never left it).
+ */
+export const MIN_UPLINK_BYTES_PER_S = 8000;
+
+/** How long a request is given, ms: the base (a request that carries nothing), plus the time its `bodyBytes` take at `uplink` bytes a second. */
+export function requestTimeoutFor(bodyBytes: number, baseMs = 60_000, uplink = MIN_UPLINK_BYTES_PER_S): number {
+    return Math.round(baseMs + (Number.isFinite(uplink) && uplink > 0 ? (bodyBytes * 1000) / uplink : 0));
 }
 
 // ------------------------------------------------------------------ the record
@@ -546,7 +563,8 @@ export class Transfer {
         const f = this.deps.fetch ?? globalThis.fetch.bind(globalThis);
         const ctl = new AbortController();
         this.fetchCtl = ctl;
-        const timeout = setTimeout(() => ctl.abort(), this.deps.requestTimeoutMs ?? 60_000);
+        // a chunk carries up to 1 MiB: a request is given time for its bytes as well, or an uplink of 100 kbit/s could never finish one
+        const timeout = setTimeout(() => ctl.abort(), requestTimeoutFor(body instanceof Uint8Array ? body.length : 0, this.deps.requestTimeoutMs ?? 60_000, this.deps.uplinkBytesPerSecond ?? MIN_UPLINK_BYTES_PER_S));
         try {
             return await this.exchange(f, ctl, method, path, body, token, headers, progress);
         } finally {
