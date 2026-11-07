@@ -43,6 +43,13 @@ GET  /{lang}/scenes/, /{lang}/scenes/<id>/, /scenes/sitemap.xml, /scenes/llms.tx
                  catalogue and the templates of the live release (SCENE_TEMPLATES)
 GET  /api/wind/<id>?mode=now
                  the wind at a published scene's place now (wind.py, Open-Meteo, cached 15 min)
+POST /api/session/start, POST /api/session/<id>/<n>, POST /api/session/<id>/finish, GET /api/session/<id>
+                 Fly by Sound recordings (v0.12, sessions.py): a pilot's flight and voice as ONE .zip, uploaded in
+                 chunks of at most 1 MiB with the upload token (X-Session-Token), checked against the SHA-256 given
+                 at the start, stored and fsynced BEFORE the API says "stored"; then the delivery queue
+                 (session_delivery.py) sends it to the owner's Telegram and e-mail, each channel with its own
+                 status and retries, "delivered" only when both confirm. Caps: SESSION_MAX_BYTES (100 MiB a
+                 package), SESSIONS_CAP_BYTES (2 GiB in all), the disk guard, rates per client and in all.
 GET  /api/health 200 {"ok": true, ...}; 503 when the disk guard has tripped.
 GET  /api/superspl/explore
                  SuperSplat catalogue (owner's decision 2026-09-27, docs/decisions.md D35): the
@@ -94,6 +101,7 @@ import outreach
 import ownerbot
 import scenepages
 import service
+import sessions
 import superspl_facts
 import translate
 import wind
@@ -153,6 +161,9 @@ _lhits: dict[str, deque] = defaultdict(deque)
 _rhits: dict[str, deque] = defaultdict(deque)
 _shits: dict[str, deque] = defaultdict(deque)
 _all_hits: dict[str, deque] = defaultdict(deque)  # per endpoint, every visitor together
+_sthits: dict[str, deque] = defaultdict(deque)    # POST /api/session/start, per client
+_schits: dict[str, deque] = defaultdict(deque)    # the chunks of an upload, per client
+_sqhits: dict[str, deque] = defaultdict(deque)    # finish and status, per client
 _tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
                                                   # a stranger's flood must not use up Telegram's deliveries)
 DRAIN_MAX = 1 << 20  # Handler._refuse: the largest body read and dropped before an early refusal (reports and shares: 512 KB)
@@ -1360,6 +1371,13 @@ ADMIN.add_route("GET", r"wind/climate", lambda m, qs, body, client: WIND.climate
 OUTREACH = outreach.OutreachStore(lambda: DATA_DIR)
 outreach.OutreachAdmin(OUTREACH).register(ADMIN)
 
+# ---------------- Fly by Sound recordings (v0.12 lane v12-feedback): sessions.py, the chunked upload of a pilot's package ----------------
+SESSIONS = sessions.SessionStore(lambda: DATA_DIR, free_bytes=lambda: int(free_gb() * 1e9), min_free_bytes=lambda: int(MIN_FREE_GB * 1e9))
+SESSION_ROUTE = re.compile(r"/api/session/(?:(start)|(S-[0-9]{8}-[0-9a-f]{12})(?:/(finish|[0-9]{1,6}))?)")
+SESSION_BODY_MAX = 8 * 1024            # the JSON of start and finish
+SESSION_DRAIN_MAX = sessions.CHUNK_BYTES + 64 * 1024   # a refused chunk is read away up to this (nginx stops a body at 1100k)
+SESSION_CHUNK_TIMEOUT = 60.0           # seconds the socket may stay silent while a chunk arrives (a thread is held meanwhile)
+
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "gsfpv-api"
@@ -1503,6 +1521,83 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, b'<!doctype html><meta charset="utf-8"><title>Not found</title><p><a href="/">ShramkoGSFPV</a></p>\n',
                    [("Content-Type", "text/html; charset=utf-8"), ("Cache-Control", "no-store")], head)
 
+    def _drain(self, n: int) -> None:
+        """Read and drop up to n bytes of the request body (at most SESSION_DRAIN_MAX), so a refusal is not lost to a reset."""
+        left = n if 0 < n <= SESSION_DRAIN_MAX else 0
+        try:
+            while left > 0:
+                got = len(self.rfile.read(min(left, 65536)))
+                if not got:
+                    break
+                left -= got
+        except OSError:
+            pass
+
+    def _session(self, method: str, path: str, qs: str) -> None:
+        """The recordings' routes (sessions.py). The token is the X-Session-Token header; for GET also ?token=. Every refusal is
+        {"ok": false, "error": <code>} with its status; rates are per client address (nginx passes the real one), and global."""
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = -1
+        m = SESSION_ROUTE.fullmatch(path)
+        if m is None:
+            self._drain(n)
+            return self._json(404, {"ok": False})
+        start, sid, tail = m.groups()
+        want = "POST" if start or tail else "GET"
+        if method != want:
+            self._drain(n)
+            return self._json(405, {"ok": False})
+        client = self._client()
+        token = self.headers.get("X-Session-Token") or (urllib.parse.parse_qs(qs).get("token", [None])[0] if method == "GET" else None)
+        if start:
+            limited = not _rate(_sthits, client, 20, 3600.0) or not _rate(_all_hits, "session-start", 300, 3600.0)
+        elif tail and tail != "finish":
+            limited = not _rate(_schits, client, 900, 600.0) or not _rate(_all_hits, "session-chunk", 6000, 600.0)
+        else:
+            limited = not _rate(_sqhits, client, 1200, 600.0) or not _rate(_all_hits, "session-status", 12000, 600.0)
+        if limited:
+            self._drain(n)
+            return self._json(429, {"ok": False, "error": "rate"})
+        consumed = [0]
+
+        def read(k: int) -> bytes:
+            b = self.rfile.read(k)
+            consumed[0] += len(b)
+            return b
+
+        try:
+            if start:
+                body = self._body()
+                if body is None:
+                    return self._json(400, {"ok": False, "error": "bad-request"})
+                return self._json(200, SESSIONS.start(client, body))
+            if tail is None:
+                return self._json(200, SESSIONS.status(sid, token))
+            if tail == "finish":
+                body = None
+                if 0 < n <= SESSION_BODY_MAX:
+                    try:
+                        body = json.loads(self.rfile.read(n))
+                    except ValueError:
+                        body = None
+                elif n > SESSION_BODY_MAX:
+                    self._drain(n)
+                    return self._json(413, {"ok": False, "error": "too-large"})
+                return self._json(200, SESSIONS.finish(sid, token, body))
+            self.connection.settimeout(SESSION_CHUNK_TIMEOUT)
+            chunk_hash = self.headers.get("X-Chunk-Sha256")
+            if n <= 0:
+                return self._json(400, {"ok": False, "error": "bad-length"})
+            return self._json(200, SESSIONS.put_chunk(sid, token, int(tail), n, read, chunk_hash.strip() if chunk_hash else None))
+        except sessions.SessionError as e:
+            if tail and tail != "finish":
+                self._drain(n - consumed[0])
+            return self._json(e.status, {"ok": False, "error": e.code, **e.extra})
+        except OSError:
+            return self._json(500, {"ok": False, "error": "io"})
+
     def do_HEAD(self):
         path = self.path.split("?")[0]
         if path.startswith("/s/"):
@@ -1528,6 +1623,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(503, {"ok": False})
         if path.startswith("/api/admin/"):
             return self._admin("GET", path, qs)
+        if path.startswith("/api/session/"):
+            return self._session("GET", path, qs)
         if path.startswith("/api/wind/"):
             return self._send(*WIND.handle_now(path[len("/api/wind/"):], qs, self._client()))
         page = SCENE_PAGES.handle(path, self.headers.get("If-None-Match"))
@@ -1605,6 +1702,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._tg(path)
         if path.startswith("/api/admin/"):
             return self._admin("POST", path)
+        if path.startswith("/api/session/"):
+            return self._session("POST", path, self.path.partition("?")[2])
         if path == "/api/share":
             if not _rate(_shits, self._client(), 12, 3600.0) or not _rate(_all_hits, "share", 300, 3600.0):
                 return self._refuse(429)
@@ -1631,9 +1730,20 @@ def start_ideas() -> None:
     WORKER.start()
 
 
+def start_sessions() -> None:
+    """The recordings' side at start (sessions.py): the store's indexes are rebuilt from the disk. Optional for the rest of the API:
+    a failure is logged and the first upload retries it."""
+    try:
+        stats = SESSIONS.recover()
+        print(f"sessions: {stats['sessions']} on disk, {stats['requeued']} sends put back in the queue, {stats['bad']} unreadable", flush=True)
+    except OSError as e:
+        print(f"sessions: recovery failed: {type(e).__name__}: {e}"[:300], flush=True)
+
+
 def main() -> None:
     check_disk()
     start_ideas()
+    start_sessions()
     threading.Thread(target=housekeeping, daemon=True).start()
     port = int(os.environ.get("PORT", "8090"))
     ThreadingHTTPServer(("0.0.0.0", port), Handler).serve_forever()

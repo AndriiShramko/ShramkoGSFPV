@@ -429,6 +429,22 @@ Local runs: `tools/bench/scripts/serve-csp.mjs` sends the same `Permissions-Poli
 like this location (403, 413), reading both from `deploy/nginx.conf`; `tools/bench/src/sonicrec-headers.ts` proves the two header
 changes in headless Chrome (a fake microphone), each with a control served under the config as it was before v0.12.
 
+**API store (step 6).** `apps/api/sessions.py` and the routes in `server.py` take a recording in chunks. Upload the API
+(`server.py`, `sessions.py`) first, then restart `gsfpv-api`; nothing else changes on the hub. The routes (the token is shown
+once, at `start`, and sent back as the `X-Session-Token` header):
+
+| Route | What it does |
+|---|---|
+| `POST /api/session/start` | body `{size, sha256, consentSend: true, packageId?, lesson?, minor?, voice?, release?}`; answers the session id, the token, the chunk size (1 MiB) and the number of chunks; 403 without `consentSend`, 413 over `SESSION_MAX_BYTES`, 507 when the disk guard or `SESSIONS_CAP_BYTES` says no; a package that is already stored is not uploaded again (the answer says `stored` and `duplicate`) |
+| `POST /api/session/<id>/<n>` | the raw bytes of chunk n (optional `X-Chunk-Sha256`): streamed to disk in 64 KB pieces, fsynced, then recorded as held; the same chunk again is accepted, other bytes for a held chunk are 409 |
+| `POST /api/session/<id>/finish` | the whole file is hashed against the `start` hash, `manifest.json` is read from the zip (a minor's package needs the guardian's confirmation: the server refuses it otherwise), the package is fsynced and moved into place, then the answer says `stored`; a repeat gives the same answer |
+| `GET /api/session/<id>` | the chunks held (to resume) or each channel's status and `delivered` |
+
+Config names (all optional, in `config.env`): `SESSION_MAX_BYTES` (default 100 MiB a package), `SESSIONS_CAP_BYTES` (2 GiB in all,
+uploads in progress count), `SESSION_RETENTION_DAYS` (1826, the privacy text's five years; an undelivered package is never aged out).
+Files: `$GSFPV_BASE/data/sessions/index.jsonl` (one line per package stored, a tombstone per deletion) and `sessions/<id>/`
+(`meta.json`, `package.zip`). The client's address is never written. Checked by `apps/api/tests/test_sessions.py`.
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.
