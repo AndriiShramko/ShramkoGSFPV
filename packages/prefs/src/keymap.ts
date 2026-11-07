@@ -87,7 +87,16 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' },
     // v0.9 lane B (app/builtin/play.ts, play/fullscreen.ts): full screen on and off, also on the top bar; F as in
     // "full screen", the key games use; it works with the mouse captured. The next favourite scene moved to Shift+F
-    { action: 'fullscreen.toggle', keys: [letter('F')], when: 'always', labelKey: 'keys.fullscreen.toggle', status: 'shipped' }
+    { action: 'fullscreen.toggle', keys: [letter('F')], when: 'always', labelKey: 'keys.fullscreen.toggle', status: 'shipped' },
+    // v0.12 Fly by Sound (docs/wip/v12-plan.md sections 1 and 3; the handlers are in app/builtin/sonic-flight.ts and
+    // sonic-session.ts, none yet at step 0, and every one does nothing while the sound mode is off). All five letters
+    // were free: T records the flight and the pilot's voice, U sends the recording to the author, I says the status
+    // (lesson, attempt, recording), Z repeats the last spoken line, G opens the sound glossary
+    { action: 'sonic.record', keys: [letter('T')], when: 'always', labelKey: 'keys.sonic.record', status: 'shipped' },
+    { action: 'sonic.send', keys: [letter('U')], when: 'always', labelKey: 'keys.sonic.send', status: 'shipped' },
+    { action: 'sonic.status', keys: [letter('I')], when: 'always', labelKey: 'keys.sonic.status', status: 'shipped' },
+    { action: 'sonic.repeat', keys: [letter('Z')], when: 'always', labelKey: 'keys.sonic.repeat', status: 'shipped' },
+    { action: 'sonic.glossary', keys: [letter('G')], when: 'always', labelKey: 'keys.sonic.glossary', status: 'shipped' }
 ];
 
 /**

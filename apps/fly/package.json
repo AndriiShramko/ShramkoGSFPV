@@ -21,6 +21,7 @@
     "@gsfpv/scenes": "workspace:*",
     "@gsfpv/sim-core": "workspace:*",
     "@playcanvas/splat-transform": "3.6.4",
+    "@shramko/sonic-fpv": "workspace:*",
     "mediabunny": "1.59.1",
     "playcanvas": "2.23.2"
   },

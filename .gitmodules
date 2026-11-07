@@ -1,0 +1,3 @@
+[submodule "packages/sonic-fpv"]
+	path = packages/sonic-fpv
+	url = https://github.com/AndriiShramko/shramko-fly-by-sound-fpv.git

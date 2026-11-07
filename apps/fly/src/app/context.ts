@@ -16,6 +16,9 @@ import type { KeyRouter } from './keys';
 import type { InputHost } from './input';
 import type { Quality } from './quality';
 import type { TestHook } from './test-hook';
+// Fly by Sound's seams (ctx.sonic and the sonicSample / sonicEvent events): a type-only edge, so the
+// augmentation in sonic-context.ts exists in every program that reads these types (v0.12 plan, section 3)
+import type {} from './sonic-context';
 
 /**
  * Why the flight is paused. It runs again only when every reason is released (pause-stack.ts), so

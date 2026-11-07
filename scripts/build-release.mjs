@@ -2,6 +2,7 @@
 //   dist/                 site out/ + /fly/assets + /{locale}/fly/index.html (lang per copy)
 //                         + /admin/index.html (the owner's admin page; its scripts are in /fly/assets)
 //   dist/csp-hashes.conf  per-page inline script hashes for the enforced CSP (see deploy/nginx.conf)
+//   dist/release.json     { sha, sonic, built }: this repository's commit and the sound package's commit
 //   dist.tgz, SHA256SUMS  what goes to the hub (built here or in CI, never on the server)
 // Usage: node scripts/build-release.mjs [--skip-build]
 import { execSync } from 'node:child_process';
@@ -14,6 +15,13 @@ const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '
 const DIST = join(ROOT, 'dist');
 const LOCALES = ['en', 'es', 'pl', 'ru'];
 const skip = process.argv.includes('--skip-build');
+// Fly by Sound (v0.12): the sound package is the git submodule packages/sonic-fpv (its own public repository).
+// A checkout without it cannot build the simulator, so stop before anything is built, with the command that fixes it.
+const SONIC = join(ROOT, 'packages', 'sonic-fpv');
+if (!existsSync(join(SONIC, 'package.json'))) {
+    console.error('packages/sonic-fpv is missing: run git submodule update --init');
+    process.exit(1);
+}
 // GA4 property "ShramkoGSFPV" (public Measurement ID, not a secret), loaded only after the visitor
 // accepts analytics cookies. The ID is committed in the sources (apps/site/src/lib/track.ts and
 // apps/fly/src/app/analytics.ts), not read from the build environment: an empty variable used to give a
@@ -134,8 +142,12 @@ if (bad.length) {
     process.exit(1);
 }
 
-const sha = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return 'nogit'; } })();
-writeFileSync(join(DIST, 'release.json'), JSON.stringify({ sha, built: new Date().toISOString() }) + '\n');
+const gitSha = (cwd) => { try { return execSync('git rev-parse --short HEAD', { cwd }).toString().trim(); } catch { return 'nogit'; } };
+const sha = gitSha(ROOT);
+// the sound package's own commit (the submodule's HEAD, the code in the bundle). A copy of the tree without the
+// submodule's .git would make git answer with this repository's commit, so there it is 'nogit', never a wrong sha.
+const sonic = existsSync(join(SONIC, '.git')) ? gitSha(SONIC) : 'nogit';
+writeFileSync(join(DIST, 'release.json'), JSON.stringify({ sha, sonic, built: new Date().toISOString() }) + '\n');
 run(`tar czf dist.tgz -C dist .`);
 const h = createHash('sha256').update(readFileSync(join(ROOT, 'dist.tgz'))).digest('hex');
 writeFileSync(join(ROOT, 'SHA256SUMS'), `${h}  dist.tgz\n`);

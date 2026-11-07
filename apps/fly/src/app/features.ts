@@ -39,6 +39,10 @@ import { play } from './builtin/play';
 import { howToFly } from './builtin/how-to-fly';
 import { nextHint } from './builtin/next-hint';
 import { sharedSettings } from './builtin/shared-settings';
+// v0.12 Fly by Sound: three features, each in a file its lane owns (docs/wip/v12-plan.md section 3 step 5)
+import { sonicFlight } from './builtin/sonic-flight';
+import { sonicSession } from './builtin/sonic-session';
+import { gpuHint } from './builtin/gpu-hint';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -75,5 +79,8 @@ export const FEATURES: readonly Feature[] = [
     play,
     howToFly,
     nextHint,
-    sharedSettings
+    sharedSettings,
+    sonicFlight,
+    sonicSession,
+    gpuHint
 ];

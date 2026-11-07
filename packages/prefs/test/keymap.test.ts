@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KEYMAP, V02_PAUSE_ITEMS, actionFor, bindingOf, keymapProblems, keysFor } from '../src/keymap';
+import { FLYING_CODES, KEYMAP, V02_PAUSE_ITEMS, actionFor, bindingOf, keymapProblems, keysFor } from '../src/keymap';
 import type { KeyBinding, KeyPress } from '../src/keymap';
 
 /** v0.2's PAUSE_KEYS, copied from apps/fly/src/ui/flight.ts at the v0.2 commit (60fa9de). */
@@ -63,6 +63,8 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // v0.9 lane B: F toggles full screen (app/builtin/play.ts)
     'fullscreen.toggle'
 ];
+/** Keys shipped for Fly by Sound (v0.12, docs/wip/v12-plan.md sections 1 and 3): bound at step 0, handled by the lanes' features. */
+const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
@@ -71,7 +73,13 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'help.keys': ['K'],
     // v0.9 lane B: F is full screen; the design table's F (next favourite scene) moved to Shift+F
     'fullscreen.toggle': ['F'],
-    'scene.favourite': ['Shift+F']
+    'scene.favourite': ['Shift+F'],
+    // v0.12 Fly by Sound: T records, U sends, I says the status, Z repeats the last line, G opens the glossary
+    'sonic.record': ['T'],
+    'sonic.send': ['U'],
+    'sonic.status': ['I'],
+    'sonic.repeat': ['Z'],
+    'sonic.glossary': ['G']
 };
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
@@ -114,8 +122,28 @@ describe('v0.2 keys keep working', () => {
         }
     });
 
-    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 shipped)', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2].sort());
+    it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 and v0.12 shipped)', () => {
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...SHIPPED_IN_V12].sort());
+    });
+
+    it('Fly by Sound\'s T U I Z G route in flight and while crashed, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
+        const want: Record<string, string> = { KeyT: 'sonic.record', KeyU: 'sonic.send', KeyI: 'sonic.status', KeyZ: 'sonic.repeat', KeyG: 'sonic.glossary' };
+        for (const state of ['flight', 'crash'] as const) {
+            for (const [code, action] of Object.entries(want)) {
+                expect(actionFor(press(code), state), `${code} ${state}`).toBe(action);
+                expect(actionFor(press(code, { shiftKey: true }), state), `Shift+${code} ${state}`).toBeNull();
+                expect(actionFor(press(code, { ctrlKey: true }), state), `Ctrl+${code} ${state}`).toBeNull();
+            }
+        }
+        for (const code of Object.keys(want)) expect(FLYING_CODES).not.toContain(code);
+        // the labels sit where the catalogue and the key lists read them: keys.<action>
+        for (const action of SHIPPED_IN_V12) expect(bindingOf(action)?.labelKey).toBe(`keys.${action}`);
+    });
+
+    it('control: a sixth action planted on one of the five letters is caught as a double binding', () => {
+        const p = keymapProblems(plant({ action: 'test.t', keys: [{ code: 'KeyT', cap: 'T', aria: 'T' }], status: 'shipped' }));
+        expect(p).toHaveLength(1);
+        expect(p[0]).toContain('KeyT is bound to sonic.record and test.t');
     });
 
     it('Space is keyboard flying\'s own (shown, never routed); M is the mode key for every input (routed, wave 2)', () => {

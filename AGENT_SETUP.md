@@ -11,13 +11,15 @@ You do not need to install anything to fly: open the website in Chrome or Edge. 
 Requirements: Git, Node.js 22.12+ (`.nvmrc`), pnpm 11 (`corepack enable`), Google Chrome or Microsoft Edge with WebGPU (Windows or macOS). About 1.5 GB of disk.
 
 ```bash
-git clone -c core.autocrlf=false https://github.com/AndriiShramko/ShramkoGSFPV.git
+git clone --recursive -c core.autocrlf=false https://github.com/AndriiShramko/ShramkoGSFPV.git
 cd ShramkoGSFPV
 corepack enable
 pnpm install --frozen-lockfile
 pnpm -r typecheck
 pnpm vitest run
 ```
+
+`--recursive` matters: the sound package of Shramko Fly by Sound lives in its own public repository, [shramko-fly-by-sound-fpv](https://github.com/AndriiShramko/shramko-fly-by-sound-fpv), and is linked here as the git submodule `packages/sonic-fpv`. Without it `pnpm install` stops with `ERR_PNPM_WORKSPACE_PKG_NOT_FOUND`, and `node scripts/build-release.mjs` says "run git submodule update --init". In a clone made without `--recursive`, run `git submodule update --init` first.
 
 All tests must pass. If `pnpm install` stops at "Ignored build scripts", the repository's `pnpm-workspace.yaml` already allows the one needed (`esbuild`); run `pnpm install` again.
 
@@ -35,15 +37,16 @@ The landing page: `pnpm --filter @gsfpv/site dev` (port 3000).
 
 ```bash
 git pull --rebase
+git submodule update --init
 pnpm install --frozen-lockfile
 pnpm -r typecheck && pnpm vitest run
 ```
 
-Read `CHANGELOG.md` / the release notes of the new tag. If `SIM_CORE_VERSION` changed, replays recorded with the old version are refused (by design).
+`git submodule update --init` moves `packages/sonic-fpv` to the commit the new version pins. Read `CHANGELOG.md` / the release notes of the new tag. If `SIM_CORE_VERSION` changed, replays recorded with the old version are refused (by design).
 
 ## Share your work
 
-Fork, branch, commit with tests, open a pull request against `main`. Physics changes need fresh evidence (`AGENTS.md` explains which harness). New drone presets are very welcome — every number needs its source.
+Fork, branch, commit with tests, open a pull request against `main`. Physics changes need fresh evidence (`AGENTS.md` explains which harness). New drone presets are very welcome — every number needs its source. A change to the sound package belongs in its own repository ([shramko-fly-by-sound-fpv](https://github.com/AndriiShramko/shramko-fly-by-sound-fpv)): open the pull request there, never edit `packages/sonic-fpv` here; this repository then moves the submodule to the new commit.
 
 ## Remove
 

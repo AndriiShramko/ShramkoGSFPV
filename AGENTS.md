@@ -12,6 +12,7 @@ ShramkoGSFPV is an open-source (MIT) browser FPV drone simulator for 3D Gaussian
 | `packages/scenes` | SuperSplat link parsing, CDN loading, history, the SuperSplat catalogue client (`superspl.ts`) | Scenes are loaded **only** from the public CDN in the browser. The only server-side request to PlayCanvas is the catalogue proxy `GET /api/superspl/explore` in `apps/api/server.py` (whitelist, 10 min cache, at most 60 calls a minute; decision D35): do not add another, never crawl. `superspl.ts` asks only that proxy and touches no DOM global (checked by `scripts/check-architecture.mjs`). |
 | `packages/input` | radios, gamepad, touch, calibration, SimRadio + bot pilot | Every input becomes `{t_us, ch[8]}`; physics never knows the source. |
 | `packages/crash` | Rapier crash aftermath (lazy) | The crash must still happen without it. |
+| `packages/sonic-fpv` | Fly by Sound: sound engine, lessons, session format, replay core. A **git submodule** of its own public repository, [shramko-fly-by-sound-fpv](https://github.com/AndriiShramko/shramko-fly-by-sound-fpv) (MIT), pinned by commit | **Never edit it here**: change it in its own repository, then move the pin. Its `src` imports only itself (checked by `scripts/check-architecture.mjs`, rule 7); the simulator adapts to it, never the other way round. Read its `AGENTS.md` before using it. |
 | `apps/fly` | the simulator app (Vite, no framework) | `lab/` pages are measurement tools, not shipped. |
 | `apps/site` | landing page (Next.js static export, EN/ES/PL/RU) | Numbers shown on the page come from `evidence/latest.json` at build time. |
 | `tools/bench` | acceptance harnesses that write `evidence/` | Every check has a negative control that must fire. |
@@ -21,6 +22,7 @@ ShramkoGSFPV is an open-source (MIT) browser FPV drone simulator for 3D Gaussian
 ## Before you open a pull request
 
 ```bash
+git submodule update --init   # packages/sonic-fpv (Fly by Sound); a clone made with --recursive has it already
 pnpm install --frozen-lockfile
 pnpm -r typecheck
 pnpm vitest run          # unit tests + CI subset of the phase A harnesses

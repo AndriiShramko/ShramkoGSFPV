@@ -8,8 +8,10 @@
 //     the schema and the catalogue builder run in Node tests and in the catalogue generator.
 //  6. the SuperSplat catalogue client (packages/scenes/src/superspl.ts) touches no DOM global (fetch and
 //     storage are injected) and never names PlayCanvas' API: the browser goes through /api/superspl/ (D35).
+//  7. packages/sonic-fpv (Fly by Sound: the git submodule of its own public repository) imports only itself
+//     under src/: no package, never @gsfpv/* or playcanvas, no path out of the package (v0.12 plan, section 3).
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve, sep } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const problems = [];
@@ -151,6 +153,22 @@ for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps')), .
         const s = readFileSync(f, 'utf8');
         if (DOM.test(s) || /\b(sessionStorage|localStorage|indexedDB)\b/.test(s)) problems.push(`superspl.ts touches a DOM global (${f})`);
         if (/playcanvas\.com\/api/.test(s)) problems.push(`superspl.ts names PlayCanvas' API; the browser must use /api/superspl/ (${f})`);
+    }
+}
+
+// Rule 7 (v0.12, docs/wip/v12-plan.md section 3 step 4): Fly by Sound's sound package is a separate public
+// repository, linked here as the git submodule packages/sonic-fpv, and must stay usable on its own: under src/
+// it imports only its own files. A bare specifier is a package (playcanvas, @gsfpv/*, node:fs ...), and a
+// relative one that leaves the package reaches into the simulator; both are refused. The package's tests and
+// tools may import what they need. `import 'x'` (no binding) is read too: the shared regex does not see it.
+{
+    const pkg = join(ROOT, 'packages', 'sonic-fpv');
+    for (const f of walk(join(pkg, 'src'))) {
+        const { s, out } = imports(f);
+        for (const m of s.matchAll(/(?:^|[;\n])\s*import\s*['"]([^'"]+)['"]/g)) out.push(m[1]);
+        for (const i of out) {
+            if (!(i.startsWith('.') && (resolve(dirname(f), i) + sep).startsWith(pkg + sep))) problems.push(`sonic-fpv imports ${i}: its src may import only its own files (${f})`);
+        }
     }
 }
 
