@@ -404,6 +404,31 @@ release the API answers 503 for the pages; nothing else changes):
    node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu                                              # checks the scene pages when the API answers
    ```
 
+## v0.12 Fly by Sound: recordings (lane v12-feedback)
+
+A pilot's flight and voice are recorded in the browser (OPFS), saved to disk, and sent to the author. The design
+is `docs/wip/v12-plan.md` section 4.3 (sections 8 and 9 override it); this section grows with the lane's steps.
+
+**nginx.conf (step 1).** Three changes, none of which needs the API; follow "Changing nginx.conf" (upload, `nginx -t`,
+reload):
+
+| Change | Where | Why |
+|---|---|---|
+| `microphone=(self)` in the `Permissions-Policy` | `location ~ ^/(en\|es\|pl\|ru)/fly/` only; the site, the assets, the admin and the scene pages keep `microphone=()` | `getUserMedia` (the voice recording) and the browser's speech recognition are refused by `microphone=()` |
+| `media-src 'self' blob:` | the map `$gsfpv_csp_rest`, so the enforced and the report-only CSP both have it | the replay plays a recording's voice from a `blob:` URL; without the directive it falls back to `default-src 'self'` and is blocked |
+| `location ^~ /api/session/` | GET and POST only, `client_max_body_size 1100k`, the client address from the real-IP module (as `/api/admin/`), cookie and `Authorization` cleared, `no-store` | the chunked upload of a recording (the routes come with the API store, step 6); until then the API answers its own 404 |
+
+Check after the reload (`apps/api/tests/test_nginx_routes.py` reads the same rules from the file; the smoke script checks them on a served release):
+```bash
+curl -sI https://gsfpv.flyreelstudio.eu/en/fly/ | grep -iE '^(permissions-policy|content-security-policy)'   # microphone=(self); media-src 'self' blob:
+curl -sI https://gsfpv.flyreelstudio.eu/en/privacy/ | grep -i '^permissions-policy'                          # microphone=()
+curl -s -o /dev/null -w '%{http_code}\n' -X DELETE https://gsfpv.flyreelstudio.eu/api/session/probe          # 403: GET and POST only
+node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu
+```
+Local runs: `tools/bench/scripts/serve-csp.mjs` sends the same `Permissions-Policy` per location and answers `/api/session/`
+like this location (403, 413), reading both from `deploy/nginx.conf`; `tools/bench/src/sonicrec-headers.ts` proves the two header
+changes in headless Chrome (a fake microphone), each with a control served under the config as it was before v0.12.
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.
