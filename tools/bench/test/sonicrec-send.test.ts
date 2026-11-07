@@ -78,12 +78,16 @@ describe('the app\'s own words can never be taken for the pilot\'s yes', () => {
     // The lines checked are the ones that can be in the air while the app listens: everything the sending itself says, and the lines
     // spoken just before it starts (the recording's end). The question about STARTING a recording (rec.ask: "Press T to say yes") is
     // not among them: a press of T stops the listening before that line is ever spoken, and a yes to it could not send anything.
-    const AROUND = ['rec.saved', 'rec.stopped', 'rec.off', 'rec.minor', 'help.send'];
+    // sonic-core 1eea4d5 added send.none and send.cancelled (said when U finds nothing, and when the question is withdrawn) and the
+    // survey's survey.mic-on, survey.howto and survey.howto-voice (said at the end of a recording, before the sending is offered):
+    // every one of them is held here as well, by name, so a renamed key cannot drop out of the check unnoticed.
+    const AROUND = ['rec.saved', 'rec.stopped', 'rec.off', 'rec.minor', 'help.send', 'survey.mic-on', 'survey.howto', 'survey.howto-voice'];
+    const NEW_IN_1EEA4D5 = ['send.none', 'send.cancelled', 'survey.mic-on', 'survey.howto', 'survey.howto-voice'];
     it.each(LANGS)('%s: no word the app says around sending counts as a yes', (l) => {
-        const own = Object.entries(DICTS[l].pkg)
-            .filter(([k]) => k.startsWith('send.') || AROUND.includes(k))
-            .map(([, v]) => v.replace('{key}', 'U'));
-        expect(own.length).toBeGreaterThan(12);
+        const lines = Object.entries(DICTS[l].pkg).filter(([k]) => k.startsWith('send.') || AROUND.includes(k));
+        for (const k of NEW_IN_1EEA4D5) expect(lines.map(([key]) => key), `${l}: ${k} is checked`).toContain(k);
+        const own = lines.map(([, v]) => v.replace('{key}', 'U').replace('{skip}', 'Escape'));
+        expect(own.length).toBeGreaterThan(17);
         const agree = phrasesOf(l, 'agree');
         expect(agree.length).toBeGreaterThanOrEqual(5);
         for (const line of own) expect(heardPhrase([line], agree), line).toBe(false);
