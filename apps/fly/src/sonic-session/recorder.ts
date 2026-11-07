@@ -7,7 +7,9 @@
 //                      the browser asks for the microphone, and the recording starts when it has answered. A third press ends it.
 //   frames             30 Hz FlightFrames from the bus event `sonicSample`, with the ids of the cues sounding
 //   events             every `sonicEvent` as it comes (the replay's markers included), carried onto the recording clock
-//   voice              MediaRecorder Opus in 1 s slices, appended to voice.webm as they arrive (VoiceCapture)
+//   voice              MediaRecorder Opus in 1 s slices, appended to voice.webm as they arrive (VoiceCapture). After the pilot's stop it
+//                      goes on while the survey is asked (open answers are spoken into the recording); the pilot is told "stopped"
+//                      only when it has been let go
 //   storage            the sound package's SessionWriter into an OPFS folder (store.ts); a flush every second
 //
 // One recording is one package. Nothing here talks to the flight: it listens (onSample, onEvent) and speaks (deps.say), and
@@ -503,7 +505,9 @@ export class Recorder {
     private async doStop(options: StopOptions): Promise<FinishedRecording | null> {
         this.write({ t: this.clock.now(), kind: 'recording', what: 'stop' });
         this.setPhase('closing');
-        this.deps.say({ key: 'rec.stopped' });
+        // "Recording stopped" is NOT said here: the flight has stopped, but the voice is still recorded while the survey is asked (its open
+        // answers are the pilot's voice in the same recording), and a pilot who has been told it stopped may talk freely. It is said in
+        // finish(), when the microphone has been let go.
         let answers: SurveyAnswers | null = null;
         const survey = options.survey ?? this.deps.survey;
         if (survey !== undefined && this.sessionId !== null && this.profileAtStart !== null) {
@@ -537,6 +541,8 @@ export class Recorder {
         }
         const result: FinishedRecording | null = manifest === null ? null : { id, manifest, frames: this.frameCount, events: this.eventCount, refused: this.refusals.total + this.sampler.refused.total };
         this.deps.voice.release();
+        // the microphone is off now: only now is "stopped" true
+        this.deps.say({ key: 'rec.stopped' });
         await this.letGoOfLock();
         this.writer = null;
         this.store = null;

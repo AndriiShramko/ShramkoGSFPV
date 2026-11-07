@@ -525,6 +525,38 @@ describe('the recorder: T asks, T records, T stops', () => {
         expect(pkg.problems).toEqual([]);
     });
 
+    it('"Recording stopped" is said when the microphone is let go, not while the survey still listens', async () => {
+        const h = setup();
+        await startRecording(h);
+        fly(h, 1);
+        let saidDuringSurvey: string[] = [];
+        let micLetGoDuringSurvey = -1;
+        const done = await h.rec.stop({
+            survey: async () => {
+                saidDuringSurvey = keys(h.said);
+                micLetGoDuringSurvey = h.mic.stopped;
+                await sleep(60); // the pilot answers aloud, or says nothing and talks to the helper: the microphone hears it either way
+                return null;
+            }
+        });
+        expect(done).not.toBeNull();
+        // while the survey runs the voice is still recorded (the spec's open answers), so the pilot must not have been told that recording stopped
+        expect(micLetGoDuringSurvey).toBe(0);
+        expect(saidDuringSurvey).toEqual(['rec.ask', 'rec.started']);
+        // when it ends: the microphone is let go, then the pilot is told that recording stopped, then that the flight is saved
+        expect(h.mic.stopped).toBe(1);
+        expect(keys(h.said)).toEqual(['rec.ask', 'rec.started', 'rec.stopped', 'rec.saved']);
+    });
+
+    it('a stop with no survey says it stopped and saved at once, as before', async () => {
+        const h = setup();
+        await startRecording(h);
+        fly(h, 1);
+        await h.rec.stop();
+        expect(keys(h.said)).toEqual(['rec.ask', 'rec.started', 'rec.stopped', 'rec.saved']);
+        expect(h.mic.stopped).toBe(1);
+    });
+
     it('a failing survey does not lose the recording', async () => {
         const h = setup();
         await startRecording(h);

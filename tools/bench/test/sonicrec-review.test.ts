@@ -5,6 +5,10 @@ import en from '../../../packages/i18n/locales/fly/sonicrec/en.json';
 import es from '../../../packages/i18n/locales/fly/sonicrec/es.json';
 import pl from '../../../packages/i18n/locales/fly/sonicrec/pl.json';
 import ru from '../../../packages/i18n/locales/fly/sonicrec/ru.json';
+import siteEn from '../../../packages/i18n/locales/site/en.json';
+import siteEs from '../../../packages/i18n/locales/site/es.json';
+import sitePl from '../../../packages/i18n/locales/site/pl.json';
+import siteRu from '../../../packages/i18n/locales/site/ru.json';
 import { setText } from '../../../apps/fly/src/sonic-session/format';
 
 const DICTS: Record<string, Record<string, string>> = { en, es, pl, ru };
@@ -44,5 +48,18 @@ describe('F2: nothing that moves every second is in a live region of the helper\
         const plain = { n: 0, set textContent(_v: string) { this.n++; } };
         for (let i = 0; i < 5; i++) plain.textContent = 'a';
         expect(plain.n).toBe(5);
+    });
+});
+
+describe('F3: the pilot is not told that recording stopped while the microphone still listens', () => {
+    const first = (d: unknown): string => (d as { privacy: { sections: { id?: string; p: string[] }[] } }).privacy.sections.find((x) => x.id === 'fly-by-sound')?.p[0] ?? '';
+
+    it('the privacy text says the microphone stays on while the survey after a recording is asked, in all four languages', () => {
+        expect(first(siteEn)).toMatch(/microphone stays on while the survey is asked/);
+        expect(first(siteEs)).toMatch(/micr\u00f3fono sigue encendido mientras se hace la encuesta/);
+        expect(first(sitePl)).toMatch(/Mikrofon pozostaje w\u0142\u0105czony, dop\u00f3ki trwa ankieta/);
+        expect(first(siteRu)).toMatch(/\u041c\u0438\u043a\u0440\u043e\u0444\u043e\u043d \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0432\u043a\u043b\u044e\u0447\u0451\u043d\u043d\u044b\u043c, \u043f\u043e\u043a\u0430 \u0438\u0434\u0451\u0442 \u043e\u043f\u0440\u043e\u0441/);
+        // control: the text as the lane first wrote it did not say so
+        expect('It also notes your language, audio settings, the type and name of the input device').not.toMatch(/microphone stays on/);
     });
 });

@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T19:33:50.570Z",
-    "gitHead": "958c6f3",
+    "date": "2026-11-07T19:39:21.261Z",
+    "gitHead": "4f375fb",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -17,12 +17,32 @@
   "pass": true,
   "checks": {
     "R1: a steady recording does not rewrite the panel's live status (the clock and the frame counter are not in a live region)": true,
-    "R1: an open replay that is not playing does not rewrite its live status line (the same sentence is not written again every 250 ms)": true
+    "R1: an open replay that is not playing does not rewrite its live status line (the same sentence is not written again every 250 ms)": true,
+    "R2: while the survey is offered the voice is still being recorded and the pilot has not been told that recording stopped": true,
+    "R2: when the survey is over the pilot hears that recording stopped, and then that the flight is saved": true
   },
   "results": {
     "recordingRegions": {},
     "replayStatus": "The replay differs from the recording in 7 event(s): 0 of 0 recorded events were worked out again, and 0 % of the sounds are the same. It is still played as it was recorded.",
-    "replayRegions": {}
+    "replayRegions": {},
+    "spokenWhileTheSurveyListens": {
+      "phase": "closing",
+      "voice": "recording",
+      "spoken": [
+        "rec.ask",
+        "rec.started",
+        "survey.offer"
+      ]
+    },
+    "spokenAfterTheSurvey": [
+      "rec.ask",
+      "rec.started",
+      "survey.offer",
+      "survey.skipped",
+      "rec.stopped",
+      "rec.saved",
+      "send.ask"
+    ]
   },
   "note": "headless Chrome, a fake microphone, real OPFS and DOM; the sound runtime, samples and key router are stand-ins until the flight lane lands. A screen reader was not used: what it would read is judged from the live regions that change, not heard."
 }

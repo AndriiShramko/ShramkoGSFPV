@@ -4,6 +4,8 @@
 //   R1 live regions   while a recording runs and while a replay is open, nothing inside a live region of the helper's panel may change
 //                     unless the sentence itself changed: a screen reader reads out every change of a polite live region, so a clock
 //                     or a frame counter inside one is read to the helper every second
+//   R2 stop           after the pilot's stop the survey listens with the voice still recording: the pilot is told that recording stopped only when
+//                     the microphone has been let go (after the survey), not at the stop
 //   npx tsx tools/bench/src/sonicrec-review.ts       evidence/<date>/sonicrec-review.json
 import { mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
@@ -151,6 +153,32 @@ try {
         log('replay open: live regions', JSON.stringify(replay));
         const rs = replay['sonicrec-replay-status'] ?? { writes: 0, differentTexts: 0, last: '' };
         checks['R1: an open replay that is not playing does not rewrite its live status line (the same sentence is not written again every 250 ms)'] = rs.writes === 0;
+        await ctx.close();
+    }
+
+    // ---------------------------------------------------------------- R2: "Recording stopped" is said when the microphone is let go
+    {
+        const ctx = await newContext();
+        const page = await open(ctx);
+        await call(page, 'deleteAll');
+        await until(page, 'the toggle button', (s) => s.panelBuilt === true && s.toggleHidden === false);
+        await call(page, 'fly', true);
+        await recordWithKeys(page);
+        await sleep(1500);
+        await page.keyboard.press('KeyT'); // the pilot's stop: the survey is offered, the voice goes on
+        const offer = await until(page, 'the survey offer', (s) => s.surveyOpen === true);
+        await sleep(300);
+        const during = (await call<{ key: string }[]>(page, 'spoken')).map((l) => l.key);
+        results.spokenWhileTheSurveyListens = { phase: offer.phase, voice: offer.status?.voice, spoken: during };
+        log('while the survey listens:', JSON.stringify(results.spokenWhileTheSurveyListens));
+        await page.keyboard.press('Digit2'); // declined: the recording ends
+        await until(page, 'the recording saved', (s) => s.phase === 'idle' && s.rows.length === 1);
+        await sleep(200);
+        const after = (await call<{ key: string }[]>(page, 'spoken')).map((l) => l.key);
+        results.spokenAfterTheSurvey = after;
+        log('after the survey:', JSON.stringify(after));
+        checks['R2: while the survey is offered the voice is still being recorded and the pilot has not been told that recording stopped'] = offer.phase === 'closing' && offer.status?.voice === 'recording' && !during.includes('rec.stopped');
+        checks['R2: when the survey is over the pilot hears that recording stopped, and then that the flight is saved'] = after.indexOf('rec.stopped') > after.indexOf('rec.started') && after.indexOf('rec.saved') > after.indexOf('rec.stopped');
         await ctx.close();
     }
 } finally {
