@@ -24,7 +24,7 @@
 import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
-import type { FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
+import type { CueEvent, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
 export const TOUCH_QUIET_TICKS = 500;
@@ -55,9 +55,10 @@ export interface BridgeOut {
     event(e: SessionEvent): void;
 }
 
-/** What of the engine the bridge drives: the layers, and speech (contract SonicEngine). */
+/** What of the engine the bridge and the mode drive: the layers, one-off cues and speech (contract SonicEngine). */
 export interface BridgeEngine {
     setLayers(layers: LessonLayers): void;
+    cue(e: CueEvent): void;
     say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void>;
 }
 

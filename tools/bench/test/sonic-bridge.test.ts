@@ -225,6 +225,7 @@ describe('the frames stop: the engine falls silent', () => {
             layers: [] as LessonLayers[],
             said: [] as { line: SpeechLine; interrupt: boolean | undefined; done: () => void }[],
             setLayers(l: LessonLayers): void { e.layers.push(l); },
+            cue(): void { /* not heard here */ },
             say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void> {
                 return new Promise((resolve) => e.said.push({ line, interrupt: o?.interrupt, done: resolve }));
             }
