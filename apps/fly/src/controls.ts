@@ -222,6 +222,15 @@ export class Controls {
     private pollHook: (() => void) | null = null;
     /** The meter of the device in use (HidSource.link / GamepadSource.link), for the HUD's F3 line. */
     private linkOf: ((now: number) => LinkStats) | null = null;
+    /**
+     * Fly by Sound's lesson pilot (v0.12, play/lesson-pilot.ts; app/input.ts installs it while a lesson runs, for
+     * every source): reads the source's channels as the pilot's intents (`ch`) and writes the channels to fly
+     * (`out` 0..4: sticks, throttle, arm) before the arm gate reads them. null in every other flight: nothing
+     * runs and the channels are the source's, as before.
+     */
+    assist: ((ch: Float32Array, out: Float32Array, tMs: number) => void) | null = null;
+    /** The mode a lesson flies in, whatever the pilot's choice or the radio's switch (null: none forced). */
+    forcedMode: FlightMode | null = null;
 
     constructor(session: FlightSession) {
         this.session = session;
@@ -296,8 +305,9 @@ export class Controls {
         return this.play === 'easy' && this.source === 'keyboard';
     }
 
-    /** The mode flying now: the radio switch's position, angle for the game scheme, or the pilot's mode. */
+    /** The mode flying now: a lesson's, the radio switch's position, angle for the game scheme, or the pilot's mode. */
     flyingMode(): FlightMode {
+        if (this.forcedMode) return this.forcedMode;
         if (this.radioDecides()) return modeFromChannel(this.ch[5]);
         return this.gameKeys() ? 'angle' : this.mode;
     }
@@ -371,19 +381,32 @@ export class Controls {
         // staleness is about when the page last HEARD from the device (arrival), not the event's
         // own timestamp: a touch event can be stamped 40 ms before the last keep-alive
         this.lastSampleAt = performance.now();
-        this.fill();
+        const gateIn = this.prepare(tMs);
         const profileOk = this.profile !== null || this.source === 'touch' || this.source === 'keyboard' || this.source === 'sim';
         const fakeProfile = profileOk ? ({} as Profile) : null;
-        this.out[4] = this.gate.update(fakeProfile, this.ch, 0, document.visibilityState === 'visible', this.session.sim?.crashed ?? false);
+        this.out[4] = this.gate.update(fakeProfile, gateIn, 0, document.visibilityState === 'visible', this.session.sim?.crashed ?? false);
         this.block = this.gate.block;
         this.dropLatch();
         this.session.input(this.out, tMs, id);
     }
 
-    /** The channels as they go out: the pilot's mode on ch[5] unless the radio's switch decides (the bot pilot sets its own). */
+    /** The channels as they go out: a lesson's mode, else the pilot's mode on ch[5] unless the radio's switch decides (the bot pilot sets its own). */
     private fill(): void {
         this.out.set(this.ch);
-        if (this.source !== 'sim' && !this.radioDecides()) this.out[5] = MODE_CHANNEL[this.gameKeys() ? 'angle' : this.mode];
+        if (this.forcedMode) this.out[5] = MODE_CHANNEL[this.forcedMode];
+        else if (this.source !== 'sim' && !this.radioDecides()) this.out[5] = MODE_CHANNEL[this.gameKeys() ? 'angle' : this.mode];
+    }
+
+    /**
+     * fill(), then the lesson pilot's rewrite when one is installed: the channels the arm gate reads (the source's
+     * own, `ch`, without one; the pilot's `out` with one).
+     */
+    private prepare(tMs: number): Float32Array {
+        this.fill();
+        const a = this.assist;
+        if (!a) return this.ch;
+        a(this.ch, this.out, tMs);
+        return this.out;
     }
 
     /**
@@ -414,8 +437,8 @@ export class Controls {
         const remote = this.source === 'hid' || this.source === 'gamepad';
         const age = remote && !stalled ? now - this.lastSampleAt : 0;
         if (this.gate.armed && (age > 100 || document.visibilityState !== 'visible')) {
-            this.fill();
-            this.out[4] = this.gate.update({} as Profile, this.ch, age, document.visibilityState === 'visible', this.session.sim?.crashed ?? false);
+            const gateIn = this.prepare(now);
+            this.out[4] = this.gate.update({} as Profile, gateIn, age, document.visibilityState === 'visible', this.session.sim?.crashed ?? false);
             this.block = this.gate.block;
             this.dropLatch();
             this.session.input(this.out, now);

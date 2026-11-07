@@ -36,6 +36,11 @@ export class GamePilot {
     private ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]);
     private readonly controls: Controls;
     private readonly env: GameEnv;
+    /**
+     * A Fly by Sound lesson runs (v0.12, play/lesson-pilot.ts, set by app/input.ts): the keys go on as the pilot's
+     * intents (strafe, forward, lift, turn on the stick channels) for the lesson pilot to fly; nothing is flown here.
+     */
+    intents = false;
 
     constructor(controls: Controls, env: GameEnv) {
         this.controls = controls;
@@ -79,6 +84,17 @@ export class GamePilot {
 
     /** Sends one frame through Controls (and its arm gate) at page time `tMs`. */
     send(keys: GameKeys, tMs: number): void {
+        if (this.intents) {
+            const ch = this.ch;
+            ch[0] = keys.strafe;
+            ch[1] = keys.forward;
+            ch[2] = keys.lift;
+            ch[3] = keys.turn;
+            ch[4] = -1;
+            ch[5] = 0;
+            this.controls.channels(ch, tMs);
+            return;
+        }
         const s = this.env.session();
         const sim = s.sim;
         const dt = this.lastT < 0 ? 0 : (tMs - this.lastT) / 1000;
