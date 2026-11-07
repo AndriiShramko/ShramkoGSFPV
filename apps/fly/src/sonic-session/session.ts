@@ -11,10 +11,13 @@ import type { ChunkStore, Locale, SonicRuntime } from '@shramko/sonic-fpv';
 import { locale, t } from '../i18n';
 import type { FlightContext } from '../app/context';
 import { loadProfile, saveProfile, withProfile, type PilotProfile } from './consent';
+import { formatWhen } from './format';
 import { sceneTransformOf, type RecorderEnv } from './manifest-input';
 import { freeBytes, holdSessionLock, persistStorage, sayVia, sessionIsLocked } from './platform';
 import { createPanel } from './panel';
 import type { RecPanel } from './panel';
+import { ReplayControl } from './replay-control';
+import { createReplayHost } from './replay-host';
 import { ResumeOffer } from './resume';
 import { runSurvey } from './survey';
 import { captureSurveyKeys } from './survey-keys';
@@ -148,6 +151,8 @@ export interface SonicSession {
     readonly recorder: Recorder;
     readonly stores: SessionStores;
     readonly resume: ResumeOffer;
+    /** the replay of a recording (replay-control.ts): a file or a session kept here, with the cues and the voice */
+    readonly replay: ReplayControl;
     /** the helper's panel, made when the sound mode first runs; null before */
     panel(): RecPanel | null;
     profile(): PilotProfile;
@@ -221,9 +226,15 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             }
         }
     });
+    const replay = new ReplayControl({
+        host: createReplayHost(ctx),
+        stores,
+        formatWhen: (iso) => formatWhen(iso, locale),
+        onChange: (s) => panel?.onReplay(s)
+    });
     const resume = new ResumeOffer({ stores, isLocked: sessionIsLocked, nowIso, say: (line) => void say(line), keyLabel, onChange: () => void panel?.refresh() });
     const ensurePanel = (): RecPanel =>
-        (panel ??= createPanel({ recorder, stores, resume, profile: () => profile, setProfile, isLocked: sessionIsLocked, nowIso }));
+        (panel ??= createPanel({ recorder, stores, resume, replay, profile: () => profile, setProfile, isLocked: sessionIsLocked, nowIso }));
 
     const offs: (() => void)[] = [];
     // T: ask, confirm, stop. Nothing happens without the sound mode, and a held key is one press. While an unfinished
@@ -269,11 +280,13 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
         recorder,
         stores,
         resume,
+        replay,
         panel: () => panel,
         profile: () => profile,
         setProfile,
         dispose() {
             for (const off of offs.splice(0)) off();
+            replay.close();
             recorder.dispose();
             panel?.dispose();
             panel = null;

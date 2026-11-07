@@ -14,6 +14,9 @@ import type { PilotProfile } from './consent';
 import { formatBytes, formatClock, formatWhen } from './format';
 import { deleteSession, listSessions, packageOf, writeNotes } from './registry';
 import type { SessionEntry } from './registry';
+import type { ReplayControl, ReplayViewState } from './replay-control';
+import { createReplayView } from './replay-view';
+import type { ReplayView } from './replay-view';
 import type { ResumeOffer } from './resume';
 import { browserSaveEnv, packageFileName, saveToDisk } from './save';
 import type { SaveEnv } from './save';
@@ -32,6 +35,8 @@ export interface PanelDeps {
     stopOptions?(): StopOptions;
     /** the page is about to be closed by the helper: leave focus where it was */
     onClose?(): void;
+    /** the replay of a recording (step 5): the panel offers Replay on each finished recording and Open a file */
+    replay?: ReplayControl;
 }
 
 export interface RecPanel {
@@ -45,6 +50,8 @@ export interface RecPanel {
     onStatus(s: RecorderStatus): void;
     /** a line in the panel's live message (a recording ended, something was saved) */
     notify(text: string): void;
+    /** the replay's state changed (replay-control.ts) */
+    onReplay(s: ReplayViewState): void;
     refresh(): Promise<void>;
     dispose(): void;
 }
@@ -88,6 +95,12 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         h('label', { for: 'sonicrec-phones' }, t('sonicrec.pilot.headphones')), phones);
 
     const close = h('button', { type: 'button', class: 'sonicrec-x', 'aria-label': t('sonicrec.close') }, '×');
+    // the toggle button says so while a replay plays (the position moves with the view's own clock)
+    let replayLabel: string | null = null;
+    const replayView: ReplayView | null = deps.replay === undefined ? null : createReplayView(deps.replay, (s) => {
+        replayLabel = s.stage === 'ready' && s.player !== null && s.player.phase === 'playing' ? t('sonicrec.button.replay', { time: formatClock(s.player.tMs) }) : null;
+        drawStatus();
+    });
     const root = h('section', { class: 'sonicrec-panel', id: 'sonicrec-panel', role: 'region', 'aria-labelledby': 'sonicrec-title', hidden: true },
         h('header', { class: 'sonicrec-head' }, h('h2', { id: 'sonicrec-title' }, t('sonicrec.title')), close),
         status, voice,
@@ -95,6 +108,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         consent,
         // the recordings come before the pilot's form: after a flight the helper looks for the Save button first
         h('h3', {}, t('sonicrec.sessions.title')), list, message,
+        ...(replayView === null ? [] : [h('div', { class: 'sonicrec-actions' }, replayView.openButton), replayView.root]),
         pilot, note);
     const button = h('button', { type: 'button', class: 'sonicrec-toggle', id: 'sonicrec-toggle', 'aria-controls': 'sonicrec-panel', 'aria-expanded': 'false', hidden: true }, t('sonicrec.button'));
     parent.append(root, button);
@@ -115,8 +129,9 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         start.hidden = !idle;
         stop.hidden = s.phase !== 'recording';
         consent.hidden = !idle;
-        button.textContent = s.phase === 'recording' ? t('sonicrec.button.recording', { time }) : t('sonicrec.button');
+        button.textContent = s.phase === 'recording' ? t('sonicrec.button.recording', { time }) : replayLabel ?? t('sonicrec.button');
         button.classList.toggle('recording', s.phase === 'recording');
+        button.classList.toggle('replaying', s.phase !== 'recording' && replayLabel !== null);
         note.textContent = !s.durable ? t('sonicrec.note.memory') : s.persisted === false ? t('sonicrec.note.persist') : '';
         note.hidden = note.textContent === '';
     }
@@ -147,6 +162,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         if (!e.locked) {
             if (e.state === 'unfinished') buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'keep', onclick: () => void keep(e) }, t('sonicrec.action.keep')));
             if (e.state === 'finished') buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'save', onclick: () => void save(e) }, t('sonicrec.action.save')));
+            if (e.state === 'finished' && deps.replay !== undefined) buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'replay', onclick: () => replay(e) }, t('sonicrec.action.replay')));
             buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'delete', onclick: () => void remove(e) }, confirming === e.id ? t('sonicrec.action.delete.sure') : t('sonicrec.action.delete')));
         }
         return h('li', { class: 'sonicrec-session', 'data-id': e.id },
@@ -201,6 +217,12 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
             busy = false;
             await refresh();
         }
+    }
+
+    /** A recording is replayed only while none is being made: the replay pauses the flight and takes the camera. */
+    function replay(e: SessionEntry): void {
+        if (last.phase !== 'idle') return say(t('sonicrec.replay.busy'));
+        void deps.replay?.openSession(e.id);
     }
 
     async function remove(e: SessionEntry): Promise<void> {
@@ -306,9 +328,15 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
             if (open && wasIdle && s.phase === 'idle') void refresh();
         },
         notify: say,
+        onReplay(s) {
+            replayView?.update(s);
+            replayLabel = s.stage === 'ready' && s.player !== null && s.player.phase === 'playing' ? t('sonicrec.button.replay', { time: formatClock(s.player.tMs) }) : null;
+            drawStatus();
+        },
         refresh,
         dispose() {
             if (confirmTimer !== null) clearTimeout(confirmTimer);
+            replayView?.dispose();
             root.remove();
             button.remove();
         }
