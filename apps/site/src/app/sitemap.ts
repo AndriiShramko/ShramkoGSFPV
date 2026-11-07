@@ -12,6 +12,8 @@ const PAGES = [
   { path: "privacy/", priority: 0.3, changeFrequency: "yearly" as const },
   { path: "licenses/", priority: 0.3, changeFrequency: "monthly" as const },
   { path: "supporters/", priority: 0.5, changeFrequency: "weekly" as const },
+  // Fly by Sound (v0.12): the page for blind and low-vision pilots and their helpers
+  { path: "sound/", priority: 0.7, changeFrequency: "monthly" as const },
   // a person's page only once they said yes (status joined); drafts made for invited people stay out
   ...joinedSupporters().map((p) => ({ path: `supporters/${p.slug}/`, priority: 0.4, changeFrequency: "monthly" as const })),
 ];

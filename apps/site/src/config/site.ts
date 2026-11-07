@@ -3,6 +3,8 @@ export const SITE = "https://gsfpv.flyreelstudio.eu";
 export const REPO = "https://github.com/AndriiShramko/ShramkoGSFPV";
 export const REPO_BLOB = `${REPO}/blob/main`;
 export const REPO_TREE = `${REPO}/tree/main`;
+/** The sound package of Fly by Sound (engine, lessons, session format, consent template), public; the simulator links it as a submodule. */
+export const SOUND_REPO = "https://github.com/AndriiShramko/shramko-fly-by-sound-fpv";
 export const GOOD_FIRST_ISSUES = `${REPO}/issues?q=is%3Aopen+label%3A%22good+first+issue%22`;
 export const EVIDENCE_URL = `${REPO_TREE}/evidence`;
 

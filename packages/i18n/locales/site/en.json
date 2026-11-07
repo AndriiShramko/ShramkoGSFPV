@@ -870,6 +870,7 @@
     "cookies": "Cookie settings",
     "licenses": "Licenses",
     "supporters": "Supporters",
+    "sound": "Fly by Sound",
     "license": "MIT license",
     "disclaimer": "Not affiliated with or endorsed by PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, the Betaflight project, LuGus Studios (Liftoff), DJI or RadioMaster. Trademarks belong to their owners."
   },
@@ -878,7 +879,7 @@
     "description": "What ShramkoGSFPV collects, why, for how long, and your rights under the GDPR.",
     "eyebrow": "Privacy",
     "h1": "Privacy notice",
-    "updated": "Last updated: 29 October 2026",
+    "updated": "Last updated: 7 November 2026",
     "review": "Legal review not yet done.",
     "sections": [
       { "h": "Who is responsible", "p": ["The controller of your data is Andrii Shramko. You can reach him at zmei116@gmail.com or through the contact form on this site."] },
@@ -888,6 +889,7 @@
       { "h": "Collaboration form", "p": ["If you send the form, your email, the role you chose and your message are stored on the server and forwarded to the owner's Telegram notification bot.", "They are kept without a fixed time limit, so that the owner can get back to you later, even years from now, until you ask for them to be deleted or withdraw your consent: write to zmei116@gmail.com or use the contact form. Legal basis: your consent (Art. 6(1)(a) GDPR)."] },
       { "h": "Bug reports and ideas", "p": ["If you send a bug report or an idea from the simulator or this site, your message, the page and scene you were on, the release, your language and, if you leave one, your contact (an e-mail address or another handle) are stored on the server. Technical details (browser, graphics card, screen, frame times, recent errors, settings, the flight log and a small picture of the view) are added only if you tick the box for them.", "A Drone physics report, sent with Help tune it in the simulator, also carries the drone it is about, the Betaflight text and the blackbox log link you paste and, unless you untick its box, the simulator settings you changed for that drone, the flight mode and the input you fly with (radio, gamepad, keyboard or touch). They are stored and forwarded like a bug's technical details.", "Everything you send, including your message, your contact and, if you added them, the technical details and the picture, is forwarded to the owner's Telegram chat (so it passes through Telegram's servers), where he reads and sorts the reports. Your e-mail address is used only to answer you: the owner's replies, and a thank-you once your idea is in the simulator, come from his Gmail address (zmei116@gmail.com) through Google's mail servers. So that a reply reaches you in the language you wrote in, your message (to recognise its language) and the owner's reply (to translate it) are sent to Google's Gemini API. Nothing is sent automatically, and if you reply, your answer goes to his Gmail inbox. If you tell him an idea in person and give him your address, it is kept and used the same way.", "Reports are kept while the idea or the problem is being worked on and afterwards as a record of how the simulator was improved; your contact is kept with them, without a fixed time limit, so that the owner can write to you again later. The public roadmap shows only titles written by us, never your words or your contact. You can ask at any time (zmei116@gmail.com) for your report, or only your e-mail address, to be deleted. Legal basis: your consent (Art. 6(1)(a) GDPR), given by sending the report and ticking the box for technical details."] },
       { "h": "Scene images and scene data", "p": ["Scene preview images on this page, and the scenes themselves in the simulator, are loaded by your browser directly from PlayCanvas servers (SuperSplat). As with any website, those servers see your IP address."] },
+      { "id": "fly-by-sound", "h": "Fly by Sound recordings", "p": ["Fly by Sound lets blind and low-vision pilots learn to fly by ear. Recording is off until the pilot, or the helper beside them, agrees to it. If you agree, the simulator records on your own device: the flight (path, speed and sticks), the sounds and spoken lines played, the lesson's events (gates, touches, resets, steps), your answers to a short survey and, if your browser allows the microphone, your voice. It also notes your language, audio settings, the type and name of the input device, the name of the graphics adapter and the simulator version, a random pilot ID and, only if you type one, a nickname (never required: please do not use your real name).", "The recording stays on your device, in the browser's private storage, until you save it to a file or send it. Sending needs a separate confirmation: a second key press after the app has asked, the Send button with the pilot's agreement ticked, or, if you chose voice commands, saying yes. Nothing is sent before that.", "Purpose: to test and improve the sound language, the lessons and the simulator with blind and low-vision pilots, and to answer them. Legal basis: your consent (Art. 6(1)(a) GDPR), given separately for recording, for sending and, if you use them, for voice commands. A voice recording is personal data, and consent is the basis for it too. You can withdraw consent at any time; that does not affect what was done before.", "A recording you send is stored on this site's server and forwarded to the owner by Telegram (so it passes through Telegram's servers) and by e-mail (through Gmail). Only the owner can open it on the server: the admin page is behind his password.", "How long: the server keeps a recording while the project runs and at most five years, and deletes it earlier if the pilot or a parent asks. The owner deletes his copies in Telegram and in his mailbox on the same request. A recording that was never sent exists only on your device, and you can delete it there at any time from the recordings panel.", "Pilots under 18: a recording can be sent only if a parent or guardian has signed the consent form and the helper has confirmed this before recording. The confirmation is written into the recording, and the server refuses a minor's recording without it. Without the confirmation the recording stays on the device. A template of the consent form is in the open-source repository of Fly by Sound (it is not legal advice).", "Voice commands (saying \"send it to the author\") are off until someone ticks the box in the recordings panel. They use your browser's own speech recognition, which sends the audio to the browser's maker (in Chrome, to Google) under its own privacy terms: we do not receive or control that audio. The keys always work, and nothing is listened to while a recording runs. For a pilot under 18 the box can be ticked only after the guardian's consent is confirmed.", "Deletion: to have a sent recording deleted, write to zmei116@gmail.com or use the contact form and give the reference shown beside the recording in the recordings panel (it starts with S-) or, if you no longer have it, the date and the lesson. Your other rights are listed under \"Your rights\" below."] },
       { "h": "Your rights", "p": ["You can ask for access to your data, its correction or erasure, restriction of processing, data portability, and you can object to processing or withdraw consent — through the contact form or by email.", "You also have the right to lodge a complaint with the Polish supervisory authority, the President of the Personal Data Protection Office (UODO)."] }
     ],
     "resetConsent": "Change my analytics choice",
@@ -1030,6 +1032,49 @@
       "flyBody": "Free, in the browser on a computer (Chrome or Edge), no install, no account. Fly with your radio over USB, a gamepad or the keyboard.",
       "fly": "Open the simulator",
       "flyScene": "Open the scene I picked for you"
+    }
+  },
+  "sound": {
+    "title": "Fly by Sound: learn to fly a drone by ear | ShramkoGSFPV",
+    "description": "Fly by Sound teaches blind and low-vision people to fly a simulated FPV drone by ear, with spatial sound and spoken lessons. Keyboard, gamepad or radio. Free and open source.",
+    "eyebrow": "Fly by Sound",
+    "h1": "Fly an FPV drone by ear",
+    "lead": "A free way for blind and low-vision people to learn to fly a simulated FPV drone using spatial sound and spoken lessons. No sight is needed: it works with a keyboard, a gamepad or an RC radio, and the app speaks for itself.",
+    "status": "This is the first stage of an experiment. The sounds and lessons are being tested with pilots, and how a sound feels is for your ears to judge. Please tell us what helped and what annoyed you.",
+    "start": {
+      "title": "Start",
+      "text": "Put on headphones and press the button. The app speaks to you and begins with a short headphone check (left, right, behind), then the first lessons: hovering, walls, a corridor and rings.",
+      "button": "Start Fly by Sound",
+      "note": "This opens the simulator in sound mode. A computer with a recent Chrome or Edge works best."
+    },
+    "need": {
+      "title": "What you need",
+      "items": ["Headphones. Wired ones are best: Bluetooth adds 180 to 250 milliseconds of delay. Switch off Windows Sonic or Dolby Atmos.", "A keyboard, a gamepad or an RC radio. A sighted helper sets up a radio once.", "A comfortable volume. If a sound hurts, take off the headphones and turn the volume down.", "A helper for the first time, for the radio and, if you want to record, for the consent."]
+    },
+    "keys": {
+      "title": "The main keys",
+      "intro": "The app also tells you these keys aloud.",
+      "items": ["start or stop a recording", "send the last recording to the author", "hear where you are", "hear the last spoken line again", "open the sound glossary", "go back to the last checkpoint; hold it to start the lesson again", "go to the next step"]
+    },
+    "record": {
+      "title": "Recording and sending",
+      "items": ["Recording is off until you agree. It is stored on your device only.", "Sending is a separate step: the app asks, and you confirm with a second key press, with the Send button, or by voice if you turned voice commands on.", "Pilots under 18 need a parent's or guardian's signed consent, confirmed by the helper, before anything can be sent.", "Voice commands use your browser's speech recognition, which sends audio to the browser's maker. They are off until you tick the box; the keys always work."],
+      "privacy": "Read what is collected, why and for how long"
+    },
+    "helpers": {
+      "title": "For helpers, teachers and schools",
+      "items": ["A consent form template (not legal advice) and a test protocol are in the open-source repository.", "For a pilot under 18, the parent or guardian signs the consent form and the helper confirms it in the recordings panel before recording.", "Keep the volume at a safe level. A page cannot measure loudness, so a school device is calibrated once: 75 dBA is the reference for children and 80 dBA for adults."]
+    },
+    "open": {
+      "title": "Open source",
+      "text": "The sound engine, the lessons, the session format and the report tool are an open-source package, Shramko Fly by Sound (MIT licence). The simulator that carries it is ShramkoGSFPV.",
+      "repo": "Shramko Fly by Sound on GitHub",
+      "sim": "ShramkoGSFPV on GitHub"
+    },
+    "help": {
+      "title": "Questions and feedback",
+      "text": "Tell us what helped and what annoyed you: answer the short survey after a recording, press B in the simulator for Feedback, or write to the author.",
+      "write": "Write to the author"
     }
   }
 }

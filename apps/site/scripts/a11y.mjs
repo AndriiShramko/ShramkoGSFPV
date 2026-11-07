@@ -27,7 +27,7 @@ await ctx.addInitScript(() => {
 const page = await ctx.newPage();
 let total = 0;
 for (const l of ["en", "es", "pl", "ru"]) {
-  for (const p of ["", "privacy/", "licenses/"]) {
+  for (const p of ["", "privacy/", "licenses/", "sound/"]) {
     await page.goto(`${BASE}/${l}/${p}`, { waitUntil: "networkidle" });
     await page.addScriptTag({ content: axeSource });
     const res = await page.evaluate(async () => {

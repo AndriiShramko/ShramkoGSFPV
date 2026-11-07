@@ -44,7 +44,7 @@ for (const [hdr, want] of [[{}, '/en/'], [{ 'Accept-Language': 'pl-PL,pl;q=0.9' 
 
 const pages = [];
 for (const l of ['en', 'es', 'pl', 'ru']) {
-    for (const p of [`/${l}/`, `/${l}/privacy/`, `/${l}/licenses/`, `/${l}/fly/`]) {
+    for (const p of [`/${l}/`, `/${l}/privacy/`, `/${l}/licenses/`, `/${l}/sound/`, `/${l}/fly/`]) {
         const { r, body } = await get(p);
         expect(r.status === 200, `${p} -> ${r.status}`);
         expect(new RegExp(`<html[^>]*lang="${l}"`).test(body), `${p} has lang=${l}`);
@@ -77,6 +77,18 @@ for (const l of ['en', 'es', 'pl', 'ru']) {
 for (const p of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/og.jpg', '/fly/showcase.json']) {
     const { r } = await get(p);
     expect(r.status === 200, `${p} -> ${r.status}`);
+}
+// Fly by Sound (v0.12): the privacy page has its section (the recordings panel's consent text links to #fly-by-sound), the page for blind
+// pilots links to it and starts the simulator in sound mode, and the sitemap lists the page in every language
+{
+    const sitemap = (await get('/sitemap.xml')).body;
+    for (const l of ['en', 'es', 'pl', 'ru']) {
+        const priv = pages.find((x) => x.p === `/${l}/privacy/`)?.body ?? '';
+        const sound = pages.find((x) => x.p === `/${l}/sound/`)?.body ?? '';
+        expect(priv.includes('id="fly-by-sound"'), `/${l}/privacy/ has the Fly by Sound section (#fly-by-sound)`);
+        expect(sound.includes(`href="/${l}/privacy/#fly-by-sound"`) && sound.includes(`href="/${l}/fly/?sonic=start"`), `/${l}/sound/ links the privacy section and starts the sound mode`);
+        expect(sitemap.includes(`/${l}/sound/`), `sitemap lists /${l}/sound/`);
+    }
 }
 // the owner's admin page: served, never cached or framed, its own strict CSP, no inline script
 {

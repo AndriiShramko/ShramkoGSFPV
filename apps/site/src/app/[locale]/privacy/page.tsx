@@ -11,7 +11,7 @@ import StickyCTA from "@/components/StickyCTA";
 import { Ext } from "@/components/kit";
 import { pageMetadata } from "@/lib/meta";
 
-type Block = { h: string; p: string[] };
+type Block = { h: string; p: string[]; id?: string };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -38,7 +38,7 @@ function Privacy({ locale }: { locale: Locale }) {
         </div>
         <div className="mx-auto max-w-3xl px-4 py-12 sm:px-8">
           {blocks.map((b) => (
-            <section key={b.h} className="mt-10 first:mt-0">
+            <section key={b.h} id={b.id} className="mt-10 scroll-mt-16 first:mt-0">
               <h2 className="text-2xl font-semibold tracking-tight text-ink">{b.h}</h2>
               {b.p.map((p, i) => (
                 <p key={i} className="mt-3 text-ink/85">
