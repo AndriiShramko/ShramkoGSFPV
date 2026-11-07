@@ -15,7 +15,7 @@
 import type { ChunkStore, FlightSample, GzipFn, SessionEvent, SessionManifest, SonicRuntime, SpeechLine, SurveyAnswers } from '@shramko/sonic-fpv';
 import { SessionWriter, newSessionId, utf8Encode } from '@shramko/sonic-fpv';
 import { SessionClock } from './clock';
-import { consentFor, type PilotProfile } from './consent';
+import { consentFor, mayLeaveDevice, type PilotProfile } from './consent';
 import { FrameSampler, Refusals, busEventWanted, eventProblem } from './frames';
 import { buildManifestInput, type RecorderEnv } from './manifest-input';
 import type { MicResult, VoiceCapture, VoiceSlice } from './voice';
@@ -286,7 +286,8 @@ export class Recorder {
         }
         this.persisted = persisted;
         const startIso = this.deps.nowIso();
-        const consent = consentFor(profile, { voice: mic === 'granted', at: startIso });
+        // speech recognition is part of this recording's consent only when it was allowed (and, for a minor, only with the guardian's confirmation)
+        const consent = consentFor(profile, { voice: mic === 'granted', at: startIso, speechRecognition: profile.speechRecognition && mayLeaveDevice(profile) });
         const id = newSessionId(this.deps.random);
         const input = buildManifestInput({ runtime: rt, env, consent, profile, startIso, id });
         const store = await this.deps.stores.create(id);

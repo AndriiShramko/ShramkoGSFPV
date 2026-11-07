@@ -467,6 +467,18 @@ retried. `delivered` is true only when both channels are `sent` or `link`. Confi
 is `GMAIL_USER` and `GMAIL_APP_PASSWORD`. Housekeeping (every 5 minutes with the counter's) removes uploads left unfinished for 24 h and delivered packages
 past `SESSION_RETENTION_DAYS`. Checked by `apps/api/tests/test_session_delivery.py` (fake Telegram and a local SMTP server, nothing leaves the machine).
 
+**Sending (step 8).** The page's client (`apps/fly/src/sonic-session/upload.ts`, driven by `send-control.ts`) speaks the routes above; it needs
+no change on the hub beyond the API of steps 6 and 7. What it sends is the whole package as the pilot confirmed it: start (size and SHA-256 of the
+package and `consentSend: true`, which the page sends only after the pilot's own yes: the second press of key U after the question was read out, the
+helper's Send with the tick set, or a spoken yes where the pilot allowed voice commands), then chunk after chunk (each with its `X-Chunk-Sha256`, the token
+in `X-Session-Token`), then finish; it keeps the package on the device through all of it and after it, resumes from what the server holds (`GET`), waits out
+failures (2 s, 4 s ... five minutes; a rate limit a minute, a full server five) and goes on at the next start of the page, and says "delivered" only when
+the status shows both channels `sent` or `link`. A recording of a minor without the guardian's confirmation is never sent (the page checks the package's own
+consent, and the server refuses it too). `upload.json` in the session's own folder in the browser keeps the server's id and token between visits.
+**Local check:** `apps/api/tests/rig_server.py` runs the real handler, store and delivery workers with a fake Telegram and SMTP on 127.0.0.1;
+`tools/bench/src/sonicrec-upload.ts` drives the page against it through `serve-csp.mjs` with `API_PROXY` (the proxy forwards the upload's own headers, as
+this nginx location does). The speech recognition of the voice command is a stand-in there: the real service is not tried.
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.

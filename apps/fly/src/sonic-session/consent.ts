@@ -25,6 +25,11 @@ export interface PilotProfile {
     readonly headphones: DeviceInfo['headphones'];
     /** ids of the surveys the pilot has finished or declined, to choose first flight or returning pilot */
     readonly surveysSeen: readonly string[];
+    /**
+     * Voice commands ("send it to the author") by the browser's speech recognition were allowed. Off until someone ticks it: the
+     * audio goes to the browser's maker. Never true for a minor whose guardian's consent is not confirmed.
+     */
+    readonly speechRecognition: boolean;
 }
 
 /** The part of Storage the profile needs. */
@@ -43,7 +48,7 @@ export function cleanNickname(raw: unknown): string | null {
 }
 
 export function newProfile(random?: (n: number) => Uint8Array): PilotProfile {
-    return { id: newPilotId(random), nickname: null, minor: false, guardianConfirmed: false, headphones: 'unknown', surveysSeen: [] };
+    return { id: newPilotId(random), nickname: null, minor: false, guardianConfirmed: false, headphones: 'unknown', surveysSeen: [], speechRecognition: false };
 }
 
 /** The stored profile, repaired field by field; a new one when nothing usable is stored. Never throws. */
@@ -61,7 +66,9 @@ export function loadProfile(store: KeyValue | null, random?: (n: number) => Uint
     const id = typeof r['id'] === 'string' && /^[A-Za-z0-9_-]{8,64}$/.test(r['id']) ? r['id'] : base.id;
     const headphones = HEADPHONES.find((h) => h === r['headphones']) ?? 'unknown';
     const seen = Array.isArray(r['surveysSeen']) ? r['surveysSeen'].filter((x): x is string => typeof x === 'string' && x.length > 0 && x.length <= 80).slice(0, 20) : [];
-    return { id, nickname: cleanNickname(r['nickname']), minor: r['minor'] === true, guardianConfirmed: r['minor'] === true && r['guardianConfirmed'] === true, headphones, surveysSeen: seen };
+    const minor = r['minor'] === true;
+    const guardianConfirmed = minor && r['guardianConfirmed'] === true;
+    return { id, nickname: cleanNickname(r['nickname']), minor, guardianConfirmed, headphones, surveysSeen: seen, speechRecognition: r['speechRecognition'] === true && (!minor || guardianConfirmed) };
 }
 
 export function saveProfile(store: KeyValue | null, profile: PilotProfile): void {
@@ -75,13 +82,16 @@ export function saveProfile(store: KeyValue | null, profile: PilotProfile): void
 /** The profile with some fields changed, repaired the way loadProfile repairs a stored one. */
 export function withProfile(profile: PilotProfile, change: Partial<Omit<PilotProfile, 'id'>>): PilotProfile {
     const minor = change.minor ?? profile.minor;
+    const guardianConfirmed = minor && (change.guardianConfirmed ?? profile.guardianConfirmed);
     return {
         id: profile.id,
         nickname: change.nickname === undefined ? profile.nickname : cleanNickname(change.nickname),
         minor,
-        guardianConfirmed: minor && (change.guardianConfirmed ?? profile.guardianConfirmed),
+        guardianConfirmed,
         headphones: change.headphones ?? profile.headphones,
-        surveysSeen: change.surveysSeen ?? profile.surveysSeen
+        surveysSeen: change.surveysSeen ?? profile.surveysSeen,
+        // a minor whose guardian is not confirmed loses the voice commands too: what leaves the device needs the guardian first
+        speechRecognition: (change.speechRecognition ?? profile.speechRecognition) && (!minor || guardianConfirmed)
     };
 }
 

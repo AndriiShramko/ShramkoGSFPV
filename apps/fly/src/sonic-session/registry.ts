@@ -1,7 +1,7 @@
 // The recordings kept on this device (docs/wip/v12-plan.md section 4.3 step 3): which sessions are in the browser's storage,
 // in what state, and what can be done with each: bring an interrupted one back, pack one into a .zip, delete one. The folder
 // of a session is the truth; a small file beside it, local.json, remembers what happened to it on this device (recovered,
-// saved to disk), and step 8 adds what the server said (stored, delivered).
+// saved to disk), and upload.json (upload.ts, step 8) what the server said about sending it (stored, delivered).
 //
 //   unfinished   manifest.json says the recording never ended (the tab was closed or crashed): offered at the next start
 //   finished     the recording ended; complete says whether it ended by the pilot (true) or was brought back (false)
@@ -12,6 +12,8 @@ import type { ChunkStore, SessionManifest } from '@shramko/sonic-fpv';
 import { PackageError, SESSION_FILES, packSession, parseManifest, recoverSession, utf8Decode, utf8Encode } from '@shramko/sonic-fpv';
 import type { RecoveryReport } from '@shramko/sonic-fpv';
 import type { SessionStores } from './recorder';
+import { TRANSFER_FILE, readTransfer } from './upload';
+import type { TransferRecord } from './upload';
 
 export type SessionState = 'unfinished' | 'finished' | 'unreadable';
 
@@ -38,6 +40,8 @@ export interface SessionEntry {
     readonly bytes: number;
     readonly voice: boolean;
     readonly notes: LocalNotes;
+    /** what the server said about sending it (upload.json), or null when it was never sent from here */
+    readonly transfer: TransferRecord | null;
     /** why an unreadable session is unreadable */
     readonly problem: string | null;
 }
@@ -85,16 +89,16 @@ async function manifestOf(store: ChunkStore): Promise<{ manifest: SessionManifes
     return parsed.ok ? { manifest: parsed.value } : { problem: parsed.issues.map((i) => `${i.path}: ${i.message}`).join('; ').slice(0, 300) };
 }
 
-const FILES = [SESSION_FILES.manifest, SESSION_FILES.flight, SESSION_FILES.events, SESSION_FILES.voice, SESSION_FILES.survey, SESSION_FILES.simLog, 'voice-sync.jsonl', LOCAL_NOTES];
+const FILES = [SESSION_FILES.manifest, SESSION_FILES.flight, SESSION_FILES.events, SESSION_FILES.voice, SESSION_FILES.survey, SESSION_FILES.simLog, 'voice-sync.jsonl', LOCAL_NOTES, TRANSFER_FILE];
 
 /** One session's entry. `isLocked`: whether another tab holds the session (platform.ts sessionIsLocked). */
 export async function describeSession(stores: SessionStores, id: string, isLocked: (id: string) => Promise<boolean>): Promise<SessionEntry> {
     const store = await stores.open(id);
-    const [m, notes, locked] = await Promise.all([manifestOf(store), readNotes(store), isLocked(id).catch(() => false)]);
+    const [m, notes, locked, transfer] = await Promise.all([manifestOf(store), readNotes(store), isLocked(id).catch(() => false), readTransfer(store)]);
     let bytes = 0;
     for (const name of FILES) bytes += await sizeOf(store, name).catch(() => 0);
     const hasVoice = (await sizeOf(store, SESSION_FILES.voice).catch(() => 0)) > 0;
-    if ('problem' in m) return { id, state: 'unreadable', manifest: null, complete: false, locked, durationMs: null, bytes, voice: hasVoice, notes, problem: m.problem };
+    if ('problem' in m) return { id, state: 'unreadable', manifest: null, complete: false, locked, durationMs: null, bytes, voice: hasVoice, notes, transfer, problem: m.problem };
     const manifest = m.manifest;
     const endMs = manifest.ended === null ? null : Date.parse(manifest.ended);
     const startMs = Date.parse(manifest.clock.startIso);
@@ -108,6 +112,7 @@ export async function describeSession(stores: SessionStores, id: string, isLocke
         bytes,
         voice: hasVoice,
         notes,
+        transfer,
         problem: null
     };
 }
@@ -120,7 +125,7 @@ export async function listSessions(stores: SessionStores, isLocked: (id: string)
         try {
             entries.push(await describeSession(stores, id, isLocked));
         } catch (e) {
-            entries.push({ id, state: 'unreadable', manifest: null, complete: false, locked: false, durationMs: null, bytes: 0, voice: false, notes: {}, problem: e instanceof Error ? e.message : String(e) });
+            entries.push({ id, state: 'unreadable', manifest: null, complete: false, locked: false, durationMs: null, bytes: 0, voice: false, notes: {}, transfer: null, problem: e instanceof Error ? e.message : String(e) });
         }
     }
     const created = (e: SessionEntry): number => (e.manifest === null ? -Infinity : Date.parse(e.manifest.created));

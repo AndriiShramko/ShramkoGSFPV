@@ -78,7 +78,11 @@ describe('the session feature in the flight page', () => {
         const t1 = Date.now();
         while (s.recorder.status().lastSessionId === null && Date.now() - t1 < 3000) await new Promise((r) => setTimeout(r, 5));
         expect(s.recorder.status().lastSessionId).toMatch(/^[A-Za-z0-9_-]{22}$/);
-        expect(fake.spoken.map((l) => l.key)).toEqual(['rec.ask', 'rec.started', 'rec.stopped', 'rec.saved']);
+        // after "saved" the pilot is told how to send it (step 8): the invitation comes after the recorder's own line, never before it
+        const t2 = Date.now();
+        while (fake.spoken.length < 5 && Date.now() - t2 < 3000) await new Promise((r) => setTimeout(r, 5));
+        expect(fake.spoken.map((l) => l.key)).toEqual(['rec.ask', 'rec.started', 'rec.stopped', 'rec.saved', 'send.ask']);
+        expect(fake.spoken[4]?.params).toEqual({ key: 'U' });
         s.dispose();
     });
 

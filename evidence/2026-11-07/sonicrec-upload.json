@@ -1,0 +1,322 @@
+{
+  "name": "sonicrec-upload",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T18:33:32.798Z",
+    "gitHead": "05894d9",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "U1: the first U asks (send.confirm with the key U) and the server is asked nothing: no request, no session": true,
+    "U1: the second U sends: start, the status, every chunk once, finish, then the status until delivered": true,
+    "U1: the chunks are 1 MiB (the last the rest) and each carries its own SHA-256 and the token in headers": true,
+    "U1: the server holds the package: the same SHA-256 and size as the local copy": true,
+    "U1: Telegram received the same bytes (SHA-256 of the sent document)": true,
+    "U1: the mail attachment is the same bytes": true,
+    "U1: both channels are sent on the server when the pilot is told \"delivered\"": true,
+    "U1: the pilot hears the question, sending, stored, delivered, in that order and nothing else": true,
+    "U1: the recording on this device is untouched: the same package bytes, still listed, its upload.json says delivered with the key as the way": true,
+    "U1: the panel row says delivered with both channels, and offers no Send for it": true,
+    "U2: Telegram failed once and e-mail is sent: the pilot hears \"e-mail only\" and has NOT heard \"delivered\"": true,
+    "U2: the panel says which channel is waiting": true,
+    "U2: when Telegram recovers the pilot hears delivered, and both channels hold the same package": true,
+    "U2: the order the pilot heard: question, sending, stored, e-mail only, delivered": true,
+    "U3: the connection fails on chunk 1: the server holds chunk 0 only, the pilot heard \"did not work\" once": true,
+    "U3: the next page resumes by itself: no second start, chunk 0 was sent once in all, chunk 2 once, chunk 1 until it got through": true,
+    "U3: what arrived is the whole package, and the pilot is not asked again": true,
+    "U3: the record kept the first consent through the resume": true,
+    "U3b: the API restarted in the middle: chunk 0 was held through it and sent once, the same page went on, one start": true,
+    "U4: Send opens the consent text in the row (what is sent, where, how long, the privacy page) and the button is off until the tick": true,
+    "U4: the tick turns the button on and still nothing has been sent": true,
+    "U4: the click sends, and the record says the button was the way": true,
+    "U5: the pilot hears how to send it, then the disclosure, then how to say it, and only then is the browser listening": true,
+    "U5: other words do nothing": true,
+    "U5: \"send it to the author\" is a request: the question is asked, the server is asked nothing": true,
+    "U5: a spoken yes sends, the record says voice was the way, and every listen was let go of": true,
+    "U5: control, without the tick the browser is never asked to listen, the keys still ask": true,
+    "U6: a minor's recording without the guardian's confirmation: U says why, the button says why, and not one request reaches the server": true,
+    "U6: control, the same pilot with the guardian's confirmation recorded is sent": true,
+    "U7: with the sound mode off U does nothing: no speech, no request, no panel": true,
+    "U8: the proxy's 1100k limit is live (1.2 MB is refused with 413) and a 1 MiB chunk passes it": true,
+    "U8: every start said the pilot confirmed sending (consentSend true) and the package's size and SHA-256": true,
+    "U8: only the page's own origin was called, and the token was never in a URL": true,
+    "U8: no Content-Security-Policy violation was reported in the whole run": true,
+    "U9: the panel with the consent text open shows no missing key in en, es, pl or ru": true
+  },
+  "results": {
+    "u1": {
+      "chunks": 3,
+      "spoken": [
+        "send.confirm",
+        "send.sending",
+        "send.stored",
+        "send.delivered"
+      ],
+      "requests": 8,
+      "seq": [
+        "POST /start",
+        "GET /<id>",
+        "POST /<id>/0",
+        "POST /<id>/1",
+        "POST /<id>/2",
+        "POST /<id>/finish",
+        "GET /<id>",
+        "GET /<id>"
+      ],
+      "sessions": [
+        {
+          "id": "S-20261107-7f92bec44cdc",
+          "bytes": 2204024,
+          "sha256": "86c3bff4b5181aea274b1d52f1c4759c47d6ae5116979025ef582e56dc911e9f",
+          "delivered": true,
+          "channels": {
+            "telegram": "sent",
+            "email": "sent"
+          }
+        }
+      ],
+      "telegram": [
+        {
+          "filename": "fly-by-sound-S-20261107-7f92bec44cdc.zip",
+          "bytes": 2204024,
+          "sha256": "86c3bff4b5181aea274b1d52f1c4759c47d6ae5116979025ef582e56dc911e9f"
+        }
+      ],
+      "mail": [
+        {
+          "name": "fly-by-sound-S-20261107-7f92bec44cdc.zip",
+          "bytes": 2204024,
+          "sha256": "86c3bff4b5181aea274b1d52f1c4759c47d6ae5116979025ef582e56dc911e9f"
+        }
+      ]
+    },
+    "u1Row": {
+      "id": "up1q3oiw6ymw6qr2nx",
+      "line": "Nov 7, 2026, 7:32 PM, 0:03, 2.2 MB \u00b7 with voice \u00b7 walls-hall",
+      "state": "Saved on this device.",
+      "transfer": "Delivered. The author has it: Telegram: sent, e-mail: sent. Reference: S-20261107-7f92bec44cdc.",
+      "transferLive": "polite",
+      "buttons": [
+        {
+          "text": "Save to disk",
+          "action": "save",
+          "disabled": false
+        },
+        {
+          "text": "Replay",
+          "action": "replay",
+          "disabled": false
+        },
+        {
+          "text": "Delete",
+          "action": "delete",
+          "disabled": false
+        }
+      ],
+      "consent": null
+    },
+    "u2": {
+      "midChannels": {
+        "telegram": "retrying",
+        "email": "sent"
+      },
+      "midKeys": [
+        "send.confirm",
+        "send.sending",
+        "send.stored",
+        "send.partial-email"
+      ],
+      "midRow": "The server has it. Delivery to the author: Telegram: will try again, e-mail: sent. Reference: S-20261107-167ec8b24e4a."
+    },
+    "u3": {
+      "heldBeforeClose": [
+        0
+      ],
+      "chunks": 3,
+      "stage": {
+        "stage": "waiting",
+        "chunksDone": 1,
+        "chunks": 3,
+        "bytes": 2204024,
+        "stored": false,
+        "delivered": false,
+        "channels": null,
+        "problem": "network",
+        "failures": 1,
+        "retryAt": 1794076390577,
+        "serverId": "S-20261107-04ae5186decc"
+      }
+    },
+    "u3b": {
+      "second": [
+        "GET /<id>",
+        "POST /<id>/1",
+        "POST /<id>/2",
+        "POST /<id>/finish",
+        "GET /<id>"
+      ]
+    },
+    "u3brestart": {
+      "chunk0": 1,
+      "chunk1": 2,
+      "chunk2": 1,
+      "starts": 1,
+      "seq": [
+        "POST /start",
+        "GET /<id>",
+        "POST /<id>/0",
+        "POST /<id>/1",
+        "GET /<id>",
+        "POST /<id>/1",
+        "POST /<id>/2",
+        "POST /<id>/finish",
+        "GET /<id>"
+      ],
+      "statuses": [
+        "POST /<id>/1 200",
+        "POST /<id>/2 200",
+        "POST /<id>/finish 200",
+        "GET /<id> 200",
+        "GET /<id> 200",
+        "POST /start 200",
+        "GET /<id> 200",
+        "POST /<id>/0 200",
+        "POST /<id>/finish 200",
+        "GET /<id> 200",
+        "GET /<id> 200",
+        "GET /<id> 200",
+        "GET /<id> 200",
+        "POST /start 200",
+        "GET /<id> 200",
+        "POST /<id>/0 200",
+        "GET /<id> 200",
+        "POST /<id>/1 200",
+        "POST /<id>/2 200",
+        "POST /<id>/finish 200",
+        "GET /<id> 200",
+        "GET /<id> 200",
+        "POST /start 200",
+        "GET /<id> 200",
+        "POST /<id>/0 200",
+        "GET /<id> 200",
+        "POST /<id>/1 200",
+        "POST /<id>/2 200",
+        "POST /<id>/finish 200",
+        "GET /<id> 200"
+      ]
+    },
+    "u4": {
+      "consent": "Send this recording to the author?The whole recording is sent: the flight and, if there is one, the pilot's voice. It goes to the author of Fly by Sound by Telegram and by e-mail. The server keeps it for the project for at most five years, or less if the pilot or a parent asks for it to be deleted. The copy on this device stays where it is.What happens to a recording The pilot agrees to send this recording, with the voice.SendNot now",
+      "link": "/en/privacy/#fly-by-sound",
+      "disabledBefore": true
+    },
+    "u5": {
+      "sr": {
+        "instances": [
+          {
+            "lang": "en-US",
+            "continuous": false,
+            "interimResults": false,
+            "maxAlternatives": 3,
+            "active": false
+          },
+          {
+            "lang": "en-US",
+            "continuous": false,
+            "interimResults": false,
+            "maxAlternatives": 3,
+            "active": false
+          }
+        ],
+        "starts": 2,
+        "aborts": 2
+      },
+      "spoken": [
+        "send.ask",
+        "send.speech-note",
+        "send.by-voice",
+        "send.confirm",
+        "send.sending",
+        "send.stored",
+        "send.delivered"
+      ]
+    },
+    "u6": {
+      "heardNo": [
+        "rec.minor"
+      ],
+      "msg": "This recording cannot be sent: a parent's signed consent was not confirmed when it was recorded."
+    },
+    "u8": {
+      "proxy": {
+        "big": 413,
+        "fits": 404
+      }
+    },
+    "u8starts": [
+      {
+        "consentSend": true,
+        "size": 2204024,
+        "sha": "string"
+      },
+      {
+        "consentSend": true,
+        "size": 604023,
+        "sha": "string"
+      },
+      {
+        "consentSend": true,
+        "size": 2204024,
+        "sha": "string"
+      },
+      {
+        "consentSend": true,
+        "size": 2204024,
+        "sha": "string"
+      },
+      {
+        "consentSend": true,
+        "size": 304023,
+        "sha": "string"
+      },
+      {
+        "consentSend": true,
+        "size": 304023,
+        "sha": "string"
+      },
+      {
+        "consentSend": true,
+        "size": 7020,
+        "sha": "string"
+      }
+    ],
+    "u9": {
+      "en": [
+        "ok",
+        ""
+      ],
+      "es": [
+        "ok",
+        ""
+      ],
+      "pl": [
+        "ok",
+        ""
+      ],
+      "ru": [
+        "ok",
+        ""
+      ]
+    }
+  },
+  "note": "headless Chrome, real OPFS, DOM, fetch and keys, the live headers through serve-csp.mjs with API_PROXY to a LOCAL copy of the real API (apps/api/tests/rig_server.py: the real handler, store and delivery workers; Telegram and SMTP are fakes on this machine). The sound runtime, samples and key router are stand-ins; the browser's speech recognition is a stand-in the harness speaks into (the real service is not tried)."
+}

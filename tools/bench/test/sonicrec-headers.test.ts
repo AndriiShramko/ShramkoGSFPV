@@ -152,4 +152,32 @@ describe('/api/session/ through serve-csp.mjs with an API behind it', () => {
         expect((await head(s.port, '/api/session/x', { method: 'PUT', body: 'x' })).status).toBe(403);
         expect(seen.length).toBe(before);
     });
+
+    it('the headers of an upload reach the API as they do through nginx (every header but Cookie and Authorization); the other routes keep their short list', async () => {
+        const seen: { url: string | undefined; headers: IncomingHttpHeaders }[] = [];
+        const api = createServer((req, res) => {
+            req.on('data', () => undefined);
+            req.on('end', () => {
+                seen.push({ url: req.url, headers: req.headers });
+                res.writeHead(200, { 'content-type': 'application/json' }).end('{"ok":true}');
+            });
+        });
+        toClose.push(api);
+        const apiPort = await new Promise<number>((resolve) => api.listen(0, '127.0.0.1', () => resolve((api.address() as { port: number }).port)));
+        const s = await serveDist(dist, { API_PROXY: `http://127.0.0.1:${apiPort}` });
+        toStop.push(s);
+        const mine = { 'x-session-token': 'tok-abc', 'x-chunk-sha256': 'f'.repeat(64), cookie: 'a=b', authorization: 'Bearer nope', 'content-type': 'application/octet-stream' };
+        expect((await fetch(`http://127.0.0.1:${s.port}/api/session/S-20261107-000000000001/0`, { method: 'POST', body: 'xx', headers: mine })).status).toBe(200);
+        expect(seen[0]?.headers['x-session-token']).toBe('tok-abc');
+        expect(seen[0]?.headers['x-chunk-sha256']).toBe('f'.repeat(64));
+        expect(seen[0]?.headers['cookie']).toBeUndefined();
+        expect(seen[0]?.headers['authorization']).toBeUndefined();
+        // the client's own address is never taken from the visitor: one value, the one the proxy sets
+        const spoof = await fetch(`http://127.0.0.1:${s.port}/api/session/S-20261107-000000000001`, { headers: { 'x-forwarded-for': '1.2.3.4', 'x-session-token': 't' } });
+        expect(spoof.status).toBe(200);
+        expect(seen[1]?.headers['x-forwarded-for']).toBe('198.51.100.1');
+        // control: a route outside /api/session/ is not given them (it never was: its list is short on purpose)
+        await fetch(`http://127.0.0.1:${s.port}/api/report`, { method: 'POST', body: 'x', headers: { 'x-session-token': 'tok-abc', 'content-type': 'text/plain' } });
+        expect(seen[2]?.headers['x-session-token']).toBeUndefined();
+    });
 });

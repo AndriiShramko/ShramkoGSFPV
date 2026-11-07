@@ -12,6 +12,10 @@ import type { Recorder, RecorderStatus, StopOptions } from './recorder';
 import type { SessionStores } from './recorder';
 import type { PilotProfile } from './consent';
 import { formatBytes, formatClock, formatWhen } from './format';
+import type { SendControl } from './send-control';
+import { channelList, sendBlocker, transferLine } from './transfer-view';
+import type { TransferLine } from './transfer-view';
+import type { ChannelState } from './upload';
 import { deleteSession, listSessions, packageOf, writeNotes } from './registry';
 import type { SessionEntry } from './registry';
 import type { ReplayControl, ReplayViewState } from './replay-control';
@@ -37,6 +41,10 @@ export interface PanelDeps {
     onClose?(): void;
     /** the replay of a recording (step 5): the panel offers Replay on each finished recording and Open a file */
     replay?: ReplayControl;
+    /** the sending of a recording to the author (step 8): the panel offers Send on each finished recording and shows where it is */
+    send?: SendControl;
+    /** the browser can recognise speech (the voice commands' tick is offered only then) */
+    speechAvailable?: boolean;
 }
 
 export interface RecPanel {
@@ -52,6 +60,8 @@ export interface RecPanel {
     notify(text: string): void;
     /** the replay's state changed (replay-control.ts) */
     onReplay(s: ReplayViewState): void;
+    /** a sending made progress or ended (send-control.ts): the lines of the rows are redrawn, the list read again when one started or ended */
+    onTransfer(): void;
     refresh(): Promise<void>;
     dispose(): void;
 }
@@ -66,6 +76,11 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
     let confirming: string | null = null;
     let confirmTimer: ReturnType<typeof setTimeout> | null = null;
     let busy = false;
+    /** the row whose Send asked for the pilot's agreement, and whether the tick is set */
+    let sending: { id: string; agree: boolean } | null = null;
+    /** the entries of the last listing, to redraw a row's transfer line without reading the storage again */
+    const shown = new Map<string, SessionEntry>();
+    let lastLive = '';
 
     // ---------------------------------------------------------------- the pieces that change
     const status = h('p', { class: 'sonicrec-status', role: 'status', 'aria-live': 'polite' });
@@ -80,6 +95,8 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
     const nickname = h('input', { type: 'text', id: 'sonicrec-nick', maxlength: 40, autocomplete: 'off', spellcheck: false });
     const minor = h('input', { type: 'checkbox', id: 'sonicrec-minor' });
     const guardian = h('input', { type: 'checkbox', id: 'sonicrec-guardian' });
+    const speech = h('input', { type: 'checkbox', id: 'sonicrec-speech', 'aria-describedby': 'sonicrec-speech-help' });
+    const speechHelp = h('p', { class: 'sonicrec-help', id: 'sonicrec-speech-help' });
     const phones = h('select', { id: 'sonicrec-phones' }, ...HEADPHONES.map((p) => h('option', { value: p }, t(`sonicrec.headphones.${p}`))));
 
     const consent = h('fieldset', { class: 'sonicrec-consent' },
@@ -92,6 +109,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         h('label', { for: 'sonicrec-minor' }, minor, ' ', t('sonicrec.pilot.minor')),
         h('label', { for: 'sonicrec-guardian' }, guardian, ' ', t('sonicrec.pilot.guardian')),
         h('p', { class: 'sonicrec-help' }, t('sonicrec.pilot.guardian.help')),
+        h('label', { for: 'sonicrec-speech' }, speech, ' ', t('sonicrec.pilot.speech')), speechHelp,
         h('label', { for: 'sonicrec-phones' }, t('sonicrec.pilot.headphones')), phones);
 
     const close = h('button', { type: 'button', class: 'sonicrec-x', 'aria-label': t('sonicrec.close') }, '×');
@@ -143,6 +161,54 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         guardian.checked = p.guardianConfirmed;
         guardian.disabled = !p.minor;
         phones.value = p.headphones;
+        // voice commands: offered only where the browser can recognise speech, and for a minor only after the guardian is confirmed
+        const can = deps.speechAvailable !== false;
+        const blockedMinor = p.minor && !p.guardianConfirmed;
+        speech.checked = p.speechRecognition;
+        speech.disabled = !can || blockedMinor;
+        speechHelp.textContent = !can ? t('sonicrec.pilot.speech.unavailable') : blockedMinor ? t('sonicrec.pilot.speech.guardian') : t('sonicrec.pilot.speech.help');
+    }
+
+    // ---------------------------------------------------------------- what is said about sending
+    const clockOf = (ms: number): string => new Date(ms).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const lookup = (prefix: string, code: string, other: string): string => {
+        const text = t(`${prefix}.${code}`);
+        return text === `${prefix}.${code}` ? t(other, { code }) : text;
+    };
+    const channelsText = (channels: Readonly<Record<string, ChannelState>> | null): string =>
+        channelList(channels).map((c) => t('sonicrec.channel.name', { name: t(`sonicrec.channel.${c.name}`), status: lookup('sonicrec.channel.status', c.status, 'sonicrec.channel.status.unknown') })).join(', ');
+
+    const refText = (ref: string | null): string => (ref === null ? '' : ` ${t('sonicrec.transfer.ref', { id: ref })}`);
+
+    function transferText(line: TransferLine): string {
+        switch (line.kind) {
+            case 'none':
+                return '';
+            case 'working':
+                return t('sonicrec.transfer.working');
+            case 'uploading':
+                return t('sonicrec.transfer.uploading', { done: line.done, of: line.of });
+            case 'waiting':
+                if (line.problem === 'interrupted') return t('sonicrec.transfer.interrupted');
+                return line.retryAt === null ? t('sonicrec.transfer.waiting.soon', { problem: lookup('sonicrec.problem', line.problem, 'sonicrec.problem.other') }) : t('sonicrec.transfer.waiting', { problem: lookup('sonicrec.problem', line.problem, 'sonicrec.problem.other'), time: clockOf(line.retryAt) });
+            case 'stored':
+                return (line.problem === null ? t('sonicrec.transfer.stored', { channels: channelsText(line.channels) }) : t('sonicrec.transfer.stored.trouble', { problem: lookup('sonicrec.problem', line.problem, 'sonicrec.problem.other') })) + refText(line.ref);
+            case 'delivered':
+                return t('sonicrec.transfer.delivered', { channels: channelsText(line.channels) }) + refText(line.ref);
+            case 'blocked':
+                return t('sonicrec.transfer.blocked', { reason: lookup('sonicrec.blocked', line.reason, 'sonicrec.blocked.other') });
+        }
+    }
+
+    const lineOf = (e: SessionEntry): TransferLine => transferLine(e.transfer, deps.send?.live().get(e.id) ?? null);
+
+    function drawTransfer(el: HTMLElement, e: SessionEntry): void {
+        const line = lineOf(e);
+        el.textContent = transferText(line);
+        el.hidden = el.textContent === '';
+        // a part counter ticking along is not read out every time; the stages (stored, delivered, waiting) are
+        el.setAttribute('aria-live', line.kind === 'uploading' || line.kind === 'working' ? 'off' : 'polite');
+        el.classList.toggle('bad', line.kind === 'waiting' || line.kind === 'blocked');
     }
 
     function stateText(e: SessionEntry): string {
@@ -163,12 +229,44 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
             if (e.state === 'unfinished') buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'keep', onclick: () => void keep(e) }, t('sonicrec.action.keep')));
             if (e.state === 'finished') buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'save', onclick: () => void save(e) }, t('sonicrec.action.save')));
             if (e.state === 'finished' && deps.replay !== undefined) buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'replay', onclick: () => replay(e) }, t('sonicrec.action.replay')));
+            const line = lineOf(e);
+            if (deps.send !== undefined && e.state === 'finished' && line.kind !== 'delivered') {
+                if (line.kind === 'working' || line.kind === 'uploading' || line.kind === 'stored') {
+                    // going, or with the server: nothing to press (a stored recording is the server's to deliver)
+                } else if (line.kind === 'waiting' && deps.send.live().has(e.id)) buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'retry', onclick: () => deps.send?.retry(e.id) }, t('sonicrec.action.retry')));
+                else buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'send', 'aria-expanded': sending?.id === e.id ? 'true' : 'false', onclick: () => void askSend(e) }, t('sonicrec.action.send')));
+            }
             buttons.push(h('button', { type: 'button', class: 'btn', 'data-action': 'delete', onclick: () => void remove(e) }, confirming === e.id ? t('sonicrec.action.delete.sure') : t('sonicrec.action.delete')));
         }
+        const transfer = h('div', { class: 'sonicrec-transfer', role: 'status' });
+        drawTransfer(transfer, e);
         return h('li', { class: 'sonicrec-session', 'data-id': e.id },
             h('div', { class: 'sonicrec-line' }, parts.join(' · '), lesson === null ? '' : ` · ${lesson}`),
             h('div', { class: 'sonicrec-state' }, stateText(e), e.notes.savedAt === undefined ? '' : ` ${t('sonicrec.state.savedDisk')}`),
+            transfer,
+            sending?.id === e.id ? sendBlock(e) : null,
             h('div', { class: 'sonicrec-buttons' }, ...buttons));
+    }
+
+    /** The consent text, the pilot's tick and the buttons, inside the row: nothing is sent until the tick is set and Send is pressed. */
+    function sendBlock(e: SessionEntry): HTMLElement {
+        const minor = e.manifest?.consent.minor === true;
+        const tick = h('input', { type: 'checkbox', id: `sonicrec-send-agree-${e.id}`, 'data-action': 'send-agree' });
+        tick.checked = sending?.agree === true;
+        const go = h('button', { type: 'button', class: 'btn primary', 'data-action': 'send-go' }, t('sonicrec.send.confirm'));
+        go.disabled = !tick.checked;
+        tick.addEventListener('change', () => {
+            if (sending !== null) sending.agree = tick.checked;
+            go.disabled = !tick.checked;
+        });
+        go.addEventListener('click', () => void sendNow(e));
+        return h('div', { class: 'sonicrec-send', role: 'group', 'aria-labelledby': `sonicrec-send-h-${e.id}` },
+            h('h4', { id: `sonicrec-send-h-${e.id}` }, t('sonicrec.send.heading')),
+            h('p', {}, t('sonicrec.send.consent.text')),
+            minor ? h('p', {}, t('sonicrec.send.consent.minor')) : null,
+            h('p', {}, h('a', { href: `/${locale}/privacy/#fly-by-sound`, target: '_blank', rel: 'noopener' }, t('sonicrec.send.privacy'))),
+            h('label', { for: tick.id }, tick, ' ', t('sonicrec.send.consent.agree')),
+            h('div', { class: 'sonicrec-buttons' }, go, h('button', { type: 'button', class: 'btn', 'data-action': 'send-cancel', onclick: () => { sending = null; void refresh(); } }, t('sonicrec.send.cancel'))));
     }
 
     async function refresh(): Promise<void> {
@@ -182,6 +280,8 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         }
         if (seq !== refreshSeq) return; // a newer refresh is on its way
         clear(list);
+        shown.clear();
+        for (const e of entries) shown.set(e.id, e);
         if (entries.length === 0) list.append(h('li', { class: 'sonicrec-empty' }, t('sonicrec.sessions.empty')));
         for (const e of entries) list.append(drawRow(e));
     }
@@ -217,6 +317,28 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
             busy = false;
             await refresh();
         }
+    }
+
+    /** Send: the row opens the consent text and the pilot's tick. A recording that cannot be sent says why instead. */
+    async function askSend(e: SessionEntry): Promise<void> {
+        if (sending?.id === e.id) {
+            sending = null;
+            return refresh();
+        }
+        const blocker = sendBlocker(e, deps.profile());
+        if (blocker !== null) return say(t(`sonicrec.send.notice.${blocker}`));
+        sending = { id: e.id, agree: false };
+        await refresh();
+        (list.querySelector(`[data-id="${CSS.escape(e.id)}"] [data-action="send-agree"]`) as HTMLElement | null)?.focus();
+    }
+
+    /** The tick is set and Send was pressed. */
+    async function sendNow(e: SessionEntry): Promise<void> {
+        if (sending?.id !== e.id || !sending.agree || deps.send === undefined) return;
+        sending = null;
+        const why = await deps.send.sendByHelper(e.id);
+        if (why !== null && why !== 'busy') say(t(`sonicrec.send.notice.${why}`));
+        await refresh();
     }
 
     /** A recording is replayed only while none is being made: the replay pauses the flight and takes the camera. */
@@ -280,6 +402,10 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
     phones.addEventListener('change', () => {
         deps.setProfile({ headphones: phones.value as PilotProfile['headphones'] });
     });
+    speech.addEventListener('change', () => {
+        deps.setProfile({ speechRecognition: speech.checked });
+        drawProfile();
+    });
 
     const setOpen = (on: boolean): void => {
         open = on;
@@ -332,6 +458,19 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
             replayView?.update(s);
             replayLabel = s.stage === 'ready' && s.player !== null && s.player.phase === 'playing' ? t('sonicrec.button.replay', { time: formatClock(s.player.tMs) }) : null;
             drawStatus();
+        },
+        onTransfer() {
+            // the lines are redrawn in place from the last listing; the listing itself is read again when a sending started or ended
+            const live = deps.send?.live() ?? new Map();
+            for (const [id, entry] of shown) {
+                const el = list.querySelector(`[data-id="${CSS.escape(id)}"] .sonicrec-transfer`) as HTMLElement | null;
+                if (el !== null) drawTransfer(el, entry);
+            }
+            const key = [...live.keys()].sort().join(',');
+            if (key !== lastLive) {
+                lastLive = key;
+                if (open) void refresh();
+            }
         },
         refresh,
         dispose() {

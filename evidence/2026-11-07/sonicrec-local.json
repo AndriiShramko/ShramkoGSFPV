@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T16:01:27.867Z",
-    "gitHead": "c077e87",
+    "date": "2026-11-07T18:31:38.508Z",
+    "gitHead": "05894d9",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -51,29 +51,31 @@
   },
   "results": {
     "e1": {
-      "fileName": "fly-by-sound-20261107-160036-WNOpvpch.zip",
-      "bytes": 25051,
+      "fileName": "fly-by-sound-20261107-183046-VYghxdTg.zip",
+      "bytes": 25060,
       "frames": 152,
       "events": 4,
       "voiceBytes": 18462,
       "complete": true,
       "rowAfter": {
-        "id": "WNOpvpchhH5EfjAQlDFZpw",
-        "line": "Nov 7, 2026, 5:00 PM, 0:05, 25 KB \u00b7 with voice \u00b7 walls-hall",
+        "id": "V_YghxdTgZPPVSmuWEEj_g",
+        "line": "Nov 7, 2026, 7:30 PM, 0:05, 25 KB \u00b7 with voice \u00b7 walls-hall",
         "state": "Saved on this device. Saved to disk.",
         "buttons": [
           "Save to disk",
+          "Replay",
+          "Send to the author",
           "Delete"
         ]
       },
-      "panelMessageAfter": "Saved as fly-by-sound-20261107-160036-WNOpvpch.zip."
+      "panelMessageAfter": "Saved as fly-by-sound-20261107-183046-VYghxdTg.zip."
     },
     "e2": {
       "cancelledMessage": "Saving was cancelled.",
-      "savedMessage": "Saved as fly-by-sound-20261107-160041-wrl8HeAx.zip.",
+      "savedMessage": "Saved as fly-by-sound-20261107-183052-fBYdC9pi.zip.",
       "downloads": 0,
       "pickedFiles": 1,
-      "pickedBytes": 17841,
+      "pickedBytes": 17872,
       "frames": 107
     },
     "e3": {
@@ -97,15 +99,17 @@
         }
       ],
       "rowAfterKeep": {
-        "id": "dY6UbqNSCwUBnQF-xNgrbQ",
-        "line": "Nov 7, 2026, 5:00 PM, 0:04, 19 KB \u00b7 with voice \u00b7 walls-hall",
+        "id": "HXektRplbSrESsNGYPzpAw",
+        "line": "Nov 7, 2026, 7:30 PM, 0:04, 19 KB \u00b7 with voice \u00b7 walls-hall",
         "state": "Kept after an interruption.",
         "buttons": [
           "Save to disk",
+          "Replay",
+          "Send to the author",
           "Delete"
         ]
       },
-      "bytes": 19439,
+      "bytes": 19450,
       "frames": 121,
       "voiceBytes": 14019,
       "complete": false,
@@ -118,7 +122,7 @@
         "rec.started"
       ],
       "consent": {
-        "at": "2026-11-07T16:00:52.916Z",
+        "at": "2026-11-07T18:31:03.556Z",
         "guardianConfirmed": true,
         "minor": true,
         "recording": true,
@@ -127,17 +131,18 @@
         "voice": true
       },
       "pilot": {
-        "id": "u2iKQnH127E",
+        "id": "xJzgy9IKhlM",
         "nickname": "Tom"
       },
       "headphones": "wired",
       "profileAfterReload": {
-        "id": "u2iKQnH127E",
+        "id": "xJzgy9IKhlM",
         "nickname": "Tom",
         "minor": true,
         "guardianConfirmed": true,
         "headphones": "wired",
-        "surveysSeen": []
+        "surveysSeen": [],
+        "speechRecognition": false
       }
     },
     "e6a": {
@@ -154,59 +159,59 @@
           "item": "fun",
           "value": 4,
           "via": "key",
-          "t": 4647.399999976158
+          "t": 4643.300000011921
         },
         {
           "item": "mental",
           "value": 7,
           "via": "key",
-          "t": 5067.099999964237
+          "t": 5057.899999976158
         },
         {
           "item": "frustration",
           "value": 2,
           "via": "key",
-          "t": 5488.299999952316
+          "t": 5477.5
         },
         {
           "item": "fear",
           "value": 0,
           "via": "key",
-          "t": 5906.299999952316
+          "t": 5893.399999976158
         },
         {
           "item": "up-direction",
           "value": 1,
           "via": "key",
-          "t": 6324.699999988079
+          "t": 6311.600000023842
         },
         {
           "item": "ears-tired",
           "value": 3,
           "via": "key",
-          "t": 6731.699999988079
+          "t": 6731.100000023842
         },
         {
           "item": "helped",
           "value": null,
           "via": "voice",
-          "t": 6731.899999976158
+          "t": 6731.399999976158
         },
         {
           "item": "annoyed",
           "value": null,
           "via": "skip",
-          "t": 9668.299999952316
+          "t": 9659.699999988079
         },
         {
           "item": "again",
           "value": 1,
           "via": "key",
-          "t": 10080.399999976158
+          "t": 10078.699999988079
         }
       ],
-      "voiceMs": 10080,
-      "lastAnswerT": 10080.399999976158,
+      "voiceMs": 10020,
+      "lastAnswerT": 10078.699999988079,
       "surveysSeen": [
         "first-flight"
       ]
@@ -293,19 +298,19 @@
           "item": "mental",
           "value": 5,
           "via": "key",
-          "t": 2727.099999964237
+          "t": 2707.300000011921
         },
         {
           "item": "temporal",
           "value": null,
           "via": "skip",
-          "t": 3140.199999988079
+          "t": 3140
         },
         {
           "item": "performance",
           "value": null,
           "via": "skip",
-          "t": 3541.899999976158
+          "t": 3534.699999988079
         }
       ],
       "mentalSpokenBeforeAndAfterAgain": [
@@ -348,7 +353,7 @@
         ]
       ],
       "consent": {
-        "at": "2026-11-07T16:01:19.846Z",
+        "at": "2026-11-07T18:31:30.472Z",
         "guardianConfirmed": true,
         "minor": true,
         "recording": true,

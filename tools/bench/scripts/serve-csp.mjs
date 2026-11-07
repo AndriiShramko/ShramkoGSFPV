@@ -7,7 +7,8 @@
 // cache headers in; status and headers out, streamed): without it /api/** answers 204. A browser download of an
 // /api/ file then goes over plain HTTP, which a Playwright route.fulfill cannot do (Chromium cancels it).
 // /api/session/ follows its nginx location: GET and POST only (else 403), bodies up to its client_max_body_size
-// (else 413), no cookie forwarded.
+// (else 413), no cookie or Authorization forwarded, every other request header forwarded (the upload's X-Session-Token and
+// X-Chunk-Sha256 among them).
 // NGINX_CONF=<file> takes the policies from another copy of the config (a control for the header checks).
 import { fileURLToPath } from 'node:url';
 // repo root (tools/bench/scripts/ -> ../../..): no machine-specific paths
@@ -77,6 +78,7 @@ const SESSION = sessionBlock === null ? null : {
     bodyMax: Number(sessionBlock.match(/client_max_body_size\s+(\d+)k;/)?.[1] ?? 0) * 1024,
     noCookie: /proxy_set_header\s+Cookie\s+"";/.test(sessionBlock)
 };
+const HOP = new Set(['host', 'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer', 'transfer-encoding', 'upgrade', 'x-forwarded-for']);
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.wasm': 'application/wasm', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml', '.txt': 'text/plain', '.xml': 'application/xml', '.ico': 'image/x-icon', '.woff2': 'font/woff2' };
 
 createServer((req, res) => {
@@ -91,6 +93,9 @@ createServer((req, res) => {
         if (!target) { res.writeHead(204).end(); return; }
         const headers = { 'x-forwarded-for': '198.51.100.1' };
         for (const k of ['content-type', 'content-length', 'cookie', 'x-csrf', 'if-none-match']) if (req.headers[k] && !(session?.noCookie && k === 'cookie')) headers[k] = req.headers[k];
+        // /api/session/ in nginx clears Cookie and Authorization and passes every other header (proxy_pass's default): the upload's
+        // X-Session-Token and X-Chunk-Sha256 must reach the API here as they do there
+        if (session) for (const [k, v] of Object.entries(req.headers)) if (v !== undefined && !(k in headers) && !HOP.has(k) && k !== 'cookie' && k !== 'authorization') headers[k] = v;
         const up = httpRequest(new URL(req.url, target), { method: req.method, headers }, (r) => { res.writeHead(r.statusCode ?? 502, r.headers); r.pipe(res); });
         up.on('error', () => { if (!res.headersSent) res.writeHead(502); res.end(); });
         req.pipe(up);

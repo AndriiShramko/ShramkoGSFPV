@@ -29,6 +29,26 @@ export function holdSessionLock(id: string): Promise<() => Promise<void>> {
     });
 }
 
+const SEND_LOCK_PREFIX = 'gsfpv-sonic-send:';
+
+/**
+ * Holds the right to send one recording, across the tabs of this browser: two tabs uploading the same package would only make two
+ * uploads of it. Resolves with the function that lets go, or null when another tab already holds it. Without Web Locks nothing is held.
+ */
+export function holdSendLock(id: string): Promise<(() => void) | null> {
+    const l = locks();
+    if (l === null) return Promise.resolve(() => undefined);
+    return new Promise((resolve) => {
+        void l.request(SEND_LOCK_PREFIX + id, { mode: 'exclusive', ifAvailable: true }, (lock) => {
+            if (lock === null) {
+                resolve(null);
+                return undefined;
+            }
+            return new Promise<void>((release) => resolve(() => release()));
+        });
+    });
+}
+
 const probing = new Map<string, Promise<boolean>>();
 
 /**

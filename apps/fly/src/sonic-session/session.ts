@@ -1,7 +1,7 @@
 // Fly by Sound's session side in the flight page (docs/wip/v12-plan.md section 4.3): builds the recorder out of what the
 // page has (the key router, the bus, the sound mode's runtime ctx.sonic, the origin private file system, the microphone)
 // and wires it in. app/builtin/sonic-session.ts installs this; it is a no-op while the sound mode is off:
-//   - key T does nothing without ctx.sonic,
+//   - keys T and U do nothing without ctx.sonic,
 //   - the bus listeners return at once unless a recording runs,
 //   - nothing is fetched, stored or asked of the browser before the pilot presses T and says yes.
 import type { SessionStores } from './recorder';
@@ -13,18 +13,20 @@ import type { FlightContext } from '../app/context';
 import { loadProfile, saveProfile, withProfile, type PilotProfile } from './consent';
 import { formatWhen } from './format';
 import { sceneTransformOf, type RecorderEnv } from './manifest-input';
-import { freeBytes, holdSessionLock, persistStorage, sayVia, sessionIsLocked } from './platform';
+import { freeBytes, holdSendLock, holdSessionLock, persistStorage, sayVia, sessionIsLocked } from './platform';
 import { createPanel } from './panel';
 import type { RecPanel } from './panel';
 import { ReplayControl } from './replay-control';
 import { createReplayHost } from './replay-host';
 import { ResumeOffer } from './resume';
+import { SendControl } from './send-control';
 import { runSurvey } from './survey';
 import { captureSurveyKeys } from './survey-keys';
 import { createSurveyDialog } from './survey-view';
 import type { SurveyDialog } from './survey-view';
 import { listSessionIds, openSessionsRoot, openSessionStore, opfsAvailable, removeSession, type DirectoryLike } from './store';
 import { VoiceCapture, browserMic } from './voice';
+import { VoiceCommands, browserRecognizer, splitPhrases } from './voice-command';
 
 /** Where the sessions are kept: the origin private file system, or memory when the browser has none (then nothing survives the tab). */
 export function browserStores(): SessionStores {
@@ -153,6 +155,8 @@ export interface SonicSession {
     readonly resume: ResumeOffer;
     /** the replay of a recording (replay-control.ts): a file or a session kept here, with the cues and the voice */
     readonly replay: ReplayControl;
+    /** the sending of a recording to the author (send-control.ts): key U, the panel's Send, the voice command, resuming at the next start */
+    readonly send: SendControl;
     /** the helper's panel, made when the sound mode first runs; null before */
     panel(): RecPanel | null;
     profile(): PilotProfile;
@@ -170,6 +174,7 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
     let panel: RecPanel | null = null;
     let surveyDialog: SurveyDialog | null = null;
     let lastShown: string | null = null;
+    let send: SendControl | null = null;
     const setProfile = (change: Partial<Omit<PilotProfile, 'id'>>): PilotProfile => {
         profile = withProfile(profile, change);
         saveProfile(storage(), profile);
@@ -218,14 +223,35 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
         },
         onStatus: (s) => {
             panel?.onStatus(s);
+            // a recording runs or is being asked for: nothing is listened to or asked about sending meanwhile (the microphone is the recorder's)
+            send?.onRecorderStatus(s);
             // a recording has just ended: the helper's panel opens on it, so the Save button is in front of them
             if (s.lastSessionId !== null && s.lastSessionId !== lastShown) {
                 lastShown = s.lastSessionId;
                 panel?.open();
                 panel?.notify(t('sonicrec.msg.recorded'));
+                // and the pilot is told how to send it, after the recorder's own "saved" line (which it says right after this status)
+                const id = s.lastSessionId;
+                setTimeout(() => void send?.offerSend(id), 0);
             }
         }
     });
+    const recognizer = browserRecognizer();
+    send = new SendControl({
+        stores,
+        recorder: { get phase() { return recorder.phase; } },
+        profile: () => profile,
+        isLocked: sessionIsLocked,
+        say: (line, options) => say(line, options),
+        keyLabel,
+        nowIso,
+        voice: new VoiceCommands({ create: recognizer, lang: t('sonicrec.voice.lang') }),
+        phrases: (kind) => splitPhrases(t(`sonicrec.voice.phrases.${kind}`)),
+        holdSendLock,
+        onChange: () => panel?.onTransfer(),
+        onNotice: (n) => panel?.notify(t(`sonicrec.send.notice.${n}`))
+    });
+    const sender = send;
     const replay = new ReplayControl({
         host: createReplayHost(ctx),
         stores,
@@ -234,7 +260,7 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
     });
     const resume = new ResumeOffer({ stores, isLocked: sessionIsLocked, nowIso, say: (line) => void say(line), keyLabel, onChange: () => void panel?.refresh() });
     const ensurePanel = (): RecPanel =>
-        (panel ??= createPanel({ recorder, stores, resume, replay, profile: () => profile, setProfile, isLocked: sessionIsLocked, nowIso }));
+        (panel ??= createPanel({ recorder, stores, resume, replay, send: sender, speechAvailable: recognizer !== null, profile: () => profile, setProfile, isLocked: sessionIsLocked, nowIso }));
 
     const offs: (() => void)[] = [];
     // T: ask, confirm, stop. Nothing happens without the sound mode, and a held key is one press. While an unfinished
@@ -245,6 +271,14 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             e.preventDefault();
             if (recorder.phase === 'idle' && resume.pending.length > 0) void resume.keepNext();
             else recorder.pressRecord();
+        })
+    );
+    // U: send the recording to the author. The app asks first and a second press, after the question was read out, is the pilot's yes.
+    offs.push(
+        ctx.keys.on('sonic.send', (e) => {
+            if (ctx.sonic === undefined || e.repeat) return;
+            e.preventDefault();
+            sender.pressSend();
         })
     );
     // the flight's data, while a recording runs
@@ -261,6 +295,8 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             if (on) {
                 ensurePanel().setVisible(true);
                 void resume.scan();
+                // a sending that was started and not finished goes on (its consent and token are in its upload.json)
+                void sender.resume();
             } else panel?.setVisible(false);
         })
     );
@@ -281,12 +317,14 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
         stores,
         resume,
         replay,
+        send: sender,
         panel: () => panel,
         profile: () => profile,
         setProfile,
         dispose() {
             for (const off of offs.splice(0)) off();
             replay.close();
+            sender.dispose();
             recorder.dispose();
             panel?.dispose();
             panel = null;
