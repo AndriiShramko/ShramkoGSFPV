@@ -28,7 +28,9 @@ import type { BridgeEngine } from './bridge';
 export const LONG_PRESS_MS = 700;
 
 /** The prefs the mode holds in the session layer while it runs, and their values. */
-export const MODE_PREFS: Readonly<Record<string, unknown>> = Object.freeze({ 'crash.enabled': false, 'input.play': 'easy' });
+// (input.howToFly off: the card that shows the keys by itself on a first visit is a sight-first dialog in the page's live
+// region; a lesson speaks its own keys, and K still opens the card by hand)
+export const MODE_PREFS: Readonly<Record<string, unknown>> = Object.freeze({ 'crash.enabled': false, 'input.play': 'easy', 'input.howToFly': false });
 
 /** What the mode needs of the page (FlightContext's parts; fakes in tests). */
 export interface ModeHost {

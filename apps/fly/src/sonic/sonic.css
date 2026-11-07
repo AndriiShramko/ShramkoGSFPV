@@ -49,3 +49,6 @@
 .sonic-layer { margin: 6px 0 14px; padding-left: 14px; border-left: 2px solid var(--line, #1f2630); }
 @media (max-width: 520px) { .sonic-start { font-size: 17px; } .sonic-field > label { min-width: 0; flex-basis: 100%; } }
 @media (prefers-reduced-motion: no-preference) { .sonic-start .btn { transition: border-color .12s; } }
+
+/* ---- the flight page while a lesson runs (body.sonic-mode, app/builtin/sonic-flight.ts): what only a scan has is not shown */
+body.sonic-mode .attribution { display: none; }

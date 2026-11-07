@@ -190,11 +190,11 @@ describe('R short and long, N, [ ]', () => {
 });
 
 describe('the mode\'s settings and assists, in and out', () => {
-    it('enter: crash.enabled false and input.play easy in the session layer, the lesson\'s assists to the input; leave: all out', async () => {
+    it('enter: crash.enabled false, input.play easy and the how-to-fly card off in the session layer, the lesson\'s assists to the input; leave: all out', async () => {
         const p = await open();
-        expect(MODE_PREFS).toEqual({ 'crash.enabled': false, 'input.play': 'easy' });
+        expect(MODE_PREFS).toEqual({ 'crash.enabled': false, 'input.play': 'easy', 'input.howToFly': false });
         p.mode.enter({ lesson: LESSON });
-        expect(Object.fromEntries(p.sessionPrefs)).toEqual({ 'crash.enabled': false, 'input.play': 'easy' });
+        expect(Object.fromEntries(p.sessionPrefs)).toEqual({ 'crash.enabled': false, 'input.play': 'easy', 'input.howToFly': false });
         expect(p.lessons).toEqual([LESSON.assists]);
         expect(p.mode.active).toBe(true);
         p.mode.leave();

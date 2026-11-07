@@ -13,6 +13,7 @@ import { Controls } from '../controls';
 import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
 import { wallsWanted } from '../flightwalls';
+import { sonicEntry } from '../sonic/entry';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
 import { storedCeiling } from '../session/ceiling-source';
@@ -244,6 +245,9 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     }
 
     const ctx = new Flight(ui, canvas, session, sceneRef, prefs);
+    // Fly by Sound: a lesson with other walls replaces the flown session, which only this shell can hand to the page
+    const sonic = sonicEntry();
+    if (sonic) sonic.swapSession = (next, scene) => ctx.swapSession(next, scene);
     // E.4: the next scenes load in this page, on this renderer, with the same input
     const host = new SceneHost({ ctx, canvas, showcase, collections, base: { drawScan, latencyMarker: q.get('lat') === '1', lagFrames: Number(q.get('lagFrames') ?? 0), renderScale: q.get('scale') ? Number(q.get('scale')) : 1 } });
     ctx.scenes = host;

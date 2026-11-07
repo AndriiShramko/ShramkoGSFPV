@@ -11,6 +11,7 @@ import type { CaptionMode } from './captions';
 import { loadSonicPrefs, saveSonicPrefs } from './store';
 import type { SonicHost } from './store';
 import type { LessonWorld } from './lesson-world';
+import type { FlightSession } from '../session';
 
 /** What the setup needs of the captions region (the real one is a DOM region; a recorder in tests). */
 export interface CaptionSink {
@@ -56,9 +57,24 @@ export class SonicSetup {
     }
 }
 
+/** What the page asks of the start screen once the flight runs (StartScreen; a recorder in tests). */
+export interface ScreenPort {
+    show(): void;
+    hide(): void;
+    /** the screen's own handlers are replaced: a lesson chosen on it opens in the flight, Escape or Back close it */
+    bind(handlers: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void }): void;
+}
+
 /** What the start screen hands to the flight page. */
 export interface SonicEntry {
     readonly setup: SonicSetup;
+    /** the start screen, to show over the flight (the pause menu's Fly by Sound item) */
+    readonly screen?: ScreenPort;
+    /**
+     * Hands a new flown session to the page (the flight shell's swapSession: every feature follows the 'session' event).
+     * Set by fly() when the page flies a lesson's world; the lesson host uses it to move to a lesson with other walls.
+     */
+    swapSession?: (next: FlightSession, scene: { id: string }) => void;
     /** the lesson to open first, or null (the mode runs with no lesson) */
     readonly lessonId: string | null;
     /** its world, built before the first flight is made on it (fly()'s `world` option), or null */

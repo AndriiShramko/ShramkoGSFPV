@@ -64,6 +64,21 @@ export interface BridgeEngine {
     update?(input: SonicFrameInput): void;
 }
 
+/**
+ * The craft rests on the respawn platform: the invisible one-way disc a fresh start (a reset, an attempt's return to its
+ * start, a bump-recentre) parks it on (sim-core C.2). Its contacts with the disc are not touches: a lesson that allows no
+ * touch would be failed by every restart otherwise. The disc is part of the model's state (S.platOn, its centre, radius
+ * and top), so this reads the model and only the model; once the craft has left it the disc is off.
+ */
+export function onPlatform(sim: Sim): boolean {
+    const s = sim.s;
+    if (!(s[S.platOn] > 0)) return false;
+    const d = Math.hypot(s[S.px] - s[S.platX], s[S.pz] - s[S.platZ]);
+    // the lowest point of the body within a hair of the disc's top, over the disc: resting on it
+    const bottom = s[S.py] - sim.p.bodyBottom;
+    return d <= s[S.platR] + sim.p.boundRadius && bottom - s[S.platY] < 0.05;
+}
+
 /** The axis rays of a touch's material, as the lesson runner looks (sonic-fpv runner.ts touchMaterial). */
 const AXES: readonly Vec3[] = [[1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1], [0, 1, 0], [0, -1, 0]];
 
@@ -104,6 +119,12 @@ export class SonicBridge {
     private pausedNow = false;
     private speaking = 0;
     private lastLine: SpeechLine | null = null;
+    /**
+     * Called after every call the bridge makes into the lesson runner (begin, reset, next, spoken): the runner may have
+     * queued things to do (say a line, place the craft, ask a question), and the host takes them at once instead of
+     * at the next frame. Set once by the lesson host; it survives start() and stop().
+     */
+    afterRunner: (() => void) | null = null;
 
     constructor(out: BridgeOut, clock: () => number = () => performance.now()) {
         this.out = out;
@@ -184,6 +205,8 @@ export class SonicBridge {
             const e = ev[i];
             if (e.tick !== sim.tick) break;
             if (e.type === 'contact' || e.type === 'crash') {
+                // resting on the respawn platform is no touch, and does not start the quiet clock either
+                if (e.type === 'contact' && onPlatform(sim)) continue;
                 if (sim.tick - this.lastContactTick >= TOUCH_QUIET_TICKS) this.touchPending = true;
                 this.lastContactTick = sim.tick;
             } else if (e.type === 'respawn') this.lastContactTick = -Infinity; // the craft was moved: the next contact is a new touch
@@ -277,6 +300,7 @@ export class SonicBridge {
     begin(run: LessonSession): void {
         this.runner = run;
         this.events(run.begin(this.now()));
+        this.afterRunner?.();
     }
 
     /** A key the pilot pressed, with the action it did (REPLAY_KEY_ACTIONS for the ones the replay acts on). */
@@ -291,13 +315,17 @@ export class SonicBridge {
         if (!run) return null;
         const r = run.reset(to, this.now());
         this.events(r.events);
+        this.afterRunner?.();
         return { pose: r.pose };
     }
 
     /** N: the key event the replay reads, then the runner's next step. */
     next(code: string): void {
         this.key(code, REPLAY_KEY_ACTIONS.next);
-        if (this.runner) this.events(this.runner.next(this.now()));
+        if (this.runner) {
+            this.events(this.runner.next(this.now()));
+            this.afterRunner?.();
+        }
     }
 
     /**
@@ -343,6 +371,9 @@ export class SonicBridge {
         if (!this.on) return;
         const t = this.now();
         this.event({ t, kind: 'speech', key: SPEECH_END_KEY, text: '' });
-        if (this.runner) this.events(this.runner.spoken(t));
+        if (this.runner) {
+            this.events(this.runner.spoken(t));
+            this.afterRunner?.();
+        }
     }
 }

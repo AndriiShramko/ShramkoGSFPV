@@ -48,7 +48,7 @@ const SECTIONS = ['start', 'headphones', 'lessons', 'settings'] as const;
 
 export class StartScreen {
     readonly root: HTMLElement;
-    private readonly d: StartScreenDeps;
+    private d: StartScreenDeps;
     private readonly tr: ReturnType<typeof createTranslator>;
     private readonly status: HTMLElement;
     private model: StartModel;
@@ -289,6 +289,12 @@ export class StartScreen {
             e.update({ sample: NEUTRAL, world: null, target: null, floorY: 0 });
             e.cue({ kind: 'preview', cue: 'target.hum', dir: HEADPHONE_DIRS[side] });
         });
+    }
+
+    /** The handlers are replaced (the first flight is launched by the entry, later lessons open in the flight). */
+    bind(h: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void }): void {
+        this.d = { ...this.d, onStart: h.onStart, onClose: h.onClose };
+        if (!this.root.hidden) this.render();
     }
 
     // ------------------------------------------------------------------ showing

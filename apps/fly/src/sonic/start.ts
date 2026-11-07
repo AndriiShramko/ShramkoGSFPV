@@ -26,6 +26,8 @@ export interface LaunchRequest {
     /** the scan a scan lesson flies */
     readonly sceneId: string | null;
     readonly setup: SonicSetup;
+    /** the start screen, for the flight to show again */
+    readonly screen: StartScreen;
 }
 
 export interface SonicStartDeps {
@@ -68,7 +70,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                 }
                 const lesson = getLesson(id);
                 try {
-                    await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, setup });
+                    await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, setup, screen });
                 } catch (e) {
                     screen.show();
                     screen.say(String((e as Error)?.message ?? e));
