@@ -107,6 +107,7 @@ import scenepages
 import service
 import session_delivery
 import sessions
+import sessions_admin
 import superspl_facts
 import translate
 import wind
@@ -1403,8 +1404,19 @@ SESSION_DELIVERY = session_delivery.Delivery(
                                         max_bytes=lambda: _env_int("SESSION_MAIL_MAX_BYTES", session_delivery.MAIL_MAX_BYTES), admin_url=SESSION_ADMIN_URL,
                                         host=urllib.parse.urlsplit(PUBLIC_ORIGIN).hostname or "gsfpv.flyreelstudio.eu"),
     admin_url=SESSION_ADMIN_URL)
+
+
+def _session_channels() -> dict:
+    """What the delivery channels are set up for, for the owner's Sessions tab: whether each is configured and its size limit (never a token or a password)."""
+    tg, mail = SESSION_DELIVERY.workers[0].channel, SESSION_DELIVERY.workers[1].channel
+    return {"telegram": {"configured": bool(tg.configured()), "maxBytes": tg.max_bytes()}, "email": {"configured": bool(mail.configured()), "maxBytes": mail.max_bytes()}}
+
+
+# the owner's Sessions tab (sessions_admin.py): the list, the streamed download, resend and delete, behind the admin's session and CSRF check
+sessions_admin.SessionsAdmin(lambda: SESSIONS, ADMIN.audit, _session_channels).register(ADMIN)
 SESSION_ROUTE = re.compile(r"/api/session/(?:(start)|(S-[0-9]{8}-[0-9a-f]{12})(?:/(finish|[0-9]{1,6}))?)")
 SESSION_BODY_MAX = 8 * 1024            # the JSON of start and finish
+STREAM_BLOCK = 64 * 1024               # the owner's download of a recording is written in blocks of this size
 SESSION_DRAIN_MAX = sessions.CHUNK_BYTES + 64 * 1024   # a refused chunk is read away up to this (nginx stops a body at 1100k)
 SESSION_CHUNK_TIMEOUT = 60.0           # seconds the socket may stay silent while a chunk arrives (a thread is held meanwhile)
 
@@ -1527,14 +1539,30 @@ class Handler(BaseHTTPRequestHandler):
         body = self.rfile.read(n) if n else b""
         self._send(*BOT.handle_webhook(path, self.headers, body))
 
-    def _send(self, code: int, body: bytes, headers: list, head: bool = False) -> None:
+    def _send(self, code: int, body, headers: list, head: bool = False) -> None:
+        stream = isinstance(body, admin.FileBody)
         self.send_response(code)
         for k, v in headers:
             self.send_header(k, v)
-        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Content-Length", str(body.size if stream else len(body)))
         self.end_headers()
-        if not head:
+        if head:
+            return
+        if not stream:
             self.wfile.write(body)
+            return
+        # a file (the owner's download of a recording): copied in blocks, never read whole
+        left = body.size
+        try:
+            with body.path.open("rb") as f:
+                while left > 0:
+                    block = f.read(min(STREAM_BLOCK, left))
+                    if not block:
+                        break
+                    self.wfile.write(block)
+                    left -= len(block)
+        except OSError:
+            self.close_connection = True       # the reader went away, or the file did: the connection ends here, short of its length
 
     def _share(self, path: str, head: bool) -> None:
         """GET/HEAD /s/<id> (the page) and /s/<id>.jpg (the picture); nginx adds the common headers (nosniff...)."""

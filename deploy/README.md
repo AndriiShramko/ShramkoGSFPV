@@ -479,6 +479,25 @@ consent, and the server refuses it too). `upload.json` in the session's own fold
 `tools/bench/src/sonicrec-upload.ts` drives the page against it through `serve-csp.mjs` with `API_PROXY` (the proxy forwards the upload's own headers, as
 this nginx location does). The speech recognition of the voice command is a stand-in there: the real service is not tried.
 
+**Admin: Recordings (step 9).** The owner's tab at `/admin/` lists the stored recordings with each channel's state, downloads a package (a plain link;
+the API streams the file from disk, `admin.FileBody`, so a package of up to 100 MiB never sits in memory), sends one channel again, and deletes a recording
+on a pilot's or a parent's request (two clicks; the server keeps only a tombstone line with the id and the reason). Routes (behind the admin session; POST
+also needs `X-CSRF`), added with `AdminApi.add_route` from `sessions_admin.py`:
+
+| Route | What it does |
+|---|---|
+| `GET /api/admin/sessions` | every stored recording, newest first (id, when, size, SHA-256, a few facts of the manifest, each channel's state), totals, what the channels are set up for |
+| `GET /api/admin/sessions/<id>/package` | the `.zip` as an attachment, streamed from disk; 404 for an unknown or unfinished id |
+| `POST /api/admin/sessions/<id>/resend` | body `{channel: telegram\|email}`: that channel goes back to queued, its failures cleared, its worker woken |
+| `POST /api/admin/sessions/<id>/delete` | body `{confirm: true}`: the package and its state are removed |
+
+Never in the list: the upload token or its hash, the pilot's nickname, the device or the user agent (they stay inside the package). Every download, resend and
+deletion is in the admin's audit log (`sessions.download`, `sessions.resend`, `sessions.delete`, the id, never a token). **To deploy:** upload the API
+(`server.py`, `admin.py`, `sessions_admin.py` and the files of steps 6 and 7), restart `gsfpv-api`, then ship the release (the tab is in the admin bundle);
+no nginx change (a package is streamed by the API and passed through by the existing `/api/admin/` location). Checked by `apps/api/tests/test_sessions_admin.py`
+(a 20 MiB package over a real socket: the server's memory peak 0.28 MiB, against 20.1 MiB for a body that is not streamed) and, in a browser, by
+`tools/bench/src/sonicrec-admin.ts` (the admin page as a release carries it, a TEST password, a local copy of the API; **the live admin is never visited**).
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.

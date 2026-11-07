@@ -74,6 +74,7 @@ class Rig:
                                to=lambda: GMAIL_USER, admin_url=self.admin_url)
         self.delivery = sd.Delivery(self.store, telegram, mail, self.admin_url, poll_s=0.1, now=self.clock)
         server.SESSIONS = self.store          # the handler's own module-level store: the real routes now work on this directory
+        server.SESSION_DELIVERY = self.delivery   # and the admin's "what the channels are set up for" reads the delivery the rig runs (one object in production)
         self.delivery.start()
 
     def mail_messages(self) -> list[dict]:

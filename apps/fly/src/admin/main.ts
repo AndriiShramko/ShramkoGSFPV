@@ -1,10 +1,11 @@
 // The owner's admin page, /admin/ (static; every byte of data comes from /api/admin/*, behind his
-// password, see apps/api/admin.py). Sign in, then four tabs: Scenes (the picker's catalogue: order,
+// password, see apps/api/admin.py). Sign in, then five tabs: Scenes (the picker's catalogue: order,
 // Featured, hidden, collections, publish and undo), Drawing (v0.10: what each class of device draws with
 // by default, and every scene's own drawing entry; the same draft, publish and history as Scenes: drawing-tab.ts),
 // Ideas (pilots' ideas and bugs and the owner's notes
-// as a kanban, in sync with the landing's roadmap: ideas/tab.ts) and Outreach (how the simulator's posts in
-// Facebook groups are doing, a read-only window on the vault's snapshot: outreach/tab.ts).
+// as a kanban, in sync with the landing's roadmap: ideas/tab.ts), Outreach (how the simulator's posts in
+// Facebook groups are doing, a read-only window on the vault's snapshot: outreach/tab.ts) and Recordings (v0.12: what pilots of
+// Fly by Sound chose to send, with each channel's state, the download, a resend and the deletion on request: sessions/tab.ts).
 import { h, clear } from '../ui/dom';
 import { t } from './i18n';
 import { AdminClient } from './api';
@@ -12,11 +13,12 @@ import { ScenesTab } from './scenes-tab';
 import { DrawingTab } from './drawing-tab';
 import { IdeasTab } from './ideas/tab';
 import { OutreachTab } from './outreach/tab';
+import { SessionsTab } from './sessions/tab';
 
 const root = document.getElementById('admin')!;
 const api = new AdminClient();
 const note = h('p', { class: 'note', role: 'status', 'aria-live': 'polite' });
-let current: ScenesTab | DrawingTab | IdeasTab | OutreachTab | null = null;
+let current: ScenesTab | DrawingTab | IdeasTab | OutreachTab | SessionsTab | null = null;
 document.title = t('admin.title');
 
 function say(msg: string, bad = false): void {
@@ -50,10 +52,10 @@ function shell(): void {
     clear(root);
     const body = h('div', {});
     const tabs = h('nav', { class: 'tabs', role: 'tablist' });
-    const open = async (which: 'scenes' | 'drawing' | 'ideas' | 'outreach'): Promise<void> => {
+    const open = async (which: 'scenes' | 'drawing' | 'ideas' | 'outreach' | 'sessions'): Promise<void> => {
         for (const b of tabs.querySelectorAll('button')) b.setAttribute('aria-selected', String(b.dataset.tab === which));
         await current?.flush();
-        const tab = which === 'scenes' ? new ScenesTab(api, say) : which === 'drawing' ? new DrawingTab(api, say) : which === 'ideas' ? new IdeasTab(api, say) : new OutreachTab(api, say);
+        const tab = which === 'scenes' ? new ScenesTab(api, say) : which === 'drawing' ? new DrawingTab(api, say) : which === 'ideas' ? new IdeasTab(api, say) : which === 'outreach' ? new OutreachTab(api, say) : new SessionsTab(api, say);
         current = tab;
         clear(body);
         body.append(tab.root);
@@ -64,7 +66,7 @@ function shell(): void {
             say(e instanceof Error ? e.message : String(e), true);
         }
     };
-    for (const k of ['scenes', 'drawing', 'ideas', 'outreach'] as const) {
+    for (const k of ['scenes', 'drawing', 'ideas', 'outreach', 'sessions'] as const) {
         tabs.append(h('button', { type: 'button', role: 'tab', class: 'tab', 'data-tab': k, onclick: () => void open(k) }, t(`admin.tab.${k}`)));
     }
     const out = h('button', { type: 'button', class: 'btn', 'data-action': 'logout', onclick: async () => { await current?.flush(); await api.logout().catch(() => undefined); login(); } }, t('admin.logout'));
