@@ -3,6 +3,11 @@
 // done by key, and the keys are what a pilot who flies by ear uses; the app reads every question aloud in either case.
 //
 // The keys are survey-keys.ts.
+//
+// It is a modal dialog (role dialog, aria-modal), so it behaves like one for a screen reader and a keyboard: when it opens the focus moves into
+// it (aria-modal hides the page behind the dialog from a screen reader, and a focus left behind it would be on something that is not there),
+// the dialog is shown BEFORE its question is written (a live region that changes while it is hidden is not announced), and when it closes the
+// focus goes back to where it was.
 import { clear, h } from '../ui/dom';
 import { t } from '../i18n';
 import type { SpeechLine } from '@shramko/sonic-fpv';
@@ -32,7 +37,7 @@ export function createSurveyDialog(deps: SurveyDialogDeps, parent: HTMLElement =
     const options = h('div', { class: 'sonicrec-options' });
     const listening = h('p', { class: 'sonicrec-listening', role: 'status' });
     const buttons = h('div', { class: 'sonicrec-options' });
-    const root = h('section', { class: 'sonicrec-survey', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sonicrec-survey-title', hidden: true },
+    const root = h('section', { class: 'sonicrec-survey', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sonicrec-survey-title', tabindex: '-1', hidden: true },
         h('h2', { id: 'sonicrec-survey-title' }, t('sonicrec.survey.title')), progress, question, anchors, options, listening, buttons);
     parent.append(root);
 
@@ -40,6 +45,22 @@ export function createSurveyDialog(deps: SurveyDialogDeps, parent: HTMLElement =
         h('button', { type: 'button', class: 'btn', 'data-digit': digit, 'aria-label': name, onclick: () => emit({ kind: 'digit', digit }) }, label);
     const control = (kind: 'skip' | 'done' | 'again', label: string, primary = false): HTMLButtonElement =>
         h('button', { type: 'button', class: primary ? 'btn primary' : 'btn', 'data-action': kind, onclick: () => emit({ kind }) }, label);
+
+    /** Where the focus was when the dialog opened, to give it back. */
+    let before: HTMLElement | null = null;
+
+    /** Shows the dialog (remembering the focus), and puts the focus into it when it is not already there: a button that was pressed is gone after the next question is drawn. */
+    function show(): void {
+        if (root.hidden) {
+            const a = document.activeElement;
+            before = a instanceof HTMLElement && !root.contains(a) ? a : null;
+            root.hidden = false;
+        }
+    }
+
+    function focusIn(): void {
+        if (!root.contains(document.activeElement)) root.focus({ preventScroll: true });
+    }
 
     function reset(): void {
         progress.textContent = '';
@@ -60,12 +81,14 @@ export function createSurveyDialog(deps: SurveyDialogDeps, parent: HTMLElement =
         },
         offer() {
             reset();
+            show();
             question.textContent = deps.text({ key: 'survey.offer' });
             options.append(digitButton(1, `1  ${deps.text({ key: 'survey.opt.yes' })}`, `1: ${deps.text({ key: 'survey.opt.yes' })}`), digitButton(2, `2  ${deps.text({ key: 'survey.opt.no' })}`, `2: ${deps.text({ key: 'survey.opt.no' })}`));
-            root.hidden = false;
+            focusIn();
         },
         question(q: QuestionView) {
             reset();
+            show();
             progress.textContent = deps.text({ key: 'survey.question-of', params: { n: q.number, total: q.total } });
             question.textContent = deps.text(q.item.prompt);
             if (q.item.kind === 'scale') {
@@ -77,7 +100,7 @@ export function createSurveyDialog(deps: SurveyDialogDeps, parent: HTMLElement =
                 q.item.options.forEach((o, i) => options.append(digitButton(i + 1, `${i + 1}  ${deps.text(o)}`, `${i + 1}: ${deps.text(o)}`)));
             } else buttons.append(control('done', t('sonicrec.survey.done'), true));
             buttons.append(control('skip', t('sonicrec.survey.skip')), control('again', t('sonicrec.survey.again')));
-            root.hidden = false;
+            focusIn();
         },
         listening(_q: QuestionView) {
             listening.textContent = t('sonicrec.survey.listening', { key: deps.keyLabel('Enter') });
@@ -85,6 +108,9 @@ export function createSurveyDialog(deps: SurveyDialogDeps, parent: HTMLElement =
         close() {
             root.hidden = true;
             reset();
+            const back = before;
+            before = null;
+            if (back !== null && back.isConnected) back.focus({ preventScroll: true });
         },
         dispose() {
             root.remove();

@@ -6,6 +6,8 @@
 //                     or a frame counter inside one is read to the helper every second
 //   R2 stop           after the pilot's stop the survey listens with the voice still recording: the pilot is told that recording stopped only when
 //                     the microphone has been let go (after the survey), not at the stop
+//   R4 survey dialog  the dialog that follows a stop is a modal dialog: the focus moves into it and comes back, and its question is written
+//                     after it is shown (a screen reader announces a live region that changes while it is visible)
 //   R3 problems       a problem of the recorder (here: too little browser storage) is read in the language of the page
 //   npx tsx tools/bench/src/sonicrec-review.ts       evidence/<date>/sonicrec-review.json
 import { mkdirSync, rmSync } from 'node:fs';
@@ -205,6 +207,45 @@ try {
         results.lowStorageInSpanish = { error: refused.status?.error, panel: refused.panelStatus };
         log('low storage, page in Spanish:', JSON.stringify(results.lowStorageInSpanish));
         checks['R3: with too little browser storage the panel says so in the language of the page (Spanish), not in English'] = /^Quedan solo \d+ MB .* 50 MB/.test(String(refused.panelStatus)) && !/browser storage/.test(String(refused.panelStatus));
+        await ctx.close();
+    }
+
+    // ---------------------------------------------------------------- R4: the survey dialog is a modal dialog a screen reader can reach
+    {
+        const ctx = await newContext();
+        // the order in which the dialog is shown and its question is written (plain JavaScript, run before the page's own)
+        await ctx.addInitScript({
+            content: `(() => {
+  window.__order = [];
+  const hid = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'hidden');
+  Object.defineProperty(HTMLElement.prototype, 'hidden', { configurable: true, get() { return hid.get.call(this); }, set(v) { if (this.classList && this.classList.contains('sonicrec-survey')) window.__order.push('dialog.hidden=' + v); hid.set.call(this, v); } });
+  const tc = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
+  Object.defineProperty(Node.prototype, 'textContent', { configurable: true, get() { return tc.get.call(this); }, set(v) { if (this.classList && this.classList.contains('sonicrec-q')) window.__order.push(v === '' ? 'question=empty' : 'question=text'); tc.set.call(this, v); } });
+})()`
+        });
+        const page = await open(ctx);
+        await call(page, 'deleteAll');
+        await until(page, 'the toggle button', (s) => s.panelBuilt === true && s.toggleHidden === false);
+        await page.locator('#sonicrec-toggle').click(); // the helper's panel opens and its button has the focus
+        await page.locator('#sonicrec-toggle').click(); // closed again: the focus stays on the button
+        await call(page, 'fly', true);
+        await recordWithKeys(page);
+        await sleep(1200);
+        await page.keyboard.press('KeyT');
+        await until(page, 'the survey offer', (s) => s.surveyOpen === true);
+        await sleep(150);
+        const during = await page.evaluate<{ inside: boolean; tag: string; order: string[] }>(`(() => { const a = document.activeElement; const d = document.querySelector('.sonicrec-survey'); return { inside: !!(a && d && d.contains(a)), tag: a ? a.tagName + '.' + (a.className || a.id || '') : '', order: window.__order.slice(0, 6) }; })()`);
+        results.surveyDialogFocus = during;
+        log('survey dialog: focus and order', JSON.stringify(during));
+        const shownBeforeWritten = during.order.indexOf('dialog.hidden=false') >= 0 && during.order.indexOf('dialog.hidden=false') < during.order.indexOf('question=text');
+        checks['R4: when the survey dialog opens the focus moves into it (aria-modal hides the page behind it from a screen reader, so the focus must not stay there)'] = during.inside;
+        checks['R4: the dialog is shown before its question is written (a live region that changes while it is hidden is not announced)'] = shownBeforeWritten;
+        await page.keyboard.press('Digit2');
+        await until(page, 'the recording saved', (s) => s.phase === 'idle' && s.rows.length === 1);
+        await sleep(100);
+        const after = await page.evaluate<{ id: string; inDialog: boolean }>(`(() => { const a = document.activeElement; const d = document.querySelector('.sonicrec-survey'); return { id: a ? a.id : '', inDialog: !!(a && d && d.contains(a)) }; })()`);
+        results.surveyFocusAfter = after;
+        checks['R4: when the survey is over the focus goes back to where it was (the panel button), not to the closed dialog'] = !after.inDialog && after.id === 'sonicrec-toggle';
         await ctx.close();
     }
 } finally {

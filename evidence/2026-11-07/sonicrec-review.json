@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T19:46:56.818Z",
-    "gitHead": "1036b18",
+    "date": "2026-11-07T19:57:02.199Z",
+    "gitHead": "8a63be5",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -20,7 +20,10 @@
     "R1: an open replay that is not playing does not rewrite its live status line (the same sentence is not written again every 250 ms)": true,
     "R2: while the survey is offered the voice is still being recorded and the pilot has not been told that recording stopped": true,
     "R2: when the survey is over the pilot hears that recording stopped, and then that the flight is saved": true,
-    "R3: with too little browser storage the panel says so in the language of the page (Spanish), not in English": true
+    "R3: with too little browser storage the panel says so in the language of the page (Spanish), not in English": true,
+    "R4: when the survey dialog opens the focus moves into it (aria-modal hides the page behind it from a screen reader, so the focus must not stay there)": true,
+    "R4: the dialog is shown before its question is written (a live region that changes while it is hidden is not announced)": true,
+    "R4: when the survey is over the focus goes back to where it was (the panel button), not to the closed dialog": true
   },
   "results": {
     "recordingRegions": {},
@@ -53,6 +56,19 @@
         }
       },
       "panel": "Quedan solo 4 MB de almacenamiento del navegador y hacen falta 50 MB, as\u00ed que no se grab\u00f3 nada. Libera espacio, o guarda las grabaciones antiguas y b\u00f3rralas."
+    },
+    "surveyDialogFocus": {
+      "inside": true,
+      "tag": "SECTION.sonicrec-survey",
+      "order": [
+        "question=empty",
+        "dialog.hidden=false",
+        "question=text"
+      ]
+    },
+    "surveyFocusAfter": {
+      "id": "sonicrec-toggle",
+      "inDialog": false
     }
   },
   "note": "headless Chrome, a fake microphone, real OPFS and DOM; the sound runtime, samples and key router are stand-ins until the flight lane lands. A screen reader was not used: what it would read is judged from the live regions that change, not heard."
