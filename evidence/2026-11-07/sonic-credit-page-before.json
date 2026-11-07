@@ -1,0 +1,690 @@
+{
+  "name": "sonic-credit-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T23:32:09.787Z",
+    "gitHead": "feaace2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "passed": 5,
+  "total": 11,
+  "pass": false,
+  "checks": [
+    {
+      "name": "K1: in a built-in lesson world (hover-height) the credit line is not shown: its scene id is lesson-..., it has no author to credit",
+      "pass": true,
+      "value": {
+        "exists": true,
+        "display": "none",
+        "scene": "lesson-hover-height",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "inView": false,
+        "text": "Scene by its author \u2014 see the original on SuperSplat \u00b7 Report this sceneWalls 10 cm \u25beWalls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55 %V: off \u2192 over the scan \u2192 voxels",
+        "links": [
+          {
+            "href": "https://superspl.at/scene/lesson-hover-height",
+            "w": 0,
+            "h": 0
+          },
+          {
+            "href": "/en/?report=lesson-hover-height#contact",
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "K2: in the owner's scan (Winter Garden, free-garden) the credit line is shown, inside the page, with its link to SuperSplat and the takedown link",
+      "pass": false,
+      "value": {
+        "exists": true,
+        "display": "none",
+        "scene": "7a475d38",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "inView": false,
+        "text": "Scene: Winter Garden, Poland by Andrii Shramko, CC BY 4.0 \u00b7 SuperSplat \u00b7 Report this sceneWalls 16 cm \u25beWalls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55 %V: off \u2192 over",
+        "links": [
+          {
+            "href": "https://superspl.at/scene/7a475d38",
+            "w": 0,
+            "h": 0
+          },
+          {
+            "href": "/en/?report=7a475d38#contact",
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "K2: what comes back is the credit and its two links: the walls switch that rides on the same line stays out of the lesson, as before",
+      "pass": true,
+      "value": "hidden"
+    },
+    {
+      "name": "K3: another scan (39e63ce9) chosen from the pause menu during the lesson: its own credit line shows (its id, its link to SuperSplat, the takedown link)",
+      "pass": false,
+      "value": {
+        "exists": true,
+        "display": "none",
+        "scene": "39e63ce9",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "inView": false,
+        "text": "Scene: Modlinek Villa \u2014 red room and bathroom by Andrii Shramko, CC BY 4.0 \u00b7 SuperSplat \u00b7 Report this sceneWalls 25 cm \u25beWalls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity",
+        "links": [
+          {
+            "href": "https://superspl.at/scene/39e63ce9",
+            "w": 0,
+            "h": 0
+          },
+          {
+            "href": "/en/?report=39e63ce9#contact",
+            "w": 0,
+            "h": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "K3: and the mode is still on (this is a lesson page that changed its scan, not an ordinary flight)",
+      "pass": true
+    },
+    {
+      "name": "K3: and the page goes on flying and the engine hearing after the change (frames over two seconds)",
+      "pass": true,
+      "value": {
+        "n0": 64,
+        "n1": 124
+      }
+    },
+    {
+      "name": "K4: desktop 1280 x 720: the credit line is shown and three lines of captions cover neither it nor the recorder's button (the owner's credit, and the longest one seen)",
+      "pass": false,
+      "value": {
+        "realTouchOn": false,
+        "own": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              527,
+              92,
+              753,
+              142
+            ],
+            [
+              305,
+              148,
+              975,
+              198
+            ],
+            [
+              190,
+              204,
+              1090,
+              287
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        },
+        "long": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              527,
+              92,
+              753,
+              142
+            ],
+            [
+              305,
+              148,
+              975,
+              198
+            ],
+            [
+              190,
+              204,
+              1090,
+              287
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        }
+      }
+    },
+    {
+      "name": "K4: control, a phone standing with touch sticks (375 x 740): with the captions where they were (150 px from the top) they cover the credit line, so moving them is needed",
+      "pass": false,
+      "value": {
+        "credit": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "seen": false,
+        "captions": [
+          [
+            108,
+            150,
+            267,
+            188
+          ],
+          [
+            15,
+            194,
+            360,
+            254
+          ],
+          [
+            15,
+            260,
+            360,
+            343
+          ]
+        ],
+        "captionsCover": false,
+        "toggleCovers": false,
+        "touchOn": true
+      }
+    },
+    {
+      "name": "K4: a phone standing with touch sticks (375 x 740): the credit line is shown and three lines of captions cover neither it nor the recorder's button (the owner's credit, and the longest one seen)",
+      "pass": false,
+      "value": {
+        "realTouchOn": true,
+        "own": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              108,
+              150,
+              267,
+              188
+            ],
+            [
+              15,
+              194,
+              360,
+              254
+            ],
+            [
+              15,
+              260,
+              360,
+              343
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": true
+        },
+        "long": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              108,
+              150,
+              267,
+              188
+            ],
+            [
+              15,
+              194,
+              360,
+              254
+            ],
+            [
+              15,
+              260,
+              360,
+              343
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": true
+        }
+      }
+    },
+    {
+      "name": "K4: a phone on its side (740 x 360): the credit line is shown and three lines of captions cover neither it nor the recorder's button (the owner's credit, and the longest one seen)",
+      "pass": false,
+      "value": {
+        "realTouchOn": false,
+        "own": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              175,
+              100,
+              565,
+              128
+            ],
+            [
+              87,
+              134,
+              653,
+              161
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        },
+        "long": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              175,
+              100,
+              565,
+              128
+            ],
+            [
+              87,
+              134,
+              653,
+              161
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        }
+      }
+    },
+    {
+      "name": "no page error in the pages of K1, K2 and K4",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "k1": {
+      "credit": {
+        "exists": true,
+        "display": "none",
+        "scene": "lesson-hover-height",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "inView": false,
+        "text": "Scene by its author \u2014 see the original on SuperSplat \u00b7 Report this sceneWalls 10 cm \u25beWalls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55 %V: off \u2192 over the scan \u2192 voxels",
+        "links": [
+          {
+            "href": "https://superspl.at/scene/lesson-hover-height",
+            "w": 0,
+            "h": 0
+          },
+          {
+            "href": "/en/?report=lesson-hover-height#contact",
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      "sonicMode": true
+    },
+    "k2": {
+      "exists": true,
+      "display": "none",
+      "scene": "7a475d38",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "w": 0,
+        "h": 0
+      },
+      "inView": false,
+      "text": "Scene: Winter Garden, Poland by Andrii Shramko, CC BY 4.0 \u00b7 SuperSplat \u00b7 Report this sceneWalls 16 cm \u25beWalls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity55 %V: off \u2192 over",
+      "links": [
+        {
+          "href": "https://superspl.at/scene/7a475d38",
+          "w": 0,
+          "h": 0
+        },
+        {
+          "href": "/en/?report=7a475d38#contact",
+          "w": 0,
+          "h": 0
+        }
+      ]
+    },
+    "k2wallsSwitch": "hidden",
+    "k3tiles": [
+      "39e63ce9",
+      "39e63ce9",
+      "7a475d38",
+      "7a475d38",
+      "887f27aa",
+      "887f27aa"
+    ],
+    "k3": {
+      "scan": "39e63ce9",
+      "credit": {
+        "exists": true,
+        "display": "none",
+        "scene": "39e63ce9",
+        "rect": {
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0
+        },
+        "inView": false,
+        "text": "Scene: Modlinek Villa \u2014 red room and bathroom by Andrii Shramko, CC BY 4.0 \u00b7 SuperSplat \u00b7 Report this sceneWalls 25 cm \u25beWalls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWireframeHeight coloursFloaters in redOpacity",
+        "links": [
+          {
+            "href": "https://superspl.at/scene/39e63ce9",
+            "w": 0,
+            "h": 0
+          },
+          {
+            "href": "/en/?report=39e63ce9#contact",
+            "w": 0,
+            "h": 0
+          }
+        ]
+      },
+      "mode": true
+    },
+    "k3frames": {
+      "n0": 64,
+      "n1": 124
+    },
+    "k4": {
+      "desktop 1280 x 720": {
+        "realTouchOn": false,
+        "own": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              527,
+              92,
+              753,
+              142
+            ],
+            [
+              305,
+              148,
+              975,
+              198
+            ],
+            [
+              190,
+              204,
+              1090,
+              287
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        },
+        "long": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              527,
+              92,
+              753,
+              142
+            ],
+            [
+              305,
+              148,
+              975,
+              198
+            ],
+            [
+              190,
+              204,
+              1090,
+              287
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        }
+      },
+      "a phone standing with touch sticks (375 x 740)": {
+        "realTouchOn": true,
+        "own": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              108,
+              150,
+              267,
+              188
+            ],
+            [
+              15,
+              194,
+              360,
+              254
+            ],
+            [
+              15,
+              260,
+              360,
+              343
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": true
+        },
+        "long": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              108,
+              150,
+              267,
+              188
+            ],
+            [
+              15,
+              194,
+              360,
+              254
+            ],
+            [
+              15,
+              260,
+              360,
+              343
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": true
+        },
+        "captionsWhereTheyWere": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              108,
+              150,
+              267,
+              188
+            ],
+            [
+              15,
+              194,
+              360,
+              254
+            ],
+            [
+              15,
+              260,
+              360,
+              343
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": true
+        }
+      },
+      "a phone on its side (740 x 360)": {
+        "realTouchOn": false,
+        "own": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              175,
+              100,
+              565,
+              128
+            ],
+            [
+              87,
+              134,
+              653,
+              161
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        },
+        "long": {
+          "credit": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "seen": false,
+          "captions": [
+            [
+              175,
+              100,
+              565,
+              128
+            ],
+            [
+              87,
+              134,
+              653,
+              161
+            ]
+          ],
+          "captionsCover": false,
+          "toggleCovers": false,
+          "touchOn": false
+        }
+      }
+    },
+    "k3PageErrors": []
+  },
+  "errors": []
+}

@@ -57,5 +57,17 @@
 @media (max-width: 520px) { .sonic-start { font-size: 17px; } .sonic-field > label { min-width: 0; flex-basis: 100%; } }
 @media (prefers-reduced-motion: no-preference) { .sonic-start .btn { transition: border-color .12s; } }
 
-/* ---- the flight page while a lesson runs (body.sonic-mode, app/builtin/sonic-flight.ts): what only a scan has is not shown */
-body.sonic-mode .attribution { display: none; }
+/* ---- the flight page while a lesson runs (body.sonic-mode, app/builtin/sonic-flight.ts)
+   The credit line (builtin/scene.ts: the scan's title, author and licence, the link to SuperSplat, the takedown link; the walls switch rides on it)
+   stays for EVERY scan in the mode. A helper can change the scan from the pause menu during a lesson, and the scan he gets is another author's:
+   its credit is a condition of its licence, not ours to hide (v12-int step 10; it used to be hidden for all of them). Only a built-in lesson
+   world has none: its scene id starts with `lesson-` (lesson-world.ts LESSON_SCENE_PREFIX), it has no author, and "by the author on SuperSplat"
+   for it would be a link to nothing. */
+body.sonic-mode .attribution[data-scene^="lesson-"] { display: none; }
+/* The walls switch (a <details> with "Walls 16 cm") rides on the same line (walls.ts); it stays out of a lesson as it did, with the line's other chrome:
+   what comes back is the credit, its link to SuperSplat and the takedown link, and nothing else. */
+body.sonic-mode .attribution [data-testid="walls-more"] { display: none; }
+/* With touch sticks the credit sits under the pad hint, 128 px from the top, where the captions would be (150 px on a phone, 92 px otherwise):
+   while a scan's credit shows, the captions go below it (up to three lines of it on a narrow page). Elsewhere the credit is at the bottom left,
+   or, in a short window, at the top left above the captions' 100 px, and the captions stay where they are. */
+body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-captions { top: calc(max(10px, env(safe-area-inset-top)) + 206px); }
