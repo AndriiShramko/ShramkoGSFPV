@@ -19,7 +19,7 @@ import { launchChrome } from './browser';
 import { writeEvidence } from './evidence';
 import { REPO, makeDist, serveDist } from './sonicrec-serve';
 
-const bundle = await build({ entryPoints: [join(REPO, 'tools', 'bench', 'src', 'sonicrec-recorder-page.ts')], bundle: true, format: 'esm', platform: 'browser', target: 'es2022', write: false, logLevel: 'silent' });
+const bundle = await build({ entryPoints: [join(REPO, 'tools', 'bench', 'test', 'sonicrec-recorder-page.ts')], bundle: true, format: 'esm', platform: 'browser', target: 'es2022', write: false, logLevel: 'silent' });
 const dist = makeDist({
     'en/fly/index.html': '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>sonicrec</title></head><body><script type="module" src="/fly/assets/rec.js"></script></body></html>',
     'fly/assets/rec.js': bundle.outputFiles[0]?.text ?? ''

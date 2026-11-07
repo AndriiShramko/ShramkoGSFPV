@@ -1,0 +1,151 @@
+{
+  "name": "sonicrec-local",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T15:36:33.469Z",
+    "gitHead": "50b4ca7",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "E1: with the sound mode on the toggle button is there, and the panel is closed": true,
+    "E1: T, T, T records; the panel opens on the new recording with its state and a Save button": true,
+    "E1: the panel says the recording is saved here and asks to save it to disk too (a live message)": true,
+    "E1: the downloaded file is a .zip named for the recording that reads strictly: frames, events, voice, complete": true,
+    "E1: the row remembers it was saved to disk, and the panel names the file": true,
+    "E1: control, the same file with one byte flipped is refused by the strict reader": true,
+    "E2: a person who closes the picker gets \"Saving was cancelled.\" and nothing is written or downloaded": true,
+    "E2: through the picker the whole zip is written and reads strictly; the browser downloaded nothing": true,
+    "E3: at the next start the pilot is told how to keep the earlier recording: rec.recover with the key T": true,
+    "E3: until T is pressed the session is still just as the crash left it (unfinished): nothing is kept or deleted behind the pilot's back": true,
+    "E3: T keeps it (it did not start a new recording): the pilot hears rec.saved, the session is finished but not complete": true,
+    "E3: the panel lists it as kept after an interruption, and saving gives a package that reads strictly: not complete, with its voice and its recovered event": true,
+    "E3: Delete asks \"Delete for good?\" first, and the second click removes the recording from storage": true,
+    "E4: Start recording is disabled until the pilot's agreement is ticked": true,
+    "E4: typing letters (a T among them) into the nickname field is not the record key": true,
+    "E4: with the agreement ticked Start is enabled, and the helper's click starts the recording at once without the pilot being asked aloud": true,
+    "E4: the package says the pilot is under 18 with the guardian confirmed, the nickname and the headphones, and never claims consent to send": true,
+    "E4: after a reload the pilot's answers are still there": true,
+    "E5: with the sound mode off nothing is drawn: no panel, no button": true,
+    "E5: the panel in English, Spanish, Polish and Russian shows no missing key": true
+  },
+  "results": {
+    "e1": {
+      "fileName": "fly-by-sound-20261107-153610-HG24qY7l.zip",
+      "bytes": 24703,
+      "frames": 152,
+      "events": 4,
+      "voiceBytes": 18462,
+      "complete": true,
+      "rowAfter": {
+        "id": "HG24qY7lyqjg22ki95Vpbw",
+        "line": "Nov 7, 2026, 4:36 PM, 0:05, 25 KB \u00b7 with voice \u00b7 walls-hall",
+        "state": "Saved on this device. Saved to disk.",
+        "buttons": [
+          "Save to disk",
+          "Delete"
+        ]
+      },
+      "panelMessageAfter": "Saved as fly-by-sound-20261107-153610-HG24qY7l.zip."
+    },
+    "e2": {
+      "cancelledMessage": "Saving was cancelled.",
+      "savedMessage": "Saved as fly-by-sound-20261107-153616-5Gvx3RO3.zip.",
+      "downloads": 0,
+      "pickedFiles": 1,
+      "pickedBytes": 16945,
+      "frames": 107
+    },
+    "e3": {
+      "offeredSpeech": [
+        {
+          "key": "rec.recover",
+          "params": {
+            "key": "T"
+          }
+        }
+      ],
+      "afterKeep": [
+        {
+          "key": "rec.recover",
+          "params": {
+            "key": "T"
+          }
+        },
+        {
+          "key": "rec.saved"
+        }
+      ],
+      "rowAfterKeep": {
+        "id": "aLm6-OUP0QIjU2WiS9CtQw",
+        "line": "Nov 7, 2026, 4:36 PM, 0:04, 19 KB \u00b7 with voice \u00b7 walls-hall",
+        "state": "Kept after an interruption.",
+        "buttons": [
+          "Save to disk",
+          "Delete"
+        ]
+      },
+      "bytes": 19434,
+      "frames": 121,
+      "voiceBytes": 14019,
+      "complete": false,
+      "recoveredEvent": true
+    },
+    "e4": {
+      "phaseAfterTyping": "idle",
+      "startEnabledWhenReady": true,
+      "spokenOnHelperStart": [
+        "rec.started"
+      ],
+      "consent": {
+        "at": "2026-11-07T15:36:27.608Z",
+        "guardianConfirmed": true,
+        "minor": true,
+        "recording": true,
+        "send": false,
+        "speechRecognition": false,
+        "voice": true
+      },
+      "pilot": {
+        "id": "xZyD0Hb2QQ8",
+        "nickname": "Tom"
+      },
+      "headphones": "wired",
+      "profileAfterReload": {
+        "id": "xZyD0Hb2QQ8",
+        "nickname": "Tom",
+        "minor": true,
+        "guardianConfirmed": true,
+        "headphones": "wired",
+        "surveysSeen": []
+      }
+    },
+    "e5": {
+      "en": [
+        "ok",
+        "Fly by Sound: recording\u00d7Not recording.Voice: not recording.S"
+      ],
+      "es": [
+        "ok",
+        "Fly by Sound: grabaci\u00f3n\u00d7No se est\u00e1 grabando.Voz: no se graba"
+      ],
+      "pl": [
+        "ok",
+        "Fly by Sound: nagrywanie\u00d7Nie nagrywa.G\u0142os: nie nagrywa.Rozpo"
+      ],
+      "ru": [
+        "ok",
+        "Fly by Sound: \u0437\u0430\u043f\u0438\u0441\u044c\u00d7\u0417\u0430\u043f\u0438\u0441\u044c \u043d\u0435 \u0438\u0434\u0451\u0442.\u0413\u043e\u043b\u043e\u0441: \u043d\u0435 \u0437\u0430\u043f\u0438\u0441\u044b\u0432\u0430\u0435\u0442\u0441\u044f.\u041d"
+      ]
+    }
+  },
+  "note": "headless Chrome, a fake microphone, real OPFS, DOM and downloads; the file picker is a stand-in (no automation drives the native dialog); the sound runtime, samples and key router are stand-ins until the flight lane lands. The downloaded files are read back from disk and read strictly."
+}

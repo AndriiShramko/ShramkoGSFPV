@@ -12,7 +12,7 @@ import { SessionClock } from '../../../apps/fly/src/sonic-session/clock';
 import { FrameSampler, busEventWanted, cleanCues, eventProblem } from '../../../apps/fly/src/sonic-session/frames';
 import { consentFor, loadProfile, newProfile, saveProfile, withProfile, cleanNickname, PROFILE_KEY } from '../../../apps/fly/src/sonic-session/consent';
 import type { PilotProfile } from '../../../apps/fly/src/sonic-session/consent';
-import { OpfsChunkStore, openSessionStore, removeSession } from '../../../apps/fly/src/sonic-session/store';
+import { OpfsChunkStore, listSessionIds, openSessionStore, removeSession } from '../../../apps/fly/src/sonic-session/store';
 import { VoiceCapture } from '../../../apps/fly/src/sonic-session/voice';
 import { FakeDirectory, FakeMic, fakeRuntime, lessonOpen, nodeGzip, sampleAt } from './sonicrec-fixtures';
 import type { FakeRuntime, MicMode } from './sonicrec-fixtures';
@@ -50,6 +50,12 @@ function setup(o: Setup = {}) {
         async create(id) {
             created.push(id);
             return openSessionStore(dir, id);
+        },
+        async open(id) {
+            return openSessionStore(dir, id, false);
+        },
+        async list() {
+            return listSessionIds(dir);
         },
         async remove(id) {
             await removeSession(dir, id);

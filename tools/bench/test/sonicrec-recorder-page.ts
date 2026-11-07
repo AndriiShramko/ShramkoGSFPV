@@ -9,7 +9,7 @@ import type { FlightSample, SonicEngine, SonicRuntime, SpeechLine, SurveyAnswers
 import { Recorder } from '../../../apps/fly/src/sonic-session/recorder';
 import type { RecorderStatus, SessionStores } from '../../../apps/fly/src/sonic-session/recorder';
 import { newProfile } from '../../../apps/fly/src/sonic-session/consent';
-import { openSessionStore, openSessionsRoot, removeSession } from '../../../apps/fly/src/sonic-session/store';
+import { listSessionIds, openSessionStore, openSessionsRoot, removeSession } from '../../../apps/fly/src/sonic-session/store';
 import type { DirectoryLike } from '../../../apps/fly/src/sonic-session/store';
 import { VoiceCapture, browserMic } from '../../../apps/fly/src/sonic-session/voice';
 import type { MicDeps, StreamLike } from '../../../apps/fly/src/sonic-session/voice';
@@ -126,6 +126,12 @@ const api = {
             async create(id) {
                 return openSessionStore(await root(), id);
             },
+            async open(id) {
+                return openSessionStore(await root(), id, false);
+            },
+            async list() {
+                return listSessionIds(await root());
+            },
             async remove(id) {
                 await removeSession(await root(), id);
             }
@@ -147,7 +153,9 @@ const api = {
                 const e = await navigator.storage?.estimate?.();
                 return e?.quota !== undefined && e.usage !== undefined ? e.quota - e.usage : null;
             },
-            holdLock: (id) => new Promise((held) => void navigator.locks.request(`gsfpv-sonic-session:${id}`, { mode: 'exclusive' }, () => new Promise<void>((release) => held(() => release())))),
+            holdLock: (id) => new Promise((held) => {
+                const done = navigator.locks.request(`gsfpv-sonic-session:${id}`, { mode: 'exclusive' }, () => new Promise<void>((release) => held(async () => { release(); await done.catch(() => undefined); })));
+            }),
             onStatus: (s) => {
                 statuses.push(s);
                 if (statuses.length > 200) statuses.shift();

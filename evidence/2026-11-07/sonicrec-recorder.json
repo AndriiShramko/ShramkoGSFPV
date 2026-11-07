@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T15:10:02.726Z",
-    "gitHead": "1264331",
+    "date": "2026-11-07T15:37:30.441Z",
+    "gitHead": "50b4ca7",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -33,13 +33,13 @@
   "results": {
     "length": {
       "analysis": {
-        "id": "wrJX27s0cro98aOaYGC1vw",
+        "id": "Znt7Cc5OT9kAksaxLTfmwA",
         "recovered": null,
         "complete": true,
         "frames": 360,
-        "firstT": 87,
-        "lastT": 12055,
-        "flightLenMs": 11968,
+        "firstT": 83,
+        "lastT": 12053,
+        "flightLenMs": 11970,
         "events": [
           "session:start",
           "recording:start",
@@ -48,37 +48,37 @@
         ],
         "voiceBytes": 47110,
         "voiceMs": 12060,
-        "voiceOffsetMs": 4.800000011920929,
+        "voiceOffsetMs": 5.5,
         "burstOnsetsMs": [
           505,
           1007.4,
           1507.5,
-          2017.4,
-          2507.5,
-          3017.4,
+          2007.5,
+          2517.4,
+          3007.5,
           3507.5,
           4007.5,
-          4517.4,
+          4507.5,
           5017.4,
           5507.5,
           6007.5,
           6507.5,
-          7007.5,
+          7017.4,
           7517.4,
           8017.4,
           8517.4,
           9017.4,
           9517.4,
           10017.4,
-          10507.5,
+          10517.4,
           11017.4,
           11517.4,
           12017.4
         ],
-        "zipBytes": 57698,
+        "zipBytes": 57664,
         "problems": [],
         "consent": {
-          "at": "2026-11-07T15:09:08.773Z",
+          "at": "2026-11-07T15:36:37.025Z",
           "guardianConfirmed": null,
           "minor": false,
           "recording": true,
@@ -94,8 +94,8 @@
         "voiceSyncMarks": 13,
         "voiceStartMark": {
           "start": {
-            "called": 4.8,
-            "event": 59
+            "called": 5.5,
+            "event": 58.2
           }
         }
       },
@@ -106,75 +106,75 @@
         "rec.saved"
       ],
       "storage": {
-        "usage": 66167,
-        "quota": 10737484407,
+        "usage": 66135,
+        "quota": 10737484375,
         "persisted": false
       },
       "persisted": false,
       "durable": true,
       "error": null,
       "voiceMs": 12060,
-      "flightLenMs": 11968,
-      "diffMs": 92
+      "flightLenMs": 11970,
+      "diffMs": 90
     },
     "cost": {
       "calls": 750,
       "p50": 0,
       "p95": 0.10000002384185791,
-      "max": 0.699999988079071
+      "max": 0.6000000238418579
     },
     "crash": {
       "runs": [
         {
           "afterMs": 3200,
-          "emittedT": 3284,
-          "recoveredLastT": 3076,
-          "lostMs": 208,
+          "emittedT": 3281,
+          "recoveredLastT": 3072,
+          "lostMs": 209,
           "frames": 90,
           "voiceBytes": 9821
         },
         {
           "afterMs": 3500,
-          "emittedT": 3593,
-          "recoveredLastT": 3080,
-          "lostMs": 513,
-          "frames": 90,
-          "voiceBytes": 9041
-        },
-        {
-          "afterMs": 3800,
-          "emittedT": 3875,
-          "recoveredLastT": 3077,
-          "lostMs": 798,
+          "emittedT": 3587,
+          "recoveredLastT": 3076,
+          "lostMs": 511,
           "frames": 90,
           "voiceBytes": 9821
         },
         {
+          "afterMs": 3800,
+          "emittedT": 3882,
+          "recoveredLastT": 3066,
+          "lostMs": 816,
+          "frames": 90,
+          "voiceBytes": 9815
+        },
+        {
           "afterMs": 4100,
-          "emittedT": 4189,
-          "recoveredLastT": 4061,
-          "lostMs": 128,
+          "emittedT": 4178,
+          "recoveredLastT": 4066,
+          "lostMs": 112,
           "frames": 120,
           "voiceBytes": 14019
         },
         {
           "afterMs": 4400,
-          "emittedT": 4490,
-          "recoveredLastT": 4075,
-          "lostMs": 415,
+          "emittedT": 4485,
+          "recoveredLastT": 4069,
+          "lostMs": 416,
           "frames": 120,
           "voiceBytes": 14019
         }
       ],
-      "worstLostMs": 798,
+      "worstLostMs": 816,
       "control": {
-        "lostMs": 4082,
+        "lostMs": 4084,
         "frames": 0
       },
       "recoveryNotes": {
         "frames": 90,
         "events": 3,
-        "lastT": 3076,
+        "lastT": 3072,
         "droppedFlightBytes": 0,
         "notes": []
       }
@@ -186,32 +186,32 @@
         5000,
         6500
       ],
-      "voiceOffsetMs": 7,
+      "voiceOffsetMs": 5.2,
       "startMark": {
-        "called": 7,
-        "event": 93.7
+        "called": 5.2,
+        "event": 75.8
       },
       "onsetsInVoiceMs": [
-        1969.6,
-        3469.6,
-        4969.6,
-        6469.6
+        1986.2,
+        3486.2,
+        4986.2,
+        6486.2
       ],
       "errorMsPerBurst": [
-        -23.4,
-        -23.4,
-        -23.4,
-        -23.4
+        -8.6,
+        -8.6,
+        -8.6,
+        -8.6
       ],
-      "meanErrorMs": -23.4,
+      "meanErrorMs": -8.6,
       "spreadMs": 0,
       "voiceMs": 8580,
       "flightLenMs": 8480,
       "errorIfTheStartEventWereTheOffsetMs": [
-        63.3,
-        63.3,
-        63.3,
-        63.3
+        62,
+        62,
+        62,
+        62
       ]
     }
   },

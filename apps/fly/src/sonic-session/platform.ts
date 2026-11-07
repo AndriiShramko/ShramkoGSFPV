@@ -14,21 +14,37 @@ const locks = (): Locks | null => (globalThis.navigator as (Navigator & { locks?
 /**
  * Holds an exclusive lock on a session while it is being written. Another tab that looks for unfinished sessions to offer
  * (the resume scan) finds this one locked and leaves it alone: a session being recorded is not a crashed one.
- * Resolves with the function that lets the lock go; a no-op where there are no Web Locks.
+ * Resolves with the function that lets the lock go; that function's promise settles when the browser has really released it
+ * (a request made right after a plain release still finds the lock held, and the panel would call a finished recording
+ * "being recorded in another tab"). A no-op where there are no Web Locks.
  */
-export function holdSessionLock(id: string): Promise<() => void> {
+export function holdSessionLock(id: string): Promise<() => Promise<void>> {
     const l = locks();
-    if (l === null) return Promise.resolve(() => undefined);
+    if (l === null) return Promise.resolve(async () => undefined);
     return new Promise((resolveHeld) => {
-        void l.request(LOCK_PREFIX + id, { mode: 'exclusive' }, () => new Promise<void>((release) => resolveHeld(() => release())));
+        const done = l.request(LOCK_PREFIX + id, { mode: 'exclusive' }, () => new Promise<void>((release) => resolveHeld(async () => {
+            release();
+            await done.catch(() => undefined);
+        })));
     });
 }
 
-/** Is another tab holding this session's lock (so it is being recorded right now)? False where there are no Web Locks. */
-export async function sessionIsLocked(id: string): Promise<boolean> {
+const probing = new Map<string, Promise<boolean>>();
+
+/**
+ * Is another tab holding this session's lock (so it is being recorded right now)? False where there are no Web Locks.
+ * The probe takes the lock for an instant itself, so two probes of one session at once would find each other's lock and both
+ * answer "held": a probe that is under way is shared, and the answer comes only after the probe's own lock is let go.
+ */
+export function sessionIsLocked(id: string): Promise<boolean> {
     const l = locks();
-    if (l === null) return false;
-    return (await l.request(LOCK_PREFIX + id, { ifAvailable: true }, (lock) => lock === null)) === true;
+    if (l === null) return Promise.resolve(false);
+    let p = probing.get(id);
+    if (p === undefined) {
+        p = (async () => (await l.request(LOCK_PREFIX + id, { ifAvailable: true }, (lock) => lock === null)) === true)().finally(() => probing.delete(id));
+        probing.set(id, p);
+    }
+    return p;
 }
 
 /** Asks the browser to keep this site's storage (navigator.storage.persist); null where it cannot say. May show a prompt in Firefox. */

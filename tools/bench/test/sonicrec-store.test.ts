@@ -84,6 +84,21 @@ describe('OpfsChunkStore', () => {
         expect(text(await store.read('events.jsonl'))).not.toContain('lost');
     });
 
+    it('operations that start together on a store that has not looked at its folder yet scan it once, not once each', async () => {
+        const dir = new FakeDirectory('s');
+        const first = new OpfsChunkStore(dir);
+        await first.append('manifest.json', bytes('{"id":1}'));
+        await first.append('events.jsonl', bytes('a\n'));
+        await first.append('events.jsonl', bytes('b\n'));
+        // a new tab reads several files at once (the registry reads the manifest and the notes together)
+        const fresh = new OpfsChunkStore(dir);
+        const [manifest, events, notes, names] = await Promise.all([fresh.read('manifest.json'), fresh.read('events.jsonl'), fresh.read('local.json'), fresh.list()]);
+        expect(text(manifest)).toBe('{"id":1}'); // twice over (the second scan adding every part again) was the bug
+        expect(text(events)).toBe('a\nb\n');
+        expect(notes).toBeNull();
+        expect(names).toEqual(['events.jsonl', 'manifest.json']);
+    });
+
     it('overlapping appends to one name never share a part', async () => {
         const dir = new FakeDirectory('s');
         const store = new OpfsChunkStore(dir);

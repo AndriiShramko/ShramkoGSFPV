@@ -57,6 +57,8 @@ interface Logical {
 export class OpfsChunkStore implements ChunkStore {
     private readonly state = new Map<string, Logical>();
     private scanned = false;
+    /** the scan that is running: operations that start while it runs wait for it instead of starting a second one */
+    private scanning: Promise<void> | null = null;
     /** every part name this store knows, by logical name and epoch (to delete older epochs) */
     private readonly parts = new Map<string, Map<number, number[]>>();
 
@@ -66,9 +68,16 @@ export class OpfsChunkStore implements ChunkStore {
         return this.dir.name;
     }
 
-    /** Reads the folder once: which parts exist. Called by every operation that needs the index. */
-    private async scan(): Promise<void> {
-        if (this.scanned) return;
+    /** Reads the folder once: which parts exist. Called by every operation that needs the index; at most one scan runs. */
+    private scan(): Promise<void> {
+        if (this.scanned) return Promise.resolve();
+        this.scanning ??= this.readFolder().finally(() => {
+            this.scanning = null;
+        });
+        return this.scanning;
+    }
+
+    private async readFolder(): Promise<void> {
         this.parts.clear();
         this.state.clear();
         for await (const [fileName, handle] of this.dir.entries()) {
@@ -224,9 +233,9 @@ export async function openSessionsRoot(): Promise<DirectoryLike> {
     return root.getDirectoryHandle(SESSIONS_DIR, { create: true });
 }
 
-/** A session's store: its folder under `root`, made when missing. */
-export async function openSessionStore(root: DirectoryLike, id: string): Promise<OpfsChunkStore> {
-    return new OpfsChunkStore(await root.getDirectoryHandle(id, { create: true }));
+/** A session's store: its folder under `root`, made when missing (`create` false: it must exist, else this rejects). */
+export async function openSessionStore(root: DirectoryLike, id: string, create = true): Promise<OpfsChunkStore> {
+    return new OpfsChunkStore(await root.getDirectoryHandle(id, { create }));
 }
 
 /** The ids of the session folders under `root`. */

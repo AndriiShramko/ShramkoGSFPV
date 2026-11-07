@@ -12,8 +12,11 @@ import { locale, t } from '../i18n';
 import type { FlightContext } from '../app/context';
 import { loadProfile, saveProfile, withProfile, type PilotProfile } from './consent';
 import { sceneTransformOf, type RecorderEnv } from './manifest-input';
-import { freeBytes, holdSessionLock, persistStorage, sayVia } from './platform';
-import { openSessionsRoot, openSessionStore, opfsAvailable, removeSession, type DirectoryLike } from './store';
+import { freeBytes, holdSessionLock, persistStorage, sayVia, sessionIsLocked } from './platform';
+import { createPanel } from './panel';
+import type { RecPanel } from './panel';
+import { ResumeOffer } from './resume';
+import { listSessionIds, openSessionsRoot, openSessionStore, opfsAvailable, removeSession, type DirectoryLike } from './store';
 import { VoiceCapture, browserMic } from './voice';
 
 /** Where the sessions are kept: the origin private file system, or memory when the browser has none (then nothing survives the tab). */
@@ -21,14 +24,31 @@ export function browserStores(): SessionStores {
     const durable = opfsAvailable();
     let root: Promise<DirectoryLike> | null = null;
     const rootOnce = (): Promise<DirectoryLike> => (root ??= openSessionsRoot());
+    const memory = new Map<string, MemorySink>();
     return {
         durable,
         async create(id): Promise<ChunkStore> {
-            if (!durable) return new MemorySink();
+            if (!durable) {
+                const sink = new MemorySink();
+                memory.set(id, sink);
+                return sink;
+            }
             return openSessionStore(await rootOnce(), id);
+        },
+        async open(id): Promise<ChunkStore> {
+            if (!durable) {
+                const sink = memory.get(id);
+                if (sink === undefined) throw new Error(`no session ${id} in memory`);
+                return sink;
+            }
+            return openSessionStore(await rootOnce(), id, false);
+        },
+        async list() {
+            return durable ? listSessionIds(await rootOnce()) : [...memory.keys()];
         },
         async remove(id) {
             if (durable) await removeSession(await rootOnce(), id);
+            else memory.delete(id);
         }
     };
 }
@@ -122,43 +142,84 @@ function storage(): Storage | null {
 
 export interface SonicSession {
     readonly recorder: Recorder;
+    readonly stores: SessionStores;
+    readonly resume: ResumeOffer;
+    /** the helper's panel, made when the sound mode first runs; null before */
+    panel(): RecPanel | null;
     profile(): PilotProfile;
     setProfile(change: Partial<Omit<PilotProfile, 'id'>>): PilotProfile;
     dispose(): void;
 }
 
-/** Builds the recorder from the page and wires it in; returns what the other parts of this lane (the panel, the survey) use. */
+/** Builds the recorder from the page and wires it in; returns what the other parts of this lane (the survey, the upload) use. */
 export function createSonicSession(ctx: FlightContext): SonicSession {
     let profile = loadProfile(storage());
     const voice = new VoiceCapture(browserMic());
     const say = sayVia(() => ctx.sonic ?? null);
+    const stores = browserStores();
+    const nowIso = (): string => new Date().toISOString();
+    let panel: RecPanel | null = null;
+    let lastShown: string | null = null;
+    const setProfile = (change: Partial<Omit<PilotProfile, 'id'>>): PilotProfile => {
+        profile = withProfile(profile, change);
+        saveProfile(storage(), profile);
+        return profile;
+    };
     const recorder = new Recorder({
         nowMs: () => performance.now(),
-        nowIso: () => new Date().toISOString(),
+        nowIso,
         runtime: () => ctx.sonic ?? null,
         env: () => readEnv(ctx),
-        stores: browserStores(),
+        stores,
         voice,
         profile: () => profile,
         say: (line) => void say(line),
         keyLabel,
         persist: persistStorage,
         freeBytes,
-        holdLock: holdSessionLock
+        holdLock: holdSessionLock,
+        onStatus: (s) => {
+            panel?.onStatus(s);
+            // a recording has just ended: the helper's panel opens on it, so the Save button is in front of them
+            if (s.lastSessionId !== null && s.lastSessionId !== lastShown) {
+                lastShown = s.lastSessionId;
+                panel?.open();
+                panel?.notify(t('sonicrec.msg.recorded'));
+            }
+        }
     });
+    const resume = new ResumeOffer({ stores, isLocked: sessionIsLocked, nowIso, say: (line) => void say(line), keyLabel, onChange: () => void panel?.refresh() });
+    const ensurePanel = (): RecPanel =>
+        (panel ??= createPanel({ recorder, stores, resume, profile: () => profile, setProfile, isLocked: sessionIsLocked, nowIso }));
 
     const offs: (() => void)[] = [];
-    // T: ask, confirm, stop. Nothing happens without the sound mode, and a held key is one press.
+    // T: ask, confirm, stop. Nothing happens without the sound mode, and a held key is one press. While an unfinished
+    // recording from an earlier visit waits for an answer ("Press T to keep it"), T answers that first.
     offs.push(
         ctx.keys.on('sonic.record', (e) => {
             if (ctx.sonic === undefined || e.repeat) return;
             e.preventDefault();
-            recorder.pressRecord();
+            if (recorder.phase === 'idle' && resume.pending.length > 0) void resume.keepNext();
+            else recorder.pressRecord();
         })
     );
     // the flight's data, while a recording runs
     offs.push(ctx.events.on('sonicSample', (s) => recorder.onSample(s)));
     offs.push(ctx.events.on('sonicEvent', (e) => recorder.onEvent(e)));
+    // The sound mode starts (ctx.sonic appears): the toggle button of the helper's panel shows, and the unfinished recordings
+    // of earlier visits are looked for and offered, once. One property read a frame while the mode is off.
+    let modeOn = false;
+    offs.push(
+        ctx.events.on('frame', () => {
+            const on = ctx.sonic !== undefined;
+            if (on === modeOn) return;
+            modeOn = on;
+            if (on) {
+                ensurePanel().setVisible(true);
+                void resume.scan();
+            } else panel?.setVisible(false);
+        })
+    );
     // a tab that is hidden or closing writes what it has (a best effort: the write may not finish; the next start recovers)
     const flush = (): void => recorder.flushNow();
     const onVisibility = (): void => {
@@ -173,15 +234,16 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
 
     return {
         recorder,
+        stores,
+        resume,
+        panel: () => panel,
         profile: () => profile,
-        setProfile(change) {
-            profile = withProfile(profile, change);
-            saveProfile(storage(), profile);
-            return profile;
-        },
+        setProfile,
         dispose() {
             for (const off of offs.splice(0)) off();
             recorder.dispose();
+            panel?.dispose();
+            panel = null;
         }
     };
 }

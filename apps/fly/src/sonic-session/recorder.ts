@@ -47,6 +47,10 @@ export interface RecorderStatus {
 export interface SessionStores {
     readonly durable: boolean;
     create(id: string): Promise<ChunkStore>;
+    /** the store of a session that exists (the registry lists, recovers, packs and deletes sessions through it) */
+    open(id: string): Promise<ChunkStore>;
+    /** the ids of the sessions kept */
+    list(): Promise<string[]>;
     remove(id: string): Promise<void>;
 }
 
@@ -73,7 +77,8 @@ export interface RecorderDeps {
     gzip?: GzipFn;
     persist?(): Promise<boolean | null>;
     freeBytes?(): Promise<number | null>;
-    holdLock?(id: string): Promise<() => void>;
+    /** holds the session's folder against other tabs; the function it resolves with lets go (its promise: when it has) */
+    holdLock?(id: string): Promise<() => void | Promise<void>>;
     onStatus?(s: RecorderStatus): void;
     /** frames per chunk (default: the package's 90) and the longest a chunk stays open, ms of the recording clock */
     chunkFrames?: number;
@@ -123,7 +128,7 @@ export class Recorder {
     private refusals = new Refusals();
     private writer: SessionWriter | null = null;
     private store: ChunkStore | null = null;
-    private releaseLock: (() => void) | null = null;
+    private releaseLock: (() => void | Promise<void>) | null = null;
     private flushTimer: ReturnType<typeof setInterval> | null = null;
     private statusTimer: ReturnType<typeof setInterval> | null = null;
     private askTimer: ReturnType<typeof setTimeout> | null = null;
@@ -215,6 +220,18 @@ export class Recorder {
         if (this.deps.profile().minor) this.deps.say({ key: 'rec.minor' });
         this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } });
         this.askTimer = setTimeout(() => this.cancel(), this.deps.askMs ?? DEFAULT_ASK_MS);
+    }
+
+    /**
+     * A helper's Start button: the helper has read the consent text on screen and ticked the pilot's agreement, so nothing is
+     * asked aloud and the recording starts in the same click (the click is the activation getUserMedia may need). Resolves
+     * true when it started; false when a recording or a question is already under way.
+     */
+    startByHelper(): Promise<boolean> {
+        if (this.phaseValue !== 'idle') return Promise.resolve(false);
+        this.errorText = null;
+        this.setPhase('asking');
+        return this.confirm();
     }
 
     /** The pilot did not say yes: nothing was asked of the microphone, nothing was written. */
@@ -483,8 +500,7 @@ export class Recorder {
         }
         const result: FinishedRecording | null = manifest === null ? null : { id, manifest, frames: this.frameCount, events: this.eventCount, refused: this.refusals.total + this.sampler.refused.total };
         this.deps.voice.release();
-        this.releaseLock?.();
-        this.releaseLock = null;
+        await this.letGoOfLock();
         this.writer = null;
         this.store = null;
         this.voiceState = 'off';
@@ -507,8 +523,7 @@ export class Recorder {
             // the recorder is gone already
         }
         this.deps.voice.release();
-        this.releaseLock?.();
-        this.releaseLock = null;
+        await this.letGoOfLock();
         this.writer = null;
         this.store = null;
         this.voiceState = 'off';
@@ -518,6 +533,17 @@ export class Recorder {
         if (empty !== null) await this.deps.stores.remove(empty).catch(() => undefined);
         this.setPhase('idle');
         this.deps.say({ key: 'rec.stopped' });
+    }
+
+    /** Lets go of the session's lock and waits until the browser has: whoever lists the sessions next must not find it held. */
+    private async letGoOfLock(): Promise<void> {
+        const release = this.releaseLock;
+        this.releaseLock = null;
+        try {
+            await release?.();
+        } catch {
+            // the lock goes with the page anyway
+        }
     }
 
     private clearTimers(): void {
@@ -533,7 +559,6 @@ export class Recorder {
     dispose(): void {
         this.clearTimers();
         this.deps.voice.release();
-        this.releaseLock?.();
-        this.releaseLock = null;
+        void this.letGoOfLock();
     }
 }
