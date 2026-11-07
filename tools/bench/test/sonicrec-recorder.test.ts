@@ -331,6 +331,23 @@ describe('the recorder: T asks, T records, T stops', () => {
         }
     });
 
+    it('the survey is told whether the voice is still being recorded (v12-int step 2, survey.mic-on): granted yes; refused, missing or unsupported no', async () => {
+        for (const mode of ['grant', 'deny', 'missing', 'unsupported'] as const) {
+            const h = setup({ mic: mode });
+            await startRecording(h);
+            fly(h, 1);
+            let voiceOn: boolean | null = null;
+            const done = await h.rec.stop({
+                survey: async (env) => {
+                    voiceOn = env.voiceOn;
+                    return null;
+                }
+            });
+            expect(done, mode).not.toBeNull();
+            expect(voiceOn, mode).toBe(mode === 'grant');
+        }
+    });
+
     it('a minor is told so first, the package is valid, and it never claims consent to send', async () => {
         const profile = withProfile(newProfile(), { minor: true, guardianConfirmed: false, nickname: 'Kid', headphones: 'wired' });
         const h = setup({ profile });

@@ -5,6 +5,9 @@
 // so the voice can be found), and lets any question, or the whole survey, be skipped.
 //
 //   offer       "Do you want to answer a few questions? Press 1 for yes, 2 for no."   (2, Escape or a minute of silence: no)
+//               while the pilot's voice is still being recorded, survey.mic-on comes first: "The microphone stays on while you
+//               answer, so your words stay with the flight. It turns off after the last question." (not when the microphone was
+//               refused or failed: then nothing listens)
 //   questions   "Question n of m." the prompt, then "Press 1 for ..." for the ends of a scale or for each option
 //   keys        digits answer; Z hears the question again; Escape skips the question; Enter ends an open answer
 //
@@ -61,6 +64,15 @@ export interface SurveyDeps {
     offerMs?: number;
     /** how long a scale or a choice waits for a key before the survey is left as it is, ms (default 120 000) */
     idleMs?: number;
+    /** the pilot's voice is still being recorded: survey.mic-on is said right before the offer (false or absent: the microphone was refused or failed) */
+    micOn?: boolean;
+    /**
+     * A spoken number is heard as an answer: the how-to says so (survey.howto-voice, "... or say the number") instead of keys only
+     * (survey.howto). No host sets it in stage 1: the survey runs inside the recording, and nothing is listened to while a recording
+     * runs (the privacy section, Fly by Sound, "nothing is listened to while a recording runs"), so with the pilot's speech
+     * recognition ticked a spoken number is still not heard and the keys-only line is the true one.
+     */
+    numbersByVoice?: boolean;
 }
 
 /** The survey that suits this pilot. */
@@ -152,7 +164,7 @@ export async function runSurvey(deps: SurveyDeps): Promise<SurveyAnswers> {
 
     try {
         deps.view.offer();
-        void speak([{ key: 'survey.offer' }], false);
+        void speak(deps.micOn === true ? [{ key: 'survey.mic-on' }, { key: 'survey.offer' }] : [{ key: 'survey.offer' }], false);
         const offered = await nextInput(deps.offerMs ?? 60_000);
         lastAnswerAt = deps.now();
         silence();
@@ -161,7 +173,7 @@ export async function runSurvey(deps: SurveyDeps): Promise<SurveyAnswers> {
             void speak([{ key: 'survey.skipped' }], true);
         } else {
             // the intro and how to answer are said before the first question, as part of its speech: the question must not cut them off
-            const intro: SpeechLine[] = [{ key: `survey.intro.${def.variant}` }, { key: 'survey.howto', params: { skip: deps.keyLabel('Escape') } }];
+            const intro: SpeechLine[] = [{ key: `survey.intro.${def.variant}` }, { key: deps.numbersByVoice === true ? 'survey.howto-voice' : 'survey.howto', params: { skip: deps.keyLabel('Escape') } }];
             for (let index = 0; index < def.items.length && !abandoned; index++) {
                 const item = def.items[index] as SurveyItem;
                 const view: QuestionView = { number: index + 1, total: def.items.length, item };

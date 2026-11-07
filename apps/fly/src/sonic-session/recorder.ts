@@ -129,6 +129,8 @@ export interface SurveyEnv {
     now(): number;
     readonly sessionId: string;
     readonly profile: PilotProfile;
+    /** the pilot's voice is still being recorded (the microphone was allowed and works): the survey says so before it asks (survey.mic-on) */
+    readonly voiceOn: boolean;
 }
 
 export interface FinishedRecording {
@@ -524,7 +526,7 @@ export class Recorder {
         const survey = options.survey ?? this.deps.survey;
         if (survey !== undefined && this.sessionId !== null && this.profileAtStart !== null) {
             try {
-                answers = await survey({ now: () => this.clock.now(), sessionId: this.sessionId, profile: this.profileAtStart });
+                answers = await survey({ now: () => this.clock.now(), sessionId: this.sessionId, profile: this.profileAtStart, voiceOn: this.voiceState === 'recording' });
             } catch (e) {
                 this.noteProblem('survey', e);
             }

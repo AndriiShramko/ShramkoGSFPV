@@ -204,6 +204,9 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
                 keyLabel,
                 now: env.now,
                 profile: env.profile,
+                // the microphone still records: the pilot hears so before the offer (survey.mic-on). A spoken number is not taken here
+                // (numbersByVoice stays off): nothing is listened to while a recording runs, so the how-to names the keys only
+                micOn: env.voiceOn,
                 view: dialog,
                 listen: (handler) => {
                     const offKeys = captureSurveyKeys(handler);
