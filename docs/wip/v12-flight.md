@@ -22,7 +22,12 @@ Not yours: `features.ts`, `context.ts`, `sonic-context.ts` and `keymap.ts` (the 
 
 ## Status
 
-- [ ] 1 Built-in world: `analyticCollision` in `packages/collision`, `SessionOptions.world`, `apps/fly/src/sonic/lesson-world.ts`, tests `tools/bench/test/sonic-world.test.ts`
+- [x] 1 Built-in world: `analyticCollision` in `packages/collision`, `SessionOptions.world`, `apps/fly/src/sonic/lesson-world.ts`, tests `tools/bench/test/sonic-world.test.ts`
+  - A voxel is solid where the world's `solidAt` says at its centre; 8^3-voxel cells are decided by the distance when no surface can cross them (1-Lipschitz), the others keep a bit mask; `AnalyticContactWorld` answers an overlap test "free" from the distance kept at the cell's centre. Exact: 20 000 voxels per world agree with `solidAt` in 7 lesson worlds (control: a distance that lies is caught), and a flight's 22 147 contact queries give the same answers on all three lookups.
+  - `SessionOptions.world` (`BuiltinWorld`): no `resolveScene`, nothing drawn, walls named by the world digest, the lesson's start as the spawn; the session refuses a rescale, walls off, the floater filter, a ceiling and other walls while it flies one. `fly()` takes it (`FlyOptions.world`) and skips `recordOpen` and `scene_loaded`.
+  - Measured (vitest, this PC, best of 5, queries of the flight replayed under one timer): a 10 s hall flight along and into a wall 15.3 to 16.0 ms (cells only 13.1 to 14.6, no cull 21.3 to 27.5); in the open 4.2 to 4.8 ms (cells only 8.9 to 11.6, no cull 19.6 to 26.0). Under the plan's 20 ms in both.
+  - Touches: a hall wall within 1.5 mm of the distance function's surface, a pillar and a ring within half a voxel diagonal (control: walls 0.3 m off are caught). A lesson life with bumps and an R replays to its hash on walls rebuilt from the spec and on the plain contact world (controls: another world's digest is refused, the same log on other walls replays apart).
+  - Found on the way: the game scheme's voxel ground probe (`play/ground.ts`, a 10 m sphere's cover test) costs 1.4 to 1.8 ms median per call on these walls; a ray of the world costs 0.006 ms. The lesson pilot (step 4) reads the ground with a ray.
 - [ ] 2 Bridge `apps/fly/src/sonic/bridge.ts`: `FlightSample` per frame, tick hook on `Runner.onStep`, touch debounce, `sonicSample` and `sonicEvent`
 - [ ] 3 Scan world `apps/fly/src/sonic/scan-world.ts` and bench `tools/bench/src/sonic-rays.ts` (Winter Garden x5, 30 rays per sample, p95 under 1 ms)
 - [ ] 4 Lesson pilot: `controls.ts` hook and forced mode, `play/lesson-pilot.ts`, numeric caps in `game.ts`, installed by `app/input.ts`

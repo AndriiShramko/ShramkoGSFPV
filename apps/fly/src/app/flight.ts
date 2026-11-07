@@ -8,6 +8,7 @@ import { parseImpl } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { GSPLAT_RENDERER_RASTER_GPU_SORT } from 'playcanvas';
 import { FlightSession, FlyNow } from '../session';
+import type { BuiltinWorld } from '../session';
 import { Controls } from '../controls';
 import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
@@ -136,13 +137,23 @@ class Flight implements FlightContext {
     }
 }
 
+/** What else fly() can be given. */
+export interface FlyOptions {
+    /**
+     * A built-in world instead of a scan (v0.12 Fly by Sound lessons, session BuiltinWorld): `link.id` is
+     * its scene's id (lesson-<id>). It never reaches the scene library or the scene_loaded beacon.
+     */
+    world?: BuiltinWorld;
+}
+
 /**
  * Load the scene of `link` and fly it; a scan that fails to load goes back to the picker through
  * `onFail`. `link.render`: how the link asked the scene to be drawn (SuperSplat's ?budget= and
  * ?stochastic, app/drawing.ts); the catalogue's render is the default under it.
  */
-export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: SceneLink, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = []): Promise<void> {
+export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: SceneLink, showcase: ShowcaseScene[], prefs: PrefsStore, onFail: (code: string, msg: string) => void, collections: CatalogCollection[] = [], opts: FlyOptions = {}): Promise<void> {
     const sceneId = link.id;
+    const world = opts.world;
     const meta = showcase.find((s) => s.id === sceneId);
     const sceneRef: SceneRef = link.render ? { id: sceneId, meta, render: link.render } : { id: sceneId, meta };
     // the Controls screen follows the loading screen unless a test mode or touch sticks take over
@@ -173,6 +184,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     try {
         session = await FlightSession.start(canvas, {
             sceneId,
+            ...(world ? { world } : {}),
             wallsOn,
             transform: storedTransform(prefs, sceneId),
             dropFloaters: storedDropFloaters(prefs, sceneId),
@@ -220,8 +232,11 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     // shows through the Controls screen (a phone has no room to move either), so it goes by itself
     const hidNote = ui.querySelector('.banner[data-kind="no-hid"]');
     if (hidNote) setTimeout(() => hidNote.remove(), HID_NOTE_FLIGHT_MS);
-    recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
-    beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) }, { scene_id: sceneId });
+    // a built-in world is not a scan: not in the pilot's scene history, not a scene_loaded (v0.12 plan 2.5)
+    if (!world) {
+        recordOpen(sceneId, !!session.collision, meta?.title, session.scene.version);
+        beacon('scene_loaded', { has_collision: !!session.collision, load_ms_bucket: Math.round((session.timings.visibleMs ?? 0) / 1000) }, { scene_id: sceneId });
+    }
 
     const ctx = new Flight(ui, canvas, session, sceneRef, prefs);
     // E.4: the next scenes load in this page, on this renderer, with the same input
