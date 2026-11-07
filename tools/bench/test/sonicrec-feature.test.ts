@@ -3,6 +3,7 @@
 // hook is a no-op while the sound mode is off, so ordinary flight is unchanged: key T does nothing without ctx.sonic, and
 // the bus listeners write nothing unless a recording runs. The page is emulated just far enough for the real key router,
 // the real bus and the real dictionaries (the few DOM globals src/i18n.ts reads at import).
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { Bus } from '../../../apps/fly/src/app/context';
 import type { AppEvents, FlightContext } from '../../../apps/fly/src/app/context';
@@ -104,15 +105,68 @@ describe('the session feature in the flight page', () => {
         expect(press(keys, 'KeyT')).toBeNull();
     });
 
-    it('the feature installs through the same path as every other and takes itself out again', () => {
+    // a held key (repeat) is routed to the session's handler and does nothing there: a probe for "is the session installed" with no effect
+    const installed = (keys: KeyRouter): boolean => press(keys, 'KeyT', { repeat: true }) === 'sonic.record';
+    async function until(pred: () => boolean, what: string, ms = 3000): Promise<void> {
+        const t0 = Date.now();
+        while (!pred()) {
+            if (Date.now() - t0 > ms) throw new Error(`timed out waiting for ${what}`);
+            await new Promise((r) => setTimeout(r, 5));
+        }
+    }
+
+    it('the feature installs through the same path as every other, brings the session in when the mode starts, and takes itself out again', async () => {
         const fake = fakeRuntime('walls-hall');
-        const { ctx, keys } = page(fake);
+        const { ctx, keys, events } = page(fake);
         const off = feature.sonicSession.install(ctx);
         expect(typeof off).toBe('function');
         expect(feature.sonicSession.id).toBe('sonic-session');
+        events.emit('frame', { now: 16 });
+        await until(() => installed(keys), 'the session side to load');
         expect(press(keys, 'KeyT')).toBe('sonic.record');
         (off as () => void)();
         expect(press(keys, 'KeyT')).toBeNull();
+    });
+
+    it('with the sound mode off the feature loads and registers nothing (ordinary flight does not pay for the session side); when the mode starts it does', async () => {
+        const fake = fakeRuntime('walls-hall');
+        const { ctx, keys, events } = page(null);
+        const off = feature.sonicSession.install(ctx);
+        for (let i = 0; i < 6; i++) events.emit('frame', { now: i * 16 });
+        await new Promise((r) => setTimeout(r, 60)); // time enough for a load that was wrongly started to finish
+        expect(press(keys, 'KeyT', { repeat: true })).toBeNull(); // T and U are nobody's: no handler, no bus listener of the session
+        expect(press(keys, 'KeyU', { repeat: true })).toBeNull();
+        // the mode starts: ctx.sonic appears, the next frame brings the session side in
+        (ctx as unknown as { sonic?: unknown }).sonic = fake.runtime;
+        events.emit('frame', { now: 200 });
+        await until(() => installed(keys), 'the session side to load once the mode runs');
+        expect(press(keys, 'KeyU', { repeat: true })).toBe('sonic.send');
+        // and it is the whole thing: T asks, the second T (once the question has been read out) records
+        expect(press(keys, 'KeyT')).toBe('sonic.record');
+        await new Promise((r) => setTimeout(r, 10));
+        press(keys, 'KeyT');
+        events.emit('sonicSample', sampleAt(performance.now()));
+        (off as () => void)();
+        expect(press(keys, 'KeyT', { repeat: true })).toBeNull();
+    });
+
+    it('a mode that starts and a feature that is taken out before the session side has loaded leave nothing behind', async () => {
+        const fake = fakeRuntime('walls-hall');
+        const { ctx, keys, events } = page(fake);
+        const off = feature.sonicSession.install(ctx);
+        events.emit('frame', { now: 16 });
+        (off as () => void)(); // gone in the same breath: the load that is on its way must not install a session afterwards
+        await new Promise((r) => setTimeout(r, 80));
+        expect(press(keys, 'KeyT', { repeat: true })).toBeNull();
+    });
+
+    it('the feature file imports the session side only through import(), so the main script of the simulator does not carry it', () => {
+        const text = readFileSync(new URL('../../../apps/fly/src/app/builtin/sonic-session.ts', import.meta.url), 'utf8');
+        expect(text).toMatch(/import\('\.\.\/\.\.\/sonic-session\/session'\)/);
+        const staticImports = [...text.matchAll(/^import\s+(?!type\b)[^;]*from\s+'([^']+)';?/gm)].map((m) => m[1]);
+        expect(staticImports.filter((from) => /sonic-session|@shramko\/sonic-fpv/.test(from as string))).toEqual([]);
+        // control: the file as the lane wrote it first imported it statically
+        expect("import { createSonicSession } from '../../sonic-session/session';").toMatch(/^import\s+(?!type\b)[^;]*from\s+'[^']*sonic-session[^']*'/);
     });
 
     it('key labels: a letter or digit as it is, the named keys from the dictionary', () => {
