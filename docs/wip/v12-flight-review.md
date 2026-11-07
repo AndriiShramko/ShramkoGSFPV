@@ -5,7 +5,7 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 ## Status
 
 - [x] 0 Read the plan (sections 4.2, 8, 9), the spec, the package's AGENTS.md and replay core, the lane's Status, and the lane's code that matters most: every changed file outside `apps/fly/src/sonic/` (input path, session, sound, flight, boot, prefs, render-pc, collision) and `bridge.ts`, `mode.ts`, `lessons.ts`, `start.ts`, `start-screen.ts`, `entry.ts`, `captions.ts`, `audio.ts`, `store.ts`, `scan-lesson.ts`, `scan-world.ts`, `lesson-world.ts`, `lesson-pilot.ts`, the feature `sonic-flight.ts`, the GPU hint (both files), `analytic.ts`, `normal.ts`, the PrimitiveStage half of `primitives.ts`.
-- [ ] 1 D2 the bridge's speech counter survives the mode starting again (a line of the lesson that was left ends after the next lesson began)
+- [x] 1 D2 the bridge's speech counter survives the mode starting again (a line of the lesson that was left ends after the next lesson began)
 - [ ] 2 D1 the keyboard stand-in of Fly by Sound is not remembered as the pilot's input
 - [ ] 3 D4 the start screen over a running flight keeps Space and the arrow keys for itself
 - [ ] 4 D3 a lesson that does not open at the entry is said in the pilot's language, by the engine's voice
@@ -13,7 +13,12 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 
 ## Findings
 
-(filled in as each defect is proved and fixed)
+### D2 (fixed): a line of the lesson that was left ends the NEW lesson's speech early (`sonic/bridge.ts`)
+
+- Defect: `SonicBridge.start()` resets the speech count to 0 for every lesson (`SonicMode.enter()`), but a `say()` of the lesson that was left is still in flight (G, or a lesson chosen on the start screen over the flight) and when it ends (cut by speechSynthesis.cancel, or on its own) its `finally` took one off the new lesson's count and, at 0, sent a `speech.end` marker and called `runner.spoken(t)` of the NEW runner while the new lesson's own line was still being said: the runner goes on before its intro is over, and the recording carries a marker that is not the host's real end of speech.
+- Test that failed before the fix (and passes after): `tools/bench/test/sonic-bridge.test.ts` "review D2" (unit, fake engine: a `speech.end` at t 0 appeared while the new lesson's line was in the queue) and `tools/bench/test/sonic-lessons.test.ts` "review D2" (the real host, mode, bridge and runner on the real flight model; only the engine and the drawing are fakes): G while the intro of rings-first is being said, then the glossary's first three `speech.end` markers: `[true, true, true]` for "the engine is still speaking" before the fix, `[false, false, false]` after. Controls that pass both before and after: the same lessons with no lesson left behind (clean open of ears-glossary), lines of one lesson counted as before, a line ending after `stop()` says nothing.
+- Fix: a run counter (`epoch`, bumped by `start()` and `stop()`); a `say()` takes its own run's number and only a line of the current run changes the count or reports the end of speech.
+- Checks run: `sonic-bridge` (15), `sonic-lessons` (23), `sonic-mode` (5): 43 pass; typecheck of `@gsfpv/fly` and `@gsfpv/bench`.
 
 ## Refuted claims and probes that found nothing
 

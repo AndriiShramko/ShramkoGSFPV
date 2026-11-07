@@ -118,6 +118,11 @@ export class SonicBridge {
     private sounding = false;
     private pausedNow = false;
     private speaking = 0;
+    /**
+     * Counts every start() and stop(): a line said in one run of the mode (one lesson) that ends in a later one must not
+     * take a line off the later run's count (see say()).
+     */
+    private epoch = 0;
     private lastLine: SpeechLine | null = null;
     /**
      * Called after every call the bridge makes into the lesson runner (begin, reset, next, spoken): the runner may have
@@ -145,6 +150,7 @@ export class SonicBridge {
     start(session: BridgeSession): void {
         if (this.on) this.stop();
         this.on = true;
+        this.epoch++;
         this.t0 = this.clock();
         this.inPlayback = false;
         this.lastContactTick = -Infinity;
@@ -162,6 +168,7 @@ export class SonicBridge {
         this.detach();
         this.silence();
         this.on = false;
+        this.epoch++;
         this.session = null;
         this.runner = null;
     }
@@ -332,16 +339,25 @@ export class SonicBridge {
      * Speaks a line through the engine, `interrupt` passed on; the queue of lines is counted, and when it runs
      * empty spoken() reports it (the speech.end marker and runner.spoken). The text event of the line is the
      * engine's (onSpeech: speech()).
+     *
+     * The count belongs to one run of the mode (start() .. stop()): entering the next lesson starts it again at zero while
+     * the engine may still be saying the last line of the lesson that was left (G, a lesson chosen on the start screen),
+     * and that line ends later, cut by the new lesson's first line or on its own. Such a line is no part of the new run:
+     * it takes nothing off its count and reports no end of speech (it would otherwise make the new lesson's queue look
+     * empty while its own first line was being said, and the runner would go on before its intro ended).
      */
     async say(line: SpeechLine, interrupt = false): Promise<void> {
         if (!this.on) return;
         this.lastLine = line;
         this.speaking++;
+        const run = this.epoch;
         try {
             await this.engine?.say(line, { interrupt });
         } finally {
-            this.speaking = Math.max(0, this.speaking - 1);
-            if (this.speaking === 0) this.spoken();
+            if (run === this.epoch) {
+                this.speaking = Math.max(0, this.speaking - 1);
+                if (this.speaking === 0) this.spoken();
+            }
         }
     }
 

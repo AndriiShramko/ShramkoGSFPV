@@ -8,7 +8,7 @@
 // the lesson it left, a paused flight is not stepped, progress is saved at every attempt, and a lesson flown through the host
 // passes the package's replay check (every event re-derived).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { SPEECH_END_KEY, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, Vec3 } from '../../../packages/sonic-fpv/src';
 import { S } from '../../../packages/sim-core/src';
 import { onPlatform } from '../../../apps/fly/src/sonic/bridge';
@@ -339,6 +339,39 @@ describe('the host around a lesson', () => {
         await r.run(900000, (rr) => { rr.mode.next('KeyN'); return null; }, () => r.host.lesson?.id === 'rings-first');
         expect(r.host.lesson!.id).toBe('rings-first');
         expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'rings-first']);
+    }, 300000);
+
+    // review of v12-flight, D2 (the bridge's speech count after another lesson is entered while a line is being said)
+    it('review D2: G while the intro is being said: the glossary\'s speech.end markers come only when the engine has nothing left to say', async () => {
+        const r = await open('rings-first');
+        const ends: boolean[] = [];
+        r.events.on('sonicEvent', (e) => {
+            if (e.kind === 'speech' && e.key === SPEECH_END_KEY) ends.push(r.engine.speaking);
+        });
+        // the intro of rings-first is being said (the engine's queue is not empty)
+        await r.run(10000, null, () => r.engine.speaking);
+        expect(r.engine.speaking).toBe(true);
+        const before = r.engine.said.length;
+        expect(await r.host.glossary()).toBe(true);
+        expect(r.host.lesson!.id).toBe('ears-glossary');
+        expect(r.engine.said.length).toBeGreaterThan(before);
+        ends.length = 0;
+        // the glossary talks for a good while (behind what is left of the intro, which G does not cut: see review D2b):
+        // every end of speech it gets is the real one
+        await r.run(300000, null, () => ends.length >= 3);
+        expect(ends.length).toBeGreaterThanOrEqual(3);
+        expect(ends).toEqual(ends.map(() => false));
+    }, 300000);
+
+    it('review D2 control: with no lesson left behind (no G) the same lesson\'s speech.end markers come with an empty engine queue too', async () => {
+        const r = await open('ears-glossary');
+        const ends: boolean[] = [];
+        r.events.on('sonicEvent', (e) => {
+            if (e.kind === 'speech' && e.key === SPEECH_END_KEY) ends.push(r.engine.speaking);
+        });
+        await r.run(60000, null, () => ends.length >= 3);
+        expect(ends.length).toBeGreaterThanOrEqual(3);
+        expect(ends).toEqual(ends.map(() => false));
     }, 300000);
 
     it('progress is saved at every attempt, not only at the pass', async () => {

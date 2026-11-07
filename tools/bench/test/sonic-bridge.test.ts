@@ -284,6 +284,78 @@ describe('the frames stop: the engine falls silent', () => {
         expect(events).toEqual([{ t: 1500, kind: 'speech', key: SPEECH_END_KEY, text: '' }]);
         expect(spokenAt).toEqual([1500]);
     });
+
+    // review of v12-flight, D2: G (the glossary), a lesson chosen on the start screen over the flight, or any other way into
+    // another lesson enters the mode again while the engine may still be saying the line of the lesson that was left; that
+    // line ends later (a new line with interrupt cuts it and speechSynthesis resolves it) and used to take one off the NEW
+    // lesson's count, so the new lesson's queue looked empty while its own first line was being said
+    it('review D2: a line of the lesson that was left, ending after the next lesson began, is not the end of the new lesson\'s speech', async () => {
+        const clock = { t: 0 };
+        const f = new FakeFlight();
+        const { bridge, events } = bridgeOn(clock);
+        const engine = fakeEngine();
+        bridge.engine = engine;
+        bridge.start(f);
+        const left = bridge.say({ key: 'x.old-intro' });
+        expect(bridge.speechQueue).toBe(1);
+        // the next lesson opens (LessonHost.open -> SonicMode.enter -> SonicBridge.start): a new clock, a new runner
+        clock.t = 4000;
+        bridge.start(f);
+        const spokenAt: number[] = [];
+        bridge.runner = { ...createLessonRunner(getLesson('walls-hall')), spoken: (t: number) => { spokenAt.push(t); return []; } } as unknown as LessonSession;
+        expect(bridge.speechQueue).toBe(0);
+        const fresh = bridge.say({ key: 'x.new-intro' }, true);
+        expect(bridge.speechQueue).toBe(1);
+        // the engine cuts the old line (speechSynthesis.cancel) and it ends
+        engine.said[0].done();
+        await left;
+        // the new lesson is still saying its intro: no end of speech, no runner.spoken, the count is its own
+        expect(events.filter((e) => e.kind === 'speech' && e.key === SPEECH_END_KEY)).toEqual([]);
+        expect(spokenAt).toEqual([]);
+        expect(bridge.speechQueue).toBe(1);
+        // its own line ends: now it is the end of speech, once, on the new lesson's clock
+        clock.t = 5300;
+        engine.said[1].done();
+        await fresh;
+        expect(events).toEqual([{ t: 1300, kind: 'speech', key: SPEECH_END_KEY, text: '' }]);
+        expect(spokenAt).toEqual([1300]);
+        expect(bridge.speechQueue).toBe(0);
+    });
+
+    it('review D2 control: lines of the same lesson count as before (a line cut by a later one is not the end; one end after the last line)', async () => {
+        const clock = { t: 0 };
+        const f = new FakeFlight();
+        const { bridge, events } = bridgeOn(clock);
+        const engine = fakeEngine();
+        bridge.engine = engine;
+        bridge.start(f);
+        const a = bridge.say({ key: 'x.one' });
+        const b = bridge.say({ key: 'x.two' }, true);
+        engine.said[0].done();
+        await a;
+        expect(events).toEqual([]);
+        expect(bridge.speechQueue).toBe(1);
+        clock.t = 900;
+        engine.said[1].done();
+        await b;
+        expect(events).toEqual([{ t: 900, kind: 'speech', key: SPEECH_END_KEY, text: '' }]);
+    });
+
+    it('review D2 control: a line of a lesson that was left, ending after the mode stopped, says nothing; the next start counts from zero', async () => {
+        const clock = { t: 0 };
+        const f = new FakeFlight();
+        const { bridge, events } = bridgeOn(clock);
+        const engine = fakeEngine();
+        bridge.engine = engine;
+        bridge.start(f);
+        const left = bridge.say({ key: 'x.old-intro' });
+        bridge.stop();
+        engine.said[0].done();
+        await left;
+        expect(events).toEqual([]);
+        bridge.start(f);
+        expect(bridge.speechQueue).toBe(0);
+    });
 });
 
 // ---------------------------------------------------------------- the replay check of a lesson recorded through the bridge
