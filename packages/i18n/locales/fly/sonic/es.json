@@ -25,6 +25,7 @@
   "sonic.say.scanLoading": "Cargando el escaneo de esta lección. Puede tardar hasta un minuto. La lección empieza sola.",
   "sonic.say.wallsCoarse": "Las paredes de este escaneo son bastas: unos {cm} centímetros a este tamaño. Una pared puede sonar un poco más cerca o más lejos de lo que está en realidad.",
   "sonic.scaleLocked": "Fly by Sound: la escena mantiene su tamaño durante una lección",
+  "sonic.sceneLocked": "Fly by Sound: la escena no cambia durante una lección",
   "sonic.settings.layers": "Volumen y tono de cada sonido",
   "sonic.start.heading": "Empezar",
   "sonic.start.intro": "Aprende a pilotar un dron de oído. Todo se dice y se toca como sonido, así que no hace falta pantalla. Un ayudante puede preparar tu radio, teclado o mando.",

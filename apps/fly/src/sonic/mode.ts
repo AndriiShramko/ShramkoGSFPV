@@ -14,7 +14,8 @@
 //                  to the lesson's start. Both are the 'key' event the replay reads, the runner's reset when there
 //                  is one, then place(): the session's spawn moves to the pose and respawnStart() makes it a logged
 //                  'manual-start' respawn, exact in a replay of the flight log (the time-based rewind Y is not used).
-//   N              the next step of the lesson (the 'key' event, runner.next); never a scene switch in the mode.
+//   N              the next step of the lesson (the 'key' event, runner.next), once per press; never a scene switch in the mode:
+//                  Shift+N (Shift is the descent key, so it is easily held with N) is the same step, Shift+F a note.
 //   [ ]            locked: a lesson's distances are metres of its world (a note says so).
 //   scan lessons   the prefs' session layer also holds the lesson's scene size and the walls on (scan-lesson.ts), taken off
 //                  again by leave(); the keys [ ] above are why the size cannot move meanwhile.
@@ -123,7 +124,20 @@ export class SonicMode {
         else b.runner = null;
         this.offs = [
             h.onKey('respawn.start', (e, source) => this.pressR(source === 'key' ? e.repeat : false, source)),
-            h.onKey('scene.next', () => this.next('KeyN')),
+            // N: one next step per press, whatever its auto-repeat does (in the ears lessons every call skips a line, a scene
+            // or a question, so a held N would run through the whole lesson)
+            h.onKey('scene.next', (e) => {
+                if (!e.repeat) this.next('KeyN');
+            }),
+            // Shift is the game scheme's descent key: a pilot who holds it and presses N sends the chord Shift+N, which the
+            // scene rotation reads as "a random scene", and Shift+F as "the next favourite". Neither may take the pilot out
+            // of the lesson (N's own rule): Shift+N is the next step that was meant, Shift+F is a note
+            h.onKey('scene.random', (e) => {
+                if (!e.repeat) this.next('KeyN');
+            }),
+            h.onKey('scene.favourite', (e) => {
+                if (!e.repeat) h.note('sonic.sceneLocked');
+            }),
             h.onKey('scale.down', () => h.note('sonic.scaleLocked')),
             h.onKey('scale.up', () => h.note('sonic.scaleLocked'))
         ];

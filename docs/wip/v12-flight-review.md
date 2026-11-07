@@ -10,6 +10,7 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 - [x] 3 D4 the start screen over a running flight keeps Space and the arrow keys for itself
 - [x] 3b D6 the captions region keeps every line of a burst while a screen reader reads it
 - [x] 4 D3 a lesson that does not open at the entry is said in the pilot's language, by the engine's voice
+- [x] 4b D5 the mode's keys: a held N is one step, Shift+N and Shift+F are no scene switch
 - [ ] 5 lane acceptance once (the checks the fixes touch: typecheck, the sonic and input tests, a6-reference, i18n parity, catalog, B18, accept-fly on a local build)
 
 ## Findings
@@ -43,6 +44,13 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 - Test that failed before the fix: `tools/bench/test/sonic-review-input.test.ts` (4 tests become 5 with controls): `InputHost.start(resumed, standIn)` with nothing found flies the keyboard with its note, opens no Controls screen and leaves `last` as the radio. Controls that pass before and after: a radio that is found flies and is remembered; the plain simulator with nothing found opens the Controls screen and keeps the radio; the mechanism (a keyboard handed to `start()` as the input found, the old call, is remembered over the radio); the keyboard picked on the Controls screen is the pilot's choice and is remembered.
 - Fix: `fly()` passes the keyboard as `standIn` (the second argument of `InputHost.start`, used only when nothing was found and the Controls screen is not shown) and `use(standIn, false)`; the wrapper `asKeyboard` and its import are gone. `controlsNext` and every other line of `fly()` are as before; with the mode off `standIn` is null and `start()` is as it was.
 - Checks run: `sonic-review-input` (5), `app-known-controller`, `app-switches`, `app-modes` (45 in four files) pass; typechecks; the page probe above.
+
+### D5 (fixed): the mode's keys: a held N runs through a lesson, and Shift+N and Shift+F still switch the scene (`sonic/mode.ts`, locales)
+
+- Defects, two in one table (`SonicMode.enter()`): (a) the N handler (`scene.next`) ignored `e.repeat`; every other key of the feature checks it (R, Z, I, G). In the ears lessons (module 0) `LessonSession.next()` skips the line, scene or question going on, so a held N (auto-repeat) skips the rest of the lesson, questions included (answered as skipped). (b) The mode took N from the scene rotation and nothing else of it: Shift+N (a random scene) and Shift+F (the next favourite) still ran `ctx.scenes.go(...)` from `app/builtin/rotation.ts`. Shift is the game scheme's descent key and the router reads Shift+N as that chord first (`shiftIsFlying` falls back to the key alone only when the chord matches nothing), so a pilot who is descending and presses N, to skip an intro, replaces the lesson's world with a catalogue scan while the lesson's runner goes on in the old one (its `place` actions then move the scan craft to lesson coordinates). The plan's own rule is "N = next step, never a scene switch in the mode". Not touched: the pause menu's scene items, which are the helper's deliberate choice.
+- Test that failed before the fix: `tools/bench/test/sonic-mode.test.ts` "review D5" (the real session and mode, the key table as the router runs it): a held N (one press, ten repeats) gave 11 key events before the fix, one after; Shift+N called the rotation's handler before and is the next step after; Shift+F called it before and is the note `sonic.sceneLocked` after; `leave()` gives both handlers back and they run again.
+- Fix: N ignores repeats; `scene.random` is the next step (`KeyN`, `next`); `scene.favourite` shows the note; new key `sonic.sceneLocked` in en, es, pl, ru.
+- Checks run: `sonic-mode` (6), `sonic-lessons` (25), `packages/i18n` (22) pass; typechecks; gates architecture, catalog and B18 PASS.
 
 ### D3 (fixed): a lesson that does not open at the entry is reported with the exception's English text, and not aloud (`sonic/start.ts`, `sonic/start-model.ts`, locales)
 

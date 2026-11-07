@@ -25,6 +25,7 @@
   "sonic.say.scanLoading": "Wczytuję skan do tej lekcji. Może to potrwać nawet minutę. Lekcja zacznie się sama.",
   "sonic.say.wallsCoarse": "Ściany tego skanu są zgrubne: około {cm} centymetrów w tej skali. Ściana może brzmieć trochę bliżej lub dalej, niż jest naprawdę.",
   "sonic.scaleLocked": "Fly by Sound: scena zachowuje swój rozmiar podczas lekcji",
+  "sonic.sceneLocked": "Fly by Sound: scena nie zmienia się podczas lekcji",
   "sonic.settings.layers": "Głośność i wysokość każdego dźwięku",
   "sonic.start.heading": "Start",
   "sonic.start.intro": "Naucz się latać dronem ze słuchu. Wszystko jest mówione i odtwarzane dźwiękiem, więc ekran nie jest potrzebny. Pomocnik może ustawić radio, klawiaturę lub pada.",

@@ -25,6 +25,7 @@
   "sonic.say.scanLoading": "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
   "sonic.say.wallsCoarse": "The walls of this scan are coarse: about {cm} centimetres at this size. A wall can sound a little nearer or farther than it really is.",
   "sonic.scaleLocked": "Fly by Sound: the scene keeps its size during a lesson",
+  "sonic.sceneLocked": "Fly by Sound: the scene does not change during a lesson",
   "sonic.settings.layers": "Volume and pitch of each sound",
   "sonic.start.heading": "Start",
   "sonic.start.intro": "Learn to fly a drone by ear. Everything is said and played as sound, so no screen is needed. A helper can set up your radio, keyboard or gamepad.",

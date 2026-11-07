@@ -187,6 +187,39 @@ describe('R short and long, N, [ ]', () => {
         p.press('scene.next');
         expect(sceneNext).toHaveBeenCalledTimes(1);
     });
+
+    // review of v12-flight, D5: the rest of the keys that leave a lesson, and a held N
+    it('review D5: a held N is one next step; Shift+N (the descent key held while N is pressed) is the next step and Shift+F a note, neither a scene switch; leave() gives them back', async () => {
+        const p = await open();
+        const random = vi.fn();
+        const favourite = vi.fn();
+        // what the page had before the mode: the scene rotation's Shift+N (a random scene) and Shift+F (the next favourite)
+        p.keys.set('scene.random', [random]);
+        p.keys.set('scene.favourite', [favourite]);
+        p.mode.enter({ lesson: LESSON });
+        const keyEvents = (): SessionEvent[] => p.sonic.filter((e) => e.kind === 'key');
+        p.press('scene.next');
+        // the key repeats of a held N: no further step (in the ears lessons every call skips a line, a scene or a question)
+        for (let i = 0; i < 10; i++) p.press('scene.next', { repeat: true });
+        expect(keyEvents()).toMatchObject([{ code: 'KeyN', action: 'next' }]);
+        expect(keyEvents()).toHaveLength(1);
+        // Shift+N is the chord the router reads while Shift is held as the descent: the pilot meant N
+        p.press('scene.random');
+        p.press('scene.random', { repeat: true });
+        expect(random).not.toHaveBeenCalled();
+        expect(keyEvents()).toMatchObject([{ code: 'KeyN', action: 'next' }, { code: 'KeyN', action: 'next' }]);
+        expect(keyEvents()).toHaveLength(2);
+        // Shift+F: the scene stays, a note says so
+        p.press('scene.favourite');
+        expect(favourite).not.toHaveBeenCalled();
+        expect(p.notes).toEqual(['sonic.sceneLocked']);
+        p.mode.leave();
+        for (const a of ['scene.random', 'scene.favourite']) expect(p.keys.get(a)).toHaveLength(1);
+        p.press('scene.random');
+        p.press('scene.favourite');
+        expect(random).toHaveBeenCalledTimes(1);
+        expect(favourite).toHaveBeenCalledTimes(1);
+    });
 });
 
 describe('the mode\'s settings and assists, in and out', () => {
