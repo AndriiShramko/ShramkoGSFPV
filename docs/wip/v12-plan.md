@@ -127,3 +127,14 @@ sonic-core to `stage1-rc1`; lead step 0; then v12-flight and v12-feedback side b
 3. Offering speech recognition at all in stage 1 (audio goes to Google).
 4. How long session packages stay on the server (the privacy text needs a period).
 5. The letters T U I Z G, the parameter `?sonic=` and the page `/sound/`.
+
+## 8. Lead decisions on section 7 (2026-11-07)
+
+The owner asked for few questions; these are the lead's defaults and can be changed later.
+
+1. ShramkoSonicFPV is published on GitHub as a public repository after the secrets scan (the owner asked for open source in the brief).
+2. Mail attachments: `gsfpv-api` memory goes to 192 MB and SESSION_MAIL_MAX_BYTES to 15 MB (Gmail's 25 MB limit counts base64); bigger packages go as an admin link. Every file is still streamed from disk.
+3. Speech recognition is offered in stage 1 (the owner asked that a blind pilot can send by voice without a helper): opt-in, disclosed before first use, keys stay the default.
+4. Session packages are kept while the project runs and at most 5 years, deleted earlier on request by the pilot or a parent; the privacy text says so.
+5. Keys T U I Z G, `?sonic=` and `/{lang}/sound/` are accepted.
+6. Winter Garden walls: v12-flight checks whether a refined wall grid for 7a475d38 can be shipped with the release so no tester's PC has to refine first; if not, the lesson says plainly that the walls are coarse.
