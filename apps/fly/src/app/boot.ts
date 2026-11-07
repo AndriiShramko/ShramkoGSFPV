@@ -6,7 +6,9 @@ import { flyQueryString, parseSceneLink, parseSharedSettings, sceneRender, strip
 import { ScenePicker, loadCatalog } from '../ui/scenes';
 import type { PickSource } from '../ui/picker-tabs';
 import { warningModal } from '../ui/panels';
-import { t } from '../i18n';
+import { t, locale } from '../i18n';
+import { setSonicEntry } from '../sonic/entry';
+import { startSonic } from '../sonic/start';
 import { banner, beacon, hasHid, hasWebGPU, q } from './env';
 import { hook } from './test-hook';
 import { fly } from './flight';
@@ -33,6 +35,25 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     useStoreLibrary(prefs);
     // W2-1: blocked storage says so once (A.5); the catalogue's ?open=settings opens over the picker
     storageBanner(ui, prefs);
+    // Fly by Sound (v0.12): ?sonic=start or ?sonic=<lesson id> opens the accessible start screen instead of the scene picker
+    // and the first-visit modal; a lesson chosen there launches the flight on its world (sonic/start.ts)
+    const sonicParam = q.get('sonic');
+    if (sonicParam !== null) {
+        startSonic({
+            prefs,
+            locale,
+            raw: sonicParam,
+            launch: async (r) => {
+                setSonicEntry({ setup: r.setup, lessonId: r.lessonId, world: r.world });
+                const id = r.world ? r.world.builtin.scene.id : r.sceneId ?? '';
+                await fly(ui, canvas, { id }, showcase, prefs, (code, msg) => {
+                    hook.errorCode = code;
+                    throw new Error(msg || code);
+                }, catalog.collections, r.world ? { world: r.world.builtin } : {});
+            }
+        });
+        return;
+    }
     let picker: ScenePicker | null = null;
 
     function showPicker(errorCode: string | null, msg?: string): void {

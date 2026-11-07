@@ -28,6 +28,7 @@ import { PauseStack } from './pause-stack';
 import { KeyRouter } from './keys';
 import { PauseMenu } from './menu';
 import { InputHost, expectResume, ownInput, resumeInput, release } from './input';
+import type { RadioChoice } from '../ui/radio';
 import { Quality } from './quality';
 import { drawingFor } from './drawing';
 import { wallsHost } from './walls';
@@ -160,11 +161,15 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     const sim = q.get('simradio');
     // no test mode, no forced input: the input from last time is looked for while the scan loads
     const own = ownInput();
-    const resumed = own ? resumeInput().catch(() => null) : Promise.resolve(null);
-    const controlsNext = own ? !expectResume() : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
+    // Fly by Sound (v0.12): no radio found, the keyboard flies at once: the Controls screen is a sight-first wizard, and a
+    // radio is set up once by a helper (the pause menu's Controls), after which it is the one found here
+    const asKeyboard = (c: RadioChoice | null): RadioChoice | null => c ?? (world ? { kind: 'keyboard', profile: null } : null);
+    const resumed = (own ? resumeInput().catch(() => null) : Promise.resolve(null)).then(asKeyboard);
+    const controlsNext = own ? !expectResume() && !world : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
     // the card's Fly now shows the first view at once (session/reveal.ts)
     const flyNow = new FlyNow();
-    const loading = new LoadingScreen(ui, {
+    // a built-in world is in memory: nothing loads, so there is no loading card to read, wait for or fade out
+    const loading = world ? null : new LoadingScreen(ui, {
         sceneId,
         title: meta?.title,
         next: controlsNext ? t('loading.next') : null,
@@ -204,12 +209,12 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             drawing: (webgpu, gpu) => drawingFor(prefs, sceneRef, webgpu, gpu),
             flyNow,
             onProgress: (p) => {
-                loading.update(p);
+                loading?.update(p);
                 hook.loading = { stage: p.stage, loaded: p.loaded, total: p.total, fraction: p.fraction, exact: p.exact, elapsedMs: Math.round(performance.now() - tLoad), view: p.view, reveal: p.reveal, canFlyNow: p.canFlyNow, revealInMs: p.revealInMs };
             }
         });
     } catch (e) {
-        loading.remove();
+        loading?.remove();
         const code = e instanceof SceneError ? e.code : 'generic';
         hook.error = String((e as Error)?.message ?? e);
         onFail(code, hook.error);
@@ -226,7 +231,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     // ?inflight=N: frames the GPU may still be on when the next is drawn (0 = no limit, the negative control)
     if (q.get('inflight') !== null) session.renderer.maxFramesInFlight = Number(q.get('inflight'));
     // "The scan is ready" for a moment, then the scan fades in: no jump straight into another screen
-    await loading.finish();
+    await loading?.finish();
     document.body.classList.add('flying');
     // the USB note is about choosing a browser; over the flight it covers the OSD's top line and
     // shows through the Controls screen (a phone has no room to move either), so it goes by itself

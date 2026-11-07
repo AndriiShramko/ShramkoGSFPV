@@ -11,7 +11,7 @@
 //     library and the CDN never see it; nothing to draw (the helper's view is primitives, step 6);
 //   - the craft starts at the lesson's start (or the world's own when the lesson gives none).
 // Sound reads the same world through the contract's SonicWorld (castRay, objects).
-import { createAnalyticWorld } from '@shramko/sonic-fpv';
+import { createAnalyticWorld, makeSpec } from '@shramko/sonic-fpv';
 import type { AnalyticWorldInfo, AnalyticWorldSpec, LessonDef, Pose } from '@shramko/sonic-fpv';
 import { AnalyticContactWorld, analyticCollision } from '@gsfpv/collision';
 import type { AnalyticVoxelCollision } from '@gsfpv/collision';
@@ -87,4 +87,14 @@ export function buildLessonWorld(spec: AnalyticWorldSpec, sceneId: string, start
 export function lessonWorldOf(lesson: LessonDef): LessonWorld | null {
     if (lesson.world.kind !== 'analytic') return null;
     return buildLessonWorld(lesson.world.spec, lessonSceneId(lesson.id), lesson.start);
+}
+
+/**
+ * The world the page flies while a lesson runs: the lesson's own; for the ears lessons (module 0: no world, the sources
+ * are placed by the lesson alone) a floor and nothing else, so the page still has a craft that hovers at the lesson's
+ * start; null for a scan lesson (module 7), which flies the scan itself.
+ */
+export function lessonFlightWorld(lesson: LessonDef): LessonWorld | null {
+    if (lesson.world.kind === 'scan') return null;
+    return lessonWorldOf(lesson) ?? buildLessonWorld(makeSpec('open', { startHeightM: lesson.start.pos[1] }), lessonSceneId(lesson.id), lesson.start);
 }
