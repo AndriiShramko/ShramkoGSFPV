@@ -128,8 +128,13 @@ try {
         await page.selectOption('[data-testid="s-filter"]', 'failed');
         const failed = (await rowsOf()).map((r) => r.id);
         await page.selectOption('[data-testid="s-filter"]', 'all');
-        await page.locator('[data-testid="s-search"]').fill('walls');
+        // typed one key at a time, as a person does (fill() would hide a re-render that sends the caret back to the start)
+        await page.locator('[data-testid="s-search"]').pressSequentially('walls', { delay: 40 });
+        const typed = await page.locator('[data-testid="s-search"]').inputValue();
+        const focused = await page.evaluate(() => document.activeElement?.id === 's-search');
         const searched = (await rowsOf()).length;
+        checks['S2: typing in the search box key by key keeps the text in order and the focus in the box'] = typed === 'walls' && focused;
+        await page.locator('[data-testid="s-search"]').fill('');
         await page.locator('[data-testid="s-search"]').fill('no-such-lesson');
         const none = (await rowsOf()).length;
         await page.locator('[data-testid="s-search"]').fill('');

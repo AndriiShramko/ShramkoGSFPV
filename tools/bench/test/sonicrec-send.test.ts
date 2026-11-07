@@ -345,11 +345,11 @@ describe('key U: the app asks, and only the pilot\'s second press, after hearing
         expect(w.api.stored()).toHaveLength(1);
     });
 
-    it('no second press in time: not sent, the pilot hears that recording is off, nothing was asked of the server', async () => {
+    it('no second press in time: not sent, nothing is said (the package has no "not sent" line, and "recording is off" would be untrue), nothing was asked of the server', async () => {
         const w = await world({ askMs: 60 });
         w.ctl.pressSend();
         await until('cancelled', () => w.notices.includes('cancelled'), 2000);
-        expect(keys(w)).toEqual(['send.confirm', 'rec.off']);
+        expect(keys(w)).toEqual(['send.confirm']);
         expect(w.api.calls).toHaveLength(0);
         expect(w.ctl.asking).toBe(false);
         expect(await recordOf(w)).toBeNull();

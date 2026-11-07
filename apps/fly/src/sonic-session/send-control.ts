@@ -160,7 +160,7 @@ export class SendControl {
     onRecorderStatus(s: RecorderStatus): void {
         if (s.phase === 'idle') return;
         this.deps.voice?.stop();
-        this.cancelAsk(false);
+        this.cancelAsk();
     }
 
     private async pickTarget(): Promise<SessionEntry | null> {
@@ -213,10 +213,12 @@ export class SendControl {
         this.confirming = question;
         this.notice('asked');
         this.changed();
-        question.timer = setTimeout(() => this.cancelAsk(true), this.deps.askMs ?? DEFAULT_ASK_MS);
+        question.timer = setTimeout(() => this.cancelAsk(), this.deps.askMs ?? DEFAULT_ASK_MS);
         // the question is read out in full before a press counts: a key struck twice in a hurry must not agree to something unheard
         const read = this.sayLine('send.confirm', { key: this.deps.keyLabel(U_KEY) });
-        await Promise.race([read, new Promise<void>((resolve) => setTimeout(resolve, this.deps.readMs ?? DEFAULT_READ_MS))]);
+        let limit: ReturnType<typeof setTimeout> | null = null;
+        await Promise.race([read, new Promise<void>((resolve) => { limit = setTimeout(resolve, this.deps.readMs ?? DEFAULT_READ_MS); })]);
+        if (limit !== null) clearTimeout(limit);
         if (this.confirming !== question) return;
         question.ready = true;
         if (this.canListen(entry)) {
@@ -228,7 +230,12 @@ export class SendControl {
         }
     }
 
-    private cancelAsk(spoken: boolean): void {
+    /**
+     * The question is withdrawn: no answer in time, a recording started, or the helper's button took over. Nothing is said aloud: the package has
+     * no line for "not sent" (its rec.off says the RECORDING is off, which is not what happened), and a pilot who did not answer needs no
+     * answer; the panel says so on screen.
+     */
+    private cancelAsk(): void {
         const c = this.confirming;
         if (c === null) return;
         if (c.timer !== null) clearTimeout(c.timer);
@@ -236,7 +243,6 @@ export class SendControl {
         this.deps.voice?.stop();
         this.notice('cancelled');
         this.changed();
-        if (spoken) void this.sayLine('rec.off');
     }
 
     private answerYes(via: ConsentVia): void {
@@ -272,7 +278,7 @@ export class SendControl {
             this.refuse(blocker);
             return blocker;
         }
-        this.cancelAsk(false);
+        this.cancelAsk();
         await this.track(this.start(id, { at: this.deps.nowIso(), via: 'button' }, true));
         return null;
     }
@@ -451,7 +457,7 @@ export class SendControl {
 
     dispose(): void {
         this.disposed = true;
-        this.cancelAsk(false);
+        this.cancelAsk();
         this.deps.voice?.stop();
         for (const run of this.runs.values()) run.transfer.stop();
     }

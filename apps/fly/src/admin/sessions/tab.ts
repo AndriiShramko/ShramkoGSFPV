@@ -29,6 +29,8 @@ export class SessionsTab {
     private readonly client: SessionsClient;
     private readonly head = h('section', { class: 'card s-head', 'data-testid': 's-head' });
     private readonly content = h('div', { class: 's-content' });
+    /** the count and the table: redrawn on their own when the filter, the search or a "sure?" changes, so the search box keeps its focus and caret */
+    private listBox: HTMLElement = h('div', { class: 's-list' });
     private answer: SessionsAnswer | null = null;
     private filter: StateFilter = 'all';
     private query = '';
@@ -82,9 +84,9 @@ export class SessionsTab {
         if (this.confirmTimer !== null) clearTimeout(this.confirmTimer);
         this.confirmTimer = setTimeout(() => {
             this.confirming = null;
-            this.render();
+            this.renderList();
         }, CONFIRM_MS);
-        this.render();
+        this.renderList();
         return false;
     }
 
@@ -182,20 +184,28 @@ export class SessionsTab {
         select.value = this.filter;
         select.addEventListener('change', () => {
             this.filter = select.value as StateFilter;
-            this.render();
+            this.renderList();
         });
         const search = h('input', { type: 'search', id: 's-search', 'data-testid': 's-search', value: this.query, 'aria-label': t('admin.sessions.search') }) as HTMLInputElement;
         search.addEventListener('input', () => {
             this.query = search.value;
-            this.render();
-            (document.getElementById('s-search') as HTMLInputElement | null)?.focus();
+            this.renderList();
         });
+        this.listBox = h('div', { class: 's-list' });
+        this.content.append(h('div', { class: 'bar' }, h('label', { class: 'field', for: 's-filter' }, h('span', {}, t('admin.sessions.filter')), select), h('label', { class: 'field', for: 's-search' }, h('span', {}, t('admin.sessions.search')), search)), this.listBox);
+        this.renderList();
+    }
+
+    /** The count and the table of the rows that pass the filter and the search. */
+    private renderList(): void {
+        const a = this.answer;
+        clear(this.listBox);
+        if (a === null) return;
         const shown = a.sessions.filter((r) => matches(r, this.filter, this.query));
         const table = h('table', { class: 'data', 'aria-labelledby': 's-title', 'data-testid': 's-table' },
             h('thead', {}, h('tr', {}, ...['when', 'lesson', 'pilot', 'length', 'size', 'telegram', 'email', 'actions'].map((k) => h('th', { scope: 'col', class: k === 'length' || k === 'size' ? 'n' : '' }, h('span', { class: 'th-text' }, t(`admin.sessions.col.${k}`)))))),
             h('tbody', {}, ...shown.map((r) => this.row(r))));
-        this.content.append(
-            h('div', { class: 'bar' }, h('label', { class: 'field', for: 's-filter' }, h('span', {}, t('admin.sessions.filter')), select), h('label', { class: 'field', for: 's-search' }, h('span', {}, t('admin.sessions.search')), search)),
+        this.listBox.append(
             h('p', { class: 'muted', role: 'status', 'aria-live': 'polite', 'data-testid': 's-count' }, t('admin.sessions.count', { shown: shown.length, all: a.sessions.length })),
             h('div', { class: 'table-wrap', tabindex: '0', role: 'region', 'aria-label': t('admin.sessions.title') }, table));
     }

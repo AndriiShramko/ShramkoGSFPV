@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T18:33:32.798Z",
-    "gitHead": "05894d9",
+    "date": "2026-11-07T18:54:01.484Z",
+    "gitHead": "2e4e80b",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -74,9 +74,9 @@
       ],
       "sessions": [
         {
-          "id": "S-20261107-7f92bec44cdc",
+          "id": "S-20261107-f9cf52c5072b",
           "bytes": 2204024,
-          "sha256": "86c3bff4b5181aea274b1d52f1c4759c47d6ae5116979025ef582e56dc911e9f",
+          "sha256": "9340190c268d52321012c1d9f6e8110f060112aa253c0d7ec71ee828ee832996",
           "delivered": true,
           "channels": {
             "telegram": "sent",
@@ -86,24 +86,24 @@
       ],
       "telegram": [
         {
-          "filename": "fly-by-sound-S-20261107-7f92bec44cdc.zip",
+          "filename": "fly-by-sound-S-20261107-f9cf52c5072b.zip",
           "bytes": 2204024,
-          "sha256": "86c3bff4b5181aea274b1d52f1c4759c47d6ae5116979025ef582e56dc911e9f"
+          "sha256": "9340190c268d52321012c1d9f6e8110f060112aa253c0d7ec71ee828ee832996"
         }
       ],
       "mail": [
         {
-          "name": "fly-by-sound-S-20261107-7f92bec44cdc.zip",
+          "name": "fly-by-sound-S-20261107-f9cf52c5072b.zip",
           "bytes": 2204024,
-          "sha256": "86c3bff4b5181aea274b1d52f1c4759c47d6ae5116979025ef582e56dc911e9f"
+          "sha256": "9340190c268d52321012c1d9f6e8110f060112aa253c0d7ec71ee828ee832996"
         }
       ]
     },
     "u1Row": {
-      "id": "up1q3oiw6ymw6qr2nx",
-      "line": "Nov 7, 2026, 7:32 PM, 0:03, 2.2 MB \u00b7 with voice \u00b7 walls-hall",
+      "id": "upznxga6pfmw6rhd17",
+      "line": "Nov 7, 2026, 7:53 PM, 0:03, 2.2 MB \u00b7 with voice \u00b7 walls-hall",
       "state": "Saved on this device.",
-      "transfer": "Delivered. The author has it: Telegram: sent, e-mail: sent. Reference: S-20261107-7f92bec44cdc.",
+      "transfer": "Delivered. The author has it: Telegram: sent, e-mail: sent. Reference: S-20261107-f9cf52c5072b.",
       "transferLive": "polite",
       "buttons": [
         {
@@ -135,7 +135,7 @@
         "send.stored",
         "send.partial-email"
       ],
-      "midRow": "The server has it. Delivery to the author: Telegram: will try again, e-mail: sent. Reference: S-20261107-167ec8b24e4a."
+      "midRow": "The server has it. Delivery to the author: Telegram: will try again, e-mail: sent. Reference: S-20261107-0fe33c79be5b."
     },
     "u3": {
       "heldBeforeClose": [
@@ -152,8 +152,8 @@
         "channels": null,
         "problem": "network",
         "failures": 1,
-        "retryAt": 1794076390577,
-        "serverId": "S-20261107-04ae5186decc"
+        "retryAt": 1794077617477,
+        "serverId": "S-20261107-c66f0f36c5b4"
       }
     },
     "u3b": {

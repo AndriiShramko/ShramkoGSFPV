@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T18:38:02.392Z",
-    "gitHead": "ba1c860",
+    "date": "2026-11-07T18:53:17.825Z",
+    "gitHead": "2e4e80b",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -23,6 +23,7 @@
     "S1: a minor's row says guardian confirmed; the lesson and the length are shown": true,
     "S1: the tab shows no upload token, no hash of it, no device and no user agent": true,
     "S1: both channels are set up on this copy and the tab says so": true,
+    "S2: typing in the search box key by key keeps the text in order and the focus in the box": true,
     "S2: \"not delivered yet\" shows B and D, \"a channel gave up\" only D, the search narrows (and finds nothing for nonsense)": true,
     "S3: the click saves the package: the SAVED bytes (not the event) are the ones the pilot sent, under the name with the id": true,
     "S3: control, the same address without the session is refused with 401 and sends no byte of the package": true,
@@ -44,30 +45,30 @@
     "s1": {
       "rows": [
         {
-          "id": "S-20261107-af69ab8eb520",
+          "id": "S-20261107-da4f93ba944c",
           "state": "failed",
-          "text": "11/07/26, 07:37 PMa channel gave upwalls-hall \u00b7 full \u00b7 enadult, with voice0:028 KBgave up (network)sentDownloadTelegram againE-mail againDelete",
+          "text": "11/07/26, 07:53 PMa channel gave upwalls-hall \u00b7 full \u00b7 enadult, with voice0:028 KBgave up (network)sentDownloadTelegram againE-mail againDelete",
           "tg": "gave up (network)",
           "mail": "sent"
         },
         {
-          "id": "S-20261107-c48c1ebdc8cf",
+          "id": "S-20261107-04233097d16d",
           "state": "delivered",
-          "text": "11/07/26, 07:37 PMdeliveredwalls-hall \u00b7 full \u00b7 enunder 18, guardian confirmed, with voice0:029 KBsentsentDownloadTelegram againE-mail againDelete",
+          "text": "11/07/26, 07:53 PMdeliveredwalls-hall \u00b7 full \u00b7 enunder 18, guardian confirmed, with voice0:029 KBsentsentDownloadTelegram againE-mail againDelete",
           "tg": "sent",
           "mail": "sent"
         },
         {
-          "id": "S-20261107-e4c828b6cf37",
+          "id": "S-20261107-2c18c855f9ba",
           "state": "half",
-          "text": "11/07/26, 07:37 PMone channel donewalls-hall \u00b7 full \u00b7 enadult, with voice0:02604 KBwill try again (telegram-500)sentDownloadTelegram againE-mail againDelete",
+          "text": "11/07/26, 07:53 PMone channel donewalls-hall \u00b7 full \u00b7 enadult, with voice0:02604 KBwill try again (telegram-500)sentDownloadTelegram againE-mail againDelete",
           "tg": "will try again (telegram-500)",
           "mail": "sent"
         },
         {
-          "id": "S-20261107-b21f4ea46e2d",
+          "id": "S-20261107-f8564294cd61",
           "state": "delivered",
-          "text": "11/07/26, 07:37 PMdeliveredwalls-hall \u00b7 full \u00b7 enadult, with voice0:022.2 MBsentsentDownloadTelegram againE-mail againDelete",
+          "text": "11/07/26, 07:53 PMdeliveredwalls-hall \u00b7 full \u00b7 enadult, with voice0:022.2 MBsentsentDownloadTelegram againE-mail againDelete",
           "tg": "sent",
           "mail": "sent"
         }
@@ -75,7 +76,7 @@
       "summary": "4 stored, 2 delivered, 2 waiting, 1 with a channel that gave up. 2.8 MB in all.Telegram: set up, files up to 49 MiB.E-mail: set up, files up to 15 MiB."
     },
     "s3": {
-      "name": "fly-by-sound-S-20261107-b21f4ea46e2d.zip",
+      "name": "fly-by-sound-S-20261107-f8564294cd61.zip",
       "bytes": 2203745,
       "failure": null
     },
