@@ -21,6 +21,15 @@ export function formatClock(ms: number): string {
     return h > 0 ? `${h}:${two(m)}:${two(s)}` : `${m}:${two(s)}`;
 }
 
+/**
+ * Writes `text` into an element only when it differs from what is there. A live region (role status, aria-live) is read out by a
+ * screen reader whenever its content is written, and `textContent = same text` replaces the text node as much as a new text does:
+ * a panel that redraws every second or every quarter of a second must not touch a sentence that has not changed.
+ */
+export function setText(el: { textContent: string | null }, text: string): void {
+    if (el.textContent !== text) el.textContent = text;
+}
+
 /** A date and time of day in the page's language, in the viewer's time zone; the ISO text itself when it is not a date. */
 export function formatWhen(iso: string, locale: string): string {
     const d = new Date(iso);

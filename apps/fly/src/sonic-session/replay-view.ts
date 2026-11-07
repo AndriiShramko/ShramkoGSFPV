@@ -3,6 +3,7 @@
 // rest of the panel. The check's own report stays in a details element (the sound package writes it in English).
 import { clear, h } from '../ui/dom';
 import { t } from '../i18n';
+import { setText } from './format';
 import { ReplayControl } from './replay-control';
 import type { ReplayViewState } from './replay-control';
 
@@ -43,28 +44,35 @@ export function createReplayView(control: ReplayControl, onTick?: (s: ReplayView
     slider.addEventListener('input', () => control.seek(Number(slider.value)));
 
     let current: ReplayViewState = control.state;
+    let notesShown = '';
+    // draw() runs every 250 ms while a replay is open (the position moves): the status line is a live region, so every write below is
+    // made only when the text is different (setText), or a screen reader would read the same sentence out four times a second
     const draw = (): void => {
         const s = current;
         root.hidden = s.stage === 'closed';
         if (s.stage === 'closed') return;
-        title.textContent = s.title;
+        setText(title, s.title);
         title.hidden = s.title === '';
-        status.textContent = s.stage === 'loading' ? t('sonicrec.replay.loading') : s.stage === 'error' ? (s.error ?? '') : (s.check?.summary ?? '');
+        setText(status, s.stage === 'loading' ? t('sonicrec.replay.loading') : s.stage === 'error' ? (s.error ?? '') : (s.check?.summary ?? ''));
         status.classList.toggle('bad', s.stage === 'error' || (s.check !== null && !s.check.ok));
-        clear(notes);
-        for (const n of s.notes) notes.append(h('li', {}, n));
+        const notesKey = s.notes.join('\n');
+        if (notesKey !== notesShown) {
+            notesShown = notesKey;
+            clear(notes);
+            for (const n of s.notes) notes.append(h('li', {}, n));
+        }
         const ready = s.stage === 'ready' && s.player !== null;
         controls.hidden = !ready;
         details.hidden = !ready || s.details === '';
-        pre.textContent = s.details;
+        setText(pre, s.details);
         if (ready && s.player !== null) {
             const p = s.player;
-            toggle.textContent = p.phase === 'playing' ? t('sonicrec.replay.pause') : t('sonicrec.replay.play');
+            setText(toggle, p.phase === 'playing' ? t('sonicrec.replay.pause') : t('sonicrec.replay.play'));
             slider.max = String(Math.max(1, Math.round(p.durationMs)));
             if (document.activeElement !== slider) slider.value = String(Math.round(p.tMs));
             const text = ReplayControl.clock(p);
-            time.textContent = text;
-            slider.setAttribute('aria-valuetext', text);
+            setText(time, text);
+            if (slider.getAttribute('aria-valuetext') !== text) slider.setAttribute('aria-valuetext', text);
         }
     };
     // the position moves while it plays: the controller reports a phase change, the clock is read here

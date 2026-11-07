@@ -11,7 +11,7 @@ import { locale, t } from '../i18n';
 import type { Recorder, RecorderStatus, StopOptions } from './recorder';
 import type { SessionStores } from './recorder';
 import type { PilotProfile } from './consent';
-import { formatBytes, formatClock, formatWhen } from './format';
+import { formatBytes, formatClock, formatWhen, setText } from './format';
 import type { SendControl } from './send-control';
 import { channelList, sendBlocker, transferLine } from './transfer-view';
 import type { TransferLine } from './transfer-view';
@@ -83,7 +83,10 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
     let lastLive = '';
 
     // ---------------------------------------------------------------- the pieces that change
+    // the status sentence is a live region: it changes only when the phase does. The clock and the frame counter move every second, so they
+    // are in a paragraph of their own that is not live (a screen reader would read out every tick of a polite live region)
     const status = h('p', { class: 'sonicrec-status', role: 'status', 'aria-live': 'polite' });
+    const clock = h('p', { class: 'sonicrec-clock' });
     const voice = h('p', { class: 'sonicrec-voice' });
     const message = h('p', { class: 'sonicrec-message', role: 'status', 'aria-live': 'polite' });
     const note = h('p', { class: 'sonicrec-note' });
@@ -121,7 +124,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
     });
     const root = h('section', { class: 'sonicrec-panel', id: 'sonicrec-panel', role: 'region', 'aria-labelledby': 'sonicrec-title', hidden: true },
         h('header', { class: 'sonicrec-head' }, h('h2', { id: 'sonicrec-title' }, t('sonicrec.title')), close),
-        status, voice,
+        status, clock, voice,
         h('div', { class: 'sonicrec-actions' }, start, stop),
         consent,
         // the recordings come before the pilot's form: after a flight the helper looks for the Save button first
@@ -139,18 +142,21 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
     function drawStatus(): void {
         const s = last;
         const time = formatClock(s.elapsedMs);
-        status.textContent = s.error !== null && s.phase === 'idle' ? t('sonicrec.error.generic', { reason: s.error }) : t(`sonicrec.status.${s.phase === 'idle' ? 'off' : s.phase}`, { time, frames: s.frames });
-        voice.textContent = t(`sonicrec.voice.${s.voice === 'recording' ? 'recording' : s.voice}`, { size: formatBytes(s.voiceBytes) });
+        setText(status, s.error !== null && s.phase === 'idle' ? t('sonicrec.error.generic', { reason: s.error }) : t(`sonicrec.status.${s.phase === 'idle' ? 'off' : s.phase}`));
+        const running = s.phase === 'recording' || s.phase === 'closing' || s.phase === 'finishing';
+        setText(clock, running ? t('sonicrec.clock', { time, frames: s.frames }) : '');
+        clock.hidden = !running;
+        setText(voice, t(`sonicrec.voice.${s.voice === 'recording' ? 'recording' : s.voice}`, { size: formatBytes(s.voiceBytes) }));
         voice.hidden = s.phase === 'idle' || s.phase === 'asking' || s.phase === 'starting';
         const idle = s.phase === 'idle';
         start.disabled = !idle || !agree.checked || busy;
         start.hidden = !idle;
         stop.hidden = s.phase !== 'recording';
         consent.hidden = !idle;
-        button.textContent = s.phase === 'recording' ? t('sonicrec.button.recording', { time }) : replayLabel ?? t('sonicrec.button');
+        setText(button, s.phase === 'recording' ? t('sonicrec.button.recording', { time }) : replayLabel ?? t('sonicrec.button'));
         button.classList.toggle('recording', s.phase === 'recording');
         button.classList.toggle('replaying', s.phase !== 'recording' && replayLabel !== null);
-        note.textContent = !s.durable ? t('sonicrec.note.memory') : s.persisted === false ? t('sonicrec.note.persist') : '';
+        setText(note, !s.durable ? t('sonicrec.note.memory') : s.persisted === false ? t('sonicrec.note.persist') : '');
         note.hidden = note.textContent === '';
     }
 
