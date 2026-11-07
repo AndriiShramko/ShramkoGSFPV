@@ -356,8 +356,8 @@ describe('the host around a lesson', () => {
         expect(r.host.lesson!.id).toBe('ears-glossary');
         expect(r.engine.said.length).toBeGreaterThan(before);
         ends.length = 0;
-        // the glossary talks for a good while (behind what is left of the intro, which G does not cut: see review D2b):
-        // every end of speech it gets is the real one
+        // the glossary talks for a good while: every end of speech it gets is the real one (the long window is for the
+        // time before review D2b, when G left the intro's lines in the queue ahead of the glossary's own)
         await r.run(300000, null, () => ends.length >= 3);
         expect(ends.length).toBeGreaterThanOrEqual(3);
         expect(ends).toEqual(ends.map(() => false));
@@ -372,6 +372,42 @@ describe('the host around a lesson', () => {
         await r.run(60000, null, () => ends.length >= 3);
         expect(ends.length).toBeGreaterThanOrEqual(3);
         expect(ends).toEqual(ends.map(() => false));
+    }, 300000);
+
+    // review of v12-flight, D2b: entering another lesson (G, a lesson chosen on the start screen) while the lesson left is still
+    // talking: the new lesson's lines queued behind the old ones (the probe: about a minute of the old intro first)
+    it('review D2b: G while the intro is being said cuts it: the glossary\'s first line interrupts and its own intro is what is heard next', async () => {
+        const r = await open('rings-first');
+        await r.run(10000, null, () => r.engine.speaking);
+        expect(r.engine.speaking).toBe(true);
+        const before = r.engine.said.length;
+        const t0 = r.clock.t;
+        expect(await r.host.glossary()).toBe(true);
+        const mine = r.engine.said.slice(before);
+        expect(mine.length).toBeGreaterThan(1);
+        expect(mine[0]).toMatchObject({ line: { key: 'lesson.ears-glossary.title' }, interrupt: true });
+        expect(mine.slice(1).every((s) => !s.interrupt)).toBe(true);
+        // so the glossary speaks next: its first end of speech comes when its own lines are said (a clean open: 12.9 s of page time)
+        let firstEnd: number | null = null;
+        r.events.on('sonicEvent', (e) => {
+            if (firstEnd === null && e.kind === 'speech' && e.key === SPEECH_END_KEY) firstEnd = r.clock.t - t0;
+        });
+        await r.run(120000, null, () => firstEnd !== null);
+        expect(firstEnd).not.toBeNull();
+        expect(firstEnd as unknown as number).toBeLessThan(20000);
+    }, 300000);
+
+    it('review D2b control: a lesson opened while nothing is being said queues its lines (no interrupt), as after a pass or from the menu', async () => {
+        const r = await open('ears-glossary');
+        expect(r.engine.said.length).toBeGreaterThan(1);
+        expect(r.engine.said.every((s) => !s.interrupt)).toBe(true);
+        // and the same when the lesson left had finished talking
+        await r.run(300000, null, () => !r.engine.speaking && r.host.runner!.phase !== 'intro');
+        const before = r.engine.said.length;
+        expect(await r.host.open('rings-first')).toBe(true);
+        const mine = r.engine.said.slice(before);
+        expect(mine.length).toBeGreaterThan(1);
+        expect(mine.every((s) => !s.interrupt)).toBe(true);
     }, 300000);
 
     it('progress is saved at every attempt, not only at the pass', async () => {

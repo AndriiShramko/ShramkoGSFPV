@@ -20,6 +20,13 @@ Reviewer's Status file. Scope: `git diff v03-lead..v12-flight` (160 files; the l
 - Fix: a run counter (`epoch`, bumped by `start()` and `stop()`); a `say()` takes its own run's number and only a line of the current run changes the count or reports the end of speech.
 - Checks run: `sonic-bridge` (15), `sonic-lessons` (23), `sonic-mode` (5): 43 pass; typecheck of `@gsfpv/fly` and `@gsfpv/bench`.
 
+### D2b (fixed): G, or a lesson chosen on the start screen, does not cut what the lesson left was saying (`sonic/lessons.ts`)
+
+- Found while proving D2: after the D2 fix the first `speech.end` of the glossary opened with G at t 16 ms came at 75 s of page time, a clean open's at 12.9 s (probe on the lesson rig, FakeEngine queued like speechSynthesis). A lesson says 4 to 6 lines at once when it opens (probe over the 20 analytic lessons: 4 lines in 16 of them, 5 in four, 6 in the corridor), the runner marks none of them `interrupt` at `begin()` (only N and an answer interrupt, `interruptNext`), so the new lesson's lines queue BEHIND the old intro: a blind pilot who presses G to reach the glossary, or picks another lesson, first hears the rest of the old lesson's intro (here about a minute).
+- Test that failed before the fix: `sonic-lessons.test.ts` "review D2b" (the first line of the glossary opened by G while the intro of rings-first is being said has `interrupt: true`, the other lines do not, and its first end of speech comes within 20 s). Control that passes before and after: a lesson opened while nothing is being said (a clean open, or after the previous one finished) queues its lines with no interrupt.
+- Fix: `LessonHost.open()` reads the bridge's speech queue before `mode.enter()`; when it is not empty the first `say` of the new runner carries `interrupt` (one flag, cleared after the first line and after `enter()`).
+- Checks run: `sonic-lessons` (25), `sonic-bridge` (15), `sonic-mode` (5): 45 pass; typechecks.
+
 ## Refuted claims and probes that found nothing
 
 (filled in)

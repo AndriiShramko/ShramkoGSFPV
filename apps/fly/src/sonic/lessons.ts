@@ -84,6 +84,11 @@ export class LessonHost {
     private question: Question | null = null;
     private demo: DemoScene | null = null;
     private busy = false;
+    /**
+     * Set while a lesson is being entered with lines of the one left still in the speech queue: the new lesson's first line
+     * interrupts them (open()). Never set otherwise: after a pass the queue is empty and nothing is cut.
+     */
+    private cutSpeech = false;
     /** a lesson is being left through G: it comes back after the glossary */
     private returnTo: string | null = null;
     private passedAt: number | null = null;
@@ -180,8 +185,16 @@ export class LessonHost {
             this.returnTo = o.returnTo ?? null;
             setCurrentLesson(this.p.store, lessonId);
             this.url(lessonId);
-            // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
-            this.p.mode.enter({ lesson, runner, world, floorY });
+            // G, or a lesson chosen on the start screen, while the lesson left is still talking: its queued lines (a lesson says
+            // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
+            // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
+            this.cutSpeech = this.p.mode.bridge.speechQueue > 0;
+            try {
+                // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
+                this.p.mode.enter({ lesson, runner, world, floorY });
+            } finally {
+                this.cutSpeech = false;
+            }
             if (scan) {
                 // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
                 this.p.mode.place(start);
@@ -253,7 +266,9 @@ export class LessonHost {
         const mode = this.p.mode;
         switch (a.kind) {
             case 'say':
-                void mode.bridge.say(a.line, a.interrupt);
+                void mode.bridge.say(a.line, a.interrupt || this.cutSpeech);
+                // only the first line cuts: the lines after it queue behind it, as the runner meant them to
+                this.cutSpeech = false;
                 break;
             case 'cue':
                 mode.bridge.engine?.cue(a.event);
