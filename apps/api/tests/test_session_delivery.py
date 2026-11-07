@@ -571,7 +571,8 @@ class EndToEnd(unittest.TestCase):
             def call(method, path, body=None, token=None, headers=None):
                 c = http.client.HTTPConnection("127.0.0.1", api.server_address[1], timeout=10)
                 raw = body if isinstance(body, bytes) or body is None else json.dumps(body).encode()
-                c.request(method, path, body=raw, headers={"X-Forwarded-For": "203.0.113.8", **({"X-Session-Token": token} if token else {}), **(headers or {})})
+                c.request(method, path, body=raw, headers={"X-Forwarded-For": "203.0.113.8", **({"X-Session-Token": token} if token else {}),
+                                                            **({"Content-Type": "application/json"} if isinstance(body, dict) else {}), **(headers or {})})
                 r = c.getresponse()
                 out = r.read()
                 c.close()

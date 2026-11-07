@@ -1627,6 +1627,12 @@ class Handler(BaseHTTPRequestHandler):
 
         try:
             if start:
+                # `start` is the one route a stranger can call with no token, and it reserves room: it wants a JSON content type, which a page on
+                # another site cannot send without a preflight (nginx answers none), so visitors' browsers cannot be made to call it for the
+                # sender of a page ("simple" cross-site POSTs carry text/plain, form or multipart bodies)
+                if (self.headers.get("Content-Type") or "").split(";")[0].strip().lower() != "application/json":
+                    self._drain(n)
+                    return self._json(415, {"ok": False, "error": "content-type"})
                 body = self._body()
                 if body is None:
                     return self._json(400, {"ok": False, "error": "bad-request"})

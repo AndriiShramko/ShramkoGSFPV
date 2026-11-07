@@ -634,9 +634,9 @@ class Http(Base):
         raw = body if isinstance(body, bytes) or body is None else json.dumps(body).encode()
         h = {"X-Forwarded-For": ip, **({"X-Session-Token": token} if token else {}), **(headers or {})}
         if isinstance(body, dict):
-            h["Content-Type"] = "application/json"
+            h.setdefault("Content-Type", "application/json")
         elif isinstance(body, bytes):
-            h["Content-Type"] = "application/octet-stream"
+            h.setdefault("Content-Type", "application/octet-stream")
         c.request(method, path, body=raw, headers=h)
         r = c.getresponse()
         out = r.read()
@@ -696,6 +696,22 @@ class Http(Base):
         self.assertNotIn(str(self.dir).encode(), raw)
         s, r, _ = self.call("POST", f"/api/session/{sid}/0", data, token=tok)               # control: the same chunk with the token
         self.assertEqual((s, r["held"]), (200, 1))
+
+    def test_start_wants_a_json_body_so_a_page_on_another_site_cannot_make_reservations_for_its_visitors(self):
+        # `fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(...)})` from any site is a "simple" request: the browser sends it
+        # with no preflight, with a text/plain body, from the visitor's own address. Each one that is taken reserves up to 100 MiB of the
+        # 2 GiB for a day, six per visitor, so a page that many people open could fill the cap and shut every pilot out with 507. A JSON content
+        # type cannot be sent cross-site without a preflight, and nginx answers no preflight (limit_except GET POST), so asking for it closes this.
+        body = json.dumps({"size": 5000, "sha256": sha(b"x"), "consentSend": True}).encode()
+        for ctype in ("text/plain;charset=UTF-8", "application/x-www-form-urlencoded", "multipart/form-data; boundary=x", "application/octet-stream"):
+            s, r, _ = self.call("POST", "/api/session/start", body, headers={"Content-Type": ctype})
+            self.assertEqual((s, r.get("error")), (415, "content-type"), ctype)
+        self.assertEqual(self.store._open, {})                                   # nothing was reserved
+        self.assertFalse((self.dir / "sessions").exists() and any((self.dir / "sessions").iterdir()))
+        # control: the same bytes with a JSON content type (a charset after it is fine) start an upload
+        s, r, _ = self.call("POST", "/api/session/start", body, headers={"Content-Type": "application/json; charset=utf-8"})
+        self.assertEqual((s, r["ok"], r["stored"]), (200, True, False))
+        self.assertEqual(len(self.store._open), 1)
 
     def test_a_chunk_that_is_too_big_is_refused_with_an_answer_not_a_reset(self):
         data = package(filler=MIB + 123_456)

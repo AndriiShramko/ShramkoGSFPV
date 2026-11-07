@@ -8,6 +8,7 @@ Reviewer: one agent, one pass over `v03-lead..v12-feedback` (112 files, about 20
 - [x] F1 privacy: a hurried second press of T gave consent before the question was heard
 - [x] F2 accessibility: live regions of the helper's panel were rewritten every second (recording) and four times a second (replay)
 - [x] F3 privacy: the pilot was told "Recording stopped" while the microphone went on listening through the survey
+- [x] F4 security: `POST /api/session/start` took a cross-site "simple" request, so a page on any site could make its visitors reserve room
 - [ ] more findings below (each: probe first, a test that fails before the fix, the fix, one commit)
 
 ## Findings
@@ -31,6 +32,12 @@ The spec (section 9) wants the survey's open answers spoken into the same record
 Fix, `recorder.ts`: `rec.stopped` is said in `finish()` right after the microphone has been let go (the same place where "saved" follows), so the pilot's first words after T are the survey's offer and the sentence is true when it is said; with no survey nothing changes (stop, saved). The privacy section of the site now says it, in en, es, pl, ru (one added sentence in the first paragraph: the microphone stays on while the survey is asked and goes off when it ends or is declined; the es, pl and ru are my translations, read by no native speaker). Tests: `sonicrec-recorder.test.ts` 2 new (the order while the survey runs and after; the no-survey control), `sonicrec-review.test.ts` (the privacy sentence in four languages), `sonicrec-review.ts` R2 in headless Chrome (while the offer is open: phase closing, voice recording, spoken `rec.ask, rec.started, survey.offer`; after declining: `survey.skipped, rec.stopped, rec.saved`).
 
 Not fixed, for the owner to weigh (a design choice of the spec, not a defect of the code): the offer waits 60 s for a key while the microphone listens, and the survey offer line itself does not say the microphone is on. A spoken line for that would have to come from sonic-core (see "Needs from sonic-core" below).
+
+### F4 (security, fixed) `start` accepted a body of any content type, so a page on another site could fill the upload quota through its visitors
+
+`POST /api/session/start` is the only route a stranger can call with no token, and it reserves the whole declared size (up to 100 MiB, six per client address, 48 in all, out of 2 GiB) for 24 hours. `Handler._body()` reads the bytes whatever the `Content-Type`, so `fetch(url, { method: "POST", mode: "no-cors", body: JSON.stringify({ size: 104857600, sha256, consentSend: true }) })` from any web page is a "simple" cross-site request: no preflight, a `text/plain` body, sent from the visitor's own address, which is the key of the per-client limits. A page that enough people open could therefore reserve the 2 GiB and answer every real pilot with 507 `cap` for a day, without the sender owning one address. Probe (a test written first): a `text/plain` POST of a valid start body got 200 and a token (`self.store._open` held the reservation).
+
+Fix, `server.py`: `start` is answered 415 `content-type` unless the body is `application/json` (a charset after it is fine). A JSON content type cannot be sent cross-site without a preflight, and nginx answers none (`limit_except GET POST` denies OPTIONS), so a browser cannot be made to call it. The page's own client already sends it (`upload.ts`), so nothing changes for pilots: the whole browser to API run, `sonicrec-upload.ts`, passes 35 of 35 after the change (its evidence files were restored: not re-committed). Test: `test_sessions.py` `Http` (4 content types refused, nothing reserved, nothing on disk; control: the same bytes as JSON start an upload); the `Http.call` helper had overridden every content type of a bytes body with octet-stream, so it now only sets a default, and `test_session_delivery.py`'s own helper sends the JSON type its client sends. API session, delivery, admin and nginx tests: 95 pass. Not fixed, by design of an anonymous upload: a direct attacker with several addresses can still hold the quota for a day; see "Left open" below.
 
 ## Refuted
 
