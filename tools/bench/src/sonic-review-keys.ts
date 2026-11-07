@@ -62,7 +62,8 @@ const DOC = {
     app: '0.3.0',
     savedAt: '2026-11-07T00:00:00.000Z',
     settings: { global: {}, drone: {}, scene: {} },
-    collections: { sonic: { v: 1, prefs: { ...defaultPrefs(), selfVoice: false }, progress: {}, current: null }, ui: { v: 1, warned: true } }
+    // (the radio of last time: a pilot whose radio is not found this time, e.g. not plugged in yet; review D1)
+    collections: { sonic: { v: 1, prefs: { ...defaultPrefs(), selfVoice: false }, progress: {}, current: null }, ui: { v: 1, warned: true }, radioProfiles: { v: 1, items: {}, last: { kind: 'hid', key: 'hid:1209:4f54:Radiomaster TX16S Joystick:19' } } }
 };
 // (window.__name: tsx wraps named functions of a page.evaluate callback in __name(), which the page does not have)
 const INIT = `(() => {
@@ -100,7 +101,11 @@ try {
     await page.focus('[data-testid="sonic-start-asked"]');
     await page.keyboard.press('Enter');
     await page.waitForFunction(() => { const h = (window as unknown as { __gsfpv?: { status?: string; sonic?: () => { lesson: string | null } } }).__gsfpv; return h?.status === 'ready' && h.sonic?.().lesson !== null; }, undefined, { timeout: 90000 });
-    await sleep(800);
+    await sleep(1500);
+    // D1: no radio was found, the keyboard flies as a stand-in and the radio of last time is still what the page remembers
+    const last = await page.evaluate(() => (JSON.parse(localStorage.getItem('gsfpv.prefs.v1') ?? '{}') as { collections?: { radioProfiles?: { last?: { kind?: string; key?: string } } } }).collections?.radioProfiles?.last ?? null);
+    const source = await page.evaluate(() => (window as unknown as { __gsfpv: { controls: { source: string | null } } }).__gsfpv.controls.source);
+    check('no radio found: the keyboard flies (as a stand-in) and the radio of last time is still the input the page remembers', source === 'keyboard' && last?.kind === 'hid' && last?.key === 'hid:1209:4f54:Radiomaster TX16S Joystick:19', { source, last });
 
     // the pause menu's Fly by Sound item opens the start screen over the flight
     await page.keyboard.press('Escape');

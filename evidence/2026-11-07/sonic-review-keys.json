@@ -7,17 +7,28 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T20:01:47.604Z",
-    "gitHead": "a510bc8",
+    "date": "2026-11-07T20:12:18.064Z",
+    "gitHead": "49191f5",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "lab": "http://localhost:5343",
-  "passed": 14,
-  "total": 14,
+  "passed": 15,
+  "total": 15,
   "checks": [
+    {
+      "name": "no radio found: the keyboard flies (as a stand-in) and the radio of last time is still the input the page remembers",
+      "pass": true,
+      "value": {
+        "source": "keyboard",
+        "last": {
+          "key": "hid:1209:4f54:Radiomaster TX16S Joystick:19",
+          "kind": "hid"
+        }
+      }
+    },
     {
       "name": "the start screen is over the flight and the flight is paused behind it",
       "pass": true,

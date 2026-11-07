@@ -29,7 +29,6 @@ import { PauseStack } from './pause-stack';
 import { KeyRouter } from './keys';
 import { PauseMenu } from './menu';
 import { InputHost, expectResume, ownInput, resumeInput, release } from './input';
-import type { RadioChoice } from '../ui/radio';
 import { Quality } from './quality';
 import { drawingFor } from './drawing';
 import { wallsHost } from './walls';
@@ -163,11 +162,11 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     // no test mode, no forced input: the input from last time is looked for while the scan loads
     const own = ownInput();
     // Fly by Sound (v0.12): no radio found, the keyboard flies at once: the Controls screen is a sight-first wizard, and a
-    // radio is set up once by a helper (the pause menu's Controls), after which it is the one found here
-    // (a scan lesson flies a scan but is the same mode: it asks for the keyboard the same way)
+    // radio is set up once by a helper (the pilot's Controls in the pause menu), after which it is the one found here
+    // (a scan lesson flies a scan but is the same mode: it asks for the keyboard the same way). The keyboard is a stand-in
+    // handed to InputHost.start apart from what was found, so it is not remembered over the radio of last time (review D1)
     const inSonic = !!world || !!sonicEntry();
-    const asKeyboard = (c: RadioChoice | null): RadioChoice | null => c ?? (inSonic ? { kind: 'keyboard', profile: null } : null);
-    const resumed = (own ? resumeInput().catch(() => null) : Promise.resolve(null)).then(asKeyboard);
+    const resumed = own ? resumeInput().catch(() => null) : Promise.resolve(null);
     const controlsNext = own ? !expectResume() && !inSonic : sim === 'raw' && q.get('lat') !== '1' && q.get('input') !== 'touch' && !(isTouch && !hasHid);
     // the card's Fly now shows the first view at once (session/reveal.ts)
     const flyNow = new FlyNow();
@@ -268,7 +267,7 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
     for (const f of FEATURES) f.install(ctx);
     ctx.keys.attach();
 
-    if (!startTestMode(ctx)) await ctx.input.start(resumed);
+    if (!startTestMode(ctx)) await ctx.input.start(resumed, inSonic ? { kind: 'keyboard', profile: null } : null);
     latencyHarness(ctx);
     voxelSwitches(ctx);
 

@@ -176,8 +176,14 @@ export class InputHost {
         return ts;
     }
 
-    /** The pilot's own input once the scan is in: forced by the device or the URL, else the one from last time. */
-    async start(resumed: Promise<RadioChoice | null>): Promise<void> {
+    /**
+     * The pilot's own input once the scan is in: forced by the device or the URL, else the one from last time.
+     * `standIn`: what flies when nothing was found and the Controls screen is not shown (Fly by Sound: that screen is a
+     * sight-first wizard, and a radio is set up once by a helper). It is flown but NOT remembered, as the keyboard that
+     * Controls' Close falls back to is not (openRadio onClose): remembered, it would replace the radio of last time, which
+     * would then never be looked for again, here or in the plain simulator.
+     */
+    async start(resumed: Promise<RadioChoice | null>, standIn: RadioChoice | null = null): Promise<void> {
         if (isTouch && !hasHid) {
             this.use({ kind: 'touch', profile: null }, false);
         } else if (q.get('input') === 'touch') {
@@ -194,6 +200,9 @@ export class InputHost {
                 this.use(c);
                 if (choiceOffer(c)) this.openRadio(true);
                 else this.note(c);
+            } else if (standIn) {
+                this.use(standIn, false);
+                this.note(standIn);
             } else this.openRadio(true);
         }
     }
