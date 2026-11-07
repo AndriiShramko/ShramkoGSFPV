@@ -1,11 +1,13 @@
 // Shared test fixtures: the real drone presets (read from sim-core's folder, prefs does not depend
 // on sim-core), a fixed clock, and a store factory on an in-memory backend.
 import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { MemoryBackend, PrefsStore, SCHEMA } from '../src';
 import type { Backend, CataloguePreset, PresetResolver, Schema, StoreOptions } from '../src';
 
-export const REPO = join(__dirname, '..', '..', '..');
+// from import.meta.url, not __dirname: a script run by tsx (an ES module, e.g. the sweep-cost bench) has no __dirname, vitest has both
+export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const PRESET_DIR = join(REPO, 'packages', 'sim-core', 'presets');
 
 export const PRESETS: CataloguePreset[] = readdirSync(PRESET_DIR)

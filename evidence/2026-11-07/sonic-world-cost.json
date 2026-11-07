@@ -1,0 +1,141 @@
+{
+  "name": "sonic-world-cost",
+  "context": {
+    "date": "2026-11-07T23:39:38.007Z",
+    "gitHead": "feaace2",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "planBoundMs": 20,
+  "rounds": 9,
+  "passed": 4,
+  "total": 4,
+  "pass": true,
+  "checks": [
+    {
+      "name": "a 10 s hall flight along and into a wall (22147 queries, 1678 contact events): the contact queries as the session flies them cost under 20 ms (best of 9)",
+      "pass": true,
+      "value": {
+        "sessionMs": 13.35,
+        "cellsMs": 11.49,
+        "noCullMs": 14.12
+      }
+    },
+    {
+      "name": "... and give the same answers as the uncached lookup",
+      "pass": true
+    },
+    {
+      "name": "a 10 s hall flight in the open (9980 queries): the contact queries as the session flies them cost under 20 ms (best of 9)",
+      "pass": true,
+      "value": {
+        "sessionMs": 3.46,
+        "cellsMs": 8.21,
+        "noCullMs": 12.22
+      }
+    },
+    {
+      "name": "... and give the same answers as the uncached lookup",
+      "pass": true
+    }
+  ],
+  "result": {
+    "along and into a wall": {
+      "queries": 22147,
+      "contacts": 1678,
+      "bestMs": {
+        "session": 13.35,
+        "cells": 11.49,
+        "raw": 14.12
+      },
+      "runsMs": {
+        "session": [
+          14.11,
+          13.88,
+          13.82,
+          13.84,
+          13.35,
+          14.69,
+          15.13,
+          13.79,
+          13.35
+        ],
+        "cells": [
+          12.24,
+          12.21,
+          12.1,
+          11.49,
+          11.57,
+          12.42,
+          12.34,
+          11.7,
+          12.36
+        ],
+        "raw": [
+          14.26,
+          14.24,
+          14.47,
+          14.85,
+          14.67,
+          14.12,
+          14.79,
+          15.28,
+          16.97
+        ]
+      },
+      "ratio": 0.95
+    },
+    "in the open": {
+      "queries": 9980,
+      "contacts": 0,
+      "bestMs": {
+        "session": 3.46,
+        "cells": 8.21,
+        "raw": 12.22
+      },
+      "runsMs": {
+        "session": [
+          5.18,
+          4.08,
+          4.1,
+          3.46,
+          4.34,
+          3.95,
+          4.41,
+          4.2,
+          4.48
+        ],
+        "cells": [
+          8.62,
+          8.71,
+          8.21,
+          8.66,
+          9.37,
+          9.06,
+          8.23,
+          8.97,
+          8.46
+        ],
+        "raw": [
+          13.35,
+          12.67,
+          12.22,
+          13.03,
+          12.63,
+          13.66,
+          13.59,
+          12.65,
+          13.11
+        ]
+      },
+      "ratio": 0.28
+    },
+    "machine": {
+      "cpus": 36,
+      "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz",
+      "busyPercentOverTheRun": 20
+    }
+  }
+}
