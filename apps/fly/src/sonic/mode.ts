@@ -17,7 +17,7 @@
 //   N              the next step of the lesson (the 'key' event, runner.next); never a scene switch in the mode.
 //   [ ]            locked: a lesson's distances are metres of its world (a note says so).
 import type { PrefsStore } from '@gsfpv/prefs';
-import type { Checkpoint, FlightSample, LessonDef, LessonSession, Pose, SonicWorld } from '@shramko/sonic-fpv';
+import type { Checkpoint, FlightSample, LessonDef, LessonSession, Pose, SonicFrameInput, SonicWorld } from '@shramko/sonic-fpv';
 import type { FlightSession } from '../session';
 import type { ActionHandler } from '../app/keys';
 import type { AppEvents, Bus } from '../app/context';
@@ -48,6 +48,8 @@ export interface ModeStart {
     readonly lesson?: LessonDef | null;
     readonly runner?: LessonSession | null;
     readonly world?: SonicWorld | null;
+    /** world y of the floor: the height layer's zero (default 0) */
+    readonly floorY?: number;
 }
 
 export class SonicMode {
@@ -55,8 +57,12 @@ export class SonicMode {
     /** touches since enter() */
     touches = 0;
     lesson: LessonDef | null = null;
+    /** world y of the floor the engine hears the height from */
+    floorY = 0;
     private readonly host: ModeHost;
     private on = false;
+    /** the recorder's replay drives the view and the engine (SonicRuntime.playback): live frames are not heard */
+    private playing = false;
     private offs: (() => void)[] = [];
     /** the last checkpoint reached, when no runner keeps it */
     private checkpoint: Checkpoint | null = null;
@@ -93,6 +99,8 @@ export class SonicMode {
         this.touches = 0;
         this.checkpoint = null;
         this.pressAt = null;
+        this.playing = false;
+        this.floorY = o.floorY ?? 0;
         h.setLesson(this.lesson ? this.lesson.assists : null);
         const b = this.bridge;
         b.world = o.world ?? null;
@@ -120,6 +128,27 @@ export class SonicMode {
         this.bridge.stop();
         this.lesson = null;
         this.pressAt = null;
+    }
+
+    /** True while a replay drives the engine (playback(true)). */
+    get inPlayback(): boolean {
+        return this.playing;
+    }
+
+    /** The replay takes the engine (true) or gives it back (false); live input and the lesson are the caller's to stop. */
+    playback(on: boolean): void {
+        this.playing = on;
+        this.bridge.playback(on);
+    }
+
+    /**
+     * The engine hears this frame: `input` (a lesson's own, a module-0 scene's demo frame) or, by default, the flight
+     * in its world with the runner's target. Nothing in playback or without an engine.
+     */
+    hear(sample: FlightSample, input?: SonicFrameInput | null): void {
+        const e = this.bridge.engine;
+        if (!this.on || this.playing || !e?.update) return;
+        e.update(input ?? { sample, world: this.bridge.world, target: this.bridge.runner?.target() ?? null, floorY: this.floorY });
     }
 
     /** A new scene session or a new flight model: the bridge's tick hook follows it. */

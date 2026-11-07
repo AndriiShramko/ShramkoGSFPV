@@ -69,7 +69,8 @@ const emptyCounts = (): Record<CollectionId, { added: number; changed: number }>
     radioProfiles: { added: 0, changed: 0 },
     sceneLibrary: { added: 0, changed: 0 },
     stats: { added: 0, changed: 0 },
-    ui: { added: 0, changed: 0 }
+    ui: { added: 0, changed: 0 },
+    sonic: { added: 0, changed: 0 }
 });
 
 function fail(error: NonNullable<ImportReport['error']>, fromVersion = 0): ImportPlan {
@@ -146,6 +147,17 @@ export function mergeCollection<K extends CollectionId>(k: K, cur: Collections[K
             const a = cur as Collections['ui'], b = inc as Collections['ui'];
             return { v: 1, warned: a.warned || b.warned } as Collections[K];
         }
+        case 'sonic': {
+            // per lesson the later visit wins (the same file twice changes nothing); the file's sound settings and lesson win
+            const a = cur as Collections['sonic'], b = inc as Collections['sonic'];
+            const progress = clone(a.progress);
+            for (const [id, p] of Object.entries(b.progress)) {
+                const had = own(progress, id);
+                const later = !had || Date.parse(p.lastAt) > Date.parse(had.lastAt) || (Date.parse(p.lastAt) === Date.parse(had.lastAt) && p.attempts >= had.attempts);
+                if (later) progress[id] = clone(p);
+            }
+            return { v: 1, prefs: clone(b.prefs ?? a.prefs), progress, current: b.current ?? a.current } as Collections[K];
+        }
     }
     return clone(inc);
 }
@@ -181,6 +193,13 @@ function countCollection(k: CollectionId, before: unknown, after: unknown): { ad
             return diffMaps((before as Collections['stats']).byDrone, (after as Collections['stats']).byDrone);
         case 'ui':
             return { added: 0, changed: canonicalJson(before) === canonicalJson(after) ? 0 : 1 };
+        case 'sonic': {
+            const a = before as Collections['sonic'], b = after as Collections['sonic'];
+            const r = diffMaps(a.progress, b.progress);
+            if (canonicalJson(a.prefs) !== canonicalJson(b.prefs)) r.changed++;
+            if (a.current !== b.current) r.changed++;
+            return r;
+        }
     }
     return { added: 0, changed: 0 };
 }

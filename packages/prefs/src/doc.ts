@@ -28,9 +28,41 @@ export interface StatsTotals { v: 1; byDrone: Record<string, DroneTotals> }
 
 export interface UiState { v: 1; warned: boolean }
 
-export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState }
-export type CollectionId = 'radioProfiles' | 'sceneLibrary' | 'stats' | 'ui';
-export const COLLECTION_IDS: readonly CollectionId[] = ['radioProfiles', 'sceneLibrary', 'stats', 'ui'];
+/** One Fly by Sound lesson's progress (sonic-fpv LessonProgress; prefs knows only its shape, never the package). */
+export interface SonicLessonProgress {
+    lessonId: string;
+    version: number;
+    attempts: number;
+    successes: number;
+    blocksPassed: number;
+    passed: boolean;
+    bestTimeMs: number | null;
+    /** ISO 8601 */
+    lastAt: string;
+}
+/**
+ * Fly by Sound (v0.12, docs/wip/v12-plan.md section 1): the pilot's own sound settings as one opaque document (the
+ * sound package's SonicPrefs, which its own reader repairs; here it is kept as a plain object of bounded size) and the
+ * progress of every lesson, by lesson id. A collection, not settings: no catalogue rows, and it travels with the
+ * export file like the others. Never a name: nothing here identifies the pilot.
+ */
+export interface SonicState {
+    v: 1;
+    prefs: Record<string, unknown> | null;
+    progress: Record<string, SonicLessonProgress>;
+    /** the lesson the pilot is on (the Continue button) */
+    current: string | null;
+}
+
+export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState; sonic: SonicState }
+export type CollectionId = 'radioProfiles' | 'sceneLibrary' | 'stats' | 'ui' | 'sonic';
+export const COLLECTION_IDS: readonly CollectionId[] = ['radioProfiles', 'sceneLibrary', 'stats', 'ui', 'sonic'];
+/** A lesson id as the lessons and the URL use it (?sonic=<id>): lower case, digits, dashes. */
+export const SONIC_LESSON_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
+/** Lessons kept in the collection, at most (the stage-1 ladder has 21). */
+export const SONIC_PROGRESS_CAP = 64;
+/** The sound settings document is at most this many characters of JSON (its own is under 1 KB). */
+export const SONIC_PREFS_CAP = 4096;
 
 export interface PrefsDoc {
     format: typeof PREFS_FORMAT;
@@ -53,7 +85,8 @@ export function defaultCollection<K extends CollectionId>(k: K): Collections[K] 
         radioProfiles: { v: 1, items: {}, last: null },
         sceneLibrary: { v: 1, history: [], favourites: [], filter: { ...DEFAULT_FILTER }, versions: {} },
         stats: { v: 1, byDrone: {} },
-        ui: { v: 1, warned: false }
+        ui: { v: 1, warned: false },
+        sonic: { v: 1, prefs: null, progress: {}, current: null }
     };
     return all[k];
 }
@@ -65,7 +98,7 @@ export function emptyDoc(app = PREFS_APP_VERSION, savedAt = new Date(0).toISOStr
         app,
         savedAt,
         settings: { global: {}, drone: {}, scene: {} },
-        collections: { radioProfiles: defaultCollection('radioProfiles'), sceneLibrary: defaultCollection('sceneLibrary'), stats: defaultCollection('stats'), ui: defaultCollection('ui') }
+        collections: { radioProfiles: defaultCollection('radioProfiles'), sceneLibrary: defaultCollection('sceneLibrary'), stats: defaultCollection('stats'), ui: defaultCollection('ui'), sonic: defaultCollection('sonic') }
     };
 }
 
@@ -173,6 +206,37 @@ function validVersions(v: unknown, dropped?: DroppedKeys): Record<string, number
     return out;
 }
 
+const whole = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0;
+
+/** One lesson's progress, or null: the id is the key's, every count a whole number, the time null or non-negative. */
+export function validSonicProgress(id: string, v: unknown): SonicLessonProgress | null {
+    const o = obj(v);
+    if (!o || !SONIC_LESSON_ID.test(id) || (o.lessonId !== undefined && o.lessonId !== id)) return null;
+    if (!whole(o.version) || o.version < 1 || !whole(o.attempts) || !whole(o.successes) || !whole(o.blocksPassed) || typeof o.passed !== 'boolean') return null;
+    const time = o.bestTimeMs === null || o.bestTimeMs === undefined ? null : fin(o.bestTimeMs) && o.bestTimeMs >= 0 ? o.bestTimeMs : undefined;
+    if (time === undefined) return null;
+    const at = typeof o.lastAt === 'string' && o.lastAt.length > 0 && o.lastAt.length <= 40 && Number.isFinite(Date.parse(o.lastAt)) ? o.lastAt : null;
+    if (at === null) return null;
+    return { lessonId: id, version: o.version, attempts: o.attempts, successes: o.successes, blocksPassed: o.blocksPassed, passed: o.passed, bestTimeMs: time, lastAt: at };
+}
+
+/** The sound settings document as a plain object of bounded size, else null (the sound package's reader repairs the rest). */
+export function validSonicPrefs(v: unknown): Record<string, unknown> | null {
+    const o = obj(v);
+    if (!o) return null;
+    let text: string;
+    try {
+        text = JSON.stringify(o);
+    } catch {
+        return null;
+    }
+    // no prototype tricks: parsed from the text, own keys only, the reserved ones never kept
+    if (text.length > SONIC_PREFS_CAP) return null;
+    const out: Record<string, unknown> = {};
+    for (const [k, x] of Object.entries(JSON.parse(text) as Record<string, unknown>)) if (!isReservedKey(k)) out[k] = x;
+    return out;
+}
+
 function validTotals(v: unknown): DroneTotals | null {
     const o = obj(v);
     if (!o) return null;
@@ -223,6 +287,16 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
         }
         case 'ui':
             return { v: 1, warned: o.warned === true } as Collections[K];
+        case 'sonic': {
+            const progress: Record<string, SonicLessonProgress> = {};
+            for (const [id, p] of usable(obj(o.progress) ?? {}, `${path}.progress`, dropped)) {
+                if (Object.keys(progress).length >= SONIC_PROGRESS_CAP) break;
+                const r = validSonicProgress(id, p);
+                if (r) progress[id] = r;
+            }
+            const current = typeof o.current === 'string' && SONIC_LESSON_ID.test(o.current) ? o.current : null;
+            return { v: 1, prefs: validSonicPrefs(o.prefs), progress, current } as Collections[K];
+        }
     }
     return null;
 }

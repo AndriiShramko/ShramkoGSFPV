@@ -156,6 +156,11 @@ const GLIDE_S = 0.03;
  * The motor sound's Web Audio graph on one AudioContext: four motor voices and the prop wash into a
  * master gain, built once (started silent). app/builtin/sound.ts owns it and calls apply() with
  * motorMix() of the flight model every frame; close() ends it for good.
+ *
+ * Fly by Sound (v0.12, docs/wip/v12-plan.md 2.2): the mode's sound engine owns the one AudioContext and an input
+ * node before its limiter (SonicEngine.auxInput). Given that node as `out`, the motors play into it instead of the
+ * context's destination, so they go through the same limiter, and the context is not this graph's to suspend or
+ * close: resume() and suspend() do nothing and close() only takes the graph off the engine's input.
  */
 export class MotorSound {
     private master: GainLike;
@@ -165,12 +170,15 @@ export class MotorSound {
     private band: FilterLike;
     private noise: SourceLike;
     private closedNow = false;
+    /** the engine's input node when the context is the sound engine's (not this graph's own) */
+    private readonly shared: boolean;
 
-    /** Builds the graph on `ac` and starts its sources (silent: the master starts at 0). */
-    constructor(readonly ac: AudioLike, blades = 3) {
+    /** Builds the graph on `ac` and starts its sources (silent: the master starts at 0). `out`: the shared context's input (see above). */
+    constructor(readonly ac: AudioLike, blades = 3, out: NodeLike | null = null) {
+        this.shared = out !== null;
         this.master = ac.createGain();
         this.master.gain.value = 0;
-        this.master.connect(ac.destination);
+        this.master.connect(out ?? ac.destination);
         const h = voiceHarmonics(blades);
         const wave = ac.createPeriodicWave(new Float32Array(h.length), h, { disableNormalization: false });
         for (let k = 0; k < 4; k++) {
@@ -223,14 +231,14 @@ export class MotorSound {
         this.band.frequency.setTargetAtTime(m.wash.freq, t, GLIDE_S);
     }
 
-    /** The context runs (after a click or a key: the browser's rule). */
+    /** The context runs (after a click or a key: the browser's rule). A shared context is the engine's: nothing here. */
     resume(): Promise<void> {
-        return this.closedNow ? Promise.resolve() : this.ac.resume();
+        return this.closedNow || this.shared ? Promise.resolve() : this.ac.resume();
     }
 
-    /** The context sleeps (a hidden tab, the sound switched off): no audio work at all. */
+    /** The context sleeps (a hidden tab, the sound switched off): no audio work at all. A shared context is the engine's. */
     suspend(): Promise<void> {
-        return this.closedNow ? Promise.resolve() : this.ac.suspend();
+        return this.closedNow || this.shared ? Promise.resolve() : this.ac.suspend();
     }
 
     /** Stops every source and closes the context; nothing plays or runs after this. */
@@ -241,6 +249,6 @@ export class MotorSound {
         try { this.noise.stop(); } catch { /* never started */ }
         this.noise.disconnect();
         this.master.disconnect();
-        await this.ac.close();
+        if (!this.shared) await this.ac.close();
     }
 }

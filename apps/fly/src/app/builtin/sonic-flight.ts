@@ -1,12 +1,16 @@
 // Fly by Sound, the flight side (v0.12, lane v12-flight, docs/wip/v12-plan.md section 4.2): the mode in the page
 // (sonic/mode.ts: the prefs' session layer, the lesson pilot for every source, the bridge's samples and events on
-// the bus, R short and long, N, [ ] locked, touches). One SonicMode per page, off until the entry or a lesson
-// enters it (sonicMode(ctx).enter(...)). Every hook below does nothing while the mode is off: the frame, session
-// and life listeners return at once, the keyup listener finds no press, the keys stay the scene's and the respawn's.
+// the bus, R short and long, N, [ ] locked, touches) and the sound engine in it (sonic/entry.ts: the one AudioContext
+// made by the start screen's Start button, the engine, the captions, the pilot's sound settings). One SonicMode per
+// page, off until the entry or a lesson enters it (sonicMode(ctx).enter(...)). Every hook below does nothing while the
+// mode is off: the frame, session and life listeners return at once, the keyup listener finds no press, the keys stay
+// the scene's and the respawn's; a page that was not entered through ?sonic= has no entry at all.
 import { bindingOf } from '@gsfpv/prefs';
 import type { Feature, FlightContext } from '../context';
 import { t } from '../../i18n';
 import { SonicMode } from '../../sonic/mode';
+import { sonicEntry } from '../../sonic/entry';
+import { PageRuntime } from '../../sonic/runtime';
 
 const modes = new WeakMap<FlightContext, SonicMode>();
 
@@ -27,8 +31,20 @@ export const sonicFlight: Feature = {
             note: (key) => ctx.hud.flash(t(key), 2500)
         });
         modes.set(ctx, mode);
+        // the page was entered through ?sonic=: the engine, its captions and speech are the mode's (sonic/entry.ts)
+        const entry = sonicEntry();
+        if (entry) {
+            const audio = entry.setup.audio;
+            mode.engine = audio.engine;
+            // every line the engine says is a 'speech' event (the replay's and the report's) once the mode runs
+            audio.engine.onSpeech = (line, text) => mode.bridge.speech(line.key, text);
+            ctx.sonic = new PageRuntime(entry.setup, mode);
+        }
         const offs = [
-            ctx.events.on('frame', ({ now }) => { mode.frame(now); }),
+            ctx.events.on('frame', ({ now }) => {
+                const sample = mode.frame(now);
+                if (sample) mode.hear(sample);
+            }),
             // a new scene: the bridge's tick hook follows its runner; the lesson pilot starts from the new craft
             ctx.events.on('session', (s) => {
                 if (!mode.active) return;
@@ -58,6 +74,10 @@ export const sonicFlight: Feature = {
             for (const off of offs) off();
             removeEventListener('keyup', onKeyUp, true);
             document.removeEventListener('visibilitychange', onVisibility);
+            if (entry) {
+                entry.setup.audio.engine.onSpeech = null;
+                delete ctx.sonic;
+            }
             modes.delete(ctx);
         };
     }

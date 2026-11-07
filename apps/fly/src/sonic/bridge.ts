@@ -24,7 +24,7 @@
 import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
-import type { CueEvent, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
+import type { CueEvent, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
 export const TOUCH_QUIET_TICKS = 500;
@@ -60,6 +60,8 @@ export interface BridgeEngine {
     setLayers(layers: LessonLayers): void;
     cue(e: CueEvent): void;
     say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void>;
+    /** once per rendered frame (SonicMode.hear); the bridge itself never calls it */
+    update?(input: SonicFrameInput): void;
 }
 
 /** The axis rays of a touch's material, as the lesson runner looks (sonic-fpv runner.ts touchMaterial). */
@@ -101,6 +103,7 @@ export class SonicBridge {
     private sounding = false;
     private pausedNow = false;
     private speaking = 0;
+    private lastLine: SpeechLine | null = null;
 
     constructor(out: BridgeOut, clock: () => number = () => performance.now()) {
         this.out = out;
@@ -128,6 +131,7 @@ export class SonicBridge {
         this.pausedNow = session.paused || session.replaying;
         this.sounding = false;
         this.speaking = 0;
+        this.lastLine = null;
         this.follow(session);
     }
 
@@ -303,6 +307,7 @@ export class SonicBridge {
      */
     async say(line: SpeechLine, interrupt = false): Promise<void> {
         if (!this.on) return;
+        this.lastLine = line;
         this.speaking++;
         try {
             await this.engine?.say(line, { interrupt });
@@ -310,6 +315,17 @@ export class SonicBridge {
             this.speaking = Math.max(0, this.speaking - 1);
             if (this.speaking === 0) this.spoken();
         }
+    }
+
+    /** The line last spoken through say(), for Z (hear it again), or null. */
+    get last(): SpeechLine | null {
+        return this.lastLine;
+    }
+
+    /** Z: the last line again, cutting what is being said now. Resolves when it ends; nothing when there is none. */
+    repeat(): Promise<void> {
+        const line = this.lastLine;
+        return line ? this.say(line, true) : Promise.resolve();
     }
 
     /** Lines waiting or being spoken through say(). */
