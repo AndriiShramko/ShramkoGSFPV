@@ -195,6 +195,7 @@ try {
         pass: checks.every((c) => c.pass)
     });
     console.log(`evidence ${file}; ${checks.filter((c) => c.pass).length}/${checks.length} checks pass`);
+    process.exitCode = checks.every((c) => c.pass) ? 0 : 1;
 } finally {
     await L.browser.close();
 }

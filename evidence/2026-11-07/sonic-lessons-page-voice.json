@@ -1,0 +1,289 @@
+{
+  "name": "sonic-lessons-page-voice",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T17:23:42.437Z",
+    "gitHead": "09c7f5c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 9: lessons passed end to end in the real page by a scripted keyboard pilot",
+  "page": "http://localhost:5342/fly/?sonic=<lesson> (Vite dev server)",
+  "voice": "the engine speaks with the browser's own voices (speed 1)",
+  "voices": 3,
+  "note": "headless Chrome runs muted (--mute-audio); how anything sounds is not judged here",
+  "results": [
+    {
+      "lesson": "ears-headphones",
+      "voice": true,
+      "passed": true,
+      "seconds": 50,
+      "utterances": 12,
+      "cancels": 1,
+      "attempts": 1,
+      "successes": 1,
+      "answers": 3,
+      "gates": 0,
+      "touches": 0,
+      "speechLines": 12,
+      "speechEnds": 4,
+      "tap": {
+        "maxRms": 0.021097907801128735,
+        "maxPeak": 0.042046427726745605,
+        "polls": 974,
+        "loud": 155,
+        "last": 0
+      },
+      "captionLines": [
+        "Is this sound in front of you or behind you? Press 1 for in front, 2 for behind, 3 if you are not sure.",
+        "Good. Your headphones work well.",
+        "Your headphones work well. You are ready for the next step."
+      ],
+      "stagePrims": 1
+    },
+    {
+      "lesson": "shapes-square",
+      "voice": true,
+      "passed": true,
+      "seconds": 12,
+      "utterances": 7,
+      "cancels": 1,
+      "attempts": 2,
+      "successes": 2,
+      "answers": 0,
+      "gates": 2,
+      "touches": 0,
+      "speechLines": 7,
+      "speechEnds": 0,
+      "tap": {
+        "maxRms": 0.025817291222963112,
+        "maxPeak": 0.052685678005218506,
+        "polls": 217,
+        "loud": 205,
+        "last": 0.014052669055768956
+      },
+      "captionLines": [
+        "Go.",
+        "Attempt 2.",
+        "Through the square!"
+      ],
+      "stagePrims": 10
+    }
+  ],
+  "notFound": [
+    "http://localhost:5342/api/catalog",
+    "http://localhost:5342/api/e"
+  ],
+  "checks": [
+    {
+      "name": "ears-headphones: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-headphones",
+        "engine": "running",
+        "prims": 1
+      }
+    },
+    {
+      "name": "ears-headphones: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 321,
+        "centre": 360
+      }
+    },
+    {
+      "name": "ears-headphones: passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 50,
+        "attempts": 1,
+        "successes": 1
+      }
+    },
+    {
+      "name": "ears-headphones: progress saved in the prefs collection (passed, attempts, successes)",
+      "pass": true,
+      "value": {
+        "lessonId": "ears-headphones",
+        "version": 1,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-07T17:23:16.039Z"
+      }
+    },
+    {
+      "name": "ears-headphones: the lesson's lines are speech events of the mode (the captions' source)",
+      "pass": true,
+      "value": {
+        "speechLines": 12,
+        "speechEnds": 4
+      }
+    },
+    {
+      "name": "ears-headphones: with the voice on, the lines reach speechSynthesis (at least 3 utterances) and an interrupt cancels what was queued",
+      "pass": true,
+      "value": {
+        "utterances": 12,
+        "cancels": 1,
+        "first": [
+          "Headphone check",
+          "Let's check your headphones. Wired headphones work best, and the volume should be comfortable, never loud."
+        ]
+      }
+    },
+    {
+      "name": "ears-headphones: the speech queue ran empty at least twice (speech.end markers, the replay's input)",
+      "pass": true,
+      "value": {
+        "speechEnds": 4
+      }
+    },
+    {
+      "name": "ears-headphones: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.021097907801128735,
+        "maxPeak": 0.042046427726745605,
+        "polls": 974,
+        "loud": 155,
+        "last": 0
+      }
+    },
+    {
+      "name": "ears-headphones: three questions answered by digit keys, right (the lesson says the headphones work well)",
+      "pass": true,
+      "value": [
+        1,
+        2,
+        2
+      ]
+    },
+    {
+      "name": "ears-headphones: after the pass the next lesson of the path opens (ears-glossary) and the page goes on (scene lesson-ears-headphones, engine running, one AudioContext)",
+      "pass": true,
+      "value": {
+        "next": "ears-glossary",
+        "scene": "lesson-ears-headphones"
+      }
+    },
+    {
+      "name": "shapes-square: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
+      "pass": true,
+      "value": {
+        "lesson": "shapes-square",
+        "engine": "running",
+        "prims": 10
+      }
+    },
+    {
+      "name": "shapes-square: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 253,
+        "centre": 360
+      }
+    },
+    {
+      "name": "shapes-square: passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 12,
+        "attempts": 2,
+        "successes": 2
+      }
+    },
+    {
+      "name": "shapes-square: progress saved in the prefs collection (passed, attempts, successes)",
+      "pass": true,
+      "value": {
+        "lessonId": "shapes-square",
+        "version": 1,
+        "attempts": 2,
+        "successes": 2,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-07T17:23:37.541Z"
+      }
+    },
+    {
+      "name": "shapes-square: the lesson's lines are speech events of the mode (the captions' source)",
+      "pass": true,
+      "value": {
+        "speechLines": 7,
+        "speechEnds": 0
+      }
+    },
+    {
+      "name": "shapes-square: with the voice on, the lines reach speechSynthesis (at least 3 utterances) and an interrupt cancels what was queued",
+      "pass": true,
+      "value": {
+        "utterances": 7,
+        "cancels": 1,
+        "first": [
+          "The square gate",
+          "A square gate has four bars. Its sound ticks at each corner."
+        ]
+      }
+    },
+    {
+      "name": "shapes-square: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.025817291222963112,
+        "maxPeak": 0.052685678005218506,
+        "polls": 217,
+        "loud": 205,
+        "last": 0.014052669055768956
+      }
+    },
+    {
+      "name": "shapes-square: gates passed, each inside the opening",
+      "pass": true,
+      "value": 2
+    },
+    {
+      "name": "shapes-square: after the pass the next lesson of the path opens (shapes-series) and the page goes on (scene lesson-shapes-series, engine running, one AudioContext)",
+      "pass": true,
+      "value": {
+        "next": "shapes-series",
+        "scene": "lesson-shapes-series"
+      }
+    },
+    {
+      "name": "G opens the sound glossary from a lesson (ears-glossary runs, the helper's view is the glossary's floor)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-glossary",
+        "opens": [
+          "shapes-square",
+          "ears-glossary"
+        ]
+      }
+    },
+    {
+      "name": "no console errors and no missing file (but the favicon and the API the dev server does not have)",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "pass": true
+}

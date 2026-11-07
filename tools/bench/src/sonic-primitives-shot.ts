@@ -191,6 +191,7 @@ try {
         pass: results.every((r) => r.pass === true) && errors.length === 0
     });
     console.log(`evidence ${file}; ${results.filter((r) => r.pass).length}/${results.length} shots pass; console errors ${errors.length}`);
+    process.exitCode = results.every((r) => r.pass === true) && errors.length === 0 ? 0 : 1;
     await L.browser.close();
 } finally {
     unlock();

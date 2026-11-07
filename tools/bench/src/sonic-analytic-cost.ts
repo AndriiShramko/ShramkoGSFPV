@@ -92,3 +92,4 @@ const file = writeEvidence('sonic-analytic-cost', {
     pass: allPass
 });
 console.log(`evidence ${file}; ${allPass ? 'all under the budget' : 'some over the budget'}`);
+process.exitCode = allPass ? 0 : 1;

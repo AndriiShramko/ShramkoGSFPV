@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T16:41:22.366Z",
-    "gitHead": "d443df8",
+    "date": "2026-11-07T17:22:22.831Z",
+    "gitHead": "09c7f5c",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,12 +16,17 @@
   },
   "step": "v12-flight 9: lessons passed end to end in the real page by a scripted keyboard pilot",
   "page": "http://localhost:5342/fly/?sonic=<lesson> (Vite dev server)",
-  "note": "headless Chrome runs muted (--mute-audio); the engine says nothing (my screen reader speaks, speed 2) and waits the time a line takes; how anything sounds is not judged here",
+  "voice": "the engine says nothing (my screen reader speaks, speed 2): it waits the time a line takes",
+  "voices": 3,
+  "note": "headless Chrome runs muted (--mute-audio); how anything sounds is not judged here",
   "results": [
     {
       "lesson": "ears-headphones",
+      "voice": false,
       "passed": true,
       "seconds": 25,
+      "utterances": 0,
+      "cancels": 0,
       "attempts": 1,
       "successes": 1,
       "answers": 3,
@@ -30,10 +35,11 @@
       "speechLines": 12,
       "speechEnds": 4,
       "tap": {
-        "maxRms": 0.020252867002673505,
-        "maxPeak": 0.042474329471588135,
-        "polls": 469,
-        "loud": 162
+        "maxRms": 0.022004852711510235,
+        "maxPeak": 0.04263961315155029,
+        "polls": 468,
+        "loud": 163,
+        "last": 0
       },
       "captionLines": [
         "Is this sound in front of you or behind you? Press 1 for in front, 2 for behind, 3 if you are not sure.",
@@ -44,8 +50,11 @@
     },
     {
       "lesson": "shapes-square",
+      "voice": false,
       "passed": true,
       "seconds": 12,
+      "utterances": 0,
+      "cancels": 0,
       "attempts": 2,
       "successes": 2,
       "answers": 0,
@@ -54,10 +63,11 @@
       "speechLines": 7,
       "speechEnds": 2,
       "tap": {
-        "maxRms": 0.06219043357286566,
-        "maxPeak": 0.17867618799209595,
-        "polls": 218,
-        "loud": 207
+        "maxRms": 0.06268859745743427,
+        "maxPeak": 0.19217658042907715,
+        "polls": 216,
+        "loud": 205,
+        "last": 0.028534307902722354
       },
       "captionLines": [
         "Go.",
@@ -68,8 +78,11 @@
     },
     {
       "lesson": "rings-first",
+      "voice": false,
       "passed": true,
       "seconds": 48,
+      "utterances": 0,
+      "cancels": 0,
       "attempts": 8,
       "successes": 8,
       "answers": 0,
@@ -78,10 +91,11 @@
       "speechLines": 14,
       "speechEnds": 8,
       "tap": {
-        "maxRms": 0.07082024635667934,
-        "maxPeak": 0.20528152585029602,
-        "polls": 949,
-        "loud": 914
+        "maxRms": 0.07745292349372292,
+        "maxPeak": 0.22522175312042236,
+        "polls": 952,
+        "loud": 919,
+        "last": 0.043189825979391167
       },
       "captionLines": [
         "Attempt 7.",
@@ -92,20 +106,24 @@
     },
     {
       "lesson": "hover-height",
+      "voice": false,
       "passed": true,
       "seconds": 87,
+      "utterances": 0,
+      "cancels": 0,
       "attempts": 4,
       "successes": 4,
       "answers": 0,
       "gates": 0,
       "touches": 0,
-      "speechLines": 9,
+      "speechLines": 11,
       "speechEnds": 4,
       "tap": {
-        "maxRms": 0.029529238430464986,
-        "maxPeak": 0.06478297710418701,
-        "polls": 1726,
-        "loud": 1718
+        "maxRms": 0.059037309726908654,
+        "maxPeak": 0.13842537999153137,
+        "polls": 1727,
+        "loud": 1689,
+        "last": 0.02048309398441033
       },
       "captionLines": [
         "You held your height. That is the first skill of flying by ear."
@@ -128,6 +146,16 @@
       }
     },
     {
+      "name": "ears-headphones: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 321,
+        "centre": 360
+      }
+    },
+    {
       "name": "ears-headphones: passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
@@ -147,11 +175,11 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-07T16:38:41.977Z"
+        "lastAt": "2026-11-07T17:19:41.203Z"
       }
     },
     {
-      "name": "ears-headphones: the lesson's speech was said through the engine and its end reported (speech events and speech.end markers)",
+      "name": "ears-headphones: the lesson's lines are speech events of the mode (the captions' source)",
       "pass": true,
       "value": {
         "speechLines": 12,
@@ -159,13 +187,28 @@
       }
     },
     {
+      "name": "ears-headphones: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
+      "name": "ears-headphones: the speech queue ran empty at least twice (speech.end markers, the replay's input)",
+      "pass": true,
+      "value": {
+        "speechEnds": 4
+      }
+    },
+    {
       "name": "ears-headphones: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.020252867002673505,
-        "maxPeak": 0.042474329471588135,
-        "polls": 469,
-        "loud": 162
+        "maxRms": 0.022004852711510235,
+        "maxPeak": 0.04263961315155029,
+        "polls": 468,
+        "loud": 163,
+        "last": 0
       }
     },
     {
@@ -195,6 +238,16 @@
       }
     },
     {
+      "name": "shapes-square: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 253,
+        "centre": 360
+      }
+    },
+    {
       "name": "shapes-square: passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
@@ -214,11 +267,11 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-07T16:38:57.819Z"
+        "lastAt": "2026-11-07T17:19:56.940Z"
       }
     },
     {
-      "name": "shapes-square: the lesson's speech was said through the engine and its end reported (speech events and speech.end markers)",
+      "name": "shapes-square: the lesson's lines are speech events of the mode (the captions' source)",
       "pass": true,
       "value": {
         "speechLines": 7,
@@ -226,13 +279,21 @@
       }
     },
     {
+      "name": "shapes-square: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
       "name": "shapes-square: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.06219043357286566,
-        "maxPeak": 0.17867618799209595,
-        "polls": 218,
-        "loud": 207
+        "maxRms": 0.06268859745743427,
+        "maxPeak": 0.19217658042907715,
+        "polls": 216,
+        "loud": 205,
+        "last": 0.028534307902722354
       }
     },
     {
@@ -258,6 +319,16 @@
       }
     },
     {
+      "name": "rings-first: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 287,
+        "centre": 360
+      }
+    },
+    {
       "name": "rings-first: passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
@@ -277,11 +348,11 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-07T16:39:48.585Z"
+        "lastAt": "2026-11-07T17:20:47.774Z"
       }
     },
     {
-      "name": "rings-first: the lesson's speech was said through the engine and its end reported (speech events and speech.end markers)",
+      "name": "rings-first: the lesson's lines are speech events of the mode (the captions' source)",
       "pass": true,
       "value": {
         "speechLines": 14,
@@ -289,13 +360,21 @@
       }
     },
     {
+      "name": "rings-first: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
       "name": "rings-first: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.07082024635667934,
-        "maxPeak": 0.20528152585029602,
-        "polls": 949,
-        "loud": 914
+        "maxRms": 0.07745292349372292,
+        "maxPeak": 0.22522175312042236,
+        "polls": 952,
+        "loud": 919,
+        "last": 0.043189825979391167
       }
     },
     {
@@ -321,6 +400,29 @@
       }
     },
     {
+      "name": "hover-height: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 321,
+        "centre": 360
+      }
+    },
+    {
+      "name": "Z says the last line again (a new speech event with the key of the last one) and I says where the pilot is (a new status line with the lesson and its attempt)",
+      "pass": true,
+      "value": {
+        "lastKey": "fly.go",
+        "z": [
+          "fly.go"
+        ],
+        "i": [
+          "Lesson: Hold your height. Attempt 1."
+        ]
+      }
+    },
+    {
       "name": "the pause menu offers Fly by Sound; its item shows the start screen over the flight (flight paused), Escape closes it and the flight goes on",
       "pass": true,
       "value": {
@@ -333,6 +435,43 @@
           "hidden": true,
           "paused": false
         }
+      }
+    },
+    {
+      "name": "the motor sound in the mode: no graph until asked; the speaker button builds it on the engine's own context (one AudioContext, master over 0), the output gets louder and its peak rises but holds under the limiter's ceiling (0.5013); off again, the motors fall silent (master 0, the level drops)",
+      "pass": true,
+      "value": {
+        "sound0": {
+          "context": null,
+          "mix": null,
+          "blades": 3
+        },
+        "sound1": {
+          "ctx": "running",
+          "master": 0.7
+        },
+        "sound2": {
+          "master": 0
+        },
+        "levels": {
+          "after": 0.023495092047894853,
+          "motorOn": 0.05886865900590228,
+          "motorOff": 0.02326673916030469
+        },
+        "peaks": {
+          "before": 0.04756370186805725,
+          "motorsOn": 0.13842537999153137
+        },
+        "audioContexts": 1
+      }
+    },
+    {
+      "name": "the sound follows the frames: the height tone sounds (RMS over 1e-3), is silent while the flight is paused behind the start screen (RMS under 1e-4: setLayers none), and is back when the flight goes on",
+      "pass": true,
+      "value": {
+        "before": 0.005888695896502117,
+        "during": 0.00000364034755152641,
+        "after": 0.023495092047894853
       }
     },
     {
@@ -355,25 +494,33 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-07T16:41:18.152Z"
+        "lastAt": "2026-11-07T17:22:17.374Z"
       }
     },
     {
-      "name": "hover-height: the lesson's speech was said through the engine and its end reported (speech events and speech.end markers)",
+      "name": "hover-height: the lesson's lines are speech events of the mode (the captions' source)",
       "pass": true,
       "value": {
-        "speechLines": 9,
+        "speechLines": 11,
         "speechEnds": 4
+      }
+    },
+    {
+      "name": "hover-height: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
       }
     },
     {
       "name": "hover-height: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.029529238430464986,
-        "maxPeak": 0.06478297710418701,
-        "polls": 1726,
-        "loud": 1718
+        "maxRms": 0.059037309726908654,
+        "maxPeak": 0.13842537999153137,
+        "polls": 1727,
+        "loud": 1689,
+        "last": 0.02048309398441033
       }
     },
     {
@@ -390,6 +537,17 @@
       "value": {
         "next": "hover-turn",
         "scene": "lesson-hover-turn"
+      }
+    },
+    {
+      "name": "G opens the sound glossary from a lesson (ears-glossary runs, the helper's view is the glossary's floor)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-glossary",
+        "opens": [
+          "shapes-square",
+          "ears-glossary"
+        ]
       }
     },
     {

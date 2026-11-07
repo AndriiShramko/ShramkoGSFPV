@@ -13,7 +13,8 @@
 // Fly by Sound (v0.12, docs/wip/v12-plan.md 2.2): on a page entered through ?sonic= (sonic/entry.ts) the sound engine owns
 // the one AudioContext. The motors are off there unless the pilot's sound settings ask for them (SonicPrefs.motorSound,
 // default off: they mask the cues), and when on they play into the engine's input node (SonicEngine.auxInput), through
-// its limiter, on its context; sound.motors and the volume are not read, and no context of this feature's own is made.
+// its limiter, on its context; sound.motors is not read (the engine's setting decides), the level is sound.volume as ever,
+// and no context of this feature's own is made.
 import { S } from '@gsfpv/sim-core';
 import { t } from '../../i18n';
 import { h } from '../../ui/dom';
