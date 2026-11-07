@@ -48,8 +48,12 @@ POST /api/session/start, POST /api/session/<id>/<n>, POST /api/session/<id>/fini
                  chunks of at most 1 MiB with the upload token (X-Session-Token), checked against the SHA-256 given
                  at the start, stored and fsynced BEFORE the API says "stored"; then the delivery queue
                  (session_delivery.py) sends it to the owner's Telegram and e-mail, each channel with its own
-                 status and retries, "delivered" only when both confirm. Caps: SESSION_MAX_BYTES (100 MiB a
-                 package), SESSIONS_CAP_BYTES (2 GiB in all), the disk guard, rates per client and in all.
+                 status and retries, "delivered" only when both confirm; a channel that fails 3 times is
+                 reported through the other. Files are streamed from disk (Telegram up to 49 MiB, e-mail up to
+                 SESSION_MAIL_MAX_BYTES, 15 MiB; a bigger package goes as a link to the admin). Caps:
+                 SESSION_MAX_BYTES (100 MiB a package), SESSIONS_CAP_BYTES (2 GiB in all), the disk guard,
+                 rates per client and in all. Config names: SESSION_MAIL_TO (default GMAIL_USER),
+                 SESSION_MAIL_MAX_BYTES, SESSION_TG_MAX_BYTES, SESSION_RETENTION_DAYS.
 GET  /api/health 200 {"ok": true, ...}; 503 when the disk guard has tripped.
 GET  /api/superspl/explore
                  SuperSplat catalogue (owner's decision 2026-09-27, docs/decisions.md D35): the
@@ -101,6 +105,7 @@ import outreach
 import ownerbot
 import scenepages
 import service
+import session_delivery
 import sessions
 import superspl_facts
 import translate
@@ -236,6 +241,10 @@ def housekeeping() -> None:
         try:
             check_disk()
             prune_events()
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            sweep_sessions()
         except Exception:  # noqa: BLE001
             pass
         time.sleep(300)
@@ -1373,6 +1382,27 @@ outreach.OutreachAdmin(OUTREACH).register(ADMIN)
 
 # ---------------- Fly by Sound recordings (v0.12 lane v12-feedback): sessions.py, the chunked upload of a pilot's package ----------------
 SESSIONS = sessions.SessionStore(lambda: DATA_DIR, free_bytes=lambda: int(free_gb() * 1e9), min_free_bytes=lambda: int(MIN_FREE_GB * 1e9))
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        v = int(os.environ.get(name) or default)
+    except ValueError:
+        return default
+    return v if v > 0 else default
+
+
+# Telegram and e-mail, each with its own worker thread, status and retries (session_delivery.py). They read the environment at each try, like the
+# owner bot and the mailer do: the owner's chat and token as ownerbot.BotConfig, Gmail as mailer.MailConfig, the address SESSION_MAIL_TO (default GMAIL_USER).
+SESSION_ADMIN_URL = PUBLIC_ORIGIN + "/admin/"
+SESSION_DELIVERY = session_delivery.Delivery(
+    SESSIONS,
+    telegram=session_delivery.TelegramChannel(lambda: ownerbot.BotConfig.from_env(os.environ), max_bytes=lambda: _env_int("SESSION_TG_MAX_BYTES", session_delivery.TG_MAX_BYTES),
+                                              admin_url=SESSION_ADMIN_URL),
+    email=session_delivery.EmailChannel(lambda: mailer.MailConfig.from_env(os.environ), to=lambda: (os.environ.get("SESSION_MAIL_TO") or "").strip(),
+                                        max_bytes=lambda: _env_int("SESSION_MAIL_MAX_BYTES", session_delivery.MAIL_MAX_BYTES), admin_url=SESSION_ADMIN_URL,
+                                        host=urllib.parse.urlsplit(PUBLIC_ORIGIN).hostname or "gsfpv.flyreelstudio.eu"),
+    admin_url=SESSION_ADMIN_URL)
 SESSION_ROUTE = re.compile(r"/api/session/(?:(start)|(S-[0-9]{8}-[0-9a-f]{12})(?:/(finish|[0-9]{1,6}))?)")
 SESSION_BODY_MAX = 8 * 1024            # the JSON of start and finish
 SESSION_DRAIN_MAX = sessions.CHUNK_BYTES + 64 * 1024   # a refused chunk is read away up to this (nginx stops a body at 1100k)
@@ -1730,14 +1760,23 @@ def start_ideas() -> None:
     WORKER.start()
 
 
+def sweep_sessions() -> None:
+    """Housekeeping of the recordings (sessions.py): abandoned uploads, and delivered packages past the retention, go; one line says so."""
+    gone = SESSIONS.sweep()
+    if gone:
+        print(f"sessions: {len(gone)} removed by housekeeping", flush=True)
+
+
 def start_sessions() -> None:
-    """The recordings' side at start (sessions.py): the store's indexes are rebuilt from the disk. Optional for the rest of the API:
-    a failure is logged and the first upload retries it."""
+    """The recordings' side at start (sessions.py, session_delivery.py): the store's indexes are rebuilt from the disk (a send a restart cut
+    off is queued again), then the two channels' workers start and work what is waiting. Optional for the rest of the API: a failure is logged
+    and the first upload retries the recovery."""
     try:
         stats = SESSIONS.recover()
         print(f"sessions: {stats['sessions']} on disk, {stats['requeued']} sends put back in the queue, {stats['bad']} unreadable", flush=True)
     except OSError as e:
         print(f"sessions: recovery failed: {type(e).__name__}: {e}"[:300], flush=True)
+    SESSION_DELIVERY.start()
 
 
 def main() -> None:

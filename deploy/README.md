@@ -445,6 +445,28 @@ uploads in progress count), `SESSION_RETENTION_DAYS` (1826, the privacy text's f
 Files: `$GSFPV_BASE/data/sessions/index.jsonl` (one line per package stored, a tombstone per deletion) and `sessions/<id>/`
 (`meta.json`, `package.zip`). The client's address is never written. Checked by `apps/api/tests/test_sessions.py`.
 
+**Delivery (step 7).** `apps/api/session_delivery.py` sends every stored package to the owner by Telegram and by e-mail, from the
+queue kept in each session's `meta.json` (so a restart loses nothing; a send that a restart cut off is queued again). Upload the API
+(`server.py`, `sessions.py`, `session_delivery.py`) first. **`deploy/compose.yml` changed too: `gsfpv-api` has 192 MB (was 64 MB, plan
+section 8); Compose applies it only when the container is recreated:**
+```bash
+scp -P $GSFPV_PORT -i $GSFPV_KEY deploy/compose.yml $GSFPV_HOST:$GSFPV_BASE/compose.yml
+$SSH "cd $GSFPV_BASE && docker compose up -d --force-recreate gsfpv-api && docker inspect gsfpv-api --format '{{.HostConfig.Memory}}'"   # 201326592
+```
+| Channel | What goes | Confirmed when |
+|---|---|---|
+| Telegram | `sendDocument`, the file part read from disk in 256 KB pieces, up to 49 MiB (`SESSION_TG_MAX_BYTES`); over it a message with the admin link, status `link` | Telegram's answer is ok with a message id |
+| E-mail | one message to `SESSION_MAIL_TO` (default `GMAIL_USER`, the owner's own address) through the authenticated Gmail SMTP server, the zip as a base64 attachment encoded and written to the socket in about 100 KB pieces, up to `SESSION_MAIL_MAX_BYTES` (15 MiB; Gmail's 25 MB limit counts the base64 text: a 15 MiB package is a message of about 21 MiB); over it a text message with the admin link, status `link` | the SMTP server accepted the message after DATA (there is no read receipt) |
+
+Each channel has its own worker thread, status and retries: a failed try waits 30 s, 2 min, 10 min, 30 min, 2 h, 6 h, 12 h, then 24 h; Telegram's
+`retry_after` is honoured when longer; the 9th failure makes the channel `failed` (the admin's resend, step 9, starts it again). A channel that is not
+set up uses no tries (it looks again each minute). **A channel that fails 3 times is reported through the other** (a Telegram message, or an e-mail
+`[Fly by Sound] telegram delivery of recording S-... failed 3 times`), once, and once more when it gives up; a notice that cannot go is kept pending and
+retried. `delivered` is true only when both channels are `sent` or `link`. Config names (all optional): `SESSION_MAIL_TO`, `SESSION_MAIL_MAX_BYTES`,
+`SESSION_TG_MAX_BYTES`; the Telegram chat and token are those of the owner bot (`TG_OWNER_CHAT_ID`/`TG_CHAT_ID`, `TG_OWNER_BOT_TOKEN`/`TG_BOT_TOKEN`), Gmail
+is `GMAIL_USER` and `GMAIL_APP_PASSWORD`. Housekeeping (every 5 minutes with the counter's) removes uploads left unfinished for 24 h and delivered packages
+past `SESSION_RETENTION_DAYS`. Checked by `apps/api/tests/test_session_delivery.py` (fake Telegram and a local SMTP server, nothing leaves the machine).
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.

@@ -242,8 +242,10 @@ class FakeSMTP:
     connection after the message body arrives, before answering it."""
 
     def __init__(self, user: str = GMAIL_USER, password: str = GMAIL_PASS, tls: ssl.SSLContext | None = None,
-                 advertise_starttls: bool = True):
-        self.user, self.password, self.tls, self.advertise_starttls = user, password, tls, advertise_starttls
+                 advertise_starttls: bool = True, spool: Path | None = None):
+        """spool: a folder; each message body is written there line by line (dot-unstuffed) and the message dict names it as
+        "path" instead of holding the bytes in "data", so a test of a large message measures the sender, not this fake."""
+        self.user, self.password, self.tls, self.advertise_starttls, self.spool = user, password, tls, advertise_starttls, spool
         self.messages: list[dict] = []
         self.events: list[str] = []
         self.plan: dict[str, list] = {}
@@ -339,15 +341,23 @@ class FakeSMTP:
             elif verb == "DATA":
                 send("354 go on")
                 data = b""
+                out = None
+                if self.spool is not None:
+                    out = (self.spool / f"msg-{threading.get_ident()}-{time.monotonic_ns()}.eml").open("wb")
                 while True:
                     ln = rf.readline()
                     if not ln or ln == b".\r\n":
                         break
-                    data += ln
+                    if out is not None:
+                        out.write(ln[1:] if ln.startswith(b"..") else ln)
+                    else:
+                        data += ln
+                if out is not None:
+                    out.close()
                 if self._planned("DATA") == "drop":
                     return
                 with self._mu:
-                    self.messages.append({"from": mail_from, "to": rcpts, "data": data, "tls": tls_on})
+                    self.messages.append({"from": mail_from, "to": rcpts, "data": data, "tls": tls_on, **({"path": out.name} if out is not None else {})})
                 send("250 2.0.0 queued")
             elif verb == "QUIT":
                 send("221 bye")

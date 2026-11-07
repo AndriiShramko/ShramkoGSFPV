@@ -274,6 +274,9 @@ class SessionStore:
             for name, ch in (meta.get("channels") or {}).items():
                 if ch.get("status") in ("queued", "retrying"):
                     work[name] = float(ch.get("nextAt") or 0)
+                # a notice about this channel's trouble that could not go through the other channel yet is work too
+                if any(n.get("state") == "pending" for n in (ch.get("notices") or {}).values()):
+                    work[f"{name}:notice"] = float(ch.get("noticeAt") or 0)
         with self._mu:
             if work:
                 self._due[sid] = work
@@ -579,7 +582,7 @@ class SessionStore:
                     _fsync_dir(sdir)
                 summary = manifest_summary(manifest)
                 meta.update(state="stored", storedAt=_iso(now), storedTs=now, bytes=meta["size"], summary=summary, held={})
-                meta["channels"] = {c: {"status": "queued", "attempts": 0, "nextAt": now, "error": "", "sentAt": None, "messageId": None} for c in CHANNELS}
+                meta["channels"] = {c: {"status": "queued", "attempts": 0, "failures": 0, "nextAt": now, "error": "", "sentAt": None, "messageId": None} for c in CHANNELS}
                 _write_json(sdir / "meta.json", meta)
                 self._append_index({"id": sid, "ts": now, "storedAt": meta["storedAt"], "bytes": meta["bytes"], "sha256": meta["sha256"], "summary": summary})
             except OSError as e:
@@ -676,7 +679,7 @@ class SessionStore:
         def fn(m: dict) -> None:
             if m.get("state") != "stored":
                 raise SessionError(409, "not-stored")
-            m["channels"][channel] = {"status": "queued", "attempts": 0, "nextAt": now, "error": "", "sentAt": None, "messageId": None, "resent": now}
+            m["channels"][channel] = {"status": "queued", "attempts": 0, "failures": 0, "nextAt": now, "error": "", "sentAt": None, "messageId": None, "resent": now}
 
         return self.update(sid, fn)
 
