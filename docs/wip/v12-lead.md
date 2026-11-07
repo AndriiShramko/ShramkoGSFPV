@@ -6,16 +6,18 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
 
 - sonic-core: `shramko-fly-by-sound-fpv` main 3959930 (stage1-rc1 41aa53e plus publication docs), 577 Node tests, 9 audio proofs, independent review with 8 fixes. Published on GitHub as public after a full-history secrets scan.
 
+- sonic-core 1eea4d5 (pushed): the spoken lines the lanes asked for (`survey.howto` without "say the number", `survey.howto-voice`, `survey.mic-on`, `send.none`, `send.cancelled`). The gitlink still points at 3959930; v12-int moves it.
+- Both lanes merged into v03-lead (local, not pushed): 8610380 (v12-flight ac59e8d), 5dc92fc (v12-feedback 970adbc). No file was changed by both lanes, no conflict.
+
 ## Running
 
-- Workflow: step 0 (one agent on v03-lead, local commits only), then v12-flight and v12-feedback side by side in `C:/dev/gsfpv-v12-flight` and `C:/dev/gsfpv-v12-feedback`, one review each. Nothing is pushed until the lead merges and releases.
+- Workflow v12-int in `C:/dev/gsfpv-v12-int` (branch `v12-int` from 5dc92fc): the seams the lanes could only stand in for, then one review. Status: `docs/wip/v12-int.md`.
 
 ## Next for the lead
 
-1. Read the lanes' Status and review files; handle "Needs from sonic-core".
-2. Merge v12-flight, then v12-feedback (`git merge --no-ff`), all gates once, push.
-3. Release per the gsfpv skill `references/release.md`: API, nginx, compose (192 MB) and config, release, live checks.
-4. Live acceptance (spec done-means), STATE.md, vault status note.
+1. Read v12-int's Status and review; merge it (`--no-ff`), all gates once, push.
+2. Release per the gsfpv skill `references/release.md`: API files, compose (192 MB) and config (`SESSION_MAIL_MAX_BYTES` 15 MB), nginx (microphone, `media-src blob:`, `/api/session/`), release, live checks.
+3. Live acceptance: release.json, accept-fly over the live site, `?sonic=` and `/{lang}/sound/` headless, one `[TEST]` package through the live API to the owner's Telegram and mailbox, then delete it. STATE.md, vault status note.
 
 ## Status
 
@@ -31,6 +33,8 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
   - README, `AGENT_SETUP.md` and `AGENTS.md`: clone with `--recursive`, `git submodule update --init`, the sound repository named and linked, "never edit `packages/sonic-fpv` here". `pnpm install` without the submodule stops with `ERR_PNPM_WORKSPACE_PKG_NOT_FOUND` (tried on a scratch workspace).
   - All gates once (`gates.py`, exit 0, logs in `U:/Temp/gsfpv-gates-20261107-150214`): typecheck 13 projects, vitest 174 files and 2706 tests (577 of them the sound package's own, run through the root config), api-unittest 320 tests, architecture, i18n (1032 strings x 4 locales), catalog (74 settings, 29 shortcut keys and 12 flying keys), B18 PASS. B18 left an untracked `evidence/2026-11-07/b-repo-b18.json`, not committed.
   - Lanes: created from the head of the Status commit, each with `docs/wip/<lane>.md` (its checklist, ownership and rules). Only the lead moves the gitlink; a lane asks under "Needs from sonic-core". Nothing here is verified by ears: how a sound feels is for the owner to judge.
-- [ ] v12-flight merged
-- [ ] v12-feedback merged
+- [x] v12-flight merged (8610380): steps 1-12 and the review's 7 fixes; Status `docs/wip/v12-flight.md`, review `docs/wip/v12-flight-review.md`
+- [x] v12-feedback merged (5dc92fc): steps 1-11 and the review's 7 fixes; Status `docs/wip/v12-feedback.md`, review `docs/wip/v12-feedback-review.md`
+  - All gates on 5dc92fc (logs `U:/Temp/gsfpv-gates-20261107-214446`): typecheck, api-unittest, architecture, i18n, catalog, B18 pass; vitest 3215 pass and 1 fail: `sonic-world.test.ts` "contact queries cost under 20 ms" measured 30.5 ms while another vitest ran on the machine. The file alone passes twice. An absolute time bound inside the parallel gate is a flake; v12-int makes it robust.
+- [ ] v12-int merged (the seams joined, lazy loading, end-to-end run)
 - [ ] released and checked live
