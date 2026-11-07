@@ -9,7 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const DIRS = ["site", "scenepage"].map((d) => join(here, "..", "..", "..", "packages", "i18n", "locales", d));
 const LOCALES = ["en", "es", "pl", "ru"];
 const ALLOW = new Set([
-  "ShramkoGSFPV", "PlayCanvas", "PlayCanvas Engine", "Rapier", "Betaflight", "SplatFPV", "MIT", "Apache-2.0", "GPL-3.0",
+  "ShramkoGSFPV", "Fly by Sound", "PlayCanvas", "PlayCanvas Engine", "Rapier", "Betaflight", "SplatFPV", "MIT", "Apache-2.0", "GPL-3.0",
   "LAVA 1104 7200KV", ">5:1", "Gamepad API", "Safari, iPad, Android", "Firefox", "fdlibm / musl", "ms", "Hz",
   // settings catalogue (tune.text): SI unit symbols and video resolutions
   "s", "m", "m/s", "m/s²", "min", "1/s", "1080p", "1440p", "2160p (4K)",
@@ -46,7 +46,8 @@ for (const l of LOCALES.slice(1)) {
       console.log(`${l}: placeholder mismatch at ${k}`);
       problems++;
     }
-    const technical = /(^|\.)(href|src|level)$/.test(k) || /\.license$/.test(k);
+    // an anchor id (the privacy page's #fly-by-sound) is the same in every language: the link to it must work in all four
+    const technical = /(^|\.)(href|src|level|id)$/.test(k) || /\.license$/.test(k);
     if (!technical && d[k] === en[k] && !ALLOW.has(en[k])) {
       console.log(`${l}: identical to EN at ${k}: ${JSON.stringify(en[k])}`);
       problems++;

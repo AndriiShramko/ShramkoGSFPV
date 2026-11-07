@@ -57,6 +57,11 @@ export default function Footer({ locale, page, share = true }: { locale: Locale;
               </a>
             </li>
             <li>
+              <a href={`/${locale}/sound/`} className={link}>
+                {t("sound")}
+              </a>
+            </li>
+            <li>
               <Ext href={REPO} className={link} track="cta_click" p="github">
                 GitHub
               </Ext>

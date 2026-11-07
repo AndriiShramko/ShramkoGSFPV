@@ -1,0 +1,108 @@
+{
+  "name": "sonicrec-admin",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T18:53:17.825Z",
+    "gitHead": "2e4e80b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "S1: the tab lists the four recordings, newest first": true,
+    "S1: each row reads right: delivered, one channel done, delivered, a channel gave up": true,
+    "S1: the channels say what happened (Telegram will try again for B, gave up for D, e-mail sent for B)": true,
+    "S1: the summary counts them: 4 stored, 2 delivered, 2 waiting, 1 with a channel that gave up": true,
+    "S1: a minor's row says guardian confirmed; the lesson and the length are shown": true,
+    "S1: the tab shows no upload token, no hash of it, no device and no user agent": true,
+    "S1: both channels are set up on this copy and the tab says so": true,
+    "S2: typing in the search box key by key keeps the text in order and the focus in the box": true,
+    "S2: \"not delivered yet\" shows B and D, \"a channel gave up\" only D, the search narrows (and finds nothing for nonsense)": true,
+    "S3: the click saves the package: the SAVED bytes (not the event) are the ones the pilot sent, under the name with the id": true,
+    "S3: control, the same address without the session is refused with 401 and sends no byte of the package": true,
+    "S4: \"Send by Telegram again\" on a channel that gave up sends the file at once (Telegram holds a second copy) and the row turns delivered": true,
+    "S4: a channel that already arrived asks \"send again?\" first (short on the button, the whole sentence as its accessible name), and nothing is sent by the first click": true,
+    "S4: the second click sends it again, the same package": true,
+    "S5: control, a delete without the CSRF header is refused with 403 and the recording is still there": true,
+    "S5: the first click only asks \"Delete for good?\" and deletes nothing": true,
+    "S5: the second click deletes: the row is gone, the folder is gone, a tombstone line names only the id and the reason": true,
+    "S5: the other recordings are untouched": true,
+    "S6: the audit log has the download, both resends and the deletion, each ok, with the id": true,
+    "S6: no password and no upload token is in the audit log": true,
+    "S6: control, the tokens exist only as hashes on the server (so the check above could have failed)": true,
+    "S6: the browser POSTed only the login, the two resends and two deletes (the control without CSRF, and the real one)": true,
+    "S6: no Content-Security-Policy violation was reported": true,
+    "S7: the tab shows no missing key in en, es, pl or ru, and the page language follows": true
+  },
+  "results": {
+    "s1": {
+      "rows": [
+        {
+          "id": "S-20261107-da4f93ba944c",
+          "state": "failed",
+          "text": "11/07/26, 07:53 PMa channel gave upwalls-hall \u00b7 full \u00b7 enadult, with voice0:028 KBgave up (network)sentDownloadTelegram againE-mail againDelete",
+          "tg": "gave up (network)",
+          "mail": "sent"
+        },
+        {
+          "id": "S-20261107-04233097d16d",
+          "state": "delivered",
+          "text": "11/07/26, 07:53 PMdeliveredwalls-hall \u00b7 full \u00b7 enunder 18, guardian confirmed, with voice0:029 KBsentsentDownloadTelegram againE-mail againDelete",
+          "tg": "sent",
+          "mail": "sent"
+        },
+        {
+          "id": "S-20261107-2c18c855f9ba",
+          "state": "half",
+          "text": "11/07/26, 07:53 PMone channel donewalls-hall \u00b7 full \u00b7 enadult, with voice0:02604 KBwill try again (telegram-500)sentDownloadTelegram againE-mail againDelete",
+          "tg": "will try again (telegram-500)",
+          "mail": "sent"
+        },
+        {
+          "id": "S-20261107-f8564294cd61",
+          "state": "delivered",
+          "text": "11/07/26, 07:53 PMdeliveredwalls-hall \u00b7 full \u00b7 enadult, with voice0:022.2 MBsentsentDownloadTelegram againE-mail againDelete",
+          "tg": "sent",
+          "mail": "sent"
+        }
+      ],
+      "summary": "4 stored, 2 delivered, 2 waiting, 1 with a channel that gave up. 2.8 MB in all.Telegram: set up, files up to 49 MiB.E-mail: set up, files up to 15 MiB."
+    },
+    "s3": {
+      "name": "fly-by-sound-S-20261107-f8564294cd61.zip",
+      "bytes": 2203745,
+      "failure": null
+    },
+    "s4": {
+      "mailBefore": 4,
+      "label": "Send again?"
+    },
+    "s6": [
+      "sessions.download true <id>",
+      "sessions.resend true <id> telegram",
+      "sessions.resend true <id> email",
+      "sessions.delete true <id>"
+    ],
+    "posts": [
+      "/api/admin/login",
+      "/api/admin/sessions/<id>/resend",
+      "/api/admin/sessions/<id>/resend",
+      "/api/admin/sessions/<id>/delete",
+      "/api/admin/sessions/<id>/delete"
+    ],
+    "s7": {
+      "es": "ok Grabaciones no missing key lang=es",
+      "pl": "ok Nagrania no missing key lang=pl",
+      "ru": "ok \u0417\u0430\u043f\u0438\u0441\u0438 no missing key lang=ru",
+      "en": "ok Recordings no missing key lang=en"
+    }
+  },
+  "note": "headless Chrome, the admin page built by vite as a release carries it and served under the live admin CSP (serve-csp.mjs), against a LOCAL copy of the real API (apps/api/tests/rig_server.py) with a TEST admin password; the recordings were sent by the real upload client; Telegram and SMTP are fakes on this machine. The live admin is never visited."
+}

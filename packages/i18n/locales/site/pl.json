@@ -870,6 +870,7 @@
     "cookies": "Ustawienia cookies",
     "licenses": "Licencje",
     "supporters": "Wspierający",
+    "sound": "Fly by Sound",
     "license": "licencja MIT",
     "disclaimer": "Projekt nie jest powiązany z PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, projektem Betaflight, LuGus Studios (Liftoff), DJI ani RadioMaster i nie jest przez nie wspierany. Znaki towarowe należą do ich właścicieli."
   },
@@ -878,7 +879,7 @@
     "description": "Jakie dane zbiera ShramkoGSFPV, w jakim celu, jak długo je przechowuje i jakie masz prawa według RODO.",
     "eyebrow": "Prywatność",
     "h1": "Informacja o prywatności",
-    "updated": "Ostatnia aktualizacja: 29 października 2026",
+    "updated": "Ostatnia aktualizacja: 7 listopada 2026",
     "review": "Tekst nie przeszedł jeszcze weryfikacji prawnej.",
     "sections": [
       { "h": "Kto odpowiada za dane", "p": ["Administratorem Twoich danych jest Andrii Shramko. Możesz się z nim skontaktować pod adresem zmei116@gmail.com lub przez formularz kontaktowy na tej stronie."] },
@@ -888,6 +889,7 @@
       { "h": "Formularz współpracy", "p": ["Jeśli wyślesz formularz, Twój e-mail, wybrana rola i wiadomość zostaną zapisane na serwerze i przekazane do bota powiadomień właściciela w Telegramie.", "Przechowujemy je bez z góry określonego terminu, żeby właściciel mógł odezwać się do Ciebie także później, nawet po latach, do chwili, gdy poprosisz o ich usunięcie albo wycofasz zgodę: napisz na zmei116@gmail.com lub przez formularz kontaktowy. Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO)."] },
       { "h": "Zgłoszenia błędów i pomysły", "p": ["Jeśli wyślesz zgłoszenie błędu albo pomysł z symulatora lub z tej strony, na serwerze zapisujemy Twoją wiadomość, stronę i scenę, z których wysyłasz zgłoszenie, wersję, język oraz, jeśli go podasz, Twój kontakt (adres e-mail albo inny identyfikator). Dane techniczne (przeglądarka, karta graficzna, ekran, czasy klatek, ostatnie błędy, ustawienia, zapis lotu i mały obraz widoku) dołączamy tylko wtedy, gdy zaznaczysz odpowiednie pole.", "Zgłoszenie Fizyka drona („Pomóż go dostroić” w symulatorze) zawiera też drona, którego dotyczy, wklejony tekst z Betaflight i link do logu blackbox, a jeśli nie odznaczysz jego pola, także ustawienia symulatora zmienione dla tego drona, tryb lotu i sterowanie, którym latasz (aparatura, gamepad, klawiatura lub ekran dotykowy). Są zapisywane i przekazywane tak jak szczegóły techniczne zgłoszenia błędu.", "Wszystko, co wysyłasz, w tym Twoja wiadomość, Twój kontakt oraz, jeśli je dołączysz, dane techniczne i obraz, trafia na czat właściciela w Telegramie (a więc przechodzi przez serwery Telegrama), gdzie czyta i porządkuje zgłoszenia. Twój adres e-mail służy wyłącznie do odpowiedzi: odpowiedzi właściciela i podziękowanie, gdy Twój pomysł jest już w symulatorze, przychodzą z jego adresu Gmail (zmei116@gmail.com) przez serwery pocztowe Google. Aby odpowiedź trafiła do Ciebie w języku, w którym napisałeś, Twoja wiadomość (żeby rozpoznać jej język) i odpowiedź właściciela (żeby ją przetłumaczyć) są wysyłane do interfejsu Gemini API Google. Nic nie wychodzi automatycznie, a jeśli odpiszesz, Twoja odpowiedź trafi do jego skrzynki Gmail. Jeśli opowiesz mu o pomyśle osobiście i podasz swój adres, przechowujemy go i używamy tak samo.", "Zgłoszenia przechowujemy, dopóki trwa praca nad pomysłem lub problemem, a potem jako zapis tego, jak symulator był ulepszany; Twój kontakt przechowujemy razem z nimi bez z góry określonego terminu, żeby właściciel mógł napisać do Ciebie ponownie. Publiczna mapa rozwoju pokazuje tylko tytuły napisane przez nas, nigdy Twoich słów ani kontaktu. W każdej chwili możesz poprosić (zmei116@gmail.com) o usunięcie zgłoszenia albo samego adresu e-mail. Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO), wyrażona przez wysłanie zgłoszenia i zaznaczenie pola danych technicznych."] },
       { "h": "Obrazy i dane scen", "p": ["Podglądy scen na tej stronie, a w symulatorze same sceny, Twoja przeglądarka pobiera bezpośrednio z serwerów PlayCanvas (SuperSplat). Jak w przypadku każdej strony, serwery te widzą Twój adres IP."] },
+      { "id": "fly-by-sound", "h": "Nagrania z Fly by Sound", "p": ["Fly by Sound pozwala osobom niewidomym i słabowidzącym uczyć się latać na słuch. Nagrywanie jest wyłączone, dopóki pilot lub pomagająca mu osoba się nie zgodzi. Jeśli się zgodzisz, symulator nagrywa na Twoim urządzeniu: lot (tor, prędkość i drążki), odtworzone dźwięki i wypowiedzi, zdarzenia lekcji (bramki, dotknięcia, powroty, kroki), Twoje odpowiedzi w krótkiej ankiecie oraz, jeśli przeglądarka pozwoli na mikrofon, Twój głos. Zapisuje też język, ustawienia dźwięku, rodzaj i nazwę urządzenia sterującego, nazwę karty graficznej i wersję symulatora, losowy identyfikator pilota i, tylko jeśli go wpiszesz, pseudonim (nigdy nie jest wymagany: prosimy nie używać prawdziwego imienia i nazwiska). Po zatrzymaniu nagrania aplikacja proponuje głosem krótką ankietę. Mikrofon pozostaje włączony, dopóki trwa ankieta, aby odpowiedzi udzielone na głos znalazły się w nagraniu, i wyłącza się, gdy ankieta się kończy albo zostanie odrzucona.", "Nagranie zostaje na Twoim urządzeniu, w prywatnej pamięci przeglądarki, dopóki nie zapiszesz go do pliku albo nie wyślesz. Wysłanie wymaga osobnego potwierdzenia: drugiego naciśnięcia klawisza po pytaniu aplikacji, przycisku Wyślij z zaznaczoną zgodą pilota albo, jeśli wybrano polecenia głosowe, powiedzenia tak. Wcześniej nic nie jest wysyłane.", "Cel: testowanie i ulepszanie języka dźwięków, lekcji i symulatora z pilotami niewidomymi i słabowidzącymi oraz odpowiadanie im. Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO), udzielana osobno na nagrywanie, na wysyłanie i, jeśli z nich korzystasz, na polecenia głosowe. Nagranie głosu to dane osobowe i zgoda jest także jego podstawą. Zgodę możesz wycofać w każdej chwili; nie wpływa to na wcześniejsze działania.", "Wysłane nagranie jest zapisywane na serwerze tej strony i przekazywane właścicielowi przez Telegram (czyli przechodzi przez serwery Telegrama) oraz e-mailem (przez Gmail). Otworzyć je na serwerze może tylko właściciel: strona administratora jest za jego hasłem.", "Jak długo: serwer przechowuje nagranie, dopóki trwa projekt, i najdłużej pięć lat, a usuwa je wcześniej, gdy poprosi o to pilot lub rodzic. Właściciel usuwa swoje kopie w Telegramie i w skrzynce pocztowej na tę samą prośbę. Nagranie, które nigdy nie zostało wysłane, jest tylko na Twoim urządzeniu i możesz je tam w każdej chwili usunąć w panelu nagrań.", "Piloci poniżej 18 lat: nagranie można wysłać tylko wtedy, gdy rodzic lub opiekun podpisał formularz zgody, a pomocnik potwierdził to przed nagraniem. Potwierdzenie jest zapisane w nagraniu, a serwer odrzuca nagranie nieletniego bez niego. Bez potwierdzenia nagranie zostaje na urządzeniu. Wzór formularza zgody jest w repozytorium Fly by Sound z otwartym kodem (to nie jest porada prawna).", "Polecenia głosowe (powiedzenie „wyślij to autorowi”) są wyłączone, dopóki ktoś nie zaznaczy pola w panelu nagrań. Korzystają z rozpoznawania mowy samej przeglądarki, które wysyła dźwięk do producenta przeglądarki (w Chrome do Google) na jego własnych zasadach prywatności: nie otrzymujemy tego dźwięku i nie mamy nad nim kontroli. Klawisze działają zawsze, a podczas nagrywania nic nie jest słuchane. Dla pilota poniżej 18 lat pole można zaznaczyć dopiero po potwierdzeniu zgody opiekuna.", "Usunięcie: aby usunąć wysłane nagranie, napisz na zmei116@gmail.com lub użyj formularza kontaktowego i podaj numer pokazany obok nagrania w panelu nagrań (zaczyna się od S-) albo, jeśli go już nie masz, datę i lekcję. Pozostałe prawa opisano niżej w części „Twoje prawa”."] },
       { "h": "Twoje prawa", "p": ["Możesz zażądać dostępu do swoich danych, ich sprostowania lub usunięcia, ograniczenia przetwarzania i przeniesienia danych, a także wnieść sprzeciw wobec przetwarzania albo wycofać zgodę — przez formularz kontaktowy lub e-mailem.", "Masz też prawo wnieść skargę do Prezesa Urzędu Ochrony Danych Osobowych (UODO)."] }
     ],
     "resetConsent": "Zmień moją decyzję w sprawie analityki",
@@ -1030,6 +1032,49 @@
       "flyBody": "Za darmo, w przeglądarce na komputerze (Chrome lub Edge), bez instalacji i bez konta. Leć z aparaturą po USB, padem albo na klawiaturze.",
       "fly": "Otwórz symulator",
       "flyScene": "Otwórz scenę, którą dla Ciebie wybrałem"
+    }
+  },
+  "sound": {
+    "title": "Fly by Sound: naucz się latać dronem na słuch | ShramkoGSFPV",
+    "description": "Fly by Sound uczy osoby niewidome i słabowidzące latać symulowanym dronem FPV na słuch, dzięki dźwiękowi przestrzennemu i lekcjom mówionym. Klawiatura, pad lub aparatura. Za darmo i na otwartym kodzie.",
+    "eyebrow": "Fly by Sound",
+    "h1": "Lataj dronem FPV na słuch",
+    "lead": "Darmowy sposób, by osoby niewidome i słabowidzące nauczyły się latać symulowanym dronem FPV dzięki dźwiękowi przestrzennemu i lekcjom mówionym. Wzrok nie jest potrzebny: działa z klawiaturą, padem lub aparaturą RC, a aplikacja sama mówi.",
+    "status": "To pierwszy etap eksperymentu. Dźwięki i lekcje są testowane z pilotami, a to, jak coś brzmi, oceniają Twoje uszy. Powiedz nam, co pomogło, a co przeszkadzało.",
+    "start": {
+      "title": "Jak zacząć",
+      "text": "Załóż słuchawki i naciśnij przycisk. Aplikacja zacznie do Ciebie mówić: najpierw krótki test słuchawek (lewo, prawo, z tyłu), potem pierwsze lekcje: zawis, ściany, korytarz i obręcze.",
+      "button": "Uruchom Fly by Sound",
+      "note": "Otworzy się symulator w trybie dźwięku. Najlepiej działa na komputerze z aktualną przeglądarką Chrome lub Edge."
+    },
+    "need": {
+      "title": "Czego potrzebujesz",
+      "items": ["Słuchawek. Najlepsze są przewodowe: Bluetooth dodaje od 180 do 250 milisekund opóźnienia. Wyłącz Windows Sonic lub Dolby Atmos.", "Klawiatury, pada lub aparatury RC. Osoba widząca konfiguruje aparaturę jeden raz.", "Wygodnej głośności. Jeśli dźwięk boli, zdejmij słuchawki i ścisz.", "Pomocnika za pierwszym razem: przy aparaturze i, jeśli chcesz nagrywać, przy zgodzie."]
+    },
+    "keys": {
+      "title": "Najważniejsze klawisze",
+      "intro": "Aplikacja podaje je też na głos.",
+      "items": ["rozpocznij lub zakończ nagrywanie", "wyślij ostatnie nagranie autorowi", "usłysz, gdzie jesteś", "usłysz jeszcze raz ostatnią wypowiedź", "otwórz słownik dźwięków", "wróć do ostatniego punktu kontrolnego; przytrzymaj, by zacząć lekcję od nowa", "przejdź do następnego kroku"]
+    },
+    "record": {
+      "title": "Nagrywanie i wysyłanie",
+      "items": ["Nagrywanie jest wyłączone, dopóki się nie zgodzisz. Nagranie jest tylko na Twoim urządzeniu.", "Wysyłanie to osobny krok: aplikacja pyta, a Ty potwierdzasz drugim naciśnięciem klawisza, przyciskiem Wyślij albo głosem, jeśli włączysz polecenia głosowe.", "Piloci poniżej 18 lat potrzebują podpisanej zgody rodzica lub opiekuna, potwierdzonej przez pomocnika, zanim cokolwiek będzie można wysłać.", "Polecenia głosowe korzystają z rozpoznawania mowy w przeglądarce, które wysyła dźwięk do producenta przeglądarki. Są wyłączone, dopóki nie zaznaczysz pola; klawisze działają zawsze."],
+      "privacy": "Przeczytaj, co jest zbierane, po co i jak długo"
+    },
+    "helpers": {
+      "title": "Dla pomocników, nauczycieli i szkół",
+      "items": ["Wzór formularza zgody (to nie jest porada prawna) i protokół testów są w repozytorium z otwartym kodem.", "Dla pilota poniżej 18 lat rodzic lub opiekun podpisuje formularz zgody, a pomocnik potwierdza to w panelu nagrań przed nagrywaniem.", "Utrzymuj bezpieczną głośność. Strona nie zmierzy głośności, więc urządzenie szkolne kalibruje się raz: 75 dBA to poziom odniesienia dla dzieci, 80 dBA dla dorosłych."]
+    },
+    "open": {
+      "title": "Otwarty kod",
+      "text": "Silnik dźwięku, lekcje, format sesji i narzędzie raportów to pakiet o otwartym kodzie, Shramko Fly by Sound (licencja MIT). Symulator, który go niesie, to ShramkoGSFPV.",
+      "repo": "Shramko Fly by Sound na GitHubie",
+      "sim": "ShramkoGSFPV na GitHubie"
+    },
+    "help": {
+      "title": "Pytania i opinie",
+      "text": "Powiedz nam, co pomogło, a co przeszkadzało: odpowiedz na krótką ankietę po nagraniu, naciśnij B w symulatorze, by otworzyć Opinie, albo napisz do autora.",
+      "write": "Napisz do autora"
     }
   }
 }

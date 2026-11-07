@@ -48,7 +48,10 @@ services:
       PORT: "8090"
       SITE_TAG: gsfpv
     networks: [gsfpv-internal]
-    mem_limit: 64m
+    # 192m, not 64m (v0.12, docs/wip/v12-plan.md section 8): the recordings' delivery streams every package from disk, so its own peak is under
+    # 1 MiB (tests/test_session_delivery.py measures it), but a mail attachment of up to 15 MiB is a message of about 20 MiB that Gmail takes in one go,
+    # and the owner chose the room over the risk. Compose applies a changed limit only when the container is recreated (--force-recreate).
+    mem_limit: 192m
     cpus: 0.25
     pids_limit: 32
     security_opt: ["no-new-privileges:true"]

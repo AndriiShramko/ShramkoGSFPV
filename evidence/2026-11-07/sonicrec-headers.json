@@ -1,0 +1,79 @@
+{
+  "name": "sonicrec-headers",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T14:33:18.704Z",
+    "gitHead": "def44ff",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "real: getUserMedia opens the microphone and MediaRecorder records it": true,
+    "real: a blob: audio loads under the enforced CSP": true,
+    "control, first cut: getUserMedia is refused": true,
+    "control, first cut: a blob: audio is blocked by the CSP": true,
+    "the microphone alone (media-src kept): getUserMedia refused, blob audio loads": true,
+    "media-src alone (microphone kept): getUserMedia ok, blob audio blocked": true
+  },
+  "results": {
+    "real": {
+      "violations": [],
+      "allowsMicrophone": true,
+      "getUserMedia": "ok",
+      "recorderBytes": 12581,
+      "recorderSlices": 5,
+      "audioBlob": "loaded 0.25",
+      "policy": "hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(), microphone=(self), geolocation=(), usb=(), serial=(), bluetooth=(), xr-spatial-tracking=()",
+      "permissionsPolicyMicrophone": "self",
+      "cspHasMediaSrcBlob": true
+    },
+    "first-cut": {
+      "violations": [
+        {
+          "directive": "media-src",
+          "blocked": "blob"
+        }
+      ],
+      "allowsMicrophone": false,
+      "getUserMedia": "NotAllowedError",
+      "audioBlob": "error",
+      "policy": "hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(), microphone=(), geolocation=(), usb=(), serial=(), bluetooth=(), xr-spatial-tracking=()",
+      "permissionsPolicyMicrophone": "",
+      "cspHasMediaSrcBlob": false
+    },
+    "microphone-reverted-only": {
+      "violations": [],
+      "allowsMicrophone": false,
+      "getUserMedia": "NotAllowedError",
+      "audioBlob": "loaded 0.25",
+      "policy": "hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(), microphone=(), geolocation=(), usb=(), serial=(), bluetooth=(), xr-spatial-tracking=()",
+      "permissionsPolicyMicrophone": "",
+      "cspHasMediaSrcBlob": true
+    },
+    "media-src-removed-only": {
+      "violations": [
+        {
+          "directive": "media-src",
+          "blocked": "blob"
+        }
+      ],
+      "allowsMicrophone": true,
+      "getUserMedia": "ok",
+      "recorderBytes": 12581,
+      "recorderSlices": 5,
+      "audioBlob": "error",
+      "policy": "hid=(self), gamepad=(self), fullscreen=(self), screen-wake-lock=(self), camera=(), microphone=(self), geolocation=(), usb=(), serial=(), bluetooth=(), xr-spatial-tracking=()",
+      "permissionsPolicyMicrophone": "self",
+      "cspHasMediaSrcBlob": false
+    }
+  },
+  "note": "headless Chrome with --use-fake-device-for-media-stream and --use-fake-ui-for-media-stream; no scan drawn; the page and the headers come from tools/bench/scripts/serve-csp.mjs reading each copy of deploy/nginx.conf"
+}

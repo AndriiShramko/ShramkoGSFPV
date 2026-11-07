@@ -594,7 +594,17 @@ class TooLarge(Exception):
     pass
 
 
-Response = tuple[int, bytes, list]
+class FileBody:
+    """A response body that is a file on disk (the owner's download of a recording, up to 100 MiB): `server.Handler._send` writes it in
+    blocks, so the package is never held in memory (the container has 192 MB). `size` is what Content-Length says."""
+
+    __slots__ = ("path", "size")
+
+    def __init__(self, path: Path, size: int):
+        self.path, self.size = path, size
+
+
+Response = tuple[int, "bytes | FileBody", list]
 
 
 def _json(code: int, obj: dict, extra: list | None = None) -> Response:

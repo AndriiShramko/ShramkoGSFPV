@@ -44,7 +44,7 @@ for (const [hdr, want] of [[{}, '/en/'], [{ 'Accept-Language': 'pl-PL,pl;q=0.9' 
 
 const pages = [];
 for (const l of ['en', 'es', 'pl', 'ru']) {
-    for (const p of [`/${l}/`, `/${l}/privacy/`, `/${l}/licenses/`, `/${l}/fly/`]) {
+    for (const p of [`/${l}/`, `/${l}/privacy/`, `/${l}/licenses/`, `/${l}/sound/`, `/${l}/fly/`]) {
         const { r, body } = await get(p);
         expect(r.status === 200, `${p} -> ${r.status}`);
         expect(new RegExp(`<html[^>]*lang="${l}"`).test(body), `${p} has lang=${l}`);
@@ -53,13 +53,22 @@ for (const l of ['en', 'es', 'pl', 'ru']) {
         expect(r.headers.get('x-content-type-options') === 'nosniff', `${p} nosniff`);
         expect(!!r.headers.get('referrer-policy'), `${p} referrer-policy`);
         expect(!!r.headers.get('x-frame-options'), `${p} x-frame-options`);
-        expect((r.headers.get('permissions-policy') ?? '').includes('hid=(self)'), `${p} permissions-policy hid=(self)`);
+        const policy = r.headers.get('permissions-policy') ?? '';
+        expect(policy.includes('hid=(self)'), `${p} permissions-policy hid=(self)`);
+        // the microphone (Fly by Sound's voice recording, the browser's speech recognition): the simulator page
+        // may ask for it, no other page may. Read as the directive's own allowlist, so "(self)" cannot hide in
+        // another directive's text
+        const wantMic = p === `/${l}/fly/` ? 'self' : '';
+        const gotMic = /(?:^|,\s*)microphone=\(([^)]*)\)/.exec(policy)?.[1];
+        expect(gotMic === wantMic, `${p} permissions-policy microphone=(${wantMic}) (got ${gotMic === undefined ? 'no microphone directive' : `(${gotMic})`})`);
         // either header counts as "has a CSP"; an HTML page must get the enforced one, and it must
         // list the hash of every inline script actually served (a stale map after a release switch
         // without an nginx reload shows up here, before a browser blocks the page)
         const csp = r.headers.get('content-security-policy') ?? '';
         expect(!!csp || !!r.headers.get('content-security-policy-report-only'), `${p} has a CSP header`);
         expect(csp.includes("script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com") && csp.includes("object-src 'none'"), `${p} CSP enforced`);
+        // a recording's voice is played from a blob: URL; without media-src it falls back to default-src 'self' and is blocked
+        expect(csp.includes("media-src 'self' blob:"), `${p} CSP media-src 'self' blob:`);
         const missing = inlineScriptHashes(body).filter((h) => !csp.includes(h));
         expect(missing.length === 0, `${p} CSP lists all ${inlineScriptHashes(body).length} inline script hashes${missing.length ? ` (missing ${missing.length})` : ''}`);
         pages.push({ p, body });
@@ -69,6 +78,18 @@ for (const p of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/og.jpg', '/fly/sh
     const { r } = await get(p);
     expect(r.status === 200, `${p} -> ${r.status}`);
 }
+// Fly by Sound (v0.12): the privacy page has its section (the recordings panel's consent text links to #fly-by-sound), the page for blind
+// pilots links to it and starts the simulator in sound mode, and the sitemap lists the page in every language
+{
+    const sitemap = (await get('/sitemap.xml')).body;
+    for (const l of ['en', 'es', 'pl', 'ru']) {
+        const priv = pages.find((x) => x.p === `/${l}/privacy/`)?.body ?? '';
+        const sound = pages.find((x) => x.p === `/${l}/sound/`)?.body ?? '';
+        expect(priv.includes('id="fly-by-sound"'), `/${l}/privacy/ has the Fly by Sound section (#fly-by-sound)`);
+        expect(sound.includes(`href="/${l}/privacy/#fly-by-sound"`) && sound.includes(`href="/${l}/fly/?sonic=start"`), `/${l}/sound/ links the privacy section and starts the sound mode`);
+        expect(sitemap.includes(`/${l}/sound/`), `sitemap lists /${l}/sound/`);
+    }
+}
 // the owner's admin page: served, never cached or framed, its own strict CSP, no inline script
 {
     const { r, body } = await get('/admin/');
@@ -77,6 +98,7 @@ for (const p of ['/sitemap.xml', '/robots.txt', '/llms.txt', '/og.jpg', '/fly/sh
     expect(r.headers.get('x-frame-options') === 'DENY', '/admin/ x-frame-options DENY');
     const csp = r.headers.get('content-security-policy') ?? '';
     expect(csp.includes("script-src 'self';") && csp.includes("frame-ancestors 'none'"), '/admin/ strict CSP');
+    expect((r.headers.get('permissions-policy') ?? '').includes('microphone=()'), '/admin/ permissions-policy microphone=()');
     expect(inlineScriptHashes(body).length === 0, '/admin/ has no inline script');
     const js = body.match(/\/fly\/assets\/admin-[^"']+\.js/)?.[0];
     expect(!!js && (await get(js)).r.status === 200, `/admin/ script ${js} served`);
@@ -107,6 +129,13 @@ for (const [path, want] of [['/en/scenes', '/en/scenes/'], ['/en/scenes/70b50d42
     expect(r.status === 301 && new URL(loc, BASE).pathname === want, `${path} -> ${r.status} ${loc} (want 301 ${want})`);
 }
 expect((await get('/scene-templates/manifest.json')).r.status === 404, '/scene-templates/ is not served');
+// Fly by Sound's upload route (location ^~ /api/session/): nginx itself refuses every method but GET and POST
+// with 403, whether an API stands behind it or not (a static file answers a DELETE with 405, so a missing
+// location shows here too)
+{
+    const r = await fetch(`${BASE}/api/session/probe?${cb()}`, { method: 'DELETE', redirect: 'manual' });
+    expect(r.status === 403, `DELETE /api/session/probe -> ${r.status} (want 403: that route takes GET and POST only)`);
+}
 if (!api) console.log(`no API behind ${BASE}: ${links.filter((h) => SCENE_PAGE.test(h)).length} scene page links not checked`);
 else {
     // a scene page: served by the API, no script at all, canonical and hreflang, its sitemap and list

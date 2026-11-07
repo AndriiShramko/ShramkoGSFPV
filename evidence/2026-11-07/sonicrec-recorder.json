@@ -1,0 +1,219 @@
+{
+  "name": "sonicrec-recorder",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T15:37:30.441Z",
+    "gitHead": "50b4ca7",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "A: the package reads strictly with the voice in it (frames, events, voice, no problems)": true,
+    "A: the voice is as long as the flight within 0.2 s": true,
+    "A: control, a voice that stopped 1 s early would fail the same bound": true,
+    "A: the pilot was asked, told it started, told it stopped and told it was saved": true,
+    "D: one onSample call costs well under a millisecond at the 95th percentile": true,
+    "B: every killed tab's session is found, recovers and reads strictly (5 of 5)": true,
+    "B: the loss is under 3 s of flight, at every moment of the flush cycle tried": true,
+    "B: the voice came back too": true,
+    "B: control, a recorder that never flushes loses the whole flight (the bound above can fail)": true,
+    "C: all four tone bursts are found in the voice": true,
+    "C: the bursts land within 0.2 s of their recording time (the voice offset included)": true,
+    "C: the error does not grow over 4.5 s between the first burst and the last (spread under 30 ms)": true,
+    "C: control, a voice 300 ms out of step breaks the 0.2 s bound": true
+  },
+  "results": {
+    "length": {
+      "analysis": {
+        "id": "Znt7Cc5OT9kAksaxLTfmwA",
+        "recovered": null,
+        "complete": true,
+        "frames": 360,
+        "firstT": 83,
+        "lastT": 12053,
+        "flightLenMs": 11970,
+        "events": [
+          "session:start",
+          "recording:start",
+          "recording:stop",
+          "session:end"
+        ],
+        "voiceBytes": 47110,
+        "voiceMs": 12060,
+        "voiceOffsetMs": 5.5,
+        "burstOnsetsMs": [
+          505,
+          1007.4,
+          1507.5,
+          2007.5,
+          2517.4,
+          3007.5,
+          3507.5,
+          4007.5,
+          4507.5,
+          5017.4,
+          5507.5,
+          6007.5,
+          6507.5,
+          7017.4,
+          7517.4,
+          8017.4,
+          8517.4,
+          9017.4,
+          9517.4,
+          10017.4,
+          10517.4,
+          11017.4,
+          11517.4,
+          12017.4
+        ],
+        "zipBytes": 57664,
+        "problems": [],
+        "consent": {
+          "at": "2026-11-07T15:36:37.025Z",
+          "guardianConfirmed": null,
+          "minor": false,
+          "recording": true,
+          "send": false,
+          "speechRecognition": false,
+          "voice": true
+        },
+        "files": [
+          "flight.jsonl.gz",
+          "events.jsonl",
+          "voice.webm"
+        ],
+        "voiceSyncMarks": 13,
+        "voiceStartMark": {
+          "start": {
+            "called": 5.5,
+            "event": 58.2
+          }
+        }
+      },
+      "spoken": [
+        "rec.ask",
+        "rec.started",
+        "rec.stopped",
+        "rec.saved"
+      ],
+      "storage": {
+        "usage": 66135,
+        "quota": 10737484375,
+        "persisted": false
+      },
+      "persisted": false,
+      "durable": true,
+      "error": null,
+      "voiceMs": 12060,
+      "flightLenMs": 11970,
+      "diffMs": 90
+    },
+    "cost": {
+      "calls": 750,
+      "p50": 0,
+      "p95": 0.10000002384185791,
+      "max": 0.6000000238418579
+    },
+    "crash": {
+      "runs": [
+        {
+          "afterMs": 3200,
+          "emittedT": 3281,
+          "recoveredLastT": 3072,
+          "lostMs": 209,
+          "frames": 90,
+          "voiceBytes": 9821
+        },
+        {
+          "afterMs": 3500,
+          "emittedT": 3587,
+          "recoveredLastT": 3076,
+          "lostMs": 511,
+          "frames": 90,
+          "voiceBytes": 9821
+        },
+        {
+          "afterMs": 3800,
+          "emittedT": 3882,
+          "recoveredLastT": 3066,
+          "lostMs": 816,
+          "frames": 90,
+          "voiceBytes": 9815
+        },
+        {
+          "afterMs": 4100,
+          "emittedT": 4178,
+          "recoveredLastT": 4066,
+          "lostMs": 112,
+          "frames": 120,
+          "voiceBytes": 14019
+        },
+        {
+          "afterMs": 4400,
+          "emittedT": 4485,
+          "recoveredLastT": 4069,
+          "lostMs": 416,
+          "frames": 120,
+          "voiceBytes": 14019
+        }
+      ],
+      "worstLostMs": 816,
+      "control": {
+        "lostMs": 4084,
+        "frames": 0
+      },
+      "recoveryNotes": {
+        "frames": 90,
+        "events": 3,
+        "lastT": 3072,
+        "droppedFlightBytes": 0,
+        "notes": []
+      }
+    },
+    "sync": {
+      "bursts": [
+        2000,
+        3500,
+        5000,
+        6500
+      ],
+      "voiceOffsetMs": 5.2,
+      "startMark": {
+        "called": 5.2,
+        "event": 75.8
+      },
+      "onsetsInVoiceMs": [
+        1986.2,
+        3486.2,
+        4986.2,
+        6486.2
+      ],
+      "errorMsPerBurst": [
+        -8.6,
+        -8.6,
+        -8.6,
+        -8.6
+      ],
+      "meanErrorMs": -8.6,
+      "spreadMs": 0,
+      "voiceMs": 8580,
+      "flightLenMs": 8480,
+      "errorIfTheStartEventWereTheOffsetMs": [
+        62,
+        62,
+        62,
+        62
+      ]
+    }
+  },
+  "note": "headless Chrome, --use-fake-device-for-media-stream (A, B) and a Web Audio tone-burst stream injected as the microphone (C); real OPFS, real MediaRecorder, the live headers; the sound runtime and the samples are stand-ins until the flight lane lands. How a recording sounds is not judged here."
+}

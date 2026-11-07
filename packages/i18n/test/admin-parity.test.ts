@@ -119,7 +119,7 @@ describe('the admin page names only words the dictionaries have', () => {
 describe('admin dictionaries', () => {
     const sets = readSets();
     it('have the same keys and placeholders in every language, each key in one file', () => {
-        expect(Object.keys(sets).sort()).toEqual(['', 'drawing', 'ideas', 'outreach']);
+        expect(Object.keys(sets).sort()).toEqual(['', 'drawing', 'ideas', 'outreach', 'sessions']);
         expect(allProblems(sets)).toEqual([]);
     });
     it('the check fires (negative control)', () => {

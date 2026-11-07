@@ -404,6 +404,100 @@ release the API answers 503 for the pages; nothing else changes):
    node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu                                              # checks the scene pages when the API answers
    ```
 
+## v0.12 Fly by Sound: recordings (lane v12-feedback)
+
+A pilot's flight and voice are recorded in the browser (OPFS), saved to disk, and sent to the author. The design
+is `docs/wip/v12-plan.md` section 4.3 (sections 8 and 9 override it); this section grows with the lane's steps.
+
+**nginx.conf (step 1).** Three changes, none of which needs the API; follow "Changing nginx.conf" (upload, `nginx -t`,
+reload):
+
+| Change | Where | Why |
+|---|---|---|
+| `microphone=(self)` in the `Permissions-Policy` | `location ~ ^/(en\|es\|pl\|ru)/fly/` only; the site, the assets, the admin and the scene pages keep `microphone=()` | `getUserMedia` (the voice recording) and the browser's speech recognition are refused by `microphone=()` |
+| `media-src 'self' blob:` | the map `$gsfpv_csp_rest`, so the enforced and the report-only CSP both have it | the replay plays a recording's voice from a `blob:` URL; without the directive it falls back to `default-src 'self'` and is blocked |
+| `location ^~ /api/session/` | GET and POST only, `client_max_body_size 1100k`, the client address from the real-IP module (as `/api/admin/`), cookie and `Authorization` cleared, `no-store` | the chunked upload of a recording (the routes come with the API store, step 6); until then the API answers its own 404 |
+
+Check after the reload (`apps/api/tests/test_nginx_routes.py` reads the same rules from the file; the smoke script checks them on a served release):
+```bash
+curl -sI https://gsfpv.flyreelstudio.eu/en/fly/ | grep -iE '^(permissions-policy|content-security-policy)'   # microphone=(self); media-src 'self' blob:
+curl -sI https://gsfpv.flyreelstudio.eu/en/privacy/ | grep -i '^permissions-policy'                          # microphone=()
+curl -s -o /dev/null -w '%{http_code}\n' -X DELETE https://gsfpv.flyreelstudio.eu/api/session/probe          # 403: GET and POST only
+node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu
+```
+Local runs: `tools/bench/scripts/serve-csp.mjs` sends the same `Permissions-Policy` per location and answers `/api/session/`
+like this location (403, 413), reading both from `deploy/nginx.conf`; `tools/bench/src/sonicrec-headers.ts` proves the two header
+changes in headless Chrome (a fake microphone), each with a control served under the config as it was before v0.12.
+
+**API store (step 6).** `apps/api/sessions.py` and the routes in `server.py` take a recording in chunks. Upload the API
+(`server.py`, `sessions.py`) first, then restart `gsfpv-api`; nothing else changes on the hub. The routes (the token is shown
+once, at `start`, and sent back as the `X-Session-Token` header):
+
+| Route | What it does |
+|---|---|
+| `POST /api/session/start` | body `{size, sha256, consentSend: true, packageId?, lesson?, minor?, voice?, release?}`; answers the session id, the token, the chunk size (1 MiB) and the number of chunks; 403 without `consentSend`, 413 over `SESSION_MAX_BYTES`, 507 when the disk guard or `SESSIONS_CAP_BYTES` says no; a package that is already stored is not uploaded again (the answer says `stored` and `duplicate`) |
+| `POST /api/session/<id>/<n>` | the raw bytes of chunk n (optional `X-Chunk-Sha256`): streamed to disk in 64 KB pieces, fsynced, then recorded as held; the same chunk again is accepted, other bytes for a held chunk are 409 |
+| `POST /api/session/<id>/finish` | the whole file is hashed against the `start` hash, `manifest.json` is read from the zip (a minor's package needs the guardian's confirmation: the server refuses it otherwise), the package is fsynced and moved into place, then the answer says `stored`; a repeat gives the same answer |
+| `GET /api/session/<id>` | the chunks held (to resume) or each channel's status and `delivered` |
+
+Config names (all optional, in `config.env`): `SESSION_MAX_BYTES` (default 100 MiB a package), `SESSIONS_CAP_BYTES` (2 GiB in all,
+uploads in progress count), `SESSION_RETENTION_DAYS` (1826, the privacy text's five years; an undelivered package is never aged out).
+Files: `$GSFPV_BASE/data/sessions/index.jsonl` (one line per package stored, a tombstone per deletion) and `sessions/<id>/`
+(`meta.json`, `package.zip`). The client's address is never written. Checked by `apps/api/tests/test_sessions.py`.
+
+**Delivery (step 7).** `apps/api/session_delivery.py` sends every stored package to the owner by Telegram and by e-mail, from the
+queue kept in each session's `meta.json` (so a restart loses nothing; a send that a restart cut off is queued again). Upload the API
+(`server.py`, `sessions.py`, `session_delivery.py`) first. **`deploy/compose.yml` changed too: `gsfpv-api` has 192 MB (was 64 MB, plan
+section 8); Compose applies it only when the container is recreated:**
+```bash
+scp -P $GSFPV_PORT -i $GSFPV_KEY deploy/compose.yml $GSFPV_HOST:$GSFPV_BASE/compose.yml
+$SSH "cd $GSFPV_BASE && docker compose up -d --force-recreate gsfpv-api && docker inspect gsfpv-api --format '{{.HostConfig.Memory}}'"   # 201326592
+```
+| Channel | What goes | Confirmed when |
+|---|---|---|
+| Telegram | `sendDocument`, the file part read from disk in 256 KB pieces, up to 49 MiB (`SESSION_TG_MAX_BYTES`); over it a message with the admin link, status `link` | Telegram's answer is ok with a message id |
+| E-mail | one message to `SESSION_MAIL_TO` (default `GMAIL_USER`, the owner's own address) through the authenticated Gmail SMTP server, the zip as a base64 attachment encoded and written to the socket in about 100 KB pieces, up to `SESSION_MAIL_MAX_BYTES` (15 MiB; Gmail's 25 MB limit counts the base64 text: a 15 MiB package is a message of about 21 MiB); over it a text message with the admin link, status `link` | the SMTP server accepted the message after DATA (there is no read receipt) |
+
+Each channel has its own worker thread, status and retries: a failed try waits 30 s, 2 min, 10 min, 30 min, 2 h, 6 h, 12 h, then 24 h; Telegram's
+`retry_after` is honoured when longer; the 9th failure makes the channel `failed` (the admin's resend, step 9, starts it again). A channel that is not
+set up uses no tries (it looks again each minute). **A channel that fails 3 times is reported through the other** (a Telegram message, or an e-mail
+`[Fly by Sound] telegram delivery of recording S-... failed 3 times`), once, and once more when it gives up; a notice that cannot go is kept pending and
+retried. `delivered` is true only when both channels are `sent` or `link`. Config names (all optional): `SESSION_MAIL_TO`, `SESSION_MAIL_MAX_BYTES`,
+`SESSION_TG_MAX_BYTES`; the Telegram chat and token are those of the owner bot (`TG_OWNER_CHAT_ID`/`TG_CHAT_ID`, `TG_OWNER_BOT_TOKEN`/`TG_BOT_TOKEN`), Gmail
+is `GMAIL_USER` and `GMAIL_APP_PASSWORD`. Housekeeping (every 5 minutes with the counter's) removes uploads left unfinished for 24 h and delivered packages
+past `SESSION_RETENTION_DAYS`. Checked by `apps/api/tests/test_session_delivery.py` (fake Telegram and a local SMTP server, nothing leaves the machine).
+
+**Sending (step 8).** The page's client (`apps/fly/src/sonic-session/upload.ts`, driven by `send-control.ts`) speaks the routes above; it needs
+no change on the hub beyond the API of steps 6 and 7. What it sends is the whole package as the pilot confirmed it: start (size and SHA-256 of the
+package and `consentSend: true`, which the page sends only after the pilot's own yes: the second press of key U after the question was read out, the
+helper's Send with the tick set, or a spoken yes where the pilot allowed voice commands), then chunk after chunk (each with its `X-Chunk-Sha256`, the token
+in `X-Session-Token`), then finish; it keeps the package on the device through all of it and after it, resumes from what the server holds (`GET`), waits out
+failures (2 s, 4 s ... five minutes; a rate limit a minute, a full server five) and goes on at the next start of the page, and says "delivered" only when
+the status shows both channels `sent` or `link`. A recording of a minor without the guardian's confirmation is never sent (the page checks the package's own
+consent, and the server refuses it too). `upload.json` in the session's own folder in the browser keeps the server's id and token between visits.
+**Local check:** `apps/api/tests/rig_server.py` runs the real handler, store and delivery workers with a fake Telegram and SMTP on 127.0.0.1;
+`tools/bench/src/sonicrec-upload.ts` drives the page against it through `serve-csp.mjs` with `API_PROXY` (the proxy forwards the upload's own headers, as
+this nginx location does). The speech recognition of the voice command is a stand-in there: the real service is not tried.
+
+**Admin: Recordings (step 9).** The owner's tab at `/admin/` lists the stored recordings with each channel's state, downloads a package (a plain link;
+the API streams the file from disk, `admin.FileBody`, so a package of up to 100 MiB never sits in memory), sends one channel again, and deletes a recording
+on a pilot's or a parent's request (two clicks; the server keeps only a tombstone line with the id and the reason). Routes (behind the admin session; POST
+also needs `X-CSRF`), added with `AdminApi.add_route` from `sessions_admin.py`:
+
+| Route | What it does |
+|---|---|
+| `GET /api/admin/sessions` | every stored recording, newest first (id, when, size, SHA-256, a few facts of the manifest, each channel's state), totals, what the channels are set up for |
+| `GET /api/admin/sessions/<id>/package` | the `.zip` as an attachment, streamed from disk; 404 for an unknown or unfinished id |
+| `POST /api/admin/sessions/<id>/resend` | body `{channel: telegram\|email}`: that channel goes back to queued, its failures cleared, its worker woken |
+| `POST /api/admin/sessions/<id>/delete` | body `{confirm: true}`: the package and its state are removed |
+
+Never in the list: the upload token or its hash, the pilot's nickname, the device or the user agent (they stay inside the package). Every download, resend and
+deletion is in the admin's audit log (`sessions.download`, `sessions.resend`, `sessions.delete`, the id, never a token). **To deploy:** upload the API
+(`server.py`, `admin.py`, `sessions_admin.py` and the files of steps 6 and 7), restart `gsfpv-api`, then ship the release (the tab is in the admin bundle);
+no nginx change (a package is streamed by the API and passed through by the existing `/api/admin/` location). Checked by `apps/api/tests/test_sessions_admin.py`
+(a 20 MiB package over a real socket: the server's memory peak 0.28 MiB, against 20.1 MiB for a body that is not streamed) and, in a browser, by
+`tools/bench/src/sonicrec-admin.ts` (the admin page as a release carries it, a TEST password, a local copy of the API; **the live admin is never visited**).
+
 ## Deploying a release
 
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.

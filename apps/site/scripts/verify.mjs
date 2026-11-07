@@ -21,7 +21,7 @@ const SHOTS = join(SITE_DIR, ".shots");
 const BASE = process.env.BASE ?? "http://127.0.0.1:8138";
 const ORIGIN = "https://gsfpv.flyreelstudio.eu";
 const LOCALES = ["en", "es", "pl", "ru"];
-const PAGES = ["", "privacy/", "licenses/", "supporters/"];
+const PAGES = ["", "privacy/", "licenses/", "supporters/", "sound/"];
 // people on the supporters pages (docs/wip/supporters.md): drafts for invited people, public pages for joined ones
 const PEOPLE = JSON.parse(readFileSync(join(SITE_DIR, "..", "..", "packages", "i18n", "locales", "supporters", "people.json"), "utf8")).people;
 const JOINED = PEOPLE.filter((p) => p.status === "joined").map((p) => `supporters/${p.slug}/`);
@@ -80,6 +80,17 @@ const hits = walk(OUT).flatMap((f) => {
   return m ? [`${f.slice(OUT.length)}: ${[...new Set(m)].join(",")}`] : [];
 });
 ok("built HTML/TXT/XML free of undefined|TODO|PLACEHOLDER|lorem|Liftoff-level|like Liftoff", hits.length === 0, hits.join("; "));
+// Fly by Sound (v0.12): the privacy section the recordings panel links to (#fly-by-sound), and the page for blind pilots and their helpers
+for (const l of LOCALES) {
+  const priv = readFileSync(join(OUT, l, "privacy", "index.html"), "utf8");
+  const snd = readFileSync(join(OUT, l, "sound", "index.html"), "utf8");
+  const want = DICT[l].privacy.sections.find((b) => b.id === "fly-by-sound");
+  const sec = priv.match(/<section id="fly-by-sound"[^>]*>([\s\S]*?)<\/section>/)?.[1] ?? "";
+  ok(`${l}/privacy/: the Fly by Sound section is there under #fly-by-sound with its ${want?.p.length ?? 0} paragraphs and its heading`, !!want && want.p.length === 8 && (sec.match(/<p[ >]/g) ?? []).length === want.p.length && sec.includes(`>${want.h}<`));
+  ok(`${l}/privacy/: the section names what is collected, the legal basis, the five years, minors, speech recognition and the way to ask for deletion`, /zmei116@gmail\.com/.test(sec) && /\bS-/.test(sec) && /GDPR|RGPD|RODO/.test(sec) && /\b5\b|five|cinco|pi\u0119\u0107|\u043f\u044f\u0442\u0438/.test(sec) && /18/.test(sec));
+  ok(`${l}/sound/: h1, the button that starts the sound mode, the link to the privacy section, the seven keys and the source link`, snd.includes(`>${DICT[l].sound.h1}<`) && snd.includes(`href="/${l}/fly/?sonic=start"`) && snd.includes(`href="/${l}/privacy/#fly-by-sound"`) && (snd.match(/<kbd/g) ?? []).length === 7 && snd.includes('https://github.com/AndriiShramko/shramko-fly-by-sound-fpv'));
+  ok(`${l}/sound/: the sound page has no microphone or other script of its own (it is the landing's static page)`, !/getUserMedia|MediaRecorder|webkitSpeechRecognition/.test(snd));
+}
 const sitemap = readFileSync(join(OUT, "sitemap.xml"), "utf8");
 {
   // src/app/sitemap.ts: the static pages and the scene catalogue page (rendered by the API) in every language;

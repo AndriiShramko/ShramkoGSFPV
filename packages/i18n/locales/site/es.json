@@ -870,6 +870,7 @@
     "cookies": "Configuración de cookies",
     "licenses": "Licencias",
     "supporters": "Colaboradores",
+    "sound": "Fly by Sound",
     "license": "licencia MIT",
     "disclaimer": "Sin relación con PlayCanvas, BetaFPV, iFlight, RED Digital Cinema, el proyecto Betaflight, LuGus Studios (Liftoff), DJI ni RadioMaster, y sin su respaldo. Las marcas pertenecen a sus propietarios."
   },
@@ -878,7 +879,7 @@
     "description": "Qué datos recoge ShramkoGSFPV, para qué, durante cuánto tiempo y cuáles son tus derechos según el RGPD.",
     "eyebrow": "Privacidad",
     "h1": "Aviso de privacidad",
-    "updated": "Última actualización: 29 de octubre de 2026",
+    "updated": "Última actualización: 7 de noviembre de 2026",
     "review": "Aún sin revisión jurídica.",
     "sections": [
       { "h": "Responsable del tratamiento", "p": ["El responsable del tratamiento de tus datos es Andrii Shramko. Puedes escribirle a zmei116@gmail.com o usar el formulario de contacto de esta web."] },
@@ -888,6 +889,7 @@
       { "h": "Formulario de colaboración", "p": ["Si envías el formulario, tu correo, el perfil que elijas y tu mensaje se guardan en el servidor y se reenvían al bot de notificaciones de Telegram del propietario.", "Se conservan sin un plazo fijo, para que el propietario pueda volver a escribirte más adelante, incluso años después, hasta que pidas su supresión o retires tu consentimiento: escribe a zmei116@gmail.com o usa el formulario de contacto. Base jurídica: tu consentimiento (art. 6.1.a del RGPD)."] },
       { "h": "Informes de errores e ideas", "p": ["Si envías un informe de error o una idea desde el simulador o desde esta web, se guardan en el servidor tu mensaje, la página y la escena en la que estabas, la versión, tu idioma y, si lo dejas, tu contacto (un correo u otro identificador). Los datos técnicos (navegador, tarjeta gráfica, pantalla, tiempos de fotograma, errores recientes, ajustes, el registro de vuelo y una pequeña imagen de la vista) solo se añaden si marcas la casilla correspondiente.", "Un informe de Física del dron («Ayuda a ajustarlo» en el simulador) lleva además el dron del que trata, el texto de Betaflight y el enlace al log de blackbox que pegues y, salvo que desmarques su casilla, los ajustes del simulador que cambiaste para ese dron, el modo de vuelo y el mando con el que vuelas (radio, gamepad, teclado o pantalla táctil). Se guardan y se reenvían como los detalles técnicos de un informe de error.", "Todo lo que envías, incluidos tu mensaje, tu contacto y, si los añadiste, los datos técnicos y la imagen, se reenvía al chat de Telegram del propietario (por lo que pasa por los servidores de Telegram), donde lee y clasifica los informes. Tu correo solo se usa para responderte: las respuestas del propietario y un agradecimiento cuando tu idea ya está en el simulador llegan desde su dirección de Gmail (zmei116@gmail.com) a través de los servidores de correo de Google. Para que la respuesta te llegue en el idioma en que escribiste, tu mensaje (para reconocer su idioma) y la respuesta del propietario (para traducirla) se envían a la API Gemini de Google. Nada se envía de forma automática, y si respondes, tu respuesta llega a su bandeja de Gmail. Si le cuentas una idea en persona y le das tu dirección, se guarda y se usa de la misma manera.", "Los informes se conservan mientras se trabaja en la idea o en el problema y después como registro de cómo se ha mejorado el simulador; tu contacto se conserva con ellos sin un plazo fijo, para que el propietario pueda volver a escribirte más adelante. La hoja de ruta pública solo muestra títulos redactados por nosotros, nunca tus palabras ni tu contacto. Puedes pedir en cualquier momento (zmei116@gmail.com) que se borre tu informe o solo tu correo. Base jurídica: tu consentimiento (art. 6.1.a del RGPD), que das al enviar el informe y al marcar la casilla de datos técnicos."] },
       { "h": "Imágenes y datos de las escenas", "p": ["Las vistas previas de las escenas de esta página, y las propias escenas en el simulador, las carga tu navegador directamente desde los servidores de PlayCanvas (SuperSplat). Como con cualquier web, esos servidores ven tu dirección IP."] },
+      { "id": "fly-by-sound", "h": "Grabaciones de Fly by Sound", "p": ["Fly by Sound permite a pilotos ciegos o con baja visión aprender a pilotar de oído. La grabación está desactivada hasta que el piloto, o quien lo ayuda, la acepte. Si aceptas, el simulador graba en tu propio dispositivo: el vuelo (trayectoria, velocidad y palancas), los sonidos y las frases habladas que se reproducen, los eventos de la lección (puertas, toques, reinicios, pasos), tus respuestas a una breve encuesta y, si tu navegador permite el micrófono, tu voz. También anota tu idioma, los ajustes de audio, el tipo y el nombre del dispositivo de entrada, el nombre del adaptador gráfico y la versión del simulador, un identificador aleatorio de piloto y, solo si lo escribes, un apodo (nunca es obligatorio: por favor, no uses tu nombre real). Después de detener la grabación, la app ofrece una breve encuesta por voz. El micrófono sigue encendido mientras se hace la encuesta, para que las respuestas habladas queden en la grabación, y se apaga cuando la encuesta termina o se rechaza.", "La grabación se queda en tu dispositivo, en el almacenamiento privado del navegador, hasta que la guardes en un archivo o la envíes. Enviar requiere una confirmación aparte: una segunda pulsación de tecla después de que la aplicación pregunte, el botón Enviar con el consentimiento del piloto marcado o, si elegiste las órdenes de voz, decir sí. No se envía nada antes.", "Finalidad: probar y mejorar el lenguaje sonoro, las lecciones y el simulador con pilotos ciegos o con baja visión, y responderles. Base jurídica: tu consentimiento (art. 6.1.a RGPD), dado por separado para grabar, para enviar y, si las usas, para las órdenes de voz. Una grabación de voz es un dato personal, y el consentimiento es también su base. Puedes retirar el consentimiento en cualquier momento; eso no afecta a lo hecho antes.", "Una grabación que envíes se guarda en el servidor de este sitio y se reenvía al propietario por Telegram (así que pasa por los servidores de Telegram) y por correo electrónico (a través de Gmail). Solo el propietario puede abrirla en el servidor: la página de administración está tras su contraseña.", "Cuánto tiempo: el servidor conserva una grabación mientras dure el proyecto y como máximo cinco años, y la borra antes si el piloto o un padre lo pide. El propietario borra sus copias en Telegram y en su buzón con la misma petición. Una grabación que nunca se envió existe solo en tu dispositivo, y puedes borrarla allí en cualquier momento desde el panel de grabaciones.", "Pilotos menores de 18 años: una grabación solo se puede enviar si un padre, una madre o un tutor ha firmado el formulario de consentimiento y quien ayuda lo ha confirmado antes de grabar. La confirmación queda escrita en la grabación, y el servidor rechaza la grabación de un menor sin ella. Sin la confirmación, la grabación se queda en el dispositivo. Una plantilla del formulario de consentimiento está en el repositorio de código abierto de Fly by Sound (no es asesoramiento jurídico).", "Las órdenes de voz (decir «envíalo al autor») están desactivadas hasta que alguien marque la casilla en el panel de grabaciones. Usan el reconocimiento de voz del propio navegador, que envía el audio a su fabricante (en Chrome, a Google) con sus propias condiciones de privacidad: nosotros no recibimos ni controlamos ese audio. Las teclas siempre funcionan, y no se escucha nada mientras se graba. Para un piloto menor de 18 años, la casilla solo se puede marcar cuando el consentimiento del tutor está confirmado.", "Borrado: para que se borre una grabación enviada, escribe a zmei116@gmail.com o usa el formulario de contacto e indica la referencia que se muestra junto a la grabación en el panel de grabaciones (empieza por S-) o, si ya no la tienes, la fecha y la lección. Tus demás derechos están en «Tus derechos», más abajo."] },
       { "h": "Tus derechos", "p": ["Puedes solicitar el acceso a tus datos, su rectificación o supresión, la limitación del tratamiento y la portabilidad, así como oponerte al tratamiento o retirar tu consentimiento, a través del formulario de contacto o por correo electrónico.", "También tienes derecho a presentar una reclamación ante la autoridad de control polaca, el Presidente de la Oficina de Protección de Datos Personales (UODO)."] }
     ],
     "resetConsent": "Cambiar mi elección sobre la analítica",
@@ -1030,6 +1032,49 @@
       "flyBody": "Gratis, en el navegador de un ordenador (Chrome o Edge), sin instalar nada y sin cuenta. Vuela con tu radio por USB, un mando o el teclado.",
       "fly": "Abrir el simulador",
       "flyScene": "Abrir la escena que elegí para ti"
+    }
+  },
+  "sound": {
+    "title": "Fly by Sound: aprende a pilotar un dron de oído | ShramkoGSFPV",
+    "description": "Fly by Sound enseña a personas ciegas o con baja visión a pilotar un dron FPV simulado de oído, con sonido espacial y lecciones habladas. Teclado, mando o radio. Gratis y de código abierto.",
+    "eyebrow": "Fly by Sound",
+    "h1": "Pilota un dron FPV de oído",
+    "lead": "Una forma gratuita de que personas ciegas o con baja visión aprendan a pilotar un dron FPV simulado con sonido espacial y lecciones habladas. No hace falta ver: funciona con teclado, mando o radio RC, y la aplicación habla por sí sola.",
+    "status": "Es la primera etapa de un experimento. Los sonidos y las lecciones se están probando con pilotos, y cómo suena algo lo juzgan tus oídos. Cuéntanos qué te ayudó y qué te molestó.",
+    "start": {
+      "title": "Empezar",
+      "text": "Ponte los auriculares y pulsa el botón. La aplicación te habla y empieza con una breve prueba de auriculares (izquierda, derecha, detrás) y las primeras lecciones: mantenerse en el aire, paredes, un pasillo y aros.",
+      "button": "Iniciar Fly by Sound",
+      "note": "Abre el simulador en modo sonido. Funciona mejor en un ordenador con un Chrome o un Edge recientes."
+    },
+    "need": {
+      "title": "Qué necesitas",
+      "items": ["Auriculares. Los de cable son mejores: el Bluetooth añade de 180 a 250 milisegundos de retraso. Desactiva Windows Sonic o Dolby Atmos.", "Un teclado, un mando o una radio RC. Una persona que vea configura la radio una sola vez.", "Un volumen cómodo. Si un sonido duele, quítate los auriculares y baja el volumen.", "Una persona que ayude la primera vez, con la radio y, si quieres grabar, con el consentimiento."]
+    },
+    "keys": {
+      "title": "Las teclas principales",
+      "intro": "La aplicación también te dice estas teclas en voz alta.",
+      "items": ["empezar o parar una grabación", "enviar la última grabación al autor", "oír dónde estás", "oír otra vez la última frase hablada", "abrir el glosario de sonidos", "volver al último punto de control; mantenla pulsada para empezar la lección de nuevo", "pasar al siguiente paso"]
+    },
+    "record": {
+      "title": "Grabar y enviar",
+      "items": ["La grabación está desactivada hasta que aceptes. Se guarda solo en tu dispositivo.", "Enviar es un paso aparte: la aplicación pregunta y tú confirmas con una segunda pulsación, con el botón Enviar o por voz si activaste las órdenes de voz.", "Los pilotos menores de 18 años necesitan el consentimiento firmado de un padre, una madre o un tutor, confirmado por quien ayuda, antes de poder enviar nada.", "Las órdenes de voz usan el reconocimiento de voz de tu navegador, que envía audio a su fabricante. Están desactivadas hasta que marques la casilla; las teclas siempre funcionan."],
+      "privacy": "Lee qué se recoge, para qué y durante cuánto tiempo"
+    },
+    "helpers": {
+      "title": "Para ayudantes, docentes y escuelas",
+      "items": ["Una plantilla de consentimiento (no es asesoramiento jurídico) y un protocolo de pruebas están en el repositorio de código abierto.", "Para un piloto menor de 18 años, el padre, la madre o el tutor firma el formulario y quien ayuda lo confirma en el panel de grabaciones antes de grabar.", "Mantén el volumen a un nivel seguro. Una página no puede medir la intensidad del sonido, así que un dispositivo escolar se calibra una vez: 75 dBA es la referencia para niños y 80 dBA para adultos."]
+    },
+    "open": {
+      "title": "Código abierto",
+      "text": "El motor de sonido, las lecciones, el formato de sesión y la herramienta de informes son un paquete de código abierto, Shramko Fly by Sound (licencia MIT). El simulador que lo lleva es ShramkoGSFPV.",
+      "repo": "Shramko Fly by Sound en GitHub",
+      "sim": "ShramkoGSFPV en GitHub"
+    },
+    "help": {
+      "title": "Preguntas y comentarios",
+      "text": "Cuéntanos qué te ayudó y qué te molestó: responde la breve encuesta tras una grabación, pulsa B en el simulador para abrir Comentarios o escribe al autor.",
+      "write": "Escribir al autor"
     }
   }
 }
