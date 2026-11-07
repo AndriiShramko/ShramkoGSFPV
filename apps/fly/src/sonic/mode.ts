@@ -212,6 +212,15 @@ export class SonicMode {
         if (this.pressAt === null) this.resetTo('checkpoint', 'KeyR');
     }
 
+    /**
+     * The window lost focus or the tab was hidden while R was down: the browser sends no keyup to the page, so the press would
+     * stay "held", and the frame clock going on would make it the long press (back to the lesson's start) 0.7 s later, or at
+     * once when the pilot comes back. The held R is dropped (the keyboard source forgets its held keys on blur the same way).
+     */
+    cancelR(): void {
+        this.pressAt = null;
+    }
+
     /** R came up: a short press is the checkpoint (a long one has already gone to the start). */
     releaseR(): void {
         if (this.pressAt === null) return;

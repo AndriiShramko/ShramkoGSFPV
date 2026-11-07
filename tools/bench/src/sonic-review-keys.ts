@@ -107,6 +107,26 @@ try {
     const source = await page.evaluate(() => (window as unknown as { __gsfpv: { controls: { source: string | null } } }).__gsfpv.controls.source);
     check('no radio found: the keyboard flies (as a stand-in) and the radio of last time is still the input the page remembers', source === 'keyboard' && last?.kind === 'hid' && last?.key === 'hid:1209:4f54:Radiomaster TX16S Joystick:19', { source, last });
 
+    // D7: R goes down, the window loses focus (the browser sends no keyup), the page goes on for longer than the long press (0.7 s):
+    // the held R must not become "back to the lesson's start"; the keyup that comes much later adds nothing
+    const resets = (): Promise<number> => page.evaluate(() => (window as unknown as { __gsfpv: { sonic: (e?: boolean) => { events: { kind: string; action?: string | null }[] } } }).__gsfpv.sonic(true).events.filter((e) => e.kind === 'key' && (e.action === 'reset.start' || e.action === 'reset.checkpoint')).length);
+    const r0 = await resets();
+    await page.keyboard.down('KeyR');
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    await sleep(1500);
+    const rDuring = await resets();
+    await page.keyboard.up('KeyR');
+    await sleep(300);
+    const rAfter = await resets();
+    check('R held while the window loses focus is dropped: no long-press reset while the page goes on, none when the late keyup comes', rDuring === r0 && rAfter === r0, { before: r0, during: rDuring, afterKeyup: rAfter });
+    // control: a plain quick R (down, up) is the reset to the checkpoint, as before
+    await page.keyboard.down('KeyR');
+    await sleep(60);
+    await page.keyboard.up('KeyR');
+    await sleep(300);
+    const rQuick = await resets();
+    check('control: a quick R with no focus lost is still a reset (to the last checkpoint)', rQuick === rAfter + 1, { before: rAfter, afterQuickR: rQuick });
+
     // the pause menu's Fly by Sound item opens the start screen over the flight
     await page.keyboard.press('Escape');
     await page.waitForSelector('[data-action="pause.sonic"]', { timeout: 5000 });

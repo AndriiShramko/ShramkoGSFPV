@@ -188,6 +188,28 @@ describe('R short and long, N, [ ]', () => {
         expect(sceneNext).toHaveBeenCalledTimes(1);
     });
 
+    // review of v12-flight, D7: R goes down, the window loses focus (the keyup is never sent to the page), and the page's frame clock
+    // went on: the press stayed "held" and became the long press (back to the lesson's start) 0.7 s later, or at once on return
+    it('review D7: R held when the window loses focus (no keyup comes) is dropped: no long-press reset, now or when the pilot comes back; a later keyup adds nothing', async () => {
+        const p = await open();
+        p.mode.enter({ lesson: LESSON });
+        p.fly(500);
+        p.fly(4000, { forward: 1 });
+        p.press('respawn.start');
+        // the window loses focus (window blur, a hidden tab): the page forgets the held R
+        p.mode.cancelR();
+        p.fly(LONG_PRESS_MS * 3, { forward: 1 });
+        expect(p.sonic.filter((e) => e.kind === 'key')).toHaveLength(0);
+        p.mode.releaseR();
+        expect(p.sonic.filter((e) => e.kind === 'key')).toHaveLength(0);
+        // control: the same hold with no focus lost is the long press, as before
+        p.press('respawn.start');
+        p.fly(LONG_PRESS_MS + 100, { forward: 1 });
+        expect(p.sonic.filter((e) => e.kind === 'key')).toMatchObject([{ action: 'reset.start' }]);
+        p.mode.releaseR();
+        expect(p.sonic.filter((e) => e.kind === 'key')).toHaveLength(1);
+    });
+
     // review of v12-flight, D5: the rest of the keys that leave a lesson, and a held N
     it('review D5: a held N is one next step; Shift+N (the descent key held while N is pressed) is the next step and Shift+F a note, neither a scene switch; leave() gives them back', async () => {
         const p = await open();

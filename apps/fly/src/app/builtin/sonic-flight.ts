@@ -327,10 +327,16 @@ export const sonicFlight: Feature = {
         };
         // a hidden tab draws no frames: the engine must not go on sounding the last layers
         const onVisibility = (): void => {
-            if (document.visibilityState !== 'visible') mode.bridge.silence();
+            if (document.visibilityState !== 'visible') {
+                mode.bridge.silence();
+                mode.cancelR();
+            }
         };
+        // R released in another window never sends its keyup here: the held R is dropped, not turned into a long press (review D7)
+        const onBlur = (): void => mode.cancelR();
         addEventListener('keyup', onKeyUp, true);
         addEventListener('keydown', onDigit, true);
+        addEventListener('blur', onBlur);
         document.addEventListener('visibilitychange', onVisibility);
         return () => {
             host?.close();
@@ -338,6 +344,7 @@ export const sonicFlight: Feature = {
             for (const off of offs) off();
             removeEventListener('keyup', onKeyUp, true);
             removeEventListener('keydown', onDigit, true);
+            removeEventListener('blur', onBlur);
             document.removeEventListener('visibilitychange', onVisibility);
             if (entry) {
                 stage?.dispose();
