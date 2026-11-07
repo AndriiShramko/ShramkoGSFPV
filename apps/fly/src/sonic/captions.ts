@@ -11,6 +11,12 @@ import './sonic.css';
 /** How many lines show at once, and how long a line stays, ms. */
 export const CAPTION_LINES = 3;
 export const CAPTION_MS = 12000;
+/**
+ * Lines the region holds at most while a screen reader reads it. A lesson says four to six lines in one go when it opens; a line
+ * taken out of the region in the task it was put in is never in the accessibility tree, so with a screen reader as the only voice
+ * the pilot would miss the title and the first lines. The oldest beyond CAPTION_LINES are hidden from the eye, not from the tree.
+ */
+export const CAPTION_KEEP_LIVE = 24;
 
 /** What the region is for now: shown to the eye (SonicPrefs.captions) and read by a screen reader (not selfVoice). */
 export interface CaptionMode {
@@ -33,6 +39,7 @@ export class Captions {
     configure(mode: CaptionMode): void {
         this.mode = mode;
         this.apply();
+        this.fit();
     }
 
     get current(): CaptionMode {
@@ -48,13 +55,24 @@ export class Captions {
         if (this.root.hidden) this.clear();
     }
 
-    /** One spoken line, newest last; the oldest goes when there are more than CAPTION_LINES. */
+    /**
+     * One spoken line, newest last. The eye sees the last CAPTION_LINES. While a screen reader reads the region (live) the older
+     * lines of a burst stay in it, hidden from the eye (see CAPTION_KEEP_LIVE); else the oldest go at once, as before.
+     */
     add(text: string): void {
         if (this.root.hidden || text.trim() === '') return;
         const line = h('p', { class: 'sonic-caption' }, text);
         this.root.append(line);
-        while (this.root.children.length > CAPTION_LINES) this.drop(this.root.firstElementChild as HTMLElement);
         this.timers.set(line, setTimeout(() => this.drop(line), CAPTION_MS));
+        this.fit();
+    }
+
+    /** What the region holds: the last CAPTION_LINES shown; with a screen reader reading it up to CAPTION_KEEP_LIVE, the older hidden from the eye. */
+    private fit(): void {
+        const keep = this.mode.live ? CAPTION_KEEP_LIVE : CAPTION_LINES;
+        while (this.root.children.length > keep) this.drop(this.root.firstElementChild as HTMLElement);
+        const lines = [...this.root.children];
+        lines.forEach((el, i) => el.classList.toggle('sonic-sr-only', i < lines.length - CAPTION_LINES));
     }
 
     /** The lines on the page now, oldest first. */

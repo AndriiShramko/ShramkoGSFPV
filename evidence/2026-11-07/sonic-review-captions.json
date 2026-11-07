@@ -1,0 +1,71 @@
+{
+  "name": "sonic-review-captions",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T20:07:46.514Z",
+    "gitHead": "9ba0aca",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "lab": "http://localhost:5343",
+  "lesson": "corridor",
+  "size": [
+    1280,
+    720
+  ],
+  "passed": 5,
+  "total": 5,
+  "checks": [
+    {
+      "name": "the captions region is the live region (aria-live polite) in \"my screen reader speaks\" mode",
+      "pass": true,
+      "value": {
+        "live": "polite"
+      }
+    },
+    {
+      "name": "the lesson says several lines in one go when it opens (4 or more within 50 ms)",
+      "pass": true,
+      "value": {
+        "burst": 6,
+        "lines": [
+          "The long corridor",
+          "This is a long corridor. The walls are close on both sides.",
+          "Stay in the middle. If the knocks are louder on one side, move away from that side.",
+          "There are checkpoints along the way. If you touch a wall, you go back to the last checkpoint.",
+          "Fly straight along the corridor.",
+          "Then follow the bends: left and right, up and down."
+        ]
+      }
+    },
+    {
+      "name": "every line of that burst is in the region at some animation frame, so the browser's accessibility tree has it to announce",
+      "pass": true,
+      "value": {
+        "burst": 6,
+        "inTheRegionAtAFrame": 6,
+        "neverInTheRegion": []
+      }
+    },
+    {
+      "name": "while the eye sees at most 3 lines at a time (the helper's view is not covered; the older ones have no box of their own)",
+      "pass": true,
+      "value": {
+        "maxLinesSeenByTheEye": 3,
+        "maxLinesInTheRegionAtOnce": 6
+      }
+    },
+    {
+      "name": "no page errors",
+      "pass": true,
+      "value": []
+    }
+  ]
+}

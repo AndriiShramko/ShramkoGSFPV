@@ -8,9 +8,11 @@
 .sonic-captions { position: fixed; left: 50%; top: calc(92px + env(safe-area-inset-top)); transform: translateX(-50%); z-index: 5; display: flex; flex-direction: column; gap: 6px; align-items: center; width: min(92vw, 900px); pointer-events: none; }
 .sonic-captions[hidden] { display: none; }
 .sonic-caption { margin: 0; padding: 8px 14px; border-radius: 10px; background: rgba(8, 10, 14, .82); color: #fff; font-size: clamp(17px, 2.4vw, 26px); line-height: 1.3; text-align: center; max-width: 100%; }
-/* a narrow page wraps the top bar into two rows; a short one has little view to cover */
+/* The older lines of a burst, while a screen reader reads the region (captions.ts, review D6): hidden from the eye, still in the page for the reader. */
+.sonic-caption.sonic-sr-only { padding: 0; margin: -1px; background: none; }
+/* a narrow page wraps the top bar into two rows; a short one has little view to cover (its older lines are hidden from the eye the same way, never display:none: a line that is not rendered is not announced) */
 @media (max-width: 640px) { .sonic-captions { top: calc(150px + env(safe-area-inset-top)); } }
-@media (max-height: 500px) { .sonic-captions { top: calc(100px + env(safe-area-inset-top)); } .sonic-caption { padding: 4px 10px; font-size: 15px; } .sonic-caption:nth-last-child(n+3) { display: none; } }
+@media (max-height: 500px) { .sonic-captions { top: calc(100px + env(safe-area-inset-top)); } .sonic-caption { padding: 4px 10px; font-size: 15px; } .sonic-caption:nth-last-child(n+3) { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; background: none; } }
 
 /* ---- the start screen (start-screen.ts): a layer of its own over the page, scrolling by itself (the page is overflow:hidden) */
 .sonic-start { position: fixed; inset: 0; z-index: 30; overflow-y: auto; background: var(--bg, #07080a); color: var(--fg, #e8eaed); padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); font-size: 18px; line-height: 1.5; }
