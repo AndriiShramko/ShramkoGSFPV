@@ -6,6 +6,11 @@
 //            mode or the recorder (markers searched in every script and style it fetched); control: a ?sonic= page does, and its
 //            lesson runs; a start chunk that does not load shows and says sonic.say.lessonFailed; a mode chunk that does not load
 //            says it through the engine and shows the start screen again, and the next Enter opens the lesson.
+//   replay   step 5: rings-first flown, T, T (the lesson opens again from its beginning), flown to its pass, rings-line opened by the
+//            page, flown 8 s, T and the survey declined; then a new page on hover-height (lesson C), the recording opened from the
+//            helper's panel and played to its end: each lesson's world drawn in turn, every event and the cues per lesson, the voice
+//            (tone bursts given as the microphone) measured where it comes out against the package's clock; the saved package is
+//            checked again in Node, and the package's own one-lesson check of the same bytes is the control.
 // The page is a RELEASE build served with nginx's enforced CSP (a Vite run reloads when a source file changes and kills the run):
 //   node scripts/build-release.mjs
 //   node tools/bench/scripts/serve-csp.mjs dist 5400                          (another shell)
@@ -312,7 +317,222 @@ async function scenarioLazy(ctx: BrowserContext): Promise<Record<string, unknown
     return out;
 }
 
-const SCENARIOS: Record<string, (ctx: BrowserContext) => Promise<Record<string, unknown>>> = { status: scenarioStatus, lazy: scenarioLazy };
+// ------------------------------------------------------------------ replay (step 5)
+
+/** The microphone is a 1 kHz tone in bursts of 80 ms every 1.5 s (the ground truth of the voice's timing), and the replay's voice is watched. */
+const VOICE_INIT = `(() => {
+  window.__voice = { decoded: null, fileOnsets: [], starts: [], onsets: [], tap: null };
+  try { delete window.showSaveFilePicker; } catch (e) {}
+  const md = navigator.mediaDevices;
+  if (md) md.getUserMedia = async () => {
+    const ac = new AudioContext();
+    const osc = ac.createOscillator();
+    osc.frequency.value = 1000;
+    const gain = ac.createGain();
+    gain.gain.value = 0;
+    const dest = ac.createMediaStreamDestination();
+    osc.connect(gain);
+    gain.connect(dest);
+    osc.start();
+    const t0 = ac.currentTime + 0.5;
+    for (let i = 0; i < 400; i++) { gain.gain.setValueAtTime(0.9, t0 + i * 1.5); gain.gain.setValueAtTime(0, t0 + i * 1.5 + 0.08); }
+    return dest.stream;
+  };
+  const dec = BaseAudioContext.prototype.decodeAudioData;
+  BaseAudioContext.prototype.decodeAudioData = function (data, ...rest) {
+    const ctx = this;
+    return dec.call(this, data, ...rest).then((buf) => {
+      if (buf.duration > 2) {
+        window.__voice.decoded = buf;
+        const ch = buf.getChannelData(0), sr = buf.sampleRate, on = [];
+        let quiet = -1e9;
+        for (let i = 0; i < ch.length; i++) if (Math.abs(ch[i]) > 0.2) { const t = i / sr; if (t > quiet) on.push(t); quiet = t + 0.3; }
+        window.__voice.fileOnsets = on;
+        ctx.audioWorklet.addModule('/fly/assets/int-tap.js').then(() => {
+          const node = new AudioWorkletNode(ctx, 'int-tap', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
+          const mute = ctx.createGain();
+          mute.gain.value = 0;
+          node.connect(mute);
+          mute.connect(ctx.destination);
+          node.port.onmessage = (e) => window.__voice.onsets.push(e.data.onset);
+          window.__voice.tap = node;
+        });
+      }
+      return buf;
+    });
+  };
+  const start = AudioBufferSourceNode.prototype.start;
+  AudioBufferSourceNode.prototype.start = function (when, offset, duration) {
+    if (this.buffer && this.buffer === window.__voice.decoded) {
+      window.__voice.starts.push({ when, offset, now: this.context.currentTime });
+      if (window.__voice.tap) this.connect(window.__voice.tap);
+    }
+    return start.call(this, when, offset, duration);
+  };
+})();`;
+/** The tap: the exact audio time at which the voice first rises above 0.2 after 0.3 s of quiet (a burst's onset); served from the page's origin. */
+const TAP = `class IntTap extends AudioWorkletProcessor {
+  constructor() { super(); this.quietUntil = 0; }
+  process(inputs) {
+    const ch = inputs[0] && inputs[0][0];
+    if (ch) for (let i = 0; i < ch.length; i++) if (Math.abs(ch[i]) > 0.2) { const at = currentTime + i / sampleRate; if (at > this.quietUntil) this.port.postMessage({ onset: at }); this.quietUntil = at + 0.3; }
+    return true;
+  }
+}
+registerProcessor('int-tap', IntTap);
+`;
+
+interface ReplayHook {
+    state: { stage: string; title: string; check: { ok: boolean; summary: string } | null; notes: string[]; details: string; player: { phase: string; tMs: number; durationMs: number; lesson: string | null; part: number; parts: number; frame: number; frames: number } | null };
+    trace: { fed: { t: number; ac: number; part: number }[]; switches: { t: number; ac: number; part: number; lesson: string | null; world: string | null; shown: boolean }[]; voiceStarts: { t: number; ac: number }[] } | null;
+    checks: { lesson: string | null; frames: number; compared: boolean; ok: boolean | null; recorded: number; matched: number; diffs: number; cueShare: number | null; cueClassShare: number | null }[];
+}
+const replayHook = (page: Page): Promise<ReplayHook | null> => page.evaluate(() => (window as unknown as { __gsfpv: { sonicReplay?: () => unknown } }).__gsfpv.sonicReplay?.() ?? null) as Promise<ReplayHook | null>;
+
+async function pressOn(page: Page, selector: string): Promise<void> {
+    await page.focus(selector);
+    await page.keyboard.press('Enter');
+}
+
+async function scenarioReplay(ctx: BrowserContext): Promise<Record<string, unknown>> {
+    const { mkdirSync: mk, writeFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { REPO, today } = await import('./evidence');
+    const shots = join(REPO, 'evidence', today(), 'sonic-int-replay');
+    mk(shots, { recursive: true });
+    await ctx.addInitScript({ content: VOICE_INIT });
+    // the tap's module from the page's own origin (a worklet's request does not pass Playwright's routes): written into the served build
+    // for this run, removed after it (dist/ is the local build, untracked)
+    const tapFile = join(REPO, 'dist', 'fly', 'assets', 'int-tap.js');
+    writeFileSync(tapFile, TAP);
+    try {
+        return await replayRun(ctx, shots);
+    } finally {
+        const { rmSync } = await import('node:fs');
+        rmSync(tapFile, { force: true });
+    }
+}
+
+async function replayRun(ctx: BrowserContext, shots: string): Promise<Record<string, unknown>> {
+    const { writeFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const out: Record<string, unknown> = {};
+    // 1. record: rings-first, then rings-line after its pass
+    const { page, errors } = await openLesson(ctx, 'rings-first');
+    await until(page, 'the recordings panel', () => page.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 20000);
+    await sleep(1500);
+    const n0 = (await probe(page)).events.length;
+    await page.keyboard.press('KeyT');
+    await until(page, 'the question', () => probe(page), (p) => spokenSince(p, n0).some((e) => e.key === 'rec.ask'), 15000);
+    for (let t0 = Date.now(); !(await recordingOn(page)) && Date.now() - t0 < 45000; ) {
+        await sleep(2500);
+        if ((await recordingOn(page)) || spokenSince(await probe(page), n0).some((e) => e.key === 'rec.started')) break;
+        await page.keyboard.press('KeyT');
+    }
+    await until(page, 'the recording', () => recordingOn(page), (v) => v, 20000);
+    const reopened = await until(page, 'rings-first opened again', () => probe(page), (p) => p.events.slice(n0).some((e) => e.kind === 'lesson' && e.what === 'open' && e.lessonId === 'rings-first'), 10000);
+    check('the recording started and rings-first opened again from its beginning (a lesson open inside the recording)', !!reopened);
+    // W held through the ring until rings-line has opened, then 8 s of rings-line
+    await page.keyboard.down('KeyW');
+    await until(page, 'rings-line', () => page.evaluate(() => (window as unknown as { __gsfpv: { sonic: (e?: boolean) => { lesson: string | null } } }).__gsfpv.sonic(false).lesson), (l) => l === 'rings-line', 240000);
+    await sleep(8000);
+    await page.keyboard.up('KeyW');
+    // T stops; the survey is offered (the voice still recorded) and declined with 2
+    await page.keyboard.press('KeyT');
+    const offer = await until(page, 'the survey offer', () => probe(page), (p) => p.events.some((e) => e.kind === 'speech' && e.key === 'survey.offer'), 20000);
+    const surveyLines = offer.events.filter((e) => e.kind === 'speech' && (e.key ?? '').startsWith('survey.')).map((e) => e.key);
+    await sleep(1500);
+    await page.keyboard.press('Digit2');
+    await until(page, 'the recording saved', () => page.evaluate(() => document.querySelectorAll('.sonicrec-session').length), (n) => n >= 1, 30000);
+    await until(page, 'the recorder idle', () => recordingOn(page), (v) => !v, 30000);
+    await sleep(1000);
+    check('the survey offer came with the microphone notice before it (survey.mic-on, step 2)', surveyLines.indexOf('survey.mic-on') >= 0 && surveyLines.indexOf('survey.mic-on') < surveyLines.indexOf('survey.offer'), surveyLines);
+    // the saved package, for the check in Node (the panel's Save: a download here)
+    await page.evaluate(() => { const b = document.querySelector('.sonicrec-toggle') as HTMLElement | null; if (b && document.querySelector('.sonicrec-panel')?.hasAttribute('hidden')) b.click(); });
+    const dl = page.waitForEvent('download', { timeout: 30000 });
+    await pressOn(page, '.sonicrec-session [data-action="save"]');
+    // a package with a voice is never committed, even a synthetic one: it goes to the system's temporary folder
+    const saved = join((await import('node:os')).tmpdir(), `sonic-int-replay-${Date.now()}.zip`);
+    await (await dl).saveAs(saved);
+    out.recordErrors = [...errors];
+    await page.close();
+
+    // 2. lesson C on a new page; the recording opened from the panel and played to its end
+    const { page: p2, errors: errors2 } = await openLesson(ctx, 'hover-height');
+    await until(p2, 'the recordings panel', () => p2.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 20000);
+    const cPrims = (await p2.evaluate(() => (window as unknown as { __gsfpv: { sonic: (e?: boolean) => { stagePrims: number } } }).__gsfpv.sonic(false).stagePrims));
+    await p2.evaluate(() => (document.querySelector('.sonicrec-toggle') as HTMLElement).click());
+    await until(p2, 'the replay button', () => p2.evaluate(() => !!document.querySelector('.sonicrec-session [data-action="replay"]')), (v) => v, 20000);
+    await pressOn(p2, '.sonicrec-session [data-action="replay"]');
+    const ready = await until(p2, 'the replay checked', () => replayHook(p2), (h) => h?.state.stage === 'ready' || h?.state.stage === 'error', 60000);
+    out.check = { summary: ready?.state.check, notes: ready?.state.notes, details: ready?.state.details, checks: ready?.checks, title: ready?.state.title };
+    const rows = ready?.checks ?? [];
+    check('the replay is checked lesson by lesson: rings-first then rings-line, each compared, every recorded event re-derived (no difference)', rows.map((r) => r.lesson).join(',') === 'rings-first,rings-line' && rows.every((r) => r.compared && r.diffs === 0 && r.matched === r.recorded && r.recorded > 0), rows);
+    check('100 % of the sounds per lesson (the cue ids of every frame, within the comparer\'s one-frame slack) and the panel says the replay agrees', rows.length === 2 && rows.every((r) => r.cueShare === 1) && ready?.state.check?.ok === true, { rows: rows.map((r) => [r.lesson, r.cueShare, r.cueClassShare]), summary: ready?.state.check });
+    check('no "another place" note: the page draws both lessons\' worlds itself', !(ready?.state.notes ?? []).some((n) => /another place/i.test(n)), ready?.state.notes);
+    await pressOn(p2, '[data-action="replay-toggle"]');
+    let lastLesson: string | null = null;
+    const prims: Record<string, number> = {};
+    const t0 = Date.now();
+    for (;;) {
+        const h = await replayHook(p2);
+        const pl = h?.state.player;
+        if (pl && pl.lesson !== lastLesson && pl.phase === 'playing') {
+            lastLesson = pl.lesson;
+            await sleep(1500);
+            prims[pl.lesson ?? '-'] = await p2.evaluate(() => (window as unknown as { __gsfpv: { sonic: (e?: boolean) => { stagePrims: number } } }).__gsfpv.sonic(false).stagePrims);
+            writeFileSync(join(shots, `replay-${pl.lesson}.png`), await p2.screenshot({ type: 'png' }));
+        }
+        if (!pl || pl.phase === 'ended' || Date.now() - t0 > 360000) break;
+        await sleep(200);
+    }
+    const end = await replayHook(p2);
+    const tr = end?.trace;
+    const voice = await p2.evaluate(() => {
+        const v = (window as unknown as { __voice: { fileOnsets: number[]; starts: { when: number; offset: number; now: number }[]; onsets: number[] } }).__voice;
+        return { fileOnsets: v.fileOnsets, starts: v.starts, onsets: v.onsets };
+    });
+    out.replay ={ phase: end?.state.player?.phase, switches: tr?.switches, voiceStarts: tr?.voiceStarts, fed: tr?.fed.length, prims, cPrims, voice: { fileOnsets: voice.fileOnsets, starts: voice.starts, onsets: voice.onsets } };
+    check('played to its end', end?.state.player?.phase === 'ended', end?.state.player);
+    const sw = tr?.switches ?? [];
+    check('each lesson\'s world drawn in turn: rings-first, then rings-line when its first frame was due (both shown by the page\'s view), other primitives than lesson C\'s', sw.map((s) => `${s.lesson}:${s.shown}`).join(',') === 'rings-first:true,rings-line:true' && sw[0]?.world !== sw[1]?.world && prims['rings-first'] !== undefined && prims['rings-line'] !== undefined, { switches: sw.map((s) => [s.lesson, s.world, s.shown, s.t]), prims, cPrims });
+    // frames fed on the package clock: the reference of the voice's start (package time t was audio time ac)
+    const ref = tr?.voiceStarts[0];
+    const fedLag = ref && tr ? tr.fed.map((f) => (ref.t + (f.ac - ref.ac) * 1000) - f.t) : [];
+    const sorted = [...fedLag].sort((a, b) => a - b);
+    out.fedLag = { n: fedLag.length, min: sorted[0], p50: sorted[Math.floor(sorted.length / 2)], p95: sorted[Math.floor(sorted.length * 0.95)], max: sorted.at(-1) };
+    check('every frame of both lessons fed once, in order, never before its package time and within 200 ms after it on the audio clock', !!tr && tr.fed.length === (end?.state.player?.frames ?? -1) && Math.min(...fedLag) >= -1 && Math.max(...fedLag) <= 200, out.fedLag);
+    // close: the mode's own view back
+    await pressOn(p2, '[data-action="replay-close"]');
+    await sleep(800);
+    const after = await p2.evaluate(() => (window as unknown as { __gsfpv: { sonic: (e?: boolean) => { stagePrims: number } } }).__gsfpv.sonic(false).stagePrims);
+    check('closed: lesson C\'s own view is back', after === cPrims, { after, cPrims });
+    out.replayErrors = [...errors2];
+    check('no page error and no console error in either page', errors.length === 0 && errors2.length === 0, { record: errors, replay: errors2 });
+    await p2.close();
+
+    // 3. in Node, the saved bytes: the same check as the page, and the control
+    const { readFileSync } = await import('node:fs');
+    const { readPackage, checkSession } = await import('../../../packages/sonic-fpv/src');
+    const { checkPackage } = await import('../../../apps/fly/src/sonic-session/replay-check');
+    const pkg = readPackage(new Uint8Array(readFileSync(saved)));
+    const mine = await checkPackage(pkg);
+    const old = checkSession(pkg);
+    out.node = { frames: pkg.frames.length, events: pkg.events.length, voiceBytes: pkg.voice?.length ?? 0, voiceOffsetMs: pkg.manifest.clock.voiceOffsetMs, segments: mine.segments.map((s) => ({ lesson: s.segment.lessonId, frames: s.segment.frames.length, ok: s.check?.ok, diffs: s.check?.events.diffs.length, share: s.check?.cues.share })), oldCheck: { ok: old.check.ok, diffs: old.check.events.diffs.length, notes: old.check.notes.map((n) => n.code), share: old.check.cues.share } };
+    check('Node, the saved package: the lesson-by-lesson check says what the page said', mine.check?.ok === ready?.state.check?.ok && mine.segments.length === 2, out.node);
+    check('control: the package\'s own one-lesson check of the same bytes (the replay before this step) does not agree', !old.check.ok && old.check.notes.some((n) => n.code === 'other-lesson-events'), out.node);
+    // 4. the voice: where each burst came out of the AudioContext, on the package's clock, against where the package puts it
+    const vo = pkg.manifest.clock.voiceOffsetMs ?? 0;
+    const expected = voice.fileOnsets.map((f) => vo + f * 1000);
+    const heard = ref ? voice.onsets.map((a) => ref.t + (a - ref.ac) * 1000) : [];
+    const errs = heard.map((h) => expected.reduce((best, e) => (Math.abs(h - e) < Math.abs(best) ? h - e : best), Infinity));
+    const lastA = (pkg.frames.filter((f) => f.t < (sw[1]?.t ?? Infinity)).at(-1)?.t ?? 0);
+    out.voiceSync = { bursts: expected.length, heard: heard.length, inLessonB: heard.filter((h) => h > lastA).length, maxAbsErrMs: Math.max(...errs.map(Math.abs)), errorsMs: errs.map((e) => Math.round(e * 10) / 10) };
+    check('the voice: every burst heard within 200 ms of its place on the package clock, over both lessons', heard.length >= 10 && heard.length >= expected.length - 2 && Math.max(...errs.map(Math.abs)) <= 200 && heard.some((h) => h > lastA), out.voiceSync);
+    return { ...out, savedZip: saved };
+}
+
+const SCENARIOS: Record<string, (ctx: BrowserContext) => Promise<Record<string, unknown>>> = { status: scenarioStatus, lazy: scenarioLazy, replay: scenarioReplay };
 
 async function main(): Promise<void> {
     const run = SCENARIOS[SCENARIO];

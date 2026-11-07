@@ -13,7 +13,7 @@ import type { ReplayHost } from './replay-host';
 import { openFile, openSession } from './replay-open';
 import type { Opened } from './replay-open';
 import { ReplayPlayer } from './replay-player';
-import type { ReplayState } from './replay-player';
+import type { ReplayState, ReplayTrace } from './replay-player';
 
 export interface ReplayViewState {
     readonly stage: 'closed' | 'loading' | 'error' | 'ready';
@@ -29,6 +29,20 @@ export interface ReplayViewState {
 }
 
 const CLOSED: ReplayViewState = { stage: 'closed', title: '', error: null, player: null, check: null, notes: [], details: '' };
+
+/** One lesson of the recording as the check found it (the numbers behind the panel's sentence), for the acceptance runs. */
+export interface LessonCheckRow {
+    readonly lesson: string | null;
+    readonly frames: number;
+    /** false: the lead of a recording of several lessons, replayed and not compared */
+    readonly compared: boolean;
+    readonly ok: boolean | null;
+    readonly recorded: number;
+    readonly matched: number;
+    readonly diffs: number;
+    readonly cueShare: number | null;
+    readonly cueClassShare: number | null;
+}
 
 export interface ReplayControlDeps {
     host: ReplayHost;
@@ -47,6 +61,7 @@ export class ReplayControl {
     private offLost: (() => void) | null = null;
     private token = 0;
     private view: ReplayViewState = CLOSED;
+    private rows: readonly LessonCheckRow[] = [];
 
     constructor(deps: ReplayControlDeps) {
         this.deps = deps;
@@ -58,6 +73,16 @@ export class ReplayControl {
 
     get active(): boolean {
         return this.player !== null;
+    }
+
+    /** The lessons of the recording opened last, as the check found them. */
+    get checks(): readonly LessonCheckRow[] {
+        return this.rows;
+    }
+
+    /** What the open replay did (frames fed, lessons shown, the voice started), on the audio clock; null with none open. */
+    get trace(): ReplayTrace | null {
+        return this.player?.trace ?? null;
     }
 
     private set(next: ReplayViewState): void {
@@ -84,12 +109,24 @@ export class ReplayControl {
         if (!opened.ok) return this.fail(t('sonicrec.replay.error', { reason: opened.error }));
         const pkg = opened.pkg;
         const m = pkg.manifest;
-        // a scan's world is the simulator's: handed in when it is the one on screen, else the replay runs without one (no hazard cues)
+        // a scan's world is the simulator's: handed in when it is the one on screen, else the replay runs without one (no hazard cues);
+        // a recording of several lessons is checked and played lesson by lesson, a scan lesson's world asked of the page (v12-int step 5)
         const world = m.scene.kind !== 'none' && link.world !== null && link.world.id === m.scene.id ? link.world : null;
-        const outcome = await checkPackage(pkg, { ...(this.deps.checkRun ?? {}), world });
+        const outcome = await checkPackage(pkg, { ...(this.deps.checkRun ?? {}), world, ...(link.scanWorld === undefined ? {} : { scanWorld: link.scanWorld }) });
         if (mine !== this.token) return;
         if (outcome.setup === null) return this.fail(t('sonicrec.replay.check.none', { reason: outcome.error?.message ?? '' }));
-        const player = new ReplayPlayer({ ...link.deps, onChange: () => this.deps.onChange(this.state) }, pkg, outcome.setup);
+        this.rows = outcome.segments.map((s) => ({
+            lesson: s.segment.lessonId,
+            frames: s.segment.frames.length,
+            compared: s.check !== null,
+            ok: s.check?.ok ?? null,
+            recorded: s.check?.events.recorded ?? 0,
+            matched: s.check?.events.matched ?? 0,
+            diffs: s.check?.events.diffs.length ?? 0,
+            cueShare: s.check?.cues.share ?? null,
+            cueClassShare: s.check?.cues.classShare ?? null
+        }));
+        const player = new ReplayPlayer({ ...link.deps, onChange: () => this.deps.onChange(this.state) }, pkg, outcome.segments);
         await player.prepare();
         if (mine !== this.token) {
             player.close();
@@ -102,15 +139,23 @@ export class ReplayControl {
         if (opened.lenient) notes.push(t('sonicrec.replay.problems', { n: opened.problems.length }));
         if (pkg.voice === null) notes.push(t('sonicrec.replay.voice.none'));
         else if (player.state.voice === 'failed') notes.push(t('sonicrec.replay.voice.failed'));
-        const samePlace = m.scene.kind === 'scan' ? link.sceneId === m.scene.id : outcome.setup.world === null || link.world?.id === outcome.setup.world.id;
+        // the picture is the recording's place when the page draws every lesson of it (the flight side's view), or, on a page that
+        // draws no lessons, when the world on screen is the recording's
+        const canShow = link.canShow;
+        const samePlace =
+            canShow !== undefined
+                ? outcome.segments.every((s) => canShow(s.setup.lesson, s.setup.world))
+                : m.scene.kind === 'scan'
+                  ? link.sceneId === m.scene.id
+                  : outcome.setup.world === null || link.world?.id === outcome.setup.world.id;
         if (!samePlace) notes.push(t('sonicrec.replay.world.other'));
-        this.set({ stage: 'ready', title: this.titleOf(pkg), error: null, player: player.state, check: this.summary(outcome), notes, details: this.detailsOf(outcome, opened.problems) });
+        this.set({ stage: 'ready', title: this.titleOf(pkg, outcome), error: null, player: player.state, check: this.summary(outcome), notes, details: this.detailsOf(outcome, opened.problems) });
     }
 
-    private titleOf(pkg: SessionPackage): string {
+    private titleOf(pkg: SessionPackage, outcome: ReplayOutcome): string {
         const m = pkg.manifest;
-        const lesson = m.lesson?.id ?? t('sonicrec.replay.freeflight');
-        return `${lesson} · ${this.deps.formatWhen(m.created)}`;
+        const ids = outcome.segments.length > 1 ? outcome.segments.map((s) => s.segment.lessonId ?? t('sonicrec.replay.freeflight')) : [m.lesson?.id ?? t('sonicrec.replay.freeflight')];
+        return `${ids.join(', ')} · ${this.deps.formatWhen(m.created)}`;
     }
 
     private summary(outcome: ReplayOutcome): { ok: boolean; summary: string } | null {
@@ -121,7 +166,8 @@ export class ReplayControl {
     }
 
     private detailsOf(outcome: ReplayOutcome, problems: readonly PackageProblem[]): string {
-        const lines = [outcome.line, ...(outcome.setup?.notes ?? []).map((n) => `${n.code}: ${n.message}`), ...problems.map((p) => `${p.code}: ${p.message}`)];
+        const notes = outcome.segments.flatMap((s) => s.setup.notes.map((n) => (outcome.segments.length > 1 ? `${s.segment.lessonId ?? '-'}: ${n.code}: ${n.message}` : `${n.code}: ${n.message}`)));
+        const lines = [outcome.line, ...notes, ...problems.map((p) => `${p.code}: ${p.message}`)];
         return lines.filter((l) => l !== '').join('\n');
     }
 

@@ -415,7 +415,8 @@ export class Recorder {
     onEvent(e: SessionEvent): void {
         if ((this.phaseValue !== 'recording' && this.phaseValue !== 'closing') || this.writer === null) return;
         if (!busEventWanted(e, this.phaseValue)) return;
-        this.write({ ...e, t: this.clock.fromHost(e.t) } as SessionEvent);
+        // a lesson's open begins a new run of the host's clock (each lesson is a new enter() of the mode, its clock from 0)
+        this.write({ ...e, t: this.clock.fromHost(e.t, e.kind === 'lesson' && e.what === 'open') } as SessionEvent);
     }
 
     private cuesNow(): readonly string[] {

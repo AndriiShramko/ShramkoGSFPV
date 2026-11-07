@@ -78,6 +78,10 @@ export class LessonHost {
     lesson: LessonDef | null = null;
     runner: LessonSession | null = null;
     world: SonicWorld | null = null;
+    /** the scan lesson running now (module 7): its world over the scan, gates, start and floor; null for any other lesson */
+    scan: ScanLesson | null = null;
+    /** what the helper's view shows for the lesson running now (drawn again after a replay drew other lessons: redraw) */
+    private shownPrims: readonly Prim[] = [];
     private readonly p: LessonPage;
     private readonly worlds = new Map<string, LessonWorld>();
     private floorY = 0;
@@ -139,7 +143,7 @@ export class LessonHost {
     // ------------------------------------------------------------------ opening a lesson
 
     /** Opens a lesson: its world flown, the helper's view drawn, the runner begun. Never throws for the pilot's sake: the reason goes to the console. */
-    async open(lessonId: string, o: { returnTo?: string | null } = {}): Promise<boolean> {
+    async open(lessonId: string, o: { returnTo?: string | null; keepSpeech?: boolean } = {}): Promise<boolean> {
         if (this.busy || !isShippedLesson(lessonId)) return false;
         this.busy = true;
         try {
@@ -159,13 +163,15 @@ export class LessonHost {
                 objects = scan.objects;
                 // the track's gates over the scan: what a helper sees of what the pilot hears
                 this.p.stage.show(scan.prims);
+                this.shownPrims = scan.prims;
             } else {
                 const lw = this.worldOf(lesson);
                 const ses = this.p.session();
                 if (!ses.builtin || ses.collisionSha256 !== lw.builtin.sha256) await this.p.swapTo(lw);
                 world = lw.world;
                 floorY = lw.world.floorY;
-                this.p.stage.show(worldPrims(lw.world));
+                this.shownPrims = worldPrims(lw.world);
+                this.p.stage.show(this.shownPrims);
             }
             const runner = createLessonRunner(lesson, {
                 locale: this.p.locale,
@@ -178,6 +184,7 @@ export class LessonHost {
             this.lesson = lesson;
             this.runner = runner;
             this.world = world;
+            this.scan = scan;
             this.floorY = floorY;
             this.question = null;
             this.demo = null;
@@ -188,7 +195,7 @@ export class LessonHost {
             // G, or a lesson chosen on the start screen, while the lesson left is still talking: its queued lines (a lesson says
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
-            this.cutSpeech = this.p.mode.bridge.speechQueue > 0;
+            this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
                 this.p.mode.enter({ lesson, runner, world, floorY });
@@ -231,10 +238,35 @@ export class LessonHost {
         this.runner = null;
         this.lesson = null;
         this.world = null;
+        this.scan = null;
+        this.shownPrims = [];
         this.question = null;
         this.demo = null;
         this.p.stage.clear();
         this.p.mode.leave();
+    }
+
+    /**
+     * The lesson running now, opened again from its beginning: a recording has just started (v12-int step 5). The replay re-derives
+     * a lesson from its `lesson open`; a lesson that began before the recording has no open in it, and its state then (the attempt,
+     * the goals met, what was said) is not in the package, so it could not be heard again as the pilot heard it. Opened again, the
+     * whole lesson is in the recording. Its lines queue behind what is being said ("Recording started."), they do not cut it.
+     * Saved progress stays (the new runner starts from it). Nothing when no lesson runs.
+     */
+    reopen(): Promise<boolean> {
+        const id = this.lesson?.id;
+        return id === undefined ? Promise.resolve(false) : this.open(id, { keepSpeech: true });
+    }
+
+    /** The helper's view of the lesson running now, drawn again (a replay drew the lessons of a recording over it); cleared while none runs. */
+    redraw(): void {
+        if (this.shownPrims.length === 0) {
+            this.p.stage.clear();
+            return;
+        }
+        this.p.stage.show(this.shownPrims);
+        const target = this.runner?.target();
+        this.p.stage.setTarget(target ? target.id : null);
     }
 
     // ------------------------------------------------------------------ frames

@@ -17,7 +17,7 @@
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
 import { createSceneSampler } from '@shramko/sonic-fpv';
-import type { FlightSample, LessonDef, LessonWorldRef, SessionEvent, TrackFile } from '@shramko/sonic-fpv';
+import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
 import type { SessionOptions } from '../session';
 import { typing } from '../devices/keyboard';
@@ -28,11 +28,14 @@ import type { SonicEntry } from './entry';
 import { PageRuntime } from './runtime';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
 import type { LessonPage } from './lessons';
-import { PrimitiveStage } from './primitives';
+import { PrimitiveStage, worldPrims } from './primitives';
+import type { Prim } from './primitives';
+import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
+import { setLessonView } from '../app/sonic-view';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../app/test-hook' {
@@ -256,6 +259,41 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         return { frames, msPerFrame: Math.round((run(frames) / frames) * 1000) / 1000, raysPerFrame: 30 };
     };
     offs.push(ctx.menu.add({ id: 'pause.sonic', action: null, labelKey: 'sonic.menu.lessons', order: 95, section: 'tools', run: () => showMenu() }));
+    // the replay of a recording draws each lesson of it in the helper's view, whatever lesson runs now (v12-int step 5;
+    // app/sonic-view.ts, the session side's replay-host.ts): an analytic world from its spec, an ears lesson's floor, a scan
+    // lesson's gates only while the page flies that scan; restore() puts the running lesson's view back
+    const viewStage = stage;
+    const primsOf = (lesson: LessonDef | null, world: SonicWorld | null): readonly Prim[] | null => {
+        if (world !== null && world.kind === 'analytic') return worldPrims(world as AnalyticWorldInfo);
+        if (lesson === null) return null;
+        if (lesson.world.kind === 'scan') {
+            const scan = h.scan;
+            return scan !== null && h.lesson?.world.kind === 'scan' && h.lesson.world.sceneId === lesson.world.sceneId && ctx.session.scene.id === lesson.world.sceneId ? scan.prims : null;
+        }
+        const own = lessonViewWorld(lesson);
+        return own === null ? null : worldPrims(own);
+    };
+    setLessonView(ctx, {
+        canShow: (lesson, world) => primsOf(lesson, world) !== null,
+        show(lesson, world) {
+            const prims = primsOf(lesson, world);
+            if (prims === null) {
+                viewStage.clear();
+                return false;
+            }
+            viewStage.show(prims);
+            viewStage.setTarget(null);
+            return true;
+        },
+        restore: () => h.redraw(),
+        reopen: () => void h.reopen(),
+        scanWorld(lesson) {
+            const scan = h.scan;
+            if (scan === null || lesson.world.kind !== 'scan' || h.lesson?.world.kind !== 'scan' || h.lesson.world.sceneId !== lesson.world.sceneId || ctx.session.scene.id !== lesson.world.sceneId) return null;
+            return { world: scan.world, objects: scan.objects, start: scan.start, floorY: scan.floorY };
+        }
+    });
+    offs.push(() => setLessonView(ctx, null));
     // Z and G: keys of the mode, each ignored while no lesson runs
     offs.push(ctx.keys.on('sonic.repeat', (e) => { if (!e.repeat && mode.active) void h.repeat(); }));
     offs.push(ctx.keys.on('sonic.glossary', (e) => { if (!e.repeat && mode.active) void h.glossary(); }));

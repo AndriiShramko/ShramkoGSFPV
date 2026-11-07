@@ -90,6 +90,16 @@ export function lessonWorldOf(lesson: LessonDef): LessonWorld | null {
 }
 
 /**
+ * The world the helper's view draws for a lesson (a replay draws each lesson of a recording, v12-int step 5): the lesson's own,
+ * the floor of an ears lesson (as lessonFlightWorld flies it), null for a scan lesson. Only the analytic world, without the walls
+ * the flight model would need: cheap enough to make at every change of lesson in a replay.
+ */
+export function lessonViewWorld(lesson: LessonDef): AnalyticWorldInfo | null {
+    if (lesson.world.kind === 'scan') return null;
+    return createAnalyticWorld(lesson.world.kind === 'analytic' ? lesson.world.spec : makeSpec('open', { startHeightM: lesson.start.pos[1] }));
+}
+
+/**
  * The world the page flies while a lesson runs: the lesson's own; for the ears lessons (module 0: no world, the sources
  * are placed by the lesson alone) a floor and nothing else, so the page still has a craft that hovers at the lesson's
  * start; null for a scan lesson (module 7), which flies the scan itself.

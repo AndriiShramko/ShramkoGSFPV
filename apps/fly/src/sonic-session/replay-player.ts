@@ -15,8 +15,14 @@
 //
 // While a replay runs the flight lane's mode is in playback (runtime.playback(true): live input, the lesson and the live engine feed
 // stop), the flight is paused and the camera is the player's. Everything is given back by close().
+//
+// Lesson by lesson (v12-int step 5): a recording of several lessons is played as its pieces (replay-segments.ts), each with its own
+// Replayer, lesson runner, cue layers and world, one after the other on the ONE clock of the package, with its one voice. When the
+// next piece's first frame is due the player moves on to it: the helper's view draws that lesson's world (`view`, the flight side's,
+// app/sonic-view.ts), the engine takes its layers. The voice is never started again for it: it runs on, as it was recorded.
 import { Replayer } from '@shramko/sonic-fpv';
-import type { CueEvent, FlightFrame, LessonLayers, Quat, ReplaySetup, SessionPackage, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef, Vec3 } from '@shramko/sonic-fpv';
+import type { CueEvent, FlightFrame, LessonLayers, Quat, ReplaySetup, ReplayStep, SessionPackage, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef, Vec3 } from '@shramko/sonic-fpv';
+import type { CheckedSegment } from './replay-check';
 import { voicePlan } from './replay-voice';
 import type { VoiceBuffer, VoiceDeps, VoiceHandle } from './replay-voice';
 
@@ -37,6 +43,14 @@ export interface PoseSink {
     end(): void;
 }
 
+/** The helper's view of the replayed lesson's world (the flight side's, app/sonic-view.ts): absent in a test or on a page without lessons. */
+export interface WorldSink {
+    /** draws this lesson's world in place of the mode's; false when the page cannot (a scan it does not fly) */
+    show(setup: ReplaySetup): boolean;
+    /** the mode's own view back */
+    restore(): void;
+}
+
 export type ReplayPhase = 'ready' | 'playing' | 'paused' | 'ended';
 
 export interface ReplayState {
@@ -49,7 +63,30 @@ export interface ReplayState {
     readonly frames: number;
     /** how far behind the audio clock the view is shown, ms */
     readonly viewLagMs: number;
+    /** the lesson being replayed now, and which of the recording's lessons it is (0-based of `parts`) */
+    readonly lesson: string | null;
+    readonly part: number;
+    readonly parts: number;
 }
+
+/** One lesson of the recording as the player runs it. */
+interface Part {
+    readonly setup: ReplaySetup;
+    readonly replayer: Replayer;
+    /** index of its first frame among the package's */
+    readonly first: number;
+    readonly frames: readonly FlightFrame[];
+    readonly lessonId: string | null;
+}
+
+/** What a replay did, for the evidence runs and the tests: when each frame was fed and each lesson's world shown, on the audio clock (s). */
+export interface ReplayTrace {
+    readonly fed: { readonly t: number; readonly ac: number; readonly part: number }[];
+    readonly switches: { readonly t: number; readonly ac: number; readonly part: number; readonly lesson: string | null; readonly world: string | null; readonly shown: boolean }[];
+    readonly voiceStarts: { readonly t: number; readonly ac: number }[];
+}
+
+const TRACE_CAP = 20000;
 
 export interface ReplayDeps {
     /** the audio clock, seconds (AudioContext.currentTime) */
@@ -64,6 +101,8 @@ export interface ReplayDeps {
     playback(on: boolean): void;
     /** how late what is heard reaches the ear, ms: the view is shown that much behind the audio clock so it meets the sound (read when the replay starts, resumes or seeks, not every frame: the browser's estimate moves) */
     viewLagMs?(): number;
+    /** the replayed lesson's world in the helper's view */
+    view?: WorldSink | null;
     onChange?(s: ReplayState): void;
     /** frames stepped in one tick at most (default 600: twenty seconds a page that was hidden has to catch up) */
     maxCatchUp?: number;
@@ -109,7 +148,9 @@ export class ReplayPlayer {
     private readonly deps: ReplayDeps;
     private readonly frames: readonly FlightFrame[];
     private readonly setup: ReplaySetup;
-    private readonly replayer: Replayer;
+    private readonly parts: readonly Part[];
+    private cur = 0;
+    readonly trace: ReplayTrace = { fed: [], switches: [], voiceStarts: [] };
     private readonly voiceBytes: Uint8Array | null;
     private readonly voiceOffsetMs: number;
     private voice: VoiceBuffer | null = null;
@@ -126,11 +167,17 @@ export class ReplayPlayer {
     private shownT = NaN;
     private tickT = NaN;
 
-    constructor(deps: ReplayDeps, pkg: SessionPackage, setup: ReplaySetup) {
+    /** `lessons`: the recording's lessons as the check made them (replay-check.ts), or one setup for the whole package (a package of one lesson). */
+    constructor(deps: ReplayDeps, pkg: SessionPackage, lessons: ReplaySetup | readonly CheckedSegment[]) {
         this.deps = deps;
         this.frames = pkg.frames;
-        this.setup = setup;
-        this.replayer = new Replayer({ setup, frames: pkg.frames, events: pkg.events });
+        const pieces =
+            'manifest' in lessons
+                ? [{ setup: lessons, first: 0, frames: pkg.frames, events: pkg.events, lessonId: lessons.lesson?.id ?? null }]
+                : lessons.map((c) => ({ setup: c.setup, first: c.segment.firstFrame, frames: c.segment.frames, events: c.segment.events, lessonId: c.segment.lessonId }));
+        if (pieces.length === 0) throw new Error('a replay needs at least one lesson of frames');
+        this.parts = pieces.map((p) => ({ setup: p.setup, replayer: new Replayer({ setup: p.setup, frames: p.frames, events: p.events }), first: p.first, frames: p.frames, lessonId: p.lessonId }));
+        this.setup = (this.parts[0] as Part).setup;
         this.voiceBytes = pkg.voice;
         this.voiceOffsetMs = pkg.manifest.clock.voiceOffsetMs ?? 0;
         this.durationValue = (pkg.frames.at(-1) as FlightFrame).t;
@@ -153,16 +200,43 @@ export class ReplayPlayer {
         this.changed();
     }
 
+    private get part(): Part {
+        return this.parts[this.cur] as Part;
+    }
+
     get state(): ReplayState {
-        return { phase: this.phase, tMs: this.currentT(), durationMs: this.durationValue, voice: this.voiceState, frame: this.replayer.position, frames: this.frames.length, viewLagMs: this.lagMs };
+        const part = this.part;
+        return { phase: this.phase, tMs: this.currentT(), durationMs: this.durationValue, voice: this.voiceState, frame: part.first + part.replayer.position, frames: this.frames.length, viewLagMs: this.lagMs, lesson: part.lessonId, part: this.cur, parts: this.parts.length };
     }
 
     get notes(): ReplaySetup['notes'] {
-        return this.setup.notes;
+        return this.parts.flatMap((p) => p.setup.notes);
     }
 
     get layers(): LessonLayers {
-        return this.replayer.cuePlanner.layers;
+        return this.part.replayer.cuePlanner.layers;
+    }
+
+    private note<T>(list: T[], item: T): void {
+        list.push(item);
+        if (list.length > TRACE_CAP) list.splice(0, list.length - TRACE_CAP);
+    }
+
+    /** The helper's view draws the lesson of the part being played (and the trace says when, on the audio clock). */
+    private showWorld(t: number): void {
+        const part = this.part;
+        const shown = this.deps.view?.show(part.setup) ?? false;
+        this.note(this.trace.switches, { t, ac: this.deps.now(), part: this.cur, lesson: part.lessonId, world: part.setup.world?.id ?? null, shown });
+    }
+
+    /** Moves on to part `i` (its replayer from its start unless `keep`), its world drawn and, while playing, its layers sounding. */
+    private switchTo(i: number, t: number, keep = false): void {
+        if (i === this.cur) return;
+        this.cur = i;
+        if (!keep) this.part.replayer.reset();
+        if (!this.entered) return;
+        this.showWorld(t);
+        if (this.phase === 'playing') this.deps.engine.setLayers(this.layers);
     }
 
     /** Package time now, ms: ticks along the audio clock while playing, where it stopped otherwise. */
@@ -182,6 +256,7 @@ export class ReplayPlayer {
         // the engine sounds as it did for the pilot: his settings and theme, the lesson's layers
         this.deps.engine.setPrefs(this.setup.prefs);
         this.deps.engine.setTheme(this.setup.theme);
+        this.showWorld(this.tHeld);
     }
 
     private silence(): void {
@@ -201,7 +276,10 @@ export class ReplayPlayer {
         this.stopVoice();
         if (this.voice !== null && this.deps.voice !== null) {
             const plan = voicePlan(this.voiceOffsetMs, tMs, this.voice.duration);
-            if (plan.audible) this.handle = this.deps.voice.play(this.voice, this.acRef + plan.atS, plan.offsetS);
+            if (plan.audible) {
+                this.handle = this.deps.voice.play(this.voice, this.acRef + plan.atS, plan.offsetS);
+                this.note(this.trace.voiceStarts, { t: tMs, ac: this.acRef });
+            }
         }
     }
 
@@ -241,9 +319,17 @@ export class ReplayPlayer {
     private seekTo(ms: number): void {
         const t = Math.min(Math.max(0, ms), this.durationValue);
         const k = frameAtOrBefore(this.frames, t);
-        let last = null;
-        if (k < 0) this.replayer.reset();
-        else last = this.replayer.seek(k);
+        let last: ReplayStep | null = null;
+        if (k < 0) {
+            this.switchTo(0, t, true);
+            this.part.replayer.reset();
+        } else {
+            // the lesson the frame belongs to: its replayer goes to it (from its start when that is behind), its world is drawn
+            let i = 0;
+            while (i + 1 < this.parts.length && (this.parts[i + 1] as Part).first <= k && (this.parts[i + 1] as Part).frames.length > 0) i++;
+            this.switchTo(i, t, true);
+            last = this.part.replayer.seek(k - this.part.first);
+        }
         if (last !== null && this.entered) this.deps.engine.update(last.input);
         this.tHeld = t;
         this.tRef = t;
@@ -263,9 +349,24 @@ export class ReplayPlayer {
         if (this.phase !== 'playing') return;
         const t = this.currentT();
         this.tickT = t;
-        const due: ReturnType<Replayer['step']>[] = [];
+        const due: ReplayStep[] = [];
         const cap = this.deps.maxCatchUp ?? 600;
-        while (due.length < cap && !this.replayer.done && (this.frames[this.replayer.position] as FlightFrame).t <= t) due.push(this.replayer.step());
+        while (due.length < cap) {
+            const part = this.part;
+            if (part.replayer.done) {
+                // this lesson is over: the next one starts when its first frame is due (its world drawn, its layers on)
+                const next = this.parts[this.cur + 1];
+                const firstT = next?.frames[0]?.t;
+                if (next === undefined || firstT === undefined || firstT > t) break;
+                this.switchTo(this.cur + 1, firstT);
+                continue;
+            }
+            if ((part.frames[part.replayer.position] as FlightFrame).t > t) break;
+            const s = part.replayer.step();
+            if (s === null) break;
+            this.note(this.trace.fed, { t: s.frame.t, ac: this.deps.now(), part: this.cur });
+            due.push(s);
+        }
         // a page that stalled catches up: the engine hears the last frame, and a line or a cue from long ago is not played in a burst
         const burst = due.length > 3;
         due.forEach((s, i) => {
@@ -279,7 +380,7 @@ export class ReplayPlayer {
             }
         });
         this.showPose(t);
-        if (t >= this.durationValue && this.replayer.done) {
+        if (t >= this.durationValue && this.part.replayer.done && this.cur === this.parts.length - 1) {
             this.tHeld = this.durationValue;
             this.phase = 'ended';
             this.stopVoice();
@@ -296,13 +397,15 @@ export class ReplayPlayer {
             const own = this.deps.own();
             this.deps.engine.setPrefs(own.prefs);
             this.deps.engine.setTheme(own.theme);
+            this.deps.view?.restore();
             this.deps.pose.end();
             this.deps.playback(false);
             this.entered = false;
         }
         this.phase = 'ready';
         this.tHeld = 0;
-        this.replayer.reset();
+        this.cur = 0;
+        for (const p of this.parts) p.replayer.reset();
         this.changed();
     }
 

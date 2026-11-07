@@ -5,13 +5,14 @@
 //   - the bus listeners return at once unless a recording runs,
 //   - nothing is fetched, stored or asked of the browser before the pilot presses T and says yes.
 import './texts';
-import type { SessionStores } from './recorder';
+import type { RecorderPhase, SessionStores } from './recorder';
 import { Recorder } from './recorder';
 import { DICTS, MemorySink, createTranslator } from '@shramko/sonic-fpv';
 import type { ChunkStore, Locale, SonicRuntime } from '@shramko/sonic-fpv';
 import { locale, t } from '../i18n';
 import type { FlightContext } from '../app/context';
 import { STATUS_ORDER, statusBoard } from '../app/sonic-status';
+import { lessonView } from '../app/sonic-view';
 import { loadProfile, saveProfile, withProfile, type PilotProfile } from './consent';
 import { formatWhen } from './format';
 import { sceneTransformOf, type RecorderEnv } from './manifest-input';
@@ -29,6 +30,15 @@ import type { SurveyDialog } from './survey-view';
 import { listSessionIds, openSessionsRoot, openSessionStore, opfsAvailable, removeSession, type DirectoryLike } from './store';
 import { VoiceCapture, browserMic } from './voice';
 import { VoiceCommands, browserRecognizer, splitPhrases } from './voice-command';
+import type { LessonCheckRow, ReplayViewState } from './replay-control';
+import type { ReplayTrace } from './replay-player';
+
+// window.__gsfpv.sonicReplay: the replay as the panel shows it, and what it did, for the acceptance runs (tools/bench/src/sonic-int-page.ts)
+declare module '../app/test-hook' {
+    interface TestHook {
+        sonicReplay?: () => { state: ReplayViewState; trace: ReplayTrace | null; checks: readonly LessonCheckRow[] };
+    }
+}
 
 /** Where the sessions are kept: the origin private file system, or memory when the browser has none (then nothing survives the tab). */
 export function browserStores(): SessionStores {
@@ -176,6 +186,7 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
     let panel: RecPanel | null = null;
     let surveyDialog: SurveyDialog | null = null;
     let lastShown: string | null = null;
+    let lastPhase: RecorderPhase = 'idle';
     let send: SendControl | null = null;
     const setProfile = (change: Partial<Omit<PilotProfile, 'id'>>): PilotProfile => {
         profile = withProfile(profile, change);
@@ -228,6 +239,11 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             return answers;
         },
         onStatus: (s) => {
+            // a recording has just started: the lesson running opens again from its beginning, so the package holds the whole lesson
+            // and its replay re-derives it (v12-int step 5; a lesson begun before the recording cannot be heard again as it was). After
+            // this task: the recorder says "Recording started." right after this status, and the lesson's lines queue behind it.
+            if (s.phase === 'recording' && lastPhase !== 'recording') queueMicrotask(() => lessonView(ctx)?.reopen());
+            lastPhase = s.phase;
             panel?.onStatus(s);
             // a recording runs or is being asked for: nothing is listened to or asked about sending meanwhile (the microphone is the recorder's)
             send?.onRecorderStatus(s);
@@ -258,7 +274,7 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
         onNotice: (n) => panel?.notify(t(`sonicrec.send.notice.${n}`))
     });
     const sender = send;
-    const replay = new ReplayControl({
+    const replay: ReplayControl = new ReplayControl({
         host: createReplayHost(ctx),
         stores,
         formatWhen: (iso) => formatWhen(iso, locale),
@@ -315,6 +331,14 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             } else panel?.setVisible(false);
         })
     );
+    // (a page without the test hook, a Node test's stand-in context, has none to fill)
+    const hook = (ctx as { hook?: FlightContext['hook'] }).hook;
+    if (hook !== undefined) {
+        hook.sonicReplay = () => ({ state: replay.state, trace: replay.trace, checks: replay.checks });
+        offs.push(() => {
+            delete hook.sonicReplay;
+        });
+    }
     // a tab that is hidden or closing writes what it has (a best effort: the write may not finish; the next start recovers)
     const flush = (): void => recorder.flushNow();
     const onVisibility = (): void => {
