@@ -168,4 +168,11 @@ fi
 ls -1t releases | grep -Ev '^(current|\.)' | tail -n +6 | while read -r old; do
   [ "$old" != "$(readlink releases/current)" ] && rm -rf "releases/$old" && echo "pruned $old"
 done
+# an upload is needed only until it is unpacked, and rollback.sh uses releases/<id>: keep the archives of the
+# kept releases, drop the rest (they had piled up to 1.1 GB on a disk the neighbours share)
+for f in incoming/dist-*.tgz; do
+  [ -e "$f" ] || continue
+  id=${f#incoming/dist-}; id=${id%.tgz}
+  [ -d "releases/$id" ] || { rm -f "$f" && echo "pruned $f"; }
+done
 REMOTE
