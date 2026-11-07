@@ -2,6 +2,7 @@
 // check it against the lesson with the sound package's comparer, play it with the cues and the pilot's voice, pause, seek, close. This file
 // is the state machine between the pieces: replay-open (the bytes), replay-check (the comparer), replay-player (the clock), replay-host
 // (the page). The view (replay-view.ts) draws `state` and calls these methods; every sentence in it is already in the page's language.
+import './texts';
 import type { PackageProblem, SessionPackage } from '@shramko/sonic-fpv';
 import { t } from '../i18n';
 import { formatClock } from './format';

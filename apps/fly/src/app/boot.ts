@@ -7,8 +7,8 @@ import { ScenePicker, loadCatalog } from '../ui/scenes';
 import type { PickSource } from '../ui/picker-tabs';
 import { warningModal } from '../ui/panels';
 import { t, locale } from '../i18n';
-import { setSonicEntry } from '../sonic/entry';
-import { startSonic } from '../sonic/start';
+import { setSonicEntry, setSonicInstaller } from '../sonic/entry-state';
+import { sonicUnavailable } from '../sonic/unavailable';
 import { banner, beacon, hasHid, hasWebGPU, q } from './env';
 import { hook } from './test-hook';
 import { fly } from './flight';
@@ -36,13 +36,29 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     // W2-1: blocked storage says so once (A.5); the catalogue's ?open=settings opens over the picker
     storageBanner(ui, prefs);
     // Fly by Sound (v0.12): ?sonic=start or ?sonic=<lesson id> opens the accessible start screen instead of the scene picker
-    // and the first-visit modal; a lesson chosen there launches the flight on its world (sonic/start.ts)
+    // and the first-visit modal; a lesson chosen there launches the flight on its world (sonic/start.ts). All of it is loaded
+    // here and only here (v12-int step 4): the start screen, the engine and the sound package in one chunk, the mode in another,
+    // fetched while the pilot reads the screen and awaited when a lesson starts. A page without ?sonic= loads neither.
     const sonicParam = q.get('sonic');
     if (sonicParam !== null) {
-        startSonic({
+        let lazy: typeof import('../sonic/lazy-start');
+        try {
+            lazy = await import('../sonic/lazy-start');
+        } catch (e) {
+            // not a silent page: the line of a lesson that did not open, shown, said where a voice may speak, and "Try again"
+            console.warn('fly by sound: the start screen did not load', e);
+            sonicUnavailable();
+            return;
+        }
+        const mode = lazy.loadMode;
+        lazy.startSonic({
             prefs,
             locale,
             raw: sonicParam,
+            // the mode's chunk; one that does not load is a lesson that did not open (said and shown by the start screen)
+            prepare: async () => {
+                setSonicInstaller(await mode());
+            },
             launch: async (r) => {
                 setSonicEntry({ setup: r.setup, lessonId: r.lessonId, world: r.world, screen: r.screen });
                 const id = r.world ? r.world.builtin.scene.id : r.sceneId ?? '';
@@ -52,6 +68,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
                 }, catalog.collections, r.world ? { world: r.world.builtin } : {});
             }
         });
+        void mode().catch(() => undefined);
         return;
     }
     let picker: ScenePicker | null = null;

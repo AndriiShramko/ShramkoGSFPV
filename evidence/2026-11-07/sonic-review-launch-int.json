@@ -1,0 +1,66 @@
+{
+  "name": "sonic-review-launch",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T21:37:39.711Z",
+    "gitHead": "0bf2d7a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "lab": "http://localhost:5401",
+  "locale": "en",
+  "expectedLine": "The scan did not load. Check the connection, then choose the lesson again.",
+  "observed": {
+    "status": "The scan did not load. Check the connection, then choose the lesson again.",
+    "spoken": [
+      "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
+      "The scan did not load. Check the connection, then choose the lesson again."
+    ],
+    "captions": [
+      "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
+      "The scan did not load. Check the connection, then choose the lesson again."
+    ]
+  },
+  "passed": 4,
+  "total": 4,
+  "checks": [
+    {
+      "name": "the start screen is shown again after the flight failed to open",
+      "pass": true
+    },
+    {
+      "name": "what the pilot is told (the live region) is that sentence, not the raw message of an exception",
+      "pass": true,
+      "value": {
+        "status": "The scan did not load. Check the connection, then choose the lesson again.",
+        "expected": "The scan did not load. Check the connection, then choose the lesson again."
+      }
+    },
+    {
+      "name": "the engine says it (speechSynthesis got exactly that line) and the captions carry it",
+      "pass": true,
+      "value": {
+        "spoken": [
+          "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
+          "The scan did not load. Check the connection, then choose the lesson again."
+        ],
+        "captions": [
+          "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
+          "The scan did not load. Check the connection, then choose the lesson again."
+        ]
+      }
+    },
+    {
+      "name": "no page errors",
+      "pass": true,
+      "value": []
+    }
+  ]
+}

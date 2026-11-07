@@ -2,6 +2,10 @@
 // lane's mode, lessons and engine and the session lane's recorder run together here for the first time (each lane tested against
 // stand-ins for the other). Scenarios, one per run (argv[2]):
 //   status   step 3: key I says the lesson's line and then the recording's (status.recording-off, then -on once T, T records).
+//   lazy     step 4: a page without ?sonic= (a scan flown, logic only) downloads no script or style that holds the sound package, the
+//            mode or the recorder (markers searched in every script and style it fetched); control: a ?sonic= page does, and its
+//            lesson runs; a start chunk that does not load shows and says sonic.say.lessonFailed; a mode chunk that does not load
+//            says it through the engine and shows the start screen again, and the next Enter opens the lesson.
 // The page is a RELEASE build served with nginx's enforced CSP (a Vite run reloads when a source file changes and kills the run):
 //   node scripts/build-release.mjs
 //   node tools/bench/scripts/serve-csp.mjs dist 5400                          (another shell)
@@ -175,7 +179,140 @@ async function scenarioStatus(ctx: BrowserContext): Promise<Record<string, unkno
     return { off, on: onLines, said };
 }
 
-const SCENARIOS: Record<string, (ctx: BrowserContext) => Promise<Record<string, unknown>>> = { status: scenarioStatus };
+/** Strings that survive minification and live only in the sound package, the mode or the recorder (not in the main chunk's own code or dictionaries). */
+const MARKERS = {
+    package: ['shramko-sonic-session/1', 'Answer with a number key', 'ears-headphones'],
+    mode: ['sonicRays', 'sonic-captions', 'pause.sonic'],
+    recorder: ['voice-sync.jsonl', 'sonicrec-toggle', 'sonicrec.status.asking']
+} as const;
+const ALL_MARKERS: string[] = Object.values(MARKERS).flat();
+
+/** Every script and style the page fetched, with the markers found in each. */
+function collectAssets(page: Page): { list: { url: string; bytes: number; found: string[] }[]; done: () => Promise<void> } {
+    const list: { url: string; bytes: number; found: string[] }[] = [];
+    const pending: Promise<void>[] = [];
+    page.on('response', (r) => {
+        const type = r.request().resourceType();
+        if (type !== 'script' && type !== 'stylesheet') return;
+        pending.push(
+            r
+                .text()
+                .then((body) => {
+                    list.push({ url: new URL(r.url()).pathname, bytes: body.length, found: ALL_MARKERS.filter((m) => body.includes(m)) });
+                })
+                .catch(() => undefined)
+        );
+    });
+    return { list, done: async () => void (await Promise.all(pending)) };
+}
+
+/** A chunk's name without its hash: /fly/assets/feature-xOyQzkAI.js -> feature.js */
+const chunkName = (url: string): string => url.replace(/^.*\//, '').replace(/-[\w-]{8}\.(js|css)$/, '.$1');
+const LESSON_FAILED_EN = 'The lesson did not open. Choose it again, or choose another one.';
+const lessonNow = (page: Page): Promise<string | null> =>
+    page.evaluate(() => {
+        const h = (window as unknown as { __gsfpv?: { status?: string; sonic?: (e?: boolean) => { lesson: string | null } } }).__gsfpv;
+        return h?.status === 'ready' && h.sonic ? h.sonic(false).lesson : null;
+    });
+const startShown = (page: Page): Promise<boolean> => page.evaluate(() => !!document.querySelector('[data-testid="sonic-start-asked"]'));
+
+async function scenarioLazy(ctx: BrowserContext): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = {};
+    // A: an ordinary flight, no ?sonic=: a scan (39e63ce9, as accept-fly flies it), logic only, until the page is ready
+    {
+        const page = await ctx.newPage();
+        const assets = collectAssets(page);
+        const errors: string[] = [];
+        page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
+        await page.goto(`${SITE}/en/fly/?scene=39e63ce9&nowarn=1&input=touch&render=off`);
+        await until(page, 'the flight', () => page.evaluate(() => (window as unknown as { __gsfpv?: { status?: string } }).__gsfpv?.status ?? null), (v) => v === 'ready', 120000);
+        await sleep(3000);
+        await assets.done();
+        const hook = await page.evaluate(() => typeof (window as unknown as { __gsfpv: { sonic?: unknown } }).__gsfpv.sonic);
+        const holding = assets.list.filter((a) => a.found.length > 0);
+        const names = assets.list.map((a) => chunkName(a.url));
+        out.plain = { fetched: assets.list.map((a) => [a.url, a.bytes]), holding };
+        check('A: a flight without ?sonic= fetched no script or style holding the sound package, the mode or the recorder', assets.list.length >= 3 && holding.length === 0, { fetched: names, holding });
+        check('A: no chunk of Fly by Sound was requested (lazy-start, feature, session) and the mode is not installed (no test hook)', !names.some((n) => /^(lazy-start|feature|session)\./.test(n)) && hook === 'undefined', { hook });
+        check('A: no page error', errors.length === 0, errors);
+        await page.close();
+    }
+    // B, the control: a ?sonic= page fetches them, and the lesson runs
+    {
+        const page = await ctx.newPage();
+        const assets = collectAssets(page);
+        await page.goto(`${SITE}/en/fly/?sonic=hover-height&nowarn=1`);
+        await until(page, 'the start screen', () => startShown(page), (v) => v, 60000);
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        const lesson = await until(page, 'the lesson', () => lessonNow(page), (v) => v === 'hover-height', 90000);
+        await until(page, 'the recordings panel', () => page.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 20000);
+        const panelText = await page.evaluate(() => document.querySelector('.sonicrec-toggle')?.textContent ?? '');
+        await assets.done();
+        const found = new Set(assets.list.flatMap((a) => a.found));
+        const names = assets.list.map((a) => chunkName(a.url));
+        out.control = { fetched: assets.list.map((a) => [a.url, a.bytes, a.found]) };
+        check('B (control): a ?sonic= page fetches the start chunk, the mode and the session side, every marker is found, the lesson runs', lesson === 'hover-height' && ['lazy-start.js', 'feature.js', 'session.js'].every((n) => names.includes(n)) && ALL_MARKERS.every((m) => found.has(m)), { names, missing: ALL_MARKERS.filter((m) => !found.has(m)) });
+        check('B: the recorder\'s texts arrived with its chunk (the panel\'s button reads "Recording", not a key)', panelText.trim() === 'Recording', panelText);
+        await page.close();
+    }
+    // C: the start chunk does not load
+    {
+        const page = await ctx.newPage();
+        await page.addInitScript({ content: 'window.__spoken = []; try { const s = window.speechSynthesis; const sp = s.speak.bind(s); s.speak = (u) => { window.__spoken.push(u.text); return sp(u); }; } catch (e) {}' });
+        await page.route('**/fly/assets/lazy-start-*.js', (r) => r.abort());
+        await page.goto(`${SITE}/en/fly/?sonic=start&nowarn=1`);
+        const box = await until(
+            page,
+            'the note',
+            () => page.evaluate(() => ({ text: document.querySelector('[data-testid="sonic-unavailable"] p')?.textContent ?? null, role: document.querySelector('[data-testid="sonic-unavailable"]')?.getAttribute('role') ?? null, focus: document.activeElement?.tagName ?? null })),
+            (v) => v.text !== null,
+            30000
+        );
+        // a letter, not Space or Enter: those would press "Try again" (the focused button), which reloads the page
+        await page.keyboard.press('KeyA');
+        await sleep(300);
+        const spoken = await page.evaluate(() => (window as unknown as { __spoken: string[] }).__spoken);
+        out.startFailed = { box, spoken };
+        check('C: the start chunk refused: an alert says sonic.say.lessonFailed, the focus on "Try again"', box.text === LESSON_FAILED_EN && box.role === 'alert' && box.focus === 'BUTTON', box);
+        check('C: the browser\'s voice is asked to say it, at once and again at the first key', spoken.filter((t) => t === LESSON_FAILED_EN).length >= 2, spoken);
+        await page.close();
+    }
+    // D: the mode's chunk does not load: the start screen says so through the engine and comes back; the next Enter opens the lesson
+    {
+        const page = await ctx.newPage();
+        let blocked = true;
+        let refused = 0;
+        await page.route('**/fly/assets/feature-*.js', (r) => {
+            if (!blocked) return r.continue();
+            refused++;
+            return r.abort();
+        });
+        await page.goto(`${SITE}/en/fly/?sonic=hover-height&nowarn=1`);
+        await until(page, 'the start screen', () => startShown(page), (v) => v, 60000);
+        await sleep(500);
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        const said = await until(
+            page,
+            'the failure line',
+            () => page.evaluate(() => ({ captions: document.querySelector('[data-testid="sonic-captions"]')?.textContent ?? '', screen: !(document.querySelector('.sonic-start') as HTMLElement | null)?.hidden, hook: typeof (window as unknown as { __gsfpv: { sonic?: unknown } }).__gsfpv.sonic })),
+            (v) => v.captions.includes(LESSON_FAILED_EN),
+            30000
+        );
+        check('D: the mode\'s chunk refused: the engine says sonic.say.lessonFailed (in the captions, the screen reader\'s region here), the start screen is back, no flight', said.screen === true && said.hook === 'undefined' && refused >= 1, { ...said, refused });
+        blocked = false;
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        const lesson = await until(page, 'the lesson after the retry', () => lessonNow(page), (v) => v !== null, 60000).catch(() => null);
+        out.modeFailed = { said, refused, lessonAfterRetry: lesson };
+        check('D: the next Enter, with the chunk reachable again, opens the lesson', lesson === 'hover-height', lesson);
+        await page.close();
+    }
+    return out;
+}
+
+const SCENARIOS: Record<string, (ctx: BrowserContext) => Promise<Record<string, unknown>>> = { status: scenarioStatus, lazy: scenarioLazy };
 
 async function main(): Promise<void> {
     const run = SCENARIOS[SCENARIO];

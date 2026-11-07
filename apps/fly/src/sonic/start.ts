@@ -38,6 +38,11 @@ export interface SonicStartDeps {
     readonly raw: string | null;
     /** the page's flight (fly()) on the lesson's world; called after the press has made the AudioContext */
     readonly launch: (r: LaunchRequest) => Promise<void>;
+    /**
+     * Gets the mode's code ready before anything of the flight is set up (boot.ts: the chunk of sonic/feature.ts, v12-int step 4).
+     * A rejection is a lesson that did not open: sonic.say.lessonFailed is said and shown, the start screen comes back.
+     */
+    readonly prepare?: () => Promise<void>;
 }
 
 export interface StartHandle {
@@ -70,6 +75,23 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                     return;
                 }
                 const lesson = getLesson(id);
+                const failed = (e: unknown, line: ReturnType<typeof launchFailureLine>): void => {
+                    console.warn('fly by sound: the flight did not open', e);
+                    screen.show();
+                    // told in his language, not with the exception's own English text: aloud with the captions when the engine
+                    // speaks, else the captions are the live region a screen reader reads (so the status line stays quiet
+                    // there, or it would be read twice)
+                    void setup.audio.engine.say(line, { interrupt: true }).catch(() => undefined);
+                    if (setup.prefs.selfVoice) screen.say(t(line.key));
+                };
+                try {
+                    // the mode's own code (a chunk of its own, fetched while the screen was read): a chunk that cannot load is a
+                    // lesson that did not open, never a silent page
+                    await d.prepare?.();
+                } catch (e) {
+                    failed(e, launchFailureLine(false));
+                    return;
+                }
                 // a scan lesson loads its scan at the lesson's size, walls on: set before the flight loads it (the mode keeps
                 // them while it runs and takes them off when it leaves), and the pilot hears that it takes a while
                 if (forceScanPrefs(d.prefs, lesson.world)) void setup.audio.engine.say({ key: 'sonic.say.scanLoading' }, { interrupt: false }).catch(() => undefined);
@@ -78,14 +100,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                 } catch (e) {
                     // the flight did not open: the scan lesson's size and walls are not kept for whatever the pilot does next
                     clearScanPrefs(d.prefs);
-                    console.warn('fly by sound: the flight did not open', e);
-                    screen.show();
-                    // told in his language, not with the exception's own English text: aloud with the captions when the engine
-                    // speaks, else the captions are the live region a screen reader reads (so the status line stays quiet
-                    // there, or it would be read twice)
-                    const line = launchFailureLine(lesson.world.kind === 'scan');
-                    void setup.audio.engine.say(line, { interrupt: true }).catch(() => undefined);
-                    if (setup.prefs.selfVoice) screen.say(t(line.key));
+                    failed(e, launchFailureLine(lesson.world.kind === 'scan'));
                 }
             });
         }

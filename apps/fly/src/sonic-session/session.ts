@@ -4,6 +4,7 @@
 //   - keys T and U do nothing without ctx.sonic,
 //   - the bus listeners return at once unless a recording runs,
 //   - nothing is fetched, stored or asked of the browser before the pilot presses T and says yes.
+import './texts';
 import type { SessionStores } from './recorder';
 import { Recorder } from './recorder';
 import { DICTS, MemorySink, createTranslator } from '@shramko/sonic-fpv';

@@ -6,6 +6,7 @@
 // It is built outside #ui (which is one aria-live region: everything added there would be announced) as a plain region with
 // real buttons, labels and one status line that is live. The pilot never needs it: T does everything by key and by voice.
 // Nothing here is drawn while the sound mode is off: the toggle button appears with ctx.sonic.
+import './texts';
 import { clear, h } from '../ui/dom';
 import { locale, t } from '../i18n';
 import type { Recorder, RecorderError, RecorderStatus, StopOptions } from './recorder';
