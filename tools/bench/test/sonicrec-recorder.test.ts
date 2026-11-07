@@ -35,6 +35,9 @@ interface Setup {
     mode?: 'on' | 'off';
     free?: number | null;
     askMs?: number;
+    /** the spoken line, as the page's engine would give it: a promise that settles when the line has been said (default: nothing to wait for) */
+    say?: (line: SpeechLine) => unknown;
+    readMs?: number;
 }
 
 function setup(o: Setup = {}) {
@@ -70,11 +73,15 @@ function setup(o: Setup = {}) {
         stores,
         voice,
         profile: () => state.profile,
-        say: (line) => said.push(line),
+        say: (line) => {
+            said.push(line);
+            return o.say?.(line);
+        },
         keyLabel: (c) => c.replace('Key', ''),
         gzip: nodeGzip,
         flushMs: 15,
         askMs: o.askMs ?? 250,
+        ...(o.readMs === undefined ? {} : { readMs: o.readMs }),
         freeBytes: async () => (o.free === undefined ? null : o.free),
         onStatus: (s) => statuses.push(s)
     });
@@ -350,6 +357,76 @@ describe('the recorder: T asks, T records, T stops', () => {
         // and the keys work again afterwards
         await startRecording(h);
         await h.rec.stop();
+    });
+
+    it('a second press before the question has been read out is not a yes: the microphone is not asked for and nothing is written', async () => {
+        // the page's engine says a line and settles when it ends: here the line is still being read
+        let readOut!: () => void;
+        const reading = new Promise<void>((resolve) => {
+            readOut = resolve;
+        });
+        const h = setup({ say: () => reading });
+        h.rec.pressRecord();
+        h.rec.pressRecord(); // struck twice in a hurry: the pilot has heard nothing of "May I record this flight and your voice?"
+        h.rec.pressRecord();
+        await sleep(40);
+        expect(h.rec.phase).toBe('asking');
+        expect(h.mic.asked).toBe(0);
+        expect(h.created).toEqual([]);
+        // the question has been read out: now a press is the pilot's answer, and it asks for the microphone in the same task
+        readOut();
+        await sleep(0);
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(1);
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+
+    it('for a minor the guardian line and the question are both read out before a press counts', async () => {
+        const gates: (() => void)[] = [];
+        const profile = withProfile(newProfile(), { minor: true, guardianConfirmed: true });
+        const h = setup({ profile, say: () => new Promise<void>((resolve) => gates.push(resolve)) });
+        h.rec.pressRecord();
+        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
+        gates[0]?.(); // the first line is over, the question is not
+        await sleep(10);
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(0);
+        gates[1]?.();
+        await sleep(0);
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(1);
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+
+    it('a question that never ends (a hidden tab) cannot lock the pilot out: after the reading limit a press is the answer', async () => {
+        const h = setup({ say: () => new Promise<void>(() => undefined), readMs: 40 });
+        h.rec.pressRecord();
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(0);
+        await sleep(90);
+        expect(h.rec.phase).toBe('asking');
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(1);
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+
+    it('the time to answer starts when the question has been read out, not when it was begun', async () => {
+        let readOut!: () => void;
+        const reading = new Promise<void>((resolve) => {
+            readOut = resolve;
+        });
+        const h = setup({ askMs: 40, say: () => reading });
+        h.rec.pressRecord();
+        await sleep(120); // longer than the time to answer, shorter than the reading limit
+        expect(h.rec.phase).toBe('asking');
+        expect(keys(h.said)).toEqual(['rec.ask']);
+        readOut();
+        await until(() => h.rec.phase === 'idle', 'the question to time out after it was read');
+        expect(keys(h.said)).toEqual(['rec.ask', 'rec.off']);
+        expect(h.mic.asked).toBe(0);
     });
 
     it('presses while it is starting, stopping or finishing do nothing', async () => {

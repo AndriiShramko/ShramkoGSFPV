@@ -188,7 +188,8 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
         stores,
         voice,
         profile: () => profile,
-        say: (line) => void say(line),
+        // the promise settles when the line has been said: the recorder waits for it only for the question that asks for consent
+        say: (line) => say(line),
         keyLabel,
         persist: persistStorage,
         freeBytes,

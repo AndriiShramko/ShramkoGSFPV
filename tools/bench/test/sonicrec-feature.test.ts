@@ -65,6 +65,10 @@ describe('the session feature in the flight page', () => {
         expect(s.recorder.phase).toBe('asking');
         expect(fake.spoken.map((l) => l.key)).toEqual(['rec.ask']);
         expect(fake.spoken[0]?.params).toEqual({ key: 'T' });
+        // struck again before the engine has finished the question: not the pilot's answer
+        press(keys, 'KeyT');
+        expect(s.recorder.phase).toBe('asking');
+        await new Promise((r) => setTimeout(r, 5)); // the engine says the line and settles: now a press is the answer
         press(keys, 'KeyT');
         const t0 = Date.now();
         while (s.recorder.phase !== 'recording' && Date.now() - t0 < 3000) await new Promise((r) => setTimeout(r, 5));

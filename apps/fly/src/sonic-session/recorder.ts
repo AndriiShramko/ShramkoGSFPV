@@ -1,9 +1,10 @@
 // The recorder of Fly by Sound (docs/wip/v12-plan.md section 4.3 step 2; spec section 7 of the sound package): the
 // pilot's flight and voice into one session package, chunk by chunk, so a closed tab loses seconds, not the flight.
 //
-//   T (sonic.record)   first press: the app asks by voice (rec.ask, and rec.minor first for a minor); second press: yes.
-//                      That second press calls getUserMedia in the same task (VoiceCapture.request), the browser asks for the
-//                      microphone, and the recording starts when it has answered. A third press ends it.
+//   T (sonic.record)   first press: the app asks by voice (rec.ask, and rec.minor first for a minor); second press: yes, but only
+//                      once the question has been read out (a key struck twice in a hurry agrees to nothing: the pilot has not
+//                      heard what is being asked). That second press calls getUserMedia in the same task (VoiceCapture.request),
+//                      the browser asks for the microphone, and the recording starts when it has answered. A third press ends it.
 //   frames             30 Hz FlightFrames from the bus event `sonicSample`, with the ids of the cues sounding
 //   events             every `sonicEvent` as it comes (the replay's markers included), carried onto the recording clock
 //   voice              MediaRecorder Opus in 1 s slices, appended to voice.webm as they arrive (VoiceCapture)
@@ -66,8 +67,12 @@ export interface RecorderDeps {
     voice: VoiceCapture;
     /** the pilot's profile, read when a recording asks and starts */
     profile(): PilotProfile;
-    /** a spoken line; never awaited here */
-    say(line: SpeechLine): void;
+    /**
+     * A spoken line. What it returns may be a promise that settles when the line has been said (the page's engine: sayVia); the recorder
+     * waits for it only for the question that asks for consent, so that a press of T that comes before the question has been heard is
+     * not taken as the answer. Anything else returned (a test's fake) means there was nothing to wait for.
+     */
+    say(line: SpeechLine): unknown;
     /** the spoken name of a key for the {key} of a line ('KeyT' -> 'T') */
     keyLabel(code: string): string;
     /** ids of the cues sounding now (default: the runtime's engine) */
@@ -87,8 +92,10 @@ export interface RecorderDeps {
     flushMs?: number;
     /** below this much free storage a recording is refused, bytes (default 50 MB) */
     minFreeBytes?: number;
-    /** how long the app waits for the second press, ms (default 30 000) */
+    /** how long the app waits for the second press once the question has been read out, ms (default 30 000) */
     askMs?: number;
+    /** the longest the app waits for its question to be read out before a press counts as the answer, ms (default 20 000): a hidden tab never finishes a line */
+    readMs?: number;
     /** the survey that runs after every stop (the pilot's T, or a button that passes none of its own) */
     survey?: (env: SurveyEnv) => Promise<SurveyAnswers | null>;
 }
@@ -119,6 +126,7 @@ export interface FinishedRecording {
 
 export const DEFAULT_MIN_FREE_BYTES = 50 * 1024 * 1024;
 const DEFAULT_ASK_MS = 30_000;
+const DEFAULT_READ_MS = 20_000;
 const DEFAULT_FLUSH_MS = 1000;
 const STATUS_MS = 1000;
 const T_KEY = 'KeyT';
@@ -134,6 +142,10 @@ export class Recorder {
     private flushTimer: ReturnType<typeof setInterval> | null = null;
     private statusTimer: ReturnType<typeof setInterval> | null = null;
     private askTimer: ReturnType<typeof setTimeout> | null = null;
+    /** the question of the current ask has been read out (or the wait for it ran out): only now is a press of T the pilot's answer */
+    private questionRead = false;
+    /** which ask a reading belongs to, so that the end of an old reading cannot open a new question */
+    private askToken = 0;
     private voiceState: VoiceState = 'off';
     private sessionId: string | null = null;
     private lastId: string | null = null;
@@ -206,7 +218,8 @@ export class Recorder {
                 this.ask();
                 break;
             case 'asking':
-                void this.confirm();
+                // still being read out: a press now agrees to nothing the pilot has heard
+                if (this.questionRead) void this.confirm();
                 break;
             case 'recording':
                 void this.stop();
@@ -218,10 +231,28 @@ export class Recorder {
 
     private ask(): void {
         this.errorText = null;
+        this.questionRead = false;
+        const token = ++this.askToken;
         this.setPhase('asking');
-        if (this.deps.profile().minor) this.deps.say({ key: 'rec.minor' });
-        this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } });
-        this.askTimer = setTimeout(() => this.cancel(), this.deps.askMs ?? DEFAULT_ASK_MS);
+        const said: unknown[] = [];
+        if (this.deps.profile().minor) said.push(this.deps.say({ key: 'rec.minor' }));
+        said.push(this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } }));
+        // the pilot has the time to answer from the moment the question has been heard
+        const opened = (): void => {
+            if (token !== this.askToken || this.phaseValue !== 'asking') return;
+            this.questionRead = true;
+            this.askTimer = setTimeout(() => this.cancel(), this.deps.askMs ?? DEFAULT_ASK_MS);
+        };
+        const reading = said.filter((x): x is PromiseLike<unknown> => typeof (x as PromiseLike<unknown> | null)?.then === 'function');
+        if (reading.length === 0) return opened();
+        let limit: ReturnType<typeof setTimeout> | undefined;
+        const ranOut = new Promise<void>((resolve) => {
+            limit = setTimeout(resolve, this.deps.readMs ?? DEFAULT_READ_MS);
+        });
+        void Promise.race([Promise.allSettled(reading), ranOut]).then(() => {
+            clearTimeout(limit);
+            opened();
+        });
     }
 
     /**
@@ -241,6 +272,7 @@ export class Recorder {
         if (this.phaseValue !== 'asking') return;
         if (this.askTimer !== null) clearTimeout(this.askTimer);
         this.askTimer = null;
+        this.askToken++;
         this.setPhase('idle');
         this.deps.say({ key: 'rec.off' });
     }
@@ -253,6 +285,7 @@ export class Recorder {
         if (this.phaseValue !== 'asking') return false;
         if (this.askTimer !== null) clearTimeout(this.askTimer);
         this.askTimer = null;
+        this.askToken++;
         this.setPhase('starting');
         const mic = this.deps.voice.request(); // before any await: this is the user's key press
         try {
