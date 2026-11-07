@@ -78,6 +78,13 @@ export class LessonHost {
     lesson: LessonDef | null = null;
     runner: LessonSession | null = null;
     world: SonicWorld | null = null;
+    /**
+     * The world the engine and the runner are given each frame: the lesson's own; NONE for module 0 (its sources are placed by the lesson
+     * alone, and the replay rebuilds the lesson with no world). The floor the page flies the craft over (`world`, for the craft and the
+     * helper's view) is not heard there: it would make the engine voice a hazard (`safety.floor:down`) between the glossary's previews
+     * that no replay can re-derive, so a recording of ears-glossary replayed with 0 % of its sounds the same (v12-int step 7).
+     */
+    private soundWorld: SonicWorld | null = null;
     /** the scan lesson running now (module 7): its world over the scan, gates, start and floor; null for any other lesson */
     scan: ScanLesson | null = null;
     /** what the helper's view shows for the lesson running now (drawn again after a replay drew other lessons: redraw) */
@@ -184,6 +191,7 @@ export class LessonHost {
             this.lesson = lesson;
             this.runner = runner;
             this.world = world;
+            this.soundWorld = lesson.world.kind === 'none' ? null : world;
             this.scan = scan;
             this.floorY = floorY;
             this.question = null;
@@ -238,6 +246,7 @@ export class LessonHost {
         this.runner = null;
         this.lesson = null;
         this.world = null;
+        this.soundWorld = null;
         this.scan = null;
         this.shownPrims = [];
         this.question = null;
@@ -277,11 +286,11 @@ export class LessonHost {
         if (!run || this.p.mode.inPlayback) return;
         if (sample.paused) return;
         // the runner's events go out through the bridge (the bus), and the host sees them there (observe)
-        this.p.mode.bridge.events(run.step(sample, this.world));
+        this.p.mode.bridge.events(run.step(sample, this.soundWorld));
         this.drain();
         const target = run.target();
         // a module-0 scene is the engine's input in place of the craft; else the craft in its world, the next gate its target
-        const input = run.demoFrame(sample.t) ?? { sample, world: this.world, target, floorY: this.floorY };
+        const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, floorY: this.floorY };
         this.p.mode.hear(sample, input);
         this.p.stage.setTarget(target ? target.id : null);
         this.checkPassed();

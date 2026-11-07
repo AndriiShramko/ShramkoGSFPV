@@ -42,9 +42,9 @@ export interface Served {
     stop(): Promise<void>;
 }
 
-/** serve-csp.mjs on a free port for `dist`; resolves when it says it listens. `env`: API_PROXY, NGINX_CONF, ... */
-export async function serveDist(dist: string, env: Record<string, string> = {}): Promise<Served> {
-    const port = await freePort();
+/** serve-csp.mjs on a free port (or on `fixedPort`, for a run that keeps to a range) for `dist`; resolves when it says it listens. `env`: API_PROXY, NGINX_CONF, ... */
+export async function serveDist(dist: string, env: Record<string, string> = {}, fixedPort?: number): Promise<Served> {
+    const port = fixedPort ?? (await freePort());
     const child: ChildProcess = spawn(process.execPath, [SERVE_CSP, dist, String(port)], { env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     await new Promise<void>((resolve, reject) => {

@@ -12,8 +12,9 @@
 //   - the player on a fake audio clock: each lesson's world shown when its first frame is due, its layers, every frame once, one voice.
 // The page (both worlds drawn in turn, the voice measured within 0.2 s) is tools/bench/src/sonic-int-page.ts replay.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildManifest, checkSession, createAnalyticWorld, defaultPrefs, getBuiltinTheme, getLesson, packSession, readPackage } from '../../../packages/sonic-fpv/src';
-import type { FlightFrame, LessonLayers, ReplaySetup, SessionEvent, SessionManifest, SessionPackage, SonicEngine, SonicRuntime, SpeechLine } from '../../../packages/sonic-fpv/src';
+import { CuePlanner, buildManifest, checkSession, createAnalyticWorld, defaultPrefs, getBuiltinTheme, getLesson, packSession, readPackage } from '../../../packages/sonic-fpv/src';
+import type { FlightFrame, FlightSample, LessonLayers, ReplaySetup, SessionEvent, SessionManifest, SessionPackage, SonicEngine, SonicRuntime, SpeechLine } from '../../../packages/sonic-fpv/src';
+import { lessonViewWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import { SessionClock } from '../../../apps/fly/src/sonic-session/clock';
 import { lessonSegments } from '../../../apps/fly/src/sonic-session/replay-segments';
 import { checkPackage } from '../../../apps/fly/src/sonic-session/replay-check';
@@ -142,8 +143,18 @@ interface Flight {
     readonly pilot: Control;
     /** the lesson opened again when the recording starts, as the session side does (false: the old way, the lesson goes on) */
     readonly reopen: boolean;
+    /** page time spent in the second lesson before the recording stops, ms (default 6000) */
+    readonly after?: number;
 }
 const RINGS: Flight = { a: 'rings-first', b: 'rings-line', pilot: throughTheGate, reopen: true };
+
+/** Module 0: a digit for each question from the side the sound came from (sonic-lessons.test.ts's pilot: left 1, right 2, behind 2). */
+const earsPilot: Control = (r) => {
+    if (!r.host.asking || r.engine.speaking) return null;
+    const d = r.engine.lastPreviewDir();
+    return { answer: d && d[0] < 0 ? 1 : d && d[0] > 0 ? 2 : d && d[2] > 0 ? 2 : 1 };
+};
+const EARS: Flight = { a: 'ears-headphones', b: 'ears-glossary', pilot: earsPilot, reopen: true, after: 90000 };
 
 /**
  * Lesson `a` flown a little, a recording started (as the helper's Start does), `a` opened again from its beginning as the session side
@@ -195,7 +206,7 @@ async function recordTwoLessons(o: Flight = RINGS): Promise<{ pkg: SessionPackag
     await rig.run(600000, o.pilot, () => rig.passed);
     await rig.run(60000, o.pilot, () => rig.host.lesson?.id !== o.a);
     expect(rig.host.lesson?.id).toBe(o.b);
-    await rig.run(6000, o.pilot);
+    await rig.run(o.after ?? 6000, o.pilot);
     const done = await rec.stop();
     expect(done).not.toBeNull();
     const parts = await packSession(await openSessionStore(dir, done!.id, false));
@@ -259,6 +270,64 @@ describe('two lessons flown through the host and recorded as one package replay 
         const lead = out.segments[0]!.segment;
         expect(checkSession({ manifest: lead.manifest, frames: lead.frames, events: lead.events }).check.ok).toBe(false);
     }, 600000);
+});
+
+// ------------------------------------------------------------------ module 0: no world for the sound
+
+describe('module 0 (the ears lessons) has no world for the sound, so its recording replays with every sound the same', () => {
+    let made: { pkg: SessionPackage; rig: Rig } | null = null;
+    afterEach(() => {
+        made?.rig.dispose();
+        made = null;
+    });
+
+    it('ears-headphones to its pass, then ears-glossary opened by the host: every event re-derived and the cue ids of EVERY frame equal (found in the joined page: 0 % in ears-glossary); the engine was given no world', async () => {
+        made = await recordTwoLessons(EARS);
+        const { pkg, rig } = made;
+        const opens = pkg.events.filter((e) => e.kind === 'lesson' && e.what === 'open').map((e) => (e as { lessonId: string }).lessonId);
+        expect(opens).toEqual(['ears-headphones', 'ears-glossary']);
+        // what the engine heard in the glossary: the craft over the page's floor would voice a hazard (the floor below) between the previews;
+        // the glossary's layers include safety, so this is where it shows
+        // (neither lesson plays a demo scene, whose own little worlds are the lesson's: every frame the engine was fed is the craft with no world)
+        expect(rig.engine.inputs.length).toBeGreaterThan(100);
+        expect(rig.engine.inputs.every((i) => i.world === null)).toBe(true);
+        expect(rig.engine.lastInput?.world).toBeNull();
+        const out: ReplayOutcome = await checkPackage(pkg);
+        expect(out.error).toBeNull();
+        expect(out.segments.map((s) => s.segment.lessonId)).toEqual(['ears-headphones', 'ears-glossary']);
+        for (const s of out.segments) {
+            const c = s.check!;
+            expect(c.events.diffs, s.segment.lessonId ?? '').toEqual([]);
+            expect(c.events.matched).toBe(c.events.recorded);
+            expect(c.cues.frames).toBeGreaterThan(100);
+            // before the fix the glossary's share was 0 (every frame had a floor voice no replay derives); now the only frames that differ are
+            // the ones where a preview's note ends: the rig renders a frame every 16 ms and the recorder keeps a 33.3 ms grid (32 and 48 ms
+            // apart), so a note that ends between two kept frames can end a frame early or late in the replay (the page's steady 60 Hz is
+            // measured by tools/bench/src/sonic-e2e.ts)
+            expect(c.cues.share, `${s.segment.lessonId}: ${JSON.stringify(c.cues.mismatches.slice(0, 2))}`).toBeGreaterThanOrEqual(0.995);
+            expect(c.cues.classShare, s.segment.lessonId ?? '').toBeGreaterThanOrEqual(0.995);
+            expect(c.cues.identical / c.cues.frames).toBeGreaterThanOrEqual(0.99);
+        }
+        expect(out.check!.ok).toBe(true);
+        // the recorded frames of the glossary carry the sounds that were really there: previews of a hazard, the room, the height tone, and no floor voice
+        const ids = new Set(pkg.frames.flatMap((f) => f.c));
+        expect(ids.has('safety.floor:down')).toBe(false);
+        expect(ids.has('safety.floor:preview')).toBe(true); // the glossary's own preview of that cue is
+        expect(ids.has('room.bed')).toBe(true);
+    }, 600000);
+
+    it('control: the same glossary heard over a floor, as the page fed it before, voices the floor below at every frame, and no replay (which has no world there) derives it', () => {
+        const lesson = getLesson('ears-glossary');
+        const heard = (world: ReturnType<typeof lessonViewWorld>): string[] => {
+            const planner = new CuePlanner({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), layers: lesson.layers });
+            const sample: FlightSample = { t: 1000, tick: 1, pos: [0, 1.5, 0], vel: [0, 0, 0], quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: true, touched: false, paused: false };
+            let ids: string[] = [];
+            for (let k = 0; k < 10; k++) ids = planner.plan({ sample: { ...sample, t: 1000 + k * 33, tick: k }, world, target: null, floorY: 0 }).cues.map((c) => c.id);
+            return ids;
+        };
+        expect(heard(lessonViewWorld(lesson))).toContain('safety.floor:down');
+        expect(heard(null)).not.toContain('safety.floor:down');
+    });
 });
 
 // ------------------------------------------------------------------ the player, lesson by lesson, on a fake audio clock

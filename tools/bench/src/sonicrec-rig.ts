@@ -16,11 +16,16 @@ export interface Rig {
     stop(): Promise<void>;
 }
 
-/** `adminPassword`: a TEST password for the owner's admin on this copy (never the live admin's). */
-export async function startRig(dataDir: string, options: { adminPassword?: string } = {}): Promise<Rig> {
+/**
+ * `adminPassword`: a TEST password for the owner's admin on this copy (never the live admin's). `apiPort` and `controlPort`: the two
+ * ports, when a run has to keep to a range (the end-to-end run of Fly by Sound); else free ones the system picks.
+ */
+export async function startRig(dataDir: string, options: { adminPassword?: string; apiPort?: number; controlPort?: number } = {}): Promise<Rig> {
     const python = process.env.PYTHON ?? 'python';
     const args = ['-X', 'utf8', join(REPO, 'apps', 'api', 'tests', 'rig_server.py'), '--data', dataDir];
     if (options.adminPassword !== undefined) args.push('--admin-password', options.adminPassword);
+    if (options.apiPort !== undefined) args.push('--api-port', String(options.apiPort));
+    if (options.controlPort !== undefined) args.push('--control-port', String(options.controlPort));
     const proc: ChildProcess = spawn(python, args, { stdio: ['pipe', 'pipe', 'inherit'] });
     const info: { api: number; control: number; data: string } = await new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('the rig did not start')), 30000);
