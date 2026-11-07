@@ -138,3 +138,12 @@ The owner asked for few questions; these are the lead's defaults and can be chan
 4. Session packages are kept while the project runs and at most 5 years, deleted earlier on request by the pilot or a parent; the privacy text says so.
 5. Keys T U I Z G, `?sonic=` and `/{lang}/sound/` are accepted.
 6. Winter Garden walls: v12-flight checks whether a refined wall grid for 7a475d38 can be shipped with the release so no tester's PC has to refine first; if not, the lesson says plainly that the walls are coarse.
+
+## 9. Amendments by the lead (2026-11-07, after sonic-core stage1-rc1)
+
+1. The sound repository is published as `AndriiShramko/shramko-fly-by-sound-fpv` (public, https://github.com/AndriiShramko/shramko-fly-by-sound-fpv, product name "Shramko Fly by Sound"). Wherever this plan says ShramkoSonicFPV it means that repository. Local clone: `C:/dev/ShramkoSonicFPV`. Submodule URL `https://github.com/AndriiShramko/shramko-fly-by-sound-fpv.git`; the path stays `packages/sonic-fpv` and the package name stays `@shramko/sonic-fpv`.
+2. Pin the gitlink to its `main` at 3959930 (tag stage1-rc1 is 41aa53e; 3959930 adds only publication documents and one README test string).
+3. Section 8 overrides 4.3 step 7: `SESSION_MAIL_MAX_BYTES` defaults to 15 MB and `gsfpv-api` gets 192 MB in `deploy/compose.yml`.
+4. Lanes never edit the submodule or `C:/dev/ShramkoSonicFPV`. A needed sound-repository change goes into the lane's Status under "Needs from sonic-core" with the reason and a failing test; the lead makes it and moves the gitlink.
+5. Hosts must emit what replay needs (sonic-core review, `src/replay`): a `lesson open` event; `key` events with action `reset.checkpoint`, `reset.start` or `next`; a `speech` event with key `speech.end` whenever the host calls `runner.spoken(t)`. Hosts pass `say.interrupt` to speech and send `setLayers({ on: [] })` when frames stop. The session writer throws for a minor's package that claims `send` or `speechRecognition` without a confirmed guardian.
+6. Read `packages/sonic-fpv/AGENTS.md` before using the package.
