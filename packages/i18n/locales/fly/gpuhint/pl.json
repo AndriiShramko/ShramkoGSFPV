@@ -1,0 +1,9 @@
+{
+  "gpuhint.copied": "Skopiowano. Wklej go w nowej karcie.",
+  "gpuhint.copy": "Skopiuj adres",
+  "gpuhint.copyFailed": "Nie udało się skopiować. Zaznacz adres i skopiuj go.",
+  "gpuhint.fixFlag": "W przeglądarce: otwórz ten adres w nowej karcie, ustaw Enabled i uruchom przeglądarkę ponownie:",
+  "gpuhint.fixWindows": "Albo w Windows: Ustawienia, System, Ekran, Grafika, wybierz tę przeglądarkę, Opcje, Wysoka wydajność.",
+  "gpuhint.ok": "Rozumiem",
+  "gpuhint.text": "Ta strona rysuje na układzie graficznym Intel. Jeśli komputer ma też kartę graficzną NVIDIA lub AMD, przeglądarka jej nie używa: Chrome w Windows ignoruje prośbę strony o szybszą. Aby to zmienić:"
+}

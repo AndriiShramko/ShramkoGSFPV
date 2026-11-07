@@ -19,6 +19,7 @@
   "sonic.nav.label": "Sekcje Fly by Sound",
   "sonic.nav.start": "Start",
   "sonic.path.legend": "Ścieżka",
+  "sonic.say.gpuHint": "Ta strona rysuje na układzie graficznym Intel. Jeśli komputer ma też kartę NVIDIA lub AMD, poproś pomocnika, by przełączył na nią przeglądarkę: w Ustawieniach Windows, System, Ekran, Grafika, wybierz przeglądarkę, Opcje, Wysoka wydajność.",
   "sonic.say.scanFailed": "Skan się nie wczytał. Sprawdź połączenie i wybierz lekcję jeszcze raz.",
   "sonic.say.scanLoading": "Wczytuję skan do tej lekcji. Może to potrwać nawet minutę. Lekcja zacznie się sama.",
   "sonic.say.wallsCoarse": "Ściany tego skanu są zgrubne: około {cm} centymetrów w tej skali. Ściana może brzmieć trochę bliżej lub dalej, niż jest naprawdę.",

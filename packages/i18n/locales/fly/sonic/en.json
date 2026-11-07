@@ -19,6 +19,7 @@
   "sonic.nav.label": "Fly by Sound sections",
   "sonic.nav.start": "Start",
   "sonic.path.legend": "Path",
+  "sonic.say.gpuHint": "This page is drawing on the Intel graphics chip. If this computer also has an NVIDIA or AMD graphics card, ask your helper to switch the browser to it: in Windows Settings, System, Display, Graphics, choose the browser, Options, High performance.",
   "sonic.say.scanFailed": "The scan did not load. Check the connection, then choose the lesson again.",
   "sonic.say.scanLoading": "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
   "sonic.say.wallsCoarse": "The walls of this scan are coarse: about {cm} centimetres at this size. A wall can sound a little nearer or farther than it really is.",

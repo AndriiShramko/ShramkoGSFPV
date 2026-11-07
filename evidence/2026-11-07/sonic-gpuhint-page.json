@@ -1,0 +1,146 @@
+{
+  "name": "sonic-gpuhint-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T19:13:57.124Z",
+    "gitHead": "188d91b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 11: the GPU hint in the real page",
+  "page": "http://localhost:5342/fly/ (Vite dev server)",
+  "note": "this PC is the owner's (NVIDIA): the real device never gets the hint; an Intel laptop is asked for through the page's test hook, which lays an adapter over what the device says and runs the same code (rule, note, copy, memory, line); headless Chrome runs muted, the line is a speech event and a caption",
+  "adapter": {
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "platform": "Windows",
+    "vendor": "nvidia",
+    "architecture": "lovelace",
+    "description": "",
+    "fallback": null
+  },
+  "checks": [
+    {
+      "name": "this PC: the page's real adapter is read (nvidia lovelace) on Windows: the rule says no hint (not Intel), and the page showed none by itself",
+      "pass": true,
+      "value": {
+        "real": {
+          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+          "platform": "Windows",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "description": "",
+          "fallback": null
+        },
+        "reading": {
+          "due": false,
+          "reason": "not-intel",
+          "shown": false
+        }
+      }
+    },
+    {
+      "name": "asked as an Intel laptop on Windows would be: the hint is due and the note comes",
+      "pass": true,
+      "value": {
+        "due": true,
+        "reason": "due",
+        "shown": true
+      }
+    },
+    {
+      "name": "the note says the Intel chip is drawing, names the other card, and gives both ways: the browser's address as text and Windows' path to High performance",
+      "pass": true,
+      "value": {
+        "text": "This page is drawing on the Intel graphics chip. If this computer also has an NVIDIA or AMD graphics card, the browser is not using it: Chrome on Windows ignores the page's request for the faster one. To switch:In the browser: open this address in a new tab, set it to Enabled and restart the browser: chrome://flags/#force-high-performance-gpu Copy the addressOr in Windows: Settings, System, Display, Graphics, choose this browser, Options, High performance.Got it",
+        "address": "chrome://flags/#force-high-performance-gpu",
+        "buttons": [
+          "Copy the address",
+          "Got it"
+        ]
+      }
+    },
+    {
+      "name": "Copy puts the address on the clipboard (read back) and says so",
+      "pass": true,
+      "value": {
+        "clipboard": "chrome://flags/#force-high-performance-gpu",
+        "status": "Copied. Paste it into a new tab."
+      }
+    },
+    {
+      "name": "Got it closes the note",
+      "pass": true
+    },
+    {
+      "name": "the browser remembers it: asked again as the same laptop, the hint is still due but not shown again; the note is in the browser's storage",
+      "pass": true,
+      "value": {
+        "due": true,
+        "reason": "due",
+        "shown": false
+      }
+    },
+    {
+      "name": "(the test hook can show it again on purpose)",
+      "pass": true,
+      "value": {
+        "due": true,
+        "reason": "due",
+        "shown": true
+      }
+    },
+    {
+      "name": "controls in the page: the Intel adapter as Arc, on macOS, as a software adapter, with no WebGPU: no note",
+      "pass": true,
+      "value": {
+        "arc": {
+          "due": false,
+          "reason": "intel-discrete",
+          "shown": false
+        },
+        "mac": {
+          "due": false,
+          "reason": "not-windows",
+          "shown": false
+        },
+        "soft": {
+          "due": false,
+          "reason": "fallback-adapter",
+          "shown": false
+        },
+        "noGpu": {
+          "due": false,
+          "reason": "no-webgpu",
+          "shown": false
+        }
+      }
+    },
+    {
+      "name": "in Fly by Sound on this PC: no note and nothing said by itself (NVIDIA)",
+      "pass": true
+    },
+    {
+      "name": "in Fly by Sound the note comes and the engine says the short line (a speech event of the mode with the Windows way, and its caption)",
+      "pass": true,
+      "value": {
+        "said": [
+          "This page is drawing on the Intel graphics chip. If this computer also has an NVIDIA or AMD graphics card, ask your helper to switch the browser to it: in Windows Settings, System, Display, Graphics, choose the browser, Options, High performance."
+        ],
+        "captions": 3
+      }
+    },
+    {
+      "name": "no console error in the page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "pass": true
+}
