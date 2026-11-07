@@ -30,6 +30,7 @@ import { PrimitiveStage } from '../../sonic/primitives';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from '../../sonic/scan-lesson';
 import type { ScanLesson } from '../../sonic/scan-lesson';
 import { allProgress } from '../../sonic/store';
+import { STATUS_ORDER, sayStatus, statusBoard } from '../sonic-status';
 
 // window.__gsfpv.sonic: what the lesson is doing, for the acceptance runs (tools/bench/src/sonic-*.ts)
 declare module '../test-hook' {
@@ -257,10 +258,21 @@ export const sonicFlight: Feature = {
                 return { frames, msPerFrame: Math.round((run(frames) / frames) * 1000) / 1000, raysPerFrame: 30 };
             };
             offs.push(ctx.menu.add({ id: 'pause.sonic', action: null, labelKey: 'sonic.menu.lessons', order: 95, section: 'tools', run: () => showMenu() }));
-            // Z, I and G: keys of the mode, each ignored while no lesson runs
+            // Z and G: keys of the mode, each ignored while no lesson runs
             offs.push(ctx.keys.on('sonic.repeat', (e) => { if (!e.repeat && mode.active) void h.repeat(); }));
-            offs.push(ctx.keys.on('sonic.status', (e) => { if (!e.repeat && mode.active) void mode.bridge.say(h.status(), true); }));
             offs.push(ctx.keys.on('sonic.glossary', (e) => { if (!e.repeat && mode.active) void h.glossary(); }));
+            // I: where the pilot is, in one press: the lesson's line (status.lesson, or status.none when none runs), then what the
+            // other features add (the recorder's status.recording-on or -off). The only handler of I: the others add providers to
+            // the page's status board (app/sonic-status.ts), because the key router runs only the last handler of an action.
+            // Through the mode's speech queue while a lesson runs (its speech events and markers), else the engine itself.
+            const board = statusBoard(ctx);
+            offs.push(board.add({ order: STATUS_ORDER.lesson, line: () => h.status() }));
+            offs.push(
+                ctx.keys.on('sonic.status', (e) => {
+                    if (e.repeat) return;
+                    void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt })));
+                })
+            );
             // the first lesson: its world is the one the page was made on (the entry built it); a lesson that cannot open
             // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
             if (entry.lessonId) {

@@ -10,6 +10,7 @@ import { DICTS, MemorySink, createTranslator } from '@shramko/sonic-fpv';
 import type { ChunkStore, Locale, SonicRuntime } from '@shramko/sonic-fpv';
 import { locale, t } from '../i18n';
 import type { FlightContext } from '../app/context';
+import { STATUS_ORDER, statusBoard } from '../app/sonic-status';
 import { loadProfile, saveProfile, withProfile, type PilotProfile } from './consent';
 import { formatWhen } from './format';
 import { sceneTransformOf, type RecorderEnv } from './manifest-input';
@@ -283,6 +284,15 @@ export function createSonicSession(ctx: FlightContext): SonicSession {
             if (ctx.sonic === undefined || e.repeat) return;
             e.preventDefault();
             sender.pressSend();
+        })
+    );
+    // I (sonic.status): the recording's line, said after the lesson's by the flight side's one handler of I (app/sonic-status.ts;
+    // a second handler here would hide that one). On while the flight and the voice are recorded, and through the survey after
+    // the pilot's stop (the microphone still listens then); off before the yes, while asking, and once the package is closing.
+    offs.push(
+        statusBoard(ctx).add({
+            order: STATUS_ORDER.recording,
+            line: () => ({ key: recorder.phase === 'recording' || recorder.phase === 'closing' ? 'status.recording-on' : 'status.recording-off' })
         })
     );
     // the flight's data, while a recording runs
