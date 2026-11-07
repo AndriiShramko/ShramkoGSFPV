@@ -4,7 +4,7 @@
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { join } from 'node:path';
-import { REPO } from './sonicrec-serve';
+import { REPO, freePorts, portRange } from './sonicrec-serve';
 
 export interface Rig {
     readonly api: number;
@@ -22,10 +22,12 @@ export interface Rig {
  */
 export async function startRig(dataDir: string, options: { adminPassword?: string; apiPort?: number; controlPort?: number } = {}): Promise<Rig> {
     const python = process.env.PYTHON ?? 'python';
+    let { apiPort, controlPort } = options;
+    if (apiPort === undefined && controlPort === undefined && portRange() !== null) [apiPort, controlPort] = await freePorts(2); // SONIC_PORTS: keep to the range
     const args = ['-X', 'utf8', join(REPO, 'apps', 'api', 'tests', 'rig_server.py'), '--data', dataDir];
     if (options.adminPassword !== undefined) args.push('--admin-password', options.adminPassword);
-    if (options.apiPort !== undefined) args.push('--api-port', String(options.apiPort));
-    if (options.controlPort !== undefined) args.push('--control-port', String(options.controlPort));
+    if (apiPort !== undefined) args.push('--api-port', String(apiPort));
+    if (controlPort !== undefined) args.push('--control-port', String(controlPort));
     const proc: ChildProcess = spawn(python, args, { stdio: ['pipe', 'pipe', 'inherit'] });
     const info: { api: number; control: number; data: string } = await new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('the rig did not start')), 30000);

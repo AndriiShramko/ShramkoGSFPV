@@ -9,7 +9,9 @@ import siteEn from '../../../packages/i18n/locales/site/en.json';
 import siteEs from '../../../packages/i18n/locales/site/es.json';
 import sitePl from '../../../packages/i18n/locales/site/pl.json';
 import siteRu from '../../../packages/i18n/locales/site/ru.json';
+import { readFileSync } from 'node:fs';
 import { setText } from '../../../apps/fly/src/sonic-session/format';
+import { REASON_PARAMS, RegistryError, reasonOf } from '../../../apps/fly/src/sonic-session/reasons';
 
 const DICTS: Record<string, Record<string, string>> = { en, es, pl, ru };
 
@@ -89,5 +91,59 @@ describe('F5: a recorder problem the helper reads is a sentence of the dictionar
         }
         // control: a code the recorder does not have is not in the dictionaries (a typo would show a key, not a sentence)
         expect(en['sonicrec.error.no-such-code' as keyof typeof en]).toBeUndefined();
+    });
+});
+
+describe('F5b (v12-int step 9): what the panel says when keeping, saving or deleting fails is a sentence of the dictionaries, in the language of the page', () => {
+    const SENTENCE_CODES = Object.keys(REASON_PARAMS);
+
+    it('every reason has its sentence in en, es, pl and ru, naming exactly the details the registry gives it', () => {
+        expect(SENTENCE_CODES.sort()).toEqual(['cannot-pack', 'locked', 'other', 'recover']);
+        for (const [lang, d] of Object.entries(DICTS)) {
+            for (const code of SENTENCE_CODES) {
+                const text = d[`sonicrec.reason.${code}`];
+                expect(text, `${lang} sonicrec.reason.${code}`).toBeTypeOf('string');
+                const named = [...(text as string).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+                expect(named, `${lang} sonicrec.reason.${code}`).toEqual([...REASON_PARAMS[code as keyof typeof REASON_PARAMS]].sort());
+            }
+            // the three actions say which one failed, and name the reason (the old single "Could not save: {reason}" said "save" for a delete too)
+            for (const action of ['save', 'delete', 'keep']) expect((d[`sonicrec.msg.failed.${action}`] as string).match(/\{(\w+)\}/g), `${lang} ${action}`).toEqual(['{reason}']);
+            expect(d['sonicrec.msg.failed'], lang).toBeUndefined();
+            expect(d['sonicrec.save.type'], `${lang} sonicrec.save.type`).toBeTypeOf('string');
+        }
+        // the other languages are not the English text copied (the sentences are the agent's translations, read by no native speaker)
+        for (const lang of ['es', 'pl', 'ru']) {
+            for (const code of SENTENCE_CODES) expect(DICTS[lang]![`sonicrec.reason.${code}`], `${lang} ${code}`).not.toBe(en[`sonicrec.reason.${code}` as keyof typeof en]);
+            for (const action of ['save', 'delete', 'keep']) expect(DICTS[lang]![`sonicrec.msg.failed.${action}`], `${lang} ${action}`).not.toBe(en[`sonicrec.msg.failed.${action}` as keyof typeof en]);
+            expect(DICTS[lang]!['sonicrec.save.type'], lang).not.toBe(en['sonicrec.save.type']);
+        }
+        // control: a code the registry does not have is not in the dictionaries
+        expect(en['sonicrec.reason.no-such-code' as keyof typeof en]).toBeUndefined();
+    });
+
+    it('a registry error is said by its code, anything else as the technical detail of a general sentence', () => {
+        expect(reasonOf(new RegistryError('locked'))).toEqual({ key: 'sonicrec.reason.locked', params: {} });
+        expect(reasonOf(new RegistryError('recover'))).toEqual({ key: 'sonicrec.reason.recover', params: {} });
+        // the package's own diagnostic is English only: it stays in the error (for the console), the sentence of the page's language names no detail
+        const damaged = new RegistryError('cannot-pack', 'voice.webm is 10 bytes, the manifest says 2000');
+        expect(reasonOf(damaged)).toEqual({ key: 'sonicrec.reason.cannot-pack', params: {} });
+        expect(damaged.detail).toBe('voice.webm is 10 bytes, the manifest says 2000');
+        expect(reasonOf(new RegistryError('cannot-pack'))).toEqual({ key: 'sonicrec.reason.cannot-pack', params: {} });
+        expect(reasonOf(new DOMException('The object can not be found here.', 'NotFoundError'))).toEqual({ key: 'sonicrec.reason.other', params: { detail: 'The object can not be found here.' } });
+        expect(reasonOf('plain text')).toEqual({ key: 'sonicrec.reason.other', params: { detail: 'plain text' } });
+        // control: the old way, the exception's own message as the reason, is the very text that was English in every language
+        expect(new Error('another tab is recording this session').message).toMatch(/^another tab/);
+    });
+
+    it('the panel and the registry hold no sentence of their own: no raw message in a failure line, no description in the save dialog', () => {
+        const src = (f: string): string => readFileSync(new URL(`../../../apps/fly/src/sonic-session/${f}`, import.meta.url), 'utf8');
+        const panel = src('panel.ts');
+        expect(panel).not.toMatch(/sonicrec\.msg\.failed['"]/); // the one key that said "save" for everything
+        expect(panel).not.toMatch(/reason: (err|e) instanceof Error/); // a message of an exception put into a sentence as it came
+        expect((panel.match(/why\(/g) ?? []).length).toBeGreaterThanOrEqual(4);
+        expect(src('registry.ts')).not.toMatch(/throw new Error\(/); // codes (RegistryError), not sentences
+        expect(src('save.ts')).not.toMatch(/description: '/); // the label comes from the caller
+        // control: the line as it was does match the rule
+        expect("say(t('sonicrec.msg.failed', { reason: err instanceof Error ? err.message : String(err) }));").toMatch(/reason: (err|e) instanceof Error/);
     });
 });

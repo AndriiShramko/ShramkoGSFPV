@@ -18,6 +18,7 @@ import { channelList, sendBlocker, transferLine } from './transfer-view';
 import type { TransferLine } from './transfer-view';
 import type { ChannelState } from './upload';
 import { deleteSession, listSessions, packageOf, writeNotes } from './registry';
+import { RegistryError, reasonOf } from './reasons';
 import type { SessionEntry } from './registry';
 import type { ReplayControl, ReplayViewState } from './replay-control';
 import { createReplayView } from './replay-view';
@@ -71,6 +72,12 @@ const HEADPHONES: readonly PilotProfile['headphones'][] = ['wired', 'bluetooth',
 
 export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body): RecPanel {
     const saveEnv = deps.saveEnv ?? browserSaveEnv();
+    /** why an action failed, in the page's language: a registry error by its code, a browser's own text as the detail of a general sentence */
+    const why = (e: unknown): string => {
+        if (e instanceof RegistryError && e.detail !== '') console.warn('fly by sound:', e.message); // the package's own diagnostic is English: the console has it, the panel says the sentence
+        const r = reasonOf(e);
+        return t(r.key, r.params);
+    };
     let open = false;
     let last: RecorderStatus = deps.recorder.status();
     let refreshSeq = 0;
@@ -289,7 +296,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         try {
             entries = await listSessions(deps.stores, deps.isLocked);
         } catch (e) {
-            if (seq === refreshSeq) say(t('sonicrec.error.generic', { reason: e instanceof Error ? e.message : String(e) }));
+            if (seq === refreshSeq) say(t('sonicrec.error.generic', { reason: why(e) }));
             return;
         }
         if (seq !== refreshSeq) return; // a newer refresh is on its way
@@ -306,7 +313,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         busy = true;
         try {
             const kept = await deps.resume.keep(e.id);
-            say(kept === null ? t('sonicrec.msg.failed', { reason: 'recover' }) : t('sonicrec.msg.kept'));
+            say(kept === null ? t('sonicrec.msg.failed.keep', { reason: why(new RegistryError('recover')) }) : t('sonicrec.msg.kept'));
         } finally {
             busy = false;
             await refresh();
@@ -319,14 +326,14 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
         try {
             const blob = await packageOf(deps.stores, e.id);
             const name = packageFileName(e.manifest);
-            const via = await saveToDisk(blob, name, saveEnv);
+            const via = await saveToDisk(blob, name, saveEnv, t('sonicrec.save.type'));
             if (via === 'cancelled') say(t('sonicrec.msg.cancelled'));
             else {
                 await writeNotes(await deps.stores.open(e.id), { savedAt: deps.nowIso(), savedVia: via });
                 say(t('sonicrec.msg.saved', { name }));
             }
         } catch (err) {
-            say(t('sonicrec.msg.failed', { reason: err instanceof Error ? err.message : String(err) }));
+            say(t('sonicrec.msg.failed.save', { reason: why(err) }));
         } finally {
             busy = false;
             await refresh();
@@ -382,7 +389,7 @@ export function createPanel(deps: PanelDeps, parent: HTMLElement = document.body
             deps.resume.forget(e.id);
             say(t('sonicrec.msg.deleted'));
         } catch (err) {
-            say(t('sonicrec.msg.failed', { reason: err instanceof Error ? err.message : String(err) }));
+            say(t('sonicrec.msg.failed.delete', { reason: why(err) }));
         } finally {
             busy = false;
             await refresh();
