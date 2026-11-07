@@ -37,7 +37,7 @@ export interface RecorderError {
 }
 
 /** An error's name and message, as the technical detail of a sentence. */
-const describe = (e: unknown): string => (e instanceof Error ? `${e.name}: ${e.message}` : String(e));
+const describeError = (e: unknown): string => (e instanceof Error ? `${e.name}: ${e.message}` : String(e));
 
 export interface RecorderStatus {
     readonly phase: RecorderPhase;
@@ -482,7 +482,7 @@ export class Recorder {
     }
 
     private noteProblem(code: Exclude<RecorderError['code'], 'mode-off' | 'storage-low'>, cause: unknown): void {
-        this.errorValue = { code, params: { reason: describe(cause) } };
+        this.errorValue = { code, params: { reason: describeError(cause) } };
         this.emit();
     }
 
@@ -570,7 +570,7 @@ export class Recorder {
     /** The recording cannot go on (storage failed, the sound mode went away): let go of everything, keep what was written. */
     private async abort(reason: unknown): Promise<void> {
         this.clearTimers();
-        if (this.errorValue === null) this.errorValue = { code: 'generic', params: { reason: describe(reason) } };
+        if (this.errorValue === null) this.errorValue = { code: 'generic', params: { reason: describeError(reason) } };
         try {
             await this.deps.voice.stop();
         } catch {

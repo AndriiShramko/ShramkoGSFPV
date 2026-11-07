@@ -12,7 +12,7 @@ Reviewer: one agent, one pass over `v03-lead..v12-feedback` (112 files, about 20
 - [x] F5 strings outside locales: the recorder's problems reached the helper as English sentences in every language
 - [x] F6 ordinary flight: every visitor of the simulator downloaded and parsed the whole session side (370 KB) although the sound mode never runs for them
 - [x] F7 accessibility: the survey dialog was a modal dialog that took no focus, and showed itself after its text was written
-- [ ] more findings below (each: probe first, a test that fails before the fix, the fix, one commit)
+- [x] end: what was refuted, what is left open, what is needed from sonic-core, what was not read, and the runs on the final tree are the last four sections
 
 ## Findings
 
@@ -66,8 +66,43 @@ Probe (browser, `sonicrec-review.ts` R4, the real dialog; property setters logge
 
 ## Refuted
 
-(a claim I suspected and a probe showed to be wrong)
+Each was a suspicion, tested by reading the code or by a probe, and found to be fine. Kept so the next reader does not spend the time again.
+
+- Ordinary flight changed by the lane (a6 hash, input, collision): the lane touches none of `sim-core`, `controls.ts`, `input.ts`, the collision package or the session; `tools/bench/test/a6-reference.test.ts` passes on this branch; the hooks are no-ops while `ctx.sonic` is unset (and since F6 they are not even loaded). The one thing that did change for every visitor was the size of the script (F6).
+- A minor's recording sent without a confirmed guardian: refused in three places that do not trust each other: `consentFor` throws for send or speech recognition without the guardian, `sendBlocker` (the package's own consent and the profile) and the server's `finish` (422 `consent-guardian`, nothing kept). The voice command for a minor needs the guardian as well (`mayListen`).
+- Speech recognition listening before its disclosure: both places that start a listen (`openQuestion`, `offerSend`) call `ensureNote()` first and the lines go through the engine's queue in order, so the note is spoken before any listening, even when two flows start together (the flag is set before the line ends, but the second flow's own lines queue behind it).
+- A held chunk overwritten by a later upload: `put_chunk` opens the file for writing only for a chunk that is not held; a held chunk is hashed and compared, never written (409 `chunk-differs`). A bad chunk hash leaves bytes in an unheld place, which a retry overwrites and `finish` never accepts.
+- Path traversal and id guessing on the new routes: the route regex and `SID_RE` are full matches (`S-YYYYMMDD-<12 hex>`), the admin routes are `fullmatch` after `/api/admin/`, the file names are built from ids only, tokens are 256 random bits, stored only as SHA-256 and compared in constant time.
+- Cross-site script in the admin tab: every server value is put in with DOM text nodes (`h()`), the download link is built with `encodeURIComponent` on a server-validated id.
+- A synthetic `lesson open` when a recording starts in the middle of a lesson: the replay core begins the lesson at the first frame when there is none, which is what a synthetic event at t = 0 would do; nothing to add.
+- A zip bomb through "Open a recording file": the package reader's inflate has a limit (`maxEntryBytes`) and the file is refused over 256 MiB.
+- The privacy text promising more than the code does about minors: "can be sent only if a guardian's consent was confirmed before recording" matches the sealed `consent.guardianConfirmed` the server reads; a minor's recording made without it stays on the device.
+
+## Left open (found, not fixed: a design choice, or too small, or not provable here)
+
+1. The upload quota can still be held by a direct attacker with a few addresses: `start` is anonymous, reserves up to 100 MiB, six per address, 2 GiB in all, for 24 hours (F4 closed only the way through other people's browsers). Suggestions for the owner: count a reservation only from the first chunk, give an upload that has held no chunk after an hour back to the pool, or hand the page a short-lived token it must show to `start`.
+2. The upload client gives a request 60 s in all (`requestTimeoutMs`), and a chunk is 1 MiB: an uplink under about 140 kbit/s can never finish a chunk and retries for ever (the recording stays safe on the device). Suggestion: a time in proportion to the bytes. Not measured (no slow link here).
+3. Delivery: if the write that records `sent` fails right after a successful send (the disk full at that moment), the channel stays `sending` until the process restarts, which then sends a second copy; the admin's resend resets it. Suggestion: a claim older than a few minutes goes back to queued.
+4. Telegram: an answer `ok: true` without a message id is counted as sent (the lane's text says a message id is required). Telegram always sends one, so this is only a looseness.
+5. Words: the registry's English error messages can still reach the panel through `sonicrec.msg.failed` ("Could not save: {reason}", also said for a failed delete or keep), and the save dialog's file-type description in `save.ts` is English.
+6. The panel button's own text still carries the clock ("Recording 0:07"): not a live region, so a screen reader reads it only when the button is focused.
+7. The survey offer waits 60 s for a key with the microphone on (F3 made the app honest about it, not shorter).
+8. Not verified by anyone yet: the real nginx (`nginx -t` was never run), Telegram and Gmail, the browser's own speech recognition, a screen reader on any part (F2 and F7 are judged from what the DOM does, not from what is heard), a phone, the merge with `v12-flight` (its own feature should be loaded lazily like F6's; `features.ts` imports it statically).
+
+## Needs from sonic-core
+
+Nothing is blocking and no failing test can be written here, because what is missing is a line that does not exist. Reason and the test that would prove it, in the format of the lane's own section:
+- A spoken line for the survey offer that says the microphone is still on ("I am still listening for your answers. Say it out loud or press a number key."), spoken before or with `survey.offer` (F3). Test: a recorder test that the line comes after `rec.started` and before `rec.stopped`, in four languages, and that it is not among the app's words a spoken "yes" could match (the lane's `sonicrec-send.test.ts` holds that for the send lines).
+- The lane's own optional notes stand (`survey.howto` still says "or say the number"; no line for "nothing to send").
 
 ## Not read
 
-`replay-player.ts`, `replay-voice.ts`, `replay-open.ts`, `replay-check.ts`, `format.ts`, `admin/sessions/model.ts`, the browser harnesses under `tools/bench/src/sonicrec-*.ts` (beyond `sonicrec-local.ts`'s structure), `serve-csp.mjs`, `smoke-release.mjs`, the site's `verify.mjs` and `a11y.mjs` changes, `deploy/README.md`, the four-language texts other than English (read only where a fix touches them), and the evidence files.
+`replay-player.ts` beyond its first 200 lines, `replay-control.ts` after line 165, `admin/sessions/model.ts`, the browser harnesses `sonicrec-{recorder,replay,upload,admin,headers}.ts` and their page files (run, not read), `serve-csp.mjs`, `smoke-release.mjs`, `deploy/README.md`, the evidence files, `apps/api/tests/fakes*.py` and `rig_server.py`, and the Spanish, Polish and Russian texts other than where a fix touched them. `nginx -t` was not run (no nginx here), no GPU run was made (no browser check of this review draws), and nothing was pushed, deployed or SSH'd.
+
+## Runs on the final tree
+
+- API: the whole suite, 410 tests OK in 137 s (409 at the lane's end, one new test).
+- Node: vitest of every `tools/bench/test/sonicrec-*` file, `a6-reference` (the determinism hash, unchanged), `app-keys`, `submodule-guards`, `packages/i18n` and `apps/site`: 17 files, 284 tests pass. `pnpm -r typecheck` exit 0; architecture rules ok; B18 PASS; i18n check 1084 strings in 4 languages; `gen-catalog --check` up to date.
+- Browser (headless Chrome 156, a fake microphone, real OPFS, no GPU needed): `sonicrec-review.ts` 8 of 8 (this review's own checks R1 to R4: R1 failed 2 of 2 and R4 failed 2 of 3 on the lane's code before their fixes; R2 and R3 were added with their fixes, the Node tests that failed first stand for their before), `sonicrec-local.ts` 32 of 32, `sonicrec-replay.ts` 29 of 29, `sonicrec-upload.ts` 35 of 35 (a real upload, through the proxy of the real handler, to a local copy of the real API, with F4's content-type rule live).
+- Release build of the simulator (`pnpm --filter @gsfpv/fly build`), main script: with the session side 3 228 423 bytes (928 248 gzip, 734 781 brotli); feature stubbed 2 857 839 (817 558, 645 410); after F6 2 858 235 (817 744, 645 375) and a separate `session-*.js` of 369 322 (110 824, 95 541).
+- The lane's evidence files were restored after each re-run (git checkout), so this review's commits hold only its own evidence, `evidence/2026-11-07/sonicrec-review.json`. Commit trailers say Claude Sonnet 5.5, as the lane's do (the harness attribution says so; the task text asked for Opus 5.5).
