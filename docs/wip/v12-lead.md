@@ -20,7 +20,7 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
 ## Status
 
 - [x] sonic-core published (3959930)
-- [x] step 0: the submodule, the seams and the guards on v03-lead (local commits after f094005, not pushed)
+- [x] step 0: the submodule, the seams and the guards on v03-lead: work commit 3b12079, then this Status commit (local, not pushed; base f094005)
   - Submodule: `packages/sonic-fpv` from `https://github.com/AndriiShramko/shramko-fly-by-sound-fpv.git`, gitlink 3959930 (sonic-core `main`, detached HEAD, one commit after the tag stage1-rc1). The URL is GitHub's, so lane worktrees need no `-c protocol.file.allow=always`. `git submodule add` also wrote `submodule.packages/sonic-fpv.url` into the shared config of the main repository (`C:/dev/ShramkoGSFPV/.git/config`), which is what lets `git submodule update --init` work in every worktree.
   - `apps/fly` depends on `@shramko/sonic-fpv` (`workspace:*`). The lockfile gains 21 lines (one new importer, every version already in it); `pnpm install --frozen-lockfile` passes. The CI checkout has `submodules: true` (`canary.yml` checks nothing out).
   - Architecture rule 7 (`scripts/check-architecture.mjs`): `packages/sonic-fpv/src` imports only itself: no package, no `@gsfpv/*`, no `playcanvas`, no `node:` module, no relative path out of the package; `import 'x'` and `import('x')` are read too. `tools/bench/test/submodule-guards.test.ts` (12 tests) runs the real scripts on a temp copy: the rule passes on the real src and fires on 7 planted violations; with the rule pointed at a wrong folder and the build guard switched off, 8 of the 12 fail (mutation check, both restored).
