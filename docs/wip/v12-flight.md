@@ -65,3 +65,11 @@ None yet. Format: the change, the reason, and the failing test that proves it.
 ## Notes
 
 Risks named in the plan (4.2): the built-in world path sits in every scan load (regression B6-B16); the assist hook sits in every pilot's input path; analytic `isVoxelSolid` inside 1 kHz sweeps; Winter Garden's 16 cm cells at x5; a hidden tab disarms (the gate), so AutoArm must re-arm; a radio pilot still needs one key press before any sound.
+
+For the next steps (after step 5, 24f3f77):
+- Entering the mode: `sonicMode(ctx)` (app/builtin/sonic-flight.ts) `.enter({ lesson, runner, world })`; a lesson world comes from `lessonWorldOf(lesson)` (sonic/lesson-world.ts) and is flown with `fly(..., { world: lw.builtin })` (FlyOptions); a scan world is `new ScanSonicWorld(id, version, { collision: () => ctx.session.collision, transform: () => ctx.session.transform }, track)`.
+- The mode clock: `mode.bridge.now()` (whole ms since `enter()`); every `sonicSample.t` and every event the bridge sends use it. `ctx.sonic` (step 7) should hand the recorder this clock, or frames and events drift apart. The bridge sends 'session' pause and resume; the recorder should not write them again.
+- The runner's actions (say, cue, place, ask, scene) are not drained yet (step 9): `place` goes to `mode.place(pose)`, `say` to `mode.bridge.say(line, interrupt)` (it calls `spoken()` when the queue empties), `cue` to the engine.
+- Not run in a browser yet (steps 1 to 5 are Node tests only): the feature's keyup and visibility listeners, and B6-B16 with the built-in world path in the scan load, wait for step 12.
+- `leave()` clears `crash.enabled` and `input.play` from the session layer even when the URL had put them there.
+- Found, not changed (ordinary flight would change): the game scheme's ground probe (`play/ground.ts`, a 10 m sphere's cover test, 30 Hz in GamePilot) costs 1.4 to 1.8 ms per call on lesson walls; not measured on scans.
