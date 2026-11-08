@@ -32,7 +32,7 @@ proofs.
     at 1500 free origins (no other world needed more than 70 000); both assertions stand.
 - [x] A2 (W20) the simulator's Fly by Sound tests pass on the new package (in groups by file, each in "Changed tests"):
   599 tests, 585 pass, 10 skipped (8 as before, 2 marked for stage B), 4 fail, which A4 (`sonic-audio`, the motor's
-  default) and A5 (`sonic-start`, the 28 lessons) take
+  default) and A5 (`sonic-start`, the 28 lessons) took: after them none fails (A7)
   - On the new package before A2: 598 tests, 556 pass, 34 fail, 8 skipped (the 18 tunnel cases of the review's 52 were
     A1's). Two of the 34 belong to A4 (`sonic-audio`, the motor's default) and two to A5 (`sonic-start`, the 28 lessons).
   - [x] `sonic-lessons` and its rig: 24 of 26 pass, 2 skipped for stage B (G and review I3: the glossary ends in a 'go'
@@ -110,7 +110,37 @@ proofs.
     hall (the 0.05 m voxels: 8 times the voxels in each cell, and in 0.7 m ways nearly every cell by the craft is
     crossed by a wall). Per 60 Hz frame that is 0.039 ms. Not a one-line setting (the voxel size is the world's spec,
     in the package's lesson file, and the replay rebuilds at it): for lane v13-look, with the frame cost of the look.
-- [ ] A7 full gates exit 0; stage A's status final
+- [x] A7 full gates exit 0; stage A's status final
+  - `gates.py --repo C:/dev/gsfpv-v13-host` on f131bb1, exit 0: typecheck PASS; vitest PASS, 3833 passed, 11 skipped
+    (3844: the 2 of stage B, 8 that need the Winter Garden scan's walls in `.cache`, 1 that needs a tool or a build
+    this machine's run lacks, all as before); api-unittest, architecture, i18n, catalog PASS; B18 PASS
+    (`evidence/2026-11-08/b-repo-b18.json`).
+  - The Fly by Sound tests (`sonic-*`, `sonicrec-*`, `packages/prefs/test/sonic.test.ts`): 604 tests, 594 pass, 10
+    skipped (8 need the scan, 2 are stage B's), none fails.
+  - No line a person reads was added or changed (no locale key): nothing waits for a native reading from stage A.
+
+#### Stage A, final
+
+Done: A1 to A7, one commit each (A2 in eight commits by file and its status). Not pushed, nothing deployed, the live
+site and the other worktrees untouched; `packages/sonic-fpv` only moved to 16c01a1, never edited.
+
+Left for stage B, with the reason:
+
+1. The two skipped `sonic-lessons` tests (G's way back, review I3) come back with W3 (`createLessonRunner`'s `path`,
+   `keys`, `returnTo`, `speechRate`) and W4 (the 'go' action): until then the glossary ends in a 'go' the host drops,
+   and N in any flying lesson is a dead end.
+2. W5 to W8, W13 to W15 as the review lists them (B, Z, the Escape menu and its keys recorded for the replay; I and the
+   progress panel from `runner.view()`; `skipped` kept in the saved progress, W7; the pause and resume of the runner;
+   the mode's settings `motorGainDb` and `heightTarget`; every line through `engine.say()`), and W9 and W10 (the replay
+   of an older lesson version speaks its recorded lines; the "recorded with an older build" verdict line).
+3. When the package answers "Needs from the package" 2 (an engine reset), call it in `LessonHost.open` and drop the
+   settle window of `sonic-int-replay`; when it answers 1 (the touch ping), follow it in `SonicMode.touched()`.
+4. `sonic-session/replay-segments.ts`: a frame stamped at the next open's own time (the "Found" note in A2).
+5. Stage C: the page proofs, `tools/bench/src/sonic-start-keyboard.ts` among them (its counts follow the package now,
+   not run here).
+
+For lane v13-look (A6): tunnel-long's contact queries are 16 % over the plan's 20 ms for 10 s of flight, and the
+planner's headroom there is 0.235 ms at p95; M41-19 and M41-23 as planned.
 
 ### Stage B
 
