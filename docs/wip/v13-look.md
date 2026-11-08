@@ -72,6 +72,9 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
   - Unchanged elsewhere: `a6-reference` (the reference hash) and every sim-core test pass; the Fly by Sound tests (`sonic-*`,
     `sonicrec-*`, `packages/prefs/test/sonic.test.ts`) and `app-game`, `app-easy`: 626 pass, 10 skipped (as before: 8 need
     the scan, 2 are stage B's). The lesson rig (`sonic-lesson-rig.ts`, the real FlightSession) now flies the slide rule.
+  - Physics benches rerun (AGENTS.md: a physics change): A2, A4 and A5 PASS (`evidence/2026-11-08/a2-collision-formats.json`,
+    `a4-physics.json`, `a5-tunnelling.json`: 200 000 passes, 0 penetrations); A3 (the rate curves) untouched. The run
+    rewrote `evidence/latest.json`'s tunnelling item (same value, its method's top speed 34.16 m/s and date).
 - [x] L1-2 (W17) a headless page flight on a release build: full stick in walls-hall from the start to the first touch
   (the model says 2 to 3 s: measured); a respawn in tunnel-gaps' free way under a block rests at the respawn point and is
   not stuck.
@@ -137,7 +140,7 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
     | rings-heights (the start) | 0.0075 | 0.129 | 0.033 | 3.11 | the rings 0.826 against 0.091: 6.23 |
     The first page run showed every object black (`Mesh.fromGeometry` takes a geometry's colours as 8 bits: a light of
     0.8 became 0): the check of 3:1 failed there (1.98 to 2.57), fixed by building the object meshes like the room's.
-- [ ] L1-4 (W16) frame cost: the page's frame time with the new look in tunnel-long, the corridor and rings-heights
+- [x] L1-4 (W16) frame cost: the page's frame time with the new look in tunnel-long, the corridor and rings-heights
   within v0.12's frame budget; tunnel-long's collider (16 % over its plan of 20 ms per 10 s of flight) brought under
   without changing the world's voxel size, or the whole frame shown in budget, the decision written with its numbers.
   - [x] The collider, brought under in the simulator, voxel size unchanged (0.05 m): `tools/bench/test/sonic-tunnel-cost.ts`,
@@ -179,7 +182,41 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
     `v13-look-cost-repeat.json` and a JPEG of each world's first view beside each (v0.12's look and the new one).
   - Decision (W16): the collider is brought under its plan in the simulator (above, 16.41 ms per 10 s), and the page
     shows the whole frame in budget besides; no change of the world's voxel size is needed.
-- [ ] L1-5 gates exit 0; flight regression B6-B16 on a local build; L1's status final.
+- [x] L1-5 gates exit 0; flight regression B6-B16 on a local build; L1's status final.
+  - `gates.py --repo C:/dev/gsfpv-v13-look` on 8343ce5 (all of L1's code; logs `U:/Temp/gsfpv-gates-20261108-211626`):
+    exit 0. typecheck 26 s; vitest 240 files, 3865 passed, 2 skipped (3867: the 23 new tests of this lane on A7's 3844;
+    the 2 skipped are stage B's of v13-host; the nine that A7 skipped for want of the scan's walls in `.cache` and a build
+    ran here), 146 s; api-unittest 420 OK; architecture ok; i18n 1087 strings x 4; catalog
+    up to date; B18 PASS (`{"outside":[],"placeholders":[],"topics":14}`), its `evidence/2026-11-08/b-repo-b18.json` given
+    back to the base's, not committed. No line a person reads was added or changed (no locale key): nothing waits for a
+    native reading from stage L1.
+  - Flight regression on the release of 8343ce5 (`release.json` sha 8343ce5, served by `serve-csp.mjs dist 5420`; the
+    run's first line `accept-fly target: http://localhost:5420`, the GPU lock held and given back): B6, B7, B9, B10, B11,
+    B12, B13, B14, B15 and B16 PASS, exit 0 (the tree dirty only by this doc and a test's header comment). The scans fly
+    as before (v12-optin's run of the same items on its base): B12's crash at 8.668 m/s at the same point to the last
+    digit, its control 498 contacts and no crash; B13 0 penetrations in 60 passes at 25 m/s; B15's crash the same speed and
+    point (its tick later by the page's start), its log replayed in a new tab to the saved hash; B16 9.591 and 1.616 m/s^2
+    (Earth, Moon); B9 the same thrust to weight to four places.
+    Evidence: `evidence/2026-11-08/b-fly-*-v13-look.json`, `b-fly-summary-v13-look.json`, `v13-look-b-fly/` (the run's
+    names moved beside v12-optin's `-optin` ones of the same day).
+
+#### Stage L1, final
+
+Done: L1-1 to L1-5, one commit each step (L1-2 in two, L1-4's collider before the look, the page frame time with L1-3).
+Not pushed, nothing deployed, no SSH, never the live site; the other worktrees untouched; `packages/sonic-fpv` never
+edited. Every check above ran here: Node tests in vitest, the page checks headless on local release builds served with
+the enforced CSP (`serve-csp.mjs dist 5420`), the GPU lock held for every drawing run.
+
+Left open, with the reason:
+
+1. A page-level control of W17 (the same page run on a stage A build, v0.12's take-off hop): not run; the Node test's
+   control shows v0.12's hop hitting the block at the runner's own respawn points.
+2. The look's GPU time against v0.12's look with unrounded timestamps: v0.12's look was measured with stock Chrome, whose
+   timestamps round to 0.066 ms here (both looks take about 0.1 ms or less of GPU per frame); the CPU comparison stands.
+3. One machine only (Intel i9-7980XE, this GPU, a 30 Hz display): a weak laptop GPU or a phone was not measured. The look
+   is unlit meshes, three per room and one per object part, two 256 px textures, linear fog.
+4. The scan lesson (free-garden) keeps the drone's own contact (see "For the lead").
+5. Stage L2: the attitude display, the sound panel, their prefs and texts, their page proofs (L2-1 to L2-5).
 
 ### Stage L2 (the next agent)
 
@@ -203,16 +240,32 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
 
 ## For the lead
 
-- L1-1 touches shared code, each change inert outside a lesson world: `packages/sim-core` (`ParamOverrides.bump`,
-  `SimParams.bump`, `Sim.slide`, the contact event's normal, `lifeHeaderProblem`), `apps/fly/src/play/assist.ts`, `game.ts`
-  (methods only a lesson's pilot calls), `play/lesson-pilot.ts`, `session/index.ts` (`BuiltinWorld.overrides`). No
-  `SIM_CORE_VERSION` bump: no trace without the override changes (the reference hash holds); a lesson life now carries
-  `bump: 'slide'` in its header, so its configHash differs from a v0.12 one, and a v0.12 lesson log still replays with
-  the contact it was flown with.
+- New prefs: none in stage L1 (the look has no setting; L2's panels will list theirs here for the spoken settings list).
+- Shared code L1 touched, each change inert outside a lesson world: `packages/sim-core` (`ParamOverrides.bump`,
+  `SimParams.bump`, `Sim.slide`, the contact event's normal, `lifeHeaderProblem`), `packages/collision/src/analytic.ts`
+  (the whole-body shortcut, exact; only lesson worlds build an `AnalyticContactWorld`), `apps/fly/src/play/assist.ts`,
+  `game.ts` (methods and a `GameSense.ceilingM` only a lesson's pilot uses), `play/lesson-pilot.ts`, `app/input.ts` (the
+  pilot's `above` ray, one line), `session/index.ts` (`BuiltinWorld.overrides`). No `SIM_CORE_VERSION` bump: no trace
+  without the override changes (the reference hash holds); a lesson life now carries `bump: 'slide'` in its header, so
+  its configHash differs from a v0.12 one, and a v0.12 lesson log still replays with the contact it was flown with.
+- Merge with v13-host's stages B and C: no file of theirs was touched (`feature.ts`, `lessons.ts`, `mode*.ts`, `bridge.ts`,
+  `start-*.ts`, `entry.ts`, `sonic-session/*`, `packages/prefs/src/doc.ts` untouched). The stage registers its measuring
+  switch on the page's test hook itself (`window.__gsfpv.sonicLook`, from `PrimitiveStage`'s constructor, removed on
+  dispose). `evidence/latest.json` changed (the A5 rerun's tunnelling item): take the newer on a conflict.
 - The scan lesson (free-garden) keeps the drone's own contact: its walls are the scan's, and the mode sets no override for
   a scan. If the owner wants the lesson bump there too, the mode would add `{ bump: 'slide' }` to the session's
   overrides while a scan lesson runs (v13-host's `mode.ts`).
+- The look sets the scene's fog while a lesson world's room is on the stage and gives the scene's own back on clear and
+  dispose; a lesson world's scene is now `tonemapping: 'linear'` and its clear colour the look's sky (was near black).
+- Checks to keep in the release's list: `tools/bench/test/sonic-bump.test.ts` (M41-19, W17), `sonic-look.test.ts`,
+  `sonic-tunnel-walls.test.ts`, `packages/sim-core/test/model-bump.test.ts`; the page benches
+  `tools/bench/src/v13-look-page.ts bump | look | cost` on a local release (`SITE=http://localhost:<port>`, GPU lock).
+- For stage L2: the scene the panels lie over is dark (floor relative luminance 0.007, walls 0.13, ceiling 0.03, sky 0.16);
+  `v13-look-page.ts` has the page helpers (open a lesson by the keyboard, place the craft by the respawn path, decode
+  a picture in a helper page) and the role paint to measure contrast; its `look` scenario's analysis takes any pair
+  of pictures.
 
 ## Needs from the package
 
-(none yet)
+- None from stage L1. The lesson bump, the take-off in a low way and the look are the simulator's; the runner's respawn
+  places (`RESPAWN_BEFORE_M` before a track point, under a block's edge in tunnel-gaps and tunnel-long) work as they are.

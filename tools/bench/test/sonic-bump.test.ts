@@ -6,9 +6,15 @@
 // 1 kHz on a lesson world's walls with that world's own flight rules (lesson-world.ts LESSON_FLIGHT: sim-core BumpRule
 // 'slide'). The craft is flown into a surface: a wall, a pillar, the ceiling (from a run-up, the stick held toward it) and the
 // floor (thrown at it: the lesson pilot never sinks fast near the ground), at 0 to 85 degrees from the surface's normal and
-// 1 to 5 m/s. At the first contact (or after 1 s more of pressing into it) the stick is let go or pointed away from the
-// surface, and the probe asks: from when on is the craft out of contact, at least OUT_GAP_M off every surface with no
-// contact after it, for the rest of the watch (OUT_WATCH_S, or until it is LEFT_M away). Wanted: within OUT_WITHIN_S.
+// 1 to 5 m/s. At the first contact (or after PRESS_S more of pressing into it) the stick is let go or pointed away from
+// the surface, and the probe asks: from when on is the craft out of contact, at least OUT_GAP_M off every surface with no
+// contact after it, for the rest of the watch (OUT_WATCH_S, or until it is LEFT_M off every surface). Wanted: within
+// OUT_WITHIN_S. The walls are walls-hall's (its left wall: 12 m to slide along), walls-pillar's pillar, walls-hall's
+// ceiling and floor, rings-first's ring and shapes-square's bar.
+//   - W17: a respawn in a low way of tunnel-long (the runner's own places, under a block's edge or on one under the
+//     ceiling) hovers there and flies on without touching what is above (the take-off hop looks up); control: v0.12's
+//     hop of 1 m hits the block.
+//   - a lesson still lands (the stick held down: the motors stop on the floor).
 //   - no tunnelling: on every tick no sphere of the body overlaps the walls by more than PEN_MAX_M, thin walls included
 //     (a ring's tube of 0.2 m and a square gate's bar of 0.15 m at 5 m/s);
 //   - control: the same flights with the v0.12 response (the drone's own contact, the pilot that never hears a bump) stick:
