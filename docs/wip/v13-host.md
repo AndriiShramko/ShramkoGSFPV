@@ -30,7 +30,9 @@ proofs.
     package's boxes alike (the hits do not depend on the faces): its bounds are 1 % free air at 0.3 m from a wall
     (102 x 4.4 x 65 m), so 20 000 draws found about 250 ray origins. The draws are now up to 200 000, still stopping
     at 1500 free origins (no other world needed more than 70 000); both assertions stand.
-- [ ] A2 (W20) the simulator's Fly by Sound tests pass on the new package (in groups by file, each in "Changed tests")
+- [x] A2 (W20) the simulator's Fly by Sound tests pass on the new package (in groups by file, each in "Changed tests"):
+  599 tests, 585 pass, 10 skipped (8 as before, 2 marked for stage B), 4 fail, which A4 (`sonic-audio`, the motor's
+  default) and A5 (`sonic-start`, the 28 lessons) take
   - On the new package before A2: 598 tests, 556 pass, 34 fail, 8 skipped (the 18 tunnel cases of the review's 52 were
     A1's). Two of the 34 belong to A4 (`sonic-audio`, the motor's default) and two to A5 (`sonic-start`, the 28 lessons).
   - [x] `sonic-lessons` and its rig: 24 of 26 pass, 2 skipped for stage B (G and review I3: the glossary ends in a 'go'
