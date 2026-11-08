@@ -21,7 +21,7 @@
 // language by default (/fly/?...): the server sends the visitor to the page in his own language (deploy/nginx.conf
 // `location = /fly/`), so a lesson a Polish pilot shares is spoken in Spanish to a Spanish one. Pure: no DOM, no lessons, no
 // themes (the page that opens it checks that the lesson and the theme exist).
-import { SCENE_ID_RE } from './link';
+import { SCENE_ID_RE, flyQueryString } from './link';
 import { SHARED_PARAMS, parseSharedSettings, sharedNumber } from './shared-settings';
 
 /** The sound settings a link may carry (each only when it is not the default). */
@@ -107,4 +107,37 @@ export function sonicLinkQuery(link: SonicLink): string {
 /** The link's address under `flyPath`: `/fly/` (no language: the server picks the visitor's own) or a page's own `/{lang}/fly/`. */
 export function sonicLinkPath(link: SonicLink, flyPath = '/fly/'): string {
     return `${flyPath}?${sonicLinkQuery(link)}`;
+}
+
+// The address of a page entered through ?sonic= (v12-optin review R2). The page reads a link's sound settings from its address at
+// every load, so the address carries only what still stands: a setting the pilot kept, changed or let go of leaves it (as a shared
+// scene's chip cleans its own parameters, apps/fly app/builtin/shared-settings.ts), and the address of a running lesson is that
+// lesson's own link (its scan only for the scan lesson). Every other parameter of the query stays where it is.
+
+/** `value` under `name`, or `name` gone. */
+function put(q: URLSearchParams, name: string, value: string | undefined): void {
+    if (value === undefined) q.delete(name);
+    else q.set(name, value);
+}
+
+/** `search` (a page's query, with or without its `?`) with the sound settings of `sound` and no other. */
+export function visitQuery(search: string, sound: SonicLinkSound): string {
+    const P = SONIC_LINK_PARAMS;
+    const q = new URLSearchParams(search);
+    put(q, P.theme, sound.theme);
+    put(q, P.calm, sound.calm === undefined ? undefined : sound.calm ? '1' : '0');
+    put(q, P.height, sound.heightPolarity);
+    put(q, P.frame, sound.listenerFrame);
+    return flyQueryString(q);
+}
+
+/** `search` as the address of `link`'s lesson: its lesson, its scan and size (or none), its sound settings; the rest of the query kept. */
+export function lessonQuery(search: string, link: SonicLink): string {
+    const P = SONIC_LINK_PARAMS;
+    const q = new URLSearchParams(visitQuery(search, link.sound));
+    q.set(P.lesson, link.lesson);
+    const scan = link.scene !== undefined && SCENE_ID_RE.test(link.scene);
+    put(q, P.scene, scan ? link.scene : undefined);
+    put(q, P.size, scan && link.size !== undefined ? sharedNumber(link.size, 3) : undefined);
+    return flyQueryString(q);
 }

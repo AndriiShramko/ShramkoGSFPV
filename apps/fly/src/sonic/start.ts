@@ -13,7 +13,7 @@
 import type { Locale } from '@shramko/sonic-fpv';
 import { DICTS, createTranslator, getLesson } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
-import { parseSonicLink } from '@gsfpv/scenes/sonic-link';
+import { followVisit } from './address';
 import { Captions } from './captions';
 import { SonicSetup } from './entry';
 import { lessonFlightWorld } from './lesson-world';
@@ -64,9 +64,10 @@ export function startSonic(d: SonicStartDeps): StartHandle {
     document.title = tr.say('app.name');
     const request = parseSonicParam(d.raw);
     const setup = new SonicSetup(d.prefs, d.locale, new Captions());
-    // a shared link's sound for this visit (never saved unless kept); its scene and size are the lesson's own, which decides
-    const link = d.query ? parseSonicLink(d.query) : null;
-    if (link) setup.setVisit(link.sound);
+    // a shared link's sound for this visit (never saved unless kept); its scene and size are the lesson's own, which decides. The
+    // address carries what of it still stands, so a reload or a restored tab never brings back a setting the pilot kept, changed or
+    // let go of (review R2, address.ts)
+    followVisit(setup, d.query);
     const screen: StartScreen = new StartScreen({
         setup,
         locale: d.locale,

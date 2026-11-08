@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BUILTIN_THEME_IDS, SHIPPED_LESSON_IDS, defaultPrefs, getLesson } from '../../../packages/sonic-fpv/src';
-import { SONIC_LINK_DEFAULTS, SONIC_LINK_PARAMS, linkSound, parseSonicLink, sonicLinkPath, sonicLinkQuery } from '../../../packages/scenes/src/sonic-link';
+import { SONIC_LINK_DEFAULTS, SONIC_LINK_PARAMS, lessonQuery, linkSound, parseSonicLink, sonicLinkPath, sonicLinkQuery, visitQuery } from '../../../packages/scenes/src/sonic-link';
 import type { SonicLink } from '../../../packages/scenes/src/sonic-link';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { SOUND_PAGE_ITEM, sonicFlight, soundPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
@@ -147,6 +147,17 @@ describe('the link that carries the mode: writer and reader (step 4, @gsfpv/scen
         expect(parseSonicLink(queryOf('/fly/?sonic=rings-first&st=clear&sc=2&sh=up-lower&sf=tilt&sz=5'))).toEqual({ lesson: 'rings-first', size: 5, sound: { theme: 'clear', heightPolarity: 'up-lower' } });
         // the writer never writes a size without its scene, nor a scene that is not a scan id
         expect(sonicLinkQuery({ lesson: 'x', scene: 'lesson-hover-height', size: 1, sound: {} })).toBe('sonic=x');
+    });
+
+    it('review R2: the address of a ?sonic= page carries only the sound that stands; every other parameter stays where it is; the reader reads it back', () => {
+        expect(visitQuery('?sonic=hover-height&st=clear&sc=1&nowarn=1', {})).toBe('sonic=hover-height&nowarn=1');
+        expect(visitQuery('sonic=x&stochastic&st=race', { theme: 'clear', listenerFrame: 'body' })).toBe('sonic=x&stochastic&st=clear&sf=body');
+        expect(visitQuery('sonic=x&sc=1', { calm: false })).toBe('sonic=x&sc=0');
+        const all = { theme: 'clear', calm: true, heightPolarity: 'up-lower', listenerFrame: 'body' } as const;
+        expect(parseSonicLink(new URLSearchParams(visitQuery('sonic=x', all)))?.sound).toEqual(all);
+        // a lesson's address: its own scan or none, never the one of the lesson before
+        expect(lessonQuery('sonic=free-garden&scene=7a475d38&sz=5', { lesson: 'corridor', sound: {} })).toBe('sonic=corridor');
+        expect(lessonQuery('sonic=corridor', { lesson: 'free-garden', scene: '7a475d38', size: 5, sound: {} })).toBe('sonic=free-garden&scene=7a475d38&sz=5');
     });
 
     it('the writer carries only the sound settings that are not the defaults; its defaults are the sound package\'s (a drift guard)', () => {

@@ -201,7 +201,8 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         // a scan lesson (module 7): the scan at the lesson's size, walls on, then its world over the track (sonic/scan-lesson.ts)
         scanLesson: (lesson) => scanLesson(ctx, mode, entry, tracks, lesson),
         showMenu,
-        clock: () => performance.now()
+        clock: () => performance.now(),
+        visit: () => entry.setup.visit
     };
 }
 

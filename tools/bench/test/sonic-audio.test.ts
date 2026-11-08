@@ -18,6 +18,10 @@ import { SonicAudio } from '../../../apps/fly/src/sonic/audio';
 import type { AudioDeps, PageEngine } from '../../../apps/fly/src/sonic/audio';
 import { SonicSetup, captionMode } from '../../../apps/fly/src/sonic/entry';
 import type { CaptionSink } from '../../../apps/fly/src/sonic/entry';
+import { followVisit } from '../../../apps/fly/src/sonic/address';
+import type { AddressWriter } from '../../../apps/fly/src/sonic/address';
+import { pageLink } from '../../../apps/fly/src/sonic/mode-keys';
+import { lessonQuery } from '../../../packages/scenes/src/sonic-link';
 import { PageRuntime } from '../../../apps/fly/src/sonic/runtime';
 import { allProgress, currentLesson, loadSonicPrefs, saveProgress, savedProgress, saveSonicPrefs, setCurrentLesson } from '../../../apps/fly/src/sonic/store';
 import { SonicBridge, SILENT_LAYERS } from '../../../apps/fly/src/sonic/bridge';
@@ -262,6 +266,115 @@ describe('SonicSetup: the pilot\'s sound settings', () => {
         expect(s.setVisit({ heightPolarity: 'sideways' as never, listenerFrame: 'body' })).toEqual({ listenerFrame: 'body' });
         expect(s.prefs.heightPolarity).toBe('up-higher');
         expect(s.prefs.calm).toBe(false); // the earlier visit is replaced, not added to
+    });
+
+    // review R2: a value equal to his own changes nothing and is no part of the visit; "Use my own settings"; what stands is told
+    it('setVisit(): a value equal to the pilot\'s own saved one is left out (after Keep a reload of the same link stands for nothing)', () => {
+        const { s } = setup({ theme: 'clear', calm: true });
+        expect(s.setVisit({ theme: 'clear', calm: true, heightPolarity: 'up-lower' })).toEqual({ heightPolarity: 'up-lower' });
+        expect(s.visit).toEqual({ heightPolarity: 'up-lower' });
+        expect(s.setVisit({ theme: 'clear', calm: true })).toEqual({});
+        // control: the same values on a pilot whose own differ stand
+        const other = setup();
+        expect(other.s.setVisit({ theme: 'clear', calm: true })).toEqual({ theme: 'clear', calm: true });
+    });
+
+    it('dropVisit() ("Use my own settings"): the visit is over, his own saved settings play again, nothing is saved', () => {
+        const { host, s, engines } = setup({ theme: 'race' });
+        s.setVisit({ theme: 'clear', heightPolarity: 'up-lower' });
+        const stored = JSON.stringify(host.collection('sonic'));
+        s.dropVisit();
+        expect(s.visit).toEqual({});
+        expect(s.prefs).toMatchObject({ theme: 'race', heightPolarity: 'up-higher' });
+        expect(engines[0]!.theme!.id).toBe('race');
+        expect(JSON.stringify(host.collection('sonic'))).toBe(stored);
+    });
+
+    it('onVisit hears what stands each time it changes (a link set, a setting changed, Keep, "Use my own settings"), and not for anything else', () => {
+        const { s } = setup();
+        const heard: unknown[] = [];
+        s.onVisit = (v) => heard.push(v);
+        s.setVisit({ theme: 'clear', calm: true, heightPolarity: 'up-lower' });
+        s.update({ speechRate: 1.5 }); // not a setting of the visit: nothing to tell
+        s.update({ calm: false });
+        s.keepVisit();
+        s.dropVisit(); // nothing stands any more: nothing to tell
+        s.setVisit({ listenerFrame: 'body' });
+        s.dropVisit();
+        expect(heard).toEqual([{ theme: 'clear', calm: true, heightPolarity: 'up-lower' }, { theme: 'clear', heightPolarity: 'up-lower' }, {}, { listenerFrame: 'body' }, {}]);
+    });
+});
+
+// review R2: a page reloaded (or a tab restored) reads the link's sound from its address again; the address carries only what stands
+describe('a shared link\'s sound and the page\'s address (sonic/address.ts followVisit, lessons.ts url)', () => {
+    /** One profile (one store) and its address bar; load() is a page load: a new setup that reads the address, as sonic/start.ts does. */
+    function profile(address: string, write?: AddressWriter) {
+        const host = mkStore();
+        const bar = { address };
+        const own: AddressWriter = (next) => { bar.address = next(bar.address); };
+        const load = (): SonicSetup => {
+            const s = new SonicSetup(host, 'en', new Sink(), { deps: fakeDeps().deps });
+            followVisit(s, new URLSearchParams(bar.address), write ?? own);
+            return s;
+        };
+        return { host, bar, load };
+    }
+
+    it('the reviewer\'s probe: link, Keep, Calm mode off, reload: no visit and no note, his saved value in force; the address lost the link\'s sound', () => {
+        const { bar, load } = profile('sonic=hover-height&st=clear&sc=1&nowarn=1');
+        const a = load();
+        expect(a.visit).toEqual({ theme: 'clear', calm: true });
+        expect(bar.address).toBe('sonic=hover-height&st=clear&sc=1&nowarn=1'); // what stands is what the link says: not rewritten
+        a.keepVisit();
+        expect(bar.address).toBe('sonic=hover-height&nowarn=1');
+        a.update({ calm: false });
+        const b = load();
+        expect(b.visit).toEqual({});
+        expect(b.prefs).toMatchObject({ theme: 'clear', calm: false });
+    });
+
+    it('a setting changed without Keep leaves the address, the rest of the link stands after a reload; "Use my own settings" takes all of it out', () => {
+        const { bar, load } = profile('sonic=hover-height&st=clear&sc=1&sh=up-lower');
+        const a = load();
+        a.update({ heightPolarity: 'up-higher' });
+        expect(bar.address).toBe('sonic=hover-height&st=clear&sc=1');
+        const b = load();
+        expect(b.visit).toEqual({ theme: 'clear', calm: true });
+        expect(b.prefs.heightPolarity).toBe('up-higher'); // the reversed height tone never comes back
+        b.dropVisit();
+        expect(bar.address).toBe('sonic=hover-height');
+        const c = load();
+        expect(c.visit).toEqual({});
+        expect(c.prefs).toMatchObject({ theme: 'soft', calm: false, heightPolarity: 'up-higher' });
+    });
+
+    it('a link setting equal to his own, or a theme this release lacks, leaves the address at the load (so nothing names it after a reload)', () => {
+        const { host, bar, load } = profile('sonic=start&st=disco&sc=1&sf=body');
+        saveSonicPrefs(host, { ...defaultPrefs(), listenerFrame: 'body' });
+        const a = load();
+        expect(a.visit).toEqual({ calm: true });
+        expect(bar.address).toBe('sonic=start&sc=1');
+    });
+
+    it('a lesson that opens writes its own link: its scan only for the scan lesson, the sound that stands, the rest of the query kept', () => {
+        const garden = getLesson('free-garden');
+        const hover = getLesson('hover-height');
+        const from = 'sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1&nowarn=1';
+        expect(lessonQuery(from, pageLink(hover, { theme: 'clear', calm: true }))).toBe('sonic=hover-height&st=clear&sc=1&nowarn=1');
+        expect(lessonQuery(from, pageLink(hover, {}))).toBe('sonic=hover-height&nowarn=1');
+        expect(lessonQuery('sonic=hover-height&nowarn=1', pageLink(garden, {}))).toBe('sonic=free-garden&nowarn=1&scene=7a475d38&sz=5');
+        // the pilot's own settings are never written as a visit (a reload would name them in the note)
+        expect(pageLink(hover, {}).sound).toEqual({});
+    });
+
+    it('control: an address that is never rewritten (as before review R2) brings Calm mode back after Keep and a change', () => {
+        const { load } = profile('sonic=hover-height&st=clear&sc=1', () => undefined);
+        const a = load();
+        a.keepVisit();
+        a.update({ calm: false });
+        const b = load();
+        expect(b.visit).toEqual({ calm: true });
+        expect(b.prefs.calm).toBe(true);
     });
 });
 

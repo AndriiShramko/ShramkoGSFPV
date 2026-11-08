@@ -10,15 +10,28 @@ import { linkSound } from '@gsfpv/scenes/sonic-link';
 import type { SonicLink } from '@gsfpv/scenes/sonic-link';
 import type { ActionId } from '@gsfpv/prefs';
 
-/** The link that opens `lesson` (null: the start screen) with the pilot's sound settings that are not the defaults. */
-export function lessonLink(lesson: Pick<LessonDef, 'id' | 'world'> | null, prefs: SonicPrefs): SonicLink {
-    const link: SonicLink = { lesson: lesson?.id ?? 'start', sound: linkSound(prefs) };
+/** The link that opens `lesson` (null: the start screen) with `sound`; a scan lesson's link names its scan at its size. */
+function linkOf(lesson: Pick<LessonDef, 'id' | 'world'> | null, sound: SonicLink['sound']): SonicLink {
+    const link: SonicLink = { lesson: lesson?.id ?? 'start', sound };
     // the scan a scan lesson flies, at its size: the lesson's own (what the link opens), named in the link
     if (lesson?.world.kind === 'scan') {
         link.scene = lesson.world.sceneId;
         link.size = lesson.world.transform[0];
     }
     return link;
+}
+
+/** The link that opens `lesson` (null: the start screen) with the pilot's sound settings that are not the defaults (what L copies). */
+export function lessonLink(lesson: Pick<LessonDef, 'id' | 'world'> | null, prefs: SonicPrefs): SonicLink {
+    return linkOf(lesson, linkSound(prefs));
+}
+
+/**
+ * The address of the page while `lesson` runs (review R2, sonic/address.ts): that lesson's own link with only the settings a shared
+ * link set that still stand (`visit`), never the pilot's own, so a reload offers this lesson with what stood and nothing else.
+ */
+export function pageLink(lesson: Pick<LessonDef, 'id' | 'world'>, visit: SonicLink['sound']): SonicLink {
+    return linkOf(lesson, { ...visit });
 }
 
 /** What L says once the link is copied (or not): `cap` is the key's cap for "press it again". */
