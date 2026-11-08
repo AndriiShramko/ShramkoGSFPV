@@ -513,6 +513,13 @@ no nginx change (a package is streamed by the API and passed through by the exis
 
 ## Deploying a release
 
+**Scripts (2026-11-08).** The release order is three scripts, each reading `deploy/hub.env` and printing no value from it:
+`bash deploy/release-api.sh [--compose] [--recreate] [--locales] <files under apps/api>` (`.prev` copies, sha256 on both ends,
+restart or recreate, `/api/health` 200 and no Traceback; `--undo` puts the `.prev` copies back), `bash deploy/release-nginx.sh`
+(`.prev`, sha on the hub and in the container, `nginx -t`, reload; a failed test puts `.prev` back), and `bash deploy/ship.sh <sha>`
+(it waits for green CI, downloads the artifact until the zip tests whole, and does steps 2 to 5 below). `ship.sh` holds the hub's
+deploy lock `/tmp/hub-deploy.lock` for the run; `HUB_LOCK_HELD=1` when the caller already holds it for a longer job.
+
 1. Take `dist.tgz` and `SHA256SUMS` from the CI run of the commit you ship.
 2. Take a neighbours snapshot before the deploy: `python deploy/neighbours.py snap <dir>`.
 3. Deploy:

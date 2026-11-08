@@ -13,13 +13,16 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
 
 ## Running
 
-- Nothing. The release waits for the owner's word: the app's auto mode refused the production deploy without it (2026-11-08).
+- Nothing for v0.12: released 2026-11-08 on the owner's word (message 40).
 
 ## Next for the lead
 
-1. Release per the gsfpv skill `references/release.md`, `main` c6ddeba. API files (`server.py`, `admin.py`, `sessions.py`, `session_delivery.py`, `sessions_admin.py`; upload `session_delivery.py` and `sessions.py` together) and `compose.yml` (192 MB, `docker compose up -d --force-recreate gsfpv-api`, Memory 201326592). No config change is needed: the hub's `config.env` has `TG_BOT_TOKEN`, `TG_CHAT_ID`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` (names checked), every `SESSION_*` has its default. Then nginx (microphone, `media-src blob:`, `/api/session/`), then `bash .cache/ship.sh c6ddeba`, live checks.
-2. Live acceptance: release.json, accept-fly over the live site, `?sonic=` and `/{lang}/sound/` headless, one test package through the live API to the owner's Telegram and mailbox (lesson `TEST-live-delivery-check`, release `TEST-delivery`; the uploader was tried on the local rig: both channels sent, SHA-256 equal), then delete it. STATE.md, vault status note.
-3. After the release: the sound repo's README says the mode is live (link to `/en/sound/`), `gh_repo.py patch --homepage`.
+1. The sound repo's README says the mode is live (link to `/en/sound/`), CHANGELOG, `gh_repo.py patch --homepage`.
+2. Owner's message 40 (2026-11-08): (a) ordinary pilots must not meet Fly by Sound unless they choose it: the five sound keys are listed for everyone
+   (`when: 'always'` in `packages/prefs/src/keymap.ts`), there is no quiet way in from the simulator, and blind pilots need a link that carries the
+   mode, the lesson and the scene to share with each other (lane v12-optin); (b) a virtual listener: the sound judged the way a person would hear it
+   (localization by a panel of measured HRTFs, masking, cue confusion, speech over the mix, musicality, loudness, an audio-only pilot), so testers
+   get working solutions, not raw builds (research, then a rig in the sound repo).
 
 ## Left open after v12-int (not blocking the release)
 
@@ -46,4 +49,4 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
 - [x] v12-int merged (c6ddeba): the seams joined, lazy loading, end-to-end run, the review's 5 fixes
   - Secrets precheck on the staged merge: 9 password-shaped hits, all test data on a line after `"pass": true` (survey answers, gate times, line keys; checked by shape), allowed once; 22 secret words, all prose or names, no value; 30 evidence pictures (the repo's convention).
   - All gates on c6ddeba (logs `U:/Temp/gsfpv-gates-20261108-022534`): typecheck, vitest 205 files 3275 pass 8 skipped, api-unittest 420, architecture, i18n, catalog, B18 PASS. Pushed to `main`.
-- [ ] released and checked live
+- [x] released and checked live (2026-11-08, `main` 047ee57): before it the hub's root disk had 1.9 GB free, under the API's 2 GB guard; the backups moved to the new 10 GB volume (vault note "Хаб 65.109.11.177 — диск и том"), data/sessions became a bind mount of the volume and the store measures free space there (d2f9db9), the predeploy backup leaves the recordings out (047ee57). API via the scratch release scripts, nginx, ship: neighbours equal, smoke 302; release.json, /sound/ x4, admin bundle sha, one marked test package to Telegram and the inbox (SHA equal), deleted. The release steps are now scripts: deploy/release-api.sh, deploy/release-nginx.sh, deploy/ship.sh (it was only in the gitignored .cache/).
