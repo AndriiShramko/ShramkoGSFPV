@@ -64,7 +64,17 @@ proofs.
     into the next lesson (`t < endT`). In the rig every switch has one (its clock stands while the host opens the next
     lesson), so rings-line's first frame is rings-first's last position, heard in rings-line's world by the replay. In
     the page the open comes after the frame by the swap or by a few microseconds, but a coarse timer could tie them.
-- [ ] A3 (W11) `FrameSampler.take` keeps every sample with `touched`
+- [x] A3 (W11) `FrameSampler.take` keeps every sample with `touched` (`apps/fly/src/sonic-session/frames.ts`): a touched
+  sample between two due ones is kept too and moves no due time
+  - Test, new `tools/bench/test/sonicrec-touch.test.ts`: a host loop as the simulator's (the package's runner and planner
+    at 60 Hz, speech.end markers, the frames chosen by `FrameSampler`) flies tunnel-narrow along its world's track and
+    flies into its side walls three times at 2 m/s (the straight legs at z = -5, x = 5 and x = 10), each touch on a
+    sample that is not due: every touched sample is a frame, the replay re-derives every event (touches and resets 3 of
+    3, each reset to a point `wN`), the verdict is pass. Control in the test: the same flight with the samples given to
+    the sampler without their touch (the v0.12 rule) reads FAIL, "position differs" on the touches. Broken once and
+    restored: `frames.ts` as at 093fbbd fails the first test.
+  - `sonicrec-*` and `sonic-int-*`: 285 of 285 after it; rings-first's recording has one frame more (2226: the touched
+    sample of a touch between attempts), its shares as before (98.7 % and 85.7 % settled).
 - [ ] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
 - [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
 - [ ] A6 (W16) one run of the analytic cost benches over the new worlds, against v0.12's frame budget
