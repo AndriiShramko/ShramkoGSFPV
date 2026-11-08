@@ -1,0 +1,3159 @@
+{
+  "name": "v13-look-layout",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T21:44:04.235Z",
+    "gitHead": "e035061",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5420",
+  "release": {
+    "sha": "e035061",
+    "sonic": "16c01a1",
+    "built": "2026-11-08T21:42:21.149Z"
+  },
+  "scenario": "layout",
+  "tag": "",
+  "checks": [
+    {
+      "name": "1280x720 dark: the attitude panel (368 x 234 at 900, 394) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 900.09375,
+          "y": 394,
+          "w": 367.90625,
+          "h": 234
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1280x720 dark: the sounds panel (253 x 212 at 12, 468) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 468.046875,
+          "w": 253,
+          "h": 211.953125
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1280x720 dark: readable: the dial 203 px and the radar 163 px across, the tape's numbers 18 px, the panel's words 15.606 px (CSS pixels; 1 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 203.04,
+        "radarPx": 162.62,
+        "tapeFontPx": 18,
+        "titleFontPx": 15.606,
+        "devicePixels": {
+          "dial": 203.04,
+          "radar": 162.62
+        }
+      }
+    },
+    {
+      "name": "1280x720 dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1366x768 dark: the attitude panel (391 x 248 at 963, 428) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 962.765625,
+          "y": 427.609375,
+          "w": 391.234375,
+          "h": 248.390625
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1366x768 dark: the sounds panel (269 x 225 at 12, 503) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 503.390625,
+          "w": 268.671875,
+          "h": 224.609375
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1366x768 dark: readable: the dial 216 px and the radar 173 px across, the tape's numbers 20 px, the panel's words 16.6464 px (CSS pixels; 1 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 216.2,
+        "radarPx": 172.96,
+        "tapeFontPx": 20,
+        "titleFontPx": 16.6464,
+        "devicePixels": {
+          "dial": 216.2,
+          "radar": 172.96
+        }
+      }
+    },
+    {
+      "name": "1366x768 dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1920x1080 dark: the attitude panel (439 x 278 at 1469, 710) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 1468.8125,
+          "y": 710,
+          "w": 439.1875,
+          "h": 278
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080 dark: the sounds panel (301 x 251 at 12, 789) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 789.4375,
+          "w": 300.875,
+          "h": 250.5625
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080 dark: readable: the dial 244 px and the radar 196 px across, the tape's numbers 22 px, the panel's words 18.7 px (CSS pixels; 1 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 244.4,
+        "radarPx": 195.52,
+        "tapeFontPx": 22,
+        "titleFontPx": 18.7,
+        "devicePixels": {
+          "dial": 244.4,
+          "radar": 195.52
+        }
+      }
+    },
+    {
+      "name": "1920x1080 dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1920x1080-zoom200 dark: the attitude panel (280 x 180 at 668, 268) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 667.5625,
+          "y": 268,
+          "w": 280.4375,
+          "h": 180
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080-zoom200 dark: the sounds panel (162 x 144 at 12, 356) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 355.875,
+          "w": 161.65625,
+          "h": 144.125
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080-zoom200 dark: readable: the dial 152 px and the radar 100 px across, the tape's numbers 14 px, the panel's words 15 px (CSS pixels; 2 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 152.27999999999997,
+        "radarPx": 99.64,
+        "tapeFontPx": 14,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 304.55999999999995,
+          "radar": 199.28
+        }
+      }
+    },
+    {
+      "name": "1920x1080-zoom200 dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1280x720-zoom200 dark: the attitude panel (140 x 91 at 492, 149) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 491.703125,
+          "y": 148.8125,
+          "w": 140.296875,
+          "h": 91.1875
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1280x720-zoom200 dark: the sounds panel (96 x 94 at 150, 235) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel (covers telemetry 135 px2, takeOff 3125 px2)",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 150,
+          "y": 234.90625,
+          "w": 95.765625,
+          "h": 94.09375
+        },
+        "hits": [],
+        "covers": [
+          "telemetry 135 px2",
+          "takeOff 3125 px2"
+        ]
+      }
+    },
+    {
+      "name": "1280x720-zoom200 dark: readable: the dial 74 px and the radar 52 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 2 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 74.26,
+        "radarPx": 52,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 148.52,
+          "radar": 104
+        }
+      }
+    },
+    {
+      "name": "1280x720-zoom200 dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "phone-upright dark: the attitude panel (174 x 112 at 208, 600) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 208,
+          "y": 600,
+          "w": 174,
+          "h": 112
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright dark: the sounds panel (121 x 113 at 8, 532) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 8,
+          "y": 531.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright dark: readable: the dial 94 px and the radar 75 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 3 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 94,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 282,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    {
+      "name": "phone-upright dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "phone-upright-sticks dark: the attitude panel (119 x 78 at 263, 404) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 262.609375,
+          "y": 403.703125,
+          "w": 119.390625,
+          "h": 78.296875
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright-sticks dark: the sounds panel (121 x 113 at 8, 370) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 8,
+          "y": 369.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright-sticks dark: readable: the dial 62 px and the radar 75 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 3 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 62,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 186,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    {
+      "name": "phone-upright-sticks dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "phone-on-its-side dark: the attitude panel (142 x 92 at 690, 210) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 690.484375,
+          "y": 210.0625,
+          "w": 141.515625,
+          "h": 91.9375
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-on-its-side dark: the sounds panel (99 x 96 at 584, 206) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 583.5,
+          "y": 205.546875,
+          "w": 98.984375,
+          "h": 96.453125
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-on-its-side dark: readable: the dial 75 px and the radar 55 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 3 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 75.2,
+        "radarPx": 55,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 225.60000000000002,
+          "radar": 165
+        }
+      }
+    },
+    {
+      "name": "phone-on-its-side dark: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1280x720 light: the attitude panel (368 x 234 at 900, 394) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 900.09375,
+          "y": 394,
+          "w": 367.90625,
+          "h": 234
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1280x720 light: the sounds panel (253 x 212 at 12, 468) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 468.046875,
+          "w": 253,
+          "h": 211.953125
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1280x720 light: readable: the dial 203 px and the radar 163 px across, the tape's numbers 18 px, the panel's words 15.606 px (CSS pixels; 1 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 203.04,
+        "radarPx": 162.62,
+        "tapeFontPx": 18,
+        "titleFontPx": 15.606,
+        "devicePixels": {
+          "dial": 203.04,
+          "radar": 162.62
+        }
+      }
+    },
+    {
+      "name": "1280x720 light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1366x768 light: the attitude panel (391 x 248 at 963, 428) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 962.765625,
+          "y": 427.609375,
+          "w": 391.234375,
+          "h": 248.390625
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1366x768 light: the sounds panel (269 x 225 at 12, 503) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 503.390625,
+          "w": 268.671875,
+          "h": 224.609375
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1366x768 light: readable: the dial 216 px and the radar 173 px across, the tape's numbers 20 px, the panel's words 16.6464 px (CSS pixels; 1 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 216.2,
+        "radarPx": 172.96,
+        "tapeFontPx": 20,
+        "titleFontPx": 16.6464,
+        "devicePixels": {
+          "dial": 216.2,
+          "radar": 172.96
+        }
+      }
+    },
+    {
+      "name": "1366x768 light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1920x1080 light: the attitude panel (439 x 278 at 1469, 710) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 1468.8125,
+          "y": 710,
+          "w": 439.1875,
+          "h": 278
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080 light: the sounds panel (301 x 251 at 12, 789) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 789.4375,
+          "w": 300.875,
+          "h": 250.5625
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080 light: readable: the dial 244 px and the radar 196 px across, the tape's numbers 22 px, the panel's words 18.7 px (CSS pixels; 1 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 244.4,
+        "radarPx": 195.52,
+        "tapeFontPx": 22,
+        "titleFontPx": 18.7,
+        "devicePixels": {
+          "dial": 244.4,
+          "radar": 195.52
+        }
+      }
+    },
+    {
+      "name": "1920x1080 light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1920x1080-zoom200 light: the attitude panel (280 x 180 at 668, 268) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 667.5625,
+          "y": 268,
+          "w": 280.4375,
+          "h": 180
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080-zoom200 light: the sounds panel (162 x 144 at 12, 356) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 12,
+          "y": 355.875,
+          "w": 161.65625,
+          "h": 144.125
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1920x1080-zoom200 light: readable: the dial 152 px and the radar 100 px across, the tape's numbers 14 px, the panel's words 15 px (CSS pixels; 2 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 152.27999999999997,
+        "radarPx": 99.64,
+        "tapeFontPx": 14,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 304.55999999999995,
+          "radar": 199.28
+        }
+      }
+    },
+    {
+      "name": "1920x1080-zoom200 light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "1280x720-zoom200 light: the attitude panel (140 x 91 at 492, 149) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 491.703125,
+          "y": 148.8125,
+          "w": 140.296875,
+          "h": 91.1875
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "1280x720-zoom200 light: the sounds panel (96 x 94 at 150, 235) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel (covers telemetry 135 px2, takeOff 3125 px2)",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 150,
+          "y": 234.90625,
+          "w": 95.765625,
+          "h": 94.09375
+        },
+        "hits": [],
+        "covers": [
+          "telemetry 135 px2",
+          "takeOff 3125 px2"
+        ]
+      }
+    },
+    {
+      "name": "1280x720-zoom200 light: readable: the dial 74 px and the radar 52 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 2 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 74.26,
+        "radarPx": 52,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 148.52,
+          "radar": 104
+        }
+      }
+    },
+    {
+      "name": "1280x720-zoom200 light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "phone-upright light: the attitude panel (174 x 112 at 208, 600) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 208,
+          "y": 600,
+          "w": 174,
+          "h": 112
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright light: the sounds panel (121 x 113 at 8, 532) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 8,
+          "y": 531.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright light: readable: the dial 94 px and the radar 75 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 3 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 94,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 282,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    {
+      "name": "phone-upright light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "phone-upright-sticks light: the attitude panel (119 x 78 at 263, 404) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 262.609375,
+          "y": 403.703125,
+          "w": 119.390625,
+          "h": 78.296875
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright-sticks light: the sounds panel (121 x 113 at 8, 370) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 8,
+          "y": 369.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-upright-sticks light: readable: the dial 62 px and the radar 75 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 3 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 62,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 186,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    {
+      "name": "phone-upright-sticks light: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "phone-on-its-side light: the attitude panel (142 x 92 at 690, 210) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 690.484375,
+          "y": 210.0625,
+          "w": 141.515625,
+          "h": 91.9375
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-on-its-side light: the sounds panel (99 x 96 at 584, 206) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel",
+      "pass": true,
+      "value": {
+        "box": {
+          "x": 583.5,
+          "y": 205.546875,
+          "w": 98.984375,
+          "h": 96.453125
+        },
+        "hits": [],
+        "covers": []
+      }
+    },
+    {
+      "name": "phone-on-its-side light: readable: the dial 75 px and the radar 55 px across, the tape's numbers 11 px, the panel's words 15 px (CSS pixels; 3 device pixels each)",
+      "pass": true,
+      "value": {
+        "dialPx": 75.2,
+        "radarPx": 55,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 225.60000000000002,
+          "radar": 165
+        }
+      }
+    },
+    {
+      "name": "phone-on-its-side light: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 64,
+  "total": 64,
+  "result": {
+    "trialCss": false,
+    "trial": false,
+    "1280x720-dark": {
+      "picture": "layout-1280x720-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 900.09375,
+            "y": 394,
+            "w": 367.90625,
+            "h": 234
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 468.046875,
+            "w": 253,
+            "h": 211.953125
+          }
+        ],
+        "captions": [
+          {
+            "x": 190,
+            "y": 92,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 190,
+            "y": 181.59375,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 606.640625,
+            "y": 271.1875,
+            "w": 66.71875,
+            "h": 49.796875
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 261,
+            "w": 228.5625,
+            "h": 198
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 1158.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 688.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 687.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 589,
+            "y": 691,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 1155.203125,
+            "y": 662,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 927.28125,
+            "y": 640,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 478.9609375,
+            "y": 560,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 900.09375,
+          "y": 394,
+          "w": 367.90625,
+          "h": 234
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 468.046875,
+          "w": 253,
+          "h": 211.953125
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 203.04,
+        "radarPx": 162.62,
+        "tapeFontPx": 18,
+        "titleFontPx": 15.606,
+        "devicePixels": {
+          "dial": 203.04,
+          "radar": 162.62
+        }
+      }
+    },
+    "1366x768-dark": {
+      "picture": "layout-1366x768-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 962.765625,
+            "y": 427.609375,
+            "w": 391.234375,
+            "h": 248.390625
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 503.390625,
+            "w": 268.671875,
+            "h": 224.609375
+          }
+        ],
+        "captions": [
+          {
+            "x": 233,
+            "y": 92,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 233,
+            "y": 181.59375,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 649.640625,
+            "y": 271.1875,
+            "w": 66.71875,
+            "h": 49.796875
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 285,
+            "w": 228.5625,
+            "h": 198
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 1244.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 774.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 735.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 675,
+            "y": 739,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 1241.203125,
+            "y": 710,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 1013.28125,
+            "y": 688,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 521.9609375,
+            "y": 608,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 962.765625,
+          "y": 427.609375,
+          "w": 391.234375,
+          "h": 248.390625
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 503.390625,
+          "w": 268.671875,
+          "h": 224.609375
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 216.2,
+        "radarPx": 172.96,
+        "tapeFontPx": 20,
+        "titleFontPx": 16.6464,
+        "devicePixels": {
+          "dial": 216.2,
+          "radar": 172.96
+        }
+      }
+    },
+    "1920x1080-dark": {
+      "picture": "layout-1920x1080-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 1468.8125,
+            "y": 710,
+            "w": 439.1875,
+            "h": 278
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 789.4375,
+            "w": 300.875,
+            "h": 250.5625
+          }
+        ],
+        "captions": [
+          {
+            "x": 510,
+            "y": 92,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 510,
+            "y": 181.59375,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 926.640625,
+            "y": 271.1875,
+            "w": 66.71875,
+            "h": 49.796875
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 441,
+            "w": 228.5625,
+            "h": 198
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 1798.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 1328.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 1047.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 1229,
+            "y": 1051,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 1795.203125,
+            "y": 1022,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 1567.28125,
+            "y": 1000,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 798.9609375,
+            "y": 920,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 1468.8125,
+          "y": 710,
+          "w": 439.1875,
+          "h": 278
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 789.4375,
+          "w": 300.875,
+          "h": 250.5625
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 244.4,
+        "radarPx": 195.52,
+        "tapeFontPx": 22,
+        "titleFontPx": 18.7,
+        "devicePixels": {
+          "dial": 244.4,
+          "radar": 195.52
+        }
+      }
+    },
+    "1920x1080-zoom200-dark": {
+      "picture": "layout-1920x1080-zoom200-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 667.5625,
+            "y": 268,
+            "w": 280.4375,
+            "h": 180
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 355.875,
+            "w": 161.65625,
+            "h": 144.125
+          }
+        ],
+        "captions": [
+          {
+            "x": 54.5625,
+            "y": 92,
+            "w": 850.859375,
+            "h": 45.953125
+          },
+          {
+            "x": 38.40625,
+            "y": 143.953125,
+            "w": 883.1875,
+            "h": 75.90625
+          },
+          {
+            "x": 448.84375,
+            "y": 225.859375,
+            "w": 62.3125,
+            "h": 45.953125
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 191.6328125,
+            "w": 180.75,
+            "h": 156.734375
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 838.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 368.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 507.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 269,
+            "y": 511,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 835.203125,
+            "y": 482,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 607.28125,
+            "y": 460,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 318.9609375,
+            "y": 416,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 667.5625,
+          "y": 268,
+          "w": 280.4375,
+          "h": 180
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 355.875,
+          "w": 161.65625,
+          "h": 144.125
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 152.27999999999997,
+        "radarPx": 99.64,
+        "tapeFontPx": 14,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 304.55999999999995,
+          "radar": 199.28
+        }
+      }
+    },
+    "1280x720-zoom200-dark": {
+      "picture": "layout-1280x720-zoom200-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 491.703125,
+            "y": 148.8125,
+            "w": 140.296875,
+            "h": 91.1875
+          }
+        ],
+        "sounds": [
+          {
+            "x": 150,
+            "y": 234.90625,
+            "w": 95.765625,
+            "h": 94.09375
+          }
+        ],
+        "captions": [
+          {
+            "x": 319.4921875,
+            "y": 99,
+            "w": 1,
+            "h": 1
+          },
+          {
+            "x": 25.6015625,
+            "y": 100,
+            "w": 588.796875,
+            "h": 47
+          },
+          {
+            "x": 298.8203125,
+            "y": 153,
+            "w": 42.34375,
+            "h": 27.5
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 184,
+            "w": 130.234375,
+            "h": 112
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 518.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 195.171875,
+            "y": 38,
+            "w": 428.828125,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 327.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 406.03125,
+            "y": 331,
+            "w": 217.96875,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 515.203125,
+            "y": 246,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 287.28125,
+            "y": 280,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 158.9609375,
+            "y": 236,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 491.703125,
+          "y": 148.8125,
+          "w": 140.296875,
+          "h": 91.1875
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 150,
+          "y": 234.90625,
+          "w": 95.765625,
+          "h": 94.09375
+        },
+        "hits": [],
+        "covers": [
+          "telemetry 135 px2",
+          "takeOff 3125 px2"
+        ]
+      },
+      "sizes": {
+        "dialPx": 74.26,
+        "radarPx": 52,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 148.52,
+          "radar": 104
+        }
+      }
+    },
+    "phone-upright-dark": {
+      "picture": "layout-phone-upright-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 208,
+            "y": 600,
+            "w": 174,
+            "h": 112
+          }
+        ],
+        "sounds": [
+          {
+            "x": 8,
+            "y": 531.5,
+            "w": 120.796875,
+            "h": 112.5
+          }
+        ],
+        "captions": [
+          {
+            "x": 15.6015625,
+            "y": 150,
+            "w": 358.796875,
+            "h": 60.1875
+          },
+          {
+            "x": 15.6015625,
+            "y": 216.1875,
+            "w": 358.796875,
+            "h": 104.375
+          },
+          {
+            "x": 168.3359375,
+            "y": 326.5625,
+            "w": 53.3125,
+            "h": 38.09375
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 652.015625,
+            "w": 144.125,
+            "h": 127.984375
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 268.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": -47.46875,
+            "y": 38,
+            "w": 421.46875,
+            "h": 57.5
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 811.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 310.71875,
+            "y": 815,
+            "w": 63.28125,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 265.203125,
+            "y": 730,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 37.28125,
+            "y": 764,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 33.9609375,
+            "y": 720,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 208,
+          "y": 600,
+          "w": 174,
+          "h": 112
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 8,
+          "y": 531.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 94,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 282,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    "phone-upright-sticks-dark": {
+      "picture": "layout-phone-upright-sticks-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 262.609375,
+            "y": 403.703125,
+            "w": 119.390625,
+            "h": 78.296875
+          }
+        ],
+        "sounds": [
+          {
+            "x": 8,
+            "y": 369.5,
+            "w": 120.796875,
+            "h": 112.5
+          }
+        ],
+        "captions": [
+          {
+            "x": 15.6015625,
+            "y": 150,
+            "w": 358.796875,
+            "h": 60.1875
+          },
+          {
+            "x": 15.6015625,
+            "y": 216.1875,
+            "w": 358.796875,
+            "h": 104.375
+          },
+          {
+            "x": 168.3359375,
+            "y": 326.5625,
+            "w": 53.3125,
+            "h": 38.09375
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 652.015625,
+            "w": 144.125,
+            "h": 127.984375
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 268.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 21.4375,
+            "y": 38,
+            "w": 352.5625,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 629.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [],
+        "recorder": [
+          {
+            "x": 265.203125,
+            "y": 730,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 97.5,
+            "y": 533,
+            "w": 195,
+            "h": 86
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 97.375,
+            "y": 485.8125,
+            "w": 195.25,
+            "h": 39.1875
+          }
+        ],
+        "pads": [
+          {
+            "x": 24,
+            "y": 664,
+            "w": 156,
+            "h": 156
+          },
+          {
+            "x": 210,
+            "y": 664,
+            "w": 156,
+            "h": 156
+          }
+        ],
+        "arm": [],
+        "padHint": [
+          {
+            "x": 19.5,
+            "y": 86,
+            "w": 351,
+            "h": 17
+          }
+        ]
+      },
+      "attitude": {
+        "box": {
+          "x": 262.609375,
+          "y": 403.703125,
+          "w": 119.390625,
+          "h": 78.296875
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 8,
+          "y": 369.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 62,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 186,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    "phone-on-its-side-dark": {
+      "picture": "layout-phone-on-its-side-dark.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 690.484375,
+            "y": 210.0625,
+            "w": 141.515625,
+            "h": 91.9375
+          }
+        ],
+        "sounds": [
+          {
+            "x": 583.5,
+            "y": 205.546875,
+            "w": 98.984375,
+            "h": 96.453125
+          }
+        ],
+        "captions": [
+          {
+            "x": 421.5,
+            "y": 99,
+            "w": 1,
+            "h": 1
+          },
+          {
+            "x": 33.765625,
+            "y": 100,
+            "w": 776.46875,
+            "h": 47
+          },
+          {
+            "x": 400.828125,
+            "y": 153,
+            "w": 42.34375,
+            "h": 27.5
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 139,
+            "w": 130.234375,
+            "h": 112
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 722.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 352.015625,
+            "y": 38,
+            "w": 475.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 357.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 610.03125,
+            "y": 361,
+            "w": 217.96875,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 719.203125,
+            "y": 332,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 491.28125,
+            "y": 310,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 260.9609375,
+            "y": 266,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 690.484375,
+          "y": 210.0625,
+          "w": 141.515625,
+          "h": 91.9375
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 583.5,
+          "y": 205.546875,
+          "w": 98.984375,
+          "h": 96.453125
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 75.2,
+        "radarPx": 55,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 225.60000000000002,
+          "radar": 165
+        }
+      }
+    },
+    "1280x720-light": {
+      "picture": "layout-1280x720-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 900.09375,
+            "y": 394,
+            "w": 367.90625,
+            "h": 234
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 468.046875,
+            "w": 253,
+            "h": 211.953125
+          }
+        ],
+        "captions": [
+          {
+            "x": 190,
+            "y": 92,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 190,
+            "y": 181.59375,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 606.640625,
+            "y": 271.1875,
+            "w": 66.71875,
+            "h": 49.796875
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 261,
+            "w": 228.5625,
+            "h": 198
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 1158.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 688.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 687.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 589,
+            "y": 691,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 1155.203125,
+            "y": 662,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 927.28125,
+            "y": 640,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 478.9609375,
+            "y": 560,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 900.09375,
+          "y": 394,
+          "w": 367.90625,
+          "h": 234
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 468.046875,
+          "w": 253,
+          "h": 211.953125
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 203.04,
+        "radarPx": 162.62,
+        "tapeFontPx": 18,
+        "titleFontPx": 15.606,
+        "devicePixels": {
+          "dial": 203.04,
+          "radar": 162.62
+        }
+      }
+    },
+    "1366x768-light": {
+      "picture": "layout-1366x768-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 962.765625,
+            "y": 427.609375,
+            "w": 391.234375,
+            "h": 248.390625
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 503.390625,
+            "w": 268.671875,
+            "h": 224.609375
+          }
+        ],
+        "captions": [
+          {
+            "x": 233,
+            "y": 92,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 233,
+            "y": 181.59375,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 649.640625,
+            "y": 271.1875,
+            "w": 66.71875,
+            "h": 49.796875
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 285,
+            "w": 228.5625,
+            "h": 198
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 1244.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 774.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 735.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 675,
+            "y": 739,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 1241.203125,
+            "y": 710,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 1013.28125,
+            "y": 688,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 521.9609375,
+            "y": 608,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 962.765625,
+          "y": 427.609375,
+          "w": 391.234375,
+          "h": 248.390625
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 503.390625,
+          "w": 268.671875,
+          "h": 224.609375
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 216.2,
+        "radarPx": 172.96,
+        "tapeFontPx": 20,
+        "titleFontPx": 16.6464,
+        "devicePixels": {
+          "dial": 216.2,
+          "radar": 172.96
+        }
+      }
+    },
+    "1920x1080-light": {
+      "picture": "layout-1920x1080-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 1468.8125,
+            "y": 710,
+            "w": 439.1875,
+            "h": 278
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 789.4375,
+            "w": 300.875,
+            "h": 250.5625
+          }
+        ],
+        "captions": [
+          {
+            "x": 510,
+            "y": 92,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 510,
+            "y": 181.59375,
+            "w": 900,
+            "h": 83.59375
+          },
+          {
+            "x": 926.640625,
+            "y": 271.1875,
+            "w": 66.71875,
+            "h": 49.796875
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 441,
+            "w": 228.5625,
+            "h": 198
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 1798.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 1328.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 1047.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 1229,
+            "y": 1051,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 1795.203125,
+            "y": 1022,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 1567.28125,
+            "y": 1000,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 798.9609375,
+            "y": 920,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 1468.8125,
+          "y": 710,
+          "w": 439.1875,
+          "h": 278
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 789.4375,
+          "w": 300.875,
+          "h": 250.5625
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 244.4,
+        "radarPx": 195.52,
+        "tapeFontPx": 22,
+        "titleFontPx": 18.7,
+        "devicePixels": {
+          "dial": 244.4,
+          "radar": 195.52
+        }
+      }
+    },
+    "1920x1080-zoom200-light": {
+      "picture": "layout-1920x1080-zoom200-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 667.5625,
+            "y": 268,
+            "w": 280.4375,
+            "h": 180
+          }
+        ],
+        "sounds": [
+          {
+            "x": 12,
+            "y": 355.875,
+            "w": 161.65625,
+            "h": 144.125
+          }
+        ],
+        "captions": [
+          {
+            "x": 54.5625,
+            "y": 92,
+            "w": 850.859375,
+            "h": 45.953125
+          },
+          {
+            "x": 38.40625,
+            "y": 143.953125,
+            "w": 883.1875,
+            "h": 75.90625
+          },
+          {
+            "x": 448.84375,
+            "y": 225.859375,
+            "w": 62.3125,
+            "h": 45.953125
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 191.6328125,
+            "w": 180.75,
+            "h": 156.734375
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 838.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 368.015625,
+            "y": 38,
+            "w": 575.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 507.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 269,
+            "y": 511,
+            "w": 675,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 835.203125,
+            "y": 482,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 607.28125,
+            "y": 460,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 318.9609375,
+            "y": 416,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 667.5625,
+          "y": 268,
+          "w": 280.4375,
+          "h": 180
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 12,
+          "y": 355.875,
+          "w": 161.65625,
+          "h": 144.125
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 152.27999999999997,
+        "radarPx": 99.64,
+        "tapeFontPx": 14,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 304.55999999999995,
+          "radar": 199.28
+        }
+      }
+    },
+    "1280x720-zoom200-light": {
+      "picture": "layout-1280x720-zoom200-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 491.703125,
+            "y": 148.8125,
+            "w": 140.296875,
+            "h": 91.1875
+          }
+        ],
+        "sounds": [
+          {
+            "x": 150,
+            "y": 234.90625,
+            "w": 95.765625,
+            "h": 94.09375
+          }
+        ],
+        "captions": [
+          {
+            "x": 319.4921875,
+            "y": 99,
+            "w": 1,
+            "h": 1
+          },
+          {
+            "x": 25.6015625,
+            "y": 100,
+            "w": 588.796875,
+            "h": 47
+          },
+          {
+            "x": 298.8203125,
+            "y": 153,
+            "w": 42.34375,
+            "h": 27.5
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 184,
+            "w": 130.234375,
+            "h": 112
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 518.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 195.171875,
+            "y": 38,
+            "w": 428.828125,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 327.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 406.03125,
+            "y": 331,
+            "w": 217.96875,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 515.203125,
+            "y": 246,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 287.28125,
+            "y": 280,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 158.9609375,
+            "y": 236,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 491.703125,
+          "y": 148.8125,
+          "w": 140.296875,
+          "h": 91.1875
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 150,
+          "y": 234.90625,
+          "w": 95.765625,
+          "h": 94.09375
+        },
+        "hits": [],
+        "covers": [
+          "telemetry 135 px2",
+          "takeOff 3125 px2"
+        ]
+      },
+      "sizes": {
+        "dialPx": 74.26,
+        "radarPx": 52,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 148.52,
+          "radar": 104
+        }
+      }
+    },
+    "phone-upright-light": {
+      "picture": "layout-phone-upright-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 208,
+            "y": 600,
+            "w": 174,
+            "h": 112
+          }
+        ],
+        "sounds": [
+          {
+            "x": 8,
+            "y": 531.5,
+            "w": 120.796875,
+            "h": 112.5
+          }
+        ],
+        "captions": [
+          {
+            "x": 15.6015625,
+            "y": 150,
+            "w": 358.796875,
+            "h": 60.1875
+          },
+          {
+            "x": 15.6015625,
+            "y": 216.1875,
+            "w": 358.796875,
+            "h": 104.375
+          },
+          {
+            "x": 168.3359375,
+            "y": 326.5625,
+            "w": 53.3125,
+            "h": 38.09375
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 652.015625,
+            "w": 144.125,
+            "h": 127.984375
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 268.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": -47.46875,
+            "y": 38,
+            "w": 421.46875,
+            "h": 57.5
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 811.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 310.71875,
+            "y": 815,
+            "w": 63.28125,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 265.203125,
+            "y": 730,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 37.28125,
+            "y": 764,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 33.9609375,
+            "y": 720,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 208,
+          "y": 600,
+          "w": 174,
+          "h": 112
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 8,
+          "y": 531.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 94,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 282,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    "phone-upright-sticks-light": {
+      "picture": "layout-phone-upright-sticks-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 262.609375,
+            "y": 403.703125,
+            "w": 119.390625,
+            "h": 78.296875
+          }
+        ],
+        "sounds": [
+          {
+            "x": 8,
+            "y": 369.5,
+            "w": 120.796875,
+            "h": 112.5
+          }
+        ],
+        "captions": [
+          {
+            "x": 15.6015625,
+            "y": 150,
+            "w": 358.796875,
+            "h": 60.1875
+          },
+          {
+            "x": 15.6015625,
+            "y": 216.1875,
+            "w": 358.796875,
+            "h": 104.375
+          },
+          {
+            "x": 168.3359375,
+            "y": 326.5625,
+            "w": 53.3125,
+            "h": 38.09375
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 652.015625,
+            "w": 144.125,
+            "h": 127.984375
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 268.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 21.4375,
+            "y": 38,
+            "w": 352.5625,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 629.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [],
+        "recorder": [
+          {
+            "x": 265.203125,
+            "y": 730,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 97.5,
+            "y": 533,
+            "w": 195,
+            "h": 86
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 97.375,
+            "y": 485.8125,
+            "w": 195.25,
+            "h": 39.1875
+          }
+        ],
+        "pads": [
+          {
+            "x": 24,
+            "y": 664,
+            "w": 156,
+            "h": 156
+          },
+          {
+            "x": 210,
+            "y": 664,
+            "w": 156,
+            "h": 156
+          }
+        ],
+        "arm": [],
+        "padHint": [
+          {
+            "x": 19.5,
+            "y": 86,
+            "w": 351,
+            "h": 17
+          }
+        ]
+      },
+      "attitude": {
+        "box": {
+          "x": 262.609375,
+          "y": 403.703125,
+          "w": 119.390625,
+          "h": 78.296875
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 8,
+          "y": 369.5,
+          "w": 120.796875,
+          "h": 112.5
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 62,
+        "radarPx": 75.2,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 186,
+          "radar": 225.60000000000002
+        }
+      }
+    },
+    "phone-on-its-side-light": {
+      "picture": "layout-phone-on-its-side-light.jpg",
+      "boxes": {
+        "attitude": [
+          {
+            "x": 690.484375,
+            "y": 210.0625,
+            "w": 141.515625,
+            "h": 91.9375
+          }
+        ],
+        "sounds": [
+          {
+            "x": 583.5,
+            "y": 205.546875,
+            "w": 98.984375,
+            "h": 96.453125
+          }
+        ],
+        "captions": [
+          {
+            "x": 421.5,
+            "y": 99,
+            "w": 1,
+            "h": 1
+          },
+          {
+            "x": 33.765625,
+            "y": 100,
+            "w": 776.46875,
+            "h": 47
+          },
+          {
+            "x": 400.828125,
+            "y": 153,
+            "w": 42.34375,
+            "h": 27.5
+          }
+        ],
+        "progress": [
+          {
+            "x": 12,
+            "y": 139,
+            "w": 130.234375,
+            "h": 112
+          }
+        ],
+        "topLeft": [
+          {
+            "x": 44,
+            "y": 14,
+            "w": 140.625,
+            "h": 18.75
+          }
+        ],
+        "topRight": [
+          {
+            "x": 722.53125,
+            "y": 14,
+            "w": 105.46875,
+            "h": 18.75
+          }
+        ],
+        "topBar": [
+          {
+            "x": 352.015625,
+            "y": 38,
+            "w": 475.984375,
+            "h": 40
+          }
+        ],
+        "telemetry": [
+          {
+            "x": 16,
+            "y": 357.25,
+            "w": 210.9375,
+            "h": 18.75
+          }
+        ],
+        "keys": [
+          {
+            "x": 610.03125,
+            "y": 361,
+            "w": 217.96875,
+            "h": 15
+          }
+        ],
+        "recorder": [
+          {
+            "x": 719.203125,
+            "y": 332,
+            "w": 110.796875,
+            "h": 44
+          }
+        ],
+        "recBar": [
+          {
+            "x": 491.28125,
+            "y": 310,
+            "w": 336.71875,
+            "h": 40
+          }
+        ],
+        "takeOff": [
+          {
+            "x": 260.9609375,
+            "y": 266,
+            "w": 322.078125,
+            "h": 36
+          }
+        ],
+        "pads": [],
+        "arm": [],
+        "padHint": []
+      },
+      "attitude": {
+        "box": {
+          "x": 690.484375,
+          "y": 210.0625,
+          "w": 141.515625,
+          "h": 91.9375
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sounds": {
+        "box": {
+          "x": 583.5,
+          "y": 205.546875,
+          "w": 98.984375,
+          "h": 96.453125
+        },
+        "hits": [],
+        "covers": []
+      },
+      "sizes": {
+        "dialPx": 75.2,
+        "radarPx": 55,
+        "tapeFontPx": 11,
+        "titleFontPx": 15,
+        "devicePixels": {
+          "dial": 225.60000000000002,
+          "radar": 165
+        }
+      }
+    }
+  }
+}

@@ -1035,8 +1035,48 @@ async function switchProof(ctx: BrowserContext): Promise<Record<string, unknown>
     return { off: off.prefs, readBack: read.prefs, on: on.prefs };
 }
 
-async function scenarioPanels(ctx: BrowserContext): Promise<Record<string, unknown>> {
+/** A light page (prefers-color-scheme: light): the attitude display level and the sound panel by the wall, measured as in the dark. */
+async function lightProof(browser: Browser): Promise<Record<string, unknown>> {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, colorScheme: 'light' });
+    await ctx.addInitScript({ content: INIT });
+    try {
+        const { page, errors } = await openLesson(ctx, 'walls-pillar');
+        await sleep(800);
+        const lesson = getLesson('walls-pillar');
+        if (lesson.world.kind !== 'analytic') throw new Error('walls-pillar');
+        const world = createAnalyticWorld(lesson.world.spec);
+        const half = (world as unknown as { resolved: { widthM: number } }).resolved.widthM / 2;
+        const pose = [-half + 0.6, 1.5, lesson.start.pos[2], 0];
+        await placeAt(page, pose);
+        await until('the craft by the wall', () => craft(page), (c) => dist(c.pos, pose) < 0.1, 5000);
+        const t0 = Date.now();
+        let rep = await panels(page);
+        while (Date.now() - t0 < 4000 && !rep.sound?.items.some((it) => it.id.startsWith('safety.wall') && it.x < -0.2)) {
+            await sleep(40);
+            rep = await panels(page);
+        }
+        await freeze(page, true);
+        rep = await panels(page);
+        const a = await measureAttitude(ctx, page, rep.attitude!, 'light-attitude');
+        const s = await measureSounds(ctx, page, rep.sound!, 'light-sounds');
+        await shot(page, 'light-page');
+        await freeze(page, false);
+        const c = a.contrast as Record<string, number | null>;
+        const low = Object.entries(c).filter(([, v]) => v !== null && (v as number) < 4.5);
+        check(`light page: the panels drawn black on white (the box's scheme), the attitude display's every line and mark 4.5:1 or more on the picture`, rep.attitude!.scheme === 'light' && rep.sound!.scheme === 'light' && low.length === 0 && near(s.background as Rgb8, [255, 255, 255]), { contrast: c, background: s.background });
+        const items = s.items as { id: string; discIsKindColour: boolean; discContrast: number }[];
+        check(`light page: every disc of the sound panel in its kind's light-page colour, 4.5:1 or more against the white box`, items.length > 0 && items.every((it) => it.discIsKindColour && it.discContrast >= 4.5), items);
+        check('light page: no page error', errors.length === 0, errors);
+        await page.close();
+        return { attitude: a, sounds: s };
+    } finally {
+        await ctx.close();
+    }
+}
+
+async function scenarioPanels(ctx: BrowserContext, browser: Browser): Promise<Record<string, unknown>> {
     return {
+        light: await lightProof(browser),
         attitude: await attitudeProof(ctx),
         pillar: await soundProofPillar(ctx),
         rings: await soundProofRings(ctx),
@@ -1115,7 +1155,8 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
         const b = await boxes(page);
         const rep = await panels(page);
         const name = `layout-${size.name}-${scheme}`;
-        writeFileSync(join(OUT, `${name}.jpg`), await page.screenshot({ type: 'jpeg', quality: 60 }));
+        // small: CSS pixels (the device's are the dial's own measure, not this picture's)
+        writeFileSync(join(OUT, `${name}.jpg`), await page.screenshot({ type: 'jpeg', quality: 55, scale: 'css' }));
         const W = size.w, H = size.h;
         const centre: Box = { x: 0.35 * W, y: 0.35 * H, w: 0.3 * W, h: 0.3 * H };
         const keep: Record<string, Box[]> = { centre: [centre], captions: b.captions ?? [], progress: b.progress ?? [], topLeft: b.topLeft ?? [], topRight: b.topRight ?? [], topBar: b.topBar ?? [], telemetry: b.telemetry ?? [], keys: b.keys ?? [], recorder: b.recorder ?? [], recBar: b.recBar ?? [], takeOff: b.takeOff ?? [], pads: b.pads ?? [], arm: b.arm ?? [] };

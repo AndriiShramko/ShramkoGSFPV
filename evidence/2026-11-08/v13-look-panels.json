@@ -1,0 +1,1749 @@
+{
+  "name": "v13-look-panels",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T21:45:44.023Z",
+    "gitHead": "e035061",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5420",
+  "release": {
+    "sha": "e035061",
+    "sonic": "16c01a1",
+    "built": "2026-11-08T21:42:21.149Z"
+  },
+  "scenario": "panels",
+  "tag": "",
+  "checks": [
+    {
+      "name": "light page: the panels drawn black on white (the box's scheme), the attitude display's every line and mark 4.5:1 or more on the picture",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": null,
+          "target": null,
+          "craftBox": 7.48,
+          "craftText": 7.48,
+          "climbArrow": null
+        },
+        "background": [
+          255,
+          255,
+          255
+        ]
+      }
+    },
+    {
+      "name": "light page: every disc of the sound panel in its kind's light-page colour, 4.5:1 or more against the white box",
+      "pass": true,
+      "value": [
+        {
+          "id": "shape.pillar",
+          "kind": "wall",
+          "elev": null,
+          "bar": null,
+          "event": false,
+          "at": [
+            124.5,
+            39
+          ],
+          "disc": [
+            179,
+            71,
+            0
+          ],
+          "discIsKindColour": true,
+          "discContrast": 5.5,
+          "markDrawn": null
+        },
+        {
+          "id": "safety.wall:left",
+          "kind": "wall",
+          "elev": null,
+          "bar": null,
+          "event": false,
+          "at": [
+            48.6,
+            99
+          ],
+          "disc": [
+            179,
+            71,
+            0
+          ],
+          "discIsKindColour": true,
+          "discContrast": 5.5,
+          "markDrawn": null
+        },
+        {
+          "id": "safety.wall:front-left",
+          "kind": "wall",
+          "elev": null,
+          "bar": null,
+          "event": false,
+          "at": [
+            55.4,
+            58.5
+          ],
+          "disc": [
+            179,
+            71,
+            0
+          ],
+          "discIsKindColour": true,
+          "discContrast": 5.5,
+          "markDrawn": null
+        }
+      ]
+    },
+    {
+      "name": "light page: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "hover-height: both panels shown in a lesson that flies (on by default)",
+      "pass": true,
+      "value": {
+        "soundPanel": true,
+        "attitude": true
+      }
+    },
+    {
+      "name": "attitude level: the flight model reads pitch 0, roll 0 (nose down, right side down positive)",
+      "pass": true,
+      "value": {
+        "rollDeg": 0,
+        "pitchDeg": 0,
+        "heightM": 1,
+        "vyMps": 0
+      }
+    },
+    {
+      "name": "attitude level: the horizon's core found on the picture where the display draws it: tilt 0 (model 0), lift 0.27 (model 0) degrees",
+      "pass": true,
+      "value": {
+        "tiltModelDeg": 0,
+        "tiltPictureDeg": 0,
+        "liftModelDeg": 0,
+        "liftPictureDeg": 0.27,
+        "coreOffPx": [
+          0.58,
+          0.58
+        ]
+      }
+    },
+    {
+      "name": "attitude level: every line and mark measured 4.5:1 or more on the picture (the wings yellow)",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 140,
+          "groundPoints": 149
+        }
+      }
+    },
+    {
+      "name": "attitude nose-down-15: the flight model reads pitch 15, roll 0 (nose down, right side down positive)",
+      "pass": true,
+      "value": {
+        "rollDeg": 0,
+        "pitchDeg": 15,
+        "heightM": 1,
+        "vyMps": 0
+      }
+    },
+    {
+      "name": "attitude nose-down-15: the horizon's core found on the picture where the display draws it: tilt 0 (model 0), lift 15.27 (model 15) degrees",
+      "pass": true,
+      "value": {
+        "tiltModelDeg": 0,
+        "tiltPictureDeg": 0,
+        "liftModelDeg": 15,
+        "liftPictureDeg": 15.27,
+        "coreOffPx": [
+          0.58,
+          0.58
+        ]
+      }
+    },
+    {
+      "name": "attitude nose-down-15: every line and mark measured 4.5:1 or more on the picture (the wings yellow)",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 45,
+          "groundPoints": 302
+        }
+      }
+    },
+    {
+      "name": "attitude right-roll-30: the flight model reads pitch 0, roll 30 (nose down, right side down positive)",
+      "pass": true,
+      "value": {
+        "rollDeg": 30,
+        "pitchDeg": 0,
+        "heightM": 1,
+        "vyMps": 0
+      }
+    },
+    {
+      "name": "attitude right-roll-30: the horizon's core found on the picture where the display draws it: tilt -30 (model -30), lift 0.4 (model 0) degrees",
+      "pass": true,
+      "value": {
+        "tiltModelDeg": -30,
+        "tiltPictureDeg": -30,
+        "liftModelDeg": 0,
+        "liftPictureDeg": 0.4,
+        "coreOffPx": [
+          0.86,
+          0.86
+        ]
+      }
+    },
+    {
+      "name": "attitude right-roll-30: every line and mark measured 4.5:1 or more on the picture (the wings yellow)",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 10.25,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 125,
+          "groundPoints": 132
+        }
+      }
+    },
+    {
+      "name": "attitude nose-up-10-left-roll-20: the flight model reads pitch -10, roll -20 (nose down, right side down positive)",
+      "pass": true,
+      "value": {
+        "rollDeg": -20,
+        "pitchDeg": -10,
+        "heightM": 1,
+        "vyMps": 0
+      }
+    },
+    {
+      "name": "attitude nose-up-10-left-roll-20: the horizon's core found on the picture where the display draws it: tilt 19.76 (model 20), lift -9.87 (model -10) degrees",
+      "pass": true,
+      "value": {
+        "tiltModelDeg": 20,
+        "tiltPictureDeg": 19.76,
+        "liftModelDeg": -10,
+        "liftPictureDeg": -9.87,
+        "coreOffPx": [
+          0,
+          0.58
+        ]
+      }
+    },
+    {
+      "name": "attitude nose-up-10-left-roll-20: every line and mark measured 4.5:1 or more on the picture (the wings yellow)",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 221,
+          "groundPoints": 94
+        }
+      }
+    },
+    {
+      "name": "attitude climb: vertical speed 0.43 m/s, the climb arrow up from the craft's height",
+      "pass": true,
+      "value": {
+        "arrow": {
+          "up": true,
+          "from": 150.11720052354605,
+          "to": 130.35694573275472
+        },
+        "craftY": 150.11720052354605,
+        "vy": 0.43254213271148145
+      }
+    },
+    {
+      "name": "attitude climb: the arrow drawn in the craft's colour, 14.67:1 against the box",
+      "pass": true,
+      "value": {
+        "band": [
+          51,
+          214,
+          255
+        ],
+        "target": [
+          51,
+          214,
+          255
+        ],
+        "craftBox": [
+          255,
+          212,
+          0
+        ],
+        "craftBoxExpected": [
+          255,
+          212,
+          0
+        ],
+        "arrow": [
+          255,
+          212,
+          0
+        ],
+        "wings": [
+          255,
+          212,
+          0
+        ],
+        "wingsAreYellow": true
+      }
+    },
+    {
+      "name": "attitude climb: the tape: the band (2 to 3 m) and the height to fly at (2.5 m) drawn, the craft's box at its height 1.04 m",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": 14.67
+        },
+        "tape": {
+          "topM": 4,
+          "craftY": 150.11720052354605,
+          "targetY": 86.17320000000001,
+          "bandY": [
+            64.34639999999999,
+            108
+          ]
+        }
+      }
+    },
+    {
+      "name": "attitude sink: vertical speed -0.52 m/s, the climb arrow down from the craft's height",
+      "pass": true,
+      "value": {
+        "arrow": {
+          "up": false,
+          "from": 139.22453340902223,
+          "to": 162.89805436009846
+        },
+        "craftY": 139.22453340902223,
+        "vy": -0.5182015793511128
+      }
+    },
+    {
+      "name": "attitude sink: the arrow drawn in the craft's colour, 14.67:1 against the box",
+      "pass": true,
+      "value": {
+        "band": [
+          51,
+          214,
+          255
+        ],
+        "target": [
+          51,
+          214,
+          255
+        ],
+        "craftBox": [
+          255,
+          212,
+          0
+        ],
+        "craftBoxExpected": [
+          255,
+          212,
+          0
+        ],
+        "arrow": [
+          255,
+          212,
+          0
+        ],
+        "wings": [
+          255,
+          212,
+          0
+        ],
+        "wingsAreYellow": true
+      }
+    },
+    {
+      "name": "attitude sink: the tape: the band (2 to 3 m) and the height to fly at (2.5 m) drawn, the craft's box at its height 1.28 m",
+      "pass": true,
+      "value": {
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": 14.67
+        },
+        "tape": {
+          "topM": 4,
+          "craftY": 139.22453340902223,
+          "targetY": 86.17320000000001,
+          "bandY": [
+            64.34639999999999,
+            108
+          ]
+        }
+      }
+    },
+    {
+      "name": "attitude: a craft at rest (under 0.1 m/s up or down) has no climb arrow",
+      "pass": true,
+      "value": {
+        "vy": -2.942900890609423e-10,
+        "arrow": null
+      }
+    },
+    {
+      "name": "hover-height: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "walls-pillar: the left wall heard (safety.wall) is drawn left of the craft in the wall's colour, 4.5:1 or more",
+      "pass": true,
+      "value": {
+        "items": [
+          {
+            "id": "shape.pillar",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              124.5,
+              39
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.wall:left",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              48.6,
+              99
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.wall:front-left",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              55.4,
+              58.5
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "walls-pillar: the pillar ahead (safety.obstacle) drawn ahead of the craft in the wall kind's colour",
+      "pass": true,
+      "value": {
+        "obstacle": {
+          "id": "safety.obstacle:front",
+          "kind": "wall",
+          "elev": null,
+          "bar": null,
+          "event": false,
+          "at": [
+            89.9,
+            76.3
+          ],
+          "disc": [
+            255,
+            140,
+            26
+          ],
+          "discIsKindColour": true,
+          "discContrast": 9.02,
+          "markDrawn": null
+        }
+      }
+    },
+    {
+      "name": "walls-pillar: the open way's chime (plan.freeWay.side left) drawn on that side in the open way's colour",
+      "pass": true,
+      "value": {
+        "open": {
+          "id": "safety.free:left",
+          "kind": "open",
+          "elev": null,
+          "bar": null,
+          "event": false,
+          "at": [
+            48,
+            65.9
+          ],
+          "disc": [
+            57,
+            224,
+            122
+          ],
+          "discIsKindColour": true,
+          "discContrast": 12.12,
+          "markDrawn": null
+        },
+        "freeWay": {
+          "side": "left",
+          "offsetM": 0.55,
+          "obstacleM": 2.8989534352987443,
+          "ttcS": 2.4772464931534706
+        }
+      }
+    },
+    {
+      "name": "walls-pillar: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "rings-heights: the target note on the height bar at the first ring's height (2.7 m above the floor), drawn in the target's colour",
+      "pass": true,
+      "value": {
+        "targetM": 2.7,
+        "toneM": 1.2000000476837158,
+        "target": {
+          "px": [
+            51,
+            214,
+            255
+          ],
+          "isTargetColour": true,
+          "contrast": 12.2
+        },
+        "tone": {
+          "px": [
+            255,
+            212,
+            0
+          ],
+          "isToneColour": true,
+          "contrast": 14.67
+        }
+      }
+    },
+    {
+      "name": "rings-heights: the height tone at the craft's height (1.2 m), drawn in the tone's colour",
+      "pass": true,
+      "value": {
+        "targetM": 2.7,
+        "toneM": 1.2000000476837158,
+        "target": {
+          "px": [
+            51,
+            214,
+            255
+          ],
+          "isTargetColour": true,
+          "contrast": 12.2
+        },
+        "tone": {
+          "px": [
+            255,
+            212,
+            0
+          ],
+          "isToneColour": true,
+          "contrast": 14.67
+        }
+      }
+    },
+    {
+      "name": "rings-heights: the attitude tape draws the same height to fly at",
+      "pass": true,
+      "value": {
+        "targetM": 2.7,
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": null,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        }
+      }
+    },
+    {
+      "name": "rings-heights: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "repeat (en): the task's three plays of the pillar's tick show its icon and the glossary's name \"Obstacle\"",
+      "pass": true,
+      "value": [
+        {
+          "cue": "safety.obstacle",
+          "name": "Obstacle",
+          "count": "1 of 3",
+          "t": 3157
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Obstacle",
+          "count": "2 of 3",
+          "t": 6730
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Obstacle",
+          "count": "3 of 3",
+          "t": 10181
+        }
+      ]
+    },
+    {
+      "name": "repeat (en): the card counts the plays: 1 of 3, 2 of 3, 3 of 3",
+      "pass": true,
+      "value": [
+        "1 of 3",
+        "2 of 3",
+        "3 of 3"
+      ]
+    },
+    {
+      "name": "repeat (en): no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "repeat (pl): the task's three plays of the pillar's tick show its icon and the glossary's name \"Przeszkoda\"",
+      "pass": true,
+      "value": [
+        {
+          "cue": "safety.obstacle",
+          "name": "Przeszkoda",
+          "count": "1 z 3",
+          "t": 3024
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Przeszkoda",
+          "count": "2 z 3",
+          "t": 6626
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Przeszkoda",
+          "count": "3 z 3",
+          "t": 10094
+        }
+      ]
+    },
+    {
+      "name": "repeat (pl): the card counts the plays: 1 z 3, 2 z 3, 3 z 3",
+      "pass": true,
+      "value": [
+        "1 z 3",
+        "2 z 3",
+        "3 z 3"
+      ]
+    },
+    {
+      "name": "repeat (pl): no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "the sound panel's switch off hides it at once; the attitude display stays",
+      "pass": true,
+      "value": {
+        "soundPanel": false,
+        "attitude": true
+      }
+    },
+    {
+      "name": "after a reload both stay off (read back from the stored prefs)",
+      "pass": true,
+      "value": {
+        "prefs": {
+          "soundPanel": false,
+          "attitude": false
+        },
+        "stored": {
+          "soundPanel": false,
+          "attitude": false
+        }
+      }
+    },
+    {
+      "name": "on again: both shown",
+      "pass": true,
+      "value": {
+        "soundPanel": true,
+        "attitude": true
+      }
+    },
+    {
+      "name": "switches: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 42,
+  "total": 42,
+  "result": {
+    "light": {
+      "attitude": {
+        "picture": "light-attitude.png",
+        "state": {
+          "rollDeg": 0,
+          "pitchDeg": 0,
+          "heightM": 1.5,
+          "vyMps": 0
+        },
+        "horizon": {
+          "tiltModelDeg": 0,
+          "tiltPictureDeg": 0,
+          "liftModelDeg": 0,
+          "liftPictureDeg": 0.27,
+          "coreOffPx": [
+            0.58,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 140,
+          "groundPoints": 149
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": null,
+          "target": null,
+          "craftBox": 7.48,
+          "craftText": 7.48,
+          "climbArrow": null
+        },
+        "colours": {
+          "band": null,
+          "target": null,
+          "craftBox": [
+            122,
+            74,
+            0
+          ],
+          "craftBoxExpected": [
+            122,
+            74,
+            0
+          ],
+          "arrow": null,
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      },
+      "sounds": {
+        "picture": "light-sounds.png",
+        "background": [
+          255,
+          255,
+          255
+        ],
+        "items": [
+          {
+            "id": "shape.pillar",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              124.5,
+              39
+            ],
+            "disc": [
+              179,
+              71,
+              0
+            ],
+            "discIsKindColour": true,
+            "discContrast": 5.5,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.wall:left",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              48.6,
+              99
+            ],
+            "disc": [
+              179,
+              71,
+              0
+            ],
+            "discIsKindColour": true,
+            "discContrast": 5.5,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.wall:front-left",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              55.4,
+              58.5
+            ],
+            "disc": [
+              179,
+              71,
+              0
+            ],
+            "discIsKindColour": true,
+            "discContrast": 5.5,
+            "markDrawn": null
+          }
+        ],
+        "bar": {
+          "targetM": null,
+          "toneM": 1.5,
+          "target": null,
+          "tone": {
+            "px": [
+              122,
+              74,
+              0
+            ],
+            "isToneColour": true,
+            "contrast": 7.48
+          }
+        },
+        "freeWay": null,
+        "now": null
+      }
+    },
+    "attitude": {
+      "level": {
+        "picture": "attitude-level.png",
+        "state": {
+          "rollDeg": 0,
+          "pitchDeg": 0,
+          "heightM": 1,
+          "vyMps": 0
+        },
+        "horizon": {
+          "tiltModelDeg": 0,
+          "tiltPictureDeg": 0,
+          "liftModelDeg": 0,
+          "liftPictureDeg": 0.27,
+          "coreOffPx": [
+            0.58,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 140,
+          "groundPoints": 149
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "colours": {
+          "band": [
+            51,
+            214,
+            255
+          ],
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": null,
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      },
+      "nose-down-15": {
+        "picture": "attitude-nose-down-15.png",
+        "state": {
+          "rollDeg": 0,
+          "pitchDeg": 15,
+          "heightM": 1,
+          "vyMps": 0
+        },
+        "horizon": {
+          "tiltModelDeg": 0,
+          "tiltPictureDeg": 0,
+          "liftModelDeg": 15,
+          "liftPictureDeg": 15.27,
+          "coreOffPx": [
+            0.58,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 45,
+          "groundPoints": 302
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "colours": {
+          "band": [
+            51,
+            214,
+            255
+          ],
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": null,
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      },
+      "right-roll-30": {
+        "picture": "attitude-right-roll-30.png",
+        "state": {
+          "rollDeg": 30,
+          "pitchDeg": 0,
+          "heightM": 1,
+          "vyMps": 0
+        },
+        "horizon": {
+          "tiltModelDeg": -30,
+          "tiltPictureDeg": -30,
+          "liftModelDeg": 0,
+          "liftPictureDeg": 0.4,
+          "coreOffPx": [
+            0.86,
+            0.86
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 125,
+          "groundPoints": 132
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 10.25,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "colours": {
+          "band": [
+            51,
+            214,
+            255
+          ],
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": null,
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      },
+      "nose-up-10-left-roll-20": {
+        "picture": "attitude-nose-up-10-left-roll-20.png",
+        "state": {
+          "rollDeg": -20,
+          "pitchDeg": -10,
+          "heightM": 1,
+          "vyMps": 0
+        },
+        "horizon": {
+          "tiltModelDeg": 20,
+          "tiltPictureDeg": 19.76,
+          "liftModelDeg": -10,
+          "liftPictureDeg": -9.87,
+          "coreOffPx": [
+            0,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 221,
+          "groundPoints": 94
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "colours": {
+          "band": [
+            51,
+            214,
+            255
+          ],
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": null,
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      },
+      "climb": {
+        "picture": "attitude-climb.png",
+        "state": {
+          "rollDeg": 0,
+          "pitchDeg": 0,
+          "heightM": 1.035,
+          "vyMps": 0.433
+        },
+        "horizon": {
+          "tiltModelDeg": 0,
+          "tiltPictureDeg": 0,
+          "liftModelDeg": 0,
+          "liftPictureDeg": 0.26,
+          "coreOffPx": [
+            0.58,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 140,
+          "groundPoints": 149
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": 14.67
+        },
+        "colours": {
+          "band": [
+            51,
+            214,
+            255
+          ],
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": [
+            255,
+            212,
+            0
+          ],
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      },
+      "sink": {
+        "picture": "attitude-sink.png",
+        "state": {
+          "rollDeg": 0,
+          "pitchDeg": 0,
+          "heightM": 1.285,
+          "vyMps": -0.518
+        },
+        "horizon": {
+          "tiltModelDeg": 0,
+          "tiltPictureDeg": 0,
+          "liftModelDeg": 0,
+          "liftPictureDeg": 0.27,
+          "coreOffPx": [
+            0.58,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 140,
+          "groundPoints": 149
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": 12.2,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": 14.67
+        },
+        "colours": {
+          "band": [
+            51,
+            214,
+            255
+          ],
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": [
+            255,
+            212,
+            0
+          ],
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      }
+    },
+    "pillar": {
+      "wall": {
+        "picture": "sounds-pillar-wall.png",
+        "background": [
+          0,
+          0,
+          0
+        ],
+        "items": [
+          {
+            "id": "shape.pillar",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              124.5,
+              39
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.wall:left",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              48.6,
+              99
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.wall:front-left",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              55.4,
+              58.5
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          }
+        ],
+        "bar": {
+          "targetM": null,
+          "toneM": 1.5,
+          "target": null,
+          "tone": {
+            "px": [
+              255,
+              212,
+              0
+            ],
+            "isToneColour": true,
+            "contrast": 14.67
+          }
+        },
+        "freeWay": null,
+        "now": null
+      },
+      "ahead": {
+        "picture": "sounds-pillar-ahead.png",
+        "background": [
+          0,
+          0,
+          0
+        ],
+        "items": [
+          {
+            "id": "shape.pillar",
+            "kind": "wall",
+            "elev": "below",
+            "bar": null,
+            "event": false,
+            "at": [
+              85.4,
+              25.7
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": true
+          },
+          {
+            "id": "safety.free:left",
+            "kind": "open",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              48,
+              65.9
+            ],
+            "disc": [
+              57,
+              224,
+              122
+            ],
+            "discIsKindColour": true,
+            "discContrast": 12.12,
+            "markDrawn": null
+          },
+          {
+            "id": "safety.obstacle:front",
+            "kind": "wall",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              89.9,
+              76.3
+            ],
+            "disc": [
+              255,
+              140,
+              26
+            ],
+            "discIsKindColour": true,
+            "discContrast": 9.02,
+            "markDrawn": null
+          }
+        ],
+        "bar": {
+          "targetM": null,
+          "toneM": 1.5154753563829084,
+          "target": null,
+          "tone": {
+            "px": [
+              255,
+              212,
+              0
+            ],
+            "isToneColour": true,
+            "contrast": 14.67
+          }
+        },
+        "freeWay": {
+          "side": "left",
+          "offsetM": 0.55,
+          "obstacleM": 2.8989534352987443,
+          "ttcS": 2.4772464931534706
+        },
+        "now": null
+      }
+    },
+    "rings": {
+      "sounds": {
+        "picture": "sounds-rings-heights.png",
+        "background": [
+          0,
+          0,
+          0
+        ],
+        "items": [
+          {
+            "id": "target.hum",
+            "kind": "target",
+            "elev": null,
+            "bar": null,
+            "event": false,
+            "at": [
+              86.5,
+              25.7
+            ],
+            "disc": [
+              51,
+              214,
+              255
+            ],
+            "discIsKindColour": true,
+            "discContrast": 12.2,
+            "markDrawn": null
+          }
+        ],
+        "bar": {
+          "targetM": 2.7,
+          "toneM": 1.2000000476837158,
+          "target": {
+            "px": [
+              51,
+              214,
+              255
+            ],
+            "isTargetColour": true,
+            "contrast": 12.2
+          },
+          "tone": {
+            "px": [
+              255,
+              212,
+              0
+            ],
+            "isToneColour": true,
+            "contrast": 14.67
+          }
+        },
+        "freeWay": null,
+        "now": null
+      },
+      "attitude": {
+        "picture": "attitude-rings-heights.png",
+        "state": {
+          "rollDeg": 0,
+          "pitchDeg": 0,
+          "heightM": 1.2,
+          "vyMps": 0
+        },
+        "horizon": {
+          "tiltModelDeg": 0,
+          "tiltPictureDeg": 0,
+          "liftModelDeg": 0,
+          "liftPictureDeg": 0.27,
+          "coreOffPx": [
+            0.58,
+            0.58
+          ]
+        },
+        "luminance": {
+          "sky": 0.6168,
+          "ground": 0.0215,
+          "skyPoints": 140,
+          "groundPoints": 149
+        },
+        "contrast": {
+          "skyGround": 9.32,
+          "horizonCoreGround": 14.68,
+          "horizonEdgeSky": 13.34,
+          "pitchMarkSky": 13.34,
+          "pitchMarkGround": 14.68,
+          "wingsCoreGround": 10.25,
+          "wingsEdgeSky": 13.34,
+          "tapeTick": 21,
+          "band": null,
+          "target": 12.2,
+          "craftBox": 14.67,
+          "craftText": 14.67,
+          "climbArrow": null
+        },
+        "colours": {
+          "band": null,
+          "target": [
+            51,
+            214,
+            255
+          ],
+          "craftBox": [
+            255,
+            212,
+            0
+          ],
+          "craftBoxExpected": [
+            255,
+            212,
+            0
+          ],
+          "arrow": null,
+          "wings": [
+            255,
+            212,
+            0
+          ],
+          "wingsAreYellow": true
+        }
+      }
+    },
+    "repeatEn": {
+      "seen": [
+        {
+          "cue": "safety.obstacle",
+          "name": "Obstacle",
+          "count": "1 of 3",
+          "t": 3157
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Obstacle",
+          "count": "2 of 3",
+          "t": 6730
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Obstacle",
+          "count": "3 of 3",
+          "t": 10181
+        }
+      ],
+      "shot": "evidence/2026-11-08/v13-look-panels/sounds-repeat-en-page.jpg"
+    },
+    "repeatPl": {
+      "seen": [
+        {
+          "cue": "safety.obstacle",
+          "name": "Przeszkoda",
+          "count": "1 z 3",
+          "t": 3024
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Przeszkoda",
+          "count": "2 z 3",
+          "t": 6626
+        },
+        {
+          "cue": "safety.obstacle",
+          "name": "Przeszkoda",
+          "count": "3 z 3",
+          "t": 10094
+        }
+      ],
+      "shot": "evidence/2026-11-08/v13-look-panels/sounds-repeat-pl-page.jpg"
+    },
+    "switches": {
+      "off": {
+        "soundPanel": false,
+        "attitude": true
+      },
+      "readBack": {
+        "soundPanel": false,
+        "attitude": false
+      },
+      "on": {
+        "soundPanel": true,
+        "attitude": true
+      }
+    }
+  }
+}
