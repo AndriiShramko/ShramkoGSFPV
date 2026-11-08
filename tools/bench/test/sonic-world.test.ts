@@ -10,10 +10,12 @@
 //  - the sweeps of a 10 s hall flight cost clearly less than the uncached lookup in the open and no more than it along a wall, timed beside it in the same
 //    process at the same moment (a ratio holds under the load of the gate's other test files, where "under 20 ms" did not: 15 ms alone were 30 ms in the
 //    gate once); the 20 ms of the plan itself is measured alone, with its evidence, by tools/bench/test/sonic-world-cost.ts.
+// v0.13 (lane v13-host A2, docs/wip/v13-host.md "Changed tests"): the cost flights fly v0.12's hall, pinned (costHall), since
+// walls-hall is a 10 x 12 m room now; the cells the distance decides are held by the world's own cell count in the small rooms.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { S, Sim, replayLives } from '../../../packages/sim-core/src';
 import type { ContactWorld, Runner, SimEvent } from '../../../packages/sim-core/src';
-import { AnalyticContactWorld, VoxelContactWorld, analyticCollision } from '../../../packages/collision/src';
+import { ANALYTIC_CELL, AnalyticContactWorld, VoxelContactWorld, analyticCollision } from '../../../packages/collision/src';
 import type { AnalyticVoxelCollision } from '../../../packages/collision/src';
 import { createAnalyticWorld, getLesson, makeSpec } from '../../../packages/sonic-fpv/src';
 import type { AnalyticWorldInfo, AnalyticWorldSpec } from '../../../packages/sonic-fpv/src';
@@ -23,7 +25,7 @@ import { depsFor, lifeProblem } from '../../../apps/fly/src/session/replay';
 import { buildLessonWorld, isLessonScene, lessonSceneId, lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
 import { PROBE_M, groundClearance } from '../../../apps/fly/src/play/ground';
 import { params } from './game-loop';
-import { OPEN_FLIGHT, WALL_FLIGHT, costKinds, hallFlight, measureKinds, walls } from './sonic-world-flight';
+import { OPEN_FLIGHT, WALL_FLIGHT, costHall, costKinds, hallFlight, measureKinds, walls } from './sonic-world-flight';
 
 /** A renderer that draws nothing (as wind-session.test.ts): every method a no-op, `app` an event source nobody fires. */
 function nullRenderer(): NonNullable<SessionOptions['renderer']> {
@@ -110,6 +112,11 @@ function mismatches(col: AnalyticVoxelCollision, world: AnalyticWorldInfo, n: nu
 
 const LESSONS = ['walls-hall', 'walls-pillar', 'rings-first', 'rings-course', 'corridor', 'shapes-cube', 'hover-height'];
 
+/** The culling cells of a collider (ANALYTIC_CELL voxels a side). */
+const cellCount = (col: AnalyticVoxelCollision): number => Math.ceil(col.numVoxelsX / ANALYTIC_CELL) * Math.ceil(col.numVoxelsY / ANALYTIC_CELL) * Math.ceil(col.numVoxelsZ / ANALYTIC_CELL);
+/** How many cells the distance must decide on its own over the picks: 1000, or a quarter of a world of fewer than 4000 cells (v0.13's rooms have 1890 to 2565). */
+const uniformBound = (col: AnalyticVoxelCollision): number => Math.min(1000, cellCount(col) / 4);
+
 describe('analytic walls: the cached lookup is solidAt at every voxel centre', () => {
     for (const id of LESSONS) {
         it(`${id}: 20 000 voxels near the surfaces and anywhere agree`, () => {
@@ -119,9 +126,16 @@ describe('analytic walls: the cached lookup is solidAt at every voxel centre', (
             expect(m.solid).toBeGreaterThan(500); // the picks do reach the walls
             expect(m.wrong).toBe(0);
             // the distance decided cells on its own (the picks crowd the surfaces, so crossed cells are many here)
-            expect(lw.collision.stats.cellsUniform).toBeGreaterThan(1000);
+            expect(lw.collision.stats.cellsUniform).toBeGreaterThan(uniformBound(lw.collision));
         });
     }
+
+    it('control: a lookup with no distance to cull by decides no cell on its own, under the bound', () => {
+        const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        const plain = analyticCollision(lw.world.bounds.min, lw.world.bounds.max, lw.world.voxelM, lw.world.solidAt, null);
+        expect(mismatches(plain, lw.world, 20000, 7).wrong).toBe(0);
+        expect(plain.stats.cellsUniform).toBeLessThanOrEqual(uniformBound(plain));
+    });
 
     it('control: a cull with a distance that lies (the surface said to be 1 m further out) is caught', () => {
         const world = lessonWorldOf(getLesson('walls-hall'))!.world;
@@ -268,7 +282,7 @@ describe('the cost of the sweeps', () => {
     for (const [name, plan, wall] of [['along and into a wall', WALL_FLIGHT, true], ['in the open', OPEN_FLIGHT, false]] as const) {
         it(`a 10 s hall flight ${name}: its contact queries cost ${wall ? 'no more than' : 'clearly less than'} the uncached lookup timed beside them (ratio under ${wall ? BOUND.wall : BOUND.open}), and change no answer`, () => {
             const flight = hallFlight(plan);
-            const lw = lessonWorldOf(getLesson('walls-hall'))!;
+            const lw = costHall();
             const { best, answers } = measureKinds(flight.queries, costKinds(lw.world));
             const ratio = best.session / best.raw;
             console.log(`sonic-world sweep cost, 10 s hall flight ${name} (${flight.queries.length} queries, ${flight.contacts} contact events): session ${best.session.toFixed(2)} ms, cells only ${best.cells.toFixed(2)} ms, no cull ${best.raw.toFixed(2)} ms, session / no cull ${ratio.toFixed(2)}`);
@@ -284,7 +298,7 @@ describe('the cost of the sweeps', () => {
 
     it('control: with the cache switched off (the world that stands for the session has no cells and no free radius) the open-air comparison is about 1 and fails its bound', () => {
         const flight = hallFlight(OPEN_FLIGHT);
-        const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        const lw = costHall();
         const off = costKinds(lw.world);
         // the "session" is the AnalyticContactWorld over walls with the cull off (it has no distance to read: no free radius, no cells): what the absence of the cache measures
         const { best } = measureKinds(flight.queries, { session: () => new AnalyticContactWorld(walls(lw.world, false)), raw: off.raw });
@@ -298,7 +312,7 @@ describe('the cost of the sweeps', () => {
     // (23.4 ms, then 26.2 ms under a clock 2.1 times as fast). A warm-up run first, and two more tries, keep such a spell from failing the build.
     it('a machine twice as slow (the gate runs other test files beside this one) moves every time and no ratio: the absolute 20 ms of before would have failed at 30 ms, the ratios hold', { retry: 2 }, () => {
         const flight = hallFlight(WALL_FLIGHT);
-        const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        const lw = costHall();
         measureKinds(flight.queries, costKinds(lw.world), 1); // warm-up: the code paths are compiled before either measurement
         const here = measureKinds(flight.queries, costKinds(lw.world));
         // the clock runs 2.1 times as fast as it should: every run of every way takes 2.1 times as long, as under a load that never lets go
@@ -318,7 +332,7 @@ describe('the cost of the sweeps', () => {
     });
 
     it('measured beside it: the game scheme\'s voxel ground probe (play/ground.ts) on these walls, and a ray of the world', () => {
-        const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        const lw = costHall();
         const contact = new VoxelContactWorld(walls(lw.world));
         const p = params('pavo20pro-3s');
         const s = new Float64Array(S.size);

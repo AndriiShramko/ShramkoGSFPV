@@ -53,6 +53,10 @@ proofs.
     cap) fly an open world with walls-hall's start and assists; in walls-hall the craft met the wall (height 0.99 m off).
   - [x] `sonic-primitives`: the 3 object cases pass (105 of 105 with A1's). Their controls (the ring as the engine's
     torus, the pillar 0.3 m aside) still find the primitives off the surface.
+  - [x] `sonic-world` (and `sonic-world-flight.ts`, `sonic-world-cost.ts`): 20 of 20, one new control (a lookup with no
+    distance decides no cell: under the bound). The cost flights fly v0.12's hall, pinned (`costHall()`, the hall
+    generator's version 1); the evidence script run once on it: 12.45 ms along the wall, 3.88 ms in the open (20 ms
+    allowed; v0.12 measured 13.4 and 3.5), its evidence file restored (a re-run of 2026-11-07's).
   - Found, not changed (for stage B): `sonic-session/replay-segments.ts` cuts a frame stamped at the next open's own time
     into the next lesson (`t < endT`). In the rig every switch has one (its clock stands while the host opens the next
     lesson), so rings-line's first frame is rings-first's last position, heard in rings-line's world by the replay. In
@@ -96,6 +100,8 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-int-replay` control "the same glossary heard over a floor" | the craft at `ALWAYS_HEARD_M` (0.8 m) over the floor, was 1.5 m | M41-13: a still craft hears a surface by its time to contact, or within 0.8 m |
 | `sonic-pilot` "walls-hall caps" and its control | flown in an open world (a floor, walls-hall's start) with walls-hall's assists | 5 s of full stick is 15 m at 3 m/s; walls-hall is a 10 x 12 m room |
 | `sonic-primitives` "rays that hit an object land on its primitives" (rings-first, shapes-square) and the ring control | ray origins 4 to 10 m from an object drawn until 4000 are free (up to 40 000 draws; was 4000 draws) | in the 10 x 12.5 m rooms most such points lie in the walls: 60 to 73 hits, 100 wanted |
+| `sonic-world` "N: 20 000 voxels near the surfaces and anywhere agree" | the cells the distance decided: more than 1000, or a quarter of the world's cells when it has fewer than 4000 (was 1000) | v0.13's rooms have 1890 to 2565 cells in all; the distance decided 682 to 922. Control (new): with no distance no cell is decided, under the bound |
+| `sonic-world` the cost of the sweeps (4 tests), `sonic-world-flight.ts`, `sonic-world-cost.ts` | flown in v0.12's hall, pinned (`makeSpec('hall', {}, 0, 1)`) | the flights' places (z = -26, 10; x -15 to 15) are v0.12's 40 x 60 m hall; in the 10 x 12 m room they start in the rock |
 | `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
 
 ## Needs from the package

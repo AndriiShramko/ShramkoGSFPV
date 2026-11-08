@@ -9,9 +9,7 @@
 // Best of 9 rounds, the three ways alternating, a fresh world for each run; how busy the machine was over the whole run (all its CPUs, from the system's
 // own counters: Windows has no load average) is in the evidence, so a number can be read with it.
 import { cpus } from 'node:os';
-import { getLesson } from '../../../packages/sonic-fpv/src';
-import { lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
-import { OPEN_FLIGHT, WALL_FLIGHT, costKinds, hallFlight, measureKinds } from './sonic-world-flight';
+import { OPEN_FLIGHT, WALL_FLIGHT, costHall, costKinds, hallFlight, measureKinds } from './sonic-world-flight';
 import { writeEvidence } from '../src/evidence';
 
 const PLAN_BOUND_MS = 20;
@@ -22,7 +20,8 @@ const check = (name: string, pass: boolean, value?: unknown): void => {
     console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${value === undefined ? '' : '  ' + JSON.stringify(value)}`);
 };
 
-const lw = lessonWorldOf(getLesson('walls-hall'))!;
+// v0.12's walls-hall, pinned: the flights are measured in it (sonic-world-flight.ts costHall)
+const lw = costHall();
 const result: Record<string, unknown> = {};
 const cpuTimes = (): { idle: number; total: number } => cpus().reduce((a, c) => ({ idle: a.idle + c.times.idle, total: a.total + c.times.user + c.times.nice + c.times.sys + c.times.idle + c.times.irq }), { idle: 0, total: 0 });
 const t0 = cpuTimes();
