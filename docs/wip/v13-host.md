@@ -182,8 +182,9 @@ with its control (the rule broken once in the code, the test seen failing, the c
 - [x] B3 (W5, M41-6) N, B and Z call the runner, each a key event the replay reads first; the mode's keys win in a lesson;
   K names N, B, Z, I and Escape
   - `apps/fly/src/sonic/bridge.ts` `keyCall()`: the key event with its `REPLAY_KEY_ACTIONS` action, then the runner's call at
-    the same t, its events, its actions taken: `next` (N), new `previous` (B), `repeatTask` (Z), `nextLesson`, `previousLesson`
-    (the lesson menu, B6). `apps/fly/src/sonic/mode.ts`: while a lesson runs the mode holds `feedback.open` (B: the step before)
+    the same t, its events, its actions taken: `next` (N), new `previous` (B), `repeatTask` (Z), `nextLesson` (the lesson menu,
+    B6; B3's `previousLesson` went again in B6: the menu has no Previous lesson, B from the first step is the lesson before).
+    `apps/fly/src/sonic/mode.ts`: while a lesson runs the mode holds `feedback.open` (B: the step before)
     and `sonic.repeat` (Z: `runner.repeat(t)`, the step's whole task with its sounds, no longer the bridge's last line) beside
     N, each once per press. B is the feedback form's key everywhere else (`packages/prefs` keymap); in a lesson the mode's
     handler is the router's last, so it wins, and the pause menu's "Report a bug" item still opens the form (its own key while
@@ -246,7 +247,51 @@ with its control (the rule broken once in the code, the test seen failing, the c
     through the ring: the attempt passes, and the recording replays PASS, without its session events the replay fails the
     attempt (in the test). Controls broken once and restored: the runner not told (4 fail), the end of speech while paused
     (2 fail), a lesson opened in a pause not paused (1 fails).
-- [ ] B6 (M41-3) Escape: the spoken lesson menu; the line at every lesson's start
+- [x] B6 (M41-3) Escape: the spoken lesson menu; the line at every lesson's start
+  - New `apps/fly/src/sonic/lesson-menu.ts`: `LessonMenu` (Resume, Repeat the task, Next step, Previous step, Next lesson,
+    Lesson list, Sound settings, Leave the mode), `DomLessonMenuView`, `runItem`, `pauseKey`. Escape in a lesson holds the
+    flight first (the page's 'menu' pause; the runner waits with it at once, B5), then the view and the voice: "Lesson menu.
+    The up and down arrows move, Enter chooses, Escape goes back to the lesson." cutting the lesson's speech, then "Resume. Item
+    1 of 8." The arrows (and Tab) move round the ends, Home and End go to them, each item said on focus by the mode's voice
+    (`menu.item`, the package's line, through the mode's speech queue and `engine.say`), cutting the one before; Enter, Space
+    or a click choose, Escape resumes; a held Escape or Enter acts once. With "my screen reader speaks" the voice says the
+    menu's name and how it works, not the items: the reader reads the focused item (no item said twice). For a screen reader:
+    a modal dialog (`role=dialog`, `aria-modal`, labelled by its heading) holding a `role=menu` of eight `role=menuitem`
+    buttons with `aria-posinset` and `aria-setsize`, the focus on the item (one in the tab order); outside #ui. While it is up
+    it takes every key at the window's capture phase (the page's keys, N, B, Z, I, the digits wait) and is a dialog to the
+    page (`apps/fly/src/devices/keyboard.ts` `dialogOpen` knows `.sonic-menu`: the keyboard does not fly the arrows).
+  - The items: Repeat the task, Next step, Previous step and Next lesson let the flight go, then call the runner as Z, N, B
+    and the runner's `nextLesson` do, recorded as those keys with the code that chose them (Enter, Space, Click); Lesson list
+    and Sound settings open the mode's start screen (on its settings: `StartScreen.show(section)`, `ScreenPort.show`), which
+    holds the flight itself, before the menu lets it go; Leave the mode saves the lesson (`LessonHost.close`) and opens
+    `/{lang}/fly/`, the start screen's own "Leave Fly by Sound" address. P, the same binding as Escape, still opens the
+    simulator's pause menu (its feedback form and the rest); over a dialog, the pause menu or with no lesson Escape is the
+    page's as before. The key list names the binding "lesson menu (Esc), pause menu (P)" in the mode; K says Escape's line
+    first (`sonic.say.helpMenu`). `sonic.css`: the menu in the middle, opaque, large, the focused item outlined and filled.
+  - The line at every lesson's start (`lessons.ts`): right after the lesson's title, queued, "Escape: menu. Z: repeat the task.
+    N: next." (`sonic.say.lessonKeys`) with the pilot's names (`KeyNames.lessonStart`, the page's `lessonKeys`); also for the
+    glossary opened by G and for a lesson opened again at a recording's start.
+  - Tests (`sonic-lesson-keys` B6, 8, the menu's view on `sonic-fake-dom.ts`): Escape holds the flight and pauses the runner
+    at once, says the menu's name (interrupting) and Resume, the arrows, Tab, Home and End say each item and go round, the
+    focus on the item said, a letter does nothing, a held Escape does not close it, Escape resumes and the lesson goes on;
+    the dialog, its heading, the menu of eight named items in their places, the focus moving, the reader's mode leaving the
+    items to the reader, a click choosing; rings-first flown with the menu's Next step, Repeat the task, Previous step, Next
+    step and passed: the keys next, repeat, previous, next with the code Enter, four pauses and resumes, replays PASS, and not
+    without its key events (in the test); Next lesson recorded as next-lesson, the lesson left skipped, rings-line opened;
+    Lesson list and Sound settings with the flight held throughout (never let go between the menu and the screen), Leave the
+    mode saving the progress; P the pause menu, Escape's repeat nothing; `dialogOpen` with the menu up; the line at the start
+    after the title with the pilot's names (Y for Z on a German layout), not cutting, in the glossary too, and every menu word
+    in the four languages. Controls broken once and restored: the menu not holding the flight (3 fail), the start screen let
+    go of before it holds the flight together with the items not said on focus (2 fail), no line of the keys (1 fails),
+    `dialogOpen` without the menu (1 fails).
+  - Changed: `sonic-optin` K (Escape's line first, "Esc" on the key table; the ordinary page's control names Esc, N, B, R,
+    L); `sonic-lesson-rig` `FakeEngine` speaks with the engine's dictionaries (`engineDicts()`: the page's own lines too, as
+    the real engine); `sonic-int-replay` "rings-first to its pass, then rings-line": the pilot listens to the task, then flies
+    (see "Changed tests" and "Needs from the package" 3).
+  - Lines for a native reading (es, pl, ru): `sonic.say.menuTitle`, `menuOpen`, the eight item names, `helpMenu`,
+    `lessonKeys`, `keys.sonic.menu`.
+  - Not seen in a page yet: the menu over a real flight with a real screen reader (NVDA, JAWS) and the voice: stage C's page
+    proof (and the open "real NVDA or JAWS test" of v12-optin).
 - [ ] B7 (W15) every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call outside the engine
 - [ ] B8 tests for B1 to B7 complete, gates exit 0, stage B's status final
 
@@ -273,7 +318,9 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-lessons` "progress is saved at every attempt" | runs to one counted attempt short of the pass (r - 1) | three counted attempts pass the lesson now |
 | `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B; back in stage B (B2): N is pressed only while the glossary runs, and the glossary's runner is left not skipped | the glossary ends in a 'go' action (W3, W4); a press after the way back would be rings-first's own N, which moves on since B2 |
 | `sonic-lessons` "N skips the intro, I says where the pilot is, Z ..." (stage B, B3 and B4) | Z pressed as a key: its key event `repeat`, the task's title said first with interrupt, more lines after it, the attempt listening; I is `status.progress-step` with the lesson's place on the path (was `status.lesson`) | Z is the runner's repeat since v0.13 (W5): the step's whole task, not the bridge's last line; I is the runner's status line (W6) |
-| `sonic-optin` K in the mode and its control (stage B, B3) | the lines N, B, Z, I, G, R, T, U, L in that order, B's and Z's the page's own; on an ordinary page N, B, R, L | K names the keys that move a lesson first; B and Z do new things |
+| `sonic-optin` K in the mode and its control (stage B, B3 and B6) | the lines Escape, N, B, Z, I, G, R, T, U, L in that order (Escape alone of its binding, with the menu's line), B's and Z's the page's own; on an ordinary page Esc, N, B, R, L | K names the lesson menu and the keys that move a lesson first; B and Z do new things |
+| `sonic-lesson-rig` `FakeEngine` (stage B, B6) | speaks with the engine's dictionaries, `engineDicts()` (was the package's alone) | the real engine speaks the page's own lines too (host-lines.ts), and stage B says more of them: their texts and read times are the real ones now |
+| `sonic-int-replay` "rings-first to its pass, then rings-line" (stage B, B6) | the pilot listens to the task, then flies through the ring (was: flying from the open); the bounds stay (98 % by kind, 85 % by sector, every lesson cue); measured 99.8 % and 98.5 % (rings-line 100 % settled) | since stage B every lesson's start says one more line (3.4 s), in which the pilot flying from the open flew on into the front wall over and over, in a part of the flight that is no attempt's (a flight in the task is put back at the first attempt's start): 97.3 % by kind, all of W19's known kinds (the open-way chime's hold 31 frames, the touch ping 13, wall and floor flips 18). Between attempts it still flies on into the wall after each ring |
 | `sonic-int-reader` "a lesson flown in this mode re-derives on replay" (stage B, B2) | N pressed in the task (it starts the first attempt), not after three attempts while flying; the recording is asserted to hold one lesson and one key | N while flying leaves the lesson and the host opens the next one: the recording held rings-line's open |
 | `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
 | `sonic-bridge` "walls-hall with N, R short, R long and a contact" and its two controls | N in the task; the flight from the landmarks: a stop 1 m before the front wall's middle, a contact on the way back to the start, R short past it, R long, the stop again | N while flying leaves the lesson (M41-6); v0.12's flight (z -20 to -27.5) was beyond the room |
@@ -307,3 +354,14 @@ Each changed expectation takes its value from the package; each kept control sti
    under the ceiling), which the replay, a fresh planner per lesson, does not derive (rings-line: 9 of 181 frames by kind,
    left out of the shares in `sonic-int-replay`). Ask: `reset()` on the engine for the host to call when it opens a lesson
    (or a reset when the frame clock goes back); the simulator then calls it in `LessonHost.open`.
+3. (stage B) A cue the runner hands over at the end of speech starts at another time in the replay than live. Live, the
+   engine stamps a one-off cue with its last frame's time (`src/audio/engine.ts:978` `cue()`: `lastInput.sample.t`, at most a
+   live frame, about 16 ms, before the call); the replay stamps it with the planner's last plan, the last RECORDED frame before
+   the input (`src/replay/replay.ts:224` `this.planner.cue(a.event)`, `t = lastT`: up to 33 ms before the speech.end marker
+   that started it). A named sound's play (a `repeat-cue`, M41-5) then ends up to two recorded frames earlier in the replay,
+   past the comparer's one-frame slack, and the lesson's own cues disagree on a frame: seen in the rig's rings-first flight of
+   `sonic-int-replay` with the keys line left out at the recording's reopen (a variant of B6 not kept: frame 1427,
+   `target.note` recorded 2 frames longer than derived, right after the speech.end at 47 296 ms). Which flights show it
+   depends on where the markers fall on the 33 ms grid. Ask: stamp a cue the replay derives at its input's own time
+   (`this.planner.cue(a.event, t)` with the marker's t), and let a host give the engine the time of a cue (or stamp it at the
+   call); until then a flight can fail the "every lesson cue on every frame" check by chance.

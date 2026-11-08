@@ -87,3 +87,13 @@ body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-c
 @media (max-height: 500px) { .sonic-progress { font-size: 15px; padding: 6px 10px; } }
 @media (prefers-color-scheme: light) { .sonic-progress { border-color: #000; outline-color: #fff; background: #fff; color: #000; } }
 @media (forced-colors: active) { .sonic-progress { border-color: CanvasText; outline-color: Canvas; background: Canvas; color: CanvasText; } }
+
+/* ---- the lesson menu (lesson-menu.ts, v0.13 M41-3): a modal dialog in the middle of the page while the flight waits under it; large items,
+   the focused one marked by a thick outline and a light fill, so a low-vision pilot and a helper see where the voice is */
+.sonic-menu { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 20; box-sizing: border-box; width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 16px; border: 3px solid #fff; border-radius: 14px; outline: 2px solid #000; background: #000; color: #fff; font: 600 clamp(18px, 2vw, 24px)/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.sonic-menu h2 { margin: 0 0 12px; font-size: 1.2em; }
+.sonic-menu-list { display: flex; flex-direction: column; gap: 8px; }
+.sonic-menu .sonic-menu-item { justify-content: flex-start; width: 100%; min-height: 52px; font: inherit; background: #111; color: #fff; border: 2px solid #9aa3ad; }
+.sonic-menu .sonic-menu-item:focus { outline: 4px solid #fbbf24; outline-offset: 2px; background: #fff; color: #000; }
+@media (prefers-color-scheme: light) { .sonic-menu { border-color: #000; outline-color: #fff; background: #fff; color: #000; } .sonic-menu .sonic-menu-item { background: #f1f3f5; color: #000; border-color: #444; } .sonic-menu .sonic-menu-item:focus { outline-color: #1d4ed8; background: #000; color: #fff; } }
+@media (forced-colors: active) { .sonic-menu .sonic-menu-item:focus { outline-color: Highlight; } }

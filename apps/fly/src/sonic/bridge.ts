@@ -12,8 +12,8 @@
 //            itself by the runner's rule (material by six axis rays, the sample's speed and position).
 //   events   every SessionEvent of the mode goes out as ctx.events 'sonicEvent', in order: the runner's (its
 //            begin() writes 'lesson open'), and the host's markers the replay takes as inputs: 'key' events
-//            with the actions reset.checkpoint, reset.start, next, and since v0.13 previous, repeat, next-lesson
-//            and previous-lesson (B, Z, the lesson menu), each written before the runner's call, and a 'speech'
+//            with the actions reset.checkpoint, reset.start, next, and since v0.13 previous, repeat and
+//            next-lesson (B, Z, the lesson menu), each written before the runner's call, and a 'speech'
 //            event with the key speech.end whenever the host's speech queue runs empty and it calls
 //            runner.spoken(t). The flight pausing and going on are 'session' pause and resume; the recorder
 //            writes start, end, recovered.
@@ -435,10 +435,6 @@ export class SonicBridge {
         this.keyCall(code, REPLAY_KEY_ACTIONS.nextLesson, (run, t) => run.nextLesson(t));
     }
 
-    /** The lesson menu's Previous lesson: at once. */
-    previousLesson(code: string): void {
-        this.keyCall(code, REPLAY_KEY_ACTIONS.previousLesson, (run, t) => run.previousLesson(t));
-    }
 
     /**
      * Speaks a line through the engine, `interrupt` passed on; the queue of lines is counted, and when it runs

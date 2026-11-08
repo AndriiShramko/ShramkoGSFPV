@@ -41,7 +41,8 @@ import { voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
-import type { RunnerKeys } from './key-names';
+import { DEFAULT_LESSON_START_KEYS } from './key-names';
+import type { LessonStartKeys, RunnerKeys } from './key-names';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -89,6 +90,8 @@ export interface LessonPage {
     keyNames?(): RunnerKeys;
     /** the pilot's speaking speed (SonicPrefs.speechRate); absent: 1 */
     speechRate?(): number;
+    /** the names of the keys the line at every lesson's start says (key-names.ts lessonStart); absent: Escape, Z, N */
+    lessonKeys?(): LessonStartKeys;
 }
 
 /** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
@@ -155,6 +158,11 @@ export class LessonHost {
      * pressed while the pass's own move opens the next lesson would otherwise open a lesson (or the start screen) over it.
      */
     private movedFrom: LessonSession | null = null;
+    /**
+     * The line at every lesson's start (v0.13 B6, M41-3), said right after the lesson's title, before the rest of its task: "Escape:
+     * menu. Z: repeat the task. N: next." with the pilot's names of those keys. Set while a lesson is entered, taken by its first line.
+     */
+    private keysLine: SpeechLine | null = null;
 
     constructor(page: LessonPage) {
         this.p = page;
@@ -247,11 +255,13 @@ export class LessonHost {
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
             this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
+            this.keysLine = { key: 'sonic.say.lessonKeys', params: { ...(this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS) } };
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
                 this.p.mode.enter({ lesson, runner, world, floorY });
             } finally {
                 this.cutSpeech = false;
+                this.keysLine = null;
             }
             if (scan) {
                 // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
@@ -360,11 +370,16 @@ export class LessonHost {
                     if (this.runner === run && !this.busy) void this.go(a.to);
                 });
                 break;
-            case 'say':
+            case 'say': {
                 void mode.bridge.say(a.line, a.interrupt || this.cutSpeech);
                 // only the first line cuts: the lines after it queue behind it, as the runner meant them to
                 this.cutSpeech = false;
+                // a lesson's first line is its title: the keys of the lesson menu, the task and next follow it
+                const keys = this.keysLine;
+                this.keysLine = null;
+                if (keys) void mode.bridge.say(keys, false);
                 break;
+            }
             case 'cue':
                 mode.bridge.engine?.cue(a.event);
                 break;

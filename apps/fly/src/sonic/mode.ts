@@ -285,12 +285,6 @@ export class SonicMode {
         this.bridge.nextLesson(code);
     }
 
-    /** The lesson menu's Previous lesson. */
-    previousLesson(code: string): void {
-        if (!this.on) return;
-        this.bridge.previousLesson(code);
-    }
-
     /**
      * The craft goes to `pose` by the respawn path: the session's spawn moves there and R's respawn takes it at the
      * next tick, a logged 'manual-start' respawn (the flight log replays it exactly).

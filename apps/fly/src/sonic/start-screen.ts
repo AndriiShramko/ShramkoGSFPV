@@ -338,12 +338,16 @@ export class StartScreen {
 
     // ------------------------------------------------------------------ showing
 
-    /** The screen is shown and the focus is on its h1 (a screen reader starts reading there). */
-    show(): void {
+    /**
+     * The screen is shown and the focus is on its h1 (a screen reader starts reading there), or on a section's heading (the lesson
+     * menu's Sound settings opens the settings: v0.13 B6).
+     */
+    show(section?: (typeof SECTIONS)[number]): void {
         this.root.hidden = false;
         this.root.removeAttribute('inert');
         this.render();
-        this.root.querySelector<HTMLElement>('#sonic-h1')?.focus();
+        const at = section ? this.sections.get(section)?.querySelector<HTMLElement>('h2') : null;
+        (at ?? this.root.querySelector<HTMLElement>('#sonic-h1'))?.focus();
     }
 
     /** The screen goes away from the page and the accessibility tree (the flight takes the page). */

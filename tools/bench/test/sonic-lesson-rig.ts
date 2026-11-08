@@ -8,7 +8,7 @@
 // page clock (performance.now) itself, so a lesson of minutes runs in seconds. Not a test file (the name has no .test).
 import { vi } from 'vitest';
 import { MODE_CHANNEL, S, attitude } from '../../../packages/sim-core/src';
-import { CuePlanner, DICTS, createTranslator, defaultPrefs, getBuiltinTheme, nextLesson } from '../../../packages/sonic-fpv/src';
+import { CuePlanner, createTranslator, defaultPrefs, getBuiltinTheme, nextLesson } from '../../../packages/sonic-fpv/src';
 import type { ActiveCue, CueEvent, FlightSample, LessonDef, LessonLayers, Locale, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Translator, Vec3 } from '../../../packages/sonic-fpv/src';
 import { estimateSpeechS } from '../../../packages/sonic-fpv/src/audio/speech';
 import { FlightSession } from '../../../apps/fly/src/session';
@@ -18,14 +18,15 @@ import type { AppEvents } from '../../../apps/fly/src/app/context';
 import type { ActionHandler } from '../../../apps/fly/src/app/keys';
 import { LessonPilot, rayClearance } from '../../../apps/fly/src/play/lesson-pilot';
 import { LessonHost } from '../../../apps/fly/src/sonic/lessons';
+import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import type { LessonPage } from '../../../apps/fly/src/sonic/lessons';
 import { buildScanLesson } from '../../../apps/fly/src/sonic/scan-lesson';
 import { SonicMode } from '../../../apps/fly/src/sonic/mode';
 import { lessonFlightWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { Prim } from '../../../apps/fly/src/sonic/primitives';
-import { DEFAULT_RUNNER_KEYS } from '../../../apps/fly/src/sonic/key-names';
-import type { RunnerKeys } from '../../../apps/fly/src/sonic/key-names';
+import { DEFAULT_LESSON_START_KEYS, DEFAULT_RUNNER_KEYS } from '../../../apps/fly/src/sonic/key-names';
+import type { LessonStartKeys, RunnerKeys } from '../../../apps/fly/src/sonic/key-names';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { VoxelContactWorld } from '../../../packages/collision/src';
 import type { VoxelCollision } from '../../../packages/collision/src';
@@ -62,7 +63,8 @@ export class FakeEngine {
     private readonly tr: Translator;
 
     constructor(private readonly clock: { t: number }, locale: Locale = 'en') {
-        this.tr = createTranslator(locale, DICTS);
+        // the real engine's dictionaries: the package's and the page's own spoken lines (host-lines.ts; v0.13 stage B says more of them)
+        this.tr = createTranslator(locale, engineDicts());
     }
 
     setLayers(l: LessonLayers): void {
@@ -199,6 +201,8 @@ export class Rig {
     speechRate = 1;
     /** called when a lesson with other walls starts being swapped in (the old lesson's runner is still the host's then) */
     onSwap: (() => void) | null = null;
+    /** the names the line at every lesson's start says (v0.13 B6; the page's are its keyboard layout's) */
+    lessonKeys: LessonStartKeys = DEFAULT_LESSON_START_KEYS;
     pilot: LessonPilot | null = null;
     session!: FlightSession;
     mode!: SonicMode;
@@ -280,7 +284,8 @@ export class Rig {
             showMenu: () => { rig.menus++; },
             clock: () => rig.clock.t,
             keyNames: () => rig.keyNames,
-            speechRate: () => rig.speechRate
+            speechRate: () => rig.speechRate,
+            lessonKeys: () => rig.lessonKeys
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);

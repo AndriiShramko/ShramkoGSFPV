@@ -149,7 +149,15 @@ interface Flight {
     /** page time spent in the second lesson before the recording stops, ms (default 6000) */
     readonly after?: number;
 }
-const RINGS: Flight = { a: 'rings-first', b: 'rings-line', pilot: throughTheGate, reopen: true };
+/**
+ * The rings pilot listens to the task, then flies through the gate (v0.13 stage B, B6). Since v0.13 a flight in the task is put back at
+ * the first attempt's start (the package's review R4), so what is flown there belongs to no attempt; and since stage B every lesson's
+ * start says one more line (the lesson menu's keys, about 3.4 s), in which a pilot flying from the open flew on into the front wall
+ * again and again: touch pings and wall flips of the safety layer the replay derives otherwise (W19's kinds, "Needs from the package"),
+ * over and over in a part of the flight that is no lesson's. Between attempts the pilot still flies on into the wall after each ring.
+ */
+const listenThenFly: Control = (r) => (r.host.runner?.phase === 'intro' ? null : throughTheGate(r));
+const RINGS: Flight = { a: 'rings-first', b: 'rings-line', pilot: listenThenFly, reopen: true };
 
 /**
  * The frames of a replayed lesson whose cues differ from the recording outside the safety layer, by the comparer's slack (a
@@ -284,7 +292,8 @@ describe('two lessons flown through the host and recorded as one package replay 
             // the sector of a hazard voice flips with the rate the sampler is fed at (compare.ts): the rig renders a frame every 16 ms
             // and the recorder keeps them on a 33.3 ms grid, so 32 and 48 ms apart (the page, at a steady 60 Hz, is measured by
             // tools/bench/src/sonic-int-page.ts replay). In v0.13's 10 x 12.5 m room (micro-drone scale, M41-18) the walls are heard
-            // on most frames, so more voices flip: rings-first by kind 98.7 %, by sector 85.8 % at 16c01a1 (v0.12 held 99 % and 90 %)
+            // on most frames, so more voices flip: rings-first by kind 98.7 %, by sector 85.8 % at 16c01a1 (v0.12 held 99 % and 90 %);
+            // with the pilot listening to the task (stage B, listenThenFly) 99.8 % by kind and 98.5 % by sector
             const shares = { ...cues, settled: { from, classShare: settled.classShare, share: settled.share } };
             expect(settled.classShare, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.98);
             expect(settled.share, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.85);

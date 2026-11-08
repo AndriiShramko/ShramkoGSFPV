@@ -11,20 +11,27 @@
 //    after every attempt (the panel on a small stand-in for the DOM, tools/bench/test/sonic-fake-dom.ts).
 //  - B5 (W8): the runner pauses and resumes with the flight, where the session's pause and resume are written; no end of speech
 //    while paused, once after the resume; a question does not time out in a pause, and a paused session replays PASS.
+//  - B6 (M41-3): Escape opens the spoken lesson menu (the lesson waits with the flight), its items said on focus by the mode's voice
+//    and exposed to a screen reader, each step and lesson item recorded as the key it stands for; the line at every lesson's start.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ASK_TIMEOUT_S, REPEAT_PLAYS, REPLAY_KEY_ACTIONS, SPEECH_END_KEY, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { ASK_TIMEOUT_S, REPEAT_PLAYS, REPLAY_KEY_ACTIONS, SPEECH_END_KEY, buildManifest, checkSession, createTranslator, defaultPrefs, getBuiltinTheme, getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, LessonSession, LessonView, SessionEvent } from '../../../packages/sonic-fpv/src';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
+import { PauseStack } from '../../../apps/fly/src/app/pause-stack';
 import { STATUS_ORDER, StatusBoard, sayStatus } from '../../../apps/fly/src/app/sonic-status';
+import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import { DEFAULT_RUNNER_KEYS, KeyNames, codeOfHint, spokenKey } from '../../../apps/fly/src/sonic/key-names';
+import { DomLessonMenuView, LESSON_MENU_ITEMS, LessonMenu, pauseKey, runItem } from '../../../apps/fly/src/sonic/lesson-menu';
+import type { KeySource } from '../../../apps/fly/src/sonic/lesson-menu';
 import { runnerOptions } from '../../../apps/fly/src/sonic/lessons';
 import { ProgressPanel, followProgress, progressRows } from '../../../apps/fly/src/sonic/progress-panel';
-import { saveProgress } from '../../../apps/fly/src/sonic/store';
+import { saveProgress, savedProgress } from '../../../apps/fly/src/sonic/store';
 import { REPO, mkStore } from '../../../packages/prefs/test/helpers';
 import { FakeDocument } from './sonic-fake-dom';
+import type { FakeElement } from './sonic-fake-dom';
 import { Rig } from './sonic-lesson-rig';
 import type { Control } from './sonic-lesson-rig';
 
@@ -138,6 +145,8 @@ describe('B1 (W3): the runner gets the pilot\'s path, key names, speaking speed 
 
 /** Straight ahead at a gate's height (the rings and the squares of modules 5 and 6). */
 const throughTheGate: Control = (r) => ({ forward: 1, lift: Math.max(-0.4, Math.min(0.4, (3 - r.pos[1]) * 0.8)) });
+/** The same pilot listening to the task first (a flight in the task is put back at the first attempt's start). */
+const listenThenFly: Control = (r) => (r.host.runner?.phase === 'intro' ? null : throughTheGate(r));
 
 describe('B2 (W4): the runner\'s \'go\': on, back, the way back of G, and one move per runner', () => {
     it('N while flying moves on to the next lesson on the pilot\'s path (it was a dead end): the lesson left is marked skipped, opened once', async () => {
@@ -577,4 +586,272 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
         expect(bare.check.ok).toBe(false);
         expect(bare.check.events.diffs.some((d) => d.problem === 'extra' && d.derived?.kind === 'lesson' && d.derived.what === 'attempt-fail')).toBe(true);
     }, 300000);
+});
+
+// ------------------------------------------------------------------ B6
+
+/** The lesson menu in the rig's page as sonic/feature.ts makes it: the mode's voice, the page's pause stack, its own DOM view. */
+interface MenuPage {
+    readonly menu: LessonMenu;
+    readonly doc: FakeDocument;
+    /** every change of the page's pause stack: whether the flight is held after it */
+    readonly held: boolean[];
+    /** the start screen shown ('start', or the section it opened on) */
+    readonly screens: string[];
+    left: number;
+    /** the simulator's pause menu opened (P) */
+    pauseMenus: number;
+    /** the menu's dialog on the page, or null */
+    root(): FakeElement | null;
+    items(): FakeElement[];
+    escape(code?: string): void;
+}
+
+function menuPage(r: Rig, o: { reader?: boolean } = {}): MenuPage {
+    const doc = new FakeDocument();
+    const tr = createTranslator('en', engineDicts());
+    const held: boolean[] = [];
+    const stack = new PauseStack<'menu' | 'panel'>((on) => {
+        held.push(on);
+        r.session.pause(on, 'menu');
+        r.mode.bridge.syncPause();
+    });
+    const page: MenuPage = {
+        doc,
+        held,
+        screens: [],
+        left: 0,
+        pauseMenus: 0,
+        menu: null as unknown as LessonMenu,
+        root: () => doc.body.descendants().find((e) => e.className === 'sonic-menu') ?? null,
+        items: () => doc.body.descendants().filter((e) => e.getAttribute('role') === 'menuitem'),
+        escape: (code = 'Escape') => pauseKey(page.menu, () => { page.pauseMenus++; })({ code, repeat: false })
+    };
+    (page as { menu: LessonMenu }).menu = new LessonMenu({
+        say: (line, interrupt) => r.mode.bridge.say(line, interrupt),
+        text: (line) => tr.text(line),
+        hold: (on) => (on ? stack.hold('menu') : stack.release('menu')),
+        readerSpeaks: () => o.reader === true,
+        run: runItem({
+            mode: r.mode,
+            showScreen: (section) => {
+                // the start screen holds the flight itself (feature.ts showMenu: the pause 'panel')
+                stack.hold('panel');
+                page.screens.push(section ?? 'start');
+            },
+            leave: () => {
+                r.host.close();
+                page.left++;
+            }
+        }),
+        view: new DomLessonMenuView(doc.body as unknown as HTMLElement, doc.body as unknown as KeySource)
+    });
+    return page;
+}
+
+/** The menu's focus line as the voice says it. */
+const itemLine = (label: string, n: number) => ({ key: 'menu.item', params: { label, n, total: LESSON_MENU_ITEMS.length } });
+const LABELS = ['Resume', 'Repeat the task', 'Next step', 'Previous step', 'Next lesson', 'Lesson list', 'Sound settings', 'Leave the mode'];
+
+/** Opens the menu, moves to `item` with the arrow keys and chooses it with Enter. */
+function choose(p: MenuPage, item: (typeof LESSON_MENU_ITEMS)[number]): void {
+    p.escape();
+    const at = LESSON_MENU_ITEMS.indexOf(item);
+    for (let i = 0; i < at; i++) p.doc.key('ArrowDown');
+    p.doc.key('Enter', { code: 'Enter' });
+}
+
+describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every lesson\'s start', () => {
+    it('Escape: the flight and the lesson wait at once; the menu\'s name, then Resume, said by the mode\'s voice (the first line cutting the lesson\'s); the arrows say each item and go round; Escape resumes', async () => {
+        const r = await open('rings-first');
+        await r.run(800, null);
+        const p = menuPage(r);
+        const said0 = r.engine.said.length;
+        p.escape();
+        expect(p.menu.isOpen).toBe(true);
+        expect(r.host.runner!.view().paused).toBe(true);
+        expect(r.of('session').at(-1)).toMatchObject({ what: 'pause' });
+        expect(r.engine.said.slice(said0).map((s) => ({ key: s.line.key, interrupt: s.interrupt }))).toEqual([{ key: 'sonic.say.menuOpen', interrupt: true }, { key: 'menu.item', interrupt: false }]);
+        expect(r.engine.said.at(-1)!.line).toEqual(itemLine('Resume', 1));
+        expect(r.engine.said.at(-1)!.text).toBe('Resume. Item 1 of 8.');
+        const say = (key: string, o: { shiftKey?: boolean } = {}): unknown => {
+            p.doc.key(key, o);
+            const last = r.engine.said.at(-1)!;
+            expect(last.interrupt).toBe(true);
+            return last.line;
+        };
+        expect(say('ArrowDown')).toEqual(itemLine('Repeat the task', 2));
+        expect(say('ArrowUp')).toEqual(itemLine('Resume', 1));
+        expect(say('ArrowUp')).toEqual(itemLine('Leave the mode', 8));
+        expect(say('ArrowDown')).toEqual(itemLine('Resume', 1));
+        expect(say('End')).toEqual(itemLine('Leave the mode', 8));
+        expect(say('Home')).toEqual(itemLine('Resume', 1));
+        expect(say('Tab')).toEqual(itemLine('Repeat the task', 2));
+        expect(say('Tab', { shiftKey: true })).toEqual(itemLine('Resume', 1));
+        // the focus is on the item the voice names; a letter does nothing while the menu is up (no lesson key, no flight)
+        expect(p.doc.activeElement?.textContent).toBe('Resume');
+        const n = r.sonic.length;
+        const said = r.engine.said.length;
+        const ev = p.doc.key('n', { code: 'KeyN' });
+        expect(ev.propagationStopped).toBe(true);
+        expect(r.sonic.length).toBe(n);
+        expect(r.engine.said.length).toBe(said);
+        // a held Escape (the press that opened the menu still down) does not close it
+        p.doc.key('Escape', { repeat: true });
+        expect(p.menu.isOpen).toBe(true);
+        p.doc.key('Escape');
+        expect(p.menu.isOpen).toBe(false);
+        expect(p.root()).toBeNull();
+        expect(r.host.runner!.view().paused).toBe(false);
+        expect(r.of('session').at(-1)).toMatchObject({ what: 'resume' });
+        expect(p.held).toEqual([true, false]);
+        // the lesson goes on from there: the task is said to its end and the first attempt begins
+        await r.run(120000, null, () => r.host.runner!.phase === 'flying');
+        expect(r.host.runner!.phase).toBe('flying');
+    }, 120000);
+
+    it('a screen reader meets a modal dialog with a menu of eight menu items, named, in their places, the focus on one; with "my screen reader speaks" the voice leaves the items to it', async () => {
+        const r = await open('rings-first');
+        const p = menuPage(r, { reader: true });
+        const said0 = r.engine.said.length;
+        p.escape();
+        const root = p.root()!;
+        expect(root.getAttribute('role')).toBe('dialog');
+        expect(root.getAttribute('aria-modal')).toBe('true');
+        const title = root.descendants().find((e) => e.getAttribute('id') === root.getAttribute('aria-labelledby'))!;
+        expect(title.textContent).toBe('Lesson menu');
+        const list = root.descendants().find((e) => e.getAttribute('role') === 'menu')!;
+        expect(list.getAttribute('aria-labelledby')).toBe(root.getAttribute('aria-labelledby'));
+        const items = p.items();
+        expect(items.map((b) => b.textContent)).toEqual(LABELS);
+        expect(items.map((b) => b.getAttribute('aria-posinset'))).toEqual(LABELS.map((_, i) => String(i + 1)));
+        expect(items.every((b) => b.getAttribute('aria-setsize') === '8' && b.tagName === 'BUTTON')).toBe(true);
+        expect(items.map((b) => b.tabIndex)).toEqual([0, -1, -1, -1, -1, -1, -1, -1]);
+        expect(p.doc.activeElement).toBe(items[0]);
+        p.doc.key('ArrowDown');
+        expect(items.map((b) => b.tabIndex)).toEqual([-1, 0, -1, -1, -1, -1, -1, -1]);
+        expect(p.doc.activeElement).toBe(items[1]);
+        // the reader reads the focused item; the voice said the menu's name and how it works, not the items
+        expect(r.engine.said.slice(said0).map((s) => s.line.key)).toEqual(['sonic.say.menuOpen']);
+        // a click chooses too (Repeat the task: the key 'repeat', with the code Click)
+        items[1]!.click();
+        expect(p.menu.isOpen).toBe(false);
+        expect(r.of('key').at(-1)).toMatchObject({ code: 'Click', action: REPLAY_KEY_ACTIONS.repeat });
+    }, 120000);
+
+    it('each step and lesson item calls the runner as its key does, recorded the same way: a lesson flown with the menu\'s Next step, Repeat the task and Previous step replays PASS; control: without its key events it does not', async () => {
+        const r = await open('rings-first');
+        const p = menuPage(r);
+        const rec = recorder(listenThenFly);
+        await r.run(1200, rec.control);
+        choose(p, 'next-step');
+        expect(r.of('key').at(-1)).toMatchObject({ code: 'Enter', action: REPLAY_KEY_ACTIONS.next });
+        expect(r.host.runner!.phase).toBe('flying');
+        await r.run(80000, rec.control, () => r.lessonEvents('attempt-start').length >= 2);
+        await r.run(1500, rec.control);
+        choose(p, 'repeat');
+        expect(r.of('key').at(-1)).toMatchObject({ code: 'Enter', action: REPLAY_KEY_ACTIONS.repeat });
+        expect(r.host.runner!.view().listening).toBe(true);
+        await r.run(60000, rec.control, () => r.engine.said.some((s) => s.line.key === 'fly.go-on'));
+        await r.run(1000, rec.control);
+        choose(p, 'previous-step');
+        expect(r.of('key').at(-1)).toMatchObject({ code: 'Enter', action: REPLAY_KEY_ACTIONS.previous });
+        expect(r.host.runner!.phase).toBe('intro');
+        await r.run(2500, rec.control);
+        choose(p, 'next-step');
+        await r.run(240000, rec.control, () => r.passed);
+        await r.run(600, rec.control);
+        expect(r.passed).toBe(true);
+        expect(r.of('key').map((e) => e.action)).toEqual(['next', 'repeat', 'previous', 'next']);
+        // every choice let the flight go before the runner's call: four pauses, four resumes
+        expect(r.of('session').map((e) => e.what)).toEqual(['pause', 'resume', 'pause', 'resume', 'pause', 'resume', 'pause', 'resume']);
+        const manifest = manifestOf(r, 'rings-first', 'menuSession00000001');
+        const { check } = checkSession({ manifest, frames: rec.frames, events: r.sonic });
+        expect(check.events.diffs).toEqual([]);
+        expect(check.ok, JSON.stringify({ notes: check.notes, cues: check.cues })).toBe(true);
+        const bare = checkSession({ manifest, frames: rec.frames, events: r.sonic.filter((e) => e.kind !== 'key') });
+        expect(bare.check.ok).toBe(false);
+    }, 300000);
+
+    it('Next lesson: recorded as next-lesson, the lesson left skipped and the next on the path opened', async () => {
+        const r = await open('rings-first');
+        const p = menuPage(r);
+        const left = r.host.runner!;
+        choose(p, 'next-lesson');
+        expect(r.of('key').at(-1)).toMatchObject({ code: 'Enter', action: REPLAY_KEY_ACTIONS.nextLesson });
+        await r.run(60000, null, () => r.host.lesson?.id !== 'rings-first');
+        expect(r.host.lesson!.id).toBe(lessonAfter('rings-first', 'full')!.id);
+        expect(left.progress().skipped).toBe(true);
+        expect(r.host.runner!.view().paused).toBe(false);
+    }, 120000);
+
+    it('Lesson list and Sound settings open the mode\'s start screen (on its settings), the flight held all the while; Leave the mode saves the lesson and leaves', async () => {
+        const r = await open('rings-first');
+        await r.run(500, null);
+        const p = menuPage(r);
+        choose(p, 'lessons');
+        expect(p.screens).toEqual(['start']);
+        // the menu let go only once the screen held the flight: never a moment of flight between them
+        expect(p.held).toEqual([true, true, true]);
+        expect(r.of('session').filter((e) => e.what === 'resume')).toEqual([]);
+        expect(r.of('key')).toEqual([]);
+        const p2 = menuPage(r);
+        choose(p2, 'settings');
+        expect(p2.screens).toEqual(['settings']);
+        expect(p2.held.every((h) => h)).toBe(true);
+        const p3 = menuPage(r);
+        expect(savedProgress(r.store, 'rings-first')).toBeNull();
+        choose(p3, 'leave');
+        expect(p3.left).toBe(1);
+        expect(r.host.active).toBe(false);
+        expect(savedProgress(r.store, 'rings-first')).not.toBeNull();
+    }, 120000);
+
+    it('P is still the pause menu\'s (it keeps the feedback form); Escape\'s auto-repeat opens nothing more', async () => {
+        const r = await open('rings-first');
+        const p = menuPage(r);
+        p.escape('KeyP');
+        expect(p.pauseMenus).toBe(1);
+        expect(p.menu.isOpen).toBe(false);
+        pauseKey(p.menu, () => { p.pauseMenus++; })({ code: 'Escape', repeat: true });
+        expect(p.menu.isOpen).toBe(false);
+        p.escape();
+        expect(p.menu.isOpen).toBe(true);
+        expect(p.pauseMenus).toBe(1);
+    }, 120000);
+
+    it('the lesson menu is a dialog to the page while it is up: the keyboard does not fly its arrows (devices/keyboard.ts dialogOpen)', async () => {
+        const dom: { className: string }[] = [];
+        vi.stubGlobal('document', { querySelector: (sel: string) => (sel.split(',').some((s) => s.trim() === '.sonic-menu') ? (dom.find((e) => e.className === 'sonic-menu') ?? null) : null) });
+        const { dialogOpen } = await import('../../../apps/fly/src/devices/keyboard');
+        expect(dialogOpen()).toBe(false);
+        dom.push({ className: 'sonic-menu' });
+        expect(dialogOpen()).toBe(true);
+        vi.unstubAllGlobals();
+    });
+
+    it('the line at every lesson\'s start: right after the title, the keys of the menu, the task and next by the pilot\'s names, queued (not cutting); the glossary opened by G says it too', async () => {
+        const names = pageNames();
+        names.setLayout(new Map([['KeyZ', 'y'], ['KeyN', 'n']]));
+        const r = await open('rings-first', (rr) => { rr.lessonKeys = names.lessonStart(); });
+        const first = r.engine.said.slice(0, 2);
+        expect(first[0]).toMatchObject({ line: getLesson('rings-first').title });
+        expect(first[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys', params: { menu: 'Escape', repeat: 'Y', next: 'N' } }, interrupt: false });
+        expect(first[1]!.text).toBe('Escape: menu. Y: repeat the task. N: next.');
+        expect(r.engine.said.filter((s) => s.line.key === 'sonic.say.lessonKeys')).toHaveLength(1);
+        await r.run(1000, null);
+        const before = r.engine.said.length;
+        expect(await r.host.glossary()).toBe(true);
+        const mine = r.engine.said.slice(before);
+        expect(mine[0]!.line.key).toBe('lesson.ears-glossary.title');
+        expect(mine[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys' }, interrupt: false });
+        // its words in the four languages, each naming the three keys
+        const dicts = engineDicts();
+        for (const l of ['en', 'es', 'pl', 'ru'] as const) {
+            const text = dicts[l]['sonic.say.lessonKeys'];
+            for (const k of ['{menu}', '{repeat}', '{next}']) expect(text, `${l} ${k}`).toContain(k);
+            for (const id of LESSON_MENU_ITEMS) expect(dicts[l][`sonic.say.menu${id.split('-').map((w) => w[0]!.toUpperCase() + w.slice(1)).join('')}`], `${l} ${id}`).toBeTruthy();
+            for (const k of ['sonic.say.menuOpen', 'sonic.say.menuTitle', 'sonic.say.helpMenu']) expect(dicts[l][k], `${l} ${k}`).toBeTruthy();
+        }
+    }, 120000);
 });

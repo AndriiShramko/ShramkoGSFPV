@@ -25,6 +25,15 @@ export interface RunnerKeys {
 /** The runner's own names, when the page has none (the package's defaults). */
 export const DEFAULT_RUNNER_KEYS: RunnerKeys = Object.freeze({ next: 'N', previous: 'B', repeat: 'Z' });
 
+/** The keys the line at every lesson's start names ("Escape: menu. Z: repeat the task. N: next.", sonic.say.lessonKeys). */
+export interface LessonStartKeys {
+    readonly menu: string;
+    readonly repeat: string;
+    readonly next: string;
+}
+
+export const DEFAULT_LESSON_START_KEYS: LessonStartKeys = Object.freeze({ menu: 'Escape', repeat: 'Z', next: 'N' });
+
 /** Named keys the page binds (aria = KeyboardEvent.code for these). */
 const NAMED = new Set(['Escape', 'Enter', 'Space', 'Tab', 'Backspace']);
 
@@ -85,6 +94,15 @@ export class KeyNames {
             .filter((h) => aria === undefined || h.aria === aria)
             .map((h) => spokenKey(h, this.layout, this.named))
             .join(' ');
+    }
+
+    /** The keys the line at every lesson's start names (B6): Escape (the lesson menu), Z (the task again), N (next). */
+    lessonStart(): LessonStartKeys {
+        return {
+            menu: this.of('pause.toggle', 'Escape') || DEFAULT_LESSON_START_KEYS.menu,
+            repeat: this.of('sonic.repeat') || DEFAULT_LESSON_START_KEYS.repeat,
+            next: this.of('scene.next') || DEFAULT_LESSON_START_KEYS.next
+        };
     }
 
     /** The runner's keys: N (scene.next), B (feedback.open) and Z (sonic.repeat), as this pilot's keyboard names them. */
