@@ -93,6 +93,7 @@
   "sonicrec.replay.freeflight": "Vuelo libre",
   "sonicrec.replay.check.pass": "La reproducción coincide con la grabación: se volvieron a calcular {matched} de {recorded} eventos y el {cues} % de los sonidos es igual.",
   "sonicrec.replay.check.fail": "La reproducción difiere de la grabación en {diffs} evento(s): se volvieron a calcular {matched} de {recorded} eventos grabados y el {cues} % de los sonidos es igual. Se reproduce tal como se grabó.",
+  "sonicrec.replay.check.older": "Grabado con una versión anterior de las lecciones: esta versión no puede comprobarlo, y eso no dice nada en contra del vuelo. Se reproduce tal como se grabó, con las frases que oyó el piloto.",
   "sonicrec.replay.check.none": "Esta grabación no se puede reproducir: {reason}",
   "sonicrec.replay.error": "No se puede abrir este archivo: {reason}",
   "sonicrec.replay.noruntime": "La reproducción necesita que el modo de sonido esté en marcha. Empieza primero una lección y abre después la grabación.",

@@ -93,6 +93,7 @@
   "sonicrec.replay.freeflight": "Lot swobodny",
   "sonicrec.replay.check.pass": "Odtwarzanie zgadza się z nagraniem: ponownie wyliczono {matched} z {recorded} zdarzeń, a {cues} % dźwięków jest takich samych.",
   "sonicrec.replay.check.fail": "Odtwarzanie różni się od nagrania w {diffs} zdarzeniach: ponownie wyliczono {matched} z {recorded} zapisanych zdarzeń, a {cues} % dźwięków jest takich samych. Nagranie i tak gra tak, jak je zapisano.",
+  "sonicrec.replay.check.older": "Nagrane we wcześniejszej wersji lekcji: ta wersja nie może tego sprawdzić, co nie świadczy przeciwko lotowi. Odtwarzamy je tak, jak zostało nagrane, ze zdaniami, które słyszał pilot.",
   "sonicrec.replay.check.none": "Tego nagrania nie da się odtworzyć: {reason}",
   "sonicrec.replay.error": "Nie można otworzyć tego pliku: {reason}",
   "sonicrec.replay.noruntime": "Odtwarzanie wymaga włączonego trybu dźwięku. Najpierw uruchom lekcję, potem otwórz nagranie.",

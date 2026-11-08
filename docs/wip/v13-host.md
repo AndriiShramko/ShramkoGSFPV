@@ -462,7 +462,21 @@ store and an engine that records what it is asked to say.
     says, not what the replay derives. Control in the test: a lesson cue a frame short (a play's edge) and a reset cue a frame early are
     both 'other'; broken once and restored: the chime's hold not named (the test fails on rings-first).
   - Lines for a native reading (es, pl, ru): `sonic.say.replayOlder`.
-- [ ] C5 (W10) the replay page's summary from `replayVerdict`: pass, recorded with an older build, fail
+- [x] C5 (W10) the replay page's summary from `replayVerdict`: pass, recorded with an older build, fail
+  - `apps/fly/src/sonic-session/replay-control.ts`: the summary's sentence comes from the package's verdict (`replayVerdict` of each
+    compared lesson; new `recordingVerdict()`: a recording fails when one of its lessons fails, else it is "recorded with an older
+    build" when one of them is, else it passes; the checks added up into one would let one lesson's older version hide another's
+    failure with this build's own version). `ReplayViewState.check` carries the `verdict`. New sentence
+    `sonicrec.replay.check.older` (four languages): "Recorded with an older build of the lessons: this build cannot check it, which
+    says nothing against the flight. It is played as it was recorded, with the lines the pilot heard." `replay-view.ts` marks the
+    status line as bad for an error and a FAIL only, not for an older build.
+  - Test (`sonicrec-replay` "the replay as the helper uses it", C5): this build's recording PASS; the package's v0.12 rings-first
+    fixture opened as a file reads the older-build sentence (verdict 'older-build', the details line the package's "recorded with an
+    older build"); the same flight as this build's recording moved 6 m (its flight file rewritten) reads FAIL; control in the test:
+    the sentence from `ok` alone would call the v0.12 recording a FAIL; `recordingVerdict` of two lessons (older and failing: fail;
+    older and passing: older build; both passing: pass). Controls broken once and restored: the sentence from `ok` alone (fails), the
+    older build put before a failure in `recordingVerdict` (fails).
+  - Lines for a native reading (es, pl, ru): `sonicrec.replay.check.older`.
 - [ ] C6 page proofs in headless Chrome on a release build
 - [ ] C7 gates exit 0; "## Final status"
 

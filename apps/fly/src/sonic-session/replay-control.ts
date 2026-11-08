@@ -2,8 +2,11 @@
 // check it against the lesson with the sound package's comparer, play it with the cues and the pilot's voice, pause, seek, close. This file
 // is the state machine between the pieces: replay-open (the bytes), replay-check (the comparer), replay-player (the clock), replay-host
 // (the page). The view (replay-view.ts) draws `state` and calls these methods; every sentence in it is already in the page's language.
+// v0.13 (lane v13-host C5, W10): the summary is the package's verdict (`replayVerdict`): pass; recorded with an older build of the lessons
+// (this build cannot check it, which says nothing against the flight); fail. A recording of several lessons fails when one of them does.
 import './texts';
-import type { PackageProblem, SessionPackage } from '@shramko/sonic-fpv';
+import { replayVerdict } from '@shramko/sonic-fpv';
+import type { PackageProblem, ReplayCheck, ReplayVerdict, SessionPackage } from '@shramko/sonic-fpv';
 import { t } from '../i18n';
 import { formatClock } from './format';
 import type { SessionStores } from './recorder';
@@ -21,7 +24,8 @@ export interface ReplayViewState {
     readonly title: string;
     readonly error: string | null;
     readonly player: ReplayState | null;
-    readonly check: { readonly ok: boolean; readonly summary: string } | null;
+    /** the check: re-derived or not, the package's verdict, and its sentence in the page's language */
+    readonly check: { readonly ok: boolean; readonly verdict: ReplayVerdict; readonly summary: string } | null;
     /** sentences the helper should read: no voice, the voice could not be decoded, another place on screen, a damaged file */
     readonly notes: readonly string[];
     /** the package's own English report of the check, and its notes: for the details element */
@@ -53,6 +57,24 @@ export interface ReplayControlDeps {
     /** options of the check (tests make it small) */
     checkRun?: CheckRun;
 }
+
+/**
+ * The verdict of a recording from the checks of its lessons (the package's `replayVerdict` of each): fail when one of them fails, else
+ * recorded with an older build when one of them was, else pass. The checks added up into one would hide a lesson that fails with this
+ * build's own version behind another one's older version (the notes of both in one list).
+ */
+export function recordingVerdict(checks: readonly Pick<ReplayCheck, 'ok' | 'notes' | 'verdict'>[]): ReplayVerdict {
+    const all = checks.map((c) => c.verdict ?? replayVerdict(c));
+    if (all.length === 0 || all.includes('fail')) return 'fail';
+    return all.includes('older-build') ? 'older-build' : 'pass';
+}
+
+/** The sentence of each verdict (sonicrec namespace). */
+const VERDICT_TEXT: Readonly<Record<ReplayVerdict, string>> = {
+    pass: 'sonicrec.replay.check.pass',
+    'older-build': 'sonicrec.replay.check.older',
+    fail: 'sonicrec.replay.check.fail'
+};
 
 export class ReplayControl {
     private readonly deps: ReplayControlDeps;
@@ -158,11 +180,13 @@ export class ReplayControl {
         return `${ids.join(', ')} · ${this.deps.formatWhen(m.created)}`;
     }
 
-    private summary(outcome: ReplayOutcome): { ok: boolean; summary: string } | null {
+    private summary(outcome: ReplayOutcome): { ok: boolean; verdict: ReplayVerdict; summary: string } | null {
         const c = outcome.check;
         if (c === null) return null;
         const vars = { matched: c.events.matched, recorded: c.events.recorded, cues: Math.round(c.cues.share * 100), diffs: c.events.diffs.length };
-        return { ok: c.ok, summary: t(c.ok ? 'sonicrec.replay.check.pass' : 'sonicrec.replay.check.fail', vars) };
+        const compared = outcome.segments.flatMap((s) => (s.check === null ? [] : [s.check]));
+        const verdict = recordingVerdict(compared.length > 0 ? compared : [c]);
+        return { ok: c.ok, verdict, summary: t(VERDICT_TEXT[verdict], vars) };
     }
 
     private detailsOf(outcome: ReplayOutcome, problems: readonly PackageProblem[]): string {

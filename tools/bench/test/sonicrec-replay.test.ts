@@ -6,8 +6,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gunzipSync, gzipSync } from 'node:zlib';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { checkSession, getLesson, readPackage, readZip, REPLAY_KEY_ACTIONS, Replayer, rebuildSession, ZipWriter } from '../../../packages/sonic-fpv/src';
+import { checkSession, encodeFrame, getLesson, readPackage, readZip, REPLAY_KEY_ACTIONS, Replayer, rebuildSession, ZipWriter } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, LessonLayers, SessionEvent, SessionPackage, SonicPrefs, SonicWorld, SpeechLine, ThemeDef } from '../../../packages/sonic-fpv/src';
 import { RecordingHost } from '../../../packages/sonic-fpv/test/helpers/record';
 import { checkPackage } from '../../../apps/fly/src/sonic-session/replay-check';
@@ -684,6 +685,42 @@ describe('the replay as the helper uses it', () => {
         const own = page({ world: rebuildSession(rings.pkg.manifest).world });
         await own.ctl.openFile(file(rings.bytes));
         expect(own.ctl.state.notes.some((n) => /another place/.test(n))).toBe(false);
+    });
+
+    it('v0.13 (C5, W10): the summary is the package\'s verdict: this build\'s recording passes; the v0.12 recording reads "Recorded with an older build of the lessons", not marked as a fault; the same flight moved 6 m reads FAIL; control: a sentence from `ok` alone calls the v0.12 recording a FAIL', async () => {
+        const en = JSON.parse(readFileSync(join(FIXTURES, '..', '..', '..', 'i18n', 'locales', 'fly', 'sonicrec', 'en.json'), 'utf8')) as Record<string, string>;
+        const pass = page();
+        await pass.ctl.openFile(file(rings.bytes));
+        expect(pass.ctl.state.check).toMatchObject({ ok: true, verdict: 'pass' });
+        // the sound package's recording made with v0.12 (lesson and theme version 1)
+        const v012 = new Uint8Array(readFileSync(join(FIXTURES, 'session-v012-rings-first.zip')));
+        const old = page();
+        await old.ctl.openFile(file(v012));
+        expect(old.ctl.state.stage).toBe('ready');
+        expect(old.ctl.state.check).toMatchObject({ ok: false, verdict: 'older-build' });
+        expect(old.ctl.state.check?.summary).toBe(en['sonicrec.replay.check.older']);
+        expect(old.ctl.state.check?.summary).toMatch(/^Recorded with an older build of the lessons/);
+        expect(old.ctl.state.details).toMatch(/^replay check: recorded with an older build \(/);
+        // the same flight 6 m to one side, in this build's own versions: it does not re-derive, and nothing explains it
+        const moved = rewritten(rings.bytes, (m) => {
+            const lines = gunzipSync(m.get('flight.jsonl.gz') as Uint8Array).toString('utf8').split('\n').filter((l) => l !== '');
+            const shifted = lines.map((l) => {
+                const f = JSON.parse(l) as FlightFrame;
+                return encodeFrame({ ...f, p: [f.p[0] + 6, f.p[1], f.p[2]] });
+            });
+            m.set('flight.jsonl.gz', new Uint8Array(gzipSync(`${shifted.join('\n')}\n`)));
+        });
+        const bad = page();
+        await bad.ctl.openFile(file(moved));
+        expect(bad.ctl.state.stage).toBe('ready');
+        expect(bad.ctl.state.check).toMatchObject({ ok: false, verdict: 'fail' });
+        expect(bad.ctl.state.check?.summary).toMatch(/^The replay differs from the recording in \d+ event\(s\)/);
+        // control: the summary from `ok` alone (v0.12's rule) would say the v0.12 recording failed
+        expect(old.ctl.state.check?.ok ? en['sonicrec.replay.check.pass'] : en['sonicrec.replay.check.fail']).not.toBe(old.ctl.state.check?.summary);
+        // a recording of several lessons fails when one of them does, whatever the others' versions say
+        expect(control.recordingVerdict([{ ok: false, notes: [{ code: 'lesson-version', message: '', recorded: 1, here: 2 }] }, { ok: false, notes: [] }])).toBe('fail');
+        expect(control.recordingVerdict([{ ok: false, notes: [{ code: 'lesson-version', message: '', recorded: 1, here: 2 }] }, { ok: true, notes: [] }])).toBe('older-build');
+        expect(control.recordingVerdict([{ ok: true, notes: [] }, { ok: true, notes: [] }])).toBe('pass');
     });
 
     it('lets the latest open win and drops what it was doing', async () => {
