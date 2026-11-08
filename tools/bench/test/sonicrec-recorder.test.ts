@@ -4,7 +4,7 @@
 // rate of a display. The same code runs for real in tools/bench/src/sonicrec-recorder.ts (headless Chrome, a fake
 // microphone, real OPFS). Every claim has a control that must fail the way the claim says it would.
 import { describe, expect, it } from 'vitest';
-import { packSession, readPackage, recoverSession } from '../../../packages/sonic-fpv/src';
+import { getLesson, packSession, readPackage, recoverSession } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, SessionEvent, SpeechLine } from '../../../packages/sonic-fpv/src';
 import { Recorder } from '../../../apps/fly/src/sonic-session/recorder';
 import type { RecorderStatus, SessionStores } from '../../../apps/fly/src/sonic-session/recorder';
@@ -300,7 +300,8 @@ describe('the recorder: T asks, T records, T stops', () => {
         expect(pkg.manifest.clock.voiceOffsetMs).toBeGreaterThanOrEqual(0);
         expect(pkg.manifest.clock.voiceOffsetMs).toBeLessThan(100);
         expect(pkg.manifest.consent).toMatchObject({ recording: true, voice: true, send: false, speechRecognition: false, minor: false, guardianConfirmed: null });
-        expect(pkg.manifest.lesson).toEqual({ id: 'walls-hall', version: 1, path: 'full' });
+        // the lesson's own version, as the package ships it (walls-hall is version 2 since v0.13)
+        expect(pkg.manifest.lesson).toEqual({ id: 'walls-hall', version: getLesson('walls-hall').version, path: 'full' });
         expect(pkg.manifest.scene.kind).toBe('analytic');
         expect(pkg.manifest.complete).toBe(true);
         expect(pkg.manifest.app).toEqual({ name: 'ShramkoGSFPV', release: 'abc1234', sonic: '3959930' });
