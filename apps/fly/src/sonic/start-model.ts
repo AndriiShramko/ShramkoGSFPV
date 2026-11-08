@@ -35,7 +35,7 @@ export interface StartModel {
     readonly continueId: string | null;
 }
 
-/** The lessons in ladder order (the order of the shipped files), each once. */
+/** The lessons in ladder order (each lesson's `order`, its place on the full path: 28 lessons since v0.13), each once. */
 export function ladder(): LessonDef[] {
     return SHIPPED_LESSON_IDS.map((id) => getLesson(id)).sort((a, b) => a.order - b.order);
 }

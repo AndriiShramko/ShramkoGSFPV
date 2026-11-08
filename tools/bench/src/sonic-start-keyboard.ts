@@ -5,7 +5,7 @@
 //               viewport that allows zoom, every control a real element with a name, no raw dictionary key on screen
 //               (en, es, pl, ru), contrast of the text colours, no sideways scroll at 1280, 640 and 360 px wide;
 //   Tab order   every stop in the start layer in document order (nav, start, headphones, lessons, settings, footer), each
-//               with a name, all 21 lessons reachable, no stop outside the layer, the radio group one stop, the details
+//               with a name, every shipped lesson reachable (28 since v0.13), no stop outside the layer, the radio group one stop, the details
 //               control opening with Space and giving 14 sliders; Shift+Tab goes back the same way;
 //   operation   Space and arrows set the path, calm mode and "my screen reader speaks" (saved in the prefs collection,
 //               the captions region turns live); Enter on the headphone buttons makes the AudioContext (the first press)
@@ -19,8 +19,12 @@
 import { mkdirSync, rmdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
+import { SHIPPED_LESSON_IDS } from '../../../packages/sonic-fpv/src';
 import { launch } from './browser';
 import { REPO, today, writeEvidence } from './evidence';
+
+/** How many lessons the screen lists: every lesson the package ships (21 in v0.12, 28 in v0.13). */
+const LESSONS = SHIPPED_LESSON_IDS.length;
 
 const LAB = (process.env.LAB ?? '').replace(/\/$/, '');
 if (!LAB) throw new Error('LAB=http://localhost:<vite port> is needed');
@@ -254,7 +258,7 @@ try {
     check('one h1 (the product), four h2 (start, headphones, lessons, settings)', s.h1.length === 1 && s.h2.length === 4, { h1: s.h1, h2: s.h2 });
     check('the h1 has the focus when the screen opens', s.focused === 'sonic-h1', s.focused);
     check('eight module headings and the loudness heading are h3', s.h3.length === 9, s.h3);
-    check('21 lessons, each a real button with a name', s.lessons.length === 21 && s.lessons.every((l) => l.tag === 'BUTTON' && l.type === 'button' && l.text.length > 3), s.lessons.length);
+    check(`${LESSONS} lessons, each a real button with a name`, s.lessons.length === LESSONS && s.lessons.every((l) => l.tag === 'BUTTON' && l.type === 'button' && l.text.length > 3), s.lessons.length);
     check('no div or span made into a button', s.divButtons === 0);
     const dupes = await page.evaluate(() => { const seen = new Map<string, number>(); for (const e of document.querySelectorAll('[id]')) seen.set(e.id, (seen.get(e.id) ?? 0) + 1); return [...seen].filter(([, n]) => n > 1).map(([id]) => id); });
     check('no id is used twice on the page', dupes.length === 0, dupes);
@@ -310,7 +314,7 @@ try {
     const order = ['nav', 'start', 'headphones', 'lessons', 'settings', 'footer'];
     const regionIdx = stops.map((x) => order.indexOf(x.region));
     check('the stops follow the document: navigation, start, headphones, lessons, settings, footer', regionIdx.every((v, i) => v >= 0 && (i === 0 || v >= regionIdx[i - 1]!)), [...new Set(stops.map((x) => x.region))]);
-    check('all 21 lessons are reached by Tab, once each', lessonStops.length === 21 && new Set(lessonStops.map((x) => x.name)).size === 21, lessonStops.length);
+    check(`all ${LESSONS} lessons are reached by Tab, once each`, lessonStops.length === LESSONS && new Set(lessonStops.map((x) => x.name)).size === LESSONS, lessonStops.length);
     check('the radio group is one stop (the arrow keys move inside it)', stops.filter((x) => x.type === 'radio').length === 1, stops.filter((x) => x.type === 'radio').length);
     check('the headphone check has three buttons in the order left, right, behind', JSON.stringify(stops.filter((x) => x.region === 'headphones' && x.tag === 'button').map((x) => x.testid)) === JSON.stringify(['sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind']), stops.filter((x) => x.region === 'headphones').map((x) => x.testid));
     const last = stops[stops.length - 1];

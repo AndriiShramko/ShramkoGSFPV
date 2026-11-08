@@ -85,7 +85,15 @@ proofs.
     `auxInput` nor the speakers. Controls in the test: an engine with no motor bus gets it on `auxInput`; the motor turned
     off makes no graph. Broken once and restored: `sound.ts` as at 093fbbd (into `auxInput`) fails the first test.
   - `sonic-audio`: the two motor defaults expect the motor on (W12's check); 38 of 38.
-- [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
+- [x] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
+  - `apps/fly/src/sonic/start-model.ts` already lists every shipped lesson by `order` (the full path's place) and marks
+    the fast path from the lesson files: no code change but its comments (and `start-screen.ts`'s "21 lessons").
+  - `sonic-start` (12 of 12) takes the counts from the package (`SHIPPED_LESSON_IDS.length`, `lessonPaths()`), pins 28
+    and 8, and holds the fast lessons in the path's own order. Controls broken once and restored: a model that lists only
+    the fast path's lessons on that path fails "every shipped lesson" (8 of 28); a stale fast mark (tunnel-gaps left
+    out) fails the fast path. (Dropping the sort by `order` fails nothing: the package's list is in that order already.)
+  - The page proof `tools/bench/src/sonic-start-keyboard.ts` (not a gate, not run here) counts the package's lessons
+    instead of 21.
 - [ ] A6 (W16) one run of the analytic cost benches over the new worlds, against v0.12's frame budget
 - [ ] A7 full gates exit 0; stage A's status final
 
@@ -126,6 +134,7 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-world` the cost of the sweeps (4 tests), `sonic-world-flight.ts`, `sonic-world-cost.ts` | flown in v0.12's hall, pinned (`makeSpec('hall', {}, 0, 1)`) | the flights' places (z = -26, 10; x -15 to 15) are v0.12's 40 x 60 m hall; in the 10 x 12 m room they start in the rock |
 | `sonicrec-recorder` "records a flight with the pilot's voice" | the manifest's lesson version is `getLesson('walls-hall').version` (2), was 1 | walls-hall is version 2 since v0.13 |
 | `sonic-audio` "the defaults when nothing is saved" and "silent unless the settings ask", retitled | `motorSound` true by default (was false); the off mix still has a zero master | M41-16: the motor on by default in the mode |
+| `sonic-start` "all 21 shipped lessons", "the fast path marks six" | `SHIPPED_LESSON_IDS.length` (28) and `lessonPaths().fast` (8), both also pinned; the fast lessons in the path's order | W18: six tunnels and rings-heights more, a fast path of 8 |
 | `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
 
 ## Needs from the package

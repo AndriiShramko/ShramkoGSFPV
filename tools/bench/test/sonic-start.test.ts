@@ -8,6 +8,8 @@
 //  - ?sonic= is the start screen, a shipped lesson, or an unknown word (the start screen with a note), never a crash;
 //  - the world a lesson flies in exists for every lesson but the scan one (the ears lessons get a floor), and its scene id
 //    is a lesson id that can never be a hex SuperSplat id.
+// v0.13 (lane v13-host A5, W18): the counts are the package's, SHIPPED_LESSON_IDS (28: six tunnels and rings-heights more) and
+// lessonPaths() (a fast path of 8).
 import { describe, expect, it } from 'vitest';
 import { SHIPPED_LESSON_IDS, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
 import { buildModel, continueLesson, ladder, parseSonicParam, stateOf } from '../../../apps/fly/src/sonic/start-model';
@@ -17,12 +19,13 @@ import { enableZoom } from '../../../apps/fly/src/sonic/zoom';
 const done = (attempts = 3, passed = true) => ({ passed, attempts });
 
 describe('the lessons on the screen', () => {
-    it('all 21 shipped lessons, once, by module in ladder order, whatever the path', () => {
+    it('every shipped lesson (28 since v0.13), once, by module in ladder order, whatever the path', () => {
+        expect(SHIPPED_LESSON_IDS).toHaveLength(28);
         for (const path of ['full', 'fast'] as const) {
             const m = buildModel({}, null, path);
             const ids = m.modules.flatMap((x) => x.lessons.map((l) => l.id));
-            expect(ids).toHaveLength(21);
-            expect(new Set(ids).size).toBe(21);
+            expect(ids).toHaveLength(SHIPPED_LESSON_IDS.length);
+            expect(new Set(ids).size).toBe(SHIPPED_LESSON_IDS.length);
             expect([...ids].sort()).toEqual([...SHIPPED_LESSON_IDS].sort());
             expect(ids).toEqual(lessonPaths().full);
             expect(m.modules.map((x) => x.module)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
@@ -33,9 +36,12 @@ describe('the lessons on the screen', () => {
         }
     });
 
-    it('the ladder is in order and the fast path marks six of them (hover, walls, corridor, rings, free flight and the headphones)', () => {
-        expect(ladder().map((l) => l.order)).toEqual([...Array(21).keys()]);
+    it('the ladder is in order and the fast path marks its lessons (8 since v0.13: the headphones, hover, walls, corridor, a tunnel, two of rings, free flight)', () => {
+        expect(ladder().map((l) => l.order)).toEqual([...Array(SHIPPED_LESSON_IDS.length).keys()]);
         const fast = buildModel({}, null, 'fast').modules.flatMap((x) => x.lessons).filter((l) => l.fastPath).map((l) => l.id);
+        expect(lessonPaths().fast).toHaveLength(8);
+        // in the path's own order too: the screen lists them by order, which is the full path's
+        expect(fast).toEqual(lessonPaths().fast);
         expect(fast.sort()).toEqual([...lessonPaths().fast].sort());
     });
 

@@ -10,7 +10,7 @@
 //              which is the user activation the AudioContext and the speech need.
 //   Headphones a sound on the left, on the right, behind: made by the engine (its first press makes the AudioContext),
 //              with the package's notes (wired, no surround effects) and the loudness note beside it.
-//   Lessons    the 21 lessons by module with where the pilot stands (passed, in progress, not started).
+//   Lessons    every shipped lesson (28 since v0.13) by module with where the pilot stands (passed, in progress, not started).
 //   Settings   the pilot's own sound: theme, calm, height polarity, speaking speed, captions, "my screen reader speaks",
 //              motor sound, what the sound turns with, each sound's volume and pitch. Each change applies at once and is
 //              saved (SonicSetup.update).
