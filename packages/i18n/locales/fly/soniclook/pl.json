@@ -1,5 +1,7 @@
 {
   "soniclook.sounds.title": "Dźwięki",
   "soniclook.sounds.play": "{k} z {n}",
-  "soniclook.metres": "{v} m"
+  "soniclook.metres": "{v} m",
+  "soniclook.setting.soundPanel": "Panel dźwięków: zobacz każdy dźwięk",
+  "soniclook.setting.attitude": "Wskaźnik horyzontu i wysokości"
 }

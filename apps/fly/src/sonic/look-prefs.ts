@@ -7,6 +7,8 @@ import type { PrefsStore } from '@gsfpv/prefs';
 
 export type LookPanel = 'soundPanel' | 'attitude';
 export const LOOK_PANELS: readonly LookPanel[] = ['soundPanel', 'attitude'];
+/** Each switch's name for the spoken settings list (packages/i18n/locales/fly/soniclook; the list itself is v13-host's, stage C). */
+export const LOOK_PANEL_LABELS: Readonly<Record<LookPanel, string>> = { soundPanel: 'soniclook.setting.soundPanel', attitude: 'soniclook.setting.attitude' };
 
 /** What the switches need of the page's PrefsStore (a fake or a store on memory in tests). */
 export type LookHost = Pick<PrefsStore, 'collection' | 'updateCollection'>;

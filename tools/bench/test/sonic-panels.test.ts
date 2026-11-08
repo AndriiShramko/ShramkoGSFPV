@@ -371,7 +371,7 @@ describe('the panels\' switches (L2-3) and words', () => {
         expect(texts).toContain("'../../../../packages/i18n/locales/fly/soniclook/*.json'");
         const en = JSON.parse(readFileSync(join(ROOT, 'packages/i18n/locales/fly/soniclook/en.json'), 'utf8')) as Record<string, string>;
         const asked = new Set<string>();
-        for (const f of ['attitude.ts', 'sound-panel.ts', 'look-panels.ts']) for (const m of readFileSync(join(ROOT, 'apps/fly/src/sonic', f), 'utf8').matchAll(/'(soniclook\.[\w.-]+)'/g)) asked.add(m[1]!);
+        for (const f of ['attitude.ts', 'sound-panel.ts', 'look-panels.ts', 'look-prefs.ts']) for (const m of readFileSync(join(ROOT, 'apps/fly/src/sonic', f), 'utf8').matchAll(/'(soniclook\.[\w.-]+)'/g)) asked.add(m[1]!);
         expect([...asked].sort()).toEqual(Object.keys(en).sort());
     });
 });

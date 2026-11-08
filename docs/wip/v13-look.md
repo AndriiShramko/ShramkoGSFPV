@@ -220,7 +220,7 @@ Left open, with the reason:
 
 ### Stage L2
 
-- [ ] L2-1 (M41-24) the attitude display for low vision, only in the Fly by Sound mode (`apps/fly/src/sonic/attitude.ts`, new).
+- [x] L2-1 (M41-24) the attitude display for low vision, only in the Fly by Sound mode (`apps/fly/src/sonic/attitude.ts`, new).
   - What the mode showed and why the owner found it unreadable (message 41: "the graphic shown now is completely unclear.
     There is no sense of the horizon, whether you climb or sink. Two black and grey parts"): in v0.12 (live) a lesson world
     was drawn as flat, untextured slabs, evenly lit (`StandardMaterial`, a diffuse colour and 0.28 of it as its own light),
@@ -250,8 +250,9 @@ Left open, with the reason:
     0.0000 degrees, 0.01 allowed; a right roll lifts the horizon's right end, a nose down the horizon); control in the test: the
     roll's sign turned is caught (over 50 degrees off). The tape's places, the climb arrow's way and length. Contrast of
     every line and mark against what it lies on, dark and light page: the least 5.44:1 (the light page's band), the dial's
-    9.32 to 18.42.
-- [ ] L2-2 (M41-25, W14) the sound panel (`apps/fly/src/sonic/sound-panel.ts`, new): what the engine plans, never a guess.
+    9.32 to 18.42. A small dial (a phone) keeps the marks of 10 and 20 degrees and drops the numbers where two would touch;
+    the craft's height shrinks to fit its box, the number alone where even that does not fit.
+- [x] L2-2 (M41-25, W14) the sound panel (`apps/fly/src/sonic/sound-panel.ts`, new): what the engine plans, never a guess.
   - A radar seen from above, the nose up: every active cue with a direction (`plan.cues`, the heading frame) at its
     direction and distance (rings at 1, 2 and 4 m, the rim 8 m), an icon and a colour per kind: wall (walls, obstacles, a
     touch), floor or ceiling, open way, target (the gate's hum and notes, the shape traces), checkpoint (and the re-centre),
@@ -260,7 +261,11 @@ Left open, with the reason:
     it) goes to the top or bottom of the height bar. The open way's side is the plan's (`plan.freeWay.side`): the chime of a
     way above or below sounds from ahead today (its pitch says which), so the mark comes from the side; a cue whose
     direction has an elevation of its own (lane s13-elev) is marked by it with no change here. A cue without a direction
-    (a touch, a checkpoint's chime, praise) shows on the craft for 1.2 s at least (a chime of 0.3 s is seen).
+    (a touch, a checkpoint's chime, praise) shows on the craft for 1.2 s at least (a chime of 0.3 s is seen). A pillar's shape
+    trace is the wall kind (an obstacle); a gate's shape trace the target's. Discs never touch: where two would (two sectors
+    of one wall 0.5 m off, 45 degrees apart near the craft: the first page run drew them overlapping), they move apart along
+    the line between them (`placeDiscs`, each within 40 degrees of its direction); the drawing and the report use the same
+    places. The distance scale runs from 0.34 of the radius (the craft's own disc inside 0.3).
   - A height bar, floor to the room's top: the height tone (`plan.height.heightM`; jagged while the tone is rough, outside
     the band), the target note (`plan.height.target.heightM`), bolder for `noteS` of every `periodS`.
   - A step that plays a sound three times (M41-5; the runner's `view().playing`, held through the 1 s gaps): the sound's
@@ -273,27 +278,92 @@ Left open, with the reason:
     tunnel-gaps before block 1 (`plan.freeWay.side` up: the chime marked above), rings-heights (the target note at the first
     ring's height, on for `noteS` of `periodS`); control in the test: the chime from ahead with no side is not marked; every
     sound a lesson plays three times (its intro's cues) has its name in en, es, pl and ru, not by fallback. Contrast, dark
-    and light page: the least 5.07:1 (the light page's praise), the dark page's 6.58 to 21.
-- [ ] L2-3 the switches `soundPanel` and `attitude` (`apps/fly/src/sonic/look-prefs.ts`): in the prefs collection 'sonic'
+    and light page: the least 5.07:1 (the light page's praise), the dark page's 6.58 to 21. Discs: a wall in five sectors
+    0.5 m off and the open way beside them never touch, each on its side; control in the test: at their own places they would
+    (broken once: no moving apart, fails).
+- [x] L2-3 the switches `soundPanel` and `attitude` (`apps/fly/src/sonic/look-prefs.ts`): in the prefs collection 'sonic'
   (`packages/prefs/src/doc.ts` `SonicState.soundPanel?`, `.attitude?`: absent means on, kept only when a boolean), so they
   travel with the settings file and need no catalogue rows; a change shows at once (the panels follow `collection.sonic`).
   Test: on by default, saved, read back by a new store on the same storage, each apart; a value that is not a boolean
   dropped. The panels' words in a namespace of their own, `packages/i18n/locales/fly/soniclook` (en, es, pl, ru; "Sounds",
-  "{k} of {n}", "{v} m"), which comes with the mode's chunk like `sonic` and `sonickeys` (excluded in `apps/fly/src/i18n.ts`,
-  added in `sonic/texts.ts`; test). `feature.ts`: one import and one registration line per panel.
+  "{k} of {n}", "{v} m", and each switch's name for the spoken list, `LOOK_PANEL_LABELS`: "Sound panel: see every sound",
+  "Horizon and height display"), which comes with the mode's chunk like `sonic` and `sonickeys` (excluded in
+  `apps/fly/src/i18n.ts`, added in `sonic/texts.ts`; test). `feature.ts`: one import and one registration line per panel.
+  For a native reading (es, pl, ru): `soniclook.sounds.title`, `soniclook.sounds.play`, `soniclook.metres`,
+  `soniclook.setting.soundPanel`, `soniclook.setting.attitude`.
   - Controls broken once and restored (`sonic-panels.test.ts`, each failing what it should): the roll's sign (3 tests), the
     pitch's (2), the tape upside down, the climb arrow the wrong way, a light-page colour under 4.5:1, the horizon's core
     grey (dark and light), the open way without the plan's side (2), the ceiling not on the bar, a switch not kept, the
     words in the main chunk.
-- [ ] L2-4 page proofs on a release build (headless, GPU lock): the attitude display level, pitched and banked; the tape with
-  the band and the climb arrow; the sound panel in walls-pillar (a wall and the open-way chime), in rings-heights (the
-  target note on the height bar) and on a repeat step (icon and name); the places at several sizes, 200 % zoom and a
-  phone, dark and light; contrast measured on the pictures; the frame time with both panels.
+- [x] L2-4 page proofs on a release build (`tools/bench/src/v13-look-page.ts panels | layout | panelcost`, headless system
+  Chrome, the release of e035061 served by `serve-csp.mjs dist 5420`, the GPU lock held for every run).
+  - `panels`, 42 of 42 (`evidence/2026-11-08/v13-look-panels.json`; each panel's picture as PNG and the page as JPEG in
+    `v13-look-panels/`). The attitude display in hover-height (the band 2 to 3 m), the flight model held and the craft turned
+    (the camera turns with it): level, nose down 15, right roll 30, nose up 10 with a left roll 20. On each picture the
+    horizon's white core is found where the display draws it: tilt 0, 0, -30.00 and 19.76 degrees (drawn 0, 0, -30, 20), lift
+    0.27, 15.27, 0.40 and -9.87 (drawn 0, 15, 0, -10). Measured on the pictures: sky against ground 9.32:1, the horizon's
+    core against the ground 14.68, its edge against the sky 13.34, the pitch marks 13.34 (sky) and 14.68 (ground), the wings
+    10.25 and 13.34, the tape's ticks 21, band 12.2, height to fly at 12.2, the craft's box 14.67 and its number 14.67. A
+    climb on Space (0.53 m/s: the arrow up from the craft's height) and a sink on Shift (-0.43 m/s: down), the arrow 14.67:1;
+    at rest no arrow. A light page: the boxes white, the box and its number 7.48:1, every disc 5.5:1 or more.
+  - The sound panel, its picture held by the hook (`freeze`; the engine plays nothing while the flight is paused, the bridge
+    silences its layers, so a paused flight empties the panel, as it should): walls-pillar 0.6 m from the left wall
+    (`safety.wall:left` drawn left of the craft in the wall's colour, 9.02:1); W at the pillar (`safety.obstacle:front`
+    ahead, 9.02:1; the open way's chime `safety.free:left` on the left, the plan's `freeWay.side` left, 12.12:1);
+    rings-heights at 1.2 m (the target note at the first ring's 2.70 m on the height bar, 12.2:1; the tone at 1.20 m,
+    14.67:1; the attitude tape's line at the same 2.70 m). The task of walls-pillar plays the pillar's tick three times: the
+    card shows its icon, "Obstacle" and "1 of 3", "2 of 3", "3 of 3" (at 3.2, 6.7 and 10.2 s); in Polish "Przeszkoda", "1 z 3"
+    to "3 z 3". The switches: the sound panel off hides it at once (the attitude display stays), both off survive a reload
+    (read back from the stored prefs), on again shows both.
+  - `layout`, 64 of 64 (`v13-look-layout.json`, a JPEG of each in `v13-look-layout/`): 8 sizes, dark and light, hover-height
+    with its captions up and a stand-in of v13-host's progress panel (`tools/bench/src/v13-look-progress-standin.css`, its
+    CSS at ef91fa1, the four rows and the title, its tallest): each panel inside the page and clear of the view's centre (the
+    middle 30 % x 30 %), the captions, the progress panel, the page's controls (top bar, recorder, REC row, touch sticks) and
+    the other panel. Sizes (CSS pixels; the dial's and the radar's diameter):
+    | page | attitude display | sound panel | dial | radar |
+    |---|---|---|---|---|
+    | 1280 x 720 | 367 x 234 | 253 x 211 | 203 | 163 |
+    | 1366 x 768 | 391 x 248 | 268 x 224 | 216 | 173 |
+    | 1920 x 1080 | 439 x 278 | 300 x 250 | 244 | 196 |
+    | 1920 x 1080 at 200 % (960 x 540) | 280 x 180 | 161 x 144 | 152 | 100 |
+    | 1280 x 720 at 200 % (640 x 360) | 140 x 91 | 95 x 94 | 74 | 52 |
+    | phone upright 390 x 844 | 174 x 112 | 120 x 112 | 94 | 75 |
+    | the same with touch sticks | 119 x 78 | 120 x 112 | 62 | 75 |
+    | phone on its side 844 x 390 | 141 x 91 | 98 x 96 | 75 | 55 |
+    The words 15 px or more everywhere; the tape's numbers 11 to 22 px. At 640 x 360 the sound panel covers the take-off line
+    ("Click to fly...", shown before take-off) and the telemetry's corner: no other place is free there.
+  - `panelcost`, 8 of 8 (`v13-look-panelcost.json`): the page's frame flying on W, the panels on and off by their switches,
+    the engine's CPU time per frame (frameupdate to frameend): the corridor 2.9 ms at p95 with both (2.5 and 2.3 without),
+    p50 2.0 (1.7); rings-heights 2.6 ms (2.2, 2.3), p50 1.8 (1.6). The panels' own frame handlers: 0.3 ms (the attitude
+    display) and 0.2 ms (the sound panel) at p95, the first draw of a panel up to 6 ms (its canvas made). v0.12's budget (the
+    60 Hz frame of 16.7 ms) holds; the display paces this machine's frames at 30 Hz.
 - [ ] L2-5 gates exit 0; flight regression B6-B16; the lane's status final.
 
 ## For the lead
 
-- New prefs: none in stage L1 (the look has no setting; L2's panels will list theirs here for the spoken settings list).
+- New prefs for the spoken settings list (v13-host's stage C, M41-4), both on by default, in the prefs collection 'sonic'
+  (`SonicState.soundPanel?`, `.attitude?`; absent means on): read with `panelOn(store, 'soundPanel' | 'attitude')`, set with
+  `setPanel(store, which, on)` (`apps/fly/src/sonic/look-prefs.ts`; saved only on a change; the panels follow at once);
+  their names `LOOK_PANEL_LABELS` (`soniclook.setting.soundPanel` "Sound panel: see every sound",
+  `soniclook.setting.attitude` "Horizon and height display", four languages, es, pl, ru for a native reading). The lesson
+  menu's Sound settings would reach them there too.
+- Places agreed with v13-host's progress panel (`look.css`; checked by `v13-look-page.ts layout` against a stand-in of its
+  CSS at ef91fa1): on a wide page the progress panel at the left edge halfway down, the sound panel at the bottom left under
+  it (sized from the progress panel's CSS: it ends 8 px under a panel of six lines of `clamp(18px, 2.2vw, 28px)` and
+  30 px), the attitude display at the bottom right over the REC row; on a short page both at the bottom right side by side;
+  on a narrow one the sound panel left of the view's centre over the progress panel (low on the left), the attitude display
+  under the centre at the right; with touch sticks both beside the centre over the REC row; at 640 x 360 the sound panel at
+  `left: 150px`, right of the progress panel there (130 px wide). If stage C moves or resizes the progress panel,
+  `look.css` follows and `layout` runs again with the real panel in place of the stand-in.
+- Seen on the way, not this lane's: on a phone upright with touch sticks the progress panel (`bottom: 64px`) lies over the
+  left stick, and at 960 x 540 (1920 x 1080 at 200 %) the captions' two lines and "Go." reach into the progress panel at the
+  left edge (both in `v13-look-layout/`).
+- Files of other owners L2 touched: `apps/fly/src/sonic/feature.ts` (one import, one registration line per panel, after the
+  stage is made: away from v13-host's hunks), `apps/fly/src/i18n.ts` and `apps/fly/src/sonic/texts.ts` (the new namespace
+  in the mode's chunk), `packages/prefs/src/doc.ts` (the two keys on `SonicState` and their check in
+  `validateCollection`, apart from v13-host's `skipped` hunks). The test hook gains `window.__gsfpv.sonicPanels`
+  (`report`, `setSwitch`, `freeze`).
+- New prefs: none in stage L1 (the look has no setting).
 - Shared code L1 touched, each change inert outside a lesson world: `packages/sim-core` (`ParamOverrides.bump`,
   `SimParams.bump`, `Sim.slide`, the contact event's normal, `lifeHeaderProblem`), `packages/collision/src/analytic.ts`
   (the whole-body shortcut, exact; only lesson worlds build an `AnalyticContactWorld`), `apps/fly/src/play/assist.ts`,
@@ -311,8 +381,9 @@ Left open, with the reason:
 - The look sets the scene's fog while a lesson world's room is on the stage and gives the scene's own back on clear and
   dispose; a lesson world's scene is now `tonemapping: 'linear'` and its clear colour the look's sky (was near black).
 - Checks to keep in the release's list: `tools/bench/test/sonic-bump.test.ts` (M41-19, W17), `sonic-look.test.ts`,
-  `sonic-tunnel-walls.test.ts`, `packages/sim-core/test/model-bump.test.ts`; the page benches
-  `tools/bench/src/v13-look-page.ts bump | look | cost` on a local release (`SITE=http://localhost:<port>`, GPU lock).
+  `sonic-tunnel-walls.test.ts`, `sonic-panels.test.ts` (M41-24, M41-25), `packages/sim-core/test/model-bump.test.ts`; the
+  page benches `tools/bench/src/v13-look-page.ts bump | look | cost | panels | layout | panelcost` on a local release
+  (`SITE=http://localhost:<port>`, GPU lock).
 - For stage L2: the scene the panels lie over is dark (floor relative luminance 0.007, walls 0.13, ceiling 0.03, sky 0.16);
   `v13-look-page.ts` has the page helpers (open a lesson by the keyboard, place the craft by the respawn path, decode
   a picture in a helper page) and the role paint to measure contrast; its `look` scenario's analysis takes any pair
@@ -322,3 +393,12 @@ Left open, with the reason:
 
 - None from stage L1. The lesson bump, the take-off in a low way and the look are the simulator's; the runner's respawn
   places (`RESPAWN_BEFORE_M` before a track point, under a block's edge in tunnel-gaps and tunnel-long) work as they are.
+- From stage L2 (the sound panel, W14):
+  1. The target note's time. The engine plays the target note from a train of its own (`src/audio/engine.ts`, `duePulses` on
+     `targetTrain`); the plan gives its period and length (`plan.height.target.periodS`, `noteS`) but not when a note
+     sounds, so the panel's bar marks a note for `noteS` of every `periodS` on the page's clock, in step with the sound's
+     rhythm but not with its phase. Ask: the plan says when the next note begins (for example `target.nextAtS` on the audio
+     clock, or `target.sounding` in the frame's plan), and the panel follows it.
+  2. Lane s13-elev: once the chime of a way above or below (and the other cues that mean up or down) carry a real elevation
+     in their direction, the panel marks them from the direction itself; today the open way's mark comes from
+     `plan.freeWay.side` (works now, and the same rule shows more once the package moves; nothing to change here).
