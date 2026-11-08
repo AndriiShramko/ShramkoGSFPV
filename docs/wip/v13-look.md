@@ -246,8 +246,8 @@ Left open, with the reason:
     plays back); hidden from screen readers (`aria-hidden`), never takes a pointer, under the captions (z-index 4 and 5).
   - On paper (`tools/bench/test/sonic-panels.test.ts`): the horizon is the one the craft's camera sees: 75 attitudes (3
     headings x 5 pitches x 5 rolls) built as a body turned by a known pitch and roll, read back by sim-core's `attitude()`,
-    two points of the world's horizon projected by a camera at that attitude: the display's tilt and lift agree within
-    0.0001 degree (a right roll lifts the horizon's right end, a nose down lifts the horizon); control in the test: the
+    two points of the world's horizon projected by a camera at that attitude: the display's tilt and lift agree (worst
+    0.0000 degrees, 0.01 allowed; a right roll lifts the horizon's right end, a nose down the horizon); control in the test: the
     roll's sign turned is caught (over 50 degrees off). The tape's places, the climb arrow's way and length. Contrast of
     every line and mark against what it lies on, dark and light page: the least 5.44:1 (the light page's band), the dial's
     9.32 to 18.42.

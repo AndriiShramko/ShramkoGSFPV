@@ -245,8 +245,8 @@ const line = (g: G, a: Pt, b: Pt, width: number, css: string): void => {
 };
 const along = (p: Pt, v: Pt, k: number): Pt => [p[0] + v[0] * k, p[1] + v[1] * k];
 
-/** A height in metres as the page writes it: the number in the page's language and the locales' metre symbol. */
-export type HeightText = (metres: number) => string;
+/** A height in metres as the page writes it: the number in the page's language and (unless `unit` is false) the locales' metre symbol. */
+export type HeightText = (metres: number, unit?: boolean) => string;
 
 /** Draws the display for `s` on a context scaled to CSS pixels. `metres` writes a height with its unit. */
 export function drawAttitude(g: G, l: AttitudeLayout, s: AttitudeState, scheme: Scheme, metres: HeightText): void {
@@ -286,18 +286,22 @@ export function drawAttitude(g: G, l: AttitudeLayout, s: AttitudeState, scheme: 
     g.lineTo(...along(a0, hz.n, far));
     g.closePath();
     g.fill();
-    // the pitch marks and their numbers: black on the sky, white on the ground
+    // the pitch marks and their numbers: black on the sky, white on the ground. A small dial (a phone) keeps the marks of 10 and 20
+    // degrees and drops the numbers where two would touch
     const markW = Math.max(2.5, 0.035 * r);
-    g.font = `700 ${Math.max(11, Math.round(0.16 * r))}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+    const markFont = Math.max(11, Math.round(0.16 * r));
+    const numbered = 10 * hz.pxPerDeg >= 1.3 * markFont;
+    g.font = `700 ${markFont}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     for (const m of PITCH_MARKS) {
+        if (!numbered && Math.abs(m) > 20) continue;
         const half = (Math.abs(m) === 20 ? 0.42 : 0.3) * r;
         const p = along(hz.centre, hz.n, m * hz.pxPerDeg);
         const css = m > 0 ? DIAL.black.css : DIAL.white.css;
         line(g, along(p, hz.u, -half), along(p, hz.u, half), markW, css);
         g.fillStyle = css;
-        for (const side of [-1, 1]) {
+        if (numbered) for (const side of [-1, 1]) {
             const q = along(p, hz.u, side * (half + 0.13 * r));
             g.save();
             g.translate(q[0], q[1]);
@@ -357,8 +361,9 @@ export function drawAttitude(g: G, l: AttitudeLayout, s: AttitudeState, scheme: 
         const ya = tape.y(s.bandM[1]), yb = tape.y(s.bandM[0]);
         g.fillStyle = box.band.css;
         g.fillRect(tb.x0 + 0.04 * tw, ya, 0.16 * tw, yb - ya);
-        line(g, [tb.x0 + 0.04 * tw, ya], [tb.x1 - 0.04 * tw, ya], 2.5, box.band.css);
-        line(g, [tb.x0 + 0.04 * tw, yb], [tb.x1 - 0.04 * tw, yb], 2.5, box.band.css);
+        // the edges stop short of the numbers (right-aligned at the tape's right)
+        line(g, [tb.x0 + 0.04 * tw, ya], [tb.x0 + 0.74 * tw, ya], 2.5, box.band.css);
+        line(g, [tb.x0 + 0.04 * tw, yb], [tb.x0 + 0.74 * tw, yb], 2.5, box.band.css);
     }
     // the ticks every half metre, numbered every labelEveryM
     g.font = `700 ${l.font}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
@@ -374,7 +379,7 @@ export function drawAttitude(g: G, l: AttitudeLayout, s: AttitudeState, scheme: 
     // the height to fly at
     if (s.targetM !== null && Number.isFinite(s.targetM)) {
         const y = tape.y(s.targetM);
-        line(g, [tb.x0 + 0.04 * tw, y], [tb.x1 - 0.04 * tw, y], Math.max(3, 0.018 * l.h), box.target.css);
+        line(g, [tb.x0 + 0.04 * tw, y], [tb.x0 + 0.74 * tw, y], Math.max(3, 0.018 * l.h), box.target.css);
     }
     // the craft: a box with its height, pointing at the tape's scale
     const yc = tape.y(s.heightM);
@@ -394,7 +399,16 @@ export function drawAttitude(g: G, l: AttitudeLayout, s: AttitudeState, scheme: 
     g.stroke();
     g.fillStyle = box.craftText.css;
     g.textAlign = 'center';
-    g.fillText(metres(Math.max(0, s.heightM)), (bx0 + tb.x1) / 2, yc + 1);
+    // the height with its unit, smaller where the box is narrow (a phone), the number alone where even that does not fit
+    const room = tb.x1 - 0.02 * tw - bx0 - 4;
+    let label = metres(Math.max(0, s.heightM));
+    let size = l.font;
+    while (size > 9 && g.measureText(label).width > room) {
+        size--;
+        g.font = `700 ${size}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+    }
+    if (g.measureText(label).width > room) label = metres(Math.max(0, s.heightM), false);
+    g.fillText(label, (bx0 + tb.x1) / 2, yc + 1);
     // ---- the climb arrow
     const arrow = climbArrow(s, tape, l.arrow);
     if (arrow) {

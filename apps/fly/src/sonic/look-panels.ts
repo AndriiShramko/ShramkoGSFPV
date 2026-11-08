@@ -15,7 +15,7 @@ import { AttitudeDisplay } from './attitude';
 import type { AttitudeReport, AttitudeState, Scheme } from './attitude';
 import { SoundPanel } from './sound-panel';
 import type { SoundReport } from './sound-panel';
-import { LOOK_PANELS, panelOn } from './look-prefs';
+import { LOOK_PANELS, panelOn, setPanel } from './look-prefs';
 import type { LookPanel } from './look-prefs';
 import type { LessonHost } from './lessons';
 import type { SonicMode } from './mode';
@@ -24,8 +24,14 @@ import './look.css';
 
 declare module '../app/test-hook' {
     interface TestHook {
-        /** v0.13 v13-look: what the attitude display and the sound panel show, their switches, and what drawing them costs a frame (ms) */
-        sonicPanels?: () => { attitude: AttitudeReport | null; sound: SoundReport | null; prefs: Record<LookPanel, boolean>; frameMs: Record<'attitude' | 'sound', CostStats> };
+        /**
+         * v0.13 v13-look: what the attitude display and the sound panel show, their switches, and what drawing them costs a frame (ms);
+         * `setSwitch` turns one on or off the way the spoken settings list will (look-prefs.ts setPanel: saved in the prefs)
+         */
+        sonicPanels?: {
+            report(): { attitude: AttitudeReport | null; sound: SoundReport | null; prefs: Record<LookPanel, boolean>; frameMs: Record<'attitude' | 'sound', CostStats> };
+            setSwitch(which: LookPanel, on: boolean): void;
+        };
     }
 }
 
@@ -92,7 +98,10 @@ function panelsOf(ctx: FlightContext): Panels {
         p = { attitude: null, sound: null, cost: { attitude: new FrameCost(), sound: new FrameCost() }, on, scheme: schemeWatch() };
         installed.set(ctx, p);
         const panels = p;
-        ctx.hook.sonicPanels = () => ({ attitude: panels.attitude?.report() ?? null, sound: panels.sound?.report() ?? null, prefs: { ...panels.on }, frameMs: { attitude: panels.cost.attitude.stats(), sound: panels.cost.sound.stats() } });
+        ctx.hook.sonicPanels = {
+            report: () => ({ attitude: panels.attitude?.report() ?? null, sound: panels.sound?.report() ?? null, prefs: { ...panels.on }, frameMs: { attitude: panels.cost.attitude.stats(), sound: panels.cost.sound.stats() } }),
+            setSwitch: (which, on) => setPanel(ctx.prefs, which, on)
+        };
     }
     return p;
 }
@@ -118,7 +127,7 @@ function followSwitch(ctx: FlightContext, p: Panels, which: LookPanel): () => vo
 export function installAttitude(ctx: FlightContext, mode: SonicMode, host: () => LessonHost | null): () => void {
     const p = panelsOf(ctx);
     const nf = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    const view = new AttitudeDisplay({ parent: document.body, metres: (m) => t('soniclook.metres', { v: nf.format(m) }), scheme: p.scheme.get });
+    const view = new AttitudeDisplay({ parent: document.body, metres: (m, unit = true) => (unit ? t('soniclook.metres', { v: nf.format(m) }) : nf.format(m)), scheme: p.scheme.get });
     p.attitude = view;
     const offFrame = ctx.events.on('frame', () => {
         const t0 = performance.now();
