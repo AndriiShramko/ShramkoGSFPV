@@ -9,6 +9,7 @@ import type { Locale, LessonProgress, SpeechLine } from '../../../packages/sonic
 import type { AudioDeps, PageEngine } from '../../../apps/fly/src/sonic/audio';
 import type { CaptionSink } from '../../../apps/fly/src/sonic/entry';
 import { mkStore } from '../../../packages/prefs/test/helpers';
+import * as lookPrefs from '../../../apps/fly/src/sonic/look-prefs';
 import { FakeDocument } from './sonic-fake-dom';
 import type { FakeElement } from './sonic-fake-dom';
 
@@ -275,7 +276,8 @@ const STOPS = [
     'sonic-start-beginning', 'sonic-path-full', 'sonic-path-fast',
     'sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind',
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-frame', 'summary',
+    // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */
@@ -316,9 +318,12 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         // a lesson says its own place and state, not an item number
         expect(at('lesson:ears-headphones')).toBe(`Lessons. ${titleOf('ears-headphones')}. Lesson 1 of ${SHIPPED_LESSON_IDS.length}, not started, Fast path`);
         expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first')}, not started, Fast path`);
-        expect(at('sonic-theme')).toBe('Settings. Sound theme: Soft. Item 1 of 11.');
-        expect(at('sonic-motor-level')).toBe('Motor volume: 0 dB. Item 8 of 11.');
-        expect(at('sonic-height-target')).toBe('Target height note: on. Item 9 of 11.');
+        // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3)
+        const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
+        expect(settings).toBe(14);
+        expect(at('sonic-theme')).toBe(`Settings. Sound theme: Soft. Item 1 of ${settings}.`);
+        expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 8 of ${settings}.`);
+        expect(at('sonic-height-target')).toBe(`Target height note: on. Item 9 of ${settings}.`);
         expect(at('sonic-about')).toBe('About Fly by Sound and its source code. Item 1 of 2.');
         // round: Down from the last is the first; Up from the first the last; Home and End
         doc.key('ArrowDown');
@@ -498,8 +503,111 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         over.s.show('settings');
         expect(page.map((x) => x.line.params?.text ?? x.line.key)).toEqual(['Settings']);
         doc.key('ArrowDown');
-        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 11.');
+        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 14.');
         expect(over.engine.said).toEqual([]);
         over.s.dispose();
+    });
+});
+
+// ------------------------------------------------------------------ v13-int step 3: the three new switches
+
+describe('v13-int step 3: sound from above and below, the sound panel and the attitude display in the settings and the spoken list', () => {
+    /** The engine as the page's setup reaches it, keeping the settings it was given (setPrefs). */
+    class PrefsEngine extends SayingEngine {
+        prefs: unknown[] = [];
+        override setPrefs(p?: unknown): void {
+            this.prefs.push(p);
+        }
+    }
+    /** A screen on `store` whose engine keeps the settings it is given. */
+    function withPrefs(store = mkStore(), o: { selfVoice?: boolean } = {}): Screen & { readonly pe: PrefsEngine } {
+        doc = stubPage();
+        const pe = new PrefsEngine();
+        const deps: AudioDeps = { makeContext: () => ({ currentTime: 0, sampleRate: 48000, state: 'running' }) as never, unlockSpeech: () => undefined, createEngine: () => pe as unknown as PageEngine };
+        const setup = new entryMod.SonicSetup(store, 'en', new Sink(), { deps });
+        if (o.selfVoice === false) expect(setup.update({ selfVoice: false }).ok).toBe(true);
+        const s = new screenMod.StartScreen({ setup, locale: 'en', request: modelMod.parseSonicParam('start'), progress: () => storeMod.allProgress(store), current: () => storeMod.currentLesson(store), onStart: () => undefined }, doc.body as unknown as HTMLElement);
+        s.show();
+        return { s, setup, store, engine: pe, started: [], closed: { n: 0 }, doc, pe };
+    }
+    const DIRECTION_WHAT = EN.say('menu.setting.height-direction-what').replace(/\.$/, '');
+    const SWITCHES = [
+        { id: 'sonic-height-direction', name: EN.say('menu.setting.height-direction'), n: 10, tail: `. ${DIRECTION_WHAT}` },
+        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 12, tail: '' },
+        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 13, tail: '' }
+    ] as const;
+    /** what each switch keeps: the package's setting in the saved sound document, the panels in the collection beside it */
+    const saved = (store: ReturnType<typeof mkStore>, id: string): unknown => {
+        const c = store.collection('sonic');
+        return id === 'sonic-height-direction' ? (c.prefs as Record<string, unknown>)['heightDirection'] : id === 'sonic-look-soundPanel' ? c.soundPanel : c.attitude;
+    };
+
+    it('each is said with its section (coming from another one), its value and "Item n of N" (the package\'s words for sound from above and below, its description after the value); all three are on for a pilot who never set them', () => {
+        const { s, engine } = withPrefs();
+        expect(EN.say('menu.setting.height-direction')).toBe('Sound from above and below');
+        doc.key('ArrowDown');
+        for (const sw of SWITCHES) {
+            byTestId(doc, 'sonic-about')!.focus();
+            byTestId(doc, sw.id)!.focus();
+            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 14.`, interrupt: true });
+            expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(true);
+        }
+        // and within the section, the next stop after the long description cuts it (a line that interrupts)
+        byTestId(doc, 'sonic-height-direction')!.focus();
+        doc.key('ArrowDown');
+        expect(focusedId(doc)).toBe('sonic-frame');
+        expect(engine.said.at(-1)!.interrupt).toBe(true);
+        s.dispose();
+    });
+
+    it('Enter and the arrows turn each off and on: the new value said, applied (sound from above and below to the running engine at once) and saved; read back after a reload; control: a switch left alone keeps its value', () => {
+        const store = mkStore();
+        const { s, engine, setup, pe } = withPrefs(store);
+        doc.key('ArrowDown');
+        for (const sw of SWITCHES) {
+            byTestId(doc, sw.id)!.focus();
+            doc.key('Enter');
+            expect(lastHeard(engine), sw.id).toEqual({ text: `${sw.name}: off`, interrupt: true });
+            expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(false);
+            expect(saved(store, sw.id), sw.id).toBe(false);
+        }
+        // at once: the engine was given the setting off; the page's panels read the store (look-prefs.ts)
+        expect(setup.prefs.heightDirection).toBe(false);
+        expect((pe.prefs.at(-1) as { heightDirection?: boolean }).heightDirection).toBe(false);
+        expect(lookPrefs.panelOn(store, 'soundPanel')).toBe(false);
+        expect(lookPrefs.panelOn(store, 'attitude')).toBe(false);
+        // the attitude display on again with Right: the sound panel stays off (each its own)
+        byTestId(doc, 'sonic-look-attitude')!.focus();
+        doc.key('ArrowRight');
+        expect(lastHeard(engine)).toEqual({ text: 'Horizon and height display: on', interrupt: true });
+        expect(lookPrefs.panelOn(store, 'attitude')).toBe(true);
+        expect(lookPrefs.panelOn(store, 'soundPanel')).toBe(false);
+        s.dispose();
+        // a reload: a new setup and screen on the same saved document, and the engine made with it (the next start)
+        const again = withPrefs(store);
+        expect(again.setup.prefs.heightDirection).toBe(false);
+        expect(byTestId(doc, 'sonic-height-direction')!.checked).toBe(false);
+        expect(byTestId(doc, 'sonic-look-soundPanel')!.checked).toBe(false);
+        expect(byTestId(doc, 'sonic-look-attitude')!.checked).toBe(true);
+        doc.key('ArrowDown');
+        byTestId(doc, 'sonic-height-direction')!.focus();
+        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 10 of 14.`);
+        again.s.dispose();
+    });
+
+    it('with "my screen reader speaks" the native controls work (a click is the page\'s Space) and the voice says nothing: each value applied and saved all the same', () => {
+        const store = mkStore();
+        const { s, engine, setup } = withPrefs(store, { selfVoice: false });
+        for (const sw of SWITCHES) {
+            byTestId(doc, sw.id)!.focus();
+            // the list leaves the keys to the page: Enter and the arrows are the reader's and the box's own
+            expect(doc.key('Enter').defaultPrevented, sw.id).toBe(false);
+            byTestId(doc, sw.id)!.click();
+            expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(false);
+            expect(saved(store, sw.id), sw.id).toBe(false);
+        }
+        expect(setup.prefs.heightDirection).toBe(false);
+        expect(engine.said).toEqual([]);
+        s.dispose();
     });
 });

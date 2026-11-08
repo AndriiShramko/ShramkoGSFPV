@@ -324,7 +324,7 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         const lines = (await spoken(page)).slice(n);
         const motorFocus = await focusNow(page);
         out.settingsWalk = { navAt, head, headSaid, lines };
-        check('C: the navigation\'s Settings link, Enter: the section\'s heading has the focus and is said; Down through the settings, each said with "Item n of 11", to Motor volume', navAt.text === 'Settings' && head.id === 'sonic-h-settings' && headSaid.join(' | ') === 'Settings' && lines[0] === 'Sound theme: Soft. Item 1 of 11.' && lines.length === 8 && lines.at(-1) === 'Motor volume: 0 dB. Item 8 of 11.' && motorFocus.testid === 'sonic-motor-level', out.settingsWalk);
+        check('C: the navigation\'s Settings link, Enter: the section\'s heading has the focus and is said; Down through the settings, each said with "Item n of 14" (v13-int step 3: three switches more), to Motor volume', navAt.text === 'Settings' && head.id === 'sonic-h-settings' && headSaid.join(' | ') === 'Settings' && lines[0] === 'Sound theme: Soft. Item 1 of 14.' && lines.length === 8 && lines.at(-1) === 'Motor volume: 0 dB. Item 8 of 14.' && motorFocus.testid === 'sonic-motor-level', out.settingsWalk);
         n = (await spoken(page)).length;
         await key(page, 'ArrowRight');
         await key(page, 'ArrowRight');
@@ -342,7 +342,7 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         const target = (await spoken(page)).slice(n);
         const targetSaved = await until('the target note saved', () => saved(page), (x) => x.prefs?.heightTarget === false, 5000).then((x) => x.prefs?.heightTarget).catch(async () => (await saved(page)).prefs?.heightTarget);
         out.heightTarget = { target, saved: targetSaved };
-        check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === 'Target height note: on. Item 9 of 11. | Target height note: off' && targetSaved === false, out.heightTarget);
+        check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === 'Target height note: on. Item 9 of 14. | Target height note: off' && targetSaved === false, out.heightTarget);
         await shot(page, 'c-settings', 'the settings with Motor volume at -9 dB and the target note off');
         // Escape: back to the first Start button, said
         n = (await spoken(page)).length;

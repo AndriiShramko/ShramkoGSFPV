@@ -15,8 +15,10 @@
 //              it) and where the pilot stands (passed, skipped, in progress, not started); then "Reset my progress", which asks
 //              first (No first, then Yes; Escape is No) and keeps the sound settings.
 //   Settings   the pilot's own sound: theme, calm, height polarity, speaking speed, captions, "my screen reader speaks",
-//              motor sound, the motor's volume and the target height note (v0.13, W13), what the sound turns with, each sound's
-//              volume and pitch. Each change applies at once and is saved (SonicSetup.update).
+//              motor sound, the motor's volume and the target height note (v0.13, W13), sound from above and below (v0.13, the
+//              package's heightDirection), what the sound turns with, the sound panel and the attitude display (v0.13, the look's
+//              switches, look-prefs.ts), each sound's volume and pitch. Each change applies at once and is saved
+//              (SonicSetup.update; the panels' switches setPanel).
 //
 // A spoken list (v0.13, lane v13-host C3, the owner's M41-4; spoken-list.ts): with the mode's voice on (not "my screen reader
 // speaks"), Down and Up move through the screen's stops, Left and Right change a setting, Enter chooses, Escape goes back, and the
@@ -34,6 +36,8 @@ import { SpokenList } from './spoken-list';
 import type { SpokenAnchor, SpokenItem } from './spoken-list';
 import { buildModel, lessonPlace } from './start-model';
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
+import { LOOK_PANELS, LOOK_PANEL_LABELS, panelOn, setPanel } from './look-prefs';
+import type { LookPanel } from './look-prefs';
 import './sonic.css';
 
 /** Directions of the headphone check, in the listener's frame (x right, y up, z back). */
@@ -553,7 +557,13 @@ export class StartScreen {
             // v0.13 (W13): the motor's own level in the mode (after the engine's leveller), 3 dB a step, and the target height's note
             range('sonic-motor-level', this.key('menu.setting.motor-level'), prefs.motorGainDb ?? 0, PREFS_LIMITS.motorGainDb.min, PREFS_LIMITS.motorGainDb.max, 3, ' dB', (v, said) => this.change({ motorGainDb: v }, said)),
             check('sonic-height-target', this.key('menu.setting.height-target'), prefs.heightTarget !== false, (v, said) => this.change({ heightTarget: v }, said)),
-            select('sonic-frame', this.key('menu.setting.frame'), prefs.listenerFrame, [['heading', this.key('menu.value.heading')], ['body', this.key('menu.value.body')]], (v, said) => this.change({ listenerFrame: v as SonicPrefs['listenerFrame'] }, said))
+            // v0.13 (v13-int step 3; the package's lane s13-elev, the owner's message 42): the cues of up and down also from above and
+            // below, on unless the pilot turns it off; its description says what off does (the next stop cuts it, as any long line)
+            check('sonic-height-direction', this.key('menu.setting.height-direction'), prefs.heightDirection !== false, (v, said) => this.change({ heightDirection: v }, said), this.key('menu.setting.height-direction-what')),
+            select('sonic-frame', this.key('menu.setting.frame'), prefs.listenerFrame, [['heading', this.key('menu.value.heading')], ['body', this.key('menu.value.body')]], (v, said) => this.change({ listenerFrame: v as SonicPrefs['listenerFrame'] }, said)),
+            // v0.13 (v13-int step 3; lane v13-look): the sound panel and the attitude display, each on unless the pilot turns it off; kept in
+            // the collection beside the sound settings (look-prefs.ts), and the panels follow a change at once
+            ...LOOK_PANELS.map((which) => check(`sonic-look-${which}`, t(LOOK_PANEL_LABELS[which]), panelOn(this.d.setup.host, which), (v, said) => this.panel(which, v, said)))
         ];
         this.stop(summary, () => t('sonic.settings.layers'));
         const layerRows = LAYER_IDS.map((id: LayerId) => {
@@ -601,6 +611,12 @@ export class StartScreen {
         // the path decides which lesson the Start buttons open: the buttons follow it, the focus stays where it is; a setting a shared
         // link set is the pilot's own once he changes it, so the note of the link loses it
         if (patch.path !== undefined || Object.keys(patch).some((k) => visit.includes(k))) this.refreshStart();
+    }
+
+    /** A panel of the look turned on or off (saved in the collection 'sonic'; the page's panels follow the change at once), and said. */
+    private panel(which: LookPanel, on: boolean, said: string): void {
+        setPanel(this.d.setup.host, which, on);
+        this.sayValue(said);
     }
 
     private refreshStart(): void {

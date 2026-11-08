@@ -52,9 +52,24 @@ lead's "Next" 5 and 6 as this branch sees them).
     target's, marked above or below by it; off, the height bar alone. `sonic-panels` 23 of 23 (4 new); controls in the
     code, each run once and restored: without the target note's rule 2 tests fail; without the elevation from the
     direction 3 fail (the new tunnel-gaps test among them).
-- [ ] 3. Settings: the sound panel, the attitude display and the package's `heightDirection` in the start screen's
+- [x] 3. Settings: the sound panel, the attitude display and the package's `heightDirection` in the start screen's
   settings and the spoken list; said with section, "Item n of N" and value; saved and read back after a reload; the
   reader's native controls with "my screen reader speaks".
+  - The start screen's settings (`start-screen.ts`), three check boxes, each a stop of the spoken list: "Sound from above
+    and below" (`sonic-height-direction`, the package's `menu.setting.height-direction`, its description
+    `menu.setting.height-direction-what` under the box and said after the value; `SonicSetup.update({ heightDirection })`:
+    checked by the package's validator, applied to the engine at once, saved with the whole sound document, read by the
+    engine made at the next start) after the target height note; "Sound panel: see every sound" and "Horizon and height
+    display" (`sonic-look-soundPanel`, `sonic-look-attitude`, v13-look's `LOOK_PANEL_LABELS`, `panelOn`, `setPanel` on
+    the setup's store: the collection 'sonic', keys `soundPanel` and `attitude`; the page's panels follow the store's
+    change at once) after "what the sound turns with". The settings have 14 stops (were 11).
+  - `sonic-start-screen` 16 of 16 (3 new): each said with "Settings." when the focus comes from another section, its value
+    and "Item 10, 12, 13 of 14"; Enter and the arrows off and on, said, applied (the engine got `heightDirection: false`),
+    saved, read back by a new setup and screen on the same store; with "my screen reader speaks" Enter is left to the page,
+    a click (the page's Space) changes and saves each, the voice says nothing. Controls in the code, each run once and
+    restored: the direction box not applied, 2 tests fail; the panels not saved, 2 fail; a value said with the reader on, 2
+    fail.
+  - The page proof `sonic-v13-page.ts` C counts "Item n of 14" now (was 11); not run here (step 8).
 - [ ] 4. The scan lesson's contact: free-garden flies with the lesson contact `{ bump: 'slide' }` while a lesson runs on
   a scan; every other flight unchanged.
 - [ ] 5. Reset over a running lesson: after "Reset my progress" every lesson is new, the one under the screen too.
@@ -82,6 +97,9 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-int-replay` new control "the same flight with an engine that forgets nothing" (step 1) | records the same two lessons with `FakeEngine.keepOnReset`: rings-line's start holds rings-first's sectors (9 frames measured) | the control that fails without the call |
 | `sonic-int-replay` "the player plays the lessons in turn" (step 1) | the fake engine logs frames and resets: a reset first, one right before rings-line's first frame, two in all while playing; at each seek a reset, then the frame sought; a reset at close | the player resets the engine where a lesson starts or the clock jumps |
 | `sonic-lesson-rig` `FakeEngine` (step 1) | `reset()` as the package's (the planner from nothing, the last frame and its cues forgotten), `resets`, `keepOnReset` | the host calls the engine's reset at every lesson it opens |
+| `sonic-start-screen` C3 "the first key ... Down goes through every stop" and the reader's control (step 3) | `STOPS` has the three new switches; the settings' place "Item n of 14" (was 11), the 14 counted from the screen's own stops | three settings more (step 3) |
+| `sonic-start-screen` new: "v13-int step 3: sound from above and below, the sound panel and the attitude display ..." (3 tests) | new | step 3 |
+| page proof `tools/bench/src/sonic-v13-page.ts` C (step 3) | "Item n of 14" (was 11) in the settings walk and the target note's line | three settings more; not run here (step 8) |
 | `sonic-panels` "real elevations from the package (s13-elev) ..." (step 2) | new, 4 tests: tunnel-gaps' open way above marked by its own direction (on) and by the plan's side (off), with the bare chime's control; the target note's mark follows `plan.height.target.dir` (above, below, level), and with the setting off it stays on the bar | the package now gives the panel real elevations (lane s13-elev's "Needs from the simulator") |
 
 ## Deferred
