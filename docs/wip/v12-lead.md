@@ -7,17 +7,24 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
 - sonic-core: `shramko-fly-by-sound-fpv` main 3959930 (stage1-rc1 41aa53e plus publication docs), 577 Node tests, 9 audio proofs, independent review with 8 fixes. Published on GitHub as public after a full-history secrets scan.
 
 - sonic-core 1eea4d5 (pushed): the spoken lines the lanes asked for (`survey.howto` without "say the number", `survey.howto-voice`, `survey.mic-on`, `send.none`, `send.cancelled`). The gitlink still points at 3959930; v12-int moves it.
-- Both lanes merged into v03-lead (local, not pushed): 8610380 (v12-flight ac59e8d), 5dc92fc (v12-feedback 970adbc). No file was changed by both lanes, no conflict.
+- Both lanes merged into v03-lead: 8610380 (v12-flight ac59e8d), 5dc92fc (v12-feedback 970adbc). No file was changed by both lanes, no conflict.
+- v12-int merged (c6ddeba, pushed to `main` 2026-11-08): the seams joined, lazy loading (+1.46 % gzip start-up script), replay lesson by lesson, the screen-reader queue, delivery robustness, scan credits, end-to-end run 35 of 35; the review fixed 5 defects (`docs/wip/v12-int-review.md`). The lead accepts the two step-5 choices: a recording opens the running lesson again from its beginning, and the survey how-to stays keys only.
+- deploy.sh (60ff0a6): the uploaded archives of releases no longer kept are pruned (incoming had 1.1 GB on a disk at 93 %).
 
 ## Running
 
-- Workflow v12-int in `C:/dev/gsfpv-v12-int` (branch `v12-int` from 5dc92fc): the seams the lanes could only stand in for, then one review. Status: `docs/wip/v12-int.md`.
+- Nothing. The release waits for the owner's word: the app's auto mode refused the production deploy without it (2026-11-08).
 
 ## Next for the lead
 
-1. Read v12-int's Status and review; merge it (`--no-ff`), all gates once, push.
-2. Release per the gsfpv skill `references/release.md`: API files, compose (192 MB) and config (`SESSION_MAIL_MAX_BYTES` 15 MB), nginx (microphone, `media-src blob:`, `/api/session/`), release, live checks.
-3. Live acceptance: release.json, accept-fly over the live site, `?sonic=` and `/{lang}/sound/` headless, one `[TEST]` package through the live API to the owner's Telegram and mailbox, then delete it. STATE.md, vault status note.
+1. Release per the gsfpv skill `references/release.md`, `main` c6ddeba. API files (`server.py`, `admin.py`, `sessions.py`, `session_delivery.py`, `sessions_admin.py`; upload `session_delivery.py` and `sessions.py` together) and `compose.yml` (192 MB, `docker compose up -d --force-recreate gsfpv-api`, Memory 201326592). No config change is needed: the hub's `config.env` has `TG_BOT_TOKEN`, `TG_CHAT_ID`, `GMAIL_USER`, `GMAIL_APP_PASSWORD` (names checked), every `SESSION_*` has its default. Then nginx (microphone, `media-src blob:`, `/api/session/`), then `bash .cache/ship.sh c6ddeba`, live checks.
+2. Live acceptance: release.json, accept-fly over the live site, `?sonic=` and `/{lang}/sound/` headless, one test package through the live API to the owner's Telegram and mailbox (lesson `TEST-live-delivery-check`, release `TEST-delivery`; the uploader was tried on the local rig: both channels sent, SHA-256 equal), then delete it. STATE.md, vault status note.
+3. After the release: the sound repo's README says the mode is live (link to `/en/sound/`), `gh_repo.py patch --homepage`.
+
+## Left open after v12-int (not blocking the release)
+
+- From the review's "Left open": a failed load of the recorder's chunk is silent (323 gzip bytes left of the size target for a new key); `rec.started`, `rec.stopped`, `rec.saved` queue behind lesson speech; T during an open replay starts a recording; replay edge cases (a recording begun with no lesson, a piece with no frames, saved progress not in the manifest); Z after I repeats the recording line; a WebGPU `createBindGroup` error after a scan change from the pause menu in a lesson page (`PrimitiveStage` suspected; ordinary pages do not load it).
+- Needs from sonic-core: `engine.say()` with `selfVoice` off should queue like `speechSynthesis`; the replay comparer should judge a hazard voice by its kind (rings lessons replay 92-99 % of cue ids); hover-height's timers drift on replay.
 
 ## Status
 
@@ -36,5 +43,7 @@ Handoff of the lead. Plan: `docs/wip/v12-plan.md` (sections 8 and 9 override ear
 - [x] v12-flight merged (8610380): steps 1-12 and the review's 7 fixes; Status `docs/wip/v12-flight.md`, review `docs/wip/v12-flight-review.md`
 - [x] v12-feedback merged (5dc92fc): steps 1-11 and the review's 7 fixes; Status `docs/wip/v12-feedback.md`, review `docs/wip/v12-feedback-review.md`
   - All gates on 5dc92fc (logs `U:/Temp/gsfpv-gates-20261107-214446`): typecheck, api-unittest, architecture, i18n, catalog, B18 pass; vitest 3215 pass and 1 fail: `sonic-world.test.ts` "contact queries cost under 20 ms" measured 30.5 ms while another vitest ran on the machine. The file alone passes twice. An absolute time bound inside the parallel gate is a flake; v12-int makes it robust.
-- [ ] v12-int merged (the seams joined, lazy loading, end-to-end run)
+- [x] v12-int merged (c6ddeba): the seams joined, lazy loading, end-to-end run, the review's 5 fixes
+  - Secrets precheck on the staged merge: 9 password-shaped hits, all test data on a line after `"pass": true` (survey answers, gate times, line keys; checked by shape), allowed once; 22 secret words, all prose or names, no value; 30 evidence pictures (the repo's convention).
+  - All gates on c6ddeba (logs `U:/Temp/gsfpv-gates-20261108-022534`): typecheck, vitest 205 files 3275 pass 8 skipped, api-unittest 420, architecture, i18n, catalog, B18 PASS. Pushed to `main`.
 - [ ] released and checked live
