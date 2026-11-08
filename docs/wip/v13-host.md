@@ -30,7 +30,13 @@ proofs.
     package's boxes alike (the hits do not depend on the faces): its bounds are 1 % free air at 0.3 m from a wall
     (102 x 4.4 x 65 m), so 20 000 draws found about 250 ray origins. The draws are now up to 200 000, still stopping
     at 1500 free origins (no other world needed more than 70 000); both assertions stand.
-- [ ] A2 (W20) the simulator's Fly by Sound tests pass on the new package
+- [ ] A2 (W20) the simulator's Fly by Sound tests pass on the new package (in groups by file, each in "Changed tests")
+  - On the new package before A2: 598 tests, 556 pass, 34 fail, 8 skipped (the 18 tunnel cases of the review's 52 were
+    A1's). Two of the 34 belong to A4 (`sonic-audio`, the motor's default) and two to A5 (`sonic-start`, the 28 lessons).
+  - [x] `sonic-lessons` and its rig: 24 of 26 pass, 2 skipped for stage B (G and review I3: the glossary ends in a 'go'
+    action, W3 and W4). Controls broken once and restored: the rig's answerer without `repeat-cue` (module 0 fails), the
+    move-speed pilot released 4 m past the zone's middle (fails), the wrong-height pilot at the ring's own height (the
+    control fails: it passes the ring), the progress test run to the pass (fails: passed).
 - [ ] A3 (W11) `FrameSampler.take` keeps every sample with `touched`
 - [ ] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
 - [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
@@ -52,6 +58,17 @@ Each changed expectation takes its value from the package; each kept control sti
 | Test | Change | Why |
 |---|---|---|
 | `sonic-primitives` "every wall a ray hits has a drawn face" | up to 200 000 draws for the 1500 free ray origins (was 20 000) | tunnel-long's bounds are 1 % free air; 300 hits are still wanted, no face missed |
+| `sonic-lesson-rig` `FakeEngine.lastPreviewDir` | also reads the last `repeat-cue` | module 0's trial sound is a `repeat-cue` since v0.13 (M41-5); the answerer read only `preview` and answered blind |
+| `sonic-lessons` module 0, ears-headphones | `repeat-cue` plays = the lesson's trials x `REPEAT_PLAYS` (9), each with a direction | was "3 or more previews"; M41-5 |
+| `sonic-lessons` module 1, hover-height | attempt passes = `pass.required` (3); goals met >= it | was 4 of 5: format 2 counts r in total |
+| `sonic-lessons` module 2, move-speed | the pilot lets go a metre short of the middle of the world's zone (was at 9 m); passes = `pass.required`; manual-start lives >= it | the zone is 7 m out and 6 m deep now (was 6 to 22 m) |
+| `sonic-lessons` module 3, walls-hall | the pilot stops 0.5 m inside `stopWithinM` (1.0 m, was 2.4 m); passes = `pass.required`; the engine got the lesson's layers (safety, height, room, voice) | the small room and its 1.5 m stop; the layers of M41-10 (was "safety only") |
+| `sonic-lessons` module 4, corridor | passes = `pass.required` (1); a touch resets to a point `wN` of the world's list (N at most its length); one reset to the start or more (was 2); every checkpoint of the lesson reached (cp-1 to cp-6) | r = 1, the corridor ends at `track-end`, respawn near the crash (M41-20) |
+| `sonic-lessons` module 5, rings-first | gates = `pass.required` (3) | was 8 of 10 |
+| `sonic-lessons` control, wrong height | the pilot leaves the respawn platform, sinks under the ring (half its lowest edge, from the world's ring) and flies on; asserts it really flew past the ring below it, and 2 failed attempts or more | the room is 5.2 m high and the ring 5.5 m ahead: the climb toward 7 m crossed the ring inside it |
+| `sonic-lessons` "a restart is not a touch" | its wall control waits until the lesson flies, then flies sideways into the side wall | the first attempt begins at the start (a flight in the task is put back); straight on, the ring's plane ends every attempt before the front wall, and between attempts nothing is a touch |
+| `sonic-lessons` "progress is saved at every attempt" | runs to one counted attempt short of the pass (r - 1) | three counted attempts pass the lesson now |
+| `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B | the glossary ends in a 'go' action the host does not take yet (W3, W4) |
 
 ## Needs from the package
 

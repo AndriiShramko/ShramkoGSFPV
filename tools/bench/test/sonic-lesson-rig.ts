@@ -129,11 +129,15 @@ export class FakeEngine {
         return this.queue.length > 0;
     }
 
-    /** The last preview cue's direction (module 0 plays one before each question). */
+    /**
+     * The direction of the last sound a step played (module 0 plays one before each question): a 'repeat-cue' since v0.13 (a
+     * named sound is played three times, M41-5), a 'preview' before.
+     */
     lastPreviewDir(): Vec3 | null {
         for (let i = this.cues.length - 1; i >= 0; i--) {
             const c = this.cues[i]!;
             if (c.kind === 'preview') return c.dir;
+            if (c.kind === 'repeat-cue') return c.dir ?? null;
         }
         return null;
     }
