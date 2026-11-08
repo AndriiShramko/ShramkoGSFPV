@@ -337,7 +337,58 @@ Left open, with the reason:
     p50 2.0 (1.7); rings-heights 2.6 ms (2.2, 2.3), p50 1.8 (1.6). The panels' own frame handlers: 0.3 ms (the attitude
     display) and 0.2 ms (the sound panel) at p95, the first draw of a panel up to 6 ms (its canvas made). v0.12's budget (the
     60 Hz frame of 16.7 ms) holds; the display paces this machine's frames at 30 Hz.
-- [ ] L2-5 gates exit 0; flight regression B6-B16; the lane's status final.
+- [x] L2-5 gates exit 0; flight regression B6-B16 on a local build; L2's status final.
+  - `gates.py --repo C:/dev/gsfpv-v13-look` on 32d1896 (logs `U:/Temp/gsfpv-gates-20261108-225009`): exit 0. typecheck 25 s;
+    vitest 241 files, 3884 passed, 2 skipped (3886: L1's 3867 and the 19 of `sonic-panels.test.ts`; the 2 skipped are stage
+    B's of v13-host), 134 s; api-unittest 420 OK; architecture ok; i18n 1087 strings x 4 (the site's; the panels' words are the
+    simulator's, held by `packages/i18n/test/fly-parity.test.ts`); catalog up to date; B18 PASS
+    (`{"outside":[],"placeholders":[],"topics":14}`), its `evidence/2026-11-08/b-repo-b18.json` given back to the base's.
+  - Flight regression on the release of 32d1896 (`release.json` sha 32d1896, `serve-csp.mjs dist 5420`; the run's first line
+    `accept-fly target: http://localhost:5420`; it waited for the GPU lock another lane held, then held it): B6, B7, B9,
+    B10, B11, B12, B13, B14, B15 and B16 PASS, exit 0. The scans fly as in L1's run: B12's crash at 8.668 m/s at the same
+    point to the last digit (its tick earlier by the page's start), B15's crash 8.566 m/s, B16 9.591 m/s^2. Evidence:
+    `evidence/2026-11-08/b-fly-*-v13-look-l2.json`, `b-fly-summary-v13-look-l2.json`, `v13-look-l2-b-fly/` (named beside L1's
+    `-v13-look` and v12-optin's `-optin` of the same day).
+
+## Final status
+
+The lane is done: stage L1 (M41-19, W17, M41-23, W16; its final under "Stage L1, final" above) and stage L2 below.
+
+Stage L2 done: L2-1 to L2-5 (the code and its tests in one commit, the places and the page scenarios, the radar's discs, the evidence,
+this status). Not pushed, nothing deployed, no SSH, never the live site; the other worktrees only read (v13-host's progress
+panel CSS copied for the stand-in); `packages/sonic-fpv` never edited. Every check above ran here: Node tests in vitest, the
+page checks headless on local release builds served with the enforced CSP, the GPU lock held for every drawing run.
+
+What each item does now:
+- M41-24: in every lesson of the mode that flies, a large attitude display at the bottom right: a light sky over a dark
+  ground with a thick two-tone horizon, pitch marks every 10 degrees, a bank scale and a sky pointer, the craft's wings; a
+  height tape from the floor to the room's top with the lesson's band, the height to fly at and the craft's height in its
+  box; a climb arrow from the vertical speed. The horizon is the craft camera's (checked against a projection for 75
+  attitudes, and on the page's pictures within 0.4 degrees).
+- M41-25 (W14): in every lesson of the mode, a sound panel at the bottom left: the engine's active cues on a radar at their
+  direction and distance, an icon and a colour per kind, above and below marked (the open way's from the plan's side), the
+  ceiling's and the floor's sounds at the height bar's ends; the height tone and the target note on the bar; the sound a
+  step plays three times with its glossary name and "k of 3", in the page's language.
+- Both on by default, each with its switch in the prefs (read back after a reload), hidden from screen readers, never taking a
+  pointer, out of the view's centre and the captions and clear of v13-host's progress panel at eight page sizes, dark and
+  light; the page's frame 0.3 to 0.6 ms more at p95 with both (the corridor 2.9 against 2.5 and 2.3 ms, rings-heights 2.6
+  against 2.2 and 2.3).
+
+Not checked by any machine here, with the reason:
+1. A deaf pilot reading the sound panel while flying, or a low-vision pilot flying by the attitude display: no such person
+   tried it; the owner's testers decide whether the icons, the marks and the sizes work for them.
+2. Colour blindness: each kind has its own icon (the colours are a second channel), not tried with people or a simulation.
+3. Forced colours (Windows high contrast): the boxes follow the system's colours by CSS, the canvases keep their own; not
+   rendered here.
+4. A real phone and a real 200 % zoom: emulated in headless Chrome (390 x 844 and 844 x 390 at 3 device pixels per CSS pixel,
+   960 x 540 and 640 x 360 at 2); the phones' safe areas and a real browser's zoom were not seen. At 640 x 360 the sound
+   panel covers the take-off line (no other place is free there).
+5. The target note's pulse on the height bar keeps the plan's rhythm (`noteS` of every `periodS`) but not the engine's phase
+   (see "Needs from the package" 1).
+6. A slower machine's frame with the panels (one machine: Intel i9-7980XE, a 30 Hz display).
+7. The panels beside v13-host's real progress panel and spoken settings list: a stand-in of its CSS was used; after the merge
+   `v13-look-page.ts layout` runs again with the real panel (and the stand-in goes).
+8. The es, pl and ru words of the panels by a native reader (listed under L2-3).
 
 ## For the lead
 
