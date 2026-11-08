@@ -66,8 +66,11 @@ status note (message 41) carries the same table for the owner.
 - Owner, message 42: install the es, pl and ru voices. `Install-Language` and `Add-WindowsCapability` need elevation,
   which this session cannot get; the agent's access to Windows Settings came back denied. A one-click installer is on
   the owner's desktop (`Install-Shramko-Voices.cmd`, worker `U:/Temp/shramko-voices/install-voices.ps1`, log
-  `install.log` there; one UAC "Yes"). A background watcher wakes the lead when the log says DONE. Headless Chrome
-  lists only the local Windows voices (no Google network voices), so the voices are needed for any es/pl/ru check.
+  `install.log` there; one UAC "Yes"). Headless Chrome lists only the local Windows voices (no Google network
+  voices), so the voices are needed for any es/pl/ru check. Done 2026-11-08 17:55 UTC: es-ES Helena, Laura, Pablo;
+  pl-PL Adam, Paulina; ru-RU Irina, Pavel (OneCore), no restart; headless Chrome lists all of them. The desktop
+  installer is removed. s13-elev E2 measures and round-trips the package's lines; the integrated review hears the
+  simulator's K help and menu lines in es, pl and ru.
 - In a lesson B is "previous step" (M41-6); the feedback form stays in the pause menu and in the ordinary simulator.
 
 ## Open from v12-optin (needs people or voices this machine does not have)
