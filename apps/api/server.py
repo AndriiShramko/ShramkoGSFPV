@@ -1382,7 +1382,8 @@ OUTREACH = outreach.OutreachStore(lambda: DATA_DIR)
 outreach.OutreachAdmin(OUTREACH).register(ADMIN)
 
 # ---------------- Fly by Sound recordings (v0.12 lane v12-feedback): sessions.py, the chunked upload of a pilot's package ----------------
-SESSIONS = sessions.SessionStore(lambda: DATA_DIR, free_bytes=lambda: int(free_gb() * 1e9), min_free_bytes=lambda: int(MIN_FREE_GB * 1e9))
+# Free space is measured where the packages are written: on the hub data/sessions is its own disk (the volume, bind-mounted), not data/'s.
+SESSIONS = sessions.SessionStore(lambda: DATA_DIR, min_free_bytes=lambda: int(MIN_FREE_GB * 1e9))
 
 
 def _env_int(name: str, default: int) -> int:
