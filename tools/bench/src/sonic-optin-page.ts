@@ -193,9 +193,12 @@ const savedSound = (page: Page): Promise<{ theme?: string; calm?: boolean } | nu
         }
     });
 
-/** The pause menu (Esc), then what it shows: its items, the actions and caps of its key list, how often it names the mode. */
-async function pauseMenu(page: Page): Promise<{ items: string[]; keys: { action: string; caps: string[]; label: string }[]; sound: { href: string | null; target: string | null; rel: string | null; text: string; label: string; newTab: string; tag: string } | null; namesInMenu: number; namesInBody: number }> {
-    await page.keyboard.press('Escape');
+/**
+ * The pause menu (Esc; in a lesson P, since v0.13 Escape there is the lesson menu: stage B, B6), then what it shows: its items, the actions
+ * and caps of its key list, how often it names the mode.
+ */
+async function pauseMenu(page: Page, key: 'Escape' | 'KeyP' = 'Escape'): Promise<{ items: string[]; keys: { action: string; caps: string[]; label: string }[]; sound: { href: string | null; target: string | null; rel: string | null; text: string; label: string; newTab: string; tag: string } | null; namesInMenu: number; namesInBody: number }> {
+    await page.keyboard.press(key);
     await page.waitForSelector('.pause-menu', { timeout: 10000 });
     return page.evaluate(() => {
         const menu = document.querySelector('.pause-menu') as HTMLElement;
@@ -378,7 +381,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     out.flightFocus = focused;
     check('B: once the lesson flies the focus is on the mode\'s labelled role="application" region, where a screen reader passes every key on (review R5; control: A has none)', focused.testid === 'sonic-flight' && focused.role === 'application' && focused.label === EN['sonic.flight.label'], focused);
 
-    const menu = await pauseMenu(page);
+    const menu = await pauseMenu(page, 'KeyP');
     out.modeMenu = { items: menu.items, keys: menu.keys.filter((k) => k.action.startsWith('sonic.') || k.action === 'share.open' || k.action === 'help.keys') };
     const modeKeys = menu.keys.filter((k) => SOUND_ACTIONS.includes(k.action));
     check('B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode\'s own item, not the ordinary one', modeKeys.map((k) => k.caps.join('')).join(' ') === SOUND_CAPS.join(' ') && menu.keys.length === pageBindings({ sonic: true }).length && menu.items.includes('pause.sonic') && !menu.items.includes('pause.flyBySound'), out.modeMenu);
@@ -447,7 +450,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     out.keyHelpCut = { said: spokenSince(cut, n3).map((e) => e.key).slice(-3), pausedAfter: afterCut };
     check('B: any key cuts the keys: "Back to the flight." is said and the flight goes on at once (review R4)', !!cut && afterCut === false, out.keyHelpCut);
     // with the "How to fly" card up (opened from the pause menu) K closes it and says nothing (the card's own K; control: A's K opens it)
-    await pauseMenu(page);
+    await pauseMenu(page, 'KeyP');
     await page.click('[data-action="pause.howtofly"]');
     await page.waitForSelector('[data-testid="how-to-fly"]', { timeout: 10000 });
     const n4 = await eventCount(page);
@@ -460,10 +463,11 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     await until('the flight to go on after the card', () => pausedNow(page), (v) => v === false, 5000).catch(() => undefined);
 
     // the visible Share in the mode: the lesson's link, copied and shown in the field, not the picture panel (review R3). A sighted
-    // helper pauses first (Esc: the game scheme's flight holds the mouse), then clicks the pause menu's Share, or the top bar's
+    // helper pauses first (P: the game scheme's flight holds the mouse; in a lesson Escape is the lesson menu since v0.13), then clicks
+    // the pause menu's Share, or the top bar's
     const visibleShare = async (selector: string): Promise<{ field: Awaited<ReturnType<typeof linkField>> | null; clipboard: string; gone: boolean; pausedAfter: boolean | null }> => {
         await page.evaluate(() => navigator.clipboard.writeText('-'));
-        await page.keyboard.press('Escape');
+        await page.keyboard.press('KeyP');
         await page.waitForSelector('.pause-menu', { timeout: 10000 });
         await page.click(selector);
         const field = await until('the link field', () => linkField(page), (v) => v.shown, 5000).catch(() => null);
@@ -480,7 +484,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     check('B: in the mode the pause menu\'s Share and the top bar\'s Share copy the lesson\'s link and show it selected in the field, with no picture panel; Escape closes it and the flight goes on (review R3)', shareOk(menuShare) && shareOk(topShare), out.visibleShare);
 
     // the Winter Garden lesson, chosen on the start screen over the flight: the link names its scan and size
-    await pauseMenu(page);
+    await pauseMenu(page, 'KeyP');
     await page.click('[data-action="pause.sonic"]');
     await page.waitForSelector('#sonic-start:not([hidden])', { timeout: 10000 });
     await page.focus('[data-testid="sonic-lesson"][data-lesson="free-garden"]');
