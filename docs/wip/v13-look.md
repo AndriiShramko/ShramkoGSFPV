@@ -218,24 +218,77 @@ Left open, with the reason:
 4. The scan lesson (free-garden) keeps the drone's own contact (see "For the lead").
 5. Stage L2: the attitude display, the sound panel, their prefs and texts, their page proofs (L2-1 to L2-5).
 
-### Stage L2 (the next agent)
+### Stage L2
 
-- [ ] L2-1 (M41-24) the attitude display for low vision (`apps/fly/src/sonic/attitude.ts`, new): a large high-contrast
-  horizon (thick horizon line, ground and sky that differ in lightness, pitch marks), an altitude tape with the lesson's
-  target band and the craft's mark, a climb arrow; drawn from the flight's state, no new sim state; contrast at least
-  4.5:1 for its lines and marks, measured.
-- [ ] L2-2 (M41-25, W14) the sound panel (`apps/fly/src/sonic/sound-panel.ts`, new): a top-down radar with each active
-  cue at its direction (above or below marked for a cue whose direction has an elevation, so the panel shows more once
-  the package's lane s13-elev gives the cues a 3D direction), the open way's side from `engine.plan.freeWay`; a height bar
-  with the drone tone (`plan.height.heightM`, `hz`) and the target tone (`plan.height.target`, its note every
-  `periodS`); a repeat step (`repeat-cue`) shows the cue's icon and name while it plays. Reads `PageEngine.plan` and the
-  engine's events only.
-- [ ] L2-3 the panels' prefs (show or hide, size; new keys in `packages/prefs/src/doc.ts` only) and their texts in
-  `packages/i18n/locales/**` (en, es, pl, ru; es, pl and ru marked for a native reading); one registration line per
-  panel in `feature.ts`; the new prefs listed under "For the lead" for the spoken settings list.
-- [ ] L2-4 page proofs on a release build (headless, GPU lock): the attitude display follows a scripted climb, roll and
-  pitch; the sound panel shows a hazard's side, the open way's side and the height and target tones as the engine plans
-  them; a repeat step shows its cue; contrast measured on the pictures; the frame cost with both panels on.
+- [ ] L2-1 (M41-24) the attitude display for low vision, only in the Fly by Sound mode (`apps/fly/src/sonic/attitude.ts`, new).
+  - What the mode showed and why the owner found it unreadable (message 41: "the graphic shown now is completely unclear.
+    There is no sense of the horizon, whether you climb or sink. Two black and grey parts"): in v0.12 (live) a lesson world
+    was drawn as flat, untextured slabs, evenly lit (`StandardMaterial`, a diffuse colour and 0.28 of it as its own light),
+    under a near-black clear colour (`LESSON_BACKGROUND` 0.02, 0.02, 0.03). hover-height, the first lesson that flies, is the
+    open world: a floor and nothing else. So the view was a grey-green floor under a black field, split by the floor's far
+    edge: the two parts. A flat even plane looks the same from every height and its edge stays at the screen's middle while
+    the craft is level, so a climb or a sink changed nothing in the picture; no horizon line, no pitch or bank marks, no
+    height scale, no sign of climbing. The only height on the page was the HUD's `ALT 0.0 m`, 15 px monospace in the bottom
+    left corner. (The corridor of v0.12 shows the same flat fields: `evidence/2026-11-08/v13-look-cost-v012-look/corridor-cost-view.jpg`;
+    hover-height of v0.12 was not rendered again.) L1-3 gave the rooms a checker floor and a sky (the squares shrink as the
+    craft climbs); the display adds the instrument.
+  - The display: a dial (a light sky over a dark ground, 9.3:1 apart; a thick horizon line, white between two black edges, so
+    the white reads on the ground and the black on the sky; pitch marks every 10 degrees with their numbers, black on the sky,
+    white on the ground; a bank scale on a dark bezel at 0, 10, 20, 30, 45 and 60 degrees and a sky pointer that turns with
+    the horizon; the craft's yellow wings fixed in the middle), a height tape (the floor at the bottom, the room's top, from
+    the world's hollow, at the top; in the open 4 m at least, growing a metre at a time; the lesson's band as a green bar with
+    its two edges across the tape; the height to fly at, the package's `targetHeightM`: the next gate's centre, else the
+    band's, as a cyan line; the craft as a yellow box with its height in the page's language, `1,5 m` in Polish), and a climb
+    arrow from the craft's height (up or down, full length at 2 m/s, none under 0.1 m/s). Drawn on a canvas from the
+    session's flight model (`attitude()`, `py` less the lesson's floor, `vy`), only when the picture changes (a tenth of a
+    degree, a centimetre).
+  - Shown while a lesson that flies runs (not in module 0's listening lessons, which fly nothing; not while a recording
+    plays back); hidden from screen readers (`aria-hidden`), never takes a pointer, under the captions (z-index 4 and 5).
+  - On paper (`tools/bench/test/sonic-panels.test.ts`): the horizon is the one the craft's camera sees: 75 attitudes (3
+    headings x 5 pitches x 5 rolls) built as a body turned by a known pitch and roll, read back by sim-core's `attitude()`,
+    two points of the world's horizon projected by a camera at that attitude: the display's tilt and lift agree within
+    0.0001 degree (a right roll lifts the horizon's right end, a nose down lifts the horizon); control in the test: the
+    roll's sign turned is caught (over 50 degrees off). The tape's places, the climb arrow's way and length. Contrast of
+    every line and mark against what it lies on, dark and light page: the least 5.44:1 (the light page's band), the dial's
+    9.32 to 18.42.
+- [ ] L2-2 (M41-25, W14) the sound panel (`apps/fly/src/sonic/sound-panel.ts`, new): what the engine plans, never a guess.
+  - A radar seen from above, the nose up: every active cue with a direction (`plan.cues`, the heading frame) at its
+    direction and distance (rings at 1, 2 and 4 m, the rim 8 m), an icon and a colour per kind: wall (walls, obstacles, a
+    touch), floor or ceiling, open way, target (the gate's hum and notes, the shape traces), checkpoint (and the re-centre),
+    wrong way (and wrong side), praise (and the fanfare, a stage). A direction rising or falling 20 degrees or more carries
+    an "above" or "below" mark; one within 25 degrees of straight up or down (the ceiling over the craft, the floor under
+    it) goes to the top or bottom of the height bar. The open way's side is the plan's (`plan.freeWay.side`): the chime of a
+    way above or below sounds from ahead today (its pitch says which), so the mark comes from the side; a cue whose
+    direction has an elevation of its own (lane s13-elev) is marked by it with no change here. A cue without a direction
+    (a touch, a checkpoint's chime, praise) shows on the craft for 1.2 s at least (a chime of 0.3 s is seen).
+  - A height bar, floor to the room's top: the height tone (`plan.height.heightM`; jagged while the tone is rough, outside
+    the band), the target note (`plan.height.target.heightM`), bolder for `noteS` of every `periodS`.
+  - A step that plays a sound three times (M41-5; the runner's `view().playing`, held through the 1 s gaps): the sound's
+    icon, its name in the glossary's words (the package's `cue.<id>.name`, four languages) and "2 of 3" over the radar.
+  - On by default, in every lesson of the mode (the listening lessons too: the glossary is where a deaf pilot meets the
+    sounds), hidden from screen readers (`aria-hidden`: the speech says it), never takes a pointer.
+  - On paper (`sonic-panels.test.ts`): every cue the glossary names has a kind and the seven kinds are reached; the places
+    (left on the left, front-right up and right, straight up on the bar's top, 45 degrees up marked above); with the real
+    planner: walls-pillar 2.5 m before the pillar at 2 m/s (`safety.obstacle:front` ahead, the open way left),
+    tunnel-gaps before block 1 (`plan.freeWay.side` up: the chime marked above), rings-heights (the target note at the first
+    ring's height, on for `noteS` of `periodS`); control in the test: the chime from ahead with no side is not marked; every
+    sound a lesson plays three times (its intro's cues) has its name in en, es, pl and ru, not by fallback. Contrast, dark
+    and light page: the least 5.07:1 (the light page's praise), the dark page's 6.58 to 21.
+- [ ] L2-3 the switches `soundPanel` and `attitude` (`apps/fly/src/sonic/look-prefs.ts`): in the prefs collection 'sonic'
+  (`packages/prefs/src/doc.ts` `SonicState.soundPanel?`, `.attitude?`: absent means on, kept only when a boolean), so they
+  travel with the settings file and need no catalogue rows; a change shows at once (the panels follow `collection.sonic`).
+  Test: on by default, saved, read back by a new store on the same storage, each apart; a value that is not a boolean
+  dropped. The panels' words in a namespace of their own, `packages/i18n/locales/fly/soniclook` (en, es, pl, ru; "Sounds",
+  "{k} of {n}", "{v} m"), which comes with the mode's chunk like `sonic` and `sonickeys` (excluded in `apps/fly/src/i18n.ts`,
+  added in `sonic/texts.ts`; test). `feature.ts`: one import and one registration line per panel.
+  - Controls broken once and restored (`sonic-panels.test.ts`, each failing what it should): the roll's sign (3 tests), the
+    pitch's (2), the tape upside down, the climb arrow the wrong way, a light-page colour under 4.5:1, the horizon's core
+    grey (dark and light), the open way without the plan's side (2), the ceiling not on the bar, a switch not kept, the
+    words in the main chunk.
+- [ ] L2-4 page proofs on a release build (headless, GPU lock): the attitude display level, pitched and banked; the tape with
+  the band and the climb arrow; the sound panel in walls-pillar (a wall and the open-way chime), in rings-heights (the
+  target note on the height bar) and on a repeat step (icon and name); the places at several sizes, 200 % zoom and a
+  phone, dark and light; contrast measured on the pictures; the frame time with both panels.
 - [ ] L2-5 gates exit 0; flight regression B6-B16; the lane's status final.
 
 ## For the lead
