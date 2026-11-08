@@ -517,7 +517,101 @@ store and an engine that records what it is asked to say.
   - Not run here (no gate; left as they are, each still expects v0.12 where stage B noted it): `tools/bench/src/sonic-int-page.ts:164`,
     `:182` (I as `status.lesson`) and `tools/bench/src/sonic-lessons-page.ts:282-291` (Z as the last line again; I's `status.lesson`);
     both run on the Vite dev server (`LAB`).
-- [ ] C7 gates exit 0; "## Final status"
+- [x] C7 gates exit 0; "## Final status"
+  - `gates.py --repo C:/dev/gsfpv-v13-host` on 9901198, exit 0: typecheck PASS; vitest PASS, 238 files, 3894 passed, 8 skipped
+    (3902: stage B's 3881 and 21 new tests of stage C, `sonic-start-screen` 13, `sonicrec-replay` 5, `sonic-start` 2, the prefs' 1;
+    the 8 skipped need the Winter Garden scan's walls in `.cache`; the one a build was missing for, `apps/site/test/scene-templates`
+    "the built templates pass", ran and passed, the release build of C6 having made `out/`); api-unittest, architecture, i18n,
+    catalog PASS; B18 PASS (`evidence/2026-11-08/b-repo-b18.json`).
+  - The lane doc's "Final status" below; "Changed tests" has stage C's rows; "Needs from the package" item 4 is new.
+
+#### Stage C, final
+
+Done: C1 to C7, one commit each (C6 in five: the proof, its own fixes after the first run, the optin proof's two updates, the
+evidence). Not pushed, nothing deployed, the live site and the other worktrees untouched; `packages/sonic-fpv` not touched (still
+16c01a1). Outside `apps/fly/src/sonic/*` stage C changed `apps/fly/src/app/builtin/sonic-flight.ts` (the pause item),
+`apps/fly/src/sonic-session/replay-player.ts`, `replay-control.ts` and `replay-view.ts` (W9, W10), `packages/prefs/src/doc.ts` (W7),
+the locales `fly/sonic` and `fly/sonicrec`, and the tests and page proofs in `tools/bench`.
+
+## Final status
+
+Lane v13-host, branch `v13-host` (from `v03-lead` 093fbbd), the sound package at 16c01a1 (its public `main`, v0.13), stages A, B
+and C done. Gates exit 0 on 9901198 (C7). Not pushed, nothing deployed, the live site never opened; the other worktrees and the
+package untouched.
+
+### The owner's items (message 41) that are this lane's
+
+| Item | What the simulator does now | Steps | Held by |
+|---|---|---|---|
+| M41-1 | The pause menu's item on an ordinary page is a link to the mode's start screen `/{lang}/fly/?sonic=start` in a new tab, one line, "(opens in a new tab)" for a reader; the page about the mode is in the start screen's footer | C1 | `sonic-optin`, `sonic-start-screen` C1; page: `sonic-v13-page` A, `sonic-optin-page` A |
+| M41-2 | The start screen: "Continue: <lesson>" (its place and state), "Start the course from the beginning" (lesson 1, the progress kept), the 28 lessons by module with "Lesson N of 28" and passed, skipped, in progress or not started (the prefs keep `skipped`, W7), "Reset my progress" after its question (No first, Escape is No), the sound settings kept | C2 | `sonic-start-screen` C2, `sonic-start`, `packages/prefs/test/sonic.test.ts`; page: `sonic-v13-page` B |
+| M41-3 | Escape in a lesson: the spoken lesson menu (Resume, Repeat the task, Next step, Previous step, Next lesson, Lesson list, Sound settings, Leave the mode), the flight and the lesson held, each item said on focus by the mode's voice; P is still the pause menu; at every lesson's start "Escape: menu. Z: repeat the task. N: next." with the pilot's key names | B6 | `sonic-lesson-keys` B6; page: `sonic-v13-page` D |
+| M41-4 | The start screen and the mode's settings are a spoken list: Down and Up move, Left and Right change a setting, Enter chooses, Escape goes back; every focus and every applied value said through the engine; "Motor volume" (-24 to 6 dB, 3 dB steps) and "Target height note" saved and read back (W13); with "my screen reader speaks" the page keeps its own keys and the reader reads | C3 | `sonic-start-screen` C3; page: `sonic-v13-page` C and its reader control |
+| M41-5 (the host's part) | Z (and the menu's Repeat the task) is the runner's repeat: the step's whole task with its sounds, recorded as a key | B3 | `sonic-lesson-keys` B3 |
+| M41-6 | N is the next step (in a flying lesson the next lesson, this one marked skipped), B the step or the lesson before, G's way back first; each a key event the replay reads; the mode's keys win in a lesson | B1 to B3 | `sonic-lesson-keys` B1 to B3, `sonic-lessons` |
+| M41-7 | I says the runner's status line ("Lesson 20 of 28: Your first ring. Step 2 of 2. Attempt 2. Counted 1 of 3."); a large high-contrast panel draws the runner's view after every attempt | B4 | `sonic-lesson-keys` B4; page: `sonic-v13-page` E |
+| M41-16 | The mode's motor into the engine's motor bus, on by default | A4 | `sonic-motor`, `sonic-audio` |
+| M41-24, M41-25 | Not done: the low-vision attitude display and the panel that shows each sound (W14) were in no step of stages A to C (the lead's decision of 2026-11-08: the visual items start after the weekly reset unless use allows) | none | none |
+
+M41-19 and M41-23 are lane v13-look's; the other items are the package's (merged at 16c01a1).
+
+### The review's W list (`C:/dev/ShramkoSonicFPV/docs/dev/review-v0.13-merge.md`, "Wave 2: one list")
+
+| W | Now | Step |
+|---|---|---|
+| W1 | the gitlink at 16c01a1 with W2 and W20 on this branch | A1 |
+| W2 | the room drawn from `world.cavities` (the mirror deleted) | A1 |
+| W3 | `createLessonRunner` gets `path`, `keys` (the pilot's layout), `returnTo`, `speechRate` (`runnerOptions`) | B1 |
+| W4 | the 'go' action: next, previous, G's way back, one move per runner | B2 |
+| W5 | N, B, Z and the menu's step and lesson items call the runner, each a `key` event with its replay action first | B3, B6 |
+| W6 | I says `runner.statusLine()`; the progress panel draws `runner.view()` | B4 |
+| W7 | `skipped` kept by the prefs; the start screen's skipped state | C2 |
+| W8 | `runner.pause`/`resume` with the session's pause and resume; no end of speech while paused | B5 |
+| W9 | a lesson of an older version replays with the recorded lines at their times, once a line that says so, none of this build's lines | C4 |
+| W10 | the replay page's summary from `replayVerdict` (per lesson; a FAIL wins): pass, "Recorded with an older build of the lessons", fail | C5 |
+| W11 | the recorder keeps every touched sample | A3 |
+| W12 | the motor into `motorInput ?? auxInput`; `PageEngine` has `motorInput` and `plan` | A4 |
+| W13 | Motor volume and Target height note in the mode's settings | C3 |
+| W14 | not done (the panel of M41-25) | none |
+| W15 | every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call past it | B7 (C3's lines too) |
+| W16 | the cost benches run once on the v0.13 worlds | A6 |
+| W17 | lane v13-look's (a headless flight in walls-hall) | none here |
+| W18 | the start screen's 28 lessons and fast path of 8 | A5 |
+| W19 | rings-first's cue kinds pinned down as a rule of `sonic-int-replay`: each differing frame's cause named (touch ping, open-way chime hold, hazard kind), none other, a play's edge among the others | A2, C4 |
+| W20 | the simulator's Fly by Sound tests on the v0.13 package | A2 |
+
+### Measured
+
+- The cost benches on the v0.13 worlds (A6, this machine): the planner per frame within 1 ms at p95 in all 22 analytic worlds (worst
+  tunnel-long p95 0.765 ms); tunnel-long's contact queries 23.24 ms for 10 s of flight, 16 % over the plan's 20 ms (for v13-look).
+- The replay of the rig's rings-first and rings-line flight (A2, B6, C4): every event re-derived, the lesson's own cues on every
+  frame; by kind rings-first 99.3 % of its settled frames (16 of 2357: the touch ping 5, the open-way chime's hold 11), by sector 96.8
+  %; rings-line 100 % and 100 % once settled.
+- The page (C6, release build of 370715d, Chrome 156 headless): `sonic-v13-page` 22 of 22; its control with "my screen reader speaks"
+  fails the voice's checks as it must; `sonic-optin-page` 46 of 46 on the same build.
+- Gates (C7): exit 0, vitest 3894 passed and 8 skipped.
+
+### Not checked by a machine
+
+- No person has heard v0.13 in this simulator: the lesson menu's voice, the spoken list's lines at the theme's voice level, the line
+  at a lesson's start, the motor under the cues, the target note, the three plays of a named sound, the recorded lines of an older
+  lesson in a replay. The page proofs read what the engine was asked to say and what reached `speechSynthesis.speak` in headless
+  Chrome, not what a voice made of it.
+- No real screen reader (NVDA, JAWS): the start screen with "my screen reader speaks" (the page's native keys), the reset question's
+  group, the lesson menu's dialog and menu items, the progress panel outside the live region (open since v12-optin, review R5).
+- No native reading of the es, pl and ru lines the lane added. Stage B: `sonic.key.Escape`, `sonic.say.helpPrevious`,
+  `sonic.say.helpRepeat`, `sonic.say.helpMenu`, `sonic.say.lessonKeys`, `sonic.say.menuTitle`, `sonic.say.menuOpen`, the eight
+  `sonic.say.menu*` items, `sonic.progress.*` (5), `keys.sonic.next`, `keys.sonic.previous`, `keys.sonic.repeat`, `keys.sonic.menu`.
+  Stage C: `sonic.start.course`, `sonic.start.courseWhat`, `sonic.start.courseKeeps`, `sonic.start.continue`, `sonic.lessons.skipped`,
+  `sonic.reset.button`, `.ask`, `.yes`, `.no`, `.done`, `.kept`, `sonic.say.listHelp`, `sonic.say.replayOlder`,
+  `sonicrec.replay.check.older`.
+- The progress panel was seen at 1280x720 in the headless page's light scheme only, not on a phone (its rule at 640 px and under) nor
+  in the dark scheme.
+- The replay of a v0.12 recording in the page (W9 and W10 are held in Node: the player on a fake clock, the controller on the
+  package's fixtures); a recording made in another language than the page's is said with the voice of the page's language.
+- Two page proofs still expect v0.12 lines and were not run here: `tools/bench/src/sonic-int-page.ts:164`, `:182` and
+  `tools/bench/src/sonic-lessons-page.ts:282-291` (stage B's note).
+- A reset over a running lesson clears the saved progress, but that lesson's runner saves its own counts again at its next event.
 
 ## Changed tests
 
@@ -555,6 +649,11 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-audio` "the defaults when nothing is saved" and "silent unless the settings ask", retitled | `motorSound` true by default (was false); the off mix still has a zero master | M41-16: the motor on by default in the mode |
 | `sonic-start` "all 21 shipped lessons", "the fast path marks six" | `SHIPPED_LESSON_IDS.length` (28) and `lessonPaths().fast` (8), both also pinned; the fast lessons in the path's order | W18: six tunnels and rings-heights more, a fast path of 8 |
 | `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
+| `sonic-optin` "an ordinary page gets exactly one item" (stage C, C1) | the item's link is `/{lang}/fly/?sonic=start` (`modeStartPage`), read as the start screen, opened by `run()` in a new tab (was `/{lang}/sound/`) | M41-1: the pause menu opens the mode itself; the page about the mode is linked from the start screen |
+| `sonic-int-replay` "rings-first to its pass, then rings-line" (stage C, C4) | adds W19's rule: every settled frame that differs by kind is one the comparer counts and has a named cause (`kindDifferences`), none 'other'; the bounds stay; the comment's shares are stage C's measure (99.3 % by kind, 96.8 % by sector) | W19: the explanation held by the test, not only by a comment |
+| `sonicrec-replay` rig (stage C, C4) | the fake engine keeps each line's parameters | the recorded lines of an older lesson are one key (`sonic.say.text`) with the text as a parameter |
+| `sonic-fake-dom.ts` (stage C, C1) | grown: text nodes, selectors, form controls, `focusin` on focus, a window's capture listeners | the start screen itself runs on it; `sonic-lesson-keys` and `sonic-review` pass on it unchanged |
+| page proof `sonic-optin-page.ts` (stage C, C6) | A: the item links and opens `/en/fly/?sonic=start` (Polish: `/pl/fly/?sonic=start`); B: I's line `status.progress-step` or `status.progress`, K's order Escape, N, B, Z, I, G, R, T, U, L, the pause menu opened with P in a lesson | C1, and stage B's W6, B3 and B6 (Escape in a lesson is the lesson menu); 46 of 46 on the release build |
 
 ## Needs from the package
 
@@ -585,3 +684,10 @@ Each changed expectation takes its value from the package; each kept control sti
    depends on where the markers fall on the 33 ms grid. Ask: stamp a cue the replay derives at its input's own time
    (`this.planner.cue(a.event, t)` with the marker's t), and let a host give the engine the time of a cue (or stamp it at the
    call); until then a flight can fail the "every lesson cue on every frame" check by chance.
+4. (stage C) The package's words for where a pilot stands in a lesson have no "skipped". Its runner marks a lesson left without
+   passing as skipped (`LessonProgress.skipped`, `src/lesson/runner.ts:1220`, `:1640`) and says it is shown on the start screen,
+   but its dictionaries name only three states (`locales/en.json:336-338`, `menu.lesson.new`, `menu.lesson.current`,
+   `menu.lesson.passed`; `src/i18n/catalog.ts:158-160`). The simulator says it in its own words (`sonic.lessons.skipped`, four
+   languages; shown by `tools/bench/test/sonic-start-screen.test.ts` C2, "the 28 lessons ... the four states"). Ask:
+   `menu.lesson.skipped` in the four locales and the catalog, so the package's own spoken menu and the simulator say it alike;
+   the simulator then takes the package's word.
