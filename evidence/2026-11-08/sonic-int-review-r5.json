@@ -1,0 +1,93 @@
+{
+  "name": "sonic-int-review-r5",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T01:12:31.635Z",
+    "gitHead": "850598d",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "d2931c9",
+    "sonic": "1eea4d5",
+    "built": "2026-11-08T01:02:10.218Z"
+  },
+  "git": "850598d",
+  "seconds": 61,
+  "passed": 3,
+  "total": 3,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R5: a recording made with the browser's voice is checked: ears-headphones, compared, every recorded event re-derived (0 differences)",
+      "pass": true,
+      "value": [
+        {
+          "lesson": "ears-headphones",
+          "frames": 1153,
+          "compared": true,
+          "ok": true,
+          "recorded": 22,
+          "matched": 22,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        }
+      ]
+    },
+    {
+      "name": "R5: the sounds agree (every frame's cue ids) and the panel says the replay agrees",
+      "pass": true,
+      "value": {
+        "rows": [
+          [
+            "ears-headphones",
+            1,
+            1
+          ]
+        ],
+        "summary": {
+          "ok": true,
+          "summary": "The replay agrees with the recording: 22 of 22 events were worked out again, and 100 % of the sounds are the same."
+        }
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r5": {
+      "summary": {
+        "ok": true,
+        "summary": "The replay agrees with the recording: 22 of 22 events were worked out again, and 100 % of the sounds are the same."
+      },
+      "notes": [],
+      "rows": [
+        {
+          "lesson": "ears-headphones",
+          "frames": 1153,
+          "compared": true,
+          "ok": true,
+          "recorded": 22,
+          "matched": 22,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        }
+      ],
+      "details": "replay check PASS: events 22 of 22 re-derived (largest time difference 2 ms); cues 100.0 % of 1153 frames agree (100.0 % by cue kind)"
+    }
+  },
+  "problems": []
+}

@@ -19,7 +19,10 @@
 //       the engine speaks with the browser's own voice; a recording is started, its lesson opens again and says its intro; T stops it a moment later and
 //       1 answers the offer a moment after that; speechSynthesis is watched for the notice.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4]
+//   R5  a recording made with the browser's own voice (the default of a pilot; the end-to-end run is silent) replays as it was flown
+//       ears-headphones recorded and passed with the engine speaking (speed 2), the survey declined; the panel's Replay checks the recording lesson by lesson.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5]
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
@@ -413,6 +416,61 @@ async function r4(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R5
+
+/** The lesson pilot of ears-headphones (the lane's): N for the intro, a digit for each question from the sound that was played (1, 2, 2). */
+async function passEarsHeadphones(page: Page): Promise<void> {
+    let skipped = false;
+    let answered = '';
+    const t0 = Date.now();
+    for (;;) {
+        const p = await probe(page);
+        if ((await events(page)).some((e) => e.kind === 'lesson' && e.what === 'passed' && e.lessonId === 'ears-headphones')) return;
+        if (Date.now() - t0 > 240000) throw new Error(`ears-headphones was not passed in 4 minutes: ${JSON.stringify(p)}`);
+        if (!skipped && p.phase === 'intro') {
+            skipped = true;
+            await page.keyboard.press('KeyN');
+        } else if (p.asking && p.speechQueue === 0 && p.question && answered !== p.question.id) {
+            answered = p.question.id;
+            await page.keyboard.press(`Digit${Number(p.question.id.split(':')[2]) === 1 ? 1 : 2}`);
+        }
+        await sleep(60);
+    }
+}
+
+interface ReplayHook {
+    state: { stage: string; title: string; check: { ok: boolean; summary: string } | null; notes: string[]; details: string };
+    checks: { lesson: string | null; frames: number; compared: boolean; ok: boolean | null; recorded: number; matched: number; diffs: number; cueShare: number | null; cueClassShare: number | null }[];
+}
+const replayHook = (page: Page): Promise<ReplayHook | null> => page.evaluate(() => (window as unknown as { __gsfpv: { sonicReplay?: () => unknown } }).__gsfpv.sonicReplay?.() ?? null) as Promise<ReplayHook | null>;
+
+async function r5(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R5: a recording made with the browser\'s own voice');
+    const ctx = await newContext(browser, served, prefsDoc({ selfVoice: true, speechRate: 2 }), null);
+    const page = await openLesson(ctx, served, 'ears-headphones', 'R5');
+    await startRecording(page, ['rec.ask']);
+    await passEarsHeadphones(page);
+    const stopFrom = (await events(page)).length;
+    await page.keyboard.press('KeyT');
+    await until('the survey offer', () => events(page), (all) => spokenAfter(all, stopFrom).includes('survey.offer'), 40000, 50);
+    await sleep(800);
+    await page.keyboard.press('Digit2');
+    await until('rec.saved', () => events(page), (all) => spokenAfter(all, stopFrom).includes('rec.saved'), 40000, 100);
+    await page.evaluate(() => {
+        const b = document.querySelector('.sonicrec-toggle') as HTMLElement | null;
+        if (b && document.querySelector('.sonicrec-panel')?.hasAttribute('hidden')) b.click();
+    });
+    await until('the replay button', () => page.evaluate(() => !!document.querySelector('.sonicrec-session [data-action="replay"]')), (v) => v, 30000);
+    await page.focus('.sonicrec-session [data-action="replay"]');
+    await page.keyboard.press('Enter');
+    const ready = (await until('the replay checked', () => replayHook(page), (h) => h?.state.stage === 'ready' || h?.state.stage === 'error', 90000)) as ReplayHook;
+    const rows = ready.checks;
+    result.r5 = { summary: ready.state.check, notes: ready.state.notes, rows, details: ready.state.details.slice(0, 600) };
+    check('R5: a recording made with the browser\'s voice is checked: ears-headphones, compared, every recorded event re-derived (0 differences)', rows.length === 1 && rows[0]?.lesson === 'ears-headphones' && rows[0].compared && rows[0].diffs === 0 && rows[0].matched === rows[0].recorded && rows[0].recorded > 5, rows);
+    check('R5: the sounds agree (every frame\'s cue ids) and the panel says the replay agrees', rows[0]?.cueShare === 1 && ready.state.check?.ok === true, { rows: rows.map((r) => [r.lesson, r.cueShare, r.cueClassShare]), summary: ready.state.check });
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -442,6 +500,7 @@ async function main(): Promise<void> {
         else if (which === 'r2') await r2(fresh, served);
         else if (which === 'r3') await r3(fresh, served);
         else if (which === 'r4') await r4(fresh, served);
+        else if (which === 'r5') await r5(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
@@ -453,7 +512,7 @@ async function main(): Promise<void> {
         unlock();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence(`sonic-int-review-${which}${process.env.EVIDENCE_SUFFIX ?? ''}`, { site: `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
+    const file = writeEvidence(`sonic-int-review-${which}`, { site: `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
     console.log(`${passed} of ${checks.length} checks passed in ${Math.round((Date.now() - T0) / 1000)} s; ${file}`);
     process.exit(failure === null && passed === checks.length ? 0 : 1);
 }

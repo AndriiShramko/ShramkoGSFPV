@@ -1,0 +1,1170 @@
+{
+  "name": "sonic-e2e",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T01:09:46.654Z",
+    "gitHead": "850598d",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5410",
+  "release": {
+    "sha": "d2931c9",
+    "sonic": "1eea4d5",
+    "built": "2026-11-08T01:02:10.218Z"
+  },
+  "seconds": 189,
+  "passed": 35,
+  "total": 35,
+  "pass": true,
+  "checks": [
+    {
+      "name": "A: the real runtime: the page flies ears-headphones, the engine runs, the recorder's panel is there (ctx.sonic is set)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-headphones",
+        "phase": "intro",
+        "attempt": 0,
+        "touches": 0,
+        "passed": false,
+        "asking": false,
+        "question": null,
+        "engine": "running",
+        "target": null,
+        "cost": {
+          "n": 32,
+          "p50": 0,
+          "p95": 0.2,
+          "p99": 0.2,
+          "max": 1.2
+        },
+        "walls": {
+          "voxelM": 0.1,
+          "builtin": true,
+          "scene": "lesson-ears-headphones",
+          "scale": 1
+        },
+        "pos": [
+          0,
+          1.5,
+          0
+        ],
+        "yaw": 0,
+        "speed": 0,
+        "armed": false,
+        "speechQueue": 3,
+        "lastLine": "lesson.ears-headphones.goal.1",
+        "stagePrims": 1,
+        "progress": {},
+        "events": []
+      }
+    },
+    {
+      "name": "A: T asks (rec.ask) and the second T records (rec.started); the running lesson opened again from its beginning inside the recording",
+      "pass": true,
+      "value": [
+        "rec.ask",
+        "rec.started",
+        "lesson.ears-headphones.title",
+        "lesson.ears-headphones.intro.1",
+        "lesson.ears-headphones.intro.2",
+        "lesson.ears-headphones.goal.1"
+      ]
+    },
+    {
+      "name": "A: the pass moved the path on to ears-glossary while recording (lesson opens: ears-headphones, ears-glossary)",
+      "pass": true,
+      "value": [
+        "ears-headphones",
+        "ears-glossary"
+      ]
+    },
+    {
+      "name": "A: the survey: survey.mic-on, then survey.offer; at the end survey.thanks, then rec.stopped (the microphone let go), then rec.saved",
+      "pass": true,
+      "value": [
+        "survey.mic-on",
+        "survey.offer",
+        "survey.intro.first",
+        "survey.thanks",
+        "rec.stopped",
+        "rec.saved"
+      ]
+    },
+    {
+      "name": "A: the first flight's survey asked 9 questions in the dialog, answered by keys (scales in the middle, a choice with 1, one open answer by voice, one skipped)",
+      "pass": true,
+      "value": [
+        "1:scale:Digit3",
+        "2:scale:Digit5",
+        "3:scale:Digit5",
+        "4:scale:Digit5",
+        "5:choice:Digit1",
+        "6:choice:Digit1",
+        "7:open:Enter",
+        "8:open:Escape",
+        "9:choice:Digit1"
+      ]
+    },
+    {
+      "name": "A: the saved package reads strictly (every listed file's size and SHA-256), complete, consent recording and voice and not send, a voice, a survey",
+      "pass": true,
+      "value": {
+        "frames": 1364,
+        "events": {
+          "session": 2,
+          "recording": 2,
+          "speech": 51,
+          "lesson": 9,
+          "key": 9,
+          "answer": 3,
+          "goal": 1
+        },
+        "voiceBytes": 125277,
+        "bytes": 148869,
+        "consent": {
+          "at": "2026-11-08T01:06:45.708Z",
+          "guardianConfirmed": null,
+          "minor": false,
+          "recording": true,
+          "send": false,
+          "speechRecognition": false,
+          "voice": true
+        }
+      }
+    },
+    {
+      "name": "A: the package holds both lessons, in order, the pass, the three answers by key, the N presses",
+      "pass": true,
+      "value": {
+        "opens": [
+          "ears-headphones",
+          "ears-glossary"
+        ],
+        "answers": [
+          [
+            1,
+            "key"
+          ],
+          [
+            2,
+            "key"
+          ],
+          [
+            2,
+            "key"
+          ]
+        ],
+        "keys": 9
+      }
+    },
+    {
+      "name": "A: the recorder's own lines are in the package in order: rec.started (the question rec.ask came before the recording began), survey.mic-on, survey.offer, survey.thanks",
+      "pass": true,
+      "value": [
+        "rec.started",
+        "survey.mic-on",
+        "survey.offer",
+        "survey.thanks"
+      ]
+    },
+    {
+      "name": "A: survey.json: the first flight's survey, not skipped, 9 answers equal to the keys pressed (value and way), the open one by voice and one skipped",
+      "pass": true,
+      "value": {
+        "id": "first-flight",
+        "skipped": false,
+        "answers": [
+          [
+            "fun",
+            3,
+            "key"
+          ],
+          [
+            "mental",
+            5,
+            "key"
+          ],
+          [
+            "frustration",
+            5,
+            "key"
+          ],
+          [
+            "fear",
+            5,
+            "key"
+          ],
+          [
+            "up-direction",
+            1,
+            "key"
+          ],
+          [
+            "ears-tired",
+            1,
+            "key"
+          ],
+          [
+            "helped",
+            null,
+            "voice"
+          ],
+          [
+            "annoyed",
+            null,
+            "skip"
+          ],
+          [
+            "again",
+            1,
+            "key"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "A: the replay is checked lesson by lesson: ears-headphones, ears-glossary, each compared, every recorded event re-derived (0 differences)",
+      "pass": true,
+      "value": [
+        {
+          "lesson": "ears-headphones",
+          "frames": 1048,
+          "compared": true,
+          "ok": true,
+          "recorded": 22,
+          "matched": 22,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        },
+        {
+          "lesson": "ears-glossary",
+          "frames": 316,
+          "compared": true,
+          "ok": true,
+          "recorded": 16,
+          "matched": 16,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        }
+      ]
+    },
+    {
+      "name": "A: 100 % of the sounds in each lesson (the cue ids of every frame) and the panel says the replay agrees",
+      "pass": true,
+      "value": {
+        "rows": [
+          [
+            "ears-headphones",
+            1,
+            1
+          ],
+          [
+            "ears-glossary",
+            1,
+            1
+          ]
+        ],
+        "summary": {
+          "ok": true,
+          "summary": "The replay agrees with the recording: 38 of 38 events were worked out again, and 100 % of the sounds are the same."
+        }
+      }
+    },
+    {
+      "name": "A: the lesson-by-lesson check in Node agrees with the page's",
+      "pass": true,
+      "value": {
+        "ok": true,
+        "segments": [
+          {
+            "lesson": "ears-headphones",
+            "lead": false,
+            "frames": 1048,
+            "ok": true,
+            "diffs": 0,
+            "cueShare": 1
+          },
+          {
+            "lesson": "ears-glossary",
+            "lead": false,
+            "frames": 316,
+            "ok": true,
+            "diffs": 0,
+            "cueShare": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "A: control: with one recorded answer taken out the events no longer agree (the replay takes answers as input, so what it derives changes)",
+      "pass": true,
+      "value": {
+        "diffs": 9
+      }
+    },
+    {
+      "name": "A: control: with the sounds of four seconds of the glossary taken out of the recording the sounds no longer agree",
+      "pass": true,
+      "value": {
+        "share": 0.9134897360703812
+      }
+    },
+    {
+      "name": "A: the replay played to its end",
+      "pass": true,
+      "value": {
+        "phase": "ended",
+        "tMs": 57425.19999998808,
+        "durationMs": 57425.19999998808,
+        "voice": "ready",
+        "frame": 1364,
+        "frames": 1364,
+        "viewLagMs": 42,
+        "lesson": "ears-glossary",
+        "part": 1,
+        "parts": 2
+      }
+    },
+    {
+      "name": "A: each lesson's world drawn in turn when its first frame was due: ears-headphones, then ears-glossary, both shown by the page's view",
+      "pass": true,
+      "value": {
+        "switches": [
+          [
+            "ears-headphones",
+            null,
+            true,
+            0
+          ],
+          [
+            "ears-glossary",
+            null,
+            true,
+            35484
+          ]
+        ],
+        "prims": {
+          "ears-headphones": 1,
+          "ears-glossary": 1
+        }
+      }
+    },
+    {
+      "name": "A: every frame of both lessons fed once, in order, never before its package time and within 200 ms after it on the audio clock",
+      "pass": true,
+      "value": {
+        "n": 1364,
+        "min": 8.666666666671517,
+        "p50": 13.666666666678793,
+        "p95": 19.33333333333576,
+        "max": 32.33333333333576
+      }
+    },
+    {
+      "name": "A: the voice track holds every burst of the microphone across the recording (no gap: 1.5 s apart all along) and runs through the survey (to the last answer)",
+      "pass": true,
+      "value": {
+        "bursts": 38,
+        "gaps": [
+          1.4999166666666666,
+          1.500020833333334
+        ],
+        "lastAnswerT": 57478.19999998808,
+        "voiceEndT": 57425
+      }
+    },
+    {
+      "name": "A: the voice in the replay: every burst heard within 200 ms of its place on the package clock, over both lessons",
+      "pass": true,
+      "value": {
+        "bursts": 38,
+        "heard": 38,
+        "inSecondLesson": 14,
+        "maxAbsErrMs": 0.012499988079525792,
+        "errorsMs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "voiceSeconds": 57.42,
+        "burstGapsS": [
+          1.4999166666666666,
+          1.500020833333334
+        ]
+      }
+    },
+    {
+      "name": "A: closing the replay gives the page back (the live lesson runs again, the engine runs)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-glossary",
+        "phase": "flying",
+        "attempt": 1,
+        "touches": 0,
+        "passed": false,
+        "asking": false,
+        "question": null,
+        "engine": "running",
+        "target": null,
+        "cost": {
+          "n": 1621,
+          "p50": 0.1,
+          "p95": 0.2,
+          "p99": 0.4,
+          "max": 1.2
+        },
+        "walls": {
+          "voxelM": 0.1,
+          "builtin": true,
+          "scene": "lesson-ears-headphones",
+          "scale": 1
+        },
+        "pos": [
+          0,
+          1.5,
+          0
+        ],
+        "yaw": 0,
+        "speed": 0,
+        "armed": false,
+        "speechQueue": 2,
+        "lastLine": "cue.safety.reset.glossary",
+        "stagePrims": 1,
+        "progress": {
+          "ears-headphones": {
+            "lessonId": "ears-headphones",
+            "version": 1,
+            "attempts": 1,
+            "successes": 1,
+            "blocksPassed": 1,
+            "passed": true,
+            "bestTimeMs": null,
+            "lastAt": "2026-11-08T01:07:15.829Z"
+          }
+        },
+        "events": []
+      }
+    },
+    {
+      "name": "A: the pilot hears the question, sending, stored, delivered, in that order",
+      "pass": true,
+      "value": [
+        "send.confirm",
+        "send.sending",
+        "send.stored",
+        "send.delivered"
+      ]
+    },
+    {
+      "name": "A: the start said the pilot confirmed sending (consentSend), and the package's size and SHA-256",
+      "pass": true,
+      "value": {
+        "size": 148869,
+        "sha256": "137c34f7e62bd67ca1cd8d0c768d8634cde5d435c6595d717ff0db688df67328",
+        "consentSend": true,
+        "packageId": "Jvp2B9XcKwz5a7xdJozj7Q",
+        "lesson": "ears-headphones",
+        "minor": false,
+        "voice": true,
+        "release": "d2931c9"
+      }
+    },
+    {
+      "name": "A: the rig's stored file has the local package's SHA-256 (the file on its disk hashed here, and its record)",
+      "pass": true,
+      "value": {
+        "record": true,
+        "file": true
+      }
+    },
+    {
+      "name": "A: its Telegram document and its mail attachment have the same SHA-256, and both channels are sent",
+      "pass": true,
+      "value": {
+        "telegram": 1,
+        "mail": 1,
+        "channels": {
+          "telegram": "sent",
+          "email": "sent"
+        }
+      }
+    },
+    {
+      "name": "A: the recording on the device is untouched by the sending (the panel's Save gives the same bytes)",
+      "pass": true,
+      "value": {
+        "before": "137c34f7e62b",
+        "after": "137c34f7e62b"
+      }
+    },
+    {
+      "name": "B: for a minor T says rec.minor (the guardian line) and then asks (rec.ask), the second T records",
+      "pass": true,
+      "value": [
+        "rec.minor",
+        "rec.ask",
+        "rec.started",
+        "lesson.hover-height.title",
+        "lesson.hover-height.intro.1",
+        "lesson.hover-height.intro.2",
+        "lesson.hover-height.goal.1"
+      ]
+    },
+    {
+      "name": "B: the child variant: 6 questions in the dialog, answered by keys",
+      "pass": true,
+      "value": [
+        "1:scale:Digit3",
+        "2:choice:Digit1",
+        "3:choice:Digit1",
+        "4:choice:Digit1",
+        "5:choice:Digit1",
+        "6:open:Enter"
+      ]
+    },
+    {
+      "name": "B: the package reads strictly; a minor: consent minor and guardianConfirmed, recording and voice, never send; a flown lesson (frames moved)",
+      "pass": true,
+      "value": {
+        "consent": {
+          "at": "2026-11-08T01:09:00.740Z",
+          "guardianConfirmed": true,
+          "minor": true,
+          "recording": true,
+          "send": false,
+          "speechRecognition": false,
+          "voice": true
+        },
+        "frames": 823,
+        "events": {
+          "session": 2,
+          "recording": 2,
+          "speech": 19,
+          "lesson": 5,
+          "key": 1,
+          "goal": 1
+        }
+      }
+    },
+    {
+      "name": "B: survey.json is the child variant, not skipped, 6 answers equal to the keys pressed",
+      "pass": true,
+      "value": {
+        "id": "child-again-again",
+        "skipped": false,
+        "answers": [
+          [
+            "child-fun",
+            3,
+            "key"
+          ],
+          [
+            "child-again-flying",
+            1,
+            "key"
+          ],
+          [
+            "child-again-walls",
+            1,
+            "key"
+          ],
+          [
+            "child-again-rings",
+            1,
+            "key"
+          ],
+          [
+            "child-scary",
+            1,
+            "key"
+          ],
+          [
+            "child-liked-best",
+            null,
+            "voice"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "B: the recording of the flown lesson is checked as it was flown: hover-height compared, every recorded event re-derived, the sounds",
+      "pass": true,
+      "value": {
+        "rows": [
+          {
+            "lesson": "hover-height",
+            "frames": 823,
+            "compared": true,
+            "ok": true,
+            "recorded": 12,
+            "matched": 12,
+            "diffs": 0,
+            "cueShare": 1,
+            "cueClassShare": 1
+          }
+        ],
+        "summary": {
+          "ok": true,
+          "summary": "The replay agrees with the recording: 12 of 12 events were worked out again, and 100 % of the sounds are the same."
+        },
+        "node": {
+          "ok": true,
+          "segments": [
+            {
+              "lesson": "hover-height",
+              "lead": false,
+              "frames": 823,
+              "ok": true,
+              "diffs": 0,
+              "cueShare": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "B: with the guardian confirmed U sends it: question, sending, stored, delivered; the start carried consentSend and the package's SHA-256",
+      "pass": true,
+      "value": {
+        "said": [
+          "send.confirm",
+          "send.sending",
+          "send.stored",
+          "send.delivered"
+        ],
+        "body": {
+          "size": 97012,
+          "sha256": "aa7047c3e8bf8cd9ec7848e6e0071c1ff9b6d4139eba82eac754ab3b102d4880",
+          "consentSend": true,
+          "packageId": "2ig83OTfe4io8IFN3Mfs1Q",
+          "lesson": "hover-height",
+          "minor": true,
+          "voice": true,
+          "release": "d2931c9"
+        }
+      }
+    },
+    {
+      "name": "B: the rig's stored file, its Telegram document and its mail attachment have the local package's SHA-256; both channels sent",
+      "pass": true,
+      "value": {
+        "stored": true,
+        "telegram": 1,
+        "mail": 1,
+        "channels": {
+          "telegram": "sent",
+          "email": "sent"
+        }
+      }
+    },
+    {
+      "name": "both recordings are on the rig, delivered, and nothing else was sent (2 documents, 2 mails)",
+      "pass": true,
+      "value": {
+        "sessions": 2,
+        "documents": 2,
+        "mails": 2
+      }
+    },
+    {
+      "name": "the wire: every start named consentSend true; no request carried a token in its address",
+      "pass": true,
+      "value": {
+        "requests": 12
+      }
+    },
+    {
+      "name": "no page error, no console error, no failed request in either page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "surveyA": [
+      {
+        "n": 1,
+        "total": 9,
+        "kind": "scale",
+        "digits": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "pressed": "Digit3",
+        "at": 469
+      },
+      {
+        "n": 2,
+        "total": 9,
+        "kind": "scale",
+        "digits": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "pressed": "Digit5",
+        "at": 1025
+      },
+      {
+        "n": 3,
+        "total": 9,
+        "kind": "scale",
+        "digits": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "pressed": "Digit5",
+        "at": 1572
+      },
+      {
+        "n": 4,
+        "total": 9,
+        "kind": "scale",
+        "digits": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "pressed": "Digit5",
+        "at": 2129
+      },
+      {
+        "n": 5,
+        "total": 9,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 2687
+      },
+      {
+        "n": 6,
+        "total": 9,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 3245
+      },
+      {
+        "n": 7,
+        "total": 9,
+        "kind": "open",
+        "digits": [],
+        "pressed": "Enter",
+        "at": 5600
+      },
+      {
+        "n": 8,
+        "total": 9,
+        "kind": "open",
+        "digits": [],
+        "pressed": "Escape",
+        "at": 6158
+      },
+      {
+        "n": 9,
+        "total": 9,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 6740
+      }
+    ],
+    "packageA": {
+      "sha256": "137c34f7e62bd67ca1cd8d0c768d8634cde5d435c6595d717ff0db688df67328",
+      "bytes": 148869,
+      "frames": 1364,
+      "events": {
+        "session": 2,
+        "recording": 2,
+        "speech": 51,
+        "lesson": 9,
+        "key": 9,
+        "answer": 3,
+        "goal": 1
+      },
+      "voiceBytes": 125277,
+      "voiceOffsetMs": 5.199999988079071,
+      "manifestLesson": {
+        "id": "ears-headphones",
+        "path": "full",
+        "version": 1
+      },
+      "scene": {
+        "id": "open-b8163ece",
+        "kind": "analytic",
+        "transform": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "version": 1
+      }
+    },
+    "nodeCheckA": {
+      "ok": true,
+      "segments": [
+        {
+          "lesson": "ears-headphones",
+          "lead": false,
+          "frames": 1048,
+          "ok": true,
+          "diffs": 0,
+          "cueShare": 1
+        },
+        {
+          "lesson": "ears-glossary",
+          "lead": false,
+          "frames": 316,
+          "ok": true,
+          "diffs": 0,
+          "cueShare": 1
+        }
+      ]
+    },
+    "replayCheckA": {
+      "summary": {
+        "ok": true,
+        "summary": "The replay agrees with the recording: 38 of 38 events were worked out again, and 100 % of the sounds are the same."
+      },
+      "notes": [],
+      "checks": [
+        {
+          "lesson": "ears-headphones",
+          "frames": 1048,
+          "compared": true,
+          "ok": true,
+          "recorded": 22,
+          "matched": 22,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        },
+        {
+          "lesson": "ears-glossary",
+          "frames": 316,
+          "compared": true,
+          "ok": true,
+          "recorded": 16,
+          "matched": 16,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        }
+      ],
+      "title": "ears-headphones, ears-glossary \u00b7 Nov 8, 2026, 2:06 AM"
+    },
+    "voiceSyncA": {
+      "bursts": 38,
+      "heard": 38,
+      "inSecondLesson": 14,
+      "maxAbsErrMs": 0.012499988079525792,
+      "errorsMs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "voiceSeconds": 57.42,
+      "burstGapsS": [
+        1.4999166666666666,
+        1.500020833333334
+      ]
+    },
+    "sendA": {
+      "said": [
+        "send.confirm",
+        "send.sending",
+        "send.stored",
+        "send.delivered",
+        "glossary.next"
+      ],
+      "seq": [
+        "POST /start",
+        "GET /<id>",
+        "POST /<id>/0",
+        "POST /<id>/finish",
+        "GET /<id>",
+        "GET /<id>"
+      ],
+      "rig": {
+        "record": {
+          "id": "S-20261108-75c1184932ce",
+          "bytes": 148869,
+          "sha256": "137c34f7e62bd67ca1cd8d0c768d8634cde5d435c6595d717ff0db688df67328",
+          "delivered": true,
+          "channels": {
+            "telegram": "sent",
+            "email": "sent"
+          }
+        },
+        "storedFileSha": "137c34f7e62bd67ca1cd8d0c768d8634cde5d435c6595d717ff0db688df67328",
+        "telegram": 1,
+        "mail": 1,
+        "documents": 1,
+        "messages": 1
+      }
+    },
+    "surveyB": [
+      {
+        "n": 1,
+        "total": 6,
+        "kind": "scale",
+        "digits": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "pressed": "Digit3",
+        "at": 460
+      },
+      {
+        "n": 2,
+        "total": 6,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 1019
+      },
+      {
+        "n": 3,
+        "total": 6,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 1577
+      },
+      {
+        "n": 4,
+        "total": 6,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 2132
+      },
+      {
+        "n": 5,
+        "total": 6,
+        "kind": "choice",
+        "digits": [
+          1,
+          2,
+          3
+        ],
+        "pressed": "Digit1",
+        "at": 2693
+      },
+      {
+        "n": 6,
+        "total": 6,
+        "kind": "open",
+        "digits": [],
+        "pressed": "Enter",
+        "at": 5085
+      }
+    ],
+    "packageB": {
+      "sha256": "aa7047c3e8bf8cd9ec7848e6e0071c1ff9b6d4139eba82eac754ab3b102d4880",
+      "bytes": 97012,
+      "frames": 823,
+      "events": {
+        "session": 2,
+        "recording": 2,
+        "speech": 19,
+        "lesson": 5,
+        "key": 1,
+        "goal": 1
+      },
+      "voiceBytes": 81540,
+      "surveyId": "child-again-again"
+    },
+    "nodeCheckB": {
+      "ok": true,
+      "segments": [
+        {
+          "lesson": "hover-height",
+          "lead": false,
+          "frames": 823,
+          "ok": true,
+          "diffs": 0,
+          "cueShare": 1
+        }
+      ]
+    },
+    "replayCheckB": {
+      "summary": {
+        "ok": true,
+        "summary": "The replay agrees with the recording: 12 of 12 events were worked out again, and 100 % of the sounds are the same."
+      },
+      "notes": [],
+      "checks": [
+        {
+          "lesson": "hover-height",
+          "frames": 823,
+          "compared": true,
+          "ok": true,
+          "recorded": 12,
+          "matched": 12,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        }
+      ]
+    },
+    "sendB": {
+      "said": [
+        "send.confirm",
+        "send.sending",
+        "send.stored",
+        "send.delivered"
+      ],
+      "rig": {
+        "record": {
+          "id": "S-20261108-5f4816f9c6e5",
+          "bytes": 97012,
+          "sha256": "aa7047c3e8bf8cd9ec7848e6e0071c1ff9b6d4139eba82eac754ab3b102d4880",
+          "delivered": true,
+          "channels": {
+            "telegram": "sent",
+            "email": "sent"
+          }
+        },
+        "storedFileSha": "aa7047c3e8bf8cd9ec7848e6e0071c1ff9b6d4139eba82eac754ab3b102d4880",
+        "telegram": 1,
+        "mail": 1,
+        "documents": 2,
+        "messages": 2
+      }
+    }
+  },
+  "problems": []
+}

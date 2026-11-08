@@ -753,7 +753,7 @@ describe('review I2: the consent question and the lesson\'s speech', () => {
         await sleep(120);
         const startsAfter = (engine.startOf('rec.ask') ?? Infinity) - pressed;
         h.rec.pressRecord();
-        expect(startsAfter).toBeGreaterThan(200);
+        expect(startsAfter).toBeGreaterThan(100); // later than the reading limit (90 ms): the gate was open before the question had begun
         expect(h.mic.asked).toBe(1); // the microphone was asked for while the question was still queued
         await until(() => h.rec.phase === 'recording', 'the recording to start');
         await h.rec.stop();
@@ -769,11 +769,21 @@ describe('review I4: a minor\'s two-line question in "my screen reader speaks" m
     /** The engine in that mode: no queue, a line takes `unitMs` from the call whatever else is being said, an interrupt cuts nothing. */
     function parallelEngine(unitMs: number) {
         const calls: { key: string; at: number }[] = [];
+        let resolved = 0;
         return {
             calls,
             say(line: SpeechLine): Promise<void> {
                 calls.push({ key: line.key, at: Date.now() });
-                return new Promise<void>((resolve) => setTimeout(resolve, unitMs));
+                return new Promise<void>((resolve) =>
+                    setTimeout(() => {
+                        resolved++;
+                        resolve();
+                    }, unitMs)
+                );
+            },
+            /** resolves when `n` lines have been waited out (driven by the engine's own timers, not by a guess of the test's) */
+            async whenResolved(n: number): Promise<void> {
+                while (resolved < n) await sleep(2);
             }
         };
     }
@@ -783,11 +793,13 @@ describe('review I4: a minor\'s two-line question in "my screen reader speaks" m
         const engine = parallelEngine(60); // a reader needs 120 ms for the pair
         const h = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
         h.rec.pressRecord();
-        await sleep(90); // the first line is over (60 ms), the question is being read (until 120 ms)
+        await engine.whenResolved(1); // the first line is over (60 ms) ...
+        await sleep(4); // ... and the recorder has taken it in; the question is being read until 120 ms (the old way: handed over with the first, "read" at 60 ms)
         h.rec.pressRecord();
         expect(h.mic.asked).toBe(0);
         expect(h.rec.phase).toBe('asking');
-        await sleep(100); // both read out
+        await engine.whenResolved(2); // both read out
+        await sleep(4);
         h.rec.pressRecord();
         expect(h.mic.asked).toBe(1);
         await until(() => h.rec.phase === 'recording', 'the recording to start');

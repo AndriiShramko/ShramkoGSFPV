@@ -1,0 +1,100 @@
+{
+  "name": "sonic-int-review-r1-final",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T01:14:11.270Z",
+    "gitHead": "850598d",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "d2931c9",
+    "sonic": "1eea4d5",
+    "built": "2026-11-08T01:02:10.218Z"
+  },
+  "git": "850598d",
+  "seconds": 50,
+  "passed": 4,
+  "total": 4,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R1 control: with no survey a digit answers the lesson question (the probe sees a lesson answer)",
+      "pass": true,
+      "value": {
+        "question": "ears-headphones:1:1:side",
+        "answers": [
+          {
+            "t": 14677,
+            "kind": "answer",
+            "item": "ears-headphones:1:1:side",
+            "value": 1,
+            "via": "key"
+          }
+        ]
+      }
+    },
+    {
+      "name": "R1: the survey offer was heard while the lesson was still asking",
+      "pass": true,
+      "value": {
+        "before": {
+          "id": "ears-headphones:1:1:side",
+          "options": 3
+        }
+      }
+    },
+    {
+      "name": "R1: the digits pressed for the survey (1 for yes, then 3 and 3) answered NO question of the lesson",
+      "pass": true,
+      "value": {
+        "lessonAnswers": [],
+        "askingAfterTheYes": true,
+        "askingAfterTheDigits": true
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r1": {
+      "question": {
+        "id": "ears-headphones:1:1:side",
+        "options": 3
+      },
+      "askingBeforeTheYes": true,
+      "askingAfterTheYes": true,
+      "askingAfterTheDigits": true,
+      "lessonAnswers": [],
+      "spokenSinceStop": [
+        "survey.mic-on",
+        "survey.offer",
+        "survey.intro.first",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.question-of",
+        "survey.thanks",
+        "rec.stopped",
+        "rec.saved",
+        "send.ask"
+      ]
+    }
+  },
+  "problems": []
+}

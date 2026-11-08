@@ -915,7 +915,7 @@ describe('review I2: U\'s question and the lesson\'s speech', () => {
         await sleep(120);
         const startsAfter = (engine.startOf('send.confirm') ?? Infinity) - pressed;
         w.ctl.pressSend();
-        expect(startsAfter).toBeGreaterThan(200);
+        expect(startsAfter).toBeGreaterThan(100); // later than the reading limit (90 ms): the gate was open before the question had begun
         await w.ctl.whenIdle();
         expect(w.api.stored()).toHaveLength(1); // agreed to while it was still queued
     });
