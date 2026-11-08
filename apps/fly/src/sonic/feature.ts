@@ -44,6 +44,7 @@ import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
 import type { LessonPage } from './lessons';
 import { PrimitiveStage, worldPrims } from './primitives';
+import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
@@ -247,6 +248,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     ctx.sonic = new PageRuntime(entry.setup, mode);
     document.body.classList.add('sonic-mode');
     stage = new PrimitiveStage(ctx.renderer);
+    offs.push(installAttitude(ctx, mode, () => host)); // M41-24, look-panels.ts (lane v13-look)
+    offs.push(installSoundPanel(ctx, mode, audio.engine, () => host)); // M41-25, look-panels.ts (lane v13-look)
     const screen = entry.screen;
     // review R5: a screen reader in browse mode keeps single letters for its own quick keys (NVDA and JAWS: K link, L list, T table,
     // G graphic, R radio button, I list item, the digits headings), so the flight's keys would never reach the page. While the flight

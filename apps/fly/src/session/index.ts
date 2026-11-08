@@ -54,6 +54,11 @@ export interface BuiltinWorld {
     sha256: string;
     /** x, y, z (world metres), yaw degrees */
     spawn: readonly [number, number, number, number];
+    /**
+     * The flight rules the world brings (v0.13: a lesson world's bump, `{ bump: 'slide' }`, M41-19): merged over the
+     * pilot's overrides into every life it flies (lifeOverrides), so each header names them and a replay flies them too.
+     */
+    overrides?: ParamOverrides;
 }
 
 export interface SessionOptions {
@@ -478,6 +483,8 @@ export class FlightSession {
      */
     lifeOverrides(): ParamOverrides {
         const o: ParamOverrides = this.crashOn ? { ...this.overrides } : { ...this.overrides, crashOn: false };
+        // a built-in world's own rules (a lesson world's bump): every life it flies has them, none a scan flies
+        if (this.builtin?.overrides) Object.assign(o, this.builtin.overrides);
         const wind = this.windConfig();
         if (wind) o.wind = wind;
         return o;

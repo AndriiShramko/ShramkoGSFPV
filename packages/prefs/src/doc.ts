@@ -57,6 +57,12 @@ export interface SonicState {
     progress: Record<string, SonicLessonProgress>;
     /** the lesson the pilot is on (the Continue button) */
     current: string | null;
+    /**
+     * v0.13 (lane v13-look): the mode's sound panel (M41-25) and attitude display (M41-24) shown; absent means shown (a v0.12
+     * document), false is the pilot's "off". Kept only when a boolean.
+     */
+    soundPanel?: boolean;
+    attitude?: boolean;
 }
 
 export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState; sonic: SonicState }
@@ -305,7 +311,11 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
                 if (r) progress[id] = r;
             }
             const current = typeof o.current === 'string' && SONIC_LESSON_ID.test(o.current) ? o.current : null;
-            return { v: 1, prefs: validSonicPrefs(o.prefs), progress, current } as Collections[K];
+            const sonic: SonicState = { v: 1, prefs: validSonicPrefs(o.prefs), progress, current };
+            // the panels' switches (v0.13 v13-look): kept when a boolean, else left out (shown)
+            if (typeof o.soundPanel === 'boolean') sonic.soundPanel = o.soundPanel;
+            if (typeof o.attitude === 'boolean') sonic.attitude = o.attitude;
+            return sonic as Collections[K];
         }
     }
     return null;

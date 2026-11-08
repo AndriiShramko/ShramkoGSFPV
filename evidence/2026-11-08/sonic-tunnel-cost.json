@@ -1,8 +1,8 @@
 {
   "name": "sonic-tunnel-cost",
   "context": {
-    "date": "2026-11-08T18:26:29.232Z",
-    "gitHead": "96269b4",
+    "date": "2026-11-08T19:33:41.047Z",
+    "gitHead": "9f45f0a",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -10,7 +10,8 @@
   },
   "planBoundMs": 20,
   "rounds": 9,
-  "pass": false,
+  "bump": "lesson",
+  "pass": true,
   "result": {
     "world": {
       "id": "corridor-77892cc5",
@@ -30,26 +31,26 @@
       "voxels": 232818432,
       "trackPoints": 62
     },
-    "buildMs": 5.62,
+    "buildMs": 8.67,
     "flight": {
       "ticks": 62000,
-      "queries": 82494,
-      "contacts": 2806
+      "queries": 67018,
+      "contacts": 618
     },
     "bestMs": {
-      "session": 144.1,
-      "cells": 172.93,
-      "raw": 753.1
+      "session": 101.75,
+      "cells": 153.25,
+      "raw": 706.41
     },
     "per10sMs": {
-      "session": 23.24,
-      "cells": 27.89,
-      "raw": 121.47
+      "session": 16.41,
+      "cells": 24.72,
+      "raw": 113.94
     },
     "sameAnswers": true,
     "cells": {
-      "uniform": 441,
-      "mixed": 329
+      "uniform": 330,
+      "mixed": 183
     }
   }
 }

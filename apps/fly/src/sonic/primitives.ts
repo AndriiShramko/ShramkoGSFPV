@@ -1,5 +1,5 @@
 // What a sighted helper sees of a Fly by Sound world (v0.12, docs/wip/v12-plan.md 2.5 and 4.2 step 6; spec section 4):
-// the world drawn as plain primitives on a dark background, the walls, floor and ceiling as thin slabs and the objects
+// the world drawn as primitives (v0.13: in a game's look, look.ts), the walls, floor and ceiling as thin slabs and the objects
 // (rings, squares, cube frames, pillars, boxes, zones) as boxes, cylinders and tori, so the helper sees what the pilot
 // hears. Two parts:
 //
@@ -9,8 +9,9 @@
 //            says (tools/bench/test/sonic-primitives.test.ts).
 //   stage    PrimitiveStage puts a list of Prim into the page's renderer under a root of its own
 //            (renderer.app.root, never debrisRoot, which the session clears with dispose()), and can light the
-//            target gate. Boxes and cylinders are the engine's own render shapes; a ring is a torus made with the
-//            ring's radii, because the engine's 'torus' shape has fixed ones.
+//            target gate. v0.13 (M41-23, lane v13-look): in the look of look.ts, a game's blocks and checker floor, a
+//            hemisphere and a sun baked per vertex, soft fog, bright obstacles; the room as one mesh per role, a ring
+//            a torus of its own radii, a pillar or a bar the engine's unit cylinder or box scaled.
 //
 // The room is drawn as the boundary of the hollow the generators carve out of solid rock (a union of axis-aligned
 // boxes, `cavityBoxes`: the package's own `world.cavities` since v0.13, so every generator and version is drawn as
@@ -18,10 +19,15 @@
 // becomes a slab SLAB_M thick standing OUTSIDE the hollow, so the free space is exactly the world's and the camera
 // inside sees the slab's inner face (no culling trick). A scan's walls are the scan itself: for a scan only the track's gates
 // are drawn (the objects of ScanSonicWorld, already through the scene transform).
-import { Color, Entity, Mesh, MeshInstance, Quat as PcQuat, StandardMaterial, TorusGeometry } from 'playcanvas';
+import {
+    ADDRESS_REPEAT, BoxGeometry, Color, CylinderGeometry, Entity, FILTER_LINEAR, FILTER_LINEAR_MIPMAP_LINEAR, FOG_LINEAR, FOG_NONE, Mesh, MeshInstance,
+    PIXELFORMAT_RGBA8, PRIMITIVE_TRIANGLES, Quat as PcQuat, StandardMaterial, Texture, TorusGeometry, Vec3 as PcVec3
+} from 'playcanvas';
 import type { AppBase, GraphicsDevice } from 'playcanvas';
 import { quatAxisAngle, quatMultiply, quatRotate } from '@shramko/sonic-fpv';
 import type { AnalyticWorldInfo, CavityBox, ObjectShape, Quat, ResolvedParams, SonicObject, Vec3 } from '@shramko/sonic-fpv';
+import { ALBEDO, FOG_END_M, FOG_START_M, ROLE_PAINT, SKY, TARGET_ALBEDO, blockPattern, checkerPattern, objectColors, roomMesh, toSrgb } from './look';
+import type { MeshData, Pattern, Rgb } from './look';
 
 /** Thickness of a wall, floor or ceiling slab, metres. */
 export const SLAB_M = 0.05;
@@ -42,20 +48,9 @@ export interface Prim {
     readonly quat: Quat;
     /** box: full extents; cylinder: [diameter, height, diameter]; torus: [ring radius (centre line), tube radius, 0] */
     readonly size: Vec3;
+    /** a slab of the room: the unit axis from it into the hollow (the face the look draws, v0.13 look.ts); objects have none */
+    readonly facing?: Vec3;
 }
-
-/** The colours of the helper's view, sRGB 0..1: surfaces quiet, things to fly at or to avoid louder. */
-export const PRIM_COLOURS: Readonly<Record<PrimRole, readonly [number, number, number]>> = {
-    floor: [0.27, 0.36, 0.3],
-    wall: [0.36, 0.4, 0.52],
-    ceiling: [0.3, 0.3, 0.38],
-    gate: [0.95, 0.5, 0.1],
-    pillar: [0.82, 0.22, 0.2],
-    box: [0.62, 0.52, 0.22],
-    zone: [0.2, 0.8, 0.5]
-};
-/** The next gate or zone (the target layer's source) is lit in this colour. */
-export const TARGET_COLOUR: readonly [number, number, number] = [1, 0.92, 0.12];
 
 // ------------------------------------------------------------------ objects
 
@@ -205,7 +200,9 @@ export function slabOf(f: Face): Prim {
     centre[va!] = (f.v0 + f.v1) / 2;
     size[va!] = f.v1 - f.v0;
     const role: PrimRole = f.axis === 1 ? (f.side < 0 ? 'floor' : 'ceiling') : 'wall';
-    return { kind: 'box', role, objectId: null, pos: centre, quat: [1, 0, 0, 0], size };
+    const facing: [number, number, number] = [0, 0, 0];
+    facing[f.axis] = -f.side;
+    return { kind: 'box', role, objectId: null, pos: centre, quat: [1, 0, 0, 0], size, facing };
 }
 
 /** The exposed faces of a world's hollow (none for the open world: a floor, no hollow). */
@@ -221,8 +218,8 @@ export function roomPrims(world: AnalyticWorldInfo): Prim[] {
     // the open world: ground up to y = 0 over its half size, a ceiling when it has one (src/world/generators.ts buildOpen)
     const half = num(world.resolved, 'halfSizeM');
     const ceiling = num(world.resolved, 'ceilingM');
-    const out: Prim[] = [{ kind: 'box', role: 'floor', objectId: null, pos: [0, -SLAB_M / 2, 0], quat: [1, 0, 0, 0], size: [2 * half, SLAB_M, 2 * half] }];
-    if (ceiling > 0) out.push({ kind: 'box', role: 'ceiling', objectId: null, pos: [0, ceiling + SLAB_M / 2, 0], quat: [1, 0, 0, 0], size: [2 * half, SLAB_M, 2 * half] });
+    const out: Prim[] = [{ kind: 'box', role: 'floor', objectId: null, pos: [0, -SLAB_M / 2, 0], quat: [1, 0, 0, 0], size: [2 * half, SLAB_M, 2 * half], facing: [0, 1, 0] }];
+    if (ceiling > 0) out.push({ kind: 'box', role: 'ceiling', objectId: null, pos: [0, ceiling + SLAB_M / 2, 0], quat: [1, 0, 0, 0], size: [2 * half, SLAB_M, 2 * half], facing: [0, -1, 0] });
     return out;
 }
 
@@ -246,26 +243,90 @@ interface Shown {
     readonly instances: readonly MeshInstance[];
 }
 
-const color = (c: readonly [number, number, number]): Color => new Color(c[0], c[1], c[2]);
+/** How the stage paints: the look (look.ts), or one flat colour per kind of surface for measuring (ROLE_PAINT, no fog). */
+export type StagePaint = 'look' | 'roles';
+
+const ROOM_ROLES: readonly PrimRole[] = ['floor', 'wall', 'ceiling'];
+const isRoom = (role: PrimRole): boolean => role === 'floor' || role === 'wall' || role === 'ceiling';
+const srgbColor = (c: Rgb): Color => {
+    const s = toSrgb(c);
+    return new Color(s[0], s[1], s[2]);
+};
+
+/** A mesh from look.ts's arrays (16-bit indices when they fit). */
+function meshOf(device: GraphicsDevice, d: MeshData): Mesh {
+    const mesh = new Mesh(device);
+    mesh.setPositions(d.positions);
+    mesh.setNormals(d.normals);
+    mesh.setUvs(0, d.uvs);
+    mesh.setColors(d.colors);
+    mesh.setIndices(d.positions.length / 3 <= 65535 ? Uint16Array.from(d.indices) : d.indices);
+    mesh.update(PRIMITIVE_TRIANGLES);
+    return mesh;
+}
 
 /**
- * The helper's view in the page: the primitives under a root entity of this stage, replaced by show(), the target
- * gate lit by setTarget(), gone with dispose(). Nothing here runs while no world is shown.
+ * An object's part as a mesh: the engine's unit box or cylinder (scaled by its entity) or a torus of its own radii, its light
+ * baked as float vertex colours (Mesh.fromGeometry would take a geometry's colours as 8-bit, where a light of 0.8 is black).
+ */
+function partMesh(device: GraphicsDevice, p: Prim): Mesh {
+    const g = p.kind === 'torus'
+        ? new TorusGeometry({ ringRadius: p.size[0], tubeRadius: p.size[1], segments: 28, sides: 56 })
+        : p.kind === 'cylinder'
+            ? new CylinderGeometry({ radius: 0.5, height: 1, heightSegments: 1, capSegments: 32 })
+            : new BoxGeometry({ halfExtents: new PcVec3(0.5, 0.5, 0.5) });
+    const normals = Float32Array.from(g.normals!);
+    const count = g.positions.length / 3;
+    return meshOf(device, {
+        positions: Float32Array.from(g.positions),
+        normals,
+        uvs: g.uvs ? Float32Array.from(g.uvs) : new Float32Array(count * 2),
+        colors: objectColors(normals, p.quat),
+        indices: Uint32Array.from(g.indices!)
+    });
+}
+
+/** A look's pattern as a texture: RGBA8 read as linear multipliers, repeated, mipmapped. */
+function patternTexture(device: GraphicsDevice, name: string, p: Pattern): Texture {
+    return new Texture(device, {
+        name, width: p.px, height: p.px, format: PIXELFORMAT_RGBA8, mipmaps: true, anisotropy: 8,
+        minFilter: FILTER_LINEAR_MIPMAP_LINEAR, magFilter: FILTER_LINEAR, addressU: ADDRESS_REPEAT, addressV: ADDRESS_REPEAT,
+        levels: [p.data]
+    });
+}
+
+/**
+ * The helper's view in the page, drawn in the look of look.ts (v0.13, M41-23): the room's slabs of each role (floor,
+ * walls, ceiling) as ONE mesh of the faces toward the hollow, block or checker textured in world metres, the
+ * hemisphere-and-sun light baked per vertex, unlit materials; each object's part a mesh of its own with its light baked
+ * (the target lit by its material); soft fog toward the sky while a lesson world's room is shown (a scan lesson's gates
+ * alone leave the scene's fog as it is). show() replaces everything, setTarget() lights the next gate, paint('roles')
+ * paints every kind of surface one flat colour for measuring, dispose() takes it all off. Nothing here runs while no
+ * world is shown.
  */
 export class PrimitiveStage {
     private readonly r: StageRenderer;
     private root: Entity | null = null;
     private shown: Shown[] = [];
+    private primCount = 0;
     private readonly materials = new Map<string, StandardMaterial>();
+    private textures: { block: Texture; checker: Texture } | null = null;
     private target: string | null = null;
+    private painted: StagePaint = 'look';
+    /** the scene's fog before this stage set its own (a lesson world's room is shown), restored by clear() */
+    private fogBefore: { type: string; color: Color; start: number; end: number } | null = null;
 
     constructor(renderer: StageRenderer) {
         this.r = renderer;
+        // the page's test hook (window.__gsfpv, when there is one): the benches switch the paint to measure the look's contrast
+        // on the page's own pictures (tools/bench/src/v13-look-page.ts); in Node there is none
+        const hook = (globalThis as { __gsfpv?: Record<string, unknown> }).__gsfpv;
+        if (hook) hook.sonicLook = { paint: (mode: StagePaint) => this.paint(mode), mode: () => this.painted, count: () => this.primCount };
     }
 
-    /** Primitives on the stage now. */
+    /** Primitives on the stage now (a room's slabs count one each, though each role is one mesh). */
     get count(): number {
-        return this.shown.length;
+        return this.primCount;
     }
 
     /** The ids of the objects drawn (the target can be one of them). */
@@ -283,92 +344,155 @@ export class PrimitiveStage {
         return this.root;
     }
 
+    /** How the stage paints now. */
+    get paintMode(): StagePaint {
+        return this.painted;
+    }
+
+    private patterns(): { block: Texture; checker: Texture } {
+        this.textures ??= { block: patternTexture(this.r.device, 'sonic-blocks', blockPattern()), checker: patternTexture(this.r.device, 'sonic-checker', checkerPattern()) };
+        return this.textures;
+    }
+
+    /** The material of a role (lit: the target), in the paint now. */
     private material(role: PrimRole, lit: boolean): StandardMaterial {
-        const key = lit ? 'target' : role;
+        const key = `${this.painted}:${lit ? 'target' : role}`;
         let m = this.materials.get(key);
-        if (!m) {
-            const c = lit ? TARGET_COLOUR : PRIM_COLOURS[role];
-            m = new StandardMaterial();
-            m.diffuse = color(c);
-            // a little light of its own, so a face turned from the light is not black in the dark room
-            m.emissive = new Color(c[0] * 0.28, c[1] * 0.28, c[2] * 0.28);
-            m.update();
-            this.materials.set(key, m);
+        if (m) return m;
+        m = new StandardMaterial();
+        m.useLighting = false;
+        m.useSkybox = false;
+        m.diffuse = new Color(0, 0, 0);
+        if (this.painted === 'roles') {
+            m.emissive = srgbColor(ROLE_PAINT[isRoom(role) ? (role as 'floor' | 'wall' | 'ceiling') : 'object']);
+            m.useFog = false;
+        } else {
+            m.emissive = srgbColor(lit ? TARGET_ALBEDO : ALBEDO[role]);
+            m.emissiveVertexColor = true;
+            if (isRoom(role)) m.emissiveMap = role === 'floor' ? this.patterns().checker : this.patterns().block;
         }
+        m.update();
+        this.materials.set(key, m);
         return m;
     }
 
     /**
-     * Replaces everything on the stage with these primitives. The tori of one size share a mesh for this show; the
-     * engine frees a mesh with its last mesh instance (MeshInstance.destroy), so none is kept between shows.
+     * Replaces everything on the stage with these primitives. The meshes are made for this show; the engine frees a mesh
+     * with its last mesh instance (MeshInstance.destroy), so none is kept between shows.
      */
     show(prims: readonly Prim[]): void {
         this.clear();
         const app = this.r.app;
+        const device = this.r.device;
         const root = new Entity('sonic-stage', app);
         app.root.addChild(root);
         this.root = root;
-        const tori = new Map<string, Mesh>();
+        // the room: one mesh per role, of the faces toward the hollow
+        let room = false;
+        for (const role of ROOM_ROLES) {
+            const quads = prims.filter((p) => p.role === role && p.facing !== undefined).map((p) => ({ pos: p.pos, size: p.size, facing: p.facing! }));
+            if (quads.length === 0) continue;
+            room = true;
+            const mi = new MeshInstance(meshOf(device, roomMesh(quads)), this.material(role, false));
+            const e = new Entity(`sonic-${role}`, app);
+            e.addComponent('render', { meshInstances: [mi], castShadows: false, receiveShadows: false });
+            root.addChild(e);
+            this.shown.push({ entity: e, role, objectId: null, instances: [mi] });
+        }
+        // the objects: a mesh per part
         for (const p of prims) {
+            if (isRoom(p.role) && p.facing !== undefined) continue;
             const e = new Entity(`sonic-${p.role}`, app);
-            let instances: MeshInstance[] = [];
-            const material = this.material(p.role, false);
-            if (p.kind === 'torus') {
-                const key = `${p.size[0].toFixed(4)}:${p.size[1].toFixed(4)}`;
-                let mesh = tori.get(key);
-                if (!mesh) {
-                    mesh = Mesh.fromGeometry(this.r.device, new TorusGeometry({ ringRadius: p.size[0], tubeRadius: p.size[1], segments: 28, sides: 56 }));
-                    tori.set(key, mesh);
-                }
-                const mi = new MeshInstance(mesh, material);
-                e.addComponent('render', { meshInstances: [mi], castShadows: false });
-                instances = [mi];
-            } else {
-                e.addComponent('render', { type: p.kind, material, castShadows: false });
-                e.setLocalScale(p.size[0], p.size[1], p.size[2]);
-            }
+            const mi = new MeshInstance(partMesh(device, p), this.material(p.role, false));
+            e.addComponent('render', { meshInstances: [mi], castShadows: false, receiveShadows: false });
+            if (p.kind !== 'torus') e.setLocalScale(p.size[0], p.size[1], p.size[2]);
             e.setPosition(p.pos[0], p.pos[1], p.pos[2]);
             e.setRotation(new PcQuat(p.quat[1], p.quat[2], p.quat[3], p.quat[0]));
             root.addChild(e);
-            this.shown.push({ entity: e, role: p.role, objectId: p.objectId, instances });
+            this.shown.push({ entity: e, role: p.role, objectId: p.objectId, instances: [mi] });
         }
+        this.primCount = prims.length;
+        if (room) this.fogOn();
         this.lightTarget();
     }
 
-    /** Lights the object `id` (the next gate or zone), or none: its bars take the target colour, the others their own. */
+    /** Lights the object `id` (the next gate or zone), or none: its parts take the target's material, the others their own. */
     setTarget(id: string | null): void {
         if (id === this.target) return;
         this.target = id;
         this.lightTarget();
     }
 
+    /** Paints the stage in the look, or one flat colour per kind of surface with no fog (a measurement of what is where). */
+    paint(mode: StagePaint): void {
+        if (mode === this.painted) return;
+        this.painted = mode;
+        for (const s of this.shown) for (const mi of s.instances) mi.material = this.material(s.role, s.objectId !== null && s.objectId === this.target);
+        if (this.fogBefore) this.applyFog();
+    }
+
     private lightTarget(): void {
         for (const s of this.shown) {
             if (s.objectId === null) continue;
             const m = this.material(s.role, s.objectId === this.target);
-            if (s.instances.length > 0) for (const mi of s.instances) mi.material = m;
-            else {
-                const render = s.entity.render;
-                if (render) render.material = m;
-            }
+            for (const mi of s.instances) mi.material = m;
         }
     }
 
-    /** Takes every primitive off the stage (the root stays for the next show). */
+    /** The lesson world's fog on the scene, the scene's own kept for clear(). */
+    private fogOn(): void {
+        const fog = this.r.app.scene.fog;
+        if (!this.fogBefore) this.fogBefore = { type: fog.type, color: fog.color.clone(), start: fog.start, end: fog.end };
+        this.applyFog();
+    }
+
+    private applyFog(): void {
+        const fog = this.r.app.scene.fog;
+        if (this.painted === 'roles') {
+            fog.type = FOG_NONE;
+            return;
+        }
+        fog.type = FOG_LINEAR;
+        fog.color = srgbColor(SKY);
+        fog.start = FOG_START_M;
+        fog.end = FOG_END_M;
+    }
+
+    private fogOff(): void {
+        const before = this.fogBefore;
+        if (!before) return;
+        this.fogBefore = null;
+        const fog = this.r.app.scene.fog;
+        fog.type = before.type;
+        fog.color = before.color;
+        fog.start = before.start;
+        fog.end = before.end;
+    }
+
+    /** Takes every primitive off the stage (the root stays for the next show), and the lesson world's fog with them. */
     clear(): void {
         for (const s of this.shown) s.entity.destroy();
         this.shown = [];
+        this.primCount = 0;
         if (this.root) {
             this.root.destroy();
             this.root = null;
         }
         this.target = null;
+        this.fogOff();
     }
 
-    /** Takes the stage off the renderer for good: primitives and materials (the meshes go with their instances). */
+    /** Takes the stage off the renderer for good: primitives, materials and textures (the meshes go with their instances). */
     dispose(): void {
         this.clear();
+        const hook = (globalThis as { __gsfpv?: Record<string, unknown> }).__gsfpv;
+        if (hook) delete hook.sonicLook;
         for (const m of this.materials.values()) m.destroy();
         this.materials.clear();
+        if (this.textures) {
+            this.textures.block.destroy();
+            this.textures.checker.destroy();
+            this.textures = null;
+        }
     }
 }
