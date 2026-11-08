@@ -364,8 +364,36 @@ store and an engine that records what it is asked to say.
     and the screen's window listener goes with it. Controls broken once and restored: the item's link back to `soundPage` (the
     first fails), the footer without the About link (the second fails).
   - `sonic-int-lazy`: one title (the link's target); `sonic-lesson-keys` and `sonic-review` still pass on the grown stand-in DOM.
-- [ ] C2 (M41-2, W7) the start screen: the course from the beginning, Continue, the 28 lessons with their states, Reset with a
+- [x] C2 (M41-2, W7) the start screen: the course from the beginning, Continue, the 28 lessons with their states, Reset with a
   confirm; `skipped` kept in the saved progress; "Lesson N of 28" shown and spoken
+  - `packages/prefs/src/doc.ts` `validSonicProgress`: a lesson's `skipped` is kept when it is a boolean (true or false), left out
+    otherwise, the lesson kept (W7; `SonicLessonProgress.skipped?`). Kept false too: the runner's progress carries `skipped: false`,
+    and `saveProgress` compares with what the store holds, so dropping false would write the progress at every event.
+  - `apps/fly/src/sonic/start-model.ts`: the state 'skipped' (passed; the lesson the pilot is on is in progress; skipped while the
+    runner keeps it so, until it is passed; begun is in progress; else new), and `lessonPlace(id, path)`, "Lesson N of 28" by the
+    rule of the runner's view (on the pilot's path when the lesson is on it, else on the full one), on every `LessonRow`.
+    `store.ts` `resetProgress()`: every lesson's progress and the current lesson cleared, the sound settings kept.
+  - `apps/fly/src/sonic/start-screen.ts`: "Continue: <lesson>" (its place and state under it) first when the pilot has begun;
+    "Start the course from the beginning" ("Lesson 1 of 28: <title>.", and "Your progress is kept." once he has begun) opens the
+    path's first lesson and touches no progress; every lesson button says its place and its state (passed, skipped, in progress,
+    not started; a skipped one dashed in `sonic.css`); after the lessons, "Reset my progress" asks first in a group labelled by its
+    question, the focus on "No, keep my progress", then "Yes, reset my progress"; No and Escape keep everything (over a flight the
+    first Escape answers No, the next closes the screen); Yes resets, draws the screen again (every lesson new, no Continue), says
+    so in the status line and puts the focus on the course's first button. Shown here and read by a screen reader (the buttons'
+    names, the status line); the mode's voice says it with C3's spoken list.
+  - Tests: `packages/prefs/test/sonic.test.ts` (a skipped lesson through a write, a reload, an export and an import; true and false
+    kept, none for a v0.12 lesson, a non-boolean left out); `sonic-start` (the skipped state; the place equals the runner's view for
+    all 28 lessons on both paths); `sonic-start-screen` C2 (5: before any lesson; Continue and the course with the progress kept;
+    the 28 lessons in the path's order with "Lesson N of 28" and the four states, skipped read back from an exported and imported
+    document; Reset asked, No, Escape, Yes; over a flight Escape in the question answers No). Controls broken once and restored:
+    `skipped` dropped by the prefs (the prefs test and the read-back test fail), the skipped state ignored by `stateOf` (2 fail),
+    the place counted on the full path only (the place test fails), Reset without its question (2 fail), Continue with the
+    package's "Continue where I stopped" (1 fails).
+  - Lines for a native reading (es, pl, ru): `sonic.start.course`, `.courseWhat`, `.courseKeeps`, `.continue`,
+    `sonic.lessons.skipped`, `sonic.reset.button`, `.ask`, `.yes`, `.no`, `.done`, `.kept`. The count in pl and ru is in
+    parentheses ("lekcjach (28)"), so no plural form depends on it.
+  - Over a flight a reset clears the saved progress, but the lesson that runs keeps its runner's counts and saves them at its next
+    event (that one lesson reads in progress again): not changed.
 - [ ] C3 (M41-4, W13) the start screen and the mode's settings a spoken list; Motor volume and Target height note
 - [ ] C4 (W9, W19) the replay of an older lesson version speaks the recorded lines; rings-first's cue kinds pinned down
 - [ ] C5 (W10) the replay page's summary from `replayVerdict`: pass, recorded with an older build, fail

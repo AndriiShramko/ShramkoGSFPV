@@ -11,8 +11,8 @@
 // v0.13 (lane v13-host A5, W18): the counts are the package's, SHIPPED_LESSON_IDS (28: six tunnels and rings-heights more) and
 // lessonPaths() (a fast path of 8).
 import { describe, expect, it } from 'vitest';
-import { SHIPPED_LESSON_IDS, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
-import { buildModel, continueLesson, ladder, parseSonicParam, stateOf } from '../../../apps/fly/src/sonic/start-model';
+import { SHIPPED_LESSON_IDS, createLessonRunner, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { buildModel, continueLesson, ladder, lessonPlace, parseSonicParam, stateOf } from '../../../apps/fly/src/sonic/start-model';
 import { LESSON_SCENE_PREFIX, isLessonScene, lessonFlightWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import { enableZoom } from '../../../apps/fly/src/sonic/zoom';
 
@@ -84,6 +84,45 @@ describe('where the pilot stands', () => {
         expect(buildModel({}, null, 'full').beginningId).toBe('ears-headphones');
         expect(buildModel({}, null, 'fast').beginningId).toBe('ears-headphones');
         expect(lessonPaths().fast[0]).toBe('ears-headphones');
+    });
+
+    it('v0.13 (C2, W7): a lesson left without passing is skipped, until it is passed, unless it is the one the pilot is on again', () => {
+        const p = { ...progress, 'rings-first': { passed: false, attempts: 2, skipped: true }, 'hover-turn': { passed: false, attempts: 0, skipped: true }, corridor: { passed: true, attempts: 3, skipped: false } };
+        expect(stateOf('rings-first', p, null)).toBe('skipped');
+        expect(stateOf('hover-turn', p, null)).toBe('skipped');
+        // the one the pilot went back to is in progress; a passed one is passed
+        expect(stateOf('rings-first', p, 'rings-first')).toBe('current');
+        expect(stateOf('corridor', p, null)).toBe('passed');
+        // control: skipped false is no skip
+        expect(stateOf('hover-height', { 'hover-height': { passed: false, attempts: 4, skipped: false } }, null)).toBe('current');
+        const rows = buildModel(p, 'walls-pillar', 'full').modules.flatMap((x) => x.lessons);
+        const by = (s: string): string[] => rows.filter((l) => l.state === s).map((l) => l.id);
+        expect(by('skipped')).toEqual(['hover-turn', 'rings-first']);
+        expect(by('passed')).toEqual(['ears-headphones', 'walls-hall', 'corridor']);
+        expect(by('current')).toEqual(['hover-height', 'walls-pillar']);
+        expect(by('new')).toHaveLength(SHIPPED_LESSON_IDS.length - 7);
+    });
+});
+
+describe('a lesson\'s place, "Lesson N of 28" (C2, M41-2)', () => {
+    it('is the place the lesson\'s own view gives (I and the progress panel say it): on the pilot\'s path when the lesson is on it, else on the full one, for every lesson and both paths', () => {
+        for (const path of ['full', 'fast'] as const) {
+            for (const id of SHIPPED_LESSON_IDS) {
+                const v = createLessonRunner(getLesson(id), { path }).view();
+                expect(lessonPlace(id, path), `${id} on ${path}`).toEqual({ n: v.lessonIndex, total: v.lessonCount });
+            }
+            const rows = buildModel({}, null, path).modules.flatMap((x) => x.lessons);
+            for (const r of rows) expect(r.place).toEqual(lessonPlace(r.id, path));
+        }
+        // the full path counts the 28 in the screen's order; the fast path its 8
+        expect(SHIPPED_LESSON_IDS.map((id) => lessonPlace(id, 'full').n)).toEqual(ladder().map((l) => l.order + 1).sort((a, b) => a - b));
+        expect(lessonPlace('ears-headphones', 'full')).toEqual({ n: 1, total: SHIPPED_LESSON_IDS.length });
+        const fast = lessonPaths().fast;
+        expect(lessonPlace(fast[1]!, 'fast')).toEqual({ n: 2, total: fast.length });
+        // control: counted on the full path whatever the pilot's, the fast path's lessons would say another number than the lesson does
+        const fullOnly = (id: string): { n: number; total: number } => lessonPlace(id, 'full');
+        const v = createLessonRunner(getLesson(fast[1]!), { path: 'fast' }).view();
+        expect(fullOnly(fast[1]!)).not.toEqual({ n: v.lessonIndex, total: v.lessonCount });
     });
 });
 

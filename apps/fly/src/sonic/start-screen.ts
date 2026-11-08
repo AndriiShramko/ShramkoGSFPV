@@ -5,12 +5,15 @@
 // sliders with labels: nothing is a div with a click handler, so Tab, Enter, Space and the arrow keys do what a screen
 // reader user expects. Every lesson is a button, whatever the path (the ladder is a recommendation, not a gate).
 //
-//   Start      Continue where I stopped, Start from the beginning (of the path), and, when ?sonic=<lesson> asked for one,
-//              Start: <that lesson>; the path (full or fast); each opens a lesson through `onStart` inside the press,
-//              which is the user activation the AudioContext and the speech need.
+//   Start      Continue: <the lesson the pilot is on>, Start the course from the beginning (lesson 1 of the path; the saved
+//              progress is kept), and, when ?sonic=<lesson> asked for one, Start: <that lesson>; the path (full or fast); each
+//              opens a lesson through `onStart` inside the press, which is the user activation the AudioContext and the speech
+//              need.
 //   Headphones a sound on the left, on the right, behind: made by the engine (its first press makes the AudioContext),
 //              with the package's notes (wired, no surround effects) and the loudness note beside it.
-//   Lessons    every shipped lesson (28 since v0.13) by module with where the pilot stands (passed, in progress, not started).
+//   Lessons    every shipped lesson (28 since v0.13) by module with its place ("Lesson N of 28", as the lesson's own view counts
+//              it) and where the pilot stands (passed, skipped, in progress, not started); then "Reset my progress", which asks
+//              first (No first, then Yes; Escape is No) and keeps the sound settings.
 //   Settings   the pilot's own sound: theme, calm, height polarity, speaking speed, captions, "my screen reader speaks",
 //              motor sound, what the sound turns with, each sound's volume and pitch. Each change applies at once and is
 //              saved (SonicSetup.update).
@@ -21,8 +24,8 @@ import type { FlightSample, LayerId, Locale, SonicPrefs, SpeechLine, Vec3 } from
 import { h } from '../ui/dom';
 import { t } from '../i18n';
 import type { SonicSetup, VisitPrefs } from './entry';
-import { buildModel } from './start-model';
-import type { LessonRow, SonicRequest, StartModel } from './start-model';
+import { buildModel, lessonPlace } from './start-model';
+import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
 import './sonic.css';
 
 /** Directions of the headphone check, in the listener's frame (x right, y up, z back). */
@@ -41,6 +44,8 @@ export interface StartScreenDeps {
     readonly onStart: (lessonId: string) => void;
     /** the screen is over a running flight: Escape and a Back button close it */
     readonly onClose?: () => void;
+    /** "Reset my progress", once the pilot said yes: every lesson's progress and the current lesson cleared (store.ts resetProgress) */
+    readonly resetProgress?: () => void;
 }
 
 /** Sections of the page the navigation jumps to. */
@@ -56,8 +61,19 @@ export class StartScreen {
     private readonly status: HTMLElement;
     private model: StartModel;
     private sections = new Map<string, HTMLElement>();
+    /** "Reset my progress" was pressed and the screen asks before it does it */
+    private confirming = false;
+    private resetBox: HTMLElement | null = null;
     private onKeyDown = (e: KeyboardEvent): void => {
-        if (e.key === 'Escape' && this.d.onClose && !this.root.hidden) {
+        if (e.key !== 'Escape' || this.root.hidden) return;
+        // Escape goes back: out of the reset question first (it is No), then off the screen over a flight
+        if (this.confirming) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!e.repeat) this.endReset(false);
+            return;
+        }
+        if (this.d.onClose) {
             e.preventDefault();
             e.stopPropagation();
             this.d.onClose();
@@ -142,16 +158,22 @@ export class StartScreen {
         const lessonButton = (id: string, label: string, sub: string | null, primary: boolean, testid: string): HTMLElement =>
             h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': testid, 'data-lesson': id, ...(primary && visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.start(id) }, label, sub ? h('span', { class: 'sonic-sub' }, sub) : null);
         const titleOf = (id: string): string => this.S(this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id)?.title ?? { key: `lesson.${id}.title` });
+        const rowOf = (id: string): LessonRow | undefined => this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id);
         let primaryTaken = false;
         if (req.kind === 'lesson') {
-            buttons.push(lessonButton(req.id, t('sonic.start.lesson', { title: titleOf(req.id) }), null, true, 'sonic-start-asked'));
+            buttons.push(lessonButton(req.id, t('sonic.start.lesson', { title: titleOf(req.id) }), this.placeText(lessonPlace(req.id, prefs.path)), true, 'sonic-start-asked'));
             primaryTaken = true;
         }
+        // Continue: <the lesson>, with its place and where the pilot stands in it (M41-2)
         if (m.continueId) {
-            buttons.push(lessonButton(m.continueId, this.key('menu.main.continue'), this.key('fly.next-step', { title: titleOf(m.continueId) }), !primaryTaken, 'sonic-start-continue'));
+            const row = rowOf(m.continueId);
+            const sub = [this.placeText(lessonPlace(m.continueId, prefs.path)), row ? this.stateWord(row.state) : null].filter((x): x is string => x !== null).join(', ');
+            buttons.push(lessonButton(m.continueId, t('sonic.start.continue', { title: titleOf(m.continueId) }), sub, !primaryTaken, 'sonic-start-continue'));
             primaryTaken = true;
         }
-        buttons.push(lessonButton(m.beginningId, this.key('menu.main.start'), this.key('fly.next-step', { title: titleOf(m.beginningId) }), !primaryTaken, 'sonic-start-beginning'));
+        // the course from its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons)
+        const first = `${t('sonic.start.courseWhat', { lesson: this.placeText(lessonPlace(m.beginningId, prefs.path)), title: titleOf(m.beginningId) })}${m.continueId ? ` ${t('sonic.start.courseKeeps')}` : ''}`;
+        buttons.push(lessonButton(m.beginningId, t('sonic.start.course'), first, !primaryTaken, 'sonic-start-beginning'));
         const radios = (['full', 'fast'] as const).map((p) => {
             const input = h('input', { type: 'radio', name: 'sonic-path', value: p, id: `sonic-path-${p}`, 'data-testid': `sonic-path-${p}`, ...(prefs.path === p ? { checked: true } : {}) });
             input.addEventListener('change', () => this.change({ path: p }));
@@ -208,14 +230,42 @@ export class StartScreen {
             const items = mod.lessons.map((l) => h('li', {}, this.lessonButton(l)));
             return h('section', { class: 'sonic-module', 'aria-labelledby': hid }, h('h3', { id: hid, tabindex: -1 }, this.S(mod.name)), h('ul', { class: 'sonic-lessons' }, ...items));
         });
-        return this.section('lessons', this.key('menu.lessons.title'), h('p', { class: 'sonic-hint' }, t('sonic.lessons.hint')), ...lists);
+        this.resetBox = this.resetPart();
+        return this.section('lessons', this.key('menu.lessons.title'), h('p', { class: 'sonic-hint' }, t('sonic.lessons.hint')), ...lists, this.resetBox);
+    }
+
+    /** "Lesson 20 of 28" */
+    private placeText(p: LessonPlace): string {
+        return t('sonic.progress.lesson', { n: p.n, total: p.total });
+    }
+
+    /** Where the pilot stands, in the words of the spoken menu (the package's), skipped in the page's own (v0.13). */
+    private stateWord(s: LessonState): string {
+        if (s === 'skipped') return t('sonic.lessons.skipped');
+        return this.key(s === 'passed' ? 'menu.lesson.passed' : s === 'current' ? 'menu.lesson.current' : 'menu.lesson.new');
     }
 
     private lessonButton(l: LessonRow): HTMLElement {
-        const state = this.key(l.state === 'passed' ? 'menu.lesson.passed' : l.state === 'current' ? 'menu.lesson.current' : 'menu.lesson.new');
-        const notes = [state, l.bestTimeMs !== null ? t('sonic.lessons.bestTime', { time: this.tr.duration(l.bestTimeMs) }) : null, l.fastPath ? this.key('menu.main.path-fast') : null, l.scan ? t('sonic.lessons.scan') : null].filter((x): x is string => x !== null);
-        // the name a screen reader says: the title, then where the pilot stands, in the same words as the spoken menu
+        const notes = [this.placeText(l.place), this.stateWord(l.state), l.bestTimeMs !== null ? t('sonic.lessons.bestTime', { time: this.tr.duration(l.bestTimeMs) }) : null, l.fastPath ? this.key('menu.main.path-fast') : null, l.scan ? t('sonic.lessons.scan') : null].filter((x): x is string => x !== null);
+        // the name a screen reader says: the title, its place, then where the pilot stands, in the same words as the spoken menu
         return h('button', { type: 'button', class: `btn sonic-lesson sonic-${l.state}`, 'data-testid': 'sonic-lesson', 'data-lesson': l.id, 'data-state': l.state, onclick: () => this.start(l.id) }, this.S(l.title), h('span', { class: 'sonic-sub' }, notes.join(', ')));
+    }
+
+    /** The Reset button, or while the screen asks: the question, then No (the focus goes there) and Yes. */
+    private resetPart(): HTMLElement {
+        if (!this.confirming) {
+            return h('div', { class: 'sonic-actions sonic-reset', 'data-testid': 'sonic-reset-box' },
+                h('button', { type: 'button', class: 'btn', id: 'sonic-reset', 'data-testid': 'sonic-reset', onclick: () => this.askReset() }, t('sonic.reset.button')));
+        }
+        const no = h('button', { type: 'button', class: 'btn primary', id: 'sonic-reset-no', 'data-testid': 'sonic-reset-no', onclick: () => this.endReset(false) }, t('sonic.reset.no'));
+        const yes = h('button', { type: 'button', class: 'btn', id: 'sonic-reset-yes', 'data-testid': 'sonic-reset-yes', onclick: () => this.endReset(true) }, t('sonic.reset.yes'));
+        return h('div', { class: 'sonic-note sonic-confirm', role: 'group', 'aria-labelledby': 'sonic-reset-ask', 'data-testid': 'sonic-reset-box' },
+            h('p', { id: 'sonic-reset-ask', 'data-testid': 'sonic-reset-ask' }, this.resetQuestion()), h('div', { class: 'sonic-actions' }, no, yes));
+    }
+
+    /** "Reset your progress in all 28 lessons? ..." */
+    private resetQuestion(): string {
+        return t('sonic.reset.ask', { total: this.model.modules.reduce((a, m) => a + m.lessons.length, 0) });
     }
 
     private settingsSection(): HTMLElement {
@@ -304,6 +354,37 @@ export class StartScreen {
             old.replaceWith(fresh);
             if (focused) document.getElementById(focused)?.focus();
         }
+    }
+
+    /** "Reset my progress": the screen asks first, the focus on No. */
+    private askReset(): void {
+        this.confirming = true;
+        this.redrawReset();
+        this.say(this.resetQuestion());
+        this.root.querySelector<HTMLElement>('#sonic-reset-no')?.focus();
+    }
+
+    /** The answer: Yes clears the progress (the settings stay) and the screen is drawn again, every lesson new; No keeps it. */
+    private endReset(yes: boolean): void {
+        if (!this.confirming) return;
+        this.confirming = false;
+        if (yes && this.d.resetProgress) {
+            this.d.resetProgress();
+            this.render();
+            this.say(t('sonic.reset.done'));
+            this.root.querySelector<HTMLElement>('[data-testid="sonic-start-beginning"]')?.focus();
+            return;
+        }
+        this.redrawReset();
+        this.say(t('sonic.reset.kept'));
+        this.root.querySelector<HTMLElement>('#sonic-reset')?.focus();
+    }
+
+    private redrawReset(): void {
+        const old = this.resetBox;
+        const fresh = this.resetPart();
+        this.resetBox = fresh;
+        old?.replaceWith(fresh);
     }
 
     private start(id: string): void {

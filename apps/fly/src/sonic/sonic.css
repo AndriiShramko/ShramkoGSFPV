@@ -42,6 +42,11 @@
 .sonic-lesson { width: 100%; flex-direction: column; align-items: flex-start; text-align: left; min-height: 56px; }
 .sonic-lesson.sonic-passed { border-color: var(--accent, #4ade80); }
 .sonic-lesson.sonic-current { border-color: var(--warn, #fbbf24); }
+/* v0.13 (M41-2): a lesson left without passing, and the reset question (it reads as a question, not as a warning) */
+.sonic-lesson.sonic-skipped { border-style: dashed; border-color: var(--muted, #9aa3ad); }
+.sonic-reset { margin-top: 22px; }
+.sonic-confirm { margin-top: 22px; color: var(--fg, #e8eaed); }
+.sonic-confirm > p { margin: 0 0 4px; font-weight: 600; }
 .sonic-field { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 14px 0; }
 .sonic-field > label { min-width: 14em; }
 .sonic-field select, .sonic-field input[type=range] { min-height: 44px; font: inherit; }
