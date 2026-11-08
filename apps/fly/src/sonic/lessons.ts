@@ -17,7 +17,8 @@
 //              saved as current.
 //   after      a passed lesson is followed (once its pass line is spoken) by the next lesson on the pilot's path, the
 //              full ladder's when it was opened off the path, and by the start screen at the end of the ladder. G opens
-//              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the last line.
+//              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the step's task
+//              again (v0.13: the runner's repeat, its sounds three times; it was the last line).
 //   go         (v0.13 W4) the runner's way out of a lesson: N from its last step (flying, the last sound, after the pass) and
 //              the lesson menu's next lesson give 'go next', B from its first step and the menu's previous lesson 'go
 //              previous'. 'next' is the way on after a pass (advance: the lesson G left first, then the lesson after this one
@@ -465,9 +466,9 @@ export class LessonHost {
         return { key: 'status.lesson', params: { title: this.tr.text(lesson.title), n: Math.max(1, run.attempt) } };
     }
 
-    /** Z: the last line again. */
-    repeat(): Promise<void> {
-        return this.p.mode.bridge.repeat();
+    /** Z (v0.13 W5): the step's whole task again, its named sounds three times, through the runner (recorded as the key 'repeat'). */
+    repeat(): void {
+        this.p.mode.repeat('KeyZ');
     }
 
     /** G: the sound glossary, and back to the lesson it interrupted. */

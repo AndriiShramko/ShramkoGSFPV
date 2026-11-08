@@ -12,9 +12,11 @@
 //            itself by the runner's rule (material by six axis rays, the sample's speed and position).
 //   events   every SessionEvent of the mode goes out as ctx.events 'sonicEvent', in order: the runner's (its
 //            begin() writes 'lesson open'), and the host's markers the replay takes as inputs: 'key' events
-//            with the actions reset.checkpoint, reset.start and next, and a 'speech' event with the key
-//            speech.end whenever the host's speech queue runs empty and it calls runner.spoken(t). The flight
-//            pausing and going on are 'session' pause and resume; the recorder writes start, end, recovered.
+//            with the actions reset.checkpoint, reset.start, next, and since v0.13 previous, repeat, next-lesson
+//            and previous-lesson (B, Z, the lesson menu), each written before the runner's call, and a 'speech'
+//            event with the key speech.end whenever the host's speech queue runs empty and it calls
+//            runner.spoken(t). The flight pausing and going on are 'session' pause and resume; the recorder
+//            writes start, end, recovered.
 //   silence  when the frames stop (the flight pauses, a replay drives the view, the mode stops) the engine
 //            gets setLayers with no layer on, and the lesson's layers again when they go on; speech goes
 //            through say(), which passes `interrupt` and keeps the speech queue that spoken() reports.
@@ -354,13 +356,42 @@ export class SonicBridge {
         return { pose: r.pose };
     }
 
-    /** N: the key event the replay reads, then the runner's next step. */
+    /**
+     * A key that moves the lesson (N, B, Z, the lesson menu's items): the key event with its REPLAY_KEY_ACTIONS action first (the
+     * replay takes the key from it), then the runner's call at the same t, its events out, its actions taken.
+     */
+    private keyCall(code: string, action: string, call: (run: LessonSession, t: number) => readonly SessionEvent[]): void {
+        const t = this.now();
+        this.event({ t, kind: 'key', code, action });
+        const run = this.runner;
+        if (!run) return;
+        this.events(call(run, t));
+        this.afterRunner?.();
+    }
+
+    /** N: the next step; from the lesson's last step the next lesson (the runner's 'go'). */
     next(code: string): void {
-        this.key(code, REPLAY_KEY_ACTIONS.next);
-        if (this.runner) {
-            this.events(this.runner.next(this.now()));
-            this.afterRunner?.();
-        }
+        this.keyCall(code, REPLAY_KEY_ACTIONS.next, (run, t) => run.next(t));
+    }
+
+    /** B (v0.13): the step before; from the first step the lesson before; while flying the task again, the attempt dropped. */
+    previous(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.previous, (run, t) => run.previous(t));
+    }
+
+    /** Z (v0.13): the step's whole task again, its named sounds three times (while flying the attempt waits for it). */
+    repeatTask(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.repeat, (run, t) => run.repeat(t));
+    }
+
+    /** The lesson menu's Next lesson: at once, this lesson marked skipped unless it was passed. */
+    nextLesson(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.nextLesson, (run, t) => run.nextLesson(t));
+    }
+
+    /** The lesson menu's Previous lesson: at once. */
+    previousLesson(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.previousLesson, (run, t) => run.previousLesson(t));
     }
 
     /**

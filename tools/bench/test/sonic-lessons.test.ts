@@ -369,19 +369,20 @@ describe('the host around a lesson', () => {
         expect(r.host.asking).toBe(false);
     }, 120000);
 
-    it('N skips the intro, I says where the pilot is, Z says the last line again with interrupt', async () => {
+    // v0.13 (stage B, B3, W5): Z is the runner's repeat, the step's whole task again (it was the bridge's last line)
+    it('N skips the intro, I says where the pilot is, Z says the step\'s task again from its title, with interrupt, while the attempt waits', async () => {
         const r = await open('rings-first');
         expect(r.host.status()).toMatchObject({ key: 'status.lesson' });
-        const before = r.engine.said.length;
         expect(r.press('scene.next')).toBe(true);
         expect(r.sonic.filter((e) => e.kind === 'key').at(-1)).toMatchObject({ code: 'KeyN', action: 'next' });
         await r.run(3000, null);
         expect(r.host.runner!.phase).toBe('flying');
-        const last = r.mode.bridge.last;
-        expect(last).not.toBeNull();
-        void r.host.repeat();
-        expect(r.engine.said.at(-1)).toMatchObject({ line: last, interrupt: true });
-        expect(r.engine.said.length).toBeGreaterThan(before);
+        const before = r.engine.said.length;
+        expect(r.press('sonic.repeat')).toBe(true);
+        expect(r.sonic.filter((e) => e.kind === 'key').at(-1)).toMatchObject({ code: 'KeyZ', action: 'repeat' });
+        expect(r.engine.said[before]).toMatchObject({ line: getLesson('rings-first').title, interrupt: true });
+        expect(r.engine.said.length).toBeGreaterThan(before + 1);
+        expect(r.host.runner!.view().listening).toBe(true);
     }, 120000);
 
     // v0.13 (stage B, docs/wip/v13-host.md B2, W3 and W4): N from the glossary's last step is its 'go next', which leads back to the

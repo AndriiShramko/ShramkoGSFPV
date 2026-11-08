@@ -10,13 +10,15 @@
 // sonic/lazy-start.ts) when the pilot starts a lesson, before the flight is made. A page without ?sonic= never downloads
 // this module, the lessons, the start screen or the sound package.
 //
-// Keys the mode takes: R short and long, N and [ ] (mode.ts); the digits answer a question asked (0 skips it), Z says the
-// last line again, I says where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder
-// adds), G opens the sound glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature
-// sonic-session). The pause menu gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist
-// only on this page (keymap `when: 'sonic'`, v12-optin). Two keys of every page do the mode's own thing here (v12-optin,
-// mode-keys.ts): L copies a link that opens this lesson in the mode, instead of the share panel's picture (so do the top bar's and
-// the pause menu's Share: ctx.sonicShare, review R3); K says the keys.
+// Keys the mode takes: R short and long, N, B, Z and [ ] (mode.ts: N the next step, B the step before, Z the step's task again,
+// each through the lesson runner and recorded for the replay, v0.13 W5); the digits answer a question asked (0 skips it), I says
+// where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder adds), G opens the sound
+// glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature sonic-session). The pause menu
+// gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist only on this page (keymap `when:
+// 'sonic'`, v12-optin). Keys of every page do the mode's own thing here: L copies a link that opens this lesson in the mode, instead
+// of the share panel's picture (so do the top bar's and the pause menu's Share: ctx.sonicShare, review R3), K says the keys
+// (v12-optin, mode-keys.ts), and in a lesson N and B are the lesson's (the scene rotation's and the feedback form's elsewhere; the
+// key list says so, and the pause menu keeps the feedback form).
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
 import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
@@ -344,8 +346,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         }
     });
     offs.push(() => setLessonView(ctx, null));
-    // Z and G: keys of the mode, each ignored while no lesson runs
-    offs.push(ctx.keys.on('sonic.repeat', (e) => { if (!e.repeat && mode.active) void h.repeat(); }));
+    // G: a key of the mode, ignored while no lesson runs (Z, N and B are the mode's own while a lesson runs: mode.ts)
     offs.push(ctx.keys.on('sonic.glossary', (e) => { if (!e.repeat && mode.active) void h.glossary(); }));
     // I: where the pilot is, in one press: the lesson's line (status.lesson, or status.none when none runs), then what the
     // other features add (the recorder's status.recording-on or -off). The only handler of I: the others add providers to
@@ -361,7 +362,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     );
     // a line of the mode's own keys: through the lesson's speech queue while one runs (its speech events), else the engine itself
     const sayLine = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt }));
-    const capOf = (action: string): string => ctx.keys.caps(action).map((c) => c.cap).join(' ');
+    // the names K says for the keys: the pilot's keyboard layout's letters, Escape by its name (key-names.ts)
+    const capOf = (action: string, aria?: string): string => names.of(action, aria);
     // The mode's Share (v12-optin, review R1 R3; mode-keys.ts shareLesson): L and the top bar's and the pause menu's Share (share.ts
     // hands them to ctx.sonicShare) give the link that opens this lesson in the mode (no language in it: the server sends whoever opens
     // it to his own). Copied, then said; in screen-reader mode the captions are the live region the reader announces. Refused by the
@@ -416,6 +418,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         }, { when: () => !dialogOpen() }),
         ctx.keys.relabel('share.open', 'keys.sonic.shareLink'),
         ctx.keys.relabel('help.keys', 'keys.sonic.hearKeys'),
+        // in a lesson N and B are the lesson's (mode.ts); the pause menu's item keeps the feedback form
+        ctx.keys.relabel('scene.next', 'keys.sonic.next'),
+        ctx.keys.relabel('feedback.open', 'keys.sonic.previous'),
         () => {
             help.dispose();
             delete ctx.sonicShare;

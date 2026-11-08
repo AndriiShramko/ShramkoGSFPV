@@ -291,15 +291,19 @@ describe('review R3: in the mode every Share but a recording\'s video shares the
 });
 
 describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own help)', () => {
+    // v0.13 (lane v13-host B3): the keys that move a lesson first (N, B, Z), then I; the names are the page's (sonic/key-names.ts)
     const capsOf = (sonic: boolean) => {
         const r = new KeyRouter({ map: KEYMAP, sonic: () => sonic });
-        return (a: string) => r.caps(a).map((c) => c.cap).join(' ');
+        return (a: string, aria?: string) => r.caps(a).filter((c) => aria === undefined || c.aria === aria).map((c) => c.cap).join(' ');
     };
 
-    it('on a ?sonic= page it says the intro, T U I Z G, L, R and N with their keys, then the digits; every line is in the engine\'s dictionaries in en, es, pl and ru', () => {
+    it('on a ?sonic= page it says the intro, N B Z I G R T U L with their keys, then the digits; every line is in the engine\'s dictionaries in en, es, pl and ru', () => {
         const lines = keyHelpLines(capsOf(true));
         expect(lines.map((l) => l.key)).toEqual(['help.intro', ...KEY_HELP.map(([k]) => k), 'help.digits']);
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['T', 'U', 'I', 'Z', 'G', 'L', 'R', 'N']);
+        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['N', 'B', 'Z', 'I', 'G', 'R', 'T', 'U', 'L']);
+        // B goes one step back and Z gives the task again: the page's own lines (the package's help.repeat says "the last line")
+        expect(lines.find((l) => l.params?.key === 'Z')?.key).toBe('sonic.say.helpRepeat');
+        expect(lines.find((l) => l.params?.key === 'B')?.key).toBe('sonic.say.helpPrevious');
         const dicts = engineDicts();
         for (const l of LANGS) {
             for (const line of lines) {
@@ -312,7 +316,7 @@ describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own
 
     it('control: with the keys of an ordinary page the five keys of the mode have no cap, so no line names them', () => {
         const lines = keyHelpLines(capsOf(false));
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['L', 'R', 'N']);
+        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['N', 'B', 'R', 'L']);
     });
 });
 

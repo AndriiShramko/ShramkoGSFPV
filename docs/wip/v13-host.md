@@ -179,8 +179,33 @@ with its control (the rule broken once in the code, the test seen failing, the c
   - Changed: `sonic-int-reader` "a lesson flown in this mode re-derives on replay" presses N in the task, not while flying
     (N while flying now leaves rings-first: the recording held rings-line's open, which the one-lesson replay cannot derive).
   - The Fly by Sound tests after it: 615, 607 pass, 8 skipped (the scan's 8), none fails.
-- [ ] B3 (W5, M41-6) N, B and Z call the runner, each a key event the replay reads first; the mode's keys win in a lesson;
+- [x] B3 (W5, M41-6) N, B and Z call the runner, each a key event the replay reads first; the mode's keys win in a lesson;
   K names N, B, Z, I and Escape
+  - `apps/fly/src/sonic/bridge.ts` `keyCall()`: the key event with its `REPLAY_KEY_ACTIONS` action, then the runner's call at
+    the same t, its events, its actions taken: `next` (N), new `previous` (B), `repeatTask` (Z), `nextLesson`, `previousLesson`
+    (the lesson menu, B6). `apps/fly/src/sonic/mode.ts`: while a lesson runs the mode holds `feedback.open` (B: the step before)
+    and `sonic.repeat` (Z: `runner.repeat(t)`, the step's whole task with its sounds, no longer the bridge's last line) beside
+    N, each once per press. B is the feedback form's key everywhere else (`packages/prefs` keymap); in a lesson the mode's
+    handler is the router's last, so it wins, and the pause menu's "Report a bug" item still opens the form (its own key while
+    the menu is up, and its button); when the lesson ends, B is the form's again. `feature.ts`: the install-time Z handler is
+    gone (the mode's), the key list names N and B as the lesson's (`keys.sonic.next`, `keys.sonic.previous`), Z's label says
+    the task (`keys.sonic.repeat`), four languages each.
+  - K (`mode-keys.ts` `KEY_HELP`): N, B, Z, I first, then G, R, T, U, L, each with the page's name for its key (`KeyNames`);
+    B and Z are the page's own lines (`sonic.say.helpPrevious`, `sonic.say.helpRepeat`: the package's `help.repeat` still says
+    "the last line"). Escape's line comes with its menu (B6).
+  - Tests (`sonic-lesson-keys` B3, 5): N, B and Z each write their key event (next, previous, repeat) as the first event of the
+    press, the runner's after it, a held key's repeats nothing; Z while flying says the title, every intro line, plays each
+    named sound `REPEAT_PLAYS` times and says "Go on.", the same attempt going on; B while flying goes back to the task, the
+    attempt dropped uncounted, one attempt-start after it; rings-first flown with N, Z, B, N and passed replays PASS with no
+    diff, and without its key events it does not (in the test); B in a lesson is the lesson's, the page's feedback handler
+    runs again once the lesson ends. Controls broken once and restored: the key event written after the runner's call (the
+    first test fails), Z as the last line (4 fail), B not held by the mode (4 fail).
+  - Changed: `sonic-lessons` "N skips the intro, I says ..., Z says the task again" (Z presses the key and expects the
+    task's title first with interrupt, the attempt listening; was the last line again); `sonic-optin` K's lines (the new
+    order and names, B's and Z's lines the page's; the control on an ordinary page names N, B, R, L).
+  - Lines for a native reading (es, pl, ru): `sonic.say.helpPrevious`, `sonic.say.helpRepeat`, `keys.sonic.next`,
+    `keys.sonic.previous`, `keys.sonic.repeat`, and B1's `sonic.key.Escape`.
+  - The Fly by Sound tests with the key and locale tests after it: 694, 686 pass, 8 skipped (the scan's), none fails.
 - [ ] B4 (W6, M41-7) I says `runner.statusLine()`; a large high-contrast progress panel draws `runner.view()`
 - [ ] B5 (W8) `runner.pause(t)` and `resume(t)` where the session's pause and resume are written; no `spoken` while paused
 - [ ] B6 (M41-3) Escape: the spoken lesson menu; the line at every lesson's start
@@ -209,6 +234,8 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-lessons` "a restart is not a touch" | its wall control waits until the lesson flies, then flies sideways into the side wall | the first attempt begins at the start (a flight in the task is put back); straight on, the ring's plane ends every attempt before the front wall, and between attempts nothing is a touch |
 | `sonic-lessons` "progress is saved at every attempt" | runs to one counted attempt short of the pass (r - 1) | three counted attempts pass the lesson now |
 | `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B; back in stage B (B2): N is pressed only while the glossary runs, and the glossary's runner is left not skipped | the glossary ends in a 'go' action (W3, W4); a press after the way back would be rings-first's own N, which moves on since B2 |
+| `sonic-lessons` "N skips the intro, I says where the pilot is, Z ..." (stage B, B3) | Z pressed as a key: its key event `repeat`, the task's title said first with interrupt, more lines after it, the attempt listening | Z is the runner's repeat since v0.13 (W5): the step's whole task, not the bridge's last line |
+| `sonic-optin` K in the mode and its control (stage B, B3) | the lines N, B, Z, I, G, R, T, U, L in that order, B's and Z's the page's own; on an ordinary page N, B, R, L | K names the keys that move a lesson first; B and Z do new things |
 | `sonic-int-reader` "a lesson flown in this mode re-derives on replay" (stage B, B2) | N pressed in the task (it starts the first attempt), not after three attempts while flying; the recording is asserted to hold one lesson and one key | N while flying leaves the lesson and the host opens the next one: the recording held rings-line's open |
 | `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
 | `sonic-bridge` "walls-hall with N, R short, R long and a contact" and its two controls | N in the task; the flight from the landmarks: a stop 1 m before the front wall's middle, a contact on the way back to the start, R short past it, R long, the stop again | N while flying leaves the lesson (M41-6); v0.12's flight (z -20 to -27.5) was beyond the room |

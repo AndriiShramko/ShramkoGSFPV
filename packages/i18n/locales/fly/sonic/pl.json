@@ -35,6 +35,8 @@
   "sonic.path.legend": "Ścieżka",
   "sonic.say.gpuHint": "Ta strona rysuje na układzie graficznym Intel. Jeśli komputer ma też kartę NVIDIA lub AMD, poproś pomocnika, by przełączył na nią przeglądarkę: w Ustawieniach Windows, System, Ekran, Grafika, wybierz przeglądarkę, Opcje, Wysoka wydajność.",
   "sonic.say.helpCut": "Wracamy do lotu.",
+  "sonic.say.helpPrevious": "Naciśnij {key}, aby cofnąć się o jeden krok.",
+  "sonic.say.helpRepeat": "Naciśnij {key}, aby jeszcze raz usłyszeć zadanie tego kroku razem z dźwiękami.",
   "sonic.say.helpShare": "Naciśnij {key}, aby skopiować link do tej lekcji i się nim podzielić.",
   "sonic.say.linkCopied": "Link do tej lekcji jest skopiowany. Wklej go do wiadomości lub e-maila, aby się nim podzielić.",
   "sonic.say.linkCopiedStart": "Link do Fly by Sound jest skopiowany. Wklej go do wiadomości lub e-maila, aby się nim podzielić.",
