@@ -20,6 +20,7 @@
 //   node scripts/build-release.mjs
 //   node tools/bench/scripts/serve-csp.mjs dist <port>                       (another shell)
 //   cd tools/bench && SITE=http://localhost:<port> npx tsx src/sonic-v13-page.ts
+//   (control: CONTROL=reader PARTS=C,DE EVIDENCE_SUFFIX=-control-reader, the voice's checks fail with "my screen reader speaks")
 // Holds C:/dev/.gpu-lock: one blocking loop (mkdir, else 20 s, at most 9 minutes), let go at the end, also on an error. Evidence:
 // evidence/<date>/sonic-v13-page.json (the commit of the tree it ran on in its context; exit 1 when a check fails). The screenshots stay
 // out of the repository (SHOTS, default the system's temp folder): their paths and SHA-256 are in the evidence.
@@ -40,6 +41,12 @@ const LOCK = 'C:/dev/.gpu-lock';
 const SHOTS = process.env.SHOTS ?? join(tmpdir(), 'gsfpv-sonic-v13-page', today());
 mkdirSync(SHOTS, { recursive: true });
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/**
+ * CONTROL=reader: the control run of C and D (EVIDENCE_SUFFIX=-control-reader): the same build and keys with "my screen reader speaks"
+ * saved, where the voice says no stop, no value and no menu item (the reader reads them): the checks of the voice must fail there.
+ */
+const CONTROL = process.env.CONTROL === 'reader';
+const VOICE: Partial<SonicPrefs> = CONTROL ? { selfVoice: false } : {};
 console.log(`sonic-v13-page target: ${SITE}, screenshots in ${SHOTS}`);
 
 /** The GPU lock: one blocking loop, mkdir or 20 s more, at most 9 minutes. */
@@ -142,7 +149,8 @@ async function until<T>(what: string, read: () => Promise<T>, pred: (v: T) => bo
     }
 }
 
-const spoken = (page: Page): Promise<string[]> => page.evaluate(() => [...((window as unknown as { __spoken?: string[] }).__spoken ?? [])]);
+/** The lines that reached the browser's voice, in order (the empty utterance that unlocks speech in the first press left out: it says nothing). */
+const spoken = (page: Page): Promise<string[]> => page.evaluate(() => [...((window as unknown as { __spoken?: string[] }).__spoken ?? [])].filter((x) => x !== ''));
 const cancels = (page: Page): Promise<number> => page.evaluate(() => (window as unknown as { __cancels?: number }).__cancels ?? 0);
 const ready = (page: Page): Promise<string | null> => page.evaluate(() => (window as unknown as { __gsfpv?: { status?: string } }).__gsfpv?.status ?? null);
 const pausedNow = (page: Page): Promise<boolean | null> => page.evaluate(() => (window as unknown as { __gsfpv?: { session?: { paused?: boolean } } }).__gsfpv?.session?.paused ?? null);
@@ -291,7 +299,7 @@ async function partB(browser: Browser, out: Record<string, unknown>): Promise<vo
 // ------------------------------------------------------------------ C: the spoken settings list
 
 async function partC(browser: Browser, out: Record<string, unknown>): Promise<void> {
-    const ctx = await profile(browser, doc({ speechRate: 2 }));
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
     const page = await ctx.newPage();
     try {
         await page.goto(`${SITE}/en/fly/?sonic=start`);
@@ -302,21 +310,21 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         await key(page, 'ArrowDown');
         const first = await until('the first lines', () => spoken(page), (s) => s.length >= 2, 10000);
         check('C: nothing is said before a key; the first key says how the list works, then the first stop with its section and place', silent.length === 0 && first[0] === SONIC['sonic.say.listHelp'] && first[1] === 'Fly by Sound sections. Start. Item 1 of 4.', { before: silent, first: first.slice(0, 2) });
-        // to the settings by the navigation: its fourth link, Enter: the section's heading is said, Down goes into it
+        // to the settings by the navigation: its fourth link, Enter: the section's heading is said (so its stops need not name it again),
+        // Down goes into it
         await key(page, 'ArrowDown', 3);
         const navAt = await focusNow(page);
+        let n = (await spoken(page)).length;
         await key(page, 'Enter');
         await sleep(200);
         const head = await focusNow(page);
-        let n = (await spoken(page)).length;
-        await key(page, 'ArrowDown');
-        const lines: string[] = [];
-        for (let i = 0; i < 7; i++) await key(page, 'ArrowDown');
-        const sNow = await spoken(page);
-        lines.push(...sNow.slice(n));
+        const headSaid = (await spoken(page)).slice(n);
+        n = (await spoken(page)).length;
+        for (let i = 0; i < 8; i++) await key(page, 'ArrowDown');
+        const lines = (await spoken(page)).slice(n);
         const motorFocus = await focusNow(page);
-        out.settingsWalk = { navAt, head, lines };
-        check('C: the navigation\'s Settings link, Enter, the section\'s heading said; Down through the settings, each said with "Item n of 11", to Motor volume', navAt.text === 'Settings' && head.id === 'sonic-h-settings' && sNow.includes('Settings') && lines[0] === 'Settings. Sound theme: Soft. Item 1 of 11.' && lines.at(-1) === 'Motor volume: 0 dB. Item 8 of 11.' && motorFocus.testid === 'sonic-motor-level', out.settingsWalk);
+        out.settingsWalk = { navAt, head, headSaid, lines };
+        check('C: the navigation\'s Settings link, Enter: the section\'s heading has the focus and is said; Down through the settings, each said with "Item n of 11", to Motor volume', navAt.text === 'Settings' && head.id === 'sonic-h-settings' && headSaid.join(' | ') === 'Settings' && lines[0] === 'Sound theme: Soft. Item 1 of 11.' && lines.length === 8 && lines.at(-1) === 'Motor volume: 0 dB. Item 8 of 11.' && motorFocus.testid === 'sonic-motor-level', out.settingsWalk);
         n = (await spoken(page)).length;
         await key(page, 'ArrowRight');
         await key(page, 'ArrowRight');
@@ -324,14 +332,17 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         await key(page, 'ArrowLeft', 5);
         const values = (await spoken(page)).slice(n);
         const level = await page.evaluate(() => ({ value: (document.querySelector('[data-testid="sonic-motor-level"]') as HTMLInputElement).value, text: document.querySelector('[data-testid="sonic-motor-level"]')?.getAttribute('aria-valuetext') ?? '' }));
-        out.motorLevel = { values, level, saved: (await saved(page)).prefs?.motorGainDb };
-        check('C: Right and Left move Motor volume in 3 dB steps, each value said, the end said as the limit (6 dB), saved', values.join(' | ') === 'Motor volume: 3 dB | Motor volume: 6 dB | Motor volume: 6 dB. That is the limit. | Motor volume: 3 dB | Motor volume: 0 dB | Motor volume: -3 dB | Motor volume: -6 dB | Motor volume: -9 dB' && level.value === '-9' && level.text === '-9 dB' && (await saved(page)).prefs?.motorGainDb === -9, out.motorLevel);
+        // the prefs store writes the document a moment after a change (its debounce)
+        const levelSaved = await until('the motor level saved', () => saved(page), (x) => x.prefs?.motorGainDb === -9, 5000).then((x) => x.prefs?.motorGainDb).catch(async () => (await saved(page)).prefs?.motorGainDb);
+        out.motorLevel = { values, level, saved: levelSaved };
+        check('C: Right and Left move Motor volume in 3 dB steps, each value said, the end said as the limit (6 dB), saved', values.join(' | ') === 'Motor volume: 3 dB | Motor volume: 6 dB | Motor volume: 6 dB. That is the limit. | Motor volume: 3 dB | Motor volume: 0 dB | Motor volume: -3 dB | Motor volume: -6 dB | Motor volume: -9 dB' && level.value === '-9' && level.text === '-9 dB' && levelSaved === -9, out.motorLevel);
         n = (await spoken(page)).length;
         await key(page, 'ArrowDown');
         await key(page, 'Enter');
         const target = (await spoken(page)).slice(n);
-        out.heightTarget = { target, saved: (await saved(page)).prefs?.heightTarget };
-        check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === 'Target height note: on. Item 9 of 11. | Target height note: off' && (await saved(page)).prefs?.heightTarget === false, out.heightTarget);
+        const targetSaved = await until('the target note saved', () => saved(page), (x) => x.prefs?.heightTarget === false, 5000).then((x) => x.prefs?.heightTarget).catch(async () => (await saved(page)).prefs?.heightTarget);
+        out.heightTarget = { target, saved: targetSaved };
+        check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === 'Target height note: on. Item 9 of 11. | Target height note: off' && targetSaved === false, out.heightTarget);
         await shot(page, 'c-settings', 'the settings with Motor volume at -9 dB and the target note off');
         // Escape: back to the first Start button, said
         n = (await spoken(page)).length;
@@ -354,7 +365,7 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
 // ------------------------------------------------------------------ D and E: the lesson menu, the progress panel
 
 async function partDE(browser: Browser, out: Record<string, unknown>): Promise<void> {
-    const ctx = await profile(browser, doc({ speechRate: 2 }));
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
     const page = await ctx.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
@@ -441,7 +452,7 @@ async function main(): Promise<void> {
         letGo();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence('sonic-v13-page', { site: SITE, parts: process.env.PARTS ?? 'A,B,C,DE', checks, passed, total: checks.length, shots, result: out });
+    const file = writeEvidence('sonic-v13-page', { site: SITE, parts: process.env.PARTS ?? 'A,B,C,DE', control: CONTROL ? 'reader' : null, checks, passed, total: checks.length, shots, result: out });
     writeFileSync(join(SHOTS, 'evidence-path.txt'), file);
     console.log(`${passed} of ${checks.length} checks passed; ${file}`);
     process.exitCode = passed === checks.length && checks.length > 0 ? 0 : 1;

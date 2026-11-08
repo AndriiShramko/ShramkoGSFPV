@@ -2,9 +2,11 @@
 // served with nginx's enforced CSP and its /fly/ language redirect (tools/bench/scripts/serve-csp.mjs), headless Chrome on the GPU,
 // the keyboard only (and one click on a link, as a sighted pilot would).
 //   A  an ordinary page (no ?sonic=, a scan flown logic-only): Fly by Sound is named nowhere until the pause menu is opened, which has
-//      one item for it, a link that opens /{lang}/sound/ in a new tab (the flight stays paused under the menu); T U I Z G change
+//      one item for it, a link that opens the mode's start screen /{lang}/fly/?sonic=start in a new tab (v0.13 M41-1; v0.12: the page
+//      about the mode, /{lang}/sound/, which the start screen's footer links) (the flight stays paused under the menu); T U I Z G change
 //      nothing (no panel, note, caption, speech, sound context, hook); the pause menu's key list and the K card name none of them; L
-//      opens the picture share panel; no chunk and no text of the mode is fetched. In Polish the item is Polish and leads to /pl/sound/.
+//      opens the picture share panel; no chunk and no text of the mode is fetched. In Polish the item is Polish and leads to
+//      /pl/fly/?sonic=start.
 //   B  a ?sonic= page, the sender ("my screen reader speaks", speed 2, theme Clear and calm mode on, and his own speech and volume
 //      settings): the pause menu lists T U I Z G and has the mode's own item, not the ordinary one; I answers; L copies a link with the
 //      lesson (in the Winter Garden lesson also its scan and size) and his sound settings, nothing personal, said and put in the
@@ -297,7 +299,7 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     out.plainMenu = menu;
     const capsListed = menu.keys.flatMap((k) => k.caps);
     check('A: the pause menu\'s key list names none of the mode\'s keys (no sonic.* row, no T U I Z G cap); it lists the 21 bindings of an ordinary page (20 shortcuts, and Space among the flying keys)', menu.keys.length === pageBindings().length && !menu.keys.some((k) => k.action.startsWith('sonic.')) && !SOUND_CAPS.some((c) => capsListed.includes(c)), { rows: menu.keys.length, actions: menu.keys.map((k) => k.action) });
-    check(`A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "${EN['sonic.menu.page']}", last of the menu's items, and a screen reader hears "${MAIN_EN['pause.newTab']}" (review R8)`, menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && menu.items.at(-1) === 'pause.flyBySound' && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.label === EN['sonic.menu.page'] && menu.sound.newTab.trim() === MAIN_EN['pause.newTab'], { sound: menu.sound, last: menu.items.at(-1) });
+    check(`A: the pause menu has exactly one item for the mode, a link to the mode's start screen /en/fly/?sonic=start in a new tab (v0.13 M41-1), worded "${EN['sonic.menu.page']}", last of the menu's items, and a screen reader hears "${MAIN_EN['pause.newTab']}" (review R8)`, menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && menu.items.at(-1) === 'pause.flyBySound' && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/fly/?sonic=start' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.label === EN['sonic.menu.page'] && menu.sound.newTab.trim() === MAIN_EN['pause.newTab'], { sound: menu.sound, last: menu.items.at(-1) });
     check('A: with the menu open the page names Fly by Sound once: that item', menu.namesInMenu === 1 && menu.namesInBody === 1, { menu: menu.namesInMenu, body: menu.namesInBody });
     // review R8: one line in every language, on a computer and on a phone; control: the item as it was, measured the same way, wraps
     const wide = await labelLines(page, [...LANGS.map((l) => ITEM[l]), ITEM_BEFORE]);
@@ -314,13 +316,13 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     if (menu.sound) {
         const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
         await popup.waitForLoadState('domcontentloaded');
-        await popup.waitForSelector('h1', { timeout: 15000 });
-        const landed = await popup.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.textContent ?? '', start: [...document.querySelectorAll('a')].filter((a) => a.getAttribute('href') === '/en/fly/?sonic=start').length }));
+        await popup.waitForSelector('#sonic-start', { timeout: 60000 });
+        const landed = await popup.evaluate(() => ({ url: location.pathname + location.search, beginning: !!document.querySelector('[data-testid="sonic-start-beginning"]'), about: document.querySelector('[data-testid="sonic-about"]')?.getAttribute('href') ?? null }));
         const stillPaused = await page.evaluate(() => !!document.querySelector('.pause-menu'));
         out.plainPopup = { ...landed, stillPaused };
-        check('A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu', landed.url === '/en/sound/' && landed.h1 === SITE_EN.sound.h1 && landed.start === 1 && stillPaused, out.plainPopup);
+        check('A: the item opens the mode\'s start screen /en/fly/?sonic=start in a new tab (the page about the mode in its footer); the flight stays paused under its menu', landed.url === '/en/fly/?sonic=start' && landed.beginning && landed.about === '/en/sound/' && stillPaused, out.plainPopup);
         await popup.close();
-    } else check('A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu', false, 'no such item');
+    } else check('A: the item opens the mode\'s start screen /en/fly/?sonic=start in a new tab (the page about the mode in its footer); the flight stays paused under its menu', false, 'no such item');
     await page.keyboard.press('Escape');
     await until('the menu to close', () => page.evaluate(() => !document.querySelector('.pause-menu')), (v) => v, 5000);
 
@@ -357,7 +359,7 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     if (await pl.$('.screen.radio [data-action="radio-keyboard"]')) await chooseKeyboard(pl);
     const plMenu = await pauseMenu(pl);
     out.plainPolish = plMenu.sound;
-    check('A: in Polish the item says the Polish line and leads to /pl/sound/', plMenu.sound?.href === '/pl/sound/' && plMenu.sound.label === PL['sonic.menu.page'], plMenu.sound);
+    check('A: in Polish the item says the Polish line and leads to /pl/fly/?sonic=start', plMenu.sound?.href === '/pl/fly/?sonic=start' && plMenu.sound.label === PL['sonic.menu.page'], plMenu.sound);
     await pl.close();
 }
 
