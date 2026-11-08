@@ -22,7 +22,7 @@ import { PRESETS } from '../../presets';
 import { MotorSound, bladesOf, motorMix } from '../../audio/motor-sound';
 import type { AudioLike, Mix, MotorState, NodeLike } from '../../audio/motor-sound';
 import type { Feature, FlightContext } from '../context';
-import { sonicEntry } from '../../sonic/entry';
+import { sonicEntry } from '../../sonic/entry-state';
 
 // window.__gsfpv.sound: the graph's state and the last mix, for the acceptance
 declare module '../test-hook' {

@@ -1,0 +1,100 @@
+{
+  "name": "sonic-int-status",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T21:13:15.106Z",
+    "gitHead": "595bdaa",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5400",
+  "scenario": "status",
+  "checks": [
+    {
+      "name": "I with no recording: the lesson's line, then \"Recording is off\", in one press and in that order",
+      "pass": true,
+      "value": [
+        [
+          "status.lesson",
+          "Lesson: Hold your height. Attempt 1."
+        ],
+        [
+          "status.recording-off",
+          "Recording is off."
+        ]
+      ]
+    },
+    {
+      "name": "T, T: the recording runs (the panel's button says recording, the recorder said rec.ask and rec.started)",
+      "pass": true,
+      "value": [
+        "rec.ask",
+        "fly.go",
+        "rec.started"
+      ]
+    },
+    {
+      "name": "I while recording: the lesson's line, then \"Recording is on\", in one press and in that order",
+      "pass": true,
+      "value": [
+        [
+          "status.lesson",
+          "Lesson: Hold your height. Attempt 1."
+        ],
+        [
+          "status.recording-on",
+          "Recording is on."
+        ]
+      ]
+    },
+    {
+      "name": "no page error and no console error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 4,
+  "total": 4,
+  "result": {
+    "off": [
+      {
+        "t": 1598,
+        "kind": "speech",
+        "key": "status.lesson",
+        "text": "Lesson: Hold your height. Attempt 1."
+      },
+      {
+        "t": 1598,
+        "kind": "speech",
+        "key": "status.recording-off",
+        "text": "Recording is off."
+      }
+    ],
+    "on": [
+      {
+        "t": 11690,
+        "kind": "speech",
+        "key": "status.lesson",
+        "text": "Lesson: Hold your height. Attempt 1."
+      },
+      {
+        "t": 11690,
+        "kind": "speech",
+        "key": "status.recording-on",
+        "text": "Recording is on."
+      }
+    ],
+    "said": [
+      "rec.ask",
+      "fly.go",
+      "rec.started"
+    ]
+  }
+}

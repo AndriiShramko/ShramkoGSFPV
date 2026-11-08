@@ -1,0 +1,274 @@
+{
+  "name": "sonic-int-lazy",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T21:36:28.395Z",
+    "gitHead": "0bf2d7a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5400",
+  "scenario": "lazy",
+  "checks": [
+    {
+      "name": "A: a flight without ?sonic= fetched no script or style holding the sound package, the mode or the recorder",
+      "pass": true,
+      "value": {
+        "fetched": [
+          "main.css",
+          "storage-buffer.js",
+          "api.js",
+          "constants.js",
+          "entity.js",
+          "texture.js",
+          "main.js",
+          "rapier.js"
+        ],
+        "holding": []
+      }
+    },
+    {
+      "name": "A: no chunk of Fly by Sound was requested (lazy-start, feature, session) and the mode is not installed (no test hook)",
+      "pass": true,
+      "value": {
+        "hook": "undefined"
+      }
+    },
+    {
+      "name": "A: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "B (control): a ?sonic= page fetches the start chunk, the mode and the session side, every marker is found, the lesson runs",
+      "pass": true,
+      "value": {
+        "names": [
+          "storage-buffer.js",
+          "api.js",
+          "main.css",
+          "constants.js",
+          "entity.js",
+          "texture.js",
+          "main.js",
+          "rolldown-runtime.js",
+          "lazy-start.css",
+          "lazy-start.js",
+          "builtin.js",
+          "feature.js",
+          "sonic-status.js",
+          "session.css",
+          "rapier.js",
+          "session.js"
+        ],
+        "missing": []
+      }
+    },
+    {
+      "name": "B: the recorder's texts arrived with its chunk (the panel's button reads \"Recording\", not a key)",
+      "pass": true,
+      "value": "Recording"
+    },
+    {
+      "name": "C: the start chunk refused: an alert says sonic.say.lessonFailed, the focus on \"Try again\"",
+      "pass": true,
+      "value": {
+        "text": "The lesson did not open. Choose it again, or choose another one.",
+        "role": "alert",
+        "focus": "BUTTON"
+      }
+    },
+    {
+      "name": "C: the browser's voice is asked to say it, at once and again at the first key",
+      "pass": true,
+      "value": [
+        "The lesson did not open. Choose it again, or choose another one.",
+        "The lesson did not open. Choose it again, or choose another one."
+      ]
+    },
+    {
+      "name": "D: the mode's chunk refused: the engine says sonic.say.lessonFailed (in the captions, the screen reader's region here), the start screen is back, no flight",
+      "pass": true,
+      "value": {
+        "captions": "The lesson did not open. Choose it again, or choose another one.",
+        "screen": true,
+        "hook": "undefined",
+        "refused": 2
+      }
+    },
+    {
+      "name": "D: the next Enter, with the chunk reachable again, opens the lesson",
+      "pass": true,
+      "value": "hover-height"
+    }
+  ],
+  "passed": 9,
+  "total": 9,
+  "result": {
+    "plain": {
+      "fetched": [
+        [
+          "/fly/assets/main-CRBpecZ5.css",
+          96417
+        ],
+        [
+          "/fly/assets/storage-buffer-bdokWzy-.js",
+          1310
+        ],
+        [
+          "/fly/assets/api-BpNuAZd0.js",
+          40450
+        ],
+        [
+          "/fly/assets/constants-DFTtLrFK.js",
+          64132
+        ],
+        [
+          "/fly/assets/entity-DpwWXiMG.js",
+          170191
+        ],
+        [
+          "/fly/assets/texture-FOUnZzS7.js",
+          937757
+        ],
+        [
+          "/fly/assets/main-8yC5rzYe.js",
+          1676248
+        ],
+        [
+          "/fly/assets/rapier-B4hmj00C.js",
+          2889707
+        ]
+      ],
+      "holding": []
+    },
+    "control": {
+      "fetched": [
+        [
+          "/fly/assets/storage-buffer-bdokWzy-.js",
+          1310,
+          []
+        ],
+        [
+          "/fly/assets/api-BpNuAZd0.js",
+          40450,
+          []
+        ],
+        [
+          "/fly/assets/main-CRBpecZ5.css",
+          96417,
+          []
+        ],
+        [
+          "/fly/assets/constants-DFTtLrFK.js",
+          64132,
+          []
+        ],
+        [
+          "/fly/assets/entity-DpwWXiMG.js",
+          170191,
+          []
+        ],
+        [
+          "/fly/assets/texture-FOUnZzS7.js",
+          937757,
+          []
+        ],
+        [
+          "/fly/assets/main-8yC5rzYe.js",
+          1676248,
+          []
+        ],
+        [
+          "/fly/assets/rolldown-runtime-hePW80VL.js",
+          716,
+          []
+        ],
+        [
+          "/fly/assets/lazy-start-DX1E0OdJ.css",
+          4703,
+          [
+            "sonic-captions"
+          ]
+        ],
+        [
+          "/fly/assets/lazy-start-DKdT9i1L.js",
+          59179,
+          [
+            "sonic-captions"
+          ]
+        ],
+        [
+          "/fly/assets/builtin-Mw32t3au.js",
+          210368,
+          [
+            "shramko-sonic-session/1",
+            "Answer with a number key",
+            "ears-headphones"
+          ]
+        ],
+        [
+          "/fly/assets/feature-CHOBH0kT.js",
+          18056,
+          [
+            "sonicRays",
+            "pause.sonic"
+          ]
+        ],
+        [
+          "/fly/assets/sonic-status-8nOTvMGI.js",
+          28894,
+          []
+        ],
+        [
+          "/fly/assets/session-CV4k9y1Z.css",
+          5677,
+          [
+            "sonicrec-toggle"
+          ]
+        ],
+        [
+          "/fly/assets/rapier-B4hmj00C.js",
+          2889707,
+          []
+        ],
+        [
+          "/fly/assets/session-DOaTHLJw.js",
+          169614,
+          [
+            "voice-sync.jsonl",
+            "sonicrec-toggle",
+            "sonicrec.status.asking"
+          ]
+        ]
+      ]
+    },
+    "startFailed": {
+      "box": {
+        "text": "The lesson did not open. Choose it again, or choose another one.",
+        "role": "alert",
+        "focus": "BUTTON"
+      },
+      "spoken": [
+        "The lesson did not open. Choose it again, or choose another one.",
+        "The lesson did not open. Choose it again, or choose another one."
+      ]
+    },
+    "modeFailed": {
+      "said": {
+        "captions": "The lesson did not open. Choose it again, or choose another one.",
+        "screen": true,
+        "hook": "undefined"
+      },
+      "refused": 2,
+      "lessonAfterRetry": "hover-height"
+    }
+  }
+}

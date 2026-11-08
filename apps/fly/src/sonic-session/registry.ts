@@ -12,6 +12,7 @@ import type { ChunkStore, SessionManifest } from '@shramko/sonic-fpv';
 import { PackageError, SESSION_FILES, packSession, parseManifest, recoverSession, utf8Decode, utf8Encode } from '@shramko/sonic-fpv';
 import type { RecoveryReport } from '@shramko/sonic-fpv';
 import type { SessionStores } from './recorder';
+import { RegistryError } from './reasons';
 import { TRANSFER_FILE, readTransfer } from './upload';
 import type { TransferRecord } from './upload';
 
@@ -138,7 +139,7 @@ export async function listSessions(stores: SessionStores, isLocked: (id: string)
  * listed) and notes it. A session another tab is recording is refused.
  */
 export async function keepSession(stores: SessionStores, id: string, isLocked: (id: string) => Promise<boolean>, nowIso: () => string, options: { gzip?: (b: Uint8Array) => Promise<Uint8Array> } = {}): Promise<RecoveryReport> {
-    if (await isLocked(id)) throw new Error('another tab is recording this session');
+    if (await isLocked(id)) throw new RegistryError('locked');
     const store = await stores.open(id);
     const report = await recoverSession(store, options.gzip === undefined ? {} : { gzip: options.gzip });
     await writeNotes(store, { recoveredAt: nowIso() });
@@ -151,12 +152,12 @@ export async function packageOf(stores: SessionStores, id: string): Promise<Blob
     try {
         return new Blob((await packSession(store)) as BlobPart[], { type: 'application/zip' });
     } catch (e) {
-        if (e instanceof PackageError) throw new Error(`the recording cannot be packed: ${e.message}`);
+        if (e instanceof PackageError) throw new RegistryError('cannot-pack', e.message);
         throw e;
     }
 }
 
 export async function deleteSession(stores: SessionStores, id: string, isLocked: (id: string) => Promise<boolean>): Promise<void> {
-    if (await isLocked(id)) throw new Error('another tab is recording this session');
+    if (await isLocked(id)) throw new RegistryError('locked');
     await stores.remove(id);
 }

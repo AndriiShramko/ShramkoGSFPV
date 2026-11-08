@@ -7,7 +7,8 @@ own retries, so a channel that is down never holds the other back.
 
 The rules, in the order they matter:
 
-- Nothing is "delivered" on a hope. Telegram counts when its API answered ok with a message id; e-mail counts when Gmail's own SMTP
+- Nothing is "delivered" on a hope. Telegram counts when its API answered ok WITH a message id (an ok with none is a failure, retried);
+  e-mail counts when Gmail's own SMTP
   server accepted the message after DATA (there is no read receipt: plan section 6, item 9). `delivered` is true only when every
   channel is sent or link.
 - Every file is streamed from the disk. The Telegram upload is a multipart body whose file part is read in 256 KB pieces; the e-mail's
@@ -22,7 +23,11 @@ The rules, in the order they matter:
 - A channel failing NOTICE_AFTER (3) times is reported through the OTHER channel, once; a channel that gives up is reported once more.
   A notice that cannot go is kept pending in the same meta.json and retried, so the owner is told when either way to tell him is up.
 - A restart turns a send that was cut off (`sending`) back into `queued` (sessions.SessionStore.recover): the recording may or may not have
-  gone, and a second copy for the owner costs nothing where a lost one costs the recording.
+  gone, and a second copy for the owner costs nothing where a lost one costs the recording. So does a claim that has stood `sending` for
+  CLAIM_STALE_S (5 minutes) with no worker on it, with no restart: what leaves one so is a write that failed after the send (the disk full at
+  that moment), and without this the channel would wait for a restart that may be weeks away. That happens once per channel: when the
+  requeued send also ends with no record, the writing is what is broken and not the sending, so the channel is `failed` (lost-record) for the
+  owner's resend instead of a third copy, a fourth, and so on.
 
 Configuration (config.env, names only): TG_OWNER_BOT_TOKEN or TG_BOT_TOKEN, TG_OWNER_CHAT_ID or TG_CHAT_ID, TG_API_BASE (tests) as for the
 owner bot; GMAIL_USER, GMAIL_APP_PASSWORD, MAIL_FROM_NAME, SMTP_HOST, SMTP_PORT, SMTP_TLS, SMTP_CAFILE as for the mailer; SESSION_MAIL_TO
@@ -49,11 +54,12 @@ from typing import Callable, Iterator
 
 import mailer
 import ownerbot
-from sessions import CHANNELS, SessionError, SessionStore
+from sessions import CHANNELS, CLAIM_STALE_S, SessionError, SessionStore
 
 BACKOFF_S = (30, 120, 600, 1800, 7200, 21600, 43200, 86400)
 MAX_FAILURES = len(BACKOFF_S) + 1
 NOTICE_AFTER = 3
+MAX_STALE_REQUEUES = 1                 # a stale claim goes back to the queue once; a second one is a channel whose outcomes cannot be written
 NOTICE_RETRY_S = 300
 NOT_CONFIGURED_RETRY_S = 60
 POLL_S = 2.0
@@ -186,8 +192,12 @@ class TelegramChannel:
         raise ChannelError(f"telegram-{code}", retry_after=float(retry) if retry else None, detail=str(doc.get("description") if isinstance(doc, dict) else ""))
 
     @staticmethod
-    def _message_id(result: object):
-        return result.get("message_id") if isinstance(result, dict) else None
+    def _message_id(result: object) -> int:
+        """The id Telegram gave the message. An answer that is ok but names none is not a message that was sent: a failure (retried), never a send."""
+        mid = result.get("message_id") if isinstance(result, dict) else None
+        if isinstance(mid, bool) or not isinstance(mid, int):
+            raise ChannelError("telegram-no-id", detail="ok without a message id")
+        return mid
 
     def send(self, meta: dict, path: Path) -> Outcome:
         cfg = self.config()
@@ -203,7 +213,7 @@ class TelegramChannel:
         return Outcome("file", self._message_id(result))
 
     def notice(self, subject: str, text: str) -> None:
-        self._call("sendMessage", {"chat_id": self.config().chat, "text": f"{subject}\n{text}"[:3900], "disable_web_page_preview": True})
+        self._message_id(self._call("sendMessage", {"chat_id": self.config().chat, "text": f"{subject}\n{text}"[:3900], "disable_web_page_preview": True}))
 
 
 # ----------------------------------------------------------------------------- e-mail
@@ -363,6 +373,8 @@ class DeliveryWorker:
         """Every send that is due now, then every pending notice; the number of sends tried."""
         name = self.channel.name
         tried = 0
+        for sid in self.store.due(f"{name}:claim", self.now()):
+            self._release_stale(sid)
         for sid in self.store.due(name, self.now()):
             if not self.channel.configured():
                 self._wait_for_setup(sid)
@@ -375,6 +387,43 @@ class DeliveryWorker:
         for sid in self.store.due(f"{name}:notice", self.now()):
             self._send_notices(sid)
         return tried
+
+    def _release_stale(self, sid: str) -> None:
+        """A claim that has stood `sending` for CLAIM_STALE_S with no worker on it. This thread is between sends (it is the one that sends for
+        this channel), so a claim it finds is one whose outcome was never written: the send went (or failed) and the write after it did not.
+        Back to queued, once (see the module's rules); then `failed`, for the owner's resend."""
+        name, now = self.channel.name, self.now()
+        outcome: dict = {}
+
+        def fn(m: dict) -> None:
+            ch = m["channels"][name]
+            if m.get("state") != "stored" or ch.get("status") != "sending" or now - float(ch.get("claimedAt") or 0) < CLAIM_STALE_S:
+                raise _Skip
+            ch.pop("claimedAt", None)
+            requeues = int(ch.get("staleRequeues") or 0)
+            if requeues < MAX_STALE_REQUEUES:
+                ch["status"], ch["nextAt"], ch["recovered"], ch["staleRequeues"] = "queued", now, True, requeues + 1
+                return
+            ch["status"], ch["nextAt"], ch["error"] = "failed", 0, "lost-record"
+            notices = ch.setdefault("notices", {})
+            if "final" not in notices:
+                notices["final"] = {"state": "pending", "at": now}
+                ch["noticeAt"] = now
+            outcome["failed"] = True
+
+        try:
+            self.store.update(sid, fn)
+        except (_Skip, SessionError):
+            return
+        except OSError as e:
+            self._say(f"could not put {sid} back in the queue ({type(e).__name__}); trying again")
+            return
+        if outcome.get("failed"):
+            self._send_notices(sid)
+
+    def _say(self, line: str) -> None:
+        """One line for the server's log: what the worker could not do, never a path, an address or a token."""
+        print(f"session delivery ({self.channel.name}): {line}", flush=True)
 
     def _wait_for_setup(self, sid: str) -> None:
         """A channel that is not set up uses up no tries: it says so and looks again in a minute."""
@@ -428,6 +477,10 @@ class DeliveryWorker:
             self.store.update(sid, fn)
         except SessionError:
             pass
+        except OSError as e:
+            # the send went and its record could not be written (the disk full right now): the claim stays on disk as `sending` and the
+            # stale rule (_release_stale) puts it back after CLAIM_STALE_S; raising here would also end the round for every other session
+            self._say(f"{sid} was sent but its record could not be written ({type(e).__name__})")
 
     def _failed(self, sid: str, err: ChannelError) -> None:
         name, now = self.channel.name, self.now()
@@ -455,6 +508,9 @@ class DeliveryWorker:
             self.store.update(sid, fn)
         except SessionError:
             return
+        except OSError as e:
+            self._say(f"a failed try of {sid} could not be recorded ({type(e).__name__})")
+            return
         self._send_notices(sid)
 
     # ---- telling the owner through the other channel
@@ -472,7 +528,7 @@ class DeliveryWorker:
                 ch = meta["channels"][name]
                 other = meta["channels"].get(self.peer.name) or {}
                 sent_elsewhere = other.get("status") in ("sent", "link")
-                what = f"failed {NOTICE_AFTER} times" if kind == "3" else f"gave up after {MAX_FAILURES} attempts"
+                what = f"failed {NOTICE_AFTER} times" if kind == "3" else ("lost the record of its sends" if ch.get("error") == "lost-record" else f"gave up after {MAX_FAILURES} attempts")
                 subject = f"{name} delivery of recording {sid} {what}"
                 text = "\n".join([f"The {name} channel {what} (last reason: {ch.get('error') or 'unknown'}).", "",
                                   f"Recording: {_facts(meta)}", f"Reached you by {self.peer.name}: {'yes' if sent_elsewhere else 'not yet'}.", "",

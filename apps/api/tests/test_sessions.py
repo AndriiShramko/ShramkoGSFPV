@@ -600,6 +600,60 @@ class Housekeeping(Base):
         tomb = [json.loads(x) for x in (self.dir / "sessions" / "index.jsonl").read_text().splitlines() if '"deleted"' in x]
         self.assertEqual({t["id"]: t["reason"] for t in tomb}, {abandoned["id"]: "abandoned", stored_old["id"]: "retention"})
 
+    def test_an_upload_that_has_held_no_chunk_for_fifteen_minutes_gives_its_reservation_back(self):
+        """v12-int step 8c: `start` is anonymous and reserves the whole size; a reservation that never begins must not hold it for a day."""
+        idle = getattr(sessions, "UPLOAD_IDLE_S", 15 * 60)
+        self.assertEqual(idle, 15 * 60)
+        ids = [self.store.start("greedy", {"size": 100, "sha256": sha(bytes([i])), "consentSend": True})["id"] for i in range(sessions.MAX_OPEN_PER_CLIENT)]
+        more = {"size": 100, "sha256": sha(b"one more"), "consentSend": True}
+        with self.assertRaises(SessionError) as cm:
+            self.store.start("greedy", more)
+        self.assertEqual((cm.exception.status, cm.exception.code), (429, "too-many-uploads"))
+        self.clock[0] += idle - 60                              # fourteen minutes: not yet
+        self.assertEqual(self.store.sweep(), [])
+        with self.assertRaises(SessionError):
+            self.store.start("greedy", more)
+        self.clock[0] += 120                                    # sixteen
+        self.assertEqual(sorted(self.store.sweep()), sorted(ids))
+        for sid in ids:
+            self.assertFalse((self.dir / "sessions" / sid).exists())
+        self.assertTrue(self.store.start("greedy", more)["ok"])        # the room is back
+        tomb = [json.loads(x) for x in (self.dir / "sessions" / "index.jsonl").read_text().splitlines() if '"deleted"' in x]
+        self.assertEqual({t["id"]: t["reason"] for t in tomb}, {sid: "idle" for sid in ids})
+        # a late chunk of a dropped reservation is answered "unknown": the client starts again (it still has the package)
+        with self.assertRaises(SessionError) as late:
+            self.store.put_chunk(ids[0], "any-token", 0, 100, io.BytesIO(b"x" * 100).read, None)
+        self.assertEqual((late.exception.status, late.exception.code), (404, "unknown"))
+
+    def test_the_reserved_bytes_come_back_with_it(self):
+        store = self.make(cap_bytes=lambda: 250)
+        a = store.start("a", {"size": 100, "sha256": sha(b"a"), "consentSend": True})
+        store.start("b", {"size": 100, "sha256": sha(b"b"), "consentSend": True})
+        with self.assertRaises(SessionError) as cm:
+            store.start("c", {"size": 100, "sha256": sha(b"c"), "consentSend": True})
+        self.assertEqual((cm.exception.status, cm.exception.code), (507, "cap"))
+        self.clock[0] += 16 * 60
+        self.assertEqual(len(store.sweep()), 2)
+        self.assertTrue(store.start("c", {"size": 100, "sha256": sha(b"c"), "consentSend": True})["ok"])       # the 200 reserved bytes are free again
+        self.assertNotEqual(a["id"], "")
+
+    def test_an_upload_that_holds_a_chunk_or_has_one_arriving_is_not_idle(self):
+        data = package(filler=2 * CHUNK_BYTES)
+        started = self.store.start("c", {"size": len(data), "sha256": sha(data), "consentSend": True})
+        c0 = chunks_of(data)[0]
+        self.store.put_chunk(started["id"], started["token"], 0, len(c0), io.BytesIO(c0).read, sha(c0))
+        quiet = self.store.start("d", {"size": 100, "sha256": sha(b"quiet"), "consentSend": True})
+        arriving = self.store.start("e", {"size": 100, "sha256": sha(b"arriving"), "consentSend": True})
+        self.store._inflight.add((arriving["id"], 0))          # its first chunk is on the wire this moment
+        self.clock[0] += 16 * 60
+        self.assertEqual(self.store.sweep(), [quiet["id"]])    # only the one that never began: a chunk held or arriving keeps its upload
+        self.assertTrue((self.dir / "sessions" / started["id"] / "upload.part").exists())
+        self.assertTrue((self.dir / "sessions" / arriving["id"] / "upload.part").exists())
+        self.store._inflight.discard((arriving["id"], 0))      # the chunk fails and nothing arrived: now it is idle
+        self.assertEqual(self.store.sweep(), [arriving["id"]])
+        self.clock[0] += sessions.UPLOAD_TTL_S + 60            # the one with a chunk is the 24 hour rule's, as before
+        self.assertEqual(self.store.sweep(), [started["id"]])
+
     def test_delete_frees_the_room_and_leaves_a_tombstone(self):
         data = package(filler=2000)
         s, _ = self.upload(self.store, data)

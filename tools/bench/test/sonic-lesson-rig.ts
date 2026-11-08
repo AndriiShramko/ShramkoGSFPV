@@ -52,6 +52,11 @@ export class FakeEngine {
     onSpeech: ((line: SpeechLine, text: string) => void) | null = null;
     private queue: { endsAt: number; resolve: () => void }[] = [];
     private lastEnd = 0;
+    /**
+     * true: as the real engine with "my screen reader speaks" (selfVoice off): it says nothing and each line waits its own time
+     * from when it is handed over, all at once, no queue, an interrupt cuts nothing (v12-int step 6). false: speechSynthesis's queue.
+     */
+    parallel = false;
     private readonly tr: Translator;
 
     constructor(private readonly clock: { t: number }, locale: Locale = 'en') {
@@ -85,6 +90,7 @@ export class FakeEngine {
         const interrupt = o?.interrupt === true;
         this.said.push({ line, interrupt, text, at: this.clock.t });
         this.onSpeech?.(line, text);
+        if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve }));
         // speechSynthesis.cancel() ends what is queued at once
         if (interrupt) {
             for (const q of this.queue) q.resolve();
@@ -97,8 +103,21 @@ export class FakeEngine {
         return new Promise<void>((resolve) => this.queue.push({ endsAt, resolve }));
     }
 
+    /** Resolves when `ms` of the page's clock have passed (at the frame that reaches it, as a line's end). */
+    wait(ms: number): Promise<void> {
+        return new Promise<void>((resolve) => this.waits.push({ endsAt: this.clock.t + ms, resolve }));
+    }
+
+    private waits: { endsAt: number; resolve: () => void }[] = [];
+
     /** Lines whose time has passed end now. */
     tick(): void {
+        const now0 = this.clock.t;
+        const doneWaits = this.waits.filter((w) => w.endsAt <= now0);
+        if (doneWaits.length > 0) {
+            this.waits = this.waits.filter((w) => w.endsAt > now0);
+            for (const w of doneWaits) w.resolve();
+        }
         const now = this.clock.t;
         const due = this.queue.filter((q) => q.endsAt <= now);
         if (due.length === 0) return;

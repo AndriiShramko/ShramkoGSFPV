@@ -5,7 +5,7 @@ package()          the REAL package fixture (made by the sound repository's writ
 StreamTelegram     an HTTP server shaped like api.telegram.org/bot<token>/<method> that READS A BODY IN BLOCKS and keeps none of it: for a
                    sendDocument it records the fields, the file name, the file's length and SHA-256, so a test of a 20 MB upload measures the
                    sender's memory and not this fake's. It knows its bot tokens (a wrong one is 401), can fail the next calls by a plan
-                   (HTTP 500, 429 with retry_after, a dropped connection) and records every call.
+                   (HTTP 500, 429 with retry_after, a dropped connection, an ok that names no message) and records every call.
 Rig                the store, both channels, the workers and the fakes on a temporary data directory and a clock the test moves.
 """
 from __future__ import annotations
@@ -71,7 +71,7 @@ class StreamTelegram:
     def __init__(self, tokens: tuple[str, ...] = (BOT_TOKEN,)):
         self.tokens = set(tokens)
         self.calls: list[dict] = []
-        self.plan: list[tuple] = []             # consumed one per call: ("status", 500) ("retry", 900) ("drop",)
+        self.plan: list[tuple] = []             # consumed one per call: ("status", 500) ("retry", 900) ("drop",) ("noid",)
         self.max_block = 0
         self._next = 2000
         self._mu = threading.Lock()
@@ -131,6 +131,8 @@ class StreamTelegram:
             return self._answer(h, step[1], {"ok": False, "error_code": step[1], "description": "Internal Server Error"})
         if step and step[0] == "retry":
             return self._answer(h, 429, {"ok": False, "error_code": 429, "description": "Too Many Requests: retry later", "parameters": {"retry_after": step[1]}})
+        if step and step[0] == "noid":
+            return self._answer(h, 200, {"ok": True, "result": {}})           # ok, and no message: never what Telegram does, so never a send
         self._answer(h, 200, {"ok": True, "result": {"message_id": mid, "chat": {"id": int(call["fields"].get("chat_id") or 0)}}})
 
     def _read_multipart(self, h, n: int, ctype: str, call: dict) -> None:

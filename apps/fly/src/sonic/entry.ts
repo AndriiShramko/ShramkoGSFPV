@@ -2,7 +2,8 @@
 // flight page exists and hands to it. The sound setup (the one AudioContext and the engine, the captions region,
 // the pilot's sound settings and where they are saved) is made once per page, when the mode is entered; the flight
 // page (app/builtin/sonic-flight.ts) finds it here when its features install, and the lesson host (lessons.ts) uses
-// it to open lessons. A page that was not entered through ?sonic= has no entry, so every hook of the mode is off.
+// it to open lessons. A page that was not entered through ?sonic= has no entry, so every hook of the mode is off, and
+// it never loads this file (the main chunk asks entry-state.ts; v12-int step 4).
 import { updatePrefs } from '@shramko/sonic-fpv';
 import type { Locale, SonicPrefs, SpeechOut } from '@shramko/sonic-fpv';
 import { SonicAudio } from './audio';
@@ -81,13 +82,5 @@ export interface SonicEntry {
     readonly world: LessonWorld | null;
 }
 
-let entry: SonicEntry | null = null;
-
-/** The entry of this page; null on a page that was not entered through ?sonic=. */
-export function sonicEntry(): SonicEntry | null {
-    return entry;
-}
-
-export function setSonicEntry(e: SonicEntry | null): void {
-    entry = e;
-}
+// The page's entry itself lives in entry-state.ts (no runtime import: the main chunk asks it on every page).
+export { sonicEntry, setSonicEntry } from './entry-state';

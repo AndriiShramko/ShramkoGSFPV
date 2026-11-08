@@ -5,10 +5,11 @@ two real delivery workers. Only the outside is made up: a Telegram that reads bo
 and an SMTP server on 127.0.0.1 (fakes.FakeSMTP, a message per spool file). The retry schedule is the real one (30 s, 2 min ...), but its
 clock is the real clock plus an offset the control can move, so "the channel recovers after three minutes" takes a moment.
 
-    python rig_server.py [--data DIR] [--admin-password TEST-PASSWORD]
+    python rig_server.py [--data DIR] [--admin-password TEST-PASSWORD] [--api-port N] [--control-port N]
 
 prints ONE json line {"api": <port>, "control": <port>, "data": <dir>} and runs until its standard input is closed (the harness owns it)
-or it is killed. With --admin-password the owner's admin answers on the API port under that TEST password (a hash is made here, in this process only;
+or it is killed. The two ports are free ones the system picks, unless --api-port and --control-port name them (the end-to-end run of Fly by Sound
+keeps to a range it was given). With --admin-password the owner's admin answers on the API port under that TEST password (a hash is made here, in this process only;
 the live admin and its password are never involved): the Sessions tab can be tried in a browser against this copy. The control (second port, JSON):
     GET  /state      what the fakes received (files by SHA-256 and size), the sessions the store lists, the retry clock's offset
     POST /telegram   {"plan": [["status", 500], ["retry", 3], ["drop"]]}  the next Telegram calls fail so
@@ -97,7 +98,7 @@ class Rig:
                 "sessions": listed, "clockOffset": self.offset[0]}
 
 
-def control(rig: Rig) -> ThreadingHTTPServer:
+def control(rig: Rig, port: int = 0) -> ThreadingHTTPServer:
     class H(BaseHTTPRequestHandler):
         def log_message(self, *a):
             pass
@@ -135,7 +136,7 @@ def control(rig: Rig) -> ThreadingHTTPServer:
                 return self._send({"ok": False}, 404)
             self._send({"ok": True})
 
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    httpd = ThreadingHTTPServer(("127.0.0.1", port), H)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
 
@@ -150,9 +151,10 @@ def main() -> None:
         os.environ["ADMIN_PASSWORD_HASH"] = admin.make_hash(args[args.index("--admin-password") + 1])
     server.DATA_DIR = data                 # the admin's audit log and the sessions' index live under the same temporary directory
     rig = Rig(data)
-    api = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
+    port_of = lambda name: int(args[args.index(name) + 1]) if name in args else 0
+    api = ThreadingHTTPServer(("127.0.0.1", port_of("--api-port")), server.Handler)
     threading.Thread(target=api.serve_forever, daemon=True).start()
-    ctl = control(rig)
+    ctl = control(rig, port_of("--control-port"))
     print(json.dumps({"api": api.server_address[1], "control": ctl.server_address[1], "data": str(data)}), flush=True)
     sys.stdin.read()          # the harness closes our stdin to end us
     rig.delivery.stop()

@@ -12,7 +12,9 @@ export const LOCALES: Locale[] = ['en', 'es', 'pl', 'ru'];
 // feature adds its keys in its own files, so parallel work never edits the same four files. A glob
 // takes a path, not a package name, hence the walk up to packages/. Every key lives in exactly one
 // file (packages/i18n/test/fly-parity.test.ts), so the merge order cannot decide a text.
-const NAMESPACED = import.meta.glob<Record<string, string>>('../../../packages/i18n/locales/fly/*/*.json', { eager: true, import: 'default' });
+// The recorder's namespace (sonicrec, about 54 KB in four languages) is not among them: it comes with the session side's lazy
+// chunk, which adds it when it loads (sonic-session/texts.ts, addDictionaries), so a page without Fly by Sound never carries it.
+const NAMESPACED = import.meta.glob<Record<string, string>>(['../../../packages/i18n/locales/fly/*/*.json', '!../../../packages/i18n/locales/fly/sonicrec/*.json'], { eager: true, import: 'default' });
 
 function merged(l: Locale, flat: Record<string, string>): Record<string, string> {
     const out = { ...flat };
@@ -21,6 +23,11 @@ function merged(l: Locale, flat: Record<string, string>): Record<string, string>
 }
 
 const DICTS: Record<Locale, Record<string, string>> = { en: merged('en', en), es: merged('es', es), pl: merged('pl', pl), ru: merged('ru', ru) };
+
+/** Adds the files of a namespace a lazy chunk brought (`.../<lang>.json` paths, as import.meta.glob gives them) to t()'s dictionaries. */
+export function addDictionaries(files: Record<string, Record<string, string>>): void {
+    for (const [path, d] of Object.entries(files)) for (const l of LOCALES) if (path.endsWith(`/${l}.json`)) Object.assign(DICTS[l], d);
+}
 
 function fromPath(): Locale | null {
     const m = location.pathname.match(/^\/(en|es|pl|ru)\//);

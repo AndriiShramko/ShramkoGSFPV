@@ -10,6 +10,7 @@ import type { FlightFrame, SpeechLine } from '../../../packages/sonic-fpv/src';
 import { buildManifestInput } from '../../../apps/fly/src/sonic-session/manifest-input';
 import { consentFor, newProfile } from '../../../apps/fly/src/sonic-session/consent';
 import { deleteSession, describeSession, keepSession, listSessions, packageOf, readNotes, writeNotes } from '../../../apps/fly/src/sonic-session/registry';
+import { RegistryError } from '../../../apps/fly/src/sonic-session/reasons';
 import { ResumeOffer } from '../../../apps/fly/src/sonic-session/resume';
 import { browserSaveEnv, packageFileName, saveToDisk } from '../../../apps/fly/src/sonic-session/save';
 import type { SaveEnv } from '../../../apps/fly/src/sonic-session/save';
@@ -85,8 +86,10 @@ describe('the registry of recordings on this device', () => {
         await makeSession(dir, ids.busy, '2026-11-07T10:00:00Z', false);
         const busy = async (id: string): Promise<boolean> => id === ids.busy;
         expect((await describeSession(stores(dir), ids.busy, busy)).locked).toBe(true);
-        await expect(keepSession(stores(dir), ids.busy, busy, () => 'x')).rejects.toThrow(/another tab/);
-        await expect(deleteSession(stores(dir), ids.busy, busy)).rejects.toThrow(/another tab/);
+        // a code the panel says in the page's language (reasons.ts), not an English sentence
+        await expect(keepSession(stores(dir), ids.busy, busy, () => 'x')).rejects.toMatchObject({ name: 'RegistryError', code: 'locked' });
+        await expect(deleteSession(stores(dir), ids.busy, busy)).rejects.toBeInstanceOf(RegistryError);
+        await expect(deleteSession(stores(dir), ids.busy, busy)).rejects.toSatisfy((e: Error) => !/another tab/.test(e.message));
         expect(await listSessionIds(dir)).toEqual([ids.busy]);
         // control: with no lock the same call recovers it
         const kept = await keepSession(stores(dir), ids.busy, never, () => '2026-11-07T12:00:00Z', { gzip: nodeGzip });
@@ -97,7 +100,11 @@ describe('the registry of recordings on this device', () => {
         const dir = new FakeDirectory('sonic-sessions');
         await makeSession(dir, ids.cut, '2026-11-07T11:00:00Z', false);
         // control: before it is kept, the session cannot be packed (nothing lists its files)
-        await expect(packageOf(stores(dir), ids.cut)).rejects.toThrow(/cannot be packed/);
+        const err = (await packageOf(stores(dir), ids.cut).catch((e: unknown) => e)) as RegistryError;
+        expect(err).toBeInstanceOf(RegistryError);
+        expect(err.code).toBe('cannot-pack');
+        expect(err.detail.length).toBeGreaterThan(5); // the sound package's own technical note, which the panel shows inside the sentence of the code
+        expect(err.message).not.toMatch(/the recording cannot be packed/);
         const report = await keepSession(stores(dir), ids.cut, never, () => '2026-11-07T12:00:00Z', { gzip: nodeGzip });
         expect(report.frames).toBe(75); // the writer was flushed before the tab went: all 75 frames are in storage
         const entry = await describeSession(stores(dir), ids.cut, never);
@@ -138,6 +145,8 @@ describe('the registry of recordings on this device', () => {
 describe('saving to disk', () => {
     const blob = new Blob([new Uint8Array([80, 75, 3, 4, 1, 2, 3])], { type: 'application/zip' });
     const name = 'fly-by-sound-20261107-100000-doneSess.zip';
+    /** the file type's description in the save dialog: the page's language, given by the caller from the dictionaries (v12-int step 9) */
+    const label = 'a description from the dictionaries';
 
     function env(over: Partial<SaveEnv> = {}) {
         const written: Blob[] = [];
@@ -147,6 +156,7 @@ describe('saving to disk', () => {
             picker: async (o) => {
                 expect(o.suggestedName).toBe(name);
                 expect(o.types[0]?.accept).toEqual({ 'application/zip': ['.zip'] });
+                expect(o.types[0]?.description).toBe(label); // never a text of the code's own
                 return { createWritable: async () => ({ write: async (b: Blob) => void written.push(b), close: async () => void closed++ }) };
             },
             download: (b, n) => void downloads.push({ name: n, size: b.size }),
@@ -163,7 +173,7 @@ describe('saving to disk', () => {
 
     it('through the picker the blob is written whole and closed, and nothing is downloaded', async () => {
         const s = env();
-        expect(await saveToDisk(blob, name, s.e)).toBe('picker');
+        expect(await saveToDisk(blob, name, s.e, label)).toBe('picker');
         expect(s.written).toEqual([blob]);
         expect(s.closed()).toBe(1);
         expect(s.downloads).toEqual([]);
@@ -171,20 +181,20 @@ describe('saving to disk', () => {
 
     it('a person who closes the picker has said no: nothing is saved, nothing is downloaded behind their back', async () => {
         const s = env({ picker: async () => { throw Object.assign(new Error('The user aborted a request.'), { name: 'AbortError' }); } });
-        expect(await saveToDisk(blob, name, s.e)).toBe('cancelled');
+        expect(await saveToDisk(blob, name, s.e, label)).toBe('cancelled');
         expect(s.downloads).toEqual([]);
         // control: any other refusal of the picker falls back to the download
         const refused = env({ picker: async () => { throw Object.assign(new Error('needs a gesture'), { name: 'SecurityError' }); } });
-        expect(await saveToDisk(blob, name, refused.e)).toBe('download');
+        expect(await saveToDisk(blob, name, refused.e, label)).toBe('download');
         expect(refused.downloads).toEqual([{ name, size: blob.size }]);
     });
 
     it('without a picker the download carries it; a write that fails is reported, not swallowed', async () => {
         const noPicker = env({ picker: null });
-        expect(await saveToDisk(blob, name, noPicker.e)).toBe('download');
+        expect(await saveToDisk(blob, name, noPicker.e, label)).toBe('download');
         expect(noPicker.downloads).toEqual([{ name, size: 7 }]);
         const broken = env({ picker: async () => ({ createWritable: async () => ({ write: async () => { throw new Error('disk full'); }, close: async () => undefined }) }) });
-        await expect(saveToDisk(blob, name, broken.e)).rejects.toThrow('disk full');
+        await expect(saveToDisk(blob, name, broken.e, label)).rejects.toThrow('disk full');
     });
 
     it('the browser\'s own env hands a download to an anchor with the file name', () => {

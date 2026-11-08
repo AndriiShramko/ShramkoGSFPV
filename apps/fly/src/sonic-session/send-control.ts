@@ -131,8 +131,14 @@ export class SendControl {
         }
     }
 
-    private sayLine(key: string, params?: Record<string, string | number>): Promise<void> {
-        return this.deps.say(params === undefined ? { key } : { key, params }).catch(() => undefined);
+    /**
+     * `answer`: the line is the answer to the pilot's own key press (the question, "nothing to send", where the sending is): it cuts what the
+     * lesson is saying, or it would wait behind it and the pilot, who hears nothing, would think the key did nothing. The question above all:
+     * the reading limit (below) opens on its timer, so a question stuck behind a talking lesson would be agreed to unheard.
+     */
+    private sayLine(key: string, params?: Record<string, string | number>, answer = false): Promise<void> {
+        const line = params === undefined ? { key } : { key, params };
+        return (answer ? this.deps.say(line, { interrupt: true }) : this.deps.say(line)).catch(() => undefined);
     }
 
     private idle(): boolean {
@@ -160,7 +166,7 @@ export class SendControl {
     onRecorderStatus(s: RecorderStatus): void {
         if (s.phase === 'idle') return;
         this.deps.voice?.stop();
-        this.cancelAsk();
+        this.cancelAsk('recording');
     }
 
     private async pickTarget(): Promise<SessionEntry | null> {
@@ -177,7 +183,12 @@ export class SendControl {
         this.deciding = true;
         try {
             const entry = await this.pickTarget();
-            if (entry === null) return this.notice('nothing');
+            if (this.disposed) return;
+            if (entry === null) {
+                // nothing to send: said aloud too (the package's send.none), or a pilot who cannot see the panel hears nothing at all
+                void this.sayLine('send.none', undefined, true);
+                return this.notice('nothing');
+            }
             const run = this.runs.get(entry.id);
             if (run !== undefined) {
                 // already going: U says where it is, and tries again at once when it is waiting
@@ -186,7 +197,7 @@ export class SendControl {
                 return;
             }
             if (entry.transfer?.delivered === true && allConfirmed(entry.transfer.channels)) {
-                void this.sayLine('send.delivered');
+                void this.sayLine('send.delivered', undefined, true);
                 return this.notice('already');
             }
             const blocker = sendBlocker(entry, this.deps.profile());
@@ -203,7 +214,7 @@ export class SendControl {
     }
 
     private refuse(blocker: SendBlocker): void {
-        if (blocker === 'guardian') void this.sayLine('rec.minor');
+        if (blocker === 'guardian') void this.sayLine('rec.minor', undefined, true);
         this.notice(blocker);
     }
 
@@ -213,9 +224,9 @@ export class SendControl {
         this.confirming = question;
         this.notice('asked');
         this.changed();
-        question.timer = setTimeout(() => this.cancelAsk(), this.deps.askMs ?? DEFAULT_ASK_MS);
+        question.timer = setTimeout(() => this.cancelAsk('unanswered'), this.deps.askMs ?? DEFAULT_ASK_MS);
         // the question is read out in full before a press counts: a key struck twice in a hurry must not agree to something unheard
-        const read = this.sayLine('send.confirm', { key: this.deps.keyLabel(U_KEY) });
+        const read = this.sayLine('send.confirm', { key: this.deps.keyLabel(U_KEY) }, true);
         let limit: ReturnType<typeof setTimeout> | null = null;
         await Promise.race([read, new Promise<void>((resolve) => { limit = setTimeout(resolve, this.deps.readMs ?? DEFAULT_READ_MS); })]);
         if (limit !== null) clearTimeout(limit);
@@ -231,16 +242,19 @@ export class SendControl {
     }
 
     /**
-     * The question is withdrawn: no answer in time, a recording started, or the helper's button took over. Nothing is said aloud: the package has
-     * no line for "not sent" (its rec.off says the RECORDING is off, which is not what happened), and a pilot who did not answer needs no
-     * answer; the panel says so on screen.
+     * The question is withdrawn. A question nobody answered in its time (the question says only how to agree, so letting it run out
+     * is how a pilot declines) is answered aloud with the package's send.cancelled ("Not sent. Your flight stays on this device."): the
+     * pilot was asked and hears what came of it. Withdrawn because a recording started (the recorder is speaking now, and nothing here
+     * speaks while a recording runs), because the helper's button took over (the sending starts and says so) or because the page goes:
+     * nothing is said. The panel says so on screen in every case.
      */
-    private cancelAsk(): void {
+    private cancelAsk(why: 'unanswered' | 'recording' | 'helper' | 'closing'): void {
         const c = this.confirming;
         if (c === null) return;
         if (c.timer !== null) clearTimeout(c.timer);
         this.confirming = null;
         this.deps.voice?.stop();
+        if (why === 'unanswered' && this.idle()) void this.sayLine('send.cancelled');
         this.notice('cancelled');
         this.changed();
     }
@@ -260,14 +274,18 @@ export class SendControl {
      * The helper's Send button, after the panel showed the consent text and the tick for the pilot's agreement was set. Returns the reason
      * when the recording cannot be sent, null when the sending started.
      */
-    async sendByHelper(id: string): Promise<SendBlocker | 'busy' | null> {
+    async sendByHelper(id: string): Promise<SendBlocker | 'busy' | 'nothing' | null> {
         if (this.disposed) return 'busy';
         if (!this.idle()) {
             this.notice('busy-recording');
             return 'busy';
         }
         const entry = await this.entry(id);
-        if (entry === null) return 'unreadable';
+        if (entry === null) {
+            // the recording is gone (deleted here or in another tab): there is nothing to send, and the pilot hears so as well
+            void this.sayLine('send.none');
+            return 'nothing';
+        }
         const run = this.runs.get(id);
         if (run !== undefined) {
             run.transfer.retryNow();
@@ -278,7 +296,7 @@ export class SendControl {
             this.refuse(blocker);
             return blocker;
         }
-        this.cancelAsk();
+        this.cancelAsk('helper');
         await this.track(this.start(id, { at: this.deps.nowIso(), via: 'button' }, true));
         return null;
     }
@@ -402,10 +420,10 @@ export class SendControl {
     /** U on a transfer that is going: where it is, in the package's words. */
     private report(run: Run): void {
         const p = run.progress;
-        if (p.stage === 'delivered') void this.sayLine('send.delivered');
-        else if (p.stage === 'stored') void this.sayLine('send.stored');
-        else if (p.stage === 'waiting' || p.stage === 'blocked') void this.sayLine('send.failed');
-        else void this.sayLine('send.sending');
+        if (p.stage === 'delivered') void this.sayLine('send.delivered', undefined, true);
+        else if (p.stage === 'stored') void this.sayLine('send.stored', undefined, true);
+        else if (p.stage === 'waiting' || p.stage === 'blocked') void this.sayLine('send.failed', undefined, true);
+        else void this.sayLine('send.sending', undefined, true);
     }
 
     /** What the pilot hears as the transfer goes on. Never while a recording runs; a resumed transfer is quiet until it has an outcome. */
@@ -457,7 +475,7 @@ export class SendControl {
 
     dispose(): void {
         this.disposed = true;
-        this.cancelAsk();
+        this.cancelAsk('closing');
         this.deps.voice?.stop();
         for (const run of this.runs.values()) run.transfer.stop();
     }

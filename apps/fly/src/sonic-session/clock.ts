@@ -50,10 +50,23 @@ export class SessionClock {
     /**
      * A host-stamped time on the recording clock. Before the first sample has said what the host's t = 0 is, the arrival
      * time stands in (events cannot be placed better). Never negative.
+     *
+     * `restart`: the event begins a new run of the host's clock (v12-int step 5): each lesson is a new run of the mode with a
+     * clock from 0, and the next lesson's `lesson open` (the first thing it sends) and its first lines come BEFORE its first
+     * sample. Mapped with the old origin they would land at the start of the recording; when such an event maps further
+     * than CLOCK_JUMP_MS from its arrival, the mapping is taken again from it, as from a sample, so the next lesson begins
+     * where it began. Other events keep the mapping the samples give (a host may stamp one a moment before it is sent).
      */
-    fromHost(hostT: number): number {
+    fromHost(hostT: number, restart = false): number {
         if (this.base === null || !Number.isFinite(hostT)) return this.now();
-        return Math.max(0, hostT - this.base);
+        const arrival = this.now();
+        const mapped = hostT - this.base;
+        if (restart && Math.abs(mapped - arrival) > CLOCK_JUMP_MS) {
+            this.base = hostT - arrival;
+            this.jumpCount++;
+            return arrival;
+        }
+        return Math.max(0, mapped);
     }
 
     /**

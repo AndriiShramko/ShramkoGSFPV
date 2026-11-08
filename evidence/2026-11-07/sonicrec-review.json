@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T19:57:02.199Z",
-    "gitHead": "8a63be5",
+    "date": "2026-11-07T23:19:37.930Z",
+    "gitHead": "7af378a",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "pass": true,
+  "pass": false,
   "checks": {
     "R1: a steady recording does not rewrite the panel's live status (the clock and the frame counter are not in a live region)": true,
     "R1: an open replay that is not playing does not rewrite its live status line (the same sentence is not written again every 250 ms)": true,
@@ -23,7 +23,9 @@
     "R3: with too little browser storage the panel says so in the language of the page (Spanish), not in English": true,
     "R4: when the survey dialog opens the focus moves into it (aria-modal hides the page behind it from a screen reader, so the focus must not stay there)": true,
     "R4: the dialog is shown before its question is written (a live region that changes while it is hidden is not announced)": true,
-    "R4: when the survey is over the focus goes back to where it was (the panel button), not to the closed dialog": true
+    "R4: when the survey is over the focus goes back to where it was (the panel button), not to the closed dialog": true,
+    "R5: a recording that cannot be packed says so in Spanish, in the sentence of the dictionary and nothing else": false,
+    "R5: no English reaches the panel with it (not the registry's, not the sound package's own diagnostic: \"bytes\", \"manifest\", \"cannot be packed\", \"Could not save\")": false
   },
   "results": {
     "recordingRegions": {},
@@ -35,12 +37,14 @@
       "spoken": [
         "rec.ask",
         "rec.started",
+        "survey.mic-on",
         "survey.offer"
       ]
     },
     "spokenAfterTheSurvey": [
       "rec.ask",
       "rec.started",
+      "survey.mic-on",
       "survey.offer",
       "survey.skipped",
       "rec.stopped",
@@ -69,7 +73,8 @@
     "surveyFocusAfter": {
       "id": "sonicrec-toggle",
       "inDialog": false
-    }
+    },
+    "failedSaveInSpanish": "No se pudo guardar: the recording cannot be packed: voice.webm has 1169 bytes, the manifest says 3220"
   },
   "note": "headless Chrome, a fake microphone, real OPFS and DOM; the sound runtime, samples and key router are stand-ins until the flight lane lands. A screen reader was not used: what it would read is judged from the live regions that change, not heard."
 }

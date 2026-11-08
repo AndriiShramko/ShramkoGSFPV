@@ -78,12 +78,16 @@ describe('the app\'s own words can never be taken for the pilot\'s yes', () => {
     // The lines checked are the ones that can be in the air while the app listens: everything the sending itself says, and the lines
     // spoken just before it starts (the recording's end). The question about STARTING a recording (rec.ask: "Press T to say yes") is
     // not among them: a press of T stops the listening before that line is ever spoken, and a yes to it could not send anything.
-    const AROUND = ['rec.saved', 'rec.stopped', 'rec.off', 'rec.minor', 'help.send'];
+    // sonic-core 1eea4d5 added send.none and send.cancelled (said when U finds nothing, and when the question is withdrawn) and the
+    // survey's survey.mic-on, survey.howto and survey.howto-voice (said at the end of a recording, before the sending is offered):
+    // every one of them is held here as well, by name, so a renamed key cannot drop out of the check unnoticed.
+    const AROUND = ['rec.saved', 'rec.stopped', 'rec.off', 'rec.minor', 'help.send', 'survey.mic-on', 'survey.howto', 'survey.howto-voice'];
+    const NEW_IN_1EEA4D5 = ['send.none', 'send.cancelled', 'survey.mic-on', 'survey.howto', 'survey.howto-voice'];
     it.each(LANGS)('%s: no word the app says around sending counts as a yes', (l) => {
-        const own = Object.entries(DICTS[l].pkg)
-            .filter(([k]) => k.startsWith('send.') || AROUND.includes(k))
-            .map(([, v]) => v.replace('{key}', 'U'));
-        expect(own.length).toBeGreaterThan(12);
+        const lines = Object.entries(DICTS[l].pkg).filter(([k]) => k.startsWith('send.') || AROUND.includes(k));
+        for (const k of NEW_IN_1EEA4D5) expect(lines.map(([key]) => key), `${l}: ${k} is checked`).toContain(k);
+        const own = lines.map(([, v]) => v.replace('{key}', 'U').replace('{skip}', 'Escape'));
+        expect(own.length).toBeGreaterThan(17);
         const agree = phrasesOf(l, 'agree');
         expect(agree.length).toBeGreaterThanOrEqual(5);
         for (const line of own) expect(heardPhrase([line], agree), line).toBe(false);
@@ -240,6 +244,8 @@ interface World {
     readonly api: FakeApi;
     readonly ctl: SendControl;
     readonly lines: SpeechLine[];
+    /** the options each line was said with, in the order of `lines` */
+    readonly sayWith: ({ readonly interrupt?: boolean } | undefined)[];
     readonly notices: SendNotice[];
     readonly recorder: { phase: RecorderPhase };
     readonly gate: { hold: Promise<void> | null };
@@ -250,10 +256,11 @@ interface World {
 
 const keys = (w: World): string[] => w.lines.map((l) => l.key);
 
-async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: number; askMs?: number; readMs?: number; listenMs?: number; speech?: boolean; api?: FakeApi; made?: MadeSession; noSession?: boolean } = {}): Promise<World> {
+async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: number; askMs?: number; readMs?: number; listenMs?: number; speech?: boolean; api?: FakeApi; made?: MadeSession; noSession?: boolean; say?: (line: SpeechLine, options?: { readonly interrupt?: boolean }) => Promise<void> } = {}): Promise<World> {
     const made = o.made ?? (o.noSession ? await makeSession({ id: 'emptyDummy00000000001' }).then(async (m) => { await m.stores.remove(m.id); return m; }) : await makeSession({ voiceBytes: o.voiceBytes ?? 2500, minor: o.minor === true, guardian: o.guardian === true }));
     const api = o.api ?? new FakeApi();
     const lines: SpeechLine[] = [];
+    const sayWith: ({ readonly interrupt?: boolean } | undefined)[] = [];
     const notices: SendNotice[] = [];
     const recorder = { phase: 'idle' as RecorderPhase };
     const gate: { hold: Promise<void> | null } = { hold: null };
@@ -263,6 +270,7 @@ async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: numb
         made,
         api,
         lines,
+        sayWith,
         notices,
         recorder,
         gate,
@@ -276,8 +284,10 @@ async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: numb
         recorder,
         profile: () => w.profile,
         isLocked: async () => false,
-        say: async (line) => {
+        say: async (line, options) => {
             lines.push(line);
+            sayWith.push(options);
+            if (o.say !== undefined) return o.say(line, options);
             if (gate.hold !== null) await gate.hold;
         },
         keyLabel: (code) => code.replace('Key', ''),
@@ -345,11 +355,11 @@ describe('key U: the app asks, and only the pilot\'s second press, after hearing
         expect(w.api.stored()).toHaveLength(1);
     });
 
-    it('no second press in time: not sent, nothing is said (the package has no "not sent" line, and "recording is off" would be untrue), nothing was asked of the server', async () => {
+    it('no second press in time: not sent, and the pilot hears so (send.cancelled, v12-int step 2); nothing was asked of the server', async () => {
         const w = await world({ askMs: 60 });
         w.ctl.pressSend();
         await until('cancelled', () => w.notices.includes('cancelled'), 2000);
-        expect(keys(w)).toEqual(['send.confirm']);
+        expect(keys(w)).toEqual(['send.confirm', 'send.cancelled']);
         expect(w.api.calls).toHaveLength(0);
         expect(w.ctl.asking).toBe(false);
         expect(await recordOf(w)).toBeNull();
@@ -359,7 +369,7 @@ describe('key U: the app asks, and only the pilot\'s second press, after hearing
         expect(w.api.calls).toHaveLength(0);
     });
 
-    it('while a recording runs U does nothing but say so on screen; with nothing to send it says so on screen', async () => {
+    it('while a recording runs U does nothing but say so on screen; with nothing to send it says so on screen and aloud (send.none, v12-int step 2)', async () => {
         const w = await world();
         w.recorder.phase = 'recording';
         w.ctl.pressSend();
@@ -370,7 +380,8 @@ describe('key U: the app asks, and only the pilot\'s second press, after hearing
         const empty = await world({ noSession: true });
         empty.ctl.pressSend();
         await until('nothing', () => empty.notices.includes('nothing'));
-        expect(empty.lines).toHaveLength(0);
+        expect(keys(empty)).toEqual(['send.none']);
+        expect(empty.api.calls).toHaveLength(0);
     });
 
     it('a recording that starts while the question is out cancels the question (and the microphone is the recorder\'s)', async () => {
@@ -380,6 +391,8 @@ describe('key U: the app asks, and only the pilot\'s second press, after hearing
         w.recorder.phase = 'asking';
         w.ctl.onRecorderStatus({ phase: 'asking' } as never);
         expect(w.ctl.asking).toBe(false);
+        // the recorder speaks now: "not sent" is not said over its question (nothing here speaks while a recording runs)
+        expect(keys(w)).toEqual(['send.confirm']);
         w.recorder.phase = 'idle';
         w.ctl.pressSend(); // a fresh question, not the old yes
         await until('asked again', () => keys(w).filter((k) => k === 'send.confirm').length === 2);
@@ -469,7 +482,19 @@ describe('the helper\'s Send button, the same rules', () => {
         expect(w2.api.calls).toHaveLength(0);
         expect(await w2.ctl.sendByHelper('nonexistent00000000000')).toBe('busy'); // a recording runs: busy comes first
         w2.recorder.phase = 'idle';
-        expect(await w2.ctl.sendByHelper('nonexistent00000000000')).toBe('unreadable');
+        // a recording that is gone (deleted meanwhile) is nothing to send: the panel says so, and the pilot hears it (send.none)
+        expect(await w2.ctl.sendByHelper('nonexistent00000000000')).toBe('nothing');
+        expect(keys(w2)).toEqual(['send.none']);
+    });
+
+    it('the button taking over a question that is out sends, and the pilot does not hear "not sent" (send.cancelled is only for a question left unanswered)', async () => {
+        const w = await world();
+        w.ctl.pressSend();
+        await until('the question', () => w.ctl.asking);
+        expect(await w.ctl.sendByHelper(w.made.id)).toBeNull();
+        await w.ctl.whenIdle();
+        expect(keys(w)).toEqual(['send.confirm', 'send.sending', 'send.stored', 'send.delivered']);
+        expect(w.notices).toContain('cancelled'); // the panel's own line for the question, as before
     });
 
     it('pressing it twice makes one sending, not two', async () => {
@@ -795,16 +820,21 @@ describe('key U in the flight page', () => {
         globalThis.fetch = realFetch;
     });
 
-    it('with the mode on and a held key: a held U is one press, and with nothing recorded it asks nothing and says so on screen only', () => {
+    it('with the mode on and a held key: a held U is one press, and with nothing recorded it asks nothing and says so aloud (send.none)', async () => {
         const spy = vi.fn();
         const realFetch = globalThis.fetch;
         globalThis.fetch = spy as unknown as typeof fetch;
         const { ctx, router, fake } = page(true);
         const s = mod.createSonicSession(ctx);
         press(router, 'KeyU', { repeat: true });
+        await sleep(30);
+        expect(fake.spoken).toHaveLength(0); // the held key is no press
         press(router, 'KeyU');
-        expect(fake.spoken).toHaveLength(0); // nothing to send: silent on the voice, the panel (not built here) carries the notice
+        await until('send.none', () => fake.spoken.length > 0);
+        await sleep(30);
+        expect(fake.spoken.map((l) => l.key)).toEqual(['send.none']); // nothing to send: the pilot hears it, the panel (not built here) shows it
         expect(spy).not.toHaveBeenCalled();
+        expect(s.send.asking).toBe(false);
         expect(s.recorder.phase).toBe('idle');
         s.dispose();
         globalThis.fetch = realFetch;
@@ -816,5 +846,77 @@ describe('key U in the flight page', () => {
         events.emit('sonicSample', sampleAt(1000));
         expect(s.send.live().size).toBe(0);
         s.dispose();
+    });
+});
+
+// v12-int review, finding I2 (the same as the recorder's, tools/bench/test/sonicrec-recorder.test.ts "review I2"): the question of U, and what U
+// answers at once, were said behind what the lesson was saying, and the reading limit let a second press agree to the question before it began.
+describe('review I2: U\'s question and the lesson\'s speech', () => {
+    /** The engine as it speaks with the browser's voice: utterances queue, each takes `unitMs`; a line that interrupts cuts what is queued. */
+    function queueingEngine(unitMs: number) {
+        let freeAt = 0;
+        const rows: { key: string; startedAt: number }[] = [];
+        return {
+            startOf: (key: string): number | null => rows.find((r) => r.key === key)?.startedAt ?? null,
+            say(line: SpeechLine, options?: { readonly interrupt?: boolean }): Promise<void> {
+                const now = Date.now();
+                if (options?.interrupt === true) freeAt = now;
+                const startedAt = Math.max(now, freeAt);
+                freeAt = startedAt + unitMs;
+                rows.push({ key: line.key, startedAt });
+                return new Promise<void>((resolve) => setTimeout(resolve, freeAt - now));
+            }
+        };
+    }
+
+    it('the question, "nothing to send", and where the sending is are said with interrupt: they are the answer to the pilot\'s key', async () => {
+        const w = await world();
+        w.ctl.pressSend();
+        await until('the question', () => keys(w).includes('send.confirm'));
+        expect(w.sayWith[keys(w).indexOf('send.confirm')]).toEqual({ interrupt: true });
+        w.ctl.pressSend();
+        await w.ctl.whenIdle();
+        await until('delivered', () => keys(w).includes('send.delivered'));
+        // the lines the sending says by itself as it goes are not answers to a key: they queue behind whatever is being said
+        for (const k of ['send.sending', 'send.stored']) expect(w.sayWith[keys(w).indexOf(k)], k).toBeUndefined();
+        // U again: nothing is going on and it was delivered; the answer is at once
+        const n = w.lines.length;
+        w.ctl.pressSend();
+        await until('the answer', () => w.lines.length > n);
+        expect(w.lines[n]?.key).toBe('send.delivered');
+        expect(w.sayWith[n]).toEqual({ interrupt: true });
+        const none = await world({ noSession: true });
+        none.ctl.pressSend();
+        await until('send.none', () => keys(none).includes('send.none'));
+        expect(none.sayWith[0]).toEqual({ interrupt: true });
+    });
+
+    it('with the lesson talking the question is heard at once, so a press after the reading limit agrees to a question the pilot has heard', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` }); // 240 ms of speech ahead of the question
+        const w = await world({ readMs: 90, askMs: 2000, say: (line, options) => engine.say(line, options) });
+        w.ctl.pressSend();
+        await until('the question', () => keys(w).includes('send.confirm'));
+        await sleep(120); // longer than the reading limit, shorter than what the lesson has queued
+        const begun = engine.startOf('send.confirm');
+        w.ctl.pressSend(); // an impatient second press
+        expect(begun !== null && begun <= Date.now()).toBe(true);
+        await w.ctl.whenIdle();
+        expect(w.api.stored()).toHaveLength(1);
+    });
+
+    it('control: said the old way (no interrupt) the question waits behind the lesson and the same second press agrees to it before it has begun', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` });
+        const w = await world({ readMs: 90, askMs: 2000, say: (line) => engine.say(line) });
+        const pressed = Date.now();
+        w.ctl.pressSend();
+        await until('the question', () => keys(w).includes('send.confirm'));
+        await sleep(120);
+        const startsAfter = (engine.startOf('send.confirm') ?? Infinity) - pressed;
+        w.ctl.pressSend();
+        expect(startsAfter).toBeGreaterThan(100); // later than the reading limit (90 ms): the gate was open before the question had begun
+        await w.ctl.whenIdle();
+        expect(w.api.stored()).toHaveLength(1); // agreed to while it was still queued
     });
 });

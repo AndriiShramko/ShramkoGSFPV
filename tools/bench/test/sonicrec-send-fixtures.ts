@@ -105,7 +105,15 @@ export interface Call {
     readonly json: Record<string, unknown> | null;
 }
 
-export type Fault = { kind: 'network' } | { kind: 'status'; status: number; body?: Record<string, unknown> } | { kind: 'lost' } | { kind: 'portal' } | { kind: 'hang' } | { kind: 'reply'; body: Record<string, unknown> };
+export type Fault =
+    | { kind: 'network' }
+    | { kind: 'status'; status: number; body?: Record<string, unknown> }
+    | { kind: 'lost' }
+    | { kind: 'portal' }
+    | { kind: 'hang' }
+    | { kind: 'reply'; body: Record<string, unknown> }
+    /** the body takes `body.length / bytesPerSecond` seconds to arrive, in the timers the test controls; a request aborted before that has put nothing on the server */
+    | { kind: 'throttle'; bytesPerSecond: number };
 
 interface Sess {
     id: string;
@@ -154,6 +162,13 @@ export class FakeApi {
         let fault: Fault | null = null;
         for (const f of this.faults) fault = fault ?? f(call);
         if (fault?.kind === 'network') throw new TypeError('fetch failed');
+        if (fault?.kind === 'throttle') {
+            const ms = ((body?.length ?? 0) / fault.bytesPerSecond) * 1000;
+            await new Promise<void>((resolve, reject) => {
+                const timer = setTimeout(resolve, ms);
+                init?.signal?.addEventListener('abort', () => { clearTimeout(timer); reject(new DOMException('aborted', 'AbortError')); }, { once: true });
+            });
+        }
         if (fault?.kind === 'hang') {
             await new Promise<never>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')), { once: true }));
         }

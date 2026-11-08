@@ -36,7 +36,7 @@ interface Setup {
     free?: number | null;
     askMs?: number;
     /** the spoken line, as the page's engine would give it: a promise that settles when the line has been said (default: nothing to wait for) */
-    say?: (line: SpeechLine) => unknown;
+    say?: (line: SpeechLine, options?: { readonly interrupt?: boolean }) => unknown;
     readMs?: number;
 }
 
@@ -46,6 +46,8 @@ function setup(o: Setup = {}) {
     const fake: FakeRuntime = fakeRuntime(o.lesson === undefined ? 'walls-hall' : o.lesson);
     const state = { runtime: o.mode === 'off' ? null : fake.runtime, now: 100_000, profile: o.profile ?? newProfile() };
     const said: SpeechLine[] = [];
+    /** the options each line was said with (the lines of `said`, in the same order) */
+    const saidWith: ({ readonly interrupt?: boolean } | undefined)[] = [];
     const statuses: RecorderStatus[] = [];
     const created: string[] = [];
     const stores: SessionStores = {
@@ -73,9 +75,10 @@ function setup(o: Setup = {}) {
         stores,
         voice,
         profile: () => state.profile,
-        say: (line) => {
+        say: (line, options) => {
             said.push(line);
-            return o.say?.(line);
+            saidWith.push(options);
+            return o.say?.(line, options);
         },
         keyLabel: (c) => c.replace('Key', ''),
         gzip: nodeGzip,
@@ -85,7 +88,7 @@ function setup(o: Setup = {}) {
         freeBytes: async () => (o.free === undefined ? null : o.free),
         onStatus: (s) => statuses.push(s)
     });
-    return { dir, mic, fake, state, said, statuses, created, rec, voice, stores };
+    return { dir, mic, fake, state, said, saidWith, statuses, created, rec, voice, stores };
 }
 type H = ReturnType<typeof setup>;
 
@@ -331,6 +334,23 @@ describe('the recorder: T asks, T records, T stops', () => {
         }
     });
 
+    it('the survey is told whether the voice is still being recorded (v12-int step 2, survey.mic-on): granted yes; refused, missing or unsupported no', async () => {
+        for (const mode of ['grant', 'deny', 'missing', 'unsupported'] as const) {
+            const h = setup({ mic: mode });
+            await startRecording(h);
+            fly(h, 1);
+            let voiceOn: boolean | null = null;
+            const done = await h.rec.stop({
+                survey: async (env) => {
+                    voiceOn = env.voiceOn;
+                    return null;
+                }
+            });
+            expect(done, mode).not.toBeNull();
+            expect(voiceOn, mode).toBe(mode === 'grant');
+        }
+    });
+
     it('a minor is told so first, the package is valid, and it never claims consent to send', async () => {
         const profile = withProfile(newProfile(), { minor: true, guardianConfirmed: false, nickname: 'Kid', headphones: 'wired' });
         const h = setup({ profile });
@@ -387,9 +407,11 @@ describe('the recorder: T asks, T records, T stops', () => {
         const profile = withProfile(newProfile(), { minor: true, guardianConfirmed: true });
         const h = setup({ profile, say: () => new Promise<void>((resolve) => gates.push(resolve)) });
         h.rec.pressRecord();
-        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
+        // a reader reads them one after the other: the question is handed over when the guardian line is over (v12-int review I4)
+        expect(keys(h.said)).toEqual(['rec.minor']);
         gates[0]?.(); // the first line is over, the question is not
         await sleep(10);
+        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
         h.rec.pressRecord();
         expect(h.mic.asked).toBe(0);
         gates[1]?.();
@@ -659,5 +681,159 @@ describe('the sync marks of the voice', () => {
         // the sidecar is not part of the package
         expect(pkg.problems).toEqual([]);
         expect(pkg.manifest.files.map((f) => f.name)).not.toContain('voice-sync.jsonl');
+    });
+});
+
+// v12-int review, finding I2: the consent question was queued behind what the lesson was saying, and the reading limit let a second press agree
+// to it before it had been spoken.
+//
+// The engine speaks with the browser's own voice: its utterances queue one after another, and only a line that interrupts cuts what is queued
+// (speechSynthesis.cancel). The recorder said its question without interrupt, so with a lesson talking (a lesson says four to six lines when it
+// opens, 10 to 24 s at the normal speed) the question came after the lesson's lines, and the recorder, which waits for the end of the question
+// (readMs, 20 s, so that a hidden tab cannot lock the pilot out), opened its gate on the timer: a second press of T at 21 s was the pilot's
+// yes, before the question had begun. The page proof is tools/bench/src/sonic-int-review.ts r2 (the question came at +26.3 s, the recording
+// started at +21.3 s).
+describe('review I2: the consent question and the lesson\'s speech', () => {
+    /** The engine as it speaks with the browser's voice: utterances queue, each takes `unitMs`; a line that interrupts cuts what is queued. */
+    function queueingEngine(unitMs: number) {
+        let freeAt = 0;
+        const rows: { key: string; startedAt: number }[] = [];
+        return {
+            rows,
+            startOf: (key: string): number | null => rows.find((r) => r.key === key)?.startedAt ?? null,
+            say(line: SpeechLine, options?: { readonly interrupt?: boolean }): Promise<void> {
+                const now = Date.now();
+                if (options?.interrupt === true) freeAt = now;
+                const startedAt = Math.max(now, freeAt);
+                freeAt = startedAt + unitMs;
+                rows.push({ key: line.key, startedAt });
+                return new Promise<void>((resolve) => setTimeout(resolve, freeAt - now));
+            }
+        };
+    }
+    const lessonTalks = (engine: ReturnType<typeof queueingEngine>, lines: number): void => {
+        for (let i = 0; i < lines; i++) void engine.say({ key: `lesson.line${i}` });
+    };
+
+    it('the question cuts what is being said: its first line interrupts, a minor\'s second line (the question itself) follows it', async () => {
+        const adult = setup();
+        adult.rec.pressRecord();
+        expect(keys(adult.said)).toEqual(['rec.ask']);
+        expect(adult.saidWith).toEqual([{ interrupt: true }]);
+        const minor = setup({ profile: withProfile(newProfile(), { minor: true, guardianConfirmed: true }) });
+        minor.rec.pressRecord();
+        expect(keys(minor.said)).toEqual(['rec.minor', 'rec.ask']);
+        expect(minor.saidWith).toEqual([{ interrupt: true }, undefined]);
+    });
+
+    it('with the lesson talking, the question is heard at once, and a press after the reading limit is a yes the pilot gave knowing the question', async () => {
+        const engine = queueingEngine(40);
+        lessonTalks(engine, 6); // 240 ms of speech ahead of the question
+        const h = setup({ readMs: 90, askMs: 2000, say: (line, options) => engine.say(line, options) });
+        const pressed = Date.now();
+        h.rec.pressRecord();
+        await sleep(120); // longer than the reading limit, shorter than what the lesson has queued
+        const heardBy = engine.startOf('rec.ask');
+        h.rec.pressRecord(); // an impatient second press
+        const consent = h.mic.asked > 0;
+        // the pilot has never agreed to a question that had not begun
+        expect(heardBy === null ? false : heardBy <= Date.now()).toBe(true);
+        expect(heardBy === null ? Infinity : heardBy - pressed).toBeLessThan(30);
+        expect(consent).toBe(true);
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+
+    it('control: said the old way (no interrupt) the question waits behind the lesson and the same second press agrees to it before it has begun', async () => {
+        const engine = queueingEngine(40);
+        lessonTalks(engine, 6);
+        const h = setup({ readMs: 90, askMs: 2000, say: (line) => engine.say(line) });
+        const pressed = Date.now();
+        h.rec.pressRecord();
+        await sleep(120);
+        const startsAfter = (engine.startOf('rec.ask') ?? Infinity) - pressed;
+        h.rec.pressRecord();
+        expect(startsAfter).toBeGreaterThan(100); // later than the reading limit (90 ms): the gate was open before the question had begun
+        expect(h.mic.asked).toBe(1); // the microphone was asked for while the question was still queued
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+});
+
+// v12-int review, finding I4: with "my screen reader speaks" (the engine's selfVoice off) the engine says nothing itself and each line waits its own
+// estimated time from the moment it is handed over, all of them at once (package, engine.ts say()), while a screen reader reads the captions one
+// after the other. A minor's question is two lines (the guardian line, then the question): handed over together, the pair was "read out" after the
+// longer of the two, with the screen reader still on the question, and the second press of a hurried pilot counted from there. Step 6 of v12-int
+// made the lesson's host wait for its lines one after the other in that mode; the recorder's own question did not.
+describe('review I4: a minor\'s two-line question in "my screen reader speaks" mode', () => {
+    /** The engine in that mode: no queue, a line takes `unitMs` from the call whatever else is being said, an interrupt cuts nothing. */
+    function parallelEngine(unitMs: number) {
+        const calls: { key: string; at: number }[] = [];
+        let resolved = 0;
+        return {
+            calls,
+            say(line: SpeechLine): Promise<void> {
+                calls.push({ key: line.key, at: Date.now() });
+                return new Promise<void>((resolve) =>
+                    setTimeout(() => {
+                        resolved++;
+                        resolve();
+                    }, unitMs)
+                );
+            },
+            /** resolves when `n` lines have been waited out (driven by the engine's own timers, not by a guess of the test's) */
+            async whenResolved(n: number): Promise<void> {
+                while (resolved < n) await sleep(2);
+            }
+        };
+    }
+    const minorProfile = (): PilotProfile => withProfile(newProfile(), { minor: true, guardianConfirmed: true });
+
+    it('the question is read out after BOTH lines have been, one after the other: a press between the end of the longer one and the end of the pair is not a yes', async () => {
+        const engine = parallelEngine(60); // a reader needs 120 ms for the pair
+        const h = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
+        h.rec.pressRecord();
+        await engine.whenResolved(1); // the first line is over (60 ms) ...
+        await sleep(4); // ... and the recorder has taken it in; the question is being read until 120 ms (the old way: handed over with the first, "read" at 60 ms)
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(0);
+        expect(h.rec.phase).toBe('asking');
+        await engine.whenResolved(2); // both read out
+        await sleep(4);
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(1);
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+
+    it('the second line is handed over when the first is over (the lines of a reader are one after the other)', async () => {
+        const engine = parallelEngine(60);
+        const h = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
+        const t0 = Date.now();
+        h.rec.pressRecord();
+        expect(keys(h.said)).toEqual(['rec.minor']);
+        await until(() => keys(h.said).length === 2, 'the question');
+        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
+        expect(Date.now() - t0).toBeGreaterThanOrEqual(55);
+        expect(h.saidWith[1]).toEqual({ interrupt: true });
+    });
+
+    it('control: an adult\'s one line is read out as before, and the order and the words of a minor\'s two lines are as they were', async () => {
+        const engine = parallelEngine(40);
+        const adult = setup({ askMs: 2000, say: (line) => engine.say(line) });
+        adult.rec.pressRecord();
+        expect(keys(adult.said)).toEqual(['rec.ask']);
+        await sleep(15);
+        adult.rec.pressRecord();
+        expect(adult.mic.asked).toBe(0); // still being read
+        await sleep(50);
+        adult.rec.pressRecord();
+        expect(adult.mic.asked).toBe(1);
+        await until(() => adult.rec.phase === 'recording', 'the recording to start');
+        await adult.rec.stop();
+        const minor = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
+        minor.rec.pressRecord();
+        await until(() => keys(minor.said).length === 2, 'the question');
+        expect(minor.said[1]).toEqual({ key: 'rec.ask', params: { key: 'T' } });
     });
 });

@@ -88,7 +88,8 @@ function loadTree(): DictSet[] {
 
 /** The folder a glob pattern of apps/fly/src/i18n.ts reaches (the pattern minus its `/<ns>/<lang>.json`). */
 function globRoot(source: string): string | null {
-    const m = source.match(/import\.meta\.glob[^(]*\(\s*'([^']+)'/);
+    // the first pattern (a list may follow it with exclusions: the recorder's namespace comes with its lazy chunk, v12-int step 4)
+    const m = source.match(/import\.meta\.glob[^(]*\(\s*\[?\s*'([^']+)'/);
     if (!m || !m[1].endsWith('/*/*.json')) return null;
     return resolve(dirname(FLY_I18N), m[1].slice(0, -'/*/*.json'.length));
 }

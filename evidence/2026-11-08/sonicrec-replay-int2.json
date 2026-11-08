@@ -1,0 +1,262 @@
+{
+  "name": "sonicrec-replay",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T00:16:18.675Z",
+    "gitHead": "d63663e",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "pass": true,
+  "checks": {
+    "R1: a model host flew rings-first in real time; the real recorder wrote a package that reads strictly, with voice and the lesson events": true,
+    "R1: all four tone bursts of the microphone are in the voice (so the voice can be followed through the replay)": true,
+    "R2: the finished recording has a Replay button beside Save to disk and Delete": true,
+    "R2: opening a recording checks it against the lesson and says so: \"The replay agrees with the recording: N of N events were worked out again, and 100 % of the sounds are the same.\"": true,
+    "R2: the check is the sound package comparer's own line, kept in the details": true,
+    "R2: the title names the lesson; no note is shown for a recording with a voice made in the same lesson world": true,
+    "R2: opening and checking took nothing from the page (no playback mode, no pause, no camera)": true,
+    "R3: every recorded frame is fed to the engine exactly once, in order": true,
+    "R3: each frame is fed in the first tick whose clock has reached its time, never before it, and less than 25 ms after it (the page's tick is 16 ms)": true,
+    "R3: the lesson's own lines come again in the recorded order, and the cues the replay core makes are all fed to the engine": true,
+    "R3: the camera was given only poses on the recorded track (within 1 micrometre), and each is the recorded frames blended at the package time the player gave it (within 1 micrometre)": true,
+    "R3: the player's package time for each pose is the audio clock's within 12 ms (one audio callback: the clock moves in steps between reads)": true,
+    "R3 control: the instrument finds six known tone bursts put into the same node within 3 ms of where they were put (one render quantum is 2.7 ms)": true,
+    "R3: all four tone bursts of the voice come out of the real AudioContext at the time the package says, within 3 ms": true,
+    "R3: followed on the recording's own clock, each burst is heard within 30 ms of the moment it was made (the replay's error above plus the recording's own measured offset error)": true,
+    "R3: the page was paused with the panel reason and the mode in playback only while the replay was open and playing": true,
+    "R3: the engine ends silent (layers off) and the helper's controls say Play with the position at the end": true,
+    "R3: while it plays the panel's toggle button says Replay with the position": true,
+    "R5: closing the replay gives the page back: the camera and the flight released, the mode out of playback, the pilot's own prefs and theme to the engine again, the panel button as before": true,
+    "R4: a first burst sounds after a seek made before Play, at the time the package says (within 3 ms)": true,
+    "R4: while paused nothing sounds and the position holds exactly": true,
+    "R4: after Pause and Play the next burst comes where the package says (within 3 ms): a stop did not shift the voice against the flight": true,
+    "R4: after a seek made while playing the voice jumps with the frames: the burst comes where the package says (within 3 ms)": true,
+    "R4: after the seek only frames from the seek on were fed, each once": true,
+    "R4 control: the instrument checked again after the replays still finds the known bursts within 3 ms": true,
+    "R5 control: a voice whose offset is changed by 200 ms in the package is heard 200 ms from where the original says (the measurement can see a misalignment, 197 to 203 ms)": true,
+    "R5 control: a package whose events were changed is reported as differing (\"The replay differs from the recording ...\"), and the comparer line says FAIL": true,
+    "R6: the saved .zip opened through the \"Open a recording file\" input gives the same check as the session in the browser's storage": true,
+    "R7: the replay section in English, Spanish, Polish and Russian shows no missing key, and the check sentence is translated": true
+  },
+  "results": {
+    "flight": {
+      "hostMs": 13667,
+      "phase": "flying",
+      "attempts": 2
+    },
+    "r1": {
+      "zipBytes": 23397,
+      "frames": 410,
+      "events": 22,
+      "lesson": "rings-first",
+      "voiceBytes": 14415,
+      "voiceOffsetMs": 5,
+      "voiceMs": 13740,
+      "burstsFoundInVoice": 4,
+      "burstsPackageMs": [
+        3003.8,
+        6003.8,
+        9003.8,
+        12003.8
+      ],
+      "recordingClockErrorMs": [
+        3.8,
+        3.8,
+        3.8,
+        3.8
+      ],
+      "problems": 0,
+      "eventKinds": [
+        "session",
+        "recording",
+        "lesson",
+        "speech",
+        "gate",
+        "goal",
+        "reset"
+      ]
+    },
+    "r2": {
+      "checkCost": {
+        "ms": 22.6,
+        "frames": 410,
+        "msPerFrame": 0.055,
+        "ok": true
+      },
+      "title": "rings-first \u00b7 Nov 8, 2026, 1:15 AM",
+      "status": "The replay agrees with the recording: 15 of 15 events were worked out again, and 100 % of the sounds are the same.",
+      "notes": [],
+      "details": [
+        "replay check PASS: events 15 of 15 re-derived (largest time difference 17 ms); cues 99.5 % of 410 frames agree (99.8 % by cue kind)"
+      ],
+      "toggle": "Play",
+      "time": "0:00 of 0:13",
+      "logAfterOpen": []
+    },
+    "r3": {
+      "reference": {
+        "acS": 18.021333333333335,
+        "tMs": 0
+      },
+      "frames": {
+        "recorded": 410,
+        "fed": 410,
+        "inOrder": true,
+        "lateMsAgainstTheTicksClock": {
+          "n": 410,
+          "min": 0,
+          "mean": 8.9,
+          "p95": 19,
+          "max": 19
+        },
+        "lateMsAgainstASecondReadOfTheAudioClock": {
+          "n": 410,
+          "min": 1.3,
+          "mean": 9,
+          "p95": 19,
+          "max": 19
+        }
+      },
+      "engine": {
+        "saidLines": [
+          "lesson.rings-first.title",
+          "lesson.rings-first.intro.1",
+          "lesson.rings-first.intro.2",
+          "lesson.rings-first.intro.3",
+          "lesson.rings-first.goal.1",
+          "fly.go",
+          "fly.attempt"
+        ],
+        "recordedLines": [
+          "lesson.rings-first.title",
+          "lesson.rings-first.intro.1",
+          "lesson.rings-first.intro.2",
+          "lesson.rings-first.intro.3",
+          "lesson.rings-first.goal.1",
+          "fly.go",
+          "fly.attempt"
+        ],
+        "cues": 3,
+        "coreCues": 3,
+        "layersCalls": 2,
+        "lastLayersOn": 0
+      },
+      "camera": {
+        "posesShown": 861,
+        "maxDistanceToRecordedTrackM": 2.7755575615628914e-17,
+        "maxDifferenceFromTheBlendAtItsTimeM": 0,
+        "packageTimeVsAudioClockMs": 10.7,
+        "viewLagMs": 42,
+        "outputLatencyMsNow": 42
+      },
+      "voice": {
+        "burstsRendered": 4,
+        "expectedBursts": 4,
+        "instrumentOwnErrorMs": {
+          "mean": 0,
+          "min": 0,
+          "max": 0.1,
+          "n": 6
+        },
+        "errorVsPackageMs": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "errorVsMadeOnRecordingClockMs": [
+          3.8,
+          3.8,
+          3.8,
+          3.8
+        ],
+        "recordingClockErrorMs": [
+          3.8,
+          3.8,
+          3.8,
+          3.8
+        ],
+        "sampleRate": 48000
+      },
+      "lifecycle": [
+        "playback.true",
+        "pause:panel",
+        "engine.setPrefs",
+        "engine.setTheme"
+      ],
+      "panelMidway": {
+        "toggle": "Pause",
+        "time": "0:02 of 0:13",
+        "position": 2500,
+        "panelToggleButton": "Replay 0:02"
+      },
+      "panelEnd": {
+        "toggle": "Play",
+        "time": "0:13 of 0:13",
+        "position": 13700
+      },
+      "playingStateSeen": "Pause"
+    },
+    "r4": {
+      "pausedAtMs": 3920,
+      "heldWhilePausedMs": 0,
+      "burstsHeardBeforePauseResume": 1,
+      "burstsHeardWhilePaused": 0,
+      "burstsAfterResume": 2,
+      "burstErrorMs": {
+        "firstAfterSeekToBefore": 0,
+        "afterPauseResume": 0,
+        "afterSeekWhilePlaying": 0
+      },
+      "framesAfterSeek": {
+        "first": 7821,
+        "last": 9888,
+        "n": 63
+      }
+    },
+    "instrumentErrorAfterwardsMs": {
+      "mean": 0,
+      "min": 0,
+      "max": 0.1
+    },
+    "r5": {
+      "shiftedVoiceOffsetErrorMs": 200
+    },
+    "r5tampered": {
+      "status": "The replay differs from the recording in 2 event(s): 13 of 13 recorded events were worked out again, and 100 % of the sounds are the same. It is still played as it was recorded.",
+      "details": "replay check FAIL: events 13 of 13 re-derived (largest time difference 17 ms); cues 99.5 % of 410 frames agree (99.8 % by cue kind); 2 event differences, first: rings-first@1:attempt-start:1 at 4121 ms is derived by the replay but not recorded file-unlisted: events.jsonl is in the package but not listed in the manifest"
+    },
+    "r6": {
+      "fileBytes": 23397,
+      "status": "The replay agrees with the recording: 15 of 15 events were worked out again, and 100 % of the sounds are the same.",
+      "title": "rings-first \u00b7 Nov 8, 2026, 1:15 AM"
+    },
+    "r7": {
+      "en": [
+        "ok",
+        "The replay agrees with the recording: 15 of 15 events were worked out "
+      ],
+      "es": [
+        "ok",
+        "La reproducci\u00f3n coincide con la grabaci\u00f3n: se volvieron a calcular 15 "
+      ],
+      "pl": [
+        "ok",
+        "Odtwarzanie zgadza si\u0119 z nagraniem: ponownie wyliczono 15 z 15 zdarze\u0144"
+      ],
+      "ru": [
+        "ok",
+        "\u041f\u043e\u0432\u0442\u043e\u0440 \u0441\u043e\u0432\u043f\u0430\u0434\u0430\u0435\u0442 \u0441 \u0437\u0430\u043f\u0438\u0441\u044c\u044e: \u0437\u0430\u043d\u043e\u0432\u043e \u0432\u044b\u0447\u0438\u0441\u043b\u0435\u043d\u043e 15 \u0438\u0437 15 \u0441\u043e\u0431\u044b\u0442\u0438\u0439, \u0438 100 %"
+      ]
+    }
+  },
+  "note": "headless Chrome 156, real OPFS, MediaRecorder, AudioContext and decodeAudioData; the recorder, panel, check, player and voice are the simulator's code; the flight lane's runtime is a stand-in (a model host of the sound package flies the lesson in real time, the engine records its calls, the microphone is tone bursts at known times, a tap in front of the destination finds them again). How a replay sounds or looks is not judged here."
+}

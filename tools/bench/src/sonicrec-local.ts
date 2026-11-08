@@ -16,16 +16,14 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { build } from 'esbuild';
-import type { Plugin } from 'esbuild';
 import type { BrowserContext, Page } from 'playwright';
 import { launchChrome } from './browser';
 import { REPO as EVIDENCE_REPO, today, writeEvidence } from './evidence';
-import { REPO, makeDist, serveDist } from './sonicrec-serve';
+import { REPO, makeDist, serveDist, i18nShim } from './sonicrec-serve';
 import { readPackage } from '../../../packages/sonic-fpv/src';
 import { packageFileName } from '../../../apps/fly/src/sonic-session/save';
 
-const SHIM = join(REPO, 'tools', 'bench', 'test', 'sonicrec-i18n-shim.ts');
-const shim: Plugin = { name: 'i18n-shim', setup: (b) => b.onResolve({ filter: /\/i18n$/ }, (a) => (a.importer.includes('sonic-session') ? { path: SHIM } : undefined)) };
+const shim = i18nShim;
 const bundle = await build({ entryPoints: [join(REPO, 'tools', 'bench', 'test', 'sonicrec-local-page.ts')], outdir: 'out', bundle: true, format: 'esm', platform: 'browser', target: 'es2022', write: false, logLevel: 'silent', plugins: [shim] });
 const out = (ext: string): string => bundle.outputFiles.find((f) => f.path.endsWith(ext))?.text ?? '';
 const dist = makeDist({

@@ -7,10 +7,12 @@
 //    within half a voxel diagonal (control: walls built a few voxels off are caught);
 //  - a lesson life replays to its hash on walls rebuilt from the same spec, and lifeProblem refuses other
 //    walls (controls: another world's digest, and the same log on other walls replays apart);
-//  - the sweeps of a 10 s hall flight cost under 20 ms (measured; the uncached lookup is measured beside it).
-import { afterEach, describe, expect, it } from 'vitest';
+//  - the sweeps of a 10 s hall flight cost clearly less than the uncached lookup in the open and no more than it along a wall, timed beside it in the same
+//    process at the same moment (a ratio holds under the load of the gate's other test files, where "under 20 ms" did not: 15 ms alone were 30 ms in the
+//    gate once); the 20 ms of the plan itself is measured alone, with its evidence, by tools/bench/test/sonic-world-cost.ts.
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { S, Sim, replayLives } from '../../../packages/sim-core/src';
-import type { ContactOut, ContactWorld, Runner, SimEvent } from '../../../packages/sim-core/src';
+import type { ContactWorld, Runner, SimEvent } from '../../../packages/sim-core/src';
 import { AnalyticContactWorld, VoxelContactWorld, analyticCollision } from '../../../packages/collision/src';
 import type { AnalyticVoxelCollision } from '../../../packages/collision/src';
 import { createAnalyticWorld, getLesson, makeSpec } from '../../../packages/sonic-fpv/src';
@@ -19,14 +21,9 @@ import { FlightSession } from '../../../apps/fly/src/session';
 import type { SessionOptions } from '../../../apps/fly/src/session';
 import { depsFor, lifeProblem } from '../../../apps/fly/src/session/replay';
 import { buildLessonWorld, isLessonScene, lessonSceneId, lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
-import { MODE_CHANNEL } from '../../../packages/sim-core/src';
-import { ArmGate } from '../../../packages/input/src';
-import type { Profile } from '../../../packages/input/src';
-import { AutoArm } from '../../../apps/fly/src/play/assist';
-import { GameAssist } from '../../../apps/fly/src/play/game';
-import type { GameKeys } from '../../../apps/fly/src/play/game';
 import { PROBE_M, groundClearance } from '../../../apps/fly/src/play/ground';
 import { params } from './game-loop';
+import { OPEN_FLIGHT, WALL_FLIGHT, costKinds, hallFlight, measureKinds, walls } from './sonic-world-flight';
 
 /** A renderer that draws nothing (as wind-session.test.ts): every method a no-op, `app` an event source nobody fires. */
 function nullRenderer(): NonNullable<SessionOptions['renderer']> {
@@ -67,11 +64,6 @@ function firstTouchGap(world: AnalyticWorldInfo, contact: ContactWorld, at: read
         }
     }
     return null;
-}
-
-/** The world's walls as the session builds them, and the same walls with a different lookup. */
-function walls(world: AnalyticWorldInfo, cull = true): AnalyticVoxelCollision {
-    return analyticCollision(world.bounds.min, world.bounds.max, world.voxelM, world.solidAt, cull ? world.sdf : null);
 }
 
 /** A small seeded generator for the voxel samples (the same picks every run). */
@@ -264,129 +256,63 @@ describe('a lesson life replays to its hash', () => {
     });
 });
 
-/** One query of the flight model to its contact world, kept to be asked again. */
-type Query = { kind: 'sweep'; c0: Float64Array; c1: Float64Array; r: Float64Array; pad: Float64Array; n: number } | { kind: 'push'; x: number; y: number; z: number; r: number };
-
-/** A contact world that passes everything on and keeps every query (the timing replays them without a timer per call). */
-class Recorder implements ContactWorld {
-    readonly queries: Query[] = [];
-    constructor(private readonly inner: ContactWorld) {}
-    sweep(c0: Float64Array, c1: Float64Array, r: Float64Array, pad: Float64Array, n: number, out: ContactOut): number {
-        this.queries.push({ kind: 'sweep', c0: c0.slice(), c1: c1.slice(), r: r.slice(), pad: pad.slice(), n });
-        return this.inner.sweep(c0, c1, r, pad, n, out);
-    }
-
-    pushOut(x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }): boolean {
-        this.queries.push({ kind: 'push', x, y, z, r });
-        return this.inner.pushOut(x, y, z, r, out);
-    }
-}
-
-/** Every query asked again of `world`, under one timer, ms; and a digest of the answers (the worlds must agree). */
-function askAll(world: ContactWorld, queries: readonly Query[]): { ms: number; answers: string } {
-    const out: ContactOut = { sphere: 0, nx: 0, ny: 0, nz: 0 };
-    const push = { x: 0, y: 0, z: 0 };
-    let acc = 0;
-    const t = performance.now();
-    for (const q of queries) {
-        if (q.kind === 'sweep') {
-            const v = world.sweep(q.c0, q.c1, q.r, q.pad, q.n, out);
-            acc = (acc * 31 + (v < 0 ? -1 : v * 1e9 + out.sphere + out.nx * 7 + out.ny * 11 + out.nz * 13)) % 1e15;
-        } else if (world.pushOut(q.x, q.y, q.z, q.r, push)) acc = (acc * 31 + push.x * 3 + push.y * 5 + push.z * 7) % 1e15;
-    }
-    return { ms: performance.now() - t, answers: acc.toFixed(3) };
-}
-
-/**
- * 10 s in the default hall of walls-hall, flown the game scheme's way (GameAssist and AutoArm at 100 Hz, as
- * game-loop.ts does), along and into the front wall. Only the flight model's own contact queries are timed:
- * the assist's ground below is read by a ray of the world (the voxel probe of play/ground.ts is measured on
- * its own below).
- */
-/** Along and into the front wall: 4 m before it, then pushing into it and sliding along it. */
-const WALL_FLIGHT = {
-    at: [0, 1.5, -26],
-    moves: [
-        { ms: 3000, k: { forward: 1, strafe: 0, turn: 0, lift: 0 } },
-        { ms: 3000, k: { forward: 1, strafe: 1, turn: 0, lift: 0 } },
-        { ms: 1000, k: { forward: 0, strafe: 0, turn: 0, lift: 1 } },
-        { ms: 3000, k: { forward: 0, strafe: -1, turn: 1, lift: 0 } }
-    ]
-};
-/** In the open middle of the hall, never near a wall. */
-const OPEN_FLIGHT = {
-    at: [0, 6, 10],
-    moves: [
-        { ms: 2000, k: { forward: 1, strafe: 0, turn: 0, lift: 0 } },
-        { ms: 2000, k: { forward: 0, strafe: 0, turn: 1, lift: 0 } },
-        { ms: 1000, k: { forward: 1, strafe: 1, turn: 0, lift: 1 } },
-        { ms: 1000, k: { forward: -1, strafe: 0, turn: 0, lift: -1 } },
-        { ms: 2000, k: { forward: 0, strafe: -1, turn: 0, lift: 0 } },
-        { ms: 2000, k: { forward: 0, strafe: 0, turn: 0, lift: 0 } }
-    ]
-};
-
-function hallFlight(plan: { at: number[]; moves: { ms: number; k: GameKeys }[] }): { queries: Query[]; contacts: number } {
-    const lw = lessonWorldOf(getLesson('walls-hall'))!;
-    const timed = new Recorder(lw.builtin.contact!);
-    const p = params('pavo20pro-3s', { crashOn: false });
-    const sim = new Sim(p, timed);
-    sim.reset(plan.at[0], plan.at[1], plan.at[2], 0);
-    const arm = new AutoArm();
-    const game = new GameAssist();
-    const gate = new ArmGate({ keepArmedAfterCrash: true });
-    let contacts = 0, wasOn = false, t = 0;
-    const moves = plan.moves;
-    for (const m of moves) {
-        arm.request();
-        for (let i = 0; i < m.ms; i++, t++) {
-            if (t % 10 === 0) {
-                const a = arm.step({ simArmed: sim.armed, crashed: sim.crashed, paused: false, now: t });
-                const on = !a.holdLow && !sim.crashed;
-                const hit = lw.world.castRay([sim.s[S.px], sim.s[S.py], sim.s[S.pz]], [0, -1, 0], 20);
-                const sense = { p, s: sim.s, groundM: hit ? Math.max(0, hit.distance - p.bodyBottom) : null };
-                if (on && !wasOn) game.liftoff(sense);
-                wasOn = on;
-                const o = game.update(m.k, sense, t === 0 ? 0 : 0.01, on);
-                const ch = new Float32Array([o.roll, o.pitch, (a.holdLow ? 0 : o.throttle) * 2 - 1, o.yaw, a.arm, MODE_CHANNEL.angle, 0, 0]);
-                ch[4] = gate.update({} as Profile, ch, 0, true, sim.crashed);
-                sim.setChannels(ch);
-            }
-            const n = sim.events.length;
-            sim.step();
-            for (let j = n; j < sim.events.length; j++) if (sim.events[j].type === 'contact') contacts++;
-        }
-    }
-    return { queries: timed.queries, contacts };
-}
-
 describe('the cost of the sweeps', () => {
+    // Timed in ONE process, the three ways alternating round after round on the same queries (measureKinds), so a load that comes and goes touches them
+    // alike; the bounds are on RATIOS to the uncached lookup timed beside them. What the shortcuts (cells decided by the distance, the free radius) are for
+    // is open air: there the session's queries cost 0.16 to 0.28 of the uncached lookup's in every run made (vitest alone and inside the whole gate, the
+    // bench script). Along a wall they save little, and how little depends on how warm the code is (0.62 to 0.79 in vitest, 0.95 after nine rounds in
+    // the bench script), so what is held there is only that they cost no more than they save. The absolute 20 ms of the plan, alone and with its evidence,
+    // is tools/bench/test/sonic-world-cost.ts: it measured 13.4 ms along the wall and 3.5 ms in the open.
+    const BOUND = { wall: 1.25, open: 0.5 } as const;
+
     for (const [name, plan, wall] of [['along and into a wall', WALL_FLIGHT, true], ['in the open', OPEN_FLIGHT, false]] as const) {
-        it(`a 10 s hall flight ${name}: its contact queries cost under 20 ms (best of 5); without the shortcuts measured beside it`, () => {
+        it(`a 10 s hall flight ${name}: its contact queries cost ${wall ? 'no more than' : 'clearly less than'} the uncached lookup timed beside them (ratio under ${wall ? BOUND.wall : BOUND.open}), and change no answer`, () => {
             const flight = hallFlight(plan);
             const lw = lessonWorldOf(getLesson('walls-hall'))!;
-            const kinds = {
-                session: () => new AnalyticContactWorld(walls(lw.world)), // the cells and the free radius, as the session flies
-                cells: () => new VoxelContactWorld(walls(lw.world)), // the cells only
-                raw: () => new VoxelContactWorld(walls(lw.world, false)) // solidAt for every voxel
-            };
-            const best: Record<string, number> = {};
-            const answers: Record<string, string> = {};
-            for (const [k, make] of Object.entries(kinds)) {
-                const runs = [0, 1, 2, 3, 4].map(() => askAll(make(), flight.queries)); // a fresh world each time: its cells start empty, as in flight
-                best[k] = Math.min(...runs.map((r) => r.ms));
-                answers[k] = runs[0].answers;
-            }
-            console.log(`sonic-world sweep cost, 10 s hall flight ${name} (${flight.queries.length} queries, ${flight.contacts} contact events): session ${best.session.toFixed(2)} ms, cells only ${best.cells.toFixed(2)} ms, no cull ${best.raw.toFixed(2)} ms`);
+            const { best, answers } = measureKinds(flight.queries, costKinds(lw.world));
+            const ratio = best.session / best.raw;
+            console.log(`sonic-world sweep cost, 10 s hall flight ${name} (${flight.queries.length} queries, ${flight.contacts} contact events): session ${best.session.toFixed(2)} ms, cells only ${best.cells.toFixed(2)} ms, no cull ${best.raw.toFixed(2)} ms, session / no cull ${ratio.toFixed(2)}`);
             expect(flight.queries.length).toBeGreaterThan(9000); // it really swept every tick (the craft is held until it arms)
             if (wall) expect(flight.contacts).toBeGreaterThan(100); // and it pushed into the wall
             else expect(flight.contacts).toBe(0);
             // the shortcuts change no answer
             expect(answers.session).toBe(answers.raw);
             expect(answers.cells).toBe(answers.raw);
-            expect(best.session).toBeLessThan(20);
+            expect(ratio).toBeLessThan(wall ? BOUND.wall : BOUND.open);
         });
     }
+
+    it('control: with the cache switched off (the world that stands for the session has no cells and no free radius) the open-air comparison is about 1 and fails its bound', () => {
+        const flight = hallFlight(OPEN_FLIGHT);
+        const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        const off = costKinds(lw.world);
+        // the "session" is the AnalyticContactWorld over walls with the cull off (it has no distance to read: no free radius, no cells): what the absence of the cache measures
+        const { best } = measureKinds(flight.queries, { session: () => new AnalyticContactWorld(walls(lw.world, false)), raw: off.raw });
+        const ratio = best.session / best.raw;
+        console.log(`sonic-world sweep cost, control (cache off): ratio ${ratio.toFixed(2)}`);
+        expect(ratio).toBeGreaterThanOrEqual(BOUND.open); // the check would fail
+        expect(ratio).toBeGreaterThan(0.7); // and it is the uncached lookup's own cost, not an accident of one slow run
+    });
+
+    it('a machine twice as slow (the gate runs other test files beside this one) moves every time and no ratio: the absolute 20 ms of before would have failed at 30 ms, the ratios hold', () => {
+        const flight = hallFlight(WALL_FLIGHT);
+        const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        const here = measureKinds(flight.queries, costKinds(lw.world));
+        // the clock runs 2.1 times as fast as it should: every run of every way takes 2.1 times as long, as under a load that never lets go
+        const real = performance.now.bind(performance);
+        const spy = vi.spyOn(performance, 'now').mockImplementation(() => real() * 2.1);
+        let slow: typeof here;
+        try {
+            slow = measureKinds(flight.queries, costKinds(lw.world));
+        } finally {
+            spy.mockRestore();
+        }
+        console.log(`sonic-world sweep cost, a clock 2.1 times as slow: session ${here.best.session.toFixed(2)} -> ${slow.best.session.toFixed(2)} ms, session / no cull ${(here.best.session / here.best.raw).toFixed(2)} -> ${(slow.best.session / slow.best.raw).toFixed(2)}`);
+        expect(slow.best.session).toBeGreaterThan(here.best.session * 1.7); // it really is slower: what the old bound was asked to survive
+        expect(slow.best.session).toBeGreaterThan(20); // and over the 20 ms the old test held to, as the gate's 30.5 ms was
+        expect(Math.abs(slow.best.session / slow.best.raw - here.best.session / here.best.raw)).toBeLessThan(0.25); // while the ratio is where it was
+        expect(slow.best.session / slow.best.raw).toBeLessThan(BOUND.wall);
+    });
 
     it('measured beside it: the game scheme\'s voxel ground probe (play/ground.ts) on these walls, and a ray of the world', () => {
         const lw = lessonWorldOf(getLesson('walls-hall'))!;

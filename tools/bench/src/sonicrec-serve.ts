@@ -9,10 +9,25 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { Plugin } from 'esbuild';
 
 export const REPO = fileURLToPath(new URL('../../../', import.meta.url)).replace(/[\\/]$/, '');
 export const SERVE_CSP = join(REPO, 'tools', 'bench', 'scripts', 'serve-csp.mjs');
 export const NGINX_CONF = join(REPO, 'deploy', 'nginx.conf');
+
+const I18N_SHIM = join(REPO, 'tools', 'bench', 'test', 'sonicrec-i18n-shim.ts');
+const TEXTS_SHIM = join(REPO, 'tools', 'bench', 'test', 'sonicrec-texts-shim.ts');
+/**
+ * The esbuild plugin of the recording panel's browser probes: inside sonic-session/ the simulator's i18n.ts (Vite's import.meta.glob) is replaced by
+ * a module that reads the sonicrec dictionaries from their JSON files, and texts.ts (which adds them with the same glob) by an empty one.
+ */
+export const i18nShim: Plugin = {
+    name: 'i18n-shim',
+    setup: (b) => {
+        b.onResolve({ filter: /\/i18n$/ }, (a) => (a.importer.includes('sonic-session') ? { path: I18N_SHIM } : undefined));
+        b.onResolve({ filter: /\/texts$/ }, (a) => (a.importer.includes('sonic-session') ? { path: TEXTS_SHIM } : undefined));
+    }
+};
 
 /**
  * deploy/nginx.conf as it was before v0.12 step 1: the microphone off on the simulator page, no media-src in the
@@ -25,15 +40,50 @@ export function firstCutConf(conf: string = readFileSync(NGINX_CONF, 'utf8')): s
     return cut;
 }
 
-export async function freePort(): Promise<number> {
+/** SONIC_PORTS=5414-5419: a run that has to keep to a range of ports (v12-int: 5410 to 5419 are this job's) takes its free ports from it, else the system picks. */
+export function portRange(env: NodeJS.ProcessEnv = process.env): [number, number] | null {
+    const m = /^(\d+)-(\d+)$/.exec(env.SONIC_PORTS ?? '');
+    return m === null ? null : [Number(m[1]), Number(m[2])];
+}
+
+function listenOn(port: number): Promise<number> {
     return new Promise((resolve, reject) => {
         const s = createServer();
         s.on('error', reject);
-        s.listen(0, '127.0.0.1', () => {
-            const { port } = s.address() as { port: number };
-            s.close(() => resolve(port));
+        s.listen(port, '127.0.0.1', () => {
+            const { port: got } = s.address() as { port: number };
+            s.close(() => resolve(got));
         });
     });
+}
+
+export async function freePort(): Promise<number> {
+    const range = portRange();
+    if (range === null) return listenOn(0);
+    for (let p = range[0]; p <= range[1]; p++) {
+        try {
+            return await listenOn(p);
+        } catch {
+            /* taken: the next one */
+        }
+    }
+    throw new Error(`no free port in ${range[0]}-${range[1]} (SONIC_PORTS)`);
+}
+
+/** `n` different free ports (a second call to freePort() before the first server has bound its port would give the same one again). */
+export async function freePorts(n: number): Promise<number[]> {
+    const range = portRange();
+    if (range === null) return Promise.all(Array.from({ length: n }, () => listenOn(0)));
+    const got: number[] = [];
+    for (let p = range[0]; p <= range[1] && got.length < n; p++) {
+        try {
+            got.push(await listenOn(p));
+        } catch {
+            /* taken: the next one */
+        }
+    }
+    if (got.length < n) throw new Error(`no ${n} free ports in ${range[0]}-${range[1]} (SONIC_PORTS)`);
+    return got;
 }
 
 export interface Served {
@@ -42,9 +92,9 @@ export interface Served {
     stop(): Promise<void>;
 }
 
-/** serve-csp.mjs on a free port for `dist`; resolves when it says it listens. `env`: API_PROXY, NGINX_CONF, ... */
-export async function serveDist(dist: string, env: Record<string, string> = {}): Promise<Served> {
-    const port = await freePort();
+/** serve-csp.mjs on a free port (or on `fixedPort`, for a run that keeps to a range) for `dist`; resolves when it says it listens. `env`: API_PROXY, NGINX_CONF, ... */
+export async function serveDist(dist: string, env: Record<string, string> = {}, fixedPort?: number): Promise<Served> {
+    const port = fixedPort ?? (await freePort());
     const child: ChildProcess = spawn(process.execPath, [SERVE_CSP, dist, String(port)], { env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     await new Promise<void>((resolve, reject) => {

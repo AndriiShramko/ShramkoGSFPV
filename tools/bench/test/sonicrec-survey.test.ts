@@ -41,7 +41,7 @@ type Entry = SurveyInput | { wait: number };
  * `{ wait }` is a pause), the first for the offer and then for the questions. The survey's own clock moves `step` ms for every input
  * (default 1000), so no answer is "the same press twice" unless a test makes it so. `sayMs`: how long a line of speech takes.
  */
-async function run(script: Entry[], o: { profile?: PilotProfile; sayMs?: number; say?: SurveyDeps['say']; sayLimitMs?: number; offerMs?: number; failView?: boolean; step?: number; idleMs?: number } = {}): Promise<Run> {
+async function run(script: Entry[], o: { profile?: PilotProfile; sayMs?: number; say?: SurveyDeps['say']; sayLimitMs?: number; offerMs?: number; failView?: boolean; step?: number; idleMs?: number; micOn?: boolean; numbersByVoice?: boolean } = {}): Promise<Run> {
     const spoken: SpeechLine[] = [];
     const shown: string[] = [];
     let held = 0;
@@ -87,7 +87,9 @@ async function run(script: Entry[], o: { profile?: PilotProfile; sayMs?: number;
         },
         ...(o.sayLimitMs === undefined ? {} : { sayLimitMs: o.sayLimitMs }),
         ...(o.offerMs === undefined ? {} : { offerMs: o.offerMs }),
-        ...(o.idleMs === undefined ? {} : { idleMs: o.idleMs })
+        ...(o.idleMs === undefined ? {} : { idleMs: o.idleMs }),
+        ...(o.micOn === undefined ? {} : { micOn: o.micOn }),
+        ...(o.numbersByVoice === undefined ? {} : { numbersByVoice: o.numbersByVoice })
     };
     const running = runSurvey(deps);
     let at = 0;
@@ -144,6 +146,37 @@ describe('the questions as they are spoken', () => {
         const open = spokenQuestion(q('helped'), 7, 9, d, false);
         expect(tr.text(open[2] as SpeechLine)).toBe('Say your answer out loud. Press Enter when you are done.');
         expect(tr.text(open[0] as SpeechLine)).toBe('Question 7 of 9.');
+    });
+});
+
+describe('the lines of sonic-core 1eea4d5 (v12-int step 2)', () => {
+    const SCRIPT_DECLINE: Entry[] = [D(2)];
+    const SCRIPT_TWO: Entry[] = [D(1), D(4), SKIP, { wait: 40 }];
+
+    it('while the voice is still being recorded, survey.mic-on comes right before survey.offer', async () => {
+        const r = await run(SCRIPT_DECLINE, { micOn: true, sayMs: 5 });
+        expect(keysOf(r).slice(0, 2)).toEqual(['survey.mic-on', 'survey.offer']);
+        expect(tr.text({ key: 'survey.mic-on' })).toBe('The microphone stays on while you answer, so your words stay with the flight. It turns off after the last question.');
+    });
+
+    it('control: with the microphone refused or failed (micOn false or absent) the offer comes alone', async () => {
+        for (const micOn of [false, undefined]) {
+            const r = await run(SCRIPT_DECLINE, micOn === undefined ? { sayMs: 5 } : { micOn, sayMs: 5 });
+            expect(keysOf(r)[0], String(micOn)).toBe('survey.offer');
+            expect(keysOf(r), String(micOn)).not.toContain('survey.mic-on');
+        }
+    });
+
+    it('how to answer names the keys only (survey.howto); "or say the number" (survey.howto-voice) only where a spoken number is heard', async () => {
+        const keysOnly = await run(SCRIPT_TWO, { idleMs: 30 });
+        const howto = keysOnly.spoken.find((l) => l.key === 'survey.howto');
+        expect(howto?.params).toEqual({ skip: 'Escape' });
+        expect(keysOf(keysOnly)).not.toContain('survey.howto-voice');
+        expect(tr.text(howto as SpeechLine)).toBe('Answer with a number key. Press Escape to skip a question.');
+        const voice = await run(SCRIPT_TWO, { idleMs: 30, numbersByVoice: true });
+        expect(voice.spoken.find((l) => l.key === 'survey.howto-voice')?.params).toEqual({ skip: 'Escape' });
+        expect(keysOf(voice)).not.toContain('survey.howto');
+        expect(tr.text({ key: 'survey.howto-voice', params: { skip: 'Escape' } })).toBe('Answer with a number key, or say the number. Press Escape to skip a question.');
     });
 });
 
@@ -463,5 +496,58 @@ describe('the survey inside a recording', () => {
         const { pkg } = await recordWithSurvey([D(1), D(5), D(1), D(2), D(3), D(1), DONE], withProfile(newProfile(), { minor: true }));
         expect(pkg.survey?.surveyId).toBe('child-again-again');
         expect(pkg.manifest.consent.minor).toBe(true);
+    });
+});
+
+// v12-int review, finding I5: the survey's offer, and with it the notice that the microphone stays on (survey.mic-on), was said without interrupt, so
+// with the lesson talking at the moment of the stop it waited behind the lesson's lines; the first answer then cut it before it had begun (the next
+// question interrupts, and a cut utterance that has not started is never heard). The page proof is tools/bench/src/sonic-int-review.ts r4.
+describe('review I5: the notice that the microphone stays on is heard, whatever the lesson was saying', () => {
+    /** The browser's voice: utterances queue, each takes `unitMs`; a line that interrupts cuts what is queued, and what had not begun is never heard. */
+    function queueingEngine(unitMs: number) {
+        let freeAt = 0;
+        const rows: { key: string; startedAt: number; cut: boolean }[] = [];
+        return {
+            rows,
+            /** the line has begun to be spoken, or will be (it was not cut while it waited) */
+            heard: (key: string): boolean => rows.some((r) => r.key === key && !r.cut),
+            say(line: SpeechLine, options?: { readonly interrupt?: boolean }): Promise<void> {
+                const now = Date.now();
+                if (options?.interrupt === true) {
+                    for (const r of rows) if (r.startedAt > now) r.cut = true;
+                    freeAt = now;
+                }
+                const startedAt = Math.max(now, freeAt);
+                freeAt = startedAt + unitMs;
+                rows.push({ key: line.key, startedAt, cut: false });
+                return new Promise<void>((resolve) => setTimeout(resolve, freeAt - now));
+            }
+        };
+    }
+
+    it('the offer, with the notice before it, cuts what the lesson is saying: the notice begins at once', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` }); // 240 ms of the lesson ahead of the survey
+        const t0 = Date.now();
+        const r = await run([D(2)], { micOn: true, say: (line, options) => engine.say(line, options) });
+        void r;
+        const first = engine.rows.find((x) => x.key === 'survey.mic-on');
+        expect(first).toBeDefined();
+        expect((first?.startedAt ?? Infinity) - t0).toBeLessThan(30);
+        expect(engine.heard('survey.mic-on')).toBe(true);
+    });
+
+    it('a pilot (or a helper) who answers the offer at once still gets the notice begun, not cut while it waited', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` });
+        await run([D(1), ...skips(9)], { micOn: true, say: (line, options) => engine.say(line, options) });
+        expect(engine.heard('survey.mic-on')).toBe(true);
+    });
+
+    it('control: said the old way (no interrupt) the notice waits behind the lesson, and the first answer cuts it before it has begun', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` });
+        await run([D(1), ...skips(9)], { micOn: true, say: (line, options) => engine.say(line, options === undefined ? undefined : { ...options, interrupt: options.interrupt === true && !['survey.mic-on', 'survey.offer'].includes(line.key) }) });
+        expect(engine.heard('survey.mic-on')).toBe(false);
     });
 });

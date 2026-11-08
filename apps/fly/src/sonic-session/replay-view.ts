@@ -1,6 +1,7 @@
 // What the helper sees of a replay (docs/wip/v12-plan.md section 4.3 step 5): a section of the recording panel with real buttons, one labelled
 // position slider and a live status line. It draws the controller's state and calls its methods; it decides nothing. Built outside #ui like the
 // rest of the panel. The check's own report stays in a details element (the sound package writes it in English).
+import './texts';
 import { clear, h } from '../ui/dom';
 import { t } from '../i18n';
 import { setText } from './format';

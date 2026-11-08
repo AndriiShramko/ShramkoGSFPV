@@ -8,6 +8,7 @@
 // it (aria-modal hides the page behind the dialog from a screen reader, and a focus left behind it would be on something that is not there),
 // the dialog is shown BEFORE its question is written (a live region that changes while it is hidden is not announced), and when it closes the
 // focus goes back to where it was.
+import './texts';
 import { clear, h } from '../ui/dom';
 import { t } from '../i18n';
 import type { SpeechLine } from '@shramko/sonic-fpv';

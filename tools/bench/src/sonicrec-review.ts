@@ -9,18 +9,18 @@
 //   R4 survey dialog  the dialog that follows a stop is a modal dialog: the focus moves into it and comes back, and its question is written
 //                     after it is shown (a screen reader announces a live region that changes while it is visible)
 //   R3 problems       a problem of the recorder (here: too little browser storage) is read in the language of the page
+//   R5 a failed Save  (v12-int step 9) a recording whose files are damaged cannot be packed: the helper's panel says so in the language of the
+//                     page and in nothing else, no English sentence of the registry's and none of the sound package's own diagnostic
 //   npx tsx tools/bench/src/sonicrec-review.ts       evidence/<date>/sonicrec-review.json
 import { mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { build } from 'esbuild';
-import type { Plugin } from 'esbuild';
 import type { BrowserContext, Page } from 'playwright';
 import { launchChrome } from './browser';
 import { REPO as EVIDENCE_REPO, today, writeEvidence } from './evidence';
-import { REPO, makeDist, serveDist } from './sonicrec-serve';
+import { REPO, makeDist, serveDist, i18nShim } from './sonicrec-serve';
 
-const SHIM = join(REPO, 'tools', 'bench', 'test', 'sonicrec-i18n-shim.ts');
-const shim: Plugin = { name: 'i18n-shim', setup: (b) => b.onResolve({ filter: /\/i18n$/ }, (a) => (a.importer.includes('sonic-session') ? { path: SHIM } : undefined)) };
+const shim = i18nShim;
 const bundle = await build({ entryPoints: [join(REPO, 'tools', 'bench', 'test', 'sonicrec-local-page.ts')], outdir: 'out', bundle: true, format: 'esm', platform: 'browser', target: 'es2022', write: false, logLevel: 'silent', plugins: [shim] });
 const out = (ext: string): string => bundle.outputFiles.find((f) => f.path.endsWith(ext))?.text ?? '';
 const dist = makeDist({
@@ -246,6 +246,51 @@ try {
         const after = await page.evaluate<{ id: string; inDialog: boolean }>(`(() => { const a = document.activeElement; const d = document.querySelector('.sonicrec-survey'); return { id: a ? a.id : '', inDialog: !!(a && d && d.contains(a)) }; })()`);
         results.surveyFocusAfter = after;
         checks['R4: when the survey is over the focus goes back to where it was (the panel button), not to the closed dialog'] = !after.inDialog && after.id === 'sonicrec-toggle';
+        await ctx.close();
+    }
+
+    // ---------------------------------------------------------------- R5: a failed Save is read in the language of the page (v12-int step 9)
+    {
+        const ctx = await newContext();
+        const page = await ctx.newPage();
+        page.on('pageerror', (e) => console.log('pageerror', e.message));
+        await page.goto(`${served.origin}/en/fly/?lang=es`);
+        await page.waitForFunction(() => (window as unknown as { __loc?: unknown }).__loc !== undefined);
+        await page.bringToFront();
+        await call(page, 'init', {});
+        await call(page, 'deleteAll');
+        await until(page, 'the toggle button', (s) => s.panelBuilt === true && s.toggleHidden === false);
+        await page.locator('#sonicrec-toggle').click();
+        await call(page, 'fly', true);
+        await recordWithKeys(page);
+        await sleep(1200);
+        await call(page, 'fly', false);
+        await page.keyboard.press('KeyT');
+        await until(page, 'the survey offer', (s) => s.surveyOpen === true);
+        await page.keyboard.press('Digit2');
+        await until(page, 'the recording saved', (s) => s.phase === 'idle' && s.rows.length === 1);
+        // the voice in the browser's storage is damaged (10 bytes in the place of its first part): the package cannot be packed
+        await page.evaluate(`(async () => {
+  const root = await navigator.storage.getDirectory();
+  const dir = await root.getDirectoryHandle('sonic-sessions');
+  for await (const [, session] of dir.entries()) {
+    // a file of a session is kept as small parts (store.ts): the first part of the voice is overwritten, so its size and hash no longer match the manifest
+    const names = [];
+    for await (const [n] of session.entries()) names.push(n);
+    const part = names.filter((n) => n.startsWith('voice.webm')).sort()[0];
+    const w = await (await session.getFileHandle(part)).createWritable();
+    await w.write(new Uint8Array(10));
+    await w.close();
+  }
+})()`);
+        await page.locator('[data-action="save"]').first().click();
+        const failed = await until(page, 'the failure line', (s) => /^No se pudo guardar:/.test(String(s.panelMessage)));
+        const line = String(failed.panelMessage);
+        results.failedSaveInSpanish = line;
+        log('a failed save, page in Spanish:', line);
+        // Spanish letters are matched by a dot: the repository keeps no accented letters outside the dictionaries
+        checks['R5: a recording that cannot be packed says so in Spanish, in the sentence of the dictionary and nothing else'] = /^No se pudo guardar: la grabaci.n est. da.ada y no se puede empaquetar$/.test(line);
+        checks['R5: no English reaches the panel with it (not the registry\'s, not the sound package\'s own diagnostic: "bytes", "manifest", "cannot be packed", "Could not save")'] = !/bytes|manifest|cannot be packed|Could not save|another tab/.test(line);
         await ctx.close();
     }
 } finally {

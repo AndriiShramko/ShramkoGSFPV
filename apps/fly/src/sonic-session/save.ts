@@ -44,15 +44,16 @@ export function browserSaveEnv(): SaveEnv {
 }
 
 /**
- * Saves the zip. The picker first (the person decides where it goes); when the person closes the picker nothing is saved and
+ * Saves the zip. `typeLabel` is the file type's description in the save dialog, in the page's language (the dictionaries' `sonicrec.save.type`):
+ * a text for a person is not written in code. The picker first (the person decides where it goes); when the person closes the picker nothing is saved and
  * nothing is downloaded behind their back ('cancelled'); when the picker cannot be used (no activation, a blocked frame, no
  * writable stream) the download is the fallback. Throws when the file could not be written.
  */
-export async function saveToDisk(blob: Blob, name: string, env: SaveEnv = browserSaveEnv()): Promise<SavedVia> {
+export async function saveToDisk(blob: Blob, name: string, env: SaveEnv, typeLabel: string): Promise<SavedVia> {
     if (env.picker !== null) {
         let handle: Awaited<ReturnType<NonNullable<SaveEnv['picker']>>>;
         try {
-            handle = await env.picker({ suggestedName: name, types: [{ description: 'Fly by Sound recording', accept: { 'application/zip': ['.zip'] } }] });
+            handle = await env.picker({ suggestedName: name, types: [{ description: typeLabel, accept: { 'application/zip': ['.zip'] } }] });
         } catch (e) {
             if ((e as { name?: string } | null)?.name === 'AbortError') return 'cancelled';
             // SecurityError, NotAllowedError: not inside a click, or the page is framed: the download does not need either

@@ -13,7 +13,7 @@ import { Controls } from '../controls';
 import { CrashView } from '../crashview';
 import { VoxelController } from '../voxels';
 import { wallsWanted } from '../flightwalls';
-import { sonicEntry } from '../sonic/entry';
+import { sonicEntry } from '../sonic/entry-state';
 import { storedTransform } from './builtin/scale';
 import { storedDropFloaters } from './builtin/floaters';
 import { storedCeiling } from '../session/ceiling-source';

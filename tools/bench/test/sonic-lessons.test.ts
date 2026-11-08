@@ -341,6 +341,20 @@ describe('the host around a lesson', () => {
         expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'rings-first']);
     }, 300000);
 
+    // review of v12-int, I3 (the lesson opened again when a recording starts, session.ts onStatus -> LessonHost.reopen)
+    it('review I3: a recording that starts in the glossary opens it again WITH its way back: it still returns to the lesson G left, not on along the path', async () => {
+        const r = await open('rings-first');
+        await r.run(2000, null);
+        expect(await r.host.glossary()).toBe(true);
+        expect(r.host.lesson!.id).toBe('ears-glossary');
+        await r.run(1500, null);
+        expect(await r.host.reopen()).toBe(true);
+        expect(r.host.lesson!.id).toBe('ears-glossary');
+        await r.run(900000, (rr) => { rr.mode.next('KeyN'); return null; }, () => r.host.lesson?.id !== 'ears-glossary');
+        expect(r.host.lesson!.id).toBe('rings-first');
+        expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'ears-glossary', 'rings-first']);
+    }, 300000);
+
     // review of v12-flight, D2 (the bridge's speech count after another lesson is entered while a line is being said)
     it('review D2: G while the intro is being said: the glossary\'s speech.end markers come only when the engine has nothing left to say', async () => {
         const r = await open('rings-first');

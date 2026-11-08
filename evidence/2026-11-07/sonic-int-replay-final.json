@@ -1,0 +1,739 @@
+{
+  "name": "sonic-int-replay",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-07T22:29:54.285Z",
+    "gitHead": "50be8f7",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5400",
+  "scenario": "replay",
+  "checks": [
+    {
+      "name": "the recording started and rings-first opened again from its beginning (a lesson open inside the recording)",
+      "pass": true
+    },
+    {
+      "name": "the survey offer came with the microphone notice before it (survey.mic-on, step 2)",
+      "pass": true,
+      "value": [
+        "survey.mic-on",
+        "survey.offer"
+      ]
+    },
+    {
+      "name": "the replay is checked lesson by lesson: rings-first then rings-line, each compared, every recorded event re-derived (no difference)",
+      "pass": true,
+      "value": [
+        {
+          "lesson": "rings-first",
+          "frames": 3771,
+          "compared": true,
+          "ok": true,
+          "recorded": 66,
+          "matched": 66,
+          "diffs": 0,
+          "cueShare": 0.994431185361973,
+          "cueClassShare": 0.9992044550517104
+        },
+        {
+          "lesson": "rings-line",
+          "frames": 242,
+          "compared": true,
+          "ok": true,
+          "recorded": 8,
+          "matched": 8,
+          "diffs": 0,
+          "cueShare": 0.9917355371900827,
+          "cueClassShare": 1
+        }
+      ]
+    },
+    {
+      "name": "100 % of the sounds per lesson (the cue ids of every frame, within the comparer's one-frame slack) and the panel says the replay agrees",
+      "pass": false,
+      "value": {
+        "rows": [
+          [
+            "rings-first",
+            0.994431185361973,
+            0.9992044550517104
+          ],
+          [
+            "rings-line",
+            0.9917355371900827,
+            1
+          ]
+        ],
+        "summary": {
+          "ok": true,
+          "summary": "The replay agrees with the recording: 74 of 74 events were worked out again, and 99 % of the sounds are the same."
+        }
+      }
+    },
+    {
+      "name": "no \"another place\" note: the page draws both lessons' worlds itself",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "played to its end",
+      "pass": true,
+      "value": {
+        "phase": "ended",
+        "tMs": 139685.5,
+        "durationMs": 139685.5,
+        "voice": "ready",
+        "frame": 4013,
+        "frames": 4013,
+        "viewLagMs": 42,
+        "lesson": "rings-line",
+        "part": 1,
+        "parts": 2
+      }
+    },
+    {
+      "name": "each lesson's world drawn in turn: rings-first, then rings-line when its first frame was due (both shown by the page's view), other primitives than lesson C's",
+      "pass": true,
+      "value": {
+        "switches": [
+          [
+            "rings-first",
+            "rings-2bd64a5c",
+            true,
+            0
+          ],
+          [
+            "rings-line",
+            "rings-011ebea8",
+            true,
+            125909
+          ]
+        ],
+        "prims": {
+          "rings-first": 7,
+          "rings-line": 9
+        },
+        "cPrims": 1
+      }
+    },
+    {
+      "name": "every frame of both lessons fed once, in order, never before its package time and within 200 ms after it on the audio clock",
+      "pass": true,
+      "value": {
+        "n": 4013,
+        "min": 0,
+        "p50": 5,
+        "p95": 39,
+        "max": 166.00000000001455
+      }
+    },
+    {
+      "name": "closed: lesson C's own view is back",
+      "pass": true,
+      "value": {
+        "after": 1,
+        "cPrims": 1
+      }
+    },
+    {
+      "name": "no page error and no console error in either page",
+      "pass": true,
+      "value": {
+        "record": [],
+        "replay": []
+      }
+    },
+    {
+      "name": "Node, the saved package: the lesson-by-lesson check says what the page said",
+      "pass": true,
+      "value": {
+        "frames": 4013,
+        "events": 96,
+        "voiceBytes": 273233,
+        "voiceOffsetMs": 5.5,
+        "segments": [
+          {
+            "lesson": "rings-first",
+            "frames": 3771,
+            "ok": true,
+            "diffs": 0,
+            "share": 0.994431185361973
+          },
+          {
+            "lesson": "rings-line",
+            "frames": 242,
+            "ok": true,
+            "diffs": 0,
+            "share": 0.9917355371900827
+          }
+        ],
+        "oldCheck": {
+          "ok": false,
+          "diffs": 3,
+          "notes": [
+            "other-lesson-events"
+          ],
+          "share": 0.9349613755295291
+        }
+      }
+    },
+    {
+      "name": "control: the package's own one-lesson check of the same bytes (the replay before this step) does not agree",
+      "pass": true,
+      "value": {
+        "frames": 4013,
+        "events": 96,
+        "voiceBytes": 273233,
+        "voiceOffsetMs": 5.5,
+        "segments": [
+          {
+            "lesson": "rings-first",
+            "frames": 3771,
+            "ok": true,
+            "diffs": 0,
+            "share": 0.994431185361973
+          },
+          {
+            "lesson": "rings-line",
+            "frames": 242,
+            "ok": true,
+            "diffs": 0,
+            "share": 0.9917355371900827
+          }
+        ],
+        "oldCheck": {
+          "ok": false,
+          "diffs": 3,
+          "notes": [
+            "other-lesson-events"
+          ],
+          "share": 0.9349613755295291
+        }
+      }
+    },
+    {
+      "name": "the voice: every burst heard within 200 ms of its place on the package clock, over both lessons",
+      "pass": true,
+      "value": {
+        "bursts": 93,
+        "heard": 93,
+        "inLessonB": 9,
+        "maxAbsErrMs": 2.9103830456733704e-11,
+        "errorsMs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "passed": 12,
+  "total": 13,
+  "result": {
+    "recordErrors": [],
+    "check": {
+      "summary": {
+        "ok": true,
+        "summary": "The replay agrees with the recording: 74 of 74 events were worked out again, and 99 % of the sounds are the same."
+      },
+      "notes": [],
+      "details": "rings-first: replay check PASS: events 66 of 66 re-derived (largest time difference 12 ms); cues 99.4 % of 3771 frames agree (99.9 % by cue kind)\nrings-line: replay check PASS: events 8 of 8 re-derived (largest time difference 0 ms); cues 99.2 % of 242 frames agree (100.0 % by cue kind)",
+      "checks": [
+        {
+          "lesson": "rings-first",
+          "frames": 3771,
+          "compared": true,
+          "ok": true,
+          "recorded": 66,
+          "matched": 66,
+          "diffs": 0,
+          "cueShare": 0.994431185361973,
+          "cueClassShare": 0.9992044550517104
+        },
+        {
+          "lesson": "rings-line",
+          "frames": 242,
+          "compared": true,
+          "ok": true,
+          "recorded": 8,
+          "matched": 8,
+          "diffs": 0,
+          "cueShare": 0.9917355371900827,
+          "cueClassShare": 1
+        }
+      ],
+      "title": "rings-first, rings-line \u00b7 Nov 7, 2026, 11:25 PM"
+    },
+    "replay": {
+      "phase": "ended",
+      "switches": [
+        {
+          "t": 0,
+          "ac": 2.192,
+          "part": 0,
+          "lesson": "rings-first",
+          "world": "rings-2bd64a5c",
+          "shown": true
+        },
+        {
+          "t": 125909,
+          "ac": 128.10666666666665,
+          "part": 1,
+          "lesson": "rings-line",
+          "world": "rings-011ebea8",
+          "shown": true
+        }
+      ],
+      "voiceStarts": [
+        {
+          "t": 0,
+          "ac": 2.192
+        }
+      ],
+      "fed": 4013,
+      "prims": {
+        "rings-first": 7,
+        "rings-line": 9
+      },
+      "cPrims": 1,
+      "voice": {
+        "fileOnsets": [
+          0.4665416666666667,
+          1.9665416666666666,
+          3.4665208333333335,
+          4.9665,
+          6.4665,
+          7.9665,
+          9.4665,
+          10.9665,
+          12.466541666666666,
+          13.966541666666666,
+          15.466541666666666,
+          16.966541666666668,
+          18.466541666666668,
+          19.966541666666668,
+          21.466541666666668,
+          22.966541666666668,
+          24.466541666666668,
+          25.966541666666668,
+          27.466541666666668,
+          28.966541666666668,
+          30.466541666666668,
+          31.966541666666668,
+          33.466541666666664,
+          34.966541666666664,
+          36.466541666666664,
+          37.966541666666664,
+          39.466541666666664,
+          40.966541666666664,
+          42.466541666666664,
+          43.966541666666664,
+          45.466541666666664,
+          46.966541666666664,
+          48.466541666666664,
+          49.966541666666664,
+          51.466541666666664,
+          52.966541666666664,
+          54.466541666666664,
+          55.966541666666664,
+          57.466541666666664,
+          58.966541666666664,
+          60.466541666666664,
+          61.966541666666664,
+          63.466541666666664,
+          64.96654166666667,
+          66.46654166666667,
+          67.96654166666667,
+          69.46654166666667,
+          70.96654166666667,
+          72.46654166666667,
+          73.96654166666667,
+          75.46654166666667,
+          76.96654166666667,
+          78.46654166666667,
+          79.96654166666667,
+          81.46654166666667,
+          82.96654166666667,
+          84.46654166666667,
+          85.96654166666667,
+          87.46654166666667,
+          88.96654166666667,
+          90.46654166666667,
+          91.96654166666667,
+          93.46654166666667,
+          94.96654166666667,
+          96.46654166666667,
+          97.96654166666667,
+          99.46654166666667,
+          100.96654166666667,
+          102.46654166666667,
+          103.96654166666667,
+          105.46654166666667,
+          106.96654166666667,
+          108.46654166666667,
+          109.96654166666667,
+          111.46654166666667,
+          112.96654166666667,
+          114.46654166666667,
+          115.96654166666667,
+          117.46654166666667,
+          118.96654166666667,
+          120.46654166666667,
+          121.96654166666667,
+          123.46654166666667,
+          124.96654166666667,
+          126.46654166666667,
+          127.96654166666667,
+          129.46654166666667,
+          130.96654166666667,
+          132.46654166666667,
+          133.96654166666667,
+          135.46654166666667,
+          136.96654166666667,
+          138.46654166666667
+        ],
+        "starts": [
+          {
+            "when": 2.1975000000000002,
+            "offset": 0,
+            "now": 2.192
+          }
+        ],
+        "onsets": [
+          2.664041666666667,
+          4.164041666666667,
+          5.664020833333333,
+          7.164,
+          8.664,
+          10.164,
+          11.664,
+          13.164,
+          14.664041666666666,
+          16.164041666666666,
+          17.66404166666667,
+          19.164041666666666,
+          20.66404166666667,
+          22.164041666666666,
+          23.66404166666667,
+          25.164041666666666,
+          26.66404166666667,
+          28.164041666666666,
+          29.66404166666667,
+          31.164041666666666,
+          32.66404166666667,
+          34.16404166666667,
+          35.66404166666667,
+          37.16404166666667,
+          38.66404166666667,
+          40.16404166666667,
+          41.66404166666667,
+          43.16404166666667,
+          44.66404166666667,
+          46.16404166666667,
+          47.66404166666667,
+          49.16404166666667,
+          50.66404166666667,
+          52.16404166666667,
+          53.66404166666667,
+          55.16404166666667,
+          56.66404166666667,
+          58.16404166666667,
+          59.66404166666667,
+          61.16404166666667,
+          62.66404166666667,
+          64.16404166666666,
+          65.66404166666666,
+          67.16404166666666,
+          68.66404166666666,
+          70.16404166666666,
+          71.66404166666666,
+          73.16404166666666,
+          74.66404166666666,
+          76.16404166666666,
+          77.66404166666666,
+          79.16404166666666,
+          80.66404166666666,
+          82.16404166666666,
+          83.66404166666666,
+          85.16404166666666,
+          86.66404166666666,
+          88.16404166666666,
+          89.66404166666666,
+          91.16404166666666,
+          92.66404166666666,
+          94.16404166666666,
+          95.66404166666666,
+          97.16404166666666,
+          98.66404166666666,
+          100.16404166666666,
+          101.66404166666666,
+          103.16404166666666,
+          104.66404166666666,
+          106.16404166666666,
+          107.66404166666666,
+          109.16404166666666,
+          110.66404166666666,
+          112.16404166666666,
+          113.66404166666666,
+          115.16404166666666,
+          116.66404166666666,
+          118.16404166666666,
+          119.66404166666666,
+          121.16404166666666,
+          122.66404166666666,
+          124.16404166666666,
+          125.66404166666666,
+          127.16404166666666,
+          128.66404166666666,
+          130.16404166666666,
+          131.66404166666666,
+          133.16404166666666,
+          134.66404166666666,
+          136.16404166666666,
+          137.66404166666666,
+          139.16404166666666,
+          140.66404166666666
+        ]
+      }
+    },
+    "fedLag": {
+      "n": 4013,
+      "min": 0,
+      "p50": 5,
+      "p95": 39,
+      "max": 166.00000000001455
+    },
+    "replayErrors": [],
+    "node": {
+      "frames": 4013,
+      "events": 96,
+      "voiceBytes": 273233,
+      "voiceOffsetMs": 5.5,
+      "segments": [
+        {
+          "lesson": "rings-first",
+          "frames": 3771,
+          "ok": true,
+          "diffs": 0,
+          "share": 0.994431185361973
+        },
+        {
+          "lesson": "rings-line",
+          "frames": 242,
+          "ok": true,
+          "diffs": 0,
+          "share": 0.9917355371900827
+        }
+      ],
+      "oldCheck": {
+        "ok": false,
+        "diffs": 3,
+        "notes": [
+          "other-lesson-events"
+        ],
+        "share": 0.9349613755295291
+      }
+    },
+    "voiceSync": {
+      "bursts": 93,
+      "heard": 93,
+      "inLessonB": 9,
+      "maxAbsErrMs": 2.9103830456733704e-11,
+      "errorsMs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "savedZip": "U:\\Temp\\sonic-int-replay-1794090449153.zip"
+  }
+}
