@@ -14,6 +14,19 @@
 //      starts that lesson; Keep saves it; the Winter Garden link starts that lesson on its scan at x5; a link to a lesson this release
 //      lacks shows the start screen's note instead.
 //   D  /en/sound/: its start link is such a link and opens the start screen; its key list has nine keys, L and K among them.
+// The independent review's fixes (docs/wip/v12-optin-review.md), in the same parts:
+//   A  the item is one line in en, es, pl and ru at 1280x720 and 375x812 (control: the item as it was wraps in the same menu), last of
+//      the menu's items, and says to a screen reader that it opens a new tab (R8); no application region on an ordinary page (R5).
+//   B  the flight has the focus in a labelled role="application" region, and gets it back after the pause menu (R5); the mode's key
+//      list names L and K as the mode's (R4); K holds the flight while the keys are said and lets it go when they end, a key cuts
+//      them, with the "How to fly" card up K closes it (R4); a copied L opens no field (the control of E); the top bar's Share gives
+//      the lesson's link in the field, not the picture panel (R3).
+//   C  Keep comes after Start and the note describes the primary Start (R6); the running lesson's address keeps what of the link
+//      stands; the reviewer's probe: link, Keep, Calm mode off, reload: no note and his value (a reload before Keep still has the
+//      note, its control); "Use my own settings" (R2).
+//   E  a refused clipboard (writeText rejects, execCommand returns false), the app speaking with captions on and with them off: L
+//      selects the link in a focused field, says so with the lesson's name, puts nothing in the captions; Esc goes back (R1).
+//   D  also the screen reader's line under the key list (R5).
 // A check that proves an absence has its control in the same run: the same probe finds the thing where it exists (B for A, A for B).
 // And the whole of A has one more: run with PARTS=A on a build of v0.12 as released (8ce53fb), it must fail where that release
 // showed the mode to everyone (EVIDENCE_SUFFIX=-base keeps that evidence apart).
@@ -47,9 +60,16 @@ const fly = (l: string): Record<string, string> => {
     for (const ns of ['sonicentry', 'sonic']) Object.assign(out, JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', ns, `${l}.json`), 'utf8')) as Record<string, string>);
     return out;
 };
-const SITE_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', 'en.json'), 'utf8')) as { sound: { h1: string; start: { button: string } } };
+const SITE_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', 'en.json'), 'utf8')) as { sound: { h1: string; start: { button: string }; keys: { reader: string } } };
 const EN = fly('en');
 const PL = fly('pl');
+const LANGS = ['en', 'es', 'pl', 'ru'] as const;
+/** The menu item's words in each language (review R8: one line), and the item as it was before the review (the control: two lines). */
+const ITEM = Object.fromEntries(LANGS.map((l) => [l, fly(l)['sonic.menu.page'] ?? ''])) as Record<(typeof LANGS)[number], string>;
+const ITEM_BEFORE = 'Fly by Sound: audio-only training for blind pilots (beta)';
+/** The main dictionary's "(opens in a new tab)" and the mode's key list words for L and K (review R8, R4). */
+const MAIN_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'en.json'), 'utf8')) as Record<string, string>;
+const KEYS_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'sonickeys', 'en.json'), 'utf8')) as Record<string, string>;
 const SOUND_KEYS = ['KeyT', 'KeyU', 'KeyI', 'KeyZ', 'KeyG'];
 const SOUND_CAPS = ['T', 'U', 'I', 'Z', 'G'];
 const SOUND_ACTIONS = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
@@ -172,7 +192,7 @@ const savedSound = (page: Page): Promise<{ theme?: string; calm?: boolean } | nu
     });
 
 /** The pause menu (Esc), then what it shows: its items, the actions and caps of its key list, how often it names the mode. */
-async function pauseMenu(page: Page): Promise<{ items: string[]; keys: { action: string; caps: string[] }[]; sound: { href: string | null; target: string | null; rel: string | null; text: string; tag: string } | null; namesInMenu: number; namesInBody: number }> {
+async function pauseMenu(page: Page): Promise<{ items: string[]; keys: { action: string; caps: string[]; label: string }[]; sound: { href: string | null; target: string | null; rel: string | null; text: string; label: string; newTab: string; tag: string } | null; namesInMenu: number; namesInBody: number }> {
     await page.keyboard.press('Escape');
     await page.waitForSelector('.pause-menu', { timeout: 10000 });
     return page.evaluate(() => {
@@ -181,13 +201,56 @@ async function pauseMenu(page: Page): Promise<{ items: string[]; keys: { action:
         const a = menu.querySelector<HTMLElement>('[data-action="pause.flyBySound"]');
         return {
             items: [...menu.querySelectorAll<HTMLElement>('.sum-menu [data-action]')].map((e) => e.dataset.action ?? ''),
-            keys: [...menu.querySelectorAll<HTMLElement>('[data-testid="summary-keys"] [data-key-action]')].map((li) => ({ action: li.dataset.keyAction ?? '', caps: [...li.querySelectorAll('kbd')].map((k) => k.textContent ?? '') })),
-            sound: a ? { href: a.getAttribute('href'), target: a.getAttribute('target'), rel: a.getAttribute('rel'), text: a.textContent ?? '', tag: a.tagName } : null,
+            keys: [...menu.querySelectorAll<HTMLElement>('[data-testid="summary-keys"] [data-key-action]')].map((li) => ({ action: li.dataset.keyAction ?? '', caps: [...li.querySelectorAll('kbd')].map((k) => k.textContent ?? ''), label: li.querySelector(':scope > span:last-child')?.textContent ?? '' })),
+            sound: a ? { href: a.getAttribute('href'), target: a.getAttribute('target'), rel: a.getAttribute('rel'), text: a.textContent ?? '', label: a.querySelector('.pm-label')?.textContent ?? '', newTab: a.querySelector('.visually-hidden')?.textContent ?? '', tag: a.tagName } : null,
             namesInMenu: count(menu.innerText),
             namesInBody: count(document.body.innerText)
         };
     });
 }
+
+/**
+ * Review R8: how many lines the menu item's label takes with each of `texts` in it, in the open menu as it is laid out at this size
+ * (the label's height over its line height); the item's own words are put back after.
+ */
+async function labelLines(page: Page, texts: readonly string[]): Promise<number[]> {
+    return page.evaluate((all) => {
+        const label = document.querySelector<HTMLElement>('.pause-menu [data-action="pause.flyBySound"] .pm-label');
+        if (!label) return all.map(() => -1);
+        const own = label.textContent;
+        const lineH = parseFloat(getComputedStyle(label).lineHeight);
+        const out = all.map((text) => {
+            label.textContent = text;
+            return Math.round(label.getBoundingClientRect().height / lineH);
+        });
+        label.textContent = own;
+        return out;
+    }, [...texts]);
+}
+
+/** Where the focus is: its test id, role and label (review R5). */
+const focusNow = (page: Page): Promise<{ testid: string | null; role: string | null; label: string | null; tag: string }> =>
+    page.evaluate(() => {
+        const a = document.activeElement as HTMLElement | null;
+        return { testid: a?.dataset?.testid ?? null, role: a?.getAttribute('role') ?? null, label: a?.getAttribute('aria-label') ?? null, tag: a?.tagName ?? '' };
+    });
+
+/** The flight is paused (the session's own flag, window.__gsfpv.session). */
+const pausedNow = (page: Page): Promise<boolean | null> => page.evaluate(() => (window as unknown as { __gsfpv?: { session?: { paused?: boolean } } }).__gsfpv?.session?.paused ?? null);
+
+/** The mode's link field (sonic/link-panel.ts, review R1 R3): shown, focused, its value and what of it is selected, its status line. */
+const linkField = (page: Page): Promise<{ shown: boolean; focused: boolean; value: string; selected: string; status: string; picturePanel: boolean }> =>
+    page.evaluate(() => {
+        const f = document.querySelector<HTMLInputElement>('[data-testid="sonic-link-url"]');
+        return {
+            shown: !!document.querySelector('[data-testid="sonic-link"]'),
+            focused: !!f && document.activeElement === f,
+            value: f?.value ?? '',
+            selected: f && f.selectionStart !== null && f.selectionEnd !== null ? f.value.slice(f.selectionStart, f.selectionEnd) : '',
+            status: document.querySelector('[data-testid="sonic-link-status"]')?.textContent ?? '',
+            picturePanel: !!document.querySelector('.panel.share')
+        };
+    });
 
 // ------------------------------------------------------------------ A: an ordinary page
 
@@ -234,8 +297,19 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     out.plainMenu = menu;
     const capsListed = menu.keys.flatMap((k) => k.caps);
     check('A: the pause menu\'s key list names none of the mode\'s keys (no sonic.* row, no T U I Z G cap); it lists the 21 bindings of an ordinary page (20 shortcuts, and Space among the flying keys)', menu.keys.length === pageBindings().length && !menu.keys.some((k) => k.action.startsWith('sonic.')) && !SOUND_CAPS.some((c) => capsListed.includes(c)), { rows: menu.keys.length, actions: menu.keys.map((k) => k.action) });
-    check('A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "Fly by Sound: audio-only training for blind pilots (beta)"', menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.text === EN['sonic.menu.page'], menu.sound);
+    check(`A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "${EN['sonic.menu.page']}", last of the menu's items, and a screen reader hears "${MAIN_EN['pause.newTab']}" (review R8)`, menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && menu.items.at(-1) === 'pause.flyBySound' && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.label === EN['sonic.menu.page'] && menu.sound.newTab.trim() === MAIN_EN['pause.newTab'], { sound: menu.sound, last: menu.items.at(-1) });
     check('A: with the menu open the page names Fly by Sound once: that item', menu.namesInMenu === 1 && menu.namesInBody === 1, { menu: menu.namesInMenu, body: menu.namesInBody });
+    // review R8: one line in every language, on a computer and on a phone; control: the item as it was, measured the same way, wraps
+    const wide = await labelLines(page, [...LANGS.map((l) => ITEM[l]), ITEM_BEFORE]);
+    await page.setViewportSize({ width: 375, height: 812 });
+    await sleep(500);
+    const phone = await labelLines(page, [...LANGS.map((l) => ITEM[l]), ITEM_BEFORE]);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await sleep(500);
+    out.itemLines = { langs: LANGS, at1280x720: wide, at375x812: phone, before: ITEM_BEFORE };
+    check('A: the item is one line in en, es, pl and ru at 1280x720 and at 375x812 (review R8); control: the item as it was takes two lines in the same menu', wide.slice(0, 4).every((n) => n === 1) && phone.slice(0, 4).every((n) => n === 1) && (wide[4] ?? 0) >= 2 && (phone[4] ?? 0) >= 2, out.itemLines);
+    const region = await page.evaluate(() => document.querySelectorAll('[role="application"]').length);
+    check('A: an ordinary page has no application region for screen readers (the mode\'s, review R5; its control is B)', region === 0, { regions: region });
 
     if (menu.sound) {
         const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
@@ -283,7 +357,7 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     if (await pl.$('.screen.radio [data-action="radio-keyboard"]')) await chooseKeyboard(pl);
     const plMenu = await pauseMenu(pl);
     out.plainPolish = plMenu.sound;
-    check('A: in Polish the item says the Polish line and leads to /pl/sound/', plMenu.sound?.href === '/pl/sound/' && plMenu.sound.text === PL['sonic.menu.page'], plMenu.sound);
+    check('A: in Polish the item says the Polish line and leads to /pl/sound/', plMenu.sound?.href === '/pl/sound/' && plMenu.sound.label === PL['sonic.menu.page'], plMenu.sound);
     await pl.close();
 }
 
@@ -298,14 +372,22 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     await page.keyboard.press('Enter');
     await until('the lesson', () => probe(page), (p) => p?.lesson === 'hover-height', 90000);
     await sleep(1500);
+    const focused = await focusNow(page);
+    out.flightFocus = focused;
+    check('B: once the lesson flies the focus is on the mode\'s labelled role="application" region, where a screen reader passes every key on (review R5; control: A has none)', focused.testid === 'sonic-flight' && focused.role === 'application' && focused.label === EN['sonic.flight.label'], focused);
 
     const menu = await pauseMenu(page);
-    out.modeMenu = { items: menu.items, keys: menu.keys.filter((k) => k.action.startsWith('sonic.')) };
+    out.modeMenu = { items: menu.items, keys: menu.keys.filter((k) => k.action.startsWith('sonic.') || k.action === 'share.open' || k.action === 'help.keys') };
     const modeKeys = menu.keys.filter((k) => SOUND_ACTIONS.includes(k.action));
     check('B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode\'s own item, not the ordinary one', modeKeys.map((k) => k.caps.join('')).join(' ') === SOUND_CAPS.join(' ') && menu.keys.length === pageBindings({ sonic: true }).length && menu.items.includes('pause.sonic') && !menu.items.includes('pause.flyBySound'), out.modeMenu);
+    const rowL = menu.keys.find((k) => k.action === 'share.open')?.label;
+    const rowK = menu.keys.find((k) => k.action === 'help.keys')?.label;
+    check('B: the mode\'s key list names L and K as the mode\'s: "copy a link to this lesson", "hear the keys" (review R4)', rowL === KEYS_EN['keys.sonic.shareLink'] && rowK === KEYS_EN['keys.sonic.hearKeys'], { L: rowL, K: rowK });
     await page.keyboard.press('Escape');
     await until('the menu to close', () => page.evaluate(() => !document.querySelector('.pause-menu')), (v) => v, 5000);
     await sleep(500);
+    const back = await focusNow(page);
+    check('B: when the pause menu closes the focus is back on the flight\'s region (review R5)', back.testid === 'sonic-flight', back);
 
     const a = await snap(page);
     const n0 = await eventCount(page);
@@ -332,16 +414,57 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     });
     out.hoverSaid = { said: spokenSince(line, n1).map((e) => e.key), captions: caps };
     check('B: it is said (sonic.say.linkCopied) and captioned in the captions region, which is a polite live region in screen-reader mode', caps.live === 'polite' && caps.text.includes(EN['sonic.say.linkCopied'] ?? '<none>'), out.hoverSaid);
+    const noField = await linkField(page);
+    check('B (control of E): a copied L opens no field and no picture panel: the link is in the clipboard and the line says so', !noField.shown && !noField.picturePanel, noField);
 
-    // K: the mode's own key help, said
+    // K: the mode's own key help, said while the flight waits (review R4)
     const n2 = await eventCount(page);
     await page.keyboard.press('KeyK');
+    const heldAt = await until('the flight to wait for the keys', () => pausedNow(page), (v) => v === true, 3000).catch(() => false);
     const help = await until('the key help', () => probe(page), (p) => spokenSince(p, n2).some((e) => e.key === 'help.digits'), 15000);
     const lines = spokenSince(help, n2).filter((e) => (e.key ?? '').startsWith('help.') || e.key === 'sonic.say.helpShare');
     out.keyHelp = lines.map((e) => [e.key, e.text]);
     const order = ['help.intro', 'help.record', 'help.send', 'help.status', 'help.repeat', 'help.glossary', 'sonic.say.helpShare', 'help.reset', 'help.next', 'help.digits'];
     const capsSaid = lines.slice(1, -1).map((e) => /\b([A-Z])\b/.exec((e.text ?? '').replace(/^\w+ /, ''))?.[1] ?? '');
     check('B: K says the mode\'s keys in order, each with its key (T U I Z G L R N), then the digits; no "How to fly" card', lines.map((e) => e.key).join(',') === order.join(',') && capsSaid.join('') === 'TUIZGLRN' && !(await page.$('[data-testid="how-to-fly"]')), { keys: lines.map((e) => e.key), caps: capsSaid });
+    const t0 = Date.now();
+    const goesOn = await until('the flight to go on when the keys are said', () => pausedNow(page), (v) => v === false, 60000).catch(() => true);
+    out.keyHelpHold = { heldAt, wentOnAfterMs: Date.now() - t0 };
+    check('B: the flight waits while the keys are said and goes on by itself when they end (review R4)', heldAt === true && goesOn === false, out.keyHelpHold);
+    // a key cuts them: K, then J (bound to nothing)
+    const n3 = await eventCount(page);
+    await page.keyboard.press('KeyK');
+    await until('the flight to wait again', () => pausedNow(page), (v) => v === true, 3000).catch(() => false);
+    await sleep(400);
+    await page.keyboard.press('KeyJ');
+    const cut = await until('the cut', () => probe(page), (p) => spokenSince(p, n3).some((e) => e.key === 'sonic.say.helpCut'), 5000).catch(() => null);
+    const afterCut = await pausedNow(page);
+    out.keyHelpCut = { said: spokenSince(cut, n3).map((e) => e.key).slice(-3), pausedAfter: afterCut };
+    check('B: any key cuts the keys: "Back to the flight." is said and the flight goes on at once (review R4)', !!cut && afterCut === false, out.keyHelpCut);
+    // with the "How to fly" card up (opened from the pause menu) K closes it and says nothing (the card's own K; control: A's K opens it)
+    await pauseMenu(page);
+    await page.click('[data-action="pause.howtofly"]');
+    await page.waitForSelector('[data-testid="how-to-fly"]', { timeout: 10000 });
+    const n4 = await eventCount(page);
+    await page.keyboard.press('KeyK');
+    const closed = await until('the card to close', () => page.evaluate(() => !document.querySelector('[data-testid="how-to-fly"]')), (v) => v, 5000).catch(() => false);
+    await sleep(600);
+    const saidOverCard = spokenSince(await probe(page), n4).map((e) => e.key);
+    out.keyOverCard = { closed, said: saidOverCard };
+    check('B: with the "How to fly" card up K closes it and says no key (review R4)', closed === true && !saidOverCard.some((k) => (k ?? '').startsWith('help.')), out.keyOverCard);
+    await until('the flight to go on after the card', () => pausedNow(page), (v) => v === false, 5000).catch(() => undefined);
+
+    // the top bar's Share in the mode: the lesson's link, copied and shown in the field, not the picture panel (review R3)
+    await page.evaluate(() => navigator.clipboard.writeText('-'));
+    await page.click('[data-action="share-top"]');
+    const shown = await until('the link field', () => linkField(page), (v) => v.shown, 5000).catch(() => null);
+    const clipTop = await page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
+    out.topShare = { field: shown, clipboard: clipTop, want };
+    check('B: the top bar\'s Share in the mode copies the lesson\'s link and shows it selected in the field, with no picture panel (review R3)', !!shown && shown.value === want && shown.focused && shown.selected === want && !shown.picturePanel && shown.status === EN['sonic.link.copied'] && clipTop === want, out.topShare);
+    await page.keyboard.press('Escape');
+    const gone = await until('the field to close', () => linkField(page), (v) => !v.shown, 5000).then(() => true).catch(() => false);
+    const pausedAfterField = await until('the flight to go on', () => pausedNow(page), (v) => v === false, 5000).catch(() => true);
+    check('B: Escape closes the field and the flight goes on', gone && pausedAfterField === false, { gone, paused: pausedAfterField });
 
     // the Winter Garden lesson, chosen on the start screen over the flight: the link names its scan and size
     await pauseMenu(page);
@@ -393,12 +516,24 @@ async function receivers(newCtx: () => Promise<BrowserContext>, links: { hover: 
         out.receiver = { seen, saved };
         check('C: the link, with no language, lands on /en/fly/ with the same query; the start screen offers that lesson first; nothing sounds yet (no AudioContext, no flight)', seen.url === new URL(links.hover).search.replace(/^/, '/en/fly/') && seen.first?.testid === 'sonic-start-asked' && seen.first.lesson === 'hover-height' && seen.contexts === 0 && seen.hook === 'undefined', seen);
         check('C: the link\'s sound is in force for the visit (Clear, calm on; the note names both) and not saved (his saved sound is still Soft, calm off)', seen.theme === 'clear' && seen.calm === true && (seen.note ?? '').includes('Sound theme: Clear') && (seen.note ?? '').includes('Calm mode: on') && saved?.theme === 'soft' && saved.calm === false, out.receiver);
+        // review R6: from the section's heading, Tab reaches Start before Keep; the note describes the primary Start
+        const order = await page.evaluate(() => {
+            const sec = document.getElementById('sonic-sec-start');
+            const controls = sec ? [...sec.querySelectorAll<HTMLElement>('button, input, select, a[href]')].map((e) => e.dataset.testid ?? e.tagName) : [];
+            const primary = sec?.querySelector<HTMLElement>('.sonic-actions .btn.primary');
+            const describedBy = primary?.getAttribute('aria-describedby') ?? null;
+            return { controls, primary: primary?.dataset.testid ?? null, describedBy, description: describedBy ? document.getElementById(describedBy)?.textContent ?? null : null };
+        });
+        out.receiverOrder = order;
+        check('C: Start comes before "Keep these settings" and "Use my own settings", and the note describes the primary Start (review R6)', order.controls[0] === 'sonic-start-asked' && order.controls.indexOf('sonic-start-asked') < order.controls.indexOf('sonic-visit-keep') && order.controls.indexOf('sonic-visit-keep') < order.controls.indexOf('sonic-visit-own') && order.primary === 'sonic-start-asked' && (order.description ?? '').includes('Sound theme: Clear'), order);
         await page.focus('[data-testid="sonic-start-asked"]');
         await page.keyboard.press('Enter');
         const p = await until('the receiver\'s lesson', () => probe(page), (v) => v?.lesson === 'hover-height', 90000);
         await sleep(1000);
         const after = await savedSound(page);
         check('C: Enter starts that lesson; flying it saves nothing of the link\'s sound', p?.lesson === 'hover-height' && after?.theme === 'soft' && after.calm === false, { lesson: p?.lesson, saved: after });
+        const address = await page.evaluate(() => location.search);
+        check('C: the running lesson\'s address is its own link with what of the link still stands (a reload offers it with its note, review R2)', address === '?sonic=hover-height&st=clear&sc=1', { address });
         check('C: no page error, and no request to this site failed', w.errors.length === 0, { errors: w.errors, otherHosts: w.elsewhere });
         await ctx.close();
     }
@@ -407,12 +542,47 @@ async function receivers(newCtx: () => Promise<BrowserContext>, links: { hover: 
         const page = await ctx.newPage();
         await page.goto(links.hover);
         await page.waitForSelector('[data-testid="sonic-visit-keep"]', { timeout: 60000 });
+        // the control of the reload below: before Keep a reload still reads the link (the note is back, its sound in force)
+        await page.reload();
+        await page.waitForSelector('#sonic-start', { timeout: 60000 });
+        await sleep(500);
+        const before = await page.evaluate(() => ({ note: !!document.querySelector('[data-testid="sonic-visit"]'), calm: (document.getElementById('sonic-calm') as HTMLInputElement | null)?.checked ?? null }));
         await page.focus('[data-testid="sonic-visit-keep"]');
         await page.keyboard.press('Enter');
         const saved = await until('the kept settings', () => savedSound(page), (v) => v?.theme === 'clear', 5000).catch(() => null);
         const note = await page.evaluate(() => !!document.querySelector('[data-testid="sonic-visit"]'));
-        out.keep = { saved, noteLeft: note };
-        check('C: "Keep these settings" saves the link\'s sound (Clear, calm on) and the note goes', saved?.theme === 'clear' && saved.calm === true && !note, out.keep);
+        const keptAddress = await page.evaluate(() => location.search);
+        out.keep = { reloadBefore: before, saved, noteLeft: note, address: keptAddress };
+        check('C: "Keep these settings" saves the link\'s sound (Clear, calm on), the note goes and so does the link\'s sound from the address (review R2)', saved?.theme === 'clear' && saved.calm === true && !note && keptAddress === '?sonic=hover-height', out.keep);
+        // the reviewer's probe: Calm mode off (his own now), then a reload: no note, calm off, nothing of the link in the address
+        await page.click('#sonic-calm');
+        await until('calm off saved', () => savedSound(page), (v) => v?.calm === false, 5000).catch(() => null);
+        await page.reload();
+        await page.waitForSelector('#sonic-start', { timeout: 60000 });
+        await sleep(500);
+        const reloaded = await page.evaluate(() => ({ note: !!document.querySelector('[data-testid="sonic-visit"]'), calm: (document.getElementById('sonic-calm') as HTMLInputElement | null)?.checked ?? null, theme: (document.getElementById('sonic-theme') as HTMLSelectElement | null)?.value ?? null, address: location.search }));
+        const savedAfter = await savedSound(page);
+        out.keepReload = { reloaded, saved: savedAfter };
+        check('C: the reviewer\'s probe: link, Keep, Calm mode off, reload: no note, calm off as he set it (theme Clear kept); control: a reload before Keep still had the note and calm on (review R2)', before.note && before.calm === true && !reloaded.note && reloaded.calm === false && reloaded.theme === 'clear' && reloaded.address === '?sonic=hover-height' && savedAfter?.calm === false, out.keepReload);
+        await ctx.close();
+    }
+    {
+        // "Use my own settings": the link's sound goes, nothing is saved, the address loses it, a reload brings nothing back (review R2)
+        const ctx = await newCtx();
+        const page = await ctx.newPage();
+        await page.goto(links.hover);
+        await page.waitForSelector('[data-testid="sonic-visit-own"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-visit-own"]');
+        await page.keyboard.press('Enter');
+        await until('the note to go', () => page.evaluate(() => !document.querySelector('[data-testid="sonic-visit"]')), (v) => v, 5000).catch(() => undefined);
+        const own = await page.evaluate(() => ({ note: !!document.querySelector('[data-testid="sonic-visit"]'), calm: (document.getElementById('sonic-calm') as HTMLInputElement | null)?.checked ?? null, theme: (document.getElementById('sonic-theme') as HTMLSelectElement | null)?.value ?? null, address: location.search }));
+        const savedOwn = await savedSound(page);
+        await page.reload();
+        await page.waitForSelector('#sonic-start', { timeout: 60000 });
+        await sleep(500);
+        const ownReloaded = await page.evaluate(() => !!document.querySelector('[data-testid="sonic-visit"]'));
+        out.own = { own, saved: savedOwn, noteAfterReload: ownReloaded };
+        check('C: "Use my own settings": the note goes, his own sound is in force (Soft, calm off), nothing saved, the address and a reload carry nothing of the link (review R2)', !own.note && own.calm === false && own.theme === 'soft' && own.address === '?sonic=hover-height' && savedOwn?.theme === 'soft' && savedOwn.calm === false && !ownReloaded, out.own);
         await ctx.close();
     }
     {
@@ -440,6 +610,50 @@ async function receivers(newCtx: () => Promise<BrowserContext>, links: { hover: 
     }
 }
 
+// ------------------------------------------------------------------ E: a refused clipboard (review R1)
+
+/** The browser refuses both ways of copying: the Clipboard API rejects, execCommand('copy') answers false. */
+const REFUSE = `(() => {
+  try { Object.defineProperty(navigator.clipboard, 'writeText', { configurable: true, value: () => Promise.reject(new DOMException('refused', 'NotAllowedError')) }); } catch (e) {}
+  document.execCommand = () => false;
+})();`;
+const TITLE_EN = (JSON.parse(readFileSync(join(REPO, 'packages', 'sonic-fpv', 'locales', 'en.json'), 'utf8')) as Record<string, string>)['lesson.hover-height.title'] ?? '<no title>';
+
+async function refused(newCtx: (sonic: Partial<SonicPrefs>) => Promise<BrowserContext>, out: Record<string, unknown>): Promise<void> {
+    const setups: [string, Partial<SonicPrefs>][] = [['the app speaks, captions on', {}], ['the app speaks, captions off', { captions: false }]];
+    const seen: Record<string, unknown> = {};
+    for (const [name, sonic] of setups) {
+        const ctx = await newCtx(sonic);
+        await ctx.addInitScript({ content: REFUSE });
+        const page = await ctx.newPage();
+        const w = watch(page);
+        await page.goto(`${SITE}/en/fly/?sonic=hover-height`);
+        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        await until('the lesson', () => probe(page), (p) => p?.lesson === 'hover-height', 90000);
+        await sleep(1500);
+        const n = await eventCount(page);
+        await page.keyboard.press('KeyL');
+        const field = await until('the link field', () => linkField(page), (v) => v.shown, 10000).catch(() => null);
+        const p = await until('the line', () => probe(page), (v) => spokenSince(v, n).some((e) => e.key === 'sonic.say.linkSelected'), 10000).catch(() => null);
+        const line = spokenSince(p, n).find((e) => e.key === 'sonic.say.linkSelected');
+        const hook = await page.evaluate(() => (window as unknown as { __gsfpv: { sonicLink?: unknown } }).__gsfpv.sonicLink ?? null);
+        const captions = await page.evaluate(() => document.querySelector('[data-testid="sonic-captions"]')?.textContent ?? '');
+        const paused = await pausedNow(page);
+        await page.keyboard.press('Escape');
+        const closed = await until('the field to close', () => linkField(page), (v) => !v.shown, 5000).then(() => true).catch(() => false);
+        const goesOn = await until('the flight to go on', () => pausedNow(page), (v) => v === false, 5000).catch(() => true);
+        const want = `${SITE}/fly/?sonic=hover-height`;
+        seen[name] = { field, line: line?.text ?? null, hook, captionsHaveLink: captions.includes('sonic='), pausedUnderField: paused, closed, pausedAfter: goesOn, errors: w.errors };
+        check(`E (${name}): with the clipboard refused L selects the whole link in a focused field, says so with the lesson's name and the keys, puts no link in the captions; Esc closes it and the flight goes on (review R1; control: B's copied L opens no field)`,
+            !!field && field.value === want && field.focused && field.selected === want && !field.picturePanel && !!line?.text && line.text.includes(TITLE_EN) && line.text.includes('Control and C') && !/caption/i.test(line.text) && (hook as { copied?: boolean } | null)?.copied === false && !captions.includes('sonic=') && paused === true && closed && goesOn === false && w.errors.length === 0,
+            seen[name]);
+        await ctx.close();
+    }
+    out.refused = seen;
+}
+
 // ------------------------------------------------------------------ D: the site's page about the mode
 
 async function soundPage(ctx: BrowserContext, out: Record<string, unknown>): Promise<void> {
@@ -449,10 +663,12 @@ async function soundPage(ctx: BrowserContext, out: Record<string, unknown>): Pro
     const want = sonicLinkPath({ lesson: 'start', sound: {} }, '/en/fly/');
     const seen = await page.evaluate((href) => ({
         start: [...document.querySelectorAll('a')].filter((a) => a.getAttribute('href') === href).map((a) => a.textContent ?? ''),
-        kbd: [...document.querySelectorAll('#sound-keys ~ ul kbd, section[aria-labelledby="sound-keys"] kbd')].map((k) => k.textContent ?? '')
+        kbd: [...document.querySelectorAll('#sound-keys ~ ul kbd, section[aria-labelledby="sound-keys"] kbd')].map((k) => k.textContent ?? ''),
+        keysText: document.querySelector('section[aria-labelledby="sound-keys"]')?.textContent ?? ''
     }), want);
-    out.soundPage = seen;
+    out.soundPage = { ...seen, keysText: undefined };
     check('D: /en/sound/: its start link is the mode\'s link (/en/fly/?sonic=start, the same writer as L); its key list has nine keys, L and K among them', seen.start.length === 1 && seen.start[0] === SITE_EN.sound.start.button && seen.kbd.join(' ') === 'T U I Z G R N L K', seen);
+    check('D: under the key list, the line for a screen reader in browse mode (review R5)', seen.keysText.includes(SITE_EN.sound.keys.reader), { reader: SITE_EN.sound.keys.reader });
     await page.click(`a[href="${want}"]`);
     await page.waitForSelector('#sonic-start', { timeout: 60000 });
     const opened = await page.evaluate(() => ({ url: location.pathname + location.search, beginning: !!document.querySelector('[data-testid="sonic-start-beginning"]'), hook: typeof (window as unknown as { __gsfpv?: { sonic?: unknown } }).__gsfpv?.sonic }));
@@ -482,6 +698,8 @@ async function main(): Promise<void> {
             await send.close();
             // the receivers: the default sound, a screen reader speaks
             await receivers(() => make({ selfVoice: false, speechRate: 2 }), links, out);
+            // a refused clipboard, the app speaking (review R1)
+            await refused((sonic) => make(sonic), out);
             const site = await make({});
             await soundPage(site, out);
             await site.close();
