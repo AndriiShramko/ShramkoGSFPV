@@ -95,3 +95,72 @@ export function keyHelpLines(cap: (action: ActionId) => string): SpeechLine[] {
     lines.push({ key: 'help.digits' });
     return lines;
 }
+
+/** What K's spoken help needs of the page (sonic/feature.ts wires the real ones; Node tests pass fakes). */
+export interface KeyHelpDeps {
+    /** the lines to say now (keyHelpLines with this page's caps) */
+    lines(): SpeechLine[];
+    say(line: SpeechLine, interrupt: boolean): Promise<void>;
+    /** the flight waits (true) or goes on (false): app pause reason 'help' */
+    hold(on: boolean): void;
+    /** calls `cut` on the next key press (none of a held key's repeats); returns what stops listening */
+    listen(cut: () => void): () => void;
+    /** said when a key cuts the help: it interrupts the lines left and says the flight goes on */
+    readonly cutLine: SpeechLine;
+}
+
+/**
+ * K's spoken help in the mode (review R4): the keys said one after the other while the flight waits (a lesson's timed step does not
+ * run on under them, and its own lines do not queue behind 25 seconds of help); when the last line ends the flight goes on by itself;
+ * any key cuts them sooner (that press does only that), and so does K again.
+ */
+export class KeyHelp {
+    private run = 0;
+    private stop: (() => void) | null = null;
+    private readonly d: KeyHelpDeps;
+
+    constructor(d: KeyHelpDeps) {
+        this.d = d;
+    }
+
+    /** The keys are being said and the flight waits. */
+    get speaking(): boolean {
+        return this.stop !== null;
+    }
+
+    /** K: the help, or, while it is said, its end. */
+    toggle(): void {
+        if (this.stop) {
+            this.cut();
+            return;
+        }
+        const run = ++this.run;
+        this.d.hold(true);
+        this.stop = this.d.listen(() => this.cut());
+        const said = this.d.lines().map((line, i) => this.d.say(line, i === 0).catch(() => undefined));
+        void Promise.all(said).then(() => {
+            if (run === this.run) this.end();
+        });
+    }
+
+    /** A key: the lines left stop (the cut line interrupts them) and the flight goes on. */
+    cut(): void {
+        if (!this.stop) return;
+        this.run++;
+        this.end();
+        void this.d.say(this.d.cutLine, true).catch(() => undefined);
+    }
+
+    /** The page goes: nothing listens, nothing holds the flight. */
+    dispose(): void {
+        if (!this.stop) return;
+        this.run++;
+        this.end();
+    }
+
+    private end(): void {
+        this.stop?.();
+        this.stop = null;
+        this.d.hold(false);
+    }
+}

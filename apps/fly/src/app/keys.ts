@@ -22,6 +22,20 @@ export type ActionSource = 'key' | 'switch';
 export type ActionHandler = (e: KeyboardEvent, source: ActionSource) => void;
 
 /**
+ * How a handler is registered: `when`, asked at each press, says whether it takes this press; while it says no, the press goes to the
+ * handler before it as if it were not there (v12-optin review R4: Fly by Sound's K says the keys, but with a dialog up the press is the
+ * dialog's, and the "How to fly" card's own K closes it).
+ */
+export interface HandlerOptions {
+    when?: () => boolean;
+}
+
+interface Handler {
+    readonly run: ActionHandler;
+    readonly when?: () => boolean;
+}
+
+/**
  * May the handler of an action from `source` use the user's activation (ask for a permission, open a
  * picker)? A key press is one. A switch only while the page still holds one from a click or a key
  * moments before (navigator.userActivation), as the auto-record start decides it; asked without one,
@@ -53,7 +67,8 @@ export interface KeyRouterOptions {
 }
 
 export class KeyRouter {
-    private handlers = new Map<ActionId, ActionHandler[]>();
+    private handlers = new Map<ActionId, Handler[]>();
+    private labels = new Map<ActionId, string[]>();
     private blocks = new Set<() => boolean>();
     private readonly map: readonly KeyBinding[];
     private readonly isText: (target: EventTarget | null) => boolean;
@@ -82,16 +97,17 @@ export class KeyRouter {
     /**
      * Run `run` for this action's keys. The last handler registered for an action is the one that
      * runs, and unregistering it gives the action back to the one before: a screen that is up (the
-     * pause menu, the drone picker) owns the keys it shows while it is up. Only shipped, routed
+     * pause menu, the drone picker) owns the keys it shows while it is up. A handler whose `when`
+     * says no for a press hands it to the one before it, as if it were not there. Only shipped, routed
      * bindings take handlers: a planned binding would never run, a flying one belongs to keyboard
      * flying, so both throw here instead of failing silently.
      */
-    on(action: ActionId, run: ActionHandler): () => void {
+    on(action: ActionId, run: ActionHandler, o: HandlerOptions = {}): () => void {
         const b = bindingOf(action, this.map);
         if (!b) throw new Error(`no key binding for ${action}`);
         if (b.flying) throw new Error(`${action} is read by keyboard flying, not routed`);
         if (b.status !== 'shipped') throw new Error(`${action} is planned: ship its binding with the feature`);
-        return this.push(action, run);
+        return this.push(action, o.when ? { run, when: o.when } : { run });
     }
 
     /** Does this router route the action's keys (a shipped binding that is not keyboard flying's, a mode's key on its pages only)? */
@@ -100,14 +116,34 @@ export class KeyRouter {
         return !!b && !b.flying && b.status === 'shipped' && (b.when !== 'sonic' || this.sonic());
     }
 
-    private push(action: ActionId, run: ActionHandler): () => void {
+    private push(action: ActionId, h: Handler): () => void {
         const list = this.handlers.get(action) ?? [];
-        list.push(run);
+        list.push(h);
         this.handlers.set(action, list);
         return () => {
-            const i = list.lastIndexOf(run);
+            const i = list.lastIndexOf(h);
             if (i >= 0) list.splice(i, 1);
         };
+    }
+
+    /**
+     * This page's own words for an action's key in the key list, while they stand (v12-optin review R4: in Fly by Sound L copies the
+     * lesson's link and K says the keys); the returned function takes them back. The last given stands, like a handler.
+     */
+    relabel(action: ActionId, labelKey: string): () => void {
+        const list = this.labels.get(action) ?? [];
+        list.push(labelKey);
+        this.labels.set(action, list);
+        return () => {
+            const i = list.lastIndexOf(labelKey);
+            if (i >= 0) list.splice(i, 1);
+        };
+    }
+
+    /** The words the key list gives a binding on this page: the last relabel standing, else the keymap's own. */
+    labelOf(b: KeyBinding): string {
+        const list = this.labels.get(b.action);
+        return list?.[list.length - 1] ?? b.labelKey;
     }
 
     /** While `blocked()` is true nothing is routed (a screen with keys of its own, like Controls). */
@@ -134,11 +170,19 @@ export class KeyRouter {
             action = actionFor({ code: e.code, shiftKey: false, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey }, this.state(), page);
         }
         if (action === null) return null;
-        const list = this.handlers.get(action);
-        const run = list?.[list.length - 1];
-        if (!run) return null;
-        run(e, 'key');
-        return action;
+        return this.run(action, e, 'key') ? action : null;
+    }
+
+    /** The last registered handler of the action that takes this press (its `when` says yes, or it has none) runs; whether one did. */
+    private run(action: ActionId, e: KeyboardEvent, source: ActionSource): boolean {
+        const list = this.handlers.get(action) ?? [];
+        for (let i = list.length - 1; i >= 0; i--) {
+            const h = list[i]!;
+            if (h.when && !h.when()) continue;
+            h.run(e, source);
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -152,12 +196,8 @@ export class KeyRouter {
         const binding = bindingOf(action, this.map);
         if (!binding || !this.routes(action)) return null;
         if (!listensIn(binding, this.state())) return null;
-        const list = this.handlers.get(action);
-        const run = list?.[list.length - 1];
-        if (!run) return null;
         const k = binding.keys[0];
-        run(makeKeyEvent(k.code, !!k.shift), 'switch');
-        return action;
+        return this.run(action, makeKeyEvent(k.code, !!k.shift), 'switch') ? action : null;
     }
 
     /** Listen on `target` (the window) until the returned function is called. */

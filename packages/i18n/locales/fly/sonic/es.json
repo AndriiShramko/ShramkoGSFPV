@@ -32,6 +32,7 @@
   "sonic.nav.start": "Empezar",
   "sonic.path.legend": "Ruta",
   "sonic.say.gpuHint": "Esta página se dibuja con el chip gráfico de Intel. Si este equipo también tiene una tarjeta NVIDIA o AMD, pide a tu ayudante que cambie el navegador a ella: en Configuración de Windows, Sistema, Pantalla, Gráficos, elige el navegador, Opciones, Alto rendimiento.",
+  "sonic.say.helpCut": "De vuelta al vuelo.",
   "sonic.say.helpShare": "Pulsa {key} para copiar un enlace a esta lección y compartirlo.",
   "sonic.say.linkCopied": "El enlace a esta lección está copiado. Pégalo en un mensaje o un correo para compartirlo.",
   "sonic.say.linkCopiedStart": "El enlace a Fly by Sound está copiado. Pégalo en un mensaje o un correo para compartirlo.",

@@ -1,7 +1,9 @@
 {
   "keys.sonic.glossary": "Fly by Sound: open the sound glossary",
+  "keys.sonic.hearKeys": "Fly by Sound: hear the keys",
   "keys.sonic.record": "Fly by Sound: start or stop recording",
   "keys.sonic.repeat": "Fly by Sound: hear the last line again",
   "keys.sonic.send": "Fly by Sound: send the flight to the author",
+  "keys.sonic.shareLink": "Fly by Sound: copy a link to this lesson",
   "keys.sonic.status": "Fly by Sound: hear the lesson and recording status"
 }

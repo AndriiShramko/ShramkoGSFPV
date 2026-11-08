@@ -18,7 +18,7 @@ import type { FlightContext, MenuItem } from '../../../apps/fly/src/app/context'
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { setSonicEntry, setSonicInstaller } from '../../../apps/fly/src/sonic/entry-state';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
-import { KEY_HELP, keyHelpLines, lessonLink, shareLine } from '../../../apps/fly/src/sonic/mode-keys';
+import { KEY_HELP, KeyHelp, keyHelpLines, lessonLink, shareLine } from '../../../apps/fly/src/sonic/mode-keys';
 import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import { parseSonicParam } from '../../../apps/fly/src/sonic/start-model';
 
@@ -284,5 +284,86 @@ describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own
     it('control: with the keys of an ordinary page the five keys of the mode have no cap, so no line names them', () => {
         const lines = keyHelpLines(capsOf(false));
         expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['L', 'R', 'N']);
+    });
+});
+
+describe('review R4: K\'s spoken help holds the flight while it is said, and any key cuts it (sonic/mode-keys.ts KeyHelp)', () => {
+    /** A page for KeyHelp: the lines it says (each resolved by the test, as speech ends), the flight's holds, the key listener. */
+    function helpPage() {
+        const said: { key: string; interrupt: boolean }[] = [];
+        const ends: (() => void)[] = [];
+        const holds: boolean[] = [];
+        let listener: (() => void) | null = null;
+        const help = new KeyHelp({
+            lines: () => [{ key: 'help.intro' }, { key: 'help.record', params: { key: 'T' } }, { key: 'help.digits' }],
+            say: (line, interrupt) => {
+                said.push({ key: line.key, interrupt });
+                return new Promise<void>((r) => ends.push(r));
+            },
+            hold: (on) => holds.push(on),
+            listen: (cut) => {
+                listener = cut;
+                return () => {
+                    listener = null;
+                };
+            },
+            cutLine: { key: 'sonic.say.helpCut' }
+        });
+        const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+        return { help, said, ends, holds, press: () => listener?.(), listening: () => listener !== null, tick };
+    }
+
+    it('K: the flight waits, the lines are said (the first interrupts), a key listener waits; when the last line ends the flight goes on by itself', async () => {
+        const p = helpPage();
+        p.help.toggle();
+        expect(p.holds).toEqual([true]);
+        expect(p.said).toEqual([{ key: 'help.intro', interrupt: true }, { key: 'help.record', interrupt: false }, { key: 'help.digits', interrupt: false }]);
+        expect(p.listening()).toBe(true);
+        expect(p.help.speaking).toBe(true);
+        for (const end of p.ends) end();
+        await p.tick();
+        expect(p.holds).toEqual([true, false]);
+        expect(p.listening()).toBe(false);
+        expect(p.help.speaking).toBe(false);
+    });
+
+    it('any key cuts it: the cut line interrupts what is left, the flight goes on at once; the lines ending later change nothing', async () => {
+        const p = helpPage();
+        p.help.toggle();
+        p.press();
+        expect(p.holds).toEqual([true, false]);
+        expect(p.said.at(-1)).toEqual({ key: 'sonic.say.helpCut', interrupt: true });
+        expect(p.listening()).toBe(false);
+        for (const end of p.ends) end();
+        await p.tick();
+        expect(p.holds).toEqual([true, false]);
+    });
+
+    it('K again cuts it too; a new K after a cut is not ended by the old lines ending; going away lets the flight go and says nothing', async () => {
+        const p = helpPage();
+        p.help.toggle();
+        p.help.toggle();
+        expect(p.holds).toEqual([true, false]);
+        const old = [...p.ends];
+        p.help.toggle();
+        expect(p.holds).toEqual([true, false, true]);
+        for (const end of old) end();
+        await p.tick();
+        expect(p.help.speaking).toBe(true);
+        expect(p.holds).toEqual([true, false, true]);
+        const n = p.said.length;
+        p.help.dispose();
+        expect(p.holds).toEqual([true, false, true, false]);
+        expect(p.listening()).toBe(false);
+        expect(p.said).toHaveLength(n);
+    });
+
+    it('its words: the cut line is a line of the engine in en, es, pl and ru; the key list\'s own words for L and K exist in the four languages', () => {
+        const lines = engineDicts();
+        for (const l of LANGS) {
+            expect(lines[l]['sonic.say.helpCut'], l).toBeTruthy();
+            const keys = dict('sonickeys', l);
+            for (const k of ['keys.sonic.shareLink', 'keys.sonic.hearKeys']) expect(keys[k], `${l} ${k}`).toMatch(/^Fly by Sound: /);
+        }
     });
 });

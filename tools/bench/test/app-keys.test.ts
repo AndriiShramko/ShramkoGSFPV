@@ -84,6 +84,44 @@ describe('one handler per key press, no key bound twice', () => {
         expect(ran).toEqual(['menu', 'base']);
     });
 
+    it('v12-optin review R4: a handler whose `when` says no hands the press to the one before it (a key press and a switch alike); says yes, it runs alone', () => {
+        const r = new KeyRouter();
+        const ran: string[] = [];
+        let dialog = true;
+        r.on('help.keys', () => ran.push('card'));
+        r.on('help.keys', () => ran.push('mode'), { when: () => !dialog });
+        r.route(key({ code: 'KeyK' }));
+        r.trigger('help.keys');
+        dialog = false;
+        r.route(key({ code: 'KeyK' }));
+        r.trigger('help.keys');
+        expect(ran).toEqual(['card', 'card', 'mode', 'mode']);
+        // control: with no handler that takes it, nothing ran and the router says so
+        const lone = new KeyRouter();
+        lone.on('help.keys', () => ran.push('never'), { when: () => false });
+        expect(lone.route(key({ code: 'KeyK' }))).toBeNull();
+        expect(lone.trigger('help.keys')).toBeNull();
+        expect(ran).not.toContain('never');
+    });
+
+    it('v12-optin review R4: a page\'s own words for a key in the key list stand while given, the last given first, and go back with it', () => {
+        const r = new KeyRouter();
+        const b = KEYMAP.find((x) => x.action === 'share.open')!;
+        expect(r.labelOf(b)).toBe(b.labelKey);
+        const off = r.relabel('share.open', 'keys.sonic.shareLink');
+        expect(r.labelOf(b)).toBe('keys.sonic.shareLink');
+        const off2 = r.relabel('share.open', 'other');
+        expect(r.labelOf(b)).toBe('other');
+        off2();
+        expect(r.labelOf(b)).toBe('keys.sonic.shareLink');
+        off();
+        expect(r.labelOf(b)).toBe(b.labelKey);
+        // control: another action keeps its own words
+        const k = KEYMAP.find((x) => x.action === 'help.keys')!;
+        r.relabel('share.open', 'keys.sonic.shareLink');
+        expect(r.labelOf(k)).toBe(k.labelKey);
+    });
+
     it('only shipped, routed bindings take handlers (a planned or flying one would never run)', () => {
         // N as it was until W3-1 shipped it: a planned binding
         const r = new KeyRouter({ map: KEYMAP.map((b) => (b.action === 'scene.next' ? { ...b, status: 'planned' as const } : b)) });

@@ -25,10 +25,10 @@ import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
-import { keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
-import { typing } from '../devices/keyboard';
+import { dialogOpen, typing } from '../devices/keyboard';
 import type { FlightContext } from '../app/context';
 import { t, locale } from '../i18n';
 import { SonicMode } from './mode';
@@ -354,14 +354,35 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             say: (line) => sayLine(line, true)
         }).catch(() => undefined);
     };
+    // K (review R4, mode-keys.ts KeyHelp): the mode's keys said one after the other (the first cuts what is being said, as I and Z do)
+    // while the flight waits (pause 'help'), so a lesson's timed step does not run on under them; the flight goes on when they end, and
+    // any key cuts them sooner (that press does only that). With a dialog up K is the dialog's (`when`: the press goes to the handler
+    // before, so the "How to fly" card opened from the pause menu closes on its own K; a panel or the start screen keep the key). The
+    // pause menu's key list names L and K as the mode's (KeyRouter.relabel).
+    const help = new KeyHelp({
+        lines: () => keyHelpLines(capOf),
+        say: sayLine,
+        hold: (on) => (on ? ctx.pause('help') : ctx.resume('help')),
+        listen: (cut) => {
+            const onKey = (e: KeyboardEvent): void => {
+                if (e.repeat || /^F(1[3-9]|2[0-4])$/.test(e.code)) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                cut();
+            };
+            addEventListener('keydown', onKey, true);
+            return () => removeEventListener('keydown', onKey, true);
+        },
+        cutLine: { key: 'sonic.say.helpCut' }
+    });
     offs.push(
-        // K: the mode's keys, said one after the other (the first cuts what is being said, as I and Z do); the "How to fly" card stays
-        // in the pause menu, where K opens it while the menu is up
         ctx.keys.on('help.keys', (e) => {
-            if (e.repeat) return;
-            keyHelpLines(capOf).forEach((line, i) => void sayLine(line, i === 0).catch(() => undefined));
-        }),
+            if (!e.repeat) help.toggle();
+        }, { when: () => !dialogOpen() }),
+        ctx.keys.relabel('share.open', 'keys.sonic.shareLink'),
+        ctx.keys.relabel('help.keys', 'keys.sonic.hearKeys'),
         () => {
+            help.dispose();
             delete ctx.sonicShare;
             delete ctx.hook.sonicLink;
         }

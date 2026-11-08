@@ -1,7 +1,9 @@
 {
   "keys.sonic.glossary": "Fly by Sound: abrir el glosario de sonidos",
+  "keys.sonic.hearKeys": "Fly by Sound: oír las teclas",
   "keys.sonic.record": "Fly by Sound: empezar o parar la grabación",
   "keys.sonic.repeat": "Fly by Sound: oír otra vez la última frase",
   "keys.sonic.send": "Fly by Sound: enviar el vuelo al autor",
+  "keys.sonic.shareLink": "Fly by Sound: copiar un enlace a esta lección",
   "keys.sonic.status": "Fly by Sound: oír el estado de la lección y de la grabación"
 }
