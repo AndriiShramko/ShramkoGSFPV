@@ -74,6 +74,15 @@ What `/{lang}/sound/` links to (`apps/site/src/app/[locale]/sound/page.tsx`): "S
   - Beyond the gates, on the release build of e8989f1 (`dist/release.json` sha e8989f1, sonic 1eea4d5) behind `serve-csp.mjs` on 5420: `accept-fly` B6 B7 B9 B10 B11 B12 B13 B14 B15 B16, `SITE=http://localhost:5420` (its first line says that target), `EVIDENCE_SUFFIX=-optin`: 10 of 10 PASS in 6 min 32 s (`evidence/2026-11-08/b-fly-*-optin.json`, pictures in `optin-b-fly/`). It ran WITHOUT the GPU lock held (`accept-fly.ts` does not take it and the run was not wrapped in it); the lock was free before and after. The site's CI smoke `apps/site/scripts/verify.mjs` on a copy of this build's `apps/site/out` (`serve.mjs 8138`, the GPU lock held): 231 of 231, the `/sound/` page with its nine keys in four languages among them.
   - The start-up script on the release build: 2,932,947 B, gzip level 9 847,676 (+1.07 % over 838,687; limit 851,267, 3,591 left), level 6 850,201, brotli 684,712 (`main-closure.mjs dist/fly/assets`).
   - Nothing pushed, nothing deployed, no SSH; the only requests outside this machine were the scene CDN (the scans the page flies), GitHub's API and the live site's home page by B18, as every gate run does.
+- [ ] 8 The independent review (`docs/wip/v12-optin-review.md`, at 91216ff): each finding first tried against the code, then fixed or refuted, one commit per fix or small group; the answers in "Review answers" below
+  - [x] R11, R12: docs (this commit)
+  - [ ] R2, R6: a link's sound leaves the address when it stops standing; Keep after Start
+  - [ ] R1, R3: the mode's Share, a refused clipboard
+  - [ ] R4: K in the mode
+  - [ ] R5: the flight's focus for a screen reader
+  - [ ] R7, R8: words
+  - [ ] R9, R10: tests and the GPU lock
+  - [ ] the page proof, the flight regression and all gates on the final tree
 
 Left open, for the lead:
 
@@ -82,9 +91,16 @@ Left open, for the lead:
 - The link carries the theme, calm mode, the height tone and what the sound turns with; not each sound's volume and pitch, the speaking speed, the screen reader, the captions, the motor sound or the path (the listener's own; a decision to revisit if pilots ask). A link opened while the pilot has his own saved sound shows the note and plays the link's sound for the visit; nothing tells him again after the start screen (the settings section shows the values in force).
 - K in the mode now says the keys instead of opening the "How to fly" card (the card stays in the pause menu); how the ten lines sound one after the other was not listened to.
 - Not verified: a real screen reader (NVDA, JAWS, VoiceOver) on the start screen's note and on L's announcement (the live region was checked by its attribute and content); the clipboard on a real desktop, Firefox and Safari (headless Chrome with the permission granted); a phone; the es, pl and ru texts (the agent's, read by no native speaker); the live site.
-- `README.md` (outside the generated block) still calls Fly by Sound "not released yet"; `docs/wip/v12-lead.md` had Cyrillic (a vault note's name) that failed B18 on `main`: rewritten here in English, keep it when merging.
+- `README.md` (outside the generated block) said Fly by Sound was "not released yet": it now says it shipped in v0.12 and how a pilot reaches it (review R12). `docs/wip/v12-lead.md` is `main`'s own (c11417c) since the review (R11): `main` fixed the same line its own way, so the merge takes it with no conflict.
 
 ## Needs from sonic-core
 
 - Optional: a spoken line of its own for the share key in the help lines (`help.share`, "Press {key} to copy a link to this lesson, to share it"), beside `help.record` and the others that K now says (`apps/fly/src/sonic/mode-keys.ts` `KEY_HELP`). Reason: K's list is the package's lines but for L, which the page says from its own `sonic.say.helpShare` meanwhile. No failing test: `tools/bench/test/sonic-optin.test.ts` holds every line K says in the engine's dictionaries and would hold a new key the same way.
 - The page now reads `defaultPrefs()` for the link's defaults (`@gsfpv/scenes` `SONIC_LINK_DEFAULTS`, held equal by a test) and the help lines `help.intro`, `help.record`, `help.send`, `help.status`, `help.repeat`, `help.glossary`, `help.reset`, `help.next`, `help.digits` with a `{key}` placeholder: renaming them breaks `sonic-optin.test.ts`, on purpose.
+
+## Review answers
+
+The findings of `docs/wip/v12-optin-review.md`, each tried against the code first.
+
+- R11 fixed (the commit "v12-optin review R11 R12"): the finding holds (`git merge-tree HEAD origin/main` exit 1 on `docs/wip/v12-lead.md`). The file is now `main`'s blob (c11417c), so the merge of that file is clean (`git merge-tree` exit 0 after this commit).
+- R12 fixed (the same commit): the README said "in progress" and "Not released yet". It now says it shipped in v0.12 (beta), how a pilot reaches it (`/{lang}/sound/`, the pause menu's one item, a lesson link from L), that an ordinary flight shows nothing else of it, and what its checks measure.
