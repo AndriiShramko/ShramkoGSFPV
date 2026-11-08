@@ -5,7 +5,7 @@
 // keys of the mode are tested where they are defined (packages/prefs/test/keymap.test.ts, tools/bench/test/app-keys.test.ts), the
 // visit layer of a link's sound settings with the other SonicSetup tests (sonic-audio.test.ts); the page by
 // tools/bench/src/sonic-optin-page.ts.
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -55,7 +55,7 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         const off = sonicFlight.install(ctx) as () => void;
         expect(items).toHaveLength(1);
         const it = items[0]!;
-        expect(it).toMatchObject({ id: 'pause.sound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 95 });
+        expect(it).toMatchObject({ id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 95 });
         for (const l of LANGS) {
             vi.stubGlobal('document', { documentElement: { lang: l } });
             expect(it.href?.()).toBe(`/${l}/sound/`);
@@ -64,6 +64,22 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         expect(soundPage()).toBe('/en/sound/');
         off();
         expect(items).toEqual([]);
+    });
+
+    it('its id is no other item\'s: every menu item id written in the simulator\'s sources is someone else\'s (the menu throws on a second one, and the page would not start); control: the motor sound owns pause.sound', () => {
+        const ids: string[] = [];
+        const walk = (dir: string): void => {
+            for (const n of readdirSync(dir)) {
+                const p = join(dir, n);
+                if (statSync(p).isDirectory()) walk(p);
+                else if (/\.ts$/.test(n) && !p.endsWith('sonic-flight.ts')) for (const m of readFileSync(p, 'utf8').matchAll(/\bid:\s*'(pause\.[\w.]+)'/g)) ids.push(m[1]!);
+            }
+        };
+        walk(join(REPO, 'apps', 'fly', 'src'));
+        expect(ids.length).toBeGreaterThan(15);
+        expect(ids).not.toContain(SOUND_PAGE_ITEM.id);
+        expect(ids).toContain('pause.sound'); // the motor sound's toggle (app/builtin/sound.ts): the id this item first had, which broke the page
+        expect(ids).toContain('pause.sonic'); // the mode's own item
     });
 
     it('control: a page entered through ?sonic= gets no such item (the mode adds its own, "lessons and settings"), nor does an entry whose mode did not load', () => {

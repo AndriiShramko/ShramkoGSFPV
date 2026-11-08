@@ -172,7 +172,7 @@ async function pauseMenu(page: Page): Promise<{ items: string[]; keys: { action:
     return page.evaluate(() => {
         const menu = document.querySelector('.pause-menu') as HTMLElement;
         const count = (s: string): number => s.split('Fly by Sound').length - 1;
-        const a = menu.querySelector<HTMLElement>('[data-action="pause.sound"]');
+        const a = menu.querySelector<HTMLElement>('[data-action="pause.flyBySound"]');
         return {
             items: [...menu.querySelectorAll<HTMLElement>('.sum-menu [data-action]')].map((e) => e.dataset.action ?? ''),
             keys: [...menu.querySelectorAll<HTMLElement>('[data-testid="summary-keys"] [data-key-action]')].map((li) => ({ action: li.dataset.keyAction ?? '', caps: [...li.querySelectorAll('kbd')].map((k) => k.textContent ?? '') })),
@@ -212,10 +212,10 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     out.plainMenu = menu;
     const capsListed = menu.keys.flatMap((k) => k.caps);
     check('A: the pause menu\'s key list names none of the mode\'s keys (no sonic.* row, no T U I Z G cap); it lists 20 shortcuts and the flying keys', menu.keys.length > 0 && !menu.keys.some((k) => k.action.startsWith('sonic.')) && !SOUND_CAPS.some((c) => capsListed.includes(c)), { rows: menu.keys.length, actions: menu.keys.map((k) => k.action) });
-    check('A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "Fly by Sound: audio-only training for blind pilots (beta)"', menu.items.filter((i) => i === 'pause.sound').length === 1 && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.text === EN['sonic.menu.page'], menu.sound);
+    check('A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "Fly by Sound: audio-only training for blind pilots (beta)"', menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.text === EN['sonic.menu.page'], menu.sound);
     check('A: with the menu open the page names Fly by Sound once: that item', menu.namesInMenu === 1 && menu.namesInBody === 1, { menu: menu.namesInMenu, body: menu.namesInBody });
 
-    const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.sound"]')]);
+    const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
     await popup.waitForLoadState('domcontentloaded');
     await popup.waitForSelector('h1', { timeout: 15000 });
     const landed = await popup.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.textContent ?? '', start: [...document.querySelectorAll('a')].filter((a) => a.getAttribute('href') === '/en/fly/?sonic=start').length }));
@@ -276,7 +276,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     const menu = await pauseMenu(page);
     out.modeMenu = { items: menu.items, keys: menu.keys.filter((k) => k.action.startsWith('sonic.')) };
     const modeKeys = menu.keys.filter((k) => SOUND_ACTIONS.includes(k.action));
-    check('B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode\'s own item, not the ordinary one', modeKeys.map((k) => k.caps.join('')).join(' ') === SOUND_CAPS.join(' ') && menu.items.includes('pause.sonic') && !menu.items.includes('pause.sound'), out.modeMenu);
+    check('B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode\'s own item, not the ordinary one', modeKeys.map((k) => k.caps.join('')).join(' ') === SOUND_CAPS.join(' ') && menu.items.includes('pause.sonic') && !menu.items.includes('pause.flyBySound'), out.modeMenu);
     await page.keyboard.press('Escape');
     await until('the menu to close', () => page.evaluate(() => !document.querySelector('.pause-menu')), (v) => v, 5000);
     await sleep(500);

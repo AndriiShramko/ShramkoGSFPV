@@ -169,7 +169,7 @@ describe('the feature shim', () => {
         });
         const teardown = sonicFlight.install(ctx);
         expect(called).toBe(0);
-        expect(items.map((i) => i.id)).toEqual(['pause.sound']);
+        expect(items.map((i) => i.id)).toEqual(['pause.flyBySound']);
         (teardown as () => void)();
         expect(items).toEqual([]);
     });

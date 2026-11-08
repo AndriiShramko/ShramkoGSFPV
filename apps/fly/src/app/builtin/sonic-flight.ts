@@ -14,7 +14,7 @@ import type { Feature, MenuItem } from '../context';
 export const soundPage = (): string => `/${document.documentElement.lang || 'en'}/sound/`;
 
 /** The pause menu's way into the mode on an ordinary page: no key, the tools section, where the mode's own item sits. */
-export const SOUND_PAGE_ITEM: Omit<MenuItem, 'run'> = { id: 'pause.sound', action: null, labelKey: 'sonic.menu.page', order: 95, section: 'tools', href: soundPage };
+export const SOUND_PAGE_ITEM: Omit<MenuItem, 'run'> = { id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', order: 95, section: 'tools', href: soundPage };
 
 export const sonicFlight: Feature = {
     id: 'sonic-flight',
