@@ -85,7 +85,7 @@ describe('B1 (W3): the runner gets the pilot\'s path, key names, speaking speed 
         expect(names.runner().repeat).toBe('Z');
         expect(names.of('pause.toggle', 'Escape')).toBe('Escape');
         expect(codeOfHint({ cap: 'Shift+N', aria: 'Shift+N' })).toBeNull();
-        expect(spokenKey({ cap: '[', aria: '[' }, new Map([['BracketLeft', 'ü']]), () => null)).toBe('[');
+        expect(spokenKey({ cap: '[', aria: '[' }, new Map([['BracketLeft', '\u00fc']]), () => null)).toBe('[');
     });
 
     it('the layout is asked of the browser (navigator.keyboard.getLayoutMap) when it has it; without it, or when it refuses, the caps', async () => {
