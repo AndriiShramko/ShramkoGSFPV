@@ -9,17 +9,23 @@
 //     rebuilt from the same spec, and on no others (session/replay.ts lifeProblem);
 //   - the scene is made in memory: id lesson-<lesson id>, never a hex SuperSplat id, so the scene
 //     library and the CDN never see it; nothing to draw (the helper's view is primitives, step 6);
-//   - the craft starts at the lesson's start (or the world's own when the lesson gives none).
+//   - the craft starts at the lesson's start (or the world's own when the lesson gives none);
+//   - v0.13 (M41-19, lane v13-look): a contact is the bump of a game, not the drone's own (LESSON_FLIGHT, sim-core
+//     BumpRule 'slide'): pushed out along the surface's normal with a little bounce, free to slide along it, no spin;
+//     the lesson pilot (play/lesson-pilot.ts) lets go of the surface it bumped. Every life header of the world says so.
 // Sound reads the same world through the contract's SonicWorld (castRay, objects).
 import { createAnalyticWorld, makeSpec } from '@shramko/sonic-fpv';
 import type { AnalyticWorldInfo, AnalyticWorldSpec, LessonDef, Pose } from '@shramko/sonic-fpv';
 import { AnalyticContactWorld, analyticCollision } from '@gsfpv/collision';
 import type { AnalyticVoxelCollision } from '@gsfpv/collision';
+import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import type { BuiltinWorld } from '../session';
 
 /** Every built-in scene id starts with this; a SuperSplat id is hex, so the two never meet. */
 export const LESSON_SCENE_PREFIX = 'lesson-';
+/** The flight rules of every lesson world (BuiltinWorld.overrides): the bump of a game (M41-19). */
+export const LESSON_FLIGHT: Readonly<ParamOverrides> = Object.freeze({ bump: 'slide' });
 /** The clear colour of a lesson world: a dark room, the primitives drawn light on it (step 6). */
 export const LESSON_BACKGROUND: readonly number[] = [0.02, 0.02, 0.03];
 
@@ -78,7 +84,8 @@ export function buildLessonWorld(spec: AnalyticWorldSpec, sceneId: string, start
         collision,
         contact: new AnalyticContactWorld(collision),
         sha256: world.digest,
-        spawn: [at.pos[0], at.pos[1], at.pos[2], at.yawDeg]
+        spawn: [at.pos[0], at.pos[1], at.pos[2], at.yawDeg],
+        overrides: { ...LESSON_FLIGHT }
     };
     return { world, collision, builtin };
 }

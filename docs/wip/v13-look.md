@@ -28,11 +28,50 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
 
 ### Stage L1
 
-- [ ] L1-1 (M41-19) no sticking in the lesson worlds: a bump pushes the craft out along the contact normal with a
+- [x] L1-1 (M41-19) no sticking in the lesson worlds: a bump pushes the craft out along the contact normal with a
   little bounce and lets it slide along the surface; after a hit at any angle (walls, pillars, ceiling, floor; 0 to 85
   degrees to the surface; 1 to 5 m/s) the craft is out of contact within 0.3 s with the stick released or pointed away.
   The scans' flight does not change (the reference hash, flight regression B6-B16). A collision probe test over those
   angles and speeds, no tunnelling through thin walls; its control (the v0.12 response) sticks and fails.
+  - Why it stuck (measured on the v0.12 response, the page's own loop in Node: radio, Controls, the lesson pilot, the Sim
+    at 1 kHz on walls-pillar): the drone's contact is an impulse at the touching duct, 0.033 m off the centre, so a 3 m/s
+    hit on the pillar spun the craft at 41 rad/s; 0.15 s later its top faced the pillar and its own thrust held it there,
+    within 1 mm, for 2 s with the stick pointed away (hundreds of contacts). And the lesson pilot's velocity loop kept what
+    it asked into the pillar after the bounce (the ramped target -2.8 m/s, the integral -2.5 m/s^2), so even a bounce that
+    did not spin flew the craft straight back into it.
+  - The rule, two halves, both only in lesson worlds:
+    - sim-core `ParamOverrides.bump: 'slide'` (`SimParams.bump`, `BumpRule`; absent = 'drone', the v0.12 contact, every
+      scan): the centre of mass leaves the surface along its normal at 0.3 of the speed it came in at, at 0.3 m/s at least
+      from a wall or a ceiling (a glancing hit at 5 m/s comes in at 0.44 m/s), its motion along the surface and its spin
+      kept (no friction, no torque); a floor (normal y >= 0.7) keeps Coulomb friction and gets no push, so a lesson still
+      lands. The respawn disc keeps its own rule. The contact event now carries the surface's normal (nx, ny, nz).
+    - `apps/fly/src/sonic/lesson-world.ts` `LESSON_FLIGHT` = `{ bump: 'slide' }` in `BuiltinWorld.overrides`, which the
+      session merges into every life it flies (`session/index.ts` `lifeOverrides`): every life header of a lesson world
+      names the rule, so a replay flies it too; `lifeHeaderProblem` refuses a rule this build does not know.
+    - The lesson pilot (`play/lesson-pilot.ts`, only when the model's bump is 'slide') hands every contact to
+      `GameAssist.bump`: the velocity loop drops its target and integral into the wall, holds the stick's push into it off
+      for 0.4 s (longer while the stick still pushes and the craft is within 0.3 m), and the altitude help keeps a held
+      height 0.15 m off a bumped ceiling or floor, getting there at 0.5 m/s at least, and holds a climb into the ceiling
+      off. A sink to the floor stays the pilot's. The game scheme of the ordinary flight never calls these.
+  - Probe `tools/bench/test/sonic-bump.test.ts` (5 tests): 220 flights (walls-hall's wall, walls-pillar's pillar,
+    walls-hall's ceiling and floor x 0, 30, 60, 85 degrees from the normal x 1 to 5 m/s x stick let go, pointed away, or
+    pressed 0.5 s more first; the floor thrown at, not pressed: pressing into it is landing), 220 hits at 0.09 to 5.12
+    m/s into the surface: out of contact (2 cm off every surface, no contact after) after at most 0.236 s. Thin walls
+    (rings-first's tube, 0.2 m; shapes-square's bar, 0.15 m) at 1, 3, 5 m/s: 24 flights, out after at most 0.071 s.
+    Deepest overlap of the body with the walls on any tick: 0.0 mm (no tunnelling); the detector's control (walls the
+    flight flies through) reads 30 mm. Control in the test: the v0.12 response, pillar 52 of 60 flights stuck past 0.3 s
+    (the owner's case, 3 m/s head-on and pointed away, among them). A lesson still lands: motors off 2.78 s after the
+    stick goes down.
+  - `packages/sim-core/test/model-bump.test.ts` (5 tests): a 3 m/s hit leaves at 0.3 of it, slides on, no spin (the drone's
+    rule spins it over 5 rad/s); a glancing 0.3 m/s hit is pushed out at 0.3 m/s; a floor slows a sliding craft and lets
+    it rest (hops under 3 mm); a life flown with the rule replays to its live hash and the same log without the rule in
+    its header does not; an unknown rule is refused.
+  - Controls broken once and restored: the slide rule a no-op (the probe's worst 0.972 s, fails); the pilot's bump
+    handling off (worst 0.993 s, fails); the header check removed (the unknown rule passes, fails); a push on floors too
+    (5.4 mm hops, fails); the floor lift while the stick sinks (never lands, hovers at 0.139 m, fails).
+  - Unchanged elsewhere: `a6-reference` (the reference hash) and every sim-core test pass; the Fly by Sound tests (`sonic-*`,
+    `sonicrec-*`, `packages/prefs/test/sonic.test.ts`) and `app-game`, `app-easy`: 626 pass, 10 skipped (as before: 8 need
+    the scan, 2 are stage B's). The lesson rig (`sonic-lesson-rig.ts`, the real FlightSession) now flies the slide rule.
 - [ ] L1-2 (W17) a headless page flight on a release build: full stick in walls-hall from the start to the first touch
   (the model says 2 to 3 s: measured); a respawn in tunnel-gaps' free way under a block rests at the respawn point and is
   not stuck.
@@ -68,7 +107,15 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
 
 ## For the lead
 
-(filled as the lane goes)
+- L1-1 touches shared code, each change inert outside a lesson world: `packages/sim-core` (`ParamOverrides.bump`,
+  `SimParams.bump`, `Sim.slide`, the contact event's normal, `lifeHeaderProblem`), `apps/fly/src/play/assist.ts`, `game.ts`
+  (methods only a lesson's pilot calls), `play/lesson-pilot.ts`, `session/index.ts` (`BuiltinWorld.overrides`). No
+  `SIM_CORE_VERSION` bump: no trace without the override changes (the reference hash holds); a lesson life now carries
+  `bump: 'slide'` in its header, so its configHash differs from a v0.12 one, and a v0.12 lesson log still replays with
+  the contact it was flown with.
+- The scan lesson (free-garden) keeps the drone's own contact: its walls are the scan's, and the mode sets no override for
+  a scan. If the owner wants the lesson bump there too, the mode would add `{ bump: 'slide' }` to the session's
+  overrides while a scan lesson runs (v13-host's `mode.ts`).
 
 ## Needs from the package
 

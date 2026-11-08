@@ -355,6 +355,9 @@ export function lifeHeaderProblem(h: LifeHeader): string | null {
     if (h.scene?.ceilingM !== undefined && !Number.isFinite(h.scene.ceilingM)) return `the collision ceiling ${String(h.scene.ceilingM)} is not a number`;
     const wind = h.overrides?.wind === undefined ? null : windProblem(h.overrides.wind);
     if (wind) return wind;
+    // a bump rule this build does not know would replay as the drone's own contact: refuse it instead
+    const bump = (h.overrides as { bump?: unknown } | undefined)?.bump;
+    if (bump !== undefined && bump !== 'slide') return `bump rule ${JSON.stringify(bump)} is not one this build knows ('slide')`;
     let hash: string;
     try {
         hash = lifeConfigHash(h.presetSha256, h.overrides, h.simCore);

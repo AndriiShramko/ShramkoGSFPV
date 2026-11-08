@@ -79,10 +79,34 @@ export function upCos(s: ArrayLike<number>): number {
     return 1 - 2 * (qx * qx + qz * qz);
 }
 
+/**
+ * A lesson world's bump (v0.13, M41-19; AltitudeHelp.bump, GameAssist.bump): for this long after a bump the pilot's stick
+ * cannot push the craft back into that surface (the craft bounces off and stays off), and a height held in that time keeps
+ * BUMP_CLEAR_M off a ceiling or a floor it bumped, s.
+ */
+export const BUMP_HOLD_S = 0.4;
+/** While the stick still pushes into the surface and the craft is within this of where it bumped, the hold-off lasts, m. */
+export const BUMP_NEAR_M = 0.3;
+/** A height held after a bump on a ceiling or a floor keeps this far off it, m ... */
+export const BUMP_CLEAR_M = 0.15;
+/** ... and the craft gets there at this vertical speed at least, m/s (the hold alone would ask 0.2 m/s at 0.15 m). */
+export const BUMP_LIFT_MPS = 0.5;
+
 /** Height hold and climb/sink by speed. One per input source; reset() on a new life, a crash, a disarm. */
 export class AltitudeHelp {
     private holdY: number | null = null;
     private iAcc = 0;
+    /**
+     * The last lesson bump on a ceiling or a floor (bump()): the highest and lowest height a hold may take, the height the
+     * craft bumped a ceiling at, how long the climb into it is still held off, and how long the bump's limits still apply,
+     * s. Only a lesson's pilot bumps.
+     */
+    private bumpTop: number | null = null;
+    private bumpBottom: number | null = null;
+    private ceilingAt = 0;
+    private climbOff = 0;
+    private bumpLeft = 0;
+    private bumpSide: 1 | -1 = 1;
     /** the vertical speed asked for in the last update, m/s (for tests and the HUD) */
     target = 0;
     /** the craft was past UPRIGHT_MIN_COS in the last update: idle was sent (for tests and the bench) */
@@ -102,6 +126,39 @@ export class AltitudeHelp {
         this.iAcc = 0;
         this.target = 0;
         this.tipped = false;
+        this.bumpTop = null;
+        this.bumpBottom = null;
+        this.climbOff = 0;
+        this.bumpLeft = 0;
+    }
+
+    /** The last lesson bump's surface while its limits hold (bump()): 1 a floor, -1 a ceiling, 0 none. */
+    get bumped(): 1 | -1 | 0 {
+        return this.bumpLeft > 0 ? this.bumpSide : 0;
+    }
+
+    /**
+     * A lesson world's bump on a ceiling (side -1) or a floor (side 1), the craft at height `py` (v0.13, M41-19;
+     * GameAssist.bump): the integral lets go of what it pushed into that surface, a height held now or within BUMP_HOLD_S
+     * keeps BUMP_CLEAR_M off it, and a climb into the ceiling is held off for BUMP_HOLD_S, longer while the stick still
+     * asks to climb and the craft is within BUMP_NEAR_M under where it bumped. So a craft let go under the ceiling it hit
+     * sinks clear of it instead of hovering against it. A sink to the floor stays the pilot's: that is how a lesson lands.
+     * The ordinary flight never calls this.
+     */
+    bump(side: 1 | -1, py: number): void {
+        this.bumpLeft = BUMP_HOLD_S;
+        this.bumpSide = side;
+        if (side < 0) {
+            this.bumpTop = py - BUMP_CLEAR_M;
+            this.ceilingAt = py;
+            this.climbOff = BUMP_HOLD_S;
+            if (this.iAcc > 0) this.iAcc = 0;
+            if (this.holdY !== null && this.holdY > this.bumpTop) this.holdY = this.bumpTop;
+        } else {
+            this.bumpBottom = py + BUMP_CLEAR_M;
+            if (this.iAcc < 0) this.iAcc = 0;
+            if (this.holdY !== null && this.holdY < this.bumpBottom) this.holdY = this.bumpBottom;
+        }
     }
 
     /**
@@ -130,12 +187,33 @@ export class AltitudeHelp {
     follow(vt: number | null, p: SimParams, s: ArrayLike<number>, dtS: number): number {
         const vy = s[S.vy];
         const py = s[S.py];
+        const dt = dtS > 0 && dtS < 0.25 ? dtS : 0; // a stalled page is not time the help should integrate
+        const bumped = this.bumpLeft > 0;
+        let climbing = false;
         if (vt !== null) {
             this.holdY = null;
+            // a lesson's bump on the ceiling: the climb into it waits (bump())
+            if (this.climbOff > 0 && vt > 0) {
+                vt = 0;
+                climbing = this.ceilingAt - py < BUMP_NEAR_M;
+            }
         } else {
-            // released: hold where the craft will stop (about one time constant of travel ahead)
-            if (this.holdY === null) this.holdY = py + vy / KV;
+            // released: hold where the craft will stop (about one time constant of travel ahead), off a surface just bumped
+            if (this.holdY === null) {
+                let y = py + vy / KV;
+                if (bumped && this.bumpTop !== null && y > this.bumpTop) y = this.bumpTop;
+                if (bumped && this.bumpBottom !== null && y < this.bumpBottom) y = this.bumpBottom;
+                this.holdY = y;
+            }
             vt = Math.max(-HOLD_MAX_MPS, Math.min(HOLD_MAX_MPS, HOLD_GAIN * (this.holdY - py)));
+            // off the surface just bumped, briskly (bump())
+            if (bumped && this.bumpBottom !== null && py < this.bumpBottom) vt = Math.max(vt, BUMP_LIFT_MPS);
+            if (bumped && this.bumpTop !== null && py > this.bumpTop) vt = Math.min(vt, -BUMP_LIFT_MPS);
+        }
+        if (bumped || this.climbOff > 0) {
+            this.climbOff = climbing ? BUMP_HOLD_S : Math.max(0, this.climbOff - dt);
+            this.bumpLeft = climbing ? BUMP_HOLD_S : Math.max(0, this.bumpLeft - dt);
+            if (this.bumpLeft === 0) this.bumpTop = this.bumpBottom = null;
         }
         this.target = vt;
         const err = vt - vy;
@@ -143,7 +221,6 @@ export class AltitudeHelp {
         // on its side or upside down: idle, and the integral waits (the fall is not an error thrust can fix)
         this.tipped = cosTilt < this.uprightMinCos;
         if (this.tipped) return stickForThrust(p, s[S.volt], 0);
-        const dt = dtS > 0 && dtS < 0.25 ? dtS : 0; // a stalled page is not time the help should integrate
         this.iAcc = Math.max(-I_MAX, Math.min(I_MAX, this.iAcc + KI * err * dt));
         const g = p.gravity;
         const a = Math.max(-0.9 * g, Math.min(1.5 * g + 3, KV * err + this.iAcc));

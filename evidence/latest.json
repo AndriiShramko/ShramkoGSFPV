@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-24T16:46:28.337010",
+  "updated": "2026-11-08T19:22:35.071Z",
   "items": {
     "ratesVectors": {
       "value": "1880 points, max error 0 deg/s",
@@ -8,8 +8,8 @@
     },
     "tunnelling": {
       "value": "0 wall pass-throughs in 200,000 straight passes",
-      "method": "swept test at 1 ms ticks vs independent resampling oracle; speeds 5, 10, 15, 25, 34.39 m/s; 3 real scans + 2 cm synthetic wall",
-      "date": "2026-09-24"
+      "method": "swept test at 1 ms ticks vs independent resampling oracle; speeds 5, 10, 15, 25, 34.16 m/s; 3 real scans + 2 cm synthetic wall",
+      "date": "2026-11-08"
     },
     "clearance": {
       "value": "Pavo20 Pro body stops 47.2 mm (median) beyond its own size from walls on the 5 cm voxel collision of scene 39e63ce9",
