@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-07T23:07:22.776Z",
-    "gitHead": "49efef2",
+    "date": "2026-11-07T23:57:11.422Z",
+    "gitHead": "d63663e",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,9 +16,9 @@
   },
   "site": "http://127.0.0.1:5410",
   "release": {
-    "sha": "49efef2",
+    "sha": "d63663e",
     "sonic": "1eea4d5",
-    "built": "2026-11-07T22:55:59.444Z"
+    "built": "2026-11-07T23:48:18.415Z"
   },
   "seconds": 185,
   "passed": 35,
@@ -39,11 +39,11 @@
         "engine": "running",
         "target": null,
         "cost": {
-          "n": 34,
+          "n": 32,
           "p50": 0.1,
-          "p95": 0.2,
+          "p95": 0.1,
           "p99": 0.2,
-          "max": 0.9
+          "max": 1.3
         },
         "walls": {
           "voxelM": 0.1,
@@ -117,7 +117,7 @@
       "name": "A: the saved package reads strictly (every listed file's size and SHA-256), complete, consent recording and voice and not send, a voice, a survey",
       "pass": true,
       "value": {
-        "frames": 1377,
+        "frames": 1369,
         "events": {
           "session": 2,
           "recording": 2,
@@ -127,10 +127,10 @@
           "answer": 3,
           "goal": 1
         },
-        "voiceBytes": 125387,
-        "bytes": 149002,
+        "voiceBytes": 125561,
+        "bytes": 149182,
         "consent": {
-          "at": "2026-11-07T23:04:25.598Z",
+          "at": "2026-11-07T23:54:14.388Z",
           "guardianConfirmed": null,
           "minor": false,
           "recording": true,
@@ -236,7 +236,7 @@
       "value": [
         {
           "lesson": "ears-headphones",
-          "frames": 1060,
+          "frames": 1052,
           "compared": true,
           "ok": true,
           "recorded": 22,
@@ -289,7 +289,7 @@
           {
             "lesson": "ears-headphones",
             "lead": false,
-            "frames": 1060,
+            "frames": 1052,
             "ok": true,
             "diffs": 0,
             "cueShare": 1
@@ -316,7 +316,7 @@
       "name": "A: control: with the sounds of four seconds of the glossary taken out of the recording the sounds no longer agree",
       "pass": true,
       "value": {
-        "share": 0.9143064633260711
+        "share": 0.914536157779401
       }
     },
     {
@@ -324,11 +324,11 @@
       "pass": true,
       "value": {
         "phase": "ended",
-        "tMs": 57485.19999998808,
-        "durationMs": 57485.19999998808,
+        "tMs": 57545.59999996424,
+        "durationMs": 57545.59999996424,
         "voice": "ready",
-        "frame": 1377,
-        "frames": 1377,
+        "frame": 1369,
+        "frames": 1369,
         "viewLagMs": 42,
         "lesson": "ears-glossary",
         "part": 1,
@@ -350,7 +350,7 @@
             "ears-glossary",
             null,
             true,
-            35482
+            35516
           ]
         ],
         "prims": {
@@ -363,34 +363,34 @@
       "name": "A: every frame of both lessons fed once, in order, never before its package time and within 200 ms after it on the audio clock",
       "pass": true,
       "value": {
-        "n": 1377,
-        "min": 0.33333333333393966,
-        "p50": 5.333333333335759,
-        "p95": 8.666666666677884,
-        "max": 39.66666666666947
+        "n": 1369,
+        "min": 11.000000000003638,
+        "p50": 17,
+        "p95": 20.333333333344854,
+        "max": 28.333333333343035
       }
     },
     {
       "name": "A: the voice track holds every burst of the microphone across the recording (no gap: 1.5 s apart all along) and runs through the survey (to the last answer)",
       "pass": true,
       "value": {
-        "bursts": 38,
+        "bursts": 39,
         "gaps": [
           1.4999166666666666,
           1.500020833333334
         ],
-        "lastAnswerT": 57548.59999996424,
-        "voiceEndT": 57485
+        "lastAnswerT": 57585.59999996424,
+        "voiceEndT": 57546
       }
     },
     {
       "name": "A: the voice in the replay: every burst heard within 200 ms of its place on the package clock, over both lessons",
       "pass": true,
       "value": {
-        "bursts": 38,
-        "heard": 38,
-        "inSecondLesson": 14,
-        "maxAbsErrMs": 0.012499988079525792,
+        "bursts": 39,
+        "heard": 39,
+        "inSecondLesson": 15,
+        "maxAbsErrMs": 0.016666630894178525,
         "errorsMs": [
           0,
           0,
@@ -429,9 +429,10 @@
           0,
           0,
           0,
+          0,
           0
         ],
-        "voiceSeconds": 57.48,
+        "voiceSeconds": 57.54,
         "burstGapsS": [
           1.4999166666666666,
           1.500020833333334
@@ -455,8 +456,8 @@
           "n": 1623,
           "p50": 0.1,
           "p95": 0.2,
-          "p99": 0.4,
-          "max": 0.9
+          "p99": 0.5,
+          "max": 1.3
         },
         "walls": {
           "voxelM": 0.1,
@@ -484,7 +485,7 @@
             "blocksPassed": 1,
             "passed": true,
             "bestTimeMs": null,
-            "lastAt": "2026-11-07T23:04:55.731Z"
+            "lastAt": "2026-11-07T23:54:44.573Z"
           }
         },
         "events": []
@@ -504,14 +505,14 @@
       "name": "A: the start said the pilot confirmed sending (consentSend), and the package's size and SHA-256",
       "pass": true,
       "value": {
-        "size": 149002,
-        "sha256": "79341a63a4e04a5d0be35258ba74e20b708ca9f247bc26dd486a87cb30e6517c",
+        "size": 149182,
+        "sha256": "3ee7effe8c91803e72e9c8f9e57dbeb883682482d2e3d77a2c1e21f118ceb4c9",
         "consentSend": true,
-        "packageId": "t9zMgR8SMN0F3BAoP6lGEA",
+        "packageId": "FX0hhRYw5Kedk44qV1eWJw",
         "lesson": "ears-headphones",
         "minor": false,
         "voice": true,
-        "release": "49efef2"
+        "release": "d63663e"
       }
     },
     {
@@ -538,8 +539,8 @@
       "name": "A: the recording on the device is untouched by the sending (the panel's Save gives the same bytes)",
       "pass": true,
       "value": {
-        "before": "79341a63a4e0",
-        "after": "79341a63a4e0"
+        "before": "3ee7effe8c91",
+        "after": "3ee7effe8c91"
       }
     },
     {
@@ -572,7 +573,7 @@
       "pass": true,
       "value": {
         "consent": {
-          "at": "2026-11-07T23:06:36.862Z",
+          "at": "2026-11-07T23:56:25.853Z",
           "guardianConfirmed": true,
           "minor": true,
           "recording": true,
@@ -580,7 +581,7 @@
           "speechRecognition": false,
           "voice": true
         },
-        "frames": 821,
+        "frames": 820,
         "events": {
           "session": 2,
           "recording": 2,
@@ -638,7 +639,7 @@
         "rows": [
           {
             "lesson": "hover-height",
-            "frames": 821,
+            "frames": 820,
             "compared": true,
             "ok": true,
             "recorded": 12,
@@ -658,7 +659,7 @@
             {
               "lesson": "hover-height",
               "lead": false,
-              "frames": 821,
+              "frames": 820,
               "ok": true,
               "diffs": 0,
               "cueShare": 1
@@ -678,14 +679,14 @@
           "send.delivered"
         ],
         "body": {
-          "size": 96630,
-          "sha256": "566399312cb32e4b642226945844092915d3a7950f07d699f2958073f0e68f7b",
+          "size": 96558,
+          "sha256": "06adf525084a5d7eb9130b5e1b9248a1d766f63969d550b283fc1381260aa319",
           "consentSend": true,
-          "packageId": "IhATPPJe8MzeAMbw9AtlZg",
+          "packageId": "oxx-lK9gp4s2h2xQm4s-jQ",
           "lesson": "hover-height",
           "minor": true,
           "voice": true,
-          "release": "49efef2"
+          "release": "d63663e"
         }
       }
     },
@@ -738,7 +739,7 @@
           5
         ],
         "pressed": "Digit3",
-        "at": 471
+        "at": 468
       },
       {
         "n": 2,
@@ -757,7 +758,7 @@
           9
         ],
         "pressed": "Digit5",
-        "at": 1027
+        "at": 1025
       },
       {
         "n": 3,
@@ -776,7 +777,7 @@
           9
         ],
         "pressed": "Digit5",
-        "at": 1587
+        "at": 1580
       },
       {
         "n": 4,
@@ -795,7 +796,7 @@
           9
         ],
         "pressed": "Digit5",
-        "at": 2140
+        "at": 2136
       },
       {
         "n": 5,
@@ -807,7 +808,7 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 2697
+        "at": 2684
       },
       {
         "n": 6,
@@ -819,7 +820,7 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 3258
+        "at": 3242
       },
       {
         "n": 7,
@@ -827,7 +828,7 @@
         "kind": "open",
         "digits": [],
         "pressed": "Enter",
-        "at": 5629
+        "at": 5598
       },
       {
         "n": 8,
@@ -835,7 +836,7 @@
         "kind": "open",
         "digits": [],
         "pressed": "Escape",
-        "at": 6187
+        "at": 6151
       },
       {
         "n": 9,
@@ -847,13 +848,13 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 6769
+        "at": 6732
       }
     ],
     "packageA": {
-      "sha256": "79341a63a4e04a5d0be35258ba74e20b708ca9f247bc26dd486a87cb30e6517c",
-      "bytes": 149002,
-      "frames": 1377,
+      "sha256": "3ee7effe8c91803e72e9c8f9e57dbeb883682482d2e3d77a2c1e21f118ceb4c9",
+      "bytes": 149182,
+      "frames": 1369,
       "events": {
         "session": 2,
         "recording": 2,
@@ -863,8 +864,8 @@
         "answer": 3,
         "goal": 1
       },
-      "voiceBytes": 125387,
-      "voiceOffsetMs": 5.199999988079071,
+      "voiceBytes": 125561,
+      "voiceOffsetMs": 5.599999964237213,
       "manifestLesson": {
         "id": "ears-headphones",
         "path": "full",
@@ -888,7 +889,7 @@
         {
           "lesson": "ears-headphones",
           "lead": false,
-          "frames": 1060,
+          "frames": 1052,
           "ok": true,
           "diffs": 0,
           "cueShare": 1
@@ -912,7 +913,7 @@
       "checks": [
         {
           "lesson": "ears-headphones",
-          "frames": 1060,
+          "frames": 1052,
           "compared": true,
           "ok": true,
           "recorded": 22,
@@ -933,14 +934,15 @@
           "cueClassShare": 1
         }
       ],
-      "title": "ears-headphones, ears-glossary \u00b7 Nov 8, 2026, 12:04 AM"
+      "title": "ears-headphones, ears-glossary \u00b7 Nov 8, 2026, 12:54 AM"
     },
     "voiceSyncA": {
-      "bursts": 38,
-      "heard": 38,
-      "inSecondLesson": 14,
-      "maxAbsErrMs": 0.012499988079525792,
+      "bursts": 39,
+      "heard": 39,
+      "inSecondLesson": 15,
+      "maxAbsErrMs": 0.016666630894178525,
       "errorsMs": [
+        0,
         0,
         0,
         0,
@@ -980,7 +982,7 @@
         0,
         0
       ],
-      "voiceSeconds": 57.48,
+      "voiceSeconds": 57.54,
       "burstGapsS": [
         1.4999166666666666,
         1.500020833333334
@@ -1003,16 +1005,16 @@
       ],
       "rig": {
         "record": {
-          "id": "S-20261107-f9779e1d0588",
-          "bytes": 149002,
-          "sha256": "79341a63a4e04a5d0be35258ba74e20b708ca9f247bc26dd486a87cb30e6517c",
+          "id": "S-20261107-913cff57ae51",
+          "bytes": 149182,
+          "sha256": "3ee7effe8c91803e72e9c8f9e57dbeb883682482d2e3d77a2c1e21f118ceb4c9",
           "delivered": true,
           "channels": {
             "telegram": "sent",
             "email": "sent"
           }
         },
-        "storedFileSha": "79341a63a4e04a5d0be35258ba74e20b708ca9f247bc26dd486a87cb30e6517c",
+        "storedFileSha": "3ee7effe8c91803e72e9c8f9e57dbeb883682482d2e3d77a2c1e21f118ceb4c9",
         "telegram": 1,
         "mail": 1,
         "documents": 1,
@@ -1032,7 +1034,7 @@
           5
         ],
         "pressed": "Digit3",
-        "at": 460
+        "at": 461
       },
       {
         "n": 2,
@@ -1044,7 +1046,7 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 1018
+        "at": 1017
       },
       {
         "n": 3,
@@ -1056,7 +1058,7 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 1571
+        "at": 1574
       },
       {
         "n": 4,
@@ -1068,7 +1070,7 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 2129
+        "at": 2133
       },
       {
         "n": 5,
@@ -1080,7 +1082,7 @@
           3
         ],
         "pressed": "Digit1",
-        "at": 2689
+        "at": 2693
       },
       {
         "n": 6,
@@ -1088,13 +1090,13 @@
         "kind": "open",
         "digits": [],
         "pressed": "Enter",
-        "at": 5074
+        "at": 5085
       }
     ],
     "packageB": {
-      "sha256": "566399312cb32e4b642226945844092915d3a7950f07d699f2958073f0e68f7b",
-      "bytes": 96630,
-      "frames": 821,
+      "sha256": "06adf525084a5d7eb9130b5e1b9248a1d766f63969d550b283fc1381260aa319",
+      "bytes": 96558,
+      "frames": 820,
       "events": {
         "session": 2,
         "recording": 2,
@@ -1103,7 +1105,7 @@
         "key": 1,
         "goal": 1
       },
-      "voiceBytes": 81545,
+      "voiceBytes": 81435,
       "surveyId": "child-again-again"
     },
     "nodeCheckB": {
@@ -1112,7 +1114,7 @@
         {
           "lesson": "hover-height",
           "lead": false,
-          "frames": 821,
+          "frames": 820,
           "ok": true,
           "diffs": 0,
           "cueShare": 1
@@ -1128,7 +1130,7 @@
       "checks": [
         {
           "lesson": "hover-height",
-          "frames": 821,
+          "frames": 820,
           "compared": true,
           "ok": true,
           "recorded": 12,
@@ -1148,16 +1150,16 @@
       ],
       "rig": {
         "record": {
-          "id": "S-20261107-23a6697b3f1a",
-          "bytes": 96630,
-          "sha256": "566399312cb32e4b642226945844092915d3a7950f07d699f2958073f0e68f7b",
+          "id": "S-20261107-fa6651877509",
+          "bytes": 96558,
+          "sha256": "06adf525084a5d7eb9130b5e1b9248a1d766f63969d550b283fc1381260aa319",
           "delivered": true,
           "channels": {
             "telegram": "sent",
             "email": "sent"
           }
         },
-        "storedFileSha": "566399312cb32e4b642226945844092915d3a7950f07d699f2958073f0e68f7b",
+        "storedFileSha": "06adf525084a5d7eb9130b5e1b9248a1d766f63969d550b283fc1381260aa319",
         "telegram": 1,
         "mail": 1,
         "documents": 2,
