@@ -454,17 +454,25 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     check('B: with the "How to fly" card up K closes it and says no key (review R4)', closed === true && !saidOverCard.some((k) => (k ?? '').startsWith('help.')), out.keyOverCard);
     await until('the flight to go on after the card', () => pausedNow(page), (v) => v === false, 5000).catch(() => undefined);
 
-    // the top bar's Share in the mode: the lesson's link, copied and shown in the field, not the picture panel (review R3)
-    await page.evaluate(() => navigator.clipboard.writeText('-'));
-    await page.click('[data-action="share-top"]');
-    const shown = await until('the link field', () => linkField(page), (v) => v.shown, 5000).catch(() => null);
-    const clipTop = await page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
-    out.topShare = { field: shown, clipboard: clipTop, want };
-    check('B: the top bar\'s Share in the mode copies the lesson\'s link and shows it selected in the field, with no picture panel (review R3)', !!shown && shown.value === want && shown.focused && shown.selected === want && !shown.picturePanel && shown.status === EN['sonic.link.copied'] && clipTop === want, out.topShare);
-    await page.keyboard.press('Escape');
-    const gone = await until('the field to close', () => linkField(page), (v) => !v.shown, 5000).then(() => true).catch(() => false);
-    const pausedAfterField = await until('the flight to go on', () => pausedNow(page), (v) => v === false, 5000).catch(() => true);
-    check('B: Escape closes the field and the flight goes on', gone && pausedAfterField === false, { gone, paused: pausedAfterField });
+    // the visible Share in the mode: the lesson's link, copied and shown in the field, not the picture panel (review R3). A sighted
+    // helper pauses first (Esc: the game scheme's flight holds the mouse), then clicks the pause menu's Share, or the top bar's
+    const visibleShare = async (selector: string): Promise<{ field: Awaited<ReturnType<typeof linkField>> | null; clipboard: string; gone: boolean; pausedAfter: boolean | null }> => {
+        await page.evaluate(() => navigator.clipboard.writeText('-'));
+        await page.keyboard.press('Escape');
+        await page.waitForSelector('.pause-menu', { timeout: 10000 });
+        await page.click(selector);
+        const field = await until('the link field', () => linkField(page), (v) => v.shown, 5000).catch(() => null);
+        const clipboard = await page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
+        await page.keyboard.press('Escape');
+        const gone = await until('the field to close', () => linkField(page), (v) => !v.shown, 5000).then(() => true).catch(() => false);
+        const pausedAfter = await until('the flight to go on', () => pausedNow(page), (v) => v === false, 5000).catch(() => true);
+        return { field, clipboard, gone, pausedAfter };
+    };
+    const shareOk = (r: Awaited<ReturnType<typeof visibleShare>>): boolean => !!r.field && r.field.value === want && r.field.focused && r.field.selected === want && !r.field.picturePanel && r.field.status === EN['sonic.link.copied'] && r.clipboard === want && r.gone && r.pausedAfter === false;
+    const menuShare = await visibleShare('[data-action="pause.share"]');
+    const topShare = await visibleShare('[data-action="share-top"]');
+    out.visibleShare = { menu: menuShare, top: topShare, want };
+    check('B: in the mode the pause menu\'s Share and the top bar\'s Share copy the lesson\'s link and show it selected in the field, with no picture panel; Escape closes it and the flight goes on (review R3)', shareOk(menuShare) && shareOk(topShare), out.visibleShare);
 
     // the Winter Garden lesson, chosen on the start screen over the flight: the link names its scan and size
     await pauseMenu(page);
