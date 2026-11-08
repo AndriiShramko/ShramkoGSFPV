@@ -39,7 +39,7 @@ import { RESPAWN_BEFORE_M, createAnalyticWorld, defaultPrefs, getLesson } from '
 import type { WorldCheckpoint } from '../../../packages/sonic-fpv/src';
 import { BOX, DIAL, tapeOf } from '../../../apps/fly/src/sonic/attitude';
 import type { AttitudeReport } from '../../../apps/fly/src/sonic/attitude';
-import { KIND_COLOURS, PANEL } from '../../../apps/fly/src/sonic/sound-panel';
+import { KIND_COLOURS, PANEL, RADAR_RINGS_M, radiusOf } from '../../../apps/fly/src/sonic/sound-panel';
 import type { SoundReport } from '../../../apps/fly/src/sonic/sound-panel';
 import { launchChrome } from './browser';
 import { REPO, today, writeEvidence } from './evidence';
@@ -783,10 +783,15 @@ async function measureSounds(ctx: BrowserContext, page: Page, rep: SoundReport, 
     const barPts: [number, number][] = [];
     if (rep.bar?.targetM !== null && rep.bar?.targetM !== undefined) barPts.push([b.x0 + 0.15 * bw, yOf(rep.bar.targetM)]);
     if (rep.bar?.toneM !== null && rep.bar?.toneM !== undefined) barPts.push([b.x0 + 0.15 * bw, yOf(rep.bar.toneM)]);
-    const bgPt: [number, number] = [-0.5, 2.6, -2.6, 0.5, 1.6, -1.6].map((a) => [cx + 0.63 * r * Math.cos(a), cy + 0.63 * r * Math.sin(a)] as [number, number]).find((q) => places.every((pl) => Math.hypot(q[0] - pl.x, q[1] - pl.y) > pl.rr * 2.2 + 4)) ?? [cx + 0.63 * r * Math.cos(-0.5), cy + 0.63 * r * Math.sin(-0.5)];
-    const pts: [number, number][] = [...places.flatMap((p) => [[p.x, p.y - 0.8 * p.rr] as [number, number], [p.x + p.rr + 0.55 * 0.95 * p.rr, p.y] as [number, number]]), ...barPts, bgPt];
+    // the radar's background: eight points between the rings of 2 and 4 m, off the cross; the one nearest the box's colour (a
+    // point that falls on a disc or a ring is not the background)
+    const between = ((radiusOf(RADAR_RINGS_M[1]!) + radiusOf(RADAR_RINGS_M[2]!)) / 2) * r;
+    const bgPts = [-2.75, -1.96, -1.18, -0.39, 0.39, 1.18, 1.96, 2.75].map((a) => [cx + between * Math.cos(a), cy + between * Math.sin(a)] as [number, number]);
+    const pts: [number, number][] = [...places.flatMap((p) => [[p.x, p.y - 0.8 * p.rr] as [number, number], [p.x + p.rr + 0.55 * 0.95 * p.rr, p.y] as [number, number]]), ...barPts, ...bgPts];
     const px = await pixels(ctx, png, pts.map((q) => at(q[0], q[1])));
-    const bg = px[px.length - 1]!;
+    const boxBg = hex8(PANEL[rep.scheme].bg.css);
+    const bgs = px.slice(px.length - bgPts.length);
+    const bg = bgs.reduce((a, b) => (Math.max(...a.map((v, i) => Math.abs(v - boxBg[i]!))) <= Math.max(...b.map((v, i) => Math.abs(v - boxBg[i]!))) ? a : b));
     const bgL = lum8(bg);
     const colours = KIND_COLOURS[rep.scheme];
     const fg = hex8(PANEL[rep.scheme].fg.css);

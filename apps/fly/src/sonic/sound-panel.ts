@@ -5,7 +5,8 @@
 //
 //   radar    seen from above, the nose up: every active cue with a direction (FlyBySoundEngine.plan.cues, the heading frame) at
 //            its direction and, when it has one, its distance (rings at 1, 2 and 4 m); an icon and a colour per kind (wall,
-//            floor or ceiling, open way, target, checkpoint, wrong way, praise). A cue whose direction rises or falls 20 degrees
+//            floor or ceiling, open way, target (a gate's hum, notes and shape), checkpoint, wrong way, praise; a pillar's shape
+//            trace is an obstacle's, the wall kind). A cue whose direction rises or falls 20 degrees
 //            or more carries an "above" or "below" mark; one almost straight up or down (the ceiling over the craft, the floor
 //            under it) sits at the top or the bottom of the height bar instead. The open way's side is the plan's (plan.freeWay):
 //            its chime sounds from ahead for a way above or below, which its pitch tells (M41-14), so the mark comes from the
@@ -52,10 +53,11 @@ const KIND_OF: Readonly<Record<string, CueKind>> = {
     'target.off': 'target',
     'target.note': 'target',
     'target.lap': 'target',
+    // the shape trace of a gate is the target's; of a pillar, an obstacle's (it traces the nearest solid object when no gate is next)
     'shape.ring': 'target',
     'shape.square': 'target',
     'shape.cube': 'target',
-    'shape.pillar': 'target',
+    'shape.pillar': 'wall',
     'height.tone': 'tone',
     'height.rough': 'tone',
     'height.target': 'tone',
