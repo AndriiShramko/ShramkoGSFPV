@@ -148,6 +148,22 @@ lead's "Next" 5 and 6 as this branch sees them).
 - [ ] 8. (next agent) Page proofs on a local release build: the v13-host and v13-look page benches with the real progress
   panel (v13-look's stand-in goes), the two page proofs that still expect v0.12 lines (`sonic-int-page.ts`,
   `sonic-lessons-page.ts`), the new switches on the page.
+  - What steps 1 to 7 leave for it: no page, no browser and no port was used here (ports 5430 to 5439 are free for it).
+    The switches: test ids `sonic-height-direction`, `sonic-look-soundPanel`, `sonic-look-attitude` (the settings'
+    stops 10, 12, 13 of 14); kept as `prefs.heightDirection` in the collection 'sonic' and as its keys `soundPanel`,
+    `attitude`. `sonic-v13-page.ts` C already counts "Item n of 14" (not run). To see on the page: the three switches
+    said and saved (the reader control too); the reset over a lesson (the lesson menu's Lesson list, Reset, Yes, Escape:
+    the lesson's title said again, its progress panel at attempt 1, counted 0: the two lines in `feature.ts` no Node
+    test holds); the target note's disc on the sound panel's radar (`v13-look-page.ts panels`, rings-heights) beside the
+    gate's hum; the Russian and Polish start screen (h1 `sonic.start.name`, `sonic-start-keyboard.ts` "no dictionary key
+    shows as text"); a scan lesson flown on the page with the lesson's bump (free-garden: the life headers' `bump`).
+  - The words check as run here, from the sound worktree: `SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe
+    SHRAMKO_LISTEN_CACHE=U:/cache/shramko-listen GPU_LOCK=C:/dev/.gpu-lock node tools/run-tool.mjs listen-words --sim
+    C:/dev/gsfpv-v13-int/packages/i18n/locales --out <a file>` (the tool takes the GPU lock itself; do not wrap it in
+    another lock; `--out` because the default report folder under the cache may not exist). Clips and transcripts are
+    cached, so a rerun says only the changed lines (about 3 minutes for 140 changed).
+  - This worktree has the Winter Garden's walls in `.cache/scenes/7a475d38` (copied from v13-look's worktree, read only,
+    19 MB): vitest runs the 9 garden tests here (about 2 minutes more).
 - [ ] 9. (next agent) Flight regression accept-fly B6 to B16 on a local release (`SITE` the local address).
 - [ ] 10. (next agent) One independent review of the integrated branch.
 - [ ] 11. (next agent) The review's fixes, gates again.
