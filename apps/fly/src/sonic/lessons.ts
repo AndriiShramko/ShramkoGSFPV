@@ -260,11 +260,13 @@ export class LessonHost {
      * a lesson from its `lesson open`; a lesson that began before the recording has no open in it, and its state then (the attempt,
      * the goals met, what was said) is not in the package, so it could not be heard again as the pilot heard it. Opened again, the
      * whole lesson is in the recording. Its lines queue behind what is being said ("Recording started."), they do not cut it.
-     * Saved progress stays (the new runner starts from it). Nothing when no lesson runs.
+     * Saved progress stays (the new runner starts from it), and so does the way back from the glossary (G): it is the pilot's, not the
+     * lesson's (review I3: opened again without it, a glossary entered by G went on along the path instead of back to the lesson G left).
+     * Nothing when no lesson runs.
      */
     reopen(): Promise<boolean> {
         const id = this.lesson?.id;
-        return id === undefined ? Promise.resolve(false) : this.open(id, { keepSpeech: true });
+        return id === undefined ? Promise.resolve(false) : this.open(id, { keepSpeech: true, returnTo: this.returnTo });
     }
 
     /** The helper's view of the lesson running now, drawn again (a replay drew the lessons of a recording over it); cleared while none runs. */
