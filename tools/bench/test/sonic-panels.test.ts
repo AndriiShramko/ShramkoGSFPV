@@ -24,7 +24,7 @@ import { CuePlanner, DICTS, SHIPPED_LESSON_IDS, createAnalyticWorld, createTrans
 import type { ActiveCue, AnalyticWorldInfo, FlightSample, FreeWay, Quat, Vec3 } from '../../../packages/sonic-fpv/src';
 import { MARK_CONTRAST, attitudeLayout, attitudePairs, climbArrow, horizonOf, tapeOf } from '../../../apps/fly/src/sonic/attitude';
 import type { AttitudeState } from '../../../apps/fly/src/sonic/attitude';
-import { RADAR_KINDS, cueKind, heightBar, radarItems, radiusOf, soundPairs } from '../../../apps/fly/src/sonic/sound-panel';
+import { RADAR_KINDS, cueKind, heightBar, placeDiscs, radarItems, radiusOf, soundLayout, soundPairs } from '../../../apps/fly/src/sonic/sound-panel';
 import { LOOK_PANELS, panelOn, setPanel } from '../../../apps/fly/src/sonic/look-prefs';
 import { MemoryBackend, validateCollection } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
@@ -226,6 +226,38 @@ describe('the sound panel (M41-25, W14)', () => {
         expect(radarItems([cue('target.praise', null)], null)[0]).toMatchObject({ event: true, kind: 'praise' });
         // the height, speed and room cues are not on the radar
         expect(radarItems([cue('height.tone', null), cue('speed.tick', null), cue('room.bed', null)], null)).toEqual([]);
+    });
+
+    it('discs never touch: a wall heard in five sectors 0.5 m off and the open way beside them, each still on its side; control: at their own places they would', () => {
+        const l = soundLayout(0.8 * 216 * 1.36, 0.8 * 216);
+        const s2 = Math.SQRT1_2;
+        const items = radarItems([
+            cue('safety.wall:left', [-1, 0, 0], 0.5),
+            cue('safety.wall:front-left', [-s2, 0, -s2], 0.5),
+            cue('safety.obstacle:front', [0, 0, -1], 0.6),
+            cue('safety.wall:front-right', [s2, 0, -s2], 0.5),
+            cue('safety.wall:right', [1, 0, 0], 0.5),
+            cue('safety.free:up', [0, 0, -1], null)
+        ], { side: 'up', offsetM: 0.5, obstacleM: 0.6, ttcS: 0.5 });
+        const places = placeDiscs(items, l);
+        const reach = (q: { r: number; mark: boolean }): number => q.r * (q.mark ? 1.5 : 1);
+        let closest = Infinity;
+        for (let i = 0; i < places.length; i++) for (let j = i + 1; j < places.length; j++) {
+            const a = places[i]!, b = places[j]!;
+            closest = Math.min(closest, Math.hypot(a.x - b.x, a.y - b.y) - reach(a) - reach(b));
+        }
+        expect(closest).toBeGreaterThanOrEqual(0);
+        for (const q of places) {
+            const it = items.find((x) => x.id === q.id)!;
+            const want = Math.atan2(it.y, it.x), got = Math.atan2(q.y - l.radar.cy, q.x - l.radar.cx);
+            const off = Math.abs(((got - want + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+            expect(off, q.id).toBeLessThan((40 * Math.PI) / 180);
+            expect(Math.hypot(q.x - l.radar.cx, q.y - l.radar.cy) + q.r, q.id).toBeLessThanOrEqual(l.radar.r);
+        }
+        // control: the same cues at their own places touch
+        let raw = Infinity;
+        for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) raw = Math.min(raw, Math.hypot((items[i]!.x - items[j]!.x) * l.radar.r, (items[i]!.y - items[j]!.y) * l.radar.r) - 2 * l.icon);
+        expect(raw).toBeLessThan(0);
     });
 
     it('the open way: its side from the plan (a way above or below sounds from ahead today); control: without the side no mark', () => {

@@ -37,7 +37,7 @@ import type { Browser, BrowserContext, Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
 import { RESPAWN_BEFORE_M, createAnalyticWorld, defaultPrefs, getLesson } from '../../../packages/sonic-fpv/src';
 import type { WorldCheckpoint } from '../../../packages/sonic-fpv/src';
-import { BOX, tapeOf } from '../../../apps/fly/src/sonic/attitude';
+import { BOX, DIAL, tapeOf } from '../../../apps/fly/src/sonic/attitude';
 import type { AttitudeReport } from '../../../apps/fly/src/sonic/attitude';
 import { KIND_COLOURS, PANEL } from '../../../apps/fly/src/sonic/sound-panel';
 import type { SoundReport } from '../../../apps/fly/src/sonic/sound-panel';
@@ -574,6 +574,8 @@ const panels = (page: Page): Promise<PanelsReport> =>
     page.evaluate(() => (window as unknown as { __gsfpv: { sonicPanels: { report(): unknown } } }).__gsfpv.sonicPanels.report()) as Promise<PanelsReport>;
 const setSwitch = (page: Page, which: 'soundPanel' | 'attitude', on: boolean): Promise<void> =>
     page.evaluate(([w, v]) => { const h = (window as unknown as { __gsfpv: { sonicPanels: { setSwitch(a: string, b: boolean): void }; prefs: { flush(): void } } }).__gsfpv; h.sonicPanels.setSwitch(w as string, v as boolean); h.prefs.flush(); }, [which, on] as const);
+/** Both panels' pictures held as they are (the flight and the sound go on) or let go: a picture and a report of the same frame. */
+const freeze = (page: Page, on: boolean): Promise<void> => page.evaluate((v) => (window as unknown as { __gsfpv: { sonicPanels: { freeze(on: boolean): void } } }).__gsfpv.sonicPanels.freeze(v), on);
 /** The flight model held (a holder of its own: the page's pause stack never releases it) or let go. */
 const holdFlight = (page: Page, on: boolean): Promise<void> =>
     page.evaluate((v) => (window as unknown as { __gsfpv: { session: { pause(on: boolean, who: string): void } } }).__gsfpv.session.pause(v, 'looktest'), on);
@@ -659,14 +661,15 @@ async function measureAttitude(ctx: BrowserContext, page: Page, rep: AttitudeRep
     const pt = (ku: number, kn: number, from: readonly number[] = C): [number, number] => [from[0]! + u[0] * ku + n[0] * kn, from[1]! + u[1] * ku + n[1] * kn];
     // sky and ground: a grid inside the dial, away from the horizon, the marks, the wings and the sky pointer
     const grid: { p: [number, number]; side: 'sky' | 'ground' }[] = [];
-    for (let i = -12; i <= 12; i++) for (let j = -12; j <= 12; j++) {
-        const x = cx + (i / 12) * r, y = cy + (j / 12) * r;
+    for (let i = -20; i <= 20; i++) for (let j = -20; j <= 20; j++) {
+        const x = cx + (i / 20) * r, y = cy + (j / 20) * r;
         if (Math.hypot(x - cx, y - cy) > 0.88 * r) continue;
         const d = (x - C[0]) * n[0] + (y - C[1]) * n[1];
-        if (Math.abs(d) < 0.14 * r) continue;
-        if ([-30, -20, -10, 10, 20, 30].some((m) => Math.abs(d - m * hz.pxPerDeg) < 0.1 * r)) continue;
-        if (Math.abs(x - cx) < 0.78 * r && Math.abs(y - cy) < 0.24 * r) continue;
-        if (Math.hypot(x - hz.pointer[0], y - hz.pointer[1]) < 0.32 * r) continue;
+        const a = (x - C[0]) * u[0] + (y - C[1]) * u[1];
+        if (Math.abs(d) < 0.12 * r) continue;
+        if ([-30, -20, -10, 10, 20, 30].some((m) => Math.abs(d - m * hz.pxPerDeg) < 0.08 * r && Math.abs(a) < (Math.abs(m) === 20 ? 0.42 : 0.3) * r + 0.3 * r)) continue;
+        if (Math.abs(x - cx) < 0.78 * r && Math.abs(y - cy) < 0.22 * r) continue;
+        if (Math.hypot(x - hz.pointer[0], y - hz.pointer[1]) < 0.3 * r) continue;
         grid.push({ p: [x, y], side: d > 0 ? 'sky' : 'ground' });
     }
     // the horizon's profile across it at both ends (0.8 r from its centre along it)
@@ -680,9 +683,9 @@ async function measureAttitude(ctx: BrowserContext, page: Page, rep: AttitudeRep
         return Array.from({ length: 25 }, (_, k) => pt(0.12 * r, m * hz.pxPerDeg - 0.06 * r + (0.12 * r * k) / 24));
     };
     const marks = { up: markProfile(10), down: markProfile(-10) };
-    // the left wing, across it, and what lies over and under it
-    const wing = Array.from({ length: 25 }, (_, k) => [cx - 0.45 * r, cy - 0.1 * r + (0.2 * r * k) / 24] as [number, number]);
-    const wingAround: [number, number][] = [[cx - 0.45 * r, cy - 0.17 * r], [cx - 0.45 * r, cy + 0.17 * r]];
+    // the left wing: its yellow core in its middle, and across it (its black edge); drawn over everything else of the dial
+    const wing = Array.from({ length: 25 }, (_, k) => [cx - 0.43 * r, cy - 0.12 * r + (0.24 * r * k) / 24] as [number, number]);
+    const wingAround: [number, number][] = [[cx - 0.43 * r, cy]];
     // the tape
     const tb = l.tape, tw = tb.x1 - tb.x0;
     const tape = rep.tape!;
@@ -714,7 +717,7 @@ async function measureAttitude(ctx: BrowserContext, page: Page, rep: AttitudeRep
     const upL = marks.up ? take(25).map(lum8) : null;
     const downL = marks.down ? take(25).map(lum8) : null;
     const wingL = take(25).map(lum8);
-    const around = take(2).map(lum8);
+    const wingCore = take(1)[0]!;
     const tickL = take(13).map(lum8);
     const bgL = lum8(take(1)[0]!);
     const bandPx = band ? take(1)[0]! : null;
@@ -725,11 +728,12 @@ async function measureAttitude(ctx: BrowserContext, page: Page, rep: AttitudeRep
     const arrowBgL = lum8(take(1)[0]!);
     // the core: the brightest sample near the line's middle; its place along the normal gives the measured line
     const core = endL.map((v) => {
-        let best = 0;
-        for (let k = 1; k < K; k++) if (v[k]! > v[best]!) best = k;
-        const off = -span + (2 * span * best) / (K - 1);
-        const skySide = v.slice(best + 1);
-        return { off, max: v[best]!, edgeMin: Math.min(...skySide.slice(0, Math.ceil(K / 4))) };
+        const max = Math.max(...v);
+        const top = v.map((x, k) => (x >= 0.9 * max ? k : -1)).filter((k) => k >= 0);
+        const mid = top.reduce((a, b) => a + b, 0) / top.length;
+        const off = -span + (2 * span * mid) / (K - 1);
+        const last = Math.max(...top);
+        return { off, max, edgeMin: Math.min(...v.slice(last + 1, last + 1 + Math.ceil(K / 4))) };
     });
     const pA = pt(-0.8 * r, core[0]!.off), pB = pt(0.8 * r, core[1]!.off);
     const tiltPic = (Math.atan2(pB[1] - pA[1], pB[0] - pA[0]) * 180) / Math.PI;
@@ -747,7 +751,8 @@ async function measureAttitude(ctx: BrowserContext, page: Page, rep: AttitudeRep
             horizonEdgeSky: round(Math.min(...core.map((c) => ratio(skyL, c.edgeMin))), 2),
             pitchMarkSky: upL ? round(ratio(skyL, Math.min(...upL)), 2) : null,
             pitchMarkGround: downL ? round(ratio(Math.max(...downL), groundL), 2) : null,
-            wings: round(around.every((a) => a < 0.2) ? ratio(Math.max(...wingL), Math.max(...around)) : around.every((a) => a > 0.3) ? ratio(Math.min(...around), Math.min(...wingL)) : Math.max(ratio(Math.max(...wingL), Math.max(...around)), ratio(Math.min(...around), Math.min(...wingL))), 2),
+            wingsCoreGround: round(ratio(lum8(wingCore), groundL), 2),
+            wingsEdgeSky: round(ratio(skyL, Math.min(...wingL)), 2),
             tapeTick: round(ratio(bgL, rep.scheme === 'dark' ? Math.max(...tickL) : Math.min(...tickL)), 2),
             band: bandPx ? round(ratio(lum8(bandPx), bgL), 2) : null,
             target: targetPx ? round(ratio(lum8(targetPx), bgL), 2) : null,
@@ -755,7 +760,7 @@ async function measureAttitude(ctx: BrowserContext, page: Page, rep: AttitudeRep
             craftText: round(ratio(lum8(boxPx), rep.scheme === 'dark' ? Math.min(...textL) : Math.max(...textL)), 2),
             climbArrow: arrowPx ? round(ratio(lum8(arrowPx), arrowBgL), 2) : null
         },
-        colours: { band: bandPx, target: targetPx, craftBox: boxPx, craftBoxExpected: box, arrow: arrowPx }
+        colours: { band: bandPx, target: targetPx, craftBox: boxPx, craftBoxExpected: box, arrow: arrowPx, wings: wingCore, wingsAreYellow: near(wingCore, hex8(DIAL.wings.css)) }
     };
     return out;
 }
@@ -768,22 +773,8 @@ async function measureSounds(ctx: BrowserContext, page: Page, rep: SoundReport, 
     const { cx, cy, r } = l.radar;
     const ir = l.icon;
     const lim = Math.max(0, r - ir - 1);
-    const places = rep.items.map((it, k) => {
-        if (it.bar) {
-            const b = l.bar;
-            return { it, x: (b.x0 + b.x1) / 2, y: it.bar === 'top' ? b.y0 + 0.9 * ir : b.y1 - 0.9 * ir, rr: 0.85 * ir, mark: false };
-        }
-        if (it.event) {
-            const ev = rep.items.filter((e) => e.event);
-            const j = ev.indexOf(it);
-            return { it, x: cx + (j - (ev.length - 1) / 2) * 1.6 * ir, y: cy, rr: 1.15 * ir, mark: false };
-        }
-        let x = it.x * r, y = it.y * r;
-        const kk = Math.hypot(x, y);
-        if (kk > lim) { x *= lim / kk; y *= lim / kk; }
-        void k;
-        return { it, x: cx + x, y: cy + y, rr: ir, mark: it.elev !== null };
-    });
+    const byId = new Map(rep.items.map((it) => [it.id, it]));
+    const places = rep.places.map((q) => ({ it: byId.get(q.id)!, x: q.x, y: q.y, rr: q.r, mark: q.mark && !byId.get(q.id)!.bar }));
     // the bar's marks
     const b = l.bar, bw = b.x1 - b.x0;
     const padB = Math.max(ir * 1.1, 0.08 * (b.y1 - b.y0));
@@ -841,7 +832,7 @@ async function attitudeProof(ctx: BrowserContext): Promise<Record<string, unknow
         check(`attitude ${name}: the flight model reads pitch ${-up}, roll ${right} (nose down, right side down positive)`, Math.abs(a.state!.pitchDeg + up) < 0.05 && Math.abs(a.state!.rollDeg - right) < 0.05, m.state);
         check(`attitude ${name}: the horizon's core found on the picture where the display draws it: tilt ${h.tiltPictureDeg} (model ${h.tiltModelDeg}), lift ${h.liftPictureDeg} (model ${h.liftModelDeg}) degrees`, Math.abs(h.tiltPictureDeg - h.tiltModelDeg) < 1.5 && Math.abs(h.liftPictureDeg - h.liftModelDeg) < 1, h);
         const low = Object.entries(c).filter(([, v]) => v !== null && (v as number) < 4.5);
-        check(`attitude ${name}: every line and mark measured 4.5:1 or more on the picture`, low.length === 0, c);
+        check(`attitude ${name}: every line and mark measured 4.5:1 or more on the picture (the wings yellow)`, low.length === 0 && (m.colours as { wingsAreYellow: boolean }).wingsAreYellow, { contrast: c, luminance: m.luminance });
         out[name] = m;
     }
     await setQuat(page, bodyQ(yaw, 0, 0));
@@ -898,15 +889,14 @@ async function soundProofPillar(ctx: BrowserContext): Promise<Record<string, unk
         await sleep(40);
         rep = await panels(page);
     }
-    await holdFlight(page, true);
-    await sleep(250);
+    await freeze(page, true);
     rep = await panels(page);
     const wall = await measureSounds(ctx, page, rep.sound!, 'sounds-pillar-wall');
     await shot(page, 'sounds-pillar-wall-page');
     const wallItem = (wall.items as { id: string; kind: string; at: number[]; discIsKindColour: boolean; discContrast: number }[]).find((it) => it.kind === 'wall' && it.id.startsWith('safety.wall'));
     check('walls-pillar: the left wall heard (safety.wall) is drawn left of the craft in the wall\'s colour, 4.5:1 or more', !!wallItem && wallItem.at[0]! < rep.sound!.layout!.radar.cx - 0.2 * rep.sound!.layout!.radar.r && wallItem.discIsKindColour && wallItem.discContrast >= 4.5, { items: wall.items });
     out.wall = wall;
-    await holdFlight(page, false);
+    await freeze(page, false);
     // 2. 3.5 m before the pillar, facing it, W: the pillar ahead and the open way's chime at its side
     const pose = [pillar.pos[0], 1.5, pillar.pos[2] + 3.5, 0];
     await placeAt(page, pose);
@@ -918,11 +908,11 @@ async function soundProofPillar(ctx: BrowserContext): Promise<Record<string, unk
     while (Date.now() - t2 < 6000) {
         // held in the same turn of the page as the look: the picture is of the frame the report describes
         const r = await page.evaluate(() => {
-            const h = (window as unknown as { __gsfpv: { sonicPanels: { report(): { sound: { items: { kind: string; y: number; id: string }[] } | null } }; session: { pause(on: boolean, who: string): void } } }).__gsfpv;
+            const h = (window as unknown as { __gsfpv: { sonicPanels: { report(): { sound: { items: { kind: string; y: number; id: string }[] } | null }; freeze(on: boolean): void } } }).__gsfpv;
             const rr = h.sonicPanels.report();
             const items = rr.sound?.items ?? [];
             if (items.some((it) => it.id.startsWith('safety.obstacle') && it.y < 0) && items.some((it) => it.kind === 'open')) {
-                h.session.pause(true, 'looktest');
+                h.sonicPanels.freeze(true);
                 return rr;
             }
             return null;
@@ -936,7 +926,6 @@ async function soundProofPillar(ctx: BrowserContext): Promise<Record<string, unk
         await page.close();
         return out;
     }
-    await sleep(250);
     rep = await panels(page);
     const fly = await measureSounds(ctx, page, rep.sound!, 'sounds-pillar-ahead');
     await shot(page, 'sounds-pillar-ahead-page');
@@ -948,7 +937,7 @@ async function soundProofPillar(ctx: BrowserContext): Promise<Record<string, unk
     check('walls-pillar: the pillar ahead (safety.obstacle) drawn ahead of the craft in the wall kind\'s colour', !!obstacle && obstacle.discIsKindColour && obstacle.discContrast >= 4.5 && Math.abs(obstacle.at[0]! - L.cx) < Math.abs(obstacle.at[1]! - L.cy), { obstacle });
     check(`walls-pillar: the open way's chime (plan.freeWay.side ${side}) drawn on that side in the open way's colour`, !!open && open.discIsKindColour && open.discContrast >= 4.5 && side !== null && (side === 'left' ? open.at[0]! < L.cx : side === 'right' ? open.at[0]! > L.cx : open.elev === (side === 'up' ? 'above' : 'below')), { open, freeWay: rep.sound!.freeWay });
     out.ahead = fly;
-    await holdFlight(page, false);
+    await freeze(page, false);
     check('walls-pillar: no page error', errors.length === 0, errors);
     await page.close();
     return out;
@@ -965,8 +954,7 @@ async function soundProofRings(ctx: BrowserContext): Promise<Record<string, unkn
     await placeAt(page, pose);
     await until('the craft low at the start', () => craft(page), (c) => dist(c.pos, pose) < 0.1, 5000);
     await sleep(800);
-    await holdFlight(page, true);
-    await sleep(250);
+    await freeze(page, true);
     const rep = await panels(page);
     const m = await measureSounds(ctx, page, rep.sound!, 'sounds-rings-heights');
     const a = await measureAttitude(ctx, page, rep.attitude!, 'attitude-rings-heights');
@@ -974,9 +962,10 @@ async function soundProofRings(ctx: BrowserContext): Promise<Record<string, unkn
     const want = gates[0]!.pos[1] - world.floorY;
     const bar = m.bar as { targetM: number | null; toneM: number | null; target: { isTargetColour: boolean; contrast: number } | null; tone: { isToneColour: boolean; contrast: number } | null };
     check(`rings-heights: the target note on the height bar at the first ring's height (${round(want, 2)} m above the floor), drawn in the target's colour`, bar.targetM !== null && Math.abs(bar.targetM - want) < 0.01 && !!bar.target?.isTargetColour && bar.target.contrast >= 4.5, bar);
-    check(`rings-heights: the height tone at the craft's height (1.2 m), drawn in the tone's colour`, bar.toneM !== null && Math.abs(bar.toneM - 1.2) < 0.05 && !!bar.tone?.isToneColour && bar.tone.contrast >= 4.5, bar);
+    const craftH = rep.attitude!.state!.heightM;
+    check(`rings-heights: the height tone at the craft's height (${round(craftH, 2)} m), drawn in the tone's colour`, bar.toneM !== null && Math.abs(bar.toneM - craftH) < 0.05 && !!bar.tone?.isToneColour && bar.tone.contrast >= 4.5, bar);
     check('rings-heights: the attitude tape draws the same height to fly at', rep.attitude!.state!.targetM !== null && Math.abs(rep.attitude!.state!.targetM - want) < 0.01 && ((a.contrast as Record<string, number | null>).target ?? 0) >= 4.5, { targetM: rep.attitude!.state!.targetM, contrast: a.contrast });
-    await holdFlight(page, false);
+    await freeze(page, false);
     check('rings-heights: no page error', errors.length === 0, errors);
     await page.close();
     return { sounds: m, attitude: a };

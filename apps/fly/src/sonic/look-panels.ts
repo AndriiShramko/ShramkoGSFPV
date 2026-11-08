@@ -26,11 +26,14 @@ declare module '../app/test-hook' {
     interface TestHook {
         /**
          * v0.13 v13-look: what the attitude display and the sound panel show, their switches, and what drawing them costs a frame (ms);
-         * `setSwitch` turns one on or off the way the spoken settings list will (look-prefs.ts setPanel: saved in the prefs)
+         * `setSwitch` turns one on or off the way the spoken settings list will (look-prefs.ts setPanel: saved in the prefs); `freeze`
+         * holds both pictures as they are (the flight and the sound go on), so a bench takes a picture and the report of the same frame
+         * (the engine plays nothing while the flight is paused, so pausing it would empty the sound panel)
          */
         sonicPanels?: {
             report(): { attitude: AttitudeReport | null; sound: SoundReport | null; prefs: Record<LookPanel, boolean>; frameMs: Record<'attitude' | 'sound', CostStats> };
             setSwitch(which: LookPanel, on: boolean): void;
+            freeze(on: boolean): void;
         };
     }
 }
@@ -86,6 +89,8 @@ interface Panels {
     cost: Record<'attitude' | 'sound', FrameCost>;
     on: Record<LookPanel, boolean>;
     scheme: ReturnType<typeof schemeWatch>;
+    /** the test hook's freeze: no frame draws or hides a panel */
+    frozen: boolean;
 }
 
 const installed = new WeakMap<FlightContext, Panels>();
@@ -95,12 +100,15 @@ function panelsOf(ctx: FlightContext): Panels {
     let p = installed.get(ctx);
     if (!p) {
         const on = Object.fromEntries(LOOK_PANELS.map((k) => [k, panelOn(ctx.prefs, k)])) as Record<LookPanel, boolean>;
-        p = { attitude: null, sound: null, cost: { attitude: new FrameCost(), sound: new FrameCost() }, on, scheme: schemeWatch() };
+        p = { attitude: null, sound: null, cost: { attitude: new FrameCost(), sound: new FrameCost() }, on, scheme: schemeWatch(), frozen: false };
         installed.set(ctx, p);
         const panels = p;
         ctx.hook.sonicPanels = {
             report: () => ({ attitude: panels.attitude?.report() ?? null, sound: panels.sound?.report() ?? null, prefs: { ...panels.on }, frameMs: { attitude: panels.cost.attitude.stats(), sound: panels.cost.sound.stats() } }),
-            setSwitch: (which, on) => setPanel(ctx.prefs, which, on)
+            setSwitch: (which, on) => setPanel(ctx.prefs, which, on),
+            freeze: (on) => {
+                panels.frozen = on;
+            }
         };
     }
     return p;
@@ -130,6 +138,7 @@ export function installAttitude(ctx: FlightContext, mode: SonicMode, host: () =>
     const view = new AttitudeDisplay({ parent: document.body, metres: (m, unit = true) => (unit ? t('soniclook.metres', { v: nf.format(m) }) : nf.format(m)), scheme: p.scheme.get });
     p.attitude = view;
     const offFrame = ctx.events.on('frame', () => {
+        if (p.frozen) return;
         const t0 = performance.now();
         const h = host();
         const lesson = h?.lesson ?? null;
@@ -173,6 +182,7 @@ export function installSoundPanel(ctx: FlightContext, mode: SonicMode, engine: P
     const panel = new SoundPanel({ parent: document.body, text: (key, vars) => t(key, vars), cueName: (base) => glossary.text({ key: `cue.${base}.name` }), scheme: p.scheme.get });
     p.sound = panel;
     const offFrame = ctx.events.on('frame', ({ now }) => {
+        if (p.frozen) return;
         const t0 = performance.now();
         const h = host();
         const show = p.on.soundPanel && mode.active && h !== null && h.active;

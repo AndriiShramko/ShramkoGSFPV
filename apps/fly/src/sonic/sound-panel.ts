@@ -153,10 +153,10 @@ export const VERTICAL_LEVEL = 0.42;
 export const RADAR_FAR_M = 8;
 export const RADAR_RINGS_M: readonly number[] = [1, 2, 4];
 
-/** Where a distance lies on the radar, as a share of its radius (the craft's own disc inside 0.2). */
+/** Where a distance lies on the radar, as a share of its radius (the craft's own disc inside 0.3, the rim at RADAR_FAR_M). */
 export function radiusOf(distanceM: number | null): number {
     if (distanceM === null || !Number.isFinite(distanceM)) return 0.86;
-    return 0.2 + 0.7 * Math.min(1, Math.log1p(Math.max(0, distanceM)) / Math.log1p(RADAR_FAR_M));
+    return 0.34 + 0.56 * Math.min(1, Math.log1p(Math.max(0, distanceM)) / Math.log1p(RADAR_FAR_M));
 }
 
 export interface RadarItem {
@@ -273,6 +273,15 @@ export function heightBar(plan: FramePlan | null, topM: number, nowMs: number): 
 
 // ------------------------------------------------------------------ drawing
 
+/** Where a cue's disc is drawn, canvas pixels: its radius, and whether its elevation mark sits beside it. */
+export interface DiscPlace {
+    readonly id: string;
+    readonly x: number;
+    readonly y: number;
+    readonly r: number;
+    readonly mark: boolean;
+}
+
 export interface SoundLayout {
     readonly w: number;
     readonly h: number;
@@ -292,6 +301,63 @@ export function soundLayout(w: number, h: number): SoundLayout {
     const radar = { cx: pad + d / 2, cy: h / 2, r: d / 2 };
     const bar = { x0: w - pad - barW, y0: pad, x1: w - pad, y1: h - pad };
     return { w, h, radar, bar, icon: Math.max(10, 0.12 * d) };
+}
+
+/**
+ * The discs' places: a cue with a direction at it (inside the radar's rim), moved apart where two would touch (two sectors of one
+ * wall, a hazard and the open way beside it: their directions are 45 degrees apart and close to the craft), a few steps, each
+ * pair pushed apart along the line between them; the cues of the craft itself side by side on it, those of the ceiling and the
+ * floor at the height bar's ends. Pure: the drawing and the page's report use the same places.
+ */
+export function placeDiscs(items: readonly RadarItem[], l: SoundLayout): DiscPlace[] {
+    const { cx, cy, r } = l.radar;
+    const ir = l.icon;
+    const lim = Math.max(0, r - ir - 1);
+    const keep = (q: { x: number; y: number }): void => {
+        const k = Math.hypot(q.x - cx, q.y - cy);
+        if (k > lim) {
+            q.x = cx + ((q.x - cx) * lim) / k;
+            q.y = cy + ((q.y - cy) * lim) / k;
+        }
+    };
+    const radar = items.filter((it) => !it.event && !it.bar).map((it) => {
+        const q = { id: it.id, x: cx + it.x * r, y: cy + it.y * r, r: ir, mark: it.elev !== null, dx: it.x, dy: it.y };
+        keep(q);
+        return q;
+    });
+    // the mark beside a disc makes it wider: kept apart as a disc 1.5 times as large
+    const reach = (q: { r: number; mark: boolean }): number => q.r * (q.mark ? 1.5 : 1);
+    for (let step = 0; step < 16; step++) {
+        let moved = false;
+        for (let i = 0; i < radar.length; i++) for (let j = i + 1; j < radar.length; j++) {
+            const a = radar[i]!, b = radar[j]!;
+            let ux = b.x - a.x, uy = b.y - a.y;
+            let d = Math.hypot(ux, uy);
+            const need = reach(a) + reach(b) + 2;
+            if (d >= need) continue;
+            if (d < 1e-6) {
+                // on the same spot: apart across the first one's direction
+                ux = -a.dy || 1;
+                uy = a.dx;
+                d = Math.hypot(ux, uy);
+            }
+            const push = (need - d) / 2 / d;
+            a.x -= ux * push;
+            a.y -= uy * push;
+            b.x += ux * push;
+            b.y += uy * push;
+            keep(a);
+            keep(b);
+            moved = true;
+        }
+        if (!moved) break;
+    }
+    const out: DiscPlace[] = radar.map((q) => ({ id: q.id, x: q.x, y: q.y, r: q.r, mark: q.mark }));
+    const events = items.filter((it) => it.event);
+    events.forEach((it, i) => out.push({ id: it.id, x: cx + (i - (events.length - 1) / 2) * 1.6 * ir, y: cy, r: 1.15 * ir, mark: false }));
+    const b = l.bar;
+    for (const it of items) if (it.bar) out.push({ id: it.id, x: (b.x0 + b.x1) / 2, y: it.bar === 'top' ? b.y0 + 0.9 * ir : b.y1 - 0.9 * ir, r: 0.85 * ir, mark: false });
+    return out;
 }
 
 type G = CanvasRenderingContext2D;
@@ -381,21 +447,14 @@ export function drawSounds(g: G, l: SoundLayout, m: SoundModel, scheme: Scheme):
     g.lineTo(cx - 0.1 * r, cy + 0.1 * r);
     g.closePath();
     g.fill();
-    // the cues with a direction, then those of the craft itself on top of it
+    // the cues with a direction, then those of the craft itself on top of it (the bar's after the bar)
     const ir = l.icon;
-    const lim = Math.max(0, r - ir - 1);
-    for (const it of m.items) {
-        if (it.event || it.bar) continue;
-        let x = it.x * r, y = it.y * r;
-        const k = Math.hypot(x, y);
-        if (k > lim) {
-            x *= lim / k;
-            y *= lim / k;
-        }
-        disc(g, it, cx + x, cy + y, ir, scheme);
+    const places = placeDiscs(m.items, l);
+    const byId = new Map(m.items.map((it) => [it.id, it]));
+    for (const q of places) {
+        const it = byId.get(q.id);
+        if (it && !it.bar) disc(g, it, q.x, q.y, q.r, scheme);
     }
-    const events = m.items.filter((it) => it.event);
-    events.forEach((it, i) => disc(g, it, cx + (i - (events.length - 1) / 2) * 1.6 * ir, cy, 1.15 * ir, scheme));
     // the height bar: the floor and the room's top, the tone, the target note, the sounds of the ceiling and the floor at its ends
     const b = l.bar;
     const bw = b.x1 - b.x0;
@@ -454,10 +513,9 @@ export function drawSounds(g: G, l: SoundLayout, m: SoundModel, scheme: Scheme):
         g.stroke();
         glyph(g, 'tone', b.x0 + bw / 2, y - 0.32 * bw, 0.5 * bw, p.fg.css);
     }
-    for (const it of m.items) {
-        if (!it.bar) continue;
-        const y = it.bar === 'top' ? b.y0 + 0.9 * ir : b.y1 - 0.9 * ir;
-        disc(g, { ...it, elev: null }, b.x0 + bw / 2, y, 0.85 * ir, scheme);
+    for (const q of places) {
+        const it = byId.get(q.id);
+        if (it?.bar) disc(g, { ...it, elev: null }, q.x, q.y, q.r, scheme);
     }
 }
 
@@ -486,10 +544,14 @@ export interface SoundReport {
     readonly canvas: { x: number; y: number; w: number; h: number } | null;
     readonly layout: SoundLayout | null;
     readonly items: readonly RadarItem[];
+    /** where each item's disc is drawn (placeDiscs), canvas pixels */
+    readonly places: readonly DiscPlace[];
     readonly bar: HeightBar | null;
     /** the card of a sound played three times: what it shows, or null */
     readonly now: { cue: string; kind: CueKind | null; name: string; count: string } | null;
     readonly freeWay: FreeWay | null;
+    /** the engine's last plan as the panel read it: its time and every active cue's id (the truth the drawing is checked against) */
+    readonly plan: { t: number; cues: string[] } | null;
     readonly draws: number;
     readonly drawMs: number;
 }
@@ -525,6 +587,7 @@ export class SoundPanel {
     private items: readonly RadarItem[] = [];
     private bar: HeightBar | null = null;
     private freeWay: FreeWay | null = null;
+    private planSeen: { t: number; cues: string[] } | null = null;
     private playing: { p: Playing; until: number } | null = null;
     private nowKey = '';
     private draws = 0;
@@ -628,6 +691,8 @@ export class SoundPanel {
         if (!this.on) return;
         const plan = s.plan;
         this.freeWay = plan?.freeWay ?? null;
+        if (plan && plan.t !== this.planSeen?.t) this.planSeen = { t: plan.t, cues: plan.cues.map((c) => c.id) };
+        else if (!plan) this.planSeen = null;
         this.items = this.memory.update(plan ? radarItems(plan.cues, plan.freeWay, plan.urgent) : [], s.now);
         this.bar = heightBar(plan, s.topM, s.now);
         if (s.playing) this.playing = { p: s.playing, until: s.now + NOW_HOLD_MS };
@@ -665,9 +730,11 @@ export class SoundPanel {
             canvas: r ? { x: r.left, y: r.top, w: r.width, h: r.height } : null,
             layout: this.on && this.css.w > 0 ? soundLayout(this.css.w, this.css.h) : null,
             items: this.items,
+            places: this.on && this.css.w > 0 ? placeDiscs(this.items, soundLayout(this.css.w, this.css.h)) : [],
             bar: this.bar,
             now: p && !this.nowBox.hidden ? { cue: cueBase(p.cue), kind: cueKind(p.cue), name: this.nowName.textContent ?? '', count: this.nowCount.textContent ?? '' } : null,
             freeWay: this.freeWay,
+            plan: this.planSeen,
             draws: this.draws,
             drawMs: this.drawMs
         };
