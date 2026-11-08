@@ -104,8 +104,46 @@ lead's "Next" 5 and 6 as this branch sees them).
   - Not held by a Node test: the two lines in `feature.ts` that wire `onReset` and the restart on `onClose` (the page's
     feature runs only in the page proofs): step 8 should check it on the page (the lesson menu's Lesson list over a lesson,
     Reset, Yes, Escape: the lesson's title is said again and its progress panel shows attempt 1, counted 0).
-- [ ] 6. Words heard by the local voices: "the key" before a key's name in es, pl, ru; one register in Russian; the
+- [x] 6. Words heard by the local voices: "the key" before a key's name in es, pl, ru; one register in Russian; the
   mode's name in Russian and Polish; the words check before and after.
+  - fcc511f (the decisions and the words: "## Decisions"). Russian: 70 lines changed (36 out of the formal register, 29
+    with the mode's name, 14 with the key's word; three reworded for what the voice did not say: the wired headphones
+    with the word headphones, "ask the question again", "send the recording to the author"); Polish: 42 lines (the name in
+    29, the key's word in 14, "resume" as "resume the flight"); Spanish: the key's word in 14 lines. The new key
+    `sonic.start.name` (four languages) names the mode in the start screen's h1, its spoken anchor and the page title.
+  - The words check (the sound repo's `listen-words --sim` on this branch's locales; s13-int ea9ae36 and 43ed9a3 made it
+    read `fly/soniclook` too and fill the new parameter `{here}`; `sonic.say.text` only carries a text and is no line):
+
+    | | lines | heard exactly | mean rate | over the bound 0.2 |
+    |---|---|---|---|---|
+    | en, David, before (2c565b3) | 268 | 249 | 0.0092 | 4 |
+    | en, after (fcc511f) | 269 | 250 | 0.0091 | 4 |
+    | es, Helena, before | 268 | 251 | 0.0137 | 4 |
+    | es, after | 269 | 254 | 0.0128 | 4 |
+    | pl, Paulina, before | 268 | 248 | 0.0227 | 10 |
+    | pl, after | 269 | 254 | 0.0133 | 5 |
+    | ru, Irina, before | 268 | 219 | 0.0603 | 22 |
+    | ru, after | 269 | 245 | 0.0266 | 10 |
+
+    s13-elev's run on v13-host e7612d3 had 249 lines and 4, 4, 9, 21 over the bound; the soniclook line "1.5 m" adds one
+    in Polish and in Russian (heard as the voice reads it, "1,5 metra").
+  - Still over the bound after, none fixable by a rewording:
+    - Whisper writes it otherwise, the voice said it (no reader needed): en `sonic.copyKeys`, `copyKeysMac` ("Control and
+      C" written "Control-N-C"), `sonicrec.state.savedDisk` ("Save to Disk"), `sonicrec.channel.status.retrying` ("We'll
+      try again"); es `sonic.link.titleStart` ("FlybySound" as one word), `sonicrec.channel.telegram` ("TELAGRAM"); pl and
+      ru `soniclook.metres` ("1,5 metra" for "1.5 m", which only the panel shows); ru `sonicrec.channel.telegram`,
+      `channel.name`, `transfer.stored`, `transfer.delivered` (the brand written in Cyrillic).
+    - A habit of the voice or a word alone, for a native reader: es `sonic.copyKeysMac` ("Comando y C" heard "Comando
+      IC"), `sonicrec.send.notice.cancelled` ("No se envio" heard as "Nos envio"); pl `sonic.copyKeys` ("Kontroli C"),
+      `sonicrec.key.Tab` (heard "Tabulator"), `sonicrec.status.starting` (Chrome's own button name, kept, heard "ZZW-L"),
+      `sonicrec.channel.status.retrying` (heard in the first person); ru `sonic.copyKeys` and `copyKeysMac` (Irina mangles
+      "Command"), `sonic.progress.counted` ("counted" split in two; the package's own word in its status lines, kept
+      alike), `sonic.menu.page` ("low-vision" split; the item must use the site page's words, a test holds it),
+      `sonicrec.key.Tab` (heard "Tap").
+  - A machine check is no native reader: every line changed here in Russian and Polish (the name in both, the register
+    in Russian, the key's word in the three) needs a native reading, as do the habits above. The key's word in the
+    simulator's lines is held by the word rate only: `--sim` has no key rule of its own (the package's lines have one),
+    so a key's name lost in a long line can stay under the bound.
 - [ ] 7. Gates on the head; the sound repo's checks on s13-int.
 - [ ] 8. (next agent) Page proofs on a local release build: the v13-host and v13-look page benches with the real progress
   panel (v13-look's stand-in goes), the two page proofs that still expect v0.12 lines (`sonic-int-page.ts`,
@@ -131,6 +169,7 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-start-screen` C3 "the first key ... Down goes through every stop" and the reader's control (step 3) | `STOPS` has the three new switches; the settings' place "Item n of 14" (was 11), the 14 counted from the screen's own stops | three settings more (step 3) |
 | `sonic-start-screen` new: "v13-int step 3: sound from above and below, the sound panel and the attitude display ..." (3 tests) | new | step 3 |
 | page proof `tools/bench/src/sonic-v13-page.ts` C (step 3) | "Item n of 14" (was 11) in the settings walk and the target note's line | three settings more; not run here (step 8) |
+| `sonic-optin` "its words (review R8)" and "its words: the cut line ..." (step 6) | the item and the key list's L and K lines begin with the mode's name taken from the dictionary (`sonic.start.name` of the language), was the fixed "Fly by Sound: " | Russian and Polish name the mode in their own words |
 | `sonic-reset-running` (step 5) | new, 3 tests | the reset over a running lesson |
 | `sonic-start-screen` new: "v13-int step 5: Reset my progress over a flight tells the flight page" (step 5) | new | the screen's `onReset` |
 | `sonic-scan-bump` (step 4) | new, 2 tests | the scan lesson's contact |
@@ -150,6 +189,28 @@ To v0.14 by the lead (not done here):
 
 ## Decisions
 
+- Step 6 (c), the mode's name (the words themselves are in the locales; B18 keeps Cyrillic and Polish letters there):
+  Russian names the mode "Polyot po zvuku" ("flight by sound"), Polish "Lot na sluch" (with the Polish l: "flight by
+  ear"; `sonic.start.name` in `fly/sonic/ru.json` and `pl.json`), in every Fly by Sound file of the simulator
+  (`fly/sonic`, `sonicentry`, `sonickeys`, `sonicrec`) and in the site's and the admin page's files of those languages
+  (`site/ru.json`, `site/pl.json`: the nav, the page about the mode, the privacy section; `admin/sessions`). Why: the
+  local voices garble the English name (Irina in 10 of the 21 Russian lines over the bound in s13-elev's run, Paulina
+  "Flajby", "O Fly by Sound" heard as "Offline Sound"), and a blind pilot hears the name far more often than he reads
+  it. Where a case is needed the name stands, in quotes, after the word for "mode" in its own form, so it is always said
+  and written the same. The English name stays once: on the page about the mode where it says what the mode is and
+  links its source ("Shramko Fly by Sound", the package's and the repository's name, and its GitHub link). Spanish keeps
+  "Fly by Sound": Helena says it, and the one Spanish line over the bound with it was heard right and written as one
+  word ("FlybySound"). The start screen's h1 and the page title take the new simulator key `sonic.start.name` (four
+  languages) instead of the package's `app.name`, which still says "Fly by Sound" in every language, as does its
+  `menu.welcome` (the package's own lines are not changed in this step; the simulator does not say `menu.welcome`). The
+  Polish name is a non-native choice: a native reader decides.
+- Step 6 (b): every Fly by Sound line of the simulator in Russian speaks to the pilot as the package does (the informal
+  "ty": "press" as the package's K help says it, "your settings" in the informal); the site's pages keep the formal "vy"
+  (they speak to visitors, outside the mode). A button stays in the infinitive ("Send the recording to the author"),
+  which has no register.
+- Step 6 (a): "the key" before a key's name in Spanish ("la tecla", "las teclas"), Polish ("klawisz", "klawisze") and
+  Russian ("klavisha" in its cases), the plural before a combination (`{copy}` = "Control and C"); a button's name is
+  not a key and keeps its own words.
 - Step 2: the target note goes on the sound panel's radar when it has a direction (the package's `heightDirection` on): it
   comes from its target since s13-elev, and the radar's rule is "every active cue with a direction at its direction"; a
   deaf pilot sees where the note comes from (above or below, left or right) and not only the height on the bar. It is
