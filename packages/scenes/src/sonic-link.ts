@@ -1,7 +1,7 @@
 // The link that carries Fly by Sound (v0.12 v12-optin; the owner's message 40: blind pilots share links with blind pilots, and an
 // ordinary page never shows the mode). A sonic link is the simulator's page with ?sonic=, which opens the mode's keyboard-only
-// start screen (a lesson starts on a key press or a click: the sound needs the user's activation), and after it what makes the
-// lesson sound the same to the one who opens it:
+// start screen (a lesson starts on a key press or a click: the sound needs the user's activation), and after it the lesson's scan
+// and the sound settings the sharer changed from the defaults:
 //
 //   sonic=<lesson>     the lesson (an id of the sound package's lessons), or `start`: the start screen
 //   scene=<id>&sz=<s>  the scan a lesson flies and its Scene size, written for a lesson that flies a scan (the lesson's own world
@@ -12,8 +12,10 @@
 //   sf=body            the sound turns with the whole drone, tilt included (heading: the way the pilot faces, the usual)
 //
 // The writer puts a sound setting in only when it is not the sound package's default (SONIC_LINK_DEFAULTS, held equal to the
-// package's defaultPrefs by tools/bench/test/sonic-optin.test.ts), so a link carries what the sharer chose; the one who opens it
-// hears them for that visit, his own saved settings untouched (apps/fly sonic/entry.ts SonicSetup.visit).
+// package's defaultPrefs by tools/bench/test/sonic-optin.test.ts), so a link carries what the sharer changed, as a shared scene's
+// link carries only the settings that differ from the scene's (review R7: a setting the sharer left at its default is not written,
+// so the one who opens it keeps his own there); he hears them for that visit, his own saved settings untouched (apps/fly
+// sonic/entry.ts SonicSetup.visit).
 //
 // It carries nothing of the person: no recording, no name, no address, nothing of his voice, and nothing that depends on the
 // listener rather than on the lesson (the speaking speed, the screen reader, the captions, each sound's volume). Strict reading:

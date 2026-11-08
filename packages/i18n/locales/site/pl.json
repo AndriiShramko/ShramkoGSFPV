@@ -1054,7 +1054,7 @@
     "keys": {
       "title": "Najważniejsze klawisze",
       "intro": "Aplikacja podaje je też na głos.",
-      "items": ["rozpocznij lub zakończ nagrywanie", "wyślij ostatnie nagranie autorowi", "usłysz, gdzie jesteś", "usłysz jeszcze raz ostatnią wypowiedź", "otwórz słownik dźwięków", "wróć do ostatniego punktu kontrolnego; przytrzymaj, by zacząć lekcję od nowa", "przejdź do następnego kroku", "skopiuj link, który otwiera tę lekcję z Twoimi ustawieniami dźwięku, aby się nim podzielić", "usłysz te klawisze"],
+      "items": ["rozpocznij lub zakończ nagrywanie", "wyślij ostatnie nagranie autorowi", "usłysz, gdzie jesteś", "usłysz jeszcze raz ostatnią wypowiedź", "otwórz słownik dźwięków", "wróć do ostatniego punktu kontrolnego; przytrzymaj, by zacząć lekcję od nowa", "przejdź do następnego kroku", "skopiuj link, który otwiera tę lekcję z ustawieniami dźwięku zmienionymi przez Ciebie, aby się nim podzielić", "usłysz te klawisze"],
       "reader": "Jeśli klawisz nic nie robi, czytnik ekranu może być w trybie przeglądania: naciśnij NVDA+Spacja w NVDA albo Insert+Z w JAWS, aby klawisze trafiały do symulatora."
     },
     "record": {

@@ -13,8 +13,11 @@ import type { Feature, MenuItem } from '../context';
 /** The site's page about Fly by Sound in the page's language (i18n.ts writes it on <html lang>; read when the menu opens). */
 export const soundPage = (): string => `/${document.documentElement.lang || 'en'}/sound/`;
 
-/** The pause menu's way into the mode on an ordinary page: no key, the tools section, where the mode's own item sits. */
-export const SOUND_PAGE_ITEM: Omit<MenuItem, 'run'> = { id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', order: 95, section: 'tools', href: soundPage };
+/**
+ * The pause menu's way into the mode on an ordinary page: no key, one line, last of the tools section (after "Report a bug or an
+ * idea", 110), so it reads as the quiet end of the list (review R8); its words name blind and low-vision pilots as the site does.
+ */
+export const SOUND_PAGE_ITEM: Omit<MenuItem, 'run'> = { id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', order: 120, section: 'tools', href: soundPage };
 
 export const sonicFlight: Feature = {
     id: 'sonic-flight',

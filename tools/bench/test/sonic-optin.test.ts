@@ -55,7 +55,8 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         const off = sonicFlight.install(ctx) as () => void;
         expect(items).toHaveLength(1);
         const it = items[0]!;
-        expect(it).toMatchObject({ id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 95 });
+        // review R8: last of the tools section (after "Report a bug or an idea", 110), a quiet end of the list
+        expect(it).toMatchObject({ id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 120 });
         for (const l of LANGS) {
             vi.stubGlobal('document', { documentElement: { lang: l } });
             expect(it.href?.()).toBe(`/${l}/sound/`);
@@ -98,19 +99,32 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         expect(items).toEqual([]);
     });
 
-    it('its words: "Fly by Sound:", what it is and for whom, "(beta)", in en, es, pl and ru, each language its own; nothing else is in the eager namespace but the lines every page may need', () => {
+    it('its words (review R8): "Fly by Sound:" and for whom, blind AND low-vision pilots, with the words of the site page about the mode, in en, es, pl and ru; nothing else is in the eager namespace but the lines every page may need', () => {
         const en = dict('sonicentry', 'en')[SOUND_PAGE_ITEM.labelKey];
-        expect(en).toBe('Fly by Sound: audio-only training for blind pilots (beta)');
-        // the words for "blind" and "beta" in each language, built from code points (no Cyrillic or Polish letters in code)
-        const blind: Record<string, RegExp> = { en: /blind/, es: /ciegos/, pl: /niewidomych/, ru: new RegExp(String.fromCodePoint(0x43d, 0x435, 0x437, 0x440, 0x44f, 0x447, 0x438, 0x445)) };
-        const beta: Record<string, RegExp> = { en: /\(beta\)$/, es: /\(beta\)$/, pl: /\(beta\)$/, ru: new RegExp(`\\(${String.fromCodePoint(0x431, 0x435, 0x442, 0x430)}\\)$`) };
+        expect(en).toBe('Fly by Sound: blind and low-vision pilots');
+        // the stems of "blind" and "low vision" in each language, built from code points where they have letters B18 keeps in the locales
+        const cp = (...c: number[]): string => String.fromCodePoint(...c);
+        const words: Record<string, [RegExp, RegExp]> = {
+            en: [/blind/, /low.vision/],
+            es: [/cieg/, /baja visi/],
+            pl: [/niewidom/, new RegExp(`s${cp(0x142)}abowidz`)],
+            ru: [new RegExp(cp(0x441, 0x43b, 0x435, 0x43f)), new RegExp(cp(0x441, 0x43b, 0x430, 0x431, 0x43e, 0x432, 0x438, 0x434, 0x44f, 0x449))]
+        };
+        const site = (l: string): string => (JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8')) as { sound: { description: string } }).sound.description;
         for (const l of LANGS) {
             const text = dict('sonicentry', l)[SOUND_PAGE_ITEM.labelKey]!;
             expect(text, l).toMatch(/^Fly by Sound: /);
-            expect(text, l).toMatch(blind[l]!);
-            expect(text, l).toMatch(beta[l]!);
+            for (const w of words[l]!) {
+                expect(text, `${l}: the item says ${w}`).toMatch(w);
+                expect(site(l), `${l}: the site says ${w} too`).toMatch(w);
+            }
+            // one short line (its measured width in the menu is the page proof's): no "(beta)" and at most 42 characters
+            expect(text.length, l).toBeLessThanOrEqual(42);
+            expect(text, l).not.toMatch(/\(/);
             if (l !== 'en') expect(text, l).not.toBe(en);
         }
+        // control: the item as it was before the review names blind pilots only
+        expect('Fly by Sound: audio-only training for blind pilots (beta)').not.toMatch(words.en[1]);
     });
 });
 
