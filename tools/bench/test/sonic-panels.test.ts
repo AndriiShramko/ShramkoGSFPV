@@ -12,6 +12,9 @@
 //     the top of the height bar, a cue rising 45 degrees marked above, the open way over a block marked above by the plan's side;
 //     with the real planner (walls-pillar, tunnel-gaps, rings-heights): the pillar ahead, the open way above block 1, the target
 //     note at the next ring's height; control: the same open way without the plan's side has no mark;
+//   - (v13-int step 2, the package at s13-int) real elevations: with SonicPrefs.heightDirection on, tunnel-gaps' open way above is
+//     marked above by the chime's own direction (the middle of the way), off by the plan's side (control: no side, no mark); the
+//     target note is on the radar at plan.height.target.dir, marked above or below by it, and with the setting off on the bar alone;
 //   - the sound a step plays three times has its glossary name in en, es, pl and ru (the package's own words, not a fallback);
 //   - the two switches: on by default, saved, read back by a new store on the same storage, a value that is not a boolean dropped;
 //   - the panels' words come with the mode's chunk, never with an ordinary page's (the namespace soniclook).
@@ -24,7 +27,7 @@ import { CuePlanner, DICTS, SHIPPED_LESSON_IDS, createAnalyticWorld, createTrans
 import type { ActiveCue, AnalyticWorldInfo, FlightSample, FreeWay, Quat, Vec3 } from '../../../packages/sonic-fpv/src';
 import { MARK_CONTRAST, attitudeLayout, attitudePairs, climbArrow, horizonOf, tapeOf } from '../../../apps/fly/src/sonic/attitude';
 import type { AttitudeState } from '../../../apps/fly/src/sonic/attitude';
-import { RADAR_KINDS, cueKind, heightBar, placeDiscs, radarItems, radiusOf, soundLayout, soundPairs } from '../../../apps/fly/src/sonic/sound-panel';
+import { ELEVATION_SIN, RADAR_KINDS, TARGET_NOTE_ID, cueKind, heightBar, placeDiscs, radarItems, radiusOf, soundLayout, soundPairs } from '../../../apps/fly/src/sonic/sound-panel';
 import { LOOK_PANELS, panelOn, setPanel } from '../../../apps/fly/src/sonic/look-prefs';
 import { MemoryBackend, validateCollection } from '../../../packages/prefs/src';
 import { mkStore } from '../../../packages/prefs/test/helpers';
@@ -260,7 +263,7 @@ describe('the sound panel (M41-25, W14)', () => {
         expect(raw).toBeLessThan(0);
     });
 
-    it('the open way: its side from the plan (a way above or below sounds from ahead today); control: without the side no mark', () => {
+    it('the open way: its side from the plan (a way above or below sounds from ahead with the pilot\'s "Sound from above and below" off); control: without the side no mark', () => {
         const ahead: Vec3 = [0, 0, -1];
         const fw = (side: FreeWay['side']): FreeWay => ({ side, offsetM: 0.5, obstacleM: 1.5, ttcS: 1 });
         expect(radarItems([cue('safety.free:up', ahead)], fw('up'))[0]).toMatchObject({ kind: 'open', elev: 'above', bar: null });
@@ -316,6 +319,92 @@ describe('the sound panel (M41-25, W14)', () => {
         // the note is on for noteS of every periodS
         expect(heightBar(rings.plan, 5.5, 0).noteOn).toBe(true);
         expect(heightBar(rings.plan, 5.5, (bar.noteS! + 0.01) * 1000).noteOn).toBe(false);
+    });
+
+    // v13-int step 2: the package at s13-int (lane s13-elev's up and down by direction) gives the panel real elevations: the open way's
+    // chime from the middle of the way (plan.freeWay.dir, middleM), the target note from its target (plan.height.target.dir, the active
+    // height.target cue's dir); both only with SonicPrefs.heightDirection on, the setting the pilot can turn off.
+    describe('real elevations from the package (s13-elev), with the pilot\'s "Sound from above and below" on and off', () => {
+        const sample = (pos: Vec3, vel: Vec3, t: number): FlightSample => ({ t, tick: t, pos, vel, quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: true, touched: false, paused: false });
+        const world = (id: string): AnalyticWorldInfo => {
+            const w = getLesson(id).world;
+            if (w.kind !== 'analytic') throw new Error(id);
+            return createAnalyticWorld(w.spec);
+        };
+        const sinEl = (d: readonly number[] | null): number => (d === null ? 0 : (d[1] as number) / Math.hypot(d[0] as number, d[1] as number, d[2] as number));
+
+        /** tunnel-gaps, block 1 ahead with its free way above (the test above's place), half a second at 2.5 m/s */
+        const gaps = (heightDirection: boolean) => {
+            const w = world('tunnel-gaps');
+            const planner = new CuePlanner({ theme: getBuiltinTheme('soft'), prefs: { ...defaultPrefs(), heightDirection }, layers: getLesson('tunnel-gaps').layers });
+            let plan = planner.plan({ sample: sample([0, 1.5, -6.5], [0, 0, -2.5], 0), world: w, target: null, floorY: w.floorY });
+            for (let i = 1; i <= 30; i++) plan = planner.plan({ sample: sample([0, 1.5, -6.5 - (2.5 * i) / 60], [0, 0, -2.5], (1000 * i) / 60), world: w, target: null, floorY: w.floorY });
+            const chime = plan.cues.find((c) => cueKind(c.id) === 'open') ?? null;
+            return { plan, chime };
+        };
+
+        it('tunnel-gaps\' open way above, setting on: marked above by its own direction (the chime rises from the middle of the way), with or without the plan\'s side', () => {
+            const { plan, chime } = gaps(true);
+            expect(plan.freeWay?.side).toBe('up');
+            expect(chime?.id).toBe('safety.free:up');
+            // the package's direction: the middle of the way, above the craft's line and ahead
+            const dir = plan.freeWay!.dir!;
+            expect(dir).toBeDefined();
+            expect(plan.freeWay!.middleM).toBeGreaterThan(0);
+            expect(chime!.dir).toEqual(dir);
+            expect(sinEl(chime!.dir)).toBeGreaterThanOrEqual(ELEVATION_SIN);
+            expect(chime!.dir![2]).toBeLessThan(0);
+            expect(radarItems(plan.cues, plan.freeWay).find((it) => it.kind === 'open')).toMatchObject({ elev: 'above', bar: null });
+            // the mark comes from the direction itself: the same chime with no side anywhere (no free way, no suffix) is still marked above
+            const bare = plan.cues.map((c) => (c.id === 'safety.free:up' ? { ...c, id: 'safety.free' } : c));
+            expect(radarItems(bare, null).find((it) => it.kind === 'open')).toMatchObject({ elev: 'above' });
+        });
+
+        it('setting off: the chime sounds from ahead (its pitch tells the way), so the mark comes from the plan\'s side; control: without the side, no mark', () => {
+            const { plan, chime } = gaps(false);
+            expect(plan.freeWay?.side).toBe('up');
+            expect(chime?.id).toBe('safety.free:up');
+            // the way's middle is still found (plan.freeWay.dir), but the chime does not come from it
+            expect(chime!.dir).not.toEqual(plan.freeWay!.dir);
+            expect(Math.abs(sinEl(chime!.dir))).toBeLessThan(ELEVATION_SIN);
+            expect(radarItems(plan.cues, plan.freeWay).find((it) => it.kind === 'open')).toMatchObject({ elev: 'above', bar: null });
+            // control: the cue's own suffix still names the side, so take the side away everywhere: the chime from ahead is not marked
+            const bare = plan.cues.map((c) => (c.id === 'safety.free:up' ? { ...c, id: 'safety.free' } : c));
+            expect(radarItems(bare, null).find((it) => it.kind === 'open')!.elev).toBeNull();
+        });
+
+        /** rings-heights' first ring 2 m ahead, the craft `dy` m off its centre's height, at rest */
+        const note = (heightDirection: boolean, dy: number) => {
+            const w = world('rings-heights');
+            const lesson = getLesson('rings-heights');
+            const ring = w.objects().filter((o) => o.shape.kind === 'ring').sort((a, b) => (a.order ?? 0) - (b.order ?? 0))[0]!;
+            const planner = new CuePlanner({ theme: getBuiltinTheme('soft'), prefs: { ...defaultPrefs(), heightDirection }, layers: lesson.layers });
+            const plan = planner.plan({ sample: sample([ring.pos[0], ring.pos[1] + dy, ring.pos[2] + 2], [0, 0, 0], 0), world: w, target: ring, floorY: w.floorY });
+            return { plan, item: radarItems(plan.cues, plan.freeWay).find((it) => it.id === TARGET_NOTE_ID) ?? null };
+        };
+
+        it('the target note\'s mark follows plan.height.target.dir: on the radar as the target\'s, ahead, above for a ring above the craft and below for one under it', () => {
+            for (const [dy, elev] of [[-1.2, 'above'], [1.2, 'below'], [0, null]] as const) {
+                const { plan, item } = note(true, dy);
+                const target = plan.height?.target;
+                expect(target?.dir, `dy ${dy}`).toBeDefined();
+                const cueDir = plan.cues.find((c) => c.id === TARGET_NOTE_ID)!.dir;
+                expect(cueDir).toEqual(target!.dir);
+                expect(item, `dy ${dy}`).toMatchObject({ kind: 'target', elev, bar: null, event: false });
+                // where it is drawn is the direction's level part: ahead of the craft (the radar's nose up)
+                expect(item!.y).toBeLessThan(0);
+                expect(Math.sign(sinEl(target!.dir!))).toBe(dy === 0 ? 0 : -Math.sign(dy));
+            }
+        });
+
+        it('setting off: the target note has no direction, so it stays on the height bar alone (control: on, it is on the radar)', () => {
+            const off = note(false, -1.2);
+            expect(off.plan.height?.target).not.toBeNull();
+            expect(off.plan.height?.target?.dir).toBeUndefined();
+            expect(off.item).toBeNull();
+            expect(heightBar(off.plan, 5.5, 0).targetM).not.toBeNull();
+            expect(note(true, -1.2).item).not.toBeNull();
+        });
     });
 
     it('every sound a lesson plays three times has its glossary name in en, es, pl and ru (the package\'s own words, not a fallback)', () => {

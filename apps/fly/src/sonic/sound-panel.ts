@@ -8,9 +8,12 @@
 //            floor or ceiling, open way, target (a gate's hum, notes and shape), checkpoint, wrong way, praise; a pillar's shape
 //            trace is an obstacle's, the wall kind). A cue whose direction rises or falls 20 degrees
 //            or more carries an "above" or "below" mark; one almost straight up or down (the ceiling over the craft, the floor
-//            under it) sits at the top or the bottom of the height bar instead. The open way's side is the plan's (plan.freeWay):
-//            its chime sounds from ahead for a way above or below, which its pitch tells (M41-14), so the mark comes from the
-//            side; once the package gives such a cue a real elevation (lane s13-elev), the cue's own direction carries it.
+//            under it) sits at the top or the bottom of the height bar instead. The open way above or below: since the
+//            package's lane s13-elev its chime comes from the middle of that way (plan.freeWay.dir, middleM), so its own
+//            direction carries the mark; with the pilot's "Sound from above and below" off (SonicPrefs.heightDirection) it
+//            sounds from ahead and its pitch tells the way (M41-14), so the mark comes from the plan's side. The target note
+//            (height.target) comes from its target with that setting on (plan.height.target.dir, the cue's dir): then it is
+//            on the radar too, as the target's, at that direction and marked above or below by it; off, the bar alone.
 //            A cue without a direction (a touch, a checkpoint's chime, praise) shows on the craft in the middle for a moment.
 //   height   a bar from the floor to the room's top with the craft's height tone (plan.height.heightM; drawn jagged while the
 //            tone is rough, outside the lesson's band) and the target note (plan.height.target.heightM), bolder for noteS of
@@ -149,6 +152,8 @@ export const ICONS: Readonly<Record<CueKind | 'above' | 'below', string>> = {
 
 /** A cue's direction counts as rising or falling from this sine of its elevation (20 degrees). */
 export const ELEVATION_SIN = Math.sin((20 * Math.PI) / 180);
+/** The target note's cue: on the height bar, and on the radar when it has a direction (lane s13-elev's heightDirection). */
+export const TARGET_NOTE_ID = 'height.target';
 /** A cue whose direction lies within this of straight up or down (its level part under it) goes on the height bar. */
 export const VERTICAL_LEVEL = 0.42;
 /** The radar's outer ring, metres; rings at 1, 2 and 4 m. */
@@ -184,7 +189,9 @@ export interface RadarItem {
 export function radarItems(cues: readonly ActiveCue[], freeWay: FreeWay | null, urgent = false): RadarItem[] {
     const out: RadarItem[] = [];
     for (const c of cues) {
-        const kind = cueKind(c.id);
+        // the target note is the height bar's; when it comes from its target (the package's heightDirection on: a gate's centre,
+        // the band's middle ahead) it is on the radar too, at that direction, as the target's
+        const kind = c.id === TARGET_NOTE_ID && c.dir !== null ? 'target' : cueKind(c.id);
         if (kind === null || !RADAR_KINDS.includes(kind)) continue;
         const hot = urgent && (kind === 'wall' || kind === 'surface');
         if (c.dir === null) {

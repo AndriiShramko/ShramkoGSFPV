@@ -18,8 +18,26 @@ lead's "Next" 5 and 6 as this branch sees them).
   optional `SonicEngine.reset?()` on s13-int with a package test and its control; the host calls `engine.reset?.()`
   before a lesson's first frame and where a replay opens a lesson or seeks; `sonic-int-replay` without its settle
   window, the safety layer matched from a lesson's first frame, with a control without the call.
-- [ ] 2. The gitlink to s13-int's head; every simulator test on the new package with its expected values from the
+  - Package part done: s13-int 7980fab (the sound repo's `docs/dev/status-v0.13-int.md`, I1). `test/reset.test.ts` (5
+    tests; control: the same frames without `reset()` voice the held ceiling and floor sectors at 0 and 280 ms, none at
+    320 ms, and keep listing the last lesson's gate note) and the audio proof `engine-reset` (the real engine in headless
+    Chrome: 0 of the 18 frames of the hold with a hazard of the last lesson; control without the reset 18 of 18).
+  - The simulator's part: below (after step 2).
+- [x] 2. The gitlink to s13-int's head; every simulator test on the new package with its expected values from the
   package; the sound panel's real elevations tested (`sonic-panels`).
+  - The gitlink at fe1613b (s13-int: 7980fab the reset, fe1613b the words check's root, below). Full vitest on it: 246
+    files, 4049 passed, 9 skipped (the 8 Winter Garden tests without `.cache/scenes/7a475d38/scene.voxel.bin`, and the
+    site's built templates), none failed. No simulator test pins tunnel-gaps' or walls-pillar's version, the
+    `heightDirection` setting, the wrong way between gates or the engine's panners (searched `tools/bench`, `apps/fly`):
+    nothing to take from the package there. The one failure on the new package was the package's own
+    `test/words.test.ts` run from the simulator's root (ENOENT for `tools/listen/key-lines-v013.json`: the words check
+    took its root from the working directory); fixed in the package (fe1613b), 18 of 18 from both roots.
+  - The sound panel: the open way's mark from the chime's own direction (the package's `plan.freeWay.dir`, the middle of
+    the way) with the pilot's "Sound from above and below" on, from the plan's side with it off; the target note
+    (`height.target`) on the radar too when it comes from its target (its cue's dir, `plan.height.target.dir`), as the
+    target's, marked above or below by it; off, the height bar alone. `sonic-panels` 23 of 23 (4 new); controls in the
+    code, each run once and restored: without the target note's rule 2 tests fail; without the elevation from the
+    direction 3 fail (the new tunnel-gaps test among them).
 - [ ] 3. Settings: the sound panel, the attitude display and the package's `heightDirection` in the start screen's
   settings and the spoken list; said with section, "Item n of N" and value; saved and read back after a reload; the
   reader's native controls with "my screen reader speaks".
@@ -44,6 +62,9 @@ Each changed expectation takes its value from the package or names its reason; e
 
 | Test | Change | Why |
 |---|---|---|
+| the package's `test/words.test.ts` as the simulator's vitest runs it (step 2) | none here: fixed in the package (s13-int fe1613b, the words check's root from its own file) | it failed twice with ENOENT from the simulator's root on the new package |
+| `sonic-panels` "the open way: its side from the plan" (step 2) | title only: a way above or below sounds from ahead "with the pilot's Sound from above and below off" (was "today") | since s13-elev the chime comes from the way with the setting on |
+| `sonic-panels` "real elevations from the package (s13-elev) ..." (step 2) | new, 4 tests: tunnel-gaps' open way above marked by its own direction (on) and by the plan's side (off), with the bare chime's control; the target note's mark follows `plan.height.target.dir` (above, below, level), and with the setting off it stays on the bar | the package now gives the panel real elevations (lane s13-elev's "Needs from the simulator") |
 
 ## Deferred
 
@@ -58,3 +79,9 @@ To v0.14 by the lead (not done here):
 
 ## Decisions
 
+- Step 2: the target note goes on the sound panel's radar when it has a direction (the package's `heightDirection` on): it
+  comes from its target since s13-elev, and the radar's rule is "every active cue with a direction at its direction"; a
+  deaf pilot sees where the note comes from (above or below, left or right) and not only the height on the bar. It is
+  drawn as the target's (colour and glyph), so in a ring lesson it sits beside the gate's hum (the discs are pushed apart).
+  Without a direction it stays on the height bar alone, as in v13-look. The page proofs of the panels (v13-look-page
+  `panels`, `layout`) have not run with it: step 8.
