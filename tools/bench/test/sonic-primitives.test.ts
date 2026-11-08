@@ -1,7 +1,8 @@
 // v0.12 Fly by Sound, lane v12-flight step 6 (docs/wip/v12-plan.md 2.5 and 4.2): the helper's view of a lesson world,
 // apps/fly/src/sonic/primitives.ts, held to the world the sound reads.
-//  - the hollow the primitives draw (cavityBoxes, a mirror of the generators) is the world's own: random points in the
-//    world's bounds are free exactly where solidAt says (control: a corridor mirrored left for right is caught);
+//  - the hollow the primitives draw (cavityBoxes, the package's world.cavities since v0.13) is the world's own: random
+//    points in the world's bounds are free exactly where solidAt says (control: a corridor mirrored left for right is
+//    caught);
 //  - every exposed face is a real wall: a point just inside the hollow is free, one just beyond is solid;
 //  - every wall the sound's rays can hit has a slab on it: rays from free points, their first hit that is not an
 //    object lies on a drawn face (control: one face left out is caught);
@@ -189,12 +190,16 @@ describe('every face is a real wall and every wall has its slab', () => {
         });
     }
 
-    /** Rays from free points in random directions: the first hit that is not an object must lie on a face's slab. */
+    /**
+     * Rays from free points in random directions: the first hit that is not an object must lie on a face's slab. The
+     * origins are drawn in the world's bounds until 1500 are free; a tunnel's bounds are mostly rock (tunnel-long's are
+     * 1 % free air at 0.3 m from a wall), so up to 200 000 draws are allowed to find them.
+     */
     function uncovered(world: AnalyticWorldInfo, faces: readonly Face[], seed: number): { hits: number; missed: number } {
         const r = rng(seed);
         const { min, max } = world.bounds;
         let hits = 0, missed = 0;
-        for (let i = 0, tried = 0; tried < 1500 && i < 20000; i++) {
+        for (let i = 0, tried = 0; tried < 1500 && i < 200000; i++) {
             const o: Vec3 = [min[0] + r() * (max[0] - min[0]), min[1] + r() * (max[1] - min[1]), min[2] + r() * (max[2] - min[2])];
             if (world.sdf(o[0], o[1], o[2]) < 0.3) continue;
             tried++;
