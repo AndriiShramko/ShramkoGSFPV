@@ -83,6 +83,29 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
 - [ ] L1-4 (W16) frame cost: the page's frame time with the new look in tunnel-long, the corridor and rings-heights
   within v0.12's frame budget; tunnel-long's collider (16 % over its plan of 20 ms per 10 s of flight) brought under
   without changing the world's voxel size, or the whole frame shown in budget, the decision written with its numbers.
+  - [x] The collider, brought under in the simulator, voxel size unchanged (0.05 m): `tools/bench/test/sonic-tunnel-cost.ts`,
+    A6's flights (62 track points, a disarmed craft let go along the track at 2.5 m/s and 0.5 m/s toward the left wall, 1 s
+    each), best of 9: **16.41 ms for 10 s of flight** (plan 20 ms; A6 23.24), the same answers as the voxels with no shortcut
+    (`evidence/2026-11-08/sonic-tunnel-cost.json`, `bump: 'lesson'`). Two parts, each measured on its own:
+    - the flights now fly the lesson world's own rule (L1-1's bump 'slide', as the session flies it): the craft bounces off
+      the walls instead of grinding along them, 618 contacts instead of 2806, 67 018 queries instead of 82 494: 20.61 ms
+      without the shortcut below (still over);
+    - `packages/collision/src/analytic.ts` `AnalyticContactWorld.sweep` and `pushOut`: one test for the whole body, a ball
+      that holds every sphere's first sweep test, free when it lies within the free radius at its centre, from the cell's
+      kept distance, else the last distance asked (1-Lipschitz bounds, the craft's queries come millimetres apart), else
+      one call of the world's distance at the point (`AnalyticVoxelCollision.freeWithin`). In tunnel-long's 0.7 m ways the
+      0.4 m cells rarely tell, the point's distance mostly does: 20.61 -> 16.41 ms. With the drone's own contact (A6's
+      flights as flown then, `DRONE_BUMP=1`) it changes nothing (23.33 ms): grinding along a wall is all voxel walks.
+    - v0.12's hall (`tools/bench/test/sonic-world-cost.ts`, `evidence/2026-11-07/sonic-world-cost.json` written again): in
+      the open 2.43 ms (was 3.46), along and into a wall 14.54 ms (was 13.35: the body test that fails near a wall costs a
+      little), both under the plan's 20 ms; in vitest the ratios to the uncached lookup are 0.13 (open, bound 0.5) and 0.73
+      (wall, bound 1.25).
+    - Exactness: new `tools/bench/test/sonic-tunnel-walls.test.ts`: tunnel-long's flights (12 track points, 11 750 queries)
+      get the same answers from the session's world as from the voxels with no shortcut, the distance at the point asked
+      884 times; control in the test: the shortcut over a distance that lies (walls 0.3 m further off) differs. Broken once
+      and restored: the body test with a tenth of its reach fails the first test. `sonic-world.test.ts` (the voxel
+      agreement, the replays of a flight on rebuilt walls, the ratios) passes unchanged.
+  - [ ] The page's frame time with the new look (after L1-3).
 - [ ] L1-5 gates exit 0; flight regression B6-B16 on a local build; L1's status final.
 
 ### Stage L2 (the next agent)

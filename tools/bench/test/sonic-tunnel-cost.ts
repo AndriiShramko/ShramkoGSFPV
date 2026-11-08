@@ -6,6 +6,10 @@
 //     speed cap and a little toward the left wall, for 1 s (it falls, meets the floor and the walls, slides), every query
 //     of the flight model recorded; then asked again the three ways (as the session flies, the cells only, no cull), best of
 //     9 rounds, scaled to 10 s of flight at 1 kHz, against the plan's 20 ms for 10 s of flight (v0.12, sonic-world-cost.ts).
+// v0.13 lane v13-look (L1-4, W16): the craft flies the lesson world's own flight rules (BuiltinWorld.overrides: the bump
+// 'slide' of M41-19, which bounces it off the walls instead of grinding along them), as the session flies them now;
+// DRONE_BUMP=1 flies the drone's own contact, as A6 measured (23.24 ms). The session's walls answer with the whole-body
+// shortcut of AnalyticContactWorld (its exactness: sonic-tunnel-walls.test.ts).
 // Evidence: evidence/<date>/sonic-tunnel-cost.json.
 //   cd tools/bench && npx tsx test/sonic-tunnel-cost.ts
 import { S, Sim } from '../../../packages/sim-core/src';
@@ -32,7 +36,7 @@ const speed = lesson.assists.maxSpeedMps ?? 2.5;
 const timed = new Recorder(lw.builtin.contact!);
 let contacts = 0, ticks = 0;
 for (const cp of track) {
-    const sim = new Sim(params('pavo20pro-3s', { crashOn: false }), timed);
+    const sim = new Sim(params('pavo20pro-3s', { crashOn: false, ...(process.env.DRONE_BUMP === '1' ? {} : lw.builtin.overrides) }), timed);
     const [x, y, z] = cp.pos;
     sim.reset(x, y, z, (Math.atan2(cp.dir[0], -cp.dir[2]) * 180) / Math.PI);
     sim.s[S.hold] = 0; // let go: gravity and the push only
@@ -59,7 +63,7 @@ const result = {
     cells: { uniform: col.stats.cellsUniform, mixed: col.stats.cellsMixed }
 };
 const pass = result.per10sMs.session < PLAN_BOUND_MS && result.sameAnswers;
-const file = writeEvidence('sonic-tunnel-cost', { planBoundMs: PLAN_BOUND_MS, rounds: ROUNDS, pass, result });
+const file = writeEvidence('sonic-tunnel-cost', { planBoundMs: PLAN_BOUND_MS, rounds: ROUNDS, bump: process.env.DRONE_BUMP === '1' ? 'drone' : 'lesson', pass, result });
 console.log(JSON.stringify(result, null, 1));
 console.log(`${pass ? 'PASS' : 'OVER'}: ${result.per10sMs.session} ms of contact queries for 10 s of flight in tunnel-long (${PLAN_BOUND_MS} allowed); ${file}`);
 process.exitCode = pass ? 0 : 1;
