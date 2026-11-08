@@ -18,5 +18,12 @@ declare module './context' {
          * v12-flight writes it. Absent while the mode is off.
          */
         sonic?: SonicRuntime;
+        /**
+         * The mode's own Share (v12-optin review R1, R3): the lesson's link instead of a picture of the view, for L (`'key'`: copied and
+         * said, a field to copy it by hand only when the browser refuses) and for the visible Share of the top bar and the pause menu
+         * (`'button'`: copied, said and shown in that field, for a helper and for a phone, which has no L). Set by the mode
+         * (sonic/feature.ts), read by app/builtin/share.ts; absent on every other page.
+         */
+        sonicShare?: (via: 'key' | 'button') => void;
     }
 }

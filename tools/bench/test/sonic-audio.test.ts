@@ -20,7 +20,7 @@ import { SonicSetup, captionMode } from '../../../apps/fly/src/sonic/entry';
 import type { CaptionSink } from '../../../apps/fly/src/sonic/entry';
 import { followVisit } from '../../../apps/fly/src/sonic/address';
 import type { AddressWriter } from '../../../apps/fly/src/sonic/address';
-import { pageLink } from '../../../apps/fly/src/sonic/mode-keys';
+import { pageLink, shareLesson } from '../../../apps/fly/src/sonic/mode-keys';
 import { lessonQuery } from '../../../packages/scenes/src/sonic-link';
 import { PageRuntime } from '../../../apps/fly/src/sonic/runtime';
 import { allProgress, currentLesson, loadSonicPrefs, saveProgress, savedProgress, saveSonicPrefs, setCurrentLesson } from '../../../apps/fly/src/sonic/store';
@@ -367,7 +367,7 @@ describe('a shared link\'s sound and the page\'s address (sonic/address.ts follo
         expect(pageLink(hover, {}).sound).toEqual({});
     });
 
-    it('control: an address that is never rewritten (as before review R2) brings Calm mode back after Keep and a change', () => {
+    it('control: an address that is never rewritten (as before review R2) brings Calm mode back after Keep and a change, in the same probe', () => {
         const { load } = profile('sonic=hover-height&st=clear&sc=1', () => undefined);
         const a = load();
         a.keepVisit();
@@ -375,6 +375,54 @@ describe('a shared link\'s sound and the page\'s address (sonic/address.ts follo
         const b = load();
         expect(b.visit).toEqual({ calm: true });
         expect(b.prefs.calm).toBe(true);
+    });
+});
+
+// review R1: a refused clipboard must still give the link to a blind pilot alone, whatever his voice and captions are set to
+describe('the mode\'s Share with a refused clipboard (mode-keys.ts shareLesson, wired as sonic/feature.ts wires it)', () => {
+    const LINK = 'https://gsfpv.flyreelstudio.eu/fly/?sonic=hover-height&st=clear';
+    const SETUPS: Record<string, Partial<SonicPrefs>> = {
+        'the app speaks, captions on (the defaults)': {},
+        'the app speaks, captions off': { captions: false },
+        'my screen reader speaks': { selfVoice: false }
+    };
+    /** The setup a pilot has, its engine and captions, and the mode's Share on it with this copier and entry. */
+    async function share(prefs: Partial<SonicPrefs>, copier: () => Promise<boolean>, via: 'key' | 'button' = 'key', lesson: string | null = 'Hold your height') {
+        const host = mkStore();
+        saveSonicPrefs(host, { ...defaultPrefs(), ...prefs });
+        const f = fakeDeps();
+        const sink = new Sink();
+        const setup = new SonicSetup(host, 'en', sink, { deps: f.deps });
+        const fields: { url: string; copied: boolean }[] = [];
+        const copied = await shareLesson({ url: LINK, via, lesson, copyKeys: 'Control and C', copy: copier, field: (url, c) => fields.push({ url, copied: c }), say: (line) => setup.audio.engine.say(line, { interrupt: true }) });
+        return { copied, fields, said: f.engines[0]!.said, sink };
+    }
+
+    for (const [name, prefs] of Object.entries(SETUPS)) {
+        it(`${name}: the link goes into the focused, selected field; the line says so with the lesson's name and the keys; the captions never carry the link`, async () => {
+            const r = await share(prefs, async () => false);
+            expect(r.copied).toBe(false);
+            expect(r.fields).toEqual([{ url: LINK, copied: false }]);
+            expect(r.said).toEqual([{ line: { key: 'sonic.say.linkSelected', params: { lesson: 'Hold your height', copy: 'Control and C' } }, interrupt: true }]);
+            expect(r.sink.lines.join(' ')).not.toContain('sonic=');
+            // the three setups differ where the captions go (shown, read by a reader, neither), and the link reaches the pilot in each
+            expect(r.sink.modes[0]).toEqual(captionMode({ ...defaultPrefs(), ...prefs }));
+        });
+    }
+
+    it('on the start screen (no lesson) it names Fly by Sound instead of a lesson', async () => {
+        const r = await share({}, async () => false, 'key', null);
+        expect(r.said.map((s) => s.line)).toEqual([{ key: 'sonic.say.linkSelectedStart', params: { copy: 'Control and C' } }]);
+        expect(r.fields).toHaveLength(1);
+    });
+
+    it('control: a clipboard that takes it says it is copied and L opens no field; a visible Share (a helper, a phone) shows the field anyway', async () => {
+        const key = await share({}, async () => true);
+        expect(key.copied).toBe(true);
+        expect(key.fields).toEqual([]);
+        expect(key.said.map((s) => s.line)).toEqual([{ key: 'sonic.say.linkCopied' }]);
+        const button = await share({}, async () => true, 'button');
+        expect(button.fields).toEqual([{ url: LINK, copied: true }]);
     });
 });
 

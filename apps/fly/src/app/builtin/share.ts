@@ -59,11 +59,19 @@ export function flightShareRequest(ctx: FlightContext, entry: ShareEntry, extra:
     };
 }
 
-/** Opens the share panel over the flight (paused while it is up); nothing when another dialog is up. */
+/**
+ * Opens the share panel over the flight (paused while it is up); nothing when another dialog is up. In Fly by Sound (a page entered
+ * through ?sonic=, v12-optin review R1, R3) every Share but a recording's video shares the lesson's link instead (ctx.sonicShare): a
+ * picture link of a lesson's world would open no lesson, and a phone has no L.
+ */
 export function openFlightShare(ctx: FlightContext, entry: ShareEntry, extra: Pick<ShareRequest, 'speed' | 'video'> = {}): void {
     // over another dialog (settings, the picker) a second one would stack; the pause menu gives way
     if (dialogOpen() && !ctx.menu.isOpen) return;
     if (ctx.menu.isOpen) ctx.menu.close();
+    if (ctx.sonicShare && entry !== 'video') {
+        ctx.sonicShare(entry === 'key' || entry === 'crash' ? 'key' : 'button');
+        return;
+    }
     openSharePanel({ parent: ctx.ui, onOpen: () => ctx.pause('panel'), onClose: () => ctx.resume('panel') }, flightShareRequest(ctx, entry, extra));
 }
 

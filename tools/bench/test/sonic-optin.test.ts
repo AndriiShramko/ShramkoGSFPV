@@ -18,7 +18,7 @@ import type { FlightContext, MenuItem } from '../../../apps/fly/src/app/context'
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { setSonicEntry, setSonicInstaller } from '../../../apps/fly/src/sonic/entry-state';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
-import { KEY_HELP, keyHelpLines, lessonLink, linkLine } from '../../../apps/fly/src/sonic/mode-keys';
+import { KEY_HELP, keyHelpLines, lessonLink, shareLine } from '../../../apps/fly/src/sonic/mode-keys';
 import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import { parseSonicParam } from '../../../apps/fly/src/sonic/start-model';
 
@@ -184,9 +184,30 @@ describe('the link that carries the mode: writer and reader (step 4, @gsfpv/scen
         expect(lessonLink(getLesson('hover-height'), d)).toEqual({ lesson: 'hover-height', sound: {} });
         expect(lessonLink(getLesson('free-garden'), d)).toEqual({ lesson: 'free-garden', scene: '7a475d38', size: 5, sound: {} });
         expect(lessonLink(null, { ...d, calm: true })).toEqual({ lesson: 'start', sound: { calm: true } });
-        expect(linkLine(true, true, 'L')).toEqual({ key: 'sonic.say.linkCopied' });
-        expect(linkLine(true, false, 'L')).toEqual({ key: 'sonic.say.linkCopiedStart' });
-        expect(linkLine(false, true, 'L')).toEqual({ key: 'sonic.say.linkFailed', params: { key: 'L' } });
+        expect(shareLine(true, 'Hold your height', 'Control and C')).toEqual({ key: 'sonic.say.linkCopied' });
+        expect(shareLine(true, null, 'Control and C')).toEqual({ key: 'sonic.say.linkCopiedStart' });
+        // review R1: refused, the line names the lesson and the keys that copy the selected link
+        expect(shareLine(false, 'Hold your height', 'Control and C')).toEqual({ key: 'sonic.say.linkSelected', params: { lesson: 'Hold your height', copy: 'Control and C' } });
+        expect(shareLine(false, null, 'Command and C')).toEqual({ key: 'sonic.say.linkSelectedStart', params: { copy: 'Command and C' } });
+    });
+
+    it('review R1: the lines and the field\'s words exist in en, es, pl and ru with their placeholders, and none sends the pilot to the captions', () => {
+        // "caption" in each language, built from code points where it has letters B18 keeps in the locales
+        const caption: Record<string, RegExp> = { en: /caption/i, es: /subt[ií]tulo/i, pl: /napis/i, ru: new RegExp(String.fromCodePoint(0x441, 0x443, 0x431, 0x442, 0x438, 0x442, 0x440), 'i') };
+        const lines = engineDicts();
+        for (const l of LANGS) {
+            const d = dict('sonic', l);
+            for (const [key, params] of [['sonic.say.linkSelected', ['{lesson}', '{copy}']], ['sonic.say.linkSelectedStart', ['{copy}']], ['sonic.link.select', ['{copy}']]] as const) {
+                const text = d[key] ?? '';
+                for (const p of params) expect(text, `${l} ${key}`).toContain(p);
+                expect(text, `${l} ${key}`).not.toMatch(caption[l]!);
+            }
+            for (const key of ['sonic.say.linkCopied', 'sonic.say.linkCopiedStart', 'sonic.say.linkSelected', 'sonic.say.linkSelectedStart']) expect(lines[l][key], `${l} ${key} (the engine says it)`).toBeTruthy();
+            for (const key of ['sonic.copyKeys', 'sonic.copyKeysMac', 'sonic.link.title', 'sonic.link.titleStart', 'sonic.link.field', 'sonic.link.copied']) expect(d[key], `${l} ${key}`).toBeTruthy();
+            expect(d['sonic.say.linkFailed'], `${l}: the line that pointed to the captions is gone`).toBeUndefined();
+        }
+        // control: the word is found where it is (the captions' own label)
+        for (const l of LANGS) expect(dict('sonic', l)['sonic.captions.label'], l).toMatch(caption[l]!);
     });
 
     it('opening a link L made: the start screen offers that lesson (every shipped lesson), its sound settings come with it', () => {
@@ -197,6 +218,46 @@ describe('the link that carries the mode: writer and reader (step 4, @gsfpv/scen
         }
         // control: a link to a lesson this release does not have opens the start screen with its note
         expect(parseSonicParam(queryOf('/fly/?sonic=rings-ninth').get('sonic'))).toEqual({ kind: 'unknown', raw: 'rings-ninth' });
+    });
+});
+
+describe('review R3: in the mode every Share but a recording\'s video shares the lesson\'s link (app/builtin/share.ts openFlightShare)', () => {
+    afterEach(() => vi.unstubAllGlobals());
+    /** share.ts reads the page's address when it loads (app/env.ts): imported with a stand-in address */
+    const load = async (): Promise<typeof import('../../../apps/fly/src/app/builtin/share')> => {
+        vi.stubGlobal('location', { search: '', href: 'https://gsfpv.flyreelstudio.eu/en/fly/', origin: 'https://gsfpv.flyreelstudio.eu', pathname: '/en/fly/' });
+        vi.stubGlobal('document', { cookie: '', documentElement: { lang: '' }, querySelector: () => null, addEventListener() {}, removeEventListener() {} });
+        vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
+        vi.stubGlobal('addEventListener', () => undefined);
+        vi.stubGlobal('window', globalThis);
+        return import('../../../apps/fly/src/app/builtin/share');
+    };
+
+    it('L and L over a crash are the key; the top bar, the pause menu, the stats card and the "Nice flight" row are a button; an open pause menu closes first', async () => {
+        const { openFlightShare } = await load();
+        vi.stubGlobal('document', { querySelector: () => null });
+        const calls: string[] = [];
+        let closed = 0;
+        const menu = { isOpen: false, close: () => { closed++; menu.isOpen = false; } };
+        const ctx = { menu, sonicShare: (via: string) => calls.push(via) } as unknown as FlightContext;
+        for (const entry of ['key', 'crash', 'top', 'pause', 'card'] as const) {
+            menu.isOpen = entry === 'pause';
+            openFlightShare(ctx, entry);
+        }
+        expect(calls).toEqual(['key', 'key', 'button', 'button', 'button']);
+        expect(closed).toBe(1);
+        // control: a recording's video goes to the share panel as before (which needs a page here, so it throws): not the lesson's link
+        expect(() => openFlightShare(ctx, 'video')).toThrow();
+        expect(calls).toHaveLength(5);
+    });
+
+    it('control: over another dialog nothing is shared, as before (the pause menu gives way, a panel does not)', async () => {
+        const { openFlightShare } = await load();
+        vi.stubGlobal('document', { querySelector: () => ({}) });
+        const calls: string[] = [];
+        const ctx = { menu: { isOpen: false, close: () => undefined }, sonicShare: (via: string) => calls.push(via) } as unknown as FlightContext;
+        openFlightShare(ctx, 'key');
+        expect(calls).toEqual([]);
     });
 });
 
