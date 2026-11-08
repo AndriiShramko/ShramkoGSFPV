@@ -305,7 +305,45 @@ with its control (the rule broken once in the code, the test seen failing, the c
     comment is not (in the test); the menu's, I's, K's lines and the line at a lesson's start reach the rig's engine, each
     with its text from the engine's dictionaries. Control broken once and restored: a `speechSynthesis.speak` of the
     focused item added to `lesson-menu.ts` fails the first test, naming its line.
-- [ ] B8 tests for B1 to B7 complete, gates exit 0, stage B's status final
+- [x] B8 tests for B1 to B7 complete, gates exit 0, stage B's status final
+  - Each step's tests came with it (`tools/bench/test/sonic-lesson-keys.test.ts`, 37 tests: B1 6, B2 5, B3 5, B4 4, B5 6,
+    B6 8, B7 3; the lesson rig where it has the part, `tools/bench/test/sonic-fake-dom.ts` for the panel and the menu's view),
+    each with its control broken once and restored (listed under each step), and the two glossary tests of `sonic-lessons`
+    are back. One letter in a test written as an escape (B18's rule).
+  - `gates.py --repo C:/dev/gsfpv-v13-host` on 0896abe, exit 0: typecheck PASS; vitest PASS, 3872 passed, 9 skipped (3881:
+    stage A's 3833 and 11, plus the 37 new and the 2 glossary tests back; the 9 are the 8 that need the Winter Garden scan's
+    walls in `.cache` and the 1 that needs a tool or a build this machine's run lacks, as before); api-unittest,
+    architecture, i18n, catalog PASS; B18 PASS (`evidence/2026-11-08/b-repo-b18.json`).
+
+#### Stage B, final
+
+Done: B1 to B7, one commit each, and B8 (an escape, then this status with the gates). Not pushed, nothing deployed, the live
+site and the other worktrees untouched; `packages/sonic-fpv` not touched (still 16c01a1). Outside `apps/fly/src/sonic/*`
+stage B changed `apps/fly/src/devices/keyboard.ts` (`dialogOpen` knows the lesson menu) and the tests in `tools/bench/test`.
+
+Left for stage C, with the reason:
+
+1. The page proofs of stage B's parts, in headless Chrome: the lesson menu over a real flight (Escape, the voice, the focus,
+   the keys it takes, P still the pause menu, the start screen from Lesson list and Sound settings, Leave the mode), the
+   progress panel's place and size on a wide page and a phone, in a dark and a light scene, the line at a lesson's start,
+   K's new order, and with a real screen reader (NVDA or JAWS: still open from v12-optin). Three page proofs still expect
+   v0.12 here (not gates, not run in stage B): `tools/bench/src/sonic-int-page.ts:164` and `:182` (I as `status.lesson`;
+   it is `status.progress-step` or `status.progress` now), `tools/bench/src/sonic-lessons-page.ts:282-291` (Z as the last
+   line again; it is the task again, the key 'repeat'; I with "Attempt n" in `status.lesson`), `tools/bench/src/sonic-optin-page.ts:395-398`
+   (`status.lesson`) and `:427` (K's v0.12 order; now Escape, N, B, Z, I, G, R, T, U, L).
+2. W7, `skipped` kept: the runner marks a lesson left forward with N or the menu's Next lesson as skipped (`progress().skipped`),
+   but the prefs drop the field when they save it (`packages/prefs/src/doc.ts:212-221` `validSonicProgress`), so after a reload
+   the start screen cannot show it; with M41-2's states on the start screen (`start-model.ts` `stateOf`).
+3. Not in stage B's list: M41-1 (the pause menu's way in to `/{lang}/fly/?sonic=start`), M41-2 (the start screen's course
+   from zero, Continue, the states, Reset), M41-4 (the start screen and the mode's settings as a spoken list; the lesson menu's
+   Sound settings opens the start screen on its settings until then) with W13 (`motorGainDb`, `heightTarget`), W9 and W10
+   (the replay of an older lesson version, its verdict line), W14 and M41-24, M41-25 (the panels).
+4. A native reading of the es, pl and ru lines stage B added: `sonic.key.Escape`, `sonic.say.helpPrevious`,
+   `sonic.say.helpRepeat`, `sonic.say.helpMenu`, `sonic.say.lessonKeys`, `sonic.say.menuTitle`, `sonic.say.menuOpen`, the eight
+   `sonic.say.menu*` items, `sonic.progress.*` (5), `keys.sonic.next`, `keys.sonic.previous`, `keys.sonic.repeat`,
+   `keys.sonic.menu`.
+5. "Needs from the package" 1 to 3 (3 is new: a cue the replay derives at a speech.end marker is stamped at the last recorded
+   frame, the live engine's at its last live frame; a named sound's play can end two recorded frames apart).
 
 ### Stage C
 
