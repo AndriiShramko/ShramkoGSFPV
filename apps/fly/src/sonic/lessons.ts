@@ -3,9 +3,10 @@
 // is the pure state machine that plays it; this file is the host the runner's header describes:
 //
 //   open       builds the lesson's world (src/sonic/lesson-world.ts), swaps the flown session when the walls differ,
-//              draws the helper's view (primitives.ts), makes the runner with the pilot's saved progress, and enters
-//              the mode (assists to the input, layers to the bridge, crash off, R, N, [ ]): the runner begins and its
-//              first actions are taken at once.
+//              draws the helper's view (primitives.ts), makes the runner with the pilot's saved progress, resets the engine
+//              (v0.13: it forgets the last lesson's sounds before the clock starts again), and enters the mode (assists to
+//              the input, layers to the bridge, crash off, R, N, [ ]): the runner begins and its first actions are taken at
+//              once.
 //   frame      once per rendered frame while the flight runs: runner.step(sample, world), its events out (ctx.events
 //              'sonicEvent'), its actions carried out, and what the engine hears this frame: a module-0 scene's demo
 //              frame, or the craft in its world with the runner's next gate. A paused flight is not stepped (the
@@ -256,6 +257,11 @@ export class LessonHost {
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
             this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
             this.keysLine = { key: 'sonic.say.lessonKeys', params: { ...(this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS) } };
+            // the bridge's clock starts at 0 for this lesson: the engine first forgets what it heard on the last one's clock (v13-int step
+            // 1, v13-host's need 2: its scene sampler keeps an active sector 0.3 s on when the clock goes back, so the first frames of this
+            // lesson voiced the last one's sectors with these walls, which the replay, a new planner per lesson, does not derive). Before
+            // enter(): the runner's first actions (a sound of its first step) go to the engine after it, on the new clock
+            this.p.mode.bridge.engine?.reset?.();
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
                 this.p.mode.enter({ lesson, runner, world, floorY });

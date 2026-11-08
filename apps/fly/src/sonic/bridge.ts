@@ -69,6 +69,12 @@ export interface BridgeEngine {
     say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void>;
     /** once per rendered frame (SonicMode.hear); the bridge itself never calls it */
     update?(input: SonicFrameInput): void;
+    /**
+     * Forgets what is sounding (the package's SonicEngine.reset, s13-int; v13-int step 1): the lesson host calls it when it opens a
+     * lesson, before the bridge's clock starts again at 0, so the next lesson does not voice the last one's held hazard sectors for
+     * 0.3 s with its own walls. Absent on an older engine.
+     */
+    reset?(): void;
 }
 
 /**

@@ -14,15 +14,29 @@ deployed, the live site and API never opened.
 Steps 1 to 7 are this agent's; 8 to 12 belong to the next agent (the lead's prompt names them; the list below is the
 lead's "Next" 5 and 6 as this branch sees them).
 
-- [ ] 1. Engine reset at a new lesson and at a seek (v13-host's need 2): `FlyBySoundEngine.reset()` and the contract's
+- [x] 1. Engine reset at a new lesson and at a seek (v13-host's need 2): `FlyBySoundEngine.reset()` and the contract's
   optional `SonicEngine.reset?()` on s13-int with a package test and its control; the host calls `engine.reset?.()`
   before a lesson's first frame and where a replay opens a lesson or seeks; `sonic-int-replay` without its settle
   window, the safety layer matched from a lesson's first frame, with a control without the call.
-  - Package part done: s13-int 7980fab (the sound repo's `docs/dev/status-v0.13-int.md`, I1). `test/reset.test.ts` (5
+  - Package part: s13-int 7980fab (the sound repo's `docs/dev/status-v0.13-int.md`, I1). `test/reset.test.ts` (5
     tests; control: the same frames without `reset()` voice the held ceiling and floor sectors at 0 and 280 ms, none at
     320 ms, and keep listing the last lesson's gate note) and the audio proof `engine-reset` (the real engine in headless
     Chrome: 0 of the 18 frames of the hold with a hazard of the last lesson; control without the reset 18 of 18).
-  - The simulator's part: below (after step 2).
+  - The simulator's part (after step 2's gitlink): `LessonHost.open` resets the engine before `mode.enter()` (the bridge's
+    clock starts at 0 there; the runner's first actions reach the engine after it, on the new clock); the replay player
+    resets it when it takes the engine, when the next lesson of a recording starts (right before its first frame), at a
+    seek (before the frame sought) and when it gives the engine back to the live flight. `BridgeEngine`, `ReplayEngine`
+    and `PageEngine` carry `reset` (optional on the first two). The rig's `FakeEngine.reset()` is the real one's (the
+    planner from nothing, the last frame forgotten), with `keepOnReset` for the control.
+  - Measured (`sonic-int-replay`, the rig on the package at fe1613b): with the reset, rings-first 2369 frames, 99.8 % by
+    kind and 99.8 % by sector over every frame (4 frames differ, all the host's touch ping), rings-line 181 frames, 100 %
+    and 100 % from its first frame; no frame of either lesson's first 0.4 s with another hazard voice than the replay's.
+    Control, the same flight with an engine that forgets nothing: rings-line 95.0 % by kind (8 frames of held hazards and
+    1 the comparer counts as other), 9 frames of its first 0.4 s with rings-first's sectors (the ceiling up and front-up,
+    the wall front and front-right). rings-first's own shares are the same with and without the reset (99.8 %): the
+    difference to stage C's 96.8 % by sector comes with the new package and flight, not with the reset.
+  - Controls in the code, each run once and restored: without the host's call the main test and the control fail
+    (rings-line's start; the host's three calls); without the player's call at a lesson's start its test fails.
 - [x] 2. The gitlink to s13-int's head; every simulator test on the new package with its expected values from the
   package; the sound panel's real elevations tested (`sonic-panels`).
   - The gitlink at fe1613b (s13-int: 7980fab the reset, fe1613b the words check's root, below). Full vitest on it: 246
@@ -64,6 +78,10 @@ Each changed expectation takes its value from the package or names its reason; e
 |---|---|---|
 | the package's `test/words.test.ts` as the simulator's vitest runs it (step 2) | none here: fixed in the package (s13-int fe1613b, the words check's root from its own file) | it failed twice with ENOENT from the simulator's root on the new package |
 | `sonic-panels` "the open way: its side from the plan" (step 2) | title only: a way above or below sounds from ahead "with the pilot's Sound from above and below off" (was "today") | since s13-elev the chime comes from the way with the setting on |
+| `sonic-int-replay` "rings-first to its pass, then rings-line" (step 1) | the settle window (holdMs + 100 ms after a lesson's open) is gone: the shares (98 % by kind, 85 % by sector) and W19's causes are taken over every frame; new: no frame of a lesson's first 0.4 s with other hazard voices than the replay's, sector and all (`hazardsDifferAtStart`); the host reset the engine 3 times (rings-first, its reopen, rings-line) | the host resets the engine at every open, so nothing of the lesson before is held at the next one's start |
+| `sonic-int-replay` new control "the same flight with an engine that forgets nothing" (step 1) | records the same two lessons with `FakeEngine.keepOnReset`: rings-line's start holds rings-first's sectors (9 frames measured) | the control that fails without the call |
+| `sonic-int-replay` "the player plays the lessons in turn" (step 1) | the fake engine logs frames and resets: a reset first, one right before rings-line's first frame, two in all while playing; at each seek a reset, then the frame sought; a reset at close | the player resets the engine where a lesson starts or the clock jumps |
+| `sonic-lesson-rig` `FakeEngine` (step 1) | `reset()` as the package's (the planner from nothing, the last frame and its cues forgotten), `resets`, `keepOnReset` | the host calls the engine's reset at every lesson it opens |
 | `sonic-panels` "real elevations from the package (s13-elev) ..." (step 2) | new, 4 tests: tunnel-gaps' open way above marked by its own direction (on) and by the plan's side (off), with the bare chime's control; the target note's mark follows `plan.height.target.dir` (above, below, level), and with the setting off it stays on the bar | the package now gives the panel real elevations (lane s13-elev's "Needs from the simulator") |
 
 ## Deferred

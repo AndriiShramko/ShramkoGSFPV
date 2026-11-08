@@ -148,6 +148,8 @@ interface Flight {
     readonly reopen: boolean;
     /** page time spent in the second lesson before the recording stops, ms (default 6000) */
     readonly after?: number;
+    /** the control of v13-int step 1: the engine forgets nothing when the host opens a lesson (as one without the package's reset) */
+    readonly keepOnReset?: boolean;
 }
 /**
  * The rings pilot listens to the task, then flies through the gate (v0.13 stage B, B6). Since v0.13 a flight in the task is put back at
@@ -214,6 +216,27 @@ function kindDifferences(frames: readonly FlightFrame[], derived: readonly (read
     return out;
 }
 
+/**
+ * The frames of a lesson's first `ms` (from its open) whose safety-layer hazard voices, sector and all, differ from the replay's by the
+ * comparer's slack: the voices a held sector of the lesson before would add there (v13-int step 1). The replay starts each lesson with a
+ * new planner, so a live engine that forgot the last lesson when the host opened this one (the package's reset) agrees from the first
+ * frame; one that did not voices the last lesson's sectors for the sampler's hold (holdMs) with this lesson's walls.
+ */
+function hazardsDifferAtStart(seg: { readonly frames: readonly FlightFrame[]; readonly fromT: number }, derived: readonly (readonly string[])[], ms: number): number[] {
+    const key = (ids: readonly string[]): string => ids.filter((id) => /^safety\.(wall|floor|ceiling|object|obstacle)/.test(id)).sort().join('|');
+    const rec = seg.frames.map((f) => key(f.c));
+    const der = derived.map(key);
+    const n = Math.min(rec.length, der.length);
+    const slack = DEFAULT_TOLERANCES.cueSlackFrames;
+    const out: number[] = [];
+    for (let i = 0; i < n && (seg.frames[i] as FlightFrame).t < seg.fromT + ms; i++) {
+        let ok = false;
+        for (let k = Math.max(0, i - slack); k <= Math.min(n - 1, i + slack) && !ok; k++) ok = rec[k] === der[i];
+        if (!ok) out.push(i);
+    }
+    return out;
+}
+
 /** Module 0: a digit for each question from the side the sound came from (sonic-lessons.test.ts's pilot: left 1, right 2, behind 2). */
 const earsPilot: Control = (r) => {
     if (!r.host.asking || r.engine.speaking) return null;
@@ -229,6 +252,7 @@ const EARS: Flight = { a: 'ears-headphones', b: 'ears-glossary', pilot: earsPilo
  */
 async function recordTwoLessons(o: Flight = RINGS): Promise<{ pkg: SessionPackage; rig: Rig }> {
     const rig = await Rig.make(getLesson(o.a));
+    rig.engine.keepOnReset = o.keepOnReset === true;
     expect(await rig.host.open(o.a)).toBe(true);
     const dir = new FakeDirectory('sonic-sessions');
     const stores: SessionStores = {
@@ -288,9 +312,11 @@ describe('two lessons flown through the host and recorded as one package replay 
         made = null;
     });
 
-    it('rings-first to its pass, then rings-line opened by the host: every event of each lesson re-derived, the lesson\'s own cues on every frame, the safety layer\'s by kind on 98 % once a lesson has settled; controls: the one-lesson check fails, a lesson cue missing is caught', async () => {
+    it('rings-first to its pass, then rings-line opened by the host: every event of each lesson re-derived, the lesson\'s own cues on every frame, the safety layer\'s by kind on 98 % from each lesson\'s first frame and its hazard voices the replay\'s from the open on (the engine reset at the open); controls: the one-lesson check fails, a lesson cue missing is caught', async () => {
         made = await recordTwoLessons();
         const { pkg } = made;
+        // the host reset the engine at each lesson it opened: rings-first, rings-first again when the recording started, rings-line
+        expect(made.rig.engine.resets).toBe(3);
         const opens = pkg.events.filter((e) => e.kind === 'lesson' && e.what === 'open');
         // the recording started inside rings-first, which opened again at once: both lessons are in it from their opens
         expect(opens.map((e) => (e as { lessonId: string }).lessonId)).toEqual(['rings-first', 'rings-line']);
@@ -311,32 +337,31 @@ describe('two lessons flown through the host and recorded as one package replay 
             const d = checkSession({ manifest: seg.manifest, frames: seg.frames, events: seg.events }).result.cues;
             derived.push(d);
             expect(beyondSafety(seg.frames, d), seg.lessonId ?? '').toEqual([]);
-            // The first moments of a lesson the host opened are left out of the shares: the live engine still holds the hazard
-            // sectors of what it heard before (the sampler keeps every active sector holdMs on when the clock goes back, and
-            // nothing resets it at a new lesson: "Needs from the package"), while the replay starts each lesson fresh. At 16c01a1
-            // rings-line's first 9 frames differ so (the ceiling voiced with the craft at rest 2.2 m under it), 95 % by kind in all.
-            const settle = seg.lead ? 0 : seg.frames.findIndex((f) => f.t >= seg.fromT + DEFAULT_SAMPLER_CONFIG.holdMs + 100);
-            const from = settle < 0 ? seg.frames.length : settle;
-            const settled = compareCues(seg.frames.slice(from), d.slice(from));
-            expect(from).toBeLessThan(seg.frames.length / 10);
+            // From each lesson's first frame (v13-int step 1; the settle window of holdMs + 100 ms is gone): the host resets the engine
+            // when it opens a lesson, so the live engine no longer holds the hazard sectors of the lesson before (at 16c01a1, without a
+            // reset, rings-line's first 9 frames voiced the ceiling with the craft at rest 2.2 m under it) and the safety layer's hazard
+            // voices are the replay's from the open on, sector and all, as the replay starts each lesson with a new planner
+            expect(hazardsDifferAtStart(seg, d, DEFAULT_SAMPLER_CONFIG.holdMs + 100), `${seg.lessonId}: the lesson before's sectors at its start`).toEqual([]);
             // the sector of a hazard voice flips with the rate the sampler is fed at (compare.ts): the rig renders a frame every 16 ms
             // and the recorder keeps them on a 33.3 ms grid, so 32 and 48 ms apart (the page, at a steady 60 Hz, is measured by
             // tools/bench/src/sonic-int-page.ts replay). In v0.13's 10 x 12.5 m room (micro-drone scale, M41-18) the walls are heard
             // on most frames, so more voices flip: rings-first by kind 98.7 %, by sector 85.8 % at 16c01a1 (v0.12 held 99 % and 90 %);
-            // with the pilot listening to the task (stage B, listenThenFly), measured in stage C: 99.3 % by kind (16 of 2357 settled frames)
-            // and 96.8 % by sector; rings-line 100 % and 100 % once settled
-            const shares = { ...cues, settled: { from, classShare: settled.classShare, share: settled.share } };
-            expect(settled.classShare, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.98);
-            expect(settled.share, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.85);
-            // W19 pinned down (stage C): every settled frame that differs by kind, exactly the frames the comparer counts, has one of the
-            // causes kindDifferences names; none is a play's edge or anything else (the lesson's own cues, every play of a named sound
-            // among them, agree on every frame: beyondSafety above). rings-first with this flight: 16 frames, the host's touch ping 5 and
-            // the open-way chime's hold 11 (stage A's flight: 29 of 2225, touch 11, chime 10, hazard kinds 9); W9 changes none of them
-            // (it is what the player says, not what the replay derives). rings-line: none once settled.
-            const differ = kindDifferences(seg.frames, d).filter((x) => x.index >= from);
+            // with the pilot listening to the task (stage B, listenThenFly), measured in stage C once settled: 99.3 % by kind (16 of
+            // 2357 frames) and 96.8 % by sector; the shares are now taken over every frame (the numbers: docs/wip/v13-int.md, step 1)
+            const all = compareCues(seg.frames, d);
+            const shares = { ...cues, all: { classShare: all.classShare, share: all.share } };
+            expect(all.classShare, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.98);
+            expect(all.share, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.85);
+            // W19 pinned down (stage C), now over every frame: every frame that differs by kind, exactly the frames the comparer counts,
+            // has one of the causes kindDifferences names; none is a play's edge or anything else (the lesson's own cues, every play of a
+            // named sound among them, agree on every frame: beyondSafety above). rings-first with stage C's flight: 16 frames, the host's
+            // touch ping 5 and the open-way chime's hold 11; W9 changes none of them (it is what the player says, not what the replay
+            // derives). rings-line: none.
+            const differ = kindDifferences(seg.frames, d);
             const causes: Record<KindCause, number> = { touch: 0, free: 0, hazard: 0, other: 0 };
             for (const x of differ) causes[x.cause]++;
-            expect(differ.length, `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toBe(Math.round((1 - settled.classShare) * (seg.frames.length - from)));
+            console.log(`sonic-int-replay: ${seg.lessonId} ${seg.frames.length} frames, by kind ${(100 * all.classShare).toFixed(1)} %, by sector ${(100 * all.share).toFixed(1)} %, differing by kind ${JSON.stringify(causes)}`);
+            expect(differ.length, `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toBe(Math.round((1 - all.classShare) * seg.frames.length));
             expect(differ.filter((x) => x.cause === 'other'), `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toEqual([]);
         }
         // control of W19's causes: a lesson cue a frame short (a play's edge) and a reset cue a frame early are causes of none of them
@@ -356,6 +381,21 @@ describe('two lessons flown through the host and recorded as one package replay 
         const old = checkSession(pkg);
         expect(old.check.events.diffs.length).toBeGreaterThan(0);
         expect(old.check.notes.map((n) => n.code)).toContain('other-lesson-events');
+    }, 600000);
+
+    it('control (v13-int step 1): the same flight with an engine that forgets nothing when the host opens a lesson voices rings-first\'s sectors at rings-line\'s start, which the replay does not derive', async () => {
+        made = await recordTwoLessons({ ...RINGS, keepOnReset: true });
+        expect(made.rig.engine.resets).toBe(3); // the host called it; the engine kept everything
+        const out = await checkPackage(made.pkg);
+        expect(out.error).toBeNull();
+        const line = out.segments.find((s) => s.segment.lessonId === 'rings-line')!;
+        const d = checkSession({ manifest: line.segment.manifest, frames: line.segment.frames, events: line.segment.events }).result.cues;
+        const held = hazardsDifferAtStart(line.segment, d, DEFAULT_SAMPLER_CONFIG.holdMs + 100);
+        // measured: the frames of rings-line's first 0.4 s whose hazard voices are rings-first's held sectors (docs/wip/v13-int.md, step 1)
+        console.log(`sonic-int-replay control: rings-line frames with rings-first's sectors at its start ${held.length} (${held.map((i) => line.segment.frames[i]!.c.filter((id) => id.startsWith('safety.')).join(' ')).slice(0, 3).join('; ')})`);
+        expect(held.length).toBeGreaterThan(0);
+        // and they are the hold's: none after it
+        expect(hazardsDifferAtStart(line.segment, d, DEFAULT_SAMPLER_CONFIG.holdMs + 100).every((i) => line.segment.frames[i]!.t < line.segment.fromT + DEFAULT_SAMPLER_CONFIG.holdMs + 100)).toBe(true);
     }, 600000);
 
     it('the old way (the lesson not opened again at the recording\'s start): the lead is replayed and not compared, said in the details; the next lesson is compared', async () => {
@@ -454,9 +494,22 @@ describe('the player plays the lessons in turn on the package\'s one clock', () 
             const fed: number[] = [];
             const layers: LessonLayers[] = [];
             const plays: { whenAc: number; offsetS: number }[] = [];
+            // the engine's frames and resets in order (v13-int step 1: the player resets the engine where a lesson starts or the clock jumps)
+            const calls: string[] = [];
             const deps: ReplayDeps = {
                 now: () => clock.a,
-                engine: { update: (i) => void fed.push(i.sample.t), cue: () => undefined, say: async () => undefined, setLayers: (l) => void layers.push(l), setPrefs: () => undefined, setTheme: () => undefined },
+                engine: {
+                    update: (i) => {
+                        fed.push(i.sample.t);
+                        calls.push(`frame ${i.sample.t}`);
+                    },
+                    cue: () => undefined,
+                    say: async () => undefined,
+                    setLayers: (l) => void layers.push(l),
+                    setPrefs: () => undefined,
+                    setTheme: () => undefined,
+                    reset: () => void calls.push('reset')
+                },
                 pose: { begin: () => undefined, show: () => undefined, end: () => undefined },
                 voice: { decode: async () => ({ duration: 60 }) as VoiceBuffer, play: (_b, whenAc, offsetS) => { plays.push({ whenAc, offsetS }); return { stop: () => undefined }; } },
                 own: () => ({ prefs: defaultPrefs(), theme: getBuiltinTheme('soft') }),
@@ -486,16 +539,25 @@ describe('the player plays the lessons in turn on the package\'s one clock', () 
             expect(player.trace.fed.map((f) => f.t)).toEqual(pkg.frames.map((f) => f.t)); // every frame once, in order, across both lessons
             expect(plays).toHaveLength(1); // the voice runs on: not started again for the second lesson
             expect(player.trace.switches.map((s) => s.part)).toEqual([0, 1]);
+            // the engine was reset when the replay took it (before its first frame) and when rings-line started (right before its first
+            // frame), and at no other frame: it plans each lesson from nothing, as the replay core does
+            expect(calls[0]).toBe('reset');
+            expect(calls[calls.indexOf(`frame ${firstB}`) - 1]).toBe('reset');
+            expect(calls.filter((c) => c === 'reset')).toHaveLength(2);
             // at the end B is on: a seek back into A shows A, one into B shows B again (each replayer at the frame sought); a seek
             // inside the lesson shown draws nothing anew; close gives the mode's own view back
-            player.seek(100);
-            player.seek(firstB + 300);
-            player.seek(firstB + 600);
+            for (const ms of [100, firstB + 300, firstB + 600]) {
+                player.seek(ms);
+                // a seek: the engine forgets what it heard, then hears the frame sought
+                expect(calls.slice(-2), `seek ${ms}`).toEqual(['reset', `frame ${pkg.frames.filter((f) => f.t <= ms).at(-1)!.t}`]);
+            }
             expect(shown.map((s) => s.lesson)).toEqual(['rings-first', 'rings-line', 'rings-first', 'rings-line']);
             expect(player.state.lesson).toBe('rings-line');
             expect(player.state.frame).toBe(out.segments[1]!.segment.firstFrame + out.segments[1]!.segment.frames.filter((f) => f.t <= firstB + 600).length);
             player.close();
             expect(restored).toBe(1);
+            // the live flight takes the engine back with nothing of the recording in it
+            expect(calls.at(-1)).toBe('reset');
         } finally {
             rig.dispose();
         }

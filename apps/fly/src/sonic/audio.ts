@@ -15,7 +15,7 @@ import type { AudioContextLike, Locale, SonicPrefs, SpeechLine, SpeechOut, Theme
 import { engineDicts } from './host-lines';
 
 /** What the engine host needs of the engine (FlyBySoundEngine; a fake in tests). */
-export type PageEngine = Pick<FlyBySoundEngine, 'state' | 'start' | 'suspend' | 'resume' | 'close' | 'setTheme' | 'setPrefs' | 'setLocale' | 'setLayers' | 'update' | 'cue' | 'say' | 'activeCues' | 'auxInput' | 'motorInput' | 'plan' | 'onSpeech'>;
+export type PageEngine = Pick<FlyBySoundEngine, 'state' | 'start' | 'suspend' | 'resume' | 'close' | 'setTheme' | 'setPrefs' | 'setLocale' | 'setLayers' | 'update' | 'cue' | 'say' | 'activeCues' | 'auxInput' | 'motorInput' | 'plan' | 'onSpeech' | 'reset'>;
 
 /** What the engine host asks of the browser (replaced in tests, and by the bench's tap on the output). */
 export interface AudioDeps {

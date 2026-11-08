@@ -40,6 +40,12 @@ export interface ReplayEngine {
     setLayers(layers: LessonLayers): void;
     setPrefs(prefs: SonicPrefs): void;
     setTheme(theme: ThemeDef): void;
+    /**
+     * Forgets what is sounding (the package's SonicEngine.reset; v13-int step 1): called when the replay takes the engine, when the next
+     * lesson of the recording starts and at a seek (each a clock that starts again or jumps), and when it gives the engine back to the
+     * live flight. Absent on an older engine.
+     */
+    reset?(): void;
 }
 
 /** The helper's view of the craft: begin takes the camera and pauses the flight, end gives them back. */
@@ -279,6 +285,8 @@ export class ReplayPlayer {
         this.cur = i;
         if (!keep) this.part.replayer.reset();
         if (!this.entered) return;
+        // the next lesson opens: the engine forgets the last one's sounds, as the live host's open does (its replayer starts from nothing)
+        this.deps.engine.reset?.();
         this.showWorld(t);
         if (this.phase === 'playing') {
             this.deps.engine.setLayers(this.layers);
@@ -328,6 +336,8 @@ export class ReplayPlayer {
         if (this.entered) return;
         this.entered = true;
         this.deps.playback(true);
+        // the live flight's sounds are not the recording's: the engine plans the recording's frames from nothing
+        this.deps.engine.reset?.();
         this.deps.pose.begin();
         // the engine sounds as it did for the pilot: his settings and theme, the lesson's layers
         this.deps.engine.setPrefs(this.setup.prefs);
@@ -407,6 +417,8 @@ export class ReplayPlayer {
             this.switchTo(i, t, true);
             last = this.part.replayer.seek(k - this.part.first);
         }
+        // a seek: the engine forgets what it heard before the jump (the replayer itself plays a seek behind it from its start)
+        if (this.entered) this.deps.engine.reset?.();
         if (last !== null && this.entered) this.deps.engine.update(last.input);
         // the recorded lines before the place sought count as said (a seek does not repeat what it passed); the ones after it are said
         this.passLines(t);
@@ -479,6 +491,8 @@ export class ReplayPlayer {
         this.stopVoice();
         if (this.entered) {
             this.silence();
+            // the live flight takes the engine back on its own clock: nothing of the recording's sounds goes with it
+            this.deps.engine.reset?.();
             const own = this.deps.own();
             this.deps.engine.setPrefs(own.prefs);
             this.deps.engine.setTheme(own.theme);

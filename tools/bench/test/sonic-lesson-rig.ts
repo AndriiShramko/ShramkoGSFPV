@@ -84,6 +84,20 @@ export class FakeEngine {
         this.cues_ = this.planner.plan(i).cues;
     }
 
+    /** reset() calls so far (the lesson host's at every lesson it opens, v13-int step 1) */
+    resets = 0;
+    /** the control of v13-int step 1: reset() forgets nothing, as an engine made before the package's reset (s13-int) */
+    keepOnReset = false;
+
+    /** As the package's FlyBySoundEngine.reset(): the planner from nothing, the last frame and its cues forgotten (a cue before the next frame is stamped at 0). */
+    reset(): void {
+        this.resets++;
+        if (this.keepOnReset) return;
+        this.planner.reset();
+        this.cues_ = [];
+        this.lastInput = null;
+    }
+
     /** The cues sounding in the last frame. */
     activeCues(): readonly ActiveCue[] {
         return this.cues_;
