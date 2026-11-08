@@ -22,7 +22,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { BrowserContext, Page } from 'playwright';
-import { SCHEMA_VERSION } from '../../../packages/prefs/src';
+import { SCHEMA_VERSION, pageBindings } from '../../../packages/prefs/src';
 import { defaultPrefs } from '../../../packages/sonic-fpv/src';
 import type { SonicPrefs } from '../../../packages/sonic-fpv/src';
 import { SONIC_LINK_PARAMS, sonicLinkPath } from '../../../packages/scenes/src/sonic-link';
@@ -91,18 +91,20 @@ async function until<T>(what: string, read: () => Promise<T>, pred: (v: T) => bo
 
 interface Watch {
     errors: string[];
+    /** answers of 400 and over from other hosts: the scene CDN answers 403 for the versions of a scan the loader probes and that do not exist */
+    elsewhere: string[];
     requests: string[];
     scripts: { url: string; found: string[] }[];
     done: () => Promise<void>;
 }
-/** Page errors, every request, and the markers found in every script and style the page fetched. */
+/** Page errors and failed answers of this site, every request, and the markers found in every script and style the page fetched. */
 function watch(page: Page): Watch {
-    const w: Watch = { errors: [], requests: [], scripts: [], done: async () => undefined };
+    const w: Watch = { errors: [], elsewhere: [], requests: [], scripts: [], done: async () => undefined };
     const pending: Promise<void>[] = [];
     page.on('pageerror', (e) => w.errors.push(e.message.slice(0, 300)));
     page.on('request', (r) => w.requests.push(new URL(r.url()).pathname));
     page.on('response', (r) => {
-        if (r.status() >= 400 && !/\/favicon\.ico$/.test(r.url())) w.errors.push(`${r.status()} ${r.url()}`.slice(0, 300));
+        if (r.status() >= 400 && !/\/favicon\.ico$/.test(r.url())) (r.url().startsWith(`${SITE}/`) ? w.errors : w.elsewhere).push(`${r.status()} ${r.url()}`.slice(0, 300));
         const type = r.request().resourceType();
         if (type !== 'script' && type !== 'stylesheet') return;
         pending.push(r.text().then((body) => void w.scripts.push({ url: new URL(r.url()).pathname, found: MARKERS.filter((m) => body.includes(m)) })).catch(() => undefined));
@@ -185,12 +187,30 @@ async function pauseMenu(page: Page): Promise<{ items: string[]; keys: { action:
 
 // ------------------------------------------------------------------ A: an ordinary page
 
+/** The Controls screen of a first flight ("How will you fly?"): the keyboard, chosen with the keyboard. Its keys are its own while it is up. */
+async function chooseKeyboard(page: Page): Promise<void> {
+    await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 });
+    await page.focus('.screen.radio [data-action="radio-keyboard"]');
+    await page.keyboard.press('Enter');
+    await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
+    await sleep(800);
+}
+
+/** What a key changed on the page (the fields of Snap that differ before and after it). */
+async function pressAndDiff(page: Page, code: string): Promise<string[]> {
+    const a = await snap(page);
+    await page.keyboard.press(code);
+    await sleep(700);
+    const b = await snap(page);
+    return (Object.keys(a) as (keyof Snap)[]).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+}
+
 async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Promise<void> {
     const page = await ctx.newPage();
     const w = watch(page);
     await page.goto(`${SITE}/en/fly/?scene=39e63ce9&nowarn=1&render=off`);
     await until('the flight', () => ready(page), (v) => v === 'ready', 120000);
-    await sleep(1500);
+    await chooseKeyboard(page);
     const before = await page.evaluate(() => document.body.innerText.split('Fly by Sound').length - 1);
     check('A: an ordinary flight names Fly by Sound nowhere on the page before the pause menu is opened', before === 0, { occurrences: before });
 
@@ -198,20 +218,18 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     await page.keyboard.press('KeyJ');
     await sleep(600);
     const keys: { key: string; changed: string[] }[] = [];
-    for (const code of SOUND_KEYS) {
-        const a = await snap(page);
-        await page.keyboard.press(code);
-        await sleep(700);
-        const b = await snap(page);
-        keys.push({ key: code, changed: (Object.keys(a) as (keyof Snap)[]).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k])) });
-    }
-    out.plainKeys = keys;
-    check('A: T U I Z G change nothing on an ordinary page (no panel, start screen, caption, recorder, hook, speech, sound context or HUD note)', keys.every((k) => k.changed.length === 0), keys);
+    for (const code of SOUND_KEYS) keys.push({ key: code, changed: await pressAndDiff(page, code) });
+    // control: the same probe sees a key the page does route (H: the HUD's text off, its note says so), so the keys reach the router
+    const h = await pressAndDiff(page, 'KeyH');
+    await page.keyboard.press('KeyH');
+    await sleep(400);
+    out.plainKeys = { sound: keys, controlH: h };
+    check('A: T U I Z G change nothing on an ordinary page (no panel, start screen, caption, recorder, hook, speech, sound context or HUD note); control: H, pressed the same way, does', keys.every((k) => k.changed.length === 0) && h.includes('note'), out.plainKeys);
 
     const menu = await pauseMenu(page);
     out.plainMenu = menu;
     const capsListed = menu.keys.flatMap((k) => k.caps);
-    check('A: the pause menu\'s key list names none of the mode\'s keys (no sonic.* row, no T U I Z G cap); it lists 20 shortcuts and the flying keys', menu.keys.length > 0 && !menu.keys.some((k) => k.action.startsWith('sonic.')) && !SOUND_CAPS.some((c) => capsListed.includes(c)), { rows: menu.keys.length, actions: menu.keys.map((k) => k.action) });
+    check('A: the pause menu\'s key list names none of the mode\'s keys (no sonic.* row, no T U I Z G cap); it lists the 21 bindings of an ordinary page (20 shortcuts, and Space among the flying keys)', menu.keys.length === pageBindings().length && !menu.keys.some((k) => k.action.startsWith('sonic.')) && !SOUND_CAPS.some((c) => capsListed.includes(c)), { rows: menu.keys.length, actions: menu.keys.map((k) => k.action) });
     check('A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "Fly by Sound: audio-only training for blind pilots (beta)"', menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.text === EN['sonic.menu.page'], menu.sound);
     check('A: with the menu open the page names Fly by Sound once: that item', menu.namesInMenu === 1 && menu.namesInBody === 1, { menu: menu.namesInMenu, body: menu.namesInBody });
 
@@ -247,14 +265,16 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     const holding = w.scripts.filter((s) => s.found.length > 0);
     out.plainFetched = { scripts: w.scripts.map((s) => s.url), chunks, holding };
     check('A: no chunk of the mode was requested (lazy-start, feature, session) and no fetched script or style holds a text of the mode', w.scripts.length >= 3 && chunks.length === 0 && holding.length === 0, { chunks, holding });
-    check('A: no page error', w.errors.length === 0, w.errors);
+    check('A: no page error, and no request to this site failed', w.errors.length === 0, { errors: w.errors, otherHosts: w.elsewhere });
     await page.close();
 
     // the same item in Polish: its words and its address in the page's language
     const pl = await ctx.newPage();
     await pl.goto(`${SITE}/pl/fly/?scene=39e63ce9&nowarn=1&render=off`);
     await until('the Polish flight', () => ready(pl), (v) => v === 'ready', 120000);
-    await sleep(800);
+    // the same profile chose the keyboard on the first page: the Controls screen may not ask again
+    await sleep(1500);
+    if (await pl.$('.screen.radio [data-action="radio-keyboard"]')) await chooseKeyboard(pl);
     const plMenu = await pauseMenu(pl);
     out.plainPolish = plMenu.sound;
     check('A: in Polish the item says the Polish line and leads to /pl/sound/', plMenu.sound?.href === '/pl/sound/' && plMenu.sound.text === PL['sonic.menu.page'], plMenu.sound);
@@ -276,7 +296,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     const menu = await pauseMenu(page);
     out.modeMenu = { items: menu.items, keys: menu.keys.filter((k) => k.action.startsWith('sonic.')) };
     const modeKeys = menu.keys.filter((k) => SOUND_ACTIONS.includes(k.action));
-    check('B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode\'s own item, not the ordinary one', modeKeys.map((k) => k.caps.join('')).join(' ') === SOUND_CAPS.join(' ') && menu.items.includes('pause.sonic') && !menu.items.includes('pause.flyBySound'), out.modeMenu);
+    check('B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode\'s own item, not the ordinary one', modeKeys.map((k) => k.caps.join('')).join(' ') === SOUND_CAPS.join(' ') && menu.keys.length === pageBindings({ sonic: true }).length && menu.items.includes('pause.sonic') && !menu.items.includes('pause.flyBySound'), out.modeMenu);
     await page.keyboard.press('Escape');
     await until('the menu to close', () => page.evaluate(() => !document.querySelector('.pause-menu')), (v) => v, 5000);
     await sleep(500);
@@ -335,7 +355,7 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     const found = new Set(w.scripts.flatMap((s) => s.found));
     out.modeFetched = { chunks: w.requests.filter((u) => MODE_CHUNK.test(u)), found: [...found] };
     check('B (control of A): a ?sonic= page fetches the mode\'s chunks and the texts A did not', ['lazy-start', 'feature', 'session'].every((n) => w.requests.some((u) => MODE_CHUNK.test(u) && u.includes(`/${n}-`))) && MARKERS.every((m) => found.has(m)), out.modeFetched);
-    check('B: no page error', w.errors.length === 0, w.errors);
+    check('B: no page error, and no request to this site failed', w.errors.length === 0, { errors: w.errors, otherHosts: w.elsewhere });
     await page.close();
     return { hover: copied?.url ?? want, garden: gl?.url ?? wantGarden };
 }
@@ -373,7 +393,7 @@ async function receivers(newCtx: () => Promise<BrowserContext>, links: { hover: 
         await sleep(1000);
         const after = await savedSound(page);
         check('C: Enter starts that lesson; flying it saves nothing of the link\'s sound', p?.lesson === 'hover-height' && after?.theme === 'soft' && after.calm === false, { lesson: p?.lesson, saved: after });
-        check('C: no page error', w.errors.length === 0, w.errors);
+        check('C: no page error, and no request to this site failed', w.errors.length === 0, { errors: w.errors, otherHosts: w.elsewhere });
         await ctx.close();
     }
     {

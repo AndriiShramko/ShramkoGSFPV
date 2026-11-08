@@ -1,0 +1,977 @@
+{
+  "name": "sonic-optin-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T09:12:31.527Z",
+    "gitHead": "e8989f1",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5420",
+  "checks": [
+    {
+      "name": "A: an ordinary flight names Fly by Sound nowhere on the page before the pause menu is opened",
+      "pass": true,
+      "value": {
+        "occurrences": 0
+      }
+    },
+    {
+      "name": "A: T U I Z G change nothing on an ordinary page (no panel, start screen, caption, recorder, hook, speech, sound context or HUD note); control: H, pressed the same way, does",
+      "pass": true,
+      "value": {
+        "sound": [
+          {
+            "key": "KeyT",
+            "changed": []
+          },
+          {
+            "key": "KeyU",
+            "changed": []
+          },
+          {
+            "key": "KeyI",
+            "changed": []
+          },
+          {
+            "key": "KeyZ",
+            "changed": []
+          },
+          {
+            "key": "KeyG",
+            "changed": []
+          }
+        ],
+        "controlH": [
+          "note"
+        ]
+      }
+    },
+    {
+      "name": "A: the pause menu's key list names none of the mode's keys (no sonic.* row, no T U I Z G cap); it lists the 21 bindings of an ordinary page (20 shortcuts, and Space among the flying keys)",
+      "pass": true,
+      "value": {
+        "rows": 21,
+        "actions": [
+          "pause.toggle",
+          "respawn.start",
+          "respawn.rewind",
+          "crash.keep",
+          "scene.next",
+          "scene.random",
+          "scene.favourite",
+          "mode.cycle",
+          "voxels.cycle",
+          "walls.toggle",
+          "hud.toggle",
+          "scale.down",
+          "scale.up",
+          "record.toggle",
+          "frameStats.toggle",
+          "settings.open",
+          "feedback.open",
+          "share.open",
+          "help.keys",
+          "fullscreen.toggle",
+          "arm.toggle"
+        ]
+      }
+    },
+    {
+      "name": "A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded \"Fly by Sound: audio-only training for blind pilots (beta)\"",
+      "pass": true,
+      "value": {
+        "href": "/en/sound/",
+        "target": "_blank",
+        "rel": "noopener",
+        "text": "Fly by Sound: audio-only training for blind pilots (beta)",
+        "tag": "A"
+      }
+    },
+    {
+      "name": "A: with the menu open the page names Fly by Sound once: that item",
+      "pass": true,
+      "value": {
+        "menu": 1,
+        "body": 1
+      }
+    },
+    {
+      "name": "A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu",
+      "pass": true,
+      "value": {
+        "url": "/en/sound/",
+        "h1": "Fly an FPV drone by ear",
+        "start": 1,
+        "stillPaused": true
+      }
+    },
+    {
+      "name": "A: K opens the \"How to fly\" card, which names neither the mode nor its keys",
+      "pass": true,
+      "value": [
+        "Space",
+        "Shift",
+        "Mouse",
+        "W",
+        "A",
+        "S",
+        "D",
+        "\u2190",
+        "\u2192",
+        "Q",
+        "E",
+        "F",
+        "Esc",
+        "R",
+        "N",
+        "K"
+      ]
+    },
+    {
+      "name": "A: L opens the picture share panel, not a link of the mode (control of B's L)",
+      "pass": true,
+      "value": {
+        "panel": true,
+        "link": null
+      }
+    },
+    {
+      "name": "A: no chunk of the mode was requested (lazy-start, feature, session) and no fetched script or style holds a text of the mode",
+      "pass": true,
+      "value": {
+        "chunks": [],
+        "holding": []
+      }
+    },
+    {
+      "name": "A: no page error, and no request to this site failed",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "otherHosts": [
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v3/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json"
+        ]
+      }
+    },
+    {
+      "name": "A: in Polish the item says the Polish line and leads to /pl/sound/",
+      "pass": true,
+      "value": {
+        "href": "/pl/sound/",
+        "target": "_blank",
+        "rel": "noopener",
+        "text": "Fly by Sound: trening tylko na s\u0142uch dla niewidomych pilot\u00f3w (beta)",
+        "tag": "A"
+      }
+    },
+    {
+      "name": "B (control of A): in the mode the pause menu lists T U I Z G with their caps, and has the mode's own item, not the ordinary one",
+      "pass": true,
+      "value": {
+        "items": [
+          "pause.continue",
+          "pause.restart",
+          "pause.rewind",
+          "pause.scene",
+          "pause.scene.next",
+          "pause.scene.random",
+          "pause.scene.favourite",
+          "pause.share",
+          "pause.drone",
+          "pause.radio",
+          "pause.howtofly",
+          "pause.settings",
+          "pause.replays",
+          "pause.measure",
+          "pause.import",
+          "pause.sonic",
+          "pause.cinema",
+          "pause.record",
+          "pause.sound",
+          "pause.feedback"
+        ],
+        "keys": [
+          {
+            "action": "sonic.record",
+            "caps": [
+              "T"
+            ]
+          },
+          {
+            "action": "sonic.send",
+            "caps": [
+              "U"
+            ]
+          },
+          {
+            "action": "sonic.status",
+            "caps": [
+              "I"
+            ]
+          },
+          {
+            "action": "sonic.repeat",
+            "caps": [
+              "Z"
+            ]
+          },
+          {
+            "action": "sonic.glossary",
+            "caps": [
+              "G"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "B (control of A): in the mode I answers (status.lesson said, the captions changed): the probe that found A's keys idle sees them here",
+      "pass": true,
+      "value": [
+        "status.lesson",
+        "status.recording-off"
+      ]
+    },
+    {
+      "name": "B: L copies the link of this lesson with his sound settings: /fly/?sonic=hover-height&st=clear&sc=1, in the clipboard",
+      "pass": true,
+      "value": {
+        "copied": {
+          "url": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+          "copied": true
+        },
+        "clipboard": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+        "want": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+        "names": [
+          "sonic",
+          "st",
+          "sc"
+        ]
+      }
+    },
+    {
+      "name": "B: nothing personal in it: only the link's own parameters (his speaking speed, screen reader, motor sound and a volume are set and not there)",
+      "pass": true,
+      "value": [
+        "sonic",
+        "st",
+        "sc"
+      ]
+    },
+    {
+      "name": "B: it is said (sonic.say.linkCopied) and captioned in the captions region, which is a polite live region in screen-reader mode",
+      "pass": true,
+      "value": {
+        "said": [
+          "sonic.say.linkCopied"
+        ],
+        "captions": {
+          "live": "polite",
+          "text": "Hold your heightNow you fly, but gently. The drone levels itself, so you only choose how high it is.The tone you hear is your height. A higher tone means higher up. A smooth tone means the right height, and a buzzing tone means too high or too low.Keep the tone smooth for 20 seconds.Lesson: Hold your height. Attempt 1.Recording is off.The link to this lesson is copied. Paste it into a message or an e-mail to share it."
+        }
+      }
+    },
+    {
+      "name": "B: K says the mode's keys in order, each with its key (T U I Z G L R N), then the digits; no \"How to fly\" card",
+      "pass": true,
+      "value": {
+        "keys": [
+          "help.intro",
+          "help.record",
+          "help.send",
+          "help.status",
+          "help.repeat",
+          "help.glossary",
+          "sonic.say.helpShare",
+          "help.reset",
+          "help.next",
+          "help.digits"
+        ],
+        "caps": [
+          "T",
+          "U",
+          "I",
+          "Z",
+          "G",
+          "L",
+          "R",
+          "N"
+        ]
+      }
+    },
+    {
+      "name": "B: in the Winter Garden lesson L's link names the lesson, its scan and its size: /fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+      "pass": true,
+      "value": {
+        "link": {
+          "url": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+          "copied": true
+        },
+        "want": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+        "walls": {
+          "voxelM": 0.16,
+          "builtin": false,
+          "scene": "7a475d38",
+          "scale": 5
+        }
+      }
+    },
+    {
+      "name": "B (control of A): a ?sonic= page fetches the mode's chunks and the texts A did not",
+      "pass": true,
+      "value": {
+        "chunks": [
+          "/fly/assets/lazy-start-C2fElvls.js",
+          "/fly/assets/feature-BK029cdu.js",
+          "/fly/assets/session-DDGWKUPF.js"
+        ],
+        "found": [
+          "Learn to fly a drone by ear",
+          "Fly by Sound: start or stop recording",
+          "sonic.link.keep"
+        ]
+      }
+    },
+    {
+      "name": "B: no page error, and no request to this site failed",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "otherHosts": [
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json"
+        ]
+      }
+    },
+    {
+      "name": "C: the link, with no language, lands on /en/fly/ with the same query; the start screen offers that lesson first; nothing sounds yet (no AudioContext, no flight)",
+      "pass": true,
+      "value": {
+        "url": "/en/fly/?sonic=hover-height&st=clear&sc=1",
+        "first": {
+          "testid": "sonic-start-asked",
+          "lesson": "hover-height",
+          "text": "Start: Hold your height"
+        },
+        "contexts": 0,
+        "hook": "undefined",
+        "note": "This link sets the sound for this visit: Sound theme: Clear; Calm mode: on. Your own saved settings are not changed.Keep these settings",
+        "theme": "clear",
+        "calm": true
+      }
+    },
+    {
+      "name": "C: the link's sound is in force for the visit (Clear, calm on; the note names both) and not saved (his saved sound is still Soft, calm off)",
+      "pass": true,
+      "value": {
+        "seen": {
+          "url": "/en/fly/?sonic=hover-height&st=clear&sc=1",
+          "first": {
+            "testid": "sonic-start-asked",
+            "lesson": "hover-height",
+            "text": "Start: Hold your height"
+          },
+          "contexts": 0,
+          "hook": "undefined",
+          "note": "This link sets the sound for this visit: Sound theme: Clear; Calm mode: on. Your own saved settings are not changed.Keep these settings",
+          "theme": "clear",
+          "calm": true
+        },
+        "saved": {
+          "format": "shramko-sonic-prefs/1",
+          "theme": "soft",
+          "calm": false,
+          "heightPolarity": "up-higher",
+          "layerGainDb": {},
+          "layerPitchSteps": {},
+          "selfVoice": false,
+          "speechRate": 2,
+          "captions": true,
+          "motorSound": false,
+          "path": "full",
+          "listenerFrame": "heading"
+        }
+      }
+    },
+    {
+      "name": "C: Enter starts that lesson; flying it saves nothing of the link's sound",
+      "pass": true,
+      "value": {
+        "lesson": "hover-height",
+        "saved": {
+          "calm": false,
+          "captions": true,
+          "format": "shramko-sonic-prefs/1",
+          "heightPolarity": "up-higher",
+          "layerGainDb": {},
+          "layerPitchSteps": {},
+          "listenerFrame": "heading",
+          "motorSound": false,
+          "path": "full",
+          "selfVoice": false,
+          "speechRate": 2,
+          "theme": "soft"
+        }
+      }
+    },
+    {
+      "name": "C: no page error, and no request to this site failed",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "otherHosts": []
+      }
+    },
+    {
+      "name": "C: \"Keep these settings\" saves the link's sound (Clear, calm on) and the note goes",
+      "pass": true,
+      "value": {
+        "saved": {
+          "calm": true,
+          "captions": true,
+          "format": "shramko-sonic-prefs/1",
+          "heightPolarity": "up-higher",
+          "layerGainDb": {},
+          "layerPitchSteps": {},
+          "listenerFrame": "heading",
+          "motorSound": false,
+          "path": "full",
+          "selfVoice": false,
+          "speechRate": 2,
+          "theme": "clear"
+        },
+        "noteLeft": false
+      }
+    },
+    {
+      "name": "C: the Winter Garden link offers that lesson and Enter starts it on its scan (7a475d38) at x5",
+      "pass": true,
+      "value": {
+        "first": "free-garden",
+        "walls": {
+          "voxelM": 0.16,
+          "builtin": false,
+          "scene": "7a475d38",
+          "scale": 5
+        }
+      }
+    },
+    {
+      "name": "C (control): a link to a lesson this release lacks opens the start screen with its note and offers no such lesson",
+      "pass": true,
+      "value": {
+        "unknown": "There is no lesson called rings-ninth. Choose one from the list.",
+        "asked": false
+      }
+    },
+    {
+      "name": "D: /en/sound/: its start link is the mode's link (/en/fly/?sonic=start, the same writer as L); its key list has nine keys, L and K among them",
+      "pass": true,
+      "value": {
+        "start": [
+          "Start Fly by Sound"
+        ],
+        "kbd": [
+          "T",
+          "U",
+          "I",
+          "Z",
+          "G",
+          "R",
+          "N",
+          "L",
+          "K"
+        ]
+      }
+    },
+    {
+      "name": "D: following it opens the mode's start screen (nothing runs before a key press)",
+      "pass": true,
+      "value": {
+        "url": "/en/fly/?sonic=start",
+        "beginning": true,
+        "hook": "undefined"
+      }
+    }
+  ],
+  "passed": 29,
+  "total": 29,
+  "result": {
+    "plainKeys": {
+      "sound": [
+        {
+          "key": "KeyT",
+          "changed": []
+        },
+        {
+          "key": "KeyU",
+          "changed": []
+        },
+        {
+          "key": "KeyI",
+          "changed": []
+        },
+        {
+          "key": "KeyZ",
+          "changed": []
+        },
+        {
+          "key": "KeyG",
+          "changed": []
+        }
+      ],
+      "controlH": [
+        "note"
+      ]
+    },
+    "plainMenu": {
+      "items": [
+        "pause.continue",
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.share",
+        "pause.drone",
+        "pause.radio",
+        "pause.howtofly",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.flyBySound",
+        "pause.cinema",
+        "pause.record",
+        "pause.sound",
+        "pause.feedback"
+      ],
+      "keys": [
+        {
+          "action": "pause.toggle",
+          "caps": [
+            "Esc",
+            "P"
+          ]
+        },
+        {
+          "action": "respawn.start",
+          "caps": [
+            "R"
+          ]
+        },
+        {
+          "action": "respawn.rewind",
+          "caps": [
+            "Y"
+          ]
+        },
+        {
+          "action": "crash.keep",
+          "caps": [
+            "Enter"
+          ]
+        },
+        {
+          "action": "scene.next",
+          "caps": [
+            "N"
+          ]
+        },
+        {
+          "action": "scene.random",
+          "caps": [
+            "Shift+N"
+          ]
+        },
+        {
+          "action": "scene.favourite",
+          "caps": [
+            "Shift+F"
+          ]
+        },
+        {
+          "action": "mode.cycle",
+          "caps": [
+            "M"
+          ]
+        },
+        {
+          "action": "voxels.cycle",
+          "caps": [
+            "V"
+          ]
+        },
+        {
+          "action": "walls.toggle",
+          "caps": [
+            "C"
+          ]
+        },
+        {
+          "action": "hud.toggle",
+          "caps": [
+            "H"
+          ]
+        },
+        {
+          "action": "scale.down",
+          "caps": [
+            "[",
+            "Shift+["
+          ]
+        },
+        {
+          "action": "scale.up",
+          "caps": [
+            "]",
+            "Shift+]"
+          ]
+        },
+        {
+          "action": "record.toggle",
+          "caps": [
+            "F9"
+          ]
+        },
+        {
+          "action": "frameStats.toggle",
+          "caps": [
+            "F3"
+          ]
+        },
+        {
+          "action": "settings.open",
+          "caps": [
+            "O"
+          ]
+        },
+        {
+          "action": "feedback.open",
+          "caps": [
+            "B"
+          ]
+        },
+        {
+          "action": "share.open",
+          "caps": [
+            "L"
+          ]
+        },
+        {
+          "action": "help.keys",
+          "caps": [
+            "K"
+          ]
+        },
+        {
+          "action": "fullscreen.toggle",
+          "caps": [
+            "F"
+          ]
+        },
+        {
+          "action": "arm.toggle",
+          "caps": [
+            "Space"
+          ]
+        }
+      ],
+      "sound": {
+        "href": "/en/sound/",
+        "target": "_blank",
+        "rel": "noopener",
+        "text": "Fly by Sound: audio-only training for blind pilots (beta)",
+        "tag": "A"
+      },
+      "namesInMenu": 1,
+      "namesInBody": 1
+    },
+    "plainPopup": {
+      "url": "/en/sound/",
+      "h1": "Fly an FPV drone by ear",
+      "start": 1,
+      "stillPaused": true
+    },
+    "plainCard": {
+      "text": "How to fly\n\u00d7\n\nKeyboard and mouse\n\nSpace\n\u2191\nUP\nhold to climb\nShift\n\u2193\nDOWN\nhold to descend, and to land\nMouse\nlook and turn (up and down tilts the camera)\nW\nA\nS\nD\nmove (the Up and Down arrows too)\n\u2190\n\u2192\nQ\nE\nturn without a mouse\nF\nfull screen\nEsc\npause (frees the mouse)\nR\nback to the start\nN\nnext scene\nK\nshow this card again\n\nPress Start flying to capture the mouse, then press W or Space to take off. Esc lets it go.\n\nStart flying\nDo not show again\n\nPilot keys as on a radio (Mode 2, Space arms): Settings \u2192 Controls.",
+      "caps": [
+        "Space",
+        "Shift",
+        "Mouse",
+        "W",
+        "A",
+        "S",
+        "D",
+        "\u2190",
+        "\u2192",
+        "Q",
+        "E",
+        "F",
+        "Esc",
+        "R",
+        "N",
+        "K"
+      ]
+    },
+    "plainFetched": {
+      "scripts": [
+        "/fly/assets/main-CRBpecZ5.css",
+        "/fly/assets/storage-buffer-bdokWzy-.js",
+        "/fly/assets/api-BDdWUDJN.js",
+        "/fly/assets/constants-DFTtLrFK.js",
+        "/fly/assets/entity-DpwWXiMG.js",
+        "/fly/assets/texture-FOUnZzS7.js",
+        "/fly/assets/main-DUgTJzDh.js",
+        "/fly/assets/rapier-B4hmj00C.js",
+        "/fly/assets/drones3d-BZ3jyy9a.css",
+        "/fly/assets/drones3d-BUqAxRfJ.js"
+      ],
+      "chunks": [],
+      "holding": []
+    },
+    "plainPolish": {
+      "href": "/pl/sound/",
+      "target": "_blank",
+      "rel": "noopener",
+      "text": "Fly by Sound: trening tylko na s\u0142uch dla niewidomych pilot\u00f3w (beta)",
+      "tag": "A"
+    },
+    "modeMenu": {
+      "items": [
+        "pause.continue",
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.share",
+        "pause.drone",
+        "pause.radio",
+        "pause.howtofly",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.sonic",
+        "pause.cinema",
+        "pause.record",
+        "pause.sound",
+        "pause.feedback"
+      ],
+      "keys": [
+        {
+          "action": "sonic.record",
+          "caps": [
+            "T"
+          ]
+        },
+        {
+          "action": "sonic.send",
+          "caps": [
+            "U"
+          ]
+        },
+        {
+          "action": "sonic.status",
+          "caps": [
+            "I"
+          ]
+        },
+        {
+          "action": "sonic.repeat",
+          "caps": [
+            "Z"
+          ]
+        },
+        {
+          "action": "sonic.glossary",
+          "caps": [
+            "G"
+          ]
+        }
+      ]
+    },
+    "hoverLink": {
+      "copied": {
+        "url": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+        "copied": true
+      },
+      "clipboard": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+      "want": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+      "names": [
+        "sonic",
+        "st",
+        "sc"
+      ]
+    },
+    "hoverSaid": {
+      "said": [
+        "sonic.say.linkCopied"
+      ],
+      "captions": {
+        "live": "polite",
+        "text": "Hold your heightNow you fly, but gently. The drone levels itself, so you only choose how high it is.The tone you hear is your height. A higher tone means higher up. A smooth tone means the right height, and a buzzing tone means too high or too low.Keep the tone smooth for 20 seconds.Lesson: Hold your height. Attempt 1.Recording is off.The link to this lesson is copied. Paste it into a message or an e-mail to share it."
+      }
+    },
+    "keyHelp": [
+      [
+        "help.intro",
+        "Here are the keys."
+      ],
+      [
+        "help.record",
+        "Press T to start or stop recording."
+      ],
+      [
+        "help.send",
+        "Press U to send the flight to the author."
+      ],
+      [
+        "help.status",
+        "Press I to hear where you are."
+      ],
+      [
+        "help.repeat",
+        "Press Z to hear the last line again."
+      ],
+      [
+        "help.glossary",
+        "Press G to open the sound glossary."
+      ],
+      [
+        "sonic.say.helpShare",
+        "Press L to copy a link to this lesson, to share it."
+      ],
+      [
+        "help.reset",
+        "Press R to go back to the last checkpoint. Hold it to start the lesson again."
+      ],
+      [
+        "help.next",
+        "Press N to go to the next step."
+      ],
+      [
+        "help.digits",
+        "Use the number keys to answer a question."
+      ]
+    ],
+    "gardenLink": {
+      "link": {
+        "url": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+        "copied": true
+      },
+      "want": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+      "walls": {
+        "voxelM": 0.16,
+        "builtin": false,
+        "scene": "7a475d38",
+        "scale": 5
+      }
+    },
+    "modeFetched": {
+      "chunks": [
+        "/fly/assets/lazy-start-C2fElvls.js",
+        "/fly/assets/feature-BK029cdu.js",
+        "/fly/assets/session-DDGWKUPF.js"
+      ],
+      "found": [
+        "Learn to fly a drone by ear",
+        "Fly by Sound: start or stop recording",
+        "sonic.link.keep"
+      ]
+    },
+    "receiver": {
+      "seen": {
+        "url": "/en/fly/?sonic=hover-height&st=clear&sc=1",
+        "first": {
+          "testid": "sonic-start-asked",
+          "lesson": "hover-height",
+          "text": "Start: Hold your height"
+        },
+        "contexts": 0,
+        "hook": "undefined",
+        "note": "This link sets the sound for this visit: Sound theme: Clear; Calm mode: on. Your own saved settings are not changed.Keep these settings",
+        "theme": "clear",
+        "calm": true
+      },
+      "saved": {
+        "format": "shramko-sonic-prefs/1",
+        "theme": "soft",
+        "calm": false,
+        "heightPolarity": "up-higher",
+        "layerGainDb": {},
+        "layerPitchSteps": {},
+        "selfVoice": false,
+        "speechRate": 2,
+        "captions": true,
+        "motorSound": false,
+        "path": "full",
+        "listenerFrame": "heading"
+      }
+    },
+    "keep": {
+      "saved": {
+        "calm": true,
+        "captions": true,
+        "format": "shramko-sonic-prefs/1",
+        "heightPolarity": "up-higher",
+        "layerGainDb": {},
+        "layerPitchSteps": {},
+        "listenerFrame": "heading",
+        "motorSound": false,
+        "path": "full",
+        "selfVoice": false,
+        "speechRate": 2,
+        "theme": "clear"
+      },
+      "noteLeft": false
+    },
+    "gardenReceiver": {
+      "first": "free-garden",
+      "walls": {
+        "voxelM": 0.16,
+        "builtin": false,
+        "scene": "7a475d38",
+        "scale": 5
+      }
+    },
+    "unknownLink": {
+      "unknown": "There is no lesson called rings-ninth. Choose one from the list.",
+      "asked": false
+    },
+    "soundPage": {
+      "start": [
+        "Start Fly by Sound"
+      ],
+      "kbd": [
+        "T",
+        "U",
+        "I",
+        "Z",
+        "G",
+        "R",
+        "N",
+        "L",
+        "K"
+      ]
+    }
+  }
+}
