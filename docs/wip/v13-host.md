@@ -75,7 +75,16 @@ proofs.
     restored: `frames.ts` as at 093fbbd fails the first test.
   - `sonicrec-*` and `sonic-int-*`: 285 of 285 after it; rings-first's recording has one frame more (2226: the touched
     sample of a touch between attempts), its shares as before (98.7 % and 85.7 % settled).
-- [ ] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
+- [x] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
+  - `apps/fly/src/app/builtin/sound.ts` `startOnEngine`: the motor's graph into the engine's motor bus (`motorInput`), or
+    the plain input node of an engine without one; on by default through the package (`SonicPrefs.motorSound` true, and
+    a v0.12 document's false read as true by the package's `readPrefs`); `PageEngine` (`apps/fly/src/sonic/audio.ts`)
+    picks `motorInput` and `plan` (the panel of M41-25 reads `plan`).
+  - Test, new `tools/bench/test/sonic-motor.test.ts`: the motor feature installed on a page of the mode (fakes for the
+    page and the graph): with the package's default settings the motor plays, its master into `motorInput` once, not into
+    `auxInput` nor the speakers. Controls in the test: an engine with no motor bus gets it on `auxInput`; the motor turned
+    off makes no graph. Broken once and restored: `sound.ts` as at 093fbbd (into `auxInput`) fails the first test.
+  - `sonic-audio`: the two motor defaults expect the motor on (W12's check); 38 of 38.
 - [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
 - [ ] A6 (W16) one run of the analytic cost benches over the new worlds, against v0.12's frame budget
 - [ ] A7 full gates exit 0; stage A's status final
@@ -116,6 +125,7 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-world` "N: 20 000 voxels near the surfaces and anywhere agree" | the cells the distance decided: more than 1000, or a quarter of the world's cells when it has fewer than 4000 (was 1000) | v0.13's rooms have 1890 to 2565 cells in all; the distance decided 682 to 922. Control (new): with no distance no cell is decided, under the bound |
 | `sonic-world` the cost of the sweeps (4 tests), `sonic-world-flight.ts`, `sonic-world-cost.ts` | flown in v0.12's hall, pinned (`makeSpec('hall', {}, 0, 1)`) | the flights' places (z = -26, 10; x -15 to 15) are v0.12's 40 x 60 m hall; in the 10 x 12 m room they start in the rock |
 | `sonicrec-recorder` "records a flight with the pilot's voice" | the manifest's lesson version is `getLesson('walls-hall').version` (2), was 1 | walls-hall is version 2 since v0.13 |
+| `sonic-audio` "the defaults when nothing is saved" and "silent unless the settings ask", retitled | `motorSound` true by default (was false); the off mix still has a zero master | M41-16: the motor on by default in the mode |
 | `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
 
 ## Needs from the package
