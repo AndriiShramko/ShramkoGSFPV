@@ -16,7 +16,7 @@ status note (message 41) carries the same table for the owner.
 | v12-optin | simulator | `C:/dev/gsfpv-v12-optin` | 8ce53fb | merged into `v03-lead` (c2b1e54); head 4b5f8b5, review R1-R12 fixed | wf_3528a8f9-924, finished |
 | s13-lessons | sound | `C:/dev/sonic-s13-lessons` | `main` 7d4b4b9 | done: steps 1-10, review e180dbf (R1-R15), fixes; head 14e00f0; 656 tests, 9 audio proofs, lint and layout 0 | wf_662547d0-d8a, finished |
 | s13-sound | sound | `C:/dev/sonic-s13-sound` | `main` 7d4b4b9 | done: steps 1-10, review 41952b7 (2 blockers, 6 majors, 8 minors, none refuted), fixes; head 3c73658; 674 tests, 9 proofs, listen 8 of 8 | wf_662547d0-d8a, finished |
-| s13-worlds | sound | `C:/dev/sonic-s13-worlds` | s13-lessons eee530b | review fixes (B1, M1-M3, M8, M9 at 18e3e93) | wf_6179959f-d4a, running |
+| s13-worlds | sound | `C:/dev/sonic-s13-worlds` | s13-lessons eee530b | done: steps 1-8, review 030f7d0 (1 blocker, 9 majors, 7 minors, none refuted), fixes; head 067278f; 879 tests (7 merged cases skip until track-end exists); M4, M6 and R5 are the lead's merge items (lane doc "For the lead's merge") | wf_6179959f-d4a, finished |
 | s13-merge | sound | `C:/dev/sonic-s13-merge` | `main` 7d4b4b9 | merging s13-lessons, then s13-sound; merge items; full checks | wf_15bb2572-e79, running |
 | v13-host, v13-look | simulator | | after the sound repo is merged | not started | |
 
@@ -35,9 +35,13 @@ status note (message 41) carries the same table for the owner.
   changes the target.
 - The hub volume stays 10 GB (owner, message 41); nothing moves to it in this stage.
 - Merge of the sound lanes (s13-merge): s13-sound's planner wins over s13-lessons' placeholder cues; lesson JSON
-  takes `layers` from s13-sound and the rest from s13-lessons (one version 2); `walls-hall` keeps its goal (stop within
-  3 m) and its lines say to fly slowly until the knocks start (time-to-contact rule); a recording of an older build gets
-  its own replay verdict instead of FAIL.
+  takes `layers` from s13-sound and the rest from s13-lessons (one version 2); `walls-hall` is now the smallest room
+  (s13-worlds: "A small room", stop within 1.5 m) and its lines say to fly slowly until the knocks start
+  (time-to-contact rule); a recording of an older build gets its own replay verdict instead of FAIL.
+- Wave 2 within the ceiling: when the sound repo is merged, the core of v13-host goes first (gitlink move with the
+  switch to `world.cavities`, the simulator's sonic tests on the new package, the lesson keys and spoken menu, the pause
+  item target, the motor hookup, the replay verdict, 28 lessons on the start screen, M41-19 no sticking). The visual
+  items (M41-23 voxel look, M41-24 horizon, M41-25 sound panel) start after the weekly reset unless use allows.
 - The lanes' notes (`docs/wip/*` of the sound repo) were never in its public `main`; stage 1 published its notes as
   `docs/dev/status-*.md` and `review-*.md`. v0.13 follows that: the lane notes move to `docs/dev/` at the end of the
   merge, after a secrets check over every new commit.
