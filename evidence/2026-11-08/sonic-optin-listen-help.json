@@ -1,0 +1,288 @@
+{
+ "model": "faster-whisper large-v3 (float16, CUDA)",
+ "voices": {
+  "david": {
+   "rows": [
+    {
+     "key": "help.intro",
+     "text": "Here are the keys.",
+     "heard": "Here are the keys.",
+     "seconds": 1.81,
+     "estimate_s": 1.57,
+     "wer": 0.0,
+     "cap": null,
+     "letter_heard": null,
+     "letter_ok": null
+    },
+    {
+     "key": "help.record",
+     "text": "Press T to start or stop recording.",
+     "heard": "Press T to start or stop recording.",
+     "seconds": 3.04,
+     "estimate_s": 2.67,
+     "wer": 0.0,
+     "cap": "T",
+     "letter_heard": "t",
+     "letter_ok": true
+    },
+    {
+     "key": "help.send",
+     "text": "Press U to send the flight to the author.",
+     "heard": "Press U to send the flight to the author.",
+     "seconds": 2.9,
+     "estimate_s": 3.06,
+     "wer": 0.0,
+     "cap": "U",
+     "letter_heard": "u",
+     "letter_ok": true
+    },
+    {
+     "key": "help.status",
+     "text": "Press I to hear where you are.",
+     "heard": "Press I to hear where you are.",
+     "seconds": 2.43,
+     "estimate_s": 2.35,
+     "wer": 0.0,
+     "cap": "I",
+     "letter_heard": "i",
+     "letter_ok": true
+    },
+    {
+     "key": "help.repeat",
+     "text": "Press Z to hear the last line again.",
+     "heard": "Press Z to hear the last line again.",
+     "seconds": 2.95,
+     "estimate_s": 2.74,
+     "wer": 0.0,
+     "cap": "Z",
+     "letter_heard": "z",
+     "letter_ok": true
+    },
+    {
+     "key": "help.glossary",
+     "text": "Press G to open the sound glossary.",
+     "heard": "Press G to open the sound glossary.",
+     "seconds": 3.04,
+     "estimate_s": 2.67,
+     "wer": 0.0,
+     "cap": "G",
+     "letter_heard": "g",
+     "letter_ok": true
+    },
+    {
+     "key": "sonic.say.helpShare",
+     "text": "Press L to copy a link to this lesson, to share it.",
+     "heard": "Press L to copy a link to this lesson, to share it.",
+     "seconds": 4.13,
+     "estimate_s": 3.71,
+     "wer": 0.0,
+     "cap": "L",
+     "letter_heard": "l",
+     "letter_ok": true
+    },
+    {
+     "key": "help.reset",
+     "text": "Press R to go back to the last checkpoint. Hold it to start the lesson again.",
+     "heard": "Press R to go back to the last checkpoint. Hold it to start the lesson again.",
+     "seconds": 5.96,
+     "estimate_s": 5.41,
+     "wer": 0.0,
+     "cap": "R",
+     "letter_heard": "r",
+     "letter_ok": true
+    },
+    {
+     "key": "help.next",
+     "text": "Press N to go to the next step.",
+     "heard": "Press N to go to the next step.",
+     "seconds": 2.69,
+     "estimate_s": 2.42,
+     "wer": 0.0,
+     "cap": "N",
+     "letter_heard": "n",
+     "letter_ok": true
+    },
+    {
+     "key": "help.digits",
+     "text": "Use the number keys to answer a question.",
+     "heard": "Use the number keys to answer a question.",
+     "seconds": 3.04,
+     "estimate_s": 3.06,
+     "wer": 0.0,
+     "cap": null,
+     "letter_heard": null,
+     "letter_ok": null
+    },
+    {
+     "key": "sonic.say.helpCut",
+     "text": "Back to the flight.",
+     "heard": "Back to the flight.",
+     "seconds": 1.77,
+     "estimate_s": 1.64,
+     "wer": 0.0,
+     "cap": null,
+     "letter_heard": null,
+     "letter_ok": null
+    }
+   ],
+   "help_seconds": 32.0,
+   "help_estimate_s": 29.7,
+   "lines_heard_as_written": 11,
+   "letters_heard": 8,
+   "letters_total": 8,
+   "letters_heard_as_a_word": []
+  },
+  "zira": {
+   "rows": [
+    {
+     "key": "help.intro",
+     "text": "Here are the keys.",
+     "heard": "Here are the keys.",
+     "seconds": 1.84,
+     "estimate_s": 1.57,
+     "wer": 0.0,
+     "cap": null,
+     "letter_heard": null,
+     "letter_ok": null
+    },
+    {
+     "key": "help.record",
+     "text": "Press T to start or stop recording.",
+     "heard": "Press T to start or stop recording.",
+     "seconds": 2.92,
+     "estimate_s": 2.67,
+     "wer": 0.0,
+     "cap": "T",
+     "letter_heard": "t",
+     "letter_ok": true
+    },
+    {
+     "key": "help.send",
+     "text": "Press U to send the flight to the author.",
+     "heard": "Press U to send the flight to the author.",
+     "seconds": 2.84,
+     "estimate_s": 3.06,
+     "wer": 0.0,
+     "cap": "U",
+     "letter_heard": "u",
+     "letter_ok": true
+    },
+    {
+     "key": "help.status",
+     "text": "Press I to hear where you are.",
+     "heard": "Press I to hear where you are.",
+     "seconds": 2.31,
+     "estimate_s": 2.35,
+     "wer": 0.0,
+     "cap": "I",
+     "letter_heard": "i",
+     "letter_ok": true
+    },
+    {
+     "key": "help.repeat",
+     "text": "Press Z to hear the last line again.",
+     "heard": "Press Z to hear the last line again.",
+     "seconds": 2.91,
+     "estimate_s": 2.74,
+     "wer": 0.0,
+     "cap": "Z",
+     "letter_heard": "z",
+     "letter_ok": true
+    },
+    {
+     "key": "help.glossary",
+     "text": "Press G to open the sound glossary.",
+     "heard": "Press G to open the sound glossary.",
+     "seconds": 2.92,
+     "estimate_s": 2.67,
+     "wer": 0.0,
+     "cap": "G",
+     "letter_heard": "g",
+     "letter_ok": true
+    },
+    {
+     "key": "sonic.say.helpShare",
+     "text": "Press L to copy a link to this lesson, to share it.",
+     "heard": "Press L to copy a link to this lesson, to share it.",
+     "seconds": 3.94,
+     "estimate_s": 3.71,
+     "wer": 0.0,
+     "cap": "L",
+     "letter_heard": "l",
+     "letter_ok": true
+    },
+    {
+     "key": "help.reset",
+     "text": "Press R to go back to the last checkpoint. Hold it to start the lesson again.",
+     "heard": "Press R to go back to the last checkpoint. Hold it to start the lesson again.",
+     "seconds": 5.75,
+     "estimate_s": 5.41,
+     "wer": 0.0,
+     "cap": "R",
+     "letter_heard": "r",
+     "letter_ok": true
+    },
+    {
+     "key": "help.next",
+     "text": "Press N to go to the next step.",
+     "heard": "Press N to go to the next step.",
+     "seconds": 2.58,
+     "estimate_s": 2.42,
+     "wer": 0.0,
+     "cap": "N",
+     "letter_heard": "n",
+     "letter_ok": true
+    },
+    {
+     "key": "help.digits",
+     "text": "Use the number keys to answer a question.",
+     "heard": "Use the number keys to answer a question.",
+     "seconds": 2.95,
+     "estimate_s": 3.06,
+     "wer": 0.0,
+     "cap": null,
+     "letter_heard": null,
+     "letter_ok": null
+    },
+    {
+     "key": "sonic.say.helpCut",
+     "text": "Back to the flight.",
+     "heard": "Back to the flight.",
+     "seconds": 1.77,
+     "estimate_s": 1.64,
+     "wer": 0.0,
+     "cap": null,
+     "letter_heard": null,
+     "letter_ok": null
+    }
+   ],
+   "help_seconds": 31.0,
+   "help_estimate_s": 29.7,
+   "lines_heard_as_written": 11,
+   "letters_heard": 8,
+   "letters_total": 8,
+   "letters_heard_as_a_word": []
+  }
+ },
+ "controls": {
+  "david-01": {
+   "heard": "Press T to start or stop recording.",
+   "wer": 0.0,
+   "letter_heard": "t",
+   "letter_ok": true
+  },
+  "control-wrong": {
+   "heard": "Press P to start or stop recording.",
+   "wer": 0.143,
+   "letter_heard": "p",
+   "letter_ok": false
+  },
+  "control-reversed": {
+   "heard": "Get off your butts or we're out to sea, sir.",
+   "wer": 1.286,
+   "letter_heard": null,
+   "letter_ok": false
+  },
+  "controls_fail": true
+ }
+}
