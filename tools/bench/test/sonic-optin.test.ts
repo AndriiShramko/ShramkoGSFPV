@@ -13,7 +13,7 @@ import { BUILTIN_THEME_IDS, SHIPPED_LESSON_IDS, defaultPrefs, getLesson } from '
 import { SONIC_LINK_DEFAULTS, SONIC_LINK_PARAMS, lessonQuery, linkSound, parseSonicLink, sonicLinkPath, sonicLinkQuery, visitQuery } from '../../../packages/scenes/src/sonic-link';
 import type { SonicLink } from '../../../packages/scenes/src/sonic-link';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
-import { SOUND_PAGE_ITEM, sonicFlight, soundPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
+import { SOUND_PAGE_ITEM, modeStartPage, sonicFlight, soundPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { FlightContext, MenuItem } from '../../../apps/fly/src/app/context';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { setSonicEntry, setSonicInstaller } from '../../../apps/fly/src/sonic/entry-state';
@@ -62,18 +62,29 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         vi.unstubAllGlobals();
     });
 
-    it('an ordinary page gets exactly one item: no key, in the tools section where the mode\'s own item sits, a link to /{lang}/sound/; its teardown takes it out', () => {
+    it('an ordinary page gets exactly one item: no key, in the tools section where the mode\'s own item sits, a link to the mode\'s start screen /{lang}/fly/?sonic=start (v0.13 M41-1), opened in a new tab; its teardown takes it out', () => {
         const { ctx, items } = menuPage();
         const off = sonicFlight.install(ctx) as () => void;
         expect(items).toHaveLength(1);
         const it = items[0]!;
         // review R8: last of the tools section (after "Report a bug or an idea", 110), a quiet end of the list
         expect(it).toMatchObject({ id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 120 });
+        const opened: unknown[][] = [];
+        vi.stubGlobal('open', (...a: unknown[]) => void opened.push(a));
         for (const l of LANGS) {
             vi.stubGlobal('document', { documentElement: { lang: l } });
-            expect(it.href?.()).toBe(`/${l}/sound/`);
+            // the mode's own start screen, which the page reads as the start screen; control: not the page about the mode (v0.12's target)
+            expect(it.href?.()).toBe(`/${l}/fly/?sonic=start`);
+            expect(it.href?.()).toBe(modeStartPage());
+            expect(it.href?.()).not.toBe(soundPage());
+            expect(parseSonicParam(queryOf(it.href!()).get('sonic'))).toEqual({ kind: 'start' });
+            // a caller that runs items gets the same page, in a new tab, with no hold on this one (the flight stays paused here)
+            it.run(true);
+            expect(opened.at(-1)).toEqual([`/${l}/fly/?sonic=start`, '_blank', 'noopener']);
         }
+        expect(opened).toHaveLength(LANGS.length);
         vi.stubGlobal('document', { documentElement: { lang: '' } });
+        expect(modeStartPage()).toBe('/en/fly/?sonic=start');
         expect(soundPage()).toBe('/en/sound/');
         off();
         expect(items).toEqual([]);

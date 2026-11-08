@@ -347,7 +347,30 @@ Left for stage C, with the reason:
 
 ### Stage C
 
-(the next agent fills this)
+The way in, the start screen, the settings, the replay page and the page proofs of the whole lane (M41-1, M41-2, M41-4, W7, W9,
+W10, W13, W19), one commit a step. The start screen's own tests are in the new `tools/bench/test/sonic-start-screen.test.ts`: the
+real `StartScreen` and `SonicSetup` on `tools/bench/test/sonic-fake-dom.ts` (grown in C1 to a document with text nodes, simple
+selectors, form controls, focus with its `focusin`, and a window whose capture listeners hear a key first), an in-memory prefs
+store and an engine that records what it is asked to say.
+
+- [x] C1 (M41-1) the pause menu's item opens the mode's start screen `/{lang}/fly/?sonic=start` in a new tab
+  - `apps/fly/src/app/builtin/sonic-flight.ts`: `pause.flyBySound` is a link to `modeStartPage()` (new; was `soundPage()`, the
+    page about the mode); `run()` opens the same with `_blank` and `noopener`. The menu draws it as a link with target _blank and
+    the visually hidden "(opens in a new tab)" (`pause.newTab`, v12-optin R8), which is how it says so; its words stay review R8's
+    one line. The page about the mode stays linked from the start screen's footer ("About Fly by Sound and its source code").
+  - Tests: `sonic-optin` "an ordinary page gets exactly one item": the link is `/{lang}/fly/?sonic=start` in the four languages,
+    the page reads it as the start screen (`parseSonicParam`), not the page about the mode, and `run()` opens it in a new tab. New
+    `sonic-start-screen` C1: the footer links `/{lang}/sound/` and `/{lang}/fly/` in the screen's language, in four languages,
+    and the screen's window listener goes with it. Controls broken once and restored: the item's link back to `soundPage` (the
+    first fails), the footer without the About link (the second fails).
+  - `sonic-int-lazy`: one title (the link's target); `sonic-lesson-keys` and `sonic-review` still pass on the grown stand-in DOM.
+- [ ] C2 (M41-2, W7) the start screen: the course from the beginning, Continue, the 28 lessons with their states, Reset with a
+  confirm; `skipped` kept in the saved progress; "Lesson N of 28" shown and spoken
+- [ ] C3 (M41-4, W13) the start screen and the mode's settings a spoken list; Motor volume and Target height note
+- [ ] C4 (W9, W19) the replay of an older lesson version speaks the recorded lines; rings-first's cue kinds pinned down
+- [ ] C5 (W10) the replay page's summary from `replayVerdict`: pass, recorded with an older build, fail
+- [ ] C6 page proofs in headless Chrome on a release build
+- [ ] C7 gates exit 0; "## Final status"
 
 ## Changed tests
 
