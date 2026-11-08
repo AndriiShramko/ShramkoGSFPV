@@ -394,10 +394,12 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     const a = await snap(page);
     const n0 = await eventCount(page);
     await page.keyboard.press('KeyI');
-    const said = await until('the status', () => probe(page), (p) => spokenSince(p, n0).some((e) => e.key === 'status.lesson'), 10000);
+    // since v0.13 (W6) I says the runner's status line: status.progress-step in the task, status.progress while flying
+    const statusLine = (e: SpeechEvent): boolean => e.key === 'status.progress-step' || e.key === 'status.progress';
+    const said = await until('the status', () => probe(page), (p) => spokenSince(p, n0).some(statusLine), 10000);
     await sleep(700);
     const b = await snap(page);
-    check('B (control of A): in the mode I answers (status.lesson said, the captions changed): the probe that found A\'s keys idle sees them here', spokenSince(said, n0).some((e) => e.key === 'status.lesson') && a.captions !== b.captions, spokenSince(said, n0).map((e) => e.key));
+    check('B (control of A): in the mode I answers (the runner\'s status line said, the captions changed): the probe that found A\'s keys idle sees them here', spokenSince(said, n0).some(statusLine) && a.captions !== b.captions, spokenSince(said, n0).map((e) => e.key));
 
     // L: the link of this lesson, his sound settings in it, nothing personal
     const n1 = await eventCount(page);
@@ -424,11 +426,12 @@ async function sender(ctx: BrowserContext, out: Record<string, unknown>): Promis
     await page.keyboard.press('KeyK');
     const heldAt = await until('the flight to wait for the keys', () => pausedNow(page), (v) => v === true, 3000).catch(() => false);
     const help = await until('the key help', () => probe(page), (p) => spokenSince(p, n2).some((e) => e.key === 'help.digits'), 15000);
-    const lines = spokenSince(help, n2).filter((e) => (e.key ?? '').startsWith('help.') || e.key === 'sonic.say.helpShare');
+    const lines = spokenSince(help, n2).filter((e) => (e.key ?? '').startsWith('help.') || ((e.key ?? '').startsWith('sonic.say.help') && e.key !== 'sonic.say.helpCut'));
     out.keyHelp = lines.map((e) => [e.key, e.text]);
-    const order = ['help.intro', 'help.record', 'help.send', 'help.status', 'help.repeat', 'help.glossary', 'sonic.say.helpShare', 'help.reset', 'help.next', 'help.digits'];
-    const capsSaid = lines.slice(1, -1).map((e) => /\b([A-Z])\b/.exec((e.text ?? '').replace(/^\w+ /, ''))?.[1] ?? '');
-    check('B: K says the mode\'s keys in order, each with its key (T U I Z G L R N), then the digits; no "How to fly" card', lines.map((e) => e.key).join(',') === order.join(',') && capsSaid.join('') === 'TUIZGLRN' && !(await page.$('[data-testid="how-to-fly"]')), { keys: lines.map((e) => e.key), caps: capsSaid });
+    // since v0.13 (stage B: B3, B6) the lesson's keys first: Escape (the lesson menu), N, B, Z, I, then G, R, T, U, L
+    const order = ['help.intro', 'sonic.say.helpMenu', 'help.next', 'sonic.say.helpPrevious', 'sonic.say.helpRepeat', 'help.status', 'help.glossary', 'help.reset', 'help.record', 'help.send', 'sonic.say.helpShare', 'help.digits'];
+    const capsSaid = lines.slice(2, -1).map((e) => /\b([A-Z])\b/.exec((e.text ?? '').replace(/^\w+ /, ''))?.[1] ?? '');
+    check('B: K says the mode\'s keys in order, each with its key (Esc, then N B Z I G R T U L), then the digits; no "How to fly" card', lines.map((e) => e.key).join(',') === order.join(',') && (lines[1]?.text ?? '').includes('Esc') && capsSaid.join('') === 'NBZIGRTUL' && !(await page.$('[data-testid="how-to-fly"]')), { keys: lines.map((e) => e.key), caps: capsSaid, menu: lines[1]?.text });
     const t0 = Date.now();
     const goesOn = await until('the flight to go on when the keys are said', () => pausedNow(page), (v) => v === false, 60000).catch(() => true);
     out.keyHelpHold = { heldAt, wentOnAfterMs: Date.now() - t0 };
