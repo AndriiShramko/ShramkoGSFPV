@@ -294,9 +294,12 @@ describe('the cost of the sweeps', () => {
         expect(ratio).toBeGreaterThan(0.7); // and it is the uncached lookup's own cost, not an accident of one slow run
     });
 
-    it('a machine twice as slow (the gate runs other test files beside this one) moves every time and no ratio: the absolute 20 ms of before would have failed at 30 ms, the ratios hold', () => {
+    // Two measurements apart in time: on a busy CI runner (2026-11-08, c6ddeba) the first one met a slow spell and the slowed one did not
+    // (23.4 ms, then 26.2 ms under a clock 2.1 times as fast). A warm-up run first, and two more tries, keep such a spell from failing the build.
+    it('a machine twice as slow (the gate runs other test files beside this one) moves every time and no ratio: the absolute 20 ms of before would have failed at 30 ms, the ratios hold', { retry: 2 }, () => {
         const flight = hallFlight(WALL_FLIGHT);
         const lw = lessonWorldOf(getLesson('walls-hall'))!;
+        measureKinds(flight.queries, costKinds(lw.world), 1); // warm-up: the code paths are compiled before either measurement
         const here = measureKinds(flight.queries, costKinds(lw.world));
         // the clock runs 2.1 times as fast as it should: every run of every way takes 2.1 times as long, as under a load that never lets go
         const real = performance.now.bind(performance);
