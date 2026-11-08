@@ -99,6 +99,32 @@ describe('the main chunk holds nothing of Fly by Sound (static imports from apps
         expect(wide.length).toBeGreaterThan(0);
         for (const g of wide) expect(g, g).toMatch(/'!\.\.\/\.\.\/\.\.\/packages\/i18n\/locales\/fly\/sonicrec\/\*\.json'/);
         expect(globs.filter((g) => g.includes('/sonicrec/') && !g.includes('!'))).toEqual([]);
+        // v12-optin: nor the mode's own texts (sonic) and the names of its keys (sonickeys); the start chunk adds them (sonic/texts.ts)
+        for (const ns of ['sonic', 'sonickeys']) {
+            for (const g of wide) expect(g, `${ns}: ${g}`).toContain(`'!../../../packages/i18n/locales/fly/${ns}/*.json'`);
+            expect(globs.filter((g) => g.includes(`/fly/${ns}/`) && !g.includes('!')), ns).toEqual([]);
+        }
+        const texts = readFileSync(join(ROOT, 'apps/fly/src/sonic/texts.ts'), 'utf8');
+        expect(texts).toContain("locales/fly/sonic/*.json'");
+        expect(texts).toContain("locales/fly/sonickeys/*.json'");
+        // the start chunk's first import, so the strings are there before any of its modules runs
+        expect(/^\s*import\s+['"]([^'"]+)['"]/m.exec(readFileSync(join(ROOT, 'apps/fly/src/sonic/lazy-start.ts'), 'utf8').replace(/^\s*\/\/.*$/gm, ''))?.[1]).toBe('./texts');
+    });
+
+    it('v12-optin: every text of Fly by Sound the main chunk\'s own code asks for is in sonicentry, the one namespace of the mode every page keeps', () => {
+        const entry = JSON.parse(readFileSync(join(ROOT, 'packages/i18n/locales/fly/sonicentry/en.json'), 'utf8')) as Record<string, string>;
+        expect(Object.keys(entry).sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
+        const asked = new Set<string>();
+        for (const f of closure) {
+            if (f.startsWith('pkg:') || !f.endsWith('.ts')) continue;
+            for (const m of readFileSync(f, 'utf8').matchAll(/['`]((?:keys\.)?sonic\.[\w.-]+)['`]/g)) asked.add(m[1] as string);
+        }
+        // the GPU hint names the mode's spoken line, which the engine (in the start chunk) says: not a text of the main chunk
+        asked.delete('sonic.say.gpuHint');
+        // the keymap's labels of the mode's keys (keys.sonic.*) are read only where those keys are listed, a ?sonic= page, after the
+        // start chunk added them (an ordinary page lists none: packages/prefs/test/keymap.test.ts); ids and actions are not texts
+        for (const k of [...asked]) if (!k.includes('.say.') && !k.startsWith('sonic.menu.')) asked.delete(k);
+        expect([...asked].sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
     });
 
     it('control: the walk does find the package and the mode where they are imported (the mode\'s own module, the lazy start chunk)', () => {

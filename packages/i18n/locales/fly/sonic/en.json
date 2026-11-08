@@ -24,7 +24,6 @@
   "sonic.path.legend": "Path",
   "sonic.say.gpuHint": "This page is drawing on the Intel graphics chip. If this computer also has an NVIDIA or AMD graphics card, ask your helper to switch the browser to it: in Windows Settings, System, Display, Graphics, choose the browser, Options, High performance.",
   "sonic.say.helpShare": "Press {key} to copy a link to this lesson, to share it.",
-  "sonic.say.lessonFailed": "The lesson did not open. Choose it again, or choose another one.",
   "sonic.say.linkCopied": "The link to this lesson is copied. Paste it into a message or an e-mail to share it.",
   "sonic.say.linkCopiedStart": "The link to Fly by Sound is copied. Paste it into a message or an e-mail to share it.",
   "sonic.say.linkFailed": "The link could not be copied. Press {key} again, or ask your helper to copy it from the captions.",

@@ -14,7 +14,13 @@ export const LOCALES: Locale[] = ['en', 'es', 'pl', 'ru'];
 // file (packages/i18n/test/fly-parity.test.ts), so the merge order cannot decide a text.
 // The recorder's namespace (sonicrec, about 54 KB in four languages) is not among them: it comes with the session side's lazy
 // chunk, which adds it when it loads (sonic-session/texts.ts, addDictionaries), so a page without Fly by Sound never carries it.
-const NAMESPACED = import.meta.glob<Record<string, string>>(['../../../packages/i18n/locales/fly/*/*.json', '!../../../packages/i18n/locales/fly/sonicrec/*.json'], { eager: true, import: 'default' });
+// Nor are the mode's own (sonic: the start screen, its notes and spoken lines; sonickeys: the names of its keys, which exist only
+// in the mode), which come with the start chunk (sonic/texts.ts, v12-optin); of Fly by Sound every page keeps only sonicentry
+// (the pause menu's way in, the note that the mode did not load).
+const NAMESPACED = import.meta.glob<Record<string, string>>(
+    ['../../../packages/i18n/locales/fly/*/*.json', '!../../../packages/i18n/locales/fly/sonicrec/*.json', '!../../../packages/i18n/locales/fly/sonic/*.json', '!../../../packages/i18n/locales/fly/sonickeys/*.json'],
+    { eager: true, import: 'default' }
+);
 
 function merged(l: Locale, flat: Record<string, string>): Record<string, string> {
     const out = { ...flat };
