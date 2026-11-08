@@ -131,6 +131,8 @@ export interface MenuItem {
      */
     run(gesture: boolean): void;
     enabled?(): boolean; label?(): string;
+    /** The item opens another page: the menu shows it as a link to this address, in a new tab like its contact link (v12-optin). */
+    href?(): string;
 }
 
 /**

@@ -133,15 +133,19 @@ describe('the feature shim', () => {
         setSonicInstaller(null);
     });
 
-    it('a page without an entry installs nothing (no installer is called, no teardown)', () => {
-        const ctx = {} as FlightContext;
+    it('a page without an entry installs no mode (no installer is called); only the pause menu\'s link to /sound/, which its teardown takes out (v12-optin)', () => {
+        const items: { id: string }[] = [];
+        const ctx = { menu: { add: (it: { id: string }) => (items.push(it), () => void items.splice(items.indexOf(it), 1)) } } as unknown as FlightContext;
         let called = 0;
         setSonicInstaller(() => {
             called++;
             return () => undefined;
         });
-        expect(sonicFlight.install(ctx)).toBeUndefined();
+        const teardown = sonicFlight.install(ctx);
         expect(called).toBe(0);
+        expect(items.map((i) => i.id)).toEqual(['pause.sound']);
+        (teardown as () => void)();
+        expect(items).toEqual([]);
     });
 
     it('a page with an entry installs the mode the lazy chunk brought, and its teardown is the feature\'s', () => {
