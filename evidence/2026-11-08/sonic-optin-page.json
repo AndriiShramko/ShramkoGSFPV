@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-08T09:16:37.596Z",
-    "gitHead": "91d8d8c",
+    "date": "2026-11-08T11:19:32.014Z",
+    "gitHead": "e1c4246",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5420",
+  "site": "http://localhost:5442",
   "parts": "ABCD",
   "checks": [
     {
@@ -86,14 +86,19 @@
       }
     },
     {
-      "name": "A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded \"Fly by Sound: audio-only training for blind pilots (beta)\"",
+      "name": "A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded \"Fly by Sound: blind and low-vision pilots\", last of the menu's items, and a screen reader hears \"(opens in a new tab)\" (review R8)",
       "pass": true,
       "value": {
-        "href": "/en/sound/",
-        "target": "_blank",
-        "rel": "noopener",
-        "text": "Fly by Sound: audio-only training for blind pilots (beta)",
-        "tag": "A"
+        "sound": {
+          "href": "/en/sound/",
+          "target": "_blank",
+          "rel": "noopener",
+          "text": "Fly by Sound: blind and low-vision pilots (opens in a new tab)",
+          "label": "Fly by Sound: blind and low-vision pilots",
+          "newTab": " (opens in a new tab)",
+          "tag": "A"
+        },
+        "last": "pause.flyBySound"
       }
     },
     {
@@ -102,6 +107,40 @@
       "value": {
         "menu": 1,
         "body": 1
+      }
+    },
+    {
+      "name": "A: the item is one line in en, es, pl and ru at 1280x720 and at 375x812 (review R8); control: the item as it was takes two lines in the same menu",
+      "pass": true,
+      "value": {
+        "langs": [
+          "en",
+          "es",
+          "pl",
+          "ru"
+        ],
+        "at1280x720": [
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "at375x812": [
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "before": "Fly by Sound: audio-only training for blind pilots (beta)"
+      }
+    },
+    {
+      "name": "A: an ordinary page has no application region for screen readers (the mode's, review R5; its control is B)",
+      "pass": true,
+      "value": {
+        "regions": 0
       }
     },
     {
@@ -158,11 +197,11 @@
       "value": {
         "errors": [],
         "otherHosts": [
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v3/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json"
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json"
         ]
       }
     },
@@ -173,8 +212,20 @@
         "href": "/pl/sound/",
         "target": "_blank",
         "rel": "noopener",
-        "text": "Fly by Sound: trening tylko na s\u0142uch dla niewidomych pilot\u00f3w (beta)",
+        "text": "Fly by Sound: niewidomi i s\u0142abowidz\u0105cy (otwiera si\u0119 w nowej karcie)",
+        "label": "Fly by Sound: niewidomi i s\u0142abowidz\u0105cy",
+        "newTab": " (otwiera si\u0119 w nowej karcie)",
         "tag": "A"
+      }
+    },
+    {
+      "name": "B: once the lesson flies the focus is on the mode's labelled role=\"application\" region, where a screen reader passes every key on (review R5; control: A has none)",
+      "pass": true,
+      "value": {
+        "testid": "sonic-flight",
+        "role": "application",
+        "label": "Fly by Sound: the flight. Every key goes to the simulator.",
+        "tag": "DIV"
       }
     },
     {
@@ -205,36 +256,73 @@
         ],
         "keys": [
           {
+            "action": "share.open",
+            "caps": [
+              "L"
+            ],
+            "label": "Fly by Sound: copy a link to this lesson"
+          },
+          {
+            "action": "help.keys",
+            "caps": [
+              "K"
+            ],
+            "label": "Fly by Sound: hear the keys"
+          },
+          {
             "action": "sonic.record",
             "caps": [
               "T"
-            ]
+            ],
+            "label": "Fly by Sound: start or stop recording"
           },
           {
             "action": "sonic.send",
             "caps": [
               "U"
-            ]
+            ],
+            "label": "Fly by Sound: send the flight to the author"
           },
           {
             "action": "sonic.status",
             "caps": [
               "I"
-            ]
+            ],
+            "label": "Fly by Sound: hear the lesson and recording status"
           },
           {
             "action": "sonic.repeat",
             "caps": [
               "Z"
-            ]
+            ],
+            "label": "Fly by Sound: hear the last line again"
           },
           {
             "action": "sonic.glossary",
             "caps": [
               "G"
-            ]
+            ],
+            "label": "Fly by Sound: open the sound glossary"
           }
         ]
+      }
+    },
+    {
+      "name": "B: the mode's key list names L and K as the mode's: \"copy a link to this lesson\", \"hear the keys\" (review R4)",
+      "pass": true,
+      "value": {
+        "L": "Fly by Sound: copy a link to this lesson",
+        "K": "Fly by Sound: hear the keys"
+      }
+    },
+    {
+      "name": "B: when the pause menu closes the focus is back on the flight's region (review R5)",
+      "pass": true,
+      "value": {
+        "testid": "sonic-flight",
+        "role": "application",
+        "label": "Fly by Sound: the flight. Every key goes to the simulator.",
+        "tag": "DIV"
       }
     },
     {
@@ -250,11 +338,11 @@
       "pass": true,
       "value": {
         "copied": {
-          "url": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+          "url": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
           "copied": true
         },
-        "clipboard": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
-        "want": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+        "clipboard": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+        "want": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
         "names": [
           "sonic",
           "st",
@@ -282,6 +370,18 @@
           "live": "polite",
           "text": "Hold your heightNow you fly, but gently. The drone levels itself, so you only choose how high it is.The tone you hear is your height. A higher tone means higher up. A smooth tone means the right height, and a buzzing tone means too high or too low.Keep the tone smooth for 20 seconds.Lesson: Hold your height. Attempt 1.Recording is off.The link to this lesson is copied. Paste it into a message or an e-mail to share it."
         }
+      }
+    },
+    {
+      "name": "B (control of E): a copied L opens no field and no picture panel: the link is in the clipboard and the line says so",
+      "pass": true,
+      "value": {
+        "shown": false,
+        "focused": false,
+        "value": "",
+        "selected": "",
+        "status": "",
+        "picturePanel": false
       }
     },
     {
@@ -313,14 +413,75 @@
       }
     },
     {
+      "name": "B: the flight waits while the keys are said and goes on by itself when they end (review R4)",
+      "pass": true,
+      "value": {
+        "heldAt": true,
+        "wentOnAfterMs": 16886
+      }
+    },
+    {
+      "name": "B: any key cuts the keys: \"Back to the flight.\" is said and the flight goes on at once (review R4)",
+      "pass": true,
+      "value": {
+        "said": [
+          "help.next",
+          "help.digits",
+          "sonic.say.helpCut"
+        ],
+        "pausedAfter": false
+      }
+    },
+    {
+      "name": "B: with the \"How to fly\" card up K closes it and says no key (review R4)",
+      "pass": true,
+      "value": {
+        "closed": true,
+        "said": []
+      }
+    },
+    {
+      "name": "B: in the mode the pause menu's Share and the top bar's Share copy the lesson's link and show it selected in the field, with no picture panel; Escape closes it and the flight goes on (review R3)",
+      "pass": true,
+      "value": {
+        "menu": {
+          "field": {
+            "shown": true,
+            "focused": true,
+            "value": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+            "selected": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+            "status": "The link is copied. Paste it into a message or an e-mail.",
+            "picturePanel": false
+          },
+          "clipboard": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+          "gone": true,
+          "pausedAfter": false
+        },
+        "top": {
+          "field": {
+            "shown": true,
+            "focused": true,
+            "value": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+            "selected": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+            "status": "The link is copied. Paste it into a message or an e-mail.",
+            "picturePanel": false
+          },
+          "clipboard": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+          "gone": true,
+          "pausedAfter": false
+        },
+        "want": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1"
+      }
+    },
+    {
       "name": "B: in the Winter Garden lesson L's link names the lesson, its scan and its size: /fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
       "pass": true,
       "value": {
         "link": {
-          "url": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+          "url": "http://localhost:5442/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
           "copied": true
         },
-        "want": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+        "want": "http://localhost:5442/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
         "walls": {
           "voxelM": 0.16,
           "builtin": false,
@@ -334,9 +495,9 @@
       "pass": true,
       "value": {
         "chunks": [
-          "/fly/assets/lazy-start-C2fElvls.js",
-          "/fly/assets/feature-BK029cdu.js",
-          "/fly/assets/session-DDGWKUPF.js"
+          "/fly/assets/lazy-start-BgIZRy_S.js",
+          "/fly/assets/feature-C4T9gSH-.js",
+          "/fly/assets/session-BkQLxiXW.js"
         ],
         "found": [
           "Learn to fly a drone by ear",
@@ -351,11 +512,11 @@
       "value": {
         "errors": [],
         "otherHosts": [
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json"
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json"
         ]
       }
     },
@@ -371,7 +532,7 @@
         },
         "contexts": 0,
         "hook": "undefined",
-        "note": "This link sets the sound for this visit: Sound theme: Clear; Calm mode: on. Your own saved settings are not changed.Keep these settings",
+        "note": "This link sets the sound for this visit only (Sound theme: Clear; Calm mode: on). Your own saved settings are not changed.",
         "theme": "clear",
         "calm": true
       }
@@ -389,7 +550,7 @@
           },
           "contexts": 0,
           "hook": "undefined",
-          "note": "This link sets the sound for this visit: Sound theme: Clear; Calm mode: on. Your own saved settings are not changed.Keep these settings",
+          "note": "This link sets the sound for this visit only (Sound theme: Clear; Calm mode: on). Your own saved settings are not changed.",
           "theme": "clear",
           "calm": true
         },
@@ -407,6 +568,23 @@
           "path": "full",
           "listenerFrame": "heading"
         }
+      }
+    },
+    {
+      "name": "C: Start comes before \"Keep these settings\" and \"Use my own settings\", and the note describes the primary Start (review R6)",
+      "pass": true,
+      "value": {
+        "controls": [
+          "sonic-start-asked",
+          "sonic-start-beginning",
+          "sonic-visit-keep",
+          "sonic-visit-own",
+          "sonic-path-full",
+          "sonic-path-fast"
+        ],
+        "primary": "sonic-start-asked",
+        "describedBy": "sonic-visit-text",
+        "description": "This link sets the sound for this visit only (Sound theme: Clear; Calm mode: on). Your own saved settings are not changed."
       }
     },
     {
@@ -431,6 +609,13 @@
       }
     },
     {
+      "name": "C: the running lesson's address is its own link with what of the link still stands (a reload offers it with its note, review R2)",
+      "pass": true,
+      "value": {
+        "address": "?sonic=hover-height&st=clear&sc=1"
+      }
+    },
+    {
       "name": "C: no page error, and no request to this site failed",
       "pass": true,
       "value": {
@@ -439,9 +624,13 @@
       }
     },
     {
-      "name": "C: \"Keep these settings\" saves the link's sound (Clear, calm on) and the note goes",
+      "name": "C: \"Keep these settings\" saves the link's sound (Clear, calm on), the note goes and so does the link's sound from the address (review R2)",
       "pass": true,
       "value": {
+        "reloadBefore": {
+          "note": true,
+          "calm": true
+        },
         "saved": {
           "calm": true,
           "captions": true,
@@ -456,7 +645,61 @@
           "speechRate": 2,
           "theme": "clear"
         },
-        "noteLeft": false
+        "noteLeft": false,
+        "address": "?sonic=hover-height"
+      }
+    },
+    {
+      "name": "C: the reviewer's probe: link, Keep, Calm mode off, reload: no note, calm off as he set it (theme Clear kept); control: a reload before Keep still had the note and calm on (review R2)",
+      "pass": true,
+      "value": {
+        "reloaded": {
+          "note": false,
+          "calm": false,
+          "theme": "clear",
+          "address": "?sonic=hover-height"
+        },
+        "saved": {
+          "calm": false,
+          "captions": true,
+          "format": "shramko-sonic-prefs/1",
+          "heightPolarity": "up-higher",
+          "layerGainDb": {},
+          "layerPitchSteps": {},
+          "listenerFrame": "heading",
+          "motorSound": false,
+          "path": "full",
+          "selfVoice": false,
+          "speechRate": 2,
+          "theme": "clear"
+        }
+      }
+    },
+    {
+      "name": "C: \"Use my own settings\": the note goes, his own sound is in force (Soft, calm off), nothing saved, the address and a reload carry nothing of the link (review R2)",
+      "pass": true,
+      "value": {
+        "own": {
+          "note": false,
+          "calm": false,
+          "theme": "soft",
+          "address": "?sonic=hover-height"
+        },
+        "saved": {
+          "format": "shramko-sonic-prefs/1",
+          "theme": "soft",
+          "calm": false,
+          "heightPolarity": "up-higher",
+          "layerGainDb": {},
+          "layerPitchSteps": {},
+          "selfVoice": false,
+          "speechRate": 2,
+          "captions": true,
+          "motorSound": false,
+          "path": "full",
+          "listenerFrame": "heading"
+        },
+        "noteAfterReload": false
       }
     },
     {
@@ -481,6 +724,54 @@
       }
     },
     {
+      "name": "E (the app speaks, captions on): with the clipboard refused L selects the whole link in a focused field, says so with the lesson's name and the keys, puts no link in the captions; Esc closes it and the flight goes on (review R1; control: B's copied L opens no field)",
+      "pass": true,
+      "value": {
+        "field": {
+          "shown": true,
+          "focused": true,
+          "value": "http://localhost:5442/fly/?sonic=hover-height",
+          "selected": "http://localhost:5442/fly/?sonic=hover-height",
+          "status": "The link is selected: press Control and C to copy it.",
+          "picturePanel": false
+        },
+        "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
+        "hook": {
+          "url": "http://localhost:5442/fly/?sonic=hover-height",
+          "copied": false
+        },
+        "captionsHaveLink": false,
+        "pausedUnderField": true,
+        "closed": true,
+        "pausedAfter": false,
+        "errors": []
+      }
+    },
+    {
+      "name": "E (the app speaks, captions off): with the clipboard refused L selects the whole link in a focused field, says so with the lesson's name and the keys, puts no link in the captions; Esc closes it and the flight goes on (review R1; control: B's copied L opens no field)",
+      "pass": true,
+      "value": {
+        "field": {
+          "shown": true,
+          "focused": true,
+          "value": "http://localhost:5442/fly/?sonic=hover-height",
+          "selected": "http://localhost:5442/fly/?sonic=hover-height",
+          "status": "The link is selected: press Control and C to copy it.",
+          "picturePanel": false
+        },
+        "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
+        "hook": {
+          "url": "http://localhost:5442/fly/?sonic=hover-height",
+          "copied": false
+        },
+        "captionsHaveLink": false,
+        "pausedUnderField": true,
+        "closed": true,
+        "pausedAfter": false,
+        "errors": []
+      }
+    },
+    {
       "name": "D: /en/sound/: its start link is the mode's link (/en/fly/?sonic=start, the same writer as L); its key list has nine keys, L and K among them",
       "pass": true,
       "value": {
@@ -497,7 +788,15 @@
           "N",
           "L",
           "K"
-        ]
+        ],
+        "keysText": "The main keysThe app also tells you these keys aloud.Tstart or stop a recordingUsend the last recording to the authorIhear where you areZhear the last spoken line againGopen the sound glossaryRgo back to the last checkpoint; hold it to start the lesson againNgo to the next stepLcopy a link that opens this lesson, with the sound settings you changed, to share itKhear these keysIf a key does nothing, your screen reader may be in browse mode: press NVDA+Space in NVDA, or Insert+Z in JAWS, so the keys reach the simulator."
+      }
+    },
+    {
+      "name": "D: under the key list, the line for a screen reader in browse mode (review R5)",
+      "pass": true,
+      "value": {
+        "reader": "If a key does nothing, your screen reader may be in browse mode: press NVDA+Space in NVDA, or Insert+Z in JAWS, so the keys reach the simulator."
       }
     },
     {
@@ -510,8 +809,8 @@
       }
     }
   ],
-  "passed": 29,
-  "total": 29,
+  "passed": 46,
+  "total": 46,
   "result": {
     "plainKeys": {
       "sound": [
@@ -557,11 +856,11 @@
         "pause.replays",
         "pause.measure",
         "pause.import",
-        "pause.flyBySound",
         "pause.cinema",
         "pause.record",
         "pause.sound",
-        "pause.feedback"
+        "pause.feedback",
+        "pause.flyBySound"
       ],
       "keys": [
         {
@@ -569,140 +868,186 @@
           "caps": [
             "Esc",
             "P"
-          ]
+          ],
+          "label": "Pause / resume"
         },
         {
           "action": "respawn.start",
           "caps": [
             "R"
-          ]
+          ],
+          "label": "Back to the start"
         },
         {
           "action": "respawn.rewind",
           "caps": [
             "Y"
-          ]
+          ],
+          "label": "Rewind 5 s"
         },
         {
           "action": "crash.keep",
           "caps": [
             "Enter"
-          ]
+          ],
+          "label": "Keep the wreck (no automatic respawn)"
         },
         {
           "action": "scene.next",
           "caps": [
             "N"
-          ]
+          ],
+          "label": "Next scene"
         },
         {
           "action": "scene.random",
           "caps": [
             "Shift+N"
-          ]
+          ],
+          "label": "Random scene"
         },
         {
           "action": "scene.favourite",
           "caps": [
             "Shift+F"
-          ]
+          ],
+          "label": "Next favourite scene"
         },
         {
           "action": "mode.cycle",
           "caps": [
             "M"
-          ]
+          ],
+          "label": "Flight mode"
         },
         {
           "action": "voxels.cycle",
           "caps": [
             "V"
-          ]
+          ],
+          "label": "Voxel grid: off / over the scan / voxels only"
         },
         {
           "action": "walls.toggle",
           "caps": [
             "C"
-          ]
+          ],
+          "label": "Walls on / off for this scan"
         },
         {
           "action": "hud.toggle",
           "caps": [
             "H"
-          ]
+          ],
+          "label": "Show or hide the HUD"
         },
         {
           "action": "scale.down",
           "caps": [
             "[",
             "Shift+["
-          ]
+          ],
+          "label": "Scene smaller"
         },
         {
           "action": "scale.up",
           "caps": [
             "]",
             "Shift+]"
-          ]
+          ],
+          "label": "Scene larger"
         },
         {
           "action": "record.toggle",
           "caps": [
             "F9"
-          ]
+          ],
+          "label": "Start or stop recording"
         },
         {
           "action": "frameStats.toggle",
           "caps": [
             "F3"
-          ]
+          ],
+          "label": "Frame times and delay"
         },
         {
           "action": "settings.open",
           "caps": [
             "O"
-          ]
+          ],
+          "label": "Settings"
         },
         {
           "action": "feedback.open",
           "caps": [
             "B"
-          ]
+          ],
+          "label": "Report a bug or an idea"
         },
         {
           "action": "share.open",
           "caps": [
             "L"
-          ]
+          ],
+          "label": "Share this scene"
         },
         {
           "action": "help.keys",
           "caps": [
             "K"
-          ]
+          ],
+          "label": "How to fly (the keys card)"
         },
         {
           "action": "fullscreen.toggle",
           "caps": [
             "F"
-          ]
+          ],
+          "label": "Full screen on / off"
         },
         {
           "action": "arm.toggle",
           "caps": [
             "Space"
-          ]
+          ],
+          "label": "Arm / disarm (pilot keys)"
         }
       ],
       "sound": {
         "href": "/en/sound/",
         "target": "_blank",
         "rel": "noopener",
-        "text": "Fly by Sound: audio-only training for blind pilots (beta)",
+        "text": "Fly by Sound: blind and low-vision pilots (opens in a new tab)",
+        "label": "Fly by Sound: blind and low-vision pilots",
+        "newTab": " (opens in a new tab)",
         "tag": "A"
       },
       "namesInMenu": 1,
       "namesInBody": 1
+    },
+    "itemLines": {
+      "langs": [
+        "en",
+        "es",
+        "pl",
+        "ru"
+      ],
+      "at1280x720": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "at375x812": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "before": "Fly by Sound: audio-only training for blind pilots (beta)"
     },
     "plainPopup": {
       "url": "/en/sound/",
@@ -739,10 +1084,10 @@
         "/fly/assets/constants-DFTtLrFK.js",
         "/fly/assets/entity-DpwWXiMG.js",
         "/fly/assets/texture-FOUnZzS7.js",
-        "/fly/assets/main-DUgTJzDh.js",
+        "/fly/assets/main-Bpa0fUDm.js",
         "/fly/assets/rapier-B4hmj00C.js",
         "/fly/assets/drones3d-BZ3jyy9a.css",
-        "/fly/assets/drones3d-BUqAxRfJ.js"
+        "/fly/assets/drones3d-B0gw1jty.js"
       ],
       "chunks": [],
       "holding": []
@@ -751,8 +1096,16 @@
       "href": "/pl/sound/",
       "target": "_blank",
       "rel": "noopener",
-      "text": "Fly by Sound: trening tylko na s\u0142uch dla niewidomych pilot\u00f3w (beta)",
+      "text": "Fly by Sound: niewidomi i s\u0142abowidz\u0105cy (otwiera si\u0119 w nowej karcie)",
+      "label": "Fly by Sound: niewidomi i s\u0142abowidz\u0105cy",
+      "newTab": " (otwiera si\u0119 w nowej karcie)",
       "tag": "A"
+    },
+    "flightFocus": {
+      "testid": "sonic-flight",
+      "role": "application",
+      "label": "Fly by Sound: the flight. Every key goes to the simulator.",
+      "tag": "DIV"
     },
     "modeMenu": {
       "items": [
@@ -779,44 +1132,63 @@
       ],
       "keys": [
         {
+          "action": "share.open",
+          "caps": [
+            "L"
+          ],
+          "label": "Fly by Sound: copy a link to this lesson"
+        },
+        {
+          "action": "help.keys",
+          "caps": [
+            "K"
+          ],
+          "label": "Fly by Sound: hear the keys"
+        },
+        {
           "action": "sonic.record",
           "caps": [
             "T"
-          ]
+          ],
+          "label": "Fly by Sound: start or stop recording"
         },
         {
           "action": "sonic.send",
           "caps": [
             "U"
-          ]
+          ],
+          "label": "Fly by Sound: send the flight to the author"
         },
         {
           "action": "sonic.status",
           "caps": [
             "I"
-          ]
+          ],
+          "label": "Fly by Sound: hear the lesson and recording status"
         },
         {
           "action": "sonic.repeat",
           "caps": [
             "Z"
-          ]
+          ],
+          "label": "Fly by Sound: hear the last line again"
         },
         {
           "action": "sonic.glossary",
           "caps": [
             "G"
-          ]
+          ],
+          "label": "Fly by Sound: open the sound glossary"
         }
       ]
     },
     "hoverLink": {
       "copied": {
-        "url": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+        "url": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
         "copied": true
       },
-      "clipboard": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
-      "want": "http://localhost:5420/fly/?sonic=hover-height&st=clear&sc=1",
+      "clipboard": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+      "want": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
       "names": [
         "sonic",
         "st",
@@ -874,12 +1246,57 @@
         "Use the number keys to answer a question."
       ]
     ],
+    "keyHelpHold": {
+      "heldAt": true,
+      "wentOnAfterMs": 16886
+    },
+    "keyHelpCut": {
+      "said": [
+        "help.next",
+        "help.digits",
+        "sonic.say.helpCut"
+      ],
+      "pausedAfter": false
+    },
+    "keyOverCard": {
+      "closed": true,
+      "said": []
+    },
+    "visibleShare": {
+      "menu": {
+        "field": {
+          "shown": true,
+          "focused": true,
+          "value": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+          "selected": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+          "status": "The link is copied. Paste it into a message or an e-mail.",
+          "picturePanel": false
+        },
+        "clipboard": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+        "gone": true,
+        "pausedAfter": false
+      },
+      "top": {
+        "field": {
+          "shown": true,
+          "focused": true,
+          "value": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+          "selected": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+          "status": "The link is copied. Paste it into a message or an e-mail.",
+          "picturePanel": false
+        },
+        "clipboard": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1",
+        "gone": true,
+        "pausedAfter": false
+      },
+      "want": "http://localhost:5442/fly/?sonic=hover-height&st=clear&sc=1"
+    },
     "gardenLink": {
       "link": {
-        "url": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+        "url": "http://localhost:5442/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
         "copied": true
       },
-      "want": "http://localhost:5420/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+      "want": "http://localhost:5442/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
       "walls": {
         "voxelM": 0.16,
         "builtin": false,
@@ -889,9 +1306,9 @@
     },
     "modeFetched": {
       "chunks": [
-        "/fly/assets/lazy-start-C2fElvls.js",
-        "/fly/assets/feature-BK029cdu.js",
-        "/fly/assets/session-DDGWKUPF.js"
+        "/fly/assets/lazy-start-BgIZRy_S.js",
+        "/fly/assets/feature-C4T9gSH-.js",
+        "/fly/assets/session-BkQLxiXW.js"
       ],
       "found": [
         "Learn to fly a drone by ear",
@@ -909,7 +1326,7 @@
         },
         "contexts": 0,
         "hook": "undefined",
-        "note": "This link sets the sound for this visit: Sound theme: Clear; Calm mode: on. Your own saved settings are not changed.Keep these settings",
+        "note": "This link sets the sound for this visit only (Sound theme: Clear; Calm mode: on). Your own saved settings are not changed.",
         "theme": "clear",
         "calm": true
       },
@@ -928,7 +1345,24 @@
         "listenerFrame": "heading"
       }
     },
+    "receiverOrder": {
+      "controls": [
+        "sonic-start-asked",
+        "sonic-start-beginning",
+        "sonic-visit-keep",
+        "sonic-visit-own",
+        "sonic-path-full",
+        "sonic-path-fast"
+      ],
+      "primary": "sonic-start-asked",
+      "describedBy": "sonic-visit-text",
+      "description": "This link sets the sound for this visit only (Sound theme: Clear; Calm mode: on). Your own saved settings are not changed."
+    },
     "keep": {
+      "reloadBefore": {
+        "note": true,
+        "calm": true
+      },
       "saved": {
         "calm": true,
         "captions": true,
@@ -943,7 +1377,53 @@
         "speechRate": 2,
         "theme": "clear"
       },
-      "noteLeft": false
+      "noteLeft": false,
+      "address": "?sonic=hover-height"
+    },
+    "keepReload": {
+      "reloaded": {
+        "note": false,
+        "calm": false,
+        "theme": "clear",
+        "address": "?sonic=hover-height"
+      },
+      "saved": {
+        "calm": false,
+        "captions": true,
+        "format": "shramko-sonic-prefs/1",
+        "heightPolarity": "up-higher",
+        "layerGainDb": {},
+        "layerPitchSteps": {},
+        "listenerFrame": "heading",
+        "motorSound": false,
+        "path": "full",
+        "selfVoice": false,
+        "speechRate": 2,
+        "theme": "clear"
+      }
+    },
+    "own": {
+      "own": {
+        "note": false,
+        "calm": false,
+        "theme": "soft",
+        "address": "?sonic=hover-height"
+      },
+      "saved": {
+        "format": "shramko-sonic-prefs/1",
+        "theme": "soft",
+        "calm": false,
+        "heightPolarity": "up-higher",
+        "layerGainDb": {},
+        "layerPitchSteps": {},
+        "selfVoice": false,
+        "speechRate": 2,
+        "captions": true,
+        "motorSound": false,
+        "path": "full",
+        "listenerFrame": "heading"
+      },
+      "noteAfterReload": false
     },
     "gardenReceiver": {
       "first": "free-garden",
@@ -957,6 +1437,48 @@
     "unknownLink": {
       "unknown": "There is no lesson called rings-ninth. Choose one from the list.",
       "asked": false
+    },
+    "refused": {
+      "the app speaks, captions on": {
+        "field": {
+          "shown": true,
+          "focused": true,
+          "value": "http://localhost:5442/fly/?sonic=hover-height",
+          "selected": "http://localhost:5442/fly/?sonic=hover-height",
+          "status": "The link is selected: press Control and C to copy it.",
+          "picturePanel": false
+        },
+        "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
+        "hook": {
+          "url": "http://localhost:5442/fly/?sonic=hover-height",
+          "copied": false
+        },
+        "captionsHaveLink": false,
+        "pausedUnderField": true,
+        "closed": true,
+        "pausedAfter": false,
+        "errors": []
+      },
+      "the app speaks, captions off": {
+        "field": {
+          "shown": true,
+          "focused": true,
+          "value": "http://localhost:5442/fly/?sonic=hover-height",
+          "selected": "http://localhost:5442/fly/?sonic=hover-height",
+          "status": "The link is selected: press Control and C to copy it.",
+          "picturePanel": false
+        },
+        "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
+        "hook": {
+          "url": "http://localhost:5442/fly/?sonic=hover-height",
+          "copied": false
+        },
+        "captionsHaveLink": false,
+        "pausedUnderField": true,
+        "closed": true,
+        "pausedAfter": false,
+        "errors": []
+      }
     },
     "soundPage": {
       "start": [
