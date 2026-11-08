@@ -67,6 +67,7 @@
   "sonic.say.menuResume": "Resume",
   "sonic.say.menuSettings": "Sound settings",
   "sonic.say.menuTitle": "Lesson menu",
+  "sonic.say.replayOlder": "This flight was recorded with version {recorded} of the lesson, and this build has version {here}. You hear the lines as the pilot heard them.",
   "sonic.say.scanFailed": "The scan did not load. Check the connection, then choose the lesson again.",
   "sonic.say.scanLoading": "Loading the scan for this lesson. It can take up to a minute. The lesson starts by itself.",
   "sonic.say.text": "{text}",

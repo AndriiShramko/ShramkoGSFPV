@@ -3,12 +3,15 @@
 // recorder must write: 30 Hz frames with their cue ids, the events and the host markers. Packages made that way are what the replay core was
 // built for, so a replay of them must check out; the same page in a real browser, with the real recorder, a tone-burst microphone and a real
 // AudioContext, is tools/bench/src/sonicrec-replay.ts. Every claim has a control that must fail the way the claim says it would.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { checkSession, getLesson, readPackage, readZip, REPLAY_KEY_ACTIONS, Replayer, rebuildSession, ZipWriter } from '../../../packages/sonic-fpv/src';
-import type { FlightFrame, LessonLayers, SessionEvent, SessionPackage, SonicPrefs, SonicWorld, ThemeDef } from '../../../packages/sonic-fpv/src';
+import type { FlightFrame, LessonLayers, SessionEvent, SessionPackage, SonicPrefs, SonicWorld, SpeechLine, ThemeDef } from '../../../packages/sonic-fpv/src';
 import { RecordingHost } from '../../../packages/sonic-fpv/test/helpers/record';
 import { checkPackage } from '../../../apps/fly/src/sonic-session/replay-check';
-import { frameAtOrBefore, poseAt, ReplayPlayer } from '../../../apps/fly/src/sonic-session/replay-player';
+import { frameAtOrBefore, OLDER_LINE, poseAt, RECORDED_LINE, ReplayPlayer } from '../../../apps/fly/src/sonic-session/replay-player';
 import type { ReplayDeps, ReplayEngine } from '../../../apps/fly/src/sonic-session/replay-player';
 import { voicePlan } from '../../../apps/fly/src/sonic-session/replay-voice';
 import type { VoiceBuffer } from '../../../apps/fly/src/sonic-session/replay-voice';
@@ -27,6 +30,8 @@ beforeAll(async () => {
 });
 
 const VOICE_OFFSET_MS = 1500;
+/** The sound package's own fixtures (the recordings made with v0.12 among them). */
+const FIXTURES = fileURLToPath(new URL('../../../packages/sonic-fpv/test/fixtures', import.meta.url));
 
 /** The package with its entries rewritten by `fn`: a zip whose own checks (CRC-32) pass, so only what the package layer checks is damaged. */
 function rewritten(bytes: Uint8Array, fn: (entries: Map<string, Uint8Array>) => void): Uint8Array {
@@ -77,7 +82,7 @@ const wallsHall = (host: RecordingHost): void => {
 
 interface Calls {
     update: { t: number; at: number }[];
-    say: { key: string; interrupt: boolean | undefined; at: number }[];
+    say: { key: string; params?: SpeechLine['params']; interrupt: boolean | undefined; at: number }[];
     cue: { kind: string; at: number }[];
     layers: LessonLayers[];
     prefs: SonicPrefs[];
@@ -97,7 +102,7 @@ function rig(pkg: SessionPackage, o: { voiceDuration?: number; decodeFails?: boo
     const engine: ReplayEngine = {
         update: (input) => calls.update.push({ t: input.sample.t, at: clock.a }),
         cue: (e) => calls.cue.push({ kind: e.kind, at: clock.a }),
-        say: async (line, opt) => void calls.say.push({ key: line.key, interrupt: opt?.interrupt, at: clock.a }),
+        say: async (line, opt) => void calls.say.push({ key: line.key, ...(line.params ? { params: line.params } : {}), interrupt: opt?.interrupt, at: clock.a }),
         setLayers: (l) => calls.layers.push(l),
         setPrefs: (p) => calls.prefs.push(p),
         setTheme: (x) => calls.theme.push(x)
@@ -449,6 +454,94 @@ describe('the player on a clock it does not own', () => {
         const short = rig(rings.pkg, { voiceDuration: 1 });
         await short.player.prepare();
         expect(short.player.state.durationMs).toBe(lengthMs());
+    });
+});
+
+// ------------------------------------------------------------------ v0.13 W9: a recording of an older version of the lesson
+
+describe('v0.13 (lane v13-host C4, W9): the player feeds the engine the lines the pilot heard when the lesson was flown with an older version of it', () => {
+    /** The sound package's recordings made with v0.12 (lesson and theme version 1), read strictly. */
+    const v012 = (name: string): SessionPackage => readPackage(new Uint8Array(readFileSync(join(FIXTURES, name))));
+    const linesOf = (pkg: SessionPackage): { t: number; text: string }[] => pkg.events.flatMap((e) => (e.kind === 'speech' && e.key !== 'speech.end' ? [{ t: e.t, text: e.text }] : []));
+
+    it.each(['session-v012-rings-first.zip', 'session-v012-walls-hall.zip'])('%s: every recorded line, its text at its time, after one line that says it was flown with an older version; none of the lines this build works out', async (name) => {
+        const pkg = v012(name);
+        expect(pkg.problems).toEqual([]);
+        const lessonId = pkg.manifest.lesson!.id;
+        const r = rig(pkg);
+        expect(r.setup.notes.find((n) => n.code === 'lesson-version')).toMatchObject({ recorded: 1, here: getLesson(lessonId).version });
+        await r.player.prepare();
+        r.player.play();
+        r.run((pkg.frames.at(-1) as FlightFrame).t + 500);
+        expect(r.player.state.phase).toBe('ended');
+        const lines = linesOf(pkg);
+        expect(lines.length).toBeGreaterThan(5);
+        // first, once: the line that says so, with the versions
+        expect(r.calls.say[0]).toMatchObject({ key: OLDER_LINE, params: { recorded: 1, here: getLesson(lessonId).version }, interrupt: false });
+        expect(r.calls.say.filter((s) => s.key === OLDER_LINE)).toHaveLength(1);
+        // then every recorded line, in order, queued as it was (each line's text as the pilot heard it)
+        const said = r.calls.say.filter((s) => s.key === RECORDED_LINE);
+        expect(said.map((s) => s.params?.text)).toEqual(lines.map((l) => l.text));
+        expect(said.every((s) => s.interrupt === false)).toBe(true);
+        // each at its time on the audio clock: never before it, at most one display frame after it
+        said.forEach((s, i) => {
+            const due = 100 + (lines[i] as { t: number }).t / 1000;
+            expect(s.at).toBeGreaterThanOrEqual(due - 1e-9);
+            expect(s.at - due).toBeLessThan(0.0175);
+        });
+        // nothing else: this build's runner works out other lines for it (format 2, the three plays), none of which is said
+        expect(r.calls.say).toHaveLength(lines.length + 1);
+        const core = new Replayer({ setup: r.setup, frames: pkg.frames, events: pkg.events });
+        const worked: string[] = [];
+        for (let s = core.step(); s !== null; s = core.step()) for (const a of s.actions) if (a.kind === 'say') worked.push(a.line.key);
+        expect(worked.length).toBeGreaterThan(0);
+        expect(r.calls.say.some((s) => worked.includes(s.key))).toBe(false);
+        // the cues are still the ones this build works out from the frames
+        expect(r.calls.cue.length).toBeGreaterThan(0);
+    });
+
+    it('a seek passes the lines before it and says the ones after it; a replay from its start says them again, and the line about the older version once in all', async () => {
+        const pkg = v012('session-v012-walls-hall.zip');
+        const lines = linesOf(pkg);
+        const r = rig(pkg);
+        await r.player.prepare();
+        r.player.play();
+        const cut = 20_000;
+        r.player.seek(cut);
+        r.run((pkg.frames.at(-1) as FlightFrame).t - cut + 500);
+        const after = lines.filter((l) => l.t >= cut).map((l) => l.text);
+        expect(after.length).toBeGreaterThan(0);
+        expect(r.calls.say.filter((s) => s.key === RECORDED_LINE).map((s) => s.params?.text)).toEqual(after);
+        r.player.seek(0);
+        r.player.play();
+        r.run((pkg.frames.at(-1) as FlightFrame).t + 500);
+        expect(r.calls.say.filter((s) => s.key === RECORDED_LINE)).toHaveLength(after.length + lines.length);
+        expect(r.calls.say.filter((s) => s.key === OLDER_LINE)).toHaveLength(1);
+        // a stall: the lines from long ago are not said in a burst
+        const stalled = rig(pkg);
+        await stalled.player.prepare();
+        stalled.player.play();
+        stalled.clock.a += 25;
+        stalled.player.tick();
+        expect(stalled.calls.say.filter((s) => s.key === RECORDED_LINE).length).toBeLessThan(lines.filter((l) => l.t <= 25_000).length);
+    });
+
+    it('control: the same recording claiming this build\'s lesson version is replayed with the lines this build works out, and nothing about an older version', async () => {
+        const pkg = v012('session-v012-rings-first.zip');
+        const m = pkg.manifest;
+        const claimed: SessionPackage = { ...pkg, manifest: { ...m, lesson: { ...m.lesson!, version: getLesson(m.lesson!.id).version } } };
+        const r = rig(claimed);
+        expect(r.setup.notes.some((n) => n.code === 'lesson-version')).toBe(false);
+        await r.player.prepare();
+        r.player.play();
+        r.run((pkg.frames.at(-1) as FlightFrame).t + 500);
+        expect(r.calls.say.some((s) => s.key === OLDER_LINE || s.key === RECORDED_LINE)).toBe(false);
+        // the lines an independent run of the replay core works out, in order
+        const core = new Replayer({ setup: r.setup, frames: claimed.frames, events: claimed.events });
+        const worked: string[] = [];
+        for (let x = core.step(); x !== null; x = core.step()) for (const a of x.actions) if (a.kind === 'say') worked.push(a.line.key);
+        expect(worked.length).toBeGreaterThan(0);
+        expect(r.calls.say.map((x) => x.key)).toEqual(worked);
     });
 });
 

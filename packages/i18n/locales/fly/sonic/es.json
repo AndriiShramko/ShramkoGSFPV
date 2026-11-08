@@ -67,6 +67,7 @@
   "sonic.say.menuResume": "Continuar",
   "sonic.say.menuSettings": "Ajustes de sonido",
   "sonic.say.menuTitle": "Menú de la lección",
+  "sonic.say.replayOlder": "Este vuelo se grabó con la versión {recorded} de la lección, y esta versión del simulador tiene la {here}. Oyes las frases tal como las oyó el piloto.",
   "sonic.say.scanFailed": "El escaneo no se cargó. Revisa la conexión y elige la lección otra vez.",
   "sonic.say.scanLoading": "Cargando el escaneo de esta lección. Puede tardar hasta un minuto. La lección empieza sola.",
   "sonic.say.text": "{text}",

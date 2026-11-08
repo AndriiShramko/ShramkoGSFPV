@@ -67,6 +67,7 @@
   "sonic.say.menuResume": "Продолжить",
   "sonic.say.menuSettings": "Настройки звука",
   "sonic.say.menuTitle": "Меню урока",
+  "sonic.say.replayOlder": "Этот полёт записан с версией {recorded} урока, а в этой сборке версия {here}. Вы слышите фразы так, как их слышал пилот.",
   "sonic.say.scanFailed": "Скан не загрузился. Проверьте соединение и выберите урок ещё раз.",
   "sonic.say.scanLoading": "Загружаю скан для этого урока. Это может занять до минуты. Урок начнётся сам.",
   "sonic.say.text": "{text}",

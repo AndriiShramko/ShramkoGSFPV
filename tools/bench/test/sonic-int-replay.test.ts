@@ -184,6 +184,36 @@ function beyondSafety(frames: readonly FlightFrame[], derived: readonly (readonl
     return out;
 }
 
+/**
+ * Every frame whose cues differ by kind (a cue id without its sector: the comparer's classShare, with its slack), with the kinds that
+ * differ there and the cause W19 names for them: the host's touch ping ('safety.touch', which the replay never derives), the open-way
+ * chime's hold ('safety.free', held on from a sample the recording does not keep), a hazard voice taken for another kind at a corner
+ * or an edge (the floor, a wall, the ceiling, an object: the sampler fed at another rate), or none of these ('other': a cause not
+ * pinned down, a play's edge among them).
+ */
+export type KindCause = 'touch' | 'free' | 'hazard' | 'other';
+function kindDifferences(frames: readonly FlightFrame[], derived: readonly (readonly string[])[]): { index: number; kinds: string[]; cause: KindCause }[] {
+    const classes = (ids: readonly string[]): string[] => [...new Set(ids.map((id) => id.split(':')[0] as string))].sort();
+    const rec = frames.map((f) => classes(f.c));
+    const der = derived.map(classes);
+    const n = Math.min(rec.length, der.length);
+    const slack = DEFAULT_TOLERANCES.cueSlackFrames;
+    const out: { index: number; kinds: string[]; cause: KindCause }[] = [];
+    for (let i = 0; i < n; i++) {
+        const d = (der[i] as string[]).join('|');
+        let ok = false;
+        for (let k = Math.max(0, i - slack); k <= Math.min(n - 1, i + slack) && !ok; k++) ok = (rec[k] as string[]).join('|') === d;
+        if (ok) continue;
+        const a = new Set(rec[i]);
+        const b = new Set(der[i]);
+        const kinds = [...new Set([...a, ...b])].filter((x) => a.has(x) !== b.has(x)).sort();
+        const hazard = (x: string): boolean => /^safety\.(wall|floor|ceiling|object|obstacle)/.test(x);
+        const cause: KindCause = kinds.includes('safety.touch') ? 'touch' : kinds.includes('safety.free') ? 'free' : kinds.length > 0 && kinds.every(hazard) ? 'hazard' : 'other';
+        out.push({ index: i, kinds, cause });
+    }
+    return out;
+}
+
 /** Module 0: a digit for each question from the side the sound came from (sonic-lessons.test.ts's pilot: left 1, right 2, behind 2). */
 const earsPilot: Control = (r) => {
     if (!r.host.asking || r.engine.speaking) return null;
@@ -293,11 +323,26 @@ describe('two lessons flown through the host and recorded as one package replay 
             // and the recorder keeps them on a 33.3 ms grid, so 32 and 48 ms apart (the page, at a steady 60 Hz, is measured by
             // tools/bench/src/sonic-int-page.ts replay). In v0.13's 10 x 12.5 m room (micro-drone scale, M41-18) the walls are heard
             // on most frames, so more voices flip: rings-first by kind 98.7 %, by sector 85.8 % at 16c01a1 (v0.12 held 99 % and 90 %);
-            // with the pilot listening to the task (stage B, listenThenFly) 99.8 % by kind and 98.5 % by sector
+            // with the pilot listening to the task (stage B, listenThenFly), measured in stage C: 99.3 % by kind (16 of 2357 settled frames)
+            // and 96.8 % by sector; rings-line 100 % and 100 % once settled
             const shares = { ...cues, settled: { from, classShare: settled.classShare, share: settled.share } };
             expect(settled.classShare, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.98);
             expect(settled.share, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.85);
+            // W19 pinned down (stage C): every settled frame that differs by kind, exactly the frames the comparer counts, has one of the
+            // causes kindDifferences names; none is a play's edge or anything else (the lesson's own cues, every play of a named sound
+            // among them, agree on every frame: beyondSafety above). rings-first with this flight: 16 frames, the host's touch ping 5 and
+            // the open-way chime's hold 11 (stage A's flight: 29 of 2225, touch 11, chime 10, hazard kinds 9); W9 changes none of them
+            // (it is what the player says, not what the replay derives). rings-line: none once settled.
+            const differ = kindDifferences(seg.frames, d).filter((x) => x.index >= from);
+            const causes: Record<KindCause, number> = { touch: 0, free: 0, hazard: 0, other: 0 };
+            for (const x of differ) causes[x.cause]++;
+            expect(differ.length, `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toBe(Math.round((1 - settled.classShare) * (seg.frames.length - from)));
+            expect(differ.filter((x) => x.cause === 'other'), `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toEqual([]);
         }
+        // control of W19's causes: a lesson cue a frame short (a play's edge) and a reset cue a frame early are causes of none of them
+        const edge = derived[0]!.map((ids, i) => (i === 1000 ? ids.filter((id) => !id.startsWith('height.')) : i === 1500 ? [...ids, 'safety.reset'] : ids));
+        const planted = kindDifferences(out.segments[0]!.segment.frames, edge).filter((x) => x.cause === 'other').map((x) => x.index);
+        expect(planted).toEqual([1000, 1500]);
         // control: a lesson sound missing from the replay in one frame of fifty is caught by the check above
         const a = out.segments[0]!.segment;
         const missing = derived[0]!.map((ids, i) => (i % 50 === 0 ? ids.filter((id) => !id.startsWith('height.')) : ids));

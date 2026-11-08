@@ -67,6 +67,7 @@
   "sonic.say.menuResume": "Wznów",
   "sonic.say.menuSettings": "Ustawienia dźwięku",
   "sonic.say.menuTitle": "Menu lekcji",
+  "sonic.say.replayOlder": "Ten lot nagrano w wersji {recorded} lekcji, a ta wersja symulatora ma wersję {here}. Słyszysz zdania tak, jak słyszał je pilot.",
   "sonic.say.scanFailed": "Skan się nie wczytał. Sprawdź połączenie i wybierz lekcję jeszcze raz.",
   "sonic.say.scanLoading": "Wczytuję skan do tej lekcji. Może to potrwać nawet minutę. Lekcja zacznie się sama.",
   "sonic.say.text": "{text}",

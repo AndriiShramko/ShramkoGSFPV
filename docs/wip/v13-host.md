@@ -431,7 +431,37 @@ store and an engine that records what it is asked to say.
   - Lines for a native reading (es, pl, ru): `sonic.say.listHelp` (`sonic.say.text` is `{text}` in every language).
   - Not seen in a page yet: C6's page proof (the real DOM's focus events, the voice's lines from `engine.say`, a real reader still
     open).
-- [ ] C4 (W9, W19) the replay of an older lesson version speaks the recorded lines; rings-first's cue kinds pinned down
+- [x] C4 (W9, W19) the replay of an older lesson version speaks the recorded lines; rings-first's cue kinds pinned down
+  - W9, `apps/fly/src/sonic-session/replay-player.ts`: a lesson of the recording whose notes say `lesson-version` with the recorded
+    version below this build's (`olderLesson()`) is played with the lines the pilot heard: every recorded `speech` event but the
+    speech.end markers (`recordedLines()`: the host's own lines among them), its text at its time on the package clock (through the
+    engine: `sonic.say.text` with the text, queued as they were), and none of the lines this build's runner works out for it; once per
+    replay, when such a lesson starts to play, `sonic.say.replayOlder` says it was recorded with version k of the lesson and this build
+    has version m. A seek passes the lines before it; a replay from the start says them again; a stalled page does not say lines over
+    half a second old in a burst; a recording of several lessons says each lesson's own lines. Its cues stay the ones this build works
+    out from the frames (the package's ask names only the speech). The recorded text is said in the language it was recorded in, by the
+    voice of the page's language (a recording of another language: not handled).
+  - Tests (`sonicrec-replay` W9, 4): each v0.12 fixture of the package (`session-v012-rings-first.zip`, `-walls-hall.zip`) played to
+    its end: first the older-version line once, with the versions, then every recorded line in order (7 and 8), each never before its
+    time and at most one display frame after it, and nothing else (this build's worked-out lines, counted by an independent
+    `Replayer`, none said), its cues still played; a seek to 20 s says the lines after it only, a replay from the start all again and
+    the older line still once; a 25 s stall says fewer lines than were due; control in the test: the same recording claiming this
+    build's version says the worked-out lines (equal to an independent `Replayer`'s) and nothing recorded. Controls broken once and
+    restored: no older lessons found (3 fail), the worked-out lines said too (2 fail), no older-version line (3 fail), a seek that does
+    not pass the lines before it (1 fails).
+  - W19, `tools/bench/test/sonic-int-replay.test.ts` (the review asked to explain rings-first's cue kinds by the edges of the three
+    plays or to fix them with W9, never only to lower the bound): pinned down as a rule of the test, not a comment. New
+    `kindDifferences()` lists every frame whose cues differ by kind (the comparer's classShare, with its slack) and names its cause:
+    the host's touch ping (`safety.touch`, which the replay never derives: "Needs from the package" 1), the open-way chime held from a
+    sample the recording does not keep (`safety.free`), a hazard voice taken for another kind at a corner (wall, floor, ceiling,
+    object), or 'other'. The test holds, for each lesson once settled, that these are exactly the frames the comparer counts and that
+    none is 'other' (a play's edge would be: the lesson's own cues, every play of a named sound among them, agree on every frame by
+    `beyondSafety`). Measured with stage B's flight: rings-first 16 of 2357 settled frames by kind (99.3 %; 96.8 % by sector), the touch
+    ping 5 and the chime's hold 11; rings-line none once settled (its first 9 frames are the live engine's held sectors, "Needs from
+    the package" 2). Stage A's flight had 29 of 2225 (touch 11, chime 10, hazard kinds 9). W9 changes none of them: it is what the player
+    says, not what the replay derives. Control in the test: a lesson cue a frame short (a play's edge) and a reset cue a frame early are
+    both 'other'; broken once and restored: the chime's hold not named (the test fails on rings-first).
+  - Lines for a native reading (es, pl, ru): `sonic.say.replayOlder`.
 - [ ] C5 (W10) the replay page's summary from `replayVerdict`: pass, recorded with an older build, fail
 - [ ] C6 page proofs in headless Chrome on a release build
 - [ ] C7 gates exit 0; "## Final status"
