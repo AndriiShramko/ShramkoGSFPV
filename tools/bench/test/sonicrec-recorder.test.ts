@@ -407,9 +407,11 @@ describe('the recorder: T asks, T records, T stops', () => {
         const profile = withProfile(newProfile(), { minor: true, guardianConfirmed: true });
         const h = setup({ profile, say: () => new Promise<void>((resolve) => gates.push(resolve)) });
         h.rec.pressRecord();
-        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
+        // a reader reads them one after the other: the question is handed over when the guardian line is over (v12-int review I4)
+        expect(keys(h.said)).toEqual(['rec.minor']);
         gates[0]?.(); // the first line is over, the question is not
         await sleep(10);
+        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
         h.rec.pressRecord();
         expect(h.mic.asked).toBe(0);
         gates[1]?.();
@@ -755,5 +757,71 @@ describe('review I2: the consent question and the lesson\'s speech', () => {
         expect(h.mic.asked).toBe(1); // the microphone was asked for while the question was still queued
         await until(() => h.rec.phase === 'recording', 'the recording to start');
         await h.rec.stop();
+    });
+});
+
+// v12-int review, finding I4: with "my screen reader speaks" (the engine's selfVoice off) the engine says nothing itself and each line waits its own
+// estimated time from the moment it is handed over, all of them at once (package, engine.ts say()), while a screen reader reads the captions one
+// after the other. A minor's question is two lines (the guardian line, then the question): handed over together, the pair was "read out" after the
+// longer of the two, with the screen reader still on the question, and the second press of a hurried pilot counted from there. Step 6 of v12-int
+// made the lesson's host wait for its lines one after the other in that mode; the recorder's own question did not.
+describe('review I4: a minor\'s two-line question in "my screen reader speaks" mode', () => {
+    /** The engine in that mode: no queue, a line takes `unitMs` from the call whatever else is being said, an interrupt cuts nothing. */
+    function parallelEngine(unitMs: number) {
+        const calls: { key: string; at: number }[] = [];
+        return {
+            calls,
+            say(line: SpeechLine): Promise<void> {
+                calls.push({ key: line.key, at: Date.now() });
+                return new Promise<void>((resolve) => setTimeout(resolve, unitMs));
+            }
+        };
+    }
+    const minorProfile = (): PilotProfile => withProfile(newProfile(), { minor: true, guardianConfirmed: true });
+
+    it('the question is read out after BOTH lines have been, one after the other: a press between the end of the longer one and the end of the pair is not a yes', async () => {
+        const engine = parallelEngine(60); // a reader needs 120 ms for the pair
+        const h = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
+        h.rec.pressRecord();
+        await sleep(90); // the first line is over (60 ms), the question is being read (until 120 ms)
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(0);
+        expect(h.rec.phase).toBe('asking');
+        await sleep(100); // both read out
+        h.rec.pressRecord();
+        expect(h.mic.asked).toBe(1);
+        await until(() => h.rec.phase === 'recording', 'the recording to start');
+        await h.rec.stop();
+    });
+
+    it('the second line is handed over when the first is over (the lines of a reader are one after the other)', async () => {
+        const engine = parallelEngine(60);
+        const h = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
+        const t0 = Date.now();
+        h.rec.pressRecord();
+        expect(keys(h.said)).toEqual(['rec.minor']);
+        await until(() => keys(h.said).length === 2, 'the question');
+        expect(keys(h.said)).toEqual(['rec.minor', 'rec.ask']);
+        expect(Date.now() - t0).toBeGreaterThanOrEqual(55);
+        expect(h.saidWith[1]).toEqual({ interrupt: true });
+    });
+
+    it('control: an adult\'s one line is read out as before, and the order and the words of a minor\'s two lines are as they were', async () => {
+        const engine = parallelEngine(40);
+        const adult = setup({ askMs: 2000, say: (line) => engine.say(line) });
+        adult.rec.pressRecord();
+        expect(keys(adult.said)).toEqual(['rec.ask']);
+        await sleep(15);
+        adult.rec.pressRecord();
+        expect(adult.mic.asked).toBe(0); // still being read
+        await sleep(50);
+        adult.rec.pressRecord();
+        expect(adult.mic.asked).toBe(1);
+        await until(() => adult.rec.phase === 'recording', 'the recording to start');
+        await adult.rec.stop();
+        const minor = setup({ profile: minorProfile(), askMs: 2000, say: (line) => engine.say(line) });
+        minor.rec.pressRecord();
+        await until(() => keys(minor.said).length === 2, 'the question');
+        expect(minor.said[1]).toEqual({ key: 'rec.ask', params: { key: 'T' } });
     });
 });

@@ -39,6 +39,9 @@ export interface RecorderError {
 /** An error's name and message, as the technical detail of a sentence. */
 const describeError = (e: unknown): string => (e instanceof Error ? `${e.name}: ${e.message}` : String(e));
 
+/** A value a line's say gave back that settles when the line has been said (the page's engine); anything else (a test's fake) has nothing to wait for. */
+const thenable = (x: unknown): x is PromiseLike<unknown> => typeof (x as PromiseLike<unknown> | null)?.then === 'function';
+
 export interface RecorderStatus {
     readonly phase: RecorderPhase;
     readonly sessionId: string | null;
@@ -256,15 +259,28 @@ export class Recorder {
         const said: unknown[] = [];
         // the first line of the question cuts what the lesson was saying (the pilot pressed T and is waiting to be asked); the second follows it
         const minor = this.deps.profile().minor;
-        if (minor) said.push(this.deps.say({ key: 'rec.minor' }, { interrupt: true }));
-        said.push(this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } }, minor ? undefined : { interrupt: true }));
+        const question = (options: { readonly interrupt?: boolean } | undefined): unknown => this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } }, options);
+        if (!minor) said.push(question({ interrupt: true }));
+        else {
+            const guardian = this.deps.say({ key: 'rec.minor' }, { interrupt: true });
+            if (thenable(guardian)) {
+                // a minor's question is two lines. With "my screen reader speaks" the engine gives each line a wait of its own, all at once, while
+                // a reader reads them one after the other, so the pair would count as read out when the longer one has, with the reader still
+                // on the question (review I4): the question is handed over when the guardian line is over, and the pair is read when both are.
+                // (With a voice that queues the two follow each other anyway.)
+                said.push(Promise.resolve(guardian).catch(() => undefined).then(() => (token === this.askToken && this.phaseValue === 'asking' ? question({ interrupt: true }) : undefined)));
+            } else {
+                // a say that returns nothing (a test's fake) has nothing to wait for: both lines at once
+                said.push(guardian, question(undefined));
+            }
+        }
         // the pilot has the time to answer from the moment the question has been heard
         const opened = (): void => {
             if (token !== this.askToken || this.phaseValue !== 'asking') return;
             this.questionRead = true;
             this.askTimer = setTimeout(() => this.cancel(), this.deps.askMs ?? DEFAULT_ASK_MS);
         };
-        const reading = said.filter((x): x is PromiseLike<unknown> => typeof (x as PromiseLike<unknown> | null)?.then === 'function');
+        const reading = said.filter(thenable);
         if (reading.length === 0) return opened();
         let limit: ReturnType<typeof setTimeout> | undefined;
         const ranOut = new Promise<void>((resolve) => {

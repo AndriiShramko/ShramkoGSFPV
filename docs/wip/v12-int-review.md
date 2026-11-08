@@ -8,6 +8,7 @@ Reviewer: one agent, one pass over `e681e9b..v12-int` (14 commits, 76 files outs
 - [x] I1 keyboard: a digit pressed for the recorder's survey also answered the question the lesson had asked
 - [x] I2 privacy: with the lesson talking, the consent question (T, U) waited behind it, and a second press agreed to it before it was spoken
 - [x] I3 replay seam: a recording that starts in the glossary opened it again without its way back
+- [x] I4 privacy: in "my screen reader speaks" mode a minor's two-line consent question counted as read when the longer line was
 
 ## Findings
 
@@ -33,6 +34,15 @@ Reviewer: one agent, one pass over `e681e9b..v12-int` (14 commits, 76 files outs
 - Test that failed before the fix: `sonic-lessons.test.ts` "review I3" (the lesson rig: rings-first, G, the glossary opened again as a recording starts, N through it): the page was on `ears-walls`, `expected 'ears-walls' to be 'rings-first'`. The existing G test (no recording) is the control and passes before and after.
 - Fix: `reopen()` passes the way back on (`returnTo: this.returnTo`).
 - Checks run: `sonic-lessons` (26 tests), `sonic-int-replay` (10), typecheck.
+
+### I4 (privacy, accessibility, fixed) A minor's two-line question was "read out" after the longer line, with the screen reader still on the question
+
+- Defect. With "my screen reader speaks" (the engine's `selfVoice` off) the engine says nothing itself: `say()` waits the estimate of its line (`estimateSpeechS`) from the call, every line on its own, all at once (package `audio/engine.ts`), while a screen reader reads the captions one after the other. Step 6 of v12-int made the lesson host wait for its lines one after the other in that mode, but the recorder's own question did not: a minor's question is two lines (`rec.minor`, the guardian's consent; `rec.ask`, the question), handed over together, so the pair counted as read out after the longer of the two (7.8 s at speed 1) while a reader needs both (14.9 s). A hurried second press in those 7 s was the yes, with the recorder asking for the microphone before the pilot (a child) had heard the question itself. The same rule as I2, through the other door.
+- Probe (refuting attempt, real page: release build before the fix, headless Chrome 156, engine silent at speed 1, a profile under 18 with the guardian confirmed, `walls-hall`; `tools/bench/src/sonic-int-review.ts r3`, evidence `evidence/2026-11-08/sonic-int-review-r3-before.json`): a second T at +10.7 s (after the longer line, before the pair was read at 14.9 s) started the recording. 3 of 4 checks, the failing one this. Control: a press after both lines is the yes.
+- Tests that failed before the fix: `sonicrec-recorder.test.ts` "review I4" (3 tests, a fake of the engine in that mode: each line waits its own time from the call, in parallel): a press between the end of the longer line and the end of the pair is not a yes (`expected 1 to be +0`), and the second line is handed over when the first is over (it was handed over at once). Control that passes before and after: an adult's one line and the words and order of a minor's two. The older test "for a minor the guardian line and the question are both read out before a press counts" now expects the question to be handed over when the guardian line is over (its gates did not change otherwise).
+- Fix: `Recorder.ask()` hands the question over when the guardian line has settled (with interrupt: nothing of ours is left to cut), and counts the pair as read when both have; a `say` that returns nothing (the fakes) has nothing to wait for and gets both lines at once as before. With a voice that queues (speechSynthesis) the two lines followed each other anyway.
+- Checks run: `sonicrec-*` (10 files, 247 tests), typecheck; page run on a release build with the fix: 4 of 4 (`evidence/2026-11-08/sonic-int-review-r3.json`: the early press is no yes, the pair read, a press is the yes at +16.5 s).
+- Not changed: the estimate is not the reader's time (NVDA, JAWS and VoiceOver read at their own speed; none was run), so a pilot whose reader is slower than the app's estimate can still press early; the reading limit (20 s) is as it was.
 
 ## Refuted
 

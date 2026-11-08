@@ -11,12 +11,17 @@
 //       the middle of it, then pressed again at intervals; speechSynthesis is watched (when each utterance starts). Control: the same T with the
 //       lesson silent (its intro heard to the end) is answered within a second.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2]
+//   R3  a minor's two-line question in "my screen reader speaks" mode is read out after BOTH lines, one after the other
+//       the engine silent (a screen reader would read the captions, one line after the other); a guardian-confirmed profile under 18; T asks (rec.minor,
+//       rec.ask); a second T after the first line has been read (the estimate at the pilot's speed) but before the question has is not a yes.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3]
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
-import { defaultPrefs } from '../../../packages/sonic-fpv/src';
+import { DICTS, createTranslator, defaultPrefs } from '../../../packages/sonic-fpv/src';
+import { estimateSpeechS } from '../../../packages/sonic-fpv/src/audio/speech';
 import { launchChrome } from './browser';
 import { gitSha, REPO, writeEvidence } from './evidence';
 import { serveDist } from './sonicrec-serve';
@@ -332,6 +337,40 @@ async function r2(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R3
+
+async function r3(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    const rate = 1;
+    const reader = prefsDoc({ selfVoice: false, speechRate: rate });
+    const tr = createTranslator('en', DICTS);
+    const minorMs = estimateSpeechS(tr.text({ key: 'rec.minor' }), rate) * 1000;
+    const askMs = estimateSpeechS(tr.text({ key: 'rec.ask', params: { key: 'T' } }), rate) * 1000;
+    log(`R3: a minor's question in "my screen reader speaks" mode (a reader needs ${Math.round(minorMs + askMs)} ms for the pair, the longer line alone ${Math.round(Math.max(minorMs, askMs))} ms)`);
+    const ctx = await newContext(browser, served, reader, { id: 'reviewMinorPilot01', nickname: null, minor: true, guardianConfirmed: true, headphones: 'wired', surveysSeen: [], speechRecognition: false });
+    const page = await openLesson(ctx, served, 'walls-hall', 'R3');
+    const from = (await events(page)).length;
+    const pressedAt = Date.now();
+    await page.keyboard.press('KeyT');
+    await until('the guardian line', () => events(page), (all) => spokenAfter(all, from).includes('rec.minor'), 10000, 50);
+    // between the end of the longer line (where the parallel waits say "read") and the end of the pair (where a reader is done)
+    const between = Math.max(minorMs, askMs) + 0.4 * Math.min(minorMs, askMs);
+    await sleep(Math.max(0, pressedAt + between - Date.now()));
+    const said = spokenAfter(await events(page), from);
+    await page.keyboard.press('KeyT');
+    await sleep(1200);
+    const earlyOn = await recordingOn(page);
+    const earlyAt = Date.now() - pressedAt;
+    // once the pair has been read a press is the yes
+    await sleep(Math.max(0, pressedAt + minorMs + askMs + 1500 - Date.now()));
+    if (!earlyOn) await page.keyboard.press('KeyT');
+    const onAt = await until('the recording', () => recordingOn(page), (v) => v, 20000, 100).then(() => Date.now() - pressedAt);
+    result.r3 = { minorMs: Math.round(minorMs), askMs: Math.round(askMs), earlyPressAtMs: earlyAt - 1200, recordingOnAfterEarlyPress: earlyOn, recordingOnAtMs: onAt, spokenAtThatPress: said };
+    check('R3: the question is two lines (rec.minor, rec.ask) and a reader needs both before a press counts', said.includes('rec.minor'), { said });
+    check('R3: a press after the longer line but before the pair has been read is not a yes (no recording)', earlyOn === false, { earlyPressAtMs: earlyAt - 1200, pairReadAtMs: Math.round(minorMs + askMs), longerLineMs: Math.round(Math.max(minorMs, askMs)) });
+    check('R3: control: once both lines have been read a press is the yes', onAt >= minorMs + askMs, { recordingOnAtMs: onAt });
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -359,6 +398,7 @@ async function main(): Promise<void> {
         const fresh = (): Promise<BrowserContext> => b.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, acceptDownloads: true });
         if (which === 'r1') await r1(fresh, served);
         else if (which === 'r2') await r2(fresh, served);
+        else if (which === 'r3') await r3(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
