@@ -445,6 +445,14 @@ uploads in progress count), `SESSION_RETENTION_DAYS` (1826, the privacy text's f
 Files: `$GSFPV_BASE/data/sessions/index.jsonl` (one line per package stored, a tombstone per deletion) and `sessions/<id>/`
 (`meta.json`, `package.zip`). The client's address is never written. Checked by `apps/api/tests/test_sessions.py`.
 
+**Where the recordings live on the hub (2026-11-08).** `$GSFPV_BASE/data/sessions` is a bind mount (`/etc/fstab`) of
+`/mnt/HC_Volume_107400857/gsfpv/sessions`, the hub's Hetzner volume (10 GB, the owner can grow it; the root disk cannot grow).
+The empty directory under the mount is immutable (`chattr +i`), so if the volume is missing the store gets a write error instead
+of filling the root disk. The store measures free space on that volume (`MIN_FREE_GB` there), the events' disk guard measures
+`data/`. The container sees the mount only if it was there when the container started: after a boot without the volume,
+`docker restart gsfpv-api` once it is mounted again. The predeploy backup leaves `data/sessions` out; the weekly
+server backup (`/etc/server-backup/paths.d/gsfpv.paths`) takes it.
+
 **Delivery (step 7).** `apps/api/session_delivery.py` sends every stored package to the owner by Telegram and by e-mail, from the
 queue kept in each session's `meta.json` (so a restart loses nothing; a send that a restart cut off is queued again). Upload the API
 (`server.py`, `sessions.py`, `session_delivery.py`) first. **`deploy/compose.yml` changed too: `gsfpv-api` has 192 MB (was 64 MB, plan

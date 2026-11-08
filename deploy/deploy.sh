@@ -118,12 +118,14 @@ if [ "$SWITCH" = 1 ]; then
   # backup BEFORE the switch: everything in the gsfpv directory except the unpacked releases and
   # uploads (they are rebuilt from CI artifacts), plus the "current" symlink itself. config.env is
   # inside, hence umask 077. tar exit 1 = a file changed while read (live counters in data/): kept.
+  # data/sessions (the pilots' recordings, on the hub's volume) is left out: the weekly server
+  # backup holds it, and a copy in every predeploy archive would only multiply the recordings.
   mkdir -p "$BACKUPS"
   bk="$BACKUPS/gsfpv-predeploy-$(date -u +%Y%m%dT%H%M%SZ)-$ID.tgz"
   mapfile -t items < <(ls -A | grep -vxE 'releases|incoming')
   [ -L releases/current ] && items+=(releases/current)
   rc=0
-  (umask 077 && tar czf "$bk" -- "${items[@]}") || rc=$?
+  (umask 077 && tar czf "$bk" --exclude=data/sessions -- "${items[@]}") || rc=$?
   [ "$rc" -le 1 ] || { echo "backup failed (tar exit $rc): no switch"; rm -f "$bk"; exit 1; }
   n=$(tar tzf "$bk" | wc -l) || { echo "backup does not list: no switch"; exit 1; }
   [ "$n" -gt 0 ] || { echo "backup is empty: no switch"; exit 1; }
