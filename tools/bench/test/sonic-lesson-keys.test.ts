@@ -9,10 +9,12 @@
 //    so a recording with them replays PASS; in a lesson the mode's keys win over the page's (B is the feedback form's elsewhere).
 //  - B4 (W6, M41-7): I says the runner's status line through the mode's voice; a large high-contrast panel draws the runner's view
 //    after every attempt (the panel on a small stand-in for the DOM, tools/bench/test/sonic-fake-dom.ts).
+//  - B5 (W8): the runner pauses and resumes with the flight, where the session's pause and resume are written; no end of speech
+//    while paused, once after the resume; a question does not time out in a pause, and a paused session replays PASS.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { REPEAT_PLAYS, REPLAY_KEY_ACTIONS, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { ASK_TIMEOUT_S, REPEAT_PLAYS, REPLAY_KEY_ACTIONS, SPEECH_END_KEY, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, LessonSession, LessonView, SessionEvent } from '../../../packages/sonic-fpv/src';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
@@ -448,4 +450,131 @@ describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws 
         expect(light).toMatch(/color: #000;/);
         expect(rule(/@media \(forced-colors: active\) \{ \.sonic-progress \{([^}]*)\}/)).toMatch(/background: Canvas;/);
     });
+});
+
+// ------------------------------------------------------------------ B5
+
+/** The flight held or let go as the page's pause stack does it, and told to the bridge at once (the page's 'pause' event). */
+function hold(r: Rig, on: boolean): void {
+    r.session.pause(on, 'menu');
+    r.mode.bridge.syncPause();
+}
+
+const ends = (r: Rig): SessionEvent[] => r.sonic.filter((e) => e.kind === 'speech' && e.key === SPEECH_END_KEY);
+
+describe('B5 (W8): the runner pauses and resumes where the session\'s pause and resume are written; no end of speech while paused', () => {
+    it('the pause reaches the runner at once, at the t of the session event; the resume too', async () => {
+        const r = await open('rings-first');
+        await r.run(1000, null);
+        hold(r, true);
+        const pause = r.of('session').at(-1)!;
+        expect(pause).toMatchObject({ what: 'pause' });
+        expect(r.host.runner!.view().paused).toBe(true);
+        await r.run(5000, null);
+        expect(r.of('session').filter((e) => e.what === 'pause')).toHaveLength(1);
+        hold(r, false);
+        expect(r.of('session').at(-1)).toMatchObject({ what: 'resume', t: pause.t + 5000 });
+        expect(r.host.runner!.view().paused).toBe(false);
+    }, 120000);
+
+    it('a question asked before the pause does not time out in it: open after a pause three times its time, and skipped ASK_TIMEOUT_S of lesson time after it was asked', async () => {
+        const r = await open('ears-headphones');
+        await r.run(240000, null, () => r.host.asking && !r.engine.speaking);
+        expect(r.host.asking).toBe(true);
+        const asked = r.mode.bridge.now();
+        const answers = r.of('answer').length;
+        hold(r, true);
+        await r.run(ASK_TIMEOUT_S * 3000, null);
+        hold(r, false);
+        await r.run(1000, null);
+        expect(r.of('answer')).toHaveLength(answers);
+        expect(r.host.asking).toBe(true);
+        await r.run(60000, null, () => r.of('answer').length > answers);
+        const skip = r.of('answer').at(-1)!;
+        expect(skip).toMatchObject({ via: 'skip', value: null });
+        // its 20 s ran outside the pause (the question's lines were said before it: within a second of lesson time)
+        const lessonTime = skip.t - asked - ASK_TIMEOUT_S * 3000;
+        expect(lessonTime).toBeGreaterThanOrEqual(ASK_TIMEOUT_S * 1000 - 1000);
+        expect(lessonTime).toBeLessThan(ASK_TIMEOUT_S * 1000 + 1000);
+    }, 300000);
+
+    it('no speech.end and no runner.spoken while paused (the menu\'s lines); one at the resume when the queue is empty; the task\'s sound waits for it', async () => {
+        const r = await open('rings-first');
+        // the task's first part is being said; the flight pauses and a line of the menu cuts it
+        await r.run(500, null);
+        expect(r.engine.speaking).toBe(true);
+        const ends0 = ends(r).length;
+        const cues0 = r.engine.cues.length;
+        hold(r, true);
+        void r.mode.bridge.say({ key: 'status.none' }, true);
+        await r.run(15000, null);
+        expect(r.engine.speaking).toBe(false);
+        expect(ends(r)).toHaveLength(ends0);
+        expect(r.engine.cues.slice(cues0).filter((c) => c.kind === 'repeat-cue')).toEqual([]);
+        hold(r, false);
+        const resume = r.of('session').at(-1)!;
+        expect(ends(r)).toHaveLength(ends0 + 1);
+        expect(ends(r).at(-1)!.t).toBe(resume.t);
+        // the lesson goes on from there: the named sound of its first part plays
+        await r.run(10000, null);
+        expect(r.engine.cues.slice(cues0).some((c) => c.kind === 'repeat-cue')).toBe(true);
+    }, 120000);
+
+    it('resumed while a line is still being said: no end of speech at the resume, one when the line ends', async () => {
+        const r = await open('rings-first');
+        await r.run(500, null);
+        const ends0 = ends(r).length;
+        hold(r, true);
+        void r.mode.bridge.say({ key: 'status.none' }, true);
+        hold(r, false);
+        expect(r.engine.speaking).toBe(true);
+        expect(ends(r)).toHaveLength(ends0);
+        await r.run(10000, null, () => ends(r).length > ends0);
+        expect(ends(r)).toHaveLength(ends0 + 1);
+        expect(r.engine.speaking).toBe(false);
+    }, 120000);
+
+    it('a lesson opened while the flight is paused waits from its start: the pause written after its open, the runner paused, nothing goes on until the resume', async () => {
+        rig = await Rig.make(getLesson('rings-first'));
+        const r = rig;
+        r.session.pause(true, 'menu');
+        expect(await r.host.open('rings-first')).toBe(true);
+        const events = r.sonic.map((e) => (e.kind === 'session' ? `session ${e.what}` : e.kind === 'lesson' ? `lesson ${e.what}` : e.kind));
+        expect(events.indexOf('session pause')).toBeGreaterThan(events.indexOf('lesson open'));
+        expect(r.host.runner!.view().paused).toBe(true);
+        await r.run(20000, null);
+        expect(ends(r)).toHaveLength(0);
+        expect(r.host.runner!.phase).toBe('intro');
+        hold(r, false);
+        expect(ends(r)).toHaveLength(1);
+        await r.run(60000, null, () => r.host.runner!.phase === 'flying');
+        expect(r.host.runner!.phase).toBe('flying');
+    }, 120000);
+
+    it('a session paused for longer than an attempt\'s time limit in the attempt replays PASS: the attempt is not failed, the ring counts; control: without its session events the replay fails it', async () => {
+        const r = await open('rings-first');
+        const rec = recorder(null);
+        await r.run(1200, rec.control);
+        r.press('scene.next');
+        await r.run(1000, rec.control);
+        expect(r.host.runner!.phase).toBe('flying');
+        const limitMs = (getLesson('rings-first').attemptLimitS ?? 60) * 1000;
+        hold(r, true);
+        await r.run(limitMs + 10000, rec.control);
+        hold(r, false);
+        const fly = recorder(throughTheGate);
+        // the same frame list, the gate flown now
+        fly.frames.push(...rec.frames);
+        await r.run(30000, fly.control, () => r.lessonEvents('attempt-pass').length >= 1);
+        await r.run(600, fly.control);
+        expect(r.lessonEvents('attempt-fail')).toEqual([]);
+        expect(r.lessonEvents('attempt-pass')).toHaveLength(1);
+        const manifest = manifestOf(r, 'rings-first', 'pauseSession0000001');
+        const { check } = checkSession({ manifest, frames: fly.frames, events: r.sonic });
+        expect(check.events.diffs).toEqual([]);
+        expect(check.ok, JSON.stringify({ notes: check.notes, cues: check.cues })).toBe(true);
+        const bare = checkSession({ manifest, frames: fly.frames, events: r.sonic.filter((e) => e.kind !== 'session') });
+        expect(bare.check.ok).toBe(false);
+        expect(bare.check.events.diffs.some((d) => d.problem === 'extra' && d.derived?.kind === 'lesson' && d.derived.what === 'attempt-fail')).toBe(true);
+    }, 300000);
 });

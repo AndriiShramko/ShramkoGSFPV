@@ -229,7 +229,23 @@ with its control (the rule broken once in the code, the test seen failing, the c
   - Changed: `sonic-lessons` "N skips the intro, I says ..." expects the runner's step line (`status.progress-step`, the
     lesson's place on the path), was `status.lesson`.
   - Not seen in a page yet: the panel's place over a real flight and its size on a phone are stage C's page proof.
-- [ ] B5 (W8) `runner.pause(t)` and `resume(t)` where the session's pause and resume are written; no `spoken` while paused
+- [x] B5 (W8) `runner.pause(t)` and `resume(t)` where the session's pause and resume are written; no `spoken` while paused
+  - `apps/fly/src/sonic/bridge.ts` `pauseState()`: where the bridge writes the session's pause or resume it calls
+    `runner.pause(t)` or `runner.resume(t)` at the same t; after a resume it reports the end of speech once (the speech.end
+    marker and `runner.spoken`) when the queue is empty, else when it runs empty. `spoken()` does nothing while paused (the
+    queue then holds the lesson menu's, K's or I's lines). New `syncPause()`: the page calls it on its 'pause' event
+    (`feature.ts`), so the pause reaches the runner when the flight is held, not at the next frame (the menus speak at once).
+    A lesson opened while the flight is paused (a recording started under its consent dialog opens the lesson again) writes
+    the pause right after its open and pauses the runner, so it waits from its start; the resume comes with the flight's.
+  - Tests (`sonic-lesson-keys` B5, 6): the pause and the resume reach the runner at once, at the session events' t; a question
+    of ears-headphones asked before a 60 s pause is still open a second after it and is skipped 20 s of lesson time after it
+    was asked (within a second); no speech.end while paused (a menu line cut the task and ended) and no named sound starts,
+    one marker at the resume's own t, then the task's sound plays; resumed while a line is still said: no marker at the
+    resume, one when it ends; a lesson opened in a pause has its pause after its open, says nothing more and stays in the
+    task 20 s, goes on after the resume; rings-first paused 70 s (its attempt limit is 60 s) in its first attempt then flown
+    through the ring: the attempt passes, and the recording replays PASS, without its session events the replay fails the
+    attempt (in the test). Controls broken once and restored: the runner not told (4 fail), the end of speech while paused
+    (2 fail), a lesson opened in a pause not paused (1 fails).
 - [ ] B6 (M41-3) Escape: the spoken lesson menu; the line at every lesson's start
 - [ ] B7 (W15) every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call outside the engine
 - [ ] B8 tests for B1 to B7 complete, gates exit 0, stage B's status final

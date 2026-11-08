@@ -262,6 +262,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         flight.focus({ preventScroll: true });
     };
     offs.push(ctx.events.on('pause', ({ on }) => { if (!on) focusFlight(); }), () => flight.remove());
+    // the lesson waits with the flight at once (W8): the menus that hold the flight speak at once, and a line of theirs must not be
+    // taken for the end of the lesson's speech (bridge.ts pauseState); the next frame would be late for it
+    offs.push(ctx.events.on('pause', () => mode.bridge.syncPause()));
     // the start screen over the flight: the flight waits behind it, a lesson chosen on it opens, Escape and Back close it
     const showMenu = (): void => {
         if (!screen) return;
