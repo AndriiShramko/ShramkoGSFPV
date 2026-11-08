@@ -27,6 +27,7 @@ import { t, locale } from '../i18n';
 import { SonicMode } from './mode';
 import type { SonicEntry } from './entry';
 import { PageRuntime } from './runtime';
+import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
 import type { LessonPage } from './lessons';
 import { PrimitiveStage, worldPrims } from './primitives';
@@ -367,15 +368,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     const onKeyUp = (e: KeyboardEvent): void => {
         if (rCodes.has(e.code)) mode.releaseR();
     };
-    // the digits answer a question the lesson asked (0 skips it); with none asked the key is not ours
-    const onDigit = (e: KeyboardEvent): void => {
-        if (!host || !host.asking || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
-        const m = /^(?:Digit|Numpad)(\d)$/.exec(e.code);
-        if (!m || typing(e.target)) return;
-        e.preventDefault();
-        e.stopPropagation();
-        host.answer(Number(m[1]));
-    };
+    // the digits answer a question the lesson asked (0 skips it); with none asked the key is not ours (digit-key.ts)
+    const onDigit = digitAnswerHandler({ host: () => host, paused: () => ctx.session.paused, typing });
     // a hidden tab draws no frames: the engine must not go on sounding the last layers
     const onVisibility = (): void => {
         if (document.visibilityState !== 'visible') {

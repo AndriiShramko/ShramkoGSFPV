@@ -1,0 +1,305 @@
+// v0.12 v12-int REVIEW probes in the joined page (docs/wip/v12-int-review.md). Each probe is an attempt to break a claim of the int branch in the
+// real page: the release build of this tree behind tools/bench/scripts/serve-csp.mjs (nginx's enforced CSP and headers), headless Chrome with a
+// fake microphone, the keyboard only, the GPU lock held. Nothing goes to the live site or API: no /api is served at all.
+//
+//   R1  a digit pressed for the survey must not answer a question the lesson has asked
+//       ears-headphones; T, T records; the lesson asks its first question; T stops; the survey offer is answered with 1 and two questions with
+//       digits. Control (a page of its own): the same digit with no survey running DOES answer the question, so the probe can see an answer.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1]
+// Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
+import { mkdirSync, rmdirSync, statSync } from 'node:fs';
+import type { BrowserContext, Page } from 'playwright';
+import { SCHEMA_VERSION } from '../../../packages/prefs/src';
+import { defaultPrefs } from '../../../packages/sonic-fpv/src';
+import { launchChrome } from './browser';
+import { gitSha, REPO, writeEvidence } from './evidence';
+import { serveDist } from './sonicrec-serve';
+import type { Served } from './sonicrec-serve';
+
+const PORT = 5420;
+const DIST = `${REPO}/dist`;
+const LOCK = 'C:/dev/.gpu-lock';
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+const T0 = Date.now();
+const log = (...a: unknown[]): void => console.log(`[${((Date.now() - T0) / 1000).toFixed(0).padStart(4)}s]`, ...a);
+
+interface Check {
+    name: string;
+    pass: boolean;
+    value?: unknown;
+}
+const checks: Check[] = [];
+const check = (name: string, pass: boolean, value?: unknown): boolean => {
+    checks.push({ name, pass, value });
+    console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}${value === undefined ? '' : '  ' + JSON.stringify(value).slice(0, 400)}`);
+    return pass;
+};
+
+async function lock(): Promise<void> {
+    for (let waited = 0; ; waited++) {
+        try {
+            mkdirSync(LOCK);
+            return;
+        } catch {
+            try {
+                if (Date.now() - statSync(LOCK).mtimeMs > 30 * 60 * 1000) {
+                    rmdirSync(LOCK);
+                    continue;
+                }
+            } catch {
+                /* gone */
+            }
+            if (waited % 600 === 0) log('waiting for the GPU lock');
+            await sleep(100);
+        }
+    }
+}
+let locked = false;
+const unlock = (): void => {
+    if (!locked) return;
+    locked = false;
+    try {
+        rmdirSync(LOCK);
+    } catch {
+        /* not ours */
+    }
+};
+
+/** The prefs document: the engine silent (a screen reader would speak) at double speed, the first-visit warning seen. */
+function prefsDoc(over: Record<string, unknown> = {}): object {
+    return {
+        format: 'gsfpv-prefs',
+        version: SCHEMA_VERSION,
+        app: '0.3.0',
+        savedAt: '2026-11-08T00:00:00.000Z',
+        settings: { global: {}, drone: {}, scene: {} },
+        collections: { sonic: { v: 1, prefs: { ...defaultPrefs(), selfVoice: false, speechRate: 2, ...over }, progress: {}, current: null }, ui: { v: 1, warned: true } }
+    };
+}
+
+/** Before the page's scripts: the prefs, optionally a pilot profile, and an accumulator of every event of the mode (the page's own log keeps 600). */
+const initScript = (prefs: object, profile: object | null): string => `(() => {
+  window.__name = (f) => f;
+  try {
+    if (!localStorage.getItem('gsfpv.prefs.v1')) localStorage.setItem('gsfpv.prefs.v1', ${JSON.stringify(JSON.stringify(prefs))});
+    ${profile === null ? '' : `if (!localStorage.getItem('gsfpv.sonicrec.profile')) localStorage.setItem('gsfpv.sonicrec.profile', ${JSON.stringify(JSON.stringify(profile))});`}
+  } catch (e) {}
+  try { delete window.showSaveFilePicker; } catch (e) {}
+  window.__rv = { events: [], last: null };
+  setInterval(() => {
+    const h = window.__gsfpv && window.__gsfpv.sonic;
+    if (!h) return;
+    const ev = h(true).events;
+    if (ev.length === 0) return;
+    const rv = window.__rv;
+    let from = 0;
+    if (rv.last !== null) {
+      from = ev.length;
+      for (let i = ev.length - 1; i >= 0; i--) if (JSON.stringify(ev[i]) === rv.last) { from = i + 1; break; }
+      if (from === ev.length && JSON.stringify(ev[ev.length - 1]) !== rv.last) from = 0;
+    }
+    for (let i = from; i < ev.length; i++) rv.events.push(ev[i]);
+    rv.last = JSON.stringify(ev[ev.length - 1]);
+  }, 40);
+})();`;
+
+interface Ev {
+    kind: string;
+    t: number;
+    key?: string;
+    what?: string;
+    lessonId?: string;
+    item?: string;
+    via?: string;
+    value?: number | null;
+}
+interface Probe {
+    lesson: string | null;
+    phase: string | null;
+    attempt: number;
+    asking: boolean;
+    question: { id: string; options: number } | null;
+    engine: string;
+    speechQueue: number;
+}
+type Hook = { __gsfpv: { sonic: (e?: boolean) => unknown; status?: string } };
+const probe = (page: Page): Promise<Probe> => page.evaluate(() => (window as unknown as Hook).__gsfpv.sonic(false)) as Promise<Probe>;
+const events = (page: Page): Promise<Ev[]> => page.evaluate(() => (window as unknown as { __rv: { events: unknown[] } }).__rv.events) as Promise<Ev[]>;
+const spokenAfter = (all: readonly Ev[], from: number): string[] => all.slice(from).filter((e) => e.kind === 'speech' && e.key !== 'speech.end').map((e) => e.key ?? '');
+const answersAfter = (all: readonly Ev[], from: number): Ev[] => all.slice(from).filter((e) => e.kind === 'answer');
+
+/** Polls in the page (no waitForFunction: the release's CSP refuses a predicate made with new Function). */
+async function until<T>(what: string, read: () => Promise<T>, pred: (v: T) => boolean, ms = 30000, every = 100): Promise<T> {
+    const t0 = Date.now();
+    for (;;) {
+        const v = await read();
+        if (pred(v)) return v;
+        if (Date.now() - t0 > ms) throw new Error(`timed out (${Math.round(ms / 1000)} s) waiting for ${what}: ${JSON.stringify(v).slice(0, 500)}`);
+        await sleep(every);
+    }
+}
+
+const problems: string[] = [];
+
+async function newContext(browser: () => Promise<BrowserContext>, served: Served, prefs: object, profile: object | null): Promise<BrowserContext> {
+    const ctx = await browser();
+    await ctx.grantPermissions(['microphone'], { origin: served.origin });
+    await ctx.addInitScript({ content: initScript(prefs, profile) });
+    return ctx;
+}
+
+/** /en/fly/?sonic=<lesson>, Enter on the start screen's button; the lesson runs and the recorder's panel is there. */
+async function openLesson(ctx: BrowserContext, served: Served, lesson: string, label: string): Promise<Page> {
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => problems.push(`${label}: pageerror ${e.message.slice(0, 300)}`));
+    page.on('console', (m) => {
+        if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) problems.push(`${label}: console ${m.text().slice(0, 300)}`);
+    });
+    await page.goto(`${served.origin}/en/fly/?sonic=${lesson}&nowarn=1`);
+    await until('the start screen', () => page.evaluate(() => !!document.querySelector('[data-testid="sonic-start-asked"]')), (v) => v, 60000);
+    await page.focus('[data-testid="sonic-start-asked"]');
+    await page.keyboard.press('Enter');
+    await until(`lesson ${lesson}`, async () => ((await page.evaluate(() => (window as unknown as Hook).__gsfpv?.status ?? null)) === 'ready' ? (await probe(page)).lesson : null), (v) => v === lesson, 90000);
+    await until('the recordings panel', () => page.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 30000);
+    return page;
+}
+
+const recordingOn = (page: Page): Promise<boolean> => page.evaluate(() => document.querySelector('.sonicrec-toggle')?.classList.contains('recording') === true);
+
+/** T asks, T agrees (a press before the question has been read out is ignored: press until the recording runs). */
+async function startRecording(page: Page, asks: string[]): Promise<void> {
+    const from = (await events(page)).length;
+    await page.keyboard.press('KeyT');
+    await until('the question', () => events(page), (all) => asks.every((k) => spokenAfter(all, from).includes(k)), 20000);
+    for (let t0 = Date.now(); !(await recordingOn(page)) && Date.now() - t0 < 60000; ) {
+        await sleep(2500);
+        if (await recordingOn(page)) break;
+        if (spokenAfter(await events(page), from).includes('rec.started')) break;
+        await page.keyboard.press('KeyT');
+    }
+    await until('the recording', () => recordingOn(page), (v) => v, 20000);
+}
+
+/** The lesson's first question pending: the intro skipped with N, the question said (nothing left in the speech queue). */
+async function reachQuestion(page: Page): Promise<Probe> {
+    let skipped = false;
+    return until(
+        'the first question of ears-headphones',
+        async () => {
+            const p = await probe(page);
+            if (!skipped && p.phase === 'intro') {
+                skipped = true;
+                await page.keyboard.press('KeyN');
+            }
+            return p;
+        },
+        (p) => p.asking && p.speechQueue === 0 && p.question !== null,
+        120000,
+        80
+    );
+}
+
+// ------------------------------------------------------------------------------------------------ R1
+
+async function r1(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R1 control: a digit with no survey answers the question');
+    {
+        const ctx = await newContext(browser, served, prefsDoc(), null);
+        const page = await openLesson(ctx, served, 'ears-headphones', 'R1c');
+        const q = await reachQuestion(page);
+        const from = (await events(page)).length;
+        await page.keyboard.press('Digit1');
+        await sleep(600);
+        const got = answersAfter(await events(page), from);
+        check('R1 control: with no survey a digit answers the lesson question (the probe sees a lesson answer)', got.length >= 1 && got[0]?.via === 'key', { question: q.question?.id, answers: got });
+        await ctx.close();
+    }
+    log('R1: the survey runs while the lesson asks');
+    const ctx = await newContext(browser, served, prefsDoc(), null);
+    const page = await openLesson(ctx, served, 'ears-headphones', 'R1');
+    await startRecording(page, ['rec.ask']);
+    const q = await reachQuestion(page);
+    const stopFrom = (await events(page)).length;
+    await page.keyboard.press('KeyT');
+    await until('the survey offer', () => events(page), (all) => spokenAfter(all, stopFrom).includes('survey.offer'), 30000);
+    const before = await probe(page);
+    await sleep(500);
+    await page.keyboard.press('Digit1');
+    await sleep(700);
+    const afterYes = await probe(page);
+    // two survey questions with digits (the first is a scale or a choice that takes 3), then the rest skipped
+    await page.keyboard.press('Digit3');
+    await sleep(600);
+    await page.keyboard.press('Digit3');
+    await sleep(600);
+    const afterDigits = await probe(page);
+    for (let i = 0; i < 12; i++) {
+        const open = await page.evaluate(() => {
+            const root = document.querySelector('.sonicrec-survey') as HTMLElement | null;
+            return !!root && !root.hidden;
+        });
+        if (!open) break;
+        await page.keyboard.press('Escape');
+        await sleep(450);
+    }
+    await until('the survey closed', () => page.evaluate(() => { const r = document.querySelector('.sonicrec-survey') as HTMLElement | null; return !r || r.hidden === true; }), (v) => v, 20000);
+    const all = await events(page);
+    const lessonAnswers = answersAfter(all, stopFrom);
+    result.r1 = { question: q.question, askingBeforeTheYes: before.asking, askingAfterTheYes: afterYes.asking, askingAfterTheDigits: afterDigits.asking, lessonAnswers, spokenSinceStop: spokenAfter(all, stopFrom) };
+    check('R1: the survey offer was heard while the lesson was still asking', before.asking === true && before.question?.id === q.question?.id, { before: before.question });
+    check('R1: the digits pressed for the survey (1 for yes, then 3 and 3) answered NO question of the lesson', lessonAnswers.length === 0 && afterYes.asking === true && afterDigits.asking === true, { lessonAnswers, askingAfterTheYes: afterYes.asking, askingAfterTheDigits: afterDigits.asking });
+    await ctx.close();
+}
+
+// ------------------------------------------------------------------------------------------------ main
+
+const result: Record<string, unknown> = {};
+
+async function main(): Promise<void> {
+    const which = (process.argv[2] ?? 'r1').toLowerCase();
+    let release: unknown = null;
+    try {
+        release = JSON.parse((await import('node:fs')).readFileSync(`${DIST}/release.json`, 'utf8'));
+    } catch {
+        throw new Error('dist/release.json is missing: run `node scripts/build-release.mjs` first');
+    }
+    if ((release as { sha?: string }).sha !== gitSha()) console.log(`NOTE: dist was built at ${(release as { sha?: string }).sha}, the tree is at ${gitSha()}`);
+    await lock();
+    locked = true;
+    let served: Served | null = null;
+    let browserHandle: Awaited<ReturnType<typeof launchChrome>>['browser'] | null = null;
+    let failure: string | null = null;
+    try {
+        served = await serveDist(DIST, {}, PORT);
+        const launched = await launchChrome({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--autoplay-policy=no-user-gesture-required'] });
+        browserHandle = launched.browser;
+        log('up:', launched.which.version, served.origin, JSON.stringify(release));
+        const b = browserHandle;
+        const fresh = (): Promise<BrowserContext> => b.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, acceptDownloads: true });
+        if (which === 'r1') await r1(fresh, served);
+        else throw new Error(`no probe named ${which}`);
+        check('no page error, no console error in any page', problems.length === 0, problems);
+    } catch (e) {
+        failure = e instanceof Error ? (e.stack ?? e.message) : String(e);
+        check('the run reached its end without an exception', false, failure.slice(0, 700));
+    } finally {
+        await browserHandle?.close().catch(() => undefined);
+        await served?.stop().catch(() => undefined);
+        unlock();
+    }
+    const passed = checks.filter((c) => c.pass).length;
+    const file = writeEvidence(`sonic-int-review-${which}${process.env.EVIDENCE_SUFFIX ?? ''}`, { site: `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
+    console.log(`${passed} of ${checks.length} checks passed in ${Math.round((Date.now() - T0) / 1000)} s; ${file}`);
+    process.exit(failure === null && passed === checks.length ? 0 : 1);
+}
+
+process.on('SIGINT', () => {
+    unlock();
+    process.exit(130);
+});
+main().catch((e) => {
+    unlock();
+    console.error(e);
+    process.exit(2);
+});
