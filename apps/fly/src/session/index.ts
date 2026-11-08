@@ -228,6 +228,12 @@ export class FlightSession {
     policy: RespawnPolicy = { ...DEFAULT_RESPAWN_POLICY };
     /** crash.enabled (C.7): false turns impacts into bounces; part of each life's params */
     crashOn = true;
+    /**
+     * The flight rules a lesson brings while it runs on a scan (v0.13 v13-int step 4: the lesson's bump, `{ bump: 'slide' }`, as a lesson
+     * world brings it in BuiltinWorld.overrides), set by the Fly by Sound mode (sonic/mode.ts); null outside such a lesson, so every other
+     * flight is the same flight. Merged into every life like a built-in world's rules (lifeOverrides). Change it with setLessonFlight.
+     */
+    private lessonFlight: Readonly<ParamOverrides> | null = null;
     /** a new life began (respawn, 'life' setting, a new flight model at the spawn) */
     onLife: ((life: Life) => void) | null = null;
     /** the pilot's camera, render-only (setCamera); null = the drone preset's value */
@@ -483,8 +489,9 @@ export class FlightSession {
      */
     lifeOverrides(): ParamOverrides {
         const o: ParamOverrides = this.crashOn ? { ...this.overrides } : { ...this.overrides, crashOn: false };
-        // a built-in world's own rules (a lesson world's bump): every life it flies has them, none a scan flies
+        // a built-in world's own rules (a lesson world's bump): every life it flies has them; a scan's only while a lesson runs on it
         if (this.builtin?.overrides) Object.assign(o, this.builtin.overrides);
+        if (this.lessonFlight) Object.assign(o, this.lessonFlight);
         const wind = this.windConfig();
         if (wind) o.wind = wind;
         return o;
@@ -608,6 +615,17 @@ export class FlightSession {
         if (on === this.crashOn) return false;
         this.crashOn = on;
         return true;
+    }
+
+    /**
+     * A lesson's flight rules on this session (v13-int step 4: a lesson on a scan flies with the lesson's bump), or null when it ends:
+     * a 'life' setting. Returns false when what the next life would fly with is the same (a lesson world brings the bump itself); the
+     * caller applies it with applyLifeSettings.
+     */
+    setLessonFlight(rules: Readonly<ParamOverrides> | null): boolean {
+        const before = JSON.stringify(this.lifeOverrides());
+        this.lessonFlight = rules === null ? null : Object.freeze({ ...rules });
+        return JSON.stringify(this.lifeOverrides()) !== before;
     }
 
     /**

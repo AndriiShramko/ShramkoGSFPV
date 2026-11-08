@@ -70,8 +70,23 @@ lead's "Next" 5 and 6 as this branch sees them).
     restored: the direction box not applied, 2 tests fail; the panels not saved, 2 fail; a value said with the reader on, 2
     fail.
   - The page proof `sonic-v13-page.ts` C counts "Item n of 14" now (was 11); not run here (step 8).
-- [ ] 4. The scan lesson's contact: free-garden flies with the lesson contact `{ bump: 'slide' }` while a lesson runs on
+- [x] 4. The scan lesson's contact: free-garden flies with the lesson contact `{ bump: 'slide' }` while a lesson runs on
   a scan; every other flight unchanged.
+  - `FlightSession.setLessonFlight(rules | null)`: a lesson's flight rules merged into every life like a built-in world's
+    (`lifeOverrides`), a 'life' setting that reports a change only when what the next life flies with changes; null by
+    default, so every flight outside a lesson is the same flight (the a6 reference test passes; B12 and B15's crash rules
+    untouched). `SonicMode.enter()` sets `LESSON_FLIGHT` for a lesson whose world is a scan and applies it at once
+    (`applyLifeSettings`: a new life where the craft flies, else a new flight model at the spawn); `leave()` clears it. A
+    lesson world brings the rule itself: no new life for it.
+  - `sonic-scan-bump` (new, 2 tests): on a scan stand-in (walls-pillar's room as voxels through a `VoxelContactWorld`, no
+    rules of its own, as the lesson rig flies a scan) the mode's free-garden makes the next lives 'slide' (headers too, a
+    respawn keeps it), leave() gives the drone's contact back, walls-hall's own session starts no life. Flown by the lesson
+    pilot (free-garden's assists) into the pillar at 0, 30, 60 degrees, 2, 3, 4 m/s, the stick let go or pointed away: in
+    the lesson all 18 out of contact in 0.016 to 0.034 s; control, the drone's own contact (no lesson): 18 of 18 never out
+    within the 1 s watch. Control in the code (the mode's call removed): both tests fail.
+  - The Winter Garden's real walls: copied (read only) from v13-look's worktree cache into this worktree's `.cache/scenes/
+    7a475d38` (no download), so the 8 garden tests run here now; with step 4 all pass (the lesson passed end to end through
+    the host, eight gates, no touch), and one new: the lesson flies the scan 'slide', the drone's contact after `close()`.
 - [ ] 5. Reset over a running lesson: after "Reset my progress" every lesson is new, the one under the screen too.
 - [ ] 6. Words heard by the local voices: "the key" before a key's name in es, pl, ru; one register in Russian; the
   mode's name in Russian and Polish; the words check before and after.
@@ -100,6 +115,8 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-start-screen` C3 "the first key ... Down goes through every stop" and the reader's control (step 3) | `STOPS` has the three new switches; the settings' place "Item n of 14" (was 11), the 14 counted from the screen's own stops | three settings more (step 3) |
 | `sonic-start-screen` new: "v13-int step 3: sound from above and below, the sound panel and the attitude display ..." (3 tests) | new | step 3 |
 | page proof `tools/bench/src/sonic-v13-page.ts` C (step 3) | "Item n of 14" (was 11) in the settings walk and the target note's line | three settings more; not run here (step 8) |
+| `sonic-scan-bump` (step 4) | new, 2 tests | the scan lesson's contact |
+| `sonic-garden` "Winter Garden at x5, on its real walls" (step 4) | one test more: the lesson flies the scan 'slide', the drone's contact before and after; the 8 tests run here now (the walls' cache is in this worktree) | step 4 on the real scan |
 | `sonic-panels` "real elevations from the package (s13-elev) ..." (step 2) | new, 4 tests: tunnel-gaps' open way above marked by its own direction (on) and by the plan's side (off), with the bare chime's control; the target note's mark follows `plan.height.target.dir` (above, below, level), and with the setting off it stays on the bar | the package now gives the panel real elevations (lane s13-elev's "Needs from the simulator") |
 
 ## Deferred

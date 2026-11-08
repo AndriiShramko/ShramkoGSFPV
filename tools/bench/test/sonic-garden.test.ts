@@ -13,7 +13,8 @@
 //                (tools/bench/src/sonic-track-check.ts, with its controls), the lesson's world over them reads the track's gates and the floor,
 //                and the real flight model, flown by the lesson pilot along the legs, passes the lesson through the page's own host: eight
 //                gates in order inside their openings, no touch, timed; the best time is kept across pages (a slower lap does not take it,
-//                a faster one does); a pilot who does not steer, or does not fly, is not passed.
+//                a faster one does); a pilot who does not steer, or does not fly, is not passed. v0.13 (v13-int step 4): the lesson
+//                flies the scan with the lesson's bump (sim-core 'slide'), the drone's own contact before and after it.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -403,5 +404,17 @@ describe.skipIf(!haveWalls)('Winter Garden at x5, on its real walls', () => {
         expect(rig.sessionPrefs.has('scene.transform')).toBe(false);
         expect(rig.sessionPrefs.has('scene.walls')).toBe(false);
         expect(rig.sessionPrefs.get('crash.enabled')).toBe(false);
+    }, 180000);
+
+    it('v13-int step 4: the lesson flies the scan with the lesson\'s bump (sim-core \'slide\'), its flights\' headers say so, and the scan flies the drone\'s own contact again once the lesson is left (control: before the lesson)', async () => {
+        rig = await Rig.make(lesson, { scan });
+        expect(rig.session.sim.p.bump).toBe('drone');
+        expect(await rig.host.open('free-garden')).toBe(true);
+        await rig.run(1000);
+        expect(rig.session.sim.p.bump).toBe('slide');
+        expect((rig.session.lives().at(-1)!.header.overrides as { bump?: string }).bump).toBe('slide');
+        rig.host.close();
+        expect(rig.session.sim.p.bump).toBe('drone');
+        expect((rig.session.lives().at(-1)!.header.overrides as { bump?: string }).bump).toBeUndefined();
     }, 180000);
 });

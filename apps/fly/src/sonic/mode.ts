@@ -22,8 +22,11 @@
 //                  the form stays in the pause menu; N is the scene rotation's.
 //   [ ]            locked: a lesson's distances are metres of its world (a note says so).
 //   scan lessons   the prefs' session layer also holds the lesson's scene size and the walls on (scan-lesson.ts), taken off
-//                  again by leave(); the keys [ ] above are why the size cannot move meanwhile.
+//                  again by leave(); the keys [ ] above are why the size cannot move meanwhile. The session flies the lesson's
+//                  bump while the lesson runs (v0.13 v13-int step 4, FlightSession.setLessonFlight with LESSON_FLIGHT: a lesson
+//                  world brings it itself), the drone's own contact again after leave().
 import type { PrefsStore } from '@gsfpv/prefs';
+import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { Checkpoint, FlightSample, LessonDef, LessonSession, Pose, SonicFrameInput, SonicWorld } from '@shramko/sonic-fpv';
 import type { FlightSession } from '../session';
 import type { ActionHandler } from '../app/keys';
@@ -31,6 +34,7 @@ import type { AppEvents, Bus } from '../app/context';
 import { SonicBridge, touchMaterial } from './bridge';
 import type { BridgeEngine } from './bridge';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
+import { LESSON_FLIGHT } from './lesson-world';
 
 /** R held this long is the long press (back to the lesson's start), ms. */
 export const LONG_PRESS_MS = 700;
@@ -120,6 +124,8 @@ export class SonicMode {
         this.playing = false;
         this.floorY = o.floorY ?? 0;
         h.setLesson(this.lesson ? this.lesson.assists : null);
+        // a lesson on a scan flies with the lesson's bump too (v13-int step 4): a lesson world brings it itself (lesson-world.ts)
+        this.lessonFlight(this.lesson?.world.kind === 'scan' ? LESSON_FLIGHT : null);
         const b = this.bridge;
         b.world = o.world ?? null;
         b.layers = this.lesson ? this.lesson.layers : null;
@@ -165,9 +171,20 @@ export class SonicMode {
         for (const id of Object.keys(MODE_PREFS)) h.prefs.clearSession(id);
         clearScanPrefs(h.prefs);
         h.setLesson(null);
+        this.lessonFlight(null);
         this.bridge.stop();
         this.lesson = null;
         this.pressAt = null;
+    }
+
+    /**
+     * The session flies with a lesson's rules (a scan lesson's bump, LESSON_FLIGHT) or with none: a 'life' setting, applied at once when
+     * it changes what the next life flies with (a new life where the craft is, or a new flight model at the spawn).
+     */
+    private lessonFlight(rules: Readonly<ParamOverrides> | null): void {
+        const s = this.host.session();
+        if (s.disposed || typeof s.setLessonFlight !== 'function') return;
+        if (s.setLessonFlight(rules)) s.applyLifeSettings(s.presetId, s.overrides);
     }
 
     /** True while a replay drives the engine (playback(true)). */
