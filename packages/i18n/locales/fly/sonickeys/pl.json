@@ -1,12 +1,12 @@
 {
-  "keys.sonic.glossary": "Fly by Sound: otwórz słownik dźwięków",
-  "keys.sonic.hearKeys": "Fly by Sound: usłysz klawisze",
-  "keys.sonic.menu": "Fly by Sound: menu lekcji (Esc), menu pauzy (P)",
-  "keys.sonic.next": "Fly by Sound: następny krok",
-  "keys.sonic.previous": "Fly by Sound: krok wstecz",
-  "keys.sonic.record": "Fly by Sound: zacznij lub zatrzymaj nagrywanie",
-  "keys.sonic.repeat": "Fly by Sound: usłysz zadanie jeszcze raz",
-  "keys.sonic.send": "Fly by Sound: wyślij lot autorowi",
-  "keys.sonic.shareLink": "Fly by Sound: skopiuj link do tej lekcji",
-  "keys.sonic.status": "Fly by Sound: usłysz stan lekcji i nagrywania"
+  "keys.sonic.glossary": "Lot na słuch: otwórz słownik dźwięków",
+  "keys.sonic.hearKeys": "Lot na słuch: usłysz klawisze",
+  "keys.sonic.menu": "Lot na słuch: menu lekcji (klawisz Esc), menu pauzy (klawisz P)",
+  "keys.sonic.next": "Lot na słuch: następny krok",
+  "keys.sonic.previous": "Lot na słuch: krok wstecz",
+  "keys.sonic.record": "Lot na słuch: zacznij lub zatrzymaj nagrywanie",
+  "keys.sonic.repeat": "Lot na słuch: usłysz zadanie jeszcze raz",
+  "keys.sonic.send": "Lot na słuch: wyślij lot autorowi",
+  "keys.sonic.shareLink": "Lot na słuch: skopiuj link do tej lekcji",
+  "keys.sonic.status": "Lot na słuch: usłysz stan lekcji i nagrywania"
 }

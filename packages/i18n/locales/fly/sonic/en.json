@@ -81,6 +81,7 @@
   "sonic.start.courseWhat": "{lesson}: {title}.",
   "sonic.start.heading": "Start",
   "sonic.start.intro": "Learn to fly a drone by ear. Everything is said and played as sound, so no screen is needed. A helper can set up your radio, keyboard or gamepad.",
+  "sonic.start.name": "Fly by Sound",
   "sonic.start.lesson": "Start: {title}",
   "sonic.start.noAudio": "This browser cannot play sound, so Fly by Sound cannot run here. Try a current Chrome or Edge.",
   "sonic.start.starting": "Starting: {title}.",

@@ -236,7 +236,7 @@ export class StartScreen {
         }
         const anchors: SpokenAnchor[] = [];
         const h1 = this.root.querySelector<HTMLElement>('#sonic-h1');
-        if (h1) anchors.push({ el: h1, section: 'top', next: 0, words: () => this.key('app.name') });
+        if (h1) anchors.push({ el: h1, section: 'top', next: 0, words: () => t('sonic.start.name') });
         for (const id of SECTIONS) {
             const head = this.sections.get(id)?.querySelector<HTMLElement>('h2');
             if (head) anchors.push({ el: head, section: id, next: first.get(id) ?? 0, words: () => this.sectionName(id) });
@@ -283,7 +283,7 @@ export class StartScreen {
     // ------------------------------------------------------------------ parts
 
     private header(): HTMLElement {
-        return h('header', {}, h('h1', { id: 'sonic-h1', tabindex: -1, 'data-testid': 'sonic-h1' }, this.key('app.name')), h('p', { class: 'sonic-intro' }, t('sonic.start.intro')));
+        return h('header', {}, h('h1', { id: 'sonic-h1', tabindex: -1, 'data-testid': 'sonic-h1' }, t('sonic.start.name')), h('p', { class: 'sonic-intro' }, t('sonic.start.intro')));
     }
 
     private nav(): HTMLElement {

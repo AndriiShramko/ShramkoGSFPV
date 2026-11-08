@@ -136,7 +136,8 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         const site = (l: string): string => (JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8')) as { sound: { description: string } }).sound.description;
         for (const l of LANGS) {
             const text = dict('sonicentry', l)[SOUND_PAGE_ITEM.labelKey]!;
-            expect(text, l).toMatch(/^Fly by Sound: /);
+            // the mode's name first, in the language's own words where it has them (v13-int step 6: the Polish and the Russian name)
+            expect(text.startsWith(`${dict('sonic', l)['sonic.start.name']}: `), `${l}: ${text}`).toBe(true);
             for (const w of words[l]!) {
                 expect(text, `${l}: the item says ${w}`).toMatch(w);
                 expect(site(l), `${l}: the site says ${w} too`).toMatch(w);
@@ -410,7 +411,9 @@ describe('review R4: K\'s spoken help holds the flight while it is said, and any
         for (const l of LANGS) {
             expect(lines[l]['sonic.say.helpCut'], l).toBeTruthy();
             const keys = dict('sonickeys', l);
-            for (const k of ['keys.sonic.shareLink', 'keys.sonic.hearKeys']) expect(keys[k], `${l} ${k}`).toMatch(/^Fly by Sound: /);
+            // the mode's name first, in the language's own words where it has them (v13-int step 6: Russian and Polish)
+            const name = dict('sonic', l)['sonic.start.name']!;
+            for (const k of ['keys.sonic.shareLink', 'keys.sonic.hearKeys']) expect(keys[k]!.startsWith(`${name}: `), `${l} ${k}: ${keys[k]}`).toBe(true);
         }
     });
 });

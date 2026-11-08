@@ -11,7 +11,7 @@
 // start screen offers its lesson first and nothing starts by itself. Its sound settings are in force for this visit only
 // (SonicSetup.setVisit), and the start screen says which, with a button to keep them.
 import type { Locale } from '@shramko/sonic-fpv';
-import { DICTS, createTranslator, getLesson } from '@shramko/sonic-fpv';
+import { getLesson } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { followVisit } from './address';
 import { Captions } from './captions';
@@ -60,8 +60,8 @@ export interface StartHandle {
 /** Opens the start screen; a lesson chosen on it launches the flight. */
 export function startSonic(d: SonicStartDeps): StartHandle {
     enableZoom();
-    const tr = createTranslator(d.locale, DICTS);
-    document.title = tr.say('app.name');
+    // the mode's name in the page's language (v13-int step 6: Russian and Polish name it in their own words)
+    document.title = t('sonic.start.name');
     const request = parseSonicParam(d.raw);
     const setup = new SonicSetup(d.prefs, d.locale, new Captions());
     // a shared link's sound for this visit (never saved unless kept); its scene and size are the lesson's own, which decides. The
