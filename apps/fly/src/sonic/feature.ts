@@ -29,6 +29,7 @@ import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
 import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
 import { KeyNames } from './key-names';
+import { ProgressPanel, followProgress } from './progress-panel';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
 import { dialogOpen, typing } from '../devices/keyboard';
@@ -77,6 +78,8 @@ declare module '../app/test-hook' {
             lastLine: string | null;
             stagePrims: number;
             progress: ReturnType<typeof allProgress>;
+            /** what the progress panel shows (its lines joined by newlines), '' while it is hidden (v0.13 M41-7) */
+            panel: string;
             events: SessionEvent[];
         };
         /**
@@ -295,6 +298,19 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         log.push(e);
         if (log.length > EVENT_LOG_CAP) log.shift();
     }));
+    // the lesson's progress for the eye (M41-7, progress-panel.ts): drawn from the runner's view whenever the mode writes an event (an
+    // attempt's start, pass and failure each are one), outside #ui (the flight's live region), hidden while no lesson runs
+    const progressTitles = createTranslator(locale, DICTS);
+    const progress = new ProgressPanel({ parent: document.body, text: (key, params) => t(key, params as Record<string, string | number> | undefined) });
+    offs.push(
+        followProgress(progress, (cb) => ctx.events.on('sonicEvent', cb), () => {
+            const run = mode.active ? h.runner : null;
+            if (!run) return null;
+            const view = run.view();
+            return { view, title: progressTitles.text(view.title) };
+        }),
+        () => progress.dispose()
+    );
     let lastSample: FlightSample | null = null;
     offs.push(ctx.events.on('sonicSample', (smp) => { lastSample = smp; }));
     ctx.hook.sonicRays = (frames = 400) => {
@@ -453,6 +469,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         lastLine: mode.bridge.last ? mode.bridge.last.key : null,
         stagePrims: stage ? stage.count : 0,
         progress: allProgress(ctx.prefs),
+        panel: progress.text,
         events: withEvents ? [...log] : []
     });
     offs.push(

@@ -25,7 +25,7 @@
 //              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
 //              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
+import { createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
@@ -155,11 +155,9 @@ export class LessonHost {
      * pressed while the pass's own move opens the next lesson would otherwise open a lesson (or the start screen) over it.
      */
     private movedFrom: LessonSession | null = null;
-    private readonly tr: ReturnType<typeof createTranslator>;
 
     constructor(page: LessonPage) {
         this.p = page;
-        this.tr = createTranslator(page.locale, DICTS);
         page.mode.bridge.afterRunner = () => this.drain();
         page.onEvent((e) => this.observe(e));
     }
@@ -458,12 +456,13 @@ export class LessonHost {
         return true;
     }
 
-    /** I: where the pilot is, as a line to say. */
+    /**
+     * I (v0.13 W6, M41-7): where the pilot is, as the runner says it: "Lesson 6 of 28: Hold your height. Step 2 of 2. Attempt 2.
+     * Counted 0 of 3." (its lesson and step only in a lesson without a world); "No lesson is running." when none runs.
+     */
     status(): SpeechLine {
         const run = this.runner;
-        const lesson = this.lesson;
-        if (!run || !lesson) return { key: 'status.none' };
-        return { key: 'status.lesson', params: { title: this.tr.text(lesson.title), n: Math.max(1, run.attempt) } };
+        return run ? run.statusLine() : { key: 'status.none' };
     }
 
     /** Z (v0.13 W5): the step's whole task again, its named sounds three times, through the runner (recorded as the key 'repeat'). */

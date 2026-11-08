@@ -7,15 +7,22 @@
 //    'previous' the way back (the lesson G left, else the lesson before on the path, else the start screen); one move per runner.
 //  - B3 (W5, M41-6): N, B and Z call the runner (next, previous, repeat), each written first as a key event with its replay action,
 //    so a recording with them replays PASS; in a lesson the mode's keys win over the page's (B is the feedback form's elsewhere).
+//  - B4 (W6, M41-7): I says the runner's status line through the mode's voice; a large high-contrast panel draws the runner's view
+//    after every attempt (the panel on a small stand-in for the DOM, tools/bench/test/sonic-fake-dom.ts).
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { REPEAT_PLAYS, REPLAY_KEY_ACTIONS, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
-import type { FlightFrame, LessonSession, SessionEvent } from '../../../packages/sonic-fpv/src';
+import type { FlightFrame, LessonSession, LessonView, SessionEvent } from '../../../packages/sonic-fpv/src';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
+import { STATUS_ORDER, StatusBoard, sayStatus } from '../../../apps/fly/src/app/sonic-status';
 import { DEFAULT_RUNNER_KEYS, KeyNames, codeOfHint, spokenKey } from '../../../apps/fly/src/sonic/key-names';
 import { runnerOptions } from '../../../apps/fly/src/sonic/lessons';
+import { ProgressPanel, followProgress, progressRows } from '../../../apps/fly/src/sonic/progress-panel';
 import { saveProgress } from '../../../apps/fly/src/sonic/store';
-import { mkStore } from '../../../packages/prefs/test/helpers';
+import { REPO, mkStore } from '../../../packages/prefs/test/helpers';
+import { FakeDocument } from './sonic-fake-dom';
 import { Rig } from './sonic-lesson-rig';
 import type { Control } from './sonic-lesson-rig';
 
@@ -338,4 +345,107 @@ describe('B3 (W5, M41-6): N, B and Z call the runner, each recorded first as a k
         expect(forms).toBe(1);
         expect(r.of('key')).toHaveLength(2);
     }, 120000);
+});
+
+// ------------------------------------------------------------------ B4
+
+/** The simulator's English lines of the mode (packages/i18n/locales/fly/sonic/en.json), filled in as the page's t() fills them. */
+const SONIC_EN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'sonic', 'en.json'), 'utf8')) as Record<string, string>;
+function tEn(key: string, params?: Readonly<Record<string, string | number>>): string {
+    let s = SONIC_EN[key] ?? key;
+    for (const [k, v] of Object.entries(params ?? {})) s = s.split(`{${k}}`).join(String(v));
+    return s;
+}
+
+/** A view with the given fields over a flying lesson's in its first attempt. */
+const viewOf = (o: Partial<LessonView>): LessonView => ({ lessonId: 'rings-first', title: { key: 'lesson.rings-first.title' }, lessonIndex: 20, lessonCount: 28, path: 'full', step: 2, steps: 2, stepKind: 'fly', goal: 1, goals: 1, attempt: 1, counted: 0, required: 3, failsInARow: 0, offered: false, touches: 0, maxTouches: null, phase: 'flying', passed: false, skipped: false, listening: false, paused: false, playing: null, ...o });
+
+describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws its view after every attempt', () => {
+    it('the panel\'s rows: the lesson on the path and the step always; in a flying lesson the attempt once one began and the count; module 0 its lesson and step only', () => {
+        expect(progressRows(viewOf({ attempt: 2, counted: 1 })).map((r) => tEn(r.key, r.params))).toEqual(['Lesson 20 of 28', 'Step 2 of 2', 'Attempt 2', 'Counted 1 of 3']);
+        expect(progressRows(viewOf({ step: 1, stepKind: 'task', attempt: 0, phase: 'intro' })).map((r) => tEn(r.key, r.params))).toEqual(['Lesson 20 of 28', 'Step 1 of 2', 'Counted 0 of 3']);
+        expect(progressRows(viewOf({ lessonId: 'ears-glossary', lessonIndex: 2, step: 5, steps: 22, stepKind: 'sound', goal: 0, goals: 0, attempt: 1 })).map((r) => tEn(r.key, r.params))).toEqual(['Lesson 2 of 28', 'Step 5 of 22']);
+        // every row's words exist in the four languages, with the same numbers in them
+        for (const l of ['en', 'es', 'pl', 'ru']) {
+            const d = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'sonic', `${l}.json`), 'utf8')) as Record<string, string>;
+            for (const k of ['sonic.progress.label', 'sonic.progress.lesson', 'sonic.progress.step', 'sonic.progress.attempt', 'sonic.progress.counted']) expect(d[k], `${l} ${k}`).toBeTruthy();
+            for (const k of ['sonic.progress.lesson', 'sonic.progress.step', 'sonic.progress.counted']) expect(d[k], `${l} ${k}`).toMatch(/\{n\}.*\{total\}/);
+        }
+    });
+
+    it('I through the page\'s status board says runner.statusLine() through the mode\'s voice: lesson k of n, step, attempt, counted m of r', async () => {
+        const r = await open('rings-first');
+        const board = new StatusBoard();
+        board.add({ order: STATUS_ORDER.lesson, line: () => r.host.status() });
+        const say = (): { key: string; params: Record<string, unknown>; text: string } => {
+            const n = r.engine.said.length;
+            void sayStatus(board, (line, interrupt) => r.mode.bridge.say(line, interrupt));
+            const said = r.engine.said.slice(n);
+            expect(said).toHaveLength(1);
+            expect(said[0]!.interrupt).toBe(true);
+            return { key: said[0]!.line.key, params: { ...said[0]!.line.params }, text: said[0]!.text };
+        };
+        const index = lessonPaths().full.indexOf('rings-first') + 1;
+        // the task: the lesson and the step
+        expect(say()).toMatchObject({ key: 'status.progress-step', params: { lesson: index, lessons: 28, step: 1, steps: 2 } });
+        await r.run(240000, throughTheGate, () => r.lessonEvents('attempt-pass').length === 1 && r.lessonEvents('attempt-start').length === 2);
+        const now = say();
+        expect(now).toMatchObject({ key: 'status.progress', params: { lesson: index, lessons: 28, step: 2, steps: 2, n: 2, counted: 1, required: getLesson('rings-first').pass.required } });
+        expect(now.text).toContain(`Lesson ${index} of 28`);
+        expect(now.text).toContain('Attempt 2. Counted 1 of 3.');
+        // the line is the runner's own, word for word
+        expect(now.key).toBe(r.host.runner!.statusLine().key);
+        expect(now.params).toEqual(r.host.runner!.statusLine().params);
+    }, 300000);
+
+    it('the panel follows the lesson: hidden before one runs; after every attempt\'s start its number, after every counted attempt the count; I\'s numbers', async () => {
+        rig = await Rig.make(getLesson('rings-first'));
+        const r = rig;
+        const doc = new FakeDocument();
+        const panel = new ProgressPanel({ parent: doc.body as unknown as HTMLElement, text: tEn });
+        const stop = followProgress(panel, (cb) => r.events.on('sonicEvent', cb), () => (r.host.runner ? { view: r.host.runner.view(), title: 'Rings' } : null));
+        expect(panel.root.hidden).toBe(true);
+        expect(panel.text).toBe('');
+        expect(await r.host.open('rings-first')).toBe(true);
+        expect(panel.root.hidden).toBe(false);
+        expect(panel.root.getAttribute('aria-label')).toBe('Lesson progress');
+        // what the panel showed when each attempt began and ended (the bus runs the panel's listener first: it subscribed first)
+        const seen: { what: string; text: string }[] = [];
+        r.events.on('sonicEvent', (e) => {
+            if (e.kind === 'lesson' && (e.what === 'attempt-start' || e.what === 'attempt-pass' || e.what === 'attempt-fail')) seen.push({ what: e.what, text: panel.text });
+        });
+        await r.run(300000, throughTheGate, () => r.passed);
+        expect(r.passed).toBe(true);
+        let starts = 0;
+        let counted = 0;
+        for (const s of seen) {
+            if (s.what === 'attempt-start') expect(s.text, s.text).toContain(`Attempt ${++starts}`);
+            if (s.what === 'attempt-pass') expect(s.text, s.text).toContain(`Counted ${++counted} of 3`);
+        }
+        expect(starts).toBeGreaterThanOrEqual(3);
+        expect(counted).toBe(3);
+        expect(panel.text.split('\n')).toEqual(['Rings', `Lesson ${lessonPaths().full.indexOf('rings-first') + 1} of 28`, 'Step 2 of 2', `Attempt ${starts}`, 'Counted 3 of 3']);
+        // the same numbers as I
+        const line = r.host.runner!.statusLine();
+        expect(panel.text).toContain(`Counted ${line.params!.counted} of ${line.params!.required}`);
+        stop();
+    }, 300000);
+
+    it('its place and colours (sonic.css): at the left edge, clear of the view\'s centre, opaque, white on black and black on white', () => {
+        const css = readFileSync(join(REPO, 'apps', 'fly', 'src', 'sonic', 'sonic.css'), 'utf8');
+        const rule = (sel: RegExp): string => sel.exec(css)?.[1] ?? '';
+        const main = rule(/\.sonic-progress \{([^}]*)\}/);
+        expect(main).toMatch(/position: fixed/);
+        expect(main).toMatch(/left: max\(12px, env\(safe-area-inset-left\)\)/);
+        expect(main).not.toMatch(/left: 50%|right:/);
+        expect(main).toMatch(/max-width: min\(30vw, 360px\)/);
+        expect(main).toMatch(/background: #000;/);
+        expect(main).toMatch(/color: #fff;/);
+        expect(main).toMatch(/border: 3px solid #fff/);
+        expect(main).toMatch(/z-index: 4;/);
+        const light = rule(/@media \(prefers-color-scheme: light\) \{ \.sonic-progress \{([^}]*)\}/);
+        expect(light).toMatch(/background: #fff;/);
+        expect(light).toMatch(/color: #000;/);
+        expect(rule(/@media \(forced-colors: active\) \{ \.sonic-progress \{([^}]*)\}/)).toMatch(/background: Canvas;/);
+    });
 });

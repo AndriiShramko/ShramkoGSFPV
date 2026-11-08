@@ -369,10 +369,11 @@ describe('the host around a lesson', () => {
         expect(r.host.asking).toBe(false);
     }, 120000);
 
-    // v0.13 (stage B, B3, W5): Z is the runner's repeat, the step's whole task again (it was the bridge's last line)
+    // v0.13 (stage B, B3, W5): Z is the runner's repeat, the step's whole task again (it was the bridge's last line); (B4, W6) I is the
+    // runner's status line, the lesson on the path and the step (it was the title and the attempt)
     it('N skips the intro, I says where the pilot is, Z says the step\'s task again from its title, with interrupt, while the attempt waits', async () => {
         const r = await open('rings-first');
-        expect(r.host.status()).toMatchObject({ key: 'status.lesson' });
+        expect(r.host.status()).toMatchObject({ key: 'status.progress-step', params: { lesson: lessonPaths().full.indexOf('rings-first') + 1, lessons: lessonPaths().full.length, step: 1, steps: 2 } });
         expect(r.press('scene.next')).toBe(true);
         expect(r.sonic.filter((e) => e.kind === 'key').at(-1)).toMatchObject({ code: 'KeyN', action: 'next' });
         await r.run(3000, null);

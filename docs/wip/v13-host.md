@@ -206,7 +206,29 @@ with its control (the rule broken once in the code, the test seen failing, the c
   - Lines for a native reading (es, pl, ru): `sonic.say.helpPrevious`, `sonic.say.helpRepeat`, `keys.sonic.next`,
     `keys.sonic.previous`, `keys.sonic.repeat`, and B1's `sonic.key.Escape`.
   - The Fly by Sound tests with the key and locale tests after it: 694, 686 pass, 8 skipped (the scan's), none fails.
-- [ ] B4 (W6, M41-7) I says `runner.statusLine()`; a large high-contrast progress panel draws `runner.view()`
+- [x] B4 (W6, M41-7) I says `runner.statusLine()`; a large high-contrast progress panel draws `runner.view()`
+  - `apps/fly/src/sonic/lessons.ts` `status()` is the runner's `statusLine()` ("Lesson 20 of 28: Your first ring. Step 2 of 2.
+    Attempt 2. Counted 1 of 3."; the lesson and the step in the task and in module 0), `status.none` with no lesson; I says it
+    through the page's status board and the mode's voice (`bridge.say` -> `engine.say`), as before. The host's own translator
+    is gone with the old line.
+  - New `apps/fly/src/sonic/progress-panel.ts`: `progressRows(view)` (lesson k of n and step k of N always; in a flying lesson
+    "Attempt k" once one began and "Counted m of r"), `ProgressPanel` (the title and the rows, drawn only when the text
+    changed, hidden while no lesson runs) and `followProgress` (drawn at once and at every event the mode writes: every
+    attempt's start, pass and failure is one). `feature.ts` puts it outside #ui (the flight's live region: a screen reader is
+    not read every change; I and the attempt lines say it), the test hook gives its text (`sonic().panel`). New words
+    `sonic.progress.*` in the four languages. `sonic.css`: at the left edge halfway down (low on the left on a narrow page),
+    at most 30 % of the width, so the view's centre, the captions and the corners' telemetry stay clear; bold 18 to 28 px
+    white on opaque black with a white edge and a black outline (21:1, reads over a dark and a light scene), black on white
+    under `prefers-color-scheme: light`, the system's colours under `forced-colors`.
+  - Tests (`sonic-lesson-keys` B4, 4; the panel on `tools/bench/test/sonic-fake-dom.ts`, a small stand-in for the DOM): the
+    rows of a flying lesson, its task and module 0, the words in four languages; I through the board says the runner's line
+    (the step in the task; "Lesson 20 of 28", "Attempt 2. Counted 1 of 3." after the first counted attempt), interrupting;
+    the panel hidden before a lesson, then at every attempt's start "Attempt k" and at every counted one "Counted k of 3",
+    the numbers I says; its place and colours in `sonic.css`. Controls broken once and restored: `status()` with the v0.12
+    line (the I test fails), the panel drawn once and never again (the follow test fails).
+  - Changed: `sonic-lessons` "N skips the intro, I says ..." expects the runner's step line (`status.progress-step`, the
+    lesson's place on the path), was `status.lesson`.
+  - Not seen in a page yet: the panel's place over a real flight and its size on a phone are stage C's page proof.
 - [ ] B5 (W8) `runner.pause(t)` and `resume(t)` where the session's pause and resume are written; no `spoken` while paused
 - [ ] B6 (M41-3) Escape: the spoken lesson menu; the line at every lesson's start
 - [ ] B7 (W15) every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call outside the engine
@@ -234,7 +256,7 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-lessons` "a restart is not a touch" | its wall control waits until the lesson flies, then flies sideways into the side wall | the first attempt begins at the start (a flight in the task is put back); straight on, the ring's plane ends every attempt before the front wall, and between attempts nothing is a touch |
 | `sonic-lessons` "progress is saved at every attempt" | runs to one counted attempt short of the pass (r - 1) | three counted attempts pass the lesson now |
 | `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B; back in stage B (B2): N is pressed only while the glossary runs, and the glossary's runner is left not skipped | the glossary ends in a 'go' action (W3, W4); a press after the way back would be rings-first's own N, which moves on since B2 |
-| `sonic-lessons` "N skips the intro, I says where the pilot is, Z ..." (stage B, B3) | Z pressed as a key: its key event `repeat`, the task's title said first with interrupt, more lines after it, the attempt listening | Z is the runner's repeat since v0.13 (W5): the step's whole task, not the bridge's last line |
+| `sonic-lessons` "N skips the intro, I says where the pilot is, Z ..." (stage B, B3 and B4) | Z pressed as a key: its key event `repeat`, the task's title said first with interrupt, more lines after it, the attempt listening; I is `status.progress-step` with the lesson's place on the path (was `status.lesson`) | Z is the runner's repeat since v0.13 (W5): the step's whole task, not the bridge's last line; I is the runner's status line (W6) |
 | `sonic-optin` K in the mode and its control (stage B, B3) | the lines N, B, Z, I, G, R, T, U, L in that order, B's and Z's the page's own; on an ordinary page N, B, R, L | K names the keys that move a lesson first; B and Z do new things |
 | `sonic-int-reader` "a lesson flown in this mode re-derives on replay" (stage B, B2) | N pressed in the task (it starts the first attempt), not after three attempts while flying; the recording is asserted to hold one lesson and one key | N while flying leaves the lesson and the host opens the next one: the recording held rings-line's open |
 | `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
