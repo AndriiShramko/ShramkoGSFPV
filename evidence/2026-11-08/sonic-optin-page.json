@@ -7,14 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-08T09:12:31.527Z",
-    "gitHead": "e8989f1",
+    "date": "2026-11-08T09:16:37.596Z",
+    "gitHead": "91d8d8c",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "site": "http://localhost:5420",
+  "parts": "ABCD",
   "checks": [
     {
       "name": "A: an ordinary flight names Fly by Sound nowhere on the page before the pause menu is opened",
@@ -157,11 +158,11 @@
       "value": {
         "errors": [],
         "otherHosts": [
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v3/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json"
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json"
         ]
       }
     },
@@ -351,10 +352,10 @@
         "errors": [],
         "otherHosts": [
           "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json"
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json"
         ]
       }
     },

@@ -15,6 +15,8 @@
 //      lacks shows the start screen's note instead.
 //   D  /en/sound/: its start link is such a link and opens the start screen; its key list has nine keys, L and K among them.
 // A check that proves an absence has its control in the same run: the same probe finds the thing where it exists (B for A, A for B).
+// And the whole of A has one more: run with PARTS=A on a build of v0.12 as released (8ce53fb), it must fail where that release
+// showed the mode to everyone (EVIDENCE_SUFFIX=-base keeps that evidence apart).
 //   node scripts/build-release.mjs
 //   node tools/bench/scripts/serve-csp.mjs dist <port>                       (another shell)
 //   cd tools/bench && SITE=http://localhost:<port> npx tsx src/sonic-optin-page.ts
@@ -32,7 +34,9 @@ import { lock, sleep, unlock } from './sonic-garden-pilot';
 
 const SITE = (process.env.SITE ?? '').replace(/\/$/, '');
 if (!/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(SITE)) throw new Error('SITE=http://localhost:<port> of a local release build is needed (never the live site)');
-console.log(`sonic-optin-page target: ${SITE}`);
+/** PARTS=A: the ordinary page only (the control run: a build of the release before this lane, v0.12 at 8ce53fb, must fail it). */
+const PARTS = process.env.PARTS;
+console.log(`sonic-optin-page target: ${SITE}${PARTS ? `, parts ${PARTS}` : ''}`);
 process.on('SIGINT', () => {
     unlock();
     process.exit(130);
@@ -233,14 +237,16 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     check('A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded "Fly by Sound: audio-only training for blind pilots (beta)"', menu.items.filter((i) => i === 'pause.flyBySound').length === 1 && !menu.items.includes('pause.sonic') && menu.sound?.tag === 'A' && menu.sound.href === '/en/sound/' && menu.sound.target === '_blank' && (menu.sound.rel ?? '').includes('noopener') && menu.sound.text === EN['sonic.menu.page'], menu.sound);
     check('A: with the menu open the page names Fly by Sound once: that item', menu.namesInMenu === 1 && menu.namesInBody === 1, { menu: menu.namesInMenu, body: menu.namesInBody });
 
-    const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
-    await popup.waitForLoadState('domcontentloaded');
-    await popup.waitForSelector('h1', { timeout: 15000 });
-    const landed = await popup.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.textContent ?? '', start: [...document.querySelectorAll('a')].filter((a) => a.getAttribute('href') === '/en/fly/?sonic=start').length }));
-    const stillPaused = await page.evaluate(() => !!document.querySelector('.pause-menu'));
-    out.plainPopup = { ...landed, stillPaused };
-    check('A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu', landed.url === '/en/sound/' && landed.h1 === SITE_EN.sound.h1 && landed.start === 1 && stillPaused, out.plainPopup);
-    await popup.close();
+    if (menu.sound) {
+        const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
+        await popup.waitForLoadState('domcontentloaded');
+        await popup.waitForSelector('h1', { timeout: 15000 });
+        const landed = await popup.evaluate(() => ({ url: location.pathname, h1: document.querySelector('h1')?.textContent ?? '', start: [...document.querySelectorAll('a')].filter((a) => a.getAttribute('href') === '/en/fly/?sonic=start').length }));
+        const stillPaused = await page.evaluate(() => !!document.querySelector('.pause-menu'));
+        out.plainPopup = { ...landed, stillPaused };
+        check('A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu', landed.url === '/en/sound/' && landed.h1 === SITE_EN.sound.h1 && landed.start === 1 && stillPaused, out.plainPopup);
+        await popup.close();
+    } else check('A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu', false, 'no such item');
     await page.keyboard.press('Escape');
     await until('the menu to close', () => page.evaluate(() => !document.querySelector('.pause-menu')), (v) => v, 5000);
 
@@ -469,15 +475,17 @@ async function main(): Promise<void> {
         const plain = await make({});
         await ordinary(plain, out);
         await plain.close();
-        // the sender: a screen reader speaks (the engine is silent and the captions are the live region), and his own sound language
-        const send = await make({ selfVoice: false, speechRate: 2, theme: 'clear', calm: true, motorSound: true, layerGainDb: { safety: -6 } }, true);
-        const links = await sender(send, out);
-        await send.close();
-        // the receivers: the default sound, a screen reader speaks
-        await receivers(() => make({ selfVoice: false, speechRate: 2 }), links, out);
-        const site = await make({});
-        await soundPage(site, out);
-        await site.close();
+        if (PARTS !== 'A') {
+            // the sender: a screen reader speaks (the engine is silent and the captions are the live region), and his own sound language
+            const send = await make({ selfVoice: false, speechRate: 2, theme: 'clear', calm: true, motorSound: true, layerGainDb: { safety: -6 } }, true);
+            const links = await sender(send, out);
+            await send.close();
+            // the receivers: the default sound, a screen reader speaks
+            await receivers(() => make({ selfVoice: false, speechRate: 2 }), links, out);
+            const site = await make({});
+            await soundPage(site, out);
+            await site.close();
+        }
     } catch (e) {
         check('the run reached its end', false, String(e).slice(0, 400));
     } finally {
@@ -485,7 +493,7 @@ async function main(): Promise<void> {
         unlock();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence('sonic-optin-page', { site: SITE, checks, passed, total: checks.length, result: out });
+    const file = writeEvidence('sonic-optin-page', { site: SITE, parts: PARTS ?? 'ABCD', checks, passed, total: checks.length, result: out });
     console.log(`${passed} of ${checks.length} checks passed; ${file}`);
     process.exitCode = passed === checks.length && checks.length > 0 ? 0 : 1;
 }
