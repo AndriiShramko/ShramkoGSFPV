@@ -144,7 +144,15 @@ lead's "Next" 5 and 6 as this branch sees them).
     in Russian, the key's word in the three) needs a native reading, as do the habits above. The key's word in the
     simulator's lines is held by the word rate only: `--sim` has no key rule of its own (the package's lines have one),
     so a key's name lost in a long line can stay under the bound.
-- [ ] 7. Gates on the head; the sound repo's checks on s13-int.
+- [x] 7. Gates on the head; the sound repo's checks on s13-int.
+  - The gitlink at s13-int ecb2ffb (2b7fae2; since fe1613b the package changed only in tools, docs and evidence). `gates.py`
+    on 2b7fae2: exit 0: typecheck; vitest 248 files, 4068 passed, 1 skipped (the site's built templates; the 9 Winter
+    Garden tests run here); api-unittest 420 (3 skipped); architecture; i18n; catalog; B18 PASS (the run's change of
+    `evidence/2026-11-08/b-repo-b18.json` given back).
+  - The sound repo on ecb2ffb: `pnpm typecheck` clean; `pnpm test` 50 files, 1172 tests; locale lint 0 problems (4
+    languages, 526 keys); layout 0; `GPU_LOCK=C:/dev/.gpu-lock pnpm proof:audio` 3 files, 9 tests (8 audio proofs with
+    `engine-reset`, each failing on its control; the demo's checks); `pnpm listen` 9 of 9 (evidence keyed again,
+    d0f4d5a92ed7, every measured number as before). Its notes: `docs/dev/status-v0.13-int.md` there (I1 to I3).
 - [ ] 8. (next agent) Page proofs on a local release build: the v13-host and v13-look page benches with the real progress
   panel (v13-look's stand-in goes), the two page proofs that still expect v0.12 lines (`sonic-int-page.ts`,
   `sonic-lessons-page.ts`), the new switches on the page.
