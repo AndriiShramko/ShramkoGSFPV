@@ -20,7 +20,7 @@
 //              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the last line.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
 import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, nextLesson } from '@shramko/sonic-fpv';
-import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
+import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
 import type { FlightSession } from '../session';
@@ -35,6 +35,7 @@ import { voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
+import type { RunnerKeys } from './key-names';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -78,6 +79,40 @@ export interface LessonPage {
     clock(): number;
     /** the sound settings a shared link set that still stand (SonicSetup.visit), which the address of a lesson keeps (review R2) */
     visit?(): SonicLinkSound;
+    /** the names of the pilot's keys N, B and Z as his keyboard layout types them (key-names.ts); absent: N, B and Z */
+    keyNames?(): RunnerKeys;
+    /** the pilot's speaking speed (SonicPrefs.speechRate); absent: 1 */
+    speechRate?(): number;
+}
+
+/** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
+export interface RunnerPlace {
+    readonly start: Pose;
+    readonly floorY: number;
+    readonly objects: readonly SonicObject[] | null;
+    /** the lesson the pilot left with G (this one is the glossary, a detour), or null */
+    readonly returnTo: string | null;
+}
+
+/**
+ * What the sound package's runner of a lesson is made with (v0.13 W3, the package's RunnerOptions): the pilot's saved progress,
+ * his path (the lesson's place on it, "Lesson 6 of 28", and the lesson a pass names next), his speaking speed (how long a line is
+ * waited for when no end of speech comes), the names of his keys (the lines say "Press N"), and the lesson G left: the glossary
+ * opened from a lesson is a detour whose ways out lead back there, and leaving it forward does not mark it skipped (review R3).
+ */
+export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
+    return {
+        locale: page.locale,
+        progress: savedProgress(page.store, lessonId),
+        sessionStartMs,
+        start: place.start,
+        floorY: place.floorY,
+        ...(place.objects ? { objects: place.objects } : {}),
+        path: page.path(),
+        speechRate: page.speechRate?.() ?? 1,
+        ...(page.keyNames ? { keys: page.keyNames() } : {}),
+        returnTo: place.returnTo
+    };
 }
 
 export class LessonHost {
@@ -186,14 +221,7 @@ export class LessonHost {
                 this.shownPrims = worldPrims(lw.world);
                 this.p.stage.show(this.shownPrims);
             }
-            const runner = createLessonRunner(lesson, {
-                locale: this.p.locale,
-                progress: savedProgress(this.p.store, lessonId),
-                sessionStartMs: Date.now(),
-                start,
-                floorY,
-                ...(objects ? { objects } : {})
-            });
+            const runner = createLessonRunner(lesson, runnerOptions(this.p, lessonId, { start, floorY, objects, returnTo: o.returnTo ?? null }, Date.now()));
             this.lesson = lesson;
             this.runner = runner;
             this.world = world;

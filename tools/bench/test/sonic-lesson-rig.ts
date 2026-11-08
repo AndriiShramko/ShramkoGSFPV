@@ -24,6 +24,8 @@ import { SonicMode } from '../../../apps/fly/src/sonic/mode';
 import { lessonFlightWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { Prim } from '../../../apps/fly/src/sonic/primitives';
+import { DEFAULT_RUNNER_KEYS } from '../../../apps/fly/src/sonic/key-names';
+import type { RunnerKeys } from '../../../apps/fly/src/sonic/key-names';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { VoxelContactWorld } from '../../../packages/collision/src';
 import type { VoxelCollision } from '../../../packages/collision/src';
@@ -191,6 +193,10 @@ export class Rig {
     /** a session swap is under way: the page's flight is held (nothing steps) until it is done */
     swapping = false;
     paths: 'full' | 'fast' = 'full';
+    /** the names of the pilot's keys the page gives the runner (v0.13 W3; the page's are its keyboard layout's) */
+    keyNames: RunnerKeys = DEFAULT_RUNNER_KEYS;
+    /** the pilot's speaking speed the page gives the runner (SonicPrefs.speechRate) */
+    speechRate = 1;
     pilot: LessonPilot | null = null;
     session!: FlightSession;
     mode!: SonicMode;
@@ -268,7 +274,9 @@ export class Rig {
                       })
                     : null,
             showMenu: () => { rig.menus++; },
-            clock: () => rig.clock.t
+            clock: () => rig.clock.t,
+            keyNames: () => rig.keyNames,
+            speechRate: () => rig.speechRate
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);

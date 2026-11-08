@@ -13,6 +13,7 @@
   "sonic.hp.playing.left": "Звук играет слева.",
   "sonic.hp.playing.right": "Звук играет справа.",
   "sonic.hp.right": "Звук справа",
+  "sonic.key.Escape": "Эскейп",
   "sonic.lessons.bestTime": "лучшее время {time}",
   "sonic.lessons.hint": "Любой урок можно открыть сразу. Путь только подсказывает порядок.",
   "sonic.lessons.scan": "полёт в настоящем скане",

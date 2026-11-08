@@ -13,6 +13,7 @@
   "sonic.hp.playing.left": "Playing a sound on your left.",
   "sonic.hp.playing.right": "Playing a sound on your right.",
   "sonic.hp.right": "Play a sound on the right",
+  "sonic.key.Escape": "Escape",
   "sonic.lessons.bestTime": "best time {time}",
   "sonic.lessons.hint": "Every lesson can be opened directly. The path only recommends an order.",
   "sonic.lessons.scan": "flies a real scan",

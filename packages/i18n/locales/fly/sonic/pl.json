@@ -13,6 +13,7 @@
   "sonic.hp.playing.left": "Gra dźwięk po twojej lewej stronie.",
   "sonic.hp.playing.right": "Gra dźwięk po twojej prawej stronie.",
   "sonic.hp.right": "Odtwórz dźwięk z prawej",
+  "sonic.key.Escape": "Escape",
   "sonic.lessons.bestTime": "najlepszy czas {time}",
   "sonic.lessons.hint": "Każdą lekcję można otworzyć od razu. Ścieżka tylko poleca kolejność.",
   "sonic.lessons.scan": "lot w prawdziwym skanie",

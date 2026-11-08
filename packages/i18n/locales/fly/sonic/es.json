@@ -13,6 +13,7 @@
   "sonic.hp.playing.left": "Reproduciendo un sonido a tu izquierda.",
   "sonic.hp.playing.right": "Reproduciendo un sonido a tu derecha.",
   "sonic.hp.right": "Reproducir un sonido a la derecha",
+  "sonic.key.Escape": "Escape",
   "sonic.lessons.bestTime": "mejor tiempo {time}",
   "sonic.lessons.hint": "Cada lección se puede abrir directamente. La ruta solo recomienda un orden.",
   "sonic.lessons.scan": "vuela en un escaneo real",

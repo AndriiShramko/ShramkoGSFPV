@@ -26,6 +26,7 @@ import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, Sessio
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
 import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { KeyNames } from './key-names';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
 import { dialogOpen, typing } from '../devices/keyboard';
@@ -163,7 +164,7 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
 }
 
 /** The page as the lesson host sees it. */
-function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void): LessonPage {
+function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
         mode,
         store: ctx.prefs,
@@ -171,6 +172,9 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         stage,
         onEvent: (cb) => ctx.events.on('sonicEvent', cb),
         path: () => entry.setup.prefs.path,
+        // the runner's lines name N, B and Z as the pilot's keyboard types them (key-names.ts), and wait for lines at his speaking speed
+        keyNames: () => names.runner(),
+        speechRate: () => entry.setup.prefs.speechRate,
         session: () => ctx.session,
         // a lesson with other walls: the flown session is replaced, the way the scene host replaces a scan (app/scene-host.ts),
         // the flight held meanwhile (pause 'scene'), the drone, its rules and the gust seed kept
@@ -264,7 +268,18 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         ctx.resume('panel');
         focusFlight();
     };
-    const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu));
+    // the names of the pilot's keys in what the mode says: the page's key table, the letters of his keyboard layout where the browser
+    // tells them (asked again when the window comes back: a layout may have been switched meanwhile), a named key in the page's language
+    const names = new KeyNames((action) => ctx.keys.caps(action), (code) => {
+        const key = `sonic.key.${code}`;
+        const said = t(key);
+        return said === key ? null : said;
+    });
+    void names.refresh();
+    const onFocus = (): void => void names.refresh();
+    addEventListener('focus', onFocus);
+    offs.push(() => removeEventListener('focus', onFocus));
+    const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu, names));
     host = h;
     hosts.set(ctx, h);
     screen?.bind({

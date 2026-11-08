@@ -144,7 +144,31 @@ planner's headroom there is 0.235 ms at p95; M41-19 and M41-23 as planned.
 
 ### Stage B
 
-(the next agent fills this)
+The pilot's keys and the lesson menu (W3 to W6, W8, W15, M41-3, M41-6, M41-7), one commit a step. Tests in the new
+`tools/bench/test/sonic-lesson-keys.test.ts` (the lesson rig where it has the part, plain fakes where it has none), each
+with its control (the rule broken once in the code, the test seen failing, the code restored).
+
+- [x] B1 (W3) the runner gets the pilot's path, the names of his keys, his speaking speed and the lesson G left
+  - `apps/fly/src/sonic/lessons.ts` `runnerOptions()` (new, pure): `createLessonRunner` gets `path` (the pilot's,
+    `SonicPrefs.path`), `speechRate` (`SonicPrefs.speechRate`), `keys` (`LessonPage.keyNames()`) and `returnTo` (the opener's
+    `returnTo`, the lesson G left) besides what it had; `apps/fly/src/sonic/feature.ts` gives the page's.
+  - New `apps/fly/src/sonic/key-names.ts` `KeyNames`: the name of a key is what the pilot's keyboard layout types on its place
+    (`navigator.keyboard.getLayoutMap()` where the browser has it, asked again when the window comes back), else the key
+    table's cap (the router's `caps()`, the US place); a named key by its name in the page's language (`sonic.key.Escape`,
+    new in the four locales). N, B and Z are `scene.next`, `feedback.open` and `sonic.repeat`; no cap: the runner's own N, B, Z.
+  - Tests (`sonic-lesson-keys` B1, 6): the names with no layout, a German one (Z's place types Y), a French one (W), a place
+    with nothing printable; the browser's layout map asked, absent and refused; `runnerOptions` from a page; rings-first stands
+    6 of 8 on the fast path and 20 of 28 on the full one; hover-height's go-on offer after three failures names N as the page
+    names it (J). Controls broken once and restored: `path` left out of the options (the path tests fail), `keys` left out (the
+    offer says N), the layout ignored (Y and W become Z): 5 of the 6 fail; the sixth is the "no cap off the mode" control.
+- [ ] B2 (W4) the 'go' action: N in a flying lesson moves on, B goes back, G goes and comes back, never a second advance
+- [ ] B3 (W5, M41-6) N, B and Z call the runner, each a key event the replay reads first; the mode's keys win in a lesson;
+  K names N, B, Z, I and Escape
+- [ ] B4 (W6, M41-7) I says `runner.statusLine()`; a large high-contrast progress panel draws `runner.view()`
+- [ ] B5 (W8) `runner.pause(t)` and `resume(t)` where the session's pause and resume are written; no `spoken` while paused
+- [ ] B6 (M41-3) Escape: the spoken lesson menu; the line at every lesson's start
+- [ ] B7 (W15) every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call outside the engine
+- [ ] B8 tests for B1 to B7 complete, gates exit 0, stage B's status final
 
 ### Stage C
 
