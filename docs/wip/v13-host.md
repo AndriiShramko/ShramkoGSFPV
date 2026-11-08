@@ -49,6 +49,10 @@ proofs.
     with the craft at rest 2.2 m under it). Both package sides are under "Needs from the package". The test now holds the
     lesson's own cues on every frame (control in the test: one height cue in fifty dropped is caught) and the safety
     layer's shares once a lesson has settled: rings-first 98.7 % by kind, 85.7 % by sector; rings-line 100 %.
+  - [x] `sonic-pilot`: 8 of 8. The caps test and its control (the speed cap left open flies past it, still failing the
+    cap) fly an open world with walls-hall's start and assists; in walls-hall the craft met the wall (height 0.99 m off).
+  - [x] `sonic-primitives`: the 3 object cases pass (105 of 105 with A1's). Their controls (the ring as the engine's
+    torus, the pillar 0.3 m aside) still find the primitives off the surface.
   - Found, not changed (for stage B): `sonic-session/replay-segments.ts` cuts a frame stamped at the next open's own time
     into the next lesson (`t < endT`). In the rig every switch has one (its clock stands while the host opens the next
     lesson), so rings-line's first frame is rings-first's last position, heard in rings-line's world by the replay. In
@@ -90,6 +94,8 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-bridge` "a flight into the hall's wall" | the craft reset 1.5 m before the front wall's middle (the landmark) | was z = -28.5, rock now |
 | `sonic-int-replay` "rings-first to its pass, then rings-line" | the lesson's own cues (every id but `safety.*`) agree on every frame within the comparer's slack, with a control in the test; the shares are taken once a lesson has settled (holdMs + 100 ms after its open) at 98 % by kind and 85 % by sector (were 99 % and 90 % over all frames); gates >= `pass.required` (was 8) | W19: the frames that differ are the safety layer only, each kind of difference named in the test (the touch ping and the held sectors are the package's, see below); the small rooms voice walls on most frames, so more sectors flip |
 | `sonic-int-replay` control "the same glossary heard over a floor" | the craft at `ALWAYS_HEARD_M` (0.8 m) over the floor, was 1.5 m | M41-13: a still craft hears a surface by its time to contact, or within 0.8 m |
+| `sonic-pilot` "walls-hall caps" and its control | flown in an open world (a floor, walls-hall's start) with walls-hall's assists | 5 s of full stick is 15 m at 3 m/s; walls-hall is a 10 x 12 m room |
+| `sonic-primitives` "rays that hit an object land on its primitives" (rings-first, shapes-square) and the ring control | ray origins 4 to 10 m from an object drawn until 4000 are free (up to 40 000 draws; was 4000 draws) | in the 10 x 12.5 m rooms most such points lie in the walls: 60 to 73 hits, 100 wanted |
 | `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
 
 ## Needs from the package
