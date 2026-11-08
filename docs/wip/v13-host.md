@@ -94,7 +94,22 @@ proofs.
     out) fails the fast path. (Dropping the sort by `order` fails nothing: the package's list is in that order already.)
   - The page proof `tools/bench/src/sonic-start-keyboard.ts` (not a gate, not run here) counts the package's lessons
     instead of 21.
-- [ ] A6 (W16) one run of the analytic cost benches over the new worlds, against v0.12's frame budget
+- [x] A6 (W16) one run of the analytic cost benches over the new worlds, against v0.12's frame budget (measure only;
+  this machine: Intel i9-7980XE, Node 22.13, the same as v0.12's evidence)
+  - The planner per frame (`tools/bench/src/sonic-analytic-cost.ts`, every layer on, 4000 free points a world at 3 m/s;
+    budget p95 under 1 ms a frame): all 22 analytic worlds pass (`evidence/2026-11-08/sonic-analytic-cost.json`). The
+    path rays and the open-way probes cost 2 to 3 times v0.12's per frame. Worst: tunnel-long p95 0.765 ms, p99
+    0.988 ms, max 1.36 ms (0.235 ms of headroom at p95); the corridor p95 0.636 ms (v0.12: 0.227); walls-row 0.335,
+    tunnel-bends 0.322, tunnel-gaps 0.318; the rings, shapes and halls 0.14 to 0.29 (v0.12: 0.07 to 0.13). A CPU slower
+    by a third would take tunnel-long over the budget at p95.
+  - tunnel-long's walls (new `tools/bench/test/sonic-tunnel-cost.ts`, `evidence/2026-11-08/sonic-tunnel-cost.json`):
+    its collider (0.05 m voxels, bounds 101.6 x 4.4 x 65.1 m, 233 million voxels, cells classified on demand) builds in
+    5.6 ms. A disarmed craft let go along the track at its 62 points (2.5 m/s and 0.5 m/s toward the left wall, 1 s each:
+    82 494 contact queries, 2806 contacts) costs 23.24 ms for 10 s of flight as the session flies (cells only 27.89, no
+    cull 121.47; the same answers): OVER the plan's 20 ms by 3.2 ms (16 %). A query costs about 3 times one in v0.12's
+    hall (the 0.05 m voxels: 8 times the voxels in each cell, and in 0.7 m ways nearly every cell by the craft is
+    crossed by a wall). Per 60 Hz frame that is 0.039 ms. Not a one-line setting (the voxel size is the world's spec,
+    in the package's lesson file, and the replay rebuilds at it): for lane v13-look, with the frame cost of the look.
 - [ ] A7 full gates exit 0; stage A's status final
 
 ### Stage B
