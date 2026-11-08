@@ -94,6 +94,7 @@ function Sound({ locale }: { locale: Locale }) {
                 </li>
               ))}
             </ul>
+            <p className="mt-4 text-sm text-muted">{t("sound.keys.reader")}</p>
           </section>
 
           <section aria-labelledby="sound-record" className="mt-10">

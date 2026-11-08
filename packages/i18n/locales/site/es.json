@@ -1054,7 +1054,8 @@
     "keys": {
       "title": "Las teclas principales",
       "intro": "La aplicación también te dice estas teclas en voz alta.",
-      "items": ["empezar o parar una grabación", "enviar la última grabación al autor", "oír dónde estás", "oír otra vez la última frase hablada", "abrir el glosario de sonidos", "volver al último punto de control; mantenla pulsada para empezar la lección de nuevo", "pasar al siguiente paso", "copiar un enlace que abre esta lección, con tus ajustes de sonido, para compartirlo", "oír estas teclas"]
+      "items": ["empezar o parar una grabación", "enviar la última grabación al autor", "oír dónde estás", "oír otra vez la última frase hablada", "abrir el glosario de sonidos", "volver al último punto de control; mantenla pulsada para empezar la lección de nuevo", "pasar al siguiente paso", "copiar un enlace que abre esta lección, con tus ajustes de sonido, para compartirlo", "oír estas teclas"],
+      "reader": "Si una tecla no hace nada, puede que tu lector de pantalla esté en modo exploración: pulsa NVDA+Espacio en NVDA o Insert+Z en JAWS para que las teclas lleguen al simulador."
     },
     "record": {
       "title": "Grabar y enviar",

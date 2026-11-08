@@ -234,6 +234,25 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     document.body.classList.add('sonic-mode');
     stage = new PrimitiveStage(ctx.renderer);
     const screen = entry.screen;
+    // review R5: a screen reader in browse mode keeps single letters for its own quick keys (NVDA and JAWS: K link, L list, T table,
+    // G graphic, R radio button, I list item, the digits headings), so the flight's keys would never reach the page. While the flight
+    // has the page (no screen, panel or menu up and no other control holding the focus) the focus is on a region with
+    // role="application", which both readers answer by passing every key on; a dialog takes the focus while it is up, and when the
+    // flight goes on it comes back here. Outside #ui (one live region for the flight's notes). Not yet tried with a real reader.
+    const flight = document.createElement('div');
+    flight.className = 'sonic-sr-only';
+    flight.setAttribute('role', 'application');
+    flight.setAttribute('aria-label', t('sonic.flight.label'));
+    flight.tabIndex = -1;
+    flight.dataset.testid = 'sonic-flight';
+    document.body.append(flight);
+    const focusFlight = (): void => {
+        if (dialogOpen() || !flight.isConnected) return;
+        const at = document.activeElement;
+        if (at !== null && at !== document.body && at !== flight) return;
+        flight.focus({ preventScroll: true });
+    };
+    offs.push(ctx.events.on('pause', ({ on }) => { if (!on) focusFlight(); }), () => flight.remove());
     // the start screen over the flight: the flight waits behind it, a lesson chosen on it opens, Escape and Back close it
     const showMenu = (): void => {
         if (!screen) return;
@@ -243,6 +262,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     const closeMenu = (): void => {
         screen?.hide();
         ctx.resume('panel');
+        focusFlight();
     };
     const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu));
     host = h;
@@ -250,7 +270,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     screen?.bind({
         onStart: (id) => {
             closeMenu();
-            void h.open(id).then((ok) => { if (!ok) showMenu(); });
+            void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
         onClose: closeMenu
     });
@@ -391,7 +411,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
     if (entry.lessonId) {
         if (entry.world) h.seed(entry.lessonId, entry.world);
-        void h.open(entry.lessonId).then((ok) => { if (!ok) showMenu(); });
+        void h.open(entry.lessonId).then((ok) => { if (ok) focusFlight(); else showMenu(); });
     } else showMenu();
     ctx.hook.sonic = (withEvents = true) => ({
         lesson: h.lesson ? h.lesson.id : null,

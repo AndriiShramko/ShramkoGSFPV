@@ -1054,7 +1054,8 @@
     "keys": {
       "title": "The main keys",
       "intro": "The app also tells you these keys aloud.",
-      "items": ["start or stop a recording", "send the last recording to the author", "hear where you are", "hear the last spoken line again", "open the sound glossary", "go back to the last checkpoint; hold it to start the lesson again", "go to the next step", "copy a link that opens this lesson, with your sound settings, to share it", "hear these keys"]
+      "items": ["start or stop a recording", "send the last recording to the author", "hear where you are", "hear the last spoken line again", "open the sound glossary", "go back to the last checkpoint; hold it to start the lesson again", "go to the next step", "copy a link that opens this lesson, with your sound settings, to share it", "hear these keys"],
+      "reader": "If a key does nothing, your screen reader may be in browse mode: press NVDA+Space in NVDA, or Insert+Z in JAWS, so the keys reach the simulator."
     },
     "record": {
       "title": "Recording and sending",

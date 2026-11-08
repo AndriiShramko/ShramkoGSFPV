@@ -3,6 +3,7 @@
   "sonic.close": "Back to the flight",
   "sonic.copyKeys": "Control and C",
   "sonic.copyKeysMac": "Command and C",
+  "sonic.flight.label": "Fly by Sound: the flight. Every key goes to the simulator.",
   "sonic.footer.about": "About Fly by Sound and its source code",
   "sonic.footer.leave": "Leave Fly by Sound and open the simulator",
   "sonic.hp.behind": "Play a sound behind you",
