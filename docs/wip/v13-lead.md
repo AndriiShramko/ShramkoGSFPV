@@ -24,7 +24,8 @@ status note (message 41) carries the same table for the owner.
 | s13-worlds | sound | `C:/dev/sonic-s13-worlds` | s13-lessons eee530b | done: steps 1-8, review 030f7d0 (1 blocker, 9 majors, 7 minors, none refuted), fixes; head 067278f; 879 tests (7 merged cases skip until track-end exists); M4, M6 and R5 are the lead's merge items (lane doc "For the lead's merge") | wf_6179959f-d4a, finished |
 | s13-merge | sound | `C:/dev/sonic-s13-merge` | `main` 7d4b4b9 | done: merges, merge items, review ab7f591, fixes; head 16c01a1 = `main`, pushed | wf_15bb2572-e79, wf_586638f5-472, finished |
 | v13-host | simulator | `C:/dev/gsfpv-v13-host` | `v03-lead` 093fbbd | running: stage A (gitlink to 16c01a1 with `world.cavities`, W20 tests, W11, W12, W18, W16 measured), B (N/B/Z/I, go, pause, progress panel, Escape spoken menu, speech through the engine), C (pause item target, start screen, spoken settings with W13, W9/W10/W19, page proofs); lane doc `docs/wip/v13-host.md` | wf_9e36e296-b1f, running |
-| v13-look | simulator | | after v13-host | after the weekly reset (2026-11-12 12:00 UTC): M41-19, 23, 24, 25, W14, W16's fix if needed, W17 | |
+| v13-look | simulator | `C:/dev/gsfpv-v13-look` | v13-host after stage A | in this release (owner, message 42): M41-19, 23, 24, 25, W14, W16's fix if needed, W17; starts when stage A ends (background gate) | |
+| s13-elev | sound | `C:/dev/sonic-s13-elev` | `main` 16c01a1 | running: E1 direction for up and down, E2 voices, review, fixes | wf_0149f60b-cbc, running |
 
 ## Decisions taken
 
@@ -54,8 +55,19 @@ status note (message 41) carries the same table for the owner.
 
 - No separate `v13-base` branch: v13-host's first commit moves the gitlink with the switch to `world.cavities`
   (review W1 + W2) and the lane updates the simulator tests (W20) on the same branch.
-- v0.13 ships the core (lessons, sound, rooms, tunnels, keys, spoken menu, start screen, settings, replay verdict); the
-  look (M41-19, 23, 24, 25) ships after the weekly reset as the next release.
+- Owner, message 42 (vault brief): the look goes into this release ("how will people test it without it"; deaf pilots
+  need the sound panel, low-vision pilots the attitude display), and 85 % weekly use is fine. So v0.13 ships the core
+  and the look (M41-19, 23, 24, 25). The earlier "look after the reset" is withdrawn.
+- Owner, message 42: keep the direction of the sound for up and down on top of the pitch. Sound repo lane s13-elev
+  (worktree `C:/dev/sonic-s13-elev`, base `main` 16c01a1, wf_0149f60b-cbc): every up/down cue also comes from its
+  real direction through the HRTF (broadband to about 16 kHz), pitch unchanged, a pref to turn it off; wrong way
+  between close gates (LINE_UP_M scaled to the spacing); es/pl/ru line lengths and a TTS-to-Whisper round trip once
+  the voices exist. Its result goes to `main` after gh_precheck, then the simulator's gitlink moves again.
+- Owner, message 42: install the es, pl and ru voices. `Install-Language` and `Add-WindowsCapability` need elevation,
+  which this session cannot get; the agent's access to Windows Settings came back denied. A one-click installer is on
+  the owner's desktop (`Install-Shramko-Voices.cmd`, worker `U:/Temp/shramko-voices/install-voices.ps1`, log
+  `install.log` there; one UAC "Yes"). A background watcher wakes the lead when the log says DONE. Headless Chrome
+  lists only the local Windows voices (no Google network voices), so the voices are needed for any es/pl/ru check.
 - In a lesson B is "previous step" (M41-6); the feedback form stays in the pause menu and in the ordinary simulator.
 
 ## Open from v12-optin (needs people or voices this machine does not have)
@@ -68,8 +80,10 @@ status note (message 41) carries the same table for the owner.
 
 1. Done: the sound repo merged, reviewed, fixed, prechecked and pushed (`main` 16c01a1).
 2. Done: v12-optin merged into `v03-lead` (c2b1e54).
-3. v13-host (running, three stages). When it ends: check the weekly use; at 78 % or less one review of the lane and
-   its fixes, else after the reset. Review and fixes: a second workflow, same worktree.
-4. Merge v13-host into `v03-lead`, all gates, accept-fly B6-B16, page proofs, `deploy/ship.sh`, live checks, report
-   to the owner.
-5. After the reset: v13-look, one review, fixes, release.
+3. v13-host (running, three stages), v13-look (from stage A's head, two stages), s13-elev (sound repo). Ceiling 85 %.
+4. s13-elev to the sound repo's `main` after gh_precheck; push.
+5. Integration branch `v13-int` from `v03-lead`: merge v13-host, merge v13-look, move the gitlink to the new sound
+   `main`, show the new prefs (up/down direction, sound panel, attitude display) in the mode's spoken settings list.
+   One independent review of the integrated wave 2, then fixes.
+6. All gates, accept-fly B6-B16, page proofs, the es/pl/ru voice checks if the voices are installed, `deploy/ship.sh`,
+   live checks, report to the owner.
