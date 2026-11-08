@@ -164,7 +164,10 @@ export async function runSurvey(deps: SurveyDeps): Promise<SurveyAnswers> {
 
     try {
         deps.view.offer();
-        void speak(deps.micOn === true ? [{ key: 'survey.mic-on' }, { key: 'survey.offer' }] : [{ key: 'survey.offer' }], false);
+        // the first line cuts what the lesson was saying (the pilot's T has just stopped the flight, which the survey holds): the notice that the
+        // microphone stays on comes at once. Said without interrupt it waited behind the lesson's lines, and the first answer, which cuts the
+        // line it answers, took it away before it had begun (review I5)
+        void speak(deps.micOn === true ? [{ key: 'survey.mic-on' }, { key: 'survey.offer' }] : [{ key: 'survey.offer' }], true);
         const offered = await nextInput(deps.offerMs ?? 60_000);
         lastAnswerAt = deps.now();
         silence();

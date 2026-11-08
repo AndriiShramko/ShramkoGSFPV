@@ -1,0 +1,207 @@
+{
+  "name": "sonic-int-review-r4",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T01:00:52.248Z",
+    "gitHead": "d2931c9",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "0deed35",
+    "sonic": "1eea4d5",
+    "built": "2026-11-08T00:57:35.138Z"
+  },
+  "git": "d2931c9",
+  "seconds": 37,
+  "passed": 2,
+  "total": 4,
+  "pass": false,
+  "checks": [
+    {
+      "name": "R4: the lesson was talking when the recording was stopped (its intro was being said)",
+      "pass": true,
+      "value": [
+        {
+          "text": "The microphone stays on whil",
+          "called": 8,
+          "started": null
+        },
+        {
+          "text": "Do you want to answer a few ",
+          "called": 8023,
+          "started": null
+        },
+        {
+          "text": "I have a few short questions",
+          "called": 8801,
+          "started": 8940
+        }
+      ]
+    },
+    {
+      "name": "R4: the notice that the microphone stays on began to be spoken (an answer given at once did not take it away before it began)",
+      "pass": false,
+      "value": {
+        "noticeCalledMs": 8,
+        "noticeStartedMs": null,
+        "afterStop": [
+          {
+            "text": "The microphone stays on whil",
+            "called": 8,
+            "started": null
+          },
+          {
+            "text": "Do you want to answer a few ",
+            "called": 8023,
+            "started": null
+          },
+          {
+            "text": "I have a few short questions",
+            "called": 8801,
+            "started": 8940
+          },
+          {
+            "text": "Go.",
+            "called": 8820,
+            "started": null
+          },
+          {
+            "text": "Question 2 of 9.",
+            "called": 10014,
+            "started": 10069
+          },
+          {
+            "text": "Question 3 of 9.",
+            "called": 10481,
+            "started": 10584
+          },
+          {
+            "text": "Question 4 of 9.",
+            "called": 10940,
+            "started": 11011
+          },
+          {
+            "text": "Question 5 of 9.",
+            "called": 11410,
+            "started": 11486
+          }
+        ]
+      }
+    },
+    {
+      "name": "R4: it began within 2 s of the stop (it did not wait for the lesson to finish talking)",
+      "pass": false,
+      "value": {
+        "noticeStartedMs": {
+          "noticeCalledMs": 8,
+          "noticeStartedMs": null,
+          "afterStop": [
+            {
+              "text": "The microphone stays on whil",
+              "called": 8,
+              "started": null
+            },
+            {
+              "text": "Do you want to answer a few ",
+              "called": 8023,
+              "started": null
+            },
+            {
+              "text": "I have a few short questions",
+              "called": 8801,
+              "started": 8940
+            },
+            {
+              "text": "Go.",
+              "called": 8820,
+              "started": null
+            },
+            {
+              "text": "Question 2 of 9.",
+              "called": 10014,
+              "started": 10069
+            },
+            {
+              "text": "Question 3 of 9.",
+              "called": 10481,
+              "started": 10584
+            },
+            {
+              "text": "Question 4 of 9.",
+              "called": 10940,
+              "started": 11011
+            },
+            {
+              "text": "Question 5 of 9.",
+              "called": 11410,
+              "started": 11486
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r4": {
+      "noticeCalledMs": 8,
+      "noticeStartedMs": null,
+      "afterStop": [
+        {
+          "text": "The microphone stays on whil",
+          "called": 8,
+          "started": null
+        },
+        {
+          "text": "Do you want to answer a few ",
+          "called": 8023,
+          "started": null
+        },
+        {
+          "text": "I have a few short questions",
+          "called": 8801,
+          "started": 8940
+        },
+        {
+          "text": "Go.",
+          "called": 8820,
+          "started": null
+        },
+        {
+          "text": "Question 2 of 9.",
+          "called": 10014,
+          "started": 10069
+        },
+        {
+          "text": "Question 3 of 9.",
+          "called": 10481,
+          "started": 10584
+        },
+        {
+          "text": "Question 4 of 9.",
+          "called": 10940,
+          "started": 11011
+        },
+        {
+          "text": "Question 5 of 9.",
+          "called": 11410,
+          "started": 11486
+        }
+      ]
+    }
+  },
+  "problems": []
+}

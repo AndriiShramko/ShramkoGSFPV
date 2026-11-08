@@ -498,3 +498,56 @@ describe('the survey inside a recording', () => {
         expect(pkg.manifest.consent.minor).toBe(true);
     });
 });
+
+// v12-int review, finding I5: the survey's offer, and with it the notice that the microphone stays on (survey.mic-on), was said without interrupt, so
+// with the lesson talking at the moment of the stop it waited behind the lesson's lines; the first answer then cut it before it had begun (the next
+// question interrupts, and a cut utterance that has not started is never heard). The page proof is tools/bench/src/sonic-int-review.ts r4.
+describe('review I5: the notice that the microphone stays on is heard, whatever the lesson was saying', () => {
+    /** The browser's voice: utterances queue, each takes `unitMs`; a line that interrupts cuts what is queued, and what had not begun is never heard. */
+    function queueingEngine(unitMs: number) {
+        let freeAt = 0;
+        const rows: { key: string; startedAt: number; cut: boolean }[] = [];
+        return {
+            rows,
+            /** the line has begun to be spoken, or will be (it was not cut while it waited) */
+            heard: (key: string): boolean => rows.some((r) => r.key === key && !r.cut),
+            say(line: SpeechLine, options?: { readonly interrupt?: boolean }): Promise<void> {
+                const now = Date.now();
+                if (options?.interrupt === true) {
+                    for (const r of rows) if (r.startedAt > now) r.cut = true;
+                    freeAt = now;
+                }
+                const startedAt = Math.max(now, freeAt);
+                freeAt = startedAt + unitMs;
+                rows.push({ key: line.key, startedAt, cut: false });
+                return new Promise<void>((resolve) => setTimeout(resolve, freeAt - now));
+            }
+        };
+    }
+
+    it('the offer, with the notice before it, cuts what the lesson is saying: the notice begins at once', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` }); // 240 ms of the lesson ahead of the survey
+        const t0 = Date.now();
+        const r = await run([D(2)], { micOn: true, say: (line, options) => engine.say(line, options) });
+        void r;
+        const first = engine.rows.find((x) => x.key === 'survey.mic-on');
+        expect(first).toBeDefined();
+        expect((first?.startedAt ?? Infinity) - t0).toBeLessThan(30);
+        expect(engine.heard('survey.mic-on')).toBe(true);
+    });
+
+    it('a pilot (or a helper) who answers the offer at once still gets the notice begun, not cut while it waited', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` });
+        await run([D(1), ...skips(9)], { micOn: true, say: (line, options) => engine.say(line, options) });
+        expect(engine.heard('survey.mic-on')).toBe(true);
+    });
+
+    it('control: said the old way (no interrupt) the notice waits behind the lesson, and the first answer cuts it before it has begun', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` });
+        await run([D(1), ...skips(9)], { micOn: true, say: (line, options) => engine.say(line, options === undefined ? undefined : { ...options, interrupt: options.interrupt === true && !['survey.mic-on', 'survey.offer'].includes(line.key) }) });
+        expect(engine.heard('survey.mic-on')).toBe(false);
+    });
+});

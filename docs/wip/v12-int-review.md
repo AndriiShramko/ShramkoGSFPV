@@ -9,6 +9,7 @@ Reviewer: one agent, one pass over `e681e9b..v12-int` (14 commits, 76 files outs
 - [x] I2 privacy: with the lesson talking, the consent question (T, U) waited behind it, and a second press agreed to it before it was spoken
 - [x] I3 replay seam: a recording that starts in the glossary opened it again without its way back
 - [x] I4 privacy: in "my screen reader speaks" mode a minor's two-line consent question counted as read when the longer line was
+- [x] I5 privacy: the notice that the microphone stays on (survey.mic-on) waited behind the lesson's speech and was cut before it began
 
 ## Findings
 
@@ -43,6 +44,14 @@ Reviewer: one agent, one pass over `e681e9b..v12-int` (14 commits, 76 files outs
 - Fix: `Recorder.ask()` hands the question over when the guardian line has settled (with interrupt: nothing of ours is left to cut), and counts the pair as read when both have; a `say` that returns nothing (the fakes) has nothing to wait for and gets both lines at once as before. With a voice that queues (speechSynthesis) the two lines followed each other anyway.
 - Checks run: `sonicrec-*` (10 files, 247 tests), typecheck; page run on a release build with the fix: 4 of 4 (`evidence/2026-11-08/sonic-int-review-r3.json`: the early press is no yes, the pair read, a press is the yes at +16.5 s).
 - Not changed: the estimate is not the reader's time (NVDA, JAWS and VoiceOver read at their own speed; none was run), so a pilot whose reader is slower than the app's estimate can still press early; the reading limit (20 s) is as it was.
+
+### I5 (privacy, fixed) The survey's notice that the microphone stays on could be cut before it had begun
+
+- Defect. Step 2 says `survey.mic-on` right before `survey.offer`, in one speech run, with no interrupt. The engine speaks with the browser's own voice: utterances queue, and the lesson talks (its intro, its hints, its pass line). With the lesson talking at the moment of the stop the notice waited behind the lesson's lines, the survey's first question interrupts (`speechSynthesis.cancel`), and an utterance that was cut while it waited is never heard. So the one sentence that tells the pilot that the microphone goes on recording through the survey was heard by nobody in that case, and the offer after it neither. The task's own question: "survey.mic-on missing". (A pilot who answers before the sentence ends still cuts it, as the offer takes the first key.)
+- Probe (refuting attempt, real page: release build before the fix, the engine speaking with the browser's own voice at speed 1, `walls-hall`; a recording started, its lesson opened again and saying its intro, T 2.5 s later, 1 for the offer when it was said; `speechSynthesis.speak` watched; `tools/bench/src/sonic-int-review.ts r4`, evidence `evidence/2026-11-08/sonic-int-review-r4-before.json`): the notice was handed to the engine 8 ms after the stop and never started (`started: null`); the offer, handed over at +8.0 s, never started either; the first question began at +8.9 s. 2 of 4 checks.
+- Tests that failed before the fix: `sonicrec-survey.test.ts` "review I5" (3 tests, a fake of the browser's voice: utterances queue, a line that interrupts cuts what is queued and what had not begun is never heard): the notice began 240 ms after the stop behind six lesson lines (`expected 240 to be less than 30`), and an answer given at once took it away before it began (`expected false to be true`). Control that passes before and after: said the old way (no interrupt) the notice is never heard.
+- Fix: `runSurvey` says the notice and the offer with interrupt on the first line (the pilot's T has just stopped the flight, which the survey holds, so what the lesson was saying is moot).
+- Checks run: `sonicrec-*` (10 files, 250 tests), typecheck; page run on a release build with the fix: 4 of 4 (`evidence/2026-11-08/sonic-int-review-r4.json`: the notice begins 118 ms after the stop).
 
 ## Refuted
 

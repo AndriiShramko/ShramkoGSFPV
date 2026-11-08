@@ -15,7 +15,11 @@
 //       the engine silent (a screen reader would read the captions, one line after the other); a guardian-confirmed profile under 18; T asks (rec.minor,
 //       rec.ask); a second T after the first line has been read (the estimate at the pilot's speed) but before the question has is not a yes.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3]
+//   R4  the notice that the microphone stays on (survey.mic-on) is spoken even when the lesson is talking at the stop and the offer is answered at once
+//       the engine speaks with the browser's own voice; a recording is started, its lesson opens again and says its intro; T stops it a moment later and
+//       1 answers the offer a moment after that; speechSynthesis is watched for the notice.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4]
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
@@ -371,6 +375,44 @@ async function r3(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R4
+
+async function r4(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R4: the survey\'s notice while the lesson talks');
+    const ctx = await newContext(browser, served, prefsDoc({ selfVoice: true, speechRate: 1 }), null);
+    const page = await openLesson(ctx, served, 'walls-hall', 'R4');
+    await startRecording(page, ['rec.ask']);
+    // "Recording started." is said, then the lesson opens again from its beginning and says its intro: it is talking when T is pressed
+    await until('the lesson\'s intro after "Recording started."', () => utterances(page), (u) => u.some((x) => /^Recording started/.test(x.text) && x.started !== null), 30000, 100);
+    await sleep(2500);
+    const stopFrom = (await events(page)).length;
+    const stoppedAt = await pageNow(page);
+    await page.keyboard.press('KeyT');
+    await until('the survey offer', () => events(page), (all) => spokenAfter(all, stopFrom).includes('survey.offer'), 30000, 50);
+    // the offer is answered at once (a helper who sees the dialog presses 1)
+    await sleep(700);
+    await page.keyboard.press('Digit1');
+    await sleep(1200);
+    for (let i = 0; i < 12; i++) {
+        const open = await page.evaluate(() => {
+            const root = document.querySelector('.sonicrec-survey') as HTMLElement | null;
+            return !!root && !root.hidden;
+        });
+        if (!open) break;
+        await page.keyboard.press('Escape');
+        await sleep(450);
+    }
+    await until('the survey closed', () => page.evaluate(() => { const r = document.querySelector('.sonicrec-survey') as HTMLElement | null; return !r || r.hidden === true; }), (v) => v, 30000);
+    const utt = await utterances(page);
+    const notice = utt.find((u) => /^The microphone stays on/.test(u.text));
+    const afterStop = utt.filter((u) => u.called >= stoppedAt).map((u) => ({ text: u.text.slice(0, 28), called: Math.round(u.called - stoppedAt), started: u.started === null ? null : Math.round(u.started - stoppedAt) }));
+    result.r4 = { noticeCalledMs: notice === undefined ? null : Math.round(notice.called - stoppedAt), noticeStartedMs: notice?.started == null ? null : Math.round(notice.started - stoppedAt), afterStop: afterStop.slice(0, 8) };
+    check('R4: the lesson was talking when the recording was stopped (its intro was being said)', utt.some((u) => !/^(Recording|May I|The microphone)/.test(u.text) && u.called < stoppedAt && u.called > stoppedAt - 20000), afterStop.slice(0, 3));
+    check('R4: the notice that the microphone stays on began to be spoken (an answer given at once did not take it away before it began)', notice !== undefined && notice.started !== null, result.r4);
+    check('R4: it began within 2 s of the stop (it did not wait for the lesson to finish talking)', notice?.started != null && notice.started - stoppedAt < 2000, { noticeStartedMs: result.r4 });
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -399,6 +441,7 @@ async function main(): Promise<void> {
         if (which === 'r1') await r1(fresh, served);
         else if (which === 'r2') await r2(fresh, served);
         else if (which === 'r3') await r3(fresh, served);
+        else if (which === 'r4') await r4(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
