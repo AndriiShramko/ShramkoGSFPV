@@ -799,7 +799,8 @@ describe('key U in the flight page', () => {
 
     function page(on: boolean) {
         const fake = fakeRuntime('walls-hall');
-        const router = new KeyRouter();
+        // a page entered through ?sonic= (the sound mode's keys are only on such a page, v12-optin); `on` false: the mode not started yet
+        const router = new KeyRouter({ sonic: () => true });
         const events = new Bus<AppEvents>();
         const ctx = { keys: router, events, sonic: on ? fake.runtime : undefined, session: { transform: { s: 5, t: [0, 0, 0] } }, controls: { source: 'keyboard', profile: null }, renderer: { isWebGPU: false } } as unknown as FlightContext;
         return { ctx, router, events, fake };

@@ -2,8 +2,10 @@
 // an action through the keymap of @gsfpv/prefs (shipped bindings only), and the action runs the
 // handler a feature registered for it. Menu key-caps come from the same table (caps()).
 // Not routed here: keyboard flying (devices/keyboard.ts reads W A S D, the arrows, Space and M
-// itself; they are the keymap's `flying` bindings) and the latency harness keys F13-F24.
-import { KEYMAP, actionFor, bindingOf, keysFor } from '@gsfpv/prefs';
+// itself; they are the keymap's `flying` bindings) and the latency harness keys F13-F24. The sound mode's
+// keys (`when: 'sonic'`: T U I Z G) are routed, captioned and listed only when the page says it was entered
+// through ?sonic= (the `sonic` option; v12-optin), else they are not on the page at all.
+import { KEYMAP, actionFor, bindingOf, keysFor, listensIn, pageBindings } from '@gsfpv/prefs';
 import type { ActionId, KeyBinding, KeyHint } from '@gsfpv/prefs';
 import { typing } from '../devices/keyboard';
 
@@ -46,6 +48,8 @@ export interface KeyRouterOptions {
      * as the key alone (Shift+Esc pauses, Shift+R respawns). The handler still gets the real event.
      */
     shiftIsFlying?: () => boolean;
+    /** the page was entered through ?sonic= (app/flight.ts: sonicEntry()); only then are the sound mode's keys on it (default: no) */
+    sonic?: () => boolean;
 }
 
 export class KeyRouter {
@@ -55,12 +59,24 @@ export class KeyRouter {
     private readonly isText: (target: EventTarget | null) => boolean;
     private readonly state: () => KeyState;
     private readonly shiftIsFlying: () => boolean;
+    private readonly sonic: () => boolean;
 
     constructor(o: KeyRouterOptions = {}) {
         this.map = o.map ?? KEYMAP;
         this.isText = o.isText ?? typing;
         this.state = o.state ?? (() => 'flight');
         this.shiftIsFlying = o.shiftIsFlying ?? (() => false);
+        this.sonic = o.sonic ?? (() => false);
+    }
+
+    /** What the keymap's lookups need to know of this page: its table and whether the sound mode's keys are on it. */
+    private get page(): { map: readonly KeyBinding[]; sonic: boolean } {
+        return { map: this.map, sonic: this.sonic() };
+    }
+
+    /** The bindings this page lists (the summary panel's key list), in table order: the sound mode's only on its pages. */
+    listed(): KeyBinding[] {
+        return pageBindings(this.page);
     }
 
     /**
@@ -78,10 +94,10 @@ export class KeyRouter {
         return this.push(action, run);
     }
 
-    /** Does this router route the action's keys (a shipped binding that is not keyboard flying's)? */
+    /** Does this router route the action's keys (a shipped binding that is not keyboard flying's, a mode's key on its pages only)? */
     routes(action: ActionId): boolean {
         const b = bindingOf(action, this.map);
-        return !!b && !b.flying && b.status === 'shipped';
+        return !!b && !b.flying && b.status === 'shipped' && (b.when !== 'sonic' || this.sonic());
     }
 
     private push(action: ActionId, run: ActionHandler): () => void {
@@ -102,7 +118,7 @@ export class KeyRouter {
 
     /** The key-caps of an action, for a menu item or a hint (keysFor over this router's table). */
     caps(action: ActionId): KeyHint[] {
-        return keysFor(action, { map: this.map });
+        return keysFor(action, this.page);
     }
 
     /** Route one key press: the action whose handler ran, or null. */
@@ -112,9 +128,10 @@ export class KeyRouter {
         if (this.isText(e.target) && !THROUGH_TEXT.has(e.code)) return null;
         // Shift held as a flying key (the descent) is a modifier only where a binding says so: the real chord
         // first, then the key alone
-        let action = actionFor(e, this.state(), { map: this.map });
+        const page = this.page;
+        let action = actionFor(e, this.state(), page);
         if (action === null && e.shiftKey && this.shiftIsFlying()) {
-            action = actionFor({ code: e.code, shiftKey: false, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey }, this.state(), { map: this.map });
+            action = actionFor({ code: e.code, shiftKey: false, ctrlKey: e.ctrlKey, altKey: e.altKey, metaKey: e.metaKey }, this.state(), page);
         }
         if (action === null) return null;
         const list = this.handlers.get(action);
@@ -134,7 +151,7 @@ export class KeyRouter {
         for (const b of this.blocks) if (b()) return null;
         const binding = bindingOf(action, this.map);
         if (!binding || !this.routes(action)) return null;
-        if (binding.when !== 'always' && binding.when !== this.state()) return null;
+        if (!listensIn(binding, this.state())) return null;
         const list = this.handlers.get(action);
         const run = list?.[list.length - 1];
         if (!run) return null;

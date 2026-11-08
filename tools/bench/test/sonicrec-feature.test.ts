@@ -38,7 +38,8 @@ const press = (keys: KeyRouter, code: string, extra: object = {}): string | null
     keys.route({ code, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, repeat: false, target: null, preventDefault() {}, ...extra } as unknown as KeyboardEvent);
 
 function page(fake: FakeRuntime | null) {
-    const keys = new KeyRouter();
+    // a page entered through ?sonic= (the sound mode's keys are only on such a page, v12-optin); `fake` null: the mode not started yet
+    const keys = new KeyRouter({ sonic: () => true });
     const events = new Bus<AppEvents>();
     const ctx = { keys, events, sonic: fake?.runtime, session: { transform: { s: 5, t: [0, 0, 0] } }, controls: { source: 'keyboard', profile: null }, renderer: { isWebGPU: false } } as unknown as FlightContext;
     return { ctx, keys, events };

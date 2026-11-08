@@ -119,6 +119,52 @@ describe('one handler per key press, no key bound twice', () => {
     });
 });
 
+describe('the sound mode\'s keys are on a page entered through ?sonic= only (v12-optin)', () => {
+    const SOUND: [string, ActionId][] = [['KeyT', 'sonic.record'], ['KeyU', 'sonic.send'], ['KeyI', 'sonic.status'], ['KeyZ', 'sonic.repeat'], ['KeyG', 'sonic.glossary']];
+    /** The keymap as v0.12 was released (8ce53fb): the five keys always. */
+    const RELEASED = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
+
+    it('an ordinary page (the router\'s default): T U I Z G run no handler even when one is registered, show no caps, are not listed, routed or triggered; control: the released keymap routes and lists all five', () => {
+        for (const state of ['flight', 'crash'] as const) {
+            const { r, total } = counting(KEYMAP, { state: () => state });
+            for (const [code, action] of SOUND) {
+                expect(r.route(key({ code })), `${code} ${state}`).toBeNull();
+                expect(r.caps(action)).toEqual([]);
+                expect(r.routes(action)).toBe(false);
+                expect(r.trigger(action)).toBeNull();
+            }
+            expect(total()).toBe(0);
+            expect(r.listed().map((b) => b.action).filter((a) => a.startsWith('sonic.'))).toEqual([]);
+            const old = counting(RELEASED, { state: () => state });
+            for (const [code, action] of SOUND) expect(old.r.route(key({ code })), `${code} ${state} released`).toBe(action);
+            expect(old.r.listed().filter((b) => b.action.startsWith('sonic.'))).toHaveLength(5);
+        }
+    });
+
+    it('a page entered through ?sonic=: each runs its handler once, in flight and while crashed, with its caps, listed in table order', () => {
+        for (const state of ['flight', 'crash'] as const) {
+            const { r, runs } = counting(KEYMAP, { state: () => state, sonic: () => true });
+            for (const [code, action] of SOUND) {
+                expect(r.route(key({ code })), `${code} ${state}`).toBe(action);
+                expect(runs.get(action)).toBe(1);
+                expect(r.caps(action).map((k) => k.cap)).toEqual([code.slice(3)]);
+                expect(r.routes(action)).toBe(true);
+            }
+            expect(r.listed().map((b) => b.action)).toEqual(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action));
+            expect(r.trigger('sonic.status')).toBe('sonic.status');
+        }
+    });
+
+    it('the page is asked at each press, not once: the same router before and after the page says ?sonic=', () => {
+        let sonic = false;
+        const { r, runs } = counting(KEYMAP, { sonic: () => sonic });
+        expect(r.route(key({ code: 'KeyT' }))).toBeNull();
+        sonic = true;
+        expect(r.route(key({ code: 'KeyT' }))).toBe('sonic.record');
+        expect(runs.get('sonic.record')).toBe(1);
+    });
+});
+
 describe('focus in a field that takes text', () => {
     const shortcuts = ['KeyP', 'KeyR', 'F3', 'KeyV', 'KeyC', 'KeyH'];
 

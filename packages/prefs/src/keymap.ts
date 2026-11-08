@@ -18,8 +18,12 @@ export interface KeyChord extends KeyHint {
     shift?: boolean;
 }
 
-/** Where a binding listens: in flight (paused or not), while the crash toast or panel is up, or both. */
-export type KeyWhen = 'flight' | 'crash' | 'always';
+/**
+ * Where a binding listens: in flight (paused or not), while the crash toast or panel is up, or both. `sonic`: both, but
+ * only on a page entered through ?sonic= (Fly by Sound, v12-optin): anywhere else the key is neither routed nor listed,
+ * and the catalogue does not count it, so a pilot who did not choose the sound mode never meets its keys.
+ */
+export type KeyWhen = 'flight' | 'crash' | 'always' | 'sonic';
 
 export interface KeyBinding {
     action: ActionId;
@@ -88,15 +92,16 @@ export const KEYMAP: readonly KeyBinding[] = [
     // v0.9 lane B (app/builtin/play.ts, play/fullscreen.ts): full screen on and off, also on the top bar; F as in
     // "full screen", the key games use; it works with the mouse captured. The next favourite scene moved to Shift+F
     { action: 'fullscreen.toggle', keys: [letter('F')], when: 'always', labelKey: 'keys.fullscreen.toggle', status: 'shipped' },
-    // v0.12 Fly by Sound (docs/wip/v12-plan.md sections 1 and 3; the handlers are in app/builtin/sonic-flight.ts and
-    // sonic-session.ts, none yet at step 0, and every one does nothing while the sound mode is off). All five letters
-    // were free: T records the flight and the pilot's voice, U sends the recording to the author, I says the status
-    // (lesson, attempt, recording), Z repeats the last spoken line, G opens the sound glossary
-    { action: 'sonic.record', keys: [letter('T')], when: 'always', labelKey: 'keys.sonic.record', status: 'shipped' },
-    { action: 'sonic.send', keys: [letter('U')], when: 'always', labelKey: 'keys.sonic.send', status: 'shipped' },
-    { action: 'sonic.status', keys: [letter('I')], when: 'always', labelKey: 'keys.sonic.status', status: 'shipped' },
-    { action: 'sonic.repeat', keys: [letter('Z')], when: 'always', labelKey: 'keys.sonic.repeat', status: 'shipped' },
-    { action: 'sonic.glossary', keys: [letter('G')], when: 'always', labelKey: 'keys.sonic.glossary', status: 'shipped' }
+    // v0.12 Fly by Sound (docs/wip/v12-plan.md sections 1 and 3; the handlers are in sonic/feature.ts and
+    // sonic-session/session.ts). All five letters were free: T records the flight and the pilot's voice, U sends the
+    // recording to the author, I says the status (lesson, attempt, recording), Z repeats the last spoken line, G opens the
+    // sound glossary. Keys of the mode only (v12-optin, the owner's message 40: the sound mode is not pressed on pilots who
+    // did not choose it): routed and listed on a page entered through ?sonic=, nowhere else, and not in the catalogue
+    { action: 'sonic.record', keys: [letter('T')], when: 'sonic', labelKey: 'keys.sonic.record', status: 'shipped' },
+    { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
+    { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },
+    { action: 'sonic.repeat', keys: [letter('Z')], when: 'sonic', labelKey: 'keys.sonic.repeat', status: 'shipped' },
+    { action: 'sonic.glossary', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.glossary', status: 'shipped' }
 ];
 
 /**
@@ -122,8 +127,15 @@ export const SHARED_WITH_FLYING: Readonly<Record<string, ActionId>> = { KeyM: 'm
 /** F13-F24 belong to the latency harness (devices/keyboard.ts): one numbered input event per press. */
 export const RESERVED_CODES: readonly string[] = Array.from({ length: 12 }, (_, i) => `F${13 + i}`);
 
-function visible(b: KeyBinding, planned: boolean): boolean {
-    return planned || b.status === 'shipped';
+/**
+ * What a lookup knows of the page: `planned` shows bindings that have not shipped (the catalogue's checks), `sonic` says the
+ * page was entered through ?sonic= (only then are the `sonic` bindings there), `map` is another table (tests).
+ */
+export interface KeyLookup { planned?: boolean; sonic?: boolean; map?: readonly KeyBinding[] }
+
+/** Is the binding on this page at all: shipped (or planned, when asked for), and a mode's key only on a page of that mode. */
+function visible(b: KeyBinding, o: KeyLookup): boolean {
+    return (!!o.planned || b.status === 'shipped') && (b.when !== 'sonic' || !!o.sonic);
 }
 
 /** The binding of an action, or undefined. */
@@ -131,11 +143,24 @@ export function bindingOf(action: ActionId, map: readonly KeyBinding[] = KEYMAP)
     return map.find((b) => b.action === action);
 }
 
-/** Key-caps for a menu item, in table order. Planned bindings show nothing unless asked for. */
-export function keysFor(action: ActionId, o: { planned?: boolean; map?: readonly KeyBinding[] } = {}): KeyHint[] {
+/**
+ * The bindings a page lists (its key list, the catalogue), in table order: the shipped ones, without the sound mode's
+ * unless the page was entered through ?sonic=.
+ */
+export function pageBindings(o: KeyLookup = {}): KeyBinding[] {
+    return (o.map ?? KEYMAP).filter((b) => visible(b, o));
+}
+
+/** Key-caps for a menu item, in table order. Planned bindings show nothing unless asked for, a mode's keys nothing outside it. */
+export function keysFor(action: ActionId, o: KeyLookup = {}): KeyHint[] {
     const b = bindingOf(action, o.map);
-    if (!b || !visible(b, !!o.planned)) return [];
+    if (!b || !visible(b, o)) return [];
     return b.keys.map((k) => ({ cap: k.cap, aria: k.aria }));
+}
+
+/** Does the binding listen in this state ('flight' or 'crash'): `always` and `sonic` in both (`sonic` on its pages only: visible). */
+export function listensIn(b: KeyBinding, state: 'flight' | 'crash'): boolean {
+    return b.when === 'always' || b.when === 'sonic' || b.when === state;
 }
 
 /** The subset of KeyboardEvent the lookup reads (so it runs in Node tests). */
@@ -146,10 +171,10 @@ export interface KeyPress { code: string; shiftKey: boolean; ctrlKey?: boolean; 
  * never ours: the browser keeps Ctrl+R, Ctrl+P, Ctrl+F and the rest. Flying bindings are never
  * routed: keyboard flying reads those keys itself.
  */
-export function actionFor(e: KeyPress, state: 'flight' | 'crash', o: { planned?: boolean; map?: readonly KeyBinding[] } = {}): ActionId | null {
+export function actionFor(e: KeyPress, state: 'flight' | 'crash', o: KeyLookup = {}): ActionId | null {
     if (e.ctrlKey || e.altKey || e.metaKey) return null;
     for (const b of o.map ?? KEYMAP) {
-        if (b.flying || !visible(b, !!o.planned) || (b.when !== 'always' && b.when !== state)) continue;
+        if (b.flying || !visible(b, o) || !listensIn(b, state)) continue;
         if (b.keys.some((k) => k.code === e.code && !!k.shift === e.shiftKey)) return b.action;
     }
     return null;
@@ -157,7 +182,8 @@ export function actionFor(e: KeyPress, state: 'flight' | 'crash', o: { planned?:
 
 /**
  * Everything wrong with a keymap, empty when it is sound: a key bound twice where both listen
- * ('always' overlaps both states), a flying or harness key taken by a menu action, a binding
+ * ('always' overlaps both states; 'sonic' overlaps everything, since a page of the sound mode has every other key
+ * too), a flying or harness key taken by a menu action, a binding
  * marked flying on a key keyboard flying does not read, an action listed twice, a label outside
  * `keys.<action>`, an aria value with spaces (aria-keyshortcuts separates alternatives with
  * spaces). Planned bindings are checked too: they will ship.
@@ -181,7 +207,8 @@ export function keymapProblems(map: readonly KeyBinding[]): string[] {
             if (/\s/.test(k.aria) || !k.aria) out.push(`${b.action}: aria "${k.aria}" is not one aria-keyshortcuts value`);
             const list = seen.get(chord) ?? [];
             for (const o of list) {
-                if (o.when === 'always' || b.when === 'always' || o.when === b.when) out.push(`${chord} is bound to ${o.action} and ${b.action} (${o.when} / ${b.when})`);
+                const overlap = o.when === b.when || [o.when, b.when].some((w) => w === 'always' || w === 'sonic');
+                if (overlap) out.push(`${chord} is bound to ${o.action} and ${b.action} (${o.when} / ${b.when})`);
             }
             list.push({ action: b.action, when: b.when });
             seen.set(chord, list);

@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, rmdirSync, statSync } from 'node:f
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
-import { KEYMAP } from '../../../packages/prefs/src/keymap';
+import { KEYMAP, pageBindings } from '../../../packages/prefs/src/keymap';
 import { S } from '../../../packages/sim-core/src/index';
 import type { KeyBinding } from '../../../packages/prefs/src/keymap';
 import { launchChrome, waitReady } from './browser';
@@ -37,7 +37,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const MENU = ['pause.continue', 'pause.restart', 'pause.rewind', 'pause.scene', 'pause.scene.next', 'pause.scene.random', 'pause.scene.favourite', 'pause.drone', 'pause.radio', 'pause.settings', 'pause.replays', 'pause.measure', 'pause.import', 'pause.cinema', 'pause.record'];
 /** Menu items that run a keymap action (MenuItem.action): the item shows that action's keys. */
 const MENU_ACTION: Record<string, string> = { 'pause.continue': 'pause.toggle', 'pause.restart': 'respawn.start' };
-const SHIPPED = KEYMAP.filter((b) => b.status === 'shipped');
+// the keys an ordinary page has: shipped, none of the sound mode's (`when: 'sonic'`, on a ?sonic= page only; v12-optin)
+const SHIPPED = pageBindings();
 const PLANNED = KEYMAP.filter((b) => b.status !== 'shipped');
 
 /** m:ss.t (or h:mm:ss) back to seconds. */
@@ -117,13 +118,14 @@ const ariaOf = (b: KeyBinding) => b.keys.map((k) => k.aria).join(' ');
 /** Every shipped binding in the panel with its caps; no planned one; the menu items that run an action show its caps. */
 function panelKeyProblems(info: Any, map: readonly KeyBinding[] = KEYMAP): string[] {
     const out: string[] = [];
-    for (const b of map.filter((x) => x.status === 'shipped')) {
+    for (const b of pageBindings({ map })) {
         const row = info.keys.find((k: Any) => k.action === b.action);
         if (!row) { out.push(`${b.action}: not in the panel`); continue; }
         if (JSON.stringify(row.caps) !== JSON.stringify(capsOf(b))) out.push(`${b.action}: caps ${row.caps.join(',')} != ${capsOf(b).join(',')}`);
         if (row.aria !== ariaOf(b)) out.push(`${b.action}: aria "${row.aria}" != "${ariaOf(b)}"`);
     }
     for (const b of map.filter((x) => x.status !== 'shipped')) if (info.keys.some((k: Any) => k.action === b.action)) out.push(`${b.action}: planned but shown`);
+    for (const b of map.filter((x) => x.when === 'sonic')) if (info.keys.some((k: Any) => k.action === b.action)) out.push(`${b.action}: a key of the sound mode shown on an ordinary page`);
     for (const [id, action] of Object.entries(MENU_ACTION)) {
         const it = info.items.find((x: Any) => x.id === id);
         const b = map.find((x) => x.action === action)!;
