@@ -41,6 +41,18 @@ proofs.
     the replay; the places of v0.12's hall (z = -10, -20 to -28.5) are rock in the new room, which is what failed before.
   - [x] `sonic-int-reader`: 4 of 4. Control broken once and restored: the task test on the engine's own waits (no
     sequential queue) ends the first part at its longest line (5472 ms, the sum 6844 ms) and fails.
+  - [x] `sonic-int-replay`: 10 of 10. W19 pinned down (not a play's edge): rings-first's 29 of 2225 frames that differ by
+    kind are the host's touch ping, which the replay never derives (11 frames, after each ring the craft flies on into
+    the front wall between attempts), the open-way chime's hold from samples the recording does not keep (10), and the
+    floor or the wall at a corner with the feed rate (9). Once rings-first passed, rings-line (never reached before) had
+    9 of 181 frames off by kind at its start: the live engine still held rings-first's hazard sectors (the ceiling voiced
+    with the craft at rest 2.2 m under it). Both package sides are under "Needs from the package". The test now holds the
+    lesson's own cues on every frame (control in the test: one height cue in fifty dropped is caught) and the safety
+    layer's shares once a lesson has settled: rings-first 98.7 % by kind, 85.7 % by sector; rings-line 100 %.
+  - Found, not changed (for stage B): `sonic-session/replay-segments.ts` cuts a frame stamped at the next open's own time
+    into the next lesson (`t < endT`). In the rig every switch has one (its clock stands while the host opens the next
+    lesson), so rings-line's first frame is rings-first's last position, heard in rings-line's world by the replay. In
+    the page the open comes after the frame by the swap or by a few microseconds, but a coarse timer could tie them.
 - [ ] A3 (W11) `FrameSampler.take` keeps every sample with `touched`
 - [ ] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
 - [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
@@ -76,8 +88,25 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
 | `sonic-bridge` "walls-hall with N, R short, R long and a contact" and its two controls | N in the task; the flight from the landmarks: a stop 1 m before the front wall's middle, a contact on the way back to the start, R short past it, R long, the stop again | N while flying leaves the lesson (M41-6); v0.12's flight (z -20 to -27.5) was beyond the room |
 | `sonic-bridge` "a flight into the hall's wall" | the craft reset 1.5 m before the front wall's middle (the landmark) | was z = -28.5, rock now |
+| `sonic-int-replay` "rings-first to its pass, then rings-line" | the lesson's own cues (every id but `safety.*`) agree on every frame within the comparer's slack, with a control in the test; the shares are taken once a lesson has settled (holdMs + 100 ms after its open) at 98 % by kind and 85 % by sector (were 99 % and 90 % over all frames); gates >= `pass.required` (was 8) | W19: the frames that differ are the safety layer only, each kind of difference named in the test (the touch ping and the held sectors are the package's, see below); the small rooms voice walls on most frames, so more sectors flip |
+| `sonic-int-replay` control "the same glossary heard over a floor" | the craft at `ALWAYS_HEARD_M` (0.8 m) over the floor, was 1.5 m | M41-13: a still craft hears a surface by its time to contact, or within 0.8 m |
 | `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
 
 ## Needs from the package
 
-(none yet)
+1. The host's touch ping is never derived by the replay. The simulator's mode pings every touched sample
+   (`apps/fly/src/sonic/mode.ts` `touched()`, `engine.cue({ kind: 'touch' })`), in the task and between attempts too,
+   where the runner records no touch event; the replay feeds the runner a touched sample at a recorded touch event but
+   plays no touch cue (`src/replay/replay.ts` `Replayer.step`), the runner pushes no touch cue action (`src/lesson/runner.ts`
+   `fly()`), and the package's own test host does not ping (`test/helpers/record.ts`). Shown by
+   `tools/bench/test/sonic-int-replay.test.ts` (rings-first: 11 of its 29 frames that differ by kind). Ask: one owner of the
+   touch ping that the replay can re-derive (for example a touch cue action from the runner at every touched sample, in
+   every phase, with the touch recorded, and the host then not pinging on its own).
+2. The engine is never reset at a new lesson. Each lesson restarts the host's frame clock; the sampler keeps every active
+   sector `holdMs` (300 ms) on when the clock goes back (`src/sense/sampler.ts:386`, meant for a seek), and nothing calls
+   `CuePlanner.reset()` (`src/cues/planner.ts:392`, "a new lesson, a seek"): `FlyBySoundEngine` (`src/audio/engine.ts`) has
+   no reset a host could call. So the first 0.3 s of the next lesson voice the last one's sectors with the new geometry
+   (rings-first to rings-line in the rig: `safety.ceiling:up` and `front-up` for 12 live frames with the craft at rest 2.2 m
+   under the ceiling), which the replay, a fresh planner per lesson, does not derive (rings-line: 9 of 181 frames by kind,
+   left out of the shares in `sonic-int-replay`). Ask: `reset()` on the engine for the host to call when it opens a lesson
+   (or a reset when the frame clock goes back); the simulator then calls it in `LessonHost.open`.
