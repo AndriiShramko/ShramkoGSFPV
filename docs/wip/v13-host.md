@@ -292,7 +292,19 @@ with its control (the rule broken once in the code, the test seen failing, the c
     `lessonKeys`, `keys.sonic.menu`.
   - Not seen in a page yet: the menu over a real flight with a real screen reader (NVDA, JAWS) and the voice: stage C's page
     proof (and the open "real NVDA or JAWS test" of v12-optin).
-- [ ] B7 (W15) every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call outside the engine
+- [x] B7 (W15) every line of the mode through `engine.say()`; a test fails on a `speechSynthesis` call outside the engine
+  - Every line stage B adds goes through the mode's speech queue to `engine.say()` (the theme's voice level): the lesson
+    menu's (`feature.ts` `sayLine`: `bridge.say` while a lesson runs, else `engine.say`), I's (the status board, as before),
+    K's (as before) and the line at a lesson's start (`bridge.say`); the progress panel is drawn, not said. No code change
+    was needed for it; the check is new.
+  - Test (`sonic-lesson-keys` B7, 3): every `.ts` under `apps/fly/src` (comments taken out) names the browser's voice
+    (`speechSynthesis`, `SpeechSynthesisUtterance`) only in the two places the engine cannot speak: the empty utterance that
+    unlocks speech in the press that makes the engine (`sonic/audio.ts`, two lines, checked to say nothing) and the note
+    that Fly by Sound did not load (`sonic/unavailable.ts`, which cannot reach the engine: checked to import nothing of the
+    package); a planted call in the menu, the status board and the start screen, and a non-empty unlock, are each found, a
+    comment is not (in the test); the menu's, I's, K's lines and the line at a lesson's start reach the rig's engine, each
+    with its text from the engine's dictionaries. Control broken once and restored: a `speechSynthesis.speak` of the
+    focused item added to `lesson-menu.ts` fails the first test, naming its line.
 - [ ] B8 tests for B1 to B7 complete, gates exit 0, stage B's status final
 
 ### Stage C

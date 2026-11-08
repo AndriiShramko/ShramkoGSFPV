@@ -13,8 +13,10 @@
 //    while paused, once after the resume; a question does not time out in a pause, and a paused session replays PASS.
 //  - B6 (M41-3): Escape opens the spoken lesson menu (the lesson waits with the flight), its items said on focus by the mode's voice
 //    and exposed to a screen reader, each step and lesson item recorded as the key it stands for; the line at every lesson's start.
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+//  - B7 (W15): every line of the mode goes through the engine (engine.say: the theme's voice level); no source of the page calls the
+//    browser's voice past it but the two places the engine cannot be there.
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ASK_TIMEOUT_S, REPEAT_PLAYS, REPLAY_KEY_ACTIONS, SPEECH_END_KEY, buildManifest, checkSession, createTranslator, defaultPrefs, getBuiltinTheme, getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, LessonSession, LessonView, SessionEvent } from '../../../packages/sonic-fpv/src';
@@ -27,6 +29,7 @@ import { DEFAULT_RUNNER_KEYS, KeyNames, codeOfHint, spokenKey } from '../../../a
 import { DomLessonMenuView, LESSON_MENU_ITEMS, LessonMenu, pauseKey, runItem } from '../../../apps/fly/src/sonic/lesson-menu';
 import type { KeySource } from '../../../apps/fly/src/sonic/lesson-menu';
 import { runnerOptions } from '../../../apps/fly/src/sonic/lessons';
+import { keyHelpLines } from '../../../apps/fly/src/sonic/mode-keys';
 import { ProgressPanel, followProgress, progressRows } from '../../../apps/fly/src/sonic/progress-panel';
 import { saveProgress, savedProgress } from '../../../apps/fly/src/sonic/store';
 import { REPO, mkStore } from '../../../packages/prefs/test/helpers';
@@ -853,5 +856,132 @@ describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every les
             for (const id of LESSON_MENU_ITEMS) expect(dicts[l][`sonic.say.menu${id.split('-').map((w) => w[0]!.toUpperCase() + w.slice(1)).join('')}`], `${l} ${id}`).toBeTruthy();
             for (const k of ['sonic.say.menuOpen', 'sonic.say.menuTitle', 'sonic.say.helpMenu']) expect(dicts[l][k], `${l} ${k}`).toBeTruthy();
         }
+    }, 120000);
+});
+
+// ------------------------------------------------------------------ B7
+
+/** A source with its comments taken out (line and block comments; the text of strings and templates stays). */
+function codeOf(src: string): string {
+    let out = '';
+    let i = 0;
+    let quote: string | null = null;
+    while (i < src.length) {
+        const c = src[i] as string;
+        const next = src[i + 1];
+        if (quote !== null) {
+            out += c;
+            if (c === '\\') {
+                out += next ?? '';
+                i += 2;
+                continue;
+            }
+            if (c === quote) quote = null;
+            i++;
+            continue;
+        }
+        if (c === '/' && next === '/') {
+            while (i < src.length && src[i] !== '\n') i++;
+            continue;
+        }
+        if (c === '/' && next === '*') {
+            const end = src.indexOf('*/', i + 2);
+            const skipped = src.slice(i, end < 0 ? src.length : end + 2);
+            out += skipped.replace(/[^\n]/g, ' ');
+            i = end < 0 ? src.length : end + 2;
+            continue;
+        }
+        if (c === '"' || c === "'" || c === '`') quote = c;
+        out += c;
+        i++;
+    }
+    return out;
+}
+
+/**
+ * The places outside the engine that may use the browser's voice, and why (W15: a line said past the engine is 7 to 11 LU louder than
+ * the mix, at no theme's level): the press that makes the engine's AudioContext unlocks speech with an empty utterance (Chrome speaks
+ * for a page only after one), and the note that Fly by Sound did not load is said by the browser because the engine is in the chunk
+ * that did not load. Nothing else may.
+ */
+const VOICE_PAST_ENGINE: readonly { readonly file: string; readonly line: RegExp; readonly why: string }[] = [
+    { file: 'apps/fly/src/sonic/audio.ts', line: /^\s*const synth = globalThis\.speechSynthesis;$/, why: 'the unlock in the press that makes the engine' },
+    { file: 'apps/fly/src/sonic/audio.ts', line: /^\s*if \(synth\) synth\.speak\(new SpeechSynthesisUtterance\(''\)\);$/, why: 'an empty utterance: the unlock, no line' },
+    { file: 'apps/fly/src/sonic/unavailable.ts', line: /./, why: 'the engine did not load: the browser is the only voice there is' }
+];
+
+/** Every line of code that names the browser's voice where the list above does not allow it: "file:line: code". */
+function voicePastEngine(files: readonly { readonly path: string; readonly text: string }[]): string[] {
+    const out: string[] = [];
+    for (const f of files) {
+        codeOf(f.text).split('\n').forEach((line, i) => {
+            if (!/speechSynthesis|SpeechSynthesisUtterance/.test(line)) return;
+            if (VOICE_PAST_ENGINE.some((a) => a.file === f.path && a.line.test(line))) return;
+            out.push(`${f.path}:${i + 1}: ${line.trim()}`);
+        });
+    }
+    return out;
+}
+
+/** The page's sources: every .ts under apps/fly/src, paths from the repository's root with forward slashes. */
+function pageSources(): { path: string; text: string }[] {
+    const root = join(REPO, 'apps', 'fly', 'src');
+    const out: { path: string; text: string }[] = [];
+    const walk = (dir: string): void => {
+        for (const name of readdirSync(dir)) {
+            const p = join(dir, name);
+            if (statSync(p).isDirectory()) walk(p);
+            else if (name.endsWith('.ts')) out.push({ path: relative(REPO, p).split('\\').join('/'), text: readFileSync(p, 'utf8') });
+        }
+    };
+    walk(root);
+    return out;
+}
+
+describe('B7 (W15): every line of the mode through the engine; no voice past it', () => {
+    it('no source of the page calls the browser\'s voice but the engine\'s unlock and the note that the mode did not load', () => {
+        const files = pageSources();
+        expect(files.length).toBeGreaterThan(200);
+        expect(files.some((f) => f.path === 'apps/fly/src/sonic/lesson-menu.ts')).toBe(true);
+        expect(voicePastEngine(files)).toEqual([]);
+        // the two places are still what they claim: the unlock speaks nothing, and the note's file cannot reach the engine
+        const audio = files.find((f) => f.path === 'apps/fly/src/sonic/audio.ts')!.text;
+        expect(codeOf(audio).match(/SpeechSynthesisUtterance\(([^)]*)\)/g)).toEqual(["SpeechSynthesisUtterance('')"]);
+        const unavailable = codeOf(files.find((f) => f.path === 'apps/fly/src/sonic/unavailable.ts')!.text);
+        expect(unavailable).not.toMatch(/@shramko\/sonic-fpv/);
+    });
+
+    it('control: a line said past the engine anywhere else is found (the lesson menu, the status board, the start screen), a non-empty unlock too; a comment that names it is not', () => {
+        const planted = [
+            { path: 'apps/fly/src/sonic/lesson-menu.ts', text: 'const u = new SpeechSynthesisUtterance(text);\nspeechSynthesis.speak(u);' },
+            { path: 'apps/fly/src/app/sonic-status.ts', text: "globalThis.speechSynthesis?.speak(new SpeechSynthesisUtterance('I'));" },
+            { path: 'apps/fly/src/sonic/start-screen.ts', text: 'const s = window["speechSynthesis"];' },
+            { path: 'apps/fly/src/sonic/audio.ts', text: "if (synth) synth.speak(new SpeechSynthesisUtterance('Lesson menu'));" },
+            { path: 'apps/fly/src/sonic/progress-panel.ts', text: '// the voice is the engine\'s, never speechSynthesis\n/* nor SpeechSynthesisUtterance */\nconst a = 1;' }
+        ];
+        expect(voicePastEngine(planted).map((l) => l.split(':').slice(0, 2).join(':'))).toEqual([
+            'apps/fly/src/sonic/lesson-menu.ts:1',
+            'apps/fly/src/sonic/lesson-menu.ts:2',
+            'apps/fly/src/app/sonic-status.ts:1',
+            'apps/fly/src/sonic/start-screen.ts:1',
+            'apps/fly/src/sonic/audio.ts:1'
+        ]);
+    });
+
+    it('the mode\'s menu, progress, status and key lines reach the engine (its say): the menu, I, K\'s lines and the line at a lesson\'s start, in the rig whose engine stands for the page\'s', async () => {
+        const r = await open('rings-first');
+        await r.run(500, null);
+        const p = menuPage(r);
+        p.escape();
+        p.doc.key('ArrowDown');
+        p.doc.key('Escape');
+        const board = new StatusBoard();
+        board.add({ order: STATUS_ORDER.lesson, line: () => r.host.status() });
+        void sayStatus(board, (line, interrupt) => r.mode.bridge.say(line, interrupt));
+        for (const line of keyHelpLines((a, aria) => pageNames().of(a, aria))) void r.mode.bridge.say(line, false);
+        const keys = new Set(r.engine.said.map((s) => s.line.key));
+        for (const k of ['sonic.say.lessonKeys', 'sonic.say.menuOpen', 'menu.item', 'status.progress-step', 'help.intro', 'sonic.say.helpMenu', 'sonic.say.helpPrevious', 'sonic.say.helpRepeat']) expect(keys.has(k), k).toBe(true);
+        // and every one of them as the engine speaks it: its text from the engine's dictionaries, never the key itself
+        for (const s of r.engine.said) expect(s.text, s.line.key).not.toBe(s.line.key);
     }, 120000);
 });
