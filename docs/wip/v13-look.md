@@ -72,9 +72,32 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
   - Unchanged elsewhere: `a6-reference` (the reference hash) and every sim-core test pass; the Fly by Sound tests (`sonic-*`,
     `sonicrec-*`, `packages/prefs/test/sonic.test.ts`) and `app-game`, `app-easy`: 626 pass, 10 skipped (as before: 8 need
     the scan, 2 are stage B's). The lesson rig (`sonic-lesson-rig.ts`, the real FlightSession) now flies the slide rule.
-- [ ] L1-2 (W17) a headless page flight on a release build: full stick in walls-hall from the start to the first touch
+- [x] L1-2 (W17) a headless page flight on a release build: full stick in walls-hall from the start to the first touch
   (the model says 2 to 3 s: measured); a respawn in tunnel-gaps' free way under a block rests at the respawn point and is
   not stuck.
+  - Found on the way, fixed: the lesson pilot's take-off from within 0.5 m of the ground climbed a 1 m hop blind to what
+    is above. tunnel-long's runner respawns a craft at two points 0.35 m under a block's edge (and two on a block's top
+    0.35 m under the ceiling): the hop met the block over the rear ducts, and a touch in a tunnel re-centres the craft to
+    that same point, so it would hop into it again (a loop). At take-off the lesson pilot now looks up over the body's
+    footprint (`play/lesson-pilot.ts` `rayClearanceUp`: five rays, the centre's alone misses a block at its edge;
+    `LessonEnv.above`, wired in `app/input.ts`) and the hop goes to the middle of the way at most (`play/game.ts`
+    `liftoff`, `GameSense.ceilingM`; the game scheme gives none and keeps its 1 m). Tests (`sonic-bump.test.ts`, W17):
+    the four points hover within 6 mm with the motors on and W flies on 3.7 m, nothing above touched; control in the
+    test: v0.12's hop touches the block at 2 of the 4 (strayed 0.32 m); 0.5 m inside a block's footprint: 0 of 2
+    touched, v0.12's hop 2 of 2. Broken once: the centre ray alone (the first version) touched at 2 of 4, failing.
+  - Page, release build 8b8dd60 on `serve-csp.mjs dist 5420`, headless system Chrome 156, GPU lock held, new
+    `tools/bench/src/v13-look-page.ts bump`: 14 of 14 (`evidence/2026-11-08/v13-look-bump.json`, three small JPEGs in
+    `v13-look-bump/`).
+    - walls-hall, W held from the start at rest: **the first touch 2.63 s** after the stick went full (2.60, 2.57 and
+      2.63 s over three runs), in the flight model's own ticks (2626); top speed 3.18 m/s (cap 3), 5.9 m flown, the
+      front wall (normal +z). The worlds' model said 2 to 3 s.
+    - tunnel-gaps (block 3, a 1.2 m way) and tunnel-long (block 3 at x 58.25-59.25, a 0.7 m way): the craft put where
+      the runner puts one, W in short pulses just past the track point (marked passed), Space into the ceiling further
+      on (a touch): the runner re-centres it under the block, at (0, 0.6, -20.25) and (59.25, 0.35, -46). There, motors
+      on, 2.5 s with the sticks centred: within 1.2 cm and 6 mm of the place, no touch, no second re-centre; then W for
+      2 s flies it on 3.76 and 3.75 m, no touch. No page error.
+    - Not done: the same page run on a stage A build (v0.12's hop) as a page-level control; the Node test above is the
+      control.
 - [ ] L1-3 (M41-23) the lesson rooms and tunnels look like a game, cheaply: block textures (procedural), a checker
   floor, hemisphere ambient light plus one sun, soft fog, coloured pillars and rings, no shadows. Low vision: luminance
   contrast at least 3:1 between floor and walls and between obstacles and what is behind them, measured on the page's

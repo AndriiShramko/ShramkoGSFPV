@@ -1,0 +1,244 @@
+{
+  "name": "v13-look-bump",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T19:51:02.251Z",
+    "gitHead": "8b8dd60",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5420",
+  "release": {
+    "sha": "8b8dd60",
+    "sonic": "16c01a1",
+    "built": "2026-11-08T19:46:14.039Z"
+  },
+  "scenario": "bump",
+  "checks": [
+    {
+      "name": "walls-hall: the lesson flies with the lesson bump (sim-core bump slide), the craft at its start, at rest",
+      "pass": true,
+      "value": {
+        "bump": "slide",
+        "pos": [
+          0,
+          1.5,
+          0
+        ],
+        "speed": 0
+      }
+    },
+    {
+      "name": "walls-hall: full stick from the start meets a wall (a contact off the platform)",
+      "pass": true,
+      "value": {
+        "type": "contact",
+        "tick": 3140,
+        "speed": 3.091016154114176,
+        "nx": 0,
+        "ny": 0,
+        "nz": 1,
+        "onPlatform": false
+      }
+    },
+    {
+      "name": "walls-hall: the first touch 2.63 s after the stick went full (the worlds' model: 2 to 3 s)",
+      "pass": true,
+      "value": {
+        "seconds": 2.626,
+        "ticks": 2626,
+        "topSpeedMps": 3.18,
+        "capMps": 3,
+        "travelledM": 5.9,
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "name": "walls-hall: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "tunnel-gaps: the runner's respawn point under a block (the lowest way under one: 1.20 m)",
+      "pass": true,
+      "value": {
+        "pose": [
+          0,
+          0.6,
+          -20.25,
+          0
+        ],
+        "aboveM": 0.6,
+        "belowM": 0.6
+      }
+    },
+    {
+      "name": "tunnel-gaps: Space into the ceiling past the block is a touch, and the runner puts the craft back under the block (RESPAWN_BEFORE_M before the point passed)",
+      "pass": true,
+      "value": {
+        "recentres": 1,
+        "at": [
+          -0.001,
+          0.598,
+          -20.25
+        ],
+        "pose": [
+          0,
+          0.6,
+          -20.25,
+          0
+        ]
+      }
+    },
+    {
+      "name": "tunnel-gaps: back under the block it stays (2.5 s, the sticks centred): within 0.1 m of the place, no touch, no second re-centre",
+      "pass": true,
+      "value": {
+        "farthestM": 0.012,
+        "touches": 0,
+        "recentres": 0,
+        "armed": true,
+        "platOn": true
+      }
+    },
+    {
+      "name": "tunnel-gaps: then W for 2 s flies it on along the track (1.5 m or more), no touch",
+      "pass": true,
+      "value": {
+        "movedM": 3.76,
+        "touches": 0
+      }
+    },
+    {
+      "name": "tunnel-gaps: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "tunnel-long: the runner's respawn point under a block (the lowest way under one: 0.70 m)",
+      "pass": true,
+      "value": {
+        "pose": [
+          59.25,
+          0.35,
+          -46,
+          90
+        ],
+        "aboveM": 0.35,
+        "belowM": 0.35
+      }
+    },
+    {
+      "name": "tunnel-long: Space into the ceiling past the block is a touch, and the runner puts the craft back under the block (RESPAWN_BEFORE_M before the point passed)",
+      "pass": true,
+      "value": {
+        "recentres": 1,
+        "at": [
+          59.25,
+          0.348,
+          -46
+        ],
+        "pose": [
+          59.25,
+          0.35,
+          -46,
+          90
+        ]
+      }
+    },
+    {
+      "name": "tunnel-long: back under the block it stays (2.5 s, the sticks centred): within 0.1 m of the place, no touch, no second re-centre",
+      "pass": true,
+      "value": {
+        "farthestM": 0.006,
+        "touches": 0,
+        "recentres": 0,
+        "armed": true,
+        "platOn": true
+      }
+    },
+    {
+      "name": "tunnel-long: then W for 2 s flies it on along the track (1.5 m or more), no touch",
+      "pass": true,
+      "value": {
+        "movedM": 3.75,
+        "touches": 0
+      }
+    },
+    {
+      "name": "tunnel-long: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 14,
+  "total": 14,
+  "result": {
+    "wallsHall": {
+      "seconds": 2.626,
+      "ticks": 2626,
+      "touch": {
+        "type": "contact",
+        "tick": 3140,
+        "speed": 3.091016154114176,
+        "nx": 0,
+        "ny": 0,
+        "nz": 1,
+        "onPlatform": false
+      },
+      "topSpeedMps": 3.18,
+      "start": [
+        0,
+        1.5,
+        0
+      ],
+      "atTouch": [
+        0.00023479298358805982,
+        1.5061191796445859,
+        -5.9006346719207885
+      ],
+      "view": "evidence/2026-11-08/v13-look-bump/walls-hall-touch.jpg"
+    },
+    "tunnelGaps": {
+      "pose": [
+        0,
+        0.6,
+        -20.25,
+        0
+      ],
+      "placedTick": 593,
+      "recentres": 1,
+      "settledFarM": 0.012185936441015736,
+      "touchesThere": 0,
+      "secondRecentres": 0,
+      "movedOnM": 3.76482191449945,
+      "view": "evidence/2026-11-08/v13-look-bump/tunnel-gaps-recentred.jpg"
+    },
+    "tunnelLong": {
+      "pose": [
+        59.25,
+        0.35,
+        -46,
+        90
+      ],
+      "placedTick": 577,
+      "recentres": 1,
+      "settledFarM": 0.005711324853775426,
+      "touchesThere": 0,
+      "secondRecentres": 0,
+      "movedOnM": 3.751854358700996,
+      "view": "evidence/2026-11-08/v13-look-bump/tunnel-long-recentred.jpg"
+    }
+  }
+}
