@@ -103,7 +103,8 @@ async function panelInfo(p: Page): Promise<Any> {
         const caps = (el) => [...el.querySelectorAll('kbd')].map((k) => k.textContent);
         return {
             items: [...panel.querySelectorAll('.sum-menu [data-action]')].map((b) => ({ id: b.dataset.action, caps: caps(b), aria: b.getAttribute('aria-keyshortcuts'), testid: b.dataset.testid ?? null })),
-            contact: (() => { const a = panel.querySelector('.sum-menu a'); return a ? { href: a.getAttribute('href'), target: a.getAttribute('target') } : null; })(),
+            // the contact link by its address: the menu has other links (v12-optin: the Fly by Sound item, a link to /{lang}/sound/; review R9 d)
+            contact: (() => { const a = panel.querySelector('.sum-menu a[href$="#contact"]'); return a ? { href: a.getAttribute('href'), target: a.getAttribute('target') } : null; })(),
             keys: [...panel.querySelectorAll('[data-key-action]')].map((li) => ({ action: li.dataset.keyAction, caps: caps(li), aria: li.getAttribute('aria-keyshortcuts') })),
             stats: [...panel.querySelectorAll('[data-testid="summary-stats"] tbody tr')].map((tr) => ({ id: tr.dataset.stat, life: tr.querySelector('[data-col=life]').textContent, session: tr.querySelector('[data-col=session]').textContent, lifetime: tr.querySelector('[data-col=lifetime]').textContent, visible: tr.getClientRects().length > 0 })),
             mode: panel.querySelector('[data-testid="summary-mode"]')?.dataset.mode ?? null,

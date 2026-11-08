@@ -11,6 +11,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { sonicFlight } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { FlightContext } from '../../../apps/fly/src/app/context';
 import { setSonicEntry, setSonicInstaller } from '../../../apps/fly/src/sonic/entry-state';
+import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
 
 // LAZY_ROOT=<another checkout>: the same checks on another tree (the tree before this step fails them: docs/wip/v12-int.md step 4)
@@ -79,6 +80,22 @@ const soundOf = (closure: Set<string>): string[] =>
         .filter((f) => /^pkg:@shramko\/sonic-fpv/.test(f) || f.startsWith('packages/sonic-fpv/') || f.startsWith('apps/fly/src/sonic-session/') || (f.startsWith('apps/fly/src/sonic/') && !ALLOWED.has(f)))
         .sort();
 
+/** Every quoted string of `sources` that looks like a key of Fly by Sound's texts (sonic.* or keys.sonic.*). */
+function askedSonic(sources: readonly string[]): Set<string> {
+    const asked = new Set<string>();
+    for (const src of sources) for (const m of src.matchAll(/['`]((?:keys\.)?sonic\.[\w.-]+)['`]/g)) asked.add(m[1] as string);
+    return asked;
+}
+
+/** The keys of the namespaces only a ?sonic= page loads (the start chunk adds them, sonic/texts.ts), in English. */
+const LAZY_KEYS = new Set(['sonic', 'sonickeys'].flatMap((ns) => Object.keys(JSON.parse(readFileSync(join(ROOT, `packages/i18n/locales/fly/${ns}/en.json`), 'utf8')) as Record<string, string>)));
+/** Of those, what an ordinary page's code may name because it reads it only on a ?sonic= page: the mode's key labels, the GPU hint's line. */
+const ONLY_IN_MODE = new Set([...KEYMAP.filter((b) => b.when === 'sonic').map((b) => b.labelKey), 'sonic.say.gpuHint']);
+/** The keys of the mode's own namespaces that `sources` name and an ordinary page would show raw. */
+function lazyAsked(sources: readonly string[]): string[] {
+    return [...askedSonic(sources)].filter((k) => LAZY_KEYS.has(k) && !ONLY_IN_MODE.has(k)).sort();
+}
+
 describe('the main chunk holds nothing of Fly by Sound (static imports from apps/fly/src/main.ts)', () => {
     const closure = staticClosure(MAIN);
 
@@ -111,20 +128,22 @@ describe('the main chunk holds nothing of Fly by Sound (static imports from apps
         expect(/^\s*import\s+['"]([^'"]+)['"]/m.exec(readFileSync(join(ROOT, 'apps/fly/src/sonic/lazy-start.ts'), 'utf8').replace(/^\s*\/\/.*$/gm, ''))?.[1]).toBe('./texts');
     });
 
-    it('v12-optin: every text of Fly by Sound the main chunk\'s own code asks for is in sonicentry, the one namespace of the mode every page keeps', () => {
+    it('v12-optin: every text of Fly by Sound the main chunk\'s own code asks for is in sonicentry, the one namespace of the mode every page keeps; none of the mode\'s own namespaces (sonic, sonickeys) is asked but where it is read on a ?sonic= page only', () => {
         const entry = JSON.parse(readFileSync(join(ROOT, 'packages/i18n/locales/fly/sonicentry/en.json'), 'utf8')) as Record<string, string>;
         expect(Object.keys(entry).sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
-        const asked = new Set<string>();
-        for (const f of closure) {
-            if (f.startsWith('pkg:') || !f.endsWith('.ts')) continue;
-            for (const m of readFileSync(f, 'utf8').matchAll(/['`]((?:keys\.)?sonic\.[\w.-]+)['`]/g)) asked.add(m[1] as string);
-        }
-        // the GPU hint names the mode's spoken line, which the engine (in the start chunk) says: not a text of the main chunk
-        asked.delete('sonic.say.gpuHint');
-        // the keymap's labels of the mode's keys (keys.sonic.*) are read only where those keys are listed, a ?sonic= page, after the
-        // start chunk added them (an ordinary page lists none: packages/prefs/test/keymap.test.ts); ids and actions are not texts
-        for (const k of [...asked]) if (!k.includes('.say.') && !k.startsWith('sonic.menu.')) asked.delete(k);
-        expect([...asked].sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
+        const sources = [...closure].filter((f) => !f.startsWith('pkg:') && f.endsWith('.ts')).map((f) => readFileSync(f, 'utf8'));
+        expect([...askedSonic(sources)].filter((k) => k in entry).sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
+        // review R9 (c): the keys of the namespaces the start chunk adds (sonic/texts.ts) are raw keys on an ordinary page, so the main
+        // chunk names none of them but those read only on a ?sonic= page: the keymap's labels of the mode's own keys (listed only
+        // there) and the GPU hint's spoken line (said by the engine, which is in the start chunk)
+        expect(lazyAsked(sources)).toEqual([]);
+    });
+
+    it('control: the same check finds a key of the mode\'s namespaces named in the main chunk (a t(\'sonic.close\') would show the raw key on an ordinary page), which the check before review R9 let through', () => {
+        const planted = ["import { t } from '../i18n';", "export const back = (): string => t('sonic.close');"].join('\n');
+        expect(lazyAsked([planted])).toEqual(['sonic.close']);
+        // the check before the review kept only `.say.` and `sonic.menu.` keys: sonic.close slipped through it
+        expect([...askedSonic([planted])].filter((k) => k.includes('.say.') || k.startsWith('sonic.menu.'))).toEqual([]);
     });
 
     it('control: the walk does find the package and the mode where they are imported (the mode\'s own module, the lazy start chunk)', () => {

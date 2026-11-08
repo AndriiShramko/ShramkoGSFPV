@@ -12,6 +12,8 @@
 // render 'off' in its evidence, its screenshots end in -render-off, and B17's flash count covers
 // the HUD and overlays only. The visual items B6 (renderer, frame not empty), B7 and B8 (pixel
 // checks, Firefox) always run with the scan drawn. tools/bench/README.md.
+// The run holds the benches' GPU lock (C:/dev/.gpu-lock, gpu-lock.ts) from before the browser starts to the end, also on an error or
+// Ctrl+C (review R10 of v12-optin: frame and timing numbers made while another run drew are that run's too).
 import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { firefox } from 'playwright';
@@ -19,6 +21,7 @@ import type { BrowserContext, Page } from 'playwright';
 import { launch, waitReady } from './browser';
 import { benchHeadless } from './chrome.mjs';
 import { writeEvidence, REPO, today } from './evidence';
+import { LOCK, lock, unlock } from './gpu-lock';
 
 const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$/, '');
 // The target is SITE. A run given only BASE (site verify's name) would silently test the live site; refuse it.
@@ -107,6 +110,13 @@ function record(id: string, data: Record<string, unknown> & { pass: boolean }): 
     console.log(`${id} ${data.pass ? 'PASS' : 'FAIL'}`);
 }
 
+await lock();
+console.log(`accept-fly holds ${LOCK}`);
+process.on('exit', unlock);
+process.on('SIGINT', () => {
+    unlock();
+    process.exit(130);
+});
 const L0 = await launch();
 const { browser, context } = L0;
 let page = L0.page;
@@ -646,5 +656,5 @@ if (want('B17')) {
 }
 
 await browser.close();
-writeEvidence('b-fly-summary', { site: SITE, items: summary, render: RENDER_OFF ? { off: [...LOGIC_ITEMS].filter(want), on: ['B6', 'B7', 'B8'].filter(want) } : 'on' });
+writeEvidence('b-fly-summary', { site: SITE, gpuLock: LOCK, items: summary, render: RENDER_OFF ? { off: [...LOGIC_ITEMS].filter(want), on: ['B6', 'B7', 'B8'].filter(want) } : 'on' });
 console.log(JSON.stringify(summary));

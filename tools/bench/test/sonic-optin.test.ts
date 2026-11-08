@@ -29,6 +29,18 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const LANGS = ['en', 'es', 'pl', 'ru'] as const;
 const dict = (ns: string, l: string): Record<string, string> => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', ns, `${l}.json`), 'utf8')) as Record<string, string>;
 
+/**
+ * What a link must not carry (review R9 b): a parameter that is not one of the link's own, or the name of one of the pilot's personal
+ * settings anywhere in it (his voice, speaking speed, captions, motor sound, volumes, pitch, path) or an address.
+ */
+function privacyProblems(href: string): string[] {
+    const out: string[] = [];
+    for (const n of new Set(queryOf(href).keys())) if (!(Object.values(SONIC_LINK_PARAMS) as string[]).includes(n)) out.push(`parameter ${n}`);
+    const named = /speech|voice|caption|motor|gain|pitch|fast|@/i.exec(decodeURIComponent(href));
+    if (named) out.push(`names ${named[0]}`);
+    return out;
+}
+
 /** A flight context with only a menu that records what is added (the shim needs nothing else). */
 function menuPage(): { ctx: FlightContext; items: MenuItem[] } {
     const items: MenuItem[] = [];
@@ -185,12 +197,15 @@ describe('the link that carries the mode: writer and reader (step 4, @gsfpv/scen
     it('no personal data: whatever the pilot set (voice, speed, screen reader, captions, motors, each sound\'s volume and pitch), only the link\'s own parameters are written', () => {
         const prefs = { ...defaultPrefs(), theme: 'clear', calm: true, selfVoice: false, speechRate: 2, captions: false, motorSound: true, path: 'fast' as const, layerGainDb: { safety: -6 }, layerPitchSteps: { height: 2 } };
         const href = sonicLinkPath(lessonLink(getLesson('rings-first'), prefs));
-        const names = [...queryOf(href).keys()];
-        expect(names).toEqual(['sonic', 'st', 'sc']);
-        for (const n of names) expect(Object.values(SONIC_LINK_PARAMS)).toContain(n);
-        expect(href).not.toMatch(/speech|voice|caption|motor|gain|pitch|fast|@/i);
-        // control: written as the whole settings document, the same link would carry all of them
-        expect(JSON.stringify(prefs)).toMatch(/selfVoice|speechRate|layerGainDb/);
+        expect([...queryOf(href).keys()]).toEqual(['sonic', 'st', 'sc']);
+        expect(privacyProblems(href)).toEqual([]);
+        // review R9 (b), the controls: writers that leak are caught by the same check, one that serialises the whole settings
+        // document into the link, and one that writes each setting as a parameter of its own
+        const whole = `${href}&p=${encodeURIComponent(JSON.stringify(prefs))}`;
+        expect(privacyProblems(whole)).toEqual(expect.arrayContaining(['parameter p']));
+        expect(privacyProblems(whole).some((x) => x.startsWith('names '))).toBe(true);
+        const each = `/fly/?${new URLSearchParams(Object.entries(prefs).map(([k, v]) => [k, JSON.stringify(v)])).toString()}`;
+        expect(privacyProblems(each)).toEqual(expect.arrayContaining(['parameter selfVoice', 'parameter speechRate', 'parameter layerGainDb']));
     });
 
     it('L in the mode: the running lesson, a scan lesson with its scan and Scene size, no lesson the start screen; what it says after', () => {
