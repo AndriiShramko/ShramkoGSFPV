@@ -509,6 +509,30 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
     });
 });
 
+// ------------------------------------------------------------------ v13-int step 5: the reset over a running lesson
+
+describe('v13-int step 5: "Reset my progress" over a flight tells the flight page, after the saved progress is cleared', () => {
+    it('Yes: onReset once, with every lesson already cleared; No and Escape: never (control); the lesson host\'s part is sonic-reset-running.test.ts', () => {
+        const { s, store } = shown({ progress: { 'hover-height': P('hover-height', { attempts: 1 }) }, current: 'hover-height', overFlight: true });
+        const told: number[] = [];
+        s.bind({ onStart: () => undefined, onClose: () => undefined, onReset: () => void told.push(Object.keys(store.collection('sonic').progress).length) });
+        doc.key('ArrowDown');
+        byTestId(doc, 'sonic-reset')!.click();
+        byTestId(doc, 'sonic-reset-no')!.click();
+        expect(told).toEqual([]);
+        byTestId(doc, 'sonic-reset')!.click();
+        byTestId(doc, 'sonic-reset-no')!.focus();
+        doc.key('Escape');
+        expect(told).toEqual([]);
+        expect(storeMod.savedProgress(store, 'hover-height')).not.toBeNull();
+        byTestId(doc, 'sonic-reset')!.click();
+        byTestId(doc, 'sonic-reset-yes')!.click();
+        expect(told).toEqual([0]);
+        expect(storeMod.savedProgress(store, 'hover-height')).toBeNull();
+        s.dispose();
+    });
+});
+
 // ------------------------------------------------------------------ v13-int step 3: the three new switches
 
 describe('v13-int step 3: sound from above and below, the sound panel and the attitude display in the settings and the spoken list', () => {

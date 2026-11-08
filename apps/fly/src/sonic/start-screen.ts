@@ -64,6 +64,8 @@ export interface StartScreenDeps {
     readonly onClose?: () => void;
     /** "Reset my progress", once the pilot said yes: every lesson's progress and the current lesson cleared (store.ts resetProgress) */
     readonly resetProgress?: () => void;
+    /** after the reset (v13-int step 5): the flight page's own (bind), the lesson running under the screen forgets its counts */
+    readonly onReset?: () => void;
     /** the voice over a flight (bind); absent: the engine's own say */
     readonly say?: ScreenVoice;
 }
@@ -651,6 +653,8 @@ export class StartScreen {
         this.confirming = false;
         if (yes && this.d.resetProgress) {
             this.d.resetProgress();
+            // a lesson running under the screen holds its old counts: it forgets them too (v13-int step 5)
+            this.d.onReset?.();
             this.render();
             this.announce(t('sonic.reset.done'));
             this.root.querySelector<HTMLElement>('[data-testid="sonic-start-beginning"]')?.focus();
@@ -698,8 +702,8 @@ export class StartScreen {
      * The handlers are replaced (the first flight is launched by the entry, later lessons open in the flight); `say`: the voice over the
      * flight (the lesson's speech queue while one runs).
      */
-    bind(h: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void; readonly say?: ScreenVoice }): void {
-        this.d = { ...this.d, onStart: h.onStart, onClose: h.onClose, ...(h.say ? { say: h.say } : {}) };
+    bind(h: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void; readonly say?: ScreenVoice; readonly onReset?: () => void }): void {
+        this.d = { ...this.d, onStart: h.onStart, onClose: h.onClose, ...(h.say ? { say: h.say } : {}), ...(h.onReset ? { onReset: h.onReset } : {}) };
         if (!this.root.hidden) this.render();
     }
 

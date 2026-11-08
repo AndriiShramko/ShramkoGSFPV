@@ -135,9 +135,10 @@ export interface ScreenPort {
     hide(): void;
     /**
      * the screen's own handlers are replaced: a lesson chosen on it opens in the flight, Escape or Back close it; `say` (v0.13 C3): its
-     * spoken list's lines go through the page's voice (the lesson's speech queue while one runs)
+     * spoken list's lines go through the page's voice (the lesson's speech queue while one runs); `onReset` (v13-int step 5): told after
+     * "Reset my progress" was answered Yes and the saved progress cleared (the lesson running under the screen forgets its counts)
      */
-    bind(handlers: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void; readonly say?: (line: SpeechLine, interrupt: boolean) => Promise<void> }): void;
+    bind(handlers: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void; readonly say?: (line: SpeechLine, interrupt: boolean) => Promise<void>; readonly onReset?: () => void }): void;
 }
 
 /** What the start screen hands to the flight page. */

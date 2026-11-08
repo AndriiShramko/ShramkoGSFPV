@@ -164,6 +164,13 @@ export class LessonHost {
      * menu. Z: repeat the task. N: next." with the pilot's names of those keys. Set while a lesson is entered, taken by its first line.
      */
     private keysLine: SpeechLine | null = null;
+    /**
+     * The runner whose counts the pilot reset (v13-int step 5: "Reset my progress" answered Yes on the start screen shown over this
+     * lesson). The screen cleared the saved progress, but this runner still holds the lesson's old counts: nothing of it is saved again
+     * (at its next attempt, block or pass, nor when it is left), and the lesson starts again from nothing (restartAfterReset) when the
+     * flight goes on, or another lesson opens. Null otherwise.
+     */
+    private forgotten: LessonSession | null = null;
 
     constructor(page: LessonPage) {
         this.p = page;
@@ -242,6 +249,8 @@ export class LessonHost {
             const runner = createLessonRunner(lesson, runnerOptions(this.p, lessonId, { start, floorY, objects, returnTo: o.returnTo ?? null }, Date.now()));
             this.lesson = lesson;
             this.runner = runner;
+            // a new runner is made from what is saved now: its counts are the pilot's again
+            this.forgotten = null;
             this.world = world;
             this.soundWorld = lesson.world.kind === 'none' ? null : world;
             this.scan = scan;
@@ -294,14 +303,34 @@ export class LessonHost {
         writeAddress((search) => lessonQuery(search, link));
     }
 
-    /** What the pilot did in the lesson being left is saved. */
+    /** What the pilot did in the lesson being left is saved (not when he reset his progress over it: its counts are void). */
     private finish(): void {
-        if (this.runner) saveProgress(this.p.store, this.runner.progress());
+        if (this.runner && this.runner !== this.forgotten) saveProgress(this.p.store, this.runner.progress());
+    }
+
+    /**
+     * "Reset my progress" over the lesson running now (v13-int step 5): the start screen has cleared every lesson's saved progress; this
+     * lesson's runner, which holds the old counts, saves nothing more, and the lesson starts again from nothing when the flight goes on
+     * (restartAfterReset) or another lesson is opened. Nothing when no lesson runs.
+     */
+    progressReset(): void {
+        this.forgotten = this.runner;
+    }
+
+    /**
+     * The start screen is closed over the flight (Escape, Back): a lesson whose progress was reset under it starts again from its
+     * beginning, a new runner from the progress saved now (none), the way back of G kept. False when there is none to restart.
+     */
+    restartAfterReset(): Promise<boolean> {
+        const id = this.lesson?.id;
+        if (this.runner === null || this.runner !== this.forgotten || id === undefined) return Promise.resolve(false);
+        return this.open(id, { returnTo: this.returnTo });
     }
 
     /** The lesson ends and the mode with it (the page is going to the menu or away). */
     close(): void {
         this.finish();
+        this.forgotten = null;
         this.runner = null;
         this.lesson = null;
         this.world = null;
@@ -407,7 +436,8 @@ export class LessonHost {
         if (!run) return;
         if (e.kind === 'answer') this.question = null;
         else if (e.kind === 'lesson' && (e.what === 'attempt-pass' || e.what === 'attempt-fail' || e.what === 'block-pass' || e.what === 'passed')) {
-            saveProgress(this.p.store, run.progress());
+            // a runner whose counts the pilot reset saves nothing (v13-int step 5)
+            if (run !== this.forgotten) saveProgress(this.p.store, run.progress());
             if (e.what === 'passed') this.passedAt = null;
         }
     }

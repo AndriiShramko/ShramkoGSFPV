@@ -87,7 +87,23 @@ lead's "Next" 5 and 6 as this branch sees them).
   - The Winter Garden's real walls: copied (read only) from v13-look's worktree cache into this worktree's `.cache/scenes/
     7a475d38` (no download), so the 8 garden tests run here now; with step 4 all pass (the lesson passed end to end through
     the host, eight gates, no touch), and one new: the lesson flies the scan 'slide', the drone's contact after `close()`.
-- [ ] 5. Reset over a running lesson: after "Reset my progress" every lesson is new, the one under the screen too.
+- [x] 5. Reset over a running lesson: after "Reset my progress" every lesson is new, the one under the screen too.
+  - The start screen tells the flight page after Yes has cleared the saved progress (`bind`'s new `onReset`, also on
+    `ScreenPort`); the feature hands it to `LessonHost.progressReset()`: the runner under the screen keeps its old counts
+    in memory, so it saves nothing more (not at its next attempt, block or pass, nor when it is left); closed with Escape or
+    Back the screen's `onClose` now also calls `LessonHost.restartAfterReset()`: that lesson starts again from its
+    beginning with a new runner from what is saved now (nothing), the way back of G kept; a lesson chosen on the screen
+    opens as before and the one left saves nothing.
+  - `sonic-reset-running` (new, 3 tests, the lesson rig): rings-first flown to a counted attempt, the reset, then closed:
+    the lesson restarts at 0 and its next counted attempt is saved as the first (successes 1); another lesson chosen: the
+    old runner counts one more under the screen and saves none of it, nor when left. Control (the reset not told to the
+    flight page, as before): the next counted attempt saves the old count + 1 back, and leaving saves it again.
+    `sonic-start-screen` one more: Yes calls `onReset` once with every lesson already cleared, No and Escape never.
+    Controls in the code, each run once and restored: the save guard at an event off, 1 test fails; at leaving off, 2;
+    no restart, 1; the screen not telling, 1.
+  - Not held by a Node test: the two lines in `feature.ts` that wire `onReset` and the restart on `onClose` (the page's
+    feature runs only in the page proofs): step 8 should check it on the page (the lesson menu's Lesson list over a lesson,
+    Reset, Yes, Escape: the lesson's title is said again and its progress panel shows attempt 1, counted 0).
 - [ ] 6. Words heard by the local voices: "the key" before a key's name in es, pl, ru; one register in Russian; the
   mode's name in Russian and Polish; the words check before and after.
 - [ ] 7. Gates on the head; the sound repo's checks on s13-int.
@@ -115,6 +131,8 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-start-screen` C3 "the first key ... Down goes through every stop" and the reader's control (step 3) | `STOPS` has the three new switches; the settings' place "Item n of 14" (was 11), the 14 counted from the screen's own stops | three settings more (step 3) |
 | `sonic-start-screen` new: "v13-int step 3: sound from above and below, the sound panel and the attitude display ..." (3 tests) | new | step 3 |
 | page proof `tools/bench/src/sonic-v13-page.ts` C (step 3) | "Item n of 14" (was 11) in the settings walk and the target note's line | three settings more; not run here (step 8) |
+| `sonic-reset-running` (step 5) | new, 3 tests | the reset over a running lesson |
+| `sonic-start-screen` new: "v13-int step 5: Reset my progress over a flight tells the flight page" (step 5) | new | the screen's `onReset` |
 | `sonic-scan-bump` (step 4) | new, 2 tests | the scan lesson's contact |
 | `sonic-garden` "Winter Garden at x5, on its real walls" (step 4) | one test more: the lesson flies the scan 'slide', the drone's contact before and after; the 8 tests run here now (the walls' cache is in this worktree) | step 4 on the real scan |
 | `sonic-panels` "real elevations from the package (s13-elev) ..." (step 2) | new, 4 tests: tunnel-gaps' open way above marked by its own direction (on) and by the plan's side (off), with the bare chime's control; the target note's mark follows `plan.height.target.dir` (above, below, level), and with the setting off it stays on the bar | the package now gives the panel real elevations (lane s13-elev's "Needs from the simulator") |

@@ -304,7 +304,13 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             closeMenu();
             void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
-        onClose: closeMenu,
+        // closed over a lesson whose progress was reset under it: that lesson starts again from nothing (v13-int step 5)
+        onClose: () => {
+            closeMenu();
+            void h.restartAfterReset().then((ok) => { if (ok) focusFlight(); });
+        },
+        // "Reset my progress" answered Yes over a running lesson: its runner's old counts are not saved again (v13-int step 5)
+        onReset: () => h.progressReset(),
         // the start screen's spoken list (v0.13 C3) speaks as the lesson menu does: through the lesson's speech queue while one runs
         say: (line, interrupt) => sayLine(line, interrupt)
     });
