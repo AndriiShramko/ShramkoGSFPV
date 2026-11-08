@@ -1,11 +1,14 @@
 // The settings catalogue (I.1, I.2): every shipped setting, every shipped key and every drone, in
 // each language, as plain data. scripts/gen-catalog.ts turns it into the site's features.json,
 // docs/settings.md and the README block. Planned settings and keys never appear: the site must
-// not promise what the simulator does not do yet. A shipped entry without its text in any
-// language throws, so an untranslated row cannot reach the site.
+// not promise what the simulator does not do yet. Nor do the keys of the sound mode (`when: 'sonic'`,
+// v12-optin): they exist only on a page entered through ?sonic=, and its own help and the site's
+// /sound/ page list them. A shipped entry without its text in any language throws, so an untranslated
+// row cannot reach the site.
 
 import { actionsOf, helpKey, isCuratedRef, isPresetRef, labelKey, literalDefault, presetValue } from './schema';
 import type { Apply, GroupId, Schema, Scope, SettingDef, Unit } from './schema';
+import { pageBindings } from './keymap';
 import type { ActionId, KeyBinding } from './keymap';
 import { RATE_TYPES } from './defs/tune';
 
@@ -77,7 +80,8 @@ function num(v: number): string {
  */
 export function buildCatalogue(schema: Schema, keymap: readonly KeyBinding[], dicts: Readonly<Record<string, Dict>>, presets: readonly CataloguePreset[], o: CatalogueOptions = {}): Catalogue {
     const shipped = schema.defs.filter((d) => d.status === 'shipped');
-    const keys = keymap.filter((b) => b.status === 'shipped');
+    // the keys an ordinary page has: shipped, and none of the sound mode's
+    const keys = pageBindings({ map: keymap });
     const droneDef = schema.byId.get('drone.current');
     const defaultDrone = o.defaultDrone ?? (droneDef && typeof droneDef.default === 'string' ? droneDef.default : presets[0]?.id);
     const resolver = { field: (id: string, key: string) => {

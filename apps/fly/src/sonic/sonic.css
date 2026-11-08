@@ -71,3 +71,6 @@ body.sonic-mode .attribution [data-testid="walls-more"] { display: none; }
    while a scan's credit shows, the captions go below it (up to three lines of it on a narrow page). Elsewhere the credit is at the bottom left,
    or, in a short window, at the top left above the captions' 100 px, and the captions stay where they are. */
 body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-captions { top: calc(max(10px, env(safe-area-inset-top)) + 206px); }
+
+/* The lesson's link in a field of its own (link-panel.ts, review R1 R3): the share panel's size, over the flight and the captions. */
+.panel.sonic-link { width: min(640px, calc(100vw - 32px)); z-index: 8; }

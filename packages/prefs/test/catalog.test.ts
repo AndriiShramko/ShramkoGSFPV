@@ -78,13 +78,28 @@ describe('buildCatalogue (I.6)', () => {
 
     it('lists shipped keys only; a key shows up once its binding ships', () => {
         const c = build();
-        const shipped = KEYMAP.filter((b) => b.status === 'shipped');
-        expect(c.locales.en.keys.map((k) => k.action)).toEqual(shipped.map((b) => b.action));
+        // shipped, and not the sound mode's: those are on a page entered through ?sonic= only (v12-optin)
+        const listed = KEYMAP.filter((b) => b.status === 'shipped' && b.when !== 'sonic');
+        expect(c.locales.en.keys.map((k) => k.action)).toEqual(listed.map((b) => b.action));
         expect(c.locales.en.keys.find((k) => k.action === 'pause.toggle')!.keys).toEqual(['Esc', 'P']);
-        expect(c.counts.keys).toBe(shipped.reduce((n, b) => n + b.keys.length, 0));
+        expect(c.counts.keys).toBe(listed.reduce((n, b) => n + b.keys.length, 0));
         const hShips = KEYMAP.map((b) => (b.action === 'hud.toggle' ? { ...b, status: 'shipped' as const } : b));
         const c2 = build(dicts(), hShips);
         expect(c2.locales.en.groups.flatMap((g) => g.settings).find((s) => s.id === 'display.hud')!.keys).toEqual(['H']);
+    });
+
+    it('the sound mode\'s keys (T U I Z G) are neither listed nor counted, in any language; control: as always keys (8ce53fb) they were', () => {
+        const c = build();
+        const sonic = KEYMAP.filter((b) => b.when === 'sonic');
+        expect(sonic.map((b) => b.action)).toEqual(['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary']);
+        for (const l of ['en', 'es', 'pl', 'ru']) expect(c.locales[l].keys.filter((k) => k.action.startsWith('sonic.'))).toEqual([]);
+        const caps = new Set(c.locales.en.keys.flatMap((k) => k.keys));
+        for (const cap of ['T', 'U', 'I', 'Z', 'G']) expect(caps.has(cap), cap).toBe(false);
+        // control: the keymap of v0.12 as released, the five keys `always`, lists and counts all five
+        const old = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
+        const c0 = build(dicts(), old);
+        expect(c0.locales.en.keys.filter((k) => k.action.startsWith('sonic.')).map((k) => k.keys[0])).toEqual(['T', 'U', 'I', 'Z', 'G']);
+        expect(c0.counts.keys - c.counts.keys).toBe(5);
     });
 
     it('groups in rail order with only shipped settings; drones with each field\'s source; counts', () => {

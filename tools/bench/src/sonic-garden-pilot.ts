@@ -3,43 +3,15 @@
 // the GPU lock, the prefs the page starts from, a tap in front of the page's AudioContext destination (what the engine produced), the
 // page's test hook (window.__gsfpv.sonic) as a typed probe, and the pilot: it reads the craft and the next ring from the hook and presses
 // the keys of the game scheme (W forward, E and Q turn, Space and Shift for height) like a person, until the lesson's own 'passed' event.
-import { mkdirSync, rmdirSync, statSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
 import { defaultPrefs } from '../../../packages/sonic-fpv/src';
 
-export const LOCK = 'C:/dev/.gpu-lock';
+// the GPU lock lives in gpu-lock.ts (accept-fly.ts takes it too, review R10); kept here under the names the sonic page runs import
+export { LOCK, lock, unlock } from './gpu-lock';
 export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-
-export async function lock(): Promise<void> {
-    let waited = 0;
-    for (;;) {
-        try {
-            mkdirSync(LOCK);
-            return;
-        } catch {
-            try {
-                if (Date.now() - statSync(LOCK).mtimeMs > 30 * 60 * 1000) {
-                    rmdirSync(LOCK);
-                    continue;
-                }
-            } catch {
-                /* gone */
-            }
-            if (!waited++ || waited % 600 === 0) console.log('waiting for the GPU lock');
-            await sleep(100);
-        }
-    }
-}
-
-export const unlock = (): void => {
-    try {
-        rmdirSync(LOCK);
-    } catch {
-        /* not ours */
-    }
-};
 
 // the engine says nothing itself (a screen reader would): it waits the time a line takes, at double speed, so the run is not dominated by speech
 export const DOC = {

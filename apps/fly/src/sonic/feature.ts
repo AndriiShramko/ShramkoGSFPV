@@ -13,15 +13,22 @@
 // Keys the mode takes: R short and long, N and [ ] (mode.ts); the digits answer a question asked (0 skips it), Z says the
 // last line again, I says where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder
 // adds), G opens the sound glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature
-// sonic-session). The pause menu gains "Fly by Sound: lessons and settings", the start screen over the flight.
+// sonic-session). The pause menu gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist
+// only on this page (keymap `when: 'sonic'`, v12-optin). Two keys of every page do the mode's own thing here (v12-optin,
+// mode-keys.ts): L copies a link that opens this lesson in the mode, instead of the share panel's picture (so do the top bar's and
+// the pause menu's Share: ctx.sonicShare, review R3); K says the keys.
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
-import { createSceneSampler } from '@shramko/sonic-fpv';
+import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
+import { DICTS, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
-import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, TrackFile } from '@shramko/sonic-fpv';
+import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
+import { copyText } from '../share/clipboard';
+import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
-import { typing } from '../devices/keyboard';
+import { dialogOpen, typing } from '../devices/keyboard';
 import type { FlightContext } from '../app/context';
 import { t, locale } from '../i18n';
 import { SonicMode } from './mode';
@@ -75,6 +82,8 @@ declare module '../app/test-hook' {
          * warm-up. ms per frame; null while no lesson runs.
          */
         sonicRays?: (frames?: number) => { frames: number; msPerFrame: number; raysPerFrame: number } | null;
+        /** the last link L made in the mode (v12-optin): its address and whether the clipboard took it (null: still copying) */
+        sonicLink?: { url: string; copied: boolean | null } | null;
     }
 }
 
@@ -194,7 +203,8 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         // a scan lesson (module 7): the scan at the lesson's size, walls on, then its world over the track (sonic/scan-lesson.ts)
         scanLesson: (lesson) => scanLesson(ctx, mode, entry, tracks, lesson),
         showMenu,
-        clock: () => performance.now()
+        clock: () => performance.now(),
+        visit: () => entry.setup.visit
     };
 }
 
@@ -224,6 +234,25 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     document.body.classList.add('sonic-mode');
     stage = new PrimitiveStage(ctx.renderer);
     const screen = entry.screen;
+    // review R5: a screen reader in browse mode keeps single letters for its own quick keys (NVDA and JAWS: K link, L list, T table,
+    // G graphic, R radio button, I list item, the digits headings), so the flight's keys would never reach the page. While the flight
+    // has the page (no screen, panel or menu up and no other control holding the focus) the focus is on a region with
+    // role="application", which both readers answer by passing every key on; a dialog takes the focus while it is up, and when the
+    // flight goes on it comes back here. Outside #ui (one live region for the flight's notes). Not yet tried with a real reader.
+    const flight = document.createElement('div');
+    flight.className = 'sonic-sr-only';
+    flight.setAttribute('role', 'application');
+    flight.setAttribute('aria-label', t('sonic.flight.label'));
+    flight.tabIndex = -1;
+    flight.dataset.testid = 'sonic-flight';
+    document.body.append(flight);
+    const focusFlight = (): void => {
+        if (dialogOpen() || !flight.isConnected) return;
+        const at = document.activeElement;
+        if (at !== null && at !== document.body && at !== flight) return;
+        flight.focus({ preventScroll: true });
+    };
+    offs.push(ctx.events.on('pause', ({ on }) => { if (!on) focusFlight(); }), () => flight.remove());
     // the start screen over the flight: the flight waits behind it, a lesson chosen on it opens, Escape and Back close it
     const showMenu = (): void => {
         if (!screen) return;
@@ -233,6 +262,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     const closeMenu = (): void => {
         screen?.hide();
         ctx.resume('panel');
+        focusFlight();
     };
     const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu));
     host = h;
@@ -240,7 +270,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     screen?.bind({
         onStart: (id) => {
             closeMenu();
-            void h.open(id).then((ok) => { if (!ok) showMenu(); });
+            void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
         onClose: closeMenu
     });
@@ -314,11 +344,74 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt })));
         })
     );
+    // a line of the mode's own keys: through the lesson's speech queue while one runs (its speech events), else the engine itself
+    const sayLine = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt }));
+    const capOf = (action: string): string => ctx.keys.caps(action).map((c) => c.cap).join(' ');
+    // The mode's Share (v12-optin, review R1 R3; mode-keys.ts shareLesson): L and the top bar's and the pause menu's Share (share.ts
+    // hands them to ctx.sonicShare) give the link that opens this lesson in the mode (no language in it: the server sends whoever opens
+    // it to his own). Copied, then said; in screen-reader mode the captions are the live region the reader announces. Refused by the
+    // browser: the link is selected in a focused field of its own (link-panel.ts), and the line says so with the lesson's name and the
+    // keys that copy it, whatever the captions and the voice are set to. A visible Share shows that field anyway (a helper, a phone).
+    const titles = createTranslator(locale, DICTS);
+    const copyKeys = (): string => t(/Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent) ? 'sonic.copyKeysMac' : 'sonic.copyKeys');
+    ctx.hook.sonicLink = null;
+    ctx.sonicShare = (via) => {
+        const lesson = h.lesson;
+        const url = `${location.origin}${sonicLinkPath(lessonLink(lesson, entry.setup.prefs))}`;
+        const keys = copyKeys();
+        ctx.hook.sonicLink = { url, copied: null };
+        void shareLesson({
+            url,
+            via,
+            copyKeys: keys,
+            lesson: lesson ? titles.text({ key: `lesson.${lesson.id}.title` }) : null,
+            copy: async (text) => {
+                const copied = await copyText(text);
+                ctx.hook.sonicLink = { url, copied };
+                return copied;
+            },
+            field: (link, copied) => void openLinkPanel({ parent: ctx.ui, onOpen: () => ctx.pause('panel'), onClose: () => ctx.resume('panel') }, link, copied, { title: t(lesson ? 'sonic.link.title' : 'sonic.link.titleStart'), copyKeys: keys }),
+            say: (line) => sayLine(line, true)
+        }).catch(() => undefined);
+    };
+    // K (review R4, mode-keys.ts KeyHelp): the mode's keys said one after the other (the first cuts what is being said, as I and Z do)
+    // while the flight waits (pause 'help'), so a lesson's timed step does not run on under them; the flight goes on when they end, and
+    // any key cuts them sooner (that press does only that). With a dialog up K is the dialog's (`when`: the press goes to the handler
+    // before, so the "How to fly" card opened from the pause menu closes on its own K; a panel or the start screen keep the key). The
+    // pause menu's key list names L and K as the mode's (KeyRouter.relabel).
+    const help = new KeyHelp({
+        lines: () => keyHelpLines(capOf),
+        say: sayLine,
+        hold: (on) => (on ? ctx.pause('help') : ctx.resume('help')),
+        listen: (cut) => {
+            const onKey = (e: KeyboardEvent): void => {
+                if (e.repeat || /^F(1[3-9]|2[0-4])$/.test(e.code)) return;
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                cut();
+            };
+            addEventListener('keydown', onKey, true);
+            return () => removeEventListener('keydown', onKey, true);
+        },
+        cutLine: { key: 'sonic.say.helpCut' }
+    });
+    offs.push(
+        ctx.keys.on('help.keys', (e) => {
+            if (!e.repeat) help.toggle();
+        }, { when: () => !dialogOpen() }),
+        ctx.keys.relabel('share.open', 'keys.sonic.shareLink'),
+        ctx.keys.relabel('help.keys', 'keys.sonic.hearKeys'),
+        () => {
+            help.dispose();
+            delete ctx.sonicShare;
+            delete ctx.hook.sonicLink;
+        }
+    );
     // the first lesson: its world is the one the page was made on (the entry built it); a lesson that cannot open
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
     if (entry.lessonId) {
         if (entry.world) h.seed(entry.lessonId, entry.world);
-        void h.open(entry.lessonId).then((ok) => { if (!ok) showMenu(); });
+        void h.open(entry.lessonId).then((ok) => { if (ok) focusFlight(); else showMenu(); });
     } else showMenu();
     ctx.hook.sonic = (withEvents = true) => ({
         lesson: h.lesson ? h.lesson.id : null,

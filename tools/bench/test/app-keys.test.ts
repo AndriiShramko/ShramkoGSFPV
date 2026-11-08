@@ -84,6 +84,44 @@ describe('one handler per key press, no key bound twice', () => {
         expect(ran).toEqual(['menu', 'base']);
     });
 
+    it('v12-optin review R4: a handler whose `when` says no hands the press to the one before it (a key press and a switch alike); says yes, it runs alone', () => {
+        const r = new KeyRouter();
+        const ran: string[] = [];
+        let dialog = true;
+        r.on('help.keys', () => ran.push('card'));
+        r.on('help.keys', () => ran.push('mode'), { when: () => !dialog });
+        r.route(key({ code: 'KeyK' }));
+        r.trigger('help.keys');
+        dialog = false;
+        r.route(key({ code: 'KeyK' }));
+        r.trigger('help.keys');
+        expect(ran).toEqual(['card', 'card', 'mode', 'mode']);
+        // control: with no handler that takes it, nothing ran and the router says so
+        const lone = new KeyRouter();
+        lone.on('help.keys', () => ran.push('never'), { when: () => false });
+        expect(lone.route(key({ code: 'KeyK' }))).toBeNull();
+        expect(lone.trigger('help.keys')).toBeNull();
+        expect(ran).not.toContain('never');
+    });
+
+    it('v12-optin review R4: a page\'s own words for a key in the key list stand while given, the last given first, and go back with it', () => {
+        const r = new KeyRouter();
+        const b = KEYMAP.find((x) => x.action === 'share.open')!;
+        expect(r.labelOf(b)).toBe(b.labelKey);
+        const off = r.relabel('share.open', 'keys.sonic.shareLink');
+        expect(r.labelOf(b)).toBe('keys.sonic.shareLink');
+        const off2 = r.relabel('share.open', 'other');
+        expect(r.labelOf(b)).toBe('other');
+        off2();
+        expect(r.labelOf(b)).toBe('keys.sonic.shareLink');
+        off();
+        expect(r.labelOf(b)).toBe(b.labelKey);
+        // control: another action keeps its own words
+        const k = KEYMAP.find((x) => x.action === 'help.keys')!;
+        r.relabel('share.open', 'keys.sonic.shareLink');
+        expect(r.labelOf(k)).toBe(k.labelKey);
+    });
+
     it('only shipped, routed bindings take handlers (a planned or flying one would never run)', () => {
         // N as it was until W3-1 shipped it: a planned binding
         const r = new KeyRouter({ map: KEYMAP.map((b) => (b.action === 'scene.next' ? { ...b, status: 'planned' as const } : b)) });
@@ -116,6 +154,52 @@ describe('one handler per key press, no key bound twice', () => {
         r.route(key({ code: 'KeyC' }));
         expect(runs.get('walls.toggle')).toBe(1);
         expect(runs.get('test.dupe')).toBeUndefined(); // shadowed: exactly what the rule prevents
+    });
+});
+
+describe('the sound mode\'s keys are on a page entered through ?sonic= only (v12-optin)', () => {
+    const SOUND: [string, ActionId][] = [['KeyT', 'sonic.record'], ['KeyU', 'sonic.send'], ['KeyI', 'sonic.status'], ['KeyZ', 'sonic.repeat'], ['KeyG', 'sonic.glossary']];
+    /** The keymap as v0.12 was released (8ce53fb): the five keys always. */
+    const RELEASED = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
+
+    it('an ordinary page (the router\'s default): T U I Z G run no handler even when one is registered, show no caps, are not listed, routed or triggered; control: the released keymap routes and lists all five', () => {
+        for (const state of ['flight', 'crash'] as const) {
+            const { r, total } = counting(KEYMAP, { state: () => state });
+            for (const [code, action] of SOUND) {
+                expect(r.route(key({ code })), `${code} ${state}`).toBeNull();
+                expect(r.caps(action)).toEqual([]);
+                expect(r.routes(action)).toBe(false);
+                expect(r.trigger(action)).toBeNull();
+            }
+            expect(total()).toBe(0);
+            expect(r.listed().map((b) => b.action).filter((a) => a.startsWith('sonic.'))).toEqual([]);
+            const old = counting(RELEASED, { state: () => state });
+            for (const [code, action] of SOUND) expect(old.r.route(key({ code })), `${code} ${state} released`).toBe(action);
+            expect(old.r.listed().filter((b) => b.action.startsWith('sonic.'))).toHaveLength(5);
+        }
+    });
+
+    it('a page entered through ?sonic=: each runs its handler once, in flight and while crashed, with its caps, listed in table order', () => {
+        for (const state of ['flight', 'crash'] as const) {
+            const { r, runs } = counting(KEYMAP, { state: () => state, sonic: () => true });
+            for (const [code, action] of SOUND) {
+                expect(r.route(key({ code })), `${code} ${state}`).toBe(action);
+                expect(runs.get(action)).toBe(1);
+                expect(r.caps(action).map((k) => k.cap)).toEqual([code.slice(3)]);
+                expect(r.routes(action)).toBe(true);
+            }
+            expect(r.listed().map((b) => b.action)).toEqual(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action));
+            expect(r.trigger('sonic.status')).toBe('sonic.status');
+        }
+    });
+
+    it('the page is asked at each press, not once: the same router before and after the page says ?sonic=', () => {
+        let sonic = false;
+        const { r, runs } = counting(KEYMAP, { sonic: () => sonic });
+        expect(r.route(key({ code: 'KeyT' }))).toBeNull();
+        sonic = true;
+        expect(r.route(key({ code: 'KeyT' }))).toBe('sonic.record');
+        expect(runs.get('sonic.record')).toBe(1);
     });
 });
 

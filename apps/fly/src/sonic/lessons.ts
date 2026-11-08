@@ -21,7 +21,11 @@
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
 import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, nextLesson } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
+import { lessonQuery } from '@gsfpv/scenes/sonic-link';
+import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
 import type { FlightSession } from '../session';
+import { writeAddress } from './address';
+import { pageLink } from './mode-keys';
 import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
 import type { SonicMode } from './mode';
@@ -72,6 +76,8 @@ export interface LessonPage {
     showMenu(): void;
     /** Milliseconds, for the pause between a pass and the next lesson (performance.now). */
     clock(): number;
+    /** the sound settings a shared link set that still stand (SonicSetup.visit), which the address of a lesson keeps (review R2) */
+    visit?(): SonicLinkSound;
 }
 
 export class LessonHost {
@@ -199,7 +205,7 @@ export class LessonHost {
             this.passedAt = null;
             this.returnTo = o.returnTo ?? null;
             setCurrentLesson(this.p.store, lessonId);
-            this.url(lessonId);
+            this.url(lesson);
             // G, or a lesson chosen on the start screen, while the lesson left is still talking: its queued lines (a lesson says
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
@@ -225,14 +231,14 @@ export class LessonHost {
         }
     }
 
-    private url(lessonId: string): void {
-        try {
-            const u = new URL(location.href);
-            u.searchParams.set('sonic', lessonId);
-            history.replaceState(history.state, '', u);
-        } catch {
-            /* no history (a test): the address stays */
-        }
+    /**
+     * The address names the lesson that runs (a reload reopens the start screen offering it): its own link, with its scan and size
+     * only when it flies one and only the link's sound settings that still stand (review R2: never the scene, size or sound of the
+     * link or lesson it came from, nor a setting the pilot kept, changed or let go of).
+     */
+    private url(lesson: LessonDef): void {
+        const link = pageLink(lesson, this.p.visit?.() ?? {});
+        writeAddress((search) => lessonQuery(search, link));
     }
 
     /** What the pilot did in the lesson being left is saved. */

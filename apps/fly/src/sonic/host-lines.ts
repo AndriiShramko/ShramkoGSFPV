@@ -3,13 +3,15 @@
 // coarse) is the simulator's, in packages/i18n/locales/fly/sonic/<lang>.json under the keys `sonic.say.*`. The engine speaks any
 // SpeechLine through its translator, so its dictionaries are the package's with these keys added: one voice, one caption
 // region, one queue for both, and the replay sees them as the host's own lines (a speech event the runner never asked for).
+// One of them, the line of a lesson that did not open, is in locales/fly/sonicentry/ (v12-optin): the main chunk shows it too, when
+// the start chunk itself does not load (sonic/unavailable.ts), and every page keeps that namespace.
 import { DICTS, LOCALES } from '@shramko/sonic-fpv';
 import type { Dicts, Locale } from '@shramko/sonic-fpv';
 
 /** The keys the engine speaks for the page start with this. */
 export const HOST_PREFIX = 'sonic.say.';
 
-const FILES = import.meta.glob<Record<string, string>>('../../../../packages/i18n/locales/fly/sonic/*.json', { eager: true, import: 'default' });
+const FILES = import.meta.glob<Record<string, string>>(['../../../../packages/i18n/locales/fly/sonic/*.json', '../../../../packages/i18n/locales/fly/sonicentry/*.json'], { eager: true, import: 'default' });
 
 /** The page's spoken lines in `locale`: the `sonic.say.*` keys of its dictionary. */
 export function hostLines(locale: Locale): Record<string, string> {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { sonicLinkPath } from "@gsfpv/scenes/sonic-link";
 import { AUTHOR, REPO, SOUND_REPO, flyPath } from "@/config/site";
 import type { Locale } from "@/i18n/routing";
 import Footer from "@/components/Footer";
@@ -9,8 +10,18 @@ import JsonLd from "@/components/JsonLd";
 import { Ext } from "@/components/kit";
 import { pageMetadata } from "@/lib/meta";
 
-/** The keys of the sound mode in the order the dictionary's `sound.keys.items` describe them (the letters are the same in every language). */
-const KEYS = ["T", "U", "I", "Z", "G", "R", "N"] as const;
+/**
+ * The keys of the sound mode in the order the dictionary's `sound.keys.items` describe them (the letters are the same in every language).
+ * T U I Z G exist only in the mode (the simulator's keymap, `when: 'sonic'`); L and K do the mode's own thing there (copy a link to the
+ * lesson, say the keys).
+ */
+const KEYS = ["T", "U", "I", "Z", "G", "R", "N", "L", "K"] as const;
+
+/**
+ * The start link: the same kind of link a pilot's L copies in a lesson (@gsfpv/scenes sonic-link.ts), here for the start screen and in
+ * the page's own language, with the mode's default sound.
+ */
+const soundStartHref = (locale: string): string => sonicLinkPath({ lesson: "start", sound: {} }, flyPath(locale));
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -56,7 +67,7 @@ function Sound({ locale }: { locale: Locale }) {
             </h2>
             <p className="mt-3 text-ink/85">{t("sound.start.text")}</p>
             <p className="mt-5">
-              <a href={`${flyPath(locale)}?sonic=start`} data-track="fly_click" className="btn-primary inline-flex min-h-12 items-center px-5">
+              <a href={soundStartHref(locale)} data-track="fly_click" className="btn-primary inline-flex min-h-12 items-center px-5">
                 {t("sound.start.button")}
               </a>
             </p>
@@ -83,6 +94,7 @@ function Sound({ locale }: { locale: Locale }) {
                 </li>
               ))}
             </ul>
+            <p className="mt-4 text-sm text-muted">{t("sound.keys.reader")}</p>
           </section>
 
           <section aria-labelledby="sound-record" className="mt-10">

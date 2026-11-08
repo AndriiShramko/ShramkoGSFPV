@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FLYING_CODES, KEYMAP, V02_PAUSE_ITEMS, actionFor, bindingOf, keymapProblems, keysFor } from '../src/keymap';
+import { FLYING_CODES, KEYMAP, V02_PAUSE_ITEMS, actionFor, bindingOf, keymapProblems, keysFor, listensIn, pageBindings } from '../src/keymap';
 import type { KeyBinding, KeyPress } from '../src/keymap';
 
 /** v0.2's PAUSE_KEYS, copied from apps/fly/src/ui/flight.ts at the v0.2 commit (60fa9de). */
@@ -126,17 +126,17 @@ describe('v0.2 keys keep working', () => {
         expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...SHIPPED_IN_V12].sort());
     });
 
-    it('Fly by Sound\'s T U I Z G route in flight and while crashed, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
+    it('Fly by Sound\'s T U I Z G route in flight and while crashed on a page entered through ?sonic=, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
         const want: Record<string, string> = { KeyT: 'sonic.record', KeyU: 'sonic.send', KeyI: 'sonic.status', KeyZ: 'sonic.repeat', KeyG: 'sonic.glossary' };
         for (const state of ['flight', 'crash'] as const) {
             for (const [code, action] of Object.entries(want)) {
-                expect(actionFor(press(code), state), `${code} ${state}`).toBe(action);
-                expect(actionFor(press(code, { shiftKey: true }), state), `Shift+${code} ${state}`).toBeNull();
-                expect(actionFor(press(code, { ctrlKey: true }), state), `Ctrl+${code} ${state}`).toBeNull();
+                expect(actionFor(press(code), state, { sonic: true }), `${code} ${state}`).toBe(action);
+                expect(actionFor(press(code, { shiftKey: true }), state, { sonic: true }), `Shift+${code} ${state}`).toBeNull();
+                expect(actionFor(press(code, { ctrlKey: true }), state, { sonic: true }), `Ctrl+${code} ${state}`).toBeNull();
             }
         }
         for (const code of Object.keys(want)) expect(FLYING_CODES).not.toContain(code);
-        // the labels sit where the catalogue and the key lists read them: keys.<action>
+        // the labels sit where the mode's key list reads them: keys.<action>
         for (const action of SHIPPED_IN_V12) expect(bindingOf(action)?.labelKey).toBe(`keys.${action}`);
     });
 
@@ -168,6 +168,65 @@ describe('v0.2 keys keep working', () => {
         expect(keysFor('scene.next', { planned: true, map: planned })).toEqual([{ cap: 'N', aria: 'N' }]);
         expect(actionFor(press('KeyN'), 'flight')).toBe('scene.next');
         expect(actionFor(press('KeyO'), 'flight')).toBe('settings.open');
+    });
+});
+
+describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic\')', () => {
+    const SOUND_CODES = ['KeyT', 'KeyU', 'KeyI', 'KeyZ', 'KeyG'];
+    /** The keymap as v0.12 was released (8ce53fb): the same five bindings, when 'always'. The control of the tests here. */
+    const RELEASED = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
+
+    it('the five and only the five are the mode\'s', () => {
+        expect(KEYMAP.filter((b) => b.when === 'sonic').map((b) => b.action)).toEqual([...SHIPPED_IN_V12]);
+    });
+
+    it('a page without ?sonic=: T U I Z G route nothing, in flight or crashed; control: the released keymap routes all five', () => {
+        for (const state of ['flight', 'crash'] as const) {
+            for (const code of SOUND_CODES) {
+                expect(actionFor(press(code), state), `${code} ${state}`).toBeNull();
+                expect(actionFor(press(code), state, { sonic: false }), `${code} ${state}`).toBeNull();
+                expect(actionFor(press(code), state, { map: RELEASED }), `${code} ${state} released`).not.toBeNull();
+            }
+        }
+        // every other key still routes there as it did
+        expect(actionFor(press('KeyL'), 'flight')).toBe('share.open');
+        expect(actionFor(press('KeyK'), 'flight')).toBe('help.keys');
+    });
+
+    it('a page without ?sonic= lists and captions none of them; with ?sonic= they are listed where the table has them; control: released, all five listed', () => {
+        const plain = pageBindings().map((b) => b.action);
+        const sonic = pageBindings({ sonic: true }).map((b) => b.action);
+        for (const a of SHIPPED_IN_V12) {
+            expect(plain).not.toContain(a);
+            expect(keysFor(a)).toEqual([]);
+            const k = bindingOf(a)!.keys[0];
+            expect(keysFor(a, { sonic: true })).toEqual([{ cap: k.cap, aria: k.aria }]);
+        }
+        expect(sonic).toEqual(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action));
+        expect(plain).toEqual(sonic.filter((a) => !SHIPPED_IN_V12.includes(a)));
+        expect(pageBindings({ map: RELEASED }).map((b) => b.action)).toEqual(sonic);
+    });
+
+    it('a mode key listens in both states (on its pages); a planned one stays hidden on a ?sonic= page too', () => {
+        const b = bindingOf('sonic.record')!;
+        expect(listensIn(b, 'flight')).toBe(true);
+        expect(listensIn(b, 'crash')).toBe(true);
+        expect(listensIn(bindingOf('crash.keep')!, 'flight')).toBe(false);
+        const planned = KEYMAP.map((x) => (x.action === 'sonic.glossary' ? { ...x, status: 'planned' as const } : x));
+        expect(actionFor(press('KeyG'), 'flight', { sonic: true, map: planned })).toBeNull();
+        expect(pageBindings({ sonic: true, map: planned }).map((x) => x.action)).not.toContain('sonic.glossary');
+    });
+
+    it('a mode key overlaps every other binding: another action on its letter, in any state, is a double binding; control: a crash-only and a flight-only key on one letter do not clash', () => {
+        for (const when of ['flight', 'crash', 'always', 'sonic'] as const) {
+            const p = keymapProblems([...KEYMAP, { action: 'test.t', keys: [{ code: 'KeyT', cap: 'T', aria: 'T' }], when, labelKey: 'keys.test.t', status: 'shipped' }]);
+            expect(p, when).toEqual([`KeyT is bound to sonic.record and test.t (sonic / ${when})`]);
+        }
+        const free: KeyBinding[] = [
+            { action: 'test.a', keys: [{ code: 'KeyJ', cap: 'J', aria: 'J' }], when: 'flight', labelKey: 'keys.test.a', status: 'shipped' },
+            { action: 'test.b', keys: [{ code: 'KeyJ', cap: 'J', aria: 'J' }], when: 'crash', labelKey: 'keys.test.b', status: 'shipped' }
+        ];
+        expect(keymapProblems([...KEYMAP, ...free])).toEqual([]);
     });
 });
 

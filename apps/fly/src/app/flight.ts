@@ -82,7 +82,8 @@ class Flight implements FlightContext {
         this.quality = new Quality(session.renderer);
         // the Controls screen has its own keys (it stops Esc, P, R and Space itself)
         // Shift is the game scheme's descent: a shortcut with it is read as its chord, else as the key alone (app/keys.ts shiftIsFlying)
-        this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight'), shiftIsFlying: () => this.input.keyboard.shiftFlies() });
+        // the sound mode's keys (T U I Z G) are on the page only when it was entered through ?sonic= (v12-optin)
+        this.keys = new KeyRouter({ state: () => (this.crash.active ? 'crash' : 'flight'), shiftIsFlying: () => this.input.keyboard.shiftFlies(), sonic: () => sonicEntry() !== null });
         this.keys.block(() => !!document.querySelector('.screen.radio'));
         this.menu = new PauseMenu(ui, this.keys, this);
         this.input = new InputHost(this);

@@ -18,7 +18,12 @@ export interface PauseMenuEntry {
     label?: string;
     keys: readonly KeyHint[];
     disabled?: boolean;
+    /** the item opens another page: a link to it, in a new tab (the flight stays paused under the menu) */
+    href?: string;
 }
+
+/** A link of the menu opens another page in a new tab: a screen reader hears so, the eye sees the item alone (review R8). */
+const newTab = (): HTMLElement => h('span', { class: 'visually-hidden' }, ` ${t('pause.newTab')}`);
 
 /**
  * Show the menu; `pick` runs with the entry's index when a button is pressed (the menu is still on
@@ -36,10 +41,11 @@ export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[
         const ks = it.keys;
         // the caps are for the eye; a screen reader gets the same keys from aria-keyshortcuts
         const caps = ks.length ? h('span', { class: 'pm-keys', 'aria-hidden': 'true' }, ...ks.map((x) => h('kbd', {}, x.cap))) : null;
-        menu.append(h('button', { type: 'button', class: 'btn block', 'data-action': it.id, 'aria-keyshortcuts': ks.length ? ks.map((x) => x.aria).join(' ') : undefined, disabled: it.disabled, onclick: () => pick(i) },
-            h('span', { class: 'pm-label' }, it.label ?? t(it.labelKey)), caps));
+        const label = h('span', { class: 'pm-label' }, it.label ?? t(it.labelKey));
+        menu.append(it.href ? h('a', { class: 'btn block', 'data-action': it.id, href: it.href, target: '_blank', rel: 'noopener' }, label, newTab())
+            : h('button', { type: 'button', class: 'btn block', 'data-action': it.id, 'aria-keyshortcuts': ks.length ? ks.map((x) => x.aria).join(' ') : undefined, disabled: it.disabled, onclick: () => pick(i) }, label, caps));
     });
-    menu.append(h('a', { class: 'btn block', href: `/${locale}/#contact`, target: '_blank', rel: 'noopener' }, h('span', { class: 'pm-label' }, t('pause.contact'))));
+    menu.append(h('a', { class: 'btn block', href: `/${locale}/#contact`, target: '_blank', rel: 'noopener' }, h('span', { class: 'pm-label' }, t('pause.contact')), newTab()));
     // stats | menu | keys on a wide screen, stats | menu over keys below 1100 px, one column on a phone
     // rows of other features above the columns (the scene size, E.7)
     if (rows.length) p.body.append(h('div', { class: 'sum-rows' }, ...rows));

@@ -32,7 +32,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { DRONE_IDS, FLYING_CODES, KEYMAP, RATE_TYPES, SCALE_MAX, SCALE_MIN, SCHEMA, SHARED_WITH_FLYING, buildCatalogue, capText, helpKey, isPresetRef, labelKey } from '../packages/prefs/src/index';
+import { DRONE_IDS, FLYING_CODES, KEYMAP, RATE_TYPES, pageBindings, SCALE_MAX, SCALE_MIN, SCHEMA, SHARED_WITH_FLYING, buildCatalogue, capText, helpKey, isPresetRef, labelKey } from '../packages/prefs/src/index';
 import type { CatalogueKey, CataloguePreset, CatalogueSetting, Dict, GroupId, RatesType, SettingDef } from '../packages/prefs/src/index';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -216,7 +216,8 @@ function neededKeys(): { key: string; id: string }[] {
         if (d.type === 'enum') for (const o of d.options) out.push({ key: `set.${d.id}.opt.${o}`, id: d.id });
     }
     for (const g of new Set(shipped.map((d) => d.group))) out.push({ key: `group.${g}`, id: `group.${g}` });
-    for (const b of KEYMAP.filter((k) => k.status === 'shipped')) out.push({ key: b.labelKey, id: b.action });
+    // the keys the catalogue lists: shipped, none of the sound mode's (they are on ?sonic= pages only, v12-optin)
+    for (const b of pageBindings()) out.push({ key: b.labelKey, id: b.action });
     return out;
 }
 

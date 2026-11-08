@@ -24,9 +24,10 @@ import type {} from './sonic-context';
  * Why the flight is paused. It runs again only when every reason is released (pause-stack.ts), so
  * closing one screen cannot start the flight under another. Wave 1 uses menu (the pause menu),
  * panel (a screen opened from it: settings, drones, replays, measurements, import), controls (the
- * Controls screen) and scene (leaving for the scene picker); hidden and export are for wave 2-4.
+ * Controls screen) and scene (leaving for the scene picker); hidden and export are for wave 2-4;
+ * help: Fly by Sound says its keys (K), and the flight waits until they are said or a key cuts them (v12-optin review R4).
  */
-export type PauseReason = 'menu' | 'panel' | 'hidden' | 'scene' | 'export' | 'controls';
+export type PauseReason = 'menu' | 'panel' | 'hidden' | 'scene' | 'export' | 'controls' | 'help';
 
 export interface AppEvents {
     /** every runner event, in order */
@@ -131,6 +132,8 @@ export interface MenuItem {
      */
     run(gesture: boolean): void;
     enabled?(): boolean; label?(): string;
+    /** The item opens another page: the menu shows it as a link to this address, in a new tab like its contact link (v12-optin). */
+    href?(): string;
 }
 
 /**

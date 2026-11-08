@@ -1,0 +1,441 @@
+{
+  "name": "sonic-optin-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T09:15:53.025Z",
+    "gitHead": "91d8d8c",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5421",
+  "parts": "A",
+  "checks": [
+    {
+      "name": "A: an ordinary flight names Fly by Sound nowhere on the page before the pause menu is opened",
+      "pass": true,
+      "value": {
+        "occurrences": 0
+      }
+    },
+    {
+      "name": "A: T U I Z G change nothing on an ordinary page (no panel, start screen, caption, recorder, hook, speech, sound context or HUD note); control: H, pressed the same way, does",
+      "pass": true,
+      "value": {
+        "sound": [
+          {
+            "key": "KeyT",
+            "changed": []
+          },
+          {
+            "key": "KeyU",
+            "changed": []
+          },
+          {
+            "key": "KeyI",
+            "changed": []
+          },
+          {
+            "key": "KeyZ",
+            "changed": []
+          },
+          {
+            "key": "KeyG",
+            "changed": []
+          }
+        ],
+        "controlH": [
+          "note"
+        ]
+      }
+    },
+    {
+      "name": "A: the pause menu's key list names none of the mode's keys (no sonic.* row, no T U I Z G cap); it lists the 21 bindings of an ordinary page (20 shortcuts, and Space among the flying keys)",
+      "pass": false,
+      "value": {
+        "rows": 26,
+        "actions": [
+          "pause.toggle",
+          "respawn.start",
+          "respawn.rewind",
+          "crash.keep",
+          "scene.next",
+          "scene.random",
+          "scene.favourite",
+          "mode.cycle",
+          "voxels.cycle",
+          "walls.toggle",
+          "hud.toggle",
+          "scale.down",
+          "scale.up",
+          "record.toggle",
+          "frameStats.toggle",
+          "settings.open",
+          "feedback.open",
+          "share.open",
+          "help.keys",
+          "fullscreen.toggle",
+          "sonic.record",
+          "sonic.send",
+          "sonic.status",
+          "sonic.repeat",
+          "sonic.glossary",
+          "arm.toggle"
+        ]
+      }
+    },
+    {
+      "name": "A: the pause menu has exactly one item for the mode, a link to /en/sound/ in a new tab, worded \"Fly by Sound: audio-only training for blind pilots (beta)\"",
+      "pass": false,
+      "value": null
+    },
+    {
+      "name": "A: with the menu open the page names Fly by Sound once: that item",
+      "pass": false,
+      "value": {
+        "menu": 5,
+        "body": 5
+      }
+    },
+    {
+      "name": "A: the item opens /en/sound/ (the page about the mode, its start button inside) in a new tab; the flight stays paused under its menu",
+      "pass": false,
+      "value": "no such item"
+    },
+    {
+      "name": "A: K opens the \"How to fly\" card, which names neither the mode nor its keys",
+      "pass": true,
+      "value": [
+        "Space",
+        "Shift",
+        "Mouse",
+        "W",
+        "A",
+        "S",
+        "D",
+        "\u2190",
+        "\u2192",
+        "Q",
+        "E",
+        "F",
+        "Esc",
+        "R",
+        "N",
+        "K"
+      ]
+    },
+    {
+      "name": "A: L opens the picture share panel, not a link of the mode (control of B's L)",
+      "pass": true,
+      "value": {
+        "panel": true,
+        "link": null
+      }
+    },
+    {
+      "name": "A: no chunk of the mode was requested (lazy-start, feature, session) and no fetched script or style holds a text of the mode",
+      "pass": false,
+      "value": {
+        "chunks": [],
+        "holding": [
+          {
+            "url": "/fly/assets/main-BqBdUA4k.js",
+            "found": [
+              "Learn to fly a drone by ear",
+              "Fly by Sound: start or stop recording"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "A: no page error, and no request to this site failed",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "otherHosts": [
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v3/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json"
+        ]
+      }
+    },
+    {
+      "name": "A: in Polish the item says the Polish line and leads to /pl/sound/",
+      "pass": false,
+      "value": null
+    }
+  ],
+  "passed": 5,
+  "total": 11,
+  "result": {
+    "plainKeys": {
+      "sound": [
+        {
+          "key": "KeyT",
+          "changed": []
+        },
+        {
+          "key": "KeyU",
+          "changed": []
+        },
+        {
+          "key": "KeyI",
+          "changed": []
+        },
+        {
+          "key": "KeyZ",
+          "changed": []
+        },
+        {
+          "key": "KeyG",
+          "changed": []
+        }
+      ],
+      "controlH": [
+        "note"
+      ]
+    },
+    "plainMenu": {
+      "items": [
+        "pause.continue",
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.share",
+        "pause.drone",
+        "pause.radio",
+        "pause.howtofly",
+        "pause.settings",
+        "pause.replays",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "pause.sound",
+        "pause.feedback"
+      ],
+      "keys": [
+        {
+          "action": "pause.toggle",
+          "caps": [
+            "Esc",
+            "P"
+          ]
+        },
+        {
+          "action": "respawn.start",
+          "caps": [
+            "R"
+          ]
+        },
+        {
+          "action": "respawn.rewind",
+          "caps": [
+            "Y"
+          ]
+        },
+        {
+          "action": "crash.keep",
+          "caps": [
+            "Enter"
+          ]
+        },
+        {
+          "action": "scene.next",
+          "caps": [
+            "N"
+          ]
+        },
+        {
+          "action": "scene.random",
+          "caps": [
+            "Shift+N"
+          ]
+        },
+        {
+          "action": "scene.favourite",
+          "caps": [
+            "Shift+F"
+          ]
+        },
+        {
+          "action": "mode.cycle",
+          "caps": [
+            "M"
+          ]
+        },
+        {
+          "action": "voxels.cycle",
+          "caps": [
+            "V"
+          ]
+        },
+        {
+          "action": "walls.toggle",
+          "caps": [
+            "C"
+          ]
+        },
+        {
+          "action": "hud.toggle",
+          "caps": [
+            "H"
+          ]
+        },
+        {
+          "action": "scale.down",
+          "caps": [
+            "[",
+            "Shift+["
+          ]
+        },
+        {
+          "action": "scale.up",
+          "caps": [
+            "]",
+            "Shift+]"
+          ]
+        },
+        {
+          "action": "record.toggle",
+          "caps": [
+            "F9"
+          ]
+        },
+        {
+          "action": "frameStats.toggle",
+          "caps": [
+            "F3"
+          ]
+        },
+        {
+          "action": "settings.open",
+          "caps": [
+            "O"
+          ]
+        },
+        {
+          "action": "feedback.open",
+          "caps": [
+            "B"
+          ]
+        },
+        {
+          "action": "share.open",
+          "caps": [
+            "L"
+          ]
+        },
+        {
+          "action": "help.keys",
+          "caps": [
+            "K"
+          ]
+        },
+        {
+          "action": "fullscreen.toggle",
+          "caps": [
+            "F"
+          ]
+        },
+        {
+          "action": "sonic.record",
+          "caps": [
+            "T"
+          ]
+        },
+        {
+          "action": "sonic.send",
+          "caps": [
+            "U"
+          ]
+        },
+        {
+          "action": "sonic.status",
+          "caps": [
+            "I"
+          ]
+        },
+        {
+          "action": "sonic.repeat",
+          "caps": [
+            "Z"
+          ]
+        },
+        {
+          "action": "sonic.glossary",
+          "caps": [
+            "G"
+          ]
+        },
+        {
+          "action": "arm.toggle",
+          "caps": [
+            "Space"
+          ]
+        }
+      ],
+      "sound": null,
+      "namesInMenu": 5,
+      "namesInBody": 5
+    },
+    "plainCard": {
+      "text": "How to fly\n\u00d7\n\nKeyboard and mouse\n\nSpace\n\u2191\nUP\nhold to climb\nShift\n\u2193\nDOWN\nhold to descend, and to land\nMouse\nlook and turn (up and down tilts the camera)\nW\nA\nS\nD\nmove (the Up and Down arrows too)\n\u2190\n\u2192\nQ\nE\nturn without a mouse\nF\nfull screen\nEsc\npause (frees the mouse)\nR\nback to the start\nN\nnext scene\nK\nshow this card again\n\nPress Start flying to capture the mouse, then press W or Space to take off. Esc lets it go.\n\nStart flying\nDo not show again\n\nPilot keys as on a radio (Mode 2, Space arms): Settings \u2192 Controls.",
+      "caps": [
+        "Space",
+        "Shift",
+        "Mouse",
+        "W",
+        "A",
+        "S",
+        "D",
+        "\u2190",
+        "\u2192",
+        "Q",
+        "E",
+        "F",
+        "Esc",
+        "R",
+        "N",
+        "K"
+      ]
+    },
+    "plainFetched": {
+      "scripts": [
+        "/fly/assets/main-CRBpecZ5.css",
+        "/fly/assets/storage-buffer-bdokWzy-.js",
+        "/fly/assets/api-BpNuAZd0.js",
+        "/fly/assets/constants-DFTtLrFK.js",
+        "/fly/assets/entity-DpwWXiMG.js",
+        "/fly/assets/texture-FOUnZzS7.js",
+        "/fly/assets/main-BqBdUA4k.js",
+        "/fly/assets/rapier-B4hmj00C.js",
+        "/fly/assets/drones3d-BZ3jyy9a.css",
+        "/fly/assets/drones3d-CEhUIoPx.js"
+      ],
+      "chunks": [],
+      "holding": [
+        {
+          "url": "/fly/assets/main-BqBdUA4k.js",
+          "found": [
+            "Learn to fly a drone by ear",
+            "Fly by Sound: start or stop recording"
+          ]
+        }
+      ]
+    },
+    "plainPolish": null
+  }
+}

@@ -20,7 +20,7 @@ import { BUILTIN_THEME_IDS, DICTS, LAYER_IDS, PREFS_LIMITS, createTranslator } f
 import type { FlightSample, LayerId, Locale, SonicPrefs, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 import { h } from '../ui/dom';
 import { t } from '../i18n';
-import type { SonicSetup } from './entry';
+import type { SonicSetup, VisitPrefs } from './entry';
 import { buildModel } from './start-model';
 import type { LessonRow, SonicRequest, StartModel } from './start-model';
 import './sonic.css';
@@ -45,6 +45,9 @@ export interface StartScreenDeps {
 
 /** Sections of the page the navigation jumps to. */
 const SECTIONS = ['start', 'headphones', 'lessons', 'settings'] as const;
+
+/** The id of the shared link's note: the primary Start button and the note's own buttons point to it. */
+const VISIT_TEXT_ID = 'sonic-visit-text';
 
 export class StartScreen {
     readonly root: HTMLElement;
@@ -134,8 +137,10 @@ export class StartScreen {
         const m = this.model;
         const req = this.d.request;
         const buttons: HTMLElement[] = [];
+        const visit = this.visitNote(this.d.setup.visit);
+        // the primary Start carries the link's note as its description: a pilot who tabs straight to it hears what sound it starts with
         const lessonButton = (id: string, label: string, sub: string | null, primary: boolean, testid: string): HTMLElement =>
-            h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': testid, 'data-lesson': id, onclick: () => this.start(id) }, label, sub ? h('span', { class: 'sonic-sub' }, sub) : null);
+            h('button', { type: 'button', class: `btn${primary ? ' primary' : ''}`, 'data-testid': testid, 'data-lesson': id, ...(primary && visit ? { 'aria-describedby': VISIT_TEXT_ID } : {}), onclick: () => this.start(id) }, label, sub ? h('span', { class: 'sonic-sub' }, sub) : null);
         const titleOf = (id: string): string => this.S(this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id)?.title ?? { key: `lesson.${id}.title` });
         let primaryTaken = false;
         if (req.kind === 'lesson') {
@@ -154,7 +159,39 @@ export class StartScreen {
         });
         const unknown = req.kind === 'unknown' ? h('p', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-unknown' }, t('sonic.start.unknown', { id: req.raw })) : null;
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
-        return this.section('start', t('sonic.start.heading'), unknown, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), h('fieldset', { class: 'sonic-fieldset' }, h('legend', {}, t('sonic.path.legend')), ...radios));
+        return this.section('start', t('sonic.start.heading'), unknown, visit?.note ?? null, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), visit?.choice ?? null, h('fieldset', { class: 'sonic-fieldset' }, h('legend', {}, t('sonic.path.legend')), ...radios));
+    }
+
+    /**
+     * The sound settings a shared link set for this visit (v12-optin; SonicSetup.setVisit): the note, read before the Start buttons, names
+     * each with the name the settings below give it and says the pilot's own saved settings are not changed; after the Start buttons
+     * (review R6: Enter on the first control starts, never saves) "Keep these settings" saves them and "Use my own settings" lets them go.
+     * Either takes them out of the address (review R2).
+     */
+    private visitNote(v: VisitPrefs): { note: HTMLElement; choice: HTMLElement } | null {
+        const parts: string[] = [];
+        if (v.theme !== undefined) parts.push(`${this.key('menu.setting.theme')}: ${this.key(`theme.${v.theme}.name`)}`);
+        if (v.calm !== undefined) parts.push(`${this.key('menu.setting.calm')}: ${this.key(v.calm ? 'menu.value.on' : 'menu.value.off')}`);
+        if (v.heightPolarity !== undefined) parts.push(`${this.key('menu.setting.polarity')}: ${this.key(`menu.value.${v.heightPolarity}`)}`);
+        if (v.listenerFrame !== undefined) parts.push(`${this.key('menu.setting.frame')}: ${this.key(`menu.value.${v.listenerFrame}`)}`);
+        if (!parts.length) return null;
+        const done = (said: string): void => {
+            this.render();
+            this.say(said);
+            this.sections.get('start')?.querySelector<HTMLElement>('h2')?.focus();
+        };
+        const keep = h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-visit-keep', onclick: () => {
+            this.d.setup.keepVisit();
+            done(t('sonic.link.kept'));
+        } }, t('sonic.link.keep'));
+        const own = h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-visit-own', onclick: () => {
+            this.d.setup.dropVisit();
+            done(t('sonic.link.owned'));
+        } }, t('sonic.link.own'));
+        return {
+            note: h('div', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-visit' }, h('p', { id: VISIT_TEXT_ID }, t('sonic.link.settings', { list: parts.join('; ') }))),
+            choice: h('div', { class: 'sonic-actions', role: 'group', 'aria-labelledby': VISIT_TEXT_ID, 'data-testid': 'sonic-visit-choice' }, keep, own)
+        };
     }
 
     private headphonesSection(): HTMLElement {
@@ -246,14 +283,16 @@ export class StartScreen {
 
     /** A setting changed: applied and saved; a refusal is said and the screen is drawn from what is really set. */
     private change(patch: Partial<SonicPrefs>): void {
+        const visit = Object.keys(this.d.setup.visit);
         const r = this.d.setup.update(patch);
         if (!r.ok) {
             this.say(r.reasons.join('. '));
             this.render();
             return;
         }
-        // the path decides which lesson the Start buttons open: the buttons follow it, the focus stays where it is
-        if (patch.path !== undefined) this.refreshStart();
+        // the path decides which lesson the Start buttons open: the buttons follow it, the focus stays where it is; a setting a shared
+        // link set is the pilot's own once he changes it, so the note of the link loses it
+        if (patch.path !== undefined || Object.keys(patch).some((k) => visit.includes(k))) this.refreshStart();
     }
 
     private refreshStart(): void {

@@ -82,7 +82,8 @@ describe('the status board', () => {
     });
 
     it('control: why the board exists. Two handlers of I on the key router: only the one registered last runs', () => {
-        const keys = new KeyRouter();
+        // a page entered through ?sonic= (the sound mode's keys are only on such a page, v12-optin)
+        const keys = new KeyRouter({ sonic: () => true });
         const ran: string[] = [];
         keys.on('sonic.status', () => void ran.push('lesson'));
         keys.on('sonic.status', () => void ran.push('recording'));
@@ -96,7 +97,8 @@ describe('the session side on the page\'s board', () => {
         keys.route({ code, shiftKey: false, ctrlKey: false, altKey: false, metaKey: false, repeat: false, target: null, preventDefault() {} } as unknown as KeyboardEvent);
 
     function page(fake: FakeRuntime) {
-        const keys = new KeyRouter();
+        // a page entered through ?sonic= (the sound mode's keys are only on such a page, v12-optin)
+        const keys = new KeyRouter({ sonic: () => true });
         const events = new Bus<AppEvents>();
         const ctx = { keys, events, sonic: fake.runtime, session: { transform: { s: 1, t: [0, 0, 0] } }, controls: { source: 'keyboard', profile: null }, renderer: { isWebGPU: false } } as unknown as FlightContext;
         return { ctx, keys, events };

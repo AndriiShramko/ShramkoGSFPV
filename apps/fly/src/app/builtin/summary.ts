@@ -7,7 +7,6 @@
 // and every keyboard shortcut. The lifetime totals per drone (flights, air time, distance, crashes)
 // live in the prefs collection 'stats' and are written as they are flown (summary-stats.ts).
 // window.__gsfpv.stats() gives the benches the same numbers.
-import { KEYMAP } from '@gsfpv/prefs';
 import type { DroneTotals } from '@gsfpv/prefs';
 import { modeFromChannel } from '@gsfpv/sim-core';
 import type { StatsBlock } from '@gsfpv/sim-core';
@@ -43,9 +42,12 @@ declare module '../test-hook' {
 /** Keys that leave the card alone: modifiers by themselves, and the latency harness's F13-F24. */
 const IGNORED = /^(Shift|Control|Alt|Meta|OS)(Left|Right)?$|^F(1[3-9]|2[0-4])$/;
 
-/** Every shipped binding of the keymap, as the panel lists it (with the router's key-caps). */
+/**
+ * Every binding this page has (the router's: the sound mode's keys only on a ?sonic= page), as the panel lists it, with its key-caps
+ * and this page's words for it (the mode's own for L and K there, KeyRouter.relabel).
+ */
 function shortcuts(ctx: FlightContext): SummaryShortcut[] {
-    return KEYMAP.filter((b) => b.status === 'shipped').map((b) => ({ action: b.action, labelKey: b.labelKey, keys: ctx.keys.caps(b.action), flying: !!b.flying }));
+    return ctx.keys.listed().map((b) => ({ action: b.action, labelKey: ctx.keys.labelOf(b), keys: ctx.keys.caps(b.action), flying: !!b.flying }));
 }
 
 export const summary: Feature = {

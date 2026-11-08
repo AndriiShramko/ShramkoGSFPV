@@ -317,7 +317,8 @@ describe('T in the flight page while a recording waits for an answer', () => {
 
     it('the first T keeps the interrupted recording the pilot was told about; only the next T asks about a new one', async () => {
         const fake = fakeRuntime('walls-hall');
-        const keys = new KeyRouter();
+        // a page entered through ?sonic= (the sound mode's keys are only on such a page, v12-optin)
+        const keys = new KeyRouter({ sonic: () => true });
         const ctx = { keys, events: new Bus<AppEvents>(), sonic: fake.runtime, session: { transform: { s: 1, t: [0, 0, 0] } }, controls: { source: 'keyboard', profile: null }, renderer: { isWebGPU: false } } as unknown as FlightContext;
         const s = mod.createSonicSession(ctx);
         // an earlier visit left a recording cut off in this page's storage (the browser's memory store stands in for OPFS here)

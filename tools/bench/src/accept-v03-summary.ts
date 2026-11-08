@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, readFileSync, rmdirSync, statSync } from 'node:f
 import { execSync } from 'node:child_process';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
-import { KEYMAP } from '../../../packages/prefs/src/keymap';
+import { KEYMAP, pageBindings } from '../../../packages/prefs/src/keymap';
 import { S } from '../../../packages/sim-core/src/index';
 import type { KeyBinding } from '../../../packages/prefs/src/keymap';
 import { launchChrome, waitReady } from './browser';
@@ -37,7 +37,8 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const MENU = ['pause.continue', 'pause.restart', 'pause.rewind', 'pause.scene', 'pause.scene.next', 'pause.scene.random', 'pause.scene.favourite', 'pause.drone', 'pause.radio', 'pause.settings', 'pause.replays', 'pause.measure', 'pause.import', 'pause.cinema', 'pause.record'];
 /** Menu items that run a keymap action (MenuItem.action): the item shows that action's keys. */
 const MENU_ACTION: Record<string, string> = { 'pause.continue': 'pause.toggle', 'pause.restart': 'respawn.start' };
-const SHIPPED = KEYMAP.filter((b) => b.status === 'shipped');
+// the keys an ordinary page has: shipped, none of the sound mode's (`when: 'sonic'`, on a ?sonic= page only; v12-optin)
+const SHIPPED = pageBindings();
 const PLANNED = KEYMAP.filter((b) => b.status !== 'shipped');
 
 /** m:ss.t (or h:mm:ss) back to seconds. */
@@ -102,7 +103,8 @@ async function panelInfo(p: Page): Promise<Any> {
         const caps = (el) => [...el.querySelectorAll('kbd')].map((k) => k.textContent);
         return {
             items: [...panel.querySelectorAll('.sum-menu [data-action]')].map((b) => ({ id: b.dataset.action, caps: caps(b), aria: b.getAttribute('aria-keyshortcuts'), testid: b.dataset.testid ?? null })),
-            contact: (() => { const a = panel.querySelector('.sum-menu a'); return a ? { href: a.getAttribute('href'), target: a.getAttribute('target') } : null; })(),
+            // the contact link by its address: the menu has other links (v12-optin: the Fly by Sound item, a link to /{lang}/sound/; review R9 d)
+            contact: (() => { const a = panel.querySelector('.sum-menu a[href$="#contact"]'); return a ? { href: a.getAttribute('href'), target: a.getAttribute('target') } : null; })(),
             keys: [...panel.querySelectorAll('[data-key-action]')].map((li) => ({ action: li.dataset.keyAction, caps: caps(li), aria: li.getAttribute('aria-keyshortcuts') })),
             stats: [...panel.querySelectorAll('[data-testid="summary-stats"] tbody tr')].map((tr) => ({ id: tr.dataset.stat, life: tr.querySelector('[data-col=life]').textContent, session: tr.querySelector('[data-col=session]').textContent, lifetime: tr.querySelector('[data-col=lifetime]').textContent, visible: tr.getClientRects().length > 0 })),
             mode: panel.querySelector('[data-testid="summary-mode"]')?.dataset.mode ?? null,
@@ -117,13 +119,14 @@ const ariaOf = (b: KeyBinding) => b.keys.map((k) => k.aria).join(' ');
 /** Every shipped binding in the panel with its caps; no planned one; the menu items that run an action show its caps. */
 function panelKeyProblems(info: Any, map: readonly KeyBinding[] = KEYMAP): string[] {
     const out: string[] = [];
-    for (const b of map.filter((x) => x.status === 'shipped')) {
+    for (const b of pageBindings({ map })) {
         const row = info.keys.find((k: Any) => k.action === b.action);
         if (!row) { out.push(`${b.action}: not in the panel`); continue; }
         if (JSON.stringify(row.caps) !== JSON.stringify(capsOf(b))) out.push(`${b.action}: caps ${row.caps.join(',')} != ${capsOf(b).join(',')}`);
         if (row.aria !== ariaOf(b)) out.push(`${b.action}: aria "${row.aria}" != "${ariaOf(b)}"`);
     }
     for (const b of map.filter((x) => x.status !== 'shipped')) if (info.keys.some((k: Any) => k.action === b.action)) out.push(`${b.action}: planned but shown`);
+    for (const b of map.filter((x) => x.when === 'sonic')) if (info.keys.some((k: Any) => k.action === b.action)) out.push(`${b.action}: a key of the sound mode shown on an ordinary page`);
     for (const [id, action] of Object.entries(MENU_ACTION)) {
         const it = info.items.find((x: Any) => x.id === id);
         const b = map.find((x) => x.action === action)!;
