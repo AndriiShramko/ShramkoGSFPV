@@ -103,10 +103,15 @@ describe('"my screen reader speaks": the lesson waits for its lines read one aft
             if (s && rr.engine.lastInput && ++n % 2 === 0 && !s.paused) frames.push({ t: s.t, tick: s.tick, p: s.pos, v: s.vel, q: s.quat, s: s.sticks, c: rr.engine.activeCues().map((c) => c.id) });
             return throughTheGate(rr);
         };
-        await r.run(80000, record, () => r.lessonEvents('attempt-start').length >= 3);
+        // N in the task (it skips the rest of the task: the first attempt begins at the key, which only the key event re-derives); since
+        // v0.13 stage B (B2) N while flying leaves the lesson and the host opens the next one, so it is pressed before the flight
+        await r.run(1200, record);
         r.mode.next('KeyN');
+        await r.run(80000, record, () => r.lessonEvents('attempt-start').length >= 3);
         await r.run(3000, record);
         await r.run(600, record);
+        expect(r.lessonEvents('open').map((e) => e.lessonId)).toEqual(['rings-first']);
+        expect(r.of('key').map((e) => e.action)).toEqual(['next']);
         const manifest = buildManifest({
             id: 'readerSession0000001',
             created: '2026-11-07T10:00:00Z',

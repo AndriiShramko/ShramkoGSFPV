@@ -161,7 +161,24 @@ with its control (the rule broken once in the code, the test seen failing, the c
     6 of 8 on the fast path and 20 of 28 on the full one; hover-height's go-on offer after three failures names N as the page
     names it (J). Controls broken once and restored: `path` left out of the options (the path tests fail), `keys` left out (the
     offer says N), the layout ignored (Y and W become Z): 5 of the 6 fail; the sixth is the "no cap off the mode" control.
-- [ ] B2 (W4) the 'go' action: N in a flying lesson moves on, B goes back, G goes and comes back, never a second advance
+- [x] B2 (W4) the 'go' action: N in a flying lesson moves on, B goes back, G goes and comes back, never a second advance
+  - `apps/fly/src/sonic/lessons.ts` `act()` takes `{ kind: 'go', to }`: 'next' is `advance()` (the lesson G left first, then
+    `lessonAfter(id, path)`, the lesson the runner's pass line names, then the start screen; was `nextLesson` on the path, else
+    the full ladder's, which differs only where a path ends early), 'previous' is the new `go()`: the lesson G left, else
+    `lessonBefore(id, path)`, else the start screen. The move is made once the runner has handed out the rest of its actions
+    (a microtask, as the package's demo host does). One move per runner (`movedFrom`): a second 'go', a 'go' while another
+    lesson is being opened, and `checkPassed()` after a 'go' or after the pass's own move change nothing.
+  - Tests: `sonic-lessons` "G opens the sound glossary" and "review I3" are back (N pressed while the glossary runs; the
+    glossary's runner is left neither passed nor skipped). New in `sonic-lesson-keys` (B2, 5): N while flying opens the next
+    lesson on the path (rings-first to rings-line, once; the lesson left skipped, its `leave` event out; it was a dead end);
+    B in the task opens the lesson before (rings-line to rings-first); B in the first lesson of the path opens the start
+    screen; B in the glossary opened by G goes back to the lesson G left (not ears-headphones, the lesson before the glossary);
+    N pressed after a pass while the host's own move swaps in the next lesson opens nothing over it (no start screen, one open
+    of shapes-series). Controls broken once and restored: the 'go' dropped (6 tests fail, the 5 that move and I3); no guard
+    (the start screen opens over the next lesson); 'previous' without the way back (ears-headphones opens).
+  - Changed: `sonic-int-reader` "a lesson flown in this mode re-derives on replay" presses N in the task, not while flying
+    (N while flying now leaves rings-first: the recording held rings-line's open, which the one-lesson replay cannot derive).
+  - The Fly by Sound tests after it: 615, 607 pass, 8 skipped (the scan's 8), none fails.
 - [ ] B3 (W5, M41-6) N, B and Z call the runner, each a key event the replay reads first; the mode's keys win in a lesson;
   K names N, B, Z, I and Escape
 - [ ] B4 (W6, M41-7) I says `runner.statusLine()`; a large high-contrast progress panel draws `runner.view()`
@@ -191,7 +208,8 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-lessons` control, wrong height | the pilot leaves the respawn platform, sinks under the ring (half its lowest edge, from the world's ring) and flies on; asserts it really flew past the ring below it, and 2 failed attempts or more | the room is 5.2 m high and the ring 5.5 m ahead: the climb toward 7 m crossed the ring inside it |
 | `sonic-lessons` "a restart is not a touch" | its wall control waits until the lesson flies, then flies sideways into the side wall | the first attempt begins at the start (a flight in the task is put back); straight on, the ring's plane ends every attempt before the front wall, and between attempts nothing is a touch |
 | `sonic-lessons` "progress is saved at every attempt" | runs to one counted attempt short of the pass (r - 1) | three counted attempts pass the lesson now |
-| `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B | the glossary ends in a 'go' action the host does not take yet (W3, W4) |
+| `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B; back in stage B (B2): N is pressed only while the glossary runs, and the glossary's runner is left not skipped | the glossary ends in a 'go' action (W3, W4); a press after the way back would be rings-first's own N, which moves on since B2 |
+| `sonic-int-reader` "a lesson flown in this mode re-derives on replay" (stage B, B2) | N pressed in the task (it starts the first attempt), not after three attempts while flying; the recording is asserted to hold one lesson and one key | N while flying leaves the lesson and the host opens the next one: the recording held rings-line's open |
 | `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
 | `sonic-bridge` "walls-hall with N, R short, R long and a contact" and its two controls | N in the task; the flight from the landmarks: a stop 1 m before the front wall's middle, a contact on the way back to the start, R short past it, R long, the stop again | N while flying leaves the lesson (M41-6); v0.12's flight (z -20 to -27.5) was beyond the room |
 | `sonic-bridge` "a flight into the hall's wall" | the craft reset 1.5 m before the front wall's middle (the landmark) | was z = -28.5, rock now |

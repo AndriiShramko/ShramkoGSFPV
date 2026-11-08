@@ -3,8 +3,11 @@
 // pilot, mode, bridge, lesson host and runner; a fake engine and drawing) and plain fakes where the rig has none.
 //  - B1 (W3): the runner is made with the pilot's path, the names of his keys (as his keyboard layout types them), his speaking
 //    speed and the lesson G left (createLessonRunner's path, keys, speechRate, returnTo).
+//  - B2 (W4): the runner's 'go' action: 'next' is the host's way on after a pass (the lesson G left, else the next on the path),
+//    'previous' the way back (the lesson G left, else the lesson before on the path, else the start screen); one move per runner.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { getLesson, lessonAfter, lessonBefore, lessonPaths } from '../../../packages/sonic-fpv/src';
+import type { LessonSession, SessionEvent } from '../../../packages/sonic-fpv/src';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { DEFAULT_RUNNER_KEYS, KeyNames, codeOfHint, spokenKey } from '../../../apps/fly/src/sonic/key-names';
@@ -12,6 +15,7 @@ import { runnerOptions } from '../../../apps/fly/src/sonic/lessons';
 import { saveProgress } from '../../../apps/fly/src/sonic/store';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { Rig } from './sonic-lesson-rig';
+import type { Control } from './sonic-lesson-rig';
 
 let rig: Rig | null = null;
 afterEach(() => {
@@ -26,6 +30,14 @@ async function open(id: string, before?: (r: Rig) => void): Promise<Rig> {
     expect(await rig.host.open(id)).toBe(true);
     return rig;
 }
+
+/** A call into the runner as the bridge makes one (its events out on the bus, then the host takes the runner's actions). */
+function call(r: Rig, f: (run: LessonSession, t: number) => readonly SessionEvent[]): void {
+    r.mode.bridge.events(f(r.host.runner!, r.mode.bridge.now()));
+    r.mode.bridge.afterRunner?.();
+}
+
+const opens = (r: Rig): string[] => r.lessonEvents('open').map((e) => e.lessonId);
 
 /** The key names of a page entered through ?sonic= (or not): its router's key table, Escape said by its name. */
 function pageNames(sonic = true): KeyNames {
@@ -108,5 +120,80 @@ describe('B1 (W3): the runner gets the pilot\'s path, key names, speaking speed 
         expect(offer!.line.params).toMatchObject({ key: 'J' });
         expect(offer!.text).toContain('J');
         expect(r.lessonEvents('attempt-fail').length).toBeGreaterThanOrEqual(getLesson('hover-height').pass.attempts);
+    }, 300000);
+});
+
+// ------------------------------------------------------------------ B2
+
+/** Straight ahead at a gate's height (the rings and the squares of modules 5 and 6). */
+const throughTheGate: Control = (r) => ({ forward: 1, lift: Math.max(-0.4, Math.min(0.4, (3 - r.pos[1]) * 0.8)) });
+
+describe('B2 (W4): the runner\'s \'go\': on, back, the way back of G, and one move per runner', () => {
+    it('N while flying moves on to the next lesson on the pilot\'s path (it was a dead end): the lesson left is marked skipped, opened once', async () => {
+        const r = await open('rings-first');
+        await r.run(240000, null, () => r.host.runner!.phase === 'flying');
+        const left = r.host.runner!;
+        r.mode.next('KeyN');
+        await r.run(60000, null, () => r.host.lesson?.id !== 'rings-first');
+        const next = lessonAfter('rings-first', 'full')!.id;
+        expect(next).toBe('rings-line');
+        expect(r.host.lesson!.id).toBe(next);
+        expect(opens(r)).toEqual(['rings-first', next]);
+        expect(r.lessonEvents('leave').map((e) => e.lessonId)).toEqual(['rings-first']);
+        expect(left.progress().skipped).toBe(true);
+        await r.run(3000, null);
+        expect(opens(r)).toEqual(['rings-first', next]);
+        expect(r.menus).toBe(0);
+    }, 300000);
+
+    it('B in a lesson\'s first step opens the lesson before on the path (rings-line: rings-first)', async () => {
+        const r = await open('rings-line');
+        expect(r.host.runner!.phase).toBe('intro');
+        call(r, (run, t) => run.previous(t));
+        await r.run(60000, null, () => r.host.lesson?.id !== 'rings-line');
+        expect(lessonBefore('rings-line', 'full')!.id).toBe('rings-first');
+        expect(r.host.lesson!.id).toBe('rings-first');
+        expect(opens(r)).toEqual(['rings-line', 'rings-first']);
+        expect(r.menus).toBe(0);
+    }, 300000);
+
+    it('B in the first lesson of the path has nothing before it: the start screen', async () => {
+        const r = await open('ears-headphones');
+        call(r, (run, t) => run.previous(t));
+        await r.run(2000, null);
+        expect(lessonBefore('ears-headphones', 'full')).toBeNull();
+        expect(r.menus).toBe(1);
+        expect(opens(r)).toEqual(['ears-headphones']);
+    }, 120000);
+
+    it('B in the glossary opened by G goes back to the lesson G left, not to the lesson before the glossary on the ladder', async () => {
+        const r = await open('rings-first');
+        await r.run(2000, null);
+        expect(await r.host.glossary()).toBe(true);
+        call(r, (run, t) => run.previous(t));
+        await r.run(60000, null, () => r.host.lesson?.id !== 'ears-glossary');
+        expect(lessonBefore('ears-glossary', 'full')!.id).toBe('ears-headphones');
+        expect(r.host.lesson!.id).toBe('rings-first');
+        expect(opens(r)).toEqual(['rings-first', 'ears-glossary', 'rings-first']);
+    }, 300000);
+
+    it('one move per runner: N after the pass, while the host is already opening the next lesson, opens nothing over it (no start screen, no second lesson)', async () => {
+        const r = await open('shapes-square');
+        await r.run(600000, throughTheGate, () => r.passed);
+        expect(r.passed).toBe(true);
+        // the host's own move after the pass swaps the walls for shapes-series; the pilot presses N meanwhile (the passed lesson's runner)
+        let pressed = 0;
+        r.onSwap = () => {
+            if (r.host.lesson?.id !== 'shapes-square') return;
+            pressed++;
+            r.mode.next('KeyN');
+        };
+        await r.run(60000, null, () => r.host.lesson?.id !== 'shapes-square');
+        await r.run(5000, null);
+        expect(pressed).toBe(1);
+        expect(r.lessonEvents('leave').map((e) => e.lessonId)).toEqual(['shapes-square']);
+        expect(r.host.lesson!.id).toBe('shapes-series');
+        expect(opens(r)).toEqual(['shapes-square', 'shapes-series']);
+        expect(r.menus).toBe(0);
     }, 300000);
 });

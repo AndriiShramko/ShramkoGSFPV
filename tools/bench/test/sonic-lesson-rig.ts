@@ -197,6 +197,8 @@ export class Rig {
     keyNames: RunnerKeys = DEFAULT_RUNNER_KEYS;
     /** the pilot's speaking speed the page gives the runner (SonicPrefs.speechRate) */
     speechRate = 1;
+    /** called when a lesson with other walls starts being swapped in (the old lesson's runner is still the host's then) */
+    onSwap: (() => void) | null = null;
     pilot: LessonPilot | null = null;
     session!: FlightSession;
     mode!: SonicMode;
@@ -253,6 +255,8 @@ export class Rig {
             swapTo: async (w) => {
                 rig.swaps.push(w.builtin.scene.id);
                 rig.swapping = true;
+                // a test's look into the page while the next lesson's walls are being made (a key pressed meanwhile)
+                rig.onSwap?.();
                 try {
                     rig.session.dispose();
                     rig.session = await rig.start(w);

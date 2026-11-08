@@ -384,22 +384,31 @@ describe('the host around a lesson', () => {
         expect(r.engine.said.length).toBeGreaterThan(before);
     }, 120000);
 
-    // stage B (docs/wip/v13-host.md, W3 and W4): the glossary ends in a 'go' action, which this host does not take yet, so the pilot
-    // stays in it; the test comes back with the 'go' action and the runner's returnTo
-    it.skip('G opens the sound glossary and comes back to the lesson it left', async () => {
+    // v0.13 (stage B, docs/wip/v13-host.md B2, W3 and W4): N from the glossary's last step is its 'go next', which leads back to the
+    // lesson G left (the runner's returnTo and the host's way back); N is pressed only while the glossary runs (a press after the way
+    // back would be rings-first's own N)
+    const nInGlossary: Control = (rr) => {
+        if (rr.host.lesson?.id === 'ears-glossary') rr.mode.next('KeyN');
+        return null;
+    };
+
+    it('G opens the sound glossary and comes back to the lesson it left', async () => {
         const r = await open('rings-first');
         await r.run(2000, null);
         expect(await r.host.glossary()).toBe(true);
         expect(r.host.lesson!.id).toBe('ears-glossary');
-        // N skips every line and scene of the glossary
-        await r.run(900000, (rr) => { rr.mode.next('KeyN'); return null; }, () => r.host.lesson?.id === 'rings-first');
+        const glossary = r.host.runner!;
+        // N skips every line and scene of the glossary, and from its last step goes back
+        await r.run(900000, nInGlossary, () => r.host.lesson?.id === 'rings-first');
         expect(r.host.lesson!.id).toBe('rings-first');
         expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'rings-first']);
+        expect(r.lessonEvents('leave').map((e) => e.lessonId)).toEqual(['ears-glossary']);
+        // the glossary was heard, not skipped: a detour left forward does not mark it (review R3; the runner got returnTo)
+        expect(glossary.progress().skipped).toBe(false);
     }, 300000);
 
     // review of v12-int, I3 (the lesson opened again when a recording starts, session.ts onStatus -> LessonHost.reopen)
-    // stage B (docs/wip/v13-host.md, W3 and W4): as the test above, the way back is the 'go' action and the runner's returnTo
-    it.skip('review I3: a recording that starts in the glossary opens it again WITH its way back: it still returns to the lesson G left, not on along the path', async () => {
+    it('review I3: a recording that starts in the glossary opens it again WITH its way back: it still returns to the lesson G left, not on along the path', async () => {
         const r = await open('rings-first');
         await r.run(2000, null);
         expect(await r.host.glossary()).toBe(true);
@@ -407,7 +416,7 @@ describe('the host around a lesson', () => {
         await r.run(1500, null);
         expect(await r.host.reopen()).toBe(true);
         expect(r.host.lesson!.id).toBe('ears-glossary');
-        await r.run(900000, (rr) => { rr.mode.next('KeyN'); return null; }, () => r.host.lesson?.id !== 'ears-glossary');
+        await r.run(900000, nInGlossary, () => r.host.lesson?.id !== 'ears-glossary');
         expect(r.host.lesson!.id).toBe('rings-first');
         expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'ears-glossary', 'rings-first']);
     }, 300000);

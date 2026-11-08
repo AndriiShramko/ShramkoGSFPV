@@ -18,8 +18,13 @@
 //   after      a passed lesson is followed (once its pass line is spoken) by the next lesson on the pilot's path, the
 //              full ladder's when it was opened off the path, and by the start screen at the end of the ladder. G opens
 //              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the last line.
+//   go         (v0.13 W4) the runner's way out of a lesson: N from its last step (flying, the last sound, after the pass) and
+//              the lesson menu's next lesson give 'go next', B from its first step and the menu's previous lesson 'go
+//              previous'. 'next' is the way on after a pass (advance: the lesson G left first, then the lesson after this one
+//              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
+//              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, nextLesson } from '@shramko/sonic-fpv';
+import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
@@ -144,6 +149,11 @@ export class LessonHost {
     /** a lesson is being left through G: it comes back after the glossary */
     private returnTo: string | null = null;
     private passedAt: number | null = null;
+    /**
+     * The runner the pilot was moved on from (its 'go', or the move after its pass): nothing moves him from it again (W4). A 'go'
+     * pressed while the pass's own move opens the next lesson would otherwise open a lesson (or the start screen) over it.
+     */
+    private movedFrom: LessonSession | null = null;
     private readonly tr: ReturnType<typeof createTranslator>;
 
     constructor(page: LessonPage) {
@@ -336,12 +346,21 @@ export class LessonHost {
     private drain(): void {
         const run = this.runner;
         if (!run) return;
-        for (const a of run.takeActions()) this.act(a);
+        for (const a of run.takeActions()) this.act(a, run);
     }
 
-    private act(a: RunnerAction): void {
+    private act(a: RunnerAction, run: LessonSession): void {
         const mode = this.p.mode;
         switch (a.kind) {
+            case 'go':
+                // the pilot leaves this lesson (the runner is done: its event 'leave' is out). Once per runner, and not while another
+                // lesson is being opened; the other lesson opens once this runner has handed out the rest of its actions
+                if (this.movedFrom === run) break;
+                this.movedFrom = run;
+                queueMicrotask(() => {
+                    if (this.runner === run && !this.busy) void this.go(a.to);
+                });
+                break;
             case 'say':
                 void mode.bridge.say(a.line, a.interrupt || this.cutSpeech);
                 // only the first line cuts: the lines after it queue behind it, as the runner meant them to
@@ -373,10 +392,10 @@ export class LessonHost {
         }
     }
 
-    /** The lesson is passed and its pass line has been said: the next lesson (or the menu at the end). */
+    /** The lesson is passed and its pass line has been said: the next lesson (or the menu at the end); not after a 'go' of its own. */
     private checkPassed(): void {
         const run = this.runner;
-        if (!run || run.phase !== 'passed' || this.busy) return;
+        if (!run || run.phase !== 'passed' || this.busy || this.movedFrom === run) return;
         const bridge = this.p.mode.bridge;
         if (bridge.speechQueue > 0) {
             this.passedAt = null;
@@ -389,17 +408,40 @@ export class LessonHost {
         void this.advance();
     }
 
-    /** After a pass: the lesson left for the glossary, else the next on the path, else the full ladder's, else the menu. */
+    /**
+     * After a pass, and 'go next': the lesson left for the glossary, else the lesson after this one on the pilot's path (the full
+     * ladder's when this one is off the path: lessonAfter, the lesson the runner's pass line names), else the menu.
+     */
     async advance(): Promise<void> {
         const id = this.lesson?.id;
         if (!id) return;
+        this.movedFrom = this.runner;
         if (this.returnTo) {
             const back = this.returnTo;
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        const next = nextLesson(id, this.p.path()) ?? nextLesson(id, 'full');
+        const next = lessonAfter(id, this.p.path());
         if (next && (await this.open(next.id))) return;
+        this.p.showMenu();
+    }
+
+    /**
+     * A runner's 'go' (W4): 'next' is advance(); 'previous' is the way back too (the lesson G left: B on a detour goes back where the
+     * pilot came from, not to the lesson before the glossary on the ladder), else the lesson before this one on the path, else the menu.
+     */
+    private async go(to: 'next' | 'previous'): Promise<void> {
+        if (to === 'next') return this.advance();
+        const id = this.lesson?.id;
+        if (!id) return;
+        this.movedFrom = this.runner;
+        if (this.returnTo) {
+            const back = this.returnTo;
+            this.returnTo = null;
+            if (await this.open(back)) return;
+        }
+        const before = lessonBefore(id, this.p.path());
+        if (before && (await this.open(before.id))) return;
         this.p.showMenu();
     }
 
