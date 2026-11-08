@@ -11,7 +11,7 @@ import { EasyPilot } from '../play/easy';
 import { GAME_SPEED_IDS } from '../play/game';
 import type { GameSpeed } from '../play/game';
 import { GamePilot } from '../play/game-pilot';
-import { LessonPilot, lessonMode, rayClearance } from '../play/lesson-pilot';
+import { LessonPilot, lessonMode, rayClearance, rayClearanceUp } from '../play/lesson-pilot';
 import type { PlayProfile } from '../play/keys';
 import type { LessonAssists } from '@shramko/sonic-fpv';
 import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
@@ -153,7 +153,8 @@ export class InputHost {
             pilot = new LessonPilot({
                 sim: () => ctx.session.sim ?? null,
                 paused: () => ctx.session.paused,
-                ground: (sim) => rayClearance(ctx.session.collision, sim)
+                ground: (sim) => rayClearance(ctx.session.collision, sim),
+                above: (sim) => rayClearanceUp(ctx.session.collision, sim)
             }, assists);
             this.lesson = pilot;
         }

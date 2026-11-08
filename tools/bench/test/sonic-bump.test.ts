@@ -19,8 +19,8 @@ import { S, Sim } from '../../../packages/sim-core/src';
 import type { ContactWorld, ParamOverrides } from '../../../packages/sim-core/src';
 import type { VoxelContactWorld } from '../../../packages/collision/src';
 import type { RawFrame, Profile } from '../../../packages/input/src';
-import { getLesson } from '../../../packages/sonic-fpv/src';
-import type { LessonAssists, LessonDef } from '../../../packages/sonic-fpv/src';
+import { RESPAWN_BEFORE_M, getLesson } from '../../../packages/sonic-fpv/src';
+import type { LessonAssists, LessonDef, WorldCheckpoint } from '../../../packages/sonic-fpv/src';
 import { FakeStorage } from '../../../packages/prefs/test/helpers';
 import { LESSON_FLIGHT, lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
 import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
@@ -77,7 +77,7 @@ class Rig {
     /** the walls' own contact world, which the probe's measures ask (the flight may fly another: the detector's control) */
     private readonly walls: VoxelContactWorld;
 
-    constructor(readonly w: LessonWorld, assists: LessonAssists, overrides: ParamOverrides, at: readonly [number, number, number, number], flown?: ContactWorld) {
+    constructor(readonly w: LessonWorld, assists: LessonAssists, overrides: ParamOverrides, at: readonly [number, number, number, number], flown?: ContactWorld, hopBlind = false) {
         this.walls = w.builtin.contact!;
         this.sim = new Sim(params('pavo20pro-3s', { crashOn: false, ...overrides }), flown ?? this.walls);
         this.sim.reset(at[0], at[1], at[2], at[3], { platform: true });
@@ -87,7 +87,9 @@ class Rig {
         this.controls = new C.Controls(session as never);
         this.controls.setProfile(TX16S);
         this.controls.source = 'hid';
-        const pilot = new LP.LessonPilot({ sim: () => this.sim, paused: () => false, ground: (sim) => LP.rayClearance(this.w.collision, sim) }, assists);
+        // the page's lesson pilot (app/input.ts): the ground below and, at take-off, what is above (hopBlind: v0.12's, which never looked up)
+        const env = { sim: () => this.sim, paused: () => false, ground: (sim: Sim) => LP.rayClearance(this.w.collision, sim) };
+        const pilot = new LP.LessonPilot(hopBlind ? env : { ...env, above: (sim: Sim) => LP.rayClearanceUp(this.w.collision, sim) }, assists);
         this.controls.assist = (ch, out, tt) => pilot.apply(ch, out, tt);
         this.controls.forcedMode = LP.lessonMode(assists);
     }
@@ -166,8 +168,8 @@ class Rig {
     }
 }
 
-function rig(w: LessonWorld, assists: LessonAssists, overrides: ParamOverrides, at: readonly [number, number, number, number], flown?: ContactWorld): Rig {
-    const r = new Rig(w, assists, overrides, at, flown);
+function rig(w: LessonWorld, assists: LessonAssists, overrides: ParamOverrides, at: readonly [number, number, number, number], flown?: ContactWorld, hopBlind = false): Rig {
+    const r = new Rig(w, assists, overrides, at, flown, hopBlind);
     vi.spyOn(performance, 'now').mockImplementation(() => r.t);
     return r;
 }
@@ -447,5 +449,87 @@ describe('M41-19: a bump in a lesson world pushes the craft out; it never sticks
         console.log(`sonic-bump landing: motors stopped ${downAt < 0 ? 'never' : `${((downAt - t0) / 1000).toFixed(2)} s after the stick went down`}, ${r.contacts.length} contacts, height ${(r.sim.s[S.py] - r.sim.p.bodyBottom).toFixed(3)} m`);
         expect(downAt).toBeGreaterThan(0);
         expect(r.sim.s[S.py] - r.sim.p.bodyBottom).toBeLessThan(0.05);
+    });
+});
+
+describe('W17: a respawn in a low way of a tunnel rests on its platform and takes off without touching what is above', () => {
+    /** tunnel-long's respawn points (the runner's: RESPAWN_BEFORE_M before a track point, facing along it) in a way under 0.8 m. */
+    function lowRespawns(): { lw: LessonWorld; lesson: LessonDef; poses: [number, number, number, number][] } {
+        const lesson = getLesson('tunnel-long');
+        const lw = lessonWorldOf(lesson)!;
+        const poses: [number, number, number, number][] = [];
+        for (const p of (lw.world as unknown as { checkpoints: readonly WorldCheckpoint[] }).checkpoints) {
+            const at: [number, number, number] = [p.pos[0] - p.dir[0] * RESPAWN_BEFORE_M, p.pos[1], p.pos[2] - p.dir[2] * RESPAWN_BEFORE_M];
+            const up = lw.world.castRay(at, [0, 1, 0], 5), down = lw.world.castRay(at, [0, -1, 0], 5);
+            if (up && down && up.distance + down.distance < 0.8) poses.push([at[0], at[1], at[2], (Math.atan2(p.dir[0], -p.dir[2]) * 180) / Math.PI]);
+        }
+        return { lw, lesson, poses };
+    }
+
+    /**
+     * At the pose on its platform: the motors started by a short nudge of the yaw stick (the take-off runs, its hop
+     * included), 1.5 s of hover with the sticks centred, then W for 2 s; how far the hover strayed from the pose, whether
+     * what is above was touched (a contact with a downward normal), and how far along the track W took it.
+     */
+    function takeOff(lw: LessonWorld, lesson: LessonDef, pose: [number, number, number, number], hopBlind: boolean): { hoverM: number; aboveTouched: boolean; alongM: number } {
+        const r = rig(lw, lesson.assists, LESSON_FLIGHT, pose, undefined, hopBlind);
+        let aboveTouched = false;
+        const run = (ms: number, each?: () => void): void => {
+            for (let i = 0; i < ms; i++) {
+                const n0 = r.sim.events.length;
+                r.step();
+                for (let k = n0; k < r.sim.events.length; k++) {
+                    const e = r.sim.events[k]!;
+                    if (e.type === 'contact' && (e.ny ?? 0) < -0.5) aboveTouched = true;
+                }
+                each?.();
+            }
+        };
+        r.sticks.yaw = 0.3;
+        run(200);
+        r.sticks.yaw = 0;
+        let hoverM = 0;
+        run(1500, () => { hoverM = Math.max(hoverM, Math.hypot(r.sim.s[S.px] - pose[0], r.sim.s[S.py] - pose[1], r.sim.s[S.pz] - pose[2])); });
+        expect(r.sim.armed).toBe(true);
+        r.sticks.pitch = 1;
+        run(2000);
+        const h = (pose[3] * Math.PI) / 180;
+        const alongM = (r.sim.s[S.px] - pose[0]) * Math.sin(h) - (r.sim.s[S.pz] - pose[2]) * Math.cos(h);
+        return { hoverM, aboveTouched, alongM };
+    }
+
+    it('tunnel-long: every respawn point of the runner in a way under 0.8 m (0.35 m under a block, or on one under the ceiling, each at the block\'s edge): the motors started, it hovers within 0.1 m of the point, W flies on 1.5 m or more, nothing above touched', () => {
+        const { lw, lesson, poses } = lowRespawns();
+        expect(poses.length).toBeGreaterThanOrEqual(4);
+        const now = poses.map((p) => takeOff(lw, lesson, p, false));
+        const v012 = poses.map((p) => takeOff(lw, lesson, p, true));
+        console.log(`sonic-bump W17: ${poses.length} low respawn points in tunnel-long; the hover strayed ${Math.max(...now.map((o) => o.hoverM)).toFixed(3)} m at most; W: ${now.map((o) => o.alongM.toFixed(2)).join(', ')} m along, above touched ${now.filter((o) => o.aboveTouched).length}; the hop of v0.12: above touched ${v012.filter((o) => o.aboveTouched).length}, strayed ${Math.max(...v012.map((o) => o.hoverM)).toFixed(3)} m`);
+        for (const o of now) {
+            expect(o.hoverM).toBeLessThan(0.1);
+            expect(o.aboveTouched).toBe(false);
+            expect(o.alongM).toBeGreaterThan(1.5);
+        }
+        // control: the hop of v0.12 (1 m off the ground, blind to what is above) climbs into the block over the points under one
+        expect(v012.filter((o) => o.aboveTouched).length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('a craft put 0.5 m inside a block\'s footprint, 0.35 m under it: the take-off hop stays in the way (nothing above touched, a touch there would re-centre it to the same place); control: the hop of v0.12 (1 m) hits the block', () => {
+        const { lw, lesson, poses } = lowRespawns();
+        // the lowest point under a block, moved 0.5 m back along the track: under the block's middle
+        const under = poses.filter((p) => p[1] < 0.6);
+        expect(under.length).toBeGreaterThanOrEqual(1);
+        const inside = under.map((p): [number, number, number, number] => {
+            const h = (p[3] * Math.PI) / 180;
+            return [p[0] - Math.sin(h) * 0.5, p[1], p[2] + Math.cos(h) * 0.5, p[3]];
+        });
+        for (const p of inside) expect(lw.world.castRay([p[0], p[1], p[2]], [0, 1, 0], 1)?.distance ?? 9).toBeLessThan(0.5);
+        const now = inside.map((p) => takeOff(lw, lesson, p, false));
+        const v012 = inside.map((p) => takeOff(lw, lesson, p, true));
+        console.log(`sonic-bump W17 inside a footprint: ${inside.length} points; above touched ${now.filter((o) => o.aboveTouched).length} (v0.12 hop: ${v012.filter((o) => o.aboveTouched).length}); W: ${now.map((o) => o.alongM.toFixed(2)).join(', ')} m along`);
+        for (const o of now) {
+            expect(o.aboveTouched).toBe(false);
+            expect(o.alongM).toBeGreaterThan(1.5);
+        }
+        expect(v012.every((o) => o.aboveTouched)).toBe(true);
     });
 });

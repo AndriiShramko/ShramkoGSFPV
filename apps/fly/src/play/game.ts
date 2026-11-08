@@ -188,6 +188,11 @@ export interface GameSense {
     s: ArrayLike<number>;
     /** clearance of the lowest body point above the ground below, m; null: none within the probe's reach */
     groundM: number | null;
+    /**
+     * clearance of the highest body point under what is straight above, m; null: nothing within the probe's reach;
+     * absent: not looked at (the game scheme). A lesson's pilot gives it at take-off (v0.13, W17), see liftoff().
+     */
+    ceilingM?: number | null;
 }
 
 /** What it sends: the sticks (roll right +, pitch forward +, yaw right +, each -1..1) and the throttle stick 0..1. */
@@ -291,7 +296,14 @@ export class GameAssist {
         this.vyAvg = 0;
         this.lowM = Infinity;
         this.landed = false;
-        if (sense.groundM !== null && sense.groundM < ON_GROUND_M) this.help.holdAt(sense.s[S.py] + TAKEOFF_HOP_M);
+        if (sense.groundM !== null && sense.groundM < ON_GROUND_M) {
+            // a low way (v0.13, W17: tunnel-long respawns a craft 0.35 m over the floor and 0.35 m under a block): the hop
+            // goes to the middle between the ground and what is above at most, never into it (a touch there re-centres
+            // the craft to the same place, and the hop would hit it again)
+            const c = sense.ceilingM;
+            const room = c === undefined || c === null ? Infinity : Math.max(0, (c - sense.groundM) / 2);
+            this.help.holdAt(sense.s[S.py] + Math.min(TAKEOFF_HOP_M, room));
+        }
     }
 
     /** Mouse movement, already in degrees (mouseToAim): the aim turns, the gimbal tilts (clamped). */

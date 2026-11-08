@@ -46,6 +46,11 @@ export interface LessonEnv {
     paused(): boolean;
     /** the clearance of the craft's lowest point above the walls straight below, m; null: nothing within LESSON_PROBE_M */
     ground(sim: Sim): number | null;
+    /**
+     * the clearance of the craft's highest point under the walls straight above, m; null: nothing within LESSON_PROBE_M
+     * (v0.13, W17: asked at take-off, so the hop stays inside a low way; without it the hop is the game scheme's 1 m)
+     */
+    above?(sim: Sim): number | null;
 }
 
 /** The walls' ray query (VoxelCollision.queryRay). */
@@ -60,6 +65,28 @@ export function rayClearance(walls: RayWalls | null, sim: Sim): number | null {
     const h = walls.queryRay(s[S.px], s[S.py], s[S.pz], 0, -1, 0, LESSON_PROBE_M);
     if (!h) return null;
     return Math.max(0, s[S.py] - h.y - sim.p.bodyBottom);
+}
+
+/**
+ * The clearance of the craft's highest body point (level) under the walls straight above its footprint, m: the least of
+ * five rays up, from its centre and from four points at its bound radius (a craft put at a block's edge has its centre's
+ * ray miss the block that its rear ducts are under); null when none meets anything within LESSON_PROBE_M.
+ */
+export function rayClearanceUp(walls: RayWalls | null, sim: Sim): number | null {
+    if (!walls) return null;
+    const s = sim.s;
+    const p = sim.p;
+    const R = p.boundRadius;
+    let best = Infinity;
+    for (const [dx, dz] of [[0, 0], [R, 0], [-R, 0], [0, R], [0, -R]] as const) {
+        const h = walls.queryRay(s[S.px] + dx, s[S.py], s[S.pz] + dz, 0, 1, 0, LESSON_PROBE_M);
+        if (h && h.y < best) best = h.y;
+    }
+    if (best === Infinity) return null;
+    const sp = p.spheres;
+    let top = 0;
+    for (let i = 0; i < sp.length; i += 4) top = Math.max(top, sp[i + 1] + sp[i + 3]);
+    return Math.max(0, best - s[S.py] - top);
 }
 
 /** The flight mode a lesson's control flies in: velocity control commands tilts, which only angle mode turns into a tilt. */
@@ -203,7 +230,8 @@ export class LessonPilot {
             this.game.caps = lessonCaps(a);
             this.bumps(sim);
             const sense = { p: sim.p, s: sim.s, groundM: this.clearance(sim, tMs) };
-            if (on && !this.wasOn) this.game.liftoff(sense);
+            // take-off: what is above too, so the hop off the ground stays in a low way (W17)
+            if (on && !this.wasOn) this.game.liftoff(this.env.above ? { ...sense, ceilingM: this.env.above(sim) } : sense);
             const o = this.game.update(keys, sense, step, on);
             if (!paused && a.autoArm && this.game.landed) {
                 this.arm.stop();
