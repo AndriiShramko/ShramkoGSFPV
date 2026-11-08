@@ -262,18 +262,23 @@ describe('the open world is a floor (and a ceiling)', () => {
 // ------------------------------------------------------------------ objects
 
 describe('an object\'s primitives lie on its surface', () => {
-    /** Rays toward every object from free points; each object hit must land on that object's primitives. */
+    /**
+     * Rays toward every object from free points; each object hit must land on that object's primitives. The origins are
+     * drawn 4 to 10 m from an object until 4000 are free: in the small rooms of v0.13 (10 x 12.5 m) most such points lie in
+     * the walls, so up to 40 000 are drawn (4000 draws gave rings-first 73 hits).
+     */
     function offSurface(world: AnalyticWorldInfo, prims: readonly Prim[], seed: number, tol = 2e-3): { hits: number; off: number; worst: number } {
         const r = rng(seed);
         let hits = 0, off = 0, worst = 0;
         const objects = world.objects().filter((o) => o.solid);
-        for (let i = 0; i < 4000 && objects.length > 0; i++) {
+        for (let i = 0, free = 0; free < 4000 && i < 40000 && objects.length > 0; i++) {
             const o = objects[Math.floor(r() * objects.length)] as SonicObject;
             // an origin near the object, a direction toward a point around it
             const radius = 4 + 6 * r();
             const a = r() * 2 * Math.PI, e = (r() - 0.5) * 1.2;
             const from: Vec3 = [o.pos[0] + radius * Math.cos(e) * Math.sin(a), o.pos[1] + radius * Math.sin(e), o.pos[2] - radius * Math.cos(e) * Math.cos(a)];
             if (world.sdf(from[0], from[1], from[2]) < 0.3) continue;
+            free++;
             const aim: Vec3 = [o.pos[0] + (r() - 0.5) * 2, o.pos[1] + (r() - 0.5) * 2, o.pos[2] + (r() - 0.5) * 2];
             const len = Math.hypot(aim[0] - from[0], aim[1] - from[1], aim[2] - from[2]);
             const d: Vec3 = [(aim[0] - from[0]) / len, (aim[1] - from[1]) / len, (aim[2] - from[2]) / len];
