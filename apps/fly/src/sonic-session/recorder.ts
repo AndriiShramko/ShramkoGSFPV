@@ -85,9 +85,11 @@ export interface RecorderDeps {
     /**
      * A spoken line. What it returns may be a promise that settles when the line has been said (the page's engine: sayVia); the recorder
      * waits for it only for the question that asks for consent, so that a press of T that comes before the question has been heard is
-     * not taken as the answer. Anything else returned (a test's fake) means there was nothing to wait for.
+     * not taken as the answer. Anything else returned (a test's fake) means there was nothing to wait for. `interrupt` cuts what is being said:
+     * the question is the answer to the pilot's own key, so it must not wait behind a lesson that is talking (the reading limit below would
+     * open on its timer before the question had been spoken, and a second press would agree to it unheard).
      */
-    say(line: SpeechLine): unknown;
+    say(line: SpeechLine, options?: { readonly interrupt?: boolean }): unknown;
     /** the spoken name of a key for the {key} of a line ('KeyT' -> 'T') */
     keyLabel(code: string): string;
     /** ids of the cues sounding now (default: the runtime's engine) */
@@ -252,8 +254,10 @@ export class Recorder {
         const token = ++this.askToken;
         this.setPhase('asking');
         const said: unknown[] = [];
-        if (this.deps.profile().minor) said.push(this.deps.say({ key: 'rec.minor' }));
-        said.push(this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } }));
+        // the first line of the question cuts what the lesson was saying (the pilot pressed T and is waiting to be asked); the second follows it
+        const minor = this.deps.profile().minor;
+        if (minor) said.push(this.deps.say({ key: 'rec.minor' }, { interrupt: true }));
+        said.push(this.deps.say({ key: 'rec.ask', params: { key: this.deps.keyLabel(T_KEY) } }, minor ? undefined : { interrupt: true }));
         // the pilot has the time to answer from the moment the question has been heard
         const opened = (): void => {
             if (token !== this.askToken || this.phaseValue !== 'asking') return;

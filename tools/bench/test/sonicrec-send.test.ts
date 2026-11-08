@@ -244,6 +244,8 @@ interface World {
     readonly api: FakeApi;
     readonly ctl: SendControl;
     readonly lines: SpeechLine[];
+    /** the options each line was said with, in the order of `lines` */
+    readonly sayWith: ({ readonly interrupt?: boolean } | undefined)[];
     readonly notices: SendNotice[];
     readonly recorder: { phase: RecorderPhase };
     readonly gate: { hold: Promise<void> | null };
@@ -254,10 +256,11 @@ interface World {
 
 const keys = (w: World): string[] => w.lines.map((l) => l.key);
 
-async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: number; askMs?: number; readMs?: number; listenMs?: number; speech?: boolean; api?: FakeApi; made?: MadeSession; noSession?: boolean } = {}): Promise<World> {
+async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: number; askMs?: number; readMs?: number; listenMs?: number; speech?: boolean; api?: FakeApi; made?: MadeSession; noSession?: boolean; say?: (line: SpeechLine, options?: { readonly interrupt?: boolean }) => Promise<void> } = {}): Promise<World> {
     const made = o.made ?? (o.noSession ? await makeSession({ id: 'emptyDummy00000000001' }).then(async (m) => { await m.stores.remove(m.id); return m; }) : await makeSession({ voiceBytes: o.voiceBytes ?? 2500, minor: o.minor === true, guardian: o.guardian === true }));
     const api = o.api ?? new FakeApi();
     const lines: SpeechLine[] = [];
+    const sayWith: ({ readonly interrupt?: boolean } | undefined)[] = [];
     const notices: SendNotice[] = [];
     const recorder = { phase: 'idle' as RecorderPhase };
     const gate: { hold: Promise<void> | null } = { hold: null };
@@ -267,6 +270,7 @@ async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: numb
         made,
         api,
         lines,
+        sayWith,
         notices,
         recorder,
         gate,
@@ -280,8 +284,10 @@ async function world(o: { minor?: boolean; guardian?: boolean; voiceBytes?: numb
         recorder,
         profile: () => w.profile,
         isLocked: async () => false,
-        say: async (line) => {
+        say: async (line, options) => {
             lines.push(line);
+            sayWith.push(options);
+            if (o.say !== undefined) return o.say(line, options);
             if (gate.hold !== null) await gate.hold;
         },
         keyLabel: (code) => code.replace('Key', ''),
@@ -840,5 +846,77 @@ describe('key U in the flight page', () => {
         events.emit('sonicSample', sampleAt(1000));
         expect(s.send.live().size).toBe(0);
         s.dispose();
+    });
+});
+
+// v12-int review, finding I2 (the same as the recorder's, tools/bench/test/sonicrec-recorder.test.ts "review I2"): the question of U, and what U
+// answers at once, were said behind what the lesson was saying, and the reading limit let a second press agree to the question before it began.
+describe('review I2: U\'s question and the lesson\'s speech', () => {
+    /** The engine as it speaks with the browser's voice: utterances queue, each takes `unitMs`; a line that interrupts cuts what is queued. */
+    function queueingEngine(unitMs: number) {
+        let freeAt = 0;
+        const rows: { key: string; startedAt: number }[] = [];
+        return {
+            startOf: (key: string): number | null => rows.find((r) => r.key === key)?.startedAt ?? null,
+            say(line: SpeechLine, options?: { readonly interrupt?: boolean }): Promise<void> {
+                const now = Date.now();
+                if (options?.interrupt === true) freeAt = now;
+                const startedAt = Math.max(now, freeAt);
+                freeAt = startedAt + unitMs;
+                rows.push({ key: line.key, startedAt });
+                return new Promise<void>((resolve) => setTimeout(resolve, freeAt - now));
+            }
+        };
+    }
+
+    it('the question, "nothing to send", and where the sending is are said with interrupt: they are the answer to the pilot\'s key', async () => {
+        const w = await world();
+        w.ctl.pressSend();
+        await until('the question', () => keys(w).includes('send.confirm'));
+        expect(w.sayWith[keys(w).indexOf('send.confirm')]).toEqual({ interrupt: true });
+        w.ctl.pressSend();
+        await w.ctl.whenIdle();
+        await until('delivered', () => keys(w).includes('send.delivered'));
+        // the lines the sending says by itself as it goes are not answers to a key: they queue behind whatever is being said
+        for (const k of ['send.sending', 'send.stored']) expect(w.sayWith[keys(w).indexOf(k)], k).toBeUndefined();
+        // U again: nothing is going on and it was delivered; the answer is at once
+        const n = w.lines.length;
+        w.ctl.pressSend();
+        await until('the answer', () => w.lines.length > n);
+        expect(w.lines[n]?.key).toBe('send.delivered');
+        expect(w.sayWith[n]).toEqual({ interrupt: true });
+        const none = await world({ noSession: true });
+        none.ctl.pressSend();
+        await until('send.none', () => keys(none).includes('send.none'));
+        expect(none.sayWith[0]).toEqual({ interrupt: true });
+    });
+
+    it('with the lesson talking the question is heard at once, so a press after the reading limit agrees to a question the pilot has heard', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` }); // 240 ms of speech ahead of the question
+        const w = await world({ readMs: 90, askMs: 2000, say: (line, options) => engine.say(line, options) });
+        w.ctl.pressSend();
+        await until('the question', () => keys(w).includes('send.confirm'));
+        await sleep(120); // longer than the reading limit, shorter than what the lesson has queued
+        const begun = engine.startOf('send.confirm');
+        w.ctl.pressSend(); // an impatient second press
+        expect(begun !== null && begun <= Date.now()).toBe(true);
+        await w.ctl.whenIdle();
+        expect(w.api.stored()).toHaveLength(1);
+    });
+
+    it('control: said the old way (no interrupt) the question waits behind the lesson and the same second press agrees to it before it has begun', async () => {
+        const engine = queueingEngine(40);
+        for (let i = 0; i < 6; i++) void engine.say({ key: `lesson.line${i}` });
+        const w = await world({ readMs: 90, askMs: 2000, say: (line) => engine.say(line) });
+        const pressed = Date.now();
+        w.ctl.pressSend();
+        await until('the question', () => keys(w).includes('send.confirm'));
+        await sleep(120);
+        const startsAfter = (engine.startOf('send.confirm') ?? Infinity) - pressed;
+        w.ctl.pressSend();
+        expect(startsAfter).toBeGreaterThan(200);
+        await w.ctl.whenIdle();
+        expect(w.api.stored()).toHaveLength(1); // agreed to while it was still queued
     });
 });

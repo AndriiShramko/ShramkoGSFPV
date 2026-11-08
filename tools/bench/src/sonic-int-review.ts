@@ -6,7 +6,12 @@
 //       ears-headphones; T, T records; the lesson asks its first question; T stops; the survey offer is answered with 1 and two questions with
 //       digits. Control (a page of its own): the same digit with no survey running DOES answer the question, so the probe can see an answer.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1]
+//   R2  the consent question comes at once when T is pressed, even while the lesson is talking
+//       the engine speaks with the browser's own voices (the default of a pilot; speed 0.75); walls-hall opens and says its intro; T is pressed in
+//       the middle of it, then pressed again at intervals; speechSynthesis is watched (when each utterance starts). Control: the same T with the
+//       lesson silent (its intro heard to the end) is answered within a second.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2]
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
@@ -87,6 +92,19 @@ const initScript = (prefs: object, profile: object | null): string => `(() => {
   } catch (e) {}
   try { delete window.showSaveFilePicker; } catch (e) {}
   window.__rv = { events: [], last: null };
+  window.__utt = [];
+  try {
+    const synth = window.speechSynthesis;
+    const speak = synth.speak.bind(synth);
+    synth.speak = (u) => {
+      const row = { text: u.text, called: performance.now(), started: null, ended: null };
+      window.__utt.push(row);
+      u.addEventListener('start', () => { row.started = performance.now(); });
+      u.addEventListener('end', () => { row.ended = performance.now(); });
+      u.addEventListener('error', () => { row.ended = performance.now(); row.error = true; });
+      return speak(u);
+    };
+  } catch (e) {}
   setInterval(() => {
     const h = window.__gsfpv && window.__gsfpv.sonic;
     if (!h) return;
@@ -252,6 +270,68 @@ async function r1(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R2
+
+interface Utt {
+    text: string;
+    called: number;
+    started: number | null;
+    ended: number | null;
+    error?: boolean;
+}
+const utterances = (page: Page): Promise<Utt[]> => page.evaluate(() => (window as unknown as { __utt: unknown[] }).__utt) as Promise<Utt[]>;
+const pageNow = (page: Page): Promise<number> => page.evaluate(() => performance.now());
+const ASK = /^May I record/;
+
+async function r2(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    const speaking = prefsDoc({ selfVoice: true, speechRate: 0.75 });
+    log('R2: T pressed while the lesson talks');
+    const ctx = await newContext(browser, served, speaking, null);
+    const page = await openLesson(ctx, served, 'walls-hall', 'R2');
+    // the lesson's intro is being said (the first utterance has started); T is pressed a moment into it
+    await until('the first utterance of the intro', () => utterances(page), (u) => u.some((x) => x.started !== null), 30000, 100);
+    await sleep(1500);
+    const pressedAt = await pageNow(page);
+    await page.keyboard.press('KeyT');
+    const timeline: { at: number; what: string }[] = [{ at: 0, what: 'T (first press)' }];
+    let askStarted: number | null = null;
+    let recordingAt: number | null = null;
+    let secondPressAt: number | null = null;
+    let secondPressWasHeard = false;
+    const t0 = Date.now();
+    for (;;) {
+        const now = await pageNow(page);
+        const rel = Math.round(now - pressedAt);
+        const utt = await utterances(page);
+        const ask = utt.find((u) => ASK.test(u.text));
+        if (ask?.started != null && askStarted === null) {
+            askStarted = Math.round(ask.started - pressedAt);
+            timeline.push({ at: askStarted, what: 'the question (rec.ask) starts to be spoken' });
+        }
+        if (recordingAt === null && (await recordingOn(page))) {
+            recordingAt = rel;
+            timeline.push({ at: rel, what: 'the recording is on' });
+        }
+        // an impatient pilot: a second press once the recorder's 20 s reading limit has run out
+        if (secondPressAt === null && rel >= 21000) {
+            secondPressAt = rel;
+            secondPressWasHeard = askStarted !== null;
+            timeline.push({ at: rel, what: `T (second press); the question had ${askStarted === null ? 'NOT ' : ''}started` });
+            await page.keyboard.press('KeyT');
+        }
+        if ((recordingAt !== null && askStarted !== null) || Date.now() - t0 > 90000) break;
+        if (secondPressAt !== null && Date.now() - t0 > 60000) break;
+        await sleep(250);
+    }
+    const utt = await utterances(page);
+    const intro = utt.filter((u) => !ASK.test(u.text) && u.started !== null && u.started >= pressedAt - 60000).map((u) => ({ text: u.text.slice(0, 24), start: Math.round((u.started ?? 0) - pressedAt), end: u.ended === null ? null : Math.round(u.ended - pressedAt) }));
+    result.r2 = { timeline, askStartedMs: askStarted, recordingAtMs: recordingAt, secondPressAtMs: secondPressAt, secondPressWasHeard, utterances: intro };
+    check('R2: the lesson was talking when T was pressed (an utterance of the intro still to come)', intro.some((u) => u.start > 0), intro.slice(0, 6));
+    check('R2: the pilot hears the consent question within 2 s of pressing T (it does not wait for the lesson to finish talking)', askStarted !== null && askStarted <= 2000, { askStartedMs: askStarted });
+    check('R2: a second press is never taken as the yes before the question has been spoken', !(recordingAt !== null && askStarted === null) && !(recordingAt !== null && askStarted !== null && recordingAt < askStarted), { recordingAtMs: recordingAt, askStartedMs: askStarted });
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -278,6 +358,7 @@ async function main(): Promise<void> {
         const b = browserHandle;
         const fresh = (): Promise<BrowserContext> => b.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, acceptDownloads: true });
         if (which === 'r1') await r1(fresh, served);
+        else if (which === 'r2') await r2(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {

@@ -1,0 +1,145 @@
+{
+  "name": "sonic-int-review-r2",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T00:45:22.402Z",
+    "gitHead": "5d4679e",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "1fe8fbc",
+    "sonic": "1eea4d5",
+    "built": "2026-11-08T00:40:42.681Z"
+  },
+  "git": "5d4679e",
+  "seconds": 30,
+  "passed": 2,
+  "total": 4,
+  "pass": false,
+  "checks": [
+    {
+      "name": "R2: the lesson was talking when T was pressed (an utterance of the intro still to come)",
+      "pass": true,
+      "value": [
+        {
+          "text": "",
+          "start": -1952,
+          "end": -1951
+        },
+        {
+          "text": "The big hall",
+          "start": -1684,
+          "end": 113
+        },
+        {
+          "text": "You are in a big, empty ",
+          "start": 159,
+          "end": 9623
+        },
+        {
+          "text": "Fly toward a wall and st",
+          "start": 9674,
+          "end": 16454
+        },
+        {
+          "text": "If you do touch it, noth",
+          "start": 16503,
+          "end": 22453
+        },
+        {
+          "text": "Fly to each wall and sto",
+          "start": 22501,
+          "end": 26253
+        }
+      ]
+    },
+    {
+      "name": "R2: the pilot hears the consent question within 2 s of pressing T (it does not wait for the lesson to finish talking)",
+      "pass": false,
+      "value": {
+        "askStartedMs": 26301
+      }
+    },
+    {
+      "name": "R2: a second press is never taken as the yes before the question has been spoken",
+      "pass": false,
+      "value": {
+        "recordingAtMs": 21317,
+        "askStartedMs": 26301
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r2": {
+      "timeline": [
+        {
+          "at": 0,
+          "what": "T (first press)"
+        },
+        {
+          "at": 21055,
+          "what": "T (second press); the question had NOT started"
+        },
+        {
+          "at": 21317,
+          "what": "the recording is on"
+        },
+        {
+          "at": 26301,
+          "what": "the question (rec.ask) starts to be spoken"
+        }
+      ],
+      "askStartedMs": 26301,
+      "recordingAtMs": 21317,
+      "secondPressAtMs": 21055,
+      "secondPressWasHeard": false,
+      "utterances": [
+        {
+          "text": "",
+          "start": -1952,
+          "end": -1951
+        },
+        {
+          "text": "The big hall",
+          "start": -1684,
+          "end": 113
+        },
+        {
+          "text": "You are in a big, empty ",
+          "start": 159,
+          "end": 9623
+        },
+        {
+          "text": "Fly toward a wall and st",
+          "start": 9674,
+          "end": 16454
+        },
+        {
+          "text": "If you do touch it, noth",
+          "start": 16503,
+          "end": 22453
+        },
+        {
+          "text": "Fly to each wall and sto",
+          "start": 22501,
+          "end": 26253
+        }
+      ]
+    }
+  },
+  "problems": []
+}

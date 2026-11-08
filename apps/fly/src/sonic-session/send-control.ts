@@ -131,8 +131,14 @@ export class SendControl {
         }
     }
 
-    private sayLine(key: string, params?: Record<string, string | number>): Promise<void> {
-        return this.deps.say(params === undefined ? { key } : { key, params }).catch(() => undefined);
+    /**
+     * `answer`: the line is the answer to the pilot's own key press (the question, "nothing to send", where the sending is): it cuts what the
+     * lesson is saying, or it would wait behind it and the pilot, who hears nothing, would think the key did nothing. The question above all:
+     * the reading limit (below) opens on its timer, so a question stuck behind a talking lesson would be agreed to unheard.
+     */
+    private sayLine(key: string, params?: Record<string, string | number>, answer = false): Promise<void> {
+        const line = params === undefined ? { key } : { key, params };
+        return (answer ? this.deps.say(line, { interrupt: true }) : this.deps.say(line)).catch(() => undefined);
     }
 
     private idle(): boolean {
@@ -180,7 +186,7 @@ export class SendControl {
             if (this.disposed) return;
             if (entry === null) {
                 // nothing to send: said aloud too (the package's send.none), or a pilot who cannot see the panel hears nothing at all
-                void this.sayLine('send.none');
+                void this.sayLine('send.none', undefined, true);
                 return this.notice('nothing');
             }
             const run = this.runs.get(entry.id);
@@ -191,7 +197,7 @@ export class SendControl {
                 return;
             }
             if (entry.transfer?.delivered === true && allConfirmed(entry.transfer.channels)) {
-                void this.sayLine('send.delivered');
+                void this.sayLine('send.delivered', undefined, true);
                 return this.notice('already');
             }
             const blocker = sendBlocker(entry, this.deps.profile());
@@ -208,7 +214,7 @@ export class SendControl {
     }
 
     private refuse(blocker: SendBlocker): void {
-        if (blocker === 'guardian') void this.sayLine('rec.minor');
+        if (blocker === 'guardian') void this.sayLine('rec.minor', undefined, true);
         this.notice(blocker);
     }
 
@@ -220,7 +226,7 @@ export class SendControl {
         this.changed();
         question.timer = setTimeout(() => this.cancelAsk('unanswered'), this.deps.askMs ?? DEFAULT_ASK_MS);
         // the question is read out in full before a press counts: a key struck twice in a hurry must not agree to something unheard
-        const read = this.sayLine('send.confirm', { key: this.deps.keyLabel(U_KEY) });
+        const read = this.sayLine('send.confirm', { key: this.deps.keyLabel(U_KEY) }, true);
         let limit: ReturnType<typeof setTimeout> | null = null;
         await Promise.race([read, new Promise<void>((resolve) => { limit = setTimeout(resolve, this.deps.readMs ?? DEFAULT_READ_MS); })]);
         if (limit !== null) clearTimeout(limit);
@@ -414,10 +420,10 @@ export class SendControl {
     /** U on a transfer that is going: where it is, in the package's words. */
     private report(run: Run): void {
         const p = run.progress;
-        if (p.stage === 'delivered') void this.sayLine('send.delivered');
-        else if (p.stage === 'stored') void this.sayLine('send.stored');
-        else if (p.stage === 'waiting' || p.stage === 'blocked') void this.sayLine('send.failed');
-        else void this.sayLine('send.sending');
+        if (p.stage === 'delivered') void this.sayLine('send.delivered', undefined, true);
+        else if (p.stage === 'stored') void this.sayLine('send.stored', undefined, true);
+        else if (p.stage === 'waiting' || p.stage === 'blocked') void this.sayLine('send.failed', undefined, true);
+        else void this.sayLine('send.sending', undefined, true);
     }
 
     /** What the pilot hears as the transfer goes on. Never while a recording runs; a resumed transfer is quiet until it has an outcome. */
