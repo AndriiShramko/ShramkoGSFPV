@@ -1,0 +1,357 @@
+{
+  "name": "v13-look-look",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-08T20:10:39.163Z",
+    "gitHead": "c1c9349",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5420",
+  "release": {
+    "sha": "c1c9349",
+    "sonic": "16c01a1",
+    "built": "2026-11-08T20:09:59.781Z"
+  },
+  "scenario": "look",
+  "tag": "",
+  "checks": [
+    {
+      "name": "walls-hall: the measuring paint ran (the stage's hook)",
+      "pass": true,
+      "value": {
+        "painted": "roles"
+      }
+    },
+    {
+      "name": "walls-hall: floor against walls 3.15:1 (3:1 or more), the mean luminance of each in the page's picture",
+      "pass": true,
+      "value": {
+        "ceiling": {
+          "share": 0.33,
+          "meanL": 0.032
+        },
+        "wall": {
+          "share": 0.32,
+          "meanL": 0.1291
+        },
+        "floor": {
+          "share": 0.35,
+          "meanL": 0.0068
+        }
+      }
+    },
+    {
+      "name": "walls-hall: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "corridor: the measuring paint ran (the stage's hook)",
+      "pass": true,
+      "value": {
+        "painted": "roles"
+      }
+    },
+    {
+      "name": "corridor: floor against walls 3.11:1 (3:1 or more), the mean luminance of each in the page's picture",
+      "pass": true,
+      "value": {
+        "wall": {
+          "share": 0.718,
+          "meanL": 0.1268
+        },
+        "ceiling": {
+          "share": 0.134,
+          "meanL": 0.0318
+        },
+        "object": {
+          "share": 0.014,
+          "meanL": 0.594
+        },
+        "floor": {
+          "share": 0.134,
+          "meanL": 0.0068
+        }
+      }
+    },
+    {
+      "name": "corridor: obstacle 1 (12924 px) against what is behind it 6.49:1 (3:1 or more)",
+      "pass": true,
+      "value": {
+        "pixels": 12924,
+        "meanL": 0.594,
+        "surroundL": 0.0492,
+        "surroundPixels": 7680,
+        "contrast": 6.49
+      }
+    },
+    {
+      "name": "corridor: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "tunnel-gaps: the measuring paint ran (the stage's hook)",
+      "pass": true,
+      "value": {
+        "painted": "roles"
+      }
+    },
+    {
+      "name": "tunnel-gaps: floor against walls 3.08:1 (3:1 or more), the mean luminance of each in the page's picture",
+      "pass": true,
+      "value": {
+        "wall": {
+          "share": 0.679,
+          "meanL": 0.125
+        },
+        "ceiling": {
+          "share": 0.137,
+          "meanL": 0.0325
+        },
+        "object": {
+          "share": 0.072,
+          "meanL": 0.6167
+        },
+        "floor": {
+          "share": 0.112,
+          "meanL": 0.0068
+        }
+      }
+    },
+    {
+      "name": "tunnel-gaps: obstacle 1 (66727 px) against what is behind it 5.18:1 (3:1 or more)",
+      "pass": true,
+      "value": {
+        "pixels": 66727,
+        "meanL": 0.6167,
+        "surroundL": 0.0786,
+        "surroundPixels": 13896,
+        "contrast": 5.18
+      }
+    },
+    {
+      "name": "tunnel-gaps: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "rings-heights: the measuring paint ran (the stage's hook)",
+      "pass": true,
+      "value": {
+        "painted": "roles"
+      }
+    },
+    {
+      "name": "rings-heights: floor against walls 3.11:1 (3:1 or more), the mean luminance of each in the page's picture",
+      "pass": true,
+      "value": {
+        "wall": {
+          "share": 0.531,
+          "meanL": 0.1288
+        },
+        "ceiling": {
+          "share": 0.231,
+          "meanL": 0.0327
+        },
+        "object": {
+          "share": 0.008,
+          "meanL": 0.8261
+        },
+        "floor": {
+          "share": 0.23,
+          "meanL": 0.0075
+        }
+      }
+    },
+    {
+      "name": "rings-heights: obstacle 1 (7538 px) against what is behind it 6.23:1 (3:1 or more)",
+      "pass": true,
+      "value": {
+        "pixels": 7538,
+        "meanL": 0.8261,
+        "surroundL": 0.0906,
+        "surroundPixels": 14554,
+        "contrast": 6.23
+      }
+    },
+    {
+      "name": "rings-heights: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 15,
+  "total": 15,
+  "result": {
+    "fullSizePictures": "U:\\Temp\\gsfpv-v13-look\\look\\2026-11-08",
+    "walls-hall": {
+      "view": {
+        "pose": [
+          0,
+          1.5,
+          3,
+          0
+        ],
+        "why": "the room from near its back: floor, front and side walls, ceiling"
+      },
+      "levels": {
+        "ceiling": {
+          "share": 0.33,
+          "meanL": 0.032
+        },
+        "wall": {
+          "share": 0.32,
+          "meanL": 0.1291
+        },
+        "floor": {
+          "share": 0.35,
+          "meanL": 0.0068
+        }
+      },
+      "floorWall": 3.15,
+      "objects": [],
+      "pictures": {
+        "asSeen": "evidence/2026-11-08/v13-look-look/walls-hall-as-seen.jpg",
+        "scene": "evidence/2026-11-08/v13-look-look/walls-hall-scene.jpg"
+      }
+    },
+    "corridor": {
+      "view": {
+        "pose": [
+          0,
+          1.25,
+          -16.5,
+          0
+        ],
+        "why": "the first pillar 4.5 m ahead, the corridor around and behind it"
+      },
+      "levels": {
+        "wall": {
+          "share": 0.718,
+          "meanL": 0.1268
+        },
+        "ceiling": {
+          "share": 0.134,
+          "meanL": 0.0318
+        },
+        "object": {
+          "share": 0.014,
+          "meanL": 0.594
+        },
+        "floor": {
+          "share": 0.134,
+          "meanL": 0.0068
+        }
+      },
+      "floorWall": 3.11,
+      "objects": [
+        {
+          "pixels": 12924,
+          "meanL": 0.594,
+          "surroundL": 0.0492,
+          "surroundPixels": 7680,
+          "contrast": 6.49
+        }
+      ],
+      "pictures": {
+        "asSeen": "evidence/2026-11-08/v13-look-look/corridor-as-seen.jpg",
+        "scene": "evidence/2026-11-08/v13-look-look/corridor-scene.jpg"
+      }
+    },
+    "tunnel-gaps": {
+      "view": {
+        "pose": [
+          0,
+          1.5,
+          -4.5,
+          0
+        ],
+        "why": "block 1 4.25 m ahead, its free way above it"
+      },
+      "levels": {
+        "wall": {
+          "share": 0.679,
+          "meanL": 0.125
+        },
+        "ceiling": {
+          "share": 0.137,
+          "meanL": 0.0325
+        },
+        "object": {
+          "share": 0.072,
+          "meanL": 0.6167
+        },
+        "floor": {
+          "share": 0.112,
+          "meanL": 0.0068
+        }
+      },
+      "floorWall": 3.08,
+      "objects": [
+        {
+          "pixels": 66727,
+          "meanL": 0.6167,
+          "surroundL": 0.0786,
+          "surroundPixels": 13896,
+          "contrast": 5.18
+        }
+      ],
+      "pictures": {
+        "asSeen": "evidence/2026-11-08/v13-look-look/tunnel-gaps-as-seen.jpg",
+        "scene": "evidence/2026-11-08/v13-look-look/tunnel-gaps-scene.jpg"
+      }
+    },
+    "rings-heights": {
+      "view": {
+        "pose": [
+          0,
+          2.7,
+          16.75,
+          0
+        ],
+        "why": "the start: the first rings ahead at the middle and the floor height"
+      },
+      "levels": {
+        "wall": {
+          "share": 0.531,
+          "meanL": 0.1288
+        },
+        "ceiling": {
+          "share": 0.231,
+          "meanL": 0.0327
+        },
+        "object": {
+          "share": 0.008,
+          "meanL": 0.8261
+        },
+        "floor": {
+          "share": 0.23,
+          "meanL": 0.0075
+        }
+      },
+      "floorWall": 3.11,
+      "objects": [
+        {
+          "pixels": 7538,
+          "meanL": 0.8261,
+          "surroundL": 0.0906,
+          "surroundPixels": 14554,
+          "contrast": 6.23
+        }
+      ],
+      "pictures": {
+        "asSeen": "evidence/2026-11-08/v13-look-look/rings-heights-as-seen.jpg",
+        "scene": "evidence/2026-11-08/v13-look-look/rings-heights-scene.jpg"
+      }
+    }
+  }
+}

@@ -21,13 +21,14 @@ import type { AnalyticVoxelCollision } from '@gsfpv/collision';
 import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { ResolvedScene } from '@gsfpv/scenes';
 import type { BuiltinWorld } from '../session';
+import { SKY, toSrgb } from './look';
 
 /** Every built-in scene id starts with this; a SuperSplat id is hex, so the two never meet. */
 export const LESSON_SCENE_PREFIX = 'lesson-';
 /** The flight rules of every lesson world (BuiltinWorld.overrides): the bump of a game (M41-19). */
 export const LESSON_FLIGHT: Readonly<ParamOverrides> = Object.freeze({ bump: 'slide' });
-/** The clear colour of a lesson world: a dark room, the primitives drawn light on it (step 6). */
-export const LESSON_BACKGROUND: readonly number[] = [0.02, 0.02, 0.03];
+/** The clear colour of a lesson world, sRGB: the look's sky (look.ts SKY, v0.13 M41-23), which its fog fades into too. */
+export const LESSON_BACKGROUND: readonly number[] = [...toSrgb(SKY)];
 
 /** A lesson id as the URL and the progress use it (sonic-fpv lesson ids): lower case, digits, dashes. */
 const LESSON_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
@@ -65,7 +66,8 @@ function memoryScene(id: string, version: number): ResolvedScene {
         content: [],
         collisionUrl: null,
         background: [...LESSON_BACKGROUND],
-        tonemapping: undefined
+        // the look's luminance is designed for the linear tone map (look.ts): a scan flown before must not leave its own
+        tonemapping: 'linear'
     };
 }
 

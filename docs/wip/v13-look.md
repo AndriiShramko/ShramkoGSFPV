@@ -98,11 +98,45 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
       2 s flies it on 3.76 and 3.75 m, no touch. No page error.
     - Not done: the same page run on a stage A build (v0.12's hop) as a page-level control; the Node test above is the
       control.
-- [ ] L1-3 (M41-23) the lesson rooms and tunnels look like a game, cheaply: block textures (procedural), a checker
+- [x] L1-3 (M41-23) the lesson rooms and tunnels look like a game, cheaply: block textures (procedural), a checker
   floor, hemisphere ambient light plus one sun, soft fog, coloured pillars and rings, no shadows. Low vision: luminance
   contrast at least 3:1 between floor and walls and between obstacles and what is behind them, measured on the page's
   pictures. Screenshots of walls-hall, corridor, tunnel-gaps and rings-heights (small JPEGs in `evidence/`, full-size
   pictures kept local).
+  - New `apps/fly/src/sonic/look.ts` (pure, Node-tested): 0.5 m blocks on walls and ceilings (a procedural 256 px texture
+    over 2 m: a shade per block, a dark joint, a lit and a shaded bevel), a 0.5 m checker floor, both in world metres so
+    the blocks line up and show the room's size; a hemisphere (sky 1, ground 0.55) plus one sun (0.15, from 0.4/0.8/0.45),
+    no shadows, baked per vertex (the world and the sun stand still; a flat face is exact) under unlit materials; objects
+    get a softer rig of their own; soft linear fog from 12 to 60 m toward the sky colour, which is also every lesson
+    world's clear colour (`lesson-world.ts` `LESSON_BACKGROUND`, and `tonemapping: 'linear'` so a scan flown before
+    cannot leave its own). Colours for low vision, three steps 3:1 apart: a dark checker floor, slate walls, a darker
+    ceiling, bright obstacles (pillars amber, gates yellow, the next gate white-yellow, blocks cyan, zones green).
+  - `apps/fly/src/sonic/primitives.ts` `PrimitiveStage`: the room of each role (floor, walls, ceiling) is ONE mesh of the
+    slabs' faces toward the hollow (`Prim.facing`, set by `slabOf` and the open world's slabs), an object's part a mesh
+    of its own with its light baked as float vertex colours, the target lit by its material as before; the scene's fog
+    set while a lesson world's room is shown and given back on clear and dispose (a scan lesson's gates alone leave the
+    fog as it is); `paint('roles')`, one flat colour per kind of surface and no fog, for measuring (registered on
+    `window.__gsfpv.sonicLook` when the page has its test hook; feature.ts untouched). The Prim lists and every
+    geometry test stay as they were (`sonic-primitives`, 105 of 105); `count` still counts primitives.
+  - On paper, new `tools/bench/test/sonic-look.test.ts` (9 tests): floor against walls 3.18:1, the floor's bright squares
+    against the darkest wall 3.04:1, obstacles (mean over all normals) against the lightest wall, the floor and the
+    ceiling: pillars 3.23, blocks 3.31, gates 3.69, the next gate 4.79; the patterns repeat and tile; every room quad of
+    walls-hall, the corridor, tunnel-gaps, tunnel-long and hover-height on the hollow's boundary, facing into it, wound
+    counter-clockwise from inside (control in the test: the triangles reversed are caught); the baked light follows an
+    object's rotation. The first run caught two faults, fixed: every face 5 cm into the rock (a sign) and a palette
+    0.05 short of 3:1. Broken once and restored: the floor's albedo as the walls' fails the contrast test.
+  - On the page, `v13-look-page.ts look`, release build of c1c9349 with this step, 15 of 15
+    (`evidence/2026-11-08/v13-look-look.json`; per lesson a JPEG as the pilot sees it and one of the view alone in
+    `v13-look-look/`; the full-size PNGs of the look and the role paint kept on U:, `U:/Temp/gsfpv-v13-look/look/2026-11-08`):
+    mean relative luminance of each kind of surface in the page's own picture, the role paint as the mask:
+    | lesson (view) | floor | walls | ceiling | floor : walls | obstacle : what is behind it |
+    |---|---|---|---|---|---|
+    | walls-hall (from near the back) | 0.0068 | 0.129 | 0.032 | 3.15 | (none) |
+    | corridor (the first pillar 4.5 m ahead) | 0.0068 | 0.127 | 0.032 | 3.11 | pillar 0.594 against 0.049: 6.49 |
+    | tunnel-gaps (block 1 4.25 m ahead) | 0.0068 | 0.125 | 0.033 | 3.08 | block 0.617 against 0.079: 5.18 |
+    | rings-heights (the start) | 0.0075 | 0.129 | 0.033 | 3.11 | the rings 0.826 against 0.091: 6.23 |
+    The first page run showed every object black (`Mesh.fromGeometry` takes a geometry's colours as 8 bits: a light of
+    0.8 became 0): the check of 3:1 failed there (1.98 to 2.57), fixed by building the object meshes like the room's.
 - [ ] L1-4 (W16) frame cost: the page's frame time with the new look in tunnel-long, the corridor and rings-heights
   within v0.12's frame budget; tunnel-long's collider (16 % over its plan of 20 ms per 10 s of flight) brought under
   without changing the world's voxel size, or the whole frame shown in budget, the decision written with its numbers.
@@ -128,7 +162,23 @@ v13-host's stages B and C (`C:/dev/gsfpv-v13-host`): `apps/fly/src/sonic/lessons
       884 times; control in the test: the shortcut over a distance that lies (walls 0.3 m further off) differs. Broken once
       and restored: the body test with a tenth of its reach fails the first test. `sonic-world.test.ts` (the voxel
       agreement, the replays of a flight on rebuilt walls, the ratios) passes unchanged.
-  - [ ] The page's frame time with the new look (after L1-3).
+  - [x] The page's frame time with the new look: `v13-look-page.ts cost`, six views along each world's track (the craft
+    parked there), 2.5 s of frames each, headless Chrome 156 on this machine's GPU (the display paces frames at 30 Hz:
+    33.3 ms), the engine's CPU time per frame (frameupdate to frameend: the flight model, the mode and its planner, the
+    scene, the draw's encoding) and the GPU time of the render passes (WebGPU timestamps; with the developer features
+    flag, stock Chrome rounds them to 0.066 ms here, more than these frames take):
+    | world | v0.12's look (8b8dd60) CPU p50 / p95 | new look (c1c9349) CPU p50 / p95, a repeat | new look GPU p50 / p95 | planner p95 |
+    |---|---|---|---|---|
+    | tunnel-long | 1.6 / 2.1 ms | 1.5 / 2.2, 1.5 / 2.4 ms | 0.028 / 0.094 ms | 0.6 ms |
+    | corridor | 1.5 / 2.0 ms | 1.4 / 1.9, 1.4 / 2.1 ms | 0.035 / 0.12 ms | 0.4 ms |
+    | rings-heights | 1.4 / 1.9 ms | 1.6 / 2.7 (one 12.6 ms frame), 1.4 / 2.0 ms | 0.019 / 0.103 ms | 0.6 ms |
+    The look costs no measurable CPU (within run-to-run spread) and about 0.1 ms of GPU at p95; no frame was missed (the
+    governor stayed at its first step, render scale 1). v0.12's frame budget (the 60 Hz frame of 16.7 ms, the planner's
+    1 ms at p95, the collider's 20 ms per 10 s): the whole frame stays under 2.5 ms at p95 on this machine, the planner
+    at 0.6 ms in the page. Evidence: `evidence/2026-11-08/v13-look-cost-v012-look.json`, `v13-look-cost.json`,
+    `v13-look-cost-repeat.json` and a JPEG of each world's first view beside each (v0.12's look and the new one).
+  - Decision (W16): the collider is brought under its plan in the simulator (above, 16.41 ms per 10 s), and the page
+    shows the whole frame in budget besides; no change of the world's voxel size is needed.
 - [ ] L1-5 gates exit 0; flight regression B6-B16 on a local build; L1's status final.
 
 ### Stage L2 (the next agent)

@@ -8,6 +8,13 @@
 //            0.35 m over the floor and 0.35 m under the block), W past that point, Space into the ceiling further on (a
 //            touch: the runner re-centres it under the block); there it must stay, with no second touch and no second
 //            re-centre (the take-off hop of v0.12 met the block there: a loop), and W must fly it on.
+//   look   L1-3 (M41-23): walls-hall, the corridor, tunnel-gaps and rings-heights from a view each: a picture as the pilot
+//          sees it, the view alone (the overlays hidden) in the look and in the stage's role paint (window.__gsfpv.sonicLook):
+//          the mean luminance of floor, walls and ceiling and every obstacle against its surround, 3:1 or more (WCAG);
+//          the full-size PNGs are kept on U: (LOOK_KEEP), small JPEGs in the evidence.
+//   cost   L1-4: tunnel-long, the corridor and rings-heights, six views each along the world's track: the engine's CPU
+//          time per frame, the GPU time of the render passes (WebGPU timestamps), the frame intervals, the sound planner's
+//          cost; TAG=<name> keeps a second run beside the first (the look before and after).
 // Every check is the page's own state (window.__gsfpv: the session, its flight model, the mode's hook); the sim events are
 // read through the session's onEvent. Holds the GPU lock C:/dev/.gpu-lock (one blocking loop: mkdir, else 20 s, up to
 // 9 min; rmdir after, on error too). Evidence: evidence/<date>/v13-look-<scenario>.json, small JPEGs beside it.
@@ -25,9 +32,11 @@ import { REPO, today, writeEvidence } from './evidence';
 const SITE = (process.env.SITE ?? '').replace(/\/$/, '');
 if (!/^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(SITE)) throw new Error('SITE=http://localhost:<port> of a local release build is needed (never the live site)');
 const SCENARIO = process.argv[2] ?? 'bump';
+/** TAG=<name>: a second run of a scenario kept beside the first (the cost of the look before and after: TAG=v012-look) */
+const TAG = (process.env.TAG ?? '').replace(/[^a-z0-9-]/g, '');
 console.log(`v13-look-page target: ${SITE}, scenario ${SCENARIO}`);
 const LOCK = 'C:/dev/.gpu-lock';
-const OUT = join(REPO, 'evidence', today(), `v13-look-${SCENARIO}`);
+const OUT = join(REPO, 'evidence', today(), `v13-look-${SCENARIO}${TAG ? `-${TAG}` : ''}`);
 mkdirSync(OUT, { recursive: true });
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
@@ -286,20 +295,267 @@ async function scenarioBump(ctx: BrowserContext): Promise<Record<string, unknown
     return { wallsHall: await wallsHallTouch(ctx), tunnelGaps: await respawnUnderBlock(ctx, 'tunnel-gaps'), tunnelLong: await respawnUnderBlock(ctx, 'tunnel-long') };
 }
 
-const SCENARIOS: Record<string, (ctx: BrowserContext) => Promise<Record<string, unknown>>> = { bump: scenarioBump };
+// ------------------------------------------------------------------ cost (L1-4)
+
+interface Stats { n: number; p50: number; p95: number; max: number; mean: number }
+function stats(v: readonly number[]): Stats | null {
+    if (v.length === 0) return null;
+    const s = [...v].sort((a, b) => a - b);
+    const q = (f: number): number => s[Math.min(s.length - 1, Math.floor(f * (s.length - 1)))]!;
+    return { n: s.length, p50: round(q(0.5)), p95: round(q(0.95)), max: round(s[s.length - 1]!), mean: round(s.reduce((a, b) => a + b, 0) / s.length) };
+}
+
+/**
+ * The page's frame in a lesson world, at views along the world's track (the craft put there by the respawn path, facing
+ * along the track, parked): the engine's CPU time per frame (frameupdate to frameend: the flight model, the mode and its
+ * sound planner, the scene update, the encoding of the draw), the GPU time per frame (the sum of the render passes, from
+ * the engine's WebGPU timestamp queries, when the device has them) and the frame intervals.
+ */
+async function frameCost(ctx: BrowserContext, lessonId: string, views: number): Promise<Record<string, unknown>> {
+    const lesson = getLesson(lessonId);
+    if (lesson.world.kind !== 'analytic') throw new Error(`${lessonId} is not an analytic world`);
+    const world = createAnalyticWorld(lesson.world.spec);
+    const track = (world as unknown as { checkpoints?: readonly WorldCheckpoint[] }).checkpoints ?? [];
+    if (track.length < 2) throw new Error(`${lessonId}: no track`);
+    const { page, errors } = await openLesson(ctx, lessonId);
+    const gpu = await page.evaluate(() => {
+        type Prof = { enabled: boolean; report: (v: number, t: number[] | null, f?: number) => void };
+        const w = window as unknown as { __cost?: unknown; __gsfpv: { session: { renderer: { app: { on(e: string, f: () => void): void }; device: { isWebGPU: boolean; supportsTimestampQuery?: boolean; gpuProfiler?: Prof } } } } };
+        const r = w.__gsfpv.session.renderer;
+        const P = { cpu: [] as number[], gpu: [] as number[], intervals: [] as number[], recording: false, lastEnd: 0, gpuSupported: false };
+        w.__cost = P;
+        let tStart = 0;
+        r.app.on('frameupdate', () => { tStart = performance.now(); });
+        r.app.on('frameend', () => {
+            const t = performance.now();
+            if (P.recording && tStart) {
+                P.cpu.push(t - tStart);
+                if (P.lastEnd) P.intervals.push(t - P.lastEnd);
+            }
+            P.lastEnd = t;
+        });
+        const dev = r.device;
+        const prof = dev.gpuProfiler;
+        if (dev.isWebGPU && dev.supportsTimestampQuery && prof) {
+            P.gpuSupported = true;
+            const orig = prof.report.bind(prof);
+            prof.report = (v, timings, f) => {
+                if (P.recording && timings && timings.length) P.gpu.push(timings.reduce((a, b) => a + b, 0));
+                orig(v, timings, f);
+            };
+            prof.enabled = true;
+        }
+        return P.gpuSupported;
+    });
+    const per: Record<string, unknown>[] = [];
+    const all = { cpu: [] as number[], gpu: [] as number[], intervals: [] as number[] };
+    for (let i = 0; i < views; i++) {
+        const p = track[Math.min(track.length - 1, Math.round((i * (track.length - 1)) / Math.max(1, views - 1)))]!;
+        const pose: [number, number, number, number] = [p.pos[0], p.pos[1], p.pos[2], (Math.atan2(p.dir[0], -p.dir[2]) * 180) / Math.PI];
+        await page.evaluate((q) => {
+            const s = (window as unknown as { __gsfpv: { session: { spawn: number[]; respawnStart(): void } } }).__gsfpv.session;
+            s.spawn = [q[0], q[1], q[2], q[3]];
+            s.respawnStart();
+        }, pose);
+        await sleep(800);
+        await page.evaluate(() => { const P = (window as unknown as { __cost: { recording: boolean; cpu: number[]; gpu: number[]; intervals: number[]; lastEnd: number } }).__cost; P.cpu = []; P.gpu = []; P.intervals = []; P.lastEnd = 0; P.recording = true; });
+        await sleep(2500);
+        const got = await page.evaluate(() => { const P = (window as unknown as { __cost: { recording: boolean; cpu: number[]; gpu: number[]; intervals: number[] } }).__cost; P.recording = false; return { cpu: P.cpu.slice(), gpu: P.gpu.slice(), intervals: P.intervals.slice() }; });
+        all.cpu.push(...got.cpu);
+        all.gpu.push(...got.gpu);
+        all.intervals.push(...got.intervals);
+        per.push({ pose: pose.map((v) => round(v, 2)), cpuMs: stats(got.cpu), gpuMs: stats(got.gpu), intervalMs: stats(got.intervals) });
+        if (i === 0) await shot(page, `${lessonId}-cost-view`);
+    }
+    const hear = await page.evaluate(() => (window as unknown as { __gsfpv: { sonic: (e?: boolean) => { cost: unknown } } }).__gsfpv.sonic(false).cost);
+    const governor = await page.evaluate(() => { const g = (window as unknown as { __gsfpv: { governor?: { step: number; current: { renderScale: number } } } }).__gsfpv.governor; return g ? { step: g.step, renderScale: g.current.renderScale } : null; });
+    const out = { lesson: lessonId, views, gpuTimestamps: gpu, cpuMs: stats(all.cpu), gpuMs: stats(all.gpu), intervalMs: stats(all.intervals), soundPlannerMs: hear, governor, perView: per };
+    check(`${lessonId}: ${views} views measured (frames at every view, no page error)`, per.every((v) => (v.cpuMs as Stats | null) !== null) && errors.length === 0, { cpuMs: out.cpuMs, gpuMs: out.gpuMs, intervalMs: out.intervalMs, governor, errors });
+    await page.close();
+    return out;
+}
+
+async function scenarioCost(ctx: BrowserContext): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = {};
+    for (const id of ['tunnel-long', 'corridor', 'rings-heights']) out[id] = await frameCost(ctx, id, 6);
+    return out;
+}
+
+// ------------------------------------------------------------------ look (L1-3)
+
+/** Where each lesson is looked at from: a pose that shows its room and its obstacles (world metres, yaw degrees). */
+const LOOK_VIEWS: Record<string, { pose: [number, number, number, number]; why: string }> = {
+    'walls-hall': { pose: [0, 1.5, 3, 0], why: 'the room from near its back: floor, front and side walls, ceiling' },
+    corridor: { pose: [0, 1.25, -16.5, 0], why: 'the first pillar 4.5 m ahead, the corridor around and behind it' },
+    'tunnel-gaps': { pose: [0, 1.5, -4.5, 0], why: 'block 1 4.25 m ahead, its free way above it' },
+    'rings-heights': { pose: [0, 2.7, 16.75, 0], why: 'the start: the first rings ahead at the middle and the floor height' }
+};
+
+interface Analysis {
+    pixels: number;
+    roles: Record<string, { pixels: number; meanL: number }>;
+    floorWall: number | null;
+    objects: { pixels: number; meanL: number; surroundL: number; surroundPixels: number; contrast: number }[];
+}
+
+/**
+ * The look's contrast on the page's own pictures: the same view painted in the look and in the role paint (one flat colour
+ * per kind of surface, no fog), decoded in a helper page (no image dependency). Per kind of surface the mean relative
+ * luminance of its pixels in the look (sRGB decoded); each object (a connected patch of the object paint) against its
+ * surround: the pixels within BAND px of it that are no object. Pixels at the paint's edges (anti-aliased) count for none.
+ */
+async function analyse(ctx: BrowserContext, look: Buffer, roles: Buffer): Promise<Analysis> {
+    const p = await ctx.newPage();
+    const r = await p.evaluate(async ({ a, b }) => {
+        const BAND = 12;
+        const decode = async (b64: string): Promise<{ w: number; h: number; d: Uint8ClampedArray }> => {
+            const bin = atob(b64);
+            const u = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+            const bmp = await createImageBitmap(new Blob([u], { type: 'image/png' }));
+            const c = new OffscreenCanvas(bmp.width, bmp.height);
+            const g = c.getContext('2d')!;
+            g.drawImage(bmp, 0, 0);
+            return { w: bmp.width, h: bmp.height, d: g.getImageData(0, 0, bmp.width, bmp.height).data };
+        };
+        const L = await decode(a), M = await decode(b);
+        const lin = (v: number): number => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+        const lum = (i: number): number => 0.2126 * lin(L.d[i]!) + 0.7152 * lin(L.d[i + 1]!) + 0.0722 * lin(L.d[i + 2]!);
+        // the paint: a pure colour within a tolerance, else an edge (none)
+        const kind = (i: number): string => {
+            const r = M.d[i]!, g = M.d[i + 1]!, bl = M.d[i + 2]!;
+            const hi = (v: number): boolean => v > 235, lo = (v: number): boolean => v < 20;
+            if (hi(r) && hi(g) && hi(bl)) return 'object';
+            if (hi(r) && lo(g) && lo(bl)) return 'floor';
+            if (lo(r) && hi(g) && lo(bl)) return 'wall';
+            if (lo(r) && lo(g) && hi(bl)) return 'ceiling';
+            return 'other';
+        };
+        const W = L.w, H = L.h;
+        const k = new Array<string>(W * H);
+        const roles: Record<string, { pixels: number; sum: number }> = {};
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+            const j = y * W + x;
+            const kk = kind(j * 4);
+            k[j] = kk;
+            const o = (roles[kk] ??= { pixels: 0, sum: 0 });
+            o.pixels++;
+            o.sum += lum(j * 4);
+        }
+        const mean = (n: string): number | null => (roles[n] && roles[n]!.pixels > 0 ? roles[n]!.sum / roles[n]!.pixels : null);
+        const ratio = (x: number, y: number): number => (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+        const f = mean('floor'), wl = mean('wall');
+        // objects: connected patches of the object paint (4-neighbours), each with its surround band
+        const seen = new Uint8Array(W * H);
+        const objects: { pixels: number; meanL: number; surroundL: number; surroundPixels: number; contrast: number }[] = [];
+        for (let s = 0; s < W * H; s++) {
+            if (seen[s] || k[s] !== 'object') continue;
+            const stack = [s];
+            seen[s] = 1;
+            const patch: number[] = [];
+            while (stack.length) {
+                const q = stack.pop()!;
+                patch.push(q);
+                const qx = q % W, qy = (q / W) | 0;
+                for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                    const nx = qx + dx!, ny = qy + dy!;
+                    if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+                    const n = ny * W + nx;
+                    if (!seen[n] && k[n] === 'object') { seen[n] = 1; stack.push(n); }
+                }
+            }
+            if (patch.length < 200) continue; // a few edge pixels, not an object seen
+            let sumO = 0;
+            for (const q of patch) sumO += lum(q * 4);
+            // the band: every pixel within BAND of the patch (a box around each of its pixels), not an object, not an edge
+            const band = new Uint8Array(W * H);
+            for (const q of patch) {
+                const qx = q % W, qy = (q / W) | 0;
+                for (let dy = -BAND; dy <= BAND; dy += 3) for (let dx = -BAND; dx <= BAND; dx += 3) {
+                    const nx = qx + dx, ny = qy + dy;
+                    if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+                    const n = ny * W + nx;
+                    if (k[n] === 'floor' || k[n] === 'wall' || k[n] === 'ceiling') band[n] = 1;
+                }
+            }
+            let sumS = 0, nS = 0;
+            for (let n = 0; n < W * H; n++) if (band[n]) { sumS += lum(n * 4); nS++; }
+            const mo = sumO / patch.length, ms = nS ? sumS / nS : NaN;
+            objects.push({ pixels: patch.length, meanL: mo, surroundL: ms, surroundPixels: nS, contrast: ratio(mo, ms) });
+        }
+        const out: Record<string, { pixels: number; meanL: number }> = {};
+        for (const [n, o] of Object.entries(roles)) out[n] = { pixels: o.pixels, meanL: o.sum / o.pixels };
+        return { pixels: W * H, roles: out, floorWall: f !== null && wl !== null ? ratio(f, wl) : null, objects };
+    }, { a: look.toString('base64'), b: roles.toString('base64') });
+    await p.close();
+    return r;
+}
+
+/** Everything over the canvas hidden (the HUD, the captions, the panels): what the view itself shows. */
+const HIDE_OVERLAYS = 'body > *:not(canvas) { visibility: hidden !important; } canvas { visibility: visible !important; }';
+
+async function lookAt(ctx: BrowserContext, lessonId: string, keep: string): Promise<Record<string, unknown>> {
+    const view = LOOK_VIEWS[lessonId];
+    if (!view) throw new Error(`no view for ${lessonId}`);
+    const { page, errors } = await openLesson(ctx, lessonId);
+    await page.evaluate((q) => {
+        const s = (window as unknown as { __gsfpv: { session: { spawn: number[]; respawnStart(): void } } }).__gsfpv.session;
+        s.spawn = [q[0], q[1], q[2], q[3]];
+        s.respawnStart();
+    }, view.pose);
+    await until('the view', () => craft(page), (c) => dist(c.pos, view.pose) < 0.1, 5000);
+    await sleep(1500);
+    const asSeen = await shot(page, `${lessonId}-as-seen`);
+    const style = await page.addStyleTag({ content: HIDE_OVERLAYS });
+    await sleep(300);
+    const lookPng = await page.screenshot({ type: 'png' });
+    const sceneJpg = join(OUT, `${lessonId}-scene.jpg`);
+    writeFileSync(sceneJpg, await page.screenshot({ type: 'jpeg', quality: 80 }));
+    const painted = await page.evaluate(() => { const h = (window as unknown as { __gsfpv: { sonicLook?: { paint(m: string): void; mode(): string } } }).__gsfpv.sonicLook; if (!h) return null; h.paint('roles'); return h.mode(); });
+    await sleep(400);
+    const rolesPng = await page.screenshot({ type: 'png' });
+    await page.evaluate(() => (window as unknown as { __gsfpv: { sonicLook?: { paint(m: string): void } } }).__gsfpv.sonicLook?.paint('look'));
+    await style.evaluate((el) => (el as unknown as { remove(): void }).remove());
+    // the full-size pictures stay out of the repository (the evidence keeps the small JPEGs)
+    mkdirSync(keep, { recursive: true });
+    writeFileSync(join(keep, `${lessonId}-look.png`), lookPng);
+    writeFileSync(join(keep, `${lessonId}-roles.png`), rolesPng);
+    const a = await analyse(ctx, lookPng, rolesPng);
+    const fw = a.floorWall;
+    const objs = a.objects.map((o) => ({ ...o, meanL: round(o.meanL, 4), surroundL: round(o.surroundL, 4), contrast: round(o.contrast, 2) }));
+    const levels = Object.fromEntries(Object.entries(a.roles).map(([n, o]) => [n, { share: round(o.pixels / a.pixels, 3), meanL: round(o.meanL, 4) }]));
+    check(`${lessonId}: the measuring paint ran (the stage's hook)`, painted === 'roles', { painted });
+    if (a.roles.floor && a.roles.wall) check(`${lessonId}: floor against walls ${fw?.toFixed(2)}:1 (3:1 or more), the mean luminance of each in the page's picture`, fw !== null && fw >= 3, levels);
+    for (const [i, o] of objs.entries()) check(`${lessonId}: obstacle ${i + 1} (${o.pixels} px) against what is behind it ${o.contrast}:1 (3:1 or more)`, o.contrast >= 3, o);
+    check(`${lessonId}: no page error`, errors.length === 0, errors);
+    await page.close();
+    return { view, levels, floorWall: fw === null ? null : round(fw, 2), objects: objs, pictures: { asSeen, scene: sceneJpg.slice(REPO.length + 1).replace(/\\/g, '/') } };
+}
+
+async function scenarioLook(ctx: BrowserContext): Promise<Record<string, unknown>> {
+    // full-size PNGs next to the repository's other runs on U:, not in it
+    const keep = join(process.env.LOOK_KEEP ?? 'U:/Temp/gsfpv-v13-look/look', `${today()}${TAG ? `-${TAG}` : ''}`);
+    const out: Record<string, unknown> = { fullSizePictures: keep };
+    for (const id of Object.keys(LOOK_VIEWS)) out[id] = await lookAt(ctx, id, keep);
+    return out;
+}
+
+const SCENARIOS: Record<string, (ctx: BrowserContext) => Promise<Record<string, unknown>>> = { bump: scenarioBump, cost: scenarioCost, look: scenarioLook };
 
 async function main(): Promise<void> {
     const run = SCENARIOS[SCENARIO];
     if (!run) throw new Error(`unknown scenario ${SCENARIO}: ${Object.keys(SCENARIOS).join(', ')}`);
     await lock();
-    const { browser } = await launchChrome({ args: ['--autoplay-policy=no-user-gesture-required'] });
+    // cost: WebGPU's developer features give timestamp queries unquantized (stock Chrome rounds them to about 0.066 ms here,
+    // more than a lesson world's whole frame takes the GPU); nothing else of the drawing changes
+    const { browser } = await launchChrome({ args: ['--autoplay-policy=no-user-gesture-required', ...(SCENARIO === 'cost' ? ['--enable-webgpu-developer-features'] : [])] });
     try {
         const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
         await ctx.addInitScript({ content: INIT });
         const release = await (await fetch(`${SITE}/release.json`)).json().catch(() => null);
         const result = await run(ctx);
         const passed = checks.filter((c) => c.pass).length;
-        const file = writeEvidence(`v13-look-${SCENARIO}`, { site: SITE, release, scenario: SCENARIO, checks, passed, total: checks.length, result });
+        const file = writeEvidence(`v13-look-${SCENARIO}${TAG ? `-${TAG}` : ''}`, { site: SITE, release, scenario: SCENARIO, tag: TAG, checks, passed, total: checks.length, result });
         console.log(`${passed} of ${checks.length} checks passed; ${file}`);
         process.exitCode = passed === checks.length ? 0 : 1;
     } finally {
