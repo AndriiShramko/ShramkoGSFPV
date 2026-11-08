@@ -17,10 +17,16 @@
 //              saved as current.
 //   after      a passed lesson is followed (once its pass line is spoken) by the next lesson on the pilot's path, the
 //              full ladder's when it was opened off the path, and by the start screen at the end of the ladder. G opens
-//              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the last line.
+//              the sound glossary and comes back to the lesson it left; I says where the pilot is; Z says the step's task
+//              again (v0.13: the runner's repeat, its sounds three times; it was the last line).
+//   go         (v0.13 W4) the runner's way out of a lesson: N from its last step (flying, the last sound, after the pass) and
+//              the lesson menu's next lesson give 'go next', B from its first step and the menu's previous lesson 'go
+//              previous'. 'next' is the way on after a pass (advance: the lesson G left first, then the lesson after this one
+//              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
+//              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { DICTS, createLessonRunner, createTranslator, getLesson, isShippedLesson, nextLesson } from '@shramko/sonic-fpv';
-import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
+import { createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
+import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
 import type { FlightSession } from '../session';
@@ -35,6 +41,8 @@ import { voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
+import { DEFAULT_LESSON_START_KEYS } from './key-names';
+import type { LessonStartKeys, RunnerKeys } from './key-names';
 
 /** After a pass the next lesson opens when the speech queue has been empty this long, ms. */
 export const NEXT_AFTER_MS = 1500;
@@ -78,6 +86,42 @@ export interface LessonPage {
     clock(): number;
     /** the sound settings a shared link set that still stand (SonicSetup.visit), which the address of a lesson keeps (review R2) */
     visit?(): SonicLinkSound;
+    /** the names of the pilot's keys N, B and Z as his keyboard layout types them (key-names.ts); absent: N, B and Z */
+    keyNames?(): RunnerKeys;
+    /** the pilot's speaking speed (SonicPrefs.speechRate); absent: 1 */
+    speechRate?(): number;
+    /** the names of the keys the line at every lesson's start says (key-names.ts lessonStart); absent: Escape, Z, N */
+    lessonKeys?(): LessonStartKeys;
+}
+
+/** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
+export interface RunnerPlace {
+    readonly start: Pose;
+    readonly floorY: number;
+    readonly objects: readonly SonicObject[] | null;
+    /** the lesson the pilot left with G (this one is the glossary, a detour), or null */
+    readonly returnTo: string | null;
+}
+
+/**
+ * What the sound package's runner of a lesson is made with (v0.13 W3, the package's RunnerOptions): the pilot's saved progress,
+ * his path (the lesson's place on it, "Lesson 6 of 28", and the lesson a pass names next), his speaking speed (how long a line is
+ * waited for when no end of speech comes), the names of his keys (the lines say "Press N"), and the lesson G left: the glossary
+ * opened from a lesson is a detour whose ways out lead back there, and leaving it forward does not mark it skipped (review R3).
+ */
+export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
+    return {
+        locale: page.locale,
+        progress: savedProgress(page.store, lessonId),
+        sessionStartMs,
+        start: place.start,
+        floorY: place.floorY,
+        ...(place.objects ? { objects: place.objects } : {}),
+        path: page.path(),
+        speechRate: page.speechRate?.() ?? 1,
+        ...(page.keyNames ? { keys: page.keyNames() } : {}),
+        returnTo: place.returnTo
+    };
 }
 
 export class LessonHost {
@@ -109,11 +153,19 @@ export class LessonHost {
     /** a lesson is being left through G: it comes back after the glossary */
     private returnTo: string | null = null;
     private passedAt: number | null = null;
-    private readonly tr: ReturnType<typeof createTranslator>;
+    /**
+     * The runner the pilot was moved on from (its 'go', or the move after its pass): nothing moves him from it again (W4). A 'go'
+     * pressed while the pass's own move opens the next lesson would otherwise open a lesson (or the start screen) over it.
+     */
+    private movedFrom: LessonSession | null = null;
+    /**
+     * The line at every lesson's start (v0.13 B6, M41-3), said right after the lesson's title, before the rest of its task: "Escape:
+     * menu. Z: repeat the task. N: next." with the pilot's names of those keys. Set while a lesson is entered, taken by its first line.
+     */
+    private keysLine: SpeechLine | null = null;
 
     constructor(page: LessonPage) {
         this.p = page;
-        this.tr = createTranslator(page.locale, DICTS);
         page.mode.bridge.afterRunner = () => this.drain();
         page.onEvent((e) => this.observe(e));
     }
@@ -186,14 +238,7 @@ export class LessonHost {
                 this.shownPrims = worldPrims(lw.world);
                 this.p.stage.show(this.shownPrims);
             }
-            const runner = createLessonRunner(lesson, {
-                locale: this.p.locale,
-                progress: savedProgress(this.p.store, lessonId),
-                sessionStartMs: Date.now(),
-                start,
-                floorY,
-                ...(objects ? { objects } : {})
-            });
+            const runner = createLessonRunner(lesson, runnerOptions(this.p, lessonId, { start, floorY, objects, returnTo: o.returnTo ?? null }, Date.now()));
             this.lesson = lesson;
             this.runner = runner;
             this.world = world;
@@ -210,11 +255,13 @@ export class LessonHost {
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
             this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
+            this.keysLine = { key: 'sonic.say.lessonKeys', params: { ...(this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS) } };
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
                 this.p.mode.enter({ lesson, runner, world, floorY });
             } finally {
                 this.cutSpeech = false;
+                this.keysLine = null;
             }
             if (scan) {
                 // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
@@ -308,17 +355,31 @@ export class LessonHost {
     private drain(): void {
         const run = this.runner;
         if (!run) return;
-        for (const a of run.takeActions()) this.act(a);
+        for (const a of run.takeActions()) this.act(a, run);
     }
 
-    private act(a: RunnerAction): void {
+    private act(a: RunnerAction, run: LessonSession): void {
         const mode = this.p.mode;
         switch (a.kind) {
-            case 'say':
+            case 'go':
+                // the pilot leaves this lesson (the runner is done: its event 'leave' is out). Once per runner, and not while another
+                // lesson is being opened; the other lesson opens once this runner has handed out the rest of its actions
+                if (this.movedFrom === run) break;
+                this.movedFrom = run;
+                queueMicrotask(() => {
+                    if (this.runner === run && !this.busy) void this.go(a.to);
+                });
+                break;
+            case 'say': {
                 void mode.bridge.say(a.line, a.interrupt || this.cutSpeech);
                 // only the first line cuts: the lines after it queue behind it, as the runner meant them to
                 this.cutSpeech = false;
+                // a lesson's first line is its title: the keys of the lesson menu, the task and next follow it
+                const keys = this.keysLine;
+                this.keysLine = null;
+                if (keys) void mode.bridge.say(keys, false);
                 break;
+            }
             case 'cue':
                 mode.bridge.engine?.cue(a.event);
                 break;
@@ -345,10 +406,10 @@ export class LessonHost {
         }
     }
 
-    /** The lesson is passed and its pass line has been said: the next lesson (or the menu at the end). */
+    /** The lesson is passed and its pass line has been said: the next lesson (or the menu at the end); not after a 'go' of its own. */
     private checkPassed(): void {
         const run = this.runner;
-        if (!run || run.phase !== 'passed' || this.busy) return;
+        if (!run || run.phase !== 'passed' || this.busy || this.movedFrom === run) return;
         const bridge = this.p.mode.bridge;
         if (bridge.speechQueue > 0) {
             this.passedAt = null;
@@ -361,17 +422,40 @@ export class LessonHost {
         void this.advance();
     }
 
-    /** After a pass: the lesson left for the glossary, else the next on the path, else the full ladder's, else the menu. */
+    /**
+     * After a pass, and 'go next': the lesson left for the glossary, else the lesson after this one on the pilot's path (the full
+     * ladder's when this one is off the path: lessonAfter, the lesson the runner's pass line names), else the menu.
+     */
     async advance(): Promise<void> {
         const id = this.lesson?.id;
         if (!id) return;
+        this.movedFrom = this.runner;
         if (this.returnTo) {
             const back = this.returnTo;
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        const next = nextLesson(id, this.p.path()) ?? nextLesson(id, 'full');
+        const next = lessonAfter(id, this.p.path());
         if (next && (await this.open(next.id))) return;
+        this.p.showMenu();
+    }
+
+    /**
+     * A runner's 'go' (W4): 'next' is advance(); 'previous' is the way back too (the lesson G left: B on a detour goes back where the
+     * pilot came from, not to the lesson before the glossary on the ladder), else the lesson before this one on the path, else the menu.
+     */
+    private async go(to: 'next' | 'previous'): Promise<void> {
+        if (to === 'next') return this.advance();
+        const id = this.lesson?.id;
+        if (!id) return;
+        this.movedFrom = this.runner;
+        if (this.returnTo) {
+            const back = this.returnTo;
+            this.returnTo = null;
+            if (await this.open(back)) return;
+        }
+        const before = lessonBefore(id, this.p.path());
+        if (before && (await this.open(before.id))) return;
         this.p.showMenu();
     }
 
@@ -387,17 +471,18 @@ export class LessonHost {
         return true;
     }
 
-    /** I: where the pilot is, as a line to say. */
+    /**
+     * I (v0.13 W6, M41-7): where the pilot is, as the runner says it: "Lesson 6 of 28: Hold your height. Step 2 of 2. Attempt 2.
+     * Counted 0 of 3." (its lesson and step only in a lesson without a world); "No lesson is running." when none runs.
+     */
     status(): SpeechLine {
         const run = this.runner;
-        const lesson = this.lesson;
-        if (!run || !lesson) return { key: 'status.none' };
-        return { key: 'status.lesson', params: { title: this.tr.text(lesson.title), n: Math.max(1, run.attempt) } };
+        return run ? run.statusLine() : { key: 'status.none' };
     }
 
-    /** Z: the last line again. */
-    repeat(): Promise<void> {
-        return this.p.mode.bridge.repeat();
+    /** Z (v0.13 W5): the step's whole task again, its named sounds three times, through the runner (recorded as the key 'repeat'). */
+    repeat(): void {
+        this.p.mode.repeat('KeyZ');
     }
 
     /** G: the sound glossary, and back to the lesson it interrupted. */

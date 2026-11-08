@@ -45,7 +45,11 @@ const finite = (xs: readonly number[]): boolean => xs.every((x) => Number.isFini
 /**
  * Takes every rendered frame's sample and keeps one in 30 Hz: the first sample, then the first one at or after each
  * due time, the due times 1/30 s apart however the frames fall (so 60 Hz, 144 Hz and an uneven display all average 30 Hz,
- * and a slow display keeps every sample).
+ * and a slow display keeps every sample). A sample with a touch is kept too, between two due ones, and moves no due time
+ * (v0.13, W11 of the sound package's merge review, its M1): the replay applies a recorded touch on the first frame at or
+ * after its time, and in a lesson that re-centres on a touch (the corridor, the tunnels) the frame after it is already at
+ * the respawn, so without the touch's own sample the replay derives the touch there, a metre or more off, and an honest
+ * recording reads FAIL.
  */
 export class FrameSampler {
     private due: number | null = null;
@@ -57,11 +61,14 @@ export class FrameSampler {
     /** `t`: the sample's time on the recording clock. Returns the frame to write, or null. */
     take(s: FlightSample, t: number, cues: readonly string[]): FlightFrame | null {
         this.seen++;
-        if (this.due !== null && t < this.due - EARLY_MS) return null;
+        const due = this.due === null || t >= this.due - EARLY_MS;
+        if (!due && !s.touched) return null;
         const frame = this.build(s, t, cues);
         if (frame === null) return null;
-        this.due = this.due === null ? t + INTERVAL_MS : this.due + INTERVAL_MS;
-        if (this.due <= t) this.due = t + INTERVAL_MS; // behind (a stall): start counting from here, never burst
+        if (due) {
+            this.due = this.due === null ? t + INTERVAL_MS : this.due + INTERVAL_MS;
+            if (this.due <= t) this.due = t + INTERVAL_MS; // behind (a stall): start counting from here, never burst
+        }
         this.lastT = frame.t;
         this.kept++;
         return frame;

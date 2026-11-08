@@ -21,7 +21,7 @@ import type { LessonWorld } from './lesson-world';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
 import { launchFailureLine, parseSonicParam } from './start-model';
-import { allProgress, currentLesson, setCurrentLesson } from './store';
+import { allProgress, currentLesson, resetProgress, setCurrentLesson } from './store';
 import { enableZoom } from './zoom';
 import { t } from '../i18n';
 
@@ -74,6 +74,8 @@ export function startSonic(d: SonicStartDeps): StartHandle {
         request,
         progress: () => allProgress(d.prefs),
         current: () => currentLesson(d.prefs),
+        // Reset my progress (v0.13, M41-2): the lessons' progress and the current lesson go, the sound settings stay
+        resetProgress: () => resetProgress(d.prefs),
         onStart: (id) => {
             // inside the press: the context and the speech unlock; the rest follows once the engine is up
             const started = setup.audio.start();

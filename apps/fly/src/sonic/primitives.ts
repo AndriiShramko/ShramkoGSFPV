@@ -13,15 +13,15 @@
 //            ring's radii, because the engine's 'torus' shape has fixed ones.
 //
 // The room is drawn as the boundary of the hollow the generators carve out of solid rock (a union of axis-aligned
-// boxes, `cavityBoxes`, mirroring src/world/generators.ts: the package does not hand them out, "Needs from
-// sonic-core" in docs/wip/v12-flight.md): each face of each box, less what other boxes cover, becomes a slab
-// SLAB_M thick standing OUTSIDE the hollow, so the free space is exactly the world's and the camera inside sees
-// the slab's inner face (no culling trick). A scan's walls are the scan itself: for a scan only the track's gates
+// boxes, `cavityBoxes`: the package's own `world.cavities` since v0.13, so every generator and version is drawn as
+// it is built, the tunnels of corridor version 2 included): each face of each box, less what other boxes cover,
+// becomes a slab SLAB_M thick standing OUTSIDE the hollow, so the free space is exactly the world's and the camera
+// inside sees the slab's inner face (no culling trick). A scan's walls are the scan itself: for a scan only the track's gates
 // are drawn (the objects of ScanSonicWorld, already through the scene transform).
 import { Color, Entity, Mesh, MeshInstance, Quat as PcQuat, StandardMaterial, TorusGeometry } from 'playcanvas';
 import type { AppBase, GraphicsDevice } from 'playcanvas';
 import { quatAxisAngle, quatMultiply, quatRotate } from '@shramko/sonic-fpv';
-import type { AnalyticWorldInfo, ObjectShape, Quat, ResolvedParams, SonicObject, Vec3 } from '@shramko/sonic-fpv';
+import type { AnalyticWorldInfo, CavityBox, ObjectShape, Quat, ResolvedParams, SonicObject, Vec3 } from '@shramko/sonic-fpv';
 
 /** Thickness of a wall, floor or ceiling slab, metres. */
 export const SLAB_M = 0.05;
@@ -119,115 +119,18 @@ export function objectPrims(objects: readonly SonicObject[]): Prim[] {
 
 // ------------------------------------------------------------------ the room
 
-/** One box of the hollow: centre and half extents, metres (src/world/parts.ts Box). */
-export interface Cavity {
-    readonly cx: number;
-    readonly cy: number;
-    readonly cz: number;
-    readonly hx: number;
-    readonly hy: number;
-    readonly hz: number;
-}
+/** One box of the hollow: centre and half extents, metres (the package's CavityBox). */
+export type Cavity = CavityBox;
 
 const num = (p: ResolvedParams, name: string): number => p[name] as number;
 
-/** The corridor's boxes, as src/world/generators.ts buildCorridor lays them out (same walk, same numbers). */
-function corridorCavities(p: ResolvedParams): Cavity[] {
-    const w = num(p, 'widthM'), h = num(p, 'heightM');
-    const layout = p['layout'] as string;
-    const seg = num(p, 'segmentM');
-    const rise = num(p, 'riseM');
-    const even = (k: number): number => (k % 2 === 0 ? k : k + 1);
-    const bends = even(num(p, 'bendCount'));
-    const jogs = even(num(p, 'jogCount'));
-    const boxes: Cavity[] = [];
-    let x = 0, y = 0, z = 0;
-    let hx = 0, hz = -1; // heading on the floor plane: -Z first
-    const forward = (len: number): void => {
-        const nx = x + hx * len, nz = z + hz * len;
-        const alongX = hx !== 0;
-        const half = len / 2 + w / 2;
-        boxes.push({ cx: (x + nx) / 2, cy: y + h / 2, cz: (z + nz) / 2, hx: alongX ? half : w / 2, hy: h / 2, hz: alongX ? w / 2 : half });
-        x = nx;
-        z = nz;
-    };
-    const turn = (dir: 'left' | 'right'): void => {
-        const [a, b] = dir === 'right' ? [-hz, hx] : [hz, -hx];
-        hx = a + 0;
-        hz = b + 0;
-    };
-    const jog = (dy: number): void => {
-        const lo = Math.min(y, y + dy), hi = Math.max(y, y + dy);
-        boxes.push({ cx: x, cy: (lo + hi + h) / 2, cz: z, hx: w / 2, hy: (hi - lo + h) / 2, hz: w / 2 });
-        y += dy;
-    };
-    const straight = (): void => forward(num(p, 'straightM'));
-    const obstacle = (): void => forward(2 * seg);
-    const bendSection = (): void => {
-        for (let i = 0; i < bends; i++) {
-            turn(i % 2 === 0 ? 'right' : 'left');
-            forward(seg);
-        }
-    };
-    const jogSection = (): void => {
-        forward(seg);
-        for (let i = 0; i < jogs; i++) {
-            jog(i % 2 === 0 ? rise : -rise);
-            forward(seg);
-        }
-    };
-    const mixedSection = (): void => {
-        for (let i = 0; i < bends; i++) {
-            turn(i % 2 === 0 ? 'right' : 'left');
-            forward(seg);
-        }
-    };
-    switch (layout) {
-        case 'straight':
-            straight();
-            break;
-        case 'obstacle':
-            forward(seg);
-            obstacle();
-            break;
-        case 'bends':
-            forward(seg);
-            bendSection();
-            break;
-        case 'jogs':
-            jogSection();
-            break;
-        default:
-            straight();
-            obstacle();
-            bendSection();
-            jogSection();
-            mixedSection();
-    }
-    return boxes;
-}
-
 /**
- * The hollow of a world as boxes, or null for the open world (a floor, no walls). The generators do not hand their
- * hollow out; this mirrors them, and the test in tools/bench/test/sonic-primitives.test.ts holds it to the world's
- * own signed distance function.
+ * The hollow of a world as boxes, or null for the open world (a floor, no walls): the package's own boxes
+ * (`AnalyticWorldInfo.cavities`, the shell exactly, objects not included), copied. The test in
+ * tools/bench/test/sonic-primitives.test.ts holds them to the world's own signed distance function.
  */
 export function cavityBoxes(world: AnalyticWorldInfo): Cavity[] | null {
-    const p = world.resolved;
-    switch (world.spec.generator) {
-        case 'open':
-            return null;
-        case 'corridor':
-            return corridorCavities(p);
-        case 'hall':
-        case 'pillars':
-        case 'rings':
-        case 'squares':
-        case 'cube-frames': {
-            const w = num(p, 'widthM'), d = num(p, 'depthM'), h = num(p, 'heightM');
-            return [{ cx: 0, cy: h / 2, cz: 0, hx: w / 2, hy: h / 2, hz: d / 2 }];
-        }
-    }
+    return world.cavities === null ? null : world.cavities.map((b) => ({ ...b }));
 }
 
 /** A rectangle of a face, in the face's two other axes (ascending). */

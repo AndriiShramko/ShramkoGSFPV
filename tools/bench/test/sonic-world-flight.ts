@@ -6,15 +6,28 @@ import type { ContactOut, ContactWorld } from '../../../packages/sim-core/src';
 import { MODE_CHANNEL } from '../../../packages/sim-core/src';
 import { AnalyticContactWorld, VoxelContactWorld, analyticCollision } from '../../../packages/collision/src';
 import type { AnalyticVoxelCollision } from '../../../packages/collision/src';
-import { getLesson } from '../../../packages/sonic-fpv/src';
+import { makeSpec } from '../../../packages/sonic-fpv/src';
 import type { AnalyticWorldInfo } from '../../../packages/sonic-fpv/src';
-import { lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
+import { buildLessonWorld, lessonSceneId } from '../../../apps/fly/src/sonic/lesson-world';
+import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import { ArmGate } from '../../../packages/input/src';
 import type { Profile } from '../../../packages/input/src';
 import { AutoArm } from '../../../apps/fly/src/play/assist';
 import { GameAssist } from '../../../apps/fly/src/play/game';
 import type { GameKeys } from '../../../apps/fly/src/play/game';
 import { params } from './game-loop';
+
+/**
+ * The hall these flights are flown in: v0.12's walls-hall, the hall generator's version 1 with its defaults (40 x 60 x 12 m),
+ * pinned so the flights below (4 m before the front wall at z = -30, the open middle) stay where they were measured. v0.13's
+ * walls-hall is a 10 x 12 m room (version 2), where they would start in the rock (lane v13-host A2, docs/wip/v13-host.md).
+ */
+export const COST_HALL_SPEC = makeSpec('hall', {}, 0, 1);
+let costHallWorld: LessonWorld | null = null;
+export function costHall(): LessonWorld {
+    costHallWorld ??= buildLessonWorld(COST_HALL_SPEC, lessonSceneId('walls-hall'));
+    return costHallWorld;
+}
 
 /** The world's walls as the session builds them, and the same walls with a different lookup (`cull` false: solidAt for every voxel, no cells). */
 export function walls(world: AnalyticWorldInfo, cull = true): AnalyticVoxelCollision {
@@ -55,7 +68,7 @@ export function askAll(world: ContactWorld, queries: readonly Query[]): { ms: nu
 }
 
 /**
- * 10 s in the default hall of walls-hall, flown the game scheme's way (GameAssist and AutoArm at 100 Hz, as
+ * 10 s in the hall of costHall() (v0.12's walls-hall), flown the game scheme's way (GameAssist and AutoArm at 100 Hz, as
  * game-loop.ts does), along and into the front wall. Only the flight model's own contact queries are timed:
  * the assist's ground below is read by a ray of the world (the voxel probe of play/ground.ts is measured on
  * its own in the test).
@@ -84,7 +97,7 @@ export const OPEN_FLIGHT = {
 };
 
 export function hallFlight(plan: { at: number[]; moves: { ms: number; k: GameKeys }[] }): { queries: Query[]; contacts: number } {
-    const lw = lessonWorldOf(getLesson('walls-hall'))!;
+    const lw = costHall();
     const timed = new Recorder(lw.builtin.contact!);
     const p = params('pavo20pro-3s', { crashOn: false });
     const sim = new Sim(p, timed);

@@ -55,7 +55,8 @@ export function createReplayView(control: ReplayControl, onTick?: (s: ReplayView
         setText(title, s.title);
         title.hidden = s.title === '';
         setText(status, s.stage === 'loading' ? t('sonicrec.replay.loading') : s.stage === 'error' ? (s.error ?? '') : (s.check?.summary ?? ''));
-        status.classList.toggle('bad', s.stage === 'error' || (s.check !== null && !s.check.ok));
+        // a recording of an older build is not a fault of the flight (W10): only an error and a FAIL are marked
+        status.classList.toggle('bad', s.stage === 'error' || (s.check !== null && s.check.verdict === 'fail'));
         const notesKey = s.notes.join('\n');
         if (notesKey !== notesShown) {
             notesShown = notesKey;

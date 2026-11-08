@@ -6,6 +6,9 @@
 //      bar's and the pause menu's Share do the same there (review R3), and show the link in a field (shareLesson).
 //   K  (help.keys) says the mode's keys, each with the key this page has for it (the sound package's own help lines, and the
 //      page's line for L): a blind pilot cannot read the key list of the pause menu. Outside the mode K opens the "How to fly" card.
+//      v0.13 (lane v13-host B3, B6): Escape (the lesson menu) and the keys that move a lesson first, N, B, Z, then I; Z's line says
+//      the task again (the runner's repeat), B's goes back one step (the page's own lines: the package's help.repeat still says
+//      "the last line").
 import type { LessonDef, SonicPrefs, SpeechLine } from '@shramko/sonic-fpv';
 import { linkSound } from '@gsfpv/scenes/sonic-link';
 import type { SonicLink } from '@gsfpv/scenes/sonic-link';
@@ -73,23 +76,31 @@ export async function shareLesson(d: ShareDeps): Promise<boolean> {
     return copied;
 }
 
-/** The mode's keys K says, in this order, each line with the key of its action (help.* are the sound package's lines). */
-export const KEY_HELP: readonly (readonly [line: string, action: ActionId])[] = [
+/**
+ * The mode's keys K says, in this order, each line with the key of its action (help.* are the sound package's lines, sonic.say.* the
+ * page's); `aria`: only that key of the action's binding is named (Escape and P share the pause's binding).
+ */
+export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?: string])[] = [
+    ['sonic.say.helpMenu', 'pause.toggle', 'Escape'],
+    ['help.next', 'scene.next'],
+    ['sonic.say.helpPrevious', 'feedback.open'],
+    ['sonic.say.helpRepeat', 'sonic.repeat'],
+    ['help.status', 'sonic.status'],
+    ['help.glossary', 'sonic.glossary'],
+    ['help.reset', 'respawn.start'],
     ['help.record', 'sonic.record'],
     ['help.send', 'sonic.send'],
-    ['help.status', 'sonic.status'],
-    ['help.repeat', 'sonic.repeat'],
-    ['help.glossary', 'sonic.glossary'],
-    ['sonic.say.helpShare', 'share.open'],
-    ['help.reset', 'respawn.start'],
-    ['help.next', 'scene.next']
+    ['sonic.say.helpShare', 'share.open']
 ];
 
-/** The lines K says: the intro, one per key with the page's cap (an action with no key on the page is left out), the digits. */
-export function keyHelpLines(cap: (action: ActionId) => string): SpeechLine[] {
+/**
+ * The lines K says: the intro, one per key with the page's name for it (`cap`: an action with no key on the page is left out), the
+ * digits.
+ */
+export function keyHelpLines(cap: (action: ActionId, aria?: string) => string): SpeechLine[] {
     const lines: SpeechLine[] = [{ key: 'help.intro' }];
-    for (const [key, action] of KEY_HELP) {
-        const c = cap(action);
+    for (const [key, action, aria] of KEY_HELP) {
+        const c = cap(action, aria);
         if (c !== '') lines.push({ key, params: { key: c } });
     }
     lines.push({ key: 'help.digits' });

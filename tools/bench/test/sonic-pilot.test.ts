@@ -9,13 +9,15 @@
 //  - the keyboard and the touch sticks reach it as intents and are capped alike;
 //  - with no lesson, nothing changes: the mode the radio's switch picks flies, the channels are the source's.
 // Controls reads document and performance.now: the document is stubbed, the clock is the rig's.
+// v0.13 (lane v13-host A2, docs/wip/v13-host.md "Changed tests"): walls-hall is a 10 x 12 m room, so the caps (5 s of full stick,
+// 15 m at 3 m/s) are flown in an open world with walls-hall's start and assists; the rest still flies walls-hall.
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MODE_CHANNEL, S, Sim } from '../../../packages/sim-core/src';
 import type { RawFrame, Profile } from '../../../packages/input/src';
-import { getLesson } from '../../../packages/sonic-fpv/src';
+import { getLesson, makeSpec } from '../../../packages/sonic-fpv/src';
 import type { LessonAssists } from '../../../packages/sonic-fpv/src';
 import { FakeStorage } from '../../../packages/prefs/test/helpers';
-import { lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
+import { buildLessonWorld, lessonSceneId, lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
 import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import { params } from './game-loop';
 
@@ -48,6 +50,8 @@ const TX16S: Profile = {
 const LESSON = getLesson('walls-hall');
 const CAPS = { speed: LESSON.assists.maxSpeedMps!, climb: LESSON.assists.maxClimbMps!, yaw: LESSON.assists.maxYawDps! };
 let world: LessonWorld;
+/** A floor and no walls, with walls-hall's start (as the page flies a lesson without walls): where the caps are flown. */
+let openWorld: LessonWorld;
 
 /** The page around the model: the Sim at 1 kHz, the radio's frames every 4 ms through Controls, a frame tick every 16 ms. */
 class Rig {
@@ -61,8 +65,8 @@ class Rig {
     /** what the rig measured since the last clear() */
     rec = { maxSpeed: 0, maxClimb: 0, maxYawDps: 0, minY: Infinity, maxY: -Infinity, armedAt: -1 };
 
-    constructor(assists: LessonAssists | null) {
-        this.sim = new Sim(params('pavo20pro-3s', { crashOn: false }), world.builtin.contact!);
+    constructor(assists: LessonAssists | null, readonly w: LessonWorld = world) {
+        this.sim = new Sim(params('pavo20pro-3s', { crashOn: false }), w.builtin.contact!);
         this.sim.reset(0, 1.5, 0, 0, { platform: true });
         const session = { get sim() { return rig.sim; }, paused: false, input: (ch: ArrayLike<number>) => { this.pending = Float32Array.from(ch); }, beforeStep: null };
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -74,7 +78,7 @@ class Rig {
     }
 
     lesson(assists: LessonAssists): void {
-        const pilot = new LP.LessonPilot({ sim: () => this.sim, paused: () => false, ground: (sim) => LP.rayClearance(world.collision, sim) }, assists);
+        const pilot = new LP.LessonPilot({ sim: () => this.sim, paused: () => false, ground: (sim) => LP.rayClearance(this.w.collision, sim) }, assists);
         this.pilot = pilot;
         this.controls.assist = (ch, out, t) => pilot.apply(ch, out, t);
         this.controls.forcedMode = LP.lessonMode(assists);
@@ -118,13 +122,14 @@ class Rig {
 
 beforeEach(() => {
     world = world ?? lessonWorldOf(LESSON)!;
+    openWorld = openWorld ?? buildLessonWorld(makeSpec('open', { startHeightM: LESSON.start.pos[1] }), lessonSceneId(LESSON.id), LESSON.start);
     doc.visibilityState = 'visible';
 });
 afterEach(() => { vi.restoreAllMocks(); });
 
-/** A rig whose page clock is its own (Controls stamps arrivals with performance.now). */
-function rig(assists: LessonAssists | null): Rig {
-    const r = new Rig(assists);
+/** A rig whose page clock is its own (Controls stamps arrivals with performance.now); `w`: the world flown (walls-hall's own). */
+function rig(assists: LessonAssists | null, w?: LessonWorld): Rig {
+    const r = new Rig(assists, w);
     vi.spyOn(performance, 'now').mockImplementation(() => r.t);
     return r;
 }
@@ -158,8 +163,8 @@ describe('the motors start with no switch; with the hook null the gate still ref
 });
 
 describe('full sticks stay within the lesson\'s caps + 10 % and reach them; the height holds', () => {
-    it(`walls-hall caps: forward ${CAPS.speed} m/s with the height held within 0.3 m, climb ${CAPS.climb} m/s, yaw ${CAPS.yaw} deg/s`, () => {
-        const r = rig(LESSON.assists);
+    it(`walls-hall caps: forward ${CAPS.speed} m/s with the height held within 0.3 m, climb ${CAPS.climb} m/s, yaw ${CAPS.yaw} deg/s (in the open)`, () => {
+        const r = rig(LESSON.assists, openWorld);
         r.sticks.thr = 0;
         r.sticks.pitch = 1;
         r.run(1500); // armed and away
@@ -197,7 +202,7 @@ describe('full sticks stay within the lesson\'s caps + 10 % and reach them; the 
     });
 
     it('control: the same pilot with the speed cap left open flies past it (the cap is what holds the speed)', () => {
-        const r = rig({ ...LESSON.assists, maxSpeedMps: null });
+        const r = rig({ ...LESSON.assists, maxSpeedMps: null }, openWorld);
         r.sticks.thr = 0;
         r.sticks.pitch = 1;
         r.run(4000);

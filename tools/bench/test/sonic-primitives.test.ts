@@ -1,7 +1,8 @@
 // v0.12 Fly by Sound, lane v12-flight step 6 (docs/wip/v12-plan.md 2.5 and 4.2): the helper's view of a lesson world,
 // apps/fly/src/sonic/primitives.ts, held to the world the sound reads.
-//  - the hollow the primitives draw (cavityBoxes, a mirror of the generators) is the world's own: random points in the
-//    world's bounds are free exactly where solidAt says (control: a corridor mirrored left for right is caught);
+//  - the hollow the primitives draw (cavityBoxes, the package's world.cavities since v0.13) is the world's own: random
+//    points in the world's bounds are free exactly where solidAt says (control: a corridor mirrored left for right is
+//    caught);
 //  - every exposed face is a real wall: a point just inside the hollow is free, one just beyond is solid;
 //  - every wall the sound's rays can hit has a slab on it: rays from free points, their first hit that is not an
 //    object lies on a drawn face (control: one face left out is caught);
@@ -189,12 +190,16 @@ describe('every face is a real wall and every wall has its slab', () => {
         });
     }
 
-    /** Rays from free points in random directions: the first hit that is not an object must lie on a face's slab. */
+    /**
+     * Rays from free points in random directions: the first hit that is not an object must lie on a face's slab. The
+     * origins are drawn in the world's bounds until 1500 are free; a tunnel's bounds are mostly rock (tunnel-long's are
+     * 1 % free air at 0.3 m from a wall), so up to 200 000 draws are allowed to find them.
+     */
     function uncovered(world: AnalyticWorldInfo, faces: readonly Face[], seed: number): { hits: number; missed: number } {
         const r = rng(seed);
         const { min, max } = world.bounds;
         let hits = 0, missed = 0;
-        for (let i = 0, tried = 0; tried < 1500 && i < 20000; i++) {
+        for (let i = 0, tried = 0; tried < 1500 && i < 200000; i++) {
             const o: Vec3 = [min[0] + r() * (max[0] - min[0]), min[1] + r() * (max[1] - min[1]), min[2] + r() * (max[2] - min[2])];
             if (world.sdf(o[0], o[1], o[2]) < 0.3) continue;
             tried++;
@@ -257,18 +262,23 @@ describe('the open world is a floor (and a ceiling)', () => {
 // ------------------------------------------------------------------ objects
 
 describe('an object\'s primitives lie on its surface', () => {
-    /** Rays toward every object from free points; each object hit must land on that object's primitives. */
+    /**
+     * Rays toward every object from free points; each object hit must land on that object's primitives. The origins are
+     * drawn 4 to 10 m from an object until 4000 are free: in the small rooms of v0.13 (10 x 12.5 m) most such points lie in
+     * the walls, so up to 40 000 are drawn (4000 draws gave rings-first 73 hits).
+     */
     function offSurface(world: AnalyticWorldInfo, prims: readonly Prim[], seed: number, tol = 2e-3): { hits: number; off: number; worst: number } {
         const r = rng(seed);
         let hits = 0, off = 0, worst = 0;
         const objects = world.objects().filter((o) => o.solid);
-        for (let i = 0; i < 4000 && objects.length > 0; i++) {
+        for (let i = 0, free = 0; free < 4000 && i < 40000 && objects.length > 0; i++) {
             const o = objects[Math.floor(r() * objects.length)] as SonicObject;
             // an origin near the object, a direction toward a point around it
             const radius = 4 + 6 * r();
             const a = r() * 2 * Math.PI, e = (r() - 0.5) * 1.2;
             const from: Vec3 = [o.pos[0] + radius * Math.cos(e) * Math.sin(a), o.pos[1] + radius * Math.sin(e), o.pos[2] - radius * Math.cos(e) * Math.cos(a)];
             if (world.sdf(from[0], from[1], from[2]) < 0.3) continue;
+            free++;
             const aim: Vec3 = [o.pos[0] + (r() - 0.5) * 2, o.pos[1] + (r() - 0.5) * 2, o.pos[2] + (r() - 0.5) * 2];
             const len = Math.hypot(aim[0] - from[0], aim[1] - from[1], aim[2] - from[2]);
             const d: Vec3 = [(aim[0] - from[0]) / len, (aim[1] - from[1]) / len, (aim[2] - from[2]) / len];

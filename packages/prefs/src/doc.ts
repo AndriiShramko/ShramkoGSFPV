@@ -39,6 +39,11 @@ export interface SonicLessonProgress {
     bestTimeMs: number | null;
     /** ISO 8601 */
     lastAt: string;
+    /**
+     * v0.13 (sonic-fpv LessonProgress.skipped): the pilot went on to the next lesson without passing this one (N, the lesson menu's
+     * Next lesson, or a lesson that let him go on after its failures); the start screen shows it. Absent in a v0.12 document.
+     */
+    skipped?: boolean;
 }
 /**
  * Fly by Sound (v0.12, docs/wip/v12-plan.md section 1): the pilot's own sound settings as one opaque document (the
@@ -208,7 +213,10 @@ function validVersions(v: unknown, dropped?: DroppedKeys): Record<string, number
 
 const whole = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0;
 
-/** One lesson's progress, or null: the id is the key's, every count a whole number, the time null or non-negative. */
+/**
+ * One lesson's progress, or null: the id is the key's, every count a whole number, the time null or non-negative. `skipped` (v0.13)
+ * is kept when it is true or false, and left out otherwise (absent in a v0.12 document, or not a boolean: the lesson stays, without it).
+ */
 export function validSonicProgress(id: string, v: unknown): SonicLessonProgress | null {
     const o = obj(v);
     if (!o || !SONIC_LESSON_ID.test(id) || (o.lessonId !== undefined && o.lessonId !== id)) return null;
@@ -217,7 +225,9 @@ export function validSonicProgress(id: string, v: unknown): SonicLessonProgress 
     if (time === undefined) return null;
     const at = typeof o.lastAt === 'string' && o.lastAt.length > 0 && o.lastAt.length <= 40 && Number.isFinite(Date.parse(o.lastAt)) ? o.lastAt : null;
     if (at === null) return null;
-    return { lessonId: id, version: o.version, attempts: o.attempts, successes: o.successes, blocksPassed: o.blocksPassed, passed: o.passed, bestTimeMs: time, lastAt: at };
+    const out: SonicLessonProgress = { lessonId: id, version: o.version, attempts: o.attempts, successes: o.successes, blocksPassed: o.blocksPassed, passed: o.passed, bestTimeMs: time, lastAt: at };
+    if (typeof o.skipped === 'boolean') out.skipped = o.skipped;
+    return out;
 }
 
 /** The sound settings document as a plain object of bounded size, else null (the sound package's reader repairs the rest). */

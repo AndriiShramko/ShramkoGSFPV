@@ -11,8 +11,11 @@
 //     one-lesson check of the same bytes fails;
 //   - the player on a fake audio clock: each lesson's world shown when its first frame is due, its layers, every frame once, one voice.
 // The page (both worlds drawn in turn, the voice measured within 0.2 s) is tools/bench/src/sonic-int-page.ts replay.
+// v0.13 (lane v13-host A2, docs/wip/v13-host.md "Changed tests"): module 0's sounds are 'repeat-cue' plays (the rig's answerer reads
+// them); rings-first's lesson sounds agree on every frame and only its safety layer differs, each kind of difference named below
+// (W19); the floor control hovers within ALWAYS_HEARD_M (M41-13: a still craft 1.5 m up hears no floor).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CuePlanner, buildManifest, checkSession, createAnalyticWorld, defaultPrefs, getBuiltinTheme, getLesson, packSession, readPackage } from '../../../packages/sonic-fpv/src';
+import { ALWAYS_HEARD_M, CuePlanner, DEFAULT_SAMPLER_CONFIG, DEFAULT_TOLERANCES, buildManifest, checkSession, compareCues, createAnalyticWorld, defaultPrefs, getBuiltinTheme, getLesson, packSession, readPackage } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, FlightSample, LessonLayers, ReplaySetup, SessionEvent, SessionManifest, SessionPackage, SonicEngine, SonicRuntime, SpeechLine } from '../../../packages/sonic-fpv/src';
 import { lessonViewWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import { SessionClock } from '../../../apps/fly/src/sonic-session/clock';
@@ -146,7 +149,70 @@ interface Flight {
     /** page time spent in the second lesson before the recording stops, ms (default 6000) */
     readonly after?: number;
 }
-const RINGS: Flight = { a: 'rings-first', b: 'rings-line', pilot: throughTheGate, reopen: true };
+/**
+ * The rings pilot listens to the task, then flies through the gate (v0.13 stage B, B6). Since v0.13 a flight in the task is put back at
+ * the first attempt's start (the package's review R4), so what is flown there belongs to no attempt; and since stage B every lesson's
+ * start says one more line (the lesson menu's keys, about 3.4 s), in which a pilot flying from the open flew on into the front wall
+ * again and again: touch pings and wall flips of the safety layer the replay derives otherwise (W19's kinds, "Needs from the package"),
+ * over and over in a part of the flight that is no lesson's. Between attempts the pilot still flies on into the wall after each ring.
+ */
+const listenThenFly: Control = (r) => (r.host.runner?.phase === 'intro' ? null : throughTheGate(r));
+const RINGS: Flight = { a: 'rings-first', b: 'rings-line', pilot: listenThenFly, reopen: true };
+
+/**
+ * The frames of a replayed lesson whose cues differ from the recording outside the safety layer, by the comparer's slack (a
+ * recorded frame agrees when the derived cues of a frame within the slack have the same ids). The lesson's own sounds (the
+ * target, the height, the shape, the room) must agree on every frame. The safety layer is held by the shares only, and each way
+ * it differs is known (W19, measured on rings-first at the gitlink 16c01a1: 29 of 2225 frames by kind): its hazard voices change
+ * sector, at a corner even floor for wall, with the rate the sampler is fed at (about 60 Hz live, 30 Hz in the replay: 9 frames);
+ * the open-way chime holds on from a sample the recording does not keep (10 frames); and the host's touch ping (SonicMode, at
+ * every touched sample, the task and the time between attempts included) is not derived by the replay at all (11 frames;
+ * "Needs from the package" in docs/wip/v13-host.md).
+ */
+function beyondSafety(frames: readonly FlightFrame[], derived: readonly (readonly string[])[]): number[] {
+    const key = (ids: readonly string[]): string => [...new Set(ids.filter((id) => !id.startsWith('safety.')))].sort().join('|');
+    const rec = frames.map((f) => key(f.c));
+    const der = derived.map(key);
+    const n = Math.min(rec.length, der.length);
+    const slack = DEFAULT_TOLERANCES.cueSlackFrames;
+    const out: number[] = [];
+    for (let i = 0; i < n; i++) {
+        let ok = false;
+        for (let k = Math.max(0, i - slack); k <= Math.min(n - 1, i + slack) && !ok; k++) ok = rec[k] === der[i];
+        if (!ok) out.push(i);
+    }
+    return out;
+}
+
+/**
+ * Every frame whose cues differ by kind (a cue id without its sector: the comparer's classShare, with its slack), with the kinds that
+ * differ there and the cause W19 names for them: the host's touch ping ('safety.touch', which the replay never derives), the open-way
+ * chime's hold ('safety.free', held on from a sample the recording does not keep), a hazard voice taken for another kind at a corner
+ * or an edge (the floor, a wall, the ceiling, an object: the sampler fed at another rate), or none of these ('other': a cause not
+ * pinned down, a play's edge among them).
+ */
+export type KindCause = 'touch' | 'free' | 'hazard' | 'other';
+function kindDifferences(frames: readonly FlightFrame[], derived: readonly (readonly string[])[]): { index: number; kinds: string[]; cause: KindCause }[] {
+    const classes = (ids: readonly string[]): string[] => [...new Set(ids.map((id) => id.split(':')[0] as string))].sort();
+    const rec = frames.map((f) => classes(f.c));
+    const der = derived.map(classes);
+    const n = Math.min(rec.length, der.length);
+    const slack = DEFAULT_TOLERANCES.cueSlackFrames;
+    const out: { index: number; kinds: string[]; cause: KindCause }[] = [];
+    for (let i = 0; i < n; i++) {
+        const d = (der[i] as string[]).join('|');
+        let ok = false;
+        for (let k = Math.max(0, i - slack); k <= Math.min(n - 1, i + slack) && !ok; k++) ok = (rec[k] as string[]).join('|') === d;
+        if (ok) continue;
+        const a = new Set(rec[i]);
+        const b = new Set(der[i]);
+        const kinds = [...new Set([...a, ...b])].filter((x) => a.has(x) !== b.has(x)).sort();
+        const hazard = (x: string): boolean => /^safety\.(wall|floor|ceiling|object|obstacle)/.test(x);
+        const cause: KindCause = kinds.includes('safety.touch') ? 'touch' : kinds.includes('safety.free') ? 'free' : kinds.length > 0 && kinds.every(hazard) ? 'hazard' : 'other';
+        out.push({ index: i, kinds, cause });
+    }
+    return out;
+}
 
 /** Module 0: a digit for each question from the side the sound came from (sonic-lessons.test.ts's pilot: left 1, right 2, behind 2). */
 const earsPilot: Control = (r) => {
@@ -222,7 +288,7 @@ describe('two lessons flown through the host and recorded as one package replay 
         made = null;
     });
 
-    it('rings-first to its pass, then rings-line opened by the host: every event of each lesson re-derived, the cues by kind on 99 % of the frames; control: the one-lesson check fails', async () => {
+    it('rings-first to its pass, then rings-line opened by the host: every event of each lesson re-derived, the lesson\'s own cues on every frame, the safety layer\'s by kind on 98 % once a lesson has settled; controls: the one-lesson check fails, a lesson cue missing is caught', async () => {
         made = await recordTwoLessons();
         const { pkg } = made;
         const opens = pkg.events.filter((e) => e.kind === 'lesson' && e.what === 'open');
@@ -234,22 +300,58 @@ describe('two lessons flown through the host and recorded as one package replay 
         const out: ReplayOutcome = await checkPackage(pkg);
         expect(out.error).toBeNull();
         expect(out.segments.map((s) => s.segment.lessonId)).toEqual(['rings-first', 'rings-line']);
+        const derived: (readonly (readonly string[])[])[] = [];
         for (const s of out.segments) {
             const c = s.check!;
             const cues = { frames: c.cues.frames, share: c.cues.share, classShare: c.cues.classShare };
             expect(c.events.diffs, s.segment.lessonId ?? '').toEqual([]);
             expect(c.events.matched).toBe(c.events.recorded);
+            // the lesson's own sounds agree on every frame (beyondSafety says how the safety layer differs, and why)
+            const seg = s.segment;
+            const d = checkSession({ manifest: seg.manifest, frames: seg.frames, events: seg.events }).result.cues;
+            derived.push(d);
+            expect(beyondSafety(seg.frames, d), seg.lessonId ?? '').toEqual([]);
+            // The first moments of a lesson the host opened are left out of the shares: the live engine still holds the hazard
+            // sectors of what it heard before (the sampler keeps every active sector holdMs on when the clock goes back, and
+            // nothing resets it at a new lesson: "Needs from the package"), while the replay starts each lesson fresh. At 16c01a1
+            // rings-line's first 9 frames differ so (the ceiling voiced with the craft at rest 2.2 m under it), 95 % by kind in all.
+            const settle = seg.lead ? 0 : seg.frames.findIndex((f) => f.t >= seg.fromT + DEFAULT_SAMPLER_CONFIG.holdMs + 100);
+            const from = settle < 0 ? seg.frames.length : settle;
+            const settled = compareCues(seg.frames.slice(from), d.slice(from));
+            expect(from).toBeLessThan(seg.frames.length / 10);
             // the sector of a hazard voice flips with the rate the sampler is fed at (compare.ts): the rig renders a frame every 16 ms
-            // and the recorder keeps them on a 33.3 ms grid, so 32 and 48 ms apart; the kind of every cue agrees (the page, at a steady
-            // 60 Hz, is measured by tools/bench/src/sonic-int-page.ts replay)
-            expect(c.cues.classShare, `${s.segment.lessonId}: ${JSON.stringify(cues)}`).toBeGreaterThanOrEqual(0.99);
-            expect(c.cues.share, `${s.segment.lessonId}: ${JSON.stringify(cues)}`).toBeGreaterThanOrEqual(0.9);
+            // and the recorder keeps them on a 33.3 ms grid, so 32 and 48 ms apart (the page, at a steady 60 Hz, is measured by
+            // tools/bench/src/sonic-int-page.ts replay). In v0.13's 10 x 12.5 m room (micro-drone scale, M41-18) the walls are heard
+            // on most frames, so more voices flip: rings-first by kind 98.7 %, by sector 85.8 % at 16c01a1 (v0.12 held 99 % and 90 %);
+            // with the pilot listening to the task (stage B, listenThenFly), measured in stage C: 99.3 % by kind (16 of 2357 settled frames)
+            // and 96.8 % by sector; rings-line 100 % and 100 % once settled
+            const shares = { ...cues, settled: { from, classShare: settled.classShare, share: settled.share } };
+            expect(settled.classShare, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.98);
+            expect(settled.share, `${s.segment.lessonId}: ${JSON.stringify(shares)}`).toBeGreaterThanOrEqual(0.85);
+            // W19 pinned down (stage C): every settled frame that differs by kind, exactly the frames the comparer counts, has one of the
+            // causes kindDifferences names; none is a play's edge or anything else (the lesson's own cues, every play of a named sound
+            // among them, agree on every frame: beyondSafety above). rings-first with this flight: 16 frames, the host's touch ping 5 and
+            // the open-way chime's hold 11 (stage A's flight: 29 of 2225, touch 11, chime 10, hazard kinds 9); W9 changes none of them
+            // (it is what the player says, not what the replay derives). rings-line: none once settled.
+            const differ = kindDifferences(seg.frames, d).filter((x) => x.index >= from);
+            const causes: Record<KindCause, number> = { touch: 0, free: 0, hazard: 0, other: 0 };
+            for (const x of differ) causes[x.cause]++;
+            expect(differ.length, `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toBe(Math.round((1 - settled.classShare) * (seg.frames.length - from)));
+            expect(differ.filter((x) => x.cause === 'other'), `${s.segment.lessonId}: ${JSON.stringify(causes)}`).toEqual([]);
         }
+        // control of W19's causes: a lesson cue a frame short (a play's edge) and a reset cue a frame early are causes of none of them
+        const edge = derived[0]!.map((ids, i) => (i === 1000 ? ids.filter((id) => !id.startsWith('height.')) : i === 1500 ? [...ids, 'safety.reset'] : ids));
+        const planted = kindDifferences(out.segments[0]!.segment.frames, edge).filter((x) => x.cause === 'other').map((x) => x.index);
+        expect(planted).toEqual([1000, 1500]);
+        // control: a lesson sound missing from the replay in one frame of fifty is caught by the check above
+        const a = out.segments[0]!.segment;
+        const missing = derived[0]!.map((ids, i) => (i % 50 === 0 ? ids.filter((id) => !id.startsWith('height.')) : ids));
+        expect(beyondSafety(a.frames, missing).length).toBeGreaterThan(0);
         expect(out.check!.events.recorded).toBe(out.segments.reduce((a, s) => a + s.check!.events.recorded, 0));
         expect(out.check!.events.diffs).toEqual([]);
         expect(out.check!.cues.frames).toBe(pkg.frames.length);
         expect(out.segments[1]!.setup.world?.id).not.toBe(out.segments[0]!.setup.world?.id); // two worlds
-        expect(out.check!.events.byKind.gate.matched).toBeGreaterThanOrEqual(8); // rings-first: eight of ten through its ring
+        expect(out.check!.events.byKind.gate.matched).toBeGreaterThanOrEqual(getLesson('rings-first').pass.required); // rings-first: r through its ring
         // control: the same bytes through the package's one-lesson check (what the replay did before this step) do not re-derive
         const old = checkSession(pkg);
         expect(old.check.events.diffs.length).toBeGreaterThan(0);
@@ -320,7 +422,9 @@ describe('module 0 (the ears lessons) has no world for the sound, so its recordi
         const lesson = getLesson('ears-glossary');
         const heard = (world: ReturnType<typeof lessonViewWorld>): string[] => {
             const planner = new CuePlanner({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), layers: lesson.layers });
-            const sample: FlightSample = { t: 1000, tick: 1, pos: [0, 1.5, 0], vel: [0, 0, 0], quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: true, touched: false, paused: false };
+            // within ALWAYS_HEARD_M of the floor: since M41-13 a still craft hears a surface by its time to contact, and 1.5 m up
+            // (where the page's floor puts the ears lessons' craft) it hears none; this near, a surface is always heard
+            const sample: FlightSample = { t: 1000, tick: 1, pos: [0, ALWAYS_HEARD_M, 0], vel: [0, 0, 0], quat: [1, 0, 0, 0], rate: [0, 0, 0], yawDeg: 0, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: true, touched: false, paused: false };
             let ids: string[] = [];
             for (let k = 0; k < 10; k++) ids = planner.plan({ sample: { ...sample, t: 1000 + k * 33, tick: k }, world, target: null, floorY: 0 }).cues.map((c) => c.id);
             return ids;

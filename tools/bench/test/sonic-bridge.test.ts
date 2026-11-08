@@ -8,10 +8,12 @@
 //  - the markers: a lesson recorded through the bridge passes the sound package's replay check (checkSession);
 //    controls: the same recording without the speech.end markers, or without the reset and next keys, fails;
 //  - when the frames stop the engine gets no layer, and say() passes interrupt and reports the empty queue.
+// v0.13 (lane v13-host A2, docs/wip/v13-host.md "Changed tests"): walls-hall is a small room (10 x 12 m), so every place is
+// taken from its world's landmarks, and N is pressed in the task (N while flying leaves the lesson, M41-6).
 import { afterEach, describe, expect, it } from 'vitest';
 import { S, attitude } from '../../../packages/sim-core/src';
 import type { Sim, SimEvent } from '../../../packages/sim-core/src';
-import { CuePlanner, DICTS, SPEECH_END_KEY, buildManifest, checkSession, createLessonRunner, createTranslator, defaultPrefs, getBuiltinTheme, getLesson } from '../../../packages/sonic-fpv/src';
+import { CuePlanner, DICTS, SPEECH_END_KEY, buildManifest, checkSession, createAnalyticWorld, createLessonRunner, createTranslator, defaultPrefs, getBuiltinTheme, getLesson } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, FlightSample, LessonDef, LessonLayers, LessonSession, RunnerAction, SessionEvent, SonicWorld, SpeechLine, Vec3 } from '../../../packages/sonic-fpv/src';
 import { FlightSession } from '../../../apps/fly/src/session';
 import type { SessionOptions } from '../../../apps/fly/src/session';
@@ -20,6 +22,10 @@ import type { BridgeEngine, BridgeRunner, BridgeSession } from '../../../apps/fl
 import { lessonWorldOf } from '../../../apps/fly/src/sonic/lesson-world';
 
 const DEG = Math.PI / 180;
+
+/** walls-hall's world (the room the bridge tests fly) and its named points: the start and the middles of its walls, at the start height. */
+const HALL = createAnalyticWorld((getLesson('walls-hall').world as Extract<LessonDef['world'], { kind: 'analytic' }>).spec);
+const mark = (id: string): Vec3 => HALL.landmarks.find((l) => l.id === id)!.pos;
 
 /** A model-like object with what the bridge reads (s, tick, ch) and a runner slot with its events. */
 class FakeFlight implements BridgeSession {
@@ -176,11 +182,13 @@ describe('touches: contacts after 0.5 s of quiet', () => {
         const { bridge, events } = bridgeOn(clock);
         bridge.world = lw.world;
         bridge.start(f);
-        f.place([0, 0.06, -10], [0, -0.5, 0], 0); // on the floor
+        // on the floor, halfway from the start to the front wall
+        const floor: Vec3 = [(mark('start')[0] + mark('wall-front')[0]) / 2, 0.06, (mark('start')[2] + mark('wall-front')[2]) / 2];
+        f.place(floor, [0, -0.5, 0], 0);
         f.stepTo(1000, [1000]);
         clock.t = 1000;
         bridge.frame();
-        expect(events).toEqual([{ t: 1000, kind: 'touch', material: 'floor', speed: 0.5, pos: [0, 0.06, -10] }]);
+        expect(events).toEqual([{ t: 1000, kind: 'touch', material: 'floor', speed: 0.5, pos: floor }]);
         bridge.runner = createLessonRunner(getLesson('walls-hall'));
         f.stepTo(2000, [2000]);
         expect(bridge.frame()!.touched).toBe(true);
@@ -497,22 +505,29 @@ class BridgeHost {
     }
 }
 
-/** walls-hall flown through the bridge with the pilot's keys: next, a reset to the checkpoint, a long reset, and a contact. */
+/**
+ * walls-hall flown through the bridge with the pilot's keys: next (in the task: N while flying leaves the lesson since v0.13),
+ * a stop a metre from the front wall, a contact, a reset to the checkpoint, a long reset; the places are the world's landmarks.
+ */
 function wallsHall(speechEnds = true): BridgeHost {
     const h = new BridgeHost(getLesson('walls-hall'), speechEnds);
+    const start = mark('start'), front = mark('wall-front'), back = mark('wall-back');
+    const stop: Vec3 = [front[0], front[1], front[2] + 1];
+    const behind: Vec3 = [start[0], start[1], (start[2] + back[2]) / 2];
     h.begin();
-    h.until(() => h.runner.phase === 'flying', 120);
-    h.flyTo([0, 1.5, -27.5], 3);
-    h.hold(1.2);
+    h.hold(1.5);
     h.next();
+    h.until(() => h.runner.phase === 'flying', 120);
+    h.flyTo(stop, 3);
+    h.hold(1.2);
     h.until(() => h.runner.phase === 'flying', 20);
-    h.flyTo([0, 1.5, -20], 3);
+    h.flyTo(start, 3);
     h.touch();
-    h.flyTo([0, 1.5, -24], 3);
+    h.flyTo(behind, 3);
     h.resetTo('checkpoint');
     h.hold(0.5);
     h.resetTo('start');
-    h.flyTo([0, 1.5, -27.5], 3);
+    h.flyTo(stop, 3);
     h.hold(4.5);
     return h;
 }
@@ -570,7 +585,8 @@ describe('with the real FlightSession in a lesson world', () => {
         const r = s.runner;
         const t0 = r.sim.tick;
         for (let i = 0; i < 4000; i++) r.enqueue({ tUs: (t0 + i) * 1000, ch: [0, i < 400 ? 0 : 0.35, i < 300 ? -1 : 0.25, 0, i < 100 ? -1 : 1, -1, 0, 0] });
-        r.sim.reset(0, 1.5, -28.5, 0);
+        const front = mark('wall-front');
+        r.sim.reset(front[0], front[1], front[2] + 1.5, 0);
         for (let t = t0 + 16; t <= t0 + 4000; t += 16) {
             r.advanceTo(t * 1000);
             clock.t += 16;

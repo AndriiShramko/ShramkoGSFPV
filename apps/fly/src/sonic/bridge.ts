@@ -12,9 +12,16 @@
 //            itself by the runner's rule (material by six axis rays, the sample's speed and position).
 //   events   every SessionEvent of the mode goes out as ctx.events 'sonicEvent', in order: the runner's (its
 //            begin() writes 'lesson open'), and the host's markers the replay takes as inputs: 'key' events
-//            with the actions reset.checkpoint, reset.start and next, and a 'speech' event with the key
-//            speech.end whenever the host's speech queue runs empty and it calls runner.spoken(t). The flight
-//            pausing and going on are 'session' pause and resume; the recorder writes start, end, recovered.
+//            with the actions reset.checkpoint, reset.start, next, and since v0.13 previous, repeat and
+//            next-lesson (B, Z, the lesson menu), each written before the runner's call, and a 'speech'
+//            event with the key speech.end whenever the host's speech queue runs empty and it calls
+//            runner.spoken(t). The flight pausing and going on are 'session' pause and resume; the recorder
+//            writes start, end, recovered.
+//   pause    (v0.13 W8) where the bridge writes the session's pause and resume it calls runner.pause(t) and
+//            runner.resume(t) at the same t (the replay takes them from those events): the lesson's clocks stand
+//            while the flight waits; no speech.end and no runner.spoken while paused (the queue holds the lesson
+//            menu's lines then), one after the resume when the queue is empty. The page tells the bridge at once
+//            (syncPause on its 'pause' event), not only at the next frame.
 //   silence  when the frames stop (the flight pauses, a replay drives the view, the mode stops) the engine
 //            gets setLayers with no layer on, and the lesson's layers again when they go on; speech goes
 //            through say(), which passes `interrupt` and keeps the speech queue that spoken() reports.
@@ -267,10 +274,7 @@ export class SonicBridge {
         if (!sim) return null;
         const t = this.now();
         const paused = ses.paused || ses.replaying;
-        if (paused !== this.pausedNow) {
-            this.pausedNow = paused;
-            this.event({ t, kind: 'session', what: paused ? 'pause' : 'resume' });
-        }
+        this.pauseState(paused, t);
         if (paused) this.silence();
         else this.sound();
         const s = sim.s;
@@ -299,6 +303,41 @@ export class SonicBridge {
             this.event({ t, kind: 'touch', material: touchMaterial(this.world, sample.pos), speed, pos: sample.pos });
         }
         return sample;
+    }
+
+    /**
+     * The flight paused or went on (v0.13 W8, the package's review R8): the 'session' event, and the lesson runner with it at the same
+     * t, runner.pause(t) or runner.resume(t) (the replay takes the pause from that event). While paused the lesson's clocks stand (a
+     * question asked before the lesson menu does not time out in it, an attempt's time limit waits, a pause in a band is no time
+     * held) and the runner hears no end of speech (the queue holds the menu's lines then); after resume it hears it once, at once
+     * when the queue is already empty (else when it runs empty).
+     */
+    private pauseState(paused: boolean, t: number): void {
+        if (paused === this.pausedNow) return;
+        this.pausedNow = paused;
+        this.event({ t, kind: 'session', what: paused ? 'pause' : 'resume' });
+        const run = this.runner;
+        if (!run) return;
+        this.events(paused ? run.pause(t) : run.resume(t));
+        this.afterRunner?.();
+        if (!paused && this.speaking === 0) this.spoken();
+    }
+
+    /**
+     * The flight's pause now, without waiting for the next frame (the page's 'pause' event: the lesson menu, the pause menu, K's
+     * help hold the flight and speak at once, and the runner must be paused before their first line ends).
+     */
+    syncPause(): void {
+        const ses = this.session;
+        if (!this.on || this.inPlayback || !ses) return;
+        const paused = ses.paused || ses.replaying;
+        this.pauseState(paused, this.now());
+        if (paused) this.silence();
+    }
+
+    /** The flight is paused for the mode (the runner waits with it). */
+    get paused(): boolean {
+        return this.pausedNow;
     }
 
     /** The frames stop (also a hidden tab, the page says so): the engine gets no layer, once. */
@@ -331,10 +370,19 @@ export class SonicBridge {
         for (const e of list) this.event(e);
     }
 
-    /** A lesson begins now: the runner's begin() events go out (the first is 'lesson open', the replay's start). */
+    /**
+     * A lesson begins now: the runner's begin() events go out (the first is 'lesson open', the replay's start). A lesson that begins
+     * while the flight is paused (a recording started under its consent dialog opens the lesson again) waits from its start: the
+     * pause is written and given to the runner at once, its resume comes with the flight's.
+     */
     begin(run: LessonSession): void {
         this.runner = run;
-        this.events(run.begin(this.now()));
+        const t = this.now();
+        this.events(run.begin(t));
+        if (this.pausedNow) {
+            this.event({ t, kind: 'session', what: 'pause' });
+            this.events(run.pause(t));
+        }
         this.afterRunner?.();
     }
 
@@ -354,14 +402,39 @@ export class SonicBridge {
         return { pose: r.pose };
     }
 
-    /** N: the key event the replay reads, then the runner's next step. */
-    next(code: string): void {
-        this.key(code, REPLAY_KEY_ACTIONS.next);
-        if (this.runner) {
-            this.events(this.runner.next(this.now()));
-            this.afterRunner?.();
-        }
+    /**
+     * A key that moves the lesson (N, B, Z, the lesson menu's items): the key event with its REPLAY_KEY_ACTIONS action first (the
+     * replay takes the key from it), then the runner's call at the same t, its events out, its actions taken.
+     */
+    private keyCall(code: string, action: string, call: (run: LessonSession, t: number) => readonly SessionEvent[]): void {
+        const t = this.now();
+        this.event({ t, kind: 'key', code, action });
+        const run = this.runner;
+        if (!run) return;
+        this.events(call(run, t));
+        this.afterRunner?.();
     }
+
+    /** N: the next step; from the lesson's last step the next lesson (the runner's 'go'). */
+    next(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.next, (run, t) => run.next(t));
+    }
+
+    /** B (v0.13): the step before; from the first step the lesson before; while flying the task again, the attempt dropped. */
+    previous(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.previous, (run, t) => run.previous(t));
+    }
+
+    /** Z (v0.13): the step's whole task again, its named sounds three times (while flying the attempt waits for it). */
+    repeatTask(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.repeat, (run, t) => run.repeat(t));
+    }
+
+    /** The lesson menu's Next lesson: at once, this lesson marked skipped unless it was passed. */
+    nextLesson(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.nextLesson, (run, t) => run.nextLesson(t));
+    }
+
 
     /**
      * Speaks a line through the engine, `interrupt` passed on; the queue of lines is counted, and when it runs
@@ -439,9 +512,12 @@ export class SonicBridge {
         this.event({ t: this.now(), kind: 'speech', key, text });
     }
 
-    /** The host's speech queue ran empty: the speech.end marker, then what the runner does on it. */
+    /**
+     * The host's speech queue ran empty: the speech.end marker, then what the runner does on it. Not while the flight is paused (W8):
+     * the queue then held the lesson menu's (or K's, or I's) lines, not the lesson's; the runner hears it after the resume.
+     */
     spoken(): void {
-        if (!this.on) return;
+        if (!this.on || this.pausedNow) return;
         const t = this.now();
         this.event({ t, kind: 'speech', key: SPEECH_END_KEY, text: '' });
         if (this.runner) {

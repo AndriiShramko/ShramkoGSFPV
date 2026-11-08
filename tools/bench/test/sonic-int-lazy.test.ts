@@ -178,7 +178,7 @@ describe('the feature shim', () => {
         setSonicInstaller(null);
     });
 
-    it('a page without an entry installs no mode (no installer is called); only the pause menu\'s link to /sound/, which its teardown takes out (v12-optin)', () => {
+    it('a page without an entry installs no mode (no installer is called); only the pause menu\'s link to the mode\'s start screen (v12-optin; ?sonic=start since v0.13), which its teardown takes out', () => {
         const items: { id: string }[] = [];
         const ctx = { menu: { add: (it: { id: string }) => (items.push(it), () => void items.splice(items.indexOf(it), 1)) } } as unknown as FlightContext;
         let called = 0;

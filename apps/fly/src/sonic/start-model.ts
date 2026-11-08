@@ -3,11 +3,23 @@
 // Node tests hold it; the DOM is start-screen.ts. Every lesson can be opened directly (the ladder only recommends), so
 // the model lists all of them whatever the path; the path decides only which lesson the Start buttons open and which
 // lessons are marked as being on it.
+// v0.13 (lane v13-host C2, the owner's M41-2; W7): a lesson left without passing is 'skipped' (the runner's progress.skipped, which the
+// prefs keep since v0.13), and every lesson has its place, "Lesson N of 28", counted as the runner's view counts it (on the pilot's path
+// when the lesson is on it, else on the full one), so the screen and the lesson say the same number.
 import { SHIPPED_LESSON_IDS, getLesson, isShippedLesson, lessonPaths } from '@shramko/sonic-fpv';
 import type { LessonDef, LessonProgress, ModuleId, SpeechLine } from '@shramko/sonic-fpv';
 
-/** Where the pilot stands in a lesson. */
-export type LessonState = 'new' | 'current' | 'passed';
+/** Where the pilot stands in a lesson: passed, in progress, left without passing (v0.13), or new. */
+export type LessonState = 'new' | 'current' | 'skipped' | 'passed';
+
+/** What of a lesson's saved progress decides its state. */
+export type ProgressOf = Pick<LessonProgress, 'passed' | 'attempts' | 'skipped'>;
+
+/** A lesson's place: lesson `n` of `total`. */
+export interface LessonPlace {
+    readonly n: number;
+    readonly total: number;
+}
 
 export interface LessonRow {
     readonly id: string;
@@ -15,6 +27,8 @@ export interface LessonRow {
     readonly module: ModuleId;
     readonly fastPath: boolean;
     readonly state: LessonState;
+    /** "Lesson N of 28" (lessonPlace) */
+    readonly place: LessonPlace;
     /** the lesson has no analytic world (module 7 flies a scan) */
     readonly scan: boolean;
     /** the timed lesson's best time, ms, or null (none yet, or not a timed lesson) */
@@ -35,21 +49,38 @@ export interface StartModel {
     readonly continueId: string | null;
 }
 
-/** The lessons in ladder order (the order of the shipped files), each once. */
+/** The lessons in ladder order (each lesson's `order`, its place on the full path: 28 lessons since v0.13), each once. */
 export function ladder(): LessonDef[] {
     return SHIPPED_LESSON_IDS.map((id) => getLesson(id)).sort((a, b) => a.order - b.order);
 }
 
-/** A lesson's state: passed, in progress (begun, or the one the pilot left off on), or new. */
-export function stateOf(id: string, progress: Readonly<Record<string, Pick<LessonProgress, 'passed' | 'attempts'>>>, current: string | null): LessonState {
+/**
+ * A lesson's state: passed; in progress when it is the one the pilot left off on; skipped when he went on without passing it (N, the
+ * lesson menu's Next lesson, or a lesson that let him go on after its failures: the runner keeps it so until it is passed); in progress
+ * when begun; else new.
+ */
+export function stateOf(id: string, progress: Readonly<Record<string, ProgressOf>>, current: string | null): LessonState {
     const p = progress[id];
     if (p?.passed) return 'passed';
-    if (id === current || (p !== undefined && p.attempts > 0)) return 'current';
+    if (id === current) return 'current';
+    if (p?.skipped === true) return 'skipped';
+    if (p !== undefined && p.attempts > 0) return 'current';
     return 'new';
 }
 
+/**
+ * A lesson's place, "Lesson N of 28": on the pilot's path when the lesson is on it, else on the full path (the rule of the runner's
+ * view, LessonView.lessonIndex and lessonCount, which I and the progress panel say).
+ */
+export function lessonPlace(id: string, path: 'full' | 'fast'): LessonPlace {
+    const paths = lessonPaths();
+    const list = paths[path].includes(id) ? paths[path] : paths.full;
+    const i = list.indexOf(id);
+    return i < 0 ? { n: 1, total: 1 } : { n: i + 1, total: list.length };
+}
+
 /** The lesson to continue with on `path`: the one the pilot left off on if it is not passed, else the first of the path not passed; null before any lesson was begun. */
-export function continueLesson(progress: Readonly<Record<string, Pick<LessonProgress, 'passed' | 'attempts'>>>, current: string | null, path: 'full' | 'fast'): string | null {
+export function continueLesson(progress: Readonly<Record<string, ProgressOf>>, current: string | null, path: 'full' | 'fast'): string | null {
     const begun = Object.values(progress).some((p) => p.attempts > 0 || p.passed) || current !== null;
     if (!begun) return null;
     if (current !== null && isShippedLesson(current) && !progress[current]?.passed) return current;
@@ -57,12 +88,12 @@ export function continueLesson(progress: Readonly<Record<string, Pick<LessonProg
     return list.find((id) => !progress[id]?.passed) ?? list[list.length - 1] ?? null;
 }
 
-export function buildModel(progress: Readonly<Record<string, Pick<LessonProgress, 'passed' | 'attempts'> & { readonly bestTimeMs?: number | null }>>, current: string | null, path: 'full' | 'fast'): StartModel {
+export function buildModel(progress: Readonly<Record<string, ProgressOf & { readonly bestTimeMs?: number | null }>>, current: string | null, path: 'full' | 'fast'): StartModel {
     const byModule = new Map<ModuleId, LessonRow[]>();
     for (const l of ladder()) {
         const timed = l.goals.some((g) => g.kind === 'timed-course');
         const best = progress[l.id]?.bestTimeMs;
-        const row: LessonRow = { id: l.id, title: l.title, module: l.module, fastPath: l.fastPath, state: stateOf(l.id, progress, current), scan: l.world.kind === 'scan', bestTimeMs: timed && typeof best === 'number' ? best : null };
+        const row: LessonRow = { id: l.id, title: l.title, module: l.module, fastPath: l.fastPath, state: stateOf(l.id, progress, current), place: lessonPlace(l.id, path), scan: l.world.kind === 'scan', bestTimeMs: timed && typeof best === 'number' ? best : null };
         const list = byModule.get(l.module) ?? [];
         list.push(row);
         byModule.set(l.module, list);
