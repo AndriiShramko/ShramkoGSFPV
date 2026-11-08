@@ -37,6 +37,8 @@ proofs.
     action, W3 and W4). Controls broken once and restored: the rig's answerer without `repeat-cue` (module 0 fails), the
     move-speed pilot released 4 m past the zone's middle (fails), the wrong-height pilot at the ring's own height (the
     control fails: it passes the ring), the progress test run to the pass (fails: passed).
+  - [x] `sonic-bridge`: 15 of 15. Its controls (the recording without its speech.end markers, without its keys) still fail
+    the replay; the places of v0.12's hall (z = -10, -20 to -28.5) are rock in the new room, which is what failed before.
 - [ ] A3 (W11) `FrameSampler.take` keeps every sample with `touched`
 - [ ] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
 - [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
@@ -69,6 +71,9 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-lessons` "a restart is not a touch" | its wall control waits until the lesson flies, then flies sideways into the side wall | the first attempt begins at the start (a flight in the task is put back); straight on, the ring's plane ends every attempt before the front wall, and between attempts nothing is a touch |
 | `sonic-lessons` "progress is saved at every attempt" | runs to one counted attempt short of the pass (r - 1) | three counted attempts pass the lesson now |
 | `sonic-lessons` "G opens the sound glossary", "review I3" | skipped, marked for stage B | the glossary ends in a 'go' action the host does not take yet (W3, W4) |
+| `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
+| `sonic-bridge` "walls-hall with N, R short, R long and a contact" and its two controls | N in the task; the flight from the landmarks: a stop 1 m before the front wall's middle, a contact on the way back to the start, R short past it, R long, the stop again | N while flying leaves the lesson (M41-6); v0.12's flight (z -20 to -27.5) was beyond the room |
+| `sonic-bridge` "a flight into the hall's wall" | the craft reset 1.5 m before the front wall's middle (the landmark) | was z = -28.5, rock now |
 
 ## Needs from the package
 
