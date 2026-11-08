@@ -3,7 +3,7 @@
 Plan and item ids (M41-n): `docs/wip/v13-plan.md`. The owner's words: the vault brief, message 41. The vault's v0.13
 status note (message 41) carries the same table for the owner.
 
-## Where things stand (2026-11-08, 17:35 UTC)
+## Where things stand (2026-11-08, 21:05 UTC)
 
 - Live: v0.12 (release of 047ee57). Nothing of v0.13 is live.
 - `v03-lead`: v12-optin merged at c2b1e54, all gates pass on it. Not pushed.
@@ -14,7 +14,8 @@ status note (message 41) carries the same table for the owner.
   voice token; three zips are synthetic session fixtures. No key, no machine path but `GPU_LOCK`'s default.
 - The simulator's gitlink `packages/sonic-fpv` is still 1eea4d5 on `v03-lead`; v13-host moves it.
 - Weekly use: 56 % when v0.13 started, 60 % when s13-worlds started, 66 % after wave 1, 70 % when v13-host started.
-  No new lane above 70 %, ceiling 80 %.
+  No new lane above 70 %, ceiling 80 %. Owner, message 42: up to 85 % is fine. 79 % at 21:00 UTC, so the rest runs lean:
+  the lead merges and runs the gates and release scripts; agents only for the integration seams, one review and its fixes.
 
 | Lane | Repo | Worktree | Base | State | Workflow run |
 |---|---|---|---|---|---|
@@ -23,9 +24,10 @@ status note (message 41) carries the same table for the owner.
 | s13-sound | sound | `C:/dev/sonic-s13-sound` | `main` 7d4b4b9 | done: steps 1-10, review 41952b7 (2 blockers, 6 majors, 8 minors, none refuted), fixes; head 3c73658; 674 tests, 9 proofs, listen 8 of 8 | wf_662547d0-d8a, finished |
 | s13-worlds | sound | `C:/dev/sonic-s13-worlds` | s13-lessons eee530b | done: steps 1-8, review 030f7d0 (1 blocker, 9 majors, 7 minors, none refuted), fixes; head 067278f; 879 tests (7 merged cases skip until track-end exists); M4, M6 and R5 are the lead's merge items (lane doc "For the lead's merge") | wf_6179959f-d4a, finished |
 | s13-merge | sound | `C:/dev/sonic-s13-merge` | `main` 7d4b4b9 | done: merges, merge items, review ab7f591, fixes; head 16c01a1 = `main`, pushed | wf_15bb2572-e79, wf_586638f5-472, finished |
-| v13-host | simulator | `C:/dev/gsfpv-v13-host` | `v03-lead` 093fbbd | stage A done at aac4261 (gates exit 0; W16: tunnel-long's collider 16 % over its 10 s bench plan, 0.039 ms a frame, to v13-look; two needs from the package: a touch ping the replay derives, an engine reset at a new lesson); running: stage A (gitlink to 16c01a1 with `world.cavities`, W20 tests, W11, W12, W18, W16 measured), B (N/B/Z/I, go, pause, progress panel, Escape spoken menu, speech through the engine), C (pause item target, start screen, spoken settings with W13, W9/W10/W19, page proofs); lane doc `docs/wip/v13-host.md` | wf_9e36e296-b1f, running |
+| v13-host | simulator | `C:/dev/gsfpv-v13-host` | `v03-lead` 093fbbd | done, head 6c164a0: A (gitlink 16c01a1 with `world.cavities`, W20 tests, W11, W12, W18, W16 measured), B (runner options W3, go W4, N/B/Z key events W5, I status and progress panel W6, pause W8, Escape spoken lesson menu M41-3, every line through `engine.say` W15), C (pause item to `/{lang}/fly/?sonic=start` M41-1, start screen Continue/course/states/Reset M41-2 W7, spoken list and settings with motor volume and target note M41-4 W13, older lesson version replay W9 W19, verdict W10); gates exit 0 (3894 tests), page proofs sonic-v13-page 22 of 22, sonic-optin-page 46 of 46; no independent review yet (the integrated review covers it) | wf_9e36e296-b1f, finished |
 | v13-look | simulator | `C:/dev/gsfpv-v13-look` | v13-host stage A aac4261 | running (owner, message 42: in this release): L1 M41-19 bounce and slide, W17 page flight, M41-23 look, frame cost with W16; L2 M41-24 attitude display, M41-25 sound panel (W14), prefs, page proofs; lane doc `docs/wip/v13-look.md` | wf_ec1080e5-d22, running |
 | s13-elev | sound | `C:/dev/sonic-s13-elev` | `main` 16c01a1 | running: E1 direction for up and down, E2 voices, review, fixes | wf_0149f60b-cbc, running |
+| v13-int | simulator | `C:/dev/gsfpv-v13-int` | `v03-lead` cb67b0d | v13-host merged at cc2a3ab (clean); waits for v13-look and the new sound `main` | lead |
 
 ## Decisions taken
 
@@ -72,6 +74,12 @@ status note (message 41) carries the same table for the owner.
   installer is removed. s13-elev E2 measures and round-trips the package's lines; the integrated review hears the
   simulator's K help and menu lines in es, pl and ru.
 - In a lesson B is "previous step" (M41-6); the feedback form stays in the pause menu and in the ordinary simulator.
+
+- Needs from the package (v13-host lane doc, "Needs from the package" 1-4). In v0.13: only 2, `engine.reset()` that
+  `LessonHost.open` calls (the next lesson otherwise voices the previous lesson's hazard sectors for about 0.3 s, which a
+  blind pilot hears as a false ceiling or wall). Deferred to v0.14, recorded here: 1 the touch ping's single owner that the
+  replay derives, 3 a derived cue stamped at its input's own time (both replay fidelity only, the verdict already passes),
+  4 `menu.lesson.skipped` in the package (the simulator has its own `sonic.lessons.skipped`).
 
 ## Open from v12-optin (needs people or voices this machine does not have)
 
