@@ -39,6 +39,8 @@ proofs.
     control fails: it passes the ring), the progress test run to the pass (fails: passed).
   - [x] `sonic-bridge`: 15 of 15. Its controls (the recording without its speech.end markers, without its keys) still fail
     the replay; the places of v0.12's hall (z = -10, -20 to -28.5) are rock in the new room, which is what failed before.
+  - [x] `sonic-int-reader`: 4 of 4. Control broken once and restored: the task test on the engine's own waits (no
+    sequential queue) ends the first part at its longest line (5472 ms, the sum 6844 ms) and fails.
 - [ ] A3 (W11) `FrameSampler.take` keeps every sample with `touched`
 - [ ] A4 (W12, M41-16) the mode's motor into `engine.motorInput ?? auxInput`, on by default
 - [ ] A5 (W18) the start screen lists the 28 lessons by order and the fast path of 8
@@ -74,6 +76,7 @@ Each changed expectation takes its value from the package; each kept control sti
 | `sonic-bridge` "the bridge writes the touch event by the runner's rule" | the craft on the floor halfway from the start to the front wall (the world's landmarks) | z = -10 is rock in the 10 x 12 m room: the touch read 'wall' |
 | `sonic-bridge` "walls-hall with N, R short, R long and a contact" and its two controls | N in the task; the flight from the landmarks: a stop 1 m before the front wall's middle, a contact on the way back to the start, R short past it, R long, the stop again | N while flying leaves the lesson (M41-6); v0.12's flight (z -20 to -27.5) was beyond the room |
 | `sonic-bridge` "a flight into the hall's wall" | the craft reset 1.5 m before the front wall's middle (the landmark) | was z = -28.5, rock now |
+| `sonic-int-reader` "the intro", now "the task" | every part of the task up to the first attempt: each part's end of speech at the sum of its lines (within 40 ms), as many parts as the lesson's intro gives (a part ends at a line that names a sound), the attempt after the last part | the task is said in parts since M41-5: the first part has 2 lines, the test wanted 4 or more |
 
 ## Needs from the package
 
