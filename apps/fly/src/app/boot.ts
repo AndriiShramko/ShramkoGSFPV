@@ -55,6 +55,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
             prefs,
             locale,
             raw: sonicParam,
+            // the rest of a shared lesson link (@gsfpv/scenes sonic-link.ts: its scene and sound settings), read by the lazy chunk
+            query: q,
             // the mode's chunk; one that does not load is a lesson that did not open (said and shown by the start screen)
             prepare: async () => {
                 setSonicInstaller(await mode());

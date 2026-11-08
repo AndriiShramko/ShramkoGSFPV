@@ -6,9 +6,14 @@
 // The press that starts a lesson is the user activation Web Audio and speechSynthesis wait for: `onStart` makes the
 // AudioContext in that call (SonicAudio.start), then the page's flight is launched. The flight itself (fly()) is
 // the page's own (app/boot.ts passes `launch`), so this file has no edge to the flight shell and Node tests reach it.
+//
+// A shared lesson link (v12-optin, @gsfpv/scenes sonic-link.ts: L in a lesson copies one) opens here like any ?sonic= page: the
+// start screen offers its lesson first and nothing starts by itself. Its sound settings are in force for this visit only
+// (SonicSetup.setVisit), and the start screen says which, with a button to keep them.
 import type { Locale } from '@shramko/sonic-fpv';
 import { DICTS, createTranslator, getLesson } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
+import { parseSonicLink } from '@gsfpv/scenes/sonic-link';
 import { Captions } from './captions';
 import { SonicSetup } from './entry';
 import { lessonFlightWorld } from './lesson-world';
@@ -36,6 +41,8 @@ export interface SonicStartDeps {
     readonly locale: Locale;
     /** the raw ?sonic= value */
     readonly raw: string | null;
+    /** the page's query (app/env.ts q): a shared lesson link's sound settings, read for this visit */
+    readonly query?: { get(name: string): string | null };
     /** the page's flight (fly()) on the lesson's world; called after the press has made the AudioContext */
     readonly launch: (r: LaunchRequest) => Promise<void>;
     /**
@@ -57,6 +64,9 @@ export function startSonic(d: SonicStartDeps): StartHandle {
     document.title = tr.say('app.name');
     const request = parseSonicParam(d.raw);
     const setup = new SonicSetup(d.prefs, d.locale, new Captions());
+    // a shared link's sound for this visit (never saved unless kept); its scene and size are the lesson's own, which decides
+    const link = d.query ? parseSonicLink(d.query) : null;
+    if (link) setup.setVisit(link.sound);
     const screen: StartScreen = new StartScreen({
         setup,
         locale: d.locale,

@@ -20,7 +20,7 @@ import { BUILTIN_THEME_IDS, DICTS, LAYER_IDS, PREFS_LIMITS, createTranslator } f
 import type { FlightSample, LayerId, Locale, SonicPrefs, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 import { h } from '../ui/dom';
 import { t } from '../i18n';
-import type { SonicSetup } from './entry';
+import type { SonicSetup, VisitPrefs } from './entry';
 import { buildModel } from './start-model';
 import type { LessonRow, SonicRequest, StartModel } from './start-model';
 import './sonic.css';
@@ -154,7 +154,27 @@ export class StartScreen {
         });
         const unknown = req.kind === 'unknown' ? h('p', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-unknown' }, t('sonic.start.unknown', { id: req.raw })) : null;
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
-        return this.section('start', t('sonic.start.heading'), unknown, h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), h('fieldset', { class: 'sonic-fieldset' }, h('legend', {}, t('sonic.path.legend')), ...radios));
+        return this.section('start', t('sonic.start.heading'), unknown, this.visitNote(this.d.setup.visit), h('div', { class: 'sonic-actions', role: 'group', 'aria-label': t('sonic.start.heading') }, ...buttons, back), h('fieldset', { class: 'sonic-fieldset' }, h('legend', {}, t('sonic.path.legend')), ...radios));
+    }
+
+    /**
+     * The sound settings a shared link set for this visit (v12-optin; SonicSetup.setVisit), read before the Start buttons: each with the
+     * name the settings below give it, the note that the pilot's own saved settings are not changed, and a button that keeps them.
+     */
+    private visitNote(v: VisitPrefs): HTMLElement | null {
+        const parts: string[] = [];
+        if (v.theme !== undefined) parts.push(`${this.key('menu.setting.theme')}: ${this.key(`theme.${v.theme}.name`)}`);
+        if (v.calm !== undefined) parts.push(`${this.key('menu.setting.calm')}: ${this.key(v.calm ? 'menu.value.on' : 'menu.value.off')}`);
+        if (v.heightPolarity !== undefined) parts.push(`${this.key('menu.setting.polarity')}: ${this.key(`menu.value.${v.heightPolarity}`)}`);
+        if (v.listenerFrame !== undefined) parts.push(`${this.key('menu.setting.frame')}: ${this.key(`menu.value.${v.listenerFrame}`)}`);
+        if (!parts.length) return null;
+        const keep = h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-visit-keep', onclick: () => {
+            this.d.setup.keepVisit();
+            this.render();
+            this.say(t('sonic.link.kept'));
+            this.sections.get('start')?.querySelector<HTMLElement>('h2')?.focus();
+        } }, t('sonic.link.keep'));
+        return h('div', { class: 'sonic-note', role: 'note', 'data-testid': 'sonic-visit' }, h('p', {}, t('sonic.link.settings', { list: parts.join('; ') })), keep);
     }
 
     private headphonesSection(): HTMLElement {
@@ -246,14 +266,16 @@ export class StartScreen {
 
     /** A setting changed: applied and saved; a refusal is said and the screen is drawn from what is really set. */
     private change(patch: Partial<SonicPrefs>): void {
+        const visit = Object.keys(this.d.setup.visit);
         const r = this.d.setup.update(patch);
         if (!r.ok) {
             this.say(r.reasons.join('. '));
             this.render();
             return;
         }
-        // the path decides which lesson the Start buttons open: the buttons follow it, the focus stays where it is
-        if (patch.path !== undefined) this.refreshStart();
+        // the path decides which lesson the Start buttons open: the buttons follow it, the focus stays where it is; a setting a shared
+        // link set is the pilot's own once he changes it, so the note of the link loses it
+        if (patch.path !== undefined || Object.keys(patch).some((k) => visit.includes(k))) this.refreshStart();
     }
 
     private refreshStart(): void {

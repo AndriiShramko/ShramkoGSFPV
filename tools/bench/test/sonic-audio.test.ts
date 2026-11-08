@@ -223,6 +223,46 @@ describe('SonicSetup: the pilot\'s sound settings', () => {
         expect(captionMode({ ...defaultPrefs(), selfVoice: false, captions: false })).toEqual({ visible: false, live: true });
         expect(captionMode({ ...defaultPrefs(), selfVoice: true, captions: false })).toEqual({ visible: false, live: false });
     });
+
+    // v12-optin: the sound settings of a shared lesson link are in force for the visit and never saved unless kept
+    it('setVisit(): a link\'s settings play at once (engine) and are not saved; the pilot\'s own settings stay in the store', () => {
+        const { host, s, engines } = setup({ theme: 'race', speechRate: 1.5 });
+        const stored = JSON.stringify(host.collection('sonic'));
+        expect(s.setVisit({ theme: 'clear', calm: true, heightPolarity: 'up-lower', listenerFrame: 'body' })).toEqual({ theme: 'clear', calm: true, heightPolarity: 'up-lower', listenerFrame: 'body' });
+        expect(s.prefs).toMatchObject({ theme: 'clear', calm: true, heightPolarity: 'up-lower', listenerFrame: 'body', speechRate: 1.5 });
+        expect(engines[0]!.theme!.id).toBe('clear');
+        expect(engines[0]!.prefs).toMatchObject({ calm: true, heightPolarity: 'up-lower' });
+        expect(JSON.stringify(host.collection('sonic'))).toBe(stored);
+        expect(loadSonicPrefs(host).theme).toBe('race');
+        expect(s.visit).toEqual({ theme: 'clear', calm: true, heightPolarity: 'up-lower', listenerFrame: 'body' });
+    });
+
+    it('a setting the pilot changes leaves the visit and is saved; keepVisit() saves the rest; the others stay his own', () => {
+        const { host, s } = setup({ speechRate: 1.5 });
+        s.setVisit({ theme: 'clear', calm: true });
+        expect(s.update({ calm: false })).toEqual({ ok: true });
+        expect(s.visit).toEqual({ theme: 'clear' });
+        expect(s.prefs).toMatchObject({ theme: 'clear', calm: false });
+        expect(loadSonicPrefs(host)).toMatchObject({ theme: 'soft', calm: false, speechRate: 1.5 });
+        // an unrelated change keeps the visit as it is and saves no setting of it
+        expect(s.update({ speechRate: 1.25 })).toEqual({ ok: true });
+        expect(s.visit).toEqual({ theme: 'clear' });
+        expect(loadSonicPrefs(host).theme).toBe('soft');
+        s.keepVisit();
+        expect(s.visit).toEqual({});
+        expect(loadSonicPrefs(host)).toMatchObject({ theme: 'clear', calm: false, speechRate: 1.25 });
+        expect(s.prefs).toEqual(loadSonicPrefs(host));
+    });
+
+    it('control: a theme this release does not have, or a bad value, is left out on its own; the rest of the link stands', () => {
+        const { s, engines } = setup();
+        expect(s.setVisit({ theme: 'disco', calm: true })).toEqual({ calm: true });
+        expect(s.prefs.theme).toBe('soft');
+        expect(engines[0]!.theme!.id).toBe('soft');
+        expect(s.setVisit({ heightPolarity: 'sideways' as never, listenerFrame: 'body' })).toEqual({ listenerFrame: 'body' });
+        expect(s.prefs.heightPolarity).toBe('up-higher');
+        expect(s.prefs.calm).toBe(false); // the earlier visit is replaced, not added to
+    });
 });
 
 const captionModeOf = captionMode;

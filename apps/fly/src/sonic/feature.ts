@@ -13,13 +13,18 @@
 // Keys the mode takes: R short and long, N and [ ] (mode.ts); the digits answer a question asked (0 skips it), Z says the
 // last line again, I says where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder
 // adds), G opens the sound glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature
-// sonic-session). The pause menu gains "Fly by Sound: lessons and settings", the start screen over the flight.
+// sonic-session). The pause menu gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist
+// only on this page (keymap `when: 'sonic'`, v12-optin). Two keys of every page do the mode's own thing here (v12-optin,
+// mode-keys.ts): L copies a link that opens this lesson in the mode, instead of the share panel's picture; K says the keys.
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
+import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
 import { createSceneSampler } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
-import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, TrackFile } from '@shramko/sonic-fpv';
+import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
+import { copyText } from '../share/clipboard';
+import { keyHelpLines, lessonLink, linkLine } from './mode-keys';
 import type { SessionOptions } from '../session';
 import { typing } from '../devices/keyboard';
 import type { FlightContext } from '../app/context';
@@ -75,6 +80,8 @@ declare module '../app/test-hook' {
          * warm-up. ms per frame; null while no lesson runs.
          */
         sonicRays?: (frames?: number) => { frames: number; msPerFrame: number; raysPerFrame: number } | null;
+        /** the last link L made in the mode (v12-optin): its address and whether the clipboard took it (null: still copying) */
+        sonicLink?: { url: string; copied: boolean | null } | null;
     }
 }
 
@@ -313,6 +320,37 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             if (e.repeat) return;
             void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt })));
         })
+    );
+    // a line of the mode's own keys: through the lesson's speech queue while one runs (its speech events), else the engine itself
+    const sayLine = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt }));
+    const capOf = (action: string): string => ctx.keys.caps(action).map((c) => c.cap).join(' ');
+    // L (v12-optin, mode-keys.ts): a link that opens this lesson in the mode (no language in it: the server sends whoever opens it to
+    // his own), copied, then said and captioned; in screen-reader mode the captions are the live region the reader announces. Not
+    // copied (the browser refused): said, with the link in the captions for a helper. The pause menu's and the top bar's Share stay
+    // the picture panel, for a helper. The key router runs the last handler of an action, so this one wins over share.ts's.
+    ctx.hook.sonicLink = null;
+    offs.push(
+        ctx.keys.on('share.open', (e) => {
+            if (e.repeat) return;
+            e.preventDefault();
+            const lesson = h.lesson;
+            const url = `${location.origin}${sonicLinkPath(lessonLink(lesson, entry.setup.prefs))}`;
+            ctx.hook.sonicLink = { url, copied: null };
+            void copyText(url).then((copied) => {
+                ctx.hook.sonicLink = { url, copied };
+                if (!copied) entry.setup.captions.add(url);
+                return sayLine(linkLine(copied, lesson !== null, capOf('share.open')), true);
+            }).catch(() => undefined);
+        }),
+        // K: the mode's keys, said one after the other (the first cuts what is being said, as I and Z do); the "How to fly" card stays
+        // in the pause menu, where K opens it while the menu is up
+        ctx.keys.on('help.keys', (e) => {
+            if (e.repeat) return;
+            keyHelpLines(capOf).forEach((line, i) => void sayLine(line, i === 0).catch(() => undefined));
+        }),
+        () => {
+            delete ctx.hook.sonicLink;
+        }
     );
     // the first lesson: its world is the one the page was made on (the entry built it); a lesson that cannot open
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page

@@ -1054,7 +1054,7 @@
     "keys": {
       "title": "The main keys",
       "intro": "The app also tells you these keys aloud.",
-      "items": ["start or stop a recording", "send the last recording to the author", "hear where you are", "hear the last spoken line again", "open the sound glossary", "go back to the last checkpoint; hold it to start the lesson again", "go to the next step"]
+      "items": ["start or stop a recording", "send the last recording to the author", "hear where you are", "hear the last spoken line again", "open the sound glossary", "go back to the last checkpoint; hold it to start the lesson again", "go to the next step", "copy a link that opens this lesson, with your sound settings, to share it", "hear these keys"]
     },
     "record": {
       "title": "Recording and sending",
