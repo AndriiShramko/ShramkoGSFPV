@@ -394,7 +394,43 @@ store and an engine that records what it is asked to say.
     parentheses ("lekcjach (28)"), so no plural form depends on it.
   - Over a flight a reset clears the saved progress, but the lesson that runs keeps its runner's counts and saves them at its next
     event (that one lesson reads in progress again): not changed.
-- [ ] C3 (M41-4, W13) the start screen and the mode's settings a spoken list; Motor volume and Target height note
+- [x] C3 (M41-4, W13) the start screen and the mode's settings a spoken list; Motor volume and Target height note
+  - New `apps/fly/src/sonic/spoken-list.ts` `SpokenList`: the screen's stops in the page's order (the Tab order: the navigation,
+    the Start buttons and the path, the headphone check, the 28 lessons and Reset, the settings, the footer; the 14 volume and
+    pitch sliders only while their part is open). Down and Up move (round the ends; from a heading to the stop after or before
+    it), Home and End go to the ends, Left and Right move a setting one step (a slider by its step, a choice to the one before or
+    after, a box off and on, the path to the other one; "That is the limit." at an end), Enter gives a setting its next value (a
+    button or a link keeps its own Enter). Every stop the focus reaches is said, however it came (these keys, Tab, a click, the
+    navigation's jump to a heading, the page): the section's name when the focus comes into one, the words, "Item n of N" in the
+    section ("Settings. Motor volume: 0 dB. Item 8 of 11."); a lesson by its title, place and state, no item number. The first key
+    of a fresh page starts the sound in that press (the speech waits for a user activation) and the voice first says how the list
+    works (`sonic.say.listHelp`), the stop after it. With "my screen reader speaks" the list takes no key and the voice says no stop
+    and no value: the page keeps the keys a reader user knows and the reader reads the focus (the lesson menu's rule, B6).
+  - `apps/fly/src/sonic/start-screen.ts`: every control registers as a stop as it is drawn; every value a setting takes is said
+    once it is applied and saved ("Motor volume: -3 dB"), whether by the list's keys or the page's own (Space, a click); the reset
+    question and its answers are said before the stop the focus goes to (which then does not cut them). Escape goes back with the
+    voice and with a reader: out of the reset question, off the screen over a flight, else to the first of the Start buttons (from
+    there, nothing). Lines through the engine only (`sonic.say.text` carries a text the page put together; W15): the engine's own
+    `say` on the entry page, over a flight the page's (`ScreenPort.bind`'s new `say`: `feature.ts` gives `sayLine`, the lesson's
+    speech queue while one runs, as the lesson menu's).
+  - W13: "Motor volume" (`menu.setting.motor-level`, `motorGainDb`, -24 to 6 dB in 3 dB steps, after "Motor sound") and "Target
+    height note" (`menu.setting.height-target`, `heightTarget`, on unless it is false), through `SonicSetup.update` like the others,
+    so saved and read back. Found and fixed on the way: each volume and pitch slider built its change from the settings as they were
+    when the screen was drawn, so a second slider moved without a new drawing dropped the first one's change; each change now starts
+    from what is set.
+  - Tests (`sonic-start-screen` C3, 7): the first key of a fresh page (the sound started, the list's help, then the stop, queued);
+    Down through all 52 stops of a fresh screen in the page's order and round, one line each with the section's name on entry and
+    "Item n of N", Up, Home, End; a focus by the page, a click and the navigation's jump said, Down and Up from a heading; Motor volume
+    from 0 up to its limit and down through every 3 dB step to -24 and its limit, the target note by Enter, a theme by Right and its
+    limit by Left, a box by a click said, all saved, read back by a new setup and a new screen; the sliders stops only while their part
+    is open, a second slider keeping the first one's change, the path by Left and Right; Escape back to Continue (and nothing more
+    from there), over a flight closing; the reset question said before No, the reset said before the next stop; with "my screen reader
+    speaks" no key taken and nothing said (Escape still back), and over a flight the page's voice, not the engine's. Controls broken
+    once and restored: no line on a focus (6 fail), no line for a new value (2), 1 dB steps for the motor (1), the list's keys on with
+    a reader (1), the engine's voice over a flight (1), no section names (4), Escape not going back (2).
+  - Lines for a native reading (es, pl, ru): `sonic.say.listHelp` (`sonic.say.text` is `{text}` in every language).
+  - Not seen in a page yet: C6's page proof (the real DOM's focus events, the voice's lines from `engine.say`, a real reader still
+    open).
 - [ ] C4 (W9, W19) the replay of an older lesson version speaks the recorded lines; rings-first's cue kinds pinned down
 - [ ] C5 (W10) the replay page's summary from `replayVerdict`: pass, recorded with an older build, fail
 - [ ] C6 page proofs in headless Chrome on a release build

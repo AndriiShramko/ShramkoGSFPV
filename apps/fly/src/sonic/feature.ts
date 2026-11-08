@@ -301,7 +301,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             closeMenu();
             void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
-        onClose: closeMenu
+        onClose: closeMenu,
+        // the start screen's spoken list (v0.13 C3) speaks as the lesson menu does: through the lesson's speech queue while one runs
+        say: (line, interrupt) => sayLine(line, interrupt)
     });
     offs.push(ctx.events.on('sonicEvent', (e) => {
         log.push(e);
