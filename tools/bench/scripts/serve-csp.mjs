@@ -102,6 +102,15 @@ createServer((req, res) => {
         return;
     }
     if (p === '/') { res.writeHead(302, { location: '/en/' }).end(); return; }
+    // nginx `location = /fly/`: to the visitor's own language, the query kept (a Fly by Sound lesson link has no language in it,
+    // v12-optin): the NEXT_LOCALE cookie, then the first language of Accept-Language (es, pl, ru, uk and be as ru), else en
+    if (p === '/fly/') {
+        const cookie = /(?:^|;\s*)NEXT_LOCALE=(en|es|pl|ru)(?:;|$)/.exec(req.headers.cookie ?? '')?.[1];
+        const al = (req.headers['accept-language'] ?? '').trim().toLowerCase();
+        const browser = /^es/.test(al) ? 'es' : /^pl/.test(al) ? 'pl' : /^(ru|uk|be)/.test(al) ? 'ru' : 'en';
+        res.writeHead(302, { location: `/${cookie ?? browser}/fly/${url.search}`, 'cache-control': 'no-cache' }).end();
+        return;
+    }
     if (p === '/admin') { res.writeHead(301, { location: '/admin/' }).end(); return; }
     if (p.startsWith('/admin/')) {
         let file = join(dist, p);
