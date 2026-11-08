@@ -477,7 +477,46 @@ store and an engine that records what it is asked to say.
     older and passing: older build; both passing: pass). Controls broken once and restored: the sentence from `ok` alone (fails), the
     older build put before a failure in `recordingVerdict` (fails).
   - Lines for a native reading (es, pl, ru): `sonicrec.replay.check.older`.
-- [ ] C6 page proofs in headless Chrome on a release build
+- [x] C6 page proofs in headless Chrome on a release build
+  - New `tools/bench/src/sonic-v13-page.ts`: a release build of 370715d (`node scripts/build-release.mjs`, 83 s; `dist/release.json`
+    sha 370715d, sonic 16c01a1) served by `tools/bench/scripts/serve-csp.mjs dist 5461` (nginx's enforced CSP), system Chrome
+    156 headless, the keyboard only; it takes `C:/dev/.gpu-lock` itself (mkdir, else 20 s, at most 9 minutes; let go at the end, also on
+    an error). `evidence/2026-11-08/sonic-v13-page.json`: 22 of 22 (the context's gitHead 3d35ef7 is the proof's own commit; the build's
+    commit is in `result.release`). Screenshots outside the repository (their paths and SHA-256 in the evidence), looked at by eye.
+    - A (M41-1): an ordinary page (scan 39e63ce9, logic only): the pause menu's item is an `<a>` to `/en/fly/?sonic=start`, target
+      _blank, rel noopener, its one-line words, "(opens in a new tab)" for a reader; clicked, a new tab shows the mode's start screen
+      (28 lessons, the course from the beginning, `/en/sound/` in its footer) while the flight stays paused under the menu.
+    - B (M41-2, W7): a saved progress (ears-headphones passed, hover-height skipped, hover-turn in progress and current): "Continue:
+      Turn toward a sound" first and primary, "Lesson 7 of 28, in progress"; "Start the course from the beginning", "Lesson 1 of 28:
+      Headphone check. Your progress is kept."; the 28 lessons in the path's order in 8 modules, each "Lesson N of 28", the four states
+      (skipped read back from the saved document); Reset by the keyboard: the question, the focus on No; Escape keeps all three lessons
+      and the current one; Yes clears them, keeps the theme (Clear), every lesson new, no Continue, the focus on the course's button,
+      the status line says it; after a reload still all new.
+    - C (M41-4, W13): nothing said before a key; the first ArrowDown: the list's help line, then "Fly by Sound sections. Start. Item 1
+      of 4."; the navigation's Settings link and Enter: the heading said ("Settings"); eight Downs: "Sound theme: Soft. Item 1 of 11." to
+      "Motor volume: 0 dB. Item 8 of 11."; Right three times and Left five: 3, 6, the limit at 6, then down to -9 dB, each said, the slider
+      and its `aria-valuetext` at -9 dB, saved; Down and Enter: "Target height note: on. Item 9 of 11.", "Target height note: off",
+      saved; Escape: back to "Start the course from the beginning", said; 24 cuts of the browser's voice (each stop cuts the last);
+      after a reload -9 dB and the target note off. (The lines are what reached `speechSynthesis.speak` through the engine.)
+    - D (M41-3): rings-first started from its start screen; Escape holds the flight and opens the lesson menu; seven Downs: the mode's
+      speech events (what the engine was asked to say, by its onSpeech) are `sonic.say.menuOpen` and then "Resume. Item 1 of 8." to
+      "Leave the mode. Item 8 of 8." as `menu.item`, in order, the same lines reached the browser's voice, the focus on the eighth;
+      Escape lets the flight go and the lesson goes on.
+    - E (M41-7): W held through the ring until the first `attempt-pass`: the panel shows "Your first ring", "Lesson 20 of 28", "Step 2
+      of 2", "Attempt 1", "Counted 1 of 3", the same text as the hook's; 28 px bold, opaque (black on white: the headless page asks for
+      a light scheme), at x 12 to 249 of 1280, the view's middle clear; no page error.
+    - Control run (`CONTROL=reader PARTS=C,DE`, `evidence/2026-11-08/sonic-v13-page-control-reader.json`): the same build and keys with
+      "my screen reader speaks" saved: C fails (no line after the first key: the list leaves the keys to the page), D's voice check
+      fails (no item said: the reader reads them); E and D's other checks still pass (4 of 6).
+    - The first run (18 of 22) failed only on the proof's own expectations, fixed in C6 (2/3): the empty utterance that unlocks speech
+      counted as a line, a section named by its heading expected again on its first stop, the prefs read before their debounced write.
+  - `tools/bench/src/sonic-optin-page.ts` (v12-optin's page proof) follows the lane: part A's item opens the start screen (C1), part B's
+    I says the runner's status line (W6), K says Escape's menu line first and then N B Z I G R T U L (B3, B6), and P opens the pause menu
+    in a lesson (Escape is the lesson menu there, B6). Run on the same build: `evidence/2026-11-08/sonic-optin-page-v13host.json`, 46 of
+    46 (the suffix keeps v12-optin's evidence of the same date).
+  - Not run here (no gate; left as they are, each still expects v0.12 where stage B noted it): `tools/bench/src/sonic-int-page.ts:164`,
+    `:182` (I as `status.lesson`) and `tools/bench/src/sonic-lessons-page.ts:282-291` (Z as the last line again; I's `status.lesson`);
+    both run on the Vite dev server (`LAB`).
 - [ ] C7 gates exit 0; "## Final status"
 
 ## Changed tests
