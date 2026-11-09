@@ -3,9 +3,9 @@
 Plan and item ids (M41-n): `docs/wip/v13-plan.md`. The owner's words: the vault brief, message 41. The vault's v0.13
 status note (message 41) carries the same table for the owner.
 
-## Where things stand (2026-11-09, 00:50 UTC)
+## Where things stand (2026-11-09, 10:45 UTC)
 
-- Live: v0.12 (release of 047ee57). Nothing of v0.13 is live.
+- Live: v0.13, release 001f598f1d71 = `main` eac4475, sound 09535b7 (2026-11-09 10:23 UTC; STATE.md has the checks).
 - `v03-lead`: v12-optin merged at c2b1e54, all gates pass on it. Not pushed.
 - Sound repo `main` 16c01a1, pushed: s13-lessons, s13-sound and s13-worlds merged (s13-merge), one review of the
   integrated branch (ab7f591: 3 majors, 3 minors, 1 nit, none refuted), all fixed; 1062 tests, 9 audio proofs, listen
@@ -106,3 +106,10 @@ status note (message 41) carries the same table for the owner.
    One independent review of the integrated wave 2, then fixes.
 6. All gates, accept-fly B6-B16, page proofs, the es/pl/ru voice checks if the voices are installed, `deploy/ship.sh`,
    live checks, report to the owner.
+4. Done: s13-elev and s13-int in the sound repo's `main` 09535b7, pushed after gh_precheck (two benign words).
+5. Done: v13-int with the review (docs/wip/v13-int-review.md: F1-F7, K1-K6 fixed or decided) merged into `v03-lead` at eac4475.
+6. Done: gates exit 0 on eac4475; gh_precheck (five reviewed false hits: 'pass' prose, an evidence path, gate ids, a
+   locale key); pushed to `main`; `deploy/ship.sh eac4475`: CI green, neighbours equal, 302 checks; live release.json
+   eac44755 with sonic 09535b7, the mode's pages 200 in 4 languages, accept-fly 10 of 10 against the live site.
+7. Open for people: a blind, deaf or low-vision pilot, NVDA or JAWS, real phones, a native reading of es/pl/ru.
+   v0.14: docs/wip/v13-int.md 'Deferred' and the recordings panel's focus after Save, Keep, Send or Delete.
