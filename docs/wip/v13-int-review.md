@@ -278,3 +278,8 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   (ears-headphones, B: the screen; closed: the lesson opened again, N moves it), `sonic-garden` (free-garden, the last lesson of both
   paths, N while flying: the screen; closed: opened again, N moves it). Control: a lesson still running under the screen is not started
   again; the code control (the runner not kept) fails both. Changed: `sonic-reset-running` (the method's new name).
+- F4 (major, the focus left on the body after the start screen): holds. Fixed in the screen: `hide()` takes the focus off its own
+  control at once, so the flight page's `focusFlight` finds the body and puts the focus on the flight's region. Test:
+  `sonic-start-screen` "F4" (the fake DOM: the focus on the body after hide(); control: a control outside the screen keeps it); the code
+  control (no blur) fails it. In the page: `sonic-v13-page` R (Escape on the screen over a lesson: the active element is the region).
+  With NVDA or JAWS: not tried.

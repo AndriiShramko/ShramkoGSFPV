@@ -681,4 +681,21 @@ describe('v13-int review F2, F4: the screen over a flight takes every key it is 
         expect(closed.n).toBe(1);
         s.dispose();
     });
+
+    it('F4: hide() takes the focus off the screen\'s control at once, so the flight page finds the body and puts the focus on its region (feature.ts focusFlight); control: a focus outside the screen is left alone', () => {
+        const { s } = shown({ overFlight: true });
+        byTestId(doc, 'sonic-start-beginning')!.focus();
+        expect(s.root.contains(doc.activeElement as never)).toBe(true);
+        s.hide();
+        expect(doc.activeElement).toBe(doc.body);
+        expect(s.shown).toBe(false);
+        // control: a control outside the screen keeps the focus when the screen hides
+        s.show();
+        const outside = doc.createElement('button');
+        doc.body.append(outside);
+        outside.focus();
+        s.hide();
+        expect(doc.activeElement).toBe(outside);
+        s.dispose();
+    });
 });

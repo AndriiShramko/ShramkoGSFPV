@@ -219,6 +219,11 @@ export class FakeElement {
         this.dispatchEvent(new FakeEvent('focusin'));
     }
 
+    /** The focus leaves this element for the body, as the browser's blur() does (v13-int review F4). */
+    blur(): void {
+        if (this.ownerDocument.activeElement === this) this.ownerDocument.activeElement = this.ownerDocument.body;
+    }
+
     addEventListener(type: string, cb: Listener): void {
         const list = this.listeners.get(type) ?? [];
         list.push(cb);

@@ -730,10 +730,21 @@ export class StartScreen {
         (at ?? this.root.querySelector<HTMLElement>('#sonic-h1'))?.focus();
     }
 
-    /** The screen goes away from the page and the accessibility tree (the flight takes the page). */
+    /**
+     * The screen goes away from the page and the accessibility tree (the flight takes the page). The focus leaves it now (review F4): the
+     * browser takes it off a hidden control only at its next rendering, so the flight page, asking at once, saw the screen's control still
+     * focused and left the focus on the body, where a screen reader's quick keys take the flight's letters (feature.ts focusFlight).
+     */
     hide(): void {
+        const at = document.activeElement as HTMLElement | null;
+        if (at !== null && at !== document.body && this.root.contains(at)) at.blur();
         this.root.hidden = true;
         this.root.setAttribute('inert', '');
+    }
+
+    /** The screen is on the page (shown over the flight, or before it). */
+    get shown(): boolean {
+        return !this.root.hidden;
     }
 
     dispose(): void {
