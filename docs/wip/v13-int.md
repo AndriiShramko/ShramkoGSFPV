@@ -268,8 +268,31 @@ Steps 1 to 7 are the first agent's, 8 to 12 the second's (the lead's prompts nam
     architecture; i18n; catalog; B18 PASS (the run's `evidence/<date>/b-repo-b18.json` removed).
   - Not run here: accept-fly B6 to B16 (the lead's, on the final head); the words check again for the one Russian line; the build outputs (`dist`,
     `apps/site/out`, `apps/fly/dist`) were removed from C: after the runs.
-- [ ] 11. The replay in a page: the v0.12 fixture (older-build sentence, recorded lines in order, a seek), a recording made on this build.
-- [ ] 12. One run of everything on a release build of the head under the GPU lock, gates exit 0, this Status.
+- [x] 13. The independent review's findings and the lead's known items K1 to K6 (`docs/wip/v13-int-review.md` "Fixes": each tried against
+  the code first, a test that failed before the fix, one commit per defect, its control).
+  - F1 e53cdcf and 84fc177 (the lesson's lines a host line cut are said again after it; part 2: at once after the host's line, not when
+    Chrome reports a line it cancelled before it began), F2 fe1cbb1 (the start screen takes every key it does not use),
+    F3 dcdb24c (a lesson whose way out leads nowhere starts again when the screen closes), F4 9f7725a (the screen takes the focus off itself
+    when it hides), F5 0dff48f (the progress panel hidden during a replay), F6 f988bd3 (decided: a true attitude indicator; the claim
+    corrected), F7 50b7399 (the pause menu's Lesson menu item: a way in on a phone).
+  - K1: the sound package's mirror tie (s13-int c819995), the straight flight's replay PASS in Node (`sonic-k1-straight`) and in the page
+    (`sonic-v13-page` F2S); K3: the package's ru and pl `app.name` and `menu.welcome` (s13-int eafd417); the gitlink at s13-int's head.
+  - K2, K4, K5: the captions never over a panel (captions.ts hides the oldest line shown while one meets a panel; the captions take the
+    page right of the left panel column on a page wider than a phone and over 600 px high), three laptop windows (1366 x 657, 1280 x 601,
+    1536 x 705) and two tablets with touch sticks (768 x 1024, 1024 x 768) in the layout check, which runs in all four languages; the
+    tablets' places (the sound panel over the progress panel, the attitude display over the stack at the right); the recorder's toggle over
+    the right stick with touch sticks (the recording bar 15 px higher on a phone).
+    Commits 64ffa53 (K2), f4edd8a (K4), 60e65cf (K5); the layout check's evidence d6e21c6 (648 of 648).
+  - K6 9eb7681: the Russian pause item heard again with the words check (`--sim`): the comma heard, the word for "low-sighted" split as
+    in step 6 (rate 0.4), left for a native reader.
+  - The page proofs' code 561c0fd (`sonic-v13-page` R and F2S); the gitlink 46a4fd3 (eafd417) and 7b23bc9 (09535b7).
+  - Found by the lane end's page proofs on the release of 84fc177 and fixed: K2, part 2 53492e5 (`sonic-lessons-page` 43 of 44: in the
+    column right of the panels hover-height's three lines ended 5 px over the view's centre at 1280 x 720; captions.ts keeps them 20 px over
+    it); the proof's F2 press c9fb6ef (`sonic-v13-page` F2 failed twice in a whole run: after Save the recordings panel draws its list again
+    and the focus on the old row's Replay fell to the body; the proof presses Replay on the row drawn after Save). The panel's lost focus
+    itself: deferred, below.
+  - The lane end: `docs/wip/v13-int-review.md` "Lane end (the fixer's)": the gates on the final head, the sound package's checks, the
+    page proofs on the release of the final app code.
 - Steps 8 to 12, the second agent's commits: 2be5936 (8: the layout check with the real panel, the places, `sonic-panels`' 2 tests), e187afb and 652ae78 (the
   page proofs' code), 581d88b (9: both proofs pass), cf778d1 (10 and 11: F2 turns first, the straight flight's evidence, the reader control), f68d9ab (12: the
   Russian pause item, start-keyboard and garden follow v0.13), a5e0983 (the final evidence of 10 to 12, the gates, this status). The package and the gitlink
@@ -312,6 +335,20 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-start-screen` new: "v13-int step 5: Reset my progress over a flight tells the flight page" (step 5) | new | the screen's `onReset` |
 | `sonic-scan-bump` (step 4) | new, 2 tests | the scan lesson's contact |
 | `sonic-garden` "Winter Garden at x5, on its real walls" (step 4) | one test more: the lesson flies the scan 'slide', the drone's contact before and after; the 8 tests run here now (the walls' cache is in this worktree) | step 4 on the real scan |
+| `sonic-lesson-keys` B5 "no speech.end ... while paused" (review F1) | after a pause whose menu line cut the task, the task's lines are said again from the resume and the end of speech comes after them (was: at the resume) | review F1: the lesson's lines a host line cut are said again |
+| `sonic-lesson-keys` B5 "resumed while a line is still being said" (review F1) | title only (the end of speech comes when the lines said again end) | review F1 |
+| `sonic-int-reader` "a line that interrupts (Z, I, N) ..." (review F1) | split: the lesson's own interrupt (Z, N: `lesson: true`) ends the reading at its own time; new: a host's (I) has the cut lines read again after it | review F1 |
+| `sonic-lesson-rig` `FakeEngine` (review F1) | `ends`: each line said to its end or cut, with its start | the F1 tests read which lines were said whole |
+| `sonic-fake-dom` (review F4) | `blur()` | the start screen's hide() takes the focus off itself |
+| `sonic-reset-running` (review F3) | `restartAfterScreen` (was `restartAfterReset`) | the same restart covers a runner that left for the screen |
+| `sonic-panels` "the horizon is the one the camera sees" (review F6) | title and helper: a camera along the body's axis; new: the default drone's uptilt of 20 degrees between the view and the dial | review F6: a true attitude indicator, decided |
+| `sonic-review-v13`, `sonic-k1-straight`, `sonic-captions-fit` (review) | new | review F1, F3, F5; K1; K2 |
+| `sonic-captions-fit` "K2, part 2" (the lane end) | new, 5 tests: the lines shown end 20 px over the view's centre; a page whose view has no height as the control | K2, part 2 |
+| page proof `tools/bench/src/sonic-v13-page.ts` F2 (the lane end) | Replay is pressed on the row the recordings panel draws after Save (was: at once after the download) | the press went to the body when the row was drawn again between the focus and the key |
+| `sonic-start-screen` "v13-int review F2, F4" (review) | new, 4 tests | review F2, F4 |
+| `sonic-garden` "v13-int review F3" (review) | new | the last lesson of the path |
+| page proof `tools/bench/src/v13-look-page.ts layout` (review K2, K4, K5) | four languages by default (was English, others as an extra), 13 sizes (three laptop windows, two tablets with sticks), the recorder's toggle against the sticks | review K2, K4, K5 |
+| page proof `tools/bench/src/sonic-v13-page.ts` (review) | new parts R (F1, F2, F3, F4, F5, F7) and F2S (K1); the init script records every utterance's start, end and error | the review's fixes in the page |
 | `sonic-panels` "real elevations from the package (s13-elev) ..." (step 2) | new, 4 tests: tunnel-gaps' open way above marked by its own direction (on) and by the plan's side (off), with the bare chime's control; the target note's mark follows `plan.height.target.dir` (above, below, level), and with the setting off it stays on the bar | the package now gives the panel real elevations (lane s13-elev's "Needs from the simulator") |
 
 ## Deferred
@@ -325,12 +362,14 @@ To v0.14 by the lead (not done here):
 - v13-look's need 1: the plan saying when the next target note sounds (the sound panel's height bar keeps the rhythm, not
   the phase).
 
-- To the sound package (v0.14), found by step 11: a deterministic tie-break between mirror sectors (`front-left` and `front-right`) that the live engine and the
-  replay's planner share, so that a flight on a wall's axis replays at its true cue share (83.7 % by cue id today against the 0.95 bound, 100 % by kind), or
-  a cue share that counts mirror sectors of one wall as one cue. Until then a recording of a flight into a wall's middle reads "differs" in the replay.
-- Layout (step 8), not fixed: in Russian, Spanish and Polish the longer captions reach into the progress panel's top corner at 1280x720 and 1366x768 and into the
-  attitude display at 960x540 and 640x360 (`v13-look-layout-ru|pl|es.json`); heights from 601 to about 705 px, tablets with touch sticks and the recorder's
-  toggle over the right stick on a phone were not among the eight sizes.
+- Done in step 13 (the review's K1, K2, K4, K5): the mirror tie in the sound package (s13-int c819995), the captions clear of the panels in every language, the
+  laptop windows and the tablets with sticks in the layout check, the recorder's toggle over the right stick. Still open from the review's notes (not findings):
+  an older-build replay says every recorded line whole although live a line may have been cut (`replay-player.ts` `sayRecorded`); a scan lesson's reopen makes
+  two new lives; the recorder's own lines go to the engine directly, so its consent question still cuts what the lesson was saying (review F1's note).
+- Found at the lane end, for the lead: the recordings panel (`sonic-session/panel.ts` refresh()) draws its list again after Save, Keep, Send and
+  Delete, and the focus on the row's button falls to the page's body (measured: Save, the list drawn again 125 to 152 ms later, the focus gone from the
+  button to the body); a keyboard or screen reader user loses their place. The fix (the focus kept on the same button of the same row) belongs with the
+  panel's own page proofs (`sonicrec-local`, `sonicrec-replay`, `sonicrec-review`), not run in this lane.
 
 ## Decisions
 

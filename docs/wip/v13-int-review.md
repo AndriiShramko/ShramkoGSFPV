@@ -337,4 +337,11 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   in the bridge's count (`hostLines`), whenever the browser reports them. Test: `sonic-review-v13` F1 "a browser that reports a cancelled
   line late" (the rig's engine resolves a line cut before it began 15 s late, as Chrome: the keys line follows "Resume." in the same
   frame); the code control (the count kept) fails it.
-
+- K2, part 2 (found by the lane end's `sonic-lessons-page`, 43 of 44 on the release of 84fc177): in the column right of the panels a
+  line of hover-height's start wrapped once more than in the centred captions (880 px wide at 1280 x 720, they were 900), and the three
+  lines shown ended at 355 px of 720 (step 9: 321), 5 px over the view's centre, where the target is (the proof's bound: 20 px over it).
+  Fixed in `captions.ts` (53492e5): the oldest line shown is hidden from the eye (a screen reader still reads it) also while a line shown ends lower
+  than 20 px over the view's centre (`CENTRE_GAP_PX`); the newest never. Test: `sonic-captions-fit` "K2, part 2" (hover-height's three
+  lines of two rows at 1280 x 720: two shown, ending at 266 px; lines of one row: all three; the newest never hidden; a taller window
+  shows the three again on a resize). Control: a page whose view has no height shows the three, ending at 356 px; the code control (no
+  centre) fails 3 of the 5. The page: `sonic-lessons-page` and the layout check again, below.
