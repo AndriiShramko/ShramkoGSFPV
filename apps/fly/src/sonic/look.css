@@ -64,8 +64,9 @@
 @media (max-width: 640px) and (max-height: 500px) {
     .sonic-attitude, .sonic-sounds { --u: clamp(56px, 22vh, 80px); }
     .sonic-attitude { bottom: calc(120px + env(safe-area-inset-bottom)); }
-    /* right of the progress panel (the narrow page's: low on the left, 130 px wide here), under the view's centre */
-    .sonic-sounds { --u: clamp(56px, 21.5vh, 77px); left: 150px; bottom: calc(31px + env(safe-area-inset-bottom)); }
+    /* right of the progress panel (the narrow page's: low on the left, at most 160 px wide here since v13-int review K2, sonic.css), under the
+       view's centre */
+    .sonic-sounds { --u: clamp(56px, 21.5vh, 77px); left: calc(max(12px, env(safe-area-inset-left)) + 168px); bottom: calc(31px + env(safe-area-inset-bottom)); }
 }
 
 @media (prefers-color-scheme: light) {

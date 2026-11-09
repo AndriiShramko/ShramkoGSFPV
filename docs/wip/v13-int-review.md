@@ -301,3 +301,14 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   20 degrees nose-up and 10 nose-down: the dial lifts the horizon by the body's pitch, the default drone's camera, uptilt read from its
   preset, sees it 20 degrees lower, a camera along the body agrees with the dial). For the testers' notes (the lead's): the dial and the
   view disagree by the camera's tilt by design. The lead may turn it.
+- K2 (the captions over the panels in Spanish, Polish and Russian): holds (the layout check before the fix, all four languages and 13
+  sizes, `evidence/2026-11-09/v13-look-layout-baseline.json`: the captions over the progress panel at 1280 x 720 in es 1516, pl 1304, ru
+  2156 px2, at 1366 x 768 in all three, over the attitude display at 960 x 540 and 640 x 360 in es and ru, the Russian progress panel over
+  the sound panel at 640 x 360). Fixed: `captions.ts` hides the oldest line shown (from the eye only; a screen reader still reads it) while
+  a line shown meets a panel within 8 px, measured again when the page changes size; on a page wider than a phone and over 600 px high the
+  captions take the page right of the left panel column (`min(30vw, 360px)` wide), centred in it, so they never reach the progress panel;
+  at 640 x 360 the progress panel is at most 160 px wide and the sound panel right of that. The layout check runs all four languages
+  (LAYOUT_LANG, default en,es,pl,ru). Test: `sonic-captions-fit` (Russian lines over the attitude display: the oldest hidden, the rest 8 px
+  clear; English fits; the newest never hidden; refit on resize) with its controls (a panel beside the region or hidden limits nothing; the
+  code control without the hiding fails 3 of 5); the page: the layout check below. What it costs: lines shown at the attempt's start (of 3)
+  at 960 x 540 2 in every language, at 640 x 360 1, on a phone with sticks 2, on a tablet on its side 2, at 1280 x 601 2; 3 elsewhere.

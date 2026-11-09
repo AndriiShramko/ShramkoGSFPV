@@ -1121,8 +1121,11 @@ const SIZES: { name: string; w: number; h: number; dpr: number; mobile?: boolean
     { name: 'phone-upright-sticks', w: 390, h: 844, dpr: 3, mobile: true, sticks: true },
     { name: 'phone-on-its-side', w: 844, h: 390, dpr: 3, mobile: true }
 ];
-/** LAYOUT_LANG=<en|es|pl|ru>: the page's language for the layout check (the panels' words are longer in some; en is the record, the others an extra, TAG=<lang>). */
-const LAYOUT_LANG = process.env.LAYOUT_LANG ?? 'en';
+/**
+ * LAYOUT_LANG=<lang,...>: the page's languages for the layout check, all four by default (v13-int review K2: the longer captions of
+ * Spanish, Polish and Russian reached the panels at four sizes).
+ */
+const LAYOUT_LANGS = (process.env.LAYOUT_LANG ?? 'en,es,pl,ru').split(',').filter((l) => ['en', 'es', 'pl', 'ru'].includes(l));
 
 /**
  * What a panel must never cover: the view's centre, the captions, the page's controls and the touch sticks (and each of the other two
@@ -1157,16 +1160,18 @@ const boxes = (page: Page): Promise<Record<string, Box[]>> =>
         return out;
     });
 
-async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 'dark' | 'light', css: string | null): Promise<Record<string, unknown>> {
+async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 'dark' | 'light', css: string | null, lang: string): Promise<Record<string, unknown>> {
     const ctx = await browser.newContext({ viewport: { width: size.w, height: size.h }, deviceScaleFactor: size.dpr, isMobile: !!size.mobile, hasTouch: !!size.mobile, colorScheme: scheme });
     await ctx.addInitScript({ content: INIT });
+    // the checks of a language other than English say it first
+    const at = `${lang === 'en' ? '' : `${lang} `}${size.name}`;
     try {
-        const { page, errors } = await openLesson(ctx, 'hover-height', { lang: LAYOUT_LANG, ...(size.sticks ? { query: '&input=touch' } : {}) });
+        const { page, errors } = await openLesson(ctx, 'hover-height', { lang, ...(size.sticks ? { query: '&input=touch' } : {}) });
         if (css) await page.addStyleTag({ content: css });
         await sleep(900);
         const b = await boxes(page);
         const rep = await panels(page);
-        const name = `layout-${size.name}-${scheme}`;
+        const name = `layout-${lang === 'en' ? '' : `${lang}-`}${size.name}-${scheme}`;
         // small: CSS pixels (the device's are the dial's own measure, not this picture's)
         writeFileSync(join(OUT, `${name}.jpg`), await page.screenshot({ type: 'jpeg', quality: 55, scale: 'css' }));
         // the full-size picture stays out of the repository (LAYOUT_KEEP, default the system's temporary folder); its path and SHA-256 are in the evidence
@@ -1187,11 +1192,11 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
         });
         res.progressPanel = prog;
         const wantInk = scheme === 'dark' ? ['rgb(255, 255, 255)', 'rgb(0, 0, 0)'] : ['rgb(0, 0, 0)', 'rgb(255, 255, 255)'];
-        check(`${size.name} ${scheme}: the page's real progress panel shows the lesson's title and its four rows (Lesson, Step, Attempt, Counted), ${scheme === 'dark' ? 'white on black' : 'black on white'}, ${prog ? prog.font : '-'} px`, !!prog && prog.rows.length === 5 && (LAYOUT_LANG !== 'en' || (/^Lesson \d+ of 28$/.test(prog.rows[1] ?? '') && /^Step \d+ of \d+$/.test(prog.rows[2] ?? '') && /^Attempt \d+$/.test(prog.rows[3] ?? '') && /^Counted \d+ of \d+$/.test(prog.rows[4] ?? ''))) && prog.color === wantInk[0] && prog.background === wantInk[1] && prog.font >= 15, prog);
+        check(`${at} ${scheme}: the page's real progress panel shows the lesson's title and its four rows (Lesson, Step, Attempt, Counted), ${scheme === 'dark' ? 'white on black' : 'black on white'}, ${prog ? prog.font : '-'} px`, !!prog && prog.rows.length === 5 && (lang !== 'en' || (/^Lesson \d+ of 28$/.test(prog.rows[1] ?? '') && /^Step \d+ of \d+$/.test(prog.rows[2] ?? '') && /^Attempt \d+$/.test(prog.rows[3] ?? '') && /^Counted \d+ of \d+$/.test(prog.rows[4] ?? ''))) && prog.color === wantInk[0] && prog.background === wantInk[1] && prog.font >= 15, prog);
         for (const panel of PANELS) {
             const pb = (b[panel] ?? [])[0];
             if (!pb) {
-                check(`${size.name} ${scheme}: the ${panel} panel is on the page`, false, b);
+                check(`${at} ${scheme}: the ${panel} panel is on the page`, false, b);
                 continue;
             }
             const inside = pb.x >= -0.5 && pb.y >= -0.5 && pb.x + pb.w <= W + 0.5 && pb.y + pb.h <= H + 0.5;
@@ -1202,7 +1207,7 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
                 if (ob && overlap(pb, ob) > 1) hits.push(`the ${o} panel ${Math.round(overlap(pb, ob))} px2`);
             }
             const covers = over(SOFT);
-            check(`${size.name} ${scheme}: the ${panel} panel (${Math.round(pb.w)} x ${Math.round(pb.h)} at ${Math.round(pb.x)}, ${Math.round(pb.y)}) inside the page, clear of the view's centre, the captions, the page's controls, the touch sticks and the other two panels${covers.length ? ` (covers ${covers.join(', ')})` : ''}`, inside && hits.length === 0, { box: pb, hits, covers });
+            check(`${at} ${scheme}: the ${panel} panel (${Math.round(pb.w)} x ${Math.round(pb.h)} at ${Math.round(pb.x)}, ${Math.round(pb.y)}) inside the page, clear of the view's centre, the captions, the page's controls, the touch sticks and the other two panels${covers.length ? ` (covers ${covers.join(', ')})` : ''}`, inside && hits.length === 0, { box: pb, hits, covers });
             res[panel] = { box: pb, hits, covers };
         }
         // readable: the dial and the radar large enough, the panels' words 15 px or more (CSS px: at 200 % zoom twice the device pixels)
@@ -1213,8 +1218,8 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
         const dial = rep.attitude?.layout ? 2 * (rep.attitude.layout.dial.r + rep.attitude.layout.dial.bezel) : null;
         const radar = rep.sound?.layout ? 2 * rep.sound.layout.radar.r : null;
         res.sizes = { dialPx: dial, radarPx: radar, tapeFontPx: rep.attitude?.layout?.font ?? null, titleFontPx: sizes.title, devicePixels: { dial: dial === null ? null : dial * size.dpr, radar: radar === null ? null : radar * size.dpr } };
-        check(`${size.name} ${scheme}: readable: the dial ${dial === null ? '-' : Math.round(dial)} px and the radar ${radar === null ? '-' : Math.round(radar)} px across, the tape's numbers ${rep.attitude?.layout?.font} px, the panel's words ${sizes.title} px (CSS pixels; ${size.dpr} device pixels each)`, dial !== null && radar !== null && dial >= 48 && radar >= 40 && (rep.attitude?.layout?.font ?? 0) >= 11 && (sizes.title ?? 0) >= 13, res.sizes);
-        check(`${size.name} ${scheme}: no page error`, errors.length === 0, errors);
+        check(`${at} ${scheme}: readable: the dial ${dial === null ? '-' : Math.round(dial)} px and the radar ${radar === null ? '-' : Math.round(radar)} px across, the tape's numbers ${rep.attitude?.layout?.font} px, the panel's words ${sizes.title} px (CSS pixels; ${size.dpr} device pixels each)`, dial !== null && radar !== null && dial >= 48 && radar >= 40 && (rep.attitude?.layout?.font ?? 0) >= 11 && (sizes.title ?? 0) >= 13, res.sizes);
+        check(`${at} ${scheme}: no page error`, errors.length === 0, errors);
         await page.close();
         return res;
     } finally {
@@ -1229,8 +1234,9 @@ async function scenarioLayout(_ctx: BrowserContext, browser: Browser): Promise<R
     // SIZES=<name,...>: only those (a trial); SCHEMES=dark or light: only that one
     const only = process.env.SIZES ? process.env.SIZES.split(',') : null;
     const schemes = (process.env.SCHEMES ? process.env.SCHEMES.split(',') : ['dark', 'light']) as ('dark' | 'light')[];
-    out.trial = only !== null || schemes.length < 2 || css !== null;
-    for (const scheme of schemes) for (const size of SIZES) if (!only || only.includes(size.name)) out[`${size.name}-${scheme}`] = await layoutAt(browser, size, scheme, css);
+    out.trial = only !== null || schemes.length < 2 || css !== null || LAYOUT_LANGS.length < 4;
+    out.languages = LAYOUT_LANGS;
+    for (const lang of LAYOUT_LANGS) for (const scheme of schemes) for (const size of SIZES) if (!only || only.includes(size.name)) out[`${lang === 'en' ? '' : `${lang}-`}${size.name}-${scheme}`] = await layoutAt(browser, size, scheme, css, lang);
     return out;
 }
 
