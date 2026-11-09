@@ -283,3 +283,8 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   `sonic-start-screen` "F4" (the fake DOM: the focus on the body after hide(); control: a control outside the screen keeps it); the code
   control (no blur) fails it. In the page: `sonic-v13-page` R (Escape on the screen over a lesson: the active element is the region).
   With NVDA or JAWS: not tried.
+- F5 (minor, the progress panel shows the live lesson during a replay): holds. Fixed: the panel draws nothing while a replay plays
+  (`progressNow`), and is drawn again the moment a replay takes the engine or gives it back (`PageRuntime`'s onPlayback); the sound
+  panel's "played three times" card shows none of the live runner's during a replay (the same seam). Test: `sonic-review-v13` F5 (the
+  rig: the panel's title, hidden at `playback(true)`, back at `playback(false)`). Control: no lesson running, hidden too; the code control
+  (no playback check) fails it. In the page: `sonic-v13-page` R during a replay.

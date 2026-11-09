@@ -29,7 +29,7 @@ import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
 import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
 import { KeyNames } from './key-names';
-import { ProgressPanel, followProgress } from './progress-panel';
+import { ProgressPanel, followProgress, progressNow } from './progress-panel';
 import { DomLessonMenuView, LessonMenu, pauseKey, runItem } from './lesson-menu';
 import { engineDicts } from './host-lines';
 import { openLinkPanel } from './link-panel';
@@ -245,7 +245,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // "my screen reader speaks": the lesson waits for its lines read one after the other, as the reader reads them (v12-int step 6)
     mode.bridge.sequential = () => !entry.setup.prefs.selfVoice;
     mode.bridge.readTimeMs = (text) => estimateSpeechS(text, entry.setup.prefs.speechRate) * 1000;
-    ctx.sonic = new PageRuntime(entry.setup, mode);
+    // a replay taking the engine or giving it back: the progress panel follows at once (review F5: it hides while a replay plays)
+    const onPlayback = new Set<() => void>();
+    ctx.sonic = new PageRuntime(entry.setup, mode, () => { for (const f of [...onPlayback]) f(); });
     document.body.classList.add('sonic-mode');
     stage = new PrimitiveStage(ctx.renderer);
     offs.push(installAttitude(ctx, mode, () => host)); // M41-24, look-panels.ts (lane v13-look)
@@ -320,16 +322,20 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         if (log.length > EVENT_LOG_CAP) log.shift();
     }));
     // the lesson's progress for the eye (M41-7, progress-panel.ts): drawn from the runner's view whenever the mode writes an event (an
-    // attempt's start, pass and failure each are one), outside #ui (the flight's live region), hidden while no lesson runs
+    // attempt's start, pass and failure each are one) and when a replay starts or ends, outside #ui (the flight's live region), hidden
+    // while no lesson runs and while a replay plays (review F5: it showed the live lesson over the replayed one)
     const progressTitles = createTranslator(locale, DICTS);
     const progress = new ProgressPanel({ parent: document.body, text: (key, params) => t(key, params as Record<string, string | number> | undefined) });
+    const onDraw = (cb: () => void): (() => void) => {
+        const off = ctx.events.on('sonicEvent', cb);
+        onPlayback.add(cb);
+        return () => {
+            off();
+            onPlayback.delete(cb);
+        };
+    };
     offs.push(
-        followProgress(progress, (cb) => ctx.events.on('sonicEvent', cb), () => {
-            const run = mode.active ? h.runner : null;
-            if (!run) return null;
-            const view = run.view();
-            return { view, title: progressTitles.text(view.title) };
-        }),
+        followProgress(progress, onDraw, () => progressNow(mode, h.runner, (key) => progressTitles.text(key))),
         () => progress.dispose()
     );
     let lastSample: FlightSample | null = null;

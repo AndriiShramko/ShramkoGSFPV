@@ -190,7 +190,8 @@ export function installSoundPanel(ctx: FlightContext, mode: SonicMode, engine: P
         if (!show || !h) return;
         const lesson = h.lesson;
         const top = lesson && lesson.world.kind === 'analytic' ? roomTopM(h.world, mode.floorY) : null;
-        panel.draw({ plan: engine.plan, playing: h.runner?.view().playing ?? null, topM: top !== null && top > 0.5 ? Math.ceil(top * 2) / 2 : 4, now });
+        // a sound the live lesson plays three times is not the replay's (review F5): while a replay plays the card shows none of the live runner's
+        panel.draw({ plan: engine.plan, playing: mode.inPlayback ? null : (h.runner?.view().playing ?? null), topM: top !== null && top > 0.5 ? Math.ceil(top * 2) / 2 : 4, now });
         p.cost.sound.add(performance.now() - t0);
     });
     const offSwitch = followSwitch(ctx, p, 'soundPanel');

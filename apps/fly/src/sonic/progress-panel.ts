@@ -9,7 +9,7 @@
 // screen reader does not read every change (I says it, and every attempt says its count). Large, bold, white on an opaque
 // black box with a white edge and a black outline: readable over a dark scene and a light one; dark on light where the page
 // asks for a light scheme, and the system's colours in forced-colours mode (sonic.css).
-import type { LessonView } from '@shramko/sonic-fpv';
+import type { LessonSession, LessonView } from '@shramko/sonic-fpv';
 
 /** One row of the panel: its text (sonic.progress.*) and the numbers in it. */
 export interface ProgressRow {
@@ -95,6 +95,17 @@ export class ProgressPanel {
 
 /** The lesson running now as the panel draws it, or null while none runs. */
 export type ProgressNow = () => { readonly view: LessonView; readonly title: string } | null;
+
+/**
+ * What the panel draws of the page's lesson: its runner's view and title while the mode runs it, nothing while no lesson runs and while
+ * a replay plays (review F5: the replay draws its own recorded lesson in the view, and the live lesson's "Lesson 6 of 28, Counted 0 of 3"
+ * over it named the wrong flight; the attitude display hides in a replay the same way, look-panels.ts).
+ */
+export function progressNow(mode: { readonly active: boolean; readonly inPlayback: boolean }, runner: Pick<LessonSession, 'view'> | null, title: (line: LessonView['title']) => string): { readonly view: LessonView; readonly title: string } | null {
+    if (!mode.active || mode.inPlayback || runner === null) return null;
+    const view = runner.view();
+    return { view, title: title(view.title) };
+}
 
 /**
  * Keeps the panel drawn from the lesson running now: at once, then at every event the mode writes (`on`: the page's 'sonicEvent'; an

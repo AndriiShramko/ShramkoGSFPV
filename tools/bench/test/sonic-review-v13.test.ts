@@ -202,3 +202,39 @@ describe('review F3: B at the first step of the path\'s first lesson leaves no d
         expect(r.lessonEvents('open')).toHaveLength(1);
     }, 300000);
 });
+
+// ------------------------------------------------------------------ F5
+
+describe('review F5: the progress panel shows nothing of the live lesson while a replay plays', () => {
+    it('drawn from the runner while the lesson runs; hidden the moment a replay takes the engine (PageRuntime.playback), drawn again when it gives it back', async () => {
+        const r = await open('rings-first');
+        await r.run(1500, null);
+        const doc = new FakeDocument();
+        const tr = createTranslator('en', engineDicts());
+        const panel = new ProgressPanel({ parent: doc.body as unknown as HTMLElement, text: (key, params) => tr.text({ key, ...(params ? { params: params as Record<string, string | number> } : {}) }) });
+        const redraws = new Set<() => void>();
+        const runtime = new PageRuntime({} as never, r.mode, () => { for (const f of [...redraws]) f(); });
+        const off = followProgress(panel, (cb) => {
+            const offEvent = r.events.on('sonicEvent', cb);
+            redraws.add(cb);
+            return () => {
+                offEvent();
+                redraws.delete(cb);
+            };
+        }, () => progressNow(r.mode, r.host.runner, (title) => tr.text(title)));
+        expect(panel.text.split('\n')[0]).toBe(tr.text(getLesson('rings-first').title));
+        runtime.playback(true);
+        expect(r.mode.inPlayback).toBe(true);
+        expect(panel.text).toBe('');
+        expect(progressNow(r.mode, r.host.runner, (t) => tr.text(t))).toBeNull();
+        runtime.playback(false);
+        expect(panel.text.split('\n')[0]).toBe(tr.text(getLesson('rings-first').title));
+        off();
+    }, 300000);
+
+    it('control: with no lesson running the panel is hidden too, playing or not', async () => {
+        const r = await open('rings-first');
+        r.host.close();
+        expect(progressNow(r.mode, r.host.runner, (t) => String(t))).toBeNull();
+    }, 300000);
+});
