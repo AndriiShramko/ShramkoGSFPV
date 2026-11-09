@@ -304,10 +304,11 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             closeMenu();
             void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
-        // closed over a lesson whose progress was reset under it: that lesson starts again from nothing (v13-int step 5)
+        // closed over a lesson whose progress was reset under it (v13-int step 5), or whose runner left for the screen (review F3: B at the
+        // path's first lesson), that lesson starts again from its beginning; a lesson still running goes on where it was
         onClose: () => {
             closeMenu();
-            void h.restartAfterReset().then((ok) => { if (ok) focusFlight(); });
+            void h.restartAfterScreen().then((ok) => { if (ok) focusFlight(); });
         },
         // "Reset my progress" answered Yes over a running lesson: its runner's old counts are not saved again (v13-int step 5)
         onReset: () => h.progressReset(),

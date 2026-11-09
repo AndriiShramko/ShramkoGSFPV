@@ -18,7 +18,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { TrackLibrary, createTranslator, getLesson, parseTrack, quatRotate, trackToObjects, validateTrack, writeTrack } from '../../../packages/sonic-fpv/src';
+import { TrackLibrary, createTranslator, getLesson, lessonAfter, parseTrack, quatRotate, trackToObjects, validateTrack, writeTrack } from '../../../packages/sonic-fpv/src';
 import type { LessonDef, TrackFile, Vec3 } from '../../../packages/sonic-fpv/src';
 import { forceScanPrefs, clearScanPrefs, loadLessonTrack, readLessonTrack, scanSessionPrefs, trackUrl, voxelCm, wallsAreCoarse, TrackError } from '../../../apps/fly/src/sonic/scan-lesson';
 import { engineDicts, hostLines } from '../../../apps/fly/src/sonic/host-lines';
@@ -417,4 +417,28 @@ describe.skipIf(!haveWalls)('Winter Garden at x5, on its real walls', () => {
         expect(rig.session.sim.p.bump).toBe('drone');
         expect((rig.session.lives().at(-1)!.header.overrides as { bump?: string }).bump).toBeUndefined();
     }, 180000);
+
+    it('v13-int review F3: N while flying the last lesson of the path has nowhere to lead: the start screen; closed without a lesson chosen, free-garden starts again from its beginning and its keys work (before the fix it stayed dead)', async () => {
+        expect(lessonAfter('free-garden', 'full')).toBeNull();
+        rig = await Rig.make(lesson, { scan });
+        const r = rig;
+        expect(await r.host.open('free-garden')).toBe(true);
+        for (let i = 0; i < 12 && r.host.runner!.phase !== 'flying'; i++) {
+            r.press('scene.next');
+            await r.run(1500, null);
+        }
+        expect(r.host.runner!.phase).toBe('flying');
+        r.press('scene.next');
+        await r.run(3000, null);
+        expect(r.menus).toBe(1);
+        expect(r.lessonEvents('leave').map((e) => e.lessonId)).toEqual(['free-garden']);
+        // the screen closed with Escape or Back (feature.ts onClose): the lesson again from its beginning, a new runner that takes keys
+        expect(await r.host.restartAfterScreen()).toBe(true);
+        expect(r.lessonEvents('open').map((e) => e.lessonId)).toEqual(['free-garden', 'free-garden']);
+        expect(r.host.runner!.phase).toBe('intro');
+        const n = r.sonic.length;
+        r.press('scene.next');
+        await r.run(2000, null);
+        expect(r.sonic.slice(n).some((e) => e.kind === 'lesson' || e.kind === 'speech')).toBe(true);
+    }, 300000);
 });

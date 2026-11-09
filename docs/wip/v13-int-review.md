@@ -271,3 +271,10 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   button, a slider's arrows, a letter in a list). Test: `sonic-start-screen` "v13-int review F2" (over a lesson, B, N, Z, G, R, I, T, U,
   L, K, P and a digit stop at the screen and a router stand-in after it sees none; F13 goes on; Down and Escape still work). Control: the
   screen hidden, every key reaches the router; the code control (the stop removed) fails the test. In the page: `sonic-v13-page` R.
+- F3 (major, a dead lesson after B at the path's first lesson): holds. Fixed in the host: a runner whose way out leads nowhere (B at the
+  first step of the path's first lesson, N or the menu's Next lesson at the path's last lesson, the ladder's end after a pass) is kept as
+  left for the start screen (`toMenu`), and when the screen is closed without a lesson chosen that lesson starts again from its beginning
+  (`restartAfterScreen`, which v13-int step 5's restart after a reset became; `feature.ts` onClose). Test: `sonic-review-v13` F3
+  (ears-headphones, B: the screen; closed: the lesson opened again, N moves it), `sonic-garden` (free-garden, the last lesson of both
+  paths, N while flying: the screen; closed: opened again, N moves it). Control: a lesson still running under the screen is not started
+  again; the code control (the runner not kept) fails both. Changed: `sonic-reset-running` (the method's new name).

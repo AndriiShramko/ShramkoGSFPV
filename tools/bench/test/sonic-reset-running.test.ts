@@ -2,7 +2,7 @@
 // running lesson. The screen clears every lesson's saved progress (store.ts resetProgress), but the runner of the lesson under it still
 // held that lesson's old counts and saved them back at its next attempt (or when it was left), so that lesson was not new. Now the
 // screen tells the flight page (bind's onReset) and the lesson host forgets that runner's counts (LessonHost.progressReset): it saves
-// nothing more, and the lesson starts again from nothing when the screen is closed (restartAfterReset) or another lesson opens.
+// nothing more, and the lesson starts again from nothing when the screen is closed (restartAfterScreen) or another lesson opens.
 // Flown on the lesson rig (the real flight model, lesson pilot, mode, bridge, host and the package's runner): rings-first to one counted
 // attempt, the reset, then the flight going on.
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -43,14 +43,14 @@ describe('v13-int step 5: "Reset my progress" over a running lesson makes that l
     it('closed with Escape or Back: the lesson starts again from nothing, and its next counted attempt is the first one saved', async () => {
         const { r } = await resetOverARunningLesson({ tell: true });
         const old = r.host.runner;
-        expect(await r.host.restartAfterReset()).toBe(true);
+        expect(await r.host.restartAfterScreen()).toBe(true);
         expect(r.host.runner).not.toBe(old);
         expect(r.host.lesson?.id).toBe(ID);
         expect(r.host.runner!.progress()).toMatchObject({ attempts: 0, successes: 0, passed: false });
         await r.run(180000, listenThenFly, () => counted(r) >= 1);
         expect(savedProgress(r.store, ID)).toMatchObject({ successes: 1, passed: false });
         // nothing more to restart once it is the pilot's again
-        expect(await r.host.restartAfterReset()).toBe(false);
+        expect(await r.host.restartAfterScreen()).toBe(false);
     }, 600000);
 
     it('another lesson chosen on the screen: the lesson left saves nothing of its old counts, nor does an attempt it counts before that', async () => {
@@ -66,7 +66,7 @@ describe('v13-int step 5: "Reset my progress" over a running lesson makes that l
     it('control: the reset not told to the flight page (as before this step): the runner under the screen saves its old counts back at its next counted attempt, and when it is left', async () => {
         const { r, before } = await resetOverARunningLesson({ tell: false });
         // the screen closed: nothing restarts, the old runner flies on
-        expect(await r.host.restartAfterReset()).toBe(false);
+        expect(await r.host.restartAfterScreen()).toBe(false);
         await r.run(180000, listenThenFly, () => counted(r) >= 1);
         expect(counted(r)).toBe(before + 1);
         resetProgress(r.store);

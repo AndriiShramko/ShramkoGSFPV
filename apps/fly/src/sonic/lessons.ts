@@ -167,10 +167,17 @@ export class LessonHost {
     /**
      * The runner whose counts the pilot reset (v13-int step 5: "Reset my progress" answered Yes on the start screen shown over this
      * lesson). The screen cleared the saved progress, but this runner still holds the lesson's old counts: nothing of it is saved again
-     * (at its next attempt, block or pass, nor when it is left), and the lesson starts again from nothing (restartAfterReset) when the
+     * (at its next attempt, block or pass, nor when it is left), and the lesson starts again from nothing (restartAfterScreen) when the
      * flight goes on, or another lesson opens. Null otherwise.
      */
     private forgotten: LessonSession | null = null;
+    /**
+     * The runner that left for the start screen (review F3): its 'go' had nowhere to lead (B at the first step of the path's first lesson,
+     * N at its last lesson not passed, the menu's Next lesson there) or the ladder ended after its pass. Once left, a runner ignores every
+     * key, so when the screen is closed without a lesson chosen, the lesson starts again from its beginning (restartAfterScreen) instead
+     * of staying dead behind its progress panel. Null otherwise.
+     */
+    private stranded: LessonSession | null = null;
 
     constructor(page: LessonPage) {
         this.p = page;
@@ -249,8 +256,9 @@ export class LessonHost {
             const runner = createLessonRunner(lesson, runnerOptions(this.p, lessonId, { start, floorY, objects, returnTo: o.returnTo ?? null }, Date.now()));
             this.lesson = lesson;
             this.runner = runner;
-            // a new runner is made from what is saved now: its counts are the pilot's again
+            // a new runner is made from what is saved now: its counts are the pilot's again, and it runs
             this.forgotten = null;
+            this.stranded = null;
             this.world = world;
             this.soundWorld = lesson.world.kind === 'none' ? null : world;
             this.scan = scan;
@@ -311,26 +319,35 @@ export class LessonHost {
     /**
      * "Reset my progress" over the lesson running now (v13-int step 5): the start screen has cleared every lesson's saved progress; this
      * lesson's runner, which holds the old counts, saves nothing more, and the lesson starts again from nothing when the flight goes on
-     * (restartAfterReset) or another lesson is opened. Nothing when no lesson runs.
+     * (restartAfterScreen) or another lesson is opened. Nothing when no lesson runs.
      */
     progressReset(): void {
         this.forgotten = this.runner;
     }
 
     /**
-     * The start screen is closed over the flight (Escape, Back): a lesson whose progress was reset under it starts again from its
-     * beginning, a new runner from the progress saved now (none), the way back of G kept. False when there is none to restart.
+     * The start screen is closed over the flight (Escape, Back): a lesson whose progress was reset under it (v13-int step 5), or whose
+     * runner left for the screen (review F3), starts again from its beginning, a new runner from the progress saved now, the way back of G
+     * kept. False when the lesson under the screen still runs (it goes on where it was) or none does.
      */
-    restartAfterReset(): Promise<boolean> {
+    restartAfterScreen(): Promise<boolean> {
         const id = this.lesson?.id;
-        if (this.runner === null || this.runner !== this.forgotten || id === undefined) return Promise.resolve(false);
+        const run = this.runner;
+        if (run === null || id === undefined || (run !== this.forgotten && run !== this.stranded)) return Promise.resolve(false);
         return this.open(id, { returnTo: this.returnTo });
+    }
+
+    /** The runner left and nothing comes after it: the start screen, and the lesson starts again if the pilot closes it (review F3). */
+    private toMenu(): void {
+        this.stranded = this.runner;
+        this.p.showMenu();
     }
 
     /** The lesson ends and the mode with it (the page is going to the menu or away). */
     close(): void {
         this.finish();
         this.forgotten = null;
+        this.stranded = null;
         this.runner = null;
         this.lesson = null;
         this.world = null;
@@ -474,7 +491,7 @@ export class LessonHost {
         }
         const next = lessonAfter(id, this.p.path());
         if (next && (await this.open(next.id))) return;
-        this.p.showMenu();
+        this.toMenu();
     }
 
     /**
@@ -493,7 +510,7 @@ export class LessonHost {
         }
         const before = lessonBefore(id, this.p.path());
         if (before && (await this.open(before.id))) return;
-        this.p.showMenu();
+        this.toMenu();
     }
 
     // ------------------------------------------------------------------ the pilot's keys

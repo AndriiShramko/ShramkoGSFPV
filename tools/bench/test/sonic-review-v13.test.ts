@@ -167,3 +167,38 @@ describe('review F1: lines of the lesson a host line cut are said again, whole a
         expect(whole(r, L('hover-height', 'intro.1'))[0]!.start).toBeGreaterThanOrEqual(closed);
     }, 300000);
 });
+
+// ------------------------------------------------------------------ F3
+
+describe('review F3: B at the first step of the path\'s first lesson leaves no dead lesson behind the start screen', () => {
+    it('ears-headphones (lesson 1 of the path), B at its first step: the start screen; closed without a lesson chosen, the lesson starts again from its beginning, and N moves it on', async () => {
+        const first = lessonPaths().full[0]!;
+        expect(first).toBe('ears-headphones');
+        expect(lessonBefore(first, 'full')).toBeNull();
+        const r = await open(first);
+        await r.run(800, null);
+        r.press('feedback.open');
+        await r.run(1000, null);
+        expect(r.menus).toBe(1);
+        expect(r.lessonEvents('leave').map((e) => e.lessonId)).toEqual([first]);
+        // the screen closed with Escape or Back (feature.ts onClose)
+        expect(await r.host.restartAfterScreen()).toBe(true);
+        expect(r.lessonEvents('open').map((e) => e.lessonId)).toEqual([first, first]);
+        expect(r.host.runner!.phase).toBe('intro');
+        // the lesson runs: its title is said again, and N moves it on (a step or a line follows the key)
+        const n = r.sonic.length;
+        const said = r.engine.said.length;
+        r.press('scene.next');
+        await r.run(3000, null);
+        expect(r.sonic.slice(n).filter((e) => e.kind === 'key').map((e) => (e as { action: string | null }).action)).toEqual(['next']);
+        expect(r.sonic.slice(n).some((e) => e.kind === 'lesson' || e.kind === 'speech')).toBe(true);
+        expect(r.engine.said.length).toBeGreaterThan(said);
+    }, 300000);
+
+    it('control: a lesson still running under the screen (the lesson menu\'s Lesson list) is not started again when the screen closes', async () => {
+        const r = await open('rings-first');
+        await r.run(2000, null);
+        expect(await r.host.restartAfterScreen()).toBe(false);
+        expect(r.lessonEvents('open')).toHaveLength(1);
+    }, 300000);
+});
