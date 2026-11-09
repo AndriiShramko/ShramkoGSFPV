@@ -1,0 +1,56 @@
+{
+  "name": "sonic-tunnel-cost",
+  "context": {
+    "date": "2026-11-08T19:33:41.047Z",
+    "gitHead": "9f45f0a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "planBoundMs": 20,
+  "rounds": 9,
+  "bump": "lesson",
+  "pass": true,
+  "result": {
+    "world": {
+      "id": "corridor-77892cc5",
+      "voxelM": 0.05,
+      "bounds": {
+        "min": [
+          -2.5,
+          -1,
+          -62.6
+        ],
+        "max": [
+          99.1,
+          3.4,
+          2.5
+        ]
+      },
+      "voxels": 232818432,
+      "trackPoints": 62
+    },
+    "buildMs": 8.67,
+    "flight": {
+      "ticks": 62000,
+      "queries": 67018,
+      "contacts": 618
+    },
+    "bestMs": {
+      "session": 101.75,
+      "cells": 153.25,
+      "raw": 706.41
+    },
+    "per10sMs": {
+      "session": 16.41,
+      "cells": 24.72,
+      "raw": 113.94
+    },
+    "sameAnswers": true,
+    "cells": {
+      "uniform": 330,
+      "mixed": 183
+    }
+  }
+}

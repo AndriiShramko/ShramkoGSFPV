@@ -11,7 +11,7 @@
 // start screen offers its lesson first and nothing starts by itself. Its sound settings are in force for this visit only
 // (SonicSetup.setVisit), and the start screen says which, with a button to keep them.
 import type { Locale } from '@shramko/sonic-fpv';
-import { DICTS, createTranslator, getLesson } from '@shramko/sonic-fpv';
+import { getLesson } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { followVisit } from './address';
 import { Captions } from './captions';
@@ -21,7 +21,7 @@ import type { LessonWorld } from './lesson-world';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
 import { launchFailureLine, parseSonicParam } from './start-model';
-import { allProgress, currentLesson, setCurrentLesson } from './store';
+import { allProgress, currentLesson, resetProgress, setCurrentLesson } from './store';
 import { enableZoom } from './zoom';
 import { t } from '../i18n';
 
@@ -60,10 +60,13 @@ export interface StartHandle {
 /** Opens the start screen; a lesson chosen on it launches the flight. */
 export function startSonic(d: SonicStartDeps): StartHandle {
     enableZoom();
-    const tr = createTranslator(d.locale, DICTS);
-    document.title = tr.say('app.name');
+    // the mode's name in the page's language (v13-int step 6: Russian and Polish name it in their own words)
+    document.title = t('sonic.start.name');
     const request = parseSonicParam(d.raw);
-    const setup = new SonicSetup(d.prefs, d.locale, new Captions());
+    const captions = new Captions();
+    // what of the captions fits above the panels is measured again when the page changes size (v13-int review K2, captions.ts fit)
+    addEventListener('resize', () => captions.refit());
+    const setup = new SonicSetup(d.prefs, d.locale, captions);
     // a shared link's sound for this visit (never saved unless kept); its scene and size are the lesson's own, which decides. The
     // address carries what of it still stands, so a reload or a restored tab never brings back a setting the pilot kept, changed or
     // let go of (review R2, address.ts)
@@ -74,6 +77,8 @@ export function startSonic(d: SonicStartDeps): StartHandle {
         request,
         progress: () => allProgress(d.prefs),
         current: () => currentLesson(d.prefs),
+        // Reset my progress (v0.13, M41-2): the lessons' progress and the current lesson go, the sound settings stay
+        resetProgress: () => resetProgress(d.prefs),
         onStart: (id) => {
             // inside the press: the context and the speech unlock; the rest follows once the engine is up
             const started = setup.audio.start();

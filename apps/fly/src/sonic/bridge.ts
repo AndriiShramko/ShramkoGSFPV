@@ -12,9 +12,16 @@
 //            itself by the runner's rule (material by six axis rays, the sample's speed and position).
 //   events   every SessionEvent of the mode goes out as ctx.events 'sonicEvent', in order: the runner's (its
 //            begin() writes 'lesson open'), and the host's markers the replay takes as inputs: 'key' events
-//            with the actions reset.checkpoint, reset.start and next, and a 'speech' event with the key
-//            speech.end whenever the host's speech queue runs empty and it calls runner.spoken(t). The flight
-//            pausing and going on are 'session' pause and resume; the recorder writes start, end, recovered.
+//            with the actions reset.checkpoint, reset.start, next, and since v0.13 previous, repeat and
+//            next-lesson (B, Z, the lesson menu), each written before the runner's call, and a 'speech'
+//            event with the key speech.end whenever the host's speech queue runs empty and it calls
+//            runner.spoken(t). The flight pausing and going on are 'session' pause and resume; the recorder
+//            writes start, end, recovered.
+//   pause    (v0.13 W8) where the bridge writes the session's pause and resume it calls runner.pause(t) and
+//            runner.resume(t) at the same t (the replay takes them from those events): the lesson's clocks stand
+//            while the flight waits; no speech.end and no runner.spoken while paused (the queue holds the lesson
+//            menu's lines then), one after the resume when the queue is empty. The page tells the bridge at once
+//            (syncPause on its 'pause' event), not only at the next frame.
 //   silence  when the frames stop (the flight pauses, a replay drives the view, the mode stops) the engine
 //            gets setLayers with no layer on, and the lesson's layers again when they go on; speech goes
 //            through say(), which passes `interrupt` and keeps the speech queue that spoken() reports.
@@ -62,6 +69,12 @@ export interface BridgeEngine {
     say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void>;
     /** once per rendered frame (SonicMode.hear); the bridge itself never calls it */
     update?(input: SonicFrameInput): void;
+    /**
+     * Forgets what is sounding (the package's SonicEngine.reset, s13-int; v13-int step 1): the lesson host calls it when it opens a
+     * lesson, before the bridge's clock starts again at 0, so the next lesson does not voice the last one's held hazard sectors for
+     * 0.3 s with its own walls. Absent on an older engine.
+     */
+    reset?(): void;
 }
 
 /**
@@ -144,6 +157,26 @@ export class SonicBridge {
     /** the text of the line just handed to the engine (its onSpeech, speech(), runs inside engine.say) */
     private handed: string | null = null;
     /**
+     * The lesson's own lines (say with `lesson`: the runner's, the host's line at a lesson's start) handed to the engine and not ended yet,
+     * in the order they were handed (v13-int review F1).
+     */
+    private lessonLines: { readonly line: SpeechLine }[] = [];
+    /**
+     * Lines of the lesson that a line of the host's own cut (the lesson menu's, the start screen's, K's help, I's status: they interrupt):
+     * the lesson's speech is not theirs to drop. They are said again, whole and in order, once the host is done: when its lines are over
+     * while the flight runs, or when the flight goes on (sayAgainLater). A newer line of the lesson drops them (the lesson moved on: N, Z, B,
+     * the menu's step items). Before review F1 they were lost: Escape early in a lesson took the first lines of its task with it.
+     */
+    private cutLines: SpeechLine[] = [];
+    /**
+     * Lines of the host's own handed and not ended yet (this run of the mode). A line that interrupts ends them at once: the browser's
+     * speech may report a line it cancelled before it began only at its safety timeout (2 x its length and 4 s), and the lesson's lines
+     * said again after the host waited for that (13 s of silence after the lesson menu closed, seen in sonic-v13-page R).
+     */
+    private readonly hostLines = new Set<object>();
+    /** a line was said since the flight last went on (sayAgainLater: one said at the resume, "Resume.", is heard before the lesson's) */
+    private saidSinceResume = false;
+    /**
      * Called after every call the bridge makes into the lesson runner (begin, reset, next, spoken): the runner may have
      * queued things to do (say a line, place the craft, ask a question), and the host takes them at once instead of
      * at the next frame. Set once by the lesson host; it survives start() and stop().
@@ -178,8 +211,17 @@ export class SonicBridge {
         this.sounding = false;
         this.speaking = 0;
         this.lastLine = null;
+        this.forgetLines();
         this.cutReading();
         this.follow(session);
+    }
+
+    /** A new run of the mode, or its end: the lesson's lines of the run before are nobody's to say again (F1). */
+    private forgetLines(): void {
+        this.lessonLines = [];
+        this.cutLines = [];
+        this.hostLines.clear();
+        this.saidSinceResume = false;
     }
 
     /** The lines of the sequential queue are over now (cut by an interrupting line, or the run of the mode ended). */
@@ -196,6 +238,7 @@ export class SonicBridge {
         this.silence();
         this.on = false;
         this.epoch++;
+        this.forgetLines();
         this.cutReading();
         this.session = null;
         this.runner = null;
@@ -267,10 +310,7 @@ export class SonicBridge {
         if (!sim) return null;
         const t = this.now();
         const paused = ses.paused || ses.replaying;
-        if (paused !== this.pausedNow) {
-            this.pausedNow = paused;
-            this.event({ t, kind: 'session', what: paused ? 'pause' : 'resume' });
-        }
+        this.pauseState(paused, t);
         if (paused) this.silence();
         else this.sound();
         const s = sim.s;
@@ -299,6 +339,75 @@ export class SonicBridge {
             this.event({ t, kind: 'touch', material: touchMaterial(this.world, sample.pos), speed, pos: sample.pos });
         }
         return sample;
+    }
+
+    /**
+     * The flight paused or went on (v0.13 W8, the package's review R8): the 'session' event, and the lesson runner with it at the same
+     * t, runner.pause(t) or runner.resume(t) (the replay takes the pause from that event). While paused the lesson's clocks stand (a
+     * question asked before the lesson menu does not time out in it, an attempt's time limit waits, a pause in a band is no time
+     * held) and the runner hears no end of speech (the queue holds the menu's lines then); after resume it hears it once, at once
+     * when the queue is already empty (else when it runs empty).
+     */
+    private pauseState(paused: boolean, t: number): void {
+        if (paused === this.pausedNow) return;
+        this.pausedNow = paused;
+        this.event({ t, kind: 'session', what: paused ? 'pause' : 'resume' });
+        const run = this.runner;
+        if (!run) return;
+        this.events(paused ? run.pause(t) : run.resume(t));
+        this.afterRunner?.();
+        if (paused) return;
+        // lines of the lesson a host line cut while the flight waited: said again first, and the end of speech comes after them (F1)
+        if (this.cutLines.length > 0) this.sayAgainLater();
+        else if (this.speaking === 0) this.spoken();
+    }
+
+    /**
+     * The flight went on with lines of the lesson waiting to be said again (F1). What the page does at once decides when: a line of the
+     * lesson (a menu item that moves it: Next step, Repeat the task) drops them; a line of the host's ("Resume.", K's "Back to the
+     * flight.") is heard first, and they follow when it ends (say()); nothing at all: they are said now, the first cutting what the
+     * closed menu, screen or help was still saying.
+     */
+    private sayAgainLater(): void {
+        this.saidSinceResume = false;
+        const run = this.epoch;
+        queueMicrotask(() => {
+            if (run !== this.epoch || this.pausedNow) return;
+            if (this.cutLines.length === 0) {
+                if (this.speaking === 0) this.spoken();
+                return;
+            }
+            if (!this.saidSinceResume) this.sayAgain(true);
+        });
+    }
+
+    /** The lesson's lines a host line cut, said again whole and in order (F1); the first may cut what is being said. */
+    private sayAgain(interruptFirst: boolean): void {
+        const lines = this.cutLines;
+        this.cutLines = [];
+        lines.forEach((line, i) => void this.say(line, interruptFirst && i === 0, { lesson: true }));
+    }
+
+    /** Lines of the lesson wait to be said again (F1). */
+    get waitingToSayAgain(): number {
+        return this.cutLines.length;
+    }
+
+    /**
+     * The flight's pause now, without waiting for the next frame (the page's 'pause' event: the lesson menu, the pause menu, K's
+     * help hold the flight and speak at once, and the runner must be paused before their first line ends).
+     */
+    syncPause(): void {
+        const ses = this.session;
+        if (!this.on || this.inPlayback || !ses) return;
+        const paused = ses.paused || ses.replaying;
+        this.pauseState(paused, this.now());
+        if (paused) this.silence();
+    }
+
+    /** The flight is paused for the mode (the runner waits with it). */
+    get paused(): boolean {
+        return this.pausedNow;
     }
 
     /** The frames stop (also a hidden tab, the page says so): the engine gets no layer, once. */
@@ -331,10 +440,19 @@ export class SonicBridge {
         for (const e of list) this.event(e);
     }
 
-    /** A lesson begins now: the runner's begin() events go out (the first is 'lesson open', the replay's start). */
+    /**
+     * A lesson begins now: the runner's begin() events go out (the first is 'lesson open', the replay's start). A lesson that begins
+     * while the flight is paused (a recording started under its consent dialog opens the lesson again) waits from its start: the
+     * pause is written and given to the runner at once, its resume comes with the flight's.
+     */
     begin(run: LessonSession): void {
         this.runner = run;
-        this.events(run.begin(this.now()));
+        const t = this.now();
+        this.events(run.begin(t));
+        if (this.pausedNow) {
+            this.event({ t, kind: 'session', what: 'pause' });
+            this.events(run.pause(t));
+        }
         this.afterRunner?.();
     }
 
@@ -354,14 +472,39 @@ export class SonicBridge {
         return { pose: r.pose };
     }
 
-    /** N: the key event the replay reads, then the runner's next step. */
-    next(code: string): void {
-        this.key(code, REPLAY_KEY_ACTIONS.next);
-        if (this.runner) {
-            this.events(this.runner.next(this.now()));
-            this.afterRunner?.();
-        }
+    /**
+     * A key that moves the lesson (N, B, Z, the lesson menu's items): the key event with its REPLAY_KEY_ACTIONS action first (the
+     * replay takes the key from it), then the runner's call at the same t, its events out, its actions taken.
+     */
+    private keyCall(code: string, action: string, call: (run: LessonSession, t: number) => readonly SessionEvent[]): void {
+        const t = this.now();
+        this.event({ t, kind: 'key', code, action });
+        const run = this.runner;
+        if (!run) return;
+        this.events(call(run, t));
+        this.afterRunner?.();
     }
+
+    /** N: the next step; from the lesson's last step the next lesson (the runner's 'go'). */
+    next(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.next, (run, t) => run.next(t));
+    }
+
+    /** B (v0.13): the step before; from the first step the lesson before; while flying the task again, the attempt dropped. */
+    previous(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.previous, (run, t) => run.previous(t));
+    }
+
+    /** Z (v0.13): the step's whole task again, its named sounds three times (while flying the attempt waits for it). */
+    repeatTask(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.repeat, (run, t) => run.repeat(t));
+    }
+
+    /** The lesson menu's Next lesson: at once, this lesson marked skipped unless it was passed. */
+    nextLesson(code: string): void {
+        this.keyCall(code, REPLAY_KEY_ACTIONS.nextLesson, (run, t) => run.nextLesson(t));
+    }
+
 
     /**
      * Speaks a line through the engine, `interrupt` passed on; the queue of lines is counted, and when it runs
@@ -373,9 +516,29 @@ export class SonicBridge {
      * and that line ends later, cut by the new lesson's first line or on its own. Such a line is no part of the new run:
      * it takes nothing off its count and reports no end of speech (it would otherwise make the new lesson's queue look
      * empty while its own first line was being said, and the runner would go on before its intro ended).
+     *
+     * `lesson`: a line of the lesson (the runner's, the host's line at a lesson's start), not of the host's own menus and keys (review
+     * F1). A host line that interrupts cuts the lesson's lines that were not said to their end: they are said again once the host is done
+     * (cutLines). A line of the lesson that comes later drops those (the lesson moved on), and one that interrupts ends the lesson's own.
      */
-    async say(line: SpeechLine, interrupt = false): Promise<void> {
+    async say(line: SpeechLine, interrupt = false, o: { readonly lesson?: boolean } = {}): Promise<void> {
         if (!this.on) return;
+        const lesson = o.lesson === true;
+        if (lesson) {
+            // the lesson moved on: what a host line cut of its older words is not said again; its own interrupt ends its own lines
+            this.cutLines = [];
+            if (interrupt) this.lessonLines = [];
+        } else if (interrupt && this.lessonLines.length > 0) {
+            this.cutLines.push(...this.lessonLines.map((l) => l.line));
+            this.lessonLines = [];
+        }
+        // a line that interrupts ends the host's lines being said or waiting: they are over now, whenever the browser reports them
+        if (interrupt) this.hostLines.clear();
+        if (!this.pausedNow) this.saidSinceResume = true;
+        const mine = lesson ? { line } : null;
+        const host = {};
+        if (mine) this.lessonLines.push(mine);
+        else this.hostLines.add(host);
         this.lastLine = line;
         this.speaking++;
         const run = this.epoch;
@@ -411,6 +574,14 @@ export class SonicBridge {
             }
         } finally {
             if (run === this.epoch) {
+                if (mine) {
+                    const i = this.lessonLines.indexOf(mine);
+                    if (i >= 0) this.lessonLines.splice(i, 1);
+                } else if (this.hostLines.delete(host)) {
+                    // the host's lines are over while the flight runs: the lesson's lines they cut are said again now, before the end of
+                    // speech can be counted (F1)
+                    if (this.hostLines.size === 0 && this.cutLines.length > 0 && !this.pausedNow) this.sayAgain(false);
+                }
                 this.speaking = Math.max(0, this.speaking - 1);
                 if (this.speaking === 0) this.spoken();
             }
@@ -439,9 +610,12 @@ export class SonicBridge {
         this.event({ t: this.now(), kind: 'speech', key, text });
     }
 
-    /** The host's speech queue ran empty: the speech.end marker, then what the runner does on it. */
+    /**
+     * The host's speech queue ran empty: the speech.end marker, then what the runner does on it. Not while the flight is paused (W8):
+     * the queue then held the lesson menu's (or K's, or I's) lines, not the lesson's; the runner hears it after the resume.
+     */
     spoken(): void {
-        if (!this.on) return;
+        if (!this.on || this.pausedNow) return;
         const t = this.now();
         this.event({ t, kind: 'speech', key: SPEECH_END_KEY, text: '' });
         if (this.runner) {

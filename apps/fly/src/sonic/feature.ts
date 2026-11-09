@@ -10,13 +10,15 @@
 // sonic/lazy-start.ts) when the pilot starts a lesson, before the flight is made. A page without ?sonic= never downloads
 // this module, the lessons, the start screen or the sound package.
 //
-// Keys the mode takes: R short and long, N and [ ] (mode.ts); the digits answer a question asked (0 skips it), Z says the
-// last line again, I says where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder
-// adds), G opens the sound glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature
-// sonic-session). The pause menu gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist
-// only on this page (keymap `when: 'sonic'`, v12-optin). Two keys of every page do the mode's own thing here (v12-optin,
-// mode-keys.ts): L copies a link that opens this lesson in the mode, instead of the share panel's picture (so do the top bar's and
-// the pause menu's Share: ctx.sonicShare, review R3); K says the keys.
+// Keys the mode takes: R short and long, N, B, Z and [ ] (mode.ts: N the next step, B the step before, Z the step's task again,
+// each through the lesson runner and recorded for the replay, v0.13 W5); the digits answer a question asked (0 skips it), I says
+// where the pilot is (and, through the page's status board, app/sonic-status.ts, what the recorder adds), G opens the sound
+// glossary and comes back (lessons.ts); T and U belong to the recorder (lane v12-feedback, feature sonic-session). The pause menu
+// gains "Fly by Sound: lessons and settings", the start screen over the flight. T U I Z G exist only on this page (keymap `when:
+// 'sonic'`, v12-optin). Keys of every page do the mode's own thing here: L copies a link that opens this lesson in the mode, instead
+// of the share panel's picture (so do the top bar's and the pause menu's Share: ctx.sonicShare, review R3), K says the keys
+// (v12-optin, mode-keys.ts), and in a lesson N and B are the lesson's (the scene rotation's and the feedback form's elsewhere; the
+// key list says so, and the pause menu keeps the feedback form).
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
 import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
@@ -26,6 +28,10 @@ import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, Sessio
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
 import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { KeyNames } from './key-names';
+import { ProgressPanel, followProgress, progressNow } from './progress-panel';
+import { DomLessonMenuView, LessonMenu, pauseKey, runItem } from './lesson-menu';
+import { engineDicts } from './host-lines';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
 import { dialogOpen, typing } from '../devices/keyboard';
@@ -38,6 +44,7 @@ import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
 import type { LessonPage } from './lessons';
 import { PrimitiveStage, worldPrims } from './primitives';
+import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
@@ -74,6 +81,10 @@ declare module '../app/test-hook' {
             lastLine: string | null;
             stagePrims: number;
             progress: ReturnType<typeof allProgress>;
+            /** what the progress panel shows (its lines joined by newlines), '' while it is hidden (v0.13 M41-7) */
+            panel: string;
+            /** the lesson menu (v0.13 M41-3): up or not, and the item with the focus (0-based) */
+            menu: { open: boolean; focused: number };
             events: SessionEvent[];
         };
         /**
@@ -163,7 +174,7 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
 }
 
 /** The page as the lesson host sees it. */
-function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void): LessonPage {
+function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
         mode,
         store: ctx.prefs,
@@ -171,6 +182,10 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         stage,
         onEvent: (cb) => ctx.events.on('sonicEvent', cb),
         path: () => entry.setup.prefs.path,
+        // the runner's lines name N, B and Z as the pilot's keyboard types them (key-names.ts), and wait for lines at his speaking speed
+        keyNames: () => names.runner(),
+        lessonKeys: () => names.lessonStart(),
+        speechRate: () => entry.setup.prefs.speechRate,
         session: () => ctx.session,
         // a lesson with other walls: the flown session is replaced, the way the scene host replaces a scan (app/scene-host.ts),
         // the flight held meanwhile (pause 'scene'), the drone, its rules and the gust seed kept
@@ -202,7 +217,7 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         },
         // a scan lesson (module 7): the scan at the lesson's size, walls on, then its world over the track (sonic/scan-lesson.ts)
         scanLesson: (lesson) => scanLesson(ctx, mode, entry, tracks, lesson),
-        showMenu,
+        showMenu: () => showMenu(),
         clock: () => performance.now(),
         visit: () => entry.setup.visit
     };
@@ -230,9 +245,13 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // "my screen reader speaks": the lesson waits for its lines read one after the other, as the reader reads them (v12-int step 6)
     mode.bridge.sequential = () => !entry.setup.prefs.selfVoice;
     mode.bridge.readTimeMs = (text) => estimateSpeechS(text, entry.setup.prefs.speechRate) * 1000;
-    ctx.sonic = new PageRuntime(entry.setup, mode);
+    // a replay taking the engine or giving it back: the progress panel follows at once (review F5: it hides while a replay plays)
+    const onPlayback = new Set<() => void>();
+    ctx.sonic = new PageRuntime(entry.setup, mode, () => { for (const f of [...onPlayback]) f(); });
     document.body.classList.add('sonic-mode');
     stage = new PrimitiveStage(ctx.renderer);
+    offs.push(installAttitude(ctx, mode, () => host)); // M41-24, look-panels.ts (lane v13-look)
+    offs.push(installSoundPanel(ctx, mode, audio.engine, () => host)); // M41-25, look-panels.ts (lane v13-look)
     const screen = entry.screen;
     // review R5: a screen reader in browse mode keeps single letters for its own quick keys (NVDA and JAWS: K link, L list, T table,
     // G graphic, R radio button, I list item, the digits headings), so the flight's keys would never reach the page. While the flight
@@ -253,18 +272,33 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         flight.focus({ preventScroll: true });
     };
     offs.push(ctx.events.on('pause', ({ on }) => { if (!on) focusFlight(); }), () => flight.remove());
-    // the start screen over the flight: the flight waits behind it, a lesson chosen on it opens, Escape and Back close it
-    const showMenu = (): void => {
+    // the lesson waits with the flight at once (W8): the menus that hold the flight speak at once, and a line of theirs must not be
+    // taken for the end of the lesson's speech (bridge.ts pauseState); the next frame would be late for it
+    offs.push(ctx.events.on('pause', () => mode.bridge.syncPause()));
+    // the start screen over the flight: the flight waits behind it, a lesson chosen on it opens, Escape and Back close it; `section`: the
+    // heading the focus goes to (the lesson menu's Sound settings opens the settings)
+    const showMenu = (section?: 'settings'): void => {
         if (!screen) return;
         ctx.pause('panel');
-        screen.show();
+        screen.show(section);
     };
     const closeMenu = (): void => {
         screen?.hide();
         ctx.resume('panel');
         focusFlight();
     };
-    const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu));
+    // the names of the pilot's keys in what the mode says: the page's key table, the letters of his keyboard layout where the browser
+    // tells them (asked again when the window comes back: a layout may have been switched meanwhile), a named key in the page's language
+    const names = new KeyNames((action) => ctx.keys.caps(action), (code) => {
+        const key = `sonic.key.${code}`;
+        const said = t(key);
+        return said === key ? null : said;
+    });
+    void names.refresh();
+    const onFocus = (): void => void names.refresh();
+    addEventListener('focus', onFocus);
+    offs.push(() => removeEventListener('focus', onFocus));
+    const h = new LessonHost(pageOf(ctx, mode, entry, stage, new Map(), showMenu, names));
     host = h;
     hosts.set(ctx, h);
     screen?.bind({
@@ -272,12 +306,38 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             closeMenu();
             void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
-        onClose: closeMenu
+        // closed over a lesson whose progress was reset under it (v13-int step 5), or whose runner left for the screen (review F3: B at the
+        // path's first lesson), that lesson starts again from its beginning; a lesson still running goes on where it was
+        onClose: () => {
+            closeMenu();
+            void h.restartAfterScreen().then((ok) => { if (ok) focusFlight(); });
+        },
+        // "Reset my progress" answered Yes over a running lesson: its runner's old counts are not saved again (v13-int step 5)
+        onReset: () => h.progressReset(),
+        // the start screen's spoken list (v0.13 C3) speaks as the lesson menu does: through the lesson's speech queue while one runs
+        say: (line, interrupt) => sayLine(line, interrupt)
     });
     offs.push(ctx.events.on('sonicEvent', (e) => {
         log.push(e);
         if (log.length > EVENT_LOG_CAP) log.shift();
     }));
+    // the lesson's progress for the eye (M41-7, progress-panel.ts): drawn from the runner's view whenever the mode writes an event (an
+    // attempt's start, pass and failure each are one) and when a replay starts or ends, outside #ui (the flight's live region), hidden
+    // while no lesson runs and while a replay plays (review F5: it showed the live lesson over the replayed one)
+    const progressTitles = createTranslator(locale, DICTS);
+    const progress = new ProgressPanel({ parent: document.body, text: (key, params) => t(key, params as Record<string, string | number> | undefined) });
+    const onDraw = (cb: () => void): (() => void) => {
+        const off = ctx.events.on('sonicEvent', cb);
+        onPlayback.add(cb);
+        return () => {
+            off();
+            onPlayback.delete(cb);
+        };
+    };
+    offs.push(
+        followProgress(progress, onDraw, () => progressNow(mode, h.runner, (key) => progressTitles.text(key))),
+        () => progress.dispose()
+    );
     let lastSample: FlightSample | null = null;
     offs.push(ctx.events.on('sonicSample', (smp) => { lastSample = smp; }));
     ctx.hook.sonicRays = (frames = 400) => {
@@ -329,8 +389,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         }
     });
     offs.push(() => setLessonView(ctx, null));
-    // Z and G: keys of the mode, each ignored while no lesson runs
-    offs.push(ctx.keys.on('sonic.repeat', (e) => { if (!e.repeat && mode.active) void h.repeat(); }));
+    // G: a key of the mode, ignored while no lesson runs (Z, N and B are the mode's own while a lesson runs: mode.ts)
     offs.push(ctx.keys.on('sonic.glossary', (e) => { if (!e.repeat && mode.active) void h.glossary(); }));
     // I: where the pilot is, in one press: the lesson's line (status.lesson, or status.none when none runs), then what the
     // other features add (the recorder's status.recording-on or -off). The only handler of I: the others add providers to
@@ -346,7 +405,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     );
     // a line of the mode's own keys: through the lesson's speech queue while one runs (its speech events), else the engine itself
     const sayLine = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt }));
-    const capOf = (action: string): string => ctx.keys.caps(action).map((c) => c.cap).join(' ');
+    // the names K says for the keys: the pilot's keyboard layout's letters, Escape by its name (key-names.ts)
+    const capOf = (action: string, aria?: string): string => names.of(action, aria);
     // The mode's Share (v12-optin, review R1 R3; mode-keys.ts shareLesson): L and the top bar's and the pause menu's Share (share.ts
     // hands them to ctx.sonicShare) give the link that opens this lesson in the mode (no language in it: the server sends whoever opens
     // it to his own). Copied, then said; in screen-reader mode the captions are the live region the reader announces. Refused by the
@@ -401,11 +461,52 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         }, { when: () => !dialogOpen() }),
         ctx.keys.relabel('share.open', 'keys.sonic.shareLink'),
         ctx.keys.relabel('help.keys', 'keys.sonic.hearKeys'),
+        // in a lesson N and B are the lesson's (mode.ts); the pause menu's item keeps the feedback form
+        ctx.keys.relabel('scene.next', 'keys.sonic.next'),
+        ctx.keys.relabel('feedback.open', 'keys.sonic.previous'),
+        // Escape is the lesson menu's in a lesson, P the pause menu's (lesson-menu.ts pauseKey)
+        ctx.keys.relabel('pause.toggle', 'keys.sonic.menu'),
         () => {
             help.dispose();
             delete ctx.sonicShare;
             delete ctx.hook.sonicLink;
         }
+    );
+    // Escape in a lesson (v0.13 B6, M41-3; lesson-menu.ts): the spoken lesson menu, the flight and the lesson held while it is up (the
+    // page's 'menu' pause, which the runner waits with: W8). P (the same binding) still opens the simulator's pause menu, which keeps
+    // the feedback form and the rest. Over a dialog, the pause menu or with no lesson the key is the page's as before (`when`).
+    const engineText = createTranslator(locale, engineDicts());
+    const lessonMenu = new LessonMenu({
+        say: sayLine,
+        text: (line) => engineText.text(line),
+        hold: (on) => (on ? ctx.pause('menu') : ctx.resume('menu')),
+        readerSpeaks: () => !entry.setup.prefs.selfVoice,
+        run: runItem({
+            mode,
+            showScreen: (section) => showMenu(section),
+            leave: () => {
+                // the lesson's progress saved, then the simulator without the mode (the start screen's "Leave Fly by Sound" link)
+                h.close();
+                location.assign(`/${locale}/fly/`);
+            }
+        }),
+        view: new DomLessonMenuView(document.body, window)
+    });
+    offs.push(
+        ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open()), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
+        () => lessonMenu.dispose(),
+        // review F7: on a phone nothing typed Escape, so Repeat the task, Next step, Previous step and Next lesson had no way in. The pause
+        // menu (the top bar's Pause button) has the lesson menu as an item while a lesson runs; it opens once the pause menu has let the
+        // flight go (picking an item releases the pause menu's hold after the item runs: the lesson menu holds the flight itself)
+        ctx.menu.add({
+            id: 'pause.sonic.lessonMenu',
+            action: null,
+            labelKey: 'sonic.say.menuTitle',
+            order: 94,
+            section: 'tools',
+            enabled: () => mode.active && h.active,
+            run: () => queueMicrotask(() => { if (mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen) lessonMenu.open(); })
+        })
     );
     // the first lesson: its world is the one the page was made on (the entry built it); a lesson that cannot open
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
@@ -433,6 +534,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         lastLine: mode.bridge.last ? mode.bridge.last.key : null,
         stagePrims: stage ? stage.count : 0,
         progress: allProgress(ctx.prefs),
+        panel: progress.text,
+        menu: { open: lessonMenu.isOpen, focused: lessonMenu.focused },
         events: withEvents ? [...log] : []
     });
     offs.push(

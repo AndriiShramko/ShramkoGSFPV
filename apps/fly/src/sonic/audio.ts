@@ -2,7 +2,9 @@
 // AudioContext for the whole mode, made by the start screen's Start button (a user activation: the same press unlocks
 // speechSynthesis), the sound package's engine started on it, the pilot's sound settings applied to it. The engine
 // owns the context and the output chain (master, limiter at the theme's ceiling, fade-in); the simulator's motor
-// sound plugs into it through `auxInput` (app/builtin/sound.ts), so it goes through the same limiter.
+// sound plugs into it (app/builtin/sound.ts) through its motor bus `motorInput` (v0.13, M41-16: the propellers' band,
+// levelled, under the cues, ducked under speech), or `auxInput` on an engine that has none, so it goes through the same
+// limiter. `plan` is the engine's last frame plan (the height tone and target note, the open way), for the mode's panels.
 //
 // Nothing here makes sound by itself: the frames (the lesson host, the feature) call engine.update(). A browser
 // with no Web Audio gets no context: `available` is false and everything else still runs, captions and all.
@@ -13,7 +15,7 @@ import type { AudioContextLike, Locale, SonicPrefs, SpeechLine, SpeechOut, Theme
 import { engineDicts } from './host-lines';
 
 /** What the engine host needs of the engine (FlyBySoundEngine; a fake in tests). */
-export type PageEngine = Pick<FlyBySoundEngine, 'state' | 'start' | 'suspend' | 'resume' | 'close' | 'setTheme' | 'setPrefs' | 'setLocale' | 'setLayers' | 'update' | 'cue' | 'say' | 'activeCues' | 'auxInput' | 'onSpeech'>;
+export type PageEngine = Pick<FlyBySoundEngine, 'state' | 'start' | 'suspend' | 'resume' | 'close' | 'setTheme' | 'setPrefs' | 'setLocale' | 'setLayers' | 'update' | 'cue' | 'say' | 'activeCues' | 'auxInput' | 'motorInput' | 'plan' | 'onSpeech' | 'reset'>;
 
 /** What the engine host asks of the browser (replaced in tests, and by the bench's tap on the output). */
 export interface AudioDeps {

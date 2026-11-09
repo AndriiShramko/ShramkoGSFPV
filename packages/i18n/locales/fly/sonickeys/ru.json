@@ -1,9 +1,12 @@
 {
-  "keys.sonic.glossary": "Fly by Sound: открыть словарь звуков",
-  "keys.sonic.hearKeys": "Fly by Sound: услышать клавиши",
-  "keys.sonic.record": "Fly by Sound: начать или остановить запись",
-  "keys.sonic.repeat": "Fly by Sound: ещё раз услышать последнюю фразу",
-  "keys.sonic.send": "Fly by Sound: отправить полёт автору",
-  "keys.sonic.shareLink": "Fly by Sound: скопировать ссылку на этот урок",
-  "keys.sonic.status": "Fly by Sound: услышать состояние урока и записи"
+  "keys.sonic.glossary": "Полёт по звуку: открыть словарь звуков",
+  "keys.sonic.hearKeys": "Полёт по звуку: услышать клавиши",
+  "keys.sonic.menu": "Полёт по звуку: меню урока (клавиша Esc), меню паузы (клавиша P)",
+  "keys.sonic.next": "Полёт по звуку: следующий шаг",
+  "keys.sonic.previous": "Полёт по звуку: шаг назад",
+  "keys.sonic.record": "Полёт по звуку: начать или остановить запись",
+  "keys.sonic.repeat": "Полёт по звуку: ещё раз услышать задание",
+  "keys.sonic.send": "Полёт по звуку: отправить полёт автору",
+  "keys.sonic.shareLink": "Полёт по звуку: скопировать ссылку на этот урок",
+  "keys.sonic.status": "Полёт по звуку: услышать состояние урока и записи"
 }

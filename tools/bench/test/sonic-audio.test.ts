@@ -8,9 +8,9 @@
 //  - the saved progress is not rewritten when only its timestamp moved;
 //  - the mode hands the engine each frame (its default input, or a lesson's), not while a replay drives it;
 //  - the bridge repeats the last line, interrupting;
-//  - the motor sound plugs into the engine's input node on the engine's context (not its own), is silent unless the
-//    settings ask for it, and never suspends or closes a context that is not its own (control: its own context is
-//    closed as before).
+//  - the motor sound plugs into the engine's input node on the engine's context (not its own), plays by default in the
+//    mode since v0.13 (M41-16; the motor bus it goes into: sonic-motor.test.ts), is silent when the settings turn it off,
+//    and never suspends or closes a context that is not its own (control: its own context is closed as before).
 import { describe, expect, it, vi } from 'vitest';
 import { defaultPrefs, getBuiltinTheme, getLesson } from '../../../packages/sonic-fpv/src';
 import type { AudioContextLike, FlightSample, LessonLayers, Locale, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef } from '../../../packages/sonic-fpv/src';
@@ -175,10 +175,10 @@ describe('SonicSetup: the pilot\'s sound settings', () => {
         return { host, s, captions, ...f };
     }
 
-    it('the defaults when nothing is saved: the soft theme, motors off, captions on, the engine speaks, the captions are not read', () => {
+    it('the defaults when nothing is saved: the soft theme, the motor on (M41-16, v0.13), captions on, the engine speaks, the captions are not read', () => {
         const { s, captions } = setup();
         expect(s.prefs).toEqual(defaultPrefs());
-        expect(s.prefs.motorSound).toBe(false);
+        expect(s.prefs.motorSound).toBe(true);
         expect(captions.modes).toEqual([{ visible: true, live: false }]);
     });
 
@@ -625,8 +625,8 @@ describe('the motor sound plugs into the engine, not into the speakers', () => {
         expect(ac.ops).toEqual(['suspend', 'resume', 'close']);
     });
 
-    it('silent unless the settings ask: the default sound settings have the motors off, and an off mix has a zero master', () => {
-        expect(defaultPrefs().motorSound).toBe(false);
+    it('on by default, silent when the settings say so: the default sound settings have the motor on (M41-16), and an off mix has a zero master', () => {
+        expect(defaultPrefs().motorSound).toBe(true);
         const m = motorMix({ state: { motors: [0.5, 0.5, 0.5, 0.5], volt: 11.4, omegaMaxPerVolt: 500, armed: true, crashed: false, speed: 3 }, paused: false, hidden: false, enabled: false, volume: 100 });
         expect(m.master).toBe(0);
     });

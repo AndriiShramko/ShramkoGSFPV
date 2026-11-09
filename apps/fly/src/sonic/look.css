@@ -1,0 +1,94 @@
+/* The mode's attitude display and sound panel (v0.13 lane v13-look L2-1 and L2-2: attitude.ts, sound-panel.ts, look-panels.ts).
+   Their places, agreed in docs/wip/v13-look.md and measured by tools/bench/src/v13-look-page.ts layout: on a wide page the attitude
+   display at the bottom right over the recorder's buttons (the REC row, the recorder's toggle), the sound panel at the bottom left
+   over the telemetry line and under v13-host's progress panel (the left edge, 12 px under halfway down, sonic.css .sonic-progress); on
+   a page 501 to 600 px high the sound panel first of a row at the bottom left with the progress panel to its right; on a shorter one
+   both at the bottom right, side by side, the progress panel alone at the left; on a narrow one (a phone upright) beside and under the
+   view's centre (sonic.css has the progress panel's places, tools/bench/src/v13-look-page.ts layout measures all three). The view's
+   centre (the target) and the captions (top centre; z-index 5, over these if a long line ever reaches them) stay clear. Large and
+   high-contrast like the progress panel: opaque black with a white edge and a black outline (reads over a dark scene and a light
+   one), black on white under a light colour scheme, the system's colours under forced colours. Sizes follow the window (--u, the
+   dial's and the radar's scale), never under a floor in CSS pixels, so a page zoomed to 200 % draws them larger. Outside #ui,
+   hidden from screen readers (aria-hidden), never taking a pointer. */
+
+.sonic-attitude, .sonic-sounds {
+    --u: clamp(120px, 30vh, 260px);
+    position: fixed; z-index: 4; box-sizing: border-box; padding: 6px; border: 3px solid #fff; border-radius: 10px; outline: 2px solid #000;
+    background: #000; color: #fff; pointer-events: none;
+    font: 700 clamp(15px, calc(var(--u) * 0.085), 22px)/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.sonic-attitude[hidden], .sonic-sounds[hidden] { display: none; }
+.sonic-attitude canvas, .sonic-sounds canvas { display: block; }
+
+.sonic-attitude { right: max(12px, env(safe-area-inset-right)); bottom: calc(92px + env(safe-area-inset-bottom)); }
+.sonic-attitude canvas { width: calc(var(--u) * 1.62); height: var(--u); }
+
+/* under the progress panel (the left edge, 12 px under halfway down, sonic.css; about six lines of clamp(18px, 2.2vw, 28px) and 30 px tall):
+   the panel, 0.8 u and 38 px tall, ends 8 px under it */
+.sonic-sounds { --u: min(clamp(120px, 30vh, 260px), calc((50vh - 3 * clamp(18px, 2.2vw, 28px) - 113px) / 0.8)); left: max(12px, env(safe-area-inset-left)); bottom: calc(40px + env(safe-area-inset-bottom)); }
+.sonic-sounds-title { margin: 0 0 4px; font-size: max(15px, .85em); line-height: 1.1; }
+.sonic-sounds-body { position: relative; }
+.sonic-sounds canvas { width: calc(var(--u) * 0.8 * 1.36); height: calc(var(--u) * 0.8); }
+/* a sound a step plays three times: its icon, its glossary name, "2 of 3", over the radar's top */
+.sonic-sounds-now { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: center; gap: 8px; box-sizing: border-box; padding: 6px 8px; border: 2px solid #fff; border-radius: 8px; background: #000; }
+.sonic-sounds-now[hidden] { display: none; }
+.sonic-sounds-icon { width: 2em; height: 2em; flex: none; }
+.sonic-sounds-name { flex: 1 1 auto; min-width: 0; font-size: 1.15em; overflow-wrap: anywhere; }
+.sonic-sounds-count { flex: none; }
+
+/* 501 to 600 px high, wider than a phone (a 1920 x 1080 screen at 200 % zoom is 960 x 540): the progress panel does not fit over the sound
+   panel under the captions, so the sound panel is the first of a row at the bottom left and the progress panel (sonic.css, which reads
+   --sonic-sounds-u for the panel's width) stands to its right; the row ends before the take-off line */
+@media (min-width: 641px) and (min-height: 501px) and (max-height: 600px) {
+    :root { --sonic-sounds-u: clamp(100px, 24.5vh, 140px); }
+    .sonic-sounds { --u: var(--sonic-sounds-u); }
+}
+/* a short page (a phone on its side, a small window): both at the bottom right, side by side, clear of the take-off line */
+@media (max-height: 500px) and (min-width: 641px) {
+    .sonic-attitude, .sonic-sounds { --u: clamp(64px, 20.5vh, 110px); padding: 4px; border-width: 2px; }
+    .sonic-attitude { bottom: calc(88px + env(safe-area-inset-bottom)); }
+    .sonic-sounds { left: auto; right: calc(max(12px, env(safe-area-inset-right)) + var(--u) * 1.62 + 20px); bottom: calc(88px + env(safe-area-inset-bottom)); }
+}
+/* a narrow page (a phone upright): the sound panel left of the view's centre, the attitude display under it at the right */
+@media (max-width: 640px) {
+    .sonic-attitude, .sonic-sounds { --u: clamp(64px, 26vw, 100px); padding: 4px; border-width: 2px; }
+    .sonic-attitude { right: max(8px, env(safe-area-inset-right)); bottom: calc(132px + env(safe-area-inset-bottom)); }
+    /* (over the progress panel, which is 132 px up and 128 px tall here: sonic.css) */
+    .sonic-sounds { left: max(8px, env(safe-area-inset-left)); bottom: calc(268px + env(safe-area-inset-bottom)); }
+    /* touch sticks: both beside the view's centre, over what stacks over the sticks (cinema.css: 16 px, the telemetry's 19 px line,
+       10 px, the recording bar in two rows, the take-off line over it; measured at 390 px wide: its top 182 px over the sticks; 197 px since
+       v13-int review K5 put the recorder's toggle right over the right stick and the row 15 px higher, sonic.css) */
+    body.touch-on .sonic-attitude { --u: clamp(56px, 17vw, 80px); bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 197px); }
+    body.touch-on .sonic-sounds { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 197px); }
+}
+/* narrow and short (a small window at 200 % zoom): the attitude display right of the view's centre, the sound panel under it */
+@media (max-width: 640px) and (max-height: 500px) {
+    .sonic-attitude, .sonic-sounds { --u: clamp(56px, 22vh, 80px); }
+    .sonic-attitude { bottom: calc(120px + env(safe-area-inset-bottom)); }
+    /* right of the progress panel (the narrow page's: low on the left, at most 160 px wide here since v13-int review K2, sonic.css), under the
+       view's centre */
+    .sonic-sounds { --u: clamp(56px, 21.5vh, 77px); left: calc(max(12px, env(safe-area-inset-left)) + 168px); bottom: calc(31px + env(safe-area-inset-bottom)); }
+}
+/* v13-int review K4: a tablet with touch sticks (wider than a phone and over 600 px high; a phone on its side keeps the short page's places): the sticks (min(40vw, 220px) square at the bottom corners) keep the
+   bottom; the sound panel stands at the left over the progress panel (which is at the left edge halfway down, 6 rows of its font
+   clamp(18px, 2.2vw, 28px) and 30 px tall: sonic.css), the attitude display at the right over what stacks there: upright, the recording bar
+   in the middle (the sticks, 16 px, the telemetry's line and 10 px under it, 40 px tall) and the recorder's toggle over the right stick; on its
+   side, the toggle alone (the bar is between the sticks). Both clear of the view's centre: the attitude display at most 1.62 x 140 px wide */
+@media (min-width: 641px) and (min-height: 601px) {
+    body.touch-on .sonic-attitude, body.touch-on .sonic-sounds { padding: 4px; border-width: 2px; }
+    body.touch-on .sonic-sounds { --u: min(clamp(120px, 30vh, 200px), calc((50vh - 3 * clamp(18px, 2.2vw, 28px) - 88px) / 0.8)); top: auto; left: max(12px, env(safe-area-inset-left)); bottom: calc(50vh + 3 * clamp(18px, 2.2vw, 28px) + 11px); }
+    body.touch-on .sonic-attitude { --u: clamp(80px, 16vw, 140px); right: max(8px, env(safe-area-inset-right)); bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 16px + 19px + 10px + 40px + 8px); }
+}
+@media (min-width: 641px) and (min-height: 601px) and (orientation: landscape) {
+    body.touch-on .sonic-attitude { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 8px + 44px + 8px); }
+}
+
+@media (prefers-color-scheme: light) {
+    .sonic-attitude, .sonic-sounds { border-color: #000; outline-color: #fff; background: #fff; color: #000; }
+    .sonic-sounds-now { border-color: #000; background: #fff; }
+}
+@media (forced-colors: active) {
+    .sonic-attitude, .sonic-sounds, .sonic-sounds-now { border-color: CanvasText; outline-color: Canvas; background: Canvas; color: CanvasText; }
+}
+/* the clean view (a picture or a film of the flight) has no panels, like the rest of the flight's overlays */
+body.clean .sonic-attitude, body.clean .sonic-sounds { display: none; }

@@ -28,6 +28,14 @@ export interface PresetJson {
 
 export type GravityMode = 'honest' | 'same-twr' | 'auto-throttle';
 
+/**
+ * How a contact answers (v0.13, Fly by Sound M41-19). 'drone': the drone's own contact, an impulse at the touching duct
+ * with speed-dependent restitution and Coulomb friction (every scan, v0.12's lessons). 'slide': the bump of a lesson
+ * world, as a game has it: the centre of mass is pushed out along the surface's normal with a little bounce, the motion
+ * along the surface and the spin are kept (Sim.slide).
+ */
+export type BumpRule = 'drone' | 'slide';
+
 export interface SimParams {
     presetId: string;
     mass: number; // kg
@@ -64,6 +72,8 @@ export interface SimParams {
     levelOutputHz: number;
     /** false: an impact above vCrash is a bounce, not a crash (C.7) */
     crashOn: boolean;
+    /** how a contact answers (BumpRule): 'drone' unless the overrides say 'slide' */
+    bump: BumpRule;
     /** rotor and duct momentum drag at hover rotor speed, 1/s (H.2 item 1) */
     ductDrag: number;
     /** rotor + prop inertia about the motor axis, kg m^2 (H.2 item 3) */
@@ -116,6 +126,11 @@ export interface ParamOverrides {
     level?: Partial<LevelParams>;
     /** crashes on (default) or off (C.7); a flag, because JSON turns Infinity into null */
     crashOn?: boolean;
+    /**
+     * the bump of a lesson world (v0.13, BumpRule 'slide'); absent = the drone's own contact. A built-in world brings it
+     * (apps/fly BuiltinWorld.overrides), so it is in every life header it flies and a replay answers contacts alike.
+     */
+    bump?: 'slide';
     /** rotor and duct momentum drag, 1/s at hover rotor speed (preset rotor_drag_per_s) */
     ductDrag?: number;
     /** multiplier on the preset rotor_inertia_kgm2 (1 = preset, 0 = no rotor-inertia yaw reaction) */
@@ -372,6 +387,7 @@ export function compileParams(p: PresetJson, o: ParamOverrides = {}): SimParams 
         },
         levelOutputHz: 50,
         crashOn: o.crashOn ?? true,
+        bump: o.bump === 'slide' ? 'slide' : 'drone',
         ductDrag: o.ductDrag ?? num(p, 'rotor_drag_per_s'),
         rotorInertia: num(p, 'rotor_inertia_kgm2') * (o.propInertia ?? 1),
         itermWindup: 0.85,

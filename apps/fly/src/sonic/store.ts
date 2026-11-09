@@ -1,7 +1,8 @@
 // Fly by Sound's saved state in the page (v0.12, docs/wip/v12-plan.md section 1 and 4.2 step 7): the pilot's sound
 // settings and the progress of every lesson, kept in the prefs collection 'sonic' (packages/prefs doc.ts), so they
 // travel with the settings file and need no catalogue rows. The sound package reads and repairs its own document
-// (readPrefs: a missing field takes its default, a bad one is replaced), the collection only bounds it.
+// (readPrefs: a missing field takes its default, a bad one is replaced), the collection only bounds it. Since v0.13 a lesson's
+// progress keeps `skipped` (packages/prefs doc.ts validSonicProgress, W7), and the start screen can reset the progress.
 import { defaultPrefs, readPrefs } from '@shramko/sonic-fpv';
 import type { LessonProgress, SonicPrefs } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
@@ -59,5 +60,18 @@ export function setCurrentLesson(host: SonicHost, lessonId: string | null): void
     if (host.collection('sonic').current === lessonId) return;
     host.updateCollection('sonic', (d) => {
         d.current = lessonId;
+    });
+}
+
+/**
+ * "Reset my progress" (v0.13, the owner's M41-2): every lesson's progress and the lesson the pilot is on are cleared, so every lesson is
+ * new again and Continue goes; his sound settings (the document's `prefs`) stay as they are.
+ */
+export function resetProgress(host: SonicHost): void {
+    const c = host.collection('sonic');
+    if (Object.keys(c.progress).length === 0 && c.current === null) return;
+    host.updateCollection('sonic', (d) => {
+        d.progress = {};
+        d.current = null;
     });
 }

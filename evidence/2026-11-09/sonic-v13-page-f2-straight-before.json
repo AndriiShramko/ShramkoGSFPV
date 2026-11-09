@@ -1,0 +1,130 @@
+{
+  "name": "sonic-v13-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T00:43:47.419Z",
+    "gitHead": "581d88b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5440",
+  "parts": "F2",
+  "control": null,
+  "checks": [
+    {
+      "name": "F2: a recording made on this build (rings-first, a counted attempt) opened by the recorder's Replay button: the summary is the pass sentence, every recorded event worked out again, the verdict \"pass\", not marked as a failure",
+      "pass": false,
+      "value": {
+        "status": {
+          "text": "The replay differs from the recording in 0 event(s): 11 of 11 recorded events were worked out again, and 84 % of the sounds are the same. It is still played as it was recorded.",
+          "bad": true
+        },
+        "check": {
+          "ok": false,
+          "verdict": "fail",
+          "summary": "The replay differs from the recording in 0 event(s): 11 of 11 recorded events were worked out again, and 84 % of the sounds are the same. It is still played as it was recorded."
+        },
+        "player": {
+          "phase": "ready",
+          "tMs": 0,
+          "durationMs": 13144.5,
+          "voice": "ready",
+          "frame": 0,
+          "frames": 172,
+          "viewLagMs": 0,
+          "lesson": "rings-first",
+          "part": 0,
+          "parts": 1
+        },
+        "details": "replay check FAIL: events 11 of 11 re-derived (largest time difference 5 ms); cues 83.7 % of 172 frames agree (100.0 % by cue kind)",
+        "notes": [],
+        "rows": [
+          {
+            "lesson": "rings-first",
+            "frames": 172,
+            "compared": true,
+            "ok": false,
+            "recorded": 11,
+            "matched": 11,
+            "diffs": 0,
+            "cueShare": 0.8372093023255814,
+            "cueClassShare": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "F2: played to its end",
+      "pass": true,
+      "value": {
+        "phase": "ended",
+        "durationMs": 13144.5
+      }
+    },
+    {
+      "name": "F2: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 2,
+  "total": 3,
+  "shots": [],
+  "result": {
+    "release": {
+      "sha": "581d88b",
+      "sonic": "ecb2ffb",
+      "built": "2026-11-09T00:35:32.911Z"
+    },
+    "ownZip": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\f2-recording.zip",
+    "ownSummary": {
+      "status": {
+        "text": "The replay differs from the recording in 0 event(s): 11 of 11 recorded events were worked out again, and 84 % of the sounds are the same. It is still played as it was recorded.",
+        "bad": true
+      },
+      "check": {
+        "ok": false,
+        "verdict": "fail",
+        "summary": "The replay differs from the recording in 0 event(s): 11 of 11 recorded events were worked out again, and 84 % of the sounds are the same. It is still played as it was recorded."
+      },
+      "player": {
+        "phase": "ready",
+        "tMs": 0,
+        "durationMs": 13144.5,
+        "voice": "ready",
+        "frame": 0,
+        "frames": 172,
+        "viewLagMs": 0,
+        "lesson": "rings-first",
+        "part": 0,
+        "parts": 1
+      },
+      "details": "replay check FAIL: events 11 of 11 re-derived (largest time difference 5 ms); cues 83.7 % of 172 frames agree (100.0 % by cue kind)",
+      "notes": [],
+      "rows": [
+        {
+          "lesson": "rings-first",
+          "frames": 172,
+          "compared": true,
+          "ok": false,
+          "recorded": 11,
+          "matched": 11,
+          "diffs": 0,
+          "cueShare": 0.8372093023255814,
+          "cueClassShare": 1
+        }
+      ]
+    },
+    "ownPlay": {
+      "phase": "ended",
+      "durationMs": 13144.5
+    }
+  }
+}

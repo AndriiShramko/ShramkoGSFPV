@@ -5,7 +5,7 @@
 //               viewport that allows zoom, every control a real element with a name, no raw dictionary key on screen
 //               (en, es, pl, ru), contrast of the text colours, no sideways scroll at 1280, 640 and 360 px wide;
 //   Tab order   every stop in the start layer in document order (nav, start, headphones, lessons, settings, footer), each
-//               with a name, all 21 lessons reachable, no stop outside the layer, the radio group one stop, the details
+//               with a name, every shipped lesson reachable (28 since v0.13), no stop outside the layer, the radio group one stop, the details
 //               control opening with Space and giving 14 sliders; Shift+Tab goes back the same way;
 //   operation   Space and arrows set the path, calm mode and "my screen reader speaks" (saved in the prefs collection,
 //               the captions region turns live); Enter on the headphone buttons makes the AudioContext (the first press)
@@ -19,8 +19,12 @@
 import { mkdirSync, rmdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
+import { SHIPPED_LESSON_IDS } from '../../../packages/sonic-fpv/src';
 import { launch } from './browser';
 import { REPO, today, writeEvidence } from './evidence';
+
+/** How many lessons the screen lists: every lesson the package ships (21 in v0.12, 28 in v0.13). */
+const LESSONS = SHIPPED_LESSON_IDS.length;
 
 const LAB = (process.env.LAB ?? '').replace(/\/$/, '');
 if (!LAB) throw new Error('LAB=http://localhost:<vite port> is needed');
@@ -225,6 +229,9 @@ try {
     await page.goto(url);
     await page.waitForSelector('#sonic-start [data-testid="sonic-h1"]', { timeout: 60000 });
     await sleep(500);
+    // v0.13 (v13-host C3): the first key of a fresh page starts the sound (the speech waits for a user activation), so the voice can say how the
+    // spoken list works: before any key there is no AudioContext, after the first one there is the one
+    check('no AudioContext before the first key', (await page.evaluate(() => (window as unknown as { __acCount: number }).__acCount)) === 0);
 
     // ---------------------------------------------------------------- structure
     const s = await page.evaluate(() => {
@@ -254,7 +261,7 @@ try {
     check('one h1 (the product), four h2 (start, headphones, lessons, settings)', s.h1.length === 1 && s.h2.length === 4, { h1: s.h1, h2: s.h2 });
     check('the h1 has the focus when the screen opens', s.focused === 'sonic-h1', s.focused);
     check('eight module headings and the loudness heading are h3', s.h3.length === 9, s.h3);
-    check('21 lessons, each a real button with a name', s.lessons.length === 21 && s.lessons.every((l) => l.tag === 'BUTTON' && l.type === 'button' && l.text.length > 3), s.lessons.length);
+    check(`${LESSONS} lessons, each a real button with a name`, s.lessons.length === LESSONS && s.lessons.every((l) => l.tag === 'BUTTON' && l.type === 'button' && l.text.length > 3), s.lessons.length);
     check('no div or span made into a button', s.divButtons === 0);
     const dupes = await page.evaluate(() => { const seen = new Map<string, number>(); for (const e of document.querySelectorAll('[id]')) seen.set(e.id, (seen.get(e.id) ?? 0) + 1); return [...seen].filter(([, n]) => n > 1).map(([id]) => id); });
     check('no id is used twice on the page', dupes.length === 0, dupes);
@@ -310,7 +317,7 @@ try {
     const order = ['nav', 'start', 'headphones', 'lessons', 'settings', 'footer'];
     const regionIdx = stops.map((x) => order.indexOf(x.region));
     check('the stops follow the document: navigation, start, headphones, lessons, settings, footer', regionIdx.every((v, i) => v >= 0 && (i === 0 || v >= regionIdx[i - 1]!)), [...new Set(stops.map((x) => x.region))]);
-    check('all 21 lessons are reached by Tab, once each', lessonStops.length === 21 && new Set(lessonStops.map((x) => x.name)).size === 21, lessonStops.length);
+    check(`all ${LESSONS} lessons are reached by Tab, once each`, lessonStops.length === LESSONS && new Set(lessonStops.map((x) => x.name)).size === LESSONS, lessonStops.length);
     check('the radio group is one stop (the arrow keys move inside it)', stops.filter((x) => x.type === 'radio').length === 1, stops.filter((x) => x.type === 'radio').length);
     check('the headphone check has three buttons in the order left, right, behind', JSON.stringify(stops.filter((x) => x.region === 'headphones' && x.tag === 'button').map((x) => x.testid)) === JSON.stringify(['sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind']), stops.filter((x) => x.region === 'headphones').map((x) => x.testid));
     const last = stops[stops.length - 1];
@@ -341,12 +348,13 @@ try {
         return j?.collections?.sonic?.prefs ?? {};
     });
     // the path: focus the radio, an arrow key moves it to the other one (and the Start buttons follow)
+    // (v0.13: Up and Down are the spoken list's, they move between stops; Left and Right change a setting, the path to the other one)
     await page.evaluate(() => document.getElementById('sonic-path-full')!.focus());
-    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowRight');
     const fastSaved = await until(async () => (await prefsOf()).path === 'fast');
     check('an arrow key moves the path to "fast" and it is saved', fastSaved, (await prefsOf()).path);
     const startSub = await page.evaluate(() => document.querySelector('[data-testid="sonic-start-beginning"] .sonic-sub')?.textContent);
-    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowLeft');
     const fullSaved = await until(async () => (await prefsOf()).path === 'full');
     check('and back to "full"', fullSaved);
     check('the Start button names the first lesson of the path', typeof startSub === 'string' && startSub.length > 5, startSub);
@@ -368,8 +376,8 @@ try {
     await page.keyboard.press('Space');
     check('Space on "Calm mode" again turns it off', await until(async () => (await prefsOf()).calm === false));
 
-    // the headphone check by Enter: the first press makes the AudioContext, the hum is on the side asked
-    check('no AudioContext before the first sound button', (await page.evaluate(() => (window as unknown as { __acCount: number }).__acCount)) === 0);
+    // the headphone check by Enter: the hum is on the side asked (the AudioContext is the first key's since v0.13)
+    check('the first key made the one AudioContext (the spoken list starts the sound in it)', (await page.evaluate(() => (window as unknown as { __acCount: number }).__acCount)) === 1);
     const sides: Record<string, { l: number; r: number; dB: number; lagSamples: number; itdMs: number }> = {};
     for (const side of ['left', 'right', 'behind'] as const) {
         await page.evaluate((id) => document.querySelector<HTMLElement>(`[data-testid="sonic-hp-${id}"]`)!.focus(), side);

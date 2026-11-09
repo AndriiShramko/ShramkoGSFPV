@@ -1,0 +1,269 @@
+{
+  "name": "sonic-analytic-cost",
+  "context": {
+    "date": "2026-11-08T18:25:32.755Z",
+    "gitHead": "96269b4",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 9: the planner (scene sampler and cue rules) per frame on the lesson worlds, Node, main thread",
+  "budgetP95Ms": 1,
+  "frames": 4000,
+  "layers": [
+    "safety",
+    "height",
+    "speed",
+    "target",
+    "shape",
+    "room",
+    "voice"
+  ],
+  "note": "every layer on, free points of each world with random headings at 3 m/s; the browser and a slower CPU are not measured",
+  "results": [
+    {
+      "lesson": "hover-height",
+      "generator": "open",
+      "n": 4000,
+      "mean": 0.0364,
+      "p50": 0.0305,
+      "p95": 0.0656,
+      "p99": 0.1105,
+      "max": 0.873,
+      "pass": true
+    },
+    {
+      "lesson": "hover-turn",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.136,
+      "p50": 0.1221,
+      "p95": 0.2311,
+      "p99": 0.4046,
+      "max": 1.6318,
+      "pass": true
+    },
+    {
+      "lesson": "move-speed",
+      "generator": "open",
+      "n": 4000,
+      "mean": 0.028,
+      "p50": 0.0231,
+      "p95": 0.0469,
+      "p99": 0.0759,
+      "max": 1.3072,
+      "pass": true
+    },
+    {
+      "lesson": "move-stop",
+      "generator": "open",
+      "n": 4000,
+      "mean": 0.0252,
+      "p50": 0.0216,
+      "p95": 0.0398,
+      "p99": 0.0653,
+      "max": 0.7841,
+      "pass": true
+    },
+    {
+      "lesson": "walls-hall",
+      "generator": "hall",
+      "n": 4000,
+      "mean": 0.0946,
+      "p50": 0.0896,
+      "p95": 0.1358,
+      "p99": 0.3019,
+      "max": 0.5504,
+      "pass": true
+    },
+    {
+      "lesson": "walls-pillar",
+      "generator": "pillars",
+      "n": 4000,
+      "mean": 0.1237,
+      "p50": 0.1157,
+      "p95": 0.1868,
+      "p99": 0.3958,
+      "max": 0.7781,
+      "pass": true
+    },
+    {
+      "lesson": "walls-row",
+      "generator": "pillars",
+      "n": 4000,
+      "mean": 0.1973,
+      "p50": 0.1789,
+      "p95": 0.3348,
+      "p99": 0.5549,
+      "max": 1.5535,
+      "pass": true
+    },
+    {
+      "lesson": "corridor",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.4184,
+      "p50": 0.3975,
+      "p95": 0.6364,
+      "p99": 0.8624,
+      "max": 1.3165,
+      "pass": true
+    },
+    {
+      "lesson": "tunnel-wide",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.1524,
+      "p50": 0.1428,
+      "p95": 0.2176,
+      "p99": 0.4849,
+      "max": 0.7616,
+      "pass": true
+    },
+    {
+      "lesson": "tunnel-narrow",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.1452,
+      "p50": 0.1359,
+      "p95": 0.2105,
+      "p99": 0.4289,
+      "max": 0.6669,
+      "pass": true
+    },
+    {
+      "lesson": "tunnel-narrower",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.1472,
+      "p50": 0.1374,
+      "p95": 0.2112,
+      "p99": 0.368,
+      "max": 0.7148,
+      "pass": true
+    },
+    {
+      "lesson": "tunnel-bends",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.2076,
+      "p50": 0.1935,
+      "p95": 0.322,
+      "p99": 0.5343,
+      "max": 1.0394,
+      "pass": true
+    },
+    {
+      "lesson": "tunnel-gaps",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.2117,
+      "p50": 0.1976,
+      "p95": 0.318,
+      "p99": 0.5627,
+      "max": 0.8297,
+      "pass": true
+    },
+    {
+      "lesson": "tunnel-long",
+      "generator": "corridor",
+      "n": 4000,
+      "mean": 0.4672,
+      "p50": 0.4328,
+      "p95": 0.7649,
+      "p99": 0.9876,
+      "max": 1.358,
+      "pass": true
+    },
+    {
+      "lesson": "rings-first",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.1419,
+      "p50": 0.1296,
+      "p95": 0.221,
+      "p99": 0.4811,
+      "max": 0.7344,
+      "pass": true
+    },
+    {
+      "lesson": "rings-line",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.1642,
+      "p50": 0.1541,
+      "p95": 0.2565,
+      "p99": 0.5026,
+      "max": 0.7631,
+      "pass": true
+    },
+    {
+      "lesson": "rings-small",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.1756,
+      "p50": 0.1668,
+      "p95": 0.2699,
+      "p99": 0.4806,
+      "max": 0.834,
+      "pass": true
+    },
+    {
+      "lesson": "rings-heights",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.1899,
+      "p50": 0.1834,
+      "p95": 0.2849,
+      "p99": 0.5658,
+      "max": 0.7143,
+      "pass": true
+    },
+    {
+      "lesson": "rings-course",
+      "generator": "rings",
+      "n": 4000,
+      "mean": 0.1832,
+      "p50": 0.1677,
+      "p95": 0.2937,
+      "p99": 0.5273,
+      "max": 0.7347,
+      "pass": true
+    },
+    {
+      "lesson": "shapes-square",
+      "generator": "squares",
+      "n": 4000,
+      "mean": 0.1362,
+      "p50": 0.1273,
+      "p95": 0.1995,
+      "p99": 0.4945,
+      "max": 0.6845,
+      "pass": true
+    },
+    {
+      "lesson": "shapes-series",
+      "generator": "squares",
+      "n": 4000,
+      "mean": 0.1613,
+      "p50": 0.1508,
+      "p95": 0.2512,
+      "p99": 0.4673,
+      "max": 0.7958,
+      "pass": true
+    },
+    {
+      "lesson": "shapes-cube",
+      "generator": "cube-frames",
+      "n": 4000,
+      "mean": 0.141,
+      "p50": 0.1282,
+      "p95": 0.2209,
+      "p99": 0.4682,
+      "max": 0.908,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

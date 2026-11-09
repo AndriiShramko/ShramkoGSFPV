@@ -1,6 +1,6 @@
 {
   "admin.tab.sessions": "Nagrania",
-  "admin.sessions.title": "Nagrania z Fly by Sound",
+  "admin.sessions.title": "Nagrania z trybu „Lot na słuch”",
   "admin.sessions.help": "Loty i głos pilota, które piloci zdecydowali się wysłać. Każde nagranie trafia najpierw na serwer, a potem do Ciebie przez Telegram i e-mail, z ponowieniami. Pobierz je, wyślij ponownie jeden kanał albo usuń, gdy poprosi o to pilot lub rodzic.",
   "admin.sessions.retention": "Nagranie jest przechowywane najdłużej {days} dni od chwili, gdy dotarło; takie, które nadal czeka na kanał, nigdy nie jest usuwane z powodu wieku.",
   "admin.sessions.refresh": "Odśwież",

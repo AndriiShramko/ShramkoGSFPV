@@ -1,0 +1,969 @@
+{
+  "name": "sonic-start-keyboard",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T09:48:13.656Z",
+    "gitHead": "5512292",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 8: the accessible start screen, driven by the keyboard alone in headless Chrome",
+  "page": "http://localhost:5470/fly/?sonic=start (Vite dev server)",
+  "note": "headless Chrome runs muted (--mute-audio): the audio graph is rendered and measured per channel, nothing is played; how it sounds is not judged here",
+  "contrast": {
+    "intro": 16.62,
+    "h2": 16.62,
+    "link": 11.5,
+    "primary": 8.55,
+    "primarySub": 8.55,
+    "lesson": 15.69,
+    "lessonSub": 7.4,
+    "note": 16.62,
+    "label": 16.62
+  },
+  "reflow": [
+    {
+      "width": 1280,
+      "client": 1280,
+      "scroll": 1280
+    },
+    {
+      "width": 640,
+      "client": 640,
+      "scroll": 640
+    },
+    {
+      "width": 360,
+      "client": 360,
+      "scroll": 360
+    }
+  ],
+  "tabStops": [
+    {
+      "i": 0,
+      "region": "nav",
+      "tag": "a",
+      "type": null,
+      "name": "Start",
+      "testid": null,
+      "inside": true
+    },
+    {
+      "i": 1,
+      "region": "nav",
+      "tag": "a",
+      "type": null,
+      "name": "Headphones",
+      "testid": null,
+      "inside": true
+    },
+    {
+      "i": 2,
+      "region": "nav",
+      "tag": "a",
+      "type": null,
+      "name": "Lessons",
+      "testid": null,
+      "inside": true
+    },
+    {
+      "i": 3,
+      "region": "nav",
+      "tag": "a",
+      "type": null,
+      "name": "Settings",
+      "testid": null,
+      "inside": true
+    },
+    {
+      "i": 4,
+      "region": "start",
+      "tag": "button",
+      "type": "button",
+      "name": "Start the course from the beginningLesson 1 of 28: Headphone check.",
+      "testid": "sonic-start-beginning",
+      "inside": true
+    },
+    {
+      "i": 5,
+      "region": "start",
+      "tag": "input",
+      "type": "radio",
+      "name": "Full pathEvery lesson, step by step.",
+      "testid": "sonic-path-full",
+      "inside": true
+    },
+    {
+      "i": 6,
+      "region": "headphones",
+      "tag": "button",
+      "type": "button",
+      "name": "Play a sound on the left",
+      "testid": "sonic-hp-left",
+      "inside": true
+    },
+    {
+      "i": 7,
+      "region": "headphones",
+      "tag": "button",
+      "type": "button",
+      "name": "Play a sound on the right",
+      "testid": "sonic-hp-right",
+      "inside": true
+    },
+    {
+      "i": 8,
+      "region": "headphones",
+      "tag": "button",
+      "type": "button",
+      "name": "Play a sound behind you",
+      "testid": "sonic-hp-behind",
+      "inside": true
+    },
+    {
+      "i": 9,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Headphone checkLesson 1 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 10,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Meet the soundsLesson 2 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 11,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Walls on every sideLesson 3 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 12,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Ring, square and pillarLesson 4 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 13,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "What is it, and where?Lesson 5 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 14,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Hold your heightLesson 6 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 15,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Turn toward a soundLesson 7 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 16,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Feel your speedLesson 8 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 17,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Stop in the zoneLesson 9 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 18,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A small roomLesson 10 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 19,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Around a pillarLesson 11 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 20,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A row of pillarsLesson 12 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 21,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "The long corridorLesson 13 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 22,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A wide tunnelLesson 14 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 23,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A narrow tunnelLesson 15 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 24,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "An even narrower tunnelLesson 16 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 25,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A winding tunnelLesson 17 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 26,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Obstacles in the tunnelLesson 18 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 27,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "The long tunnelLesson 19 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 28,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Your first ringLesson 20 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 29,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Rings in a lineLesson 21 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 30,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Smaller ringsLesson 22 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 31,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Rings at different heightsLesson 23 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 32,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A ring courseLesson 24 of 28, not started, Fast path",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 33,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "The square gateLesson 25 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 34,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "A series of squaresLesson 26 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 35,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "The cube frameLesson 27 of 28, not started",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 36,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Free flight in the Winter GardenLesson 28 of 28, not started, Fast path, flies a real scan",
+      "testid": "sonic-lesson",
+      "inside": true
+    },
+    {
+      "i": 37,
+      "region": "lessons",
+      "tag": "button",
+      "type": "button",
+      "name": "Reset my progress",
+      "testid": "sonic-reset",
+      "inside": true
+    },
+    {
+      "i": 38,
+      "region": "settings",
+      "tag": "select",
+      "type": null,
+      "name": "Sound theme",
+      "testid": "sonic-theme",
+      "inside": true
+    },
+    {
+      "i": 39,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Calm mode",
+      "testid": "sonic-calm",
+      "inside": true
+    },
+    {
+      "i": 40,
+      "region": "settings",
+      "tag": "select",
+      "type": null,
+      "name": "Height tone",
+      "testid": "sonic-polarity",
+      "inside": true
+    },
+    {
+      "i": 41,
+      "region": "settings",
+      "tag": "input",
+      "type": "range",
+      "name": "Speaking speed",
+      "testid": "sonic-rate",
+      "inside": true
+    },
+    {
+      "i": 42,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Captions on screen",
+      "testid": "sonic-captions",
+      "inside": true
+    },
+    {
+      "i": 43,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "My screen reader speaks",
+      "testid": "sonic-sr",
+      "inside": true
+    },
+    {
+      "i": 44,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Motor sound",
+      "testid": "sonic-motor",
+      "inside": true
+    },
+    {
+      "i": 45,
+      "region": "settings",
+      "tag": "input",
+      "type": "range",
+      "name": "Motor volume",
+      "testid": "sonic-motor-level",
+      "inside": true
+    },
+    {
+      "i": 46,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Target height note",
+      "testid": "sonic-height-target",
+      "inside": true
+    },
+    {
+      "i": 47,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Sound from above and below",
+      "testid": "sonic-height-direction",
+      "inside": true
+    },
+    {
+      "i": 48,
+      "region": "settings",
+      "tag": "select",
+      "type": null,
+      "name": "Sound turns with",
+      "testid": "sonic-frame",
+      "inside": true
+    },
+    {
+      "i": 49,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Sound panel: see every sound",
+      "testid": "sonic-look-soundPanel",
+      "inside": true
+    },
+    {
+      "i": 50,
+      "region": "settings",
+      "tag": "input",
+      "type": "checkbox",
+      "name": "Horizon and height display",
+      "testid": "sonic-look-attitude",
+      "inside": true
+    },
+    {
+      "i": 51,
+      "region": "settings",
+      "tag": "summary",
+      "type": null,
+      "name": "Volume and pitch of each sound",
+      "testid": null,
+      "inside": true
+    },
+    {
+      "i": 52,
+      "region": "footer",
+      "tag": "a",
+      "type": null,
+      "name": "About Fly by Sound and its source code",
+      "testid": "sonic-about",
+      "inside": true
+    },
+    {
+      "i": 53,
+      "region": "footer",
+      "tag": "a",
+      "type": null,
+      "name": "Leave Fly by Sound and open the simulator",
+      "testid": "sonic-leave",
+      "inside": true
+    }
+  ],
+  "ariaSnapshot": "- banner:\n  - heading \"Fly by Sound\" [level=1]\n  - paragraph: Learn to fly a drone by ear. Everything is said and played as sound, so no screen is needed. A helper can set up your radio, keyboard or gamepad.\n- navigation \"Fly by Sound sections\":\n  - list:\n    - listitem:\n      - link \"Start\":\n        - /url: \"#sonic-sec-start\"\n    - listitem:\n      - link \"Headphones\":\n        - /url: \"#sonic-sec-headphones\"\n    - listitem:\n      - link \"Lessons\":\n        - /url: \"#sonic-sec-lessons\"\n    - listitem:\n      - link \"Settings\":\n        - /url: \"#sonic-sec-settings\"\n- main:\n  - region \"Start\":\n    - heading \"Start\" [level=2]\n    - group \"Start\":\n      - 'button \"Start the course from the beginning Lesson 1 of 28: Headphone check.\"'\n    - group \"Path\":\n      - text: Path\n      - radio \"Full path Every lesson, step by step.\" [checked]\n      - text: Full path Every lesson, step by step.\n      - 'radio \"Fast path A short way: hover, walls, a corridor and rings.\"'\n      - text: \"Fast path A short way: hover, walls, a corridor and rings.\"\n  - region \"Check your headphones\":\n    - heading \"Check your headphones\" [level=2]\n    - list:\n      - listitem: Put your headphones on. The side marked L goes on your left ear.\n      - listitem: Wired headphones work best. Bluetooth headphones add a delay.\n      - listitem: Please switch off Windows Sonic, Atmos and other surround effects. They change the sound.\n    - group \"Check your headphones\":\n      - button \"Play a sound on the left\"\n      - button \"Play a sound on the right\"\n      - button \"Play a sound behind you\"\n    - group \"Loudness\":\n      - heading \"Loudness\" [level=3]\n      - paragraph: Keep the volume comfortable. If a sound hurts, take off the headphones and turn the volume down.\n      - paragraph: Keep the volume comfortable. If a sound is too loud, turn it down.\n  - region \"Lessons\":\n    - heading \"Lessons\" [level=2]\n    - paragraph: Every lesson can be opened directly. The path only recommends an order.\n    - region \"Ears\":\n      - heading \"Ears\" [level=3]\n      - list:\n        - listitem:\n          - button \"Headphone check Lesson 1 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Meet the sounds Lesson 2 of 28, not started\"\n        - listitem:\n          - button \"Walls on every side Lesson 3 of 28, not started\"\n        - listitem:\n          - button \"Ring, square and pillar Lesson 4 of 28, not started\"\n        - listitem:\n          - button \"What is it, and where? Lesson 5 of 28, not started\"\n    - region \"Hover\":\n      - heading \"Hover\" [level=3]\n      - list:\n        - listitem:\n          - button \"Hold your height Lesson 6 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Turn toward a sound Lesson 7 of 28, not started\"\n    - region \"Move and stop\":\n      - heading \"Move and stop\" [level=3]\n      - list:\n        - listitem:\n          - button \"Feel your speed Lesson 8 of 28, not started\"\n        - listitem:\n          - button \"Stop in the zone Lesson 9 of 28, not started\"\n    - region \"Walls\":\n      - heading \"Walls\" [level=3]\n      - list:\n        - listitem:\n          - button \"A small room Lesson 10 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Around a pillar Lesson 11 of 28, not started\"\n        - listitem:\n          - button \"A row of pillars Lesson 12 of 28, not started\"\n    - region \"Corridor and tunnels\":\n      - heading \"Corridor and tunnels\" [level=3]\n      - list:\n        - listitem:\n          - button \"The long corridor Lesson 13 of 28, not started, Fast path\"\n        - listitem:\n          - button \"A wide tunnel Lesson 14 of 28, not started\"\n        - listitem:\n          - button \"A narrow tunnel Lesson 15 of 28, not started\"\n        - listitem:\n          - button \"An even narrower tunnel Lesson 16 of 28, not started\"\n        - listitem:\n          - button \"A winding tunnel Lesson 17 of 28, not started\"\n        - listitem:\n          - button \"Obstacles in the tunnel Lesson 18 of 28, not started, Fast path\"\n        - listitem:\n          - button \"The long tunnel Lesson 19 of 28, not started\"\n    - region \"Rings\":\n      - heading \"Rings\" [level=3]\n      - list:\n        - listitem:\n          - button \"Your first ring Lesson 20 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Rings in a line Lesson 21 of 28, not started\"\n        - listitem:\n          - button \"Smaller rings Lesson 22 of 28, not started\"\n        - listitem:\n          - button \"Rings at different heights Lesson 23 of 28, not started\"\n        - listitem:\n          - button \"A ring course Lesson 24 of 28, not started, Fast path\"\n    - region \"Shapes\":\n      - heading \"Shapes\" [level=3]\n      - list:\n        - listitem:\n          - button \"The square gate Lesson 25 of 28, not started\"\n        - listitem:\n          - button \"A series of squares Lesson 26 of 28, not started\"\n        - listitem:\n          - button \"The cube frame Lesson 27 of 28, not started\"\n    - region \"Free flight\":\n      - heading \"Free flight\" [level=3]\n      - list:\n        - listitem:\n          - button \"Free flight in the Winter Garden Lesson 28 of 28, not started, Fast path, flies a real scan\"\n    - button \"Reset my progress\"\n  - region \"Settings\":\n    - heading \"Settings\" [level=2]\n    - text: Sound theme\n    - combobox \"Sound theme\":\n      - option \"Soft\" [selected]\n      - option \"Clear\"\n      - option \"Race\"\n    - checkbox \"Calm mode\"\n    - text: Calm mode Calm mode makes every sound softer and slower. Height tone\n    - combobox \"Height tone\":\n      - option \"up is a higher tone\" [selected]\n      - option \"up is a lower tone\"\n    - text: Speaking speed\n    - slider \"Speaking speed\": \"1\"\n    - status: 1x\n    - checkbox \"Captions on screen\" [checked]\n    - text: Captions on screen\n    - checkbox \"My screen reader speaks\"\n    - text: My screen reader speaks\n    - checkbox \"Motor sound\" [checked]\n    - text: Motor sound Motor volume\n    - slider \"Motor volume\": \"0\"\n    - status: 0 dB\n    - checkbox \"Target height note\" [checked]\n    - text: Target height note\n    - checkbox \"Sound from above and below\" [checked]\n    - text: \"Sound from above and below On: a way above or below an obstacle and the target height note also come from there, with a soft hiss good headphones can place. Off: from ahead, told by their pitch alone. The ceiling and floor come from above and below either way. Sound turns with\"\n    - combobox \"Sound turns with\":\n      - option \"the way you face\" [selected]\n      - option \"the whole drone, including tilt\"\n    - 'checkbox \"Sound panel: see every sound\" [checked]'\n    - text: \"Sound panel: see every sound\"\n    - checkbox \"Horizon and height display\" [checked]\n    - text: Horizon and height display\n    - group: Volume and pitch of each sound\n- contentinfo:\n  - list:\n    - listitem:\n      - link \"About Fly by Sound and its source code\":\n        - /url: /en/sound/\n    - listitem:\n      - link \"Leave Fly by Sound and open the simulator\":\n        - /url: /en/fly/\n- status",
+  "sides": {
+    "left": {
+      "l": 2.441340748708676,
+      "r": 1.4933753188876224,
+      "dB": 2.134594306084054,
+      "lagSamples": 40,
+      "itdMs": 0.83
+    },
+    "right": {
+      "l": 1.5840896787172625,
+      "r": 2.604718243081546,
+      "dB": -2.159809874917714,
+      "lagSamples": -40,
+      "itdMs": -0.83
+    },
+    "behind": {
+      "l": 1.55281137360015,
+      "r": 1.5544530948311142,
+      "dB": -0.004589184763764497,
+      "lagSamples": 0,
+      "itdMs": 0
+    }
+  },
+  "notFound": [],
+  "flight": {
+    "status": "ready",
+    "error": null,
+    "scene": "lesson-hover-height",
+    "builtin": true,
+    "sha": 64,
+    "hidden": true,
+    "inert": true,
+    "flying": true,
+    "controlsScreen": false,
+    "loadingCard": false,
+    "ac": 1,
+    "pointers": 0
+  },
+  "checks": [
+    {
+      "name": "no AudioContext before the first key",
+      "pass": true
+    },
+    {
+      "name": "the page title is the product's",
+      "pass": true,
+      "value": "Fly by Sound"
+    },
+    {
+      "name": "the viewport allows zoom (no user-scalable=no, no maximum-scale)",
+      "pass": true,
+      "value": "width=device-width, initial-scale=1, viewport-fit=cover"
+    },
+    {
+      "name": "landmarks: one header, one labelled navigation, one main, one footer in the start layer",
+      "pass": true,
+      "value": {
+        "banner": 1,
+        "nav": 1,
+        "main": 1,
+        "footer": 1
+      }
+    },
+    {
+      "name": "one h1 (the product), four h2 (start, headphones, lessons, settings)",
+      "pass": true,
+      "value": {
+        "h1": [
+          "Fly by Sound"
+        ],
+        "h2": [
+          "Start",
+          "Check your headphones",
+          "Lessons",
+          "Settings"
+        ]
+      }
+    },
+    {
+      "name": "the h1 has the focus when the screen opens",
+      "pass": true,
+      "value": "sonic-h1"
+    },
+    {
+      "name": "eight module headings and the loudness heading are h3",
+      "pass": true,
+      "value": [
+        "Loudness",
+        "Ears",
+        "Hover",
+        "Move and stop",
+        "Walls",
+        "Corridor and tunnels",
+        "Rings",
+        "Shapes",
+        "Free flight"
+      ]
+    },
+    {
+      "name": "28 lessons, each a real button with a name",
+      "pass": true,
+      "value": 28
+    },
+    {
+      "name": "no div or span made into a button",
+      "pass": true
+    },
+    {
+      "name": "no id is used twice on the page",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "the start layer is not inside #ui (an aria-live region): its changes are not read out",
+      "pass": true,
+      "value": {
+        "uiLive": "polite"
+      }
+    },
+    {
+      "name": "the text colours have a contrast of at least 4.5:1 on their background",
+      "pass": true,
+      "value": {
+        "intro": 16.62,
+        "h2": 16.62,
+        "link": 11.5,
+        "primary": 8.55,
+        "primarySub": 8.55,
+        "lesson": 15.69,
+        "lessonSub": 7.4,
+        "note": 16.62,
+        "label": 16.62
+      }
+    },
+    {
+      "name": "the accessibility snapshot names the landmarks and headings",
+      "pass": true,
+      "value": [
+        "- banner:",
+        "  - heading \"Fly by Sound\" [level=1]",
+        "  - paragraph: Learn to fly a drone by ear. Everything is said and played as sound, so no screen is needed. A helper can set up your radio, keyboard or gamepad.",
+        "- navigation \"Fly by Sound sections\":",
+        "  - list:",
+        "    - listitem:"
+      ]
+    },
+    {
+      "name": "no dictionary key shows as text in en, es, pl or ru",
+      "pass": true,
+      "value": {
+        "en": [],
+        "es": [],
+        "pl": [],
+        "ru": []
+      }
+    },
+    {
+      "name": "no sideways scroll at 1280, 640 and 360 px wide",
+      "pass": true,
+      "value": [
+        {
+          "width": 1280,
+          "client": 1280,
+          "scroll": 1280
+        },
+        {
+          "width": 640,
+          "client": 640,
+          "scroll": 640
+        },
+        {
+          "width": 360,
+          "client": 360,
+          "scroll": 360
+        }
+      ]
+    },
+    {
+      "name": "every stop of Tab is inside the start layer",
+      "pass": true,
+      "value": {
+        "stops": 54,
+        "outside": []
+      }
+    },
+    {
+      "name": "every stop has a name",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "the stops follow the document: navigation, start, headphones, lessons, settings, footer",
+      "pass": true,
+      "value": [
+        "nav",
+        "start",
+        "headphones",
+        "lessons",
+        "settings",
+        "footer"
+      ]
+    },
+    {
+      "name": "all 28 lessons are reached by Tab, once each",
+      "pass": true,
+      "value": 28
+    },
+    {
+      "name": "the radio group is one stop (the arrow keys move inside it)",
+      "pass": true,
+      "value": 1
+    },
+    {
+      "name": "the headphone check has three buttons in the order left, right, behind",
+      "pass": true,
+      "value": [
+        "sonic-hp-left",
+        "sonic-hp-right",
+        "sonic-hp-behind"
+      ]
+    },
+    {
+      "name": "the last stop is the footer's last link (no trap: Tab goes on to the browser)",
+      "pass": true,
+      "value": {
+        "i": 53,
+        "region": "footer",
+        "tag": "a",
+        "type": null,
+        "name": "Leave Fly by Sound and open the simulator",
+        "testid": "sonic-leave",
+        "inside": true
+      }
+    },
+    {
+      "name": "Shift+Tab walks back through the same stops, last first",
+      "pass": true,
+      "value": [
+        "Leave Fly by Sound and open the simulator",
+        "About Fly by Sound and its source code",
+        "Volume and pitch of each sound"
+      ]
+    },
+    {
+      "name": "Space opens the volume and pitch details and 14 sliders follow (7 sounds, a volume and a pitch each)",
+      "pass": true,
+      "value": {
+        "open": true,
+        "sliders": 14
+      }
+    },
+    {
+      "name": "an arrow key moves the path to \"fast\" and it is saved",
+      "pass": true,
+      "value": "fast"
+    },
+    {
+      "name": "and back to \"full\"",
+      "pass": true
+    },
+    {
+      "name": "the Start button names the first lesson of the path",
+      "pass": true,
+      "value": "Lesson 1 of 8: Headphone check."
+    },
+    {
+      "name": "Space on \"Calm mode\" turns it on and it is saved",
+      "pass": true,
+      "value": true
+    },
+    {
+      "name": "Space on \"My screen reader speaks\" saves selfVoice off and makes the captions a live region",
+      "pass": true,
+      "value": {
+        "live": "polite",
+        "role": "log"
+      }
+    },
+    {
+      "name": "and off again: the engine speaks, the captions are not live",
+      "pass": true
+    },
+    {
+      "name": "Space on \"Calm mode\" again turns it off",
+      "pass": true
+    },
+    {
+      "name": "the first key made the one AudioContext (the spoken list starts the sound in it)",
+      "pass": true
+    },
+    {
+      "name": "one AudioContext after the headphone buttons",
+      "pass": true
+    },
+    {
+      "name": "sound on the left: the left channel is louder (at least 1 dB) and leads (the right channel lags by at least 3 samples)",
+      "pass": true,
+      "value": {
+        "l": 2.441340748708676,
+        "r": 1.4933753188876224,
+        "dB": 2.134594306084054,
+        "lagSamples": 40,
+        "itdMs": 0.83
+      }
+    },
+    {
+      "name": "sound on the right: the right channel is louder (at least 1 dB) and leads (the left channel lags by at least 3 samples)",
+      "pass": true,
+      "value": {
+        "l": 1.5840896787172625,
+        "r": 2.604718243081546,
+        "dB": -2.159809874917714,
+        "lagSamples": -40,
+        "itdMs": -0.83
+      }
+    },
+    {
+      "name": "sound behind: the two channels are level (within 1 dB) and arrive together (within 2 samples)",
+      "pass": true,
+      "value": {
+        "l": 1.55281137360015,
+        "r": 1.5544530948311142,
+        "dB": -0.004589184763764497,
+        "lagSamples": 0,
+        "itdMs": 0
+      }
+    },
+    {
+      "name": "control: left and right are opposite pictures (balance differs by at least 3 dB, the delays have opposite signs)",
+      "pass": true,
+      "value": {
+        "left": {
+          "l": 2.441340748708676,
+          "r": 1.4933753188876224,
+          "dB": 2.134594306084054,
+          "lagSamples": 40,
+          "itdMs": 0.83
+        },
+        "right": {
+          "l": 1.5840896787172625,
+          "r": 2.604718243081546,
+          "dB": -2.159809874917714,
+          "lagSamples": -40,
+          "itdMs": -0.83
+        }
+      }
+    },
+    {
+      "name": "Enter on the hover lesson: the page flies that lesson's built-in world (scene lesson-hover-height, the world's digest as its walls)",
+      "pass": true,
+      "value": {
+        "status": "ready",
+        "error": null,
+        "scene": "lesson-hover-height",
+        "builtin": true,
+        "sha": 64,
+        "hidden": true,
+        "inert": true,
+        "flying": true,
+        "controlsScreen": false,
+        "loadingCard": false,
+        "ac": 1,
+        "pointers": 0
+      }
+    },
+    {
+      "name": "the start screen is gone from the page and the accessibility tree (hidden and inert)",
+      "pass": true
+    },
+    {
+      "name": "no Controls screen and no loading card in the way: the keyboard flies at once",
+      "pass": true
+    },
+    {
+      "name": "still one AudioContext for the whole mode",
+      "pass": true,
+      "value": 1
+    },
+    {
+      "name": "no pointer event in the whole run: the keyboard did everything",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "?sonic=<unknown> shows the start screen with a note",
+      "pass": true,
+      "value": "There is no lesson called no-such-lesson. Choose one from the list."
+    },
+    {
+      "name": "?sonic=walls-hall offers that lesson first, as the primary button",
+      "pass": true,
+      "value": {
+        "text": "Start: A small roomLesson 10 of 28",
+        "lesson": "walls-hall",
+        "primary": true
+      }
+    },
+    {
+      "name": "the pilot's choices and the current lesson are saved in the prefs collection",
+      "pass": true,
+      "value": {
+        "current": "hover-height",
+        "prefs": {
+          "calm": false,
+          "captions": true,
+          "format": "shramko-sonic-prefs/1",
+          "heightDirection": true,
+          "heightPolarity": "up-higher",
+          "heightTarget": true,
+          "layerGainDb": {},
+          "layerPitchSteps": {},
+          "listenerFrame": "heading",
+          "motorGainDb": 0,
+          "motorSound": true,
+          "path": "full",
+          "selfVoice": true,
+          "speechRate": 1,
+          "theme": "soft"
+        }
+      }
+    },
+    {
+      "name": "no console errors and no missing file (but the favicon and the API the dev server does not have)",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "missing": [],
+        "notFound": []
+      }
+    }
+  ],
+  "pass": true
+}

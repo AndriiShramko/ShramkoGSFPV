@@ -105,6 +105,36 @@ describe('the store keeps it', () => {
         expect(b.read()).toContain('"sonic"');
     });
 
+    it('v0.13 (W7): a lesson left without passing keeps `skipped` through a write and a new store on the same backend, true or false; one of v0.12 has none; a `skipped` that is no boolean is left out, the lesson kept (control)', () => {
+        const b = new MemoryBackend();
+        const s = mkStore(b);
+        s.updateCollection('sonic', (d) => {
+            d.progress['hover-height'] = progress('hover-height', { version: 2, attempts: 4, successes: 1, skipped: true });
+            d.progress['walls-hall'] = progress('walls-hall', { version: 2, passed: true, skipped: false });
+            d.progress['rings-first'] = progress('rings-first');
+            d.progress['corridor'] = { ...progress('corridor'), skipped: 'yes' } as unknown as SonicLessonProgress;
+            d.current = 'walls-hall';
+        });
+        // in the store at once (updateCollection validates every write) and after a reload
+        for (const st of [s, mkStore(b)]) {
+            const p = st.collection('sonic').progress;
+            expect(p['hover-height']).toEqual(progress('hover-height', { version: 2, attempts: 4, successes: 1, skipped: true }));
+            expect(p['walls-hall']?.skipped).toBe(false);
+            expect(p['rings-first']).toEqual(progress('rings-first'));
+            expect('skipped' in (p['rings-first'] as object)).toBe(false);
+            expect(p['corridor']).toEqual(progress('corridor'));
+            expect('skipped' in (p['corridor'] as object)).toBe(false);
+        }
+        expect(validSonicProgress('hover-height', { ...progress('hover-height'), skipped: true })?.skipped).toBe(true);
+        expect(validSonicProgress('hover-height', { ...progress('hover-height'), skipped: 1 })).toEqual(progress('hover-height'));
+        // the export file carries it, and an import of that file keeps it
+        const file = s.exportFile({ include: ['sonic'] });
+        expect((file.collections.sonic as { progress: Record<string, SonicLessonProgress> }).progress['hover-height']?.skipped).toBe(true);
+        const other = mkStore();
+        other.importFile(file, 'replace');
+        expect(other.collection('sonic').progress['hover-height']?.skipped).toBe(true);
+    });
+
     it('an update that breaks a rule (a bad lesson id) leaves the others and drops the bad one; the stored text is canonical', () => {
         const b = new MemoryBackend();
         const s = mkStore(b);

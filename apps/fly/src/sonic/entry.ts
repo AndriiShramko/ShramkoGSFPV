@@ -5,7 +5,7 @@
 // it to open lessons. A page that was not entered through ?sonic= has no entry, so every hook of the mode is off, and
 // it never loads this file (the main chunk asks entry-state.ts; v12-int step 4).
 import { isBuiltinThemeId, updatePrefs } from '@shramko/sonic-fpv';
-import type { Locale, SonicPrefs, SpeechOut } from '@shramko/sonic-fpv';
+import type { Locale, SonicPrefs, SpeechLine, SpeechOut } from '@shramko/sonic-fpv';
 import { SonicAudio } from './audio';
 import type { AudioDeps } from './audio';
 import type { CaptionMode } from './captions';
@@ -130,10 +130,15 @@ export class SonicSetup {
 
 /** What the page asks of the start screen once the flight runs (StartScreen; a recorder in tests). */
 export interface ScreenPort {
-    show(): void;
+    /** shown with the focus on its heading, or on a section's (the lesson menu's Sound settings: 'settings') */
+    show(section?: 'start' | 'headphones' | 'lessons' | 'settings'): void;
     hide(): void;
-    /** the screen's own handlers are replaced: a lesson chosen on it opens in the flight, Escape or Back close it */
-    bind(handlers: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void }): void;
+    /**
+     * the screen's own handlers are replaced: a lesson chosen on it opens in the flight, Escape or Back close it; `say` (v0.13 C3): its
+     * spoken list's lines go through the page's voice (the lesson's speech queue while one runs); `onReset` (v13-int step 5): told after
+     * "Reset my progress" was answered Yes and the saved progress cleared (the lesson running under the screen forgets its counts)
+     */
+    bind(handlers: { readonly onStart: (lessonId: string) => void; readonly onClose: () => void; readonly say?: (line: SpeechLine, interrupt: boolean) => Promise<void>; readonly onReset?: () => void }): void;
 }
 
 /** What the start screen hands to the flight page. */

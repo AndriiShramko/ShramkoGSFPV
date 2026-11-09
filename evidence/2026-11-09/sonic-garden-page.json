@@ -1,0 +1,413 @@
+{
+  "name": "sonic-garden-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T09:54:32.435Z",
+    "gitHead": "5512292",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 10: module 7, free flight in the Winter Garden at x5, in the real page by a scripted keyboard pilot",
+  "page": "http://localhost:5470/fly/?sonic=<lesson> (Vite dev server), the scan from the scene CDN",
+  "note": "headless Chrome runs muted (--mute-audio); how anything sounds is not judged here; \"my screen reader speaks\" on, speed 2: the engine says nothing, it waits the time a line takes",
+  "results": [
+    {
+      "entry": "entry",
+      "loadSeconds": 3,
+      "lapSeconds": 60,
+      "passed": true,
+      "progress": {
+        "lessonId": "free-garden",
+        "version": 2,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:53:19.064Z",
+        "skipped": false
+      },
+      "cost": {
+        "n": 1830,
+        "p50": 0.6,
+        "p95": 1.1,
+        "p99": 1.5,
+        "max": 4.4
+      },
+      "walls": {
+        "voxelM": 0.16,
+        "builtin": false,
+        "scene": "7a475d38",
+        "scale": 5
+      },
+      "gates": 8,
+      "touches": 0
+    },
+    {
+      "entry": "swap",
+      "loadSeconds": 2,
+      "lapSeconds": 61,
+      "passed": true,
+      "progress": {
+        "lessonId": "free-garden",
+        "version": 2,
+        "attempts": 2,
+        "successes": 2,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:54:31.930Z",
+        "skipped": false
+      },
+      "cost": {
+        "n": 1919,
+        "p50": 0.7,
+        "p95": 1.2,
+        "p99": 1.4,
+        "max": 3.2
+      },
+      "walls": {
+        "voxelM": 0.16,
+        "builtin": false,
+        "scene": "7a475d38",
+        "scale": 5
+      },
+      "gates": 8,
+      "touches": 0
+    }
+  ],
+  "notFound": [
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json"
+  ],
+  "checks": [
+    {
+      "name": "entry: Enter on the start screen loads the scan at x5 with no Controls screen, and the lesson opens",
+      "pass": true,
+      "value": {
+        "seconds": 3,
+        "lesson": "free-garden",
+        "walls": {
+          "voxelM": 0.16,
+          "builtin": false,
+          "scene": "7a475d38",
+          "scale": 5
+        }
+      }
+    },
+    {
+      "name": "entry: the lesson is passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 60
+      }
+    },
+    {
+      "name": "entry: the eight rings in order, each inside the opening (miss at most 1.75 m)",
+      "pass": true,
+      "value": {
+        "gates": [
+          "ring-1:0.044",
+          "ring-2:0.316",
+          "ring-3:0.222",
+          "ring-4:0.285",
+          "ring-5:0.086",
+          "ring-6:0.295",
+          "ring-7:0.411",
+          "ring-8:0.31"
+        ]
+      }
+    },
+    {
+      "name": "entry: no touch (the walls were not met)",
+      "pass": true,
+      "value": {
+        "touches": []
+      }
+    },
+    {
+      "name": "entry: progress saved with the best time",
+      "pass": true,
+      "value": {
+        "lessonId": "free-garden",
+        "version": 2,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:53:19.064Z",
+        "skipped": false
+      }
+    },
+    {
+      "name": "entry: the page flies the real scan at x5 on 16 cm walls (not a built-in world)",
+      "pass": true,
+      "value": {
+        "voxelM": 0.16,
+        "builtin": false,
+        "scene": "7a475d38",
+        "scale": 5
+      }
+    },
+    {
+      "name": "entry: the helper's view has the eight rings over the scan",
+      "pass": true,
+      "value": {
+        "prims": 8
+      }
+    },
+    {
+      "name": "entry: the lesson said its time and its pass line, and the walls were said to be coarse (16 cm)",
+      "pass": true,
+      "value": [
+        "lesson.free-garden.title",
+        "sonic.say.lessonKeys",
+        "lesson.free-garden.intro.1",
+        "lesson.free-garden.intro.2",
+        "sonic.say.wallsCoarse",
+        "lesson.free-garden.intro.3",
+        "lesson.free-garden.goal.1",
+        "fly.go",
+        "fly.best-time",
+        "lesson.free-garden.pass",
+        "fly.last-lesson"
+      ]
+    },
+    {
+      "name": "entry: the engine made sound (RMS over 1e-3), held the limiter's ceiling (peak at most 0.5013), on one AudioContext",
+      "pass": true,
+      "value": {
+        "maxRms": 0.06643045159291508,
+        "maxPeak": 0.21258634328842163,
+        "polls": 1272,
+        "loud": 1224,
+        "last": 0.04124235140949899,
+        "audioContexts": 1
+      }
+    },
+    {
+      "name": "entry: measured: the engine's whole frame in this page (rays, planner, audio updates), ms: 0.6 p50, 1.1 p95, 1.5 p99, 4.4 max over 1830 frames",
+      "pass": true,
+      "value": {
+        "n": 1830,
+        "p50": 0.6,
+        "p95": 1.1,
+        "p99": 1.5,
+        "max": 4.4
+      }
+    },
+    {
+      "name": "entry: the scene sampler alone (30 rays at 16 cm cells) in this page: 0.382 ms a frame, under the plan's 1 ms",
+      "pass": true,
+      "value": {
+        "frames": 600,
+        "msPerFrame": 0.382,
+        "raysPerFrame": 30
+      }
+    },
+    {
+      "name": "entry: after the pass the start screen shows the lesson as passed, with its best time",
+      "pass": true,
+      "value": {
+        "label": "Free flight in the Winter GardenLesson 28 of 28, passed, best time 32.2 seconds, Fast path, flies a real scan"
+      }
+    },
+    {
+      "name": "swap: the page starts on a lesson world (a built-in session, scale 1)",
+      "pass": true,
+      "value": {
+        "voxelM": 0.1,
+        "builtin": true,
+        "scene": "lesson-rings-first",
+        "scale": 1
+      }
+    },
+    {
+      "name": "swap: the lesson chosen over the flight loads the scan in the page (scale 5, 16 cm walls, not built in) and opens",
+      "pass": true,
+      "value": {
+        "seconds": 2,
+        "walls": {
+          "voxelM": 0.16,
+          "builtin": false,
+          "scene": "7a475d38",
+          "scale": 5
+        }
+      }
+    },
+    {
+      "name": "swap: the page said that the scan is loading before it loaded (that line is a speech event of the mode)",
+      "pass": true,
+      "value": {
+        "said": [
+          "sonic.say.lessonKeys",
+          "lesson.rings-first.intro.1",
+          "sonic.say.scanLoading",
+          "lesson.free-garden.title",
+          "sonic.say.lessonKeys",
+          "lesson.free-garden.intro.1",
+          "lesson.free-garden.intro.2",
+          "sonic.say.wallsCoarse"
+        ]
+      }
+    },
+    {
+      "name": "swap: the lesson is passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 61
+      }
+    },
+    {
+      "name": "swap: the eight rings in order, each inside the opening (miss at most 1.75 m)",
+      "pass": true,
+      "value": {
+        "gates": [
+          "ring-1:0.043",
+          "ring-2:0.343",
+          "ring-3:0.284",
+          "ring-4:0.339",
+          "ring-5:0.308",
+          "ring-6:0.183",
+          "ring-7:0.518",
+          "ring-8:0.42"
+        ]
+      }
+    },
+    {
+      "name": "swap: no touch (the walls were not met)",
+      "pass": true,
+      "value": {
+        "touches": []
+      }
+    },
+    {
+      "name": "swap: progress saved with the best time",
+      "pass": true,
+      "value": {
+        "lessonId": "free-garden",
+        "version": 2,
+        "attempts": 2,
+        "successes": 2,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:54:31.930Z",
+        "skipped": false
+      }
+    },
+    {
+      "name": "swap: the page flies the real scan at x5 on 16 cm walls (not a built-in world)",
+      "pass": true,
+      "value": {
+        "voxelM": 0.16,
+        "builtin": false,
+        "scene": "7a475d38",
+        "scale": 5
+      }
+    },
+    {
+      "name": "swap: the helper's view has the eight rings over the scan",
+      "pass": true,
+      "value": {
+        "prims": 8
+      }
+    },
+    {
+      "name": "swap: the lesson said its time and its pass line, and the walls were said to be coarse (16 cm)",
+      "pass": true,
+      "value": [
+        "sonic.say.lessonKeys",
+        "lesson.rings-first.intro.1",
+        "sonic.say.scanLoading",
+        "lesson.free-garden.title",
+        "sonic.say.lessonKeys",
+        "lesson.free-garden.intro.1",
+        "lesson.free-garden.intro.2",
+        "sonic.say.wallsCoarse",
+        "lesson.free-garden.intro.3",
+        "lesson.free-garden.goal.1",
+        "fly.go",
+        "fly.time",
+        "lesson.free-garden.pass",
+        "fly.last-lesson"
+      ]
+    },
+    {
+      "name": "swap: the engine made sound (RMS over 1e-3), held the limiter's ceiling (peak at most 0.5013), on one AudioContext",
+      "pass": true,
+      "value": {
+        "maxRms": 0.06667887262422142,
+        "maxPeak": 0.17563137412071228,
+        "polls": 1325,
+        "loud": 1289,
+        "last": 0.026070134326863864,
+        "audioContexts": 1
+      }
+    },
+    {
+      "name": "swap: measured: the engine's whole frame in this page (rays, planner, audio updates), ms: 0.7 p50, 1.2 p95, 1.4 p99, 3.2 max over 1919 frames",
+      "pass": true,
+      "value": {
+        "n": 1919,
+        "p50": 0.7,
+        "p95": 1.2,
+        "p99": 1.4,
+        "max": 3.2
+      }
+    },
+    {
+      "name": "swap: the scene sampler alone (30 rays at 16 cm cells) in this page: 0.428 ms a frame, under the plan's 1 ms",
+      "pass": true,
+      "value": {
+        "frames": 600,
+        "msPerFrame": 0.428,
+        "raysPerFrame": 30
+      }
+    },
+    {
+      "name": "swap: back on a lesson world the scan session is gone (built-in, scale 1) and the scan's size is not held in the prefs any more",
+      "pass": true,
+      "value": {
+        "walls": {
+          "voxelM": 0.1,
+          "builtin": true,
+          "scene": "lesson-hover-height",
+          "scale": 1
+        },
+        "prefs": {
+          "transform": {
+            "s": 1,
+            "t": [
+              0,
+              0,
+              0
+            ],
+            "v": 0
+          },
+          "walls": "on"
+        }
+      }
+    },
+    {
+      "name": "no console error and no missing file of the page (the API the dev server has not, the favicon and the scene CDN's optional files aside)",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "pass": true
+}

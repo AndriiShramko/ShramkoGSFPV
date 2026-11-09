@@ -11,10 +11,12 @@
 //    Settings -> Sound has it and the volume (15 % by default since v0.8: prefs defs/sound.ts).
 // Not in recordings (the recorder writes video only).
 // Fly by Sound (v0.12, docs/wip/v12-plan.md 2.2): on a page entered through ?sonic= (sonic/entry.ts) the sound engine owns
-// the one AudioContext. The motors are off there unless the pilot's sound settings ask for them (SonicPrefs.motorSound,
-// default off: they mask the cues), and when on they play into the engine's input node (SonicEngine.auxInput), through
-// its limiter, on its context; sound.motors is not read (the engine's setting decides), the level is sound.volume as ever,
-// and no context of this feature's own is made.
+// the one AudioContext. The pilot's sound settings decide whether the motors play there (SonicPrefs.motorSound; sound.motors
+// is not read). Since v0.13 (M41-16, the owner's message 41) they are on by default, so the pilot hears throttle and climb as
+// in real flight, and they play into the engine's motor bus (SonicEngine.motorInput: the propellers' band, levelled to a
+// level under the cues whatever sound.volume is, the pilot's own motor level, ducked under speech) on its context; an engine
+// of an older package has no motor bus, and they play into its plain input node (SonicEngine.auxInput, before its limiter)
+// as in v0.12. No context of this feature's own is made.
 import { S } from '@gsfpv/sim-core';
 import { t } from '../../i18n';
 import { h } from '../../ui/dom';
@@ -109,13 +111,17 @@ export const sound: Feature = {
                 graph = null;
             }
         };
-        /** In the mode: the graph on the engine's context, into its input node (null until the engine has started). */
+        /**
+         * In the mode: the graph on the engine's context, into its motor bus (v0.13, M41-16), or the plain input node of an
+         * engine that has none (an older package); nothing until the engine has started.
+         */
         const startOnEngine = (): void => {
-            const aux = ctx.sonic?.engine.auxInput as ({ context?: unknown } & object) | null | undefined;
-            if (!aux?.context) return;
+            const engine = ctx.sonic?.engine;
+            const into = (engine?.motorInput ?? engine?.auxInput) as ({ context?: unknown } & object) | null | undefined;
+            if (!into?.context) return;
             try {
                 blades = presetBlades();
-                graph = new MotorSound(aux.context as AudioLike, blades, aux as unknown as NodeLike);
+                graph = new MotorSound(into.context as AudioLike, blades, into as unknown as NodeLike);
             } catch (e) {
                 console.warn('motor sound', e);
                 graph = null;

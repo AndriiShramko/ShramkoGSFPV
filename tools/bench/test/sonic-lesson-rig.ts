@@ -8,7 +8,7 @@
 // page clock (performance.now) itself, so a lesson of minutes runs in seconds. Not a test file (the name has no .test).
 import { vi } from 'vitest';
 import { MODE_CHANNEL, S, attitude } from '../../../packages/sim-core/src';
-import { CuePlanner, DICTS, createTranslator, defaultPrefs, getBuiltinTheme, nextLesson } from '../../../packages/sonic-fpv/src';
+import { CuePlanner, createTranslator, defaultPrefs, getBuiltinTheme, nextLesson } from '../../../packages/sonic-fpv/src';
 import type { ActiveCue, CueEvent, FlightSample, LessonDef, LessonLayers, Locale, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Translator, Vec3 } from '../../../packages/sonic-fpv/src';
 import { estimateSpeechS } from '../../../packages/sonic-fpv/src/audio/speech';
 import { FlightSession } from '../../../apps/fly/src/session';
@@ -18,12 +18,15 @@ import type { AppEvents } from '../../../apps/fly/src/app/context';
 import type { ActionHandler } from '../../../apps/fly/src/app/keys';
 import { LessonPilot, rayClearance } from '../../../apps/fly/src/play/lesson-pilot';
 import { LessonHost } from '../../../apps/fly/src/sonic/lessons';
+import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import type { LessonPage } from '../../../apps/fly/src/sonic/lessons';
 import { buildScanLesson } from '../../../apps/fly/src/sonic/scan-lesson';
 import { SonicMode } from '../../../apps/fly/src/sonic/mode';
 import { lessonFlightWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { LessonWorld } from '../../../apps/fly/src/sonic/lesson-world';
 import type { Prim } from '../../../apps/fly/src/sonic/primitives';
+import { DEFAULT_LESSON_START_KEYS, DEFAULT_RUNNER_KEYS } from '../../../apps/fly/src/sonic/key-names';
+import type { LessonStartKeys, RunnerKeys } from '../../../apps/fly/src/sonic/key-names';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { VoxelContactWorld } from '../../../packages/collision/src';
 import type { VoxelCollision } from '../../../packages/collision/src';
@@ -50,7 +53,7 @@ export class FakeEngine {
     lastInput: SonicFrameInput | null = null;
     inputs: SonicFrameInput[] = [];
     onSpeech: ((line: SpeechLine, text: string) => void) | null = null;
-    private queue: { endsAt: number; resolve: () => void }[] = [];
+    private queue: { endsAt: number; resolve: () => void; key: string; start: number }[] = [];
     private lastEnd = 0;
     /**
      * true: as the real engine with "my screen reader speaks" (selfVoice off): it says nothing and each line waits its own time
@@ -60,7 +63,8 @@ export class FakeEngine {
     private readonly tr: Translator;
 
     constructor(private readonly clock: { t: number }, locale: Locale = 'en') {
-        this.tr = createTranslator(locale, DICTS);
+        // the real engine's dictionaries: the package's and the page's own spoken lines (host-lines.ts; v0.13 stage B says more of them)
+        this.tr = createTranslator(locale, engineDicts());
     }
 
     setLayers(l: LessonLayers): void {
@@ -80,27 +84,56 @@ export class FakeEngine {
         this.cues_ = this.planner.plan(i).cues;
     }
 
+    /** reset() calls so far (the lesson host's at every lesson it opens, v13-int step 1) */
+    resets = 0;
+    /** the control of v13-int step 1: reset() forgets nothing, as an engine made before the package's reset (s13-int) */
+    keepOnReset = false;
+
+    /** As the package's FlyBySoundEngine.reset(): the planner from nothing, the last frame and its cues forgotten (a cue before the next frame is stamped at 0). */
+    reset(): void {
+        this.resets++;
+        if (this.keepOnReset) return;
+        this.planner.reset();
+        this.cues_ = [];
+        this.lastInput = null;
+    }
+
     /** The cues sounding in the last frame. */
     activeCues(): readonly ActiveCue[] {
         return this.cues_;
     }
+
+    /**
+     * How each line ended (v13-int review F1): said to its end, or cut by an interrupting line (speechSynthesis.cancel()) at `at`; `start`
+     * is when the voice began it (a cut line queued behind others never began: its start lies after its cut).
+     */
+    ends: { key: string; start: number; at: number; cut: boolean }[] = [];
+    /**
+     * As Chrome's speechSynthesis (seen in sonic-v13-page R, v13-int review F1): a line cancelled before it began reports nothing, and the
+     * package's speech resolves its promise only at its safety timeout. null: every cancelled line resolves at once (the rig's default).
+     */
+    lateCancelMs: number | null = null;
 
     say(line: SpeechLine, o?: { interrupt?: boolean }): Promise<void> {
         const text = this.tr.text(line);
         const interrupt = o?.interrupt === true;
         this.said.push({ line, interrupt, text, at: this.clock.t });
         this.onSpeech?.(line, text);
-        if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve }));
-        // speechSynthesis.cancel() ends what is queued at once
+        if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve, key: line.key, start: this.clock.t }));
+        // speechSynthesis.cancel() ends what is queued at once (a line that had not begun, with lateCancelMs, reports it that much later)
         if (interrupt) {
-            for (const q of this.queue) q.resolve();
+            for (const q of this.queue) {
+                this.ends.push({ key: q.key, start: q.start, at: this.clock.t, cut: true });
+                if (this.lateCancelMs !== null && q.start > this.clock.t) void this.wait(this.lateCancelMs).then(q.resolve);
+                else q.resolve();
+            }
             this.queue = [];
             this.lastEnd = this.clock.t;
         }
         const start = Math.max(this.clock.t, this.lastEnd);
         const endsAt = start + estimateSpeechS(text, 1) * 1000;
         this.lastEnd = endsAt;
-        return new Promise<void>((resolve) => this.queue.push({ endsAt, resolve }));
+        return new Promise<void>((resolve) => this.queue.push({ endsAt, resolve, key: line.key, start }));
     }
 
     /** Resolves when `ms` of the page's clock have passed (at the frame that reaches it, as a line's end). */
@@ -122,18 +155,25 @@ export class FakeEngine {
         const due = this.queue.filter((q) => q.endsAt <= now);
         if (due.length === 0) return;
         this.queue = this.queue.filter((q) => q.endsAt > now);
-        for (const q of due) q.resolve();
+        for (const q of due) {
+            this.ends.push({ key: q.key, start: q.start, at: q.endsAt, cut: false });
+            q.resolve();
+        }
     }
 
     get speaking(): boolean {
         return this.queue.length > 0;
     }
 
-    /** The last preview cue's direction (module 0 plays one before each question). */
+    /**
+     * The direction of the last sound a step played (module 0 plays one before each question): a 'repeat-cue' since v0.13 (a
+     * named sound is played three times, M41-5), a 'preview' before.
+     */
     lastPreviewDir(): Vec3 | null {
         for (let i = this.cues.length - 1; i >= 0; i--) {
             const c = this.cues[i]!;
             if (c.kind === 'preview') return c.dir;
+            if (c.kind === 'repeat-cue') return c.dir ?? null;
         }
         return null;
     }
@@ -187,6 +227,14 @@ export class Rig {
     /** a session swap is under way: the page's flight is held (nothing steps) until it is done */
     swapping = false;
     paths: 'full' | 'fast' = 'full';
+    /** the names of the pilot's keys the page gives the runner (v0.13 W3; the page's are its keyboard layout's) */
+    keyNames: RunnerKeys = DEFAULT_RUNNER_KEYS;
+    /** the pilot's speaking speed the page gives the runner (SonicPrefs.speechRate) */
+    speechRate = 1;
+    /** called when a lesson with other walls starts being swapped in (the old lesson's runner is still the host's then) */
+    onSwap: (() => void) | null = null;
+    /** the names the line at every lesson's start says (v0.13 B6; the page's are its keyboard layout's) */
+    lessonKeys: LessonStartKeys = DEFAULT_LESSON_START_KEYS;
     pilot: LessonPilot | null = null;
     session!: FlightSession;
     mode!: SonicMode;
@@ -243,6 +291,8 @@ export class Rig {
             swapTo: async (w) => {
                 rig.swaps.push(w.builtin.scene.id);
                 rig.swapping = true;
+                // a test's look into the page while the next lesson's walls are being made (a key pressed meanwhile)
+                rig.onSwap?.();
                 try {
                     rig.session.dispose();
                     rig.session = await rig.start(w);
@@ -264,7 +314,10 @@ export class Rig {
                       })
                     : null,
             showMenu: () => { rig.menus++; },
-            clock: () => rig.clock.t
+            clock: () => rig.clock.t,
+            keyNames: () => rig.keyNames,
+            speechRate: () => rig.speechRate,
+            lessonKeys: () => rig.lessonKeys
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);

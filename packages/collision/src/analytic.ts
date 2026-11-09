@@ -14,7 +14,8 @@
 
 import { VoxelCollision } from './vendor/voxel-collision';
 import type { VoxelMetadata } from './vendor/voxel-collision';
-import { VoxelContactWorld } from './world';
+import { LEAF, VoxelContactWorld } from './world';
+import type { ContactOut } from './world';
 
 /** Solid at a point of the world (metres). */
 export type PointSolidFn = (x: number, y: number, z: number) => boolean;
@@ -43,12 +44,14 @@ export interface AnalyticStats {
     cellsMixed: number;
     /** calls of solid() */
     solidCalls: number;
+    /** calls of the distance function at a query's own point (AnalyticContactWorld's body test) */
+    distanceCalls: number;
 }
 
 export class AnalyticVoxelCollision extends VoxelCollision {
     readonly solidFn: PointSolidFn;
     readonly distanceFn: DistanceFn | null;
-    readonly stats: AnalyticStats = { cellsUniform: 0, cellsMixed: 0, solidCalls: 0 };
+    readonly stats: AnalyticStats = { cellsUniform: 0, cellsMixed: 0, solidCalls: 0, distanceCalls: 0 };
     private readonly ncx: number;
     private readonly ncy: number;
     private readonly cells: Uint8Array | null;
@@ -58,6 +61,11 @@ export class AnalyticVoxelCollision extends VoxelCollision {
     private readonly halfDiag: number;
     /** half a voxel's diagonal plus the rounding of a Float32 distance, metres */
     private readonly voxelReach: number;
+    /** the last point freeWithin asked the distance function at, and its distance (NaN: none yet, every bound fails) */
+    private lastX = Number.NaN;
+    private lastY = Number.NaN;
+    private lastZ = Number.NaN;
+    private lastD = Number.NaN;
 
     constructor(meta: VoxelMetadata, solid: PointSolidFn, sdf: DistanceFn | null) {
         // one node so the upstream queries do not take the walls for missing (nodes.length === 0)
@@ -94,6 +102,43 @@ export class AnalyticVoxelCollision extends VoxelCollision {
         const dy = y - (this.gridMinY + cy * ANALYTIC_CELL * res + half);
         const dz = z - (this.gridMinZ + cz * ANALYTIC_CELL * res + half);
         return d[c] - Math.sqrt(dx * dx + dy * dy + dz * dz) - this.voxelReach;
+    }
+
+    /**
+     * Whether no solid voxel lies within `need` of (x, y, z): freeRadiusAt first (a few reads); when that cannot tell,
+     * the distance at the point itself (one call of the distance function), which is tighter by up to the way to the
+     * cell's centre, so in a way narrower than two cells (tunnel-long's 0.7 m at 0.05 m voxels: 0.4 m cells) it often
+     * tells. The call is made only when it can succeed: the distance at the point is at most the centre's plus that way
+     * (1-Lipschitz), so near a wall the cells' "no" stands without it. False when nothing is known.
+     */
+    freeWithin(x: number, y: number, z: number, need: number): boolean {
+        const d = this.cellD;
+        if (!d) return false;
+        const res = this.voxelResolution;
+        const ix = Math.floor((x - this.gridMinX) / res), iy = Math.floor((y - this.gridMinY) / res), iz = Math.floor((z - this.gridMinZ) / res);
+        if (ix < 0 || iy < 0 || iz < 0 || ix >= this.numVoxelsX || iy >= this.numVoxelsY || iz >= this.numVoxelsZ) return false;
+        const cx = (ix / ANALYTIC_CELL) | 0, cy = (iy / ANALYTIC_CELL) | 0, cz = (iz / ANALYTIC_CELL) | 0;
+        const c = (cz * this.ncy + cy) * this.ncx + cx;
+        if (this.cells![c] === UNKNOWN) this.classify(c, cx, cy, cz);
+        const half = (ANALYTIC_CELL * res) / 2;
+        const dx = x - (this.gridMinX + cx * ANALYTIC_CELL * res + half);
+        const dy = y - (this.gridMinY + cy * ANALYTIC_CELL * res + half);
+        const dz = z - (this.gridMinZ + cz * ANALYTIC_CELL * res + half);
+        const way = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (need < d[c] - way - this.voxelReach) return true;
+        if (need >= d[c] + way - this.voxelReach) return false;
+        // the last distance asked bounds this one as well (the craft's queries come a few millimetres apart): free, or no use
+        const lx = x - this.lastX, ly = y - this.lastY, lz = z - this.lastZ;
+        const moved = Math.sqrt(lx * lx + ly * ly + lz * lz);
+        if (need < this.lastD - moved - this.voxelReach) return true;
+        if (need >= this.lastD + moved - this.voxelReach) return false;
+        this.stats.distanceCalls++;
+        const at = this.distanceFn!(x, y, z);
+        this.lastX = x;
+        this.lastY = y;
+        this.lastZ = z;
+        this.lastD = at;
+        return need < at - this.voxelReach;
     }
 
     /** solid() at the centre of voxel (ix, iy, iz), asked directly (no cache). */
@@ -186,11 +231,16 @@ export function analyticCollision(min: readonly number[], max: readonly number[]
 }
 
 /**
- * The contact world of analytic walls: VoxelContactWorld with one shortcut. A sphere that fits in the free
- * radius around its centre (AnalyticVoxelCollision.freeRadiusAt: the distance kept at the centre of its cell)
- * cannot overlap a solid voxel, so the overlap test answers "free" without a voxel walk. Exact: the sweep,
- * its contact times and normals are those of VoxelContactWorld on the same walls (sonic-world.test.ts asks
- * both the queries of a flight and replays a flight on both to one hash); in open air a test is a few reads.
+ * The contact world of analytic walls: VoxelContactWorld with shortcuts that answer "free" without a voxel walk.
+ *   - overlap: a sphere that fits in the free radius around its centre (AnalyticVoxelCollision.freeRadiusAt: the
+ *     distance kept at the centre of its cell) cannot overlap a solid voxel; in open air a test is a few reads.
+ *   - sweep and pushOut (v0.13, lane v13-look, W16): the whole body at once. A ball that holds every sphere's first
+ *     test of VoxelContactWorld.sweepOne (the whole-segment cover) and lies in the free radius at its centre (the
+ *     cell's, else the distance at the point itself, one call) means every sweepOne answers -1; a pushOut sphere in
+ *     the free radius has nothing to push out of. In tunnel-long's 0.7 m ways (0.05 m voxels, 0.4 m cells) the cells
+ *     rarely tell, the distance at the point mostly does.
+ * Exact: the sweep, its contact times and normals are those of VoxelContactWorld on the same walls (sonic-world.test.ts
+ * asks both the queries of a flight and replays a flight on both to one hash).
  */
 export class AnalyticContactWorld extends VoxelContactWorld {
     private readonly walls: AnalyticVoxelCollision;
@@ -206,5 +256,43 @@ export class AnalyticContactWorld extends VoxelContactWorld {
             return false;
         }
         return super.overlap(x, y, z, r);
+    }
+
+    override sweep(c0: Float64Array, c1: Float64Array, r: Float64Array, pad: Float64Array, n: number, out: ContactOut): number {
+        if (n > 0 && this.bodyFree(c0, c1, r, pad, n)) {
+            this.stats.overlapTests++;
+            return -1;
+        }
+        return super.sweep(c0, c1, r, pad, n, out);
+    }
+
+    override pushOut(x: number, y: number, z: number, r: number, out: { x: number; y: number; z: number }): boolean {
+        if (this.walls.freeWithin(x, y, z, r)) return false;
+        return super.pushOut(x, y, z, r, out);
+    }
+
+    /**
+     * No sphere's sweep can meet a solid voxel: the ball around the middles of the spheres' moves that holds each one's
+     * whole-segment cover (radius r + pad + half the move; r + pad + LEAF for a sphere that does not move, sweepOne's
+     * test then) lies within the free radius at its centre.
+     */
+    private bodyFree(c0: Float64Array, c1: Float64Array, r: Float64Array, pad: Float64Array, n: number): boolean {
+        let cx = 0, cy = 0, cz = 0;
+        for (let k = 0; k < n; k++) {
+            cx += c0[k * 3] + c1[k * 3];
+            cy += c0[k * 3 + 1] + c1[k * 3 + 1];
+            cz += c0[k * 3 + 2] + c1[k * 3 + 2];
+        }
+        cx /= 2 * n; cy /= 2 * n; cz /= 2 * n;
+        let reach = 0;
+        for (let k = 0; k < n; k++) {
+            const ax = c0[k * 3], ay = c0[k * 3 + 1], az = c0[k * 3 + 2];
+            const dx = c1[k * 3] - ax, dy = c1[k * 3 + 1] - ay, dz = c1[k * 3 + 2] - az;
+            const half = Math.sqrt(dx * dx + dy * dy + dz * dz) * 0.5;
+            const mx = ax + dx * 0.5 - cx, my = ay + dy * 0.5 - cy, mz = az + dz * 0.5 - cz;
+            const R = Math.sqrt(mx * mx + my * my + mz * mz) + r[k] + pad[k] + Math.max(half, LEAF);
+            if (R > reach) reach = R;
+        }
+        return this.walls.freeWithin(cx, cy, cz, reach);
     }
 }

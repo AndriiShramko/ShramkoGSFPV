@@ -58,3 +58,8 @@
 .sonicrec-replay-more summary { cursor: pointer; min-height: 32px; color: var(--muted, #9aa3ad); font-size: 13px; }
 .sonicrec-replay-details { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font: 12px/1.4 ui-monospace, Consolas, monospace; color: var(--muted, #9aa3ad); }
 @media (max-width: 640px) { .sonicrec-toggle { bottom: 70px; } .sonicrec-panel { bottom: 124px; max-height: calc(100vh - 148px); } }
+/* v13-int review K5: with touch sticks (a phone, a tablet) the toggle stands right over the right stick (min(40vw, 220px) square, its bottom
+   max(24px, the home bar) up), 8 px clear of it, never on it; the panel opens over the toggle (the stack over the sticks makes room: sonic.css,
+   look.css) */
+body.touch-on .sonicrec-toggle { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 8px); }
+body.touch-on .sonicrec-panel { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 62px); max-height: calc(100vh - max(24px, env(safe-area-inset-bottom)) - min(40vw, 220px) - 86px); }

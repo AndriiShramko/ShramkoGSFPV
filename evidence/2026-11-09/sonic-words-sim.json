@@ -1,0 +1,693 @@
+{
+ "format": "shramko-listen-words-sim/1",
+ "date": "2026-11-09T08:49:10.733Z",
+ "root": "packages/i18n/locales of this repository",
+ "files": [
+  "fly/sonic",
+  "fly/sonicentry",
+  "fly/sonickeys",
+  "fly/sonicrec",
+  "fly/soniclook"
+ ],
+ "bounds": {
+  "en": 0.2,
+  "es": 0.2,
+  "pl": 0.2,
+  "ru": 0.2
+ },
+ "languages": {
+  "en": {
+   "voice": "Microsoft David Desktop",
+   "lines": 269,
+   "words": 2096,
+   "bound": 0.2,
+   "exact": 250,
+   "meanRate": 0.0091,
+   "maxRate": 0.3333,
+   "over": [
+    "sonic.copyKeys",
+    "sonic.copyKeysMac",
+    "sonicrec.state.savedDisk",
+    "sonicrec.channel.status.retrying"
+   ],
+   "keys": {
+    "lines": 0,
+    "lost": []
+   },
+   "heard": []
+  },
+  "es": {
+   "voice": "Microsoft Helena Desktop",
+   "lines": 269,
+   "words": 2211,
+   "bound": 0.2,
+   "exact": 254,
+   "meanRate": 0.0128,
+   "maxRate": 1,
+   "over": [
+    "sonic.copyKeysMac",
+    "sonic.link.titleStart",
+    "sonicrec.send.notice.cancelled",
+    "sonicrec.channel.telegram"
+   ],
+   "keys": {
+    "lines": 0,
+    "lost": []
+   },
+   "heard": []
+  },
+  "pl": {
+   "voice": "Microsoft Paulina Desktop",
+   "lines": 269,
+   "words": 1838,
+   "bound": 0.2,
+   "exact": 254,
+   "meanRate": 0.0133,
+   "maxRate": 1,
+   "over": [
+    "sonic.copyKeys",
+    "sonicrec.key.Tab",
+    "sonicrec.status.starting",
+    "sonicrec.channel.status.retrying",
+    "soniclook.metres"
+   ],
+   "keys": {
+    "lines": 0,
+    "lost": []
+   },
+   "heard": []
+  },
+  "ru": {
+   "voice": "Microsoft Irina Desktop",
+   "lines": 269,
+   "words": 1776,
+   "bound": 0.2,
+   "exact": 245,
+   "meanRate": 0.0268,
+   "maxRate": 1.3333,
+   "over": [
+    "sonic.copyKeys",
+    "sonic.copyKeysMac",
+    "sonic.progress.counted",
+    "sonic.menu.page",
+    "sonicrec.key.Tab",
+    "sonicrec.transfer.stored",
+    "sonicrec.transfer.delivered",
+    "sonicrec.channel.name",
+    "sonicrec.channel.telegram",
+    "soniclook.metres"
+   ],
+   "keys": {
+    "lines": 0,
+    "lost": []
+   },
+   "heard": []
+  }
+ },
+ "rows": [
+  {
+   "locale": "en",
+   "key": "sonic.copyKeys",
+   "text": "Control and C",
+   "heard": "Control-N-C.",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  },
+  {
+   "locale": "en",
+   "key": "sonic.copyKeysMac",
+   "text": "Command and C",
+   "heard": "Command-N-C",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  },
+  {
+   "locale": "en",
+   "key": "sonic.link.select",
+   "text": "The link is selected: press Control and C to copy it.",
+   "heard": "The link is selected, press CTRL and C to copy it.",
+   "rawRate": 0.0909,
+   "rate": 0.0909
+  },
+  {
+   "locale": "en",
+   "key": "sonic.say.helpRepeat",
+   "text": "Press Z to hear the task of this step again, with its sounds.",
+   "heard": "Press Z to hear the task of the step again, with its sounds.",
+   "rawRate": 0.0769,
+   "rate": 0.0769
+  },
+  {
+   "locale": "en",
+   "key": "sonic.say.linkSelected",
+   "text": "The link to the lesson Your first ring was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
+   "heard": "The link to the lesson Your First Ring Was Not Copied. It is selected, press Ctrl and C to copy it, then Escape to go back.",
+   "rawRate": 0.0385,
+   "rate": 0.0385
+  },
+  {
+   "locale": "en",
+   "key": "sonic.say.linkSelectedStart",
+   "text": "The link to Fly by Sound was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
+   "heard": "The link to flyby sound was not copied. It is selected, press CTRL and C to copy it, then ESC to go back.",
+   "rawRate": 0.0833,
+   "rate": 0.0833
+  },
+  {
+   "locale": "en",
+   "key": "sonic.say.wallsCoarse",
+   "text": "The walls of this scan are coarse: about 12 centimetres at this size. A wall can sound a little nearer or farther than it really is.",
+   "heard": "The walls of this scan are coarse, about 12 centimeters at this size. A wall can sound a little nearer or farther than it really is.",
+   "rawRate": 0.0385,
+   "rate": 0.0385
+  },
+  {
+   "locale": "en",
+   "key": "sonic.start.noAudio",
+   "text": "This browser cannot play sound, so Fly by Sound cannot run here. Try a current Chrome or Edge.",
+   "heard": "This browser cannot play sound, so flyby sound cannot run here. Try a current chrome or etch.",
+   "rawRate": 0.0556,
+   "rate": 0.0556
+  },
+  {
+   "locale": "en",
+   "key": "keys.sonic.hearKeys",
+   "text": "Fly by Sound: hear the keys",
+   "heard": "Flyby sound, here the keys.",
+   "rawRate": 0.1667,
+   "rate": 0.1667
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.state.savedDisk",
+   "text": "Saved to disk.",
+   "heard": "Save to Disk",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.msg.recorded",
+   "text": "The recording is saved on this device. Save it to disk too.",
+   "heard": "The recording is saved on this device. Save it to disk 2.",
+   "rawRate": 0.0833,
+   "rate": 0.0833
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.note.persist",
+   "text": "The browser may clear this storage when the disk is nearly full. Save recordings to disk.",
+   "heard": "The browser may clear the storage when the disk is nearly full. Save recordings to disk.",
+   "rawRate": 0.0625,
+   "rate": 0.0625
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.note.memory",
+   "text": "This browser cannot keep recordings safe: a closed tab loses them. Save each recording to disk right after it ends.",
+   "heard": "This browser cannot keep recordings safe, a close tab loses them. Save each recording to disk right after it ends.",
+   "rawRate": 0.05,
+   "rate": 0.05
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.error.storage-low",
+   "text": "Only 40 MB of browser storage are left and 120 MB are needed, so nothing was recorded. Free some space, or save the old recordings and delete them.",
+   "heard": "Only 40MB of browser storage are left and 120MB are needed, so nothing was recorded. Free some space, or save the old recordings and delete them.",
+   "rawRate": 0.0714,
+   "rate": 0.0714
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.replay.time",
+   "text": "0:30 of 1:05",
+   "heard": "0.30 of 105",
+   "rawRate": 0.2,
+   "rate": 0.2
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.replay.check.fail",
+   "text": "The replay differs from the recording in 2 event(s): 18 of 20 recorded events were worked out again, and 95 % of the sounds are the same. It is still played as it was recorded.",
+   "heard": "The replay differs from the recording in 2 event, S18 of 20 recorded events were worked out again, and 95% of the sounds are the same. It is still played as it was recorded.",
+   "rawRate": 0.0286,
+   "rate": 0.0286
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.send.consent.text",
+   "text": "The whole recording is sent: the flight and, if there is one, the pilot's voice. It goes to the author of Fly by Sound by Telegram and by e-mail. The server keeps it for the project for at most five years, or less if the pilot or a parent asks for it to be deleted. The copy on this device stays where it is.",
+   "heard": "The whole recording is sent, the flight and, if there is one, the pilot's voice. It goes to the author of fly by sound by telegram and by email. The server keeps it for the project for at most 5 years, or less if the pilot or a parent asks for it to be deleted. The copy on this device stays where it is.",
+   "rawRate": 0.0154,
+   "rate": 0.0154
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.send.notice.asked",
+   "text": "Asked the pilot to agree to send the recording. Press U again to agree, or use Send.",
+   "heard": "Ask the pilot to agree to send the recording. Press U again to agree, or use send.",
+   "rawRate": 0.0588,
+   "rate": 0.0588
+  },
+  {
+   "locale": "en",
+   "key": "sonicrec.channel.status.retrying",
+   "text": "will try again",
+   "heard": "We'll try again.",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  },
+  {
+   "locale": "es",
+   "key": "sonic.copyKeysMac",
+   "text": "Comando y C",
+   "heard": "Comando IC.",
+   "rawRate": 0.6667,
+   "rate": 0.6667
+  },
+  {
+   "locale": "es",
+   "key": "sonic.link.titleStart",
+   "text": "Enlace a Fly by Sound",
+   "heard": "Enlace a FlybySound.",
+   "rawRate": 0.6,
+   "rate": 0.6
+  },
+  {
+   "locale": "es",
+   "key": "sonic.say.linkCopiedStart",
+   "text": "El enlace a Fly by Sound est\u00e1 copiado. P\u00e9galo en un mensaje o un correo para compartirlo.",
+   "heard": "El enlace a Flyby's a\u00fan est\u00e1 copiado. P\u00e9galo en un mensaje o un correo para compartirlo.",
+   "rawRate": 0.1765,
+   "rate": 0.1765
+  },
+  {
+   "locale": "es",
+   "key": "sonic.say.scanFailed",
+   "text": "El escaneo no se carg\u00f3. Revisa la conexi\u00f3n y elige la lecci\u00f3n otra vez.",
+   "heard": "El escaneo no se carg\u00f3. Revisa la conexi\u00f3n y elige la elecci\u00f3n otra vez.",
+   "rawRate": 0.0714,
+   "rate": 0.0714
+  },
+  {
+   "locale": "es",
+   "key": "sonic.say.wallsCoarse",
+   "text": "Las paredes de este escaneo son bastas: unos 12 cent\u00edmetros a este tama\u00f1o. Una pared puede sonar un poco m\u00e1s cerca o m\u00e1s lejos de lo que est\u00e1 en realidad.",
+   "heard": "Las paredes de este escaneo son vastas, unos 12 cent\u00edmetros a este tama\u00f1o. Una pared puede sonar un poco m\u00e1s cerca o m\u00e1s lejos de lo que est\u00e1 en realidad.",
+   "rawRate": 0.0333,
+   "rate": 0.0333
+  },
+  {
+   "locale": "es",
+   "key": "sonic.start.intro",
+   "text": "Aprende a pilotar un dron de o\u00eddo. Todo se dice y se toca como sonido, as\u00ed que no hace falta pantalla. Un ayudante puede preparar tu radio, teclado o mando.",
+   "heard": "Aprende a pilotar un DRAM de o\u00eddo. Todo se dice y se toca como sonido, as\u00ed que no hace falta pantalla. Un ayudante puede preparar tu radio, teclado o mando.",
+   "rawRate": 0.0333,
+   "rate": 0.0333
+  },
+  {
+   "locale": "es",
+   "key": "sonic.start.noAudio",
+   "text": "Este navegador no puede reproducir sonido, as\u00ed que Fly by Sound no funciona aqu\u00ed. Prueba con un Chrome o Edge actual.",
+   "heard": "Este navegador no puede reproducir sonido, as\u00ed que Flyby Sound no funciona aqu\u00ed. Prueba con un Chrome Muelle actual.",
+   "rawRate": 0.0952,
+   "rate": 0.0952
+  },
+  {
+   "locale": "es",
+   "key": "sonic.start.unknown",
+   "text": "No hay ninguna lecci\u00f3n llamada rings-first. Elige una de la lista.",
+   "heard": "No hay ninguna lecci\u00f3n llamada Rinse First. Elige una de la lista.",
+   "rawRate": 0.0833,
+   "rate": 0.0833
+  },
+  {
+   "locale": "es",
+   "key": "sonic.menu.page",
+   "text": "Fly by Sound: ciegos o con baja visi\u00f3n",
+   "heard": "Fly by sound, ciego o con baja visi\u00f3n.",
+   "rawRate": 0.125,
+   "rate": 0.125
+  },
+  {
+   "locale": "es",
+   "key": "sonic.say.lessonFailed",
+   "text": "La lecci\u00f3n no se abri\u00f3. El\u00edgela otra vez o elige otra.",
+   "heard": "La lecci\u00f3n no se abri\u00f3. El\u00edjela otra vez o elige otra.",
+   "rawRate": 0.0909,
+   "rate": 0.0909
+  },
+  {
+   "locale": "es",
+   "key": "sonicrec.replay.loading",
+   "text": "Abriendo la grabaci\u00f3n y comprob\u00e1ndola con la lecci\u00f3n. El vuelo sigue como est\u00e1 hasta que pulses Reproducir.",
+   "heard": "Abriendo la grabaci\u00f3n y comprob\u00e1ndola con la lecci\u00f3n. El vuelo sigue como est\u00e1 hasta que Palsys reproducir.",
+   "rawRate": 0.0588,
+   "rate": 0.0588
+  },
+  {
+   "locale": "es",
+   "key": "sonicrec.replay.check.fail",
+   "text": "La reproducci\u00f3n difiere de la grabaci\u00f3n en 2 evento(s): se volvieron a calcular 18 de 20 eventos grabados y el 95 % de los sonidos es igual. Se reproduce tal como se grab\u00f3.",
+   "heard": "La reproducci\u00f3n difiere de la grabaci\u00f3n en dos evento, ese se volvieron a calcular 18 de 20 eventos grabados y el 95% de los sonidos es igual. Se reproduce tal como se grab\u00f3.",
+   "rawRate": 0.0303,
+   "rate": 0.0303
+  },
+  {
+   "locale": "es",
+   "key": "sonicrec.send.notice.busy-recording",
+   "text": "Hay una grabaci\u00f3n en marcha. Detenla primero.",
+   "heard": "Hay una grabaci\u00f3n en marcha. Det\u00e9nla primero.",
+   "rawRate": 0.1429,
+   "rate": 0.1429
+  },
+  {
+   "locale": "es",
+   "key": "sonicrec.send.notice.cancelled",
+   "text": "No se envi\u00f3. La grabaci\u00f3n sigue en este dispositivo.",
+   "heard": "Nos envi\u00f3. La grabaci\u00f3n sigue en este dispositivo.",
+   "rawRate": 0.2222,
+   "rate": 0.2222
+  },
+  {
+   "locale": "es",
+   "key": "sonicrec.channel.telegram",
+   "text": "Telegram",
+   "heard": "TELAGRAM",
+   "rawRate": 1,
+   "rate": 1
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.copyKeys",
+   "text": "Control i C",
+   "heard": "Kontroli C.",
+   "rawRate": 0.6667,
+   "rate": 0.6667
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.link.select",
+   "text": "Link jest zaznaczony: naci\u015bnij klawisze Control i C, aby go skopiowa\u0107.",
+   "heard": "Link jest zaznaczony, naci\u015bnij klawisze CTRL i C, aby go skopiowa\u0107.",
+   "rawRate": 0.0909,
+   "rate": 0.0909
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.nav.label",
+   "text": "Sekcje trybu \u201eLot na s\u0142uch\u201d",
+   "heard": "Sekcj\u0119 trybu lot na s\u0142uch.",
+   "rawRate": 0.2,
+   "rate": 0.2
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.say.gpuHint",
+   "text": "Ta strona rysuje na uk\u0142adzie graficznym Intel. Je\u015bli komputer ma te\u017c kart\u0119 NVIDIA lub AMD, popro\u015b pomocnika, by prze\u0142\u0105czy\u0142 na ni\u0105 przegl\u0105dark\u0119: w Ustawieniach Windows, System, Ekran, Grafika, wybierz przegl\u0105dark\u0119, Opcje, Wysoka wydajno\u015b\u0107.",
+   "heard": "Ta strona rysuje na uk\u0142adzie graficznym Intel. Je\u015bli komputer ma te\u017c kart\u0119 Nvidia lub AMD, popro\u015b pomocnika, by prze\u0142\u0105czy\u0142 na ni\u0105 przegl\u0105dark\u0119, w ustawieniach Windows, System, Ekran, Grafika, wybierz przegl\u0105dark\u0119, opcj\u0119, Wysoka wydajno\u015b\u0107.",
+   "rawRate": 0.0303,
+   "rate": 0.0303
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.say.linkSelected",
+   "text": "Link do lekcji Pierwsza obr\u0119cz nie zosta\u0142 skopiowany. Jest zaznaczony: naci\u015bnij klawisze Control i C, aby go skopiowa\u0107, a potem klawisz Escape, aby wr\u00f3ci\u0107.",
+   "heard": "Link do lekcji pierwsza obr\u0119cznie zosta\u0142 skopiowany. Jest zaznaczony, naci\u015bnij klawisze Ctrl i C, aby go skopiowa\u0107, a potem klawisz Escape, aby wr\u00f3ci\u0107.",
+   "rawRate": 0.0417,
+   "rate": 0.0417
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.say.linkSelectedStart",
+   "text": "Link do trybu \u201eLot na s\u0142uch\u201d nie zosta\u0142 skopiowany. Jest zaznaczony: naci\u015bnij klawisze Control i C, aby go skopiowa\u0107, a potem klawisz Escape, aby wr\u00f3ci\u0107.",
+   "heard": "Link do trybu lot na s\u0142uch nie zosta\u0142 skopiowany. Jest zaznaczony, naci\u015bnij klawisze Ctrl i C, aby go skopiowa\u0107, a potem klawisz Escape, aby wr\u00f3ci\u0107.",
+   "rawRate": 0.04,
+   "rate": 0.04
+  },
+  {
+   "locale": "pl",
+   "key": "sonic.say.wallsCoarse",
+   "text": "\u015aciany tego skanu s\u0105 zgrubne: oko\u0142o 12 centymetr\u00f3w w tej skali. \u015aciana mo\u017ce brzmie\u0107 troch\u0119 bli\u017cej lub dalej, ni\u017c jest naprawd\u0119.",
+   "heard": "\u015aciany tego skanu s\u0105 zgrubne, oko\u0142o 12 cm w tej skali. \u015aciana mo\u017ce brzmie\u0107 troch\u0119 bli\u017cej lub dalej, ni\u017c jest naprawd\u0119.",
+   "rawRate": 0.0476,
+   "rate": 0.0476
+  },
+  {
+   "locale": "pl",
+   "key": "keys.sonic.menu",
+   "text": "Lot na s\u0142uch: menu lekcji (klawisz Esc), menu pauzy (klawisz P)",
+   "heard": "Lot na s\u0142uch, menu lekcji, klawisz Escape, menu pauzy, klawisz P.",
+   "rawRate": 0.0909,
+   "rate": 0.0909
+  },
+  {
+   "locale": "pl",
+   "key": "sonicrec.key.Tab",
+   "text": "Tab",
+   "heard": "Tabulator",
+   "rawRate": 1,
+   "rate": 1
+  },
+  {
+   "locale": "pl",
+   "key": "sonicrec.status.starting",
+   "text": "Uruchamiam. Je\u015bli przegl\u0105darka zapyta o mikrofon, wybierz Zezw\u00f3l.",
+   "heard": "Uruchamiam. Je\u015bli przegl\u0105darka zapyta o mikrofon, wybierz ZZW-L.",
+   "rawRate": 0.25,
+   "rate": 0.25
+  },
+  {
+   "locale": "pl",
+   "key": "sonicrec.consent.text",
+   "text": "Lot i, je\u015bli przegl\u0105darka pozwoli na mikrofon, g\u0142os pilota s\u0105 nagrywane tylko na tym urz\u0105dzeniu. Nic nie jest nikomu wysy\u0142ane, dop\u00f3ki pilot nie zgodzi si\u0119 na wys\u0142anie, w osobnym kroku.",
+   "heard": "Je\u015bli przegl\u0105darka pozwoli na mikrofon, g\u0142os pilota s\u0105 nagrywane tylko na tym urz\u0105dzeniu. Nic nie jest nikomu wysy\u0142ane, dop\u00f3ki pilot nie zgodzi si\u0119 na wys\u0142anie, w osobnym kroku.",
+   "rawRate": 0.0667,
+   "rate": 0.0667
+  },
+  {
+   "locale": "pl",
+   "key": "sonicrec.error.store",
+   "text": "Nagrania nie da si\u0119 zapisa\u0107: inna karta nagrywa t\u0119 sesj\u0119",
+   "heard": "Nagrania nie da si\u0119 zapisa\u0107, inna karta nagrywa te sesje.",
+   "rawRate": 0.2,
+   "rate": 0.2
+  },
+  {
+   "locale": "pl",
+   "key": "sonicrec.send.consent.text",
+   "text": "Wysy\u0142ane jest ca\u0142e nagranie: lot i, je\u015bli jest, g\u0142os pilota. Trafia do autora trybu \u201eLot na s\u0142uch\u201d przez Telegram i e-mail. Serwer przechowuje je na potrzeby projektu najd\u0142u\u017cej pi\u0119\u0107 lat, albo kr\u00f3cej, je\u015bli pilot lub rodzic poprosi o usuni\u0119cie. Kopia na tym urz\u0105dzeniu zostaje tam, gdzie jest.",
+   "heard": "Wysy\u0142ane jest ca\u0142e nagranie, lot i, je\u015bli jest, g\u0142os pilota. Trafia do autora trybu lot na s\u0142uch przez telegram i e-mail. Serwer przechowuje je na potrzeby projektu najd\u0142u\u017cej 5 lat, albo kr\u00f3cej, je\u015bli pilot lub rodzic poprosi o usuni\u0119cie. Kopia na tym urz\u0105dzeniu zostaje tam, gdzie jest.",
+   "rawRate": 0.0208,
+   "rate": 0.0208
+  },
+  {
+   "locale": "pl",
+   "key": "sonicrec.channel.status.retrying",
+   "text": "spr\u00f3buje ponownie",
+   "heard": "Spr\u00f3buj\u0119 ponownie.",
+   "rawRate": 0.5,
+   "rate": 0.5
+  },
+  {
+   "locale": "pl",
+   "key": "soniclook.metres",
+   "text": "1.5 m",
+   "heard": "1,5 metra.",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.copyKeys",
+   "text": "Control \u0438 C",
+   "heard": "Ctrl-E-C",
+   "rawRate": 0.6667,
+   "rate": 0.6667
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.copyKeysMac",
+   "text": "Command \u0438 C",
+   "heard": "\u041a\u044d\u0439\u0440\u044b \u041c\u044d\u043d \u0422\u0438 \u0421\u0438",
+   "rawRate": 1.3333,
+   "rate": 1.3333
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.link.select",
+   "text": "\u0421\u0441\u044b\u043b\u043a\u0430 \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0430: \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0438 Control \u0438 C, \u0447\u0442\u043e\u0431\u044b \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0435\u0451.",
+   "heard": "\u0421\u0441\u044b\u043b\u043a\u0430 \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0430, \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0438 Ctrl \u0438 C, \u0447\u0442\u043e\u0431\u044b \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0435\u0451",
+   "rawRate": 0.1,
+   "rate": 0.1
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.link.settings",
+   "text": "\u042d\u0442\u0430 \u0441\u0441\u044b\u043b\u043a\u0430 \u0437\u0430\u0434\u0430\u0451\u0442 \u0437\u0432\u0443\u043a \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430 \u044d\u0442\u043e\u0442 \u0440\u0430\u0437 (\u041c\u044f\u0433\u043a\u0430\u044f). \u0422\u0432\u043e\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d\u043d\u044b\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u043d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f.",
+   "heard": "\u042d\u0442\u0430 \u0441\u0441\u044b\u043b\u043a\u0430 \u0437\u0430\u0434\u0430\u0451\u0442 \u0437\u0432\u0443\u043a \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430 \u044d\u0442\u043e\u0442 \u0440\u0430\u0437, \u043c\u044f\u0433\u043a\u043e\u0435 \u0422\u0432\u043e\u0438 \u0441\u043e\u0445\u0440\u0430\u043d\u0451\u043d\u043d\u044b\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0439\u043a\u0438 \u043d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442\u0441\u044f",
+   "rawRate": 0.0714,
+   "rate": 0.0714
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.progress.counted",
+   "text": "\u0417\u0430\u0441\u0447\u0438\u0442\u0430\u043d\u043e 2 \u0438\u0437 5",
+   "heard": "\u0417\u0430 \u0441\u0447\u0435\u0442\u0430 \u043d\u0430 2 \u0438\u0437 5",
+   "rawRate": 0.25,
+   "rate": 0.25
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.say.helpMenu",
+   "text": "\u041d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0443 K, \u0447\u0442\u043e\u0431\u044b \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e \u0443\u0440\u043e\u043a\u0430.",
+   "heard": "\u041d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0443 \u041a, \u0447\u0442\u043e\u0431\u044b \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043c\u0435\u043d\u044e \u0443\u0440\u043e\u043a\u0430.",
+   "rawRate": 0.1429,
+   "rate": 0.1429
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.say.lessonKeys",
+   "text": "\u041a\u043b\u0430\u0432\u0438\u0448\u0430 \u042d\u0441\u043a\u0435\u0439\u043f: \u043c\u0435\u043d\u044e. \u041a\u043b\u0430\u0432\u0438\u0448\u0430 Z: \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u043d\u0438\u0435. \u041a\u043b\u0430\u0432\u0438\u0448\u0430 N: \u0434\u0430\u043b\u044c\u0448\u0435.",
+   "heard": "\u041a\u043b\u0430\u0432\u0438\u0448\u0430 Escape, \u043c\u0435\u043d\u044e \u041a\u043b\u0430\u0432\u0438\u0448\u0430 Z, \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u044c \u0437\u0430\u0434\u0430\u043d\u0438\u0435 \u041a\u043b\u0430\u0432\u0438\u0448\u0430 N, \u0434\u0430\u043b\u044c\u0448\u0435",
+   "rawRate": 0.1,
+   "rate": 0.1
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.say.linkSelected",
+   "text": "\u0421\u0441\u044b\u043b\u043a\u0430 \u043d\u0430 \u0443\u0440\u043e\u043a \u041f\u0435\u0440\u0432\u043e\u0435 \u043a\u043e\u043b\u044c\u0446\u043e \u043d\u0435 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043b\u0430\u0441\u044c. \u041e\u043d\u0430 \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0430: \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0438 Control \u0438 C, \u0447\u0442\u043e\u0431\u044b \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0435\u0451, \u0437\u0430\u0442\u0435\u043c \u043a\u043b\u0430\u0432\u0438\u0448\u0443 Escape, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f.",
+   "heard": "\u0421\u0441\u044b\u043b\u043a\u0430 \u043d\u0430 \u0443\u0440\u043e\u043a \u041f\u0435\u0440\u0432\u043e\u0435 \u043a\u043e\u043b\u044c\u0446\u043e \u043d\u0435 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043b\u0430\u0441\u044c \u041e\u043d\u0430 \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0430, \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0438 Ctrl \u0438 C, \u0447\u0442\u043e\u0431\u044b \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0435\u0451, \u0437\u0430\u0442\u0435\u043c \u043a\u043b\u0430\u0432\u0438\u0448\u0443 Escape, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f",
+   "rawRate": 0.0455,
+   "rate": 0.0455
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.say.linkSelectedStart",
+   "text": "\u0421\u0441\u044b\u043b\u043a\u0430 \u043d\u0430 \u00ab\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443\u00bb \u043d\u0435 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043b\u0430\u0441\u044c. \u041e\u043d\u0430 \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0430: \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0438 Control \u0438 C, \u0447\u0442\u043e\u0431\u044b \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0435\u0451, \u0437\u0430\u0442\u0435\u043c \u043a\u043b\u0430\u0432\u0438\u0448\u0443 Escape, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f.",
+   "heard": "\u0421\u0441\u044b\u043b\u043a\u0430 \u043d\u0430 \u043f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443 \u043d\u0435 \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u043b\u0430\u0441\u044c \u041e\u043d\u0430 \u0432\u044b\u0434\u0435\u043b\u0435\u043d\u0430, \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0438 Ctrl \u0438 C, \u0447\u0442\u043e\u0431\u044b \u0441\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0435\u0451, \u0437\u0430\u0442\u0435\u043c \u043a\u043b\u0430\u0432\u0438\u0448\u0443 Escape, \u0447\u0442\u043e\u0431\u044b \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f",
+   "rawRate": 0.0455,
+   "rate": 0.0455
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.say.replayOlder",
+   "text": "\u042d\u0442\u043e\u0442 \u043f\u043e\u043b\u0451\u0442 \u0437\u0430\u043f\u0438\u0441\u0430\u043d \u0441 \u0432\u0435\u0440\u0441\u0438\u0435\u0439 1 \u0443\u0440\u043e\u043a\u0430, \u0430 \u0432 \u044d\u0442\u043e\u0439 \u0441\u0431\u043e\u0440\u043a\u0435 \u0432\u0435\u0440\u0441\u0438\u044f 2. \u0422\u044b \u0441\u043b\u044b\u0448\u0438\u0448\u044c \u0444\u0440\u0430\u0437\u044b \u0442\u0430\u043a, \u043a\u0430\u043a \u0438\u0445 \u0441\u043b\u044b\u0448\u0430\u043b \u043f\u0438\u043b\u043e\u0442.",
+   "heard": "\u042d\u0442\u043e\u0442 \u043f\u043e\u043b\u0451\u0442 \u0437\u0430\u043f\u0438\u0441\u0430\u043d \u0441 \u0432\u0435\u0440\u0441\u0438\u0438 1 \u0443\u0440\u043e\u043a\u0430, \u0430 \u0432 \u044d\u0442\u043e\u0439 \u0441\u0431\u043e\u0440\u043a\u0435 \u0432\u0435\u0440\u0441\u0438\u044f 2 \u0422\u044b \u0441\u043b\u044b\u0448\u0438\u0448\u044c \u0444\u0440\u0430\u0437\u044b \u0442\u0430\u043a, \u043a\u0430\u043a \u0438\u0445 \u0441\u043b\u044b\u0448\u0430\u043b \u043f\u0438\u043b\u043e\u0442",
+   "rawRate": 0.0476,
+   "rate": 0.0476
+  },
+  {
+   "locale": "ru",
+   "key": "sonic.menu.page",
+   "text": "\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443: \u0441\u043b\u0435\u043f\u044b\u043c, \u0441\u043b\u0430\u0431\u043e\u0432\u0438\u0434\u044f\u0449\u0438\u043c",
+   "heard": "\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443, \u0441\u043b\u0435\u043f\u044b\u043c, \u0441\u043b\u0430\u0431\u044b\u0439 \u0434\u044f\u0449\u0438\u043c",
+   "rawRate": 0.4,
+   "rate": 0.4
+  },
+  {
+   "locale": "ru",
+   "key": "keys.sonic.menu",
+   "text": "\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443: \u043c\u0435\u043d\u044e \u0443\u0440\u043e\u043a\u0430 (\u043a\u043b\u0430\u0432\u0438\u0448\u0430 Esc), \u043c\u0435\u043d\u044e \u043f\u0430\u0443\u0437\u044b (\u043a\u043b\u0430\u0432\u0438\u0448\u0430 P)",
+   "heard": "\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443, \u043c\u0435\u043d\u044e \u0443\u0440\u043e\u043a\u0430, \u043a\u043b\u0430\u0432\u0438\u0448\u0430 Escape, \u043c\u0435\u043d\u044e \u043f\u0430\u0443\u0437\u044b, \u043a\u043b\u0430\u0432\u0438\u0448\u0430 P",
+   "rawRate": 0.0909,
+   "rate": 0.0909
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.key.Tab",
+   "text": "\u0422\u0430\u0431",
+   "heard": "\u0422\u0410\u041f",
+   "rawRate": 1,
+   "rate": 1
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.consent.text",
+   "text": "\u041f\u043e\u043b\u0451\u0442 \u0438, \u0435\u0441\u043b\u0438 \u0431\u0440\u0430\u0443\u0437\u0435\u0440 \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u0442 \u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d, \u0433\u043e\u043b\u043e\u0441 \u043f\u0438\u043b\u043e\u0442\u0430 \u0437\u0430\u043f\u0438\u0441\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430 \u044d\u0442\u043e\u043c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435. \u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0438\u043a\u043e\u043c\u0443 \u043d\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442\u0441\u044f, \u043f\u043e\u043a\u0430 \u043f\u0438\u043b\u043e\u0442 \u043d\u0435 \u0441\u043e\u0433\u043b\u0430\u0441\u0438\u0442\u0441\u044f \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u044c \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u043c \u0448\u0430\u0433\u043e\u043c.",
+   "heard": "\u041f\u043e\u043b\u0451\u0442\u044b, \u0435\u0441\u043b\u0438 \u0431\u0440\u0430\u0443\u0437\u0435\u0440 \u0440\u0430\u0437\u0440\u0435\u0448\u0438\u0442 \u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d, \u0433\u043e\u043b\u043e\u0441 \u043f\u0438\u043b\u043e\u0442\u0430 \u0437\u0430\u043f\u0438\u0441\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u043d\u0430 \u044d\u0442\u043e\u043c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435 \u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0438\u043a\u043e\u043c\u0443 \u043d\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442\u0441\u044f, \u043f\u043e\u043a\u0430 \u043f\u0438\u043b\u043e\u0442 \u043d\u0435 \u0441\u043e\u0433\u043b\u0430\u0441\u0438\u0442\u0441\u044f \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u044c \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u043c \u0448\u0430\u0433\u043e\u043c",
+   "rawRate": 0.08,
+   "rate": 0.08
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.msg.kept",
+   "text": "\u041e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u0430. \u042d\u0442\u043e \u0437\u0430\u043f\u0438\u0441\u044c, \u043a\u043e\u0442\u043e\u0440\u0430\u044f \u0437\u0430\u043a\u043e\u043d\u0447\u0438\u043b\u0430\u0441\u044c \u0440\u0430\u043d\u044c\u0448\u0435 \u0432\u0440\u0435\u043c\u0435\u043d\u0438; \u0435\u0451 \u043c\u043e\u0436\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043d\u0430 \u0434\u0438\u0441\u043a \u0438\u043b\u0438 \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c.",
+   "heard": "\u041e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u043e \u042d\u0442\u043e \u0437\u0430\u043f\u0438\u0441\u044c, \u043a\u043e\u0442\u043e\u0440\u0430\u044f \u0437\u0430\u043a\u043e\u043d\u0447\u0438\u043b\u0430\u0441\u044c \u0440\u0430\u043d\u044c\u0448\u0435 \u0432\u0440\u0435\u043c\u0435\u043d\u0438, \u0435\u0451 \u043c\u043e\u0436\u043d\u043e \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u043d\u0430 \u0434\u0438\u0441\u043a \u0438\u043b\u0438 \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c",
+   "rawRate": 0.0714,
+   "rate": 0.0714
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.survey.listening",
+   "text": "\u0421\u043b\u0443\u0448\u0430\u044e: \u0441\u043a\u0430\u0436\u0438 \u043e\u0442\u0432\u0435\u0442 \u0432\u0441\u043b\u0443\u0445, \u043f\u043e\u0442\u043e\u043c \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0443 \u042d\u043d\u0442\u0435\u0440.",
+   "heard": "\u0421\u043b\u0443\u0448\u0430\u044e, \u0441\u043a\u0430\u0436\u0438 \u043e\u0442\u0432\u0435\u0442 \u0432\u0441\u043b\u0443\u0445, \u043f\u043e\u0442\u043e\u043c \u043d\u0430\u0436\u043c\u0438 \u043a\u043b\u0430\u0432\u0438\u0448\u0443 Enter",
+   "rawRate": 0.125,
+   "rate": 0.125
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.send.consent.text",
+   "text": "\u041e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0432\u0441\u044f \u0437\u0430\u043f\u0438\u0441\u044c: \u043f\u043e\u043b\u0451\u0442 \u0438, \u0435\u0441\u043b\u0438 \u043e\u043d \u0435\u0441\u0442\u044c, \u0433\u043e\u043b\u043e\u0441 \u043f\u0438\u043b\u043e\u0442\u0430. \u041e\u043d\u0430 \u0443\u0445\u043e\u0434\u0438\u0442 \u0430\u0432\u0442\u043e\u0440\u0443 \u0440\u0435\u0436\u0438\u043c\u0430 \u00ab\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443\u00bb \u043f\u043e Telegram \u0438 \u043f\u043e \u044d\u043b\u0435\u043a\u0442\u0440\u043e\u043d\u043d\u043e\u0439 \u043f\u043e\u0447\u0442\u0435. \u0421\u0435\u0440\u0432\u0435\u0440 \u0445\u0440\u0430\u043d\u0438\u0442 \u0435\u0451 \u0434\u043b\u044f \u043f\u0440\u043e\u0435\u043a\u0442\u0430 \u043d\u0435 \u0434\u043e\u043b\u044c\u0448\u0435 \u043f\u044f\u0442\u0438 \u043b\u0435\u0442, \u0430 \u0440\u0430\u043d\u044c\u0448\u0435 \u0443\u0434\u0430\u043b\u044f\u0435\u0442, \u0435\u0441\u043b\u0438 \u043f\u0438\u043b\u043e\u0442 \u0438\u043b\u0438 \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u043f\u043e\u043f\u0440\u043e\u0441\u0438\u0442. \u041a\u043e\u043f\u0438\u044f \u043d\u0430 \u044d\u0442\u043e\u043c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0433\u0434\u0435 \u0431\u044b\u043b\u0430.",
+   "heard": "\u041e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0432\u0441\u044f \u0437\u0430\u043f\u0438\u0441\u044c, \u043f\u043e\u043b\u0451\u0442 \u0438, \u0435\u0441\u043b\u0438 \u043e\u043d \u0435\u0441\u0442\u044c, \u0433\u043e\u043b\u043e\u0441 \u043f\u0438\u043b\u043e\u0442\u0430 \u041e\u043d\u0430 \u0443\u0445\u043e\u0434\u0438\u0442 \u0430\u0432\u0442\u043e\u0440\u0443 \u0440\u0435\u0436\u0438\u043c\u0430, \u043f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443, \u043f\u043e \u0442\u0435\u043b\u0435\u0433\u0440\u0430\u043c \u0438 \u043f\u043e \u044d\u043b\u0435\u043a\u0442\u0440\u043e\u043d\u043d\u043e\u0439 \u043f\u043e\u0447\u0442\u0435 \u0421\u0435\u0440\u0432\u0435\u0440 \u0445\u0440\u0430\u043d\u0438\u0442 \u0435\u0451 \u0434\u043b\u044f \u043f\u0440\u043e\u0435\u043a\u0442\u0430 \u043d\u0435 \u0434\u043e\u043b\u044c\u0448\u0435 5 \u043b\u0435\u0442, \u0430 \u0440\u0430\u043d\u044c\u0448\u0435 \u0443\u0434\u0430\u043b\u044f\u0435\u0442, \u0435\u0441\u043b\u0438 \u043f\u0438\u043b\u043e\u0442 \u0438\u043b\u0438 \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u043f\u043e\u043f\u0440\u043e\u0441\u0438\u0442 \u041a\u043e\u043f\u0438\u044f \u043d\u0430 \u044d\u0442\u043e\u043c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0435 \u043e\u0441\u0442\u0430\u0451\u0442\u0441\u044f \u0433\u0434\u0435 \u0431\u044b\u043b\u0430",
+   "rawRate": 0.0426,
+   "rate": 0.0426
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.send.notice.guardian",
+   "text": "\u042d\u0442\u0443 \u0437\u0430\u043f\u0438\u0441\u044c \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u043d\u0435\u043b\u044c\u0437\u044f: \u043f\u0440\u0438 \u0437\u0430\u043f\u0438\u0441\u0438 \u043d\u0435 \u0431\u044b\u043b\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e \u043f\u043e\u0434\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0435 \u0441\u043e\u0433\u043b\u0430\u0441\u0438\u0435 \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u044f.",
+   "heard": "\u042d\u0442\u0443 \u0437\u0430\u043f\u0438\u0441\u044c \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u0442\u044c \u043d\u0435\u043b\u044c\u0437\u044f, \u043f\u0440\u0438 \u0437\u0430\u043f\u0438\u0441\u0438 \u043d\u0435 \u0431\u044b\u043b\u043e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e \u043f\u043e\u0434\u043f\u0438\u0441\u0430\u043d\u043d\u043e\u0435 \u0441\u043e\u0433\u043b\u0430\u0441\u0438\u0435 \u0440\u043e\u0434\u0438\u0442\u0435\u043b\u0438",
+   "rawRate": 0.0833,
+   "rate": 0.0833
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.transfer.stored",
+   "text": "\u0421\u0435\u0440\u0432\u0435\u0440 \u0435\u0451 \u043f\u043e\u043b\u0443\u0447\u0438\u043b. \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0430\u0432\u0442\u043e\u0440\u0443: Telegram: \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e.",
+   "heard": "\u0421\u0435\u0440\u0432\u0435\u0440 \u0435\u0451 \u043f\u043e\u043b\u0443\u0447\u0438\u043b \u0414\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u0430\u0432\u0442\u043e\u0440\u0443, \u0442\u0435\u043b\u0435\u0433\u0440\u0430\u043c, \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0430",
+   "rawRate": 0.2857,
+   "rate": 0.2857
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.transfer.delivered",
+   "text": "\u0414\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u043e. \u0417\u0430\u043f\u0438\u0441\u044c \u0443 \u0430\u0432\u0442\u043e\u0440\u0430: Telegram: \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e.",
+   "heard": "\u0414\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u043e. \u0417\u0430\u043f\u0438\u0441\u044c \u0443 \u0430\u0432\u0442\u043e\u0440\u0430, \u0442\u0435\u043b\u0435\u0433\u0440\u0430\u043c, \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0430.",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.channel.name",
+   "text": "Telegram: \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e",
+   "heard": "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c, \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043e",
+   "rawRate": 0.5,
+   "rate": 0.5
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.channel.telegram",
+   "text": "Telegram",
+   "heard": "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c",
+   "rawRate": 1,
+   "rate": 1
+  },
+  {
+   "locale": "ru",
+   "key": "sonicrec.pilot.speech.help",
+   "text": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0440\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u0432\u0430\u043d\u0438\u0435 \u0440\u0435\u0447\u0438 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442 \u0437\u0432\u0443\u043a \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0430 (\u0432 Chrome \u044d\u0442\u043e Google). \u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u043e, \u043f\u043e\u043a\u0430 \u0442\u044b \u043d\u0435 \u043e\u0442\u043c\u0435\u0442\u0438\u0448\u044c. \u041a\u043b\u0430\u0432\u0438\u0448\u0438 \u0440\u0430\u0431\u043e\u0442\u0430\u044e\u0442 \u0432\u0441\u0435\u0433\u0434\u0430. \u0412\u043e \u0432\u0440\u0435\u043c\u044f \u0437\u0430\u043f\u0438\u0441\u0438 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0441\u043b\u0443\u0448\u0430\u0435\u0442\u0441\u044f.",
+   "heard": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442\u0441\u044f \u0440\u0430\u0441\u043f\u043e\u0437\u043d\u0430\u0432\u0430\u043d\u0438\u0435 \u0440\u0435\u0447\u0438 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0430, \u043a\u043e\u0442\u043e\u0440\u043e\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442 \u0437\u0432\u0443\u043a \u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044e \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0430, \u0432 \u043a\u0440\u043e\u043c \u044d\u0442\u043e \u0433\u0443\u0433\u043b \u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u043e, \u043f\u043e\u043a\u0430 \u0442\u044b \u043d\u0435 \u043e\u0442\u043c\u0435\u0442\u0438\u0448\u044c \u041a\u043b\u0430\u0432\u0438\u0448\u0438 \u0440\u0430\u0431\u043e\u0442\u0430\u044e\u0442 \u0432\u0441\u0435\u0433\u0434\u0430 \u0412\u043e \u0432\u0440\u0435\u043c\u044f \u0437\u0430\u043f\u0438\u0441\u0438 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0441\u043b\u0443\u0448\u0430\u0435\u0442\u0441\u044f",
+   "rawRate": 0.0741,
+   "rate": 0.0741
+  },
+  {
+   "locale": "ru",
+   "key": "soniclook.metres",
+   "text": "1.5 \u043c",
+   "heard": "1,5 \u043c\u0435\u0442\u0440\u0430",
+   "rawRate": 0.3333,
+   "rate": 0.3333
+  }
+ ]
+}

@@ -20,8 +20,14 @@
 // Replayer, lesson runner, cue layers and world, one after the other on the ONE clock of the package, with its one voice. When the
 // next piece's first frame is due the player moves on to it: the helper's view draws that lesson's world (`view`, the flight side's,
 // app/sonic-view.ts), the engine takes its layers. The voice is never started again for it: it runs on, as it was recorded.
-import { Replayer } from '@shramko/sonic-fpv';
-import type { CueEvent, FlightFrame, LessonLayers, Quat, ReplaySetup, ReplayStep, SessionPackage, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef, Vec3 } from '@shramko/sonic-fpv';
+//
+// A lesson flown with an older version of it (v0.13, lane v13-host C4, W9; the package's review R13): its notes say `lesson-version`
+// (a v0.12 recording: "lesson X is version 2 here, the session was flown with 1"). This build's runner works out other lines for it
+// (the pass rule, the progress lines, the three plays), so the player says what the pilot heard instead: every recorded `speech`
+// event's text at its time (not the speech.end markers), the host's own lines among them, none of the lines worked out again; and once
+// that the lesson was flown with an older version of it. Its cues are still the ones this build works out from the frames.
+import { Replayer, SPEECH_END_KEY } from '@shramko/sonic-fpv';
+import type { CueEvent, FlightFrame, LessonLayers, Quat, ReplaySetup, ReplayStep, SessionEvent, SessionPackage, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef, Vec3 } from '@shramko/sonic-fpv';
 import type { CheckedSegment } from './replay-check';
 import { voicePlan } from './replay-voice';
 import type { VoiceBuffer, VoiceDeps, VoiceHandle } from './replay-voice';
@@ -34,6 +40,12 @@ export interface ReplayEngine {
     setLayers(layers: LessonLayers): void;
     setPrefs(prefs: SonicPrefs): void;
     setTheme(theme: ThemeDef): void;
+    /**
+     * Forgets what is sounding (the package's SonicEngine.reset; v13-int step 1): called when the replay takes the engine, when the next
+     * lesson of the recording starts and at a seek (each a clock that starts again or jumps), and when it gives the engine back to the
+     * live flight. Absent on an older engine.
+     */
+    reset?(): void;
 }
 
 /** The helper's view of the craft: begin takes the camera and pauses the flight, end gives them back. */
@@ -77,6 +89,10 @@ interface Part {
     readonly first: number;
     readonly frames: readonly FlightFrame[];
     readonly lessonId: string | null;
+    /** a lesson flown with an older version of it: the lines the pilot heard (said in place of the worked-out ones), else null */
+    readonly recorded: readonly RecordedLine[] | null;
+    /** and its versions, for the line that says so */
+    readonly older: { readonly recorded: number; readonly here: number } | null;
 }
 
 /** What a replay did, for the evidence runs and the tests: when each frame was fed and each lesson's world shown, on the audio clock (s). */
@@ -109,6 +125,32 @@ export interface ReplayDeps {
 }
 
 const SILENT: LessonLayers = { on: [], heightBandM: null, hazardVoices: 0 };
+
+/** The page's spoken line that carries a text as it is (packages/i18n/locales/fly/sonic `sonic.say.text`, which the mode's engine knows). */
+export const RECORDED_LINE = 'sonic.say.text';
+/** The page's line that says once that a lesson of the recording was flown with an older version of it. */
+export const OLDER_LINE = 'sonic.say.replayOlder';
+
+/** A line the pilot heard, as it was recorded: its text and when it was said (package time, ms). */
+export interface RecordedLine {
+    readonly t: number;
+    readonly text: string;
+}
+
+/** The versions of a lesson flown with an older version of it than this build's (the replay's `lesson-version` note), or null. */
+export function olderLesson(setup: Pick<ReplaySetup, 'notes'>): { readonly recorded: number; readonly here: number } | null {
+    for (const n of setup.notes) {
+        if (n.code === 'lesson-version' && n.recorded !== undefined && n.here !== undefined && n.recorded < n.here) return { recorded: n.recorded, here: n.here };
+    }
+    return null;
+}
+
+/** The lines of a recording as the pilot heard them: every `speech` event but the speech.end markers, in order. */
+export function recordedLines(events: readonly SessionEvent[]): RecordedLine[] {
+    const out: RecordedLine[] = [];
+    for (const e of events) if (e.kind === 'speech' && e.key !== SPEECH_END_KEY) out.push({ t: e.t, text: e.text });
+    return out;
+}
 
 /** Index of the last frame whose time is at or before `t`, -1 when `t` is before the first. */
 export function frameAtOrBefore(frames: readonly FlightFrame[], t: number): number {
@@ -166,6 +208,10 @@ export class ReplayPlayer {
     private lagMs = 0;
     private shownT = NaN;
     private tickT = NaN;
+    /** per part: the next of its recorded lines to say (a lesson flown with an older version of it) */
+    private lineAt: number[] = [];
+    /** the line that says a lesson was flown with an older version of it has been said (once per replay) */
+    private olderSaid = false;
 
     /** `lessons`: the recording's lessons as the check made them (replay-check.ts), or one setup for the whole package (a package of one lesson). */
     constructor(deps: ReplayDeps, pkg: SessionPackage, lessons: ReplaySetup | readonly CheckedSegment[]) {
@@ -176,7 +222,11 @@ export class ReplayPlayer {
                 ? [{ setup: lessons, first: 0, frames: pkg.frames, events: pkg.events, lessonId: lessons.lesson?.id ?? null }]
                 : lessons.map((c) => ({ setup: c.setup, first: c.segment.firstFrame, frames: c.segment.frames, events: c.segment.events, lessonId: c.segment.lessonId }));
         if (pieces.length === 0) throw new Error('a replay needs at least one lesson of frames');
-        this.parts = pieces.map((p) => ({ setup: p.setup, replayer: new Replayer({ setup: p.setup, frames: p.frames, events: p.events }), first: p.first, frames: p.frames, lessonId: p.lessonId }));
+        this.parts = pieces.map((p) => {
+            const older = olderLesson(p.setup);
+            return { setup: p.setup, replayer: new Replayer({ setup: p.setup, frames: p.frames, events: p.events }), first: p.first, frames: p.frames, lessonId: p.lessonId, recorded: older === null ? null : recordedLines(p.events), older };
+        });
+        this.lineAt = this.parts.map(() => 0);
         this.setup = (this.parts[0] as Part).setup;
         this.voiceBytes = pkg.voice;
         this.voiceOffsetMs = pkg.manifest.clock.voiceOffsetMs ?? 0;
@@ -235,8 +285,42 @@ export class ReplayPlayer {
         this.cur = i;
         if (!keep) this.part.replayer.reset();
         if (!this.entered) return;
+        // the next lesson opens: the engine forgets the last one's sounds, as the live host's open does (its replayer starts from nothing)
+        this.deps.engine.reset?.();
         this.showWorld(t);
-        if (this.phase === 'playing') this.deps.engine.setLayers(this.layers);
+        if (this.phase === 'playing') {
+            this.deps.engine.setLayers(this.layers);
+            this.sayOlder();
+        }
+    }
+
+    /** Once per replay, when a lesson flown with an older version of it starts to play: the line that says so. */
+    private sayOlder(): void {
+        const older = this.part.older;
+        if (older === null || this.olderSaid) return;
+        this.olderSaid = true;
+        void this.deps.engine.say({ key: OLDER_LINE, params: { recorded: older.recorded, here: older.here } }, { interrupt: false }).catch(() => undefined);
+    }
+
+    /**
+     * The recorded lines of the part being played that are due at package time `t`, said as they were recorded (a lesson flown with an
+     * older version of it). A page that stalled does not say lines from long ago in a burst (`burst`: those older than half a second go).
+     */
+    private sayRecorded(t: number, burst: boolean): void {
+        const lines = this.part.recorded;
+        if (lines === null) return;
+        let k = this.lineAt[this.cur] ?? 0;
+        for (; k < lines.length && (lines[k] as RecordedLine).t <= t; k++) {
+            const line = lines[k] as RecordedLine;
+            if (burst && line.t < t - 500) continue;
+            void this.deps.engine.say({ key: RECORDED_LINE, params: { text: line.text } }, { interrupt: false }).catch(() => undefined);
+        }
+        this.lineAt[this.cur] = k;
+    }
+
+    /** Every part's recorded lines before package time `ms` count as said (a seek passes them, a replay from its start says them all again). */
+    private passLines(ms: number): void {
+        this.lineAt = this.parts.map((p) => (p.recorded === null ? 0 : p.recorded.filter((l) => l.t < ms).length));
     }
 
     /** Package time now, ms: ticks along the audio clock while playing, where it stopped otherwise. */
@@ -252,6 +336,8 @@ export class ReplayPlayer {
         if (this.entered) return;
         this.entered = true;
         this.deps.playback(true);
+        // the live flight's sounds are not the recording's: the engine plans the recording's frames from nothing
+        this.deps.engine.reset?.();
         this.deps.pose.begin();
         // the engine sounds as it did for the pilot: his settings and theme, the lesson's layers
         this.deps.engine.setPrefs(this.setup.prefs);
@@ -290,6 +376,7 @@ export class ReplayPlayer {
         this.deps.engine.setLayers(this.layers);
         this.anchor(this.tHeld);
         this.phase = 'playing';
+        this.sayOlder();
         this.showPose(this.tHeld);
         this.changed();
     }
@@ -330,7 +417,11 @@ export class ReplayPlayer {
             this.switchTo(i, t, true);
             last = this.part.replayer.seek(k - this.part.first);
         }
+        // a seek: the engine forgets what it heard before the jump (the replayer itself plays a seek behind it from its start)
+        if (this.entered) this.deps.engine.reset?.();
         if (last !== null && this.entered) this.deps.engine.update(last.input);
+        // the recorded lines before the place sought count as said (a seek does not repeat what it passed); the ones after it are said
+        this.passLines(t);
         this.tHeld = t;
         this.tRef = t;
         this.acRef = this.deps.now();
@@ -354,10 +445,12 @@ export class ReplayPlayer {
         while (due.length < cap) {
             const part = this.part;
             if (part.replayer.done) {
-                // this lesson is over: the next one starts when its first frame is due (its world drawn, its layers on)
+                // this lesson is over: the next one starts when its first frame is due (its world drawn, its layers on); its own recorded
+                // lines up to then are said first
                 const next = this.parts[this.cur + 1];
                 const firstT = next?.frames[0]?.t;
                 if (next === undefined || firstT === undefined || firstT > t) break;
+                this.sayRecorded(Math.min(t, firstT - 1e-6), due.length > 3);
                 this.switchTo(this.cur + 1, firstT);
                 continue;
             }
@@ -369,16 +462,20 @@ export class ReplayPlayer {
         }
         // a page that stalled catches up: the engine hears the last frame, and a line or a cue from long ago is not played in a burst
         const burst = due.length > 3;
+        // a lesson flown with an older version of it says the lines the pilot heard, not the ones worked out again (W9)
+        const asRecorded = this.part.recorded !== null;
         due.forEach((s, i) => {
             if (s === null) return;
             this.lastStepped = s.frame.t;
             if (!burst || i === due.length - 1) this.deps.engine.update(s.input);
             if (burst && s.frame.t < t - 500) return;
             for (const a of s.actions) {
-                if (a.kind === 'say') void this.deps.engine.say(a.line, { interrupt: a.interrupt }).catch(() => undefined);
-                else if (a.kind === 'cue') this.deps.engine.cue(a.event);
+                if (a.kind === 'say') {
+                    if (!asRecorded) void this.deps.engine.say(a.line, { interrupt: a.interrupt }).catch(() => undefined);
+                } else if (a.kind === 'cue') this.deps.engine.cue(a.event);
             }
         });
+        this.sayRecorded(t, burst);
         this.showPose(t);
         if (t >= this.durationValue && this.part.replayer.done && this.cur === this.parts.length - 1) {
             this.tHeld = this.durationValue;
@@ -394,6 +491,8 @@ export class ReplayPlayer {
         this.stopVoice();
         if (this.entered) {
             this.silence();
+            // the live flight takes the engine back on its own clock: nothing of the recording's sounds goes with it
+            this.deps.engine.reset?.();
             const own = this.deps.own();
             this.deps.engine.setPrefs(own.prefs);
             this.deps.engine.setTheme(own.theme);
@@ -406,6 +505,8 @@ export class ReplayPlayer {
         this.tHeld = 0;
         this.cur = 0;
         for (const p of this.parts) p.replayer.reset();
+        this.passLines(0);
+        this.olderSaid = false;
         this.changed();
     }
 

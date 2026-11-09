@@ -7,8 +7,11 @@
 // Also held: the next lesson opens on the pilot's path after a pass (the world swapped only when it differs), G comes back to
 // the lesson it left, a paused flight is not stepped, progress is saved at every attempt, and a lesson flown through the host
 // passes the package's replay check (every event re-derived).
+// v0.13 (lane v13-host A2, docs/wip/v13-host.md "Changed tests"): the counts, places and plays are the package's: lesson format 2
+// (r counted attempts in total, `pass.required`), the micro-drone worlds (the zone, the walls and the ring where the world puts
+// them), every named sound played REPEAT_PLAYS times as 'repeat-cue' events (M41-5), the corridor to its end (`track-end`).
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SPEECH_END_KEY, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { REPEAT_PLAYS, SPEECH_END_KEY, buildManifest, checkSession, defaultPrefs, getBuiltinTheme, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
 import type { FlightFrame, Vec3 } from '../../../packages/sonic-fpv/src';
 import { S } from '../../../packages/sim-core/src';
 import { onPlatform } from '../../../apps/fly/src/sonic/bridge';
@@ -51,35 +54,60 @@ const hover: Control = (r) => {
     return { lift: Math.abs(e) < 0.15 ? 0 : clamp(e * 0.8, -0.6, 0.6) };
 };
 
-/** Module 2: forward from the start until 9 m in (the stop zone is 6 to 22 m out), then the sticks centred. */
-const moveStop: Control = (r) => ({ forward: Math.hypot(r.pos[0], r.pos[2]) < 9 ? 1 : 0 });
+/**
+ * Module 2: forward from the start (the origin) until a metre short of the middle of the world's stop zone, then the sticks
+ * centred: the brake stops the craft inside it (v0.13: the zone is 7 m out and 6 m deep, it was 6 to 22 m out).
+ */
+const moveStop: Control = (r) => {
+    const zone = r.world.objects().find((o) => o.shape.kind === 'zone')!;
+    return { forward: Math.hypot(r.pos[0], r.pos[2]) < Math.hypot(zone.pos[0], zone.pos[2]) - 1 ? 1 : 0 };
+};
 
 /**
- * Module 3: to the farthest wall of the four ways the hall runs, slowing so as to stop 2.4 m from it, then the next wall
- * (the attempts of this lesson begin where the last one ended).
+ * Module 3: to the farthest wall of the four ways the room runs, slowing so as to stop `stopM` from it (the craft's centre; the
+ * lesson counts the hull's distance), then the next wall (the attempts of this lesson begin where the last one ended).
  */
-function wallsPilot(): Control {
+function wallsPilot(stopM: number): Control {
     let target: number | null = null;
     return (r) => {
         const front = r.world.castRay(r.pos, dirAt(r.yaw), 200)?.distance ?? 99;
         // stopped at a wall: the next one is chosen (the attempt asks for 2 m of flying before it counts a stop)
-        if (r.speed < 0.3 && front < 3.5) target = null;
+        if (r.speed < 0.3 && front < stopM + 1.1) target = null;
         if (target === null) {
             let best = -1;
             for (const h of [0, 90, 180, 270]) {
-                // the wall behind the craft counts, the one it faces does not (it is 2.5 m away)
+                // the wall behind the craft counts, the one it faces does not (it is `stopM` away)
                 const d = r.world.castRay(r.pos, dirAt(h), 200)?.distance ?? 0;
                 if (d > best + 1e-6) { best = d; target = h; }
             }
         }
         const err = wrap((target as number) - r.yaw);
         if (Math.abs(err) > 6) return { turn: clamp(err / 30, -1, 1) };
-        return { forward: clamp((front - 2.4) / 2.5, 0, 1), turn: clamp(err / 30, -1, 1) * 0.5 };
+        return { forward: clamp((front - stopM) / 2.5, 0, 1), turn: clamp(err / 30, -1, 1) * 0.5 };
     };
 }
 
 /** Modules 5 and 6: straight ahead at the gate's height. */
 const throughTheGate: Control = (r) => ({ forward: 1, lift: clamp((3 - r.pos[1]) * 0.8, -0.4, 0.4) });
+
+/**
+ * Module 5 at the wrong height: under the world's ring (half the height of its lowest edge), then straight on. An attempt begins
+ * on the respawn platform, a disc that holds the craft up until it has left it: off it slowly first, then down, then forward.
+ * `under()`: the craft went past the ring's plane below the ring (the pilot really flew there).
+ */
+function underTheRing(r: Rig): { pilot: Control; under: () => boolean } {
+    const ring = r.world.objects().find((o) => o.shape.kind === 'ring')!;
+    const shape = ring.shape as { diameter: number; tube: number };
+    const bottom = ring.pos[1] - (shape.diameter / 2 + shape.tube);
+    const low = bottom / 2;
+    let under = false;
+    const pilot: Control = (rr) => {
+        if (rr.pos[2] < ring.pos[2] && rr.pos[1] < bottom) under = true;
+        if (rr.session.sim.s[S.platOn] > 0) return { forward: 0.3 };
+        return { forward: Math.abs(rr.pos[1] - low) < 0.2 ? 1 : 0, lift: clamp((low - rr.pos[1]) * 0.8, -0.4, 0.4) };
+    };
+    return { pilot, under: () => under };
+}
 
 /**
  * Module 4: along the corridor by its walls, as a person with a cane would: a fan of rays, the way with the most room
@@ -117,9 +145,11 @@ describe('the first lesson of each module, passed end to end by a scripted pilot
         const answers = r.of('answer');
         expect(answers.length).toBeGreaterThanOrEqual(3);
         expect(answers.every((a) => a.via === 'key' && a.value !== null)).toBe(true);
-        // each trial was a sound the engine played from the side the question is about
-        const previews = r.engine.cues.filter((c) => c.kind === 'preview');
-        expect(previews.length).toBeGreaterThanOrEqual(3);
+        // each trial was a sound the engine played from the side the question is about, REPEAT_PLAYS times (M41-5: 'repeat-cue')
+        const trials = (getLesson('ears-headphones').goals.find((g) => g.kind === 'locate') as { trials: number }).trials;
+        const plays = r.engine.cues.filter((c) => c.kind === 'repeat-cue');
+        expect(plays).toHaveLength(trials * REPEAT_PLAYS);
+        expect(plays.every((c) => c.kind === 'repeat-cue' && Array.isArray(c.dir))).toBe(true);
         expect(r.engine.said.some((s) => s.line.key === 'headphones.good')).toBe(true);
         expect(r.engine.cues.some((c) => c.kind === 'fanfare')).toBe(true);
         expect(savedProgress(r.store, 'ears-headphones')).toMatchObject({ passed: true, attempts: 1, successes: 1 });
@@ -136,13 +166,14 @@ describe('the first lesson of each module, passed end to end by a scripted pilot
         expect(savedProgress(r.store, 'ears-headphones')!.attempts).toBeGreaterThanOrEqual(1);
     }, 120000);
 
-    it('module 1, hover-height: up into the 2 to 3 m band and held 20 s, four attempts of five', async () => {
+    it('module 1, hover-height: up into the 2 to 3 m band and held 20 s, passed with r counted attempts in total', async () => {
         const r = await open('hover-height');
+        const need = getLesson('hover-height').pass.required;
         await r.run(600000, hover, () => r.passed);
         expect(r.passed).toBe(true);
-        expect(r.lessonEvents('attempt-pass').length).toBeGreaterThanOrEqual(4);
+        expect(r.lessonEvents('attempt-pass')).toHaveLength(need);
         expect(savedProgress(r.store, 'hover-height')).toMatchObject({ passed: true });
-        expect(r.of('goal').filter((g) => g.what === 'met').length).toBeGreaterThanOrEqual(4);
+        expect(r.of('goal').filter((g) => g.what === 'met').length).toBeGreaterThanOrEqual(need);
         // auto-armed with no switch, height held within the band the rest of the time
         expect(r.last!.armed).toBe(true);
         expect(r.pos[1]).toBeGreaterThan(1.9);
@@ -157,49 +188,64 @@ describe('the first lesson of each module, passed end to end by a scripted pilot
         expect(r.lessonEvents('attempt-fail').length).toBeGreaterThanOrEqual(2);
     }, 120000);
 
-    it('module 2, move-speed: 6 m of flight then a stop inside the zone, four of five', async () => {
+    it('module 2, move-speed: a few metres of flight then a stop inside the zone, r counted', async () => {
         const r = await open('move-speed');
+        const need = getLesson('move-speed').pass.required;
         await r.run(600000, moveStop, () => r.passed);
         expect(r.passed).toBe(true);
-        expect(r.lessonEvents('attempt-pass').length).toBeGreaterThanOrEqual(4);
+        expect(r.lessonEvents('attempt-pass')).toHaveLength(need);
         // the craft goes back to the start for each attempt: a logged life each time
-        expect(r.session.lives().filter((l) => l.header.life.reason === 'manual-start').length).toBeGreaterThanOrEqual(4);
+        expect(r.session.lives().filter((l) => l.header.life.reason === 'manual-start').length).toBeGreaterThanOrEqual(need);
     }, 180000);
 
-    it('module 3, walls-hall: eight stops within 3 m of a wall, at most one touch each', async () => {
+    it('module 3, walls-hall: r counted stops close to a wall (the lesson\'s stopWithinM), at most one touch each', async () => {
         const r = await open('walls-hall');
-        await r.run(900000, wallsPilot(), () => r.passed);
+        const lesson = getLesson('walls-hall');
+        const within = (lesson.goals[0] as { stopWithinM: number }).stopWithinM;
+        // the craft's centre stops half a metre nearer the wall than `within`: its hull is well inside the rule
+        await r.run(900000, wallsPilot(within - 0.5), () => r.passed);
         const why = JSON.stringify({ t: r.clock.t, pos: r.pos, yaw: r.yaw, speed: r.speed, touches: r.of('touch').length, ev: r.sonic.filter((e) => e.kind === 'lesson' || e.kind === 'goal').slice(-10) });
         expect(r.passed, why).toBe(true);
-        expect(r.lessonEvents('attempt-pass').length).toBeGreaterThanOrEqual(8);
+        expect(r.lessonEvents('attempt-pass')).toHaveLength(lesson.pass.required);
         expect(r.of('touch').length).toBeLessThanOrEqual(2);
         expect(savedProgress(r.store, 'walls-hall')).toMatchObject({ passed: true });
-        // the safety layer only (and the voice): the lesson's layers reached the engine
-        expect(r.engine.layers.some((l) => l.on.includes('safety') && l.on.length === 2)).toBe(true);
+        // the lesson's layers reached the engine (v0.13: safety, height, room and the voice; M41-10, never silence)
+        const want = lesson.layers.on;
+        expect(want).toContain('safety');
+        expect(r.engine.layers.some((l) => l.on.length === want.length && want.every((x) => l.on.includes(x)))).toBe(true);
     }, 300000);
 
-    it('module 4, corridor: the whole corridor, 240 m through its bends, obstacles and jogs, with at most two touches, three attempts of four', async () => {
+    it('module 4, corridor: the whole corridor through its bends, obstacles and jogs to its end, with at most two touches, passed in r counted attempts', async () => {
         const r = await open('corridor');
+        const lesson = getLesson('corridor');
         await r.run(2400000, corridor, () => r.passed);
         const touches = r.of('touch').length;
         expect(r.passed, `touches ${touches}, attempts ${r.lessonEvents('attempt-start').length}, events ${JSON.stringify(r.sonic.filter((e) => e.kind === 'lesson' || e.kind === 'goal').slice(-8))}`).toBe(true);
-        expect(r.lessonEvents('attempt-pass').length).toBeGreaterThanOrEqual(3);
+        expect(r.lessonEvents('attempt-pass')).toHaveLength(lesson.pass.required);
         // at most two touches an attempt, and a restart of the attempt (back to the start, on the respawn platform) is not one
         expect(touches).toBeLessThanOrEqual(2);
-        // a touch in a corridor puts the craft back at the last checkpoint (this lesson's rule), and the lesson goes on from there
+        // a touch in a corridor puts the craft back near the crash (M41-20): before the last point of the world's track passed,
+        // named w1 .. wN after the world's checkpoint list, and the lesson goes on from there
+        const points = (r.world as unknown as { checkpoints?: readonly unknown[] }).checkpoints ?? [];
+        expect(points.length).toBeGreaterThan(0);
         const resets = r.of('reset');
-        expect(resets.some((e) => e.to === 'checkpoint' && e.checkpointId !== null)).toBe(touches > 0);
-        expect(resets.filter((e) => e.to === 'start').length).toBeGreaterThanOrEqual(2);
-        // the checkpoints of the corridor were reached in order
+        const back = resets.filter((e) => e.to === 'checkpoint');
+        expect(back.length > 0).toBe(touches > 0);
+        for (const e of back) {
+            expect(e.checkpointId).toMatch(/^w[0-9]+$/);
+            expect(Number(e.checkpointId!.slice(1))).toBeLessThanOrEqual(points.length);
+        }
+        expect(resets.filter((e) => e.to === 'start').length).toBeGreaterThanOrEqual(1);
+        // the checkpoints of the corridor were reached in order, the last at its end
         const cps = r.of('checkpoint').map((c) => c.id);
-        for (const id of ['cp-1', 'cp-2', 'cp-3', 'cp-4', 'cp-5']) expect(cps).toContain(id);
+        for (const id of lesson.checkpoints.map((c) => c.id)) expect(cps).toContain(id);
     }, 600000);
 
-    it('module 5, rings-first: through the ring, eight of ten, back to the start each time', async () => {
+    it('module 5, rings-first: through the ring r times, back to the start each time', async () => {
         const r = await open('rings-first');
         await r.run(900000, throughTheGate, () => r.passed);
         expect(r.passed).toBe(true);
-        expect(r.of('gate').length).toBeGreaterThanOrEqual(8);
+        expect(r.of('gate')).toHaveLength(getLesson('rings-first').pass.required);
         expect(r.of('gate').every((g) => g.gateId === 'ring-1' && g.missM < 1.5)).toBe(true);
         // the helper's view was drawn for this world with the ring in it, and the ring was the lit target
         expect(r.shown.at(-1)!.ids).toContain('ring-1');
@@ -209,9 +255,14 @@ describe('the first lesson of each module, passed end to end by a scripted pilot
 
     it('control: a pilot who flies at the wrong height misses the ring and is not passed', async () => {
         const r = await open('rings-first');
-        await r.run(400000, (rr) => ({ forward: 1, lift: clamp((7 - rr.pos[1]) * 0.8, -0.4, 0.4) }), () => r.passed);
+        // v0.13: the room is 5.2 m high and the ring 5.5 m ahead, so a climb toward 7 m on the way crossed it inside; the
+        // pilot goes under the ring instead (the world's ring), and does fly past it there
+        const wrong = underTheRing(r);
+        await r.run(400000, wrong.pilot, () => r.passed);
+        expect(wrong.under()).toBe(true);
         expect(r.passed).toBe(false);
         expect(r.of('gate')).toHaveLength(0);
+        expect(r.lessonEvents('attempt-fail').length).toBeGreaterThanOrEqual(2);
     }, 120000);
 
     it('module 6, shapes-square: through the square, two of three (a lesson that never blocks)', async () => {
@@ -252,8 +303,11 @@ describe('the host around a lesson', () => {
         expect(contacts).toBeGreaterThan(0);
         // ... and none of them is a touch
         expect(r.of('touch')).toHaveLength(0);
-        // control: the same flight into the hall's front wall is a touch
-        await r.run(60000, throughTheGate, () => r.of('touch').length > 0);
+        // control: a flight into the room's wall is a touch. Once the lesson flies (v0.13: its first attempt begins at the start,
+        // so a flight made during the task is put back), and sideways to the side wall: straight on, the ring's plane ends the
+        // attempt (through the ring, or under or beside it as a miss) before the front wall, and between attempts nothing is a touch
+        await r.run(240000, null, () => r.host.runner!.phase === 'flying');
+        await r.run(60000, () => ({ strafe: 1 }), () => r.of('touch').length > 0);
         expect(r.of('touch').length).toBeGreaterThan(0);
         expect(r.of('touch')[0]!.material).toBe('wall');
         // and off the disc (after take-off) onPlatform is false
@@ -315,30 +369,44 @@ describe('the host around a lesson', () => {
         expect(r.host.asking).toBe(false);
     }, 120000);
 
-    it('N skips the intro, I says where the pilot is, Z says the last line again with interrupt', async () => {
+    // v0.13 (stage B, B3, W5): Z is the runner's repeat, the step's whole task again (it was the bridge's last line); (B4, W6) I is the
+    // runner's status line, the lesson on the path and the step (it was the title and the attempt)
+    it('N skips the intro, I says where the pilot is, Z says the step\'s task again from its title, with interrupt, while the attempt waits', async () => {
         const r = await open('rings-first');
-        expect(r.host.status()).toMatchObject({ key: 'status.lesson' });
-        const before = r.engine.said.length;
+        expect(r.host.status()).toMatchObject({ key: 'status.progress-step', params: { lesson: lessonPaths().full.indexOf('rings-first') + 1, lessons: lessonPaths().full.length, step: 1, steps: 2 } });
         expect(r.press('scene.next')).toBe(true);
         expect(r.sonic.filter((e) => e.kind === 'key').at(-1)).toMatchObject({ code: 'KeyN', action: 'next' });
         await r.run(3000, null);
         expect(r.host.runner!.phase).toBe('flying');
-        const last = r.mode.bridge.last;
-        expect(last).not.toBeNull();
-        void r.host.repeat();
-        expect(r.engine.said.at(-1)).toMatchObject({ line: last, interrupt: true });
-        expect(r.engine.said.length).toBeGreaterThan(before);
+        const before = r.engine.said.length;
+        expect(r.press('sonic.repeat')).toBe(true);
+        expect(r.sonic.filter((e) => e.kind === 'key').at(-1)).toMatchObject({ code: 'KeyZ', action: 'repeat' });
+        expect(r.engine.said[before]).toMatchObject({ line: getLesson('rings-first').title, interrupt: true });
+        expect(r.engine.said.length).toBeGreaterThan(before + 1);
+        expect(r.host.runner!.view().listening).toBe(true);
     }, 120000);
+
+    // v0.13 (stage B, docs/wip/v13-host.md B2, W3 and W4): N from the glossary's last step is its 'go next', which leads back to the
+    // lesson G left (the runner's returnTo and the host's way back); N is pressed only while the glossary runs (a press after the way
+    // back would be rings-first's own N)
+    const nInGlossary: Control = (rr) => {
+        if (rr.host.lesson?.id === 'ears-glossary') rr.mode.next('KeyN');
+        return null;
+    };
 
     it('G opens the sound glossary and comes back to the lesson it left', async () => {
         const r = await open('rings-first');
         await r.run(2000, null);
         expect(await r.host.glossary()).toBe(true);
         expect(r.host.lesson!.id).toBe('ears-glossary');
-        // N skips every line and scene of the glossary
-        await r.run(900000, (rr) => { rr.mode.next('KeyN'); return null; }, () => r.host.lesson?.id === 'rings-first');
+        const glossary = r.host.runner!;
+        // N skips every line and scene of the glossary, and from its last step goes back
+        await r.run(900000, nInGlossary, () => r.host.lesson?.id === 'rings-first');
         expect(r.host.lesson!.id).toBe('rings-first');
         expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'rings-first']);
+        expect(r.lessonEvents('leave').map((e) => e.lessonId)).toEqual(['ears-glossary']);
+        // the glossary was heard, not skipped: a detour left forward does not mark it (review R3; the runner got returnTo)
+        expect(glossary.progress().skipped).toBe(false);
     }, 300000);
 
     // review of v12-int, I3 (the lesson opened again when a recording starts, session.ts onStatus -> LessonHost.reopen)
@@ -350,7 +418,7 @@ describe('the host around a lesson', () => {
         await r.run(1500, null);
         expect(await r.host.reopen()).toBe(true);
         expect(r.host.lesson!.id).toBe('ears-glossary');
-        await r.run(900000, (rr) => { rr.mode.next('KeyN'); return null; }, () => r.host.lesson?.id !== 'ears-glossary');
+        await r.run(900000, nInGlossary, () => r.host.lesson?.id !== 'ears-glossary');
         expect(r.host.lesson!.id).toBe('rings-first');
         expect(r.of('lesson').filter((e) => e.what === 'open').map((e) => e.lessonId)).toEqual(['rings-first', 'ears-glossary', 'ears-glossary', 'rings-first']);
     }, 300000);
@@ -426,9 +494,12 @@ describe('the host around a lesson', () => {
 
     it('progress is saved at every attempt, not only at the pass', async () => {
         const r = await open('rings-first');
-        await r.run(900000, throughTheGate, () => r.lessonEvents('attempt-pass').length >= 3);
+        // one counted attempt short of the pass (r counted pass the lesson, format 2)
+        const before = getLesson('rings-first').pass.required - 1;
+        expect(before).toBeGreaterThanOrEqual(1);
+        await r.run(900000, throughTheGate, () => r.lessonEvents('attempt-pass').length >= before);
         const p = savedProgress(r.store, 'rings-first')!;
-        expect(p.successes).toBeGreaterThanOrEqual(3);
+        expect(p.successes).toBeGreaterThanOrEqual(before);
         expect(p.passed).toBe(false);
         expect(p.attempts).toBe(r.lessonEvents('attempt-pass').length + r.lessonEvents('attempt-fail').length);
     }, 300000);

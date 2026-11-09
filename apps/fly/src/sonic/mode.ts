@@ -16,10 +16,17 @@
 //                  'manual-start' respawn, exact in a replay of the flight log (the time-based rewind Y is not used).
 //   N              the next step of the lesson (the 'key' event, runner.next), once per press; never a scene switch in the mode:
 //                  Shift+N (Shift is the descent key, so it is easily held with N) is the same step, Shift+F a note.
+//   B, Z           (v0.13, W5, M41-6) B the step before (runner.previous), Z the step's whole task again with its sounds
+//                  (runner.repeat), each the 'key' event first, once per press. While a lesson runs the mode's keys win over
+//                  the page's actions on the same keys: B is the feedback form's key (feedback.open) everywhere else, and
+//                  the form stays in the pause menu; N is the scene rotation's.
 //   [ ]            locked: a lesson's distances are metres of its world (a note says so).
 //   scan lessons   the prefs' session layer also holds the lesson's scene size and the walls on (scan-lesson.ts), taken off
-//                  again by leave(); the keys [ ] above are why the size cannot move meanwhile.
+//                  again by leave(); the keys [ ] above are why the size cannot move meanwhile. The session flies the lesson's
+//                  bump while the lesson runs (v0.13 v13-int step 4, FlightSession.setLessonFlight with LESSON_FLIGHT: a lesson
+//                  world brings it itself), the drone's own contact again after leave().
 import type { PrefsStore } from '@gsfpv/prefs';
+import type { ParamOverrides } from '@gsfpv/sim-core';
 import type { Checkpoint, FlightSample, LessonDef, LessonSession, Pose, SonicFrameInput, SonicWorld } from '@shramko/sonic-fpv';
 import type { FlightSession } from '../session';
 import type { ActionHandler } from '../app/keys';
@@ -27,6 +34,7 @@ import type { AppEvents, Bus } from '../app/context';
 import { SonicBridge, touchMaterial } from './bridge';
 import type { BridgeEngine } from './bridge';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
+import { LESSON_FLIGHT } from './lesson-world';
 
 /** R held this long is the long press (back to the lesson's start), ms. */
 export const LONG_PRESS_MS = 700;
@@ -116,6 +124,8 @@ export class SonicMode {
         this.playing = false;
         this.floorY = o.floorY ?? 0;
         h.setLesson(this.lesson ? this.lesson.assists : null);
+        // a lesson on a scan flies with the lesson's bump too (v13-int step 4): a lesson world brings it itself (lesson-world.ts)
+        this.lessonFlight(this.lesson?.world.kind === 'scan' ? LESSON_FLIGHT : null);
         const b = this.bridge;
         b.world = o.world ?? null;
         b.layers = this.lesson ? this.lesson.layers : null;
@@ -138,6 +148,14 @@ export class SonicMode {
             h.onKey('scene.favourite', (e) => {
                 if (!e.repeat) h.note('sonic.sceneLocked');
             }),
+            // B: the step before (in a lesson the feedback form's key is the lesson's; the pause menu still has the form)
+            h.onKey('feedback.open', (e) => {
+                if (!e.repeat) this.previous('KeyB');
+            }),
+            // Z: the task of the step again, with its sounds (the runner's repeat, not the last line)
+            h.onKey('sonic.repeat', (e) => {
+                if (!e.repeat) this.repeat('KeyZ');
+            }),
             h.onKey('scale.down', () => h.note('sonic.scaleLocked')),
             h.onKey('scale.up', () => h.note('sonic.scaleLocked'))
         ];
@@ -153,9 +171,20 @@ export class SonicMode {
         for (const id of Object.keys(MODE_PREFS)) h.prefs.clearSession(id);
         clearScanPrefs(h.prefs);
         h.setLesson(null);
+        this.lessonFlight(null);
         this.bridge.stop();
         this.lesson = null;
         this.pressAt = null;
+    }
+
+    /**
+     * The session flies with a lesson's rules (a scan lesson's bump, LESSON_FLIGHT) or with none: a 'life' setting, applied at once when
+     * it changes what the next life flies with (a new life where the craft is, or a new flight model at the spawn).
+     */
+    private lessonFlight(rules: Readonly<ParamOverrides> | null): void {
+        const s = this.host.session();
+        if (s.disposed || typeof s.setLessonFlight !== 'function') return;
+        if (s.setLessonFlight(rules)) s.applyLifeSettings(s.presetId, s.overrides);
     }
 
     /** True while a replay drives the engine (playback(true)). */
@@ -253,6 +282,24 @@ export class SonicMode {
     next(code: string): void {
         if (!this.on) return;
         this.bridge.next(code);
+    }
+
+    /** B: the step before (from the first, the lesson before). */
+    previous(code: string): void {
+        if (!this.on) return;
+        this.bridge.previous(code);
+    }
+
+    /** Z: the step's whole task again. */
+    repeat(code: string): void {
+        if (!this.on) return;
+        this.bridge.repeatTask(code);
+    }
+
+    /** The lesson menu's Next lesson. */
+    nextLesson(code: string): void {
+        if (!this.on) return;
+        this.bridge.nextLesson(code);
     }
 
     /**

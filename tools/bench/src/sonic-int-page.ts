@@ -21,7 +21,7 @@
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
-import { defaultPrefs } from '../../../packages/sonic-fpv/src';
+import { DICTS, createTranslator, defaultPrefs, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
 import { launchChrome } from './browser';
 import { writeEvidence } from './evidence';
 
@@ -147,6 +147,13 @@ async function openLesson(ctx: BrowserContext, lesson: string): Promise<{ page: 
 const spokenSince = (p: Probe, n: number): SpeechEvent[] => p.events.slice(n).filter((e) => e.kind === 'speech' && e.key !== 'speech.end');
 const recordingOn = (page: Page): Promise<boolean> => page.evaluate(() => document.querySelector('.sonicrec-toggle')?.classList.contains('recording') === true);
 
+/**
+ * Since v0.13 (v13-host W6) I says the runner's status line: status.progress-step in the task, status.progress once an attempt began
+ * ("Lesson 6 of 28: Hold your height. Step 1 of 2."), where v0.12 said status.lesson. hover-height's place on the pilot's path and its title.
+ */
+const PLACE = `Lesson ${lessonPaths().full.indexOf('hover-height') + 1} of ${lessonPaths().full.length}: ${createTranslator('en', DICTS).text(getLesson('hover-height').title)}. Step `;
+const isRunnerLine = (e: SpeechEvent | undefined): boolean => (e?.key === 'status.progress-step' || e?.key === 'status.progress') && (e.text ?? '').startsWith(PLACE) && (e.key === 'status.progress' ? /Attempt \d+\. Counted \d+ of \d+\.$/.test(e.text ?? '') : /Step \d+ of \d+\.$/.test(e.text ?? ''));
+
 /** I: the speech events that came after the press, the status lines among them. */
 async function pressI(page: Page): Promise<SpeechEvent[]> {
     const before = (await probe(page)).events.length;
@@ -161,7 +168,7 @@ async function scenarioStatus(ctx: BrowserContext): Promise<Record<string, unkno
     // the session side is loaded when ctx.sonic appears (its toggle button shows)
     await until(page, 'the recordings panel', () => page.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 20000);
     const off = await pressI(page);
-    check('I with no recording: the lesson\'s line, then "Recording is off", in one press and in that order', off.map((e) => e.key).join(',') === 'status.lesson,status.recording-off', off.map((e) => [e.key, e.text]));
+    check('I with no recording: the runner\'s status line (lesson k of n and its step), then "Recording is off", in one press and in that order', off.length === 2 && isRunnerLine(off[0]) && off[1]?.key === 'status.recording-off', off.map((e) => [e.key, e.text]));
     // T asks; a second T after the question has been read out is the yes (the recorder ignores a press while it is read)
     const n0 = (await probe(page)).events.length;
     await page.keyboard.press('KeyT');
@@ -179,7 +186,7 @@ async function scenarioStatus(ctx: BrowserContext): Promise<Record<string, unkno
     check('T, T: the recording runs (the panel\'s button says recording, the recorder said rec.ask and rec.started)', on && said.includes('rec.ask') && said.includes('rec.started'), said);
     await sleep(1000);
     const onLines = await pressI(page);
-    check('I while recording: the lesson\'s line, then "Recording is on", in one press and in that order', onLines.map((e) => e.key).join(',') === 'status.lesson,status.recording-on', onLines.map((e) => [e.key, e.text]));
+    check('I while recording: the runner\'s status line (lesson k of n and its step), then "Recording is on", in one press and in that order', onLines.length === 2 && isRunnerLine(onLines[0]) && onLines[1]?.key === 'status.recording-on', onLines.map((e) => [e.key, e.text]));
     check('no page error and no console error', errors.length === 0, errors);
     return { off, on: onLines, said };
 }

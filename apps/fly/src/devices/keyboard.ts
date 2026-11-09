@@ -53,12 +53,12 @@ function inChipMenu(el: EventTarget | null): boolean {
 }
 
 /**
- * A dialog is up (Controls, pause menu, settings, a picker, and Fly by Sound's start screen over a flight, sonic/start-screen.ts):
- * Space and arrows belong to its buttons, checkboxes, radios and sliders. (The start screen is hidden, not removed, while the
- * flight has the page, so only a shown one counts.)
+ * A dialog is up (Controls, pause menu, settings, a picker, and Fly by Sound's start screen over a flight, sonic/start-screen.ts, and
+ * its lesson menu, sonic/lesson-menu.ts): Space and arrows belong to its buttons, checkboxes, radios and sliders. (The start screen is
+ * hidden, not removed, while the flight has the page, so only a shown one counts.)
  */
 export function dialogOpen(): boolean {
-    return !!document.querySelector('.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-start:not([hidden])');
+    return !!document.querySelector('.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-start:not([hidden]), .sonic-menu');
 }
 
 /** What the game scheme needs from the page besides the keys: the pilot and the mouse settings. */

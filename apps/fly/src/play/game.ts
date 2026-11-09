@@ -19,7 +19,7 @@
 
 import { S, setpointRate } from '@gsfpv/sim-core';
 import type { RatesConfig, SimParams } from '@gsfpv/sim-core';
-import { AltitudeHelp } from './assist';
+import { AltitudeHelp, BUMP_HOLD_S, BUMP_NEAR_M } from './assist';
 
 /** prefs input.gameSpeed. */
 export type GameSpeed = 'slow' | 'normal' | 'fast';
@@ -100,6 +100,10 @@ export const VY_AVG_TAU_S = 0.3;
  * times the speed it landed at.
  */
 export const LANDED_SETTLE_M = 0.012;
+/** A lesson bump whose normal is this far from vertical or more (its share on the ground) is a wall's (GameAssist.bump). */
+export const BUMP_WALL_MIN = 0.2;
+/** A lesson bump whose normal is this close to vertical or closer is a ceiling's or a floor's (GameAssist.bump). */
+export const BUMP_LEVEL_MIN = 0.5;
 
 const RAD = Math.PI / 180;
 const DEG = 180 / Math.PI;
@@ -184,6 +188,11 @@ export interface GameSense {
     s: ArrayLike<number>;
     /** clearance of the lowest body point above the ground below, m; null: none within the probe's reach */
     groundM: number | null;
+    /**
+     * clearance of the highest body point under what is straight above, m; null: nothing within the probe's reach;
+     * absent: not looked at (the game scheme). A lesson's pilot gives it at take-off (v0.13, W17), see liftoff().
+     */
+    ceilingM?: number | null;
 }
 
 /** What it sends: the sticks (roll right +, pitch forward +, yaw right +, each -1..1) and the throttle stick 0..1. */
@@ -219,6 +228,15 @@ export class GameAssist {
     private lowM = Infinity;
     /** mouse yaw that arrived before the first update set the aim, degrees */
     private pendingYaw = 0;
+    /**
+     * The last lesson bump on a wall (bump()): its normal on the ground (unit x, z), where the craft was (x, z), and how long
+     * the push into it is still held off, s.
+     */
+    private bumpNx = 0;
+    private bumpNz = 0;
+    private bumpX = 0;
+    private bumpZ = 0;
+    private bumpLeft = 0;
     private curves: { key: SimParams; c: Curves } | null = null;
     /** read by the pilot and the tests: the motors can stop, the drone has been on the ground long enough with Shift held */
     landed = false;
@@ -237,7 +255,36 @@ export class GameAssist {
         this.vyAvg = 0;
         this.lowM = Infinity;
         this.landed = false;
+        this.bumpLeft = 0;
         this.help.reset();
+    }
+
+    /**
+     * A lesson world's bump (v0.13, M41-19): the play/lesson-pilot.ts pilot calls it for every contact the flight model
+     * reports, with the surface's outward normal and the model's state. The flight model bounces the craft off along the
+     * normal (sim-core's BumpRule 'slide'); here the velocity loop lets go of the surface, so it does not fly the craft back
+     * in: the ramped target and the integral lose their part into a wall, and the stick's push into it is held off for
+     * BUMP_HOLD_S, longer while the stick still pushes and the craft is within BUMP_NEAR_M of where it bumped (it stays off
+     * the wall and slides along it with the rest of the stick, instead of knocking on it again and again). A ceiling or a
+     * floor goes to the altitude help (AltitudeHelp.bump), and once the stick no longer asks toward it, the climb or sink
+     * command still ramping toward it is dropped at once. The game scheme of the ordinary flight never calls this.
+     */
+    bump(nx: number, ny: number, nz: number, s: ArrayLike<number>): void {
+        const h = Math.hypot(nx, nz);
+        if (h >= BUMP_WALL_MIN) {
+            const ux = nx / h, uz = nz / h;
+            const t = this.tvx * ux + this.tvz * uz;
+            if (t < 0) { this.tvx -= t * ux; this.tvz -= t * uz; }
+            const i = this.ix * ux + this.iz * uz;
+            if (i < 0) { this.ix -= i * ux; this.iz -= i * uz; }
+            this.bumpNx = ux;
+            this.bumpNz = uz;
+            this.bumpX = s[S.px];
+            this.bumpZ = s[S.pz];
+            this.bumpLeft = BUMP_HOLD_S;
+        }
+        if (ny >= BUMP_LEVEL_MIN) this.help.bump(1, s[S.py]);
+        else if (ny <= -BUMP_LEVEL_MIN) this.help.bump(-1, s[S.py]);
     }
 
     /** The motors just started: from the ground, climb a short hop so W does not drag the drone over the floor. */
@@ -249,7 +296,14 @@ export class GameAssist {
         this.vyAvg = 0;
         this.lowM = Infinity;
         this.landed = false;
-        if (sense.groundM !== null && sense.groundM < ON_GROUND_M) this.help.holdAt(sense.s[S.py] + TAKEOFF_HOP_M);
+        if (sense.groundM !== null && sense.groundM < ON_GROUND_M) {
+            // a low way (v0.13, W17: tunnel-long respawns a craft 0.35 m over the floor and 0.35 m under a block): the hop
+            // goes to the middle between the ground and what is above at most, never into it (a touch there re-centres
+            // the craft to the same place, and the hop would hit it again)
+            const c = sense.ceilingM;
+            const room = c === undefined || c === null ? Infinity : Math.max(0, (c - sense.groundM) / 2);
+            this.help.holdAt(sense.s[S.py] + Math.min(TAKEOFF_HOP_M, room));
+        }
     }
 
     /** Mouse movement, already in degrees (mouseToAim): the aim turns, the gimbal tilts (clamped). */
@@ -318,8 +372,18 @@ export class GameAssist {
         this.goal.right = kr * hv;
         const sa = Math.sin(aim), ca = Math.cos(aim);
         // forward = (sin a, -cos a), right = (cos a, sin a) on the ground (x, z)
-        const gx = this.goal.forward * sa + this.goal.right * ca;
-        const gz = -this.goal.forward * ca + this.goal.right * sa;
+        let gx = this.goal.forward * sa + this.goal.right * ca;
+        let gz = -this.goal.forward * ca + this.goal.right * sa;
+        // a lesson's bump: the push into the wall just bumped waits, the rest of the stick slides along it (bump())
+        if (this.bumpLeft > 0) {
+            const into = gx * this.bumpNx + gz * this.bumpNz;
+            const off = (s[S.px] - this.bumpX) * this.bumpNx + (s[S.pz] - this.bumpZ) * this.bumpNz;
+            if (into < 0) {
+                gx -= into * this.bumpNx;
+                gz -= into * this.bumpNz;
+            }
+            this.bumpLeft = into < 0 && off < BUMP_NEAR_M ? BUMP_HOLD_S : Math.max(0, this.bumpLeft - dtc);
+        }
         const dvx = gx - this.tvx, dvz = gz - this.tvz;
         const dist = Math.hypot(dvx, dvz);
         if (dist > 0) {
@@ -368,6 +432,10 @@ export class GameAssist {
         const yaw = Math.sign(rate) * curves.yaw.stickFor(Math.abs(rate));
 
         // ---- height: Space / Shift ramp to a vertical speed; none holds the height
+        // (a lesson's bump on a floor or a ceiling: the command toward it is dropped once the stick lets go of it, bump())
+        const level = this.help.bumped;
+        if (level > 0 && keys.lift >= 0 && this.lift < 0) this.lift = 0;
+        else if (level < 0 && keys.lift <= 0 && this.lift > 0) this.lift = 0;
         this.lift = approach(this.lift, keys.lift, COMMAND_RAMP_PER_S * dtc);
         let vt: number | null = null;
         if (Math.abs(this.lift) > 0.02) {

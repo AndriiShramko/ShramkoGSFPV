@@ -13,7 +13,7 @@ import { BUILTIN_THEME_IDS, SHIPPED_LESSON_IDS, defaultPrefs, getLesson } from '
 import { SONIC_LINK_DEFAULTS, SONIC_LINK_PARAMS, lessonQuery, linkSound, parseSonicLink, sonicLinkPath, sonicLinkQuery, visitQuery } from '../../../packages/scenes/src/sonic-link';
 import type { SonicLink } from '../../../packages/scenes/src/sonic-link';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
-import { SOUND_PAGE_ITEM, sonicFlight, soundPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
+import { SOUND_PAGE_ITEM, modeStartPage, sonicFlight, soundPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { FlightContext, MenuItem } from '../../../apps/fly/src/app/context';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { setSonicEntry, setSonicInstaller } from '../../../apps/fly/src/sonic/entry-state';
@@ -62,18 +62,29 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         vi.unstubAllGlobals();
     });
 
-    it('an ordinary page gets exactly one item: no key, in the tools section where the mode\'s own item sits, a link to /{lang}/sound/; its teardown takes it out', () => {
+    it('an ordinary page gets exactly one item: no key, in the tools section where the mode\'s own item sits, a link to the mode\'s start screen /{lang}/fly/?sonic=start (v0.13 M41-1), opened in a new tab; its teardown takes it out', () => {
         const { ctx, items } = menuPage();
         const off = sonicFlight.install(ctx) as () => void;
         expect(items).toHaveLength(1);
         const it = items[0]!;
         // review R8: last of the tools section (after "Report a bug or an idea", 110), a quiet end of the list
         expect(it).toMatchObject({ id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 120 });
+        const opened: unknown[][] = [];
+        vi.stubGlobal('open', (...a: unknown[]) => void opened.push(a));
         for (const l of LANGS) {
             vi.stubGlobal('document', { documentElement: { lang: l } });
-            expect(it.href?.()).toBe(`/${l}/sound/`);
+            // the mode's own start screen, which the page reads as the start screen; control: not the page about the mode (v0.12's target)
+            expect(it.href?.()).toBe(`/${l}/fly/?sonic=start`);
+            expect(it.href?.()).toBe(modeStartPage());
+            expect(it.href?.()).not.toBe(soundPage());
+            expect(parseSonicParam(queryOf(it.href!()).get('sonic'))).toEqual({ kind: 'start' });
+            // a caller that runs items gets the same page, in a new tab, with no hold on this one (the flight stays paused here)
+            it.run(true);
+            expect(opened.at(-1)).toEqual([`/${l}/fly/?sonic=start`, '_blank', 'noopener']);
         }
+        expect(opened).toHaveLength(LANGS.length);
         vi.stubGlobal('document', { documentElement: { lang: '' } });
+        expect(modeStartPage()).toBe('/en/fly/?sonic=start');
         expect(soundPage()).toBe('/en/sound/');
         off();
         expect(items).toEqual([]);
@@ -125,7 +136,8 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         const site = (l: string): string => (JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'site', `${l}.json`), 'utf8')) as { sound: { description: string } }).sound.description;
         for (const l of LANGS) {
             const text = dict('sonicentry', l)[SOUND_PAGE_ITEM.labelKey]!;
-            expect(text, l).toMatch(/^Fly by Sound: /);
+            // the mode's name first, in the language's own words where it has them (v13-int step 6: the Polish and the Russian name)
+            expect(text.startsWith(`${dict('sonic', l)['sonic.start.name']}: `), `${l}: ${text}`).toBe(true);
             for (const w of words[l]!) {
                 expect(text, `${l}: the item says ${w}`).toMatch(w);
                 expect(site(l), `${l}: the site says ${w} too`).toMatch(w);
@@ -291,15 +303,22 @@ describe('review R3: in the mode every Share but a recording\'s video shares the
 });
 
 describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own help)', () => {
+    // v0.13 (lane v13-host B3, B6): Escape (the lesson menu, its own key of the pause's binding) and the keys that move a lesson
+    // first (N, B, Z), then I; the names are the page's (sonic/key-names.ts)
     const capsOf = (sonic: boolean) => {
         const r = new KeyRouter({ map: KEYMAP, sonic: () => sonic });
-        return (a: string) => r.caps(a).map((c) => c.cap).join(' ');
+        return (a: string, aria?: string) => r.caps(a).filter((c) => aria === undefined || c.aria === aria).map((c) => c.cap).join(' ');
     };
 
-    it('on a ?sonic= page it says the intro, T U I Z G, L, R and N with their keys, then the digits; every line is in the engine\'s dictionaries in en, es, pl and ru', () => {
+    it('on a ?sonic= page it says the intro, Escape N B Z I G R T U L with their keys, then the digits; every line is in the engine\'s dictionaries in en, es, pl and ru', () => {
         const lines = keyHelpLines(capsOf(true));
         expect(lines.map((l) => l.key)).toEqual(['help.intro', ...KEY_HELP.map(([k]) => k), 'help.digits']);
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['T', 'U', 'I', 'Z', 'G', 'L', 'R', 'N']);
+        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'B', 'Z', 'I', 'G', 'R', 'T', 'U', 'L']);
+        // Escape alone (P shares its binding and stays the pause menu's), with the menu's own line
+        expect(lines[1]).toEqual({ key: 'sonic.say.helpMenu', params: { key: 'Esc' } });
+        // B goes one step back and Z gives the task again: the page's own lines (the package's help.repeat says "the last line")
+        expect(lines.find((l) => l.params?.key === 'Z')?.key).toBe('sonic.say.helpRepeat');
+        expect(lines.find((l) => l.params?.key === 'B')?.key).toBe('sonic.say.helpPrevious');
         const dicts = engineDicts();
         for (const l of LANGS) {
             for (const line of lines) {
@@ -312,7 +331,7 @@ describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own
 
     it('control: with the keys of an ordinary page the five keys of the mode have no cap, so no line names them', () => {
         const lines = keyHelpLines(capsOf(false));
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['L', 'R', 'N']);
+        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'B', 'R', 'L']);
     });
 });
 
@@ -392,7 +411,9 @@ describe('review R4: K\'s spoken help holds the flight while it is said, and any
         for (const l of LANGS) {
             expect(lines[l]['sonic.say.helpCut'], l).toBeTruthy();
             const keys = dict('sonickeys', l);
-            for (const k of ['keys.sonic.shareLink', 'keys.sonic.hearKeys']) expect(keys[k], `${l} ${k}`).toMatch(/^Fly by Sound: /);
+            // the mode's name first, in the language's own words where it has them (v13-int step 6: Russian and Polish)
+            const name = dict('sonic', l)['sonic.start.name']!;
+            for (const k of ['keys.sonic.shareLink', 'keys.sonic.hearKeys']) expect(keys[k]!.startsWith(`${name}: `), `${l} ${k}: ${keys[k]}`).toBe(true);
         }
     });
 });

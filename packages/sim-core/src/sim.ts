@@ -49,7 +49,8 @@ export interface ContactWorld {
 export type SimEvent =
     | { type: 'arm'; tick: number }
     | { type: 'disarm'; tick: number; reason: string }
-    | { type: 'contact'; tick: number; speed: number; regime: 'slide' | 'bounce' }
+    // nx, ny, nz: the surface's outward normal (v0.13: the lesson pilot reads which way a bump went)
+    | { type: 'contact'; tick: number; speed: number; regime: 'slide' | 'bounce'; nx?: number; ny?: number; nz?: number }
     | { type: 'crash'; tick: number; speed: number; nx: number; ny: number; nz: number; px: number; py: number; pz: number }
     | { type: 'rest'; tick: number }
     | { type: 'respawn'; tick: number };
@@ -135,6 +136,24 @@ const SKIN = 0.001; // m, gap kept after a contact
  * leaf of the path is reported at t = 1e-12, so the whole tick's motion is undone.
  */
 const PIN_M = 0.00025;
+/**
+ * The lesson bump (BumpRule 'slide', v0.13 M41-19): the centre of mass leaves a surface at this share of the speed its
+ * contact point came in at (a little bounce; the drone's own rule keeps 0.1 to 0.35 of it at the duct, and the duct's
+ * offset turns most of that into spin: 41 rad/s after a 3 m/s hit on a pillar, the craft pinned to it, its top to the pillar).
+ */
+export const SLIDE_RESTITUTION = 0.3;
+/**
+ * The lesson bump on a wall or a ceiling: a contact that comes in at SLIDE_PUSH_FROM_MPS or faster (a contact the flight
+ * reports, Sim.impact) pushes the centre of mass out at SLIDE_PUSH_MPS at least, m/s. A glancing hit at 5 m/s comes in at
+ * 0.44 m/s (85 degrees from the normal): 0.3 of it would leave the craft skimming the wall a centimetre off it.
+ */
+export const SLIDE_PUSH_FROM_MPS = 0.05;
+export const SLIDE_PUSH_MPS = 0.3;
+/**
+ * A surface whose normal points up this much is a floor for the lesson bump: no push (a landed craft would hop for ever),
+ * and Coulomb friction (MU) on the centre's motion along it, so a craft that lands stops instead of skating.
+ */
+export const SLIDE_FLOOR_NY = 0.7;
 const CRASH_ANG_DAMP = 3; // 1/s, tumbling craft (props stopped, ducts dragging) [estimate]
 const CRASH_LIN_DAMP = 0.5; // 1/s horizontal, scraping and bouncing losses [estimate]
 
@@ -863,8 +882,43 @@ export class Sim {
             this.restOnDisc();
             return;
         }
-        if (approach > 0) this.impulse(approach, vn, cvx, cvy, cvz, nx, ny, nz, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22);
+        if (approach > 0) {
+            // a lesson world's bump (the respawn disc keeps its own rule: it is no wall of the lesson)
+            if (p.bump === 'slide' && !onDisc) this.slide(approach, nx, ny, nz);
+            else this.impulse(approach, vn, cvx, cvy, cvz, nx, ny, nz, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22);
+        }
         if (pinned && this.pinnedPass) this.pinnedContacts(world, k, r00, r01, r02, r10, r11, r12, r20, r21, r22);
+    }
+
+    /**
+     * The lesson bump (BumpRule 'slide'): the centre of mass leaves the surface along its normal at SLIDE_RESTITUTION
+     * times the contact point's approach speed, at SLIDE_PUSH_MPS at least from a wall or a ceiling it came at as a
+     * contact, or faster when it already does. Its motion along a wall or a ceiling and the spin are kept (no friction, no
+     * torque), so the craft slides on and its attitude stays the pilot's; on a floor (SLIDE_FLOOR_NY) friction slows it.
+     */
+    private slide(approach: number, nx: number, ny: number, nz: number): void {
+        const s = this.s;
+        const floor = ny >= SLIDE_FLOOR_NY;
+        let away = SLIDE_RESTITUTION * approach;
+        if (!floor && approach >= SLIDE_PUSH_FROM_MPS && away < SLIDE_PUSH_MPS) away = SLIDE_PUSH_MPS;
+        const vx = s[S.vx], vy = s[S.vy], vz = s[S.vz];
+        const vn = vx * nx + vy * ny + vz * nz;
+        if (vn >= away) return;
+        const dv = away - vn;
+        if (floor) {
+            // Coulomb friction on the centre's motion along the floor, within MU times the change along the normal
+            const tx = vx - vn * nx, ty = vy - vn * ny, tz = vz - vn * nz;
+            const t = Math.sqrt(tx * tx + ty * ty + tz * tz);
+            if (t > 1e-12) {
+                const k = Math.min(t, MU * dv) / t;
+                s[S.vx] -= tx * k;
+                s[S.vy] -= ty * k;
+                s[S.vz] -= tz * k;
+            }
+        }
+        s[S.vx] += dv * nx;
+        s[S.vy] += dv * ny;
+        s[S.vz] += dv * nz;
     }
 
     /** A contact point approaching a surface at `approach` m/s: a crash, or a contact event (C.7: crashes off makes it a bounce). */
@@ -887,7 +941,7 @@ export class Sim {
                 px: s[S.px] + ox, py: s[S.py] + oy, pz: s[S.pz] + oz
             });
         } else if (flying && approach > 0.05) {
-            this.events.push({ type: 'contact', tick: this.tick, speed: approach, regime: approach >= p.vBounce ? 'bounce' : 'slide' });
+            this.events.push({ type: 'contact', tick: this.tick, speed: approach, regime: approach >= p.vBounce ? 'bounce' : 'slide', nx, ny, nz });
         }
     }
 
@@ -955,7 +1009,8 @@ export class Sim {
             const vn = cvx * nx + cvy * ny + cvz * nz;
             if (vn >= 0) continue;
             this.impact(-vn, nx, ny, nz, ox, oy, oz);
-            this.impulse(-vn, vn, cvx, cvy, cvz, nx, ny, nz, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22);
+            if (this.p.bump === 'slide') this.slide(-vn, nx, ny, nz);
+            else this.impulse(-vn, vn, cvx, cvy, cvz, nx, ny, nz, ox, oy, oz, r00, r01, r02, r10, r11, r12, r20, r21, r22);
         }
     }
 
