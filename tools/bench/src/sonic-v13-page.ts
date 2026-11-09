@@ -752,13 +752,19 @@ async function partF2(browser: Browser, out: Record<string, unknown>, straight =
         void k0;
         await openRecPanel(page);
         await until('the replay button', () => page.evaluate(() => !!document.querySelector('.sonicrec-session [data-action="replay"]')), (v) => v, 20000);
-        // the saved package (a voice in it: never committed, it goes to the screenshots' folder outside the repository), for a look at the check in Node
+        // the saved package (a voice in it: never committed, it goes to the screenshots' folder outside the repository), for a look at the check in Node.
+        // After Save the recordings panel draws its list again (the row's "saved" note), about 130 ms later, and the focus on the old row's button
+        // falls to the page's body: a Replay focused before that and pressed after it went to the body, and the replay never opened (twice in a
+        // whole run of this proof on the release of 84fc177: "the replay checked: stage closed"; alone it passed). The row is marked before Save, and
+        // Replay is pressed on the row drawn after it. The panel's lost focus itself is noted for the lead (docs/wip/v13-int-review.md, lane end).
+        await page.evaluate(() => document.querySelector('.sonicrec-session')?.setAttribute('data-proof-before-save', ''));
         const download = page.waitForEvent('download', { timeout: 30000 });
         await page.focus('.sonicrec-session [data-action="save"]');
         await page.keyboard.press('Enter');
         const zip = join(SHOTS, 'f2-recording.zip');
         await (await download).saveAs(zip);
         out.ownZip = zip;
+        await until('the list drawn again after the save', () => page.evaluate(() => { const row = document.querySelector('.sonicrec-session'); return row !== null && !row.hasAttribute('data-proof-before-save'); }), (v) => v, 20000);
         await page.focus('.sonicrec-session [data-action="replay"]');
         await page.keyboard.press('Enter');
         const ready = await until('the replay checked', () => replayState(page), (r) => r?.stage === 'ready' || r?.stage === 'error', 60000);
