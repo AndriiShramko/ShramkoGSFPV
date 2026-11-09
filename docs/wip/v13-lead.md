@@ -93,8 +93,13 @@ status note (message 41) carries the same table for the owner.
 2. Done: v12-optin merged into `v03-lead` (c2b1e54).
 3. Done: v13-host, v13-look, s13-elev, and v13-int's seams and pages (see the lanes table).
 3a. accept-fly B6-B16 10 of 10 on v13-int c324225 (release build, localhost:5450, 2026-11-09 01:20 UTC).
-    Paused at 84 % of the weekly limit: the owner was asked whether the ceiling may go to 90 % for the review and the
-    release. Yes: the review with fixes now, then the release. No: both after the weekly reset (2026-11-12 12:00 UTC).
+    Owner, message 43 (2026-11-09, vault brief): "делай ревью и выкладывай". Running: one independent review of
+    cb67b0d..v13-int and the package 512d7d2..ecb2ffb, then fixes of its findings and K1-K6 (wf_2607f13a-d43; review doc
+    `docs/wip/v13-int-review.md`).
+3b. Release plan (no change under apps/api, deploy/, compose.yml, the bot or mail locales, or apps/site, so no API or
+    nginx step): gh_precheck over the sound range from 16c01a1, fast-forward and push the sound `main` first (CI
+    fetches the gitlink from GitHub); merge v13-int into `v03-lead`, gates, gh_precheck, push to `origin/main`; CI;
+    `bash deploy/ship.sh <sha>`; live checks (release.json, accept-fly against the live site, the mode's page checks).
 4. s13-elev to the sound repo's `main` after gh_precheck; push.
 5. Integration branch `v13-int` from `v03-lead`: merge v13-host, merge v13-look, move the gitlink to the new sound
    `main`, show the new prefs (up/down direction, sound panel, attitude display) in the mode's spoken settings list.
