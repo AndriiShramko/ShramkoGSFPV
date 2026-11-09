@@ -53,7 +53,7 @@ export class FakeEngine {
     lastInput: SonicFrameInput | null = null;
     inputs: SonicFrameInput[] = [];
     onSpeech: ((line: SpeechLine, text: string) => void) | null = null;
-    private queue: { endsAt: number; resolve: () => void }[] = [];
+    private queue: { endsAt: number; resolve: () => void; key: string; start: number }[] = [];
     private lastEnd = 0;
     /**
      * true: as the real engine with "my screen reader speaks" (selfVoice off): it says nothing and each line waits its own time
@@ -103,22 +103,31 @@ export class FakeEngine {
         return this.cues_;
     }
 
+    /**
+     * How each line ended (v13-int review F1): said to its end, or cut by an interrupting line (speechSynthesis.cancel()) at `at`; `start`
+     * is when the voice began it (a cut line queued behind others never began: its start lies after its cut).
+     */
+    ends: { key: string; start: number; at: number; cut: boolean }[] = [];
+
     say(line: SpeechLine, o?: { interrupt?: boolean }): Promise<void> {
         const text = this.tr.text(line);
         const interrupt = o?.interrupt === true;
         this.said.push({ line, interrupt, text, at: this.clock.t });
         this.onSpeech?.(line, text);
-        if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve }));
+        if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve, key: line.key, start: this.clock.t }));
         // speechSynthesis.cancel() ends what is queued at once
         if (interrupt) {
-            for (const q of this.queue) q.resolve();
+            for (const q of this.queue) {
+                this.ends.push({ key: q.key, start: q.start, at: this.clock.t, cut: true });
+                q.resolve();
+            }
             this.queue = [];
             this.lastEnd = this.clock.t;
         }
         const start = Math.max(this.clock.t, this.lastEnd);
         const endsAt = start + estimateSpeechS(text, 1) * 1000;
         this.lastEnd = endsAt;
-        return new Promise<void>((resolve) => this.queue.push({ endsAt, resolve }));
+        return new Promise<void>((resolve) => this.queue.push({ endsAt, resolve, key: line.key, start }));
     }
 
     /** Resolves when `ms` of the page's clock have passed (at the frame that reaches it, as a line's end). */
@@ -140,7 +149,10 @@ export class FakeEngine {
         const due = this.queue.filter((q) => q.endsAt <= now);
         if (due.length === 0) return;
         this.queue = this.queue.filter((q) => q.endsAt > now);
-        for (const q of due) q.resolve();
+        for (const q of due) {
+            this.ends.push({ key: q.key, start: q.start, at: q.endsAt, cut: false });
+            q.resolve();
+        }
     }
 
     get speaking(): boolean {

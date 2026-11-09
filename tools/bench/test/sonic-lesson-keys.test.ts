@@ -510,13 +510,14 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
         expect(lessonTime).toBeLessThan(ASK_TIMEOUT_S * 1000 + 1000);
     }, 300000);
 
-    it('no speech.end and no runner.spoken while paused (the menu\'s lines); one at the resume when the queue is empty; the task\'s sound waits for it', async () => {
+    it('no speech.end and no runner.spoken while paused (the menu\'s lines); after the resume the task\'s part the menu cut is said again (v13-int review F1) and the end of speech comes when it ends; the task\'s sound waits for it', async () => {
         const r = await open('rings-first');
         // the task's first part is being said; the flight pauses and a line of the menu cuts it
         await r.run(500, null);
         expect(r.engine.speaking).toBe(true);
         const ends0 = ends(r).length;
         const cues0 = r.engine.cues.length;
+        const cut = r.engine.said.map((s) => s.line.key);
         hold(r, true);
         void r.mode.bridge.say({ key: 'status.none' }, true);
         await r.run(15000, null);
@@ -525,14 +526,19 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
         expect(r.engine.cues.slice(cues0).filter((c) => c.kind === 'repeat-cue')).toEqual([]);
         hold(r, false);
         const resume = r.of('session').at(-1)!;
+        // (before review F1: the end of speech came at the resume, and the cut lines were lost)
+        expect(ends(r)).toHaveLength(ends0);
+        await r.run(2, null);
+        expect(r.engine.said.slice(cut.length + 1).map((s) => s.line.key)).toEqual(cut);
+        await r.run(60000, null, () => ends(r).length > ends0);
         expect(ends(r)).toHaveLength(ends0 + 1);
-        expect(ends(r).at(-1)!.t).toBe(resume.t);
+        expect(ends(r).at(-1)!.t).toBeGreaterThan(resume.t + 1000);
         // the lesson goes on from there: the named sound of its first part plays
         await r.run(10000, null);
         expect(r.engine.cues.slice(cues0).some((c) => c.kind === 'repeat-cue')).toBe(true);
     }, 120000);
 
-    it('resumed while a line is still being said: no end of speech at the resume, one when the line ends', async () => {
+    it('resumed while a line is still being said: no end of speech at the resume, one when the speech ends (v13-int review F1: the task\'s lines the line cut said again first)', async () => {
         const r = await open('rings-first');
         await r.run(500, null);
         const ends0 = ends(r).length;

@@ -248,3 +248,20 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   Test: `test/locales.test.ts` (the text kept from English is app.name in Spanish only; it failed on the rename until the expectation
   followed), `test/words.test.ts` (failed on the old evidence until the check ran again). How a native speaker hears the two names:
   not judged.
+- F1 (major, the lesson menu drops the task's lines): holds. Traced in the bridge: a host line that interrupts ended the lesson's
+  queued lines in the engine, and the resume reported the end of speech once the queue was empty, so the runner went on. Fixed in the
+  bridge (the lesson's speech is not the host's to drop): `say()` knows the lesson's own lines (the host passes `lesson` for the
+  runner's lines, its line at a lesson's start and the coarse-walls line) and keeps those handed and not ended; a host line that
+  interrupts (the lesson menu, the start screen's spoken list, K's help, I) moves them to a list to say again. They are said again,
+  whole and in order, once the host is done: at the resume (the first one cutting what the closed menu or screen still said, or after a
+  host line said at the resume), and without a pause (I) when the host's lines end; a newer line of the lesson (N, Z, B, a menu item
+  that moves the lesson) drops them; the end of speech comes after them. Escape and the menu's Resume say "Resume." (interrupting),
+  which ends the menu's own lines (before: 10 s more of them after the close in the reviewer's page run). Test: `sonic-review-v13` F1
+  (hover-height, Escape at 1.5 s and 1.7 s: the keys line, intro.1 and intro.2 said whole after the close, in order, before intro.3; the
+  menu's two lines cut at the close; I during the task; the start screen over the task, its line cut at the close; the menu's Next step
+  drops them), `sonic-int-reader` (I in reader mode: the cut lines read again, the end of speech after them). Control: the same lesson
+  without the menu (all whole, before and after); the code control (the cut lines not kept, run once and restored) fails 3 of the 5 F1
+  tests. Changed: `sonic-lesson-keys` B5 (after a pause that cut the task, the end of speech comes after the task said again, not at the
+  resume), `sonic-int-reader` (a lesson's own interrupt and a host's are told apart). Not covered: the recorder's own lines go to the
+  engine directly (`sonic-session/platform.ts` `sayVia`), not through the bridge, so its consent question still cuts what the lesson was
+  saying (a recording that starts opens the lesson again from its beginning; a declined one does not).

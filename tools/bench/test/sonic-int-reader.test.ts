@@ -79,12 +79,13 @@ describe('"my screen reader speaks": the lesson waits for its lines read one aft
         expect(end).toBeLessThan(sum - 1000);
     }, 120000);
 
-    it('a line that interrupts (Z, I, N) cuts what is being read: the end of speech comes after it alone', async () => {
+    it('a line of the lesson that interrupts (Z, N: the runner\'s own) cuts what is being read: the end of speech comes after it alone', async () => {
         const r = await readerPage(true);
         await r.run(300, null);
         const n0 = markers(r).length;
         const before = r.clock.t;
-        void r.mode.bridge.say({ key: 'status.none' }, true);
+        // (v13-int review F1: the lesson's own line, as the runner says Z's and N's; a host line's cut, I's, is the next test's)
+        void r.mode.bridge.say({ key: 'status.none' }, true, { lesson: true });
         await r.run(20000, null, () => markers(r).length > n0);
         const end = markers(r).at(-1)!.t;
         const own = readMs(r.engine.said.find((x) => x.line.key === 'status.none')!.text); // (the lesson says its next line after the marker)
@@ -92,6 +93,23 @@ describe('"my screen reader speaks": the lesson waits for its lines read one aft
         const at = before - (r.clock.t - r.mode.bridge.now());
         expect(end - at).toBeGreaterThanOrEqual(own - 1);
         expect(end - at).toBeLessThan(own + 40);
+    }, 120000);
+
+    it('v13-int review F1: a host line that interrupts (I) cuts what is being read, and the lesson\'s lines it cut are read again after it: the end of speech comes after them', async () => {
+        const r = await readerPage(true);
+        await r.run(300, null);
+        const n0 = markers(r).length;
+        const cut = r.engine.said.map((s) => s.line.key);
+        void r.mode.bridge.say({ key: 'status.none' }, true);
+        await r.run(60000, null, () => markers(r).length > n0);
+        const again = r.engine.said.slice(cut.length + 1).map((s) => s.line.key);
+        // the lesson's lines handed before I, handed again after it, in order (the reader reads them after I's line)
+        expect(again.slice(0, cut.length)).toEqual(cut);
+        const end = markers(r).at(-1)!.t;
+        const own = readMs(r.engine.said.find((x) => x.line.key === 'status.none')!.text);
+        const lines = r.engine.said.slice(cut.length + 1, 2 * cut.length + 1).reduce((a, s) => a + readMs(s.text), 0);
+        const at = r.engine.said.find((x) => x.line.key === 'status.none')!.at - (r.clock.t - r.mode.bridge.now());
+        expect(end - at).toBeGreaterThanOrEqual(own + lines - 40);
     }, 120000);
 
     it('a lesson flown in this mode re-derives on replay: every event, the markers the host wrote; control: without them it does not', async () => {

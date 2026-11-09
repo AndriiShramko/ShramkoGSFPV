@@ -12,7 +12,9 @@
 //            does not fly the arrows, devices/keyboard.ts dialogOpen) and it takes every key (the page's keys and the lesson's
 //            wait: a key pressed in the menu is the menu's).
 //   pause    the flight is held while the menu is up, and the lesson with it (the page's pause reaches the runner at once, W8):
-//            its clocks stand, a question waits, a sound does not start under the menu. Resume and Escape let it go; an item that
+//            its clocks stand, a question waits, a sound does not start under the menu. The menu's first line cuts the lesson's
+//            lines; the bridge says them again when the menu has closed (review F1: Escape early in a lesson lost the first lines of
+//            its task), after "Resume.", which Resume and Escape say to end the menu's own lines. Resume and Escape let it go; an item that
 //            moves the lesson lets it go first, then calls the runner, recorded as the key it stands for (W5: Repeat the task is
 //            Z, Next step N, Previous step B, Next lesson the runner's nextLesson), so a replay re-derives it. Lesson list and Sound
 //            settings open the mode's start screen (which holds the flight itself) before letting go, so the flight never runs
@@ -139,7 +141,8 @@ export class LessonMenu {
             return;
         }
         this.d.hold(false);
-        if (item !== 'resume') this.d.run(item, code);
+        if (item === 'resume') this.resumed();
+        else this.d.run(item, code);
     }
 
     /** Escape (or Resume): back to the lesson. */
@@ -147,6 +150,16 @@ export class LessonMenu {
         if (!this.up) return;
         this.down();
         this.d.hold(false);
+        this.resumed();
+    }
+
+    /**
+     * Back to the lesson (review F1): "Resume." cuts what the menu was still saying (its first line alone is 7 s long), and the lesson's
+     * lines the menu cut follow it (bridge.ts says them again). With "my screen reader speaks" the reader says where the focus went.
+     */
+    private resumed(): void {
+        if (this.d.readerSpeaks()) return;
+        void this.d.say({ key: ITEM_LINES.resume }, true).catch(() => undefined);
     }
 
     /** The page goes: the menu comes off without saying anything (the page's own teardown lets the flight go). */

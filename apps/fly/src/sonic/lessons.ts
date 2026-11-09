@@ -282,7 +282,7 @@ export class LessonHost {
                 // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
                 this.p.mode.place(start);
                 // the walls are as fine as the scan's file: said plainly, after the intro
-                if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } });
+                if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } }, false, { lesson: true });
             }
             return true;
         } catch (e) {
@@ -406,13 +406,14 @@ export class LessonHost {
                 });
                 break;
             case 'say': {
-                void mode.bridge.say(a.line, a.interrupt || this.cutSpeech);
+                // the lesson's own lines (review F1): a host line that cuts them (the lesson menu, K, I, the start screen) has them said again
+                void mode.bridge.say(a.line, a.interrupt || this.cutSpeech, { lesson: true });
                 // only the first line cuts: the lines after it queue behind it, as the runner meant them to
                 this.cutSpeech = false;
                 // a lesson's first line is its title: the keys of the lesson menu, the task and next follow it
                 const keys = this.keysLine;
                 this.keysLine = null;
-                if (keys) void mode.bridge.say(keys, false);
+                if (keys) void mode.bridge.say(keys, false, { lesson: true });
                 break;
             }
             case 'cue':
