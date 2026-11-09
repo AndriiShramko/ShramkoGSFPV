@@ -324,3 +324,11 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   over it; on a phone the recording bar (and the take-off line with it) goes 15 px higher to make room, and the sound panel and the
   attitude display with them. The layout check gains a check of the toggle against the sticks and the arm button at every size with
   sticks (before: failing at all three; after: passing).
+- K6 (hear the reworded Russian pause item back): done (the sound repo's words check, `listen-words --sim` on this branch's locales,
+  Irina, Whisper large-v3, bound 0.2; report `evidence/2026-11-09/sonic-words-sim.json`). `sonic.menu.page` (the mode's name, a colon,
+  then "for the blind, for the low-sighted" with a comma where step 6 had "and") is heard with the comma as a pause and the name whole,
+  but the word for "low-sighted" split in two ("slabyi dyashchim"): rate 0.4, over the bound, the same split step 6's report listed before
+  the comma; the item keeps the site page's words (a test holds it), so it is left for a native reader. Russian as a whole: 269 lines, 245
+  heard exactly, mean rate 0.0268, 10 over the bound (step 6: 245, 0.0266, 10); English, Spanish, Polish as in step 6 (250, 254, 254
+  heard exactly; 4, 4, 5 over). How the voices sound to a person: not judged.
+
