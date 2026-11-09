@@ -1,8 +1,10 @@
 /* The mode's attitude display and sound panel (v0.13 lane v13-look L2-1 and L2-2: attitude.ts, sound-panel.ts, look-panels.ts).
    Their places, agreed in docs/wip/v13-look.md and measured by tools/bench/src/v13-look-page.ts layout: on a wide page the attitude
    display at the bottom right over the recorder's buttons (the REC row, the recorder's toggle), the sound panel at the bottom left
-   over the telemetry line and under v13-host's progress panel (the left edge halfway down, sonic.css .sonic-progress); on a short
-   page both at the bottom right, side by side; on a narrow one (a phone upright) beside and under the view's centre. The view's
+   over the telemetry line and under v13-host's progress panel (the left edge, 12 px under halfway down, sonic.css .sonic-progress); on
+   a page 501 to 600 px high the sound panel first of a row at the bottom left with the progress panel to its right; on a shorter one
+   both at the bottom right, side by side, the progress panel alone at the left; on a narrow one (a phone upright) beside and under the
+   view's centre (sonic.css has the progress panel's places, tools/bench/src/v13-look-page.ts layout measures all three). The view's
    centre (the target) and the captions (top centre; z-index 5, over these if a long line ever reaches them) stay clear. Large and
    high-contrast like the progress panel: opaque black with a white edge and a black outline (reads over a dark scene and a light
    one), black on white under a light colour scheme, the system's colours under forced colours. Sizes follow the window (--u, the
@@ -21,9 +23,9 @@
 .sonic-attitude { right: max(12px, env(safe-area-inset-right)); bottom: calc(92px + env(safe-area-inset-bottom)); }
 .sonic-attitude canvas { width: calc(var(--u) * 1.62); height: var(--u); }
 
-/* under the progress panel (the left edge halfway down; about six lines of clamp(18px, 2.2vw, 28px) and 30 px tall): the panel,
-   0.8 u and 38 px tall, ends 8 px under it */
-.sonic-sounds { --u: min(clamp(120px, 30vh, 260px), calc((50vh - 3 * clamp(18px, 2.2vw, 28px) - 101px) / 0.8)); left: max(12px, env(safe-area-inset-left)); bottom: calc(40px + env(safe-area-inset-bottom)); }
+/* under the progress panel (the left edge, 12 px under halfway down, sonic.css; about six lines of clamp(18px, 2.2vw, 28px) and 30 px tall):
+   the panel, 0.8 u and 38 px tall, ends 8 px under it */
+.sonic-sounds { --u: min(clamp(120px, 30vh, 260px), calc((50vh - 3 * clamp(18px, 2.2vw, 28px) - 113px) / 0.8)); left: max(12px, env(safe-area-inset-left)); bottom: calc(40px + env(safe-area-inset-bottom)); }
 .sonic-sounds-title { margin: 0 0 4px; font-size: max(15px, .85em); line-height: 1.1; }
 .sonic-sounds-body { position: relative; }
 .sonic-sounds canvas { width: calc(var(--u) * 0.8 * 1.36); height: calc(var(--u) * 0.8); }
@@ -34,6 +36,13 @@
 .sonic-sounds-name { flex: 1 1 auto; min-width: 0; font-size: 1.15em; overflow-wrap: anywhere; }
 .sonic-sounds-count { flex: none; }
 
+/* 501 to 600 px high, wider than a phone (a 1920 x 1080 screen at 200 % zoom is 960 x 540): the progress panel does not fit over the sound
+   panel under the captions, so the sound panel is the first of a row at the bottom left and the progress panel (sonic.css, which reads
+   --sonic-sounds-u for the panel's width) stands to its right; the row ends before the take-off line */
+@media (min-width: 641px) and (min-height: 501px) and (max-height: 600px) {
+    :root { --sonic-sounds-u: clamp(100px, 24.5vh, 140px); }
+    .sonic-sounds { --u: var(--sonic-sounds-u); }
+}
 /* a short page (a phone on its side, a small window): both at the bottom right, side by side, clear of the take-off line */
 @media (max-height: 500px) and (min-width: 641px) {
     .sonic-attitude, .sonic-sounds { --u: clamp(64px, 20.5vh, 110px); padding: 4px; border-width: 2px; }
@@ -44,7 +53,8 @@
 @media (max-width: 640px) {
     .sonic-attitude, .sonic-sounds { --u: clamp(64px, 26vw, 100px); padding: 4px; border-width: 2px; }
     .sonic-attitude { right: max(8px, env(safe-area-inset-right)); bottom: calc(132px + env(safe-area-inset-bottom)); }
-    .sonic-sounds { left: max(8px, env(safe-area-inset-left)); bottom: calc(200px + env(safe-area-inset-bottom)); }
+    /* (over the progress panel, which is 132 px up and 128 px tall here: sonic.css) */
+    .sonic-sounds { left: max(8px, env(safe-area-inset-left)); bottom: calc(268px + env(safe-area-inset-bottom)); }
     /* touch sticks: both beside the view's centre, over what stacks over the sticks (cinema.css: 16 px, the telemetry's 19 px line,
        10 px, the recording bar in two rows, the take-off line over it; measured at 390 px wide: its top 182 px over the sticks) */
     body.touch-on .sonic-attitude { --u: clamp(56px, 17vw, 80px); bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 182px); }

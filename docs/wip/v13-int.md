@@ -153,30 +153,49 @@ lead's "Next" 5 and 6 as this branch sees them).
     languages, 526 keys); layout 0; `GPU_LOCK=C:/dev/.gpu-lock pnpm proof:audio` 3 files, 9 tests (8 audio proofs with
     `engine-reset`, each failing on its control; the demo's checks); `pnpm listen` 9 of 9 (evidence keyed again,
     d0f4d5a92ed7, every measured number as before). Its notes: `docs/dev/status-v0.13-int.md` there (I1 to I3).
-- [ ] 8. (next agent) Page proofs on a local release build: the v13-host and v13-look page benches with the real progress
-  panel (v13-look's stand-in goes), the two page proofs that still expect v0.12 lines (`sonic-int-page.ts`,
-  `sonic-lessons-page.ts`), the new switches on the page.
-  - What steps 1 to 7 leave for it: no page, no browser and no port was used here (ports 5430 to 5439 are free for it).
-    The switches: test ids `sonic-height-direction`, `sonic-look-soundPanel`, `sonic-look-attitude` (the settings'
-    stops 10, 12, 13 of 14); kept as `prefs.heightDirection` in the collection 'sonic' and as its keys `soundPanel`,
-    `attitude`. `sonic-v13-page.ts` C already counts "Item n of 14" (not run). To see on the page: the three switches
-    said and saved (the reader control too); the reset over a lesson (the lesson menu's Lesson list, Reset, Yes, Escape:
-    the lesson's title said again, its progress panel at attempt 1, counted 0: the two lines in `feature.ts` no Node
-    test holds); the target note's disc on the sound panel's radar (`v13-look-page.ts panels`, rings-heights) beside the
-    gate's hum; the Russian and Polish start screen (h1 `sonic.start.name`, `sonic-start-keyboard.ts` "no dictionary key
-    shows as text"); a scan lesson flown on the page with the lesson's bump (free-garden: the life headers' `bump`).
-  - The words check as run here, from the sound worktree: `SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe
-    SHRAMKO_LISTEN_CACHE=U:/cache/shramko-listen GPU_LOCK=C:/dev/.gpu-lock node tools/run-tool.mjs listen-words --sim
-    C:/dev/gsfpv-v13-int/packages/i18n/locales --out <a file>` (the tool takes the GPU lock itself; do not wrap it in
-    another lock; `--out` because the default report folder under the cache may not exist). Clips and transcripts are
-    cached, so a rerun says only the changed lines (about 3 minutes for 140 changed).
-  - This worktree has the Winter Garden's walls in `.cache/scenes/7a475d38` (copied from v13-look's worktree, read only,
-    19 MB): vitest runs the 9 garden tests here (about 2 minutes more).
-- [ ] 9. (next agent) Flight regression accept-fly B6 to B16 on a local release (`SITE` the local address).
-- [ ] 10. (next agent) One independent review of the integrated branch.
-- [ ] 11. (next agent) The review's fixes, gates again.
-- [ ] 12. (next agent) The sound repo's s13-int to its `main` after gh_precheck (the lead pushes), the gitlink on that
-  commit, the merge into `v03-lead`.
+- [x] 8. Places on the page: the layout check with v13-host's real progress panel, and what it found fixed.
+  - `tools/bench/src/v13-look-page.ts layout` no longer lays v13-look's stand-in over the page: the page's own progress panel (the
+    mode draws it from the runner's view: the title and four rows, Lesson, Step, Attempt, Counted) is measured, `v13-look-progress-standin.css`
+    is deleted. Rule at each of the 8 sizes, dark and light: each of the three panels (progress, attitude display, sound panel) inside the
+    page, clear of the view's centre (the middle 30 % x 30 %), the captions (the last three lines the lesson said, as they stand when its
+    attempt begins, as v13-look measured them), the page's controls (top bar, corners, recorder button and row), the touch sticks and the
+    other two panels; the take-off line, the telemetry and the key strip may be covered where there is no room (reported). New checks: the
+    progress panel is there with its five lines, white on black (dark) or black on white (light), 15 px or more; `LAYOUT_LANG=<en|es|pl|ru>`
+    runs the same page in another language (an extra, TAG=<lang>).
+  - Control, the old CSS under the new check (`evidence/2026-11-09/v13-look-layout-before.json`, 86 of 96, pictures in
+    `v13-look-layout-before/`): the real panel fails at 5 sizes in both schemes: 1280x720 (the second caption, 212 px2: the panel began
+    5 px too high), 960x540 (the captions' second line, 4357 px2: v13-look's finding), a phone upright (the recorder's row, 1902 px2), a phone
+    upright with touch sticks (the left stick, 15327 px2: v13-look's finding) and a phone on its side (the captions, 868 px2); the
+    attitude display and the sound panel pass everywhere, as v13-look found.
+  - The places now (sonic.css `.sonic-progress`, look.css): wide and tall (over 600 px: 1280x720, 1366x768, 1920x1080) the progress panel
+    12 px under halfway down at the left edge, the sound panel under it (its formula takes the 12 px), the attitude display at the bottom
+    right as before; 501 to 600 px high (960x540, a 1080p screen at 200 % zoom) the sound panel first of a row at the bottom left and
+    the progress panel to its right in the small form (15 px), both under the captions' lowest line (the stack did not fit), the sound
+    panel's size one variable (`--sonic-sounds-u`) both files read; up to 500 px high and wider than a phone (844x390) the progress panel
+    at the bottom left, alone; 640x360 as before; a phone upright (390x844) the progress panel 132 px up over the take-off line (before:
+    over the recorder's row), the sound panel over it; a phone upright with touch sticks the progress panel over the telemetry line, left of
+    the view's centre (35 % of the width less 8 px), small form; the recorder's row and the take-off line stand at the right edge there
+    (the same 50 % of the width, the take-off line one line), which frees the left side. After: `evidence/2026-11-09/v13-look-layout.json`
+    **96 of 96** (pictures in `v13-look-layout/`, 16 small JPEGs: 8 sizes, dark and light, the progress panel in every one), on the release
+    of ba1654b with this step's CSS (the final run on the head is step 12's).
+  - `sonic-panels` 25 of 25 (2 new, "v13-int step 8"): the arithmetic the two CSS files share (the sound panel's formula 101 + 12 px, the row's
+    left from the canvas factor 0.8 x 1.36 and the box's 2 x (6 + 3) px, the sticks' stack 16 + 19 + 8 px over the sticks, the recorder row moved
+    only by the touch rule) agrees; control in the test: each of the four numbers changed in one file alone is caught.
+  - Measured, not fixed (extra, English is the record): the same layout in other languages, dark only, `v13-look-layout-ru|pl|es.json`:
+    ru 42 of 48, pl 46, es 44. The longer captions (Russian and Spanish wrap to more lines) reach into the progress panel's top right
+    corner at 1280x720 (ru 2156 px2, es 1516, pl 1304) and 1366x768 (14 to 79 px2), into the attitude display at 960x540 (ru and es, 2989
+    px2) and 640x360 (2170 px2), and in ru at 640x360 the progress panel (148 px wide) meets the sound panel (587 px2). The captions lie over
+    the panels there for the 12 s a line stays (z-index 5 over 4); a deaf pilot reads the captions, so they win. Not seen at all: a page height
+    between 601 and about 705 px (a laptop window) or a width not among the eight; the places were tuned to these eight.
+  - Seen on the way, not this step's: the recorder's toggle ("Recording") lies over the right stick and the take-off line's right end on a
+    phone upright (`sonicrec-toggle`, 111 x 44 at 265, 730 on the phone with sticks), as before this step.
+- [ ] 9. The page proofs that still expect v0.12 (`sonic-int-page.ts` I, `sonic-lessons-page.ts` Z and I).
+- [ ] 10. `sonic-v13-page.ts` part C: the three new switches by keys through the spoken list; part E in the dark scheme.
+- [ ] 11. The replay in a page: the v0.12 fixture (older-build sentence, recorded lines in order, a seek), a recording made on this build.
+- [ ] 12. One run of everything on a release build of the head under the GPU lock, gates exit 0, this Status.
+- Later, the lead's, not this job's: flight regression accept-fly B6 to B16 on a local release of the final head, one independent review of
+  the integrated branch and its fixes, the sound repo's s13-int to its `main` after gh_precheck (the lead pushes), the gitlink on that commit,
+  the merge into `v03-lead`.
 
 ## Changed tests
 

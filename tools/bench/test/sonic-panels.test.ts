@@ -464,3 +464,61 @@ describe('the panels\' switches (L2-3) and words', () => {
         expect([...asked].sort()).toEqual(Object.keys(en).sort());
     });
 });
+
+// ------------------------------------------------------------------ v13-int step 8: the places of the three panels (sonic.css, look.css)
+
+/**
+ * The numbers the progress panel's places (sonic.css) and the other two panels' (look.css) share, which no rule states twice: what
+ * disagrees, as a list of problems (empty: they agree). The page proof (v13-look-page.ts layout) measures the places on a page at
+ * eight sizes; this holds the arithmetic between the two files, so a change to one that the other does not follow fails here at once.
+ */
+function placeProblems(sonic: string, look: string, fly: string): string[] {
+    const out: string[] = [];
+    const num = (re: RegExp, text: string): number | null => (re.exec(text) ? Number(re.exec(text)![1]) : null);
+    // 1. the progress panel stands 12 px under halfway down; the sound panel under it ends 8 px under, so its formula takes 101 + 12 px
+    const top = num(/\.sonic-progress \{[^}]*top: calc\(50% \+ (\d+)px\)/, sonic);
+    const formula = num(/\.sonic-sounds \{ --u: min\(clamp\(120px, 30vh, 260px\), calc\(\(50vh - 3 \* clamp\(18px, 2\.2vw, 28px\) - (\d+)px\) \/ 0\.8\)\)/, look);
+    if (top === null || formula === null || formula !== 101 + top) out.push(`the sound panel's formula takes ${formula} px, the progress panel stands ${top} px under halfway (101 + that)`);
+    // 2. 501 to 600 px high: the sound panel's size is one variable, the progress panel's `left` is that panel's width: the canvas 0.8 x 1.36 of
+    //    it, plus the panel's own padding and border on both sides
+    const cond = '@media (min-width: 641px) and (min-height: 501px) and (max-height: 600px)';
+    if (!look.includes(`${cond} {\n    :root { --sonic-sounds-u:`) || !/\.sonic-sounds \{ --u: var\(--sonic-sounds-u\); \}/.test(look)) out.push('look.css does not set --sonic-sounds-u as the sound panel\'s --u for 501 to 600 px');
+    const row = /@media \(min-width: 641px\) and \(min-height: 501px\) and \(max-height: 600px\) \{ \.sonic-progress \{[^}]*left: calc\(max\(12px, env\(safe-area-inset-left\)\) \+ var\(--sonic-sounds-u, \d+px\) \* ([\d.]+) \+ (\d+)px \+ (\d+)px\)/.exec(sonic);
+    const canvas = /\.sonic-sounds canvas \{ width: calc\(var\(--u\) \* ([\d.]+) \* ([\d.]+)\)/.exec(look);
+    const box = /\.sonic-attitude, \.sonic-sounds \{[^}]*padding: (\d+)px; border: (\d+)px solid/.exec(look);
+    if (!row || !canvas || !box) out.push('the row rule, the canvas width or the panel box is not where the test reads it');
+    else {
+        const width = Number(canvas[1]) * Number(canvas[2]);
+        if (Math.abs(Number(row[1]) - width) > 0.0005) out.push(`the progress panel's left takes ${row[1]} of the sound panel's --u, the canvas is ${width}`);
+        if (Number(row[2]) !== 2 * (Number(box[1]) + Number(box[2]))) out.push(`the progress panel's left takes ${row[2]} px of padding and border, the panel has ${2 * (Number(box[1]) + Number(box[2]))}`);
+    }
+    // 3. touch sticks: the progress panel ends 8 px over the telemetry line, which fly.css stands 16 px over the sticks and is 19 px tall
+    const over = num(/body\.touch-on \.osd\.bl \{ bottom: calc\(max\(24px, env\(safe-area-inset-bottom\)\) \+ min\(40vw, 220px\) \+ (\d+)px\)/, fly);
+    const stick = num(/body\.touch-on \.sonic-progress \{ bottom: calc\(max\(24px, env\(safe-area-inset-bottom\)\) \+ min\(40vw, 220px\) \+ (\d+)px\)/, sonic);
+    if (over === null || stick === null || stick !== over + 19 + 8) out.push(`over the sticks the progress panel takes ${stick} px, the telemetry line stands ${over} px (+ 19 + 8)`);
+    // 4. the recorder's row and the take-off line move only with touch sticks on a phone, and take the width the sticks' layout gave them
+    if (!/@media \(max-width: 640px\) \{\n    body\.touch-on \.sonic-progress[^\n]*\n    body\.sonic-mode\.touch-on \.cinema-bar, body\.sonic-mode\.touch-on \.gate-msg \{ left: auto; right: max\(8px, env\(safe-area-inset-right\)\); transform: none; max-width: 50vw; \}/.test(sonic)) out.push('the recorder\'s row and the take-off line are not moved by the touch rule alone');
+    return out;
+}
+
+describe('v13-int step 8: the three panels\' places agree between sonic.css and look.css', () => {
+    const read = (f: string): string => readFileSync(join(ROOT, f), 'utf8').replace(/\r\n/g, '\n');
+    const sonic = read('apps/fly/src/sonic/sonic.css');
+    const look = read('apps/fly/src/sonic/look.css');
+    const fly = read('apps/fly/src/fly.css');
+
+    it('the sound panel\'s formula, the row beside it, the sticks\' stack and the moved recorder row use the same numbers', () => {
+        expect(placeProblems(sonic, look, fly)).toEqual([]);
+    });
+
+    it('control: a number changed in one file and not the other is caught, each of the four', () => {
+        const once = (text: string, from: string, to: string): string => {
+            expect(text, from).toContain(from);
+            return text.replace(from, to);
+        };
+        expect(placeProblems(once(sonic, 'top: calc(50% + 12px)', 'top: calc(50% + 16px)'), look, fly).join('|')).toContain('formula takes 113 px');
+        expect(placeProblems(sonic, once(look, 'canvas { width: calc(var(--u) * 0.8 * 1.36)', 'canvas { width: calc(var(--u) * 0.8 * 1.5)'), fly).join('|')).toContain('of the sound panel\'s --u');
+        expect(placeProblems(sonic, look, once(fly, 'min(40vw, 220px) + 16px)', 'min(40vw, 220px) + 24px)')).join('|')).toContain('over the sticks');
+        expect(placeProblems(once(sonic, 'transform: none; max-width: 50vw; }', 'transform: none; }'), look, fly).join('|')).toContain('not moved by the touch rule alone');
+    });
+});

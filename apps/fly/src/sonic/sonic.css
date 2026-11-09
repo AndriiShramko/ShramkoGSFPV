@@ -80,16 +80,37 @@ body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-c
 /* The lesson's link in a field of its own (link-panel.ts, review R1 R3): the share panel's size, over the flight and the captions. */
 .panel.sonic-link { width: min(640px, calc(100vw - 32px)); z-index: 8; }
 
-/* ---- the lesson's progress (progress-panel.ts, v0.13 M41-7): large and high-contrast, at the left edge halfway down, clear of the view's
-   centre (the target), the captions (top centre) and the telemetry (the corners). Opaque black with a white edge and a black outline, so it
-   reads over a dark scene and a light one; under the start screen (z-index 30) and the panels. */
-.sonic-progress { position: fixed; left: max(12px, env(safe-area-inset-left)); top: 50%; transform: translateY(-50%); z-index: 4; box-sizing: border-box; max-width: min(30vw, 360px); padding: 10px 14px; border: 3px solid #fff; border-radius: 10px; outline: 2px solid #000; background: #000; color: #fff; font: 700 clamp(18px, 2.2vw, 28px)/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; pointer-events: none; }
+/* ---- the lesson's progress (progress-panel.ts, v0.13 M41-7): large and high-contrast, at the left edge a little under halfway down (12 px: the
+   captions' long lines end just over it at 1280 x 720), clear of the view's centre (the target), the captions (top centre) and the telemetry
+   (the corners). Opaque black with a white edge and a black outline, so it reads over a dark scene and a light one; under the start screen
+   (z-index 30) and the panels. Its place at every page size is measured with the other two panels' (look.css) by tools/bench/src/
+   v13-look-page.ts layout: on a page up to 600 px high it is low at the left (a window at 200 % zoom: the sound panel first, it to its right;
+   a phone on its side: alone, the others are at the right), a phone upright has it low on the left over the take-off line, and with touch
+   sticks over the telemetry line, left of the view's centre, in its small form (the recorder's row and the take-off line then stand at the
+   right edge, the 50 % of the width they had). */
+.sonic-progress { position: fixed; left: max(12px, env(safe-area-inset-left)); top: calc(50% + 12px); transform: translateY(-50%); z-index: 4; box-sizing: border-box; max-width: min(30vw, 360px); padding: 10px 14px; border: 3px solid #fff; border-radius: 10px; outline: 2px solid #000; background: #000; color: #fff; font: 700 clamp(18px, 2.2vw, 28px)/1.25 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; pointer-events: none; }
 .sonic-progress[hidden] { display: none; }
 .sonic-progress p { margin: 0; }
 .sonic-progress .sonic-progress-title { margin-bottom: 4px; font-size: .8em; font-weight: 600; }
-/* a narrow page: low on the left, under the view's centre and above the bottom row, half the width */
+/* a narrow page: low on the left, under the view's centre, half the width; a phone upright (132 px up: over the take-off line, clear of the
+   recorder's row; the sound panel over it); a narrow window at 200 % zoom (up to 500 px high) 64 px up, the sound panel at its right */
 @media (max-width: 640px) { .sonic-progress { top: auto; bottom: 64px; transform: none; max-width: 48vw; font-size: 17px; padding: 8px 10px; } }
-@media (max-height: 500px) { .sonic-progress { font-size: 15px; padding: 6px 10px; } }
+@media (max-width: 640px) and (min-height: 501px) { .sonic-progress { bottom: 132px; } }
+/* a short page: the small form (15 px) */
+@media (max-height: 600px) { .sonic-progress { font-size: 15px; padding: 6px 10px; } }
+/* wider than a phone and up to 500 px high (a phone on its side): low at the left, alone (the sound panel and the attitude display are at the right) */
+@media (min-width: 641px) and (max-height: 500px) { .sonic-progress { top: auto; bottom: calc(40px + env(safe-area-inset-bottom)); transform: none; } }
+/* 501 to 600 px high (a window at 200 % zoom): low at the left, right of the sound panel, whose width is look.css's `--sonic-sounds-u` (the canvas
+   is 0.8 x 1.36 of it wide, plus 6 px of padding and 3 px of border on each side), under the captions' lowest line */
+@media (min-width: 641px) and (min-height: 501px) and (max-height: 600px) { .sonic-progress { top: auto; bottom: calc(40px + env(safe-area-inset-bottom)); transform: none; left: calc(max(12px, env(safe-area-inset-left)) + var(--sonic-sounds-u, 132px) * 1.088 + 18px + 8px); } }
+/* touch sticks on a phone upright: over the telemetry line (the 16 px over the sticks, the line's 19 px, 8 px), left of the view's centre
+   (35 % of the width, less the 8 px margin), in its small form; the recorder's row and the take-off line, which stood in the middle over the
+   sticks, go to the right edge with the width they had (50 % of the page; the take-off line may take what the panel leaves) */
+@media (max-width: 640px) {
+    body.touch-on .sonic-progress { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 43px); left: max(8px, env(safe-area-inset-left)); max-width: calc(35vw - 8px); font-size: 15px; padding: 6px 8px; }
+    body.sonic-mode.touch-on .cinema-bar, body.sonic-mode.touch-on .gate-msg { left: auto; right: max(8px, env(safe-area-inset-right)); transform: none; max-width: 50vw; }
+    body.sonic-mode.touch-on .gate-msg { max-width: calc(100vw - 150px); }
+}
 @media (prefers-color-scheme: light) { .sonic-progress { border-color: #000; outline-color: #fff; background: #fff; color: #000; } }
 @media (forced-colors: active) { .sonic-progress { border-color: CanvasText; outline-color: Canvas; background: Canvas; color: CanvasText; } }
 

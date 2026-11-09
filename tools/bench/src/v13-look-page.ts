@@ -22,9 +22,12 @@
 //          plan gives), in rings-heights (the target note at the first ring's height on the height bar), on the task's three
 //          plays of a sound (its icon, its glossary name, "1 of 3" to "3 of 3", in English and Polish); the two switches off,
 //          read back after a reload, on again.
-//   layout L2-4: the panels' places at 1280 x 720, 1920 x 1080, both at 200 % zoom, a phone upright and on its side, dark and
-//          light: inside the page, clear of the view's centre, the captions, v13-host's progress panel (a stand-in of its CSS),
-//          the HUD and the touch sticks; their sizes (LOOK_CSS=<file> lays trial CSS over the build's, never for the record).
+//   layout L2-4, v13-int step 8: the places of the mode's three panels (v13-host's progress panel, drawn by the mode, the attitude
+//          display, the sound panel) at 8 page sizes (1280 x 720, 1366 x 768, 1920 x 1080, both of those at 200 % zoom, a phone upright
+//          with and without touch sticks and on its side), dark and light: each inside the page, clear of the view's centre, the
+//          captions (the last three lines the lesson said, as they stand when its attempt begins), the page's controls, the touch sticks and the other two panels; their
+//          sizes (LOOK_CSS=<file> lays trial CSS over the build's, SIZES=<name,...> and SCHEMES=<dark|light> pick some: never for the
+//          record).
 //   panelcost L2-4: the page's frame in the corridor and rings-heights flying on W, with both panels and with neither.
 // Every check is the page's own state (window.__gsfpv: the session, its flight model, the mode's hook); the sim events are
 // read through the session's onEvent. Holds the GPU lock C:/dev/.gpu-lock (one blocking loop: mkdir, else 20 s, up to
@@ -1088,8 +1091,8 @@ async function scenarioPanels(ctx: BrowserContext, browser: Browser): Promise<Re
 
 // ------------------------------------------------------------------ layout (L2-4: the panels' places at every size, dark and light)
 
-/** v13-host's progress panel (its stage B4, sonic.css at ef91fa1, copied): a stand-in, so the places are checked against it. */
-const PROGRESS_CSS = readFileSync(join(REPO, 'tools/bench/src/v13-look-progress-standin.css'), 'utf8');
+// (v13-int step 8: the progress panel on the page is v13-host's real one, drawn by the mode from the runner's view; v13-look's
+// stand-in of its CSS, tools/bench/src/v13-look-progress-standin.css, is gone.)
 
 /** The page's sizes: three windows, two of them at 200 % zoom, a phone upright (with and without its touch sticks) and on its side. */
 const SIZES: { name: string; w: number; h: number; dpr: number; mobile?: boolean; sticks?: boolean }[] = [
@@ -1102,9 +1105,17 @@ const SIZES: { name: string; w: number; h: number; dpr: number; mobile?: boolean
     { name: 'phone-upright-sticks', w: 390, h: 844, dpr: 3, mobile: true, sticks: true },
     { name: 'phone-on-its-side', w: 844, h: 390, dpr: 3, mobile: true }
 ];
-/** What a panel must never cover (the task's list, the page's controls, the other panel); the lines it may cover where there is no room (reported). */
-const HARD = ['centre', 'captions', 'progress', 'topLeft', 'topRight', 'topBar', 'recorder', 'recBar', 'pads', 'arm'];
+/** LAYOUT_LANG=<en|es|pl|ru>: the page's language for the layout check (the panels' words are longer in some; en is the record, the others an extra, TAG=<lang>). */
+const LAYOUT_LANG = process.env.LAYOUT_LANG ?? 'en';
+
+/**
+ * What a panel must never cover: the view's centre, the captions, the page's controls and the touch sticks (and each of the other two
+ * panels, below); the lines it may cover where there is no room (reported).
+ */
+const HARD = ['centre', 'captions', 'topLeft', 'topRight', 'topBar', 'recorder', 'recBar', 'pads', 'arm'];
 const SOFT = ['telemetry', 'keys', 'takeOff'];
+/** The three panels of the mode on the page: v13-host's progress panel, v13-look's attitude display and sound panel (the `boxes` keys). */
+const PANELS = ['progress', 'attitude', 'sounds'] as const;
 
 interface Box { x: number; y: number; w: number; h: number }
 const overlap = (a: Box, b: Box): number => Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x)) * Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
@@ -1134,23 +1145,8 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
     const ctx = await browser.newContext({ viewport: { width: size.w, height: size.h }, deviceScaleFactor: size.dpr, isMobile: !!size.mobile, hasTouch: !!size.mobile, colorScheme: scheme });
     await ctx.addInitScript({ content: INIT });
     try {
-        const { page, errors } = await openLesson(ctx, 'hover-height', size.sticks ? { query: '&input=touch' } : {});
+        const { page, errors } = await openLesson(ctx, 'hover-height', { lang: LAYOUT_LANG, ...(size.sticks ? { query: '&input=touch' } : {}) });
         if (css) await page.addStyleTag({ content: css });
-        // the progress panel as v13-host draws it in a flying lesson (four rows and the title), the longest it gets
-        const title = (JSON.parse(readFileSync(join(REPO, 'packages/sonic-fpv/locales/en.json'), 'utf8')) as Record<string, string>)['lesson.hover-height.title'];
-        await page.addStyleTag({ content: PROGRESS_CSS });
-        await page.evaluate((t) => {
-            const s = document.createElement('section');
-            s.className = 'sonic-progress';
-            s.dataset.standin = 'v13-host ef91fa1';
-            for (const [cls, text] of [['sonic-progress-title', t], ['sonic-progress-row', 'Lesson 9 of 28'], ['sonic-progress-row', 'Step 2 of 2'], ['sonic-progress-row', 'Attempt 4'], ['sonic-progress-row', 'Counted 2 of 3']]) {
-                const p = document.createElement('p');
-                p.className = cls!;
-                p.textContent = text!;
-                s.append(p);
-            }
-            document.body.append(s);
-        }, title ?? 'Hold a height');
         await sleep(900);
         const b = await boxes(page);
         const rep = await panels(page);
@@ -1159,9 +1155,19 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
         writeFileSync(join(OUT, `${name}.jpg`), await page.screenshot({ type: 'jpeg', quality: 55, scale: 'css' }));
         const W = size.w, H = size.h;
         const centre: Box = { x: 0.35 * W, y: 0.35 * H, w: 0.3 * W, h: 0.3 * H };
-        const keep: Record<string, Box[]> = { centre: [centre], captions: b.captions ?? [], progress: b.progress ?? [], topLeft: b.topLeft ?? [], topRight: b.topRight ?? [], topBar: b.topBar ?? [], telemetry: b.telemetry ?? [], keys: b.keys ?? [], recorder: b.recorder ?? [], recBar: b.recBar ?? [], takeOff: b.takeOff ?? [], pads: b.pads ?? [], arm: b.arm ?? [] };
+        const keep: Record<string, Box[]> = { centre: [centre], captions: b.captions ?? [], topLeft: b.topLeft ?? [], topRight: b.topRight ?? [], topBar: b.topBar ?? [], telemetry: b.telemetry ?? [], keys: b.keys ?? [], recorder: b.recorder ?? [], recBar: b.recBar ?? [], takeOff: b.takeOff ?? [], pads: b.pads ?? [], arm: b.arm ?? [] };
         const res: Record<string, unknown> = { picture: `${name}.jpg`, boxes: b };
-        for (const panel of ['attitude', 'sounds'] as const) {
+        // the page's real progress panel (v13-host: progress-panel.ts), the longest it gets: the title and four rows, in this scheme's colours
+        const prog = await page.evaluate(() => {
+            const el = document.querySelector('.sonic-progress') as HTMLElement | null;
+            if (!el || el.hidden) return null;
+            const cs = getComputedStyle(el);
+            return { rows: el.innerText.split(String.fromCharCode(10)).map((x) => x.trim()).filter((x) => x !== ''), font: parseFloat(cs.fontSize), color: cs.color, background: cs.backgroundColor, border: cs.borderTopColor };
+        });
+        res.progressPanel = prog;
+        const wantInk = scheme === 'dark' ? ['rgb(255, 255, 255)', 'rgb(0, 0, 0)'] : ['rgb(0, 0, 0)', 'rgb(255, 255, 255)'];
+        check(`${size.name} ${scheme}: the page's real progress panel shows the lesson's title and its four rows (Lesson, Step, Attempt, Counted), ${scheme === 'dark' ? 'white on black' : 'black on white'}, ${prog ? prog.font : '-'} px`, !!prog && prog.rows.length === 5 && (LAYOUT_LANG !== 'en' || (/^Lesson \d+ of 28$/.test(prog.rows[1] ?? '') && /^Step \d+ of \d+$/.test(prog.rows[2] ?? '') && /^Attempt \d+$/.test(prog.rows[3] ?? '') && /^Counted \d+ of \d+$/.test(prog.rows[4] ?? ''))) && prog.color === wantInk[0] && prog.background === wantInk[1] && prog.font >= 15, prog);
+        for (const panel of PANELS) {
             const pb = (b[panel] ?? [])[0];
             if (!pb) {
                 check(`${size.name} ${scheme}: the ${panel} panel is on the page`, false, b);
@@ -1170,10 +1176,12 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
             const inside = pb.x >= -0.5 && pb.y >= -0.5 && pb.x + pb.w <= W + 0.5 && pb.y + pb.h <= H + 0.5;
             const over = (names: readonly string[]): string[] => Object.entries(keep).filter(([k]) => names.includes(k)).flatMap(([k, list]) => list.map((x) => ({ k, a: overlap(pb, x) })).filter((o) => o.a > 1).map((o) => `${o.k} ${Math.round(o.a)} px2`));
             const hits = over(HARD);
-            const other = (b[panel === 'attitude' ? 'sounds' : 'attitude'] ?? [])[0];
-            if (other && overlap(pb, other) > 1) hits.push(`the other panel ${Math.round(overlap(pb, other))} px2`);
+            for (const o of PANELS) {
+                const ob = o === panel ? undefined : (b[o] ?? [])[0];
+                if (ob && overlap(pb, ob) > 1) hits.push(`the ${o} panel ${Math.round(overlap(pb, ob))} px2`);
+            }
             const covers = over(SOFT);
-            check(`${size.name} ${scheme}: the ${panel} panel (${Math.round(pb.w)} x ${Math.round(pb.h)} at ${Math.round(pb.x)}, ${Math.round(pb.y)}) inside the page, clear of the view's centre, the captions, the progress panel, the page's controls and the other panel${covers.length ? ` (covers ${covers.join(', ')})` : ''}`, inside && hits.length === 0, { box: pb, hits, covers });
+            check(`${size.name} ${scheme}: the ${panel} panel (${Math.round(pb.w)} x ${Math.round(pb.h)} at ${Math.round(pb.x)}, ${Math.round(pb.y)}) inside the page, clear of the view's centre, the captions, the page's controls, the touch sticks and the other two panels${covers.length ? ` (covers ${covers.join(', ')})` : ''}`, inside && hits.length === 0, { box: pb, hits, covers });
             res[panel] = { box: pb, hits, covers };
         }
         // readable: the dial and the radar large enough, the panels' words 15 px or more (CSS px: at 200 % zoom twice the device pixels)
