@@ -292,3 +292,12 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   item while a lesson runs (disabled otherwise); it opens the lesson menu once the pause menu has let the flight go, and its items are
   buttons a finger can press. No Node test (the item lives in `feature.ts`, which runs only in a page): `sonic-v13-page` R on a phone
   (390 x 844, touch): Pause, Lesson menu, Next step moves the lesson. Control there: the item is disabled with no lesson running.
+- F6 (minor, the attitude display's horizon is the body's, the view's camera is tilted up): holds as read (the default drone's
+  uptilt 20 degrees; the dial takes sim-core's body pitch). Decided, the drawing not changed: the dial stays a true attitude indicator
+  (the craft's attitude whatever the camera, as an aircraft's instrument), because the pilot reads from it what the craft does: level
+  flight reads level, a climb's nose-up reads nose-up. Drawing the camera's horizon instead (the pitch less the uptilt) would show a
+  hovering craft 20 degrees nose-up. Corrected: the claim "the horizon the craft's camera sees" in `attitude.ts`'s header, the lane doc
+  (`docs/wip/v13-look.md`) and `sonic-panels` (its camera looks along the body's axis). Test: `sonic-panels` "v13-int review F6" (level,
+  20 degrees nose-up and 10 nose-down: the dial lifts the horizon by the body's pitch, the default drone's camera, uptilt read from its
+  preset, sees it 20 degrees lower, a camera along the body agrees with the dial). For the testers' notes (the lead's): the dial and the
+  view disagree by the camera's tilt by design. The lead may turn it.

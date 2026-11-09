@@ -14,6 +14,12 @@
 //   arrow    the climb arrow: up or down from the craft's height, longer the faster it climbs or sinks (full length at 2 m/s),
 //            none under 0.1 m/s.
 //
+// The dial is the craft body's attitude (sim-core attitude()), as an aircraft's attitude indicator, not the FPV camera's view: the
+// view's camera is tilted up by the drone's uptilt (20 degrees on the default pavo20pro-3s, 10 to 35 on the presets), so in level
+// flight the world's horizon lies that far under the view's centre while the dial draws it through its own, and with the nose down by
+// the uptilt the view looks level while the dial shows the nose down. Kept so (v13-int review F6, a decision the lead may turn by
+// drawing the pitch less the uptilt): the dial tells the pilot what the craft does whatever the camera.
+//
 // Every line and mark is at least 4.5:1 against what it lies on (ATTITUDE_PAIRS, held by tools/bench/test/sonic-panels.test.ts;
 // measured on the page's pictures by tools/bench/src/v13-look-page.ts). Pure up to AttitudeDisplay: attitudeLayout, horizonOf,
 // tapeOf and climbArrow are the geometry Node tests check; drawAttitude puts it on a canvas.

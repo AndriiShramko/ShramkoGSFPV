@@ -244,7 +244,9 @@ Left open, with the reason:
     degree, a centimetre).
   - Shown while a lesson that flies runs (not in module 0's listening lessons, which fly nothing; not while a recording
     plays back); hidden from screen readers (`aria-hidden`), never takes a pointer, under the captions (z-index 4 and 5).
-  - On paper (`tools/bench/test/sonic-panels.test.ts`): the horizon is the one the craft's camera sees: 75 attitudes (3
+  - On paper (`tools/bench/test/sonic-panels.test.ts`): the horizon is the one a camera along the body's axis sees (the craft's
+    attitude; corrected by the v13-int review, its F6: the view's FPV camera is tilted up by the drone's uptilt, 20 degrees on the
+    default drone, so it sees the level horizon 20 degrees under its centre while the dial draws it through its own): 75 attitudes (3
     headings x 5 pitches x 5 rolls) built as a body turned by a known pitch and roll, read back by sim-core's `attitude()`,
     two points of the world's horizon projected by a camera at that attitude: the display's tilt and lift agree (worst
     0.0000 degrees, 0.01 allowed; a right roll lifts the horizon's right end, a nose down the horizon); control in the test: the

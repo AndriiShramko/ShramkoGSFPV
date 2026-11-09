@@ -1,10 +1,12 @@
 // v0.13 lane v13-look L2-1 to L2-3 (docs/wip/v13-look.md; plan M41-24, M41-25; the sound package's merge review W14): the mode's
 // attitude display and sound panel on paper, before the page (apps/fly/src/sonic/attitude.ts, sound-panel.ts, look-prefs.ts; the
 // page proofs are tools/bench/src/v13-look-page.ts panels | layout).
-//   - the attitude display's horizon is the one the craft's camera sees: for attitudes the flight model reports (sim-core
-//     attitude() of a body turned by a known pitch and roll), two points of the world's horizon projected by a camera at that
-//     attitude lie on a line with the display's tilt and on the display's side of the centre (a right roll lifts the horizon's
-//     right end; a nose down lifts the horizon); control in the test: the roll's sign turned is caught;
+//   - the attitude display's horizon is the craft body's (an attitude indicator): for attitudes the flight model reports (sim-core
+//     attitude() of a body turned by a known pitch and roll), two points of the world's horizon projected by a camera along the body's
+//     -z at that attitude lie on a line with the display's tilt and on the display's side of the centre (a right roll lifts the
+//     horizon's right end; a nose down lifts the horizon); control in the test: the roll's sign turned is caught. The FPV camera of
+//     the view is tilted up by the drone's uptilt (20 degrees on the default drone): it sees the level horizon that far under its
+//     centre, the dial through its own (v13-int review F6, kept as a true attitude indicator);
 //   - the tape: the floor at the bottom, the room's top at the top, the craft, the band and the height to fly at where they are;
 //     the climb arrow up for a climb, down for a sink, none at a standstill, longer the faster;
 //   - every line and mark of both panels at least 4.5:1 against what it lies on, in a dark page and a light one;
@@ -76,12 +78,19 @@ function simState(q: Quat): Float64Array {
     return s;
 }
 
-/** The world's horizon as the craft's camera (looking along -z of the body) sees it: its tilt (screen degrees, y down) and its lift toward the sky (degrees). */
-function cameraHorizon(q: Quat, yawDeg: number, n: readonly [number, number]): { tiltDeg: number; liftDeg: number } {
+/**
+ * The world's horizon as a camera on the craft sees it: looking along -z of the body, tilted up by `uptiltDeg` (the FPV camera's uptilt;
+ * 0: the body's own axis): its tilt (screen degrees, y down) and its lift toward the sky (degrees).
+ */
+function cameraHorizon(q: Quat, yawDeg: number, n: readonly [number, number], uptiltDeg = 0): { tiltDeg: number; liftDeg: number } {
+    const u = uptiltDeg * DEG;
     const pt = (az: number): [number, number] => {
         const a = (yawDeg + az) * DEG;
         const b = toBody(q, [Math.sin(a), 0, -Math.cos(a)]);
-        return [b[0] / -b[2], -b[1] / -b[2]];
+        // the camera's axes in the body: forward (0, sin u, -cos u), up (0, cos u, sin u), right (1, 0, 0)
+        const fwd = b[1] * Math.sin(u) - b[2] * Math.cos(u);
+        const up = b[1] * Math.cos(u) + b[2] * Math.sin(u);
+        return [b[0] / fwd, -up / fwd];
     };
     const p1 = pt(-8), p2 = pt(8);
     const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
@@ -108,7 +117,7 @@ describe('the attitude display (M41-24)', () => {
         expect(hz.pointer[1]).toBeCloseTo(layout.dial.cy - layout.dial.r, 6);
     });
 
-    it('the horizon is the one the camera sees: tilt and lift for pitches and rolls the flight model reports', () => {
+    it('the horizon is the one a camera along the body\'s axis sees: tilt and lift for pitches and rolls the flight model reports', () => {
         const cases: [number, number, number][] = [];
         for (const yaw of [0, 37, -120]) for (const up of [-25, -10, 0, 10, 25]) for (const right of [-45, -20, 0, 20, 45]) cases.push([yaw, up, right]);
         let worst = { tilt: 0, lift: 0 };
@@ -128,6 +137,24 @@ describe('the attitude display (M41-24)', () => {
         console.log(`sonic-panels: horizon against the camera, ${cases.length} attitudes, worst tilt ${worst.tilt.toFixed(4)} deg, worst lift ${worst.lift.toFixed(4)} deg`);
         expect(worst.tilt).toBeLessThan(0.01);
         expect(worst.lift).toBeLessThan(0.01);
+    });
+
+    it('v13-int review F6: the dial is the craft body\'s attitude, not the FPV camera\'s view: level, it draws the horizon through its centre, while the default drone\'s camera, tilted up 20 degrees, sees it 20 degrees under its centre (kept: a true attitude indicator)', () => {
+        const preset = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../packages/sim-core/presets/pavo20pro-3s.json'), 'utf8')) as { fields: { camera_uptilt_deg: { value: number } } };
+        const uptilt = preset.fields.camera_uptilt_deg.value;
+        expect(uptilt).toBe(20);
+        for (const up of [0, -20, 10]) {
+            const q = bodyQuat(0, up, 0);
+            const a = attitude(simState(q));
+            const hz = horizonOf({ rollDeg: a.roll, pitchDeg: a.pitch }, layout.dial);
+            const lift = ((layout.dial.cy - hz.centre[1]) / hz.pxPerDeg) * Math.sign(-hz.n[1]);
+            // the dial: the body's pitch (a nose up of 10 degrees moves the horizon 10 degrees down the dial)
+            expect(lift, `up ${up}`).toBeCloseTo(-up, 6);
+            // the view's camera: the same horizon `uptilt` degrees lower, whatever the pitch (a nose down by the uptilt levels the view)
+            expect(cameraHorizon(q, a.yaw, hz.n, uptilt).liftDeg, `up ${up}`).toBeCloseTo(-up - uptilt, 6);
+            // and a camera along the body's own axis agrees with the dial (the test above)
+            expect(cameraHorizon(q, a.yaw, hz.n).liftDeg, `up ${up}`).toBeCloseTo(-up, 6);
+        }
     });
 
     it('a right roll lifts the horizon\'s right end and moves the sky pointer left of the top; a nose down lifts the horizon', () => {
