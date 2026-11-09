@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T00:34:14.914Z",
-    "gitHead": "652ae78",
+    "date": "2026-11-09T09:51:54.211Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "step": "v12-flight 9: lessons passed end to end in the real page by a scripted keyboard pilot",
-  "page": "http://localhost:5441/fly/?sonic=<lesson> (Vite dev server)",
+  "page": "http://localhost:5470/fly/?sonic=<lesson> (Vite dev server)",
   "voice": "the engine says nothing (my screen reader speaks, speed 2): it waits the time a line takes",
   "voices": 10,
   "note": "headless Chrome runs muted (--mute-audio); how anything sounds is not judged here",
@@ -35,10 +35,10 @@
       "speechLines": 17,
       "speechEnds": 6,
       "tap": {
-        "maxRms": 0.020435344066241732,
-        "maxPeak": 0.04284369945526123,
-        "polls": 1040,
-        "loud": 410,
+        "maxRms": 0.02045024016033707,
+        "maxPeak": 0.042864978313446045,
+        "polls": 1039,
+        "loud": 419,
         "last": 0
       },
       "captionLines": [
@@ -64,11 +64,11 @@
       "speechLines": 9,
       "speechEnds": 3,
       "tap": {
-        "maxRms": 0.06335562386005641,
-        "maxPeak": 0.18631437420845032,
+        "maxRms": 0.06248293375896971,
+        "maxPeak": 0.19608497619628906,
         "polls": 168,
-        "loud": 164,
-        "last": 0.05694967714162816
+        "loud": 162,
+        "last": 0.03435653298208902
       },
       "captionLines": [
         "The square gate",
@@ -87,7 +87,7 @@
       "lesson": "rings-first",
       "voice": false,
       "passed": true,
-      "seconds": 16,
+      "seconds": 15,
       "utterances": 0,
       "cancels": 0,
       "attempts": 3,
@@ -98,11 +98,11 @@
       "speechLines": 12,
       "speechEnds": 5,
       "tap": {
-        "maxRms": 0.0803260117136142,
-        "maxPeak": 0.24674838781356812,
-        "polls": 295,
-        "loud": 290,
-        "last": 0.06806094569945516
+        "maxRms": 0.08459462481999246,
+        "maxPeak": 0.2320188283920288,
+        "polls": 294,
+        "loud": 289,
+        "last": 0.03494655662557171
       },
       "captionLines": [
         "Go.",
@@ -118,7 +118,7 @@
       "lesson": "hover-height",
       "voice": false,
       "passed": true,
-      "seconds": 117,
+      "seconds": 116,
       "utterances": 0,
       "cancels": 0,
       "attempts": 3,
@@ -126,14 +126,14 @@
       "answers": 0,
       "gates": 0,
       "touches": 0,
-      "speechLines": 21,
+      "speechLines": 22,
       "speechEnds": 9,
       "tap": {
-        "maxRms": 0.03537050597571994,
-        "maxPeak": 0.08882588148117065,
-        "polls": 2324,
+        "maxRms": 0.03200716093674965,
+        "maxPeak": 0.0792534351348877,
+        "polls": 2323,
         "loud": 2293,
-        "last": 0.02539346585381818
+        "last": 0.016269075307031058
       },
       "captionLines": [
         "You held your height. That is the first skill of flying by ear.",
@@ -142,10 +142,7 @@
       "stagePrims": 1
     }
   ],
-  "notFound": [
-    "http://localhost:5441/api/catalog",
-    "http://localhost:5441/api/e"
-  ],
+  "notFound": [],
   "checks": [
     {
       "name": "ears-headphones: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
@@ -186,7 +183,7 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-09T00:31:27.836Z",
+        "lastAt": "2026-11-09T09:49:09.486Z",
         "skipped": false
       }
     },
@@ -216,10 +213,10 @@
       "name": "ears-headphones: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.020435344066241732,
-        "maxPeak": 0.04284369945526123,
-        "polls": 1040,
-        "loud": 410,
+        "maxRms": 0.02045024016033707,
+        "maxPeak": 0.042864978313446045,
+        "polls": 1039,
+        "loud": 419,
         "last": 0
       }
     },
@@ -279,7 +276,7 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-09T00:31:44.836Z",
+        "lastAt": "2026-11-09T09:49:25.768Z",
         "skipped": false
       }
     },
@@ -302,11 +299,11 @@
       "name": "shapes-square: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.06335562386005641,
-        "maxPeak": 0.18631437420845032,
+        "maxRms": 0.06248293375896971,
+        "maxPeak": 0.19608497619628906,
         "polls": 168,
-        "loud": 164,
-        "last": 0.05694967714162816
+        "loud": 162,
+        "last": 0.03435653298208902
       }
     },
     {
@@ -345,7 +342,7 @@
       "name": "rings-first: passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
-        "seconds": 16,
+        "seconds": 15,
         "attempts": 3,
         "successes": 3
       }
@@ -361,7 +358,7 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-09T00:32:05.204Z",
+        "lastAt": "2026-11-09T09:49:45.734Z",
         "skipped": false
       }
     },
@@ -384,11 +381,11 @@
       "name": "rings-first: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.0803260117136142,
-        "maxPeak": 0.24674838781356812,
-        "polls": 295,
-        "loud": 290,
-        "last": 0.06806094569945516
+        "maxRms": 0.08459462481999246,
+        "maxPeak": 0.2320188283920288,
+        "polls": 294,
+        "loud": 289,
+        "last": 0.03494655662557171
       }
     },
     {
@@ -419,7 +416,7 @@
       "value": {
         "lines": 4,
         "covered": [],
-        "lowest": 321,
+        "lowest": 299,
         "centre": 360
       }
     },
@@ -471,12 +468,12 @@
           "master": 0.7
         },
         "levels": {
-          "after": 0.02765882875795057,
-          "motorOff": 0.024998324143769,
-          "motorOn": 0.03511961079570625,
-          "ratio": 1.405
+          "after": 0.026520253655610733,
+          "motorOff": 0.025310779486526637,
+          "motorOn": 0.03200716093674965,
+          "ratio": 1.265
         },
-        "peakOn": 0.08882588148117065,
+        "peakOn": 0.0792534351348877,
         "audioContexts": 1
       }
     },
@@ -484,16 +481,16 @@
       "name": "the sound follows the frames: the height tone sounds (RMS over 1e-3), is silent while the flight is paused behind the start screen (RMS under 3e-4 and 20 times under the tone: setLayers none, only the motors' floor is left), and is back when the flight goes on",
       "pass": true,
       "value": {
-        "before": 0.006877152635524508,
-        "during": 0.00009543415524216695,
-        "after": 0.02765882875795057
+        "before": 0.0065539346846097335,
+        "during": 0.00010698049914787066,
+        "after": 0.026520253655610733
       }
     },
     {
       "name": "hover-height: passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
-        "seconds": 117,
+        "seconds": 116,
         "attempts": 3,
         "successes": 3
       }
@@ -509,7 +506,7 @@
         "blocksPassed": 1,
         "passed": true,
         "bestTimeMs": null,
-        "lastAt": "2026-11-09T00:34:07.003Z",
+        "lastAt": "2026-11-09T09:51:46.767Z",
         "skipped": false
       }
     },
@@ -517,7 +514,7 @@
       "name": "hover-height: the lesson's lines are speech events of the mode (the captions' source)",
       "pass": true,
       "value": {
-        "speechLines": 21,
+        "speechLines": 22,
         "speechEnds": 9
       }
     },
@@ -532,11 +529,11 @@
       "name": "hover-height: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
       "pass": true,
       "value": {
-        "maxRms": 0.03537050597571994,
-        "maxPeak": 0.08882588148117065,
-        "polls": 2324,
+        "maxRms": 0.03200716093674965,
+        "maxPeak": 0.0792534351348877,
+        "polls": 2323,
         "loud": 2293,
-        "last": 0.02539346585381818
+        "last": 0.016269075307031058
       }
     },
     {

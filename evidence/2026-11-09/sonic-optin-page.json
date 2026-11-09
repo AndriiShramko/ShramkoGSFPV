@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T01:06:02.961Z",
-    "gitHead": "f68d9ab",
+    "date": "2026-11-09T09:47:48.807Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5440",
+  "site": "http://localhost:5470",
   "parts": "ABCD",
   "checks": [
     {
@@ -198,8 +198,8 @@
         "errors": [],
         "otherHosts": [
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v3/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json"
         ]
@@ -248,6 +248,7 @@
           "pause.replays",
           "pause.measure",
           "pause.import",
+          "pause.sonic.lessonMenu",
           "pause.sonic",
           "pause.cinema",
           "pause.record",
@@ -338,11 +339,11 @@
       "pass": true,
       "value": {
         "copied": {
-          "url": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+          "url": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
           "copied": true
         },
-        "clipboard": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
-        "want": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+        "clipboard": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
+        "want": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
         "names": [
           "sonic",
           "st",
@@ -421,7 +422,7 @@
       "pass": true,
       "value": {
         "heldAt": true,
-        "wentOnAfterMs": 20518
+        "wentOnAfterMs": 20519
       }
     },
     {
@@ -441,7 +442,11 @@
       "pass": true,
       "value": {
         "closed": true,
-        "said": []
+        "said": [
+          "sonic.say.lessonKeys",
+          "lesson.hover-height.intro.1",
+          "lesson.hover-height.intro.2"
+        ]
       }
     },
     {
@@ -452,12 +457,12 @@
           "field": {
             "shown": true,
             "focused": true,
-            "value": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
-            "selected": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+            "value": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
+            "selected": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
             "status": "The link is copied. Paste it into a message or an e-mail.",
             "picturePanel": false
           },
-          "clipboard": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+          "clipboard": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
           "gone": true,
           "pausedAfter": false
         },
@@ -465,16 +470,16 @@
           "field": {
             "shown": true,
             "focused": true,
-            "value": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
-            "selected": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+            "value": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
+            "selected": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
             "status": "The link is copied. Paste it into a message or an e-mail.",
             "picturePanel": false
           },
-          "clipboard": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+          "clipboard": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
           "gone": true,
           "pausedAfter": false
         },
-        "want": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1"
+        "want": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1"
       }
     },
     {
@@ -482,10 +487,10 @@
       "pass": true,
       "value": {
         "link": {
-          "url": "http://localhost:5440/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+          "url": "http://localhost:5470/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
           "copied": true
         },
-        "want": "http://localhost:5440/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+        "want": "http://localhost:5470/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
         "walls": {
           "voxelM": 0.16,
           "builtin": false,
@@ -499,9 +504,9 @@
       "pass": true,
       "value": {
         "chunks": [
-          "/fly/assets/lazy-start-CT6nzG_t.js",
-          "/fly/assets/feature-BUt2DHd6.js",
-          "/fly/assets/session-PC787IfK.js"
+          "/fly/assets/lazy-start-B8hLt9CD.js",
+          "/fly/assets/feature-WhsJaNVX.js",
+          "/fly/assets/session-BSQ4im0p.js"
         ],
         "found": [
           "Learn to fly a drone by ear",
@@ -516,11 +521,11 @@
       "value": {
         "errors": [],
         "otherHosts": [
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
           "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
-          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json"
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json"
         ]
       }
     },
@@ -749,14 +754,14 @@
         "field": {
           "shown": true,
           "focused": true,
-          "value": "http://localhost:5440/fly/?sonic=hover-height",
-          "selected": "http://localhost:5440/fly/?sonic=hover-height",
+          "value": "http://localhost:5470/fly/?sonic=hover-height",
+          "selected": "http://localhost:5470/fly/?sonic=hover-height",
           "status": "The link is selected: press Control and C to copy it.",
           "picturePanel": false
         },
         "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
         "hook": {
-          "url": "http://localhost:5440/fly/?sonic=hover-height",
+          "url": "http://localhost:5470/fly/?sonic=hover-height",
           "copied": false
         },
         "captionsHaveLink": false,
@@ -773,14 +778,14 @@
         "field": {
           "shown": true,
           "focused": true,
-          "value": "http://localhost:5440/fly/?sonic=hover-height",
-          "selected": "http://localhost:5440/fly/?sonic=hover-height",
+          "value": "http://localhost:5470/fly/?sonic=hover-height",
+          "selected": "http://localhost:5470/fly/?sonic=hover-height",
           "status": "The link is selected: press Control and C to copy it.",
           "picturePanel": false
         },
         "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
         "hook": {
-          "url": "http://localhost:5440/fly/?sonic=hover-height",
+          "url": "http://localhost:5470/fly/?sonic=hover-height",
           "copied": false
         },
         "captionsHaveLink": false,
@@ -1103,10 +1108,10 @@
         "/fly/assets/constants-QIo2t17o.js",
         "/fly/assets/entity-B_vmRIRM.js",
         "/fly/assets/texture-B2BuifmZ.js",
-        "/fly/assets/main-BV4abT7x.js",
+        "/fly/assets/main-BSM0MI86.js",
         "/fly/assets/rapier-B4hmj00C.js",
         "/fly/assets/drones3d-BZ3jyy9a.css",
-        "/fly/assets/drones3d-C6YBG3u4.js"
+        "/fly/assets/drones3d-IZgmBvei.js"
       ],
       "chunks": [],
       "holding": []
@@ -1143,6 +1148,7 @@
         "pause.replays",
         "pause.measure",
         "pause.import",
+        "pause.sonic.lessonMenu",
         "pause.sonic",
         "pause.cinema",
         "pause.record",
@@ -1203,11 +1209,11 @@
     },
     "hoverLink": {
       "copied": {
-        "url": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+        "url": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
         "copied": true
       },
-      "clipboard": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
-      "want": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+      "clipboard": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
+      "want": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
       "names": [
         "sonic",
         "st",
@@ -1275,7 +1281,7 @@
     ],
     "keyHelpHold": {
       "heldAt": true,
-      "wentOnAfterMs": 20518
+      "wentOnAfterMs": 20519
     },
     "keyHelpCut": {
       "said": [
@@ -1287,19 +1293,23 @@
     },
     "keyOverCard": {
       "closed": true,
-      "said": []
+      "said": [
+        "sonic.say.lessonKeys",
+        "lesson.hover-height.intro.1",
+        "lesson.hover-height.intro.2"
+      ]
     },
     "visibleShare": {
       "menu": {
         "field": {
           "shown": true,
           "focused": true,
-          "value": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
-          "selected": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+          "value": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
+          "selected": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
           "status": "The link is copied. Paste it into a message or an e-mail.",
           "picturePanel": false
         },
-        "clipboard": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+        "clipboard": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
         "gone": true,
         "pausedAfter": false
       },
@@ -1307,23 +1317,23 @@
         "field": {
           "shown": true,
           "focused": true,
-          "value": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
-          "selected": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+          "value": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
+          "selected": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
           "status": "The link is copied. Paste it into a message or an e-mail.",
           "picturePanel": false
         },
-        "clipboard": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1",
+        "clipboard": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1",
         "gone": true,
         "pausedAfter": false
       },
-      "want": "http://localhost:5440/fly/?sonic=hover-height&st=clear&sc=1"
+      "want": "http://localhost:5470/fly/?sonic=hover-height&st=clear&sc=1"
     },
     "gardenLink": {
       "link": {
-        "url": "http://localhost:5440/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+        "url": "http://localhost:5470/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
         "copied": true
       },
-      "want": "http://localhost:5440/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
+      "want": "http://localhost:5470/fly/?sonic=free-garden&scene=7a475d38&sz=5&st=clear&sc=1",
       "walls": {
         "voxelM": 0.16,
         "builtin": false,
@@ -1333,9 +1343,9 @@
     },
     "modeFetched": {
       "chunks": [
-        "/fly/assets/lazy-start-CT6nzG_t.js",
-        "/fly/assets/feature-BUt2DHd6.js",
-        "/fly/assets/session-PC787IfK.js"
+        "/fly/assets/lazy-start-B8hLt9CD.js",
+        "/fly/assets/feature-WhsJaNVX.js",
+        "/fly/assets/session-BSQ4im0p.js"
       ],
       "found": [
         "Learn to fly a drone by ear",
@@ -1482,14 +1492,14 @@
         "field": {
           "shown": true,
           "focused": true,
-          "value": "http://localhost:5440/fly/?sonic=hover-height",
-          "selected": "http://localhost:5440/fly/?sonic=hover-height",
+          "value": "http://localhost:5470/fly/?sonic=hover-height",
+          "selected": "http://localhost:5470/fly/?sonic=hover-height",
           "status": "The link is selected: press Control and C to copy it.",
           "picturePanel": false
         },
         "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
         "hook": {
-          "url": "http://localhost:5440/fly/?sonic=hover-height",
+          "url": "http://localhost:5470/fly/?sonic=hover-height",
           "copied": false
         },
         "captionsHaveLink": false,
@@ -1502,14 +1512,14 @@
         "field": {
           "shown": true,
           "focused": true,
-          "value": "http://localhost:5440/fly/?sonic=hover-height",
-          "selected": "http://localhost:5440/fly/?sonic=hover-height",
+          "value": "http://localhost:5470/fly/?sonic=hover-height",
+          "selected": "http://localhost:5470/fly/?sonic=hover-height",
           "status": "The link is selected: press Control and C to copy it.",
           "picturePanel": false
         },
         "line": "The link to the lesson Hold your height was not copied. It is selected: press Control and C to copy it, then Escape to go back.",
         "hook": {
-          "url": "http://localhost:5440/fly/?sonic=hover-height",
+          "url": "http://localhost:5470/fly/?sonic=hover-height",
           "copied": false
         },
         "captionsHaveLink": false,

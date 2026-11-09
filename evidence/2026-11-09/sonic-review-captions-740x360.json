@@ -1,0 +1,69 @@
+{
+  "name": "sonic-review-captions-740x360",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T09:54:46.770Z",
+    "gitHead": "5512292",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "lab": "http://localhost:5470",
+  "lesson": "corridor",
+  "size": [
+    740,
+    360
+  ],
+  "passed": 5,
+  "total": 5,
+  "checks": [
+    {
+      "name": "the captions region is the live region (aria-live polite) in \"my screen reader speaks\" mode",
+      "pass": true,
+      "value": {
+        "live": "polite"
+      }
+    },
+    {
+      "name": "the lesson says several lines in one go when it opens (4 or more within 50 ms)",
+      "pass": true,
+      "value": {
+        "burst": 4,
+        "lines": [
+          "The long corridor",
+          "Escape: menu. Z: repeat the task. N: next.",
+          "This is a long corridor. The walls are close on both sides.",
+          "Stay in the middle. Knocks from one side mean you are drifting toward that wall. Move away from it."
+        ]
+      }
+    },
+    {
+      "name": "every line of that burst is in the region at some animation frame, so the browser's accessibility tree has it to announce",
+      "pass": true,
+      "value": {
+        "burst": 4,
+        "inTheRegionAtAFrame": 4,
+        "neverInTheRegion": []
+      }
+    },
+    {
+      "name": "while the eye sees at most 2 lines at a time (the helper's view is not covered; the older ones have no box of their own)",
+      "pass": true,
+      "value": {
+        "maxLinesSeenByTheEye": 1,
+        "maxLinesInTheRegionAtOnce": 4
+      }
+    },
+    {
+      "name": "no page errors",
+      "pass": true,
+      "value": []
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "name": "sonic-v13-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T09:40:00.015Z",
+    "gitHead": "5512292",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5470",
+  "parts": "F2S",
+  "control": null,
+  "checks": [
+    {
+      "name": "F2S: a recording made on this build (rings-first, W alone dead ahead at the front wall, a counted attempt) opened by the recorder's Replay button: the summary is the pass sentence, every recorded event worked out again, the verdict \"pass\", not marked as a failure",
+      "pass": true,
+      "value": {
+        "status": {
+          "text": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same.",
+          "bad": false
+        },
+        "check": {
+          "ok": true,
+          "verdict": "pass",
+          "summary": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same."
+        },
+        "player": {
+          "phase": "ready",
+          "tMs": 0,
+          "durationMs": 13145.300000011921,
+          "voice": "ready",
+          "frame": 0,
+          "frames": 173,
+          "viewLagMs": 0,
+          "lesson": "rings-first",
+          "part": 0,
+          "parts": 1
+        },
+        "details": "replay check PASS: events 11 of 11 re-derived (largest time difference 5 ms); cues 100.0 % of 173 frames agree (100.0 % by cue kind)",
+        "notes": [],
+        "rows": [
+          {
+            "lesson": "rings-first",
+            "frames": 173,
+            "compared": true,
+            "ok": true,
+            "recorded": 11,
+            "matched": 11,
+            "diffs": 0,
+            "cueShare": 1,
+            "cueClassShare": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "F2S: played to its end",
+      "pass": true,
+      "value": {
+        "phase": "ended",
+        "durationMs": 13145.300000011921
+      }
+    },
+    {
+      "name": "F2S: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 3,
+  "total": 3,
+  "shots": [],
+  "result": {
+    "release": {
+      "sha": "c9fb6ef",
+      "sonic": "09535b7",
+      "built": "2026-11-09T09:33:35.999Z"
+    },
+    "ownZip": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\f2-recording.zip",
+    "ownSummary": {
+      "status": {
+        "text": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same.",
+        "bad": false
+      },
+      "check": {
+        "ok": true,
+        "verdict": "pass",
+        "summary": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same."
+      },
+      "player": {
+        "phase": "ready",
+        "tMs": 0,
+        "durationMs": 13145.300000011921,
+        "voice": "ready",
+        "frame": 0,
+        "frames": 173,
+        "viewLagMs": 0,
+        "lesson": "rings-first",
+        "part": 0,
+        "parts": 1
+      },
+      "details": "replay check PASS: events 11 of 11 re-derived (largest time difference 5 ms); cues 100.0 % of 173 frames agree (100.0 % by cue kind)",
+      "notes": [],
+      "rows": [
+        {
+          "lesson": "rings-first",
+          "frames": 173,
+          "compared": true,
+          "ok": true,
+          "recorded": 11,
+          "matched": 11,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1
+        }
+      ]
+    },
+    "ownPlay": {
+      "phase": "ended",
+      "durationMs": 13145.300000011921
+    }
+  }
+}

@@ -7,21 +7,21 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T01:11:43.400Z",
-    "gitHead": "f68d9ab",
+    "date": "2026-11-09T09:54:32.435Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "step": "v12-flight 10: module 7, free flight in the Winter Garden at x5, in the real page by a scripted keyboard pilot",
-  "page": "http://localhost:5440/fly/?sonic=<lesson> (Vite dev server), the scan from the scene CDN",
+  "page": "http://localhost:5470/fly/?sonic=<lesson> (Vite dev server), the scan from the scene CDN",
   "note": "headless Chrome runs muted (--mute-audio); how anything sounds is not judged here; \"my screen reader speaks\" on, speed 2: the engine says nothing, it waits the time a line takes",
   "results": [
     {
       "entry": "entry",
       "loadSeconds": 3,
-      "lapSeconds": 59,
+      "lapSeconds": 60,
       "passed": true,
       "progress": {
         "lessonId": "free-garden",
@@ -30,16 +30,16 @@
         "successes": 1,
         "blocksPassed": 1,
         "passed": true,
-        "bestTimeMs": 31784,
-        "lastAt": "2026-11-09T01:10:32.195Z",
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:53:19.064Z",
         "skipped": false
       },
       "cost": {
-        "n": 1817,
+        "n": 1830,
         "p50": 0.6,
         "p95": 1.1,
-        "p99": 1.3,
-        "max": 5.3
+        "p99": 1.5,
+        "max": 4.4
       },
       "walls": {
         "voxelM": 0.16,
@@ -53,7 +53,7 @@
     {
       "entry": "swap",
       "loadSeconds": 2,
-      "lapSeconds": 59,
+      "lapSeconds": 61,
       "passed": true,
       "progress": {
         "lessonId": "free-garden",
@@ -62,16 +62,16 @@
         "successes": 2,
         "blocksPassed": 1,
         "passed": true,
-        "bestTimeMs": 31617,
-        "lastAt": "2026-11-09T01:11:42.962Z",
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:54:31.930Z",
         "skipped": false
       },
       "cost": {
-        "n": 1861,
+        "n": 1919,
         "p50": 0.7,
         "p95": 1.2,
-        "p99": 1.5,
-        "max": 3.6
+        "p99": 1.4,
+        "max": 3.2
       },
       "walls": {
         "voxelM": 0.16,
@@ -84,11 +84,11 @@
     }
   ],
   "notFound": [
-    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json",
-    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
-    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
     "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v4/settings.json",
-    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json"
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v3/settings.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/meta.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v5/settings.json",
+    "403 https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v2/settings.json"
   ],
   "checks": [
     {
@@ -109,7 +109,7 @@
       "name": "entry: the lesson is passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
-        "seconds": 59
+        "seconds": 60
       }
     },
     {
@@ -117,14 +117,14 @@
       "pass": true,
       "value": {
         "gates": [
-          "ring-1:0.042",
-          "ring-2:0.305",
-          "ring-3:0.283",
-          "ring-4:0.291",
-          "ring-5:0.129",
-          "ring-6:0.315",
-          "ring-7:0.341",
-          "ring-8:0.402"
+          "ring-1:0.044",
+          "ring-2:0.316",
+          "ring-3:0.222",
+          "ring-4:0.285",
+          "ring-5:0.086",
+          "ring-6:0.295",
+          "ring-7:0.411",
+          "ring-8:0.31"
         ]
       }
     },
@@ -145,8 +145,8 @@
         "successes": 1,
         "blocksPassed": 1,
         "passed": true,
-        "bestTimeMs": 31784,
-        "lastAt": "2026-11-09T01:10:32.195Z",
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:53:19.064Z",
         "skipped": false
       }
     },
@@ -188,31 +188,31 @@
       "name": "entry: the engine made sound (RMS over 1e-3), held the limiter's ceiling (peak at most 0.5013), on one AudioContext",
       "pass": true,
       "value": {
-        "maxRms": 0.061810906934632405,
-        "maxPeak": 0.18509510159492493,
-        "polls": 1263,
-        "loud": 1216,
-        "last": 0.03319977770209636,
+        "maxRms": 0.06643045159291508,
+        "maxPeak": 0.21258634328842163,
+        "polls": 1272,
+        "loud": 1224,
+        "last": 0.04124235140949899,
         "audioContexts": 1
       }
     },
     {
-      "name": "entry: measured: the engine's whole frame in this page (rays, planner, audio updates), ms: 0.6 p50, 1.1 p95, 1.3 p99, 5.3 max over 1817 frames",
+      "name": "entry: measured: the engine's whole frame in this page (rays, planner, audio updates), ms: 0.6 p50, 1.1 p95, 1.5 p99, 4.4 max over 1830 frames",
       "pass": true,
       "value": {
-        "n": 1817,
+        "n": 1830,
         "p50": 0.6,
         "p95": 1.1,
-        "p99": 1.3,
-        "max": 5.3
+        "p99": 1.5,
+        "max": 4.4
       }
     },
     {
-      "name": "entry: the scene sampler alone (30 rays at 16 cm cells) in this page: 0.374 ms a frame, under the plan's 1 ms",
+      "name": "entry: the scene sampler alone (30 rays at 16 cm cells) in this page: 0.382 ms a frame, under the plan's 1 ms",
       "pass": true,
       "value": {
         "frames": 600,
-        "msPerFrame": 0.374,
+        "msPerFrame": 0.382,
         "raysPerFrame": 30
       }
     },
@@ -220,7 +220,7 @@
       "name": "entry: after the pass the start screen shows the lesson as passed, with its best time",
       "pass": true,
       "value": {
-        "label": "Free flight in the Winter GardenLesson 28 of 28, passed, best time 31.8 seconds, Fast path, flies a real scan"
+        "label": "Free flight in the Winter GardenLesson 28 of 28, passed, best time 32.2 seconds, Fast path, flies a real scan"
       }
     },
     {
@@ -266,7 +266,7 @@
       "name": "swap: the lesson is passed end to end by the keyboard (the lesson's own 'passed' event)",
       "pass": true,
       "value": {
-        "seconds": 59
+        "seconds": 61
       }
     },
     {
@@ -274,14 +274,14 @@
       "pass": true,
       "value": {
         "gates": [
-          "ring-1:0.053",
-          "ring-2:0.241",
-          "ring-3:0.352",
-          "ring-4:0.297",
-          "ring-5:0.172",
-          "ring-6:0.225",
-          "ring-7:0.414",
-          "ring-8:0.306"
+          "ring-1:0.043",
+          "ring-2:0.343",
+          "ring-3:0.284",
+          "ring-4:0.339",
+          "ring-5:0.308",
+          "ring-6:0.183",
+          "ring-7:0.518",
+          "ring-8:0.42"
         ]
       }
     },
@@ -302,8 +302,8 @@
         "successes": 2,
         "blocksPassed": 1,
         "passed": true,
-        "bestTimeMs": 31617,
-        "lastAt": "2026-11-09T01:11:42.962Z",
+        "bestTimeMs": 32189,
+        "lastAt": "2026-11-09T09:54:31.930Z",
         "skipped": false
       }
     },
@@ -339,7 +339,7 @@
         "lesson.free-garden.intro.3",
         "lesson.free-garden.goal.1",
         "fly.go",
-        "fly.best-time",
+        "fly.time",
         "lesson.free-garden.pass",
         "fly.last-lesson"
       ]
@@ -348,31 +348,31 @@
       "name": "swap: the engine made sound (RMS over 1e-3), held the limiter's ceiling (peak at most 0.5013), on one AudioContext",
       "pass": true,
       "value": {
-        "maxRms": 0.06345668460616823,
-        "maxPeak": 0.16670101881027222,
-        "polls": 1282,
-        "loud": 1247,
-        "last": 0.0169336558938046,
+        "maxRms": 0.06667887262422142,
+        "maxPeak": 0.17563137412071228,
+        "polls": 1325,
+        "loud": 1289,
+        "last": 0.026070134326863864,
         "audioContexts": 1
       }
     },
     {
-      "name": "swap: measured: the engine's whole frame in this page (rays, planner, audio updates), ms: 0.7 p50, 1.2 p95, 1.5 p99, 3.6 max over 1861 frames",
+      "name": "swap: measured: the engine's whole frame in this page (rays, planner, audio updates), ms: 0.7 p50, 1.2 p95, 1.4 p99, 3.2 max over 1919 frames",
       "pass": true,
       "value": {
-        "n": 1861,
+        "n": 1919,
         "p50": 0.7,
         "p95": 1.2,
-        "p99": 1.5,
-        "max": 3.6
+        "p99": 1.4,
+        "max": 3.2
       }
     },
     {
-      "name": "swap: the scene sampler alone (30 rays at 16 cm cells) in this page: 0.427 ms a frame, under the plan's 1 ms",
+      "name": "swap: the scene sampler alone (30 rays at 16 cm cells) in this page: 0.428 ms a frame, under the plan's 1 ms",
       "pass": true,
       "value": {
         "frames": 600,
-        "msPerFrame": 0.427,
+        "msPerFrame": 0.428,
         "raysPerFrame": 30
       }
     },

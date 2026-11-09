@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T00:16:34.902Z",
-    "gitHead": "2be5936",
+    "date": "2026-11-09T09:52:11.611Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5440",
+  "site": "http://localhost:5470",
   "scenario": "status",
   "checks": [
     {
@@ -36,6 +36,9 @@
       "pass": true,
       "value": [
         "rec.ask",
+        "sonic.say.lessonKeys",
+        "lesson.hover-height.intro.1",
+        "lesson.hover-height.intro.2",
         "rec.started",
         "lesson.hover-height.title",
         "sonic.say.lessonKeys",
@@ -68,13 +71,13 @@
   "result": {
     "off": [
       {
-        "t": 1608,
+        "t": 1601,
         "kind": "speech",
         "key": "status.progress-step",
         "text": "Lesson 6 of 28: Hold your height. Step 1 of 2."
       },
       {
-        "t": 1609,
+        "t": 1603,
         "kind": "speech",
         "key": "status.recording-off",
         "text": "Recording is off."
@@ -82,13 +85,13 @@
     ],
     "on": [
       {
-        "t": 3445,
+        "t": 3397,
         "kind": "speech",
         "key": "status.progress-step",
         "text": "Lesson 6 of 28: Hold your height. Step 1 of 2."
       },
       {
-        "t": 3445,
+        "t": 3398,
         "kind": "speech",
         "key": "status.recording-on",
         "text": "Recording is on."
@@ -96,6 +99,9 @@
     ],
     "said": [
       "rec.ask",
+      "sonic.say.lessonKeys",
+      "lesson.hover-height.intro.1",
+      "lesson.hover-height.intro.2",
       "rec.started",
       "lesson.hover-height.title",
       "sonic.say.lessonKeys",

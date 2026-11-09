@@ -7,18 +7,18 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T01:06:55.240Z",
-    "gitHead": "f68d9ab",
+    "date": "2026-11-09T09:45:16.167Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5440",
+  "site": "http://localhost:5470",
   "release": {
-    "sha": "f68d9ab",
-    "sonic": "ecb2ffb",
-    "built": "2026-11-09T01:00:58.044Z"
+    "sha": "c9fb6ef",
+    "sonic": "09535b7",
+    "built": "2026-11-09T09:33:35.999Z"
   },
   "scenario": "panels",
   "tag": "",
@@ -330,16 +330,16 @@
       }
     },
     {
-      "name": "attitude climb: vertical speed 0.43 m/s, the climb arrow up from the craft's height",
+      "name": "attitude climb: vertical speed 0.42 m/s, the climb arrow up from the craft's height",
       "pass": true,
       "value": {
         "arrow": {
           "up": true,
-          "from": 150.13849148569,
-          "to": 130.49309226149632
+          "from": 150.17168499541478,
+          "to": 130.87206766281605
         },
-        "craftY": 150.13849148569,
-        "vy": 0.430028001580284
+        "craftY": 150.17168499541478,
+        "vy": 0.42245900824355825
       }
     },
     {
@@ -400,7 +400,7 @@
         },
         "tape": {
           "topM": 4,
-          "craftY": 150.13849148569,
+          "craftY": 150.17168499541478,
           "targetY": 86.17320000000001,
           "bandY": [
             64.34639999999999,
@@ -410,16 +410,16 @@
       }
     },
     {
-      "name": "attitude sink: vertical speed -0.4 m/s, the climb arrow down from the craft's height",
+      "name": "attitude sink: vertical speed -0.56 m/s, the climb arrow down from the craft's height",
       "pass": true,
       "value": {
         "arrow": {
           "up": false,
-          "from": 138.49425309173813,
-          "to": 156.92167485400586
+          "from": 139.64109943276233,
+          "to": 165.17745665027562
         },
-        "craftY": 138.49425309173813,
-        "vy": -0.40336708174126024
+        "craftY": 139.64109943276233,
+        "vy": -0.5589781371489644
       }
     },
     {
@@ -460,7 +460,7 @@
       }
     },
     {
-      "name": "attitude sink: the tape: the band (2 to 3 m) and the height to fly at (2.5 m) drawn, the craft's box at its height 1.3 m",
+      "name": "attitude sink: the tape: the band (2 to 3 m) and the height to fly at (2.5 m) drawn, the craft's box at its height 1.28 m",
       "pass": true,
       "value": {
         "contrast": {
@@ -480,7 +480,7 @@
         },
         "tape": {
           "topM": 4,
-          "craftY": 138.49425309173813,
+          "craftY": 139.64109943276233,
           "targetY": 86.17320000000001,
           "bandY": [
             64.34639999999999,
@@ -493,7 +493,7 @@
       "name": "attitude: a craft at rest (under 0.1 m/s up or down) has no climb arrow",
       "pass": true,
       "value": {
-        "vy": -1.3176177713277991e-11,
+        "vy": -0.0018509116219401513,
         "arrow": null
       }
     },
@@ -579,7 +579,7 @@
           "event": false,
           "at": [
             84.8,
-            72.1
+            72
           ],
           "disc": [
             255,
@@ -618,14 +618,14 @@
         "freeWay": {
           "side": "left",
           "offsetM": 0.55,
-          "obstacleM": 2.8968967558387155,
-          "ttcS": 2.458474688176957,
+          "obstacleM": 2.8923540296085393,
+          "ttcS": 2.4128432632811743,
           "dir": [
-            -0.3752945815617709,
+            -0.3757422063731906,
             0,
-            -0.9269055923072076
+            -0.9267242277775015
           ],
-          "middleM": 1.3227330390101304
+          "middleM": 1.3227280180160421
         }
       }
     },
@@ -749,19 +749,19 @@
           "cue": "safety.obstacle",
           "name": "Obstacle",
           "count": "1 of 3",
-          "t": 4975
+          "t": 4913
         },
         {
           "cue": "safety.obstacle",
           "name": "Obstacle",
           "count": "2 of 3",
-          "t": 8499
+          "t": 8457
         },
         {
           "cue": "safety.obstacle",
           "name": "Obstacle",
           "count": "3 of 3",
-          "t": 11956
+          "t": 11979
         }
       ]
     },
@@ -787,19 +787,19 @@
           "cue": "safety.obstacle",
           "name": "Przeszkoda",
           "count": "1 z 3",
-          "t": 5659
+          "t": 5619
         },
         {
           "cue": "safety.obstacle",
           "name": "Przeszkoda",
           "count": "2 z 3",
-          "t": 9204
+          "t": 9188
         },
         {
           "cue": "safety.obstacle",
           "name": "Przeszkoda",
           "count": "3 z 3",
-          "t": 12654
+          "t": 12712
         }
       ]
     },
@@ -1284,14 +1284,14 @@
         "state": {
           "rollDeg": 0,
           "pitchDeg": 0,
-          "heightM": 1.035,
-          "vyMps": 0.43
+          "heightM": 1.034,
+          "vyMps": 0.422
         },
         "horizon": {
           "tiltModelDeg": 0,
           "tiltPictureDeg": 0,
           "liftModelDeg": 0,
-          "liftPictureDeg": 0.27,
+          "liftPictureDeg": 0.26,
           "coreOffPx": [
             0.58,
             0.58
@@ -1357,8 +1357,8 @@
         "state": {
           "rollDeg": 0,
           "pitchDeg": 0,
-          "heightM": 1.301,
-          "vyMps": -0.403
+          "heightM": 1.275,
+          "vyMps": -0.559
         },
         "horizon": {
           "tiltModelDeg": 0,
@@ -1564,7 +1564,7 @@
             "event": false,
             "at": [
               84.8,
-              72.1
+              72
             ],
             "disc": [
               255,
@@ -1578,7 +1578,7 @@
         ],
         "bar": {
           "targetM": null,
-          "toneM": 1.5154821692646652,
+          "toneM": 1.5154761318415948,
           "target": null,
           "tone": {
             "px": [
@@ -1593,14 +1593,14 @@
         "freeWay": {
           "side": "left",
           "offsetM": 0.55,
-          "obstacleM": 2.8968967558387155,
-          "ttcS": 2.458474688176957,
+          "obstacleM": 2.8923540296085393,
+          "ttcS": 2.4128432632811743,
           "dir": [
-            -0.3752945815617709,
+            -0.3757422063731906,
             0,
-            -0.9269055923072076
+            -0.9267242277775015
           ],
-          "middleM": 1.3227330390101304
+          "middleM": 1.3227280180160421
         },
         "now": null
       }
@@ -1774,19 +1774,19 @@
           "cue": "safety.obstacle",
           "name": "Obstacle",
           "count": "1 of 3",
-          "t": 4975
+          "t": 4913
         },
         {
           "cue": "safety.obstacle",
           "name": "Obstacle",
           "count": "2 of 3",
-          "t": 8499
+          "t": 8457
         },
         {
           "cue": "safety.obstacle",
           "name": "Obstacle",
           "count": "3 of 3",
-          "t": 11956
+          "t": 11979
         }
       ],
       "shot": "evidence/2026-11-09/v13-look-panels/sounds-repeat-en-page.jpg"
@@ -1797,19 +1797,19 @@
           "cue": "safety.obstacle",
           "name": "Przeszkoda",
           "count": "1 z 3",
-          "t": 5659
+          "t": 5619
         },
         {
           "cue": "safety.obstacle",
           "name": "Przeszkoda",
           "count": "2 z 3",
-          "t": 9204
+          "t": 9188
         },
         {
           "cue": "safety.obstacle",
           "name": "Przeszkoda",
           "count": "3 z 3",
-          "t": 12654
+          "t": 12712
         }
       ],
       "shot": "evidence/2026-11-09/v13-look-panels/sounds-repeat-pl-page.jpg"

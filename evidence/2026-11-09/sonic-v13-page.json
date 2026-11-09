@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T01:04:56.755Z",
-    "gitHead": "f68d9ab",
+    "date": "2026-11-09T09:39:18.511Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5440",
-  "parts": "A,B,C,C2,DE,E2,F1,F2,G",
+  "site": "http://localhost:5470",
+  "parts": "A,B,C,C2,DE,E2,F1,F2,G,R",
   "control": null,
   "checks": [
     {
@@ -294,18 +294,18 @@
       }
     },
     {
-      "name": "C2: Enter on \"Sound panel: see every sound\" takes the sound panel off the page at once (106 ms), the other one stays; Enter again puts it back (3 ms); each value said",
+      "name": "C2: Enter on \"Sound panel: see every sound\" takes the sound panel off the page at once (117 ms), the other one stays; Enter again puts it back (2 ms); each value said",
       "pass": true,
       "value": {
         "off": {
-          "ms": 106,
+          "ms": 117,
           "shown": {
             "sounds": false,
             "attitude": true
           }
         },
         "back": {
-          "ms": 3,
+          "ms": 2,
           "shown": {
             "sounds": true,
             "attitude": true
@@ -318,18 +318,18 @@
       }
     },
     {
-      "name": "C2: Enter on \"Horizon and height display\" takes the horizon display off the page at once (111 ms), the other one stays; Enter again puts it back (3 ms); each value said",
+      "name": "C2: Enter on \"Horizon and height display\" takes the horizon display off the page at once (113 ms), the other one stays; Enter again puts it back (2 ms); each value said",
       "pass": true,
       "value": {
         "off": {
-          "ms": 111,
+          "ms": 113,
           "shown": {
             "sounds": true,
             "attitude": false
           }
         },
         "back": {
-          "ms": 3,
+          "ms": 2,
           "shown": {
             "sounds": true,
             "attitude": true
@@ -613,11 +613,11 @@
         "lagMs": [
           15,
           15,
-          15,
-          15,
-          15,
-          -2,
-          15
+          16,
+          16,
+          17,
+          34,
+          16
         ],
         "times": [
           500,
@@ -665,25 +665,25 @@
           "durationMs": 25624.899999976158,
           "voice": "ready",
           "frame": 0,
-          "frames": 547,
+          "frames": 546,
           "viewLagMs": 0,
           "lesson": "rings-first",
           "part": 0,
           "parts": 1
         },
-        "details": "replay check PASS: events 19 of 19 re-derived (largest time difference 3 ms); cues 99.6 % of 547 frames agree (99.6 % by cue kind)",
+        "details": "replay check PASS: events 19 of 19 re-derived (largest time difference 4 ms); cues 99.8 % of 546 frames agree (99.8 % by cue kind)",
         "notes": [],
         "rows": [
           {
             "lesson": "rings-first",
-            "frames": 547,
+            "frames": 546,
             "compared": true,
             "ok": true,
             "recorded": 19,
             "matched": 19,
             "diffs": 0,
-            "cueShare": 0.9963436928702011,
-            "cueClassShare": 0.9963436928702011
+            "cueShare": 0.9981684981684982,
+            "cueClassShare": 0.9981684981684982
           }
         ]
       }
@@ -741,10 +741,157 @@
       "name": "G: no page error",
       "pass": true,
       "value": []
+    },
+    {
+      "name": "R F1: hover-height, Escape 1.2 s after the keys line and again 0.3 s later: intro.1 and intro.2 start and end whole (no error) after the menu closed, in order, before intro.3 (before the fix they were never handed again)",
+      "pass": true,
+      "value": {
+        "closedAtMs": 2313,
+        "lines": {
+          "intro1": {
+            "start": 10404.100000023842,
+            "end": 17831.400000035763
+          },
+          "intro2": {
+            "start": 17878.80000001192,
+            "end": 28152
+          },
+          "intro3": {
+            "start": 46794.60000002384,
+            "end": 54521.90000003576
+          }
+        },
+        "menuEndsAfterClose": 0,
+        "utterances": 21
+      }
+    },
+    {
+      "name": "R F1: the menu's own lines stop at the close: none of them ends later than 1 s after it (before: they spoke on for 10 s)",
+      "pass": true,
+      "value": {
+        "closedAtMs": 2313,
+        "lines": {
+          "intro1": {
+            "start": 10404.100000023842,
+            "end": 17831.400000035763
+          },
+          "intro2": {
+            "start": 17878.80000001192,
+            "end": 28152
+          },
+          "intro3": {
+            "start": 46794.60000002384,
+            "end": 54521.90000003576
+          }
+        },
+        "menuEndsAfterClose": 0,
+        "utterances": 21
+      }
+    },
+    {
+      "name": "R F1: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F2: the start screen over rings-first (the lesson menu's Sound settings): B, N, Z, G, R and B again write no key and no lesson event; the lesson is still rings-first, the screen still up (before the fix two B opened tunnel-long under it)",
+      "pass": true,
+      "value": {
+        "lesson": "rings-first",
+        "phase": "flying",
+        "moved": [],
+        "screen": true
+      }
+    },
+    {
+      "name": "R F4: Escape closes the screen and the focus is on the flight's region (data-testid sonic-flight, role application), not the body",
+      "pass": true,
+      "value": {
+        "testid": "sonic-flight",
+        "id": "",
+        "tag": "DIV",
+        "text": ""
+      }
+    },
+    {
+      "name": "R F2 control: the screen closed, B moves the lesson (its key event \"previous\")",
+      "pass": true,
+      "value": [
+        "previous"
+      ]
+    },
+    {
+      "name": "R F2: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F3: B 1.5 s into ears-headphones (lesson 1 of the path): the start screen; Escape: the lesson opens again from its beginning (a second \"lesson open\"), and N moves it (its key event and a lesson or speech event after it; before the fix nothing followed the key)",
+      "pass": true,
+      "value": {
+        "opens": [
+          "ears-headphones",
+          "ears-headphones"
+        ],
+        "lesson": "ears-headphones",
+        "phase": "flying",
+        "panel": "Headphone check\nLesson 1 of 28\nStep 2 of 4",
+        "afterN": [
+          "key next",
+          "lesson attempt-start",
+          "speech headphones.intro",
+          "speech headphones.wired",
+          "speech headphones.os-spatial",
+          "speech headphones.trial"
+        ]
+      }
+    },
+    {
+      "name": "R F3: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F5: hover-height's progress panel is on the page; while the recording of rings-first plays it is hidden (nothing of the live lesson over the replay); after the replay it is back",
+      "pass": true,
+      "value": {
+        "live": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3",
+        "during": {
+          "hidden": true,
+          "text": ""
+        },
+        "panelDuring": "",
+        "back": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3"
+      }
+    },
+    {
+      "name": "R F5: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F7: a phone upright with touch sticks: the top bar's Pause opens the pause menu with \"Lesson menu\", which opens the lesson menu; its Next step, tapped, moves the lesson (the key event \"next\"), and the flight goes on",
+      "pass": true,
+      "value": {
+        "item": {
+          "text": "Lesson menu",
+          "disabled": false
+        },
+        "menuOpen": false,
+        "keys": [
+          "next"
+        ],
+        "paused": false
+      }
+    },
+    {
+      "name": "R F7: no page error",
+      "pass": true,
+      "value": []
     }
   ],
-  "passed": 51,
-  "total": 51,
+  "passed": 64,
+  "total": 64,
   "shots": [
     {
       "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\a-start-screen-from-pause-item.png",
@@ -773,25 +920,25 @@
     },
     {
       "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\d-lesson-menu.png",
-      "sha256": "6a0245b9d18d77998379c4e33b0b7ff7cafc351a5a7664a55bca0ecc7d9c9a67",
+      "sha256": "164edc77eaeec11a4aa39855afdaa54d3c7d9a16033262425b8b3bb8cee4366f",
       "what": "the lesson menu over the flight, the last item focused"
     },
     {
       "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\e-progress-panel.png",
-      "sha256": "3efeeda71d788cc38e39da305f5f2060341ff8ee7853a7b644be24e65618e87e",
+      "sha256": "48de234576f4a639b1d135e95fbe33e768900498e03ff5af8b395f871b969e0c",
       "what": "the progress panel after the first counted attempt of rings-first, light page"
     },
     {
       "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\e-progress-panel-dark.png",
-      "sha256": "f45f27130f3a084c1688a33b844f3887c575806fc5bb61613d74e8afc12953eb",
+      "sha256": "b684abdd18abeb6cca7fd117b0d512c48617056cd7e44a78d97601be3914c3f0",
       "what": "the progress panel after the first counted attempt of rings-first, dark page"
     }
   ],
   "result": {
     "release": {
-      "sha": "f68d9ab",
-      "sonic": "ecb2ffb",
-      "built": "2026-11-09T01:00:58.044Z"
+      "sha": "c9fb6ef",
+      "sonic": "09535b7",
+      "built": "2026-11-09T09:33:35.999Z"
     },
     "pauseItem": {
       "tag": "A",
@@ -943,14 +1090,14 @@
       },
       "sounds": {
         "off": {
-          "ms": 106,
+          "ms": 117,
           "shown": {
             "sounds": false,
             "attitude": true
           }
         },
         "back": {
-          "ms": 3,
+          "ms": 2,
           "shown": {
             "sounds": true,
             "attitude": true
@@ -963,14 +1110,14 @@
       },
       "attitude": {
         "off": {
-          "ms": 111,
+          "ms": 113,
           "shown": {
             "sounds": true,
             "attitude": false
           }
         },
         "back": {
-          "ms": 3,
+          "ms": 2,
           "shown": {
             "sounds": true,
             "attitude": true
@@ -1078,13 +1225,13 @@
         "blocksPassed": 0,
         "passed": false,
         "bestTimeMs": null,
-        "lastAt": "2026-11-09T01:02:16.529Z",
+        "lastAt": "2026-11-09T09:35:02.000Z",
         "skipped": false
       }
     },
     "lessonStart": {
       "phase": "intro",
-      "events": 16
+      "events": 18
     },
     "panelDark": {
       "panel": {
@@ -1112,7 +1259,7 @@
         "blocksPassed": 0,
         "passed": false,
         "bestTimeMs": null,
-        "lastAt": "2026-11-09T01:03:05.365Z",
+        "lastAt": "2026-11-09T09:35:50.966Z",
         "skipped": false
       }
     },
@@ -1167,11 +1314,11 @@
       "lagMs": [
         15,
         15,
-        15,
-        15,
-        15,
-        -2,
-        15
+        16,
+        16,
+        17,
+        34,
+        16
       ],
       "foreign": 0
     },
@@ -1199,25 +1346,25 @@
         "durationMs": 25624.899999976158,
         "voice": "ready",
         "frame": 0,
-        "frames": 547,
+        "frames": 546,
         "viewLagMs": 0,
         "lesson": "rings-first",
         "part": 0,
         "parts": 1
       },
-      "details": "replay check PASS: events 19 of 19 re-derived (largest time difference 3 ms); cues 99.6 % of 547 frames agree (99.6 % by cue kind)",
+      "details": "replay check PASS: events 19 of 19 re-derived (largest time difference 4 ms); cues 99.8 % of 546 frames agree (99.8 % by cue kind)",
       "notes": [],
       "rows": [
         {
           "lesson": "rings-first",
-          "frames": 547,
+          "frames": 546,
           "compared": true,
           "ok": true,
           "recorded": 19,
           "matched": 19,
           "diffs": 0,
-          "cueShare": 0.9963436928702011,
-          "cueClassShare": 0.9963436928702011
+          "cueShare": 0.9981684981684982,
+          "cueClassShare": 0.9981684981684982
         }
       ]
     },
@@ -1241,6 +1388,77 @@
       "successes": 1,
       "attempts": 1,
       "panel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+    },
+    "reviewF1": {
+      "closedAtMs": 2313,
+      "lines": {
+        "intro1": {
+          "start": 10404.100000023842,
+          "end": 17831.400000035763
+        },
+        "intro2": {
+          "start": 17878.80000001192,
+          "end": 28152
+        },
+        "intro3": {
+          "start": 46794.60000002384,
+          "end": 54521.90000003576
+        }
+      },
+      "menuEndsAfterClose": 0,
+      "utterances": 21
+    },
+    "reviewF2": {
+      "lesson": "rings-first",
+      "phase": "flying",
+      "moved": [],
+      "screen": true
+    },
+    "reviewF4": {
+      "testid": "sonic-flight",
+      "id": "",
+      "tag": "DIV",
+      "text": ""
+    },
+    "reviewF2Control": [
+      "previous"
+    ],
+    "reviewF3": {
+      "opens": [
+        "ears-headphones",
+        "ears-headphones"
+      ],
+      "lesson": "ears-headphones",
+      "phase": "flying",
+      "panel": "Headphone check\nLesson 1 of 28\nStep 2 of 4",
+      "afterN": [
+        "key next",
+        "lesson attempt-start",
+        "speech headphones.intro",
+        "speech headphones.wired",
+        "speech headphones.os-spatial",
+        "speech headphones.trial"
+      ]
+    },
+    "reviewF5": {
+      "live": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3",
+      "during": {
+        "hidden": true,
+        "text": ""
+      },
+      "panelDuring": "",
+      "back": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3"
+    },
+    "reviewF7": {
+      "item": {
+        "text": "Lesson menu",
+        "disabled": false
+      },
+      "menuOpen": false,
+      "keys": [
+        "next"
+      ],
+      "paused": false
     }
   }
 }

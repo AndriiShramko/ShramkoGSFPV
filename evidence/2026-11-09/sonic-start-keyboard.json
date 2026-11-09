@@ -7,15 +7,15 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T01:09:25.176Z",
-    "gitHead": "f68d9ab",
+    "date": "2026-11-09T09:48:13.656Z",
+    "gitHead": "5512292",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
   "step": "v12-flight 8: the accessible start screen, driven by the keyboard alone in headless Chrome",
-  "page": "http://localhost:5440/fly/?sonic=start (Vite dev server)",
+  "page": "http://localhost:5470/fly/?sonic=start (Vite dev server)",
   "note": "headless Chrome runs muted (--mute-audio): the audio graph is rendered and measured per channel, nothing is played; how it sounds is not judged here",
   "contrast": {
     "intro": 16.62,
@@ -536,23 +536,23 @@
   "ariaSnapshot": "- banner:\n  - heading \"Fly by Sound\" [level=1]\n  - paragraph: Learn to fly a drone by ear. Everything is said and played as sound, so no screen is needed. A helper can set up your radio, keyboard or gamepad.\n- navigation \"Fly by Sound sections\":\n  - list:\n    - listitem:\n      - link \"Start\":\n        - /url: \"#sonic-sec-start\"\n    - listitem:\n      - link \"Headphones\":\n        - /url: \"#sonic-sec-headphones\"\n    - listitem:\n      - link \"Lessons\":\n        - /url: \"#sonic-sec-lessons\"\n    - listitem:\n      - link \"Settings\":\n        - /url: \"#sonic-sec-settings\"\n- main:\n  - region \"Start\":\n    - heading \"Start\" [level=2]\n    - group \"Start\":\n      - 'button \"Start the course from the beginning Lesson 1 of 28: Headphone check.\"'\n    - group \"Path\":\n      - text: Path\n      - radio \"Full path Every lesson, step by step.\" [checked]\n      - text: Full path Every lesson, step by step.\n      - 'radio \"Fast path A short way: hover, walls, a corridor and rings.\"'\n      - text: \"Fast path A short way: hover, walls, a corridor and rings.\"\n  - region \"Check your headphones\":\n    - heading \"Check your headphones\" [level=2]\n    - list:\n      - listitem: Put your headphones on. The side marked L goes on your left ear.\n      - listitem: Wired headphones work best. Bluetooth headphones add a delay.\n      - listitem: Please switch off Windows Sonic, Atmos and other surround effects. They change the sound.\n    - group \"Check your headphones\":\n      - button \"Play a sound on the left\"\n      - button \"Play a sound on the right\"\n      - button \"Play a sound behind you\"\n    - group \"Loudness\":\n      - heading \"Loudness\" [level=3]\n      - paragraph: Keep the volume comfortable. If a sound hurts, take off the headphones and turn the volume down.\n      - paragraph: Keep the volume comfortable. If a sound is too loud, turn it down.\n  - region \"Lessons\":\n    - heading \"Lessons\" [level=2]\n    - paragraph: Every lesson can be opened directly. The path only recommends an order.\n    - region \"Ears\":\n      - heading \"Ears\" [level=3]\n      - list:\n        - listitem:\n          - button \"Headphone check Lesson 1 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Meet the sounds Lesson 2 of 28, not started\"\n        - listitem:\n          - button \"Walls on every side Lesson 3 of 28, not started\"\n        - listitem:\n          - button \"Ring, square and pillar Lesson 4 of 28, not started\"\n        - listitem:\n          - button \"What is it, and where? Lesson 5 of 28, not started\"\n    - region \"Hover\":\n      - heading \"Hover\" [level=3]\n      - list:\n        - listitem:\n          - button \"Hold your height Lesson 6 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Turn toward a sound Lesson 7 of 28, not started\"\n    - region \"Move and stop\":\n      - heading \"Move and stop\" [level=3]\n      - list:\n        - listitem:\n          - button \"Feel your speed Lesson 8 of 28, not started\"\n        - listitem:\n          - button \"Stop in the zone Lesson 9 of 28, not started\"\n    - region \"Walls\":\n      - heading \"Walls\" [level=3]\n      - list:\n        - listitem:\n          - button \"A small room Lesson 10 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Around a pillar Lesson 11 of 28, not started\"\n        - listitem:\n          - button \"A row of pillars Lesson 12 of 28, not started\"\n    - region \"Corridor and tunnels\":\n      - heading \"Corridor and tunnels\" [level=3]\n      - list:\n        - listitem:\n          - button \"The long corridor Lesson 13 of 28, not started, Fast path\"\n        - listitem:\n          - button \"A wide tunnel Lesson 14 of 28, not started\"\n        - listitem:\n          - button \"A narrow tunnel Lesson 15 of 28, not started\"\n        - listitem:\n          - button \"An even narrower tunnel Lesson 16 of 28, not started\"\n        - listitem:\n          - button \"A winding tunnel Lesson 17 of 28, not started\"\n        - listitem:\n          - button \"Obstacles in the tunnel Lesson 18 of 28, not started, Fast path\"\n        - listitem:\n          - button \"The long tunnel Lesson 19 of 28, not started\"\n    - region \"Rings\":\n      - heading \"Rings\" [level=3]\n      - list:\n        - listitem:\n          - button \"Your first ring Lesson 20 of 28, not started, Fast path\"\n        - listitem:\n          - button \"Rings in a line Lesson 21 of 28, not started\"\n        - listitem:\n          - button \"Smaller rings Lesson 22 of 28, not started\"\n        - listitem:\n          - button \"Rings at different heights Lesson 23 of 28, not started\"\n        - listitem:\n          - button \"A ring course Lesson 24 of 28, not started, Fast path\"\n    - region \"Shapes\":\n      - heading \"Shapes\" [level=3]\n      - list:\n        - listitem:\n          - button \"The square gate Lesson 25 of 28, not started\"\n        - listitem:\n          - button \"A series of squares Lesson 26 of 28, not started\"\n        - listitem:\n          - button \"The cube frame Lesson 27 of 28, not started\"\n    - region \"Free flight\":\n      - heading \"Free flight\" [level=3]\n      - list:\n        - listitem:\n          - button \"Free flight in the Winter Garden Lesson 28 of 28, not started, Fast path, flies a real scan\"\n    - button \"Reset my progress\"\n  - region \"Settings\":\n    - heading \"Settings\" [level=2]\n    - text: Sound theme\n    - combobox \"Sound theme\":\n      - option \"Soft\" [selected]\n      - option \"Clear\"\n      - option \"Race\"\n    - checkbox \"Calm mode\"\n    - text: Calm mode Calm mode makes every sound softer and slower. Height tone\n    - combobox \"Height tone\":\n      - option \"up is a higher tone\" [selected]\n      - option \"up is a lower tone\"\n    - text: Speaking speed\n    - slider \"Speaking speed\": \"1\"\n    - status: 1x\n    - checkbox \"Captions on screen\" [checked]\n    - text: Captions on screen\n    - checkbox \"My screen reader speaks\"\n    - text: My screen reader speaks\n    - checkbox \"Motor sound\" [checked]\n    - text: Motor sound Motor volume\n    - slider \"Motor volume\": \"0\"\n    - status: 0 dB\n    - checkbox \"Target height note\" [checked]\n    - text: Target height note\n    - checkbox \"Sound from above and below\" [checked]\n    - text: \"Sound from above and below On: a way above or below an obstacle and the target height note also come from there, with a soft hiss good headphones can place. Off: from ahead, told by their pitch alone. The ceiling and floor come from above and below either way. Sound turns with\"\n    - combobox \"Sound turns with\":\n      - option \"the way you face\" [selected]\n      - option \"the whole drone, including tilt\"\n    - 'checkbox \"Sound panel: see every sound\" [checked]'\n    - text: \"Sound panel: see every sound\"\n    - checkbox \"Horizon and height display\" [checked]\n    - text: Horizon and height display\n    - group: Volume and pitch of each sound\n- contentinfo:\n  - list:\n    - listitem:\n      - link \"About Fly by Sound and its source code\":\n        - /url: /en/sound/\n    - listitem:\n      - link \"Leave Fly by Sound and open the simulator\":\n        - /url: /en/fly/\n- status",
   "sides": {
     "left": {
-      "l": 2.1017081483306868,
-      "r": 1.2893411874284695,
-      "dB": 2.122045517670565,
-      "lagSamples": 41,
-      "itdMs": 0.85
+      "l": 2.441340748708676,
+      "r": 1.4933753188876224,
+      "dB": 2.134594306084054,
+      "lagSamples": 40,
+      "itdMs": 0.83
     },
     "right": {
-      "l": 1.5423962907563933,
-      "r": 2.5579622483174056,
-      "dB": -2.196981585117928,
+      "l": 1.5840896787172625,
+      "r": 2.604718243081546,
+      "dB": -2.159809874917714,
       "lagSamples": -40,
       "itdMs": -0.83
     },
     "behind": {
-      "l": 1.5415151079441962,
-      "r": 1.54614261997202,
-      "dB": -0.013017663357878174,
+      "l": 1.55281137360015,
+      "r": 1.5544530948311142,
+      "dB": -0.004589184763764497,
       "lagSamples": 0,
       "itdMs": 0
     }
@@ -832,20 +832,20 @@
       "name": "sound on the left: the left channel is louder (at least 1 dB) and leads (the right channel lags by at least 3 samples)",
       "pass": true,
       "value": {
-        "l": 2.1017081483306868,
-        "r": 1.2893411874284695,
-        "dB": 2.122045517670565,
-        "lagSamples": 41,
-        "itdMs": 0.85
+        "l": 2.441340748708676,
+        "r": 1.4933753188876224,
+        "dB": 2.134594306084054,
+        "lagSamples": 40,
+        "itdMs": 0.83
       }
     },
     {
       "name": "sound on the right: the right channel is louder (at least 1 dB) and leads (the left channel lags by at least 3 samples)",
       "pass": true,
       "value": {
-        "l": 1.5423962907563933,
-        "r": 2.5579622483174056,
-        "dB": -2.196981585117928,
+        "l": 1.5840896787172625,
+        "r": 2.604718243081546,
+        "dB": -2.159809874917714,
         "lagSamples": -40,
         "itdMs": -0.83
       }
@@ -854,9 +854,9 @@
       "name": "sound behind: the two channels are level (within 1 dB) and arrive together (within 2 samples)",
       "pass": true,
       "value": {
-        "l": 1.5415151079441962,
-        "r": 1.54614261997202,
-        "dB": -0.013017663357878174,
+        "l": 1.55281137360015,
+        "r": 1.5544530948311142,
+        "dB": -0.004589184763764497,
         "lagSamples": 0,
         "itdMs": 0
       }
@@ -866,16 +866,16 @@
       "pass": true,
       "value": {
         "left": {
-          "l": 2.1017081483306868,
-          "r": 1.2893411874284695,
-          "dB": 2.122045517670565,
-          "lagSamples": 41,
-          "itdMs": 0.85
+          "l": 2.441340748708676,
+          "r": 1.4933753188876224,
+          "dB": 2.134594306084054,
+          "lagSamples": 40,
+          "itdMs": 0.83
         },
         "right": {
-          "l": 1.5423962907563933,
-          "r": 2.5579622483174056,
-          "dB": -2.196981585117928,
+          "l": 1.5840896787172625,
+          "r": 2.604718243081546,
+          "dB": -2.159809874917714,
           "lagSamples": -40,
           "itdMs": -0.83
         }
