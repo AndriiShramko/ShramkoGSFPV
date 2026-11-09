@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-09T00:08:49.006Z",
-    "gitHead": "ba1654b",
+    "date": "2026-11-09T01:07:37.957Z",
+    "gitHead": "f68d9ab",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,9 +16,9 @@
   },
   "site": "http://localhost:5440",
   "release": {
-    "sha": "ba1654b",
+    "sha": "f68d9ab",
     "sonic": "ecb2ffb",
-    "built": "2026-11-09T00:07:45.318Z"
+    "built": "2026-11-09T01:00:58.044Z"
   },
   "scenario": "layout",
   "tag": "",
@@ -1285,6 +1285,10 @@
     "trial": false,
     "1280x720-dark": {
       "picture": "layout-1280x720-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1280x720-dark.png",
+        "sha256": "092326d9f4d6c6946e25e8cc0060d51504d02af39167ed2550a352d9d40e5d66"
+      },
       "boxes": {
         "attitude": [
           {
@@ -1454,6 +1458,10 @@
     },
     "1366x768-dark": {
       "picture": "layout-1366x768-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1366x768-dark.png",
+        "sha256": "0b27b11df6a36c7734fff060c7d11fc0b1adeec2d2ff33fae239cced220aefdb"
+      },
       "boxes": {
         "attitude": [
           {
@@ -1623,6 +1631,10 @@
     },
     "1920x1080-dark": {
       "picture": "layout-1920x1080-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1920x1080-dark.png",
+        "sha256": "279fe699902e716636258dd97fed529109b39e40ef2d42d18adf988674fe2894"
+      },
       "boxes": {
         "attitude": [
           {
@@ -1792,6 +1804,10 @@
     },
     "1920x1080-zoom200-dark": {
       "picture": "layout-1920x1080-zoom200-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1920x1080-zoom200-dark.png",
+        "sha256": "4c2ad00e685e230c3e947122fd0382e11bd09ae81c7677efeb14a387a52ccf9a"
+      },
       "boxes": {
         "attitude": [
           {
@@ -1961,6 +1977,10 @@
     },
     "1280x720-zoom200-dark": {
       "picture": "layout-1280x720-zoom200-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1280x720-zoom200-dark.png",
+        "sha256": "0163895b9fca3b0ce22b4279b1d9dc9263fe31097835a8f34558ad473485e1e0"
+      },
       "boxes": {
         "attitude": [
           {
@@ -2133,6 +2153,10 @@
     },
     "phone-upright-dark": {
       "picture": "layout-phone-upright-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-phone-upright-dark.png",
+        "sha256": "9c77c58b0a65ab13e03fa2f2f88c98c2e234d8426d6bf613caad7e2cbb34f6a1"
+      },
       "boxes": {
         "attitude": [
           {
@@ -2302,6 +2326,10 @@
     },
     "phone-upright-sticks-dark": {
       "picture": "layout-phone-upright-sticks-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-phone-upright-sticks-dark.png",
+        "sha256": "4306b44d2a14e4b88312c48781e35556787f6ab33fbbe20536fd66a23d80222c"
+      },
       "boxes": {
         "attitude": [
           {
@@ -2484,6 +2512,10 @@
     },
     "phone-on-its-side-dark": {
       "picture": "layout-phone-on-its-side-dark.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-phone-on-its-side-dark.png",
+        "sha256": "1a45f8e0b588fbba222df489578fcfe1bd435ede77c6f8036f08bc3dbe0ae0cc"
+      },
       "boxes": {
         "attitude": [
           {
@@ -2653,6 +2685,10 @@
     },
     "1280x720-light": {
       "picture": "layout-1280x720-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1280x720-light.png",
+        "sha256": "2ad28452fa6c442818209006be88482ea74b6fe4cbc6bb55cde32f5323d6b999"
+      },
       "boxes": {
         "attitude": [
           {
@@ -2822,6 +2858,10 @@
     },
     "1366x768-light": {
       "picture": "layout-1366x768-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1366x768-light.png",
+        "sha256": "7f15b86dac855ce8c575720a26a21859cda9e0cca8e934f3b2a0949f9f08d358"
+      },
       "boxes": {
         "attitude": [
           {
@@ -2991,6 +3031,10 @@
     },
     "1920x1080-light": {
       "picture": "layout-1920x1080-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1920x1080-light.png",
+        "sha256": "5c66d8e76532b0b1fcd57fe16393313fc6c8b9cf67b34b333fb8e2af08d3aac3"
+      },
       "boxes": {
         "attitude": [
           {
@@ -3160,6 +3204,10 @@
     },
     "1920x1080-zoom200-light": {
       "picture": "layout-1920x1080-zoom200-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1920x1080-zoom200-light.png",
+        "sha256": "70aa68bd361605772f2d2cff37e5ea5dbe4f600c184fae25ded5ac56db8b9b30"
+      },
       "boxes": {
         "attitude": [
           {
@@ -3329,6 +3377,10 @@
     },
     "1280x720-zoom200-light": {
       "picture": "layout-1280x720-zoom200-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-1280x720-zoom200-light.png",
+        "sha256": "7777a95ed118db039fa11316f7f790710a3006f222570160d51a0b44ccf89905"
+      },
       "boxes": {
         "attitude": [
           {
@@ -3501,6 +3553,10 @@
     },
     "phone-upright-light": {
       "picture": "layout-phone-upright-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-phone-upright-light.png",
+        "sha256": "aa6a4770a7ce5e31ff81107d6974bc9ab7b7239227ccaec0f0a270891c64f86a"
+      },
       "boxes": {
         "attitude": [
           {
@@ -3670,6 +3726,10 @@
     },
     "phone-upright-sticks-light": {
       "picture": "layout-phone-upright-sticks-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-phone-upright-sticks-light.png",
+        "sha256": "079b5fc8786cd2970b09e5c7656fb3174001eb491d2800b55ad7f7ae0848ad5b"
+      },
       "boxes": {
         "attitude": [
           {
@@ -3852,6 +3912,10 @@
     },
     "phone-on-its-side-light": {
       "picture": "layout-phone-on-its-side-light.jpg",
+      "full": {
+        "file": "U:\\Temp\\gsfpv-v13-look-layout\\2026-11-09\\layout-phone-on-its-side-light.png",
+        "sha256": "1a56675931eee52a7e972246850f93de223a68b27b08fca653a69ab5c89d6136"
+      },
       "boxes": {
         "attitude": [
           {

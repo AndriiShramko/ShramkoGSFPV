@@ -11,8 +11,7 @@ deployed, the live site and API never opened.
 
 ## Status
 
-Steps 1 to 7 are this agent's; 8 to 12 belong to the next agent (the lead's prompt names them; the list below is the
-lead's "Next" 5 and 6 as this branch sees them).
+Steps 1 to 7 are the first agent's, 8 to 12 the second's (the lead's prompts name them).
 
 - [x] 1. Engine reset at a new lesson and at a seek (v13-host's need 2): `FlyBySoundEngine.reset()` and the contract's
   optional `SonicEngine.reset?()` on s13-int with a package test and its control; the host calls `engine.reset?.()`
@@ -205,7 +204,70 @@ lead's "Next" 5 and 6 as this branch sees them).
     the tone); gates and attempts counted by `pass.required` (3: rings-first, hover-height). Second run: **44 of 44**
     (ears-headphones 53 s, shapes-square 9 s, rings-first 16 s, hover-height 117 s, each passed and saved), `evidence/2026-11-09/sonic-lessons-page.json`
     and its pictures. The first run's two failures are the control for the two sound checks: they fail on the v0.12 expectations.
-- [ ] 10. `sonic-v13-page.ts` part C: the three new switches by keys through the spoken list; part E in the dark scheme.
+- [x] 10. `sonic-v13-page.ts` part C: the three new switches by keys through the spoken list, read back after a reload; part E also in the dark scheme.
+  - C, by keys on `/en/fly/?sonic=start` after the target note (every line is what reached `speechSynthesis.speak` through the engine, the
+    empty unlocking utterance left out): Down, "Sound from above and below: on. On: a way above or below an obstacle and the target height note also
+    come from there, with a soft hiss good headphones can place. Off: from ahead, told by their pitch alone. The ceiling and floor come from above and below
+    either way. Item 10 of 14.", Enter, "Sound from above and below: off"; two Downs, "Sound turns with: the way you face. Item 11 of 14." on the way,
+    "Sound panel: see every sound: on. Item 12 of 14.", Enter, "...: off"; Down, "Horizon and height display: on. Item 13 of 14.", Enter, "...: off".
+    Saved (`heightDirection` false in the sound document, `soundPanel` and `attitude` false in the collection beside the progress), and after a reload the
+    three boxes are unchecked beside Motor volume -9 dB and the target note off. 31 cuts of the voice over the walk.
+  - C2 (new): in hover-height both panels are on the page; the lesson menu's "Sound settings" (Escape, six Downs, Enter) opens the settings over the
+    flight; Enter on "Sound panel: see every sound" takes the sound panel off the page in 106 ms (back in 3 ms), on "Horizon and height display" the display
+    in 111 ms (back in 3 ms), the other panel never touched; both off, Escape, the lesson goes on without them, saved; the lesson opened again later has
+    neither on the page. (The switches are reached with the focus, then the list's Enter.)
+  - E, both schemes (`runE`, one function): rings-first flown through its ring by W to the first counted attempt: "Your first ring, Lesson 20 of 28,
+    Step 2 of 2, Attempt 1, Counted 1 of 3" as the hook says it, 28 px bold, 237 x 198 at (12, 273) on 1280x720, opaque, in the left part; on a light page
+    black on white with a black edge, on a dark page (E2: a context with `colorScheme: dark`) white on black with a white edge.
+  - Control: `CONTROL=reader PARTS=C,C2,DE` with "my screen reader speaks" saved (`evidence/2026-11-09/sonic-v13-page-control-reader.json`, 7 of 13): C stops at
+    its first lines (the list takes no key, nothing is said), C2's Enter leaves both panels on the page, D's voice check fails as in v13-host's control.
+  - Not seen by any machine: what Sound from above and below does to the running engine from this screen (held in Node by `sonic-start-screen`: the engine
+    was given `heightDirection: false`); a real screen reader; how the lines sound.
+- [x] 11. The replay in a page: `sonic-v13-page.ts` F1 and F2 (the run gives Chrome a fake microphone: `--use-fake-ui-for-media-stream
+  --use-fake-device-for-media-stream`), and G.
+  - F1 (W9, W10): the package's v0.12 recording of rings-first (`session-v012-rings-first.zip`, 643 frames, 21.9 s, 7 lines) given to the recorder panel's
+    "Open a recording file": the summary is `sonicrec.replay.check.older` ("Recorded with an older build of the lessons: ..."), the verdict `older-build`,
+    not marked as a failure; played from the start, the browser's voice was given the older-build line ("This flight was recorded with version 1 of the
+    lesson, and this build has version 2. ...") and then the 7 recorded lines in the recording's order (the five of the lesson's start at 0.5 s, "Go." at
+    14.4 s, "Attempt 2." at 19.9 s), no other utterance; on the page's clock each came 15 ms after its time (one 2 ms before it); a seek to 10 s (the slider's
+    input event) puts the player at 10.0 s and, played on, only "Go." and "Attempt 2." follow.
+  - F2: a recording made on this build (rings-first: T, T starts it, the task skipped, a small turn right, W through the ring to a counted attempt, T stops,
+    the survey declined with 2; 547 frames) opened with the recorder's own Replay button: "The replay agrees with the recording: 19 of 19 events were worked
+    out again, and 100 % of the sounds are the same." (99.6 % of the frames by cue id and by kind), verdict `pass`, not marked as a failure; played to its end
+    (25.6 s).
+  - FOUND, not fixed (the package's): the same flight with W alone, dead ahead at the front wall (the craft at x exactly 0), replays with 0 events different
+    (11 of 11 worked out again) and 100 % by cue kind, but 83.7 % of 172 frames by cue id, under the package's 0.95: the verdict is FAIL and the page says "The
+    replay differs from the recording in 0 event(s) ...". From 5.0 s for 28 frames the live engine voiced `safety.wall:front-right` and the replay's planner
+    `safety.wall:front-left` (a left-right tie of two mirror sectors with the craft on the wall's axis); `evidence/2026-11-09/sonic-v13-page-f2-straight.json`
+    (the package, with a synthetic voice, stays in the system's temporary folder). F2 therefore turns the craft first. A flight into a wall's middle is what a
+    pilot does in the first lessons, so a tester's own recording can read FAIL: see "Deferred".
+  - G (v13-int step 5, the two lines in `feature.ts` that no Node test holds): rings-first flown to one counted attempt (the panel "Counted 1 of 3", the
+    saved success), the lesson menu's "Lesson list" over the flight, Reset my progress, Yes: the saved progress is gone; Escape: the lesson starts again from its
+    beginning (its title said again, the panel at "Step 1 of 2, Counted 0 of 3", nothing saved); through the ring once more the attempt is saved as the first
+    (successes 1, not 2), the panel "Counted 1 of 3".
+- [x] 12. Everything once more on a release build of the head, gates.
+  - The release: `dist/release.json` sha f68d9ab (no file under `apps/` or `packages/` changed after 2be5936 but f68d9ab's one Russian line), the
+    sound package ecb2ffb, `serve-csp.mjs dist 5440`, headless system Chrome, the GPU lock taken by each script itself; `SITE=http://localhost:5440`.
+    The first sequence ran on a release of 581d88b: it found optin A (the Russian pause item took two lines at 375 px since step 6's name: 283 px of room, the
+    item 275 px with a comma instead of "i"), start-keyboard (3 of 45: the first key now makes the AudioContext, the path moves by Left and Right) and garden (the
+    pause menu is on P): fixed in f68d9ab, then the whole sequence again:
+
+    | run | result | evidence |
+    |---|---|---|
+    | `sonic-v13-page.ts` A, B, C, C2, DE, E2, F1, F2, G | 51 of 51 | `sonic-v13-page.json` |
+    | `sonic-optin-page.ts` | 46 of 46 (item lines at 375 px: en, es, pl, ru 1 each) | `sonic-optin-page.json` |
+    | `v13-look-page.ts panels` | 43 of 43 (42 + the target note's disc on the radar) | `v13-look-panels.json` |
+    | `v13-look-page.ts layout` | 96 of 96 | `v13-look-layout.json`, `v13-look-layout/` |
+    | `v13-look-page.ts panelcost` | 8 of 8 (corridor p95 2.8 ms with both panels, 2.5 and 2.4 without; rings-heights 2.6 against 2.3 and 2.3; the panels' own p95 0.3 and 0.2 ms) | `v13-look-panelcost.json` |
+    | `sonic-start-keyboard.ts` (`LAB` the release) | 46 of 46 | `sonic-start-keyboard.json` |
+    | `sonic-garden-page.ts` (`LAB` the release, the scan from the scene CDN) | 27 of 27 (entry and swap each flown to its pass in 59 s; the engine's whole frame p95 1.1 and 1.2 ms) | `sonic-garden-page.json` |
+
+    All under `evidence/2026-11-09/` (the UTC date turned during this job: the layout run's first pictures sit in the same folder as its json).
+  - Gates (`gates.py --repo C:/dev/gsfpv-v13-int` on f68d9ab, logs `gsfpv-gates-20261109-021202` in the system's temporary folder): exit 0: typecheck 25 s; vitest
+    248 files, 4071 passed, 0 skipped (two new tests of `sonic-panels`; the site's built-templates test ran, a build was there), 134 s; api-unittest 420 OK;
+    architecture; i18n; catalog; B18 PASS (the run's `evidence/<date>/b-repo-b18.json` removed).
+  - Not run here: accept-fly B6 to B16 (the lead's, on the final head); the words check again for the one Russian line; the build outputs (`dist`,
+    `apps/site/out`, `apps/fly/dist`) were removed from C: after the runs.
 - [ ] 11. The replay in a page: the v0.12 fixture (older-build sentence, recorded lines in order, a seek), a recording made on this build.
 - [ ] 12. One run of everything on a release build of the head under the GPU lock, gates exit 0, this Status.
 - Later, the lead's, not this job's: flight regression accept-fly B6 to B16 on a local release of the final head, one independent review of
@@ -230,6 +292,10 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-optin` "its words (review R8)" and "its words: the cut line ..." (step 6) | the item and the key list's L and K lines begin with the mode's name taken from the dictionary (`sonic.start.name` of the language), was the fixed "Fly by Sound: " | Russian and Polish name the mode in their own words |
 | page proof `tools/bench/src/sonic-int-page.ts` I (step 9) | the runner's status line (`status.progress-step` or `status.progress`, its text begins "Lesson 6 of 28: Hold your height. Step") then the recorder's line, was `status.lesson,status.recording-off` and `-on` | I says the runner's status line since v0.13 (W6) |
 | page proof `tools/bench/src/sonic-lessons-page.ts` (step 9) | Z: the key event, the title, every task line, "Go on." last (was: the last line again); I: `status.progress` with place, step, attempt, counted (was `status.lesson`); the pause menu on P (was Escape); motors on by default and the button's first press off; the pause's floor 3e-4 and 20 times under the tone (was 1e-4); gates and goals by `pass.required` (was 8 and 4) | v13-host B3, B4, B6; M41-16; the lessons' own pass counts |
+| page proof `tools/bench/src/sonic-v13-page.ts` (steps 10 and 11) | C walks the three new switches; new parts C2, E2, F1, F2, G; E is one function run on a light and a dark page; the run gives Chrome a fake microphone | steps 3, 5, 6, 10, 11 |
+| page proof `tools/bench/src/sonic-start-keyboard.ts` (step 12) | "no AudioContext before the first key" (was "before the first sound button") and "the first key made the one AudioContext"; the path moves by ArrowRight and ArrowLeft (was Down and Up) | v13-host C3: the first key starts the sound; Up and Down are the spoken list's |
+| page proof `tools/bench/src/sonic-garden-page.ts` (step 12) | the pause menu opened with P (was Escape) | Escape in a lesson is the lesson menu (v13-host B6) |
+| `packages/i18n/locales/fly/sonicentry/ru.json` `sonic.menu.page` (step 12) | the Russian item with a comma where it had "i": one line at 375 px again | sonic-optin-page A (R8): the mode's name in Russian made the item two lines |
 | page proof `tools/bench/src/v13-look-page.ts layout` (step 8) | the real progress panel instead of v13-look's stand-in (`v13-look-progress-standin.css` deleted); the progress panel checked like the other two; LAYOUT_LANG | step 8 |
 | page proof `tools/bench/src/v13-look-page.ts panels` rings-heights (step 2, run in step 12) | one new check: while the target note sounds it is a disc on the radar | the target note has a direction since s13-elev |
 | `sonic-reset-running` (step 5) | new, 3 tests | the reset over a running lesson |
@@ -248,6 +314,13 @@ To v0.14 by the lead (not done here):
 - v13-host's need 4: the package's word for a skipped lesson (`menu.lesson.skipped`).
 - v13-look's need 1: the plan saying when the next target note sounds (the sound panel's height bar keeps the rhythm, not
   the phase).
+
+- To the sound package (v0.14), found by step 11: a deterministic tie-break between mirror sectors (`front-left` and `front-right`) that the live engine and the
+  replay's planner share, so that a flight on a wall's axis replays at its true cue share (83.7 % by cue id today against the 0.95 bound, 100 % by kind), or
+  a cue share that counts mirror sectors of one wall as one cue. Until then a recording of a flight into a wall's middle reads "differs" in the replay.
+- Layout (step 8), not fixed: in Russian, Spanish and Polish the longer captions reach into the progress panel's top corner at 1280x720 and 1366x768 and into the
+  attitude display at 960x540 and 640x360 (`v13-look-layout-ru|pl|es.json`); heights from 601 to about 705 px, tablets with touch sticks and the recorder's
+  toggle over the right stick on a phone were not among the eight sizes.
 
 ## Decisions
 

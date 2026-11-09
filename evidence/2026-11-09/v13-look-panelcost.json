@@ -1,0 +1,705 @@
+{
+  "name": "v13-look-panelcost",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T01:09:00.172Z",
+    "gitHead": "f68d9ab",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5440",
+  "release": {
+    "sha": "f68d9ab",
+    "sonic": "ecb2ffb",
+    "built": "2026-11-09T01:00:58.044Z"
+  },
+  "scenario": "panelcost",
+  "tag": "",
+  "checks": [
+    {
+      "name": "corridor with the panels off: frames measured while flying, the panels hidden",
+      "pass": true,
+      "value": {
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.7,
+          "p95": 2.5,
+          "max": 5.2,
+          "mean": 1.828
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 12,
+            "p50": 0,
+            "p95": 0.40000003576278687,
+            "max": 5.199999988079071
+          },
+          "sound": {
+            "n": 12,
+            "p50": 0,
+            "p95": 0.3999999761581421,
+            "max": 2.200000047683716
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 2,
+          "sound": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "name": "corridor with the panels on: frames measured while flying, the panels shown and drawing",
+      "pass": true,
+      "value": {
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.9,
+          "p95": 2.8,
+          "max": 5.2,
+          "mean": 2.012
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 366,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "max": 4.199999988079071
+          },
+          "sound": {
+            "n": 366,
+            "p50": 0,
+            "p95": 0.19999998807907104,
+            "max": 1.9000000357627869
+          }
+        },
+        "shown": {
+          "attitude": true,
+          "sound": true
+        },
+        "draws": {
+          "attitude": 292,
+          "sound": 107
+        },
+        "errors": []
+      }
+    },
+    {
+      "name": "corridor with the panels off: frames measured while flying, the panels hidden",
+      "pass": true,
+      "value": {
+        "cpuMs": {
+          "n": 225,
+          "p50": 1.7,
+          "p95": 2.4,
+          "max": 5,
+          "mean": 1.818
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 13,
+            "p50": 0,
+            "p95": 0.5,
+            "max": 4.699999988079071
+          },
+          "sound": {
+            "n": 13,
+            "p50": 0.09999996423721313,
+            "p95": 0.3999999761581421,
+            "max": 2
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 2,
+          "sound": 2
+        },
+        "errors": []
+      }
+    },
+    {
+      "name": "corridor: the whole frame with both panels 2.8 ms at p95 (without: 2.5, 2.4 ms), under v0.12's frame of 16.7 ms; the panels' own p95 0.5 ms, under 1 ms",
+      "pass": true,
+      "value": {
+        "off": {
+          "n": 226,
+          "p50": 1.7,
+          "p95": 2.5,
+          "max": 5.2,
+          "mean": 1.828
+        },
+        "on": {
+          "n": 226,
+          "p50": 1.9,
+          "p95": 2.8,
+          "max": 5.2,
+          "mean": 2.012
+        },
+        "offAgain": {
+          "n": 225,
+          "p50": 1.7,
+          "p95": 2.4,
+          "max": 5,
+          "mean": 1.818
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 366,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "max": 4.199999988079071
+          },
+          "sound": {
+            "n": 366,
+            "p50": 0,
+            "p95": 0.19999998807907104,
+            "max": 1.9000000357627869
+          }
+        }
+      }
+    },
+    {
+      "name": "rings-heights with the panels off: frames measured while flying, the panels hidden",
+      "pass": true,
+      "value": {
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.6,
+          "p95": 2.3,
+          "max": 3.5,
+          "mean": 1.667
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 14,
+            "p50": 0.09999996423721313,
+            "p95": 0.5,
+            "max": 4.600000023841858
+          },
+          "sound": {
+            "n": 13,
+            "p50": 0.09999996423721313,
+            "p95": 0.7000000476837158,
+            "max": 1.800000011920929
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 3,
+          "sound": 3
+        },
+        "errors": []
+      }
+    },
+    {
+      "name": "rings-heights with the panels on: frames measured while flying, the panels shown and drawing",
+      "pass": true,
+      "value": {
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.8,
+          "p95": 2.6,
+          "max": 3.7,
+          "mean": 1.848
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 366,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "max": 5.199999988079071
+          },
+          "sound": {
+            "n": 366,
+            "p50": 0.09999996423721313,
+            "p95": 0.19999998807907104,
+            "max": 2
+          }
+        },
+        "shown": {
+          "attitude": true,
+          "sound": true
+        },
+        "draws": {
+          "attitude": 261,
+          "sound": 152
+        },
+        "errors": []
+      }
+    },
+    {
+      "name": "rings-heights with the panels off: frames measured while flying, the panels hidden",
+      "pass": true,
+      "value": {
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.6,
+          "p95": 2.3,
+          "max": 3.2,
+          "mean": 1.665
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 14,
+            "p50": 0,
+            "p95": 0.5,
+            "max": 4.400000035762787
+          },
+          "sound": {
+            "n": 14,
+            "p50": 0.10000002384185791,
+            "p95": 0.5,
+            "max": 2.299999952316284
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 3,
+          "sound": 3
+        },
+        "errors": []
+      }
+    },
+    {
+      "name": "rings-heights: the whole frame with both panels 2.6 ms at p95 (without: 2.3, 2.3 ms), under v0.12's frame of 16.7 ms; the panels' own p95 0.5 ms, under 1 ms",
+      "pass": true,
+      "value": {
+        "off": {
+          "n": 226,
+          "p50": 1.6,
+          "p95": 2.3,
+          "max": 3.5,
+          "mean": 1.667
+        },
+        "on": {
+          "n": 226,
+          "p50": 1.8,
+          "p95": 2.6,
+          "max": 3.7,
+          "mean": 1.848
+        },
+        "offAgain": {
+          "n": 226,
+          "p50": 1.6,
+          "p95": 2.3,
+          "max": 3.2,
+          "mean": 1.665
+        },
+        "panelMs": {
+          "attitude": {
+            "n": 366,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "max": 5.199999988079071
+          },
+          "sound": {
+            "n": 366,
+            "p50": 0.09999996423721313,
+            "p95": 0.19999998807907104,
+            "max": 2
+          }
+        }
+      }
+    }
+  ],
+  "passed": 8,
+  "total": 8,
+  "result": {
+    "corridor": {
+      "off": {
+        "lesson": "corridor",
+        "panels": false,
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.7,
+          "p95": 2.5,
+          "max": 5.2,
+          "mean": 1.828
+        },
+        "runs": [
+          {
+            "cpuMs": {
+              "n": 76,
+              "p50": 1.7,
+              "p95": 2.4,
+              "max": 2.5,
+              "mean": 1.789
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.6,
+              "p95": 2.4,
+              "max": 4.1,
+              "mean": 1.732
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.9,
+              "p95": 2.7,
+              "max": 5.2,
+              "mean": 1.964
+            }
+          }
+        ],
+        "panelMs": {
+          "attitude": {
+            "n": 12,
+            "p50": 0,
+            "p95": 0.40000003576278687,
+            "max": 5.199999988079071
+          },
+          "sound": {
+            "n": 12,
+            "p50": 0,
+            "p95": 0.3999999761581421,
+            "max": 2.200000047683716
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 2,
+          "sound": 2
+        }
+      },
+      "on": {
+        "lesson": "corridor",
+        "panels": true,
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.9,
+          "p95": 2.8,
+          "max": 5.2,
+          "mean": 2.012
+        },
+        "runs": [
+          {
+            "cpuMs": {
+              "n": 76,
+              "p50": 1.8,
+              "p95": 2.5,
+              "max": 2.8,
+              "mean": 1.901
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.9,
+              "p95": 2.5,
+              "max": 4,
+              "mean": 1.904
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 2.1,
+              "p95": 2.9,
+              "max": 5.2,
+              "mean": 2.232
+            }
+          }
+        ],
+        "panelMs": {
+          "attitude": {
+            "n": 366,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "max": 4.199999988079071
+          },
+          "sound": {
+            "n": 366,
+            "p50": 0,
+            "p95": 0.19999998807907104,
+            "max": 1.9000000357627869
+          }
+        },
+        "shown": {
+          "attitude": true,
+          "sound": true
+        },
+        "draws": {
+          "attitude": 292,
+          "sound": 107
+        }
+      },
+      "offAgain": {
+        "lesson": "corridor",
+        "panels": false,
+        "cpuMs": {
+          "n": 225,
+          "p50": 1.7,
+          "p95": 2.4,
+          "max": 5,
+          "mean": 1.818
+        },
+        "runs": [
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.6,
+              "p95": 2.3,
+              "max": 2.5,
+              "mean": 1.748
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.7,
+              "p95": 2.2,
+              "max": 4.3,
+              "mean": 1.757
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.9,
+              "p95": 2.6,
+              "max": 5,
+              "mean": 1.949
+            }
+          }
+        ],
+        "panelMs": {
+          "attitude": {
+            "n": 13,
+            "p50": 0,
+            "p95": 0.5,
+            "max": 4.699999988079071
+          },
+          "sound": {
+            "n": 13,
+            "p50": 0.09999996423721313,
+            "p95": 0.3999999761581421,
+            "max": 2
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 2,
+          "sound": 2
+        }
+      }
+    },
+    "rings-heights": {
+      "off": {
+        "lesson": "rings-heights",
+        "panels": false,
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.6,
+          "p95": 2.3,
+          "max": 3.5,
+          "mean": 1.667
+        },
+        "runs": [
+          {
+            "cpuMs": {
+              "n": 76,
+              "p50": 1.8,
+              "p95": 2.5,
+              "max": 3.5,
+              "mean": 1.891
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.5,
+              "p95": 2,
+              "max": 3.3,
+              "mean": 1.591
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.5,
+              "p95": 2,
+              "max": 2,
+              "mean": 1.517
+            }
+          }
+        ],
+        "panelMs": {
+          "attitude": {
+            "n": 14,
+            "p50": 0.09999996423721313,
+            "p95": 0.5,
+            "max": 4.600000023841858
+          },
+          "sound": {
+            "n": 13,
+            "p50": 0.09999996423721313,
+            "p95": 0.7000000476837158,
+            "max": 1.800000011920929
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 3,
+          "sound": 3
+        }
+      },
+      "on": {
+        "lesson": "rings-heights",
+        "panels": true,
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.8,
+          "p95": 2.6,
+          "max": 3.7,
+          "mean": 1.848
+        },
+        "runs": [
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 2,
+              "p95": 2.8,
+              "max": 3.7,
+              "mean": 2.095
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.8,
+              "p95": 2.4,
+              "max": 3,
+              "mean": 1.784
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 76,
+              "p50": 1.6,
+              "p95": 2.2,
+              "max": 2.7,
+              "mean": 1.667
+            }
+          }
+        ],
+        "panelMs": {
+          "attitude": {
+            "n": 366,
+            "p50": 0.19999998807907104,
+            "p95": 0.30000001192092896,
+            "max": 5.199999988079071
+          },
+          "sound": {
+            "n": 366,
+            "p50": 0.09999996423721313,
+            "p95": 0.19999998807907104,
+            "max": 2
+          }
+        },
+        "shown": {
+          "attitude": true,
+          "sound": true
+        },
+        "draws": {
+          "attitude": 261,
+          "sound": 152
+        }
+      },
+      "offAgain": {
+        "lesson": "rings-heights",
+        "panels": false,
+        "cpuMs": {
+          "n": 226,
+          "p50": 1.6,
+          "p95": 2.3,
+          "max": 3.2,
+          "mean": 1.665
+        },
+        "runs": [
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.8,
+              "p95": 2.5,
+              "max": 3.2,
+              "mean": 1.888
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 75,
+              "p50": 1.5,
+              "p95": 2.3,
+              "max": 2.7,
+              "mean": 1.617
+            }
+          },
+          {
+            "cpuMs": {
+              "n": 76,
+              "p50": 1.3,
+              "p95": 2,
+              "max": 2.1,
+              "mean": 1.492
+            }
+          }
+        ],
+        "panelMs": {
+          "attitude": {
+            "n": 14,
+            "p50": 0,
+            "p95": 0.5,
+            "max": 4.400000035762787
+          },
+          "sound": {
+            "n": 14,
+            "p50": 0.10000002384185791,
+            "p95": 0.5,
+            "max": 2.299999952316284
+          }
+        },
+        "shown": {
+          "attitude": false,
+          "sound": false
+        },
+        "draws": {
+          "attitude": 3,
+          "sound": 3
+        }
+      }
+    }
+  }
+}
