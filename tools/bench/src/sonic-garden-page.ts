@@ -103,8 +103,9 @@ try {
         const before = await probe(page);
         check('swap: the page starts on a lesson world (a built-in session, scale 1)', before.walls.builtin && Math.abs(before.walls.scale - 1) < 1e-9, before.walls);
         await sleep(1500);
-        // the pause menu's item opens the start screen over the flight; the Winter Garden lesson is chosen with the keyboard
-        await page.keyboard.press('Escape');
+        // the pause menu's item opens the start screen over the flight; the Winter Garden lesson is chosen with the keyboard (since v0.13 Escape in a
+        // lesson is the lesson menu, v13-host B6: the page's pause menu is on P)
+        await page.keyboard.press('KeyP');
         await page.waitForSelector('[data-action="pause.sonic"]', { timeout: 5000 });
         await (await page.$('[data-action="pause.sonic"]'))!.focus();
         await page.keyboard.press('Enter');
@@ -123,8 +124,8 @@ try {
         const l = await lap(page, OUT, 'swap', 6 * 60000);
         await pageChecks(page, 'swap', l);
         results.push({ entry: 'swap', loadSeconds: loadS, lapSeconds: l.seconds, passed: l.passed, progress: l.end.progress['free-garden'], cost: l.end.cost, walls: l.end.walls, gates: l.end.events.filter((e) => e.kind === 'gate').length, touches: l.end.events.filter((e) => e.kind === 'touch').length });
-        // back to a lesson world: the scan session is replaced, the scan's size and walls are given back
-        await page.keyboard.press('Escape');
+        // back to a lesson world: the scan session is replaced, the scan's size and walls are given back (the pause menu is on P since v0.13)
+        await page.keyboard.press('KeyP');
         await page.waitForSelector('[data-action="pause.sonic"]', { timeout: 5000 });
         await (await page.$('[data-action="pause.sonic"]'))!.focus();
         await page.keyboard.press('Enter');
