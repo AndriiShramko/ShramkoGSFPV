@@ -288,3 +288,7 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   panel's "played three times" card shows none of the live runner's during a replay (the same seam). Test: `sonic-review-v13` F5 (the
   rig: the panel's title, hidden at `playback(true)`, back at `playback(false)`). Control: no lesson running, hidden too; the code control
   (no playback check) fails it. In the page: `sonic-v13-page` R during a replay.
+- F7 (nit, no way into the lesson menu on a phone): holds. Fixed: the pause menu (the top bar's Pause button) has "Lesson menu" as an
+  item while a lesson runs (disabled otherwise); it opens the lesson menu once the pause menu has let the flight go, and its items are
+  buttons a finger can press. No Node test (the item lives in `feature.ts`, which runs only in a page): `sonic-v13-page` R on a phone
+  (390 x 844, touch): Pause, Lesson menu, Next step moves the lesson. Control there: the item is disabled with no lesson running.

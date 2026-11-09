@@ -494,7 +494,19 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     });
     offs.push(
         ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open()), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
-        () => lessonMenu.dispose()
+        () => lessonMenu.dispose(),
+        // review F7: on a phone nothing typed Escape, so Repeat the task, Next step, Previous step and Next lesson had no way in. The pause
+        // menu (the top bar's Pause button) has the lesson menu as an item while a lesson runs; it opens once the pause menu has let the
+        // flight go (picking an item releases the pause menu's hold after the item runs: the lesson menu holds the flight itself)
+        ctx.menu.add({
+            id: 'pause.sonic.lessonMenu',
+            action: null,
+            labelKey: 'sonic.say.menuTitle',
+            order: 94,
+            section: 'tools',
+            enabled: () => mode.active && h.active,
+            run: () => queueMicrotask(() => { if (mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen) lessonMenu.open(); })
+        })
     );
     // the first lesson: its world is the one the page was made on (the entry built it); a lesson that cannot open
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
