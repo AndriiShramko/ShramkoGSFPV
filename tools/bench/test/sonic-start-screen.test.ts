@@ -635,3 +635,50 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         s.dispose();
     });
 });
+
+// ------------------------------------------------------------------ v13-int review F2 and F4
+
+describe('v13-int review F2, F4: the screen over a flight takes every key it is shown with; the focus leaves it when it hides', () => {
+    /** The page's key router stand-in: a listener on the window after the screen's (KeyRouter.attach: the window, bubbling). */
+    function router(d: FakeDocument): string[] {
+        const seen: string[] = [];
+        d.window.addEventListener('keydown', ((e: { code: string }) => void seen.push(e.code)) as never, false);
+        return seen;
+    }
+
+    it('F2: shown over a lesson, the lesson\'s keys and the page\'s (B, N, Z, G, R, I, T, U, L, K, P, a digit) stop at the screen: the page\'s router never sees them; the harness keys F13 to F24 go on', () => {
+        const { s } = shown({ overFlight: true });
+        const seen = router(doc);
+        byTestId(doc, 'sonic-start-beginning')!.focus();
+        const codes = ['KeyB', 'KeyN', 'KeyZ', 'KeyG', 'KeyR', 'KeyI', 'KeyT', 'KeyU', 'KeyL', 'KeyK', 'KeyP', 'Digit1'];
+        for (const code of codes) {
+            const ev = doc.key(code.slice(-1).toLowerCase(), { code });
+            expect(ev.propagationStopped, code).toBe(true);
+        }
+        expect(seen).toEqual([]);
+        doc.key('F13', { code: 'F13' });
+        expect(seen).toEqual(['F13']);
+        s.dispose();
+    });
+
+    it('F2 control: hidden (the flight has the page), every key reaches the page\'s router as before', () => {
+        const { s } = shown({ overFlight: true });
+        const seen = router(doc);
+        s.hide();
+        for (const code of ['KeyB', 'KeyN', 'KeyZ']) expect(doc.key(code.slice(-1).toLowerCase(), { code }).propagationStopped, code).toBe(false);
+        expect(seen).toEqual(['KeyB', 'KeyN', 'KeyZ']);
+        s.dispose();
+    });
+
+    it('F2: the screen\'s own keys still work while it takes the others (Down moves the spoken list, Escape closes it over the flight)', () => {
+        const { s, closed } = shown({ overFlight: true });
+        router(doc);
+        byTestId(doc, 'sonic-start-beginning')!.focus();
+        const before = doc.activeElement;
+        doc.key('ArrowDown');
+        expect(doc.activeElement).not.toBe(before);
+        doc.key('Escape');
+        expect(closed.n).toBe(1);
+        s.dispose();
+    });
+});

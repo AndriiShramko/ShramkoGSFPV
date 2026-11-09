@@ -265,3 +265,9 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   resume), `sonic-int-reader` (a lesson's own interrupt and a host's are told apart). Not covered: the recorder's own lines go to the
   engine directly (`sonic-session/platform.ts` `sayVia`), not through the bridge, so its consent question still cuts what the lesson was
   saying (a recording that starts opens the lesson again from its beginning; a declined one does not).
+- F2 (major, N, B, Z under the start screen move the lesson): holds. Fixed in the screen: while it is shown, its capture listener stops
+  every key it does not use itself from reaching the page (the key router with the lesson's N, B, Z, G, R and the page's I, T, U, L, K,
+  P, F), the latency harness's F13 to F24 excepted; the screen's own keys stay, and so do the browser's default actions (Tab, Enter on a
+  button, a slider's arrows, a letter in a list). Test: `sonic-start-screen` "v13-int review F2" (over a lesson, B, N, Z, G, R, I, T, U,
+  L, K, P and a digit stop at the screen and a router stand-in after it sees none; F13 goes on; Down and Escape still work). Control: the
+  screen hidden, every key reaches the router; the code control (the stop removed) fails the test. In the page: `sonic-v13-page` R.

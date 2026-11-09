@@ -80,6 +80,9 @@ type ListSection = (typeof LIST_SECTIONS)[number];
 /** The id of the shared link's note: the primary Start button and the note's own buttons point to it. */
 const VISIT_TEXT_ID = 'sonic-visit-text';
 
+/** F13 to F24 belong to the latency harness (devices/keyboard.ts): never the screen's. */
+const HARNESS_KEY = /^F(1[3-9]|2[0-4])$/;
+
 export class StartScreen {
     readonly root: HTMLElement;
     private d: StartScreenDeps;
@@ -115,7 +118,13 @@ export class StartScreen {
         if (this.list.key(e) === 'taken') {
             e.preventDefault();
             e.stopPropagation();
+            return;
         }
+        // every other key is the screen's too while it is shown (review F2): over a flight the page's keys (N, B, Z, G, R, I, T, L, P...)
+        // would move the lesson under the screen (two B left rings-first for tunnel-long, whose task was said over the settings). A key's
+        // own use on the screen (Tab, Enter on a button, the arrows on a slider, a letter in a list) is the browser's and stays; the
+        // latency harness's F13 to F24 go on to the page (devices/keyboard.ts)
+        if (!HARNESS_KEY.test(e.code)) e.stopPropagation();
     };
     private onFocusIn = (e: Event): void => this.list.focusIn(e.target);
 
