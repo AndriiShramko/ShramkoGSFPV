@@ -92,7 +92,8 @@ status note (message 41) carries the same table for the owner.
 1. Done: the sound repo merged, reviewed, fixed, prechecked and pushed (`main` 16c01a1).
 2. Done: v12-optin merged into `v03-lead` (c2b1e54).
 3. Done: v13-host, v13-look, s13-elev, and v13-int's seams and pages (see the lanes table).
-3a. Paused at 84 % of the weekly limit: the owner was asked whether the ceiling may go to 90 % for the review and the
+3a. accept-fly B6-B16 10 of 10 on v13-int c324225 (release build, localhost:5450, 2026-11-09 01:20 UTC).
+    Paused at 84 % of the weekly limit: the owner was asked whether the ceiling may go to 90 % for the review and the
     release. Yes: the review with fixes now, then the release. No: both after the weekly reset (2026-11-12 12:00 UTC).
 4. s13-elev to the sound repo's `main` after gh_precheck; push.
 5. Integration branch `v13-int` from `v03-lead`: merge v13-host, merge v13-look, move the gitlink to the new sound
