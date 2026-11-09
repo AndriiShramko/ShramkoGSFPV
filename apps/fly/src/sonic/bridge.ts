@@ -168,8 +168,12 @@ export class SonicBridge {
      * the menu's step items). Before review F1 they were lost: Escape early in a lesson took the first lines of its task with it.
      */
     private cutLines: SpeechLine[] = [];
-    /** lines of the host's own handed and not ended yet (this run of the mode) */
-    private hostSpeaking = 0;
+    /**
+     * Lines of the host's own handed and not ended yet (this run of the mode). A line that interrupts ends them at once: the browser's
+     * speech may report a line it cancelled before it began only at its safety timeout (2 x its length and 4 s), and the lesson's lines
+     * said again after the host waited for that (13 s of silence after the lesson menu closed, seen in sonic-v13-page R).
+     */
+    private readonly hostLines = new Set<object>();
     /** a line was said since the flight last went on (sayAgainLater: one said at the resume, "Resume.", is heard before the lesson's) */
     private saidSinceResume = false;
     /**
@@ -216,7 +220,7 @@ export class SonicBridge {
     private forgetLines(): void {
         this.lessonLines = [];
         this.cutLines = [];
-        this.hostSpeaking = 0;
+        this.hostLines.clear();
         this.saidSinceResume = false;
     }
 
@@ -528,10 +532,13 @@ export class SonicBridge {
             this.cutLines.push(...this.lessonLines.map((l) => l.line));
             this.lessonLines = [];
         }
+        // a line that interrupts ends the host's lines being said or waiting: they are over now, whenever the browser reports them
+        if (interrupt) this.hostLines.clear();
         if (!this.pausedNow) this.saidSinceResume = true;
         const mine = lesson ? { line } : null;
+        const host = {};
         if (mine) this.lessonLines.push(mine);
-        else this.hostSpeaking++;
+        else this.hostLines.add(host);
         this.lastLine = line;
         this.speaking++;
         const run = this.epoch;
@@ -570,11 +577,10 @@ export class SonicBridge {
                 if (mine) {
                     const i = this.lessonLines.indexOf(mine);
                     if (i >= 0) this.lessonLines.splice(i, 1);
-                } else {
-                    this.hostSpeaking = Math.max(0, this.hostSpeaking - 1);
+                } else if (this.hostLines.delete(host)) {
                     // the host's lines are over while the flight runs: the lesson's lines they cut are said again now, before the end of
                     // speech can be counted (F1)
-                    if (this.hostSpeaking === 0 && this.cutLines.length > 0 && !this.pausedNow) this.sayAgain(false);
+                    if (this.hostLines.size === 0 && this.cutLines.length > 0 && !this.pausedNow) this.sayAgain(false);
                 }
                 this.speaking = Math.max(0, this.speaking - 1);
                 if (this.speaking === 0) this.spoken();

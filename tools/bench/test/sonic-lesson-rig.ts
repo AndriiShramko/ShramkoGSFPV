@@ -108,6 +108,11 @@ export class FakeEngine {
      * is when the voice began it (a cut line queued behind others never began: its start lies after its cut).
      */
     ends: { key: string; start: number; at: number; cut: boolean }[] = [];
+    /**
+     * As Chrome's speechSynthesis (seen in sonic-v13-page R, v13-int review F1): a line cancelled before it began reports nothing, and the
+     * package's speech resolves its promise only at its safety timeout. null: every cancelled line resolves at once (the rig's default).
+     */
+    lateCancelMs: number | null = null;
 
     say(line: SpeechLine, o?: { interrupt?: boolean }): Promise<void> {
         const text = this.tr.text(line);
@@ -115,11 +120,12 @@ export class FakeEngine {
         this.said.push({ line, interrupt, text, at: this.clock.t });
         this.onSpeech?.(line, text);
         if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve, key: line.key, start: this.clock.t }));
-        // speechSynthesis.cancel() ends what is queued at once
+        // speechSynthesis.cancel() ends what is queued at once (a line that had not begun, with lateCancelMs, reports it that much later)
         if (interrupt) {
             for (const q of this.queue) {
                 this.ends.push({ key: q.key, start: q.start, at: this.clock.t, cut: true });
-                q.resolve();
+                if (this.lateCancelMs !== null && q.start > this.clock.t) void this.wait(this.lateCancelMs).then(q.resolve);
+                else q.resolve();
             }
             this.queue = [];
             this.lastEnd = this.clock.t;

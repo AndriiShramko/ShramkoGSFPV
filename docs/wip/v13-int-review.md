@@ -331,4 +331,10 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   the comma; the item keeps the site page's words (a test holds it), so it is left for a native reader. Russian as a whole: 269 lines, 245
   heard exactly, mean rate 0.0268, 10 over the bound (step 6: 245, 0.0266, 10); English, Spanish, Polish as in step 6 (250, 254, 254
   heard exactly; 4, 4, 5 over). How the voices sound to a person: not judged.
+- F1, part 2 (found by the fix's own page proof, `sonic-v13-page` R F1): in the real page the lesson's lines came 13 s after the menu
+  closed: Chrome reports nothing for a line it cancelled before that line began, and the package's speech resolves such a line only at
+  its safety timeout, so the bridge waited for the menu's queued item line. Fixed: a line that interrupts ends the host's lines at once
+  in the bridge's count (`hostLines`), whenever the browser reports them. Test: `sonic-review-v13` F1 "a browser that reports a cancelled
+  line late" (the rig's engine resolves a line cut before it began 15 s late, as Chrome: the keys line follows "Resume." in the same
+  frame); the code control (the count kept) fails it.
 

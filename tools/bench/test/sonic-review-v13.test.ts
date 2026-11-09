@@ -101,6 +101,22 @@ describe('review F1: lines of the lesson a host line cut are said again, whole a
         expect(whole(r, L('hover-height', 'title'))[0]!.at).toBeLessThan(closed);
     }, 300000);
 
+    it('a browser that reports a cancelled line late (Chrome: a line cut before it began resolves at its safety timeout): the lesson\'s lines follow "Resume." at once, not after the menu\'s cut lines report in', async () => {
+        const r = await open('hover-height');
+        r.engine.lateCancelMs = 15000;
+        await r.run(1500, null);
+        const p = menuPage(r);
+        p.escape();
+        await r.run(200, null);
+        p.doc.key('Escape');
+        await r.run(30000, null, () => whole(r, L('hover-height', 'intro.1')).length > 0);
+        const resumed = r.engine.ends.find((e) => e.key === 'sonic.say.menuResume')!;
+        expect(resumed.cut).toBe(false);
+        // the keys line said again as soon as "Resume." ended (the same frame), not 15 s later when the menu's queued item line reports its cut
+        expect(whole(r, 'sonic.say.lessonKeys')[0]!.start - resumed.at).toBeLessThanOrEqual(20);
+        expect(whole(r, L('hover-height', 'intro.1'))).toHaveLength(1);
+    }, 300000);
+
     it('control: the same lesson without the menu says each of those lines whole once, in the same order (as before the fix)', async () => {
         const r = await open('hover-height');
         await r.run(120000, null, () => r.host.runner!.phase === 'flying');
