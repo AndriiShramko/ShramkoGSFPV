@@ -22,6 +22,9 @@ the probes read what the engine was asked to say, what reached `speechSynthesis.
   path's first lesson (P6). The probe script was a temporary `tools/bench/src/zz-review-page.ts` (deleted, never committed); its raw
   output stayed in the session's temporary folder, the numbers that matter are written below. Afterwards the server was stopped, the
   build outputs (`dist`, `dist.tgz`, `SHA256SUMS`, `apps/fly/dist`, `apps/site/out`) removed from C:, the lock free.
+- [x] The fixer's pass (another agent): F1 to F7 and the lead's K1 to K6 each tried against the code and handled (F6 decided, its
+  drawing kept), two more found by the fixes' own page proofs and fixed (F1 part 2, K2 part 2), one left for the lead (the recordings
+  panel's lost focus after Save): "Fixes" and "Lane end (the fixer's)" at the end of this file.
 
 ## Findings
 
@@ -310,8 +313,11 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   at 640 x 360 the progress panel is at most 160 px wide and the sound panel right of that. The layout check runs all four languages
   (LAYOUT_LANG, default en,es,pl,ru). Test: `sonic-captions-fit` (Russian lines over the attitude display: the oldest hidden, the rest 8 px
   clear; English fits; the newest never hidden; refit on resize) with its controls (a panel beside the region or hidden limits nothing; the
-  code control without the hiding fails 3 of 5); the page: the layout check below. What it costs: lines shown at the attempt's start (of 3)
-  at 960 x 540 2 in every language, at 640 x 360 1, on a phone with sticks 2, on a tablet on its side 2, at 1280 x 601 2; 3 elsewhere.
+  code control without the hiding fails 3 of 5); the page: the layout check below. What it cost on the release of 9eb7681 (the
+  layout check's three lines at the attempt's start, lines shown of 3): 3 at every size and language but 960 x 540 (es, ru 2),
+  640 x 360 (1), a phone with sticks and
+  a tablet on its side with sticks (es, ru 2), a phone on its side (2, the short page's own rule). Corrected at the lane end: this line
+  first said 2 at 960 x 540 in every language and at 1280 x 601, which that evidence does not show. After part 2: below.
 - K4 (601 to 705 px high, a tablet with touch sticks): holds. The layout check gains three laptop windows (1366 x 657, 1280 x 601, 1536 x
   705) and two tablets with touch sticks (768 x 1024, 1024 x 768): before the fix the windows failed only by K2's captions; both tablets
   failed (the attitude display and the sound panel lay on the sticks, the recording bar and the view's centre: 33440 and 44880 px2 on the
@@ -340,8 +346,54 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
 - K2, part 2 (found by the lane end's `sonic-lessons-page`, 43 of 44 on the release of 84fc177): in the column right of the panels a
   line of hover-height's start wrapped once more than in the centred captions (880 px wide at 1280 x 720, they were 900), and the three
   lines shown ended at 355 px of 720 (step 9: 321), 5 px over the view's centre, where the target is (the proof's bound: 20 px over it).
-  Fixed in `captions.ts` (53492e5): the oldest line shown is hidden from the eye (a screen reader still reads it) also while a line shown ends lower
-  than 20 px over the view's centre (`CENTRE_GAP_PX`); the newest never. Test: `sonic-captions-fit` "K2, part 2" (hover-height's three
-  lines of two rows at 1280 x 720: two shown, ending at 266 px; lines of one row: all three; the newest never hidden; a taller window
-  shows the three again on a resize). Control: a page whose view has no height shows the three, ending at 356 px; the code control (no
-  centre) fails 3 of the 5. The page: `sonic-lessons-page` and the layout check again, below.
+  Fixed in `captions.ts` (53492e5): the oldest line shown is hidden from the eye (a screen reader still reads it) also while a line
+  shown ends lower than 20 px over the view's centre (`CENTRE_GAP_PX`); the newest never. Test: `sonic-captions-fit` "K2, part 2"
+  (hover-height's three lines of two rows at 1280 x 720: two shown, ending at 266 px; lines of one row: all three; the newest never
+  hidden; a taller window shows the three again on a resize). Control: a page whose view has no height shows the three, ending at
+  356 px; the code control (no centre) fails 3 of the 5. The layout check on the release of c9fb6ef: 648 of 648; the captions end
+  20 px or more over the view's centre at all 52 sizes and languages (on 9eb7681: 23 of 52 ended lower, at 1280 x 601 55 px under the
+  centre). What it costs (lines shown of 3, the same three lines): 1280 x 720, 960 x 540, 1366 x 657 and 1280 x 601 2 in every
+  language (were 3, at 960 x 540 es and ru 2), 1536 x 705 es, pl, ru 2, a phone upright es and ru 2, a phone on its side 1 (was 2);
+  640 x 360 1; 3 elsewhere, the sizes with sticks as before. The page: `sonic-lessons-page` 44 of 44, below.
+
+## Lane end (the fixer's)
+
+- Heads: simulator `v13-int` at the commit of this section: the fixes after c324225 up to c9fb6ef (F1 to F7, K1 to K6, K2 part 2,
+  the proof's F2 press), then the docs and the page proofs' evidence; the sound package `s13-int` 09535b7 (c819995 K1, eafd417 K3,
+  09535b7 its checks' evidence); the gitlink 09535b7. Nothing pushed, nothing deployed, the live site and API never opened.
+- Gates (`gates.py --repo C:/dev/gsfpv-v13-int` on 93c7d27, the code of c9fb6ef with the page proofs' evidence; logs
+  `gsfpv-gates-20261109-105551` in the system's temporary folder): exit 0: typecheck 25 s; vitest 252 files, 4120 passed (4114 on
+  9eb7681: one F1 part 2 test and five of K2 part 2 since; the a6 reference test among them, its hash 1d01ca5b unchanged), 134 s;
+  api-unittest 420 OK, 138 s; architecture; i18n; catalog; B18 PASS (the run's `evidence/2026-11-09/b-repo-b18.json` removed).
+- The sound package on eafd417 (09535b7 adds only its evidence): `pnpm typecheck` clean; `pnpm test` 51 files, 1191 tests; locale lint 0
+  problems (4 languages, 526 keys); layout 0; `pnpm proof:audio` 3 files, 9 tests; `pnpm listen` 9 of 9, keyed again (88d883ccff54);
+  `pnpm listen:words` PASS. Its notes: `docs/dev/status-v0.13-int.md` there (I4 to I6).
+- Page proofs, headless Chrome (`tools/bench/src/chrome.mjs`), each holding the GPU lock, on the release build of c9fb6ef (the final app
+  code; the sound package 09535b7) served by `serve-csp` at localhost:5470, removed from C: after the runs; evidence under
+  `evidence/2026-11-09`:
+  - `sonic-v13-page` A to R 64 of 64 (R, the review's F1, F2, F3, F4, F5 and F7 in the page: 13 checks; F2, a recording made on this
+    build: 19 of 19 events, 99.8 % of 546 frames); F2S, K1's straight run: 3 of 3, PASS, 11 of 11 events, 100.0 % of 173 frames by cue id
+    and by kind (before the mirror tie: FAIL, 83.7 % by id, `sonic-v13-page-f2-straight-before.json`).
+  - `v13-look-page` layout 648 of 648 (four languages, 13 sizes, dark and light; the captions 20 px or more over the view's centre at all
+    52 sizes and languages; the Spanish, Polish and Russian screenshots kept too), panels 43 of 43, panelcost 8 of 8.
+  - `sonic-optin-page` 46 of 46; `sonic-start-keyboard` 46 of 46; `sonic-lessons-page` 44 of 44 (hover-height's captions end at 299 px of
+    720, at 355 on the release of 84fc177); `sonic-int-page status` 4 of 4; `sonic-garden-page` 27 of 27; `sonic-review-captions` 5 of 5
+    at 1280 x 720 and at 740 x 360 (every line of a lesson's opening burst in the live region at some frame; the eye sees 3 at most, 1 at
+    740 x 360); `sonic-review-launch` 4 of 4.
+- Found by the first runs of these proofs (on the release of 84fc177) and fixed: K2, part 2 (`sonic-lessons-page` 43 of 44; Fixes above,
+  53492e5); `sonic-v13-page` F2 failed twice in a whole run ("the replay checked: stage closed") and passed alone. Measured with a
+  diagnostic run (not kept): after Save the recordings panel draws its list again 125 to 152 ms later and the focus on the old row's
+  button falls to the page's body; the proof's focus on Replay and its Enter fell either side of that. The proof now presses Replay on
+  the row drawn after Save (c9fb6ef).
+- Found, not fixed (for the lead): that lost focus is the panel's. `sonic-session/panel.ts` refresh() replaces the rows after Save, Keep,
+  Send and Delete, so a keyboard or screen reader user who pressed one is put back on the page's body. Outside the review's findings; the
+  fix (the focus kept on the same button of the same row) belongs with the panel's own page proofs (`sonicrec-local`, `sonicrec-replay`,
+  `sonicrec-review`), not run here.
+- Not run: accept-fly B6 to B16 (nothing under `packages/sim-core`, `packages/collision` or the flight's path changed: the fixes are in the
+  mode's bridge, lesson host, start screen, captions, panels and CSS, and the package's scene sampler); the a6 reference test ran in the
+  gates' vitest (above). The page proofs of the recorder (`sonicrec-*`), the credit line (`sonic-credit-page`), the GPU hint
+  (`sonic-gpuhint-page`), v12-int's review probes (`sonic-int-review`) and `sonic-e2e`: none of their own files changed; they reach the
+  fixes through the bridge and the lesson host, which the proofs above ran.
+- Not judged by any machine: how a line, a caption, a panel or a sound feels to a blind, deaf or low-vision pilot (the voice checks read
+  what reached `speechSynthesis.speak` and its start and end events, not what the voice made of it); NVDA or JAWS (F4's consequence);
+  real phones and tablets, a real browser zoom (headless Chrome emulates the 13 sizes); a native reading of the package's two new names.
