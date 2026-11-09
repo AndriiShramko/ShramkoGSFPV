@@ -1,0 +1,303 @@
+{
+  "name": "sonic-v13-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T00:47:44.378Z",
+    "gitHead": "581d88b",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5440",
+  "parts": "C,C2,DE",
+  "control": "reader",
+  "checks": [
+    {
+      "name": "C: the part reached its end",
+      "pass": false,
+      "value": "Error: timed out waiting for the first lines: []"
+    },
+    {
+      "name": "C2: in a lesson that flies both panels are on the page (a pilot who never set them)",
+      "pass": true,
+      "value": {
+        "sounds": true,
+        "attitude": true
+      }
+    },
+    {
+      "name": "C2: Enter on \"Sound panel: see every sound\" takes the sound panel off the page at once (-1 ms), the other one stays; Enter again puts it back (2 ms); each value said",
+      "pass": false,
+      "value": {
+        "off": {
+          "ms": -1,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": []
+      }
+    },
+    {
+      "name": "C2: Enter on \"Horizon and height display\" takes the horizon display off the page at once (-1 ms), the other one stays; Enter again puts it back (2 ms); each value said",
+      "pass": false,
+      "value": {
+        "off": {
+          "ms": -1,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": []
+      }
+    },
+    {
+      "name": "C2: both switched off, the screen closed with Escape: the lesson goes on without either panel, both saved off",
+      "pass": false,
+      "value": {
+        "bothOff": {
+          "sounds": true,
+          "attitude": true
+        },
+        "after": {
+          "sounds": true,
+          "attitude": true
+        },
+        "saved": {
+          "heightDirection": true
+        }
+      }
+    },
+    {
+      "name": "C2: the lesson opened again later has neither panel on the page (read back from the saved document)",
+      "pass": false,
+      "value": {
+        "sounds": true,
+        "attitude": true
+      }
+    },
+    {
+      "name": "C2: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "D: Escape in a lesson holds the flight and opens the lesson menu; the engine was asked to say its name and how it works, then each item the arrows reach, in order, \"Item n of 8\" (the mode's speech events), and the same lines reached the browser's voice",
+      "pass": false,
+      "value": {
+        "lines": [
+          {
+            "key": "sonic.say.menuOpen",
+            "text": "Lesson menu. The up and down arrows move, Enter chooses, Escape goes back to the lesson."
+          }
+        ],
+        "voice": [],
+        "focused": 7,
+        "held": true
+      }
+    },
+    {
+      "name": "D: Escape lets the flight go and the lesson goes on",
+      "pass": true,
+      "value": {
+        "lesson": "rings-first",
+        "paused": false
+      }
+    },
+    {
+      "name": "E: after a counted attempt the panel shows rings-first's place (Lesson 20 of 28), the step (2 of 2), \"Attempt 1\" and \"Counted 1 of 3\", as the hook's text",
+      "pass": true,
+      "value": {
+        "rows": [
+          "Your first ring",
+          "Lesson 20 of 28",
+          "Step 2 of 2",
+          "Attempt 1",
+          "Counted 1 of 3"
+        ],
+        "hook": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+      }
+    },
+    {
+      "name": "E: the panel is large (18 px or more), bold, opaque, in the left part of the page and not over the view's middle",
+      "pass": true,
+      "value": {
+        "text": "Your first ring\n\nLesson 20 of 28\n\nStep 2 of 2\n\nAttempt 1\n\nCounted 1 of 3",
+        "hidden": false,
+        "left": 12,
+        "top": 273,
+        "width": 237.1875,
+        "height": 198,
+        "font": "28px",
+        "weight": "700",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "edge": "rgb(0, 0, 0)",
+        "vw": 1280,
+        "vh": 720
+      }
+    },
+    {
+      "name": "E: on a light page the panel is black on white, its edge black (the page's scheme, not a fixed one)",
+      "pass": true,
+      "value": {
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "edge": "rgb(0, 0, 0)"
+      }
+    },
+    {
+      "name": "D, E: no page error in the lesson",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 7,
+  "total": 13,
+  "shots": [
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\c2-settings-over-flight.png",
+      "sha256": "474918e5bd9223ec9aa87971c9fc647633d04925e5859cd367ace1ec35f2d348",
+      "what": "the settings over the flight with both panels switched off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\d-lesson-menu.png",
+      "sha256": "73fdb79f80d077d4522c44a0bad46e44a1827b96382bdb3227d51b0766933bff",
+      "what": "the lesson menu over the flight, the last item focused"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-09\\e-progress-panel.png",
+      "sha256": "aa1c2967e072865eb91ff2a502ef94e9df468858fd2c825e310a9b6d38251768",
+      "what": "the progress panel after the first counted attempt of rings-first, light page"
+    }
+  ],
+  "result": {
+    "release": {
+      "sha": "581d88b",
+      "sonic": "ecb2ffb",
+      "built": "2026-11-09T00:35:32.911Z"
+    },
+    "switchesInLesson": {
+      "start": {
+        "sounds": true,
+        "attitude": true
+      },
+      "sounds": {
+        "off": {
+          "ms": -1,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": []
+      },
+      "attitude": {
+        "off": {
+          "ms": -1,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": []
+      },
+      "bothOff": {
+        "sounds": true,
+        "attitude": true
+      },
+      "after": {
+        "sounds": true,
+        "attitude": true
+      },
+      "saved": {
+        "heightDirection": true
+      }
+    },
+    "switchesAgain": {
+      "sounds": true,
+      "attitude": true
+    },
+    "lessonMenu": {
+      "lines": [
+        {
+          "key": "sonic.say.menuOpen",
+          "text": "Lesson menu. The up and down arrows move, Enter chooses, Escape goes back to the lesson."
+        }
+      ],
+      "voice": [],
+      "focused": 7,
+      "held": true
+    },
+    "panel": {
+      "panel": {
+        "text": "Your first ring\n\nLesson 20 of 28\n\nStep 2 of 2\n\nAttempt 1\n\nCounted 1 of 3",
+        "hidden": false,
+        "left": 12,
+        "top": 273,
+        "width": 237.1875,
+        "height": 198,
+        "font": "28px",
+        "weight": "700",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "edge": "rgb(0, 0, 0)",
+        "vw": 1280,
+        "vh": 720
+      },
+      "hookPanel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3",
+      "attempt": 1,
+      "progress": {
+        "lessonId": "rings-first",
+        "version": 2,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 0,
+        "passed": false,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-09T00:47:43.633Z",
+        "skipped": false
+      }
+    },
+    "lessonStart": {
+      "phase": "intro",
+      "events": 16
+    }
+  }
+}

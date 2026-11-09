@@ -679,6 +679,8 @@ async function partF1(browser: Browser, out: Record<string, unknown>): Promise<v
  */
 async function partF2(browser: Browser, out: Record<string, unknown>): Promise<void> {
     const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
+    // Save is a download here, not the file picker (nothing could answer it)
+    await ctx.addInitScript({ content: 'try { delete window.showSaveFilePicker; } catch (e) {}' });
     const page = await ctx.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
@@ -709,6 +711,11 @@ async function partF2(browser: Browser, out: Record<string, unknown>): Promise<v
             if (p?.phase === 'intro') await page.keyboard.press('KeyN');
             await sleep(400);
         }
+        // a small turn to the right first: a flight dead ahead at a wall (x exactly 0) is a left-right tie for the wall's sectors, which the live engine and the
+        // replay's planner break the other way round (measured in this proof: evidence/<date>/sonic-v13-page-f2-straight.json, 83.7 % of the sounds, 100 % by kind)
+        await page.keyboard.down('KeyE');
+        await sleep(300);
+        await page.keyboard.up('KeyE');
         await page.keyboard.down('KeyW');
         try {
             await until('a counted attempt', () => probe(page), (p) => p !== null && p.events.slice(m0).some((e) => e.kind === 'lesson' && e.what === 'attempt-pass'), 120000);
@@ -727,12 +734,20 @@ async function partF2(browser: Browser, out: Record<string, unknown>): Promise<v
         void k0;
         await openRecPanel(page);
         await until('the replay button', () => page.evaluate(() => !!document.querySelector('.sonicrec-session [data-action="replay"]')), (v) => v, 20000);
+        // the saved package (a voice in it: never committed, it goes to the screenshots' folder outside the repository), for a look at the check in Node
+        const download = page.waitForEvent('download', { timeout: 30000 });
+        await page.focus('.sonicrec-session [data-action="save"]');
+        await page.keyboard.press('Enter');
+        const zip = join(SHOTS, 'f2-recording.zip');
+        await (await download).saveAs(zip);
+        out.ownZip = zip;
         await page.focus('.sonicrec-session [data-action="replay"]');
         await page.keyboard.press('Enter');
         const ready = await until('the replay checked', () => replayState(page), (r) => r?.stage === 'ready' || r?.stage === 'error', 60000);
         const status = await statusText(page);
         const m = /^The replay agrees with the recording: (\d+) of (\d+) events were worked out again, and (\d+) % of the sounds are the same\.$/.exec(status.text);
-        out.ownSummary = { status, check: ready?.check, player: ready?.player };
+        const rows = await page.evaluate(() => ((window as unknown as { __gsfpv: { sonicReplay?: () => { checks: unknown } } }).__gsfpv.sonicReplay?.()?.checks ?? null));
+        out.ownSummary = { status, check: ready?.check, player: ready?.player, details: ready?.details, notes: ready?.notes, rows };
         check('F2: a recording made on this build (rings-first, a counted attempt) opened by the recorder\'s Replay button: the summary is the pass sentence, every recorded event worked out again, the verdict "pass", not marked as a failure', ready?.stage === 'ready' && !!m && m[1] === m[2] && Number(m[2]) > 0 && ready.check?.verdict === 'pass' && ready.check.ok === true && !status.bad, out.ownSummary);
         await page.focus('[data-action="replay-toggle"]');
         await page.keyboard.press('Enter');
