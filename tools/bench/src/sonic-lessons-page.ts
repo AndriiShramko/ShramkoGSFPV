@@ -319,29 +319,29 @@ try {
                     const closed = await page.evaluate(() => ({ hidden: document.getElementById('sonic-start')!.hidden, paused: (window as unknown as { __gsfpv: { session: { paused: boolean } } }).__gsfpv.session.paused }));
                     check('the pause menu offers Fly by Sound; its item shows the start screen over the flight (flight paused), Escape closes it and the flight goes on', open.visible && open.focus === 'sonic-h1' && open.paused && closed.hidden && !closed.paused, { open, closed });
                     const after = await levelOver(page, 1500);
-                    // the motor sound: off in the mode until the settings ask; the top bar's speaker flips it; it plays into the engine,
-                    // through its limiter, on its context. The volume is put to 100 for the test: the motors then are the loudest thing there
-                    // is, and the ceiling of the limiter is what the peak must hold under
+                    // the motor sound: ON in the mode by default since v0.13 (M41-16: the motors play into the engine's motor bus under the cues, through
+                    // its limiter, on its context, from the lesson's start); the top bar's speaker flips it: the first press turns it off, the second on.
+                    // The volume is put to 100 for the test: the motors are then at their loudest, and the ceiling of the limiter is what the peak must hold under
                     type SoundHook = { context: string | null; mix: { master: number } | null };
                     const soundHook = (): Promise<SoundHook | undefined> => page.evaluate(() => (window as unknown as { __gsfpv: { sound?: () => SoundHook } }).__gsfpv.sound?.());
                     const peakNow = (): Promise<number> => page.evaluate(() => (window as unknown as { __tap: { maxPeak: number } }).__tap.maxPeak);
                     const sound0 = await soundHook();
-                    const peak0 = await peakNow();
                     await page.evaluate(() => (window as unknown as { __gsfpv: { prefs: { set(id: string, v: unknown): unknown } } }).__gsfpv.prefs.set('sound.volume', 100));
                     await page.focus('[data-action="sound-toggle"]');
                     await page.keyboard.press('Enter');
                     await sleep(700);
-                    const motorOn = await levelOver(page, 1500);
-                    const sound1 = await soundHook();
-                    const peak1 = await peakNow();
+                    const motorOff = await levelOver(page, 1500);
+                    const soundOff = await soundHook();
                     await page.keyboard.press('Enter');
                     await sleep(700);
-                    const motorOff = await levelOver(page, 1500);
-                    const sound2 = await soundHook();
+                    const motorOn = await levelOver(page, 1500);
+                    const soundOn = await soundHook();
+                    const peakOn = await peakNow();
                     await page.evaluate(() => (window as unknown as { __gsfpv: { prefs: { reset(id: string): void } } }).__gsfpv.prefs.reset('sound.volume'));
                     const acs = await page.evaluate(() => (window as unknown as { __acCount: number }).__acCount);
-                    check('the motor sound in the mode: no graph until asked; the speaker button builds it on the engine\'s own context (one AudioContext, master over 0), the output gets louder and its peak rises but holds under the limiter\'s ceiling (0.5013); off again, the motors fall silent (master 0, the level drops)', !sound0?.context && sound1?.context === 'running' && (sound1.mix?.master ?? 0) > 0 && motorOn > Math.max(after, 0.004) * 2 && peak1 > peak0 && peak1 <= 0.5013 && (sound2?.mix?.master ?? 1) === 0 && motorOff < motorOn * 0.5 && acs === 1, { sound0, sound1: { ctx: sound1?.context, master: sound1?.mix?.master }, sound2: { master: sound2?.mix?.master }, levels: { after, motorOn, motorOff }, peaks: { before: peak0, motorsOn: peak1 }, audioContexts: acs });
-                    check('the sound follows the frames: the height tone sounds (RMS over 1e-3), is silent while the flight is paused behind the start screen (RMS under 1e-4: setLayers none), and is back when the flight goes on', before > 1e-3 && during < 1e-4 && after > 1e-3, { before, during, after });
+                    check('the motor sound in the mode (v0.13: on by default): the graph is on the engine\'s own context from the start (one AudioContext, master over 0); the speaker button\'s first press turns it off (master 0), the second on again (master over 0), the output a little louder with the motors (they play under the cues) and its peak under the limiter\'s ceiling (0.5013)', sound0?.context === 'running' && (sound0.mix?.master ?? 0) > 0 && (soundOff?.mix?.master ?? 1) === 0 && (soundOn?.mix?.master ?? 0) > 0 && motorOn > motorOff * 1.1 && peakOn <= 0.5013 && acs === 1, { sound0: { ctx: sound0?.context, master: sound0?.mix?.master }, soundOff: { master: soundOff?.mix?.master }, soundOn: { master: soundOn?.mix?.master }, levels: { after, motorOff, motorOn, ratio: Math.round((motorOn / motorOff) * 1000) / 1000 }, peakOn, audioContexts: acs });
+                    // the pause leaves the motors' own floor (about 1e-4 RMS, measured: the motors are on by default since v0.13); the tone's silence is a factor of 20 or more under its level
+                    check('the sound follows the frames: the height tone sounds (RMS over 1e-3), is silent while the flight is paused behind the start screen (RMS under 3e-4 and 20 times under the tone: setLayers none, only the motors\' floor is left), and is back when the flight goes on', before > 1e-3 && during < 3e-4 && during * 20 < before && after > 1e-3, { before, during, after });
                 } else check('the pause menu offers a Fly by Sound item', false);
             }
             const withEvents = await probe(page, true);

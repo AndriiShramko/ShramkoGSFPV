@@ -974,10 +974,24 @@ async function soundProofRings(ctx: BrowserContext): Promise<Record<string, unkn
     check(`rings-heights: the height tone at the craft's height (${round(craftH, 2)} m), drawn in the tone's colour`, bar.toneM !== null && Math.abs(bar.toneM - craftH) < 0.05 && !!bar.tone?.isToneColour && bar.tone.contrast >= 4.5, bar);
     check('rings-heights: the attitude tape draws the same height to fly at', rep.attitude!.state!.targetM !== null && Math.abs(rep.attitude!.state!.targetM - want) < 0.01 && ((a.contrast as Record<string, number | null>).target ?? 0) >= 4.5, { targetM: rep.attitude!.state!.targetM, contrast: a.contrast });
     await freeze(page, false);
+    // v13-int step 2: the target note comes from its target now (the package's heightDirection on, the default), so it is a disc on the radar too, at its
+    // direction and drawn as the target's, beside the gate's hum; it sounds for a part of every second, so the panel is read until a note is on it
+    let note: RadarItemLike | undefined;
+    let hum: RadarItemLike[] = [];
+    for (const t0 = Date.now(); Date.now() - t0 < 8000 && !note;) {
+        const r = await panels(page);
+        const items = (r.sound?.items ?? []) as unknown as RadarItemLike[];
+        note = items.find((i) => i.id === 'height.target');
+        hum = items.filter((i) => i.kind === 'target' && i.id !== 'height.target');
+        if (!note) await sleep(40);
+    }
+    check('rings-heights: while the target note sounds it is a disc on the radar at its direction (not an event on the craft, not at the height bar\'s end), drawn as the target\'s, beside the gate\'s hum', !!note && note.kind === 'target' && note.event === false && note.bar === null && hum.length >= 1, { note, hum });
     check('rings-heights: no page error', errors.length === 0, errors);
     await page.close();
-    return { sounds: m, attitude: a };
+    return { sounds: m, attitude: a, note: { note, hum } };
 }
+/** The radar items the page reports, as far as this proof reads them (sound-panel.ts RadarItem). */
+interface RadarItemLike { id: string; kind: string; event: boolean; bar: string | null; elev: string | null }
 
 /** A step that plays its sound three times: walls-pillar's task plays the pillar's tick (safety.obstacle); in English and Polish. */
 async function soundProofRepeat(ctx: BrowserContext, lang: 'en' | 'pl'): Promise<Record<string, unknown>> {
