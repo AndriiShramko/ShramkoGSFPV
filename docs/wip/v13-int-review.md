@@ -221,3 +221,30 @@ the probes read what the engine was asked to say, what reached `speechSynthesis.
   a restart after a reset) makes two new lives (`leave()` takes the lesson's bump off, `enter()` puts it back), each a 'life' event.
 - Not judged: how any line, sound, caption or panel feels to a blind, deaf or low-vision pilot; a real screen reader (F4's consequence
   for NVDA and JAWS is the code's own design note, not tried); a real phone or browser zoom.
+
+## Fixes
+
+The fixer's pass (one agent): each finding and each known item K1 to K6 of the lead tried against the code first, then a test that
+fails before the fix, the fix, the test passing, one commit per defect. Simulator commits on `v13-int`, the sound package's on `s13-int`
+in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). Format: finding, commit, test, control.
+
+- K1 (a flight dead ahead at a wall replays FAIL): holds. Cause: the two front-side sectors of the scene sampler tie on the wall's axis;
+  a yaw under what a recording keeps (its quaternion to 1e-4) broke the tie toward one side live and stickiness kept that voice, while
+  the replay of the rounded frame saw the tie exact and broke it by the order of the sectors (front-left first). Reproduced in Node
+  before any fix: the lesson rig with a yaw of -1e-5 rad at the attempt's start replayed with 89.2 % of its sounds by id (front-right
+  live, front-left in the replay), +1e-5 rad and none at 100 %. Not the frame rate, not the hold: the same flight at 60 and 30 Hz agrees
+  once the tie is exact. Fixed at the cause in the package: two mirror sectors whose risks lie within 2 % of each other are one tie for
+  turning on, holding, turning off and ranking (the voice's own urgency stays), the same code live and in the replay. Package s13-int
+  c819995 (`test/mirror-tie.test.ts`, 12 tests; control `mirrorDeadBand: 0`: front-right live and front-left in the replay over 20
+  frames; the code control, the band 0 by default, fails 3), gitlink eafd417; simulator `tools/bench/test/sonic-k1-straight.test.ts`
+  (rings-first, W alone, a yaw the recording rounds away, the real FrameSampler and the file's rounding: 100 % of the sounds by id,
+  verdict pass; control, the sampler's rule before the fix live and in the replay: front-right live, front-left replayed, under 95 %
+  by id and 100 % by kind, verdict fail). The page's straight run: below, with the page proofs.
+- K3 (the package's own Russian and Polish lines still say "Fly by Sound"): holds. Package s13-int eafd417: `app.name` and
+  `menu.welcome` in ru and pl name the mode as the simulator does; their lengths measured again with Irina and Paulina (only those four
+  values changed of 471 lines each: app.name ru 2.6 -> 2.08 s, pl 1.79 -> 1.675 s; menu.welcome ru 15.2 -> 15.405 s, pl 12.535 ->
+  12.705 s); the words check (`pnpm listen:words`) hears all four exactly (before: Irina "F.L.Y.B.Y. Sound" and "FLUI BUI SOUND",
+  Paulina "Flajby Sound", kept at 0 only by two records, now removed); ru 511 of 526 lines heard exactly (510), pl 516 (516), PASS.
+  Test: `test/locales.test.ts` (the text kept from English is app.name in Spanish only; it failed on the rename until the expectation
+  followed), `test/words.test.ts` (failed on the old evidence until the check ran again). How a native speaker hears the two names:
+  not judged.
