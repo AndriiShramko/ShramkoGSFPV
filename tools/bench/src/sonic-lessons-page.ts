@@ -8,9 +8,9 @@
 // not dominated by speech; a tap in front of the destination measures what the engine produced.
 //   ears-headphones   N once (skips the intro), then a digit for each question from the sound that was played;
 //   shapes-square     W held: through the square, two of three;
-//   rings-first       W held: through the ring, eight of ten; after the pass the next lesson of the path opens in the page
+//   rings-first       W held: through the ring, the lesson's required number of gates (3 since v0.13); after the pass the next lesson of the path opens in the page
 //                     (its world swapped in) and the engine, the page and the one AudioContext go on;
-//   hover-height      Space until the craft is in the 2 to 3 m band, then nothing (the height is held): four of five;
+//   hover-height      Space until the craft is in the 2 to 3 m band, then nothing (the height is held): the lesson's required number of attempts (3 since v0.13);
 //                     Escape and the pause menu's "Fly by Sound" item open the start screen over the flight and Escape closes it.
 // Module 7 is a scan (step 10); the first lessons of modules 2, 3 and 4 are passed through the same host in
 // tools/bench/test/sonic-lessons.test.ts (virtual time, the real flight model), not here: they take minutes of real time.
@@ -21,7 +21,7 @@ import { mkdirSync, rmdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
-import { defaultPrefs } from '../../../packages/sonic-fpv/src';
+import { defaultPrefs, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
 import { launch } from './browser';
 import { REPO, today, writeEvidence } from './evidence';
 
@@ -275,24 +275,35 @@ try {
             if (id === 'hover-height' && !menuChecked && last.phase === 'flying' && last.pos[1] > 2.2) {
                 menuChecked = true;
                 await hold(page, state, 'Space', false);
-                // Z says the last line again, I says where the pilot is: both are speech events of the mode (and captions)
-                const speechOf = async (): Promise<{ key?: string; text?: string }[]> => (await probe(page, true)).events.filter((e) => e.kind === 'speech' && e.key !== 'speech.end');
-                const lines0 = await speechOf();
-                const lastKey = lines0.at(-1)?.key;
+                // v0.13 (v13-host B3, B4): Z repeats the whole task, not the last line: the key is written first (action repeat), then the lesson's title,
+                // every line of its task (the sounds they name played three times) and "Go on." at the end, the attempt waiting meanwhile; I says the
+                // runner's status line (lesson k of n, step, attempt, counted). Both are speech events of the mode (and captions); the lesson may say a
+                // line of its own meanwhile, so the events after the key are searched in order, not counted.
+                type Ev = { kind: string; key?: string; text?: string; action?: string };
+                const eventsNow = async (): Promise<Ev[]> => (await probe(page, true)).events as unknown as Ev[];
+                const speechAfter = (list: Ev[]): Ev[] => list.filter((e) => e.kind === 'speech' && e.key !== 'speech.end');
+                const lesson = getLesson(id);
+                const nZ = (await eventsNow()).length;
                 await page.keyboard.press('KeyZ');
-                await sleep(500);
-                const lines1 = await speechOf();
+                let afterZ: Ev[] = [];
+                for (const t1 = Date.now(); Date.now() - t1 < 90000;) {
+                    afterZ = (await eventsNow()).slice(nZ);
+                    if (afterZ.some((e) => e.kind === 'speech' && e.key === 'fly.go-on')) break;
+                    await sleep(300);
+                }
+                const zSpeech = speechAfter(afterZ);
+                const nI = (await eventsNow()).length;
                 await page.keyboard.press('KeyI');
                 await sleep(500);
-                const lines2 = await speechOf();
-                // (the lesson may say a line of its own meanwhile: the new events are searched, not counted)
-                const afterZ = lines1.slice(lines0.length);
-                const afterI = lines2.slice(lines1.length);
-                check('Z says the last line again (a new speech event with the key of the last one) and I says where the pilot is (a new status line with the lesson and its attempt)', !!lastKey && afterZ.some((e) => e.key === lastKey) && afterI.some((e) => e.key === 'status.lesson' && /Attempt \d/.test(e.text ?? '')), { lastKey, z: afterZ.map((e) => e.key), i: afterI.map((e) => e.text) });
+                const afterI = speechAfter((await eventsNow()).slice(nI));
+                const statusLine = afterI.find((e) => e.key === 'status.progress');
+                const place = lessonPaths().full.indexOf(id) + 1;
+                check('Z repeats the whole task (its key event first, then the lesson\'s title, every line of the task, "Go on." last) and I says where the pilot is (the runner\'s status line: lesson k of n, step, attempt, counted)', afterZ.find((e) => e.kind === 'key')?.action === 'repeat' && zSpeech[0]?.key === lesson.title.key && lesson.intro.every((l) => zSpeech.some((e) => e.key === l.key)) && zSpeech.at(-1)?.key === 'fly.go-on' && !!statusLine && (statusLine.text ?? '').startsWith(`Lesson ${place} of ${lessonPaths().full.length}: `) && /Step \d+ of \d+\. Attempt \d+\. Counted \d+ of \d+\.$/.test(statusLine.text ?? ''), { z: zSpeech.map((e) => e.key), i: afterI.map((e) => e.text) });
                 // the height tone sounds while the flight runs
                 const before = await levelOver(page, 900);
-                // the pause menu's Fly by Sound item opens the start screen over the flight; Escape closes it
-                await page.keyboard.press('Escape');
+                // the pause menu's Fly by Sound item opens the start screen over the flight; Escape closes it. Since v0.13 (v13-host B6) Escape in a
+                // lesson opens the lesson menu: the page's pause menu is on P
+                await page.keyboard.press('KeyP');
                 await page.waitForSelector('[data-action="pause.sonic"]', { timeout: 5000 }).catch(() => undefined);
                 const item = await page.$('[data-action="pause.sonic"]');
                 if (item) {
@@ -367,10 +378,10 @@ try {
         if (id === 'ears-headphones') {
             check('ears-headphones: three questions answered by digit keys, right (the lesson says the headphones work well)', answers.length >= 3 && answers.every((a) => a.via === 'key' && a.value !== null) && end.events.some((e) => e.kind === 'speech' && e.key === 'headphones.good'), answers.map((a) => a.value));
         } else if (id === 'hover-height') {
-            check('hover-height: four attempts met the goal (20 s in the 2 to 3 m band, 80 % of the time)', end.events.filter((e) => e.kind === 'goal' && e.what === 'met').length >= 4, undefined);
+            check(`hover-height: the lesson's required number of attempts (${getLesson('hover-height').pass.required}) met the goal (the lesson's own, in the 2 to 3 m band)`, end.events.filter((e) => e.kind === 'goal' && e.what === 'met').length >= getLesson('hover-height').pass.required, undefined);
             check('hover-height: the motors started by the first press of Space (no arm switch)', last.armed || end.armed, undefined);
         } else {
-            check(`${id}: gates passed, each inside the opening`, gates.length >= (id === 'rings-first' ? 8 : 2) && gates.every((g) => (g as unknown as { missM: number }).missM < 1.5), gates.length);
+            check(`${id}: gates passed, each inside the opening`, gates.length >= getLesson(id).pass.required && gates.every((g) => (g as unknown as { missM: number }).missM < 1.5), gates.length);
         }
         // what follows a pass: the next lesson of the path opens in the page
         if (passed) {

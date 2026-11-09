@@ -30,7 +30,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
-import { DICTS, SHIPPED_LESSON_IDS, createTranslator, defaultPrefs, getLesson, lessonPaths } from '../../../packages/sonic-fpv/src';
+import { DICTS, SHIPPED_LESSON_IDS, createTranslator, defaultPrefs, getLesson, lessonPaths, readPackage } from '../../../packages/sonic-fpv/src';
 import type { LessonProgress, SonicPrefs } from '../../../packages/sonic-fpv/src';
 import { launchChrome } from './browser';
 import { REPO, today, writeEvidence } from './evidence';
@@ -83,6 +83,7 @@ process.on('SIGINT', () => {
 const flyDict = (ns: string): Record<string, string> => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', ns, 'en.json'), 'utf8')) as Record<string, string>;
 const MAIN = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'en.json'), 'utf8')) as Record<string, string>;
 const SONIC = { ...flyDict('sonicentry'), ...flyDict('sonic') };
+const LOOK = flyDict('soniclook');
 const EN = createTranslator('en', DICTS);
 const fill = (s: string, vars: Record<string, string | number>): string => Object.entries(vars).reduce((a, [k, v]) => a.split(`{${k}}`).join(String(v)), s);
 const TOTAL = SHIPPED_LESSON_IDS.length;
@@ -122,18 +123,19 @@ const initScript = (d: object): string => `(() => {
   window.__name = (f) => f;
   try { if (!localStorage.getItem('gsfpv.prefs.v1')) localStorage.setItem('gsfpv.prefs.v1', ${JSON.stringify(JSON.stringify(d))}); } catch (e) {}
   window.__spoken = [];
+  window.__spokenAt = [];
   window.__cancels = 0;
   try {
     const s = window.speechSynthesis;
     const sp = s.speak.bind(s);
     const cancel = s.cancel.bind(s);
-    s.speak = (u) => { window.__spoken.push(u.text); return sp(u); };
+    s.speak = (u) => { window.__spoken.push(u.text); window.__spokenAt.push(performance.now()); return sp(u); };
     s.cancel = () => { window.__cancels++; return cancel(); };
   } catch (e) {}
 })();`;
 
-async function profile(browser: Browser, d: object): Promise<BrowserContext> {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+async function profile(browser: Browser, d: object, scheme?: 'light' | 'dark'): Promise<BrowserContext> {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1, ...(scheme ? { colorScheme: scheme } : {}) });
     await ctx.addInitScript({ content: initScript(d) });
     return ctx;
 }
@@ -151,6 +153,12 @@ async function until<T>(what: string, read: () => Promise<T>, pred: (v: T) => bo
 
 /** The lines that reached the browser's voice, in order (the empty utterance that unlocks speech in the first press left out: it says nothing). */
 const spoken = (page: Page): Promise<string[]> => page.evaluate(() => [...((window as unknown as { __spoken?: string[] }).__spoken ?? [])].filter((x) => x !== ''));
+/** Every utterance with the page's clock (performance.now) at the moment it reached the browser's voice; the empty unlocking utterance left out. */
+const spokenAt = (page: Page): Promise<{ text: string; at: number }[]> =>
+    page.evaluate(() => {
+        const w = window as unknown as { __spoken?: string[]; __spokenAt?: number[] };
+        return (w.__spoken ?? []).map((text, i) => ({ text, at: w.__spokenAt?.[i] ?? 0 })).filter((x) => x.text !== '');
+    });
 const cancels = (page: Page): Promise<number> => page.evaluate(() => (window as unknown as { __cancels?: number }).__cancels ?? 0);
 const ready = (page: Page): Promise<string | null> => page.evaluate(() => (window as unknown as { __gsfpv?: { status?: string } }).__gsfpv?.status ?? null);
 const pausedNow = (page: Page): Promise<boolean | null> => page.evaluate(() => (window as unknown as { __gsfpv?: { session?: { paused?: boolean } } }).__gsfpv?.session?.paused ?? null);
@@ -166,6 +174,14 @@ const saved = (page: Page): Promise<{ prefs: Record<string, unknown> | null; pro
         const d = JSON.parse(localStorage.getItem('gsfpv.prefs.v1') ?? 'null') as { collections?: { sonic?: { prefs?: Record<string, unknown>; progress?: Record<string, LessonProgress>; current?: string | null } } } | null;
         const s = d?.collections?.sonic;
         return { prefs: s?.prefs ?? null, progress: s?.progress ?? {}, current: s?.current ?? null };
+    });
+
+/** The three switches v13-int added, as saved: the package's setting in the sound document, the two panels in the collection beside it (absent: on). */
+const savedSwitches = (page: Page): Promise<{ heightDirection: unknown; soundPanel: unknown; attitude: unknown }> =>
+    page.evaluate(() => {
+        const d = JSON.parse(localStorage.getItem('gsfpv.prefs.v1') ?? 'null') as { collections?: { sonic?: { prefs?: Record<string, unknown>; soundPanel?: unknown; attitude?: unknown } } } | null;
+        const s = d?.collections?.sonic;
+        return { heightDirection: s?.prefs?.heightDirection, soundPanel: s?.soundPanel, attitude: s?.attitude };
     });
 
 interface SpeechEvent { kind: string; key?: string; text?: string; t?: number; what?: string; lessonId?: string }
@@ -344,6 +360,27 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         out.heightTarget = { target, saved: targetSaved };
         check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === 'Target height note: on. Item 9 of 14. | Target height note: off' && targetSaved === false, out.heightTarget);
         await shot(page, 'c-settings', 'the settings with Motor volume at -9 dB and the target note off');
+        // v13-int step 3 and 10: the three switches the integration added, by the same keys. Down to each (the stop said with its place), Enter turns
+        // it off (the new value said): every line is what reached the browser's voice through the engine. Sound from above and below comes after the
+        // target note (stop 10 of 14, said with its description), the sound panel and the horizon display after the frame (12 and 13).
+        const DIRECTION = EN.say('menu.setting.height-direction');
+        const WHAT = EN.say('menu.setting.height-direction-what').replace(/[.]$/, '');
+        const PANEL = LOOK['soniclook.setting.soundPanel'] ?? '-';
+        const HORIZON = LOOK['soniclook.setting.attitude'] ?? '-';
+        const turn = async (downs: number): Promise<string[]> => {
+            const n1 = (await spoken(page)).length;
+            await key(page, 'ArrowDown', downs);
+            await key(page, 'Enter');
+            return (await spoken(page)).slice(n1);
+        };
+        const dirLines = await turn(1);
+        const panelLines = await turn(2);
+        const horizonLines = await turn(1);
+        const offSaved = await until('the three switches saved', () => savedSwitches(page), (x) => x.heightDirection === false && x.soundPanel === false && x.attitude === false, 5000).catch(async () => savedSwitches(page));
+        out.switches = { dirLines, panelLines, horizonLines, saved: offSaved };
+        check('C: Down to Sound from above and below (said with its description and "Item 10 of 14"), Enter turns it off (said), saved in the sound document', dirLines.join(' | ') === `${DIRECTION}: on. ${WHAT}. Item 10 of 14. | ${DIRECTION}: off` && offSaved.heightDirection === false, { dirLines, saved: offSaved.heightDirection });
+        check('C: two Downs to the sound panel switch (the frame\'s stop said on the way, then "Item 12 of 14"), Enter turns it off (said), saved beside the progress', panelLines.length === 3 && /Item 11 of 14[.]$/.test(panelLines[0] ?? '') && panelLines[1] === `${PANEL}: on. Item 12 of 14.` && panelLines[2] === `${PANEL}: off` && offSaved.soundPanel === false, { panelLines, saved: offSaved.soundPanel });
+        check('C: Down to the horizon and height display ("Item 13 of 14"), Enter turns it off (said), saved beside the progress', horizonLines.join(' | ') === `${HORIZON}: on. Item 13 of 14. | ${HORIZON}: off` && offSaved.attitude === false, { horizonLines, saved: offSaved.attitude });
         // Escape: back to the first Start button, said
         n = (await spoken(page)).length;
         await key(page, 'Escape');
@@ -354,9 +391,12 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         check('C: the lines cut each other (the browser\'s voice cancelled for each new stop)', (await cancels(page)) >= 10, { cancels: await cancels(page) });
         await page.reload();
         await page.waitForSelector('[data-testid="sonic-motor-level"]', { timeout: 60000 });
-        const read = await page.evaluate(() => ({ level: (document.querySelector('[data-testid="sonic-motor-level"]') as HTMLInputElement).value, target: (document.querySelector('[data-testid="sonic-height-target"]') as HTMLInputElement).checked }));
+        const read = await page.evaluate(() => {
+            const box = (id: string): boolean | null => (document.querySelector(`[data-testid="${id}"]`) as HTMLInputElement | null)?.checked ?? null;
+            return { level: (document.querySelector('[data-testid="sonic-motor-level"]') as HTMLInputElement).value, target: box('sonic-height-target'), direction: box('sonic-height-direction'), soundPanel: box('sonic-look-soundPanel'), attitude: box('sonic-look-attitude') };
+        });
         out.readBack = read;
-        check('C: after a reload the settings read back: Motor volume -9 dB, the target note off', read.level === '-9' && read.target === false, read);
+        check('C: after a reload the settings read back: Motor volume -9 dB, the target note off, sound from above and below off, the sound panel and the horizon display off', read.level === '-9' && read.target === false && read.direction === false && read.soundPanel === false && read.attitude === false, read);
     } finally {
         await ctx.close();
     }
@@ -396,33 +436,312 @@ async function partDE(browser: Browser, out: Record<string, unknown>): Promise<v
         const closed = await until('the menu to close', () => probe(page), (p) => p?.menu.open === false, 5000);
         await sleep(300);
         check('D: Escape lets the flight go and the lesson goes on', closed?.menu.open === false && (await pausedNow(page)) === false && closed.lesson === 'rings-first', { lesson: closed?.lesson, paused: await pausedNow(page) });
-        // E: through the ring with W held, until the first attempt is counted
+        // E: through the ring with W held, until the first attempt is counted (the same function runs again on a dark page, E2)
+        const e = await runE(page, 'light', out);
+        check('D, E: no page error in the lesson', errors.length === 0, errors);
+        out.lessonStart = { phase: p0?.phase, events: e.events };
+    } finally {
+        await ctx.close();
+    }
+}
+
+/**
+ * E (M41-7), on a light or a dark page: W held through the ring until the first attempt is counted, then the progress panel: rings-first's place,
+ * the step, "Attempt 1" and "Counted 1 of 3" (the runner's view, the same text as the hook's), large, bold, opaque, in the left part of the page and
+ * not over the view's middle, white on black on a dark page and black on white on a light one with the edge the other way (sonic.css).
+ */
+async function runE(page: Page, scheme: 'light' | 'dark', out: Record<string, unknown>): Promise<{ events: number }> {
+    const tag = scheme === 'dark' ? 'E (dark page)' : 'E';
+    const m0 = (await probe(page))?.events.length ?? 0;
+    await page.keyboard.down('KeyW');
+    let pe: Probe | null = null;
+    try {
+        pe = await until('a counted attempt', () => probe(page), (p) => p !== null && p.events.slice(m0).some((e) => e.kind === 'lesson' && e.what === 'attempt-pass'), 120000);
+    } finally {
+        await page.keyboard.up('KeyW');
+    }
+    await sleep(400);
+    const pv = (await probe(page)) as Probe;
+    const panel = await page.evaluate(() => {
+        const el = document.querySelector<HTMLElement>('[data-testid="sonic-progress"]') ?? document.querySelector<HTMLElement>('.sonic-progress');
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        return { text: el.innerText, hidden: el.hidden, left: r.left, top: r.top, width: r.width, height: r.height, font: cs.fontSize, weight: cs.fontWeight, color: cs.color, background: cs.backgroundColor, edge: cs.borderTopColor, vw: innerWidth, vh: innerHeight };
+    });
+    const rows = (panel?.text ?? '').split('\n').map((x) => x.trim()).filter((x) => x !== '');
+    out[scheme === 'dark' ? 'panelDark' : 'panel'] = { panel, hookPanel: pv.panel, attempt: pv.attempt, progress: pv.progress['rings-first'] };
+    await shot(page, scheme === 'dark' ? 'e-progress-panel-dark' : 'e-progress-panel', `the progress panel after the first counted attempt of rings-first, ${scheme} page`);
+    const lessonPlace = fill(SONIC['sonic.progress.lesson'] ?? '', { n: lessonPaths().full.indexOf('rings-first') + 1, total: TOTAL });
+    check(`${tag}: after a counted attempt the panel shows rings-first's place (${lessonPlace}), the step (2 of 2), "Attempt 1" and "Counted 1 of 3", as the hook's text`, !!panel && !panel.hidden && rows.some((r) => r === lessonPlace) && rows.some((r) => r === fill(SONIC['sonic.progress.step'] ?? '', { n: 2, total: 2 })) && rows.some((r) => r === fill(SONIC['sonic.progress.attempt'] ?? '', { n: 1 })) && rows.some((r) => r === fill(SONIC['sonic.progress.counted'] ?? '', { n: 1, total: getLesson('rings-first').pass.required })) && pv.panel.split('\n').every((r) => rows.includes(r.trim()) || r.trim() === ''), { rows, hook: pv.panel });
+    const font = parseFloat(panel?.font ?? '0');
+    check(`${tag}: the panel is large (18 px or more), bold, opaque, in the left part of the page and not over the view's middle`, !!panel && font >= 18 && Number(panel.weight) >= 600 && !/rgba\([^)]*,\s*0(\.\d+)?\)/.test(panel.background) && panel.left + panel.width <= panel.vw * 0.35 && panel.left < panel.vw / 2, panel);
+    const ink = scheme === 'dark' ? ['rgb(255, 255, 255)', 'rgb(0, 0, 0)', 'rgb(255, 255, 255)'] : ['rgb(0, 0, 0)', 'rgb(255, 255, 255)', 'rgb(0, 0, 0)'];
+    check(`${tag}: on a ${scheme} page the panel is ${scheme === 'dark' ? 'white on black, its edge white' : 'black on white, its edge black'} (the page's scheme, not a fixed one)`, !!panel && panel.color === ink[0] && panel.background === ink[1] && panel.edge === ink[2], { color: panel?.color, background: panel?.background, edge: panel?.edge });
+    return { events: (pe?.events.length ?? 0) - m0 };
+}
+
+/** The panels as the page shows them: the sound panel and the horizon display (hidden while a switch is off). */
+const panelsShown = (page: Page): Promise<{ sounds: boolean; attitude: boolean }> =>
+    page.evaluate(() => {
+        const on = (sel: string): boolean => {
+            const el = document.querySelector<HTMLElement>(sel);
+            return !!el && !el.hidden && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
+        };
+        return { sounds: on('.sonic-sounds'), attitude: on('.sonic-attitude') };
+    });
+
+/**
+ * C2 (v13-int steps 3 and 10): the sound panel's and the horizon display's switches at once, in a lesson that flies: both panels are on the page; the
+ * lesson menu's "Sound settings" opens the settings over the flight; Enter on the sound panel's switch (reached with the focus, then the list's key)
+ * takes that panel off the page, Enter again puts it back, each said and each at once (within a second); the same for the horizon display, the
+ * other panel never touched; both off, the screen closed with Escape, the flight goes on without them; the page opened again later has them off.
+ */
+async function partC2(browser: Browser, out: Record<string, unknown>): Promise<void> {
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
+    const page = await ctx.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
+    try {
+        await page.goto(`${SITE}/en/fly/?sonic=hover-height&nowarn=1`);
+        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        await until('hover-height to run', () => probe(page), (p) => p !== null && p.lesson === 'hover-height', 120000);
+        const start = await until('both panels', () => panelsShown(page), (x) => x.sounds && x.attitude, 20000).catch(async () => panelsShown(page));
+        check('C2: in a lesson that flies both panels are on the page (a pilot who never set them)', start.sounds && start.attitude, start);
+        // the lesson menu: Escape, six Downs to "Sound settings" (the seventh of eight items), Enter: the settings over the flight
+        await key(page, 'Escape');
+        await until('the lesson menu', () => probe(page), (p) => p?.menu.open === true, 10000);
+        await key(page, 'ArrowDown', 6);
+        await key(page, 'Enter');
+        await page.waitForSelector('#sonic-start:not([hidden])', { timeout: 10000 });
+        const result: Record<string, unknown> = { start };
+        for (const sw of [{ id: 'sonic-look-soundPanel', panel: 'sounds', other: 'attitude', name: LOOK['soniclook.setting.soundPanel'] ?? '-' }, { id: 'sonic-look-attitude', panel: 'attitude', other: 'sounds', name: LOOK['soniclook.setting.attitude'] ?? '-' }] as const) {
+            await page.focus(`[data-testid="${sw.id}"]`);
+            const n1 = (await spoken(page)).length;
+            await page.keyboard.press('Enter');
+            const t0 = Date.now();
+            const off = await until(`${sw.panel} off`, () => panelsShown(page), (x) => !x[sw.panel], 2000).then((x) => ({ ms: Date.now() - t0, shown: x })).catch(async () => ({ ms: -1, shown: await panelsShown(page) }));
+            await key(page, 'Enter');
+            const t1 = Date.now();
+            const back = await until(`${sw.panel} on`, () => panelsShown(page), (x) => x[sw.panel], 2000).then((x) => ({ ms: Date.now() - t1, shown: x })).catch(async () => ({ ms: -1, shown: await panelsShown(page) }));
+            const lines = (await spoken(page)).slice(n1);
+            result[sw.panel] = { off, back, lines };
+            check(`C2: Enter on "${sw.name}" takes the ${sw.panel === 'sounds' ? 'sound panel' : 'horizon display'} off the page at once (${off.ms} ms), the other one stays; Enter again puts it back (${back.ms} ms); each value said`, off.ms >= 0 && off.ms <= 1000 && !off.shown[sw.panel] && off.shown[sw.other] && back.ms >= 0 && back.ms <= 1000 && back.shown[sw.panel] && back.shown[sw.other] && lines.some((l) => l === `${sw.name}: off`) && lines.some((l) => l === `${sw.name}: on`), result[sw.panel]);
+        }
+        // both off, the screen closed: the flight goes on without them
+        for (const id of ['sonic-look-soundPanel', 'sonic-look-attitude']) {
+            await page.focus(`[data-testid="${id}"]`);
+            await page.keyboard.press('Enter');
+        }
+        const bothOff = await until('both panels off', () => panelsShown(page), (x) => !x.sounds && !x.attitude, 2000).catch(async () => panelsShown(page));
+        await shot(page, 'c2-settings-over-flight', 'the settings over the flight with both panels switched off');
+        await key(page, 'Escape');
+        await until('the screen to close', () => page.evaluate(() => (document.getElementById('sonic-start') as HTMLElement).hidden === true), (v) => v, 5000);
+        await sleep(600);
+        const after = await panelsShown(page);
+        const saved = await until('both saved', () => savedSwitches(page), (x) => x.soundPanel === false && x.attitude === false, 5000).catch(async () => savedSwitches(page));
+        result.bothOff = bothOff;
+        result.after = after;
+        result.saved = saved;
+        out.switchesInLesson = result;
+        check('C2: both switched off, the screen closed with Escape: the lesson goes on without either panel, both saved off', !bothOff.sounds && !bothOff.attitude && !after.sounds && !after.attitude && saved.soundPanel === false && saved.attitude === false && (await probe(page))?.lesson === 'hover-height', { bothOff, after, saved });
+        // the page opened again later (the saved document): the lesson flies, neither panel on the page
+        await page.goto(`${SITE}/en/fly/?sonic=hover-height&nowarn=1`);
+        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        await until('hover-height to run again', () => probe(page), (p) => p !== null && p.lesson === 'hover-height', 120000);
+        await sleep(1500);
+        const again = await panelsShown(page);
+        out.switchesAgain = again;
+        check('C2: the lesson opened again later has neither panel on the page (read back from the saved document)', !again.sounds && !again.attitude, again);
+        check('C2: no page error', errors.length === 0, errors);
+    } finally {
+        await ctx.close();
+    }
+}
+
+/** E2 (v13-int step 10): the progress panel on a dark page, the same checks as E (white on black). */
+async function partE2(browser: Browser, out: Record<string, unknown>): Promise<void> {
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }), 'dark');
+    const page = await ctx.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
+    try {
+        await page.goto(`${SITE}/en/fly/?sonic=rings-first`);
+        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        await until('rings-first to run', () => probe(page), (p) => p !== null && p.lesson === 'rings-first', 120000);
+        await sleep(1500);
+        const dark = await page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches);
+        check('E (dark page): the page is drawn for a dark colour scheme', dark, { dark });
+        await runE(page, 'dark', out);
+        check('E (dark page): no page error in the lesson', errors.length === 0, errors);
+    } finally {
+        await ctx.close();
+    }
+}
+
+// ------------------------------------------------------------------ F: the replay in a page (v13-int step 11: W9 and W10 were held in Node only)
+
+interface ReplayState { stage: string; check: { ok: boolean; summary: string; verdict?: string } | null; notes: string[]; details: string; player: { phase: string; tMs: number; durationMs: number; lesson: string | null } | null }
+const replayState = (page: Page): Promise<ReplayState | null> => page.evaluate(() => ((window as unknown as { __gsfpv: { sonicReplay?: () => { state: unknown } } }).__gsfpv.sonicReplay?.()?.state ?? null)) as Promise<ReplayState | null>;
+const REC = JSON.parse(readFileSync(join(REPO, 'packages', 'i18n', 'locales', 'fly', 'sonicrec', 'en.json'), 'utf8')) as Record<string, string>;
+const statusText = (page: Page): Promise<{ text: string; bad: boolean }> => page.evaluate(() => { const el = document.querySelector('.sonicrec-replay-status'); return { text: (el?.textContent ?? '').trim(), bad: el?.classList.contains('bad') ?? false }; });
+
+/** A lesson that flies, opened by Enter on the start screen's button, its task skipped with N until the attempt flies (the replay needs the mode running). */
+async function openFlying(page: Page, lesson: string): Promise<void> {
+    await page.goto(`${SITE}/en/fly/?sonic=${lesson}&nowarn=1`);
+    await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+    await page.focus('[data-testid="sonic-start-asked"]');
+    await page.keyboard.press('Enter');
+    await until(`${lesson} to run`, () => probe(page), (p) => p !== null && p.lesson === lesson, 120000);
+    for (const t0 = Date.now(); Date.now() - t0 < 60000;) {
+        const p = await probe(page);
+        if (p?.phase === 'flying') break;
+        if (p?.phase === 'intro') await page.keyboard.press('KeyN');
+        await sleep(400);
+    }
+}
+
+/** The recorder's panel opened (its toggle button): the replay's button and the sessions are in it. */
+async function openRecPanel(page: Page): Promise<void> {
+    await until('the recordings panel', () => page.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 20000);
+    await page.evaluate(() => { const b = document.querySelector('.sonicrec-toggle') as HTMLElement; if (document.querySelector('.sonicrec-panel')?.hasAttribute('hidden')) b.click(); });
+}
+
+/**
+ * F1 (W9, W10): the package's v0.12 recording of rings-first (the fixture, a flight of 21.9 s with 7 spoken lines) opened as a file in the page's
+ * replay: the summary is the older-build sentence (not a FAIL, not marked as one); played, the engine is asked for the older-build line first and then
+ * every recorded line in order, each not before its time on the package clock (the 5 of the lesson's start at 0.5 s, "Go." at 14.4 s, "Attempt 2." at
+ * 19.9 s), what reached the browser's voice; a seek to 10 s passes the lines before it: played on, only "Go." and "Attempt 2." follow.
+ */
+async function partF1(browser: Browser, out: Record<string, unknown>): Promise<void> {
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
+    const page = await ctx.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
+    try {
+        await openFlying(page, 'hover-height');
+        await openRecPanel(page);
+        await page.waitForSelector('[data-action="replay-open"]', { timeout: 10000 });
+        const file = join(REPO, 'packages', 'sonic-fpv', 'test', 'fixtures', 'session-v012-rings-first.zip');
+        const pkg = readPackage(new Uint8Array(readFileSync(file)));
+        const recorded = pkg.events.filter((e) => e.kind === 'speech' && (e as { key?: string }).key !== 'speech.end') as unknown as { t: number; key: string; text: string }[];
+        const older = fill(SONIC['sonic.say.replayOlder'] ?? '', { recorded: 1, here: getLesson('rings-first').version });
+        await page.setInputFiles('[data-testid="replay-file"]', file);
+        const ready = await until('the replay checked', () => replayState(page), (r) => r?.stage === 'ready' || r?.stage === 'error', 60000);
+        const status = await statusText(page);
+        out.olderSummary = { status, check: ready?.check, notes: ready?.notes, details: ready?.details?.slice(0, 300), player: ready?.player };
+        check('F1: the v0.12 recording of rings-first (the package\'s fixture) opened in the page: the summary is the older-build sentence (sonicrec.replay.check.older), the verdict "older-build", not marked as a failure', ready?.stage === 'ready' && status.text === REC['sonicrec.replay.check.older'] && ready.check?.verdict === 'older-build' && !status.bad, out.olderSummary);
+        check('F1: the player is ready on rings-first, a flight of about 22 s (the recording\'s last frame)', ready?.player?.lesson === 'rings-first' && Math.abs((ready.player?.durationMs ?? 0) - (pkg.frames.at(-1)?.t ?? 0)) < 1500, { player: ready?.player, last: pkg.frames.at(-1)?.t });
+        // play it from the start: the lines the engine was asked for reached the browser's voice, in order, at their times
+        const want = [older, ...recorded.map((r) => r.text)];
+        const n0 = (await spokenAt(page)).length;
+        await page.focus('[data-action="replay-toggle"]');
+        await page.keyboard.press('Enter');
+        const tPlay = await page.evaluate(() => performance.now());
+        await until('the replay to end', () => replayState(page), (r) => r?.player?.phase === 'ended', 90000);
+        await sleep(500);
+        const all = (await spokenAt(page)).slice(n0);
+        const mine = all.filter((l) => want.includes(l.text));
+        const lag = mine.slice(1).map((l, i) => Math.round((l.at - tPlay) - (recorded[i]?.t ?? 0)));
+        out.olderPlay = { lines: all.map((l) => l.text), want, lagMs: lag, foreign: all.length - mine.length };
+        check('F1: played from the start, the browser\'s voice was given the older-build line first, then each of the 7 recorded lines, in the recording\'s order', mine.map((l) => l.text).join(' | ') === want.join(' | '), { got: mine.map((l) => l.text), foreign: all.length - mine.length });
+        check('F1: no recorded line reached the voice before its time on the package clock (its lag on the page\'s clock is at least -150 ms) and none more than 2 s late', lag.length === recorded.length && Math.min(...lag) >= -150 && Math.max(...lag) <= 2000, { lagMs: lag, times: recorded.map((r) => r.t) });
+        // a seek: to 10 s, the lines before it are passed; played on, only the later ones follow
+        await page.evaluate(() => { const sl = document.getElementById('sonicrec-replay-pos') as HTMLInputElement; sl.value = '10000'; sl.dispatchEvent(new Event('input', { bubbles: true })); });
+        await sleep(400);
+        const sought = await replayState(page);
+        const n1 = (await spokenAt(page)).length;
+        await page.focus('[data-action="replay-toggle"]');
+        await page.keyboard.press('Enter');
+        await until('the replay to end again', () => replayState(page), (r) => r?.player?.phase === 'ended', 90000);
+        await sleep(500);
+        const later = (await spokenAt(page)).slice(n1).map((l) => l.text).filter((x) => want.includes(x) && x !== older);
+        out.seek = { toMs: sought?.player?.tMs, later };
+        check('F1: a seek to 10 s: the position is 10 s, the lines before it are passed, played on only "Go." and "Attempt 2." follow (none of the five of the lesson\'s start again)', Math.abs((sought?.player?.tMs ?? 0) - 10000) < 300 && later.join(' | ') === recorded.filter((r) => r.t > 10000).map((r) => r.text).join(' | ') && later.length === 2, out.seek);
+        await page.focus('[data-action="replay-close"]');
+        await page.keyboard.press('Enter');
+        check('F1: no page error', errors.length === 0, errors);
+    } finally {
+        await ctx.close();
+    }
+}
+
+/**
+ * F2 (W10): a recording made on this build (rings-first: T, T starts it, N, W through the ring to a counted attempt, T stops, the survey declined with
+ * 2) opened by the recorder's own Replay button: the summary is the pass sentence (every recorded event worked out again), the verdict "pass", not
+ * marked as a failure; played to its end.
+ */
+async function partF2(browser: Browser, out: Record<string, unknown>): Promise<void> {
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
+    const page = await ctx.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
+    try {
+        await page.goto(`${SITE}/en/fly/?sonic=rings-first&nowarn=1`);
+        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.keyboard.press('Enter');
+        await until('rings-first to run', () => probe(page), (p) => p !== null && p.lesson === 'rings-first', 120000);
+        await until('the recordings panel', () => page.evaluate(() => !!document.querySelector('.sonicrec-toggle')), (v) => v, 20000);
+        await sleep(1500);
+        const recOn = (): Promise<boolean> => page.evaluate(() => document.querySelector('.sonicrec-toggle')?.classList.contains('recording') === true);
+        const heard = async (key: string, since: number): Promise<boolean> => ((await probe(page))?.events.slice(since) ?? []).some((e) => e.kind === 'speech' && e.key === key);
+        const n0 = (await probe(page))?.events.length ?? 0;
+        await page.keyboard.press('KeyT');
+        await until('the question', () => heard('rec.ask', n0), (v) => v, 15000);
+        for (const t0 = Date.now(); !(await recOn()) && Date.now() - t0 < 45000;) {
+            await sleep(2500);
+            if ((await recOn()) || (await heard('rec.started', n0))) break;
+            await page.keyboard.press('KeyT');
+        }
+        await until('the recording', () => recOn(), (v) => v, 20000);
+        // the recording starts the lesson again from its beginning: the task is skipped, W held through the ring until the first attempt is counted
         const m0 = (await probe(page))?.events.length ?? 0;
+        for (const t0 = Date.now(); Date.now() - t0 < 30000;) {
+            const p = await probe(page);
+            if (p?.phase === 'flying') break;
+            if (p?.phase === 'intro') await page.keyboard.press('KeyN');
+            await sleep(400);
+        }
         await page.keyboard.down('KeyW');
-        let pe: Probe | null = null;
         try {
-            pe = await until('a counted attempt', () => probe(page), (p) => p !== null && p.events.slice(m0).some((e) => e.kind === 'lesson' && e.what === 'attempt-pass'), 120000);
+            await until('a counted attempt', () => probe(page), (p) => p !== null && p.events.slice(m0).some((e) => e.kind === 'lesson' && e.what === 'attempt-pass'), 120000);
         } finally {
             await page.keyboard.up('KeyW');
         }
-        await sleep(400);
-        const pv = (await probe(page)) as Probe;
-        const panel = await page.evaluate(() => {
-            const el = document.querySelector<HTMLElement>('[data-testid="sonic-progress"]') ?? document.querySelector<HTMLElement>('.sonic-progress');
-            if (!el) return null;
-            const r = el.getBoundingClientRect();
-            const cs = getComputedStyle(el);
-            return { text: el.innerText, hidden: el.hidden, left: r.left, top: r.top, width: r.width, height: r.height, font: cs.fontSize, weight: cs.fontWeight, color: cs.color, background: cs.backgroundColor, vw: innerWidth, vh: innerHeight };
-        });
-        const rows = (panel?.text ?? '').split('\n').map((x) => x.trim()).filter((x) => x !== '');
-        out.panel = { panel, hookPanel: pv.panel, attempt: pv.attempt, progress: pv.progress['rings-first'] };
-        await shot(page, 'e-progress-panel', 'the progress panel after the first counted attempt of rings-first');
-        const lessonPlace = fill(SONIC['sonic.progress.lesson'] ?? '', { n: lessonPaths().full.indexOf('rings-first') + 1, total: TOTAL });
-        check(`E: after a counted attempt the panel shows rings-first's place (${lessonPlace}), the step (2 of 2), "Attempt 1" and "Counted 1 of 3", as the hook's text`, !!panel && !panel.hidden && rows.some((r) => r === lessonPlace) && rows.some((r) => r === fill(SONIC['sonic.progress.step'] ?? '', { n: 2, total: 2 })) && rows.some((r) => r === fill(SONIC['sonic.progress.attempt'] ?? '', { n: 1 })) && rows.some((r) => r === fill(SONIC['sonic.progress.counted'] ?? '', { n: 1, total: getLesson('rings-first').pass.required })) && pv.panel.split('\n').every((r) => rows.includes(r.trim()) || r.trim() === ''), { rows, hook: pv.panel });
-        const font = parseFloat(panel?.font ?? '0');
-        check('E: the panel is large (18 px or more), bold, opaque, in the left part of the page and not over the view\'s middle', !!panel && font >= 18 && Number(panel.weight) >= 600 && !/rgba\([^)]*,\s*0(\.\d+)?\)/.test(panel.background) && panel.left + panel.width <= panel.vw * 0.35 && panel.left < panel.vw / 2, panel);
-        check('D, E: no page error in the lesson', errors.length === 0, errors);
-        out.lessonStart = { phase: p0?.phase, events: (pe?.events.length ?? 0) - m0 };
+        await sleep(500);
+        await page.keyboard.press('KeyT');
+        const k0 = (await probe(page))?.events.length ?? 0;
+        await until('the survey offer', () => heard('survey.offer', 0), (v) => v, 20000);
+        await sleep(1500);
+        await page.keyboard.press('Digit2');
+        await until('the recording saved', () => page.evaluate(() => document.querySelectorAll('.sonicrec-session').length), (n) => n >= 1, 30000);
+        await until('the recorder idle', () => recOn(), (v) => !v, 30000);
+        await sleep(1000);
+        void k0;
+        await openRecPanel(page);
+        await until('the replay button', () => page.evaluate(() => !!document.querySelector('.sonicrec-session [data-action="replay"]')), (v) => v, 20000);
+        await page.focus('.sonicrec-session [data-action="replay"]');
+        await page.keyboard.press('Enter');
+        const ready = await until('the replay checked', () => replayState(page), (r) => r?.stage === 'ready' || r?.stage === 'error', 60000);
+        const status = await statusText(page);
+        const m = /^The replay agrees with the recording: (\d+) of (\d+) events were worked out again, and (\d+) % of the sounds are the same\.$/.exec(status.text);
+        out.ownSummary = { status, check: ready?.check, player: ready?.player };
+        check('F2: a recording made on this build (rings-first, a counted attempt) opened by the recorder\'s Replay button: the summary is the pass sentence, every recorded event worked out again, the verdict "pass", not marked as a failure', ready?.stage === 'ready' && !!m && m[1] === m[2] && Number(m[2]) > 0 && ready.check?.verdict === 'pass' && ready.check.ok === true && !status.bad, out.ownSummary);
+        await page.focus('[data-action="replay-toggle"]');
+        await page.keyboard.press('Enter');
+        const end = await until('the replay to end', () => replayState(page), (r) => r?.player?.phase === 'ended', 120000);
+        out.ownPlay = { phase: end?.player?.phase, durationMs: end?.player?.durationMs };
+        check('F2: played to its end', end?.player?.phase === 'ended' && (end.player.durationMs ?? 0) > 5000, out.ownPlay);
+        await page.focus('[data-action="replay-close"]');
+        await page.keyboard.press('Enter');
+        check('F2: no page error', errors.length === 0, errors);
     } finally {
         await ctx.close();
     }
@@ -436,8 +755,8 @@ async function main(): Promise<void> {
     out.release = await fetch(`${SITE}/release.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     let browser: Browser | null = null;
     try {
-        ({ browser } = await launchChrome({ args: ['--autoplay-policy=no-user-gesture-required'] }));
-        const parts: [string, (b: Browser, o: Record<string, unknown>) => Promise<void>][] = [['A', partA], ['B', partB], ['C', partC], ['DE', partDE]];
+        ({ browser } = await launchChrome({ args: ['--autoplay-policy=no-user-gesture-required', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] }));
+        const parts: [string, (b: Browser, o: Record<string, unknown>) => Promise<void>][] = [['A', partA], ['B', partB], ['C', partC], ['C2', partC2], ['DE', partDE], ['E2', partE2], ['F1', partF1], ['F2', partF2]];
         const only = process.env.PARTS;
         for (const [name, run] of parts) {
             if (only && !only.split(',').includes(name)) continue;
@@ -452,7 +771,7 @@ async function main(): Promise<void> {
         letGo();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence('sonic-v13-page', { site: SITE, parts: process.env.PARTS ?? 'A,B,C,DE', control: CONTROL ? 'reader' : null, checks, passed, total: checks.length, shots, result: out });
+    const file = writeEvidence('sonic-v13-page', { site: SITE, parts: process.env.PARTS ?? 'A,B,C,C2,DE,E2,F1,F2', control: CONTROL ? 'reader' : null, checks, passed, total: checks.length, shots, result: out });
     writeFileSync(join(SHOTS, 'evidence-path.txt'), file);
     console.log(`${passed} of ${checks.length} checks passed; ${file}`);
     process.exitCode = passed === checks.length && checks.length > 0 ? 0 : 1;
