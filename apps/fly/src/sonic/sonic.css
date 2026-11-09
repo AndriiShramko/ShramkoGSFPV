@@ -121,6 +121,8 @@ body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-c
 /* v13-int review K2: up to 500 px high on a narrow page (a 1280 x 720 window at 200 % zoom) the progress panel is at most 160 px wide (its rows
    wrap), and the sound panel stands right of that (look.css): the Russian panel (148 px) met the sound panel at 150 px */
 @media (max-width: 640px) and (max-height: 500px) { .sonic-progress { max-width: 160px; } }
+/* v13-int review K4: a tablet with touch sticks (wider than a phone): the progress panel stays at the left edge halfway down; the sound panel goes
+   over it and the attitude display over the stack at the right (look.css), clear of the sticks */
 @media (prefers-color-scheme: light) { .sonic-progress { border-color: #000; outline-color: #fff; background: #fff; color: #000; } }
 @media (forced-colors: active) { .sonic-progress { border-color: CanvasText; outline-color: Canvas; background: Canvas; color: CanvasText; } }
 

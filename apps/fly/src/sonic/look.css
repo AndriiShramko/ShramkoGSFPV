@@ -68,6 +68,19 @@
        view's centre */
     .sonic-sounds { --u: clamp(56px, 21.5vh, 77px); left: calc(max(12px, env(safe-area-inset-left)) + 168px); bottom: calc(31px + env(safe-area-inset-bottom)); }
 }
+/* v13-int review K4: a tablet with touch sticks (wider than a phone and over 600 px high; a phone on its side keeps the short page's places): the sticks (min(40vw, 220px) square at the bottom corners) keep the
+   bottom; the sound panel stands at the left over the progress panel (which is at the left edge halfway down, 6 rows of its font
+   clamp(18px, 2.2vw, 28px) and 30 px tall: sonic.css), the attitude display at the right over what stacks there: upright, the recording bar
+   in the middle (the sticks, 16 px, the telemetry's line and 10 px under it, 40 px tall) and the recorder's toggle over the right stick; on its
+   side, the toggle alone (the bar is between the sticks). Both clear of the view's centre: the attitude display at most 1.62 x 140 px wide */
+@media (min-width: 641px) and (min-height: 601px) {
+    body.touch-on .sonic-attitude, body.touch-on .sonic-sounds { padding: 4px; border-width: 2px; }
+    body.touch-on .sonic-sounds { --u: min(clamp(120px, 30vh, 200px), calc((50vh - 3 * clamp(18px, 2.2vw, 28px) - 88px) / 0.8)); top: auto; left: max(12px, env(safe-area-inset-left)); bottom: calc(50vh + 3 * clamp(18px, 2.2vw, 28px) + 11px); }
+    body.touch-on .sonic-attitude { --u: clamp(80px, 16vw, 140px); right: max(8px, env(safe-area-inset-right)); bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 16px + 19px + 10px + 40px + 8px); }
+}
+@media (min-width: 641px) and (min-height: 601px) and (orientation: landscape) {
+    body.touch-on .sonic-attitude { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 8px + 44px + 8px); }
+}
 
 @media (prefers-color-scheme: light) {
     .sonic-attitude, .sonic-sounds { border-color: #000; outline-color: #fff; background: #fff; color: #000; }

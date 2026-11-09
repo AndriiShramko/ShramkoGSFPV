@@ -1110,16 +1110,25 @@ async function scenarioPanels(ctx: BrowserContext, browser: Browser): Promise<Re
 // (v13-int step 8: the progress panel on the page is v13-host's real one, drawn by the mode from the runner's view; v13-look's
 // stand-in of its CSS, tools/bench/src/v13-look-progress-standin.css, is gone.)
 
-/** The page's sizes: three windows, two of them at 200 % zoom, a phone upright (with and without its touch sticks) and on its side. */
+/**
+ * The page's sizes: three windows, two of them at 200 % zoom, three laptop windows between 601 and 705 px high (v13-int review K4: a
+ * 1366 x 768 laptop's browser window, the lowest of them, a 1920 x 1080 laptop at 125 %), a phone upright (with and without its touch
+ * sticks) and on its side, a tablet upright and on its side with its touch sticks (K4).
+ */
 const SIZES: { name: string; w: number; h: number; dpr: number; mobile?: boolean; sticks?: boolean }[] = [
     { name: '1280x720', w: 1280, h: 720, dpr: 1 },
     { name: '1366x768', w: 1366, h: 768, dpr: 1 },
     { name: '1920x1080', w: 1920, h: 1080, dpr: 1 },
     { name: '1920x1080-zoom200', w: 960, h: 540, dpr: 2 },
     { name: '1280x720-zoom200', w: 640, h: 360, dpr: 2 },
+    { name: 'laptop-1366x657', w: 1366, h: 657, dpr: 1 },
+    { name: 'window-1280x601', w: 1280, h: 601, dpr: 1 },
+    { name: 'laptop-1536x705', w: 1536, h: 705, dpr: 1.25 },
     { name: 'phone-upright', w: 390, h: 844, dpr: 3, mobile: true },
     { name: 'phone-upright-sticks', w: 390, h: 844, dpr: 3, mobile: true, sticks: true },
-    { name: 'phone-on-its-side', w: 844, h: 390, dpr: 3, mobile: true }
+    { name: 'phone-on-its-side', w: 844, h: 390, dpr: 3, mobile: true },
+    { name: 'tablet-upright-sticks', w: 768, h: 1024, dpr: 2, mobile: true, sticks: true },
+    { name: 'tablet-on-its-side-sticks', w: 1024, h: 768, dpr: 2, mobile: true, sticks: true }
 ];
 /**
  * LAYOUT_LANG=<lang,...>: the page's languages for the layout check, all four by default (v13-int review K2: the longer captions of

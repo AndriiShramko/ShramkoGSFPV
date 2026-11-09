@@ -312,3 +312,10 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   clear; English fits; the newest never hidden; refit on resize) with its controls (a panel beside the region or hidden limits nothing; the
   code control without the hiding fails 3 of 5); the page: the layout check below. What it costs: lines shown at the attempt's start (of 3)
   at 960 x 540 2 in every language, at 640 x 360 1, on a phone with sticks 2, on a tablet on its side 2, at 1280 x 601 2; 3 elsewhere.
+- K4 (601 to 705 px high, a tablet with touch sticks): holds. The layout check gains three laptop windows (1366 x 657, 1280 x 601, 1536 x
+  705) and two tablets with touch sticks (768 x 1024, 1024 x 768): before the fix the windows failed only by K2's captions; both tablets
+  failed (the attitude display and the sound panel lay on the sticks, the recording bar and the view's centre: 33440 and 44880 px2 on the
+  sticks). Fixed (look.css, a page wider than a phone and over 600 px high with touch sticks): the sound panel at the left over the
+  progress panel (which stays at the left edge halfway down), the attitude display at the right over what stacks there (upright: the
+  recording bar in the middle; on its side: the recorder's toggle), at most 1.62 x 140 px wide, clear of the view's centre. Test: the layout
+  check (its control: the baseline run, where both tablets failed).
