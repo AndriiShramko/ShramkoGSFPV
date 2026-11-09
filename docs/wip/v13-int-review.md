@@ -6,18 +6,22 @@ fixes. Every finding was confirmed by a probe (a Node test kept outside the comm
 an exact reading of the code path with the inputs that reach it). What a sound or a voice feels like to a person is not judged here:
 the probes read what the engine was asked to say, what reached `speechSynthesis.speak` and what the code does.
 
-## Status (work in progress)
+## Status
 
 - [x] Read: the lane docs' final status and open items (v13-host, v13-look, v13-int), the plan; the diff by area (lessons, feature,
   lesson menu, start screen, spoken list, mode, bridge, key names, store, prefs doc, progress panel, look panels, attitude display
   geometry, sound panel kinds, session lesson flight, sim-core bump, analytic collision shortcut, assists, lesson pilot, replay player,
   replay control, frames, locales of the new keys); the package's engine reset, planner reset, contract.
-- [x] F1 confirmed by a Node probe and in the page; F2 to F5 confirmed (below).
+- [x] Seven findings, each confirmed (F1 to F4 major, F5 and F6 minor, F7 a nit); the refuted claims; what was not read.
+- [x] Node probes: a temporary vitest file on the lesson rig (`tools/bench/test/zz-review-probe.test.ts`, deleted, never committed)
+  for F1 (with its control) and F3.
 - [x] Page probes on a local release build of the head (`dist/release.json` sha c54d8d9 = `c324225` + this file, sound package
   ecb2ffb; `serve-csp.mjs dist 5461`; headless system Chrome 156.0.8078.80; the GPU lock held by the probe): the start screen over a
   running lesson and the lesson keys (P1), where the focus goes when it closes (P2), the lesson menu's cut lines with the browser's real
-  voice (P3 and its control), the progress panel during a replay (P4). The probe script was a temporary `tools/bench/src/zz-review-page.ts`
-  (deleted, never committed); its raw output stayed in the session's temporary folder, the numbers that matter are written below.
+  voice (P3 and its control), the progress panel during a replay (P4), "Sound from above and below" live and at start (P5), B at the
+  path's first lesson (P6). The probe script was a temporary `tools/bench/src/zz-review-page.ts` (deleted, never committed); its raw
+  output stayed in the session's temporary folder, the numbers that matter are written below. Afterwards the server was stopped, the
+  build outputs (`dist`, `dist.tgz`, `SHA256SUMS`, `apps/fly/dist`, `apps/site/out`) removed from C:, the lock free.
 
 ## Findings
 
@@ -45,7 +49,7 @@ the probes read what the engine was asked to say, what reached `speechSynthesis.
   menu) and never started; none of them was handed again; `intro.3` started at 45.0 s, the goal at 63.3 s, "Go." at 66.5 s. Control
   (same page, no menu): all of them started (the keys line at 1.65 s, `intro.1` at 8.6 s, `intro.2` at 16.1 s). Seen on the way: the
   menu's own lines run on after the menu is closed: "Lesson menu. The up and down arrows move..." spoke from 1.27 to 8.77 s and
-  "Resume. Item 1 of 8." from 8.83 to 12.02 s, though the menu closed at about 1.5 s; the lesson waited for them (its next part came
+  "Resume. Item 1 of 8." from 8.83 to 12.02 s, though the menu closed at about 1.7 s; the lesson waited for them (its next part came
   only after its queue ran empty).
 - Fix suggestion: the lesson's speech is not the menu's to drop. Either (a) the bridge keeps the lesson lines it handed and that did not
   end (it already counts them per run) and hands them again at the resume, before it reports the end of speech; or (b) at the resume
@@ -91,8 +95,14 @@ the probes read what the engine was asked to say, what reached `speechSynthesis.
 - Failure: a new blind pilot starts the course (ears-headphones, lesson 1 of 28), tries B in its first step: the start screen opens
   (its name is said). He presses Escape to go back to his lesson: the flight page is back, but the lesson is dead. N, B and Z write their
   key events and nothing happens; the lesson menu's Repeat the task, Next step, Previous step and Next lesson do nothing; nothing is
-  said. `I` still says "Lesson 1 of 28 ... Step 1" and the progress panel still shows it, as if the lesson ran. Only the lesson menu's
-  Lesson list (or Leave the mode) gets him out.
+  said. The progress panel still shows "Lesson 1 of 28, Step 1 of 4", as if the lesson ran. Only the lesson menu's Lesson list (or
+  Leave the mode) gets him out. The same by the same code (exact reading): N from the path's last lesson that was not passed (`advance()`
+  with no lesson after), and the menu's Next lesson there.
+- Page probe P6 (the release, keyboard only): ears-headphones opened, B 1.5 s in: the start screen shown; Escape: the screen hidden,
+  the lesson ears-headphones, phase `intro`, the panel "Headphone check / Lesson 1 of 28 / Step 1 of 4" (and the focus on the body,
+  F4 again). Then N, Z, and the lesson menu's Next lesson (Escape, four Downs, Enter) over about 10 s: the events were `key next`,
+  `key repeat`, the menu's pause, its six lines, its resume and `key next-lesson`; no lesson event; the voice was given only the menu's
+  lines; phase still `intro`, lesson still ears-headphones.
 - Probe: a vitest probe on the lesson rig: `lessonPaths().full[0]` (ears-headphones) opened, 0.8 s, B (`feedback.open`): `showMenu`
   called once, `host.active` true, phase `intro`; the screen's close as `onClose` does it (`restartAfterReset()`: false); then N, Z, B,
   the menu's Next lesson and Repeat the task over 29 s of lesson time: the mode wrote the five `key` events (next, repeat, previous,
@@ -132,12 +142,82 @@ the probes read what the engine was asked to say, what reached `speechSynthesis.
   `session-v012-rings-first.zip`, played 4 s (player `playing`, lesson rings-first, frame 105 of 643): the progress panel visible
   (`display: block`, 229 x 198 at 12, 273) with exactly the live text above; the attitude display `hidden`.
 - Fix suggestion: hide the progress panel while `mode.inPlayback` (or draw the replayed lesson's view, which the player's runner has);
-  a page check during F1's replay: the panel hidden or naming rings-first.
+  a page check during F1's replay: the panel hidden or naming rings-first. The sound panel's "played three times" card reads the live
+  runner's `view().playing` too (`look-panels.ts` `installSoundPanel`), the same seam.
 
-## Refuted
+### F6 (minor) The attitude display's horizon is the craft body's, not the camera's: with the default drone they differ by 20 degrees
 
-(in progress)
+- Where: `apps/fly/src/sonic/look-panels.ts` `installAttitude` (`pitchDeg: a.pitch`, sim-core's body attitude) and
+  `apps/fly/src/sonic/attitude.ts` `horizonOf`; the view's camera is the body tilted up by the drone's camera uptilt
+  (`apps/fly/src/session/index.ts:861` `setPose(..., this.cameraUptiltDeg)`, `packages/render-pc/src/renderer.ts:801-804` "tilted up by the
+  FPV camera uptilt"). The lane's claim "the horizon is the one the craft's camera sees" was checked with a camera looking along the
+  body's -z with no uptilt (`tools/bench/test/sonic-panels.test.ts:79-80`), and the page proof measured the display's own picture.
+- Failure: the default drone (`pavo20pro-3s`, `camera_uptilt_deg` 20; every preset has 10 to 35) hovering level in a lesson: the
+  display draws the horizon through its centre (pitch 0), while in the view the world's level lies 20 degrees below the view's centre; at
+  cruise with the nose 20 degrees down the display shows a horizon lifted by 20 degrees of marks while the view looks level. A low-vision
+  pilot comparing the two sees them disagree (the rooms of the analytic lessons show walls, not an open horizon; the scan lesson flies a
+  real place).
+- Probe: exact reading of the code path above with the default preset's input (uptilt 20 from `packages/sim-core/presets/pavo20pro-3s.json`;
+  the mode sets no camera of its own, `MODE_PREFS` in `mode.ts:47`).
+- Fix suggestion: a decision for the lead: either keep a true attitude indicator and correct the claim in the lane doc and the file's
+  header (and say so to the testers), or draw the camera's horizon (lift by `pitch - uptilt`) so the instrument matches the view; the
+  test's camera should then carry the uptilt.
 
-## Not read
+### F7 (nit) On a phone the lesson menu and N, B, Z have no way in
 
-(in progress)
+- Where: the lesson menu opens only on the Escape key (`apps/fly/src/sonic/feature.ts:489`); no pause-menu item or touch control calls
+  `mode.next`, `previous`, `repeat` or opens the lesson menu (searched `apps/fly/src` for menu items with the actions `scene.next`,
+  `feedback.open`, `sonic.repeat`, `pause.toggle`: only the feedback form's item exists).
+- Failure: a low-vision pilot on a phone can switch lessons through the pause menu's "Fly by Sound: lessons and settings", but cannot
+  repeat the task, skip a step or go back a step (M41-5, M41-6) in a lesson.
+- Probe: the search above (exact reading).
+- Fix suggestion: a touch entry to the lesson menu (one button beside the recorder's, or the pause menu's item opening it when a
+  lesson runs); or record it as a known limit of v0.13 for the testers.
+
+## Refuted (claims tried and found to hold, with the probe)
+
+- "Sound from above and below" applies live and at start (the lane said no page saw it): page probe P5, hover-height flying, the
+  target note (`height.target`) on the sound panel's radar in 30 of 30 polls; the box turned off from the start screen over the flight
+  (the lesson menu's Sound settings, Enter on it): 0 of 30 polls after Escape, `heightDirection` false in the saved document; after a
+  reload and the lesson opened again: 0 of 30.
+- The lesson menu keeps every key while it is up: P1's control, B with the menu up wrote no event and the phase stayed flying.
+- The ordinary flight is not changed by the bump work: `GameAssist.bump` and `AltitudeHelp.bump` are called only from
+  `LessonPilot.bumps`, which returns unless `sim.p.bump === 'slide'` (a lesson world's or the scan lesson's life); `liftoff` without
+  `ceilingM` (the game scheme) keeps `TAKEOFF_HOP_M`; the moved `dt` line in `AltitudeHelp.follow` changes no state (exact reading; the
+  a6 reference test and accept-fly B6 to B16 were not re-run here).
+- The contact event's new `nx, ny, nz` reach no log or hash: the sim's events are read in memory only (`history.ts`, `stats.ts`,
+  `lesson-pilot.ts`, `bridge.ts`, `selftest.ts`; searched `packages/sim-core/src`, `apps/fly/src`).
+- `lifeOverrides()` is unchanged outside a lesson: `BuiltinWorld.overrides` is set only by `buildLessonWorld`; `lessonFlight` only by
+  `SonicMode.enter` for a scan lesson, cleared by `leave()`; `lifeHeaderProblem` refuses an unknown bump rule.
+- The sound panel knows every cue the package plays: the 26 cue ids in the package's `src/` (the literal ones and the two built from a
+  material, `safety.${material}` of four classes, and a traced shape) all have a kind in `KIND_OF`.
+- The sound panel shows no sound the paused engine stopped: the engine's pump plans the last frame again after `STALE_S` with the
+  bridge's silent layers, so the plan's cues go (engine.ts `pump`); after `reset()` the plan is null and the panel draws a null plan.
+- `soniclook` stays out of the main chunk: excluded from `i18n.ts`'s eager glob and added with the mode's chunk by `sonic/texts.ts`.
+- Reset over a running lesson: `finish()`, `observe()` and `close()` all skip the forgotten runner; a lesson chosen after the reset
+  opens from the cleared progress; the look panels' switches are not part of the reset (`resetProgress` writes only progress and current).
+- The motor graph on the engine's context is never suspended or closed by the sound feature (`motor-sound.ts:236-241`, `shared`).
+- The recorder's survey cannot be covered by the lesson menu although `dialogOpen()` does not list it: the survey takes every key in the
+  capture phase (`survey-keys.ts`) and the recorder's panel stops its own Escape (`panel.ts`).
+- The analytic collision shortcut stays exact by its construction: `freeWithin` answers "free" only inside a 1-Lipschitz bound of a
+  distance with the voxel margin, else falls through to the full test; `sweep` is skipped only when every sphere's whole-segment cover
+  lies in the free ball (exact reading; `sonic-world.test.ts`'s equality run was not re-run).
+- The sound package's diff has no machine path, key, token or personal data (search of every added line).
+- A v0.12 progress document keeps a passed lesson passed; only the counts of a lesson whose version changed start again, by the
+  package's rule (`runner.ts:494-505`).
+
+## Not read, not run, not judged
+
+- Not read: the drawing code (`primitives.ts`, `look.ts`, `drawAttitude` past the horizon, `drawSounds`, `placeDiscs`), the CSS place
+  rules but the progress panel's, `scan-lesson.ts`, the recorder (`sonic-session/*`) but `replay-player.ts`, `replay-control.ts`,
+  `replay-view.ts` and `frames.ts`, sim-core's slide constants and the bump and tunnel tests, the bench pages beyond their helpers, most
+  test files, the site's and the admin page's locale changes, the package's `tools/listen-words.ts`, `test/reset.test.ts` and its audio
+  proof.
+- Not run: gates, vitest beyond the probes, accept-fly, the a6 reference test, the layout and panel page proofs, the sound repo's
+  checks; the lane docs' runs stand for them.
+- Seen, not probed (for the fixer to look at, not findings): an older-build replay says every recorded speech event whole and queued
+  (`replay-player.ts` `sayRecorded`, always `interrupt: false`), while live a line can have been cut (F1, I, Z, N): such a replay says
+  lines the pilot never heard and drifts behind the flight. In a scan lesson every open after the first (a reopen at a recording's start,
+  a restart after a reset) makes two new lives (`leave()` takes the lesson's bump off, `enter()` puts it back), each a 'life' event.
+- Not judged: how any line, sound, caption or panel feels to a blind, deaf or low-vision pilot; a real screen reader (F4's consequence
+  for NVDA and JAWS is the code's own design note, not tried); a real phone or browser zoom.
