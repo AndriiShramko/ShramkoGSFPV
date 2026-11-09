@@ -22,12 +22,14 @@
 //          plan gives), in rings-heights (the target note at the first ring's height on the height bar), on the task's three
 //          plays of a sound (its icon, its glossary name, "1 of 3" to "3 of 3", in English and Polish); the two switches off,
 //          read back after a reload, on again.
-//   layout L2-4, v13-int step 8: the places of the mode's three panels (v13-host's progress panel, drawn by the mode, the attitude
-//          display, the sound panel) at 8 page sizes (1280 x 720, 1366 x 768, 1920 x 1080, both of those at 200 % zoom, a phone upright
-//          with and without touch sticks and on its side), dark and light: each inside the page, clear of the view's centre, the
-//          captions (the last three lines the lesson said, as they stand when its attempt begins), the page's controls, the touch sticks and the other two panels; their
-//          sizes (LOOK_CSS=<file> lays trial CSS over the build's, SIZES=<name,...> and SCHEMES=<dark|light> pick some: never for the
-//          record).
+//   layout L2-4, v13-int step 8 and its review (K2, K4, K5): the places of the mode's three panels (v13-host's progress panel, drawn by
+//          the mode, the attitude display, the sound panel) at 13 page sizes (1280 x 720, 1366 x 768, 1920 x 1080, both of those at 200 %
+//          zoom, three laptop windows 601 to 705 px high, a phone upright with and without touch sticks and on its side, a tablet upright
+//          and on its side with touch sticks), dark and light, in English, Spanish, Polish and Russian: each inside the page, clear of the
+//          view's centre, the captions (the last three lines the lesson said, as they stand when its attempt begins), the page's controls,
+//          the touch sticks and the other two panels; their sizes; with touch sticks the recorder's toggle clear of the sticks
+//          (LOOK_CSS=<file> lays trial CSS over the build's, SIZES=<name,...>, SCHEMES=<dark|light> and LAYOUT_LANG=<lang,...> pick some:
+//          never for the record).
 //   panelcost L2-4: the page's frame in the corridor and rings-heights flying on W, with both panels and with neither.
 // Every check is the page's own state (window.__gsfpv: the session, its flight model, the mode's hook); the sim events are
 // read through the session's onEvent. Holds the GPU lock C:/dev/.gpu-lock (one blocking loop: mkdir, else 20 s, up to
@@ -1218,6 +1220,15 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
             const covers = over(SOFT);
             check(`${at} ${scheme}: the ${panel} panel (${Math.round(pb.w)} x ${Math.round(pb.h)} at ${Math.round(pb.x)}, ${Math.round(pb.y)}) inside the page, clear of the view's centre, the captions, the page's controls, the touch sticks and the other two panels${covers.length ? ` (covers ${covers.join(', ')})` : ''}`, inside && hits.length === 0, { box: pb, hits, covers });
             res[panel] = { box: pb, hits, covers };
+        }
+        // v13-int review K5: with touch sticks the recorder's toggle (the REC button) is inside the page and clear of the sticks and the arm
+        // button, which a finger holds while flying (on a phone upright it stood over the right stick: 111 x 44 at 265, 730)
+        if (size.sticks) {
+            const rec = (b.recorder ?? [])[0];
+            const under = rec ? [...(b.pads ?? []), ...(b.arm ?? [])].map((x) => Math.round(overlap(rec, x))).filter((a) => a > 1) : [];
+            const inside = !!rec && rec.x >= -0.5 && rec.y >= -0.5 && rec.x + rec.w <= W + 0.5 && rec.y + rec.h <= H + 0.5;
+            check(`${at} ${scheme}: the recorder's toggle (${rec ? `${Math.round(rec.w)} x ${Math.round(rec.h)} at ${Math.round(rec.x)}, ${Math.round(rec.y)}` : 'none'}) inside the page and clear of the touch sticks and the arm button`, inside && under.length === 0, { box: rec ?? null, overSticks: under, pads: b.pads ?? [], arm: b.arm ?? [] });
+            res.recorderToggle = { box: rec ?? null, overSticks: under };
         }
         // readable: the dial and the radar large enough, the panels' words 15 px or more (CSS px: at 200 % zoom twice the device pixels)
         const sizes = await page.evaluate(() => {

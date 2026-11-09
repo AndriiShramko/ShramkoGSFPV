@@ -319,3 +319,8 @@ in `C:/dev/sonic-s13-int` (its checks and a CHANGELOG line, then the gitlink). F
   progress panel (which stays at the left edge halfway down), the attitude display at the right over what stacks there (upright: the
   recording bar in the middle; on its side: the recorder's toggle), at most 1.62 x 140 px wide, clear of the view's centre. Test: the layout
   check (its control: the baseline run, where both tablets failed).
+- K5 (the recorder's toggle over a touch stick): holds (on a phone upright with sticks 111 x 44 at 265, 730 over the right stick, 4435
+  px2; on both tablets too). Fixed (sonicrec.css): with touch sticks the toggle stands right over the right stick, 8 px clear, its panel
+  over it; on a phone the recording bar (and the take-off line with it) goes 15 px higher to make room, and the sound panel and the
+  attitude display with them. The layout check gains a check of the toggle against the sticks and the arm button at every size with
+  sticks (before: failing at all three; after: passing).

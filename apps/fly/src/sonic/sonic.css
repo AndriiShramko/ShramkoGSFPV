@@ -117,6 +117,9 @@ body.sonic-mode.touch-on:has(.attribution:not([data-scene^="lesson-"])) .sonic-c
     body.touch-on .sonic-progress { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 43px); left: max(8px, env(safe-area-inset-left)); max-width: calc(35vw - 8px); font-size: 15px; padding: 6px 8px; }
     body.sonic-mode.touch-on .cinema-bar, body.sonic-mode.touch-on .gate-msg { left: auto; right: max(8px, env(safe-area-inset-right)); transform: none; max-width: 50vw; }
     body.sonic-mode.touch-on .gate-msg { max-width: calc(100vw - 150px); }
+    /* v13-int review K5: the recorder's toggle stands right over the right stick (sonicrec.css), 44 px tall and 8 px clear of it: the recorder's
+       row goes 8 px over the toggle (the stack over the sticks 60 px up, was 45), and the take-off line over the row with it (cinema.ts) */
+    body.sonic-mode.touch-on:not(.cinema) .cinema-bar { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 60px); }
 }
 /* v13-int review K2: up to 500 px high on a narrow page (a 1280 x 720 window at 200 % zoom) the progress panel is at most 160 px wide (its rows
    wrap), and the sound panel stands right of that (look.css): the Russian panel (148 px) met the sound panel at 150 px */

@@ -56,9 +56,10 @@
     /* (over the progress panel, which is 132 px up and 128 px tall here: sonic.css) */
     .sonic-sounds { left: max(8px, env(safe-area-inset-left)); bottom: calc(268px + env(safe-area-inset-bottom)); }
     /* touch sticks: both beside the view's centre, over what stacks over the sticks (cinema.css: 16 px, the telemetry's 19 px line,
-       10 px, the recording bar in two rows, the take-off line over it; measured at 390 px wide: its top 182 px over the sticks) */
-    body.touch-on .sonic-attitude { --u: clamp(56px, 17vw, 80px); bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 182px); }
-    body.touch-on .sonic-sounds { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 182px); }
+       10 px, the recording bar in two rows, the take-off line over it; measured at 390 px wide: its top 182 px over the sticks; 197 px since
+       v13-int review K5 put the recorder's toggle right over the right stick and the row 15 px higher, sonic.css) */
+    body.touch-on .sonic-attitude { --u: clamp(56px, 17vw, 80px); bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 197px); }
+    body.touch-on .sonic-sounds { bottom: calc(max(24px, env(safe-area-inset-bottom)) + min(40vw, 220px) + 197px); }
 }
 /* narrow and short (a small window at 200 % zoom): the attitude display right of the view's centre, the sound panel under it */
 @media (max-width: 640px) and (max-height: 500px) {
