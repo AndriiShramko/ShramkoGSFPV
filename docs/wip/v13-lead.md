@@ -3,7 +3,7 @@
 Plan and item ids (M41-n): `docs/wip/v13-plan.md`. The owner's words: the vault brief, message 41. The vault's v0.13
 status note (message 41) carries the same table for the owner.
 
-## Where things stand (2026-11-08, 21:05 UTC)
+## Where things stand (2026-11-09, 00:50 UTC)
 
 - Live: v0.12 (release of 047ee57). Nothing of v0.13 is live.
 - `v03-lead`: v12-optin merged at c2b1e54, all gates pass on it. Not pushed.
@@ -14,7 +14,7 @@ status note (message 41) carries the same table for the owner.
   voice token; three zips are synthetic session fixtures. No key, no machine path but `GPU_LOCK`'s default.
 - The simulator's gitlink `packages/sonic-fpv` is still 1eea4d5 on `v03-lead`; v13-host moves it.
 - Weekly use: 56 % when v0.13 started, 60 % when s13-worlds started, 66 % after wave 1, 70 % when v13-host started.
-  No new lane above 70 %, ceiling 80 %. Owner, message 42: up to 85 % is fine. 79 % at 21:00 UTC, so the rest runs lean:
+  No new lane above 70 %, ceiling 80 %. Owner, message 42: up to 85 % is fine. 79 % at 21:00 UTC, 84 % at 00:45 UTC on 2026-11-09, so the rest runs lean:
   the lead merges and runs the gates and release scripts; agents only for the integration seams, one review and its fixes.
 
 | Lane | Repo | Worktree | Base | State | Workflow run |
@@ -27,7 +27,7 @@ status note (message 41) carries the same table for the owner.
 | v13-host | simulator | `C:/dev/gsfpv-v13-host` | `v03-lead` 093fbbd | done, head 6c164a0: A (gitlink 16c01a1 with `world.cavities`, W20 tests, W11, W12, W18, W16 measured), B (runner options W3, go W4, N/B/Z key events W5, I status and progress panel W6, pause W8, Escape spoken lesson menu M41-3, every line through `engine.say` W15), C (pause item to `/{lang}/fly/?sonic=start` M41-1, start screen Continue/course/states/Reset M41-2 W7, spoken list and settings with motor volume and target note M41-4 W13, older lesson version replay W9 W19, verdict W10); gates exit 0 (3894 tests), page proofs sonic-v13-page 22 of 22, sonic-optin-page 46 of 46; no independent review yet (the integrated review covers it) | wf_9e36e296-b1f, finished |
 | v13-look | simulator | `C:/dev/gsfpv-v13-look` | v13-host stage A aac4261 | done, head 022a8d2: L1 no sticking (bump 'slide' in lesson worlds), W17 take-off in low ways, M41-23 look (contrast >= 3:1), W16 collider under plan; L2 attitude display (M41-24), sound panel (M41-25, W14), switches soundPanel/attitude; gates exit 0, B6-B16 10 of 10, page proofs panels 42/42, layout 64/64, panelcost 8/8 | wf_ec1080e5-d22, finished |
 | s13-elev | sound | `C:/dev/sonic-s13-elev` | `main` 16c01a1 | done, head 512d7d2: E1 up/down by direction (HRTF, breath 4-16 kHz) with `SonicPrefs.heightDirection` (off = v0.13 plans exactly), wrong way by legs; E2 es/pl/ru measured with local voices, words check (`listen:words`, `listen-words --sim`); review dbce5fd (E1 major hairpin false wrong-way, E2-E8), all fixed; 1138+ tests, 9 proofs, listen 9 of 9 | wf_0149f60b-cbc, finished |
-| v13-int | simulator | `C:/dev/gsfpv-v13-int` | `v03-lead` cb67b0d | v13-host merged at cc2a3ab, v13-look at 8497cb4 (both clean; gates exit 0, 3935 tests); sound worktree `C:/dev/sonic-s13-int` (branch s13-int at 512d7d2) for the engine reset and tools; next: seams (engine reset, gitlink, three switches in the spoken list, scan lesson contact, reset over a running lesson, es/pl/ru words), pages (places, stale proofs, replay page), then one review with fixes | lead |
+| v13-int | simulator | `C:/dev/gsfpv-v13-int` | `v03-lead` cb67b0d | seams and pages done, head c324225, gitlink ecb2ffb (sound branch s13-int in `C:/dev/sonic-s13-int`: engine reset 7980fab, words-check fixes; sound `main` fast-forwarded locally to ecb2ffb, not pushed; gh_precheck 16c01a1..ecb2ffb exit 1, two benign words: 'no key, token or password' in a review doc and the Python package `tokenizers`). Seams: engine reset at lesson open (rings-line 100 % from its first frame), three switches in the spoken list (sound panel, attitude, height direction), scan lesson contact 'slide' (18 of 18 out within 0.034 s), reset over a running lesson, es/pl/ru key lines say 'the key', Russian informal, the mode named 'Полёт по звуку' (ru) and 'Lot na słuch' (pl) (over the words bound: pl 10 to 5, ru 22 to 10). Pages: layout 96 of 96 with the real progress panel, sonic-v13-page 51 of 51, optin 46 of 46, panels 43 of 43, panelcost 8 of 8, start-keyboard 46 of 46, garden 27 of 27; gates exit 0 (4071 tests). Open for the review: a straight-at-a-wall recording replays FAIL (front-left/front-right tie, 83.7 % by id); captions reach the panels in ru, pl and es (dark); the package's own `app.name` and `menu.welcome` still 'Fly by Sound' in ru and pl; heights 601-705 px and tablets with sticks unchecked; the recorder toggle over the right stick on a phone | wf_f886d64e-31c, finished |
 
 ## Decisions taken
 
@@ -91,7 +91,9 @@ status note (message 41) carries the same table for the owner.
 
 1. Done: the sound repo merged, reviewed, fixed, prechecked and pushed (`main` 16c01a1).
 2. Done: v12-optin merged into `v03-lead` (c2b1e54).
-3. v13-host (running, three stages), v13-look (from stage A's head, two stages), s13-elev (sound repo). Ceiling 85 %.
+3. Done: v13-host, v13-look, s13-elev, and v13-int's seams and pages (see the lanes table).
+3a. Paused at 84 % of the weekly limit: the owner was asked whether the ceiling may go to 90 % for the review and the
+    release. Yes: the review with fixes now, then the release. No: both after the weekly reset (2026-11-12 12:00 UTC).
 4. s13-elev to the sound repo's `main` after gh_precheck; push.
 5. Integration branch `v13-int` from `v03-lead`: merge v13-host, merge v13-look, move the gitlink to the new sound
    `main`, show the new prefs (up/down direction, sound panel, attitude display) in the mode's spoken settings list.
