@@ -34,7 +34,9 @@
 // 9 min; rmdir after, on error too). Evidence: evidence/<date>/v13-look-<scenario>.json, small JPEGs beside it.
 //   node scripts/build-release.mjs && node tools/bench/scripts/serve-csp.mjs dist 5420     (another shell)
 //   cd tools/bench && SITE=http://localhost:5420 npx tsx src/v13-look-page.ts bump
+import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, rmdirSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
@@ -1167,10 +1169,15 @@ async function layoutAt(browser: Browser, size: (typeof SIZES)[number], scheme: 
         const name = `layout-${size.name}-${scheme}`;
         // small: CSS pixels (the device's are the dial's own measure, not this picture's)
         writeFileSync(join(OUT, `${name}.jpg`), await page.screenshot({ type: 'jpeg', quality: 55, scale: 'css' }));
+        // the full-size picture stays out of the repository (LAYOUT_KEEP, default the system's temporary folder); its path and SHA-256 are in the evidence
+        const keepDir = join(process.env.LAYOUT_KEEP ?? join(tmpdir(), 'gsfpv-v13-look-layout'), `${today()}${TAG ? `-${TAG}` : ''}`);
+        mkdirSync(keepDir, { recursive: true });
+        const full = await page.screenshot({ type: 'png' });
+        writeFileSync(join(keepDir, `${name}.png`), full);
         const W = size.w, H = size.h;
         const centre: Box = { x: 0.35 * W, y: 0.35 * H, w: 0.3 * W, h: 0.3 * H };
         const keep: Record<string, Box[]> = { centre: [centre], captions: b.captions ?? [], topLeft: b.topLeft ?? [], topRight: b.topRight ?? [], topBar: b.topBar ?? [], telemetry: b.telemetry ?? [], keys: b.keys ?? [], recorder: b.recorder ?? [], recBar: b.recBar ?? [], takeOff: b.takeOff ?? [], pads: b.pads ?? [], arm: b.arm ?? [] };
-        const res: Record<string, unknown> = { picture: `${name}.jpg`, boxes: b };
+        const res: Record<string, unknown> = { picture: `${name}.jpg`, full: { file: join(keepDir, `${name}.png`), sha256: createHash('sha256').update(full).digest('hex') }, boxes: b };
         // the page's real progress panel (v13-host: progress-panel.ts), the longest it gets: the title and four rows, in this scheme's colours
         const prog = await page.evaluate(() => {
             const el = document.querySelector('.sonic-progress') as HTMLElement | null;

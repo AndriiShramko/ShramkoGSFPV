@@ -747,6 +747,79 @@ async function partF2(browser: Browser, out: Record<string, unknown>): Promise<v
     }
 }
 
+// ------------------------------------------------------------------ G: Reset my progress over a running lesson (v13-int step 5)
+
+/**
+ * G (v13-int step 5; the two lines in feature.ts that tell the lesson are held by no Node test): rings-first flown to one counted attempt (the panel says
+ * "Counted 1 of 3", the progress is saved); the lesson menu's "Lesson list" opens the start screen over the flight; Reset my progress, Yes: the saved
+ * progress is gone; Escape closes the screen and the lesson starts again from its beginning (its title said again, the panel at the task with nothing
+ * counted); flown through the ring once more the attempt is saved as the first (successes 1, not the old count + 1).
+ */
+async function partG(browser: Browser, out: Record<string, unknown>): Promise<void> {
+    const ctx = await profile(browser, doc({ speechRate: 2, ...VOICE }));
+    const page = await ctx.newPage();
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message.slice(0, 300)));
+    const through = async (): Promise<Probe> => {
+        const m0 = (await probe(page))?.events.length ?? 0;
+        await page.keyboard.down('KeyW');
+        try {
+            return (await until('a counted attempt', () => probe(page), (p) => p !== null && p.events.slice(m0).some((e) => e.kind === 'lesson' && e.what === 'attempt-pass'), 120000)) as Probe;
+        } finally {
+            await page.keyboard.up('KeyW');
+        }
+    };
+    try {
+        await openFlying(page, 'rings-first');
+        const one = await through();
+        await sleep(600);
+        const before = await saved(page);
+        const panelBefore = ((await probe(page)) as Probe).panel;
+        out.resetBefore = { successes: before.progress['rings-first']?.successes, attempts: before.progress['rings-first']?.attempts, panel: panelBefore };
+        check('G: rings-first flown to one counted attempt: the progress panel says "Counted 1 of 3" and the saved progress has the success', (before.progress['rings-first']?.successes ?? 0) === 1 && panelBefore.includes(fill(SONIC['sonic.progress.counted'] ?? '', { n: 1, total: getLesson('rings-first').pass.required })), out.resetBefore);
+        void one;
+        // the lesson menu: Escape, five Downs to "Lesson list" (the sixth of eight items), Enter: the start screen over the flight
+        await key(page, 'Escape');
+        await until('the lesson menu', () => probe(page), (p) => p?.menu.open === true, 10000);
+        await key(page, 'ArrowDown', 5);
+        await key(page, 'Enter');
+        await page.waitForSelector('#sonic-start:not([hidden])', { timeout: 10000 });
+        await page.focus('[data-testid="sonic-reset"]');
+        await page.keyboard.press('Enter');
+        await page.waitForSelector('[data-testid="sonic-reset-yes"]', { timeout: 5000 });
+        await page.focus('[data-testid="sonic-reset-yes"]');
+        await page.keyboard.press('Enter');
+        const cleared = await until('the progress cleared', () => saved(page), (x) => Object.keys(x.progress).length === 0, 5000).catch(async () => saved(page));
+        check('G: Reset my progress, Yes, over the running lesson: the saved progress is gone', Object.keys(cleared.progress).length === 0, { progress: Object.keys(cleared.progress) });
+        // Escape closes the screen: the lesson that ran under it starts again from its beginning, new
+        const n1 = ((await probe(page)) as Probe).events.length;
+        await key(page, 'Escape');
+        await until('the screen to close', () => page.evaluate(() => (document.getElementById('sonic-start') as HTMLElement).hidden === true), (v) => v, 5000);
+        const again = await until('the lesson to start again', () => probe(page), (p) => p !== null && p.events.slice(n1).some((e) => e.kind === 'speech' && e.key === 'lesson.rings-first.title'), 15000).catch(async () => probe(page));
+        await sleep(600);
+        const panelAgain = ((await probe(page)) as Probe).panel;
+        const afterReset = await saved(page);
+        out.resetAfter = { titleSaid: !!again?.events.slice(n1).some((e) => e.kind === 'speech' && e.key === 'lesson.rings-first.title'), lesson: again?.lesson, phase: again?.phase, panel: panelAgain, progress: Object.keys(afterReset.progress) };
+        check('G: Escape closes the screen and the lesson starts again from its beginning: its title is said again, the progress panel is at the task with nothing counted, nothing saved yet', !!again && again.lesson === 'rings-first' && (out.resetAfter as { titleSaid: boolean }).titleSaid && panelAgain.includes(fill(SONIC['sonic.progress.counted'] ?? '', { n: 0, total: getLesson('rings-first').pass.required })) && panelAgain.includes(fill(SONIC['sonic.progress.step'] ?? '', { n: 1, total: 2 })) && Object.keys(afterReset.progress).length === 0, out.resetAfter);
+        // the task skipped, W through the ring: the attempt is saved as the first
+        for (const t0 = Date.now(); Date.now() - t0 < 30000;) {
+            const p = await probe(page);
+            if (p?.phase === 'flying') break;
+            if (p?.phase === 'intro') await page.keyboard.press('KeyN');
+            await sleep(400);
+        }
+        await through();
+        await sleep(800);
+        const second = await saved(page);
+        const panelSecond = ((await probe(page)) as Probe).panel;
+        out.resetSecond = { successes: second.progress['rings-first']?.successes, attempts: second.progress['rings-first']?.attempts, panel: panelSecond };
+        check('G: flown through the ring once more, the attempt is saved as the first (successes 1, not the old count and one), the panel says "Counted 1 of 3"', second.progress['rings-first']?.successes === 1 && panelSecond.includes(fill(SONIC['sonic.progress.counted'] ?? '', { n: 1, total: getLesson('rings-first').pass.required })), out.resetSecond);
+        check('G: no page error', errors.length === 0, errors);
+    } finally {
+        await ctx.close();
+    }
+}
+
 async function main(): Promise<void> {
     await takeLock();
     locked = true;
@@ -756,7 +829,7 @@ async function main(): Promise<void> {
     let browser: Browser | null = null;
     try {
         ({ browser } = await launchChrome({ args: ['--autoplay-policy=no-user-gesture-required', '--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] }));
-        const parts: [string, (b: Browser, o: Record<string, unknown>) => Promise<void>][] = [['A', partA], ['B', partB], ['C', partC], ['C2', partC2], ['DE', partDE], ['E2', partE2], ['F1', partF1], ['F2', partF2]];
+        const parts: [string, (b: Browser, o: Record<string, unknown>) => Promise<void>][] = [['A', partA], ['B', partB], ['C', partC], ['C2', partC2], ['DE', partDE], ['E2', partE2], ['F1', partF1], ['F2', partF2], ['G', partG]];
         const only = process.env.PARTS;
         for (const [name, run] of parts) {
             if (only && !only.split(',').includes(name)) continue;
@@ -771,7 +844,7 @@ async function main(): Promise<void> {
         letGo();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence('sonic-v13-page', { site: SITE, parts: process.env.PARTS ?? 'A,B,C,C2,DE,E2,F1,F2', control: CONTROL ? 'reader' : null, checks, passed, total: checks.length, shots, result: out });
+    const file = writeEvidence('sonic-v13-page', { site: SITE, parts: process.env.PARTS ?? 'A,B,C,C2,DE,E2,F1,F2,G', control: CONTROL ? 'reader' : null, checks, passed, total: checks.length, shots, result: out });
     writeFileSync(join(SHOTS, 'evidence-path.txt'), file);
     console.log(`${passed} of ${checks.length} checks passed; ${file}`);
     process.exitCode = passed === checks.length && checks.length > 0 ? 0 : 1;

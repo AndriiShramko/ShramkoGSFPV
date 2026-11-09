@@ -189,7 +189,22 @@ lead's "Next" 5 and 6 as this branch sees them).
     between 601 and about 705 px (a laptop window) or a width not among the eight; the places were tuned to these eight.
   - Seen on the way, not this step's: the recorder's toggle ("Recording") lies over the right stick and the take-off line's right end on a
     phone upright (`sonicrec-toggle`, 111 x 44 at 265, 730 on the phone with sticks), as before this step.
-- [ ] 9. The page proofs that still expect v0.12 (`sonic-int-page.ts` I, `sonic-lessons-page.ts` Z and I).
+- [x] 9. The page proofs that still expect v0.12, following v0.13, each run once.
+  - `sonic-int-page.ts status` (a release build, `SITE=http://localhost:5440`, `serve-csp.mjs dist 5440`: the proof says a release, a Vite run
+    reloads when a source file changes): I says the runner's status line, then the recorder's: "Lesson 6 of 28: Hold your height. Step 1 of 2."
+    (`status.progress-step`) and "Recording is off." / "Recording is on." (was `status.lesson`). 4 of 4,
+    `evidence/2026-11-09/sonic-int-status.json`.
+  - `sonic-lessons-page.ts` (the Vite dev server, `cd apps/fly && npx vite --port 5441 --strictPort`, `LAB=http://localhost:5441`, the four lessons
+    flown end to end by the keyboard): Z now repeats the whole task: its key event (`repeat`) first, then the lesson's title and its four lines, "Go
+    on." last (measured: `lesson.hover-height.title`, `.intro.1` to `.3`, `.goal.1`, `fly.go-on`); I says "Lesson 6 of 28: Hold your height. Step 2 of
+    2. Attempt 1. Counted 0 of 3." Three more expectations that were v0.12's, found by the first run (42 of 44: the pause menu check and two sound
+    checks) and changed: the pause menu is on P (Escape in a lesson is the lesson menu, v13-host B6); the motors are ON by default in the mode
+    (M41-16): the graph is there from the start (master 0.0407), the speaker button's first press turns them off (master 0), the second on (master 0.7
+    at volume 100; the output 1.405 times louder, 0.0250 to 0.0351 RMS: the motors play under the cues, so the factor of 2 became 1.1), the peak 0.089
+    under the limiter's 0.5013; the pause leaves the motors' floor, 9.5e-5 RMS against the tone's 6.9e-3 (the bound 1e-4 became 3e-4 and 20 times under
+    the tone); gates and attempts counted by `pass.required` (3: rings-first, hover-height). Second run: **44 of 44**
+    (ears-headphones 53 s, shapes-square 9 s, rings-first 16 s, hover-height 117 s, each passed and saved), `evidence/2026-11-09/sonic-lessons-page.json`
+    and its pictures. The first run's two failures are the control for the two sound checks: they fail on the v0.12 expectations.
 - [ ] 10. `sonic-v13-page.ts` part C: the three new switches by keys through the spoken list; part E in the dark scheme.
 - [ ] 11. The replay in a page: the v0.12 fixture (older-build sentence, recorded lines in order, a seek), a recording made on this build.
 - [ ] 12. One run of everything on a release build of the head under the GPU lock, gates exit 0, this Status.
@@ -213,6 +228,10 @@ Each changed expectation takes its value from the package or names its reason; e
 | `sonic-start-screen` new: "v13-int step 3: sound from above and below, the sound panel and the attitude display ..." (3 tests) | new | step 3 |
 | page proof `tools/bench/src/sonic-v13-page.ts` C (step 3) | "Item n of 14" (was 11) in the settings walk and the target note's line | three settings more; not run here (step 8) |
 | `sonic-optin` "its words (review R8)" and "its words: the cut line ..." (step 6) | the item and the key list's L and K lines begin with the mode's name taken from the dictionary (`sonic.start.name` of the language), was the fixed "Fly by Sound: " | Russian and Polish name the mode in their own words |
+| page proof `tools/bench/src/sonic-int-page.ts` I (step 9) | the runner's status line (`status.progress-step` or `status.progress`, its text begins "Lesson 6 of 28: Hold your height. Step") then the recorder's line, was `status.lesson,status.recording-off` and `-on` | I says the runner's status line since v0.13 (W6) |
+| page proof `tools/bench/src/sonic-lessons-page.ts` (step 9) | Z: the key event, the title, every task line, "Go on." last (was: the last line again); I: `status.progress` with place, step, attempt, counted (was `status.lesson`); the pause menu on P (was Escape); motors on by default and the button's first press off; the pause's floor 3e-4 and 20 times under the tone (was 1e-4); gates and goals by `pass.required` (was 8 and 4) | v13-host B3, B4, B6; M41-16; the lessons' own pass counts |
+| page proof `tools/bench/src/v13-look-page.ts layout` (step 8) | the real progress panel instead of v13-look's stand-in (`v13-look-progress-standin.css` deleted); the progress panel checked like the other two; LAYOUT_LANG | step 8 |
+| page proof `tools/bench/src/v13-look-page.ts panels` rings-heights (step 2, run in step 12) | one new check: while the target note sounds it is a disc on the radar | the target note has a direction since s13-elev |
 | `sonic-reset-running` (step 5) | new, 3 tests | the reset over a running lesson |
 | `sonic-start-screen` new: "v13-int step 5: Reset my progress over a flight tells the flight page" (step 5) | new | the screen's `onReset` |
 | `sonic-scan-bump` (step 4) | new, 2 tests | the scan lesson's contact |

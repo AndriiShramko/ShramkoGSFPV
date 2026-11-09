@@ -1,0 +1,579 @@
+{
+  "name": "sonic-lessons-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-09T00:34:14.914Z",
+    "gitHead": "652ae78",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "v12-flight 9: lessons passed end to end in the real page by a scripted keyboard pilot",
+  "page": "http://localhost:5441/fly/?sonic=<lesson> (Vite dev server)",
+  "voice": "the engine says nothing (my screen reader speaks, speed 2): it waits the time a line takes",
+  "voices": 10,
+  "note": "headless Chrome runs muted (--mute-audio); how anything sounds is not judged here",
+  "results": [
+    {
+      "lesson": "ears-headphones",
+      "voice": false,
+      "passed": true,
+      "seconds": 53,
+      "utterances": 0,
+      "cancels": 0,
+      "attempts": 1,
+      "successes": 1,
+      "answers": 3,
+      "gates": 0,
+      "touches": 0,
+      "speechLines": 17,
+      "speechEnds": 6,
+      "tap": {
+        "maxRms": 0.020435344066241732,
+        "maxPeak": 0.04284369945526123,
+        "polls": 1040,
+        "loud": 410,
+        "last": 0
+      },
+      "captionLines": [
+        "Is this sound in front of you or behind you? Press 1 for in front, 2 for behind, 3 if you are not sure.",
+        "Good. Your headphones work well.",
+        "Your headphones work well. You are ready for the next step.",
+        "Lesson passed. Next, a bit harder: Meet the sounds."
+      ],
+      "stagePrims": 1
+    },
+    {
+      "lesson": "shapes-square",
+      "voice": false,
+      "passed": true,
+      "seconds": 9,
+      "utterances": 0,
+      "cancels": 0,
+      "attempts": 2,
+      "successes": 2,
+      "answers": 0,
+      "gates": 2,
+      "touches": 0,
+      "speechLines": 9,
+      "speechEnds": 3,
+      "tap": {
+        "maxRms": 0.06335562386005641,
+        "maxPeak": 0.18631437420845032,
+        "polls": 168,
+        "loud": 164,
+        "last": 0.05694967714162816
+      },
+      "captionLines": [
+        "The square gate",
+        "Escape: menu. Z: repeat the task. N: next.",
+        "A square gate has four bars. Its sound ticks at each corner.",
+        "Go.",
+        "Nice!",
+        "Attempt 1. Counted 1 of 2.",
+        "Go.",
+        "Through the square!",
+        "Lesson passed. Next, a bit harder: A series of squares."
+      ],
+      "stagePrims": 10
+    },
+    {
+      "lesson": "rings-first",
+      "voice": false,
+      "passed": true,
+      "seconds": 16,
+      "utterances": 0,
+      "cancels": 0,
+      "attempts": 3,
+      "successes": 3,
+      "answers": 0,
+      "gates": 3,
+      "touches": 0,
+      "speechLines": 12,
+      "speechEnds": 5,
+      "tap": {
+        "maxRms": 0.0803260117136142,
+        "maxPeak": 0.24674838781356812,
+        "polls": 295,
+        "loud": 290,
+        "last": 0.06806094569945516
+      },
+      "captionLines": [
+        "Go.",
+        "Better than last time!",
+        "Attempt 2. Counted 2 of 3.",
+        "Go.",
+        "Through the ring!",
+        "Lesson passed. Next, a bit harder: Rings in a line."
+      ],
+      "stagePrims": 7
+    },
+    {
+      "lesson": "hover-height",
+      "voice": false,
+      "passed": true,
+      "seconds": 117,
+      "utterances": 0,
+      "cancels": 0,
+      "attempts": 3,
+      "successes": 3,
+      "answers": 0,
+      "gates": 0,
+      "touches": 0,
+      "speechLines": 21,
+      "speechEnds": 9,
+      "tap": {
+        "maxRms": 0.03537050597571994,
+        "maxPeak": 0.08882588148117065,
+        "polls": 2324,
+        "loud": 2293,
+        "last": 0.02539346585381818
+      },
+      "captionLines": [
+        "You held your height. That is the first skill of flying by ear.",
+        "Lesson passed. Next, a bit harder: Turn toward a sound."
+      ],
+      "stagePrims": 1
+    }
+  ],
+  "notFound": [
+    "http://localhost:5441/api/catalog",
+    "http://localhost:5441/api/e"
+  ],
+  "checks": [
+    {
+      "name": "ears-headphones: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-headphones",
+        "engine": "running",
+        "prims": 1
+      }
+    },
+    {
+      "name": "ears-headphones: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 5,
+        "covered": [],
+        "lowest": 321,
+        "centre": 360
+      }
+    },
+    {
+      "name": "ears-headphones: passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 53,
+        "attempts": 1,
+        "successes": 1
+      }
+    },
+    {
+      "name": "ears-headphones: progress saved in the prefs collection (passed, attempts, successes)",
+      "pass": true,
+      "value": {
+        "lessonId": "ears-headphones",
+        "version": 2,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-09T00:31:27.836Z",
+        "skipped": false
+      }
+    },
+    {
+      "name": "ears-headphones: the lesson's lines are speech events of the mode (the captions' source)",
+      "pass": true,
+      "value": {
+        "speechLines": 17,
+        "speechEnds": 6
+      }
+    },
+    {
+      "name": "ears-headphones: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
+      "name": "ears-headphones: the speech queue ran empty at least twice (speech.end markers, the replay's input)",
+      "pass": true,
+      "value": {
+        "speechEnds": 6
+      }
+    },
+    {
+      "name": "ears-headphones: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.020435344066241732,
+        "maxPeak": 0.04284369945526123,
+        "polls": 1040,
+        "loud": 410,
+        "last": 0
+      }
+    },
+    {
+      "name": "ears-headphones: three questions answered by digit keys, right (the lesson says the headphones work well)",
+      "pass": true,
+      "value": [
+        1,
+        2,
+        2
+      ]
+    },
+    {
+      "name": "ears-headphones: after the pass the next lesson of the path opens (ears-glossary) and the page goes on (scene lesson-ears-headphones, engine running, one AudioContext)",
+      "pass": true,
+      "value": {
+        "next": "ears-glossary",
+        "scene": "lesson-ears-headphones"
+      }
+    },
+    {
+      "name": "shapes-square: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
+      "pass": true,
+      "value": {
+        "lesson": "shapes-square",
+        "engine": "running",
+        "prims": 10
+      }
+    },
+    {
+      "name": "shapes-square: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 253,
+        "centre": 360
+      }
+    },
+    {
+      "name": "shapes-square: passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 9,
+        "attempts": 2,
+        "successes": 2
+      }
+    },
+    {
+      "name": "shapes-square: progress saved in the prefs collection (passed, attempts, successes)",
+      "pass": true,
+      "value": {
+        "lessonId": "shapes-square",
+        "version": 2,
+        "attempts": 2,
+        "successes": 2,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-09T00:31:44.836Z",
+        "skipped": false
+      }
+    },
+    {
+      "name": "shapes-square: the lesson's lines are speech events of the mode (the captions' source)",
+      "pass": true,
+      "value": {
+        "speechLines": 9,
+        "speechEnds": 3
+      }
+    },
+    {
+      "name": "shapes-square: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
+      "name": "shapes-square: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.06335562386005641,
+        "maxPeak": 0.18631437420845032,
+        "polls": 168,
+        "loud": 164,
+        "last": 0.05694967714162816
+      }
+    },
+    {
+      "name": "shapes-square: gates passed, each inside the opening",
+      "pass": true,
+      "value": 2
+    },
+    {
+      "name": "shapes-square: after the pass the next lesson of the path opens (shapes-series) and the page goes on (scene lesson-shapes-series, engine running, one AudioContext)",
+      "pass": true,
+      "value": {
+        "next": "shapes-series",
+        "scene": "lesson-shapes-series"
+      }
+    },
+    {
+      "name": "rings-first: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
+      "pass": true,
+      "value": {
+        "lesson": "rings-first",
+        "engine": "running",
+        "prims": 7
+      }
+    },
+    {
+      "name": "rings-first: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 3,
+        "covered": [],
+        "lowest": 287,
+        "centre": 360
+      }
+    },
+    {
+      "name": "rings-first: passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 16,
+        "attempts": 3,
+        "successes": 3
+      }
+    },
+    {
+      "name": "rings-first: progress saved in the prefs collection (passed, attempts, successes)",
+      "pass": true,
+      "value": {
+        "lessonId": "rings-first",
+        "version": 2,
+        "attempts": 3,
+        "successes": 3,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-09T00:32:05.204Z",
+        "skipped": false
+      }
+    },
+    {
+      "name": "rings-first: the lesson's lines are speech events of the mode (the captions' source)",
+      "pass": true,
+      "value": {
+        "speechLines": 12,
+        "speechEnds": 5
+      }
+    },
+    {
+      "name": "rings-first: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
+      "name": "rings-first: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.0803260117136142,
+        "maxPeak": 0.24674838781356812,
+        "polls": 295,
+        "loud": 290,
+        "last": 0.06806094569945516
+      }
+    },
+    {
+      "name": "rings-first: gates passed, each inside the opening",
+      "pass": true,
+      "value": 3
+    },
+    {
+      "name": "rings-first: after the pass the next lesson of the path opens (rings-line) and the page goes on (scene lesson-rings-line, engine running, one AudioContext)",
+      "pass": true,
+      "value": {
+        "next": "rings-line",
+        "scene": "lesson-rings-line"
+      }
+    },
+    {
+      "name": "hover-height: the page flies the lesson (the mode runs, the engine runs, one AudioContext, the helper's view is drawn)",
+      "pass": true,
+      "value": {
+        "lesson": "hover-height",
+        "engine": "running",
+        "prims": 1
+      }
+    },
+    {
+      "name": "hover-height: the captions cover nothing the page draws and stay above the view's centre (2 or more lines, no element of the page under them)",
+      "pass": true,
+      "value": {
+        "lines": 4,
+        "covered": [],
+        "lowest": 321,
+        "centre": 360
+      }
+    },
+    {
+      "name": "Z repeats the whole task (its key event first, then the lesson's title, every line of the task, \"Go on.\" last) and I says where the pilot is (the runner's status line: lesson k of n, step, attempt, counted)",
+      "pass": true,
+      "value": {
+        "z": [
+          "lesson.hover-height.title",
+          "lesson.hover-height.intro.1",
+          "lesson.hover-height.intro.2",
+          "lesson.hover-height.intro.3",
+          "lesson.hover-height.goal.1",
+          "fly.go-on"
+        ],
+        "i": [
+          "Lesson 6 of 28: Hold your height. Step 2 of 2. Attempt 1. Counted 0 of 3.",
+          "Recording is off."
+        ]
+      }
+    },
+    {
+      "name": "the pause menu offers Fly by Sound; its item shows the start screen over the flight (flight paused), Escape closes it and the flight goes on",
+      "pass": true,
+      "value": {
+        "open": {
+          "visible": true,
+          "focus": "sonic-h1",
+          "paused": true
+        },
+        "closed": {
+          "hidden": true,
+          "paused": false
+        }
+      }
+    },
+    {
+      "name": "the motor sound in the mode (v0.13: on by default): the graph is on the engine's own context from the start (one AudioContext, master over 0); the speaker button's first press turns it off (master 0), the second on again (master over 0), the output a little louder with the motors (they play under the cues) and its peak under the limiter's ceiling (0.5013)",
+      "pass": true,
+      "value": {
+        "sound0": {
+          "ctx": "running",
+          "master": 0.04066632513517787
+        },
+        "soundOff": {
+          "master": 0
+        },
+        "soundOn": {
+          "master": 0.7
+        },
+        "levels": {
+          "after": 0.02765882875795057,
+          "motorOff": 0.024998324143769,
+          "motorOn": 0.03511961079570625,
+          "ratio": 1.405
+        },
+        "peakOn": 0.08882588148117065,
+        "audioContexts": 1
+      }
+    },
+    {
+      "name": "the sound follows the frames: the height tone sounds (RMS over 1e-3), is silent while the flight is paused behind the start screen (RMS under 3e-4 and 20 times under the tone: setLayers none, only the motors' floor is left), and is back when the flight goes on",
+      "pass": true,
+      "value": {
+        "before": 0.006877152635524508,
+        "during": 0.00009543415524216695,
+        "after": 0.02765882875795057
+      }
+    },
+    {
+      "name": "hover-height: passed end to end by the keyboard (the lesson's own 'passed' event)",
+      "pass": true,
+      "value": {
+        "seconds": 117,
+        "attempts": 3,
+        "successes": 3
+      }
+    },
+    {
+      "name": "hover-height: progress saved in the prefs collection (passed, attempts, successes)",
+      "pass": true,
+      "value": {
+        "lessonId": "hover-height",
+        "version": 2,
+        "attempts": 3,
+        "successes": 3,
+        "blocksPassed": 1,
+        "passed": true,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-09T00:34:07.003Z",
+        "skipped": false
+      }
+    },
+    {
+      "name": "hover-height: the lesson's lines are speech events of the mode (the captions' source)",
+      "pass": true,
+      "value": {
+        "speechLines": 21,
+        "speechEnds": 9
+      }
+    },
+    {
+      "name": "hover-height: with \"my screen reader speaks\" the engine says nothing itself (no utterance reaches speechSynthesis)",
+      "pass": true,
+      "value": {
+        "utterances": 0
+      }
+    },
+    {
+      "name": "hover-height: the engine made sound (RMS over 1e-3 at some point) and held the ceiling (peak at most 0.5013)",
+      "pass": true,
+      "value": {
+        "maxRms": 0.03537050597571994,
+        "maxPeak": 0.08882588148117065,
+        "polls": 2324,
+        "loud": 2293,
+        "last": 0.02539346585381818
+      }
+    },
+    {
+      "name": "hover-height: the lesson's required number of attempts (3) met the goal (the lesson's own, in the 2 to 3 m band)",
+      "pass": true
+    },
+    {
+      "name": "hover-height: the motors started by the first press of Space (no arm switch)",
+      "pass": true
+    },
+    {
+      "name": "hover-height: after the pass the next lesson of the path opens (hover-turn) and the page goes on (scene lesson-hover-turn, engine running, one AudioContext)",
+      "pass": true,
+      "value": {
+        "next": "hover-turn",
+        "scene": "lesson-hover-turn"
+      }
+    },
+    {
+      "name": "G opens the sound glossary from a lesson (ears-glossary runs, the helper's view is the glossary's floor)",
+      "pass": true,
+      "value": {
+        "lesson": "ears-glossary",
+        "opens": [
+          "shapes-square",
+          "ears-glossary"
+        ]
+      }
+    },
+    {
+      "name": "no console errors and no missing file (but the favicon and the API the dev server does not have)",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "missing": []
+      }
+    }
+  ],
+  "pass": true
+}
