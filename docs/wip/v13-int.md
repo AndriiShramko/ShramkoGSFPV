@@ -270,6 +270,16 @@ Steps 1 to 7 are the first agent's, 8 to 12 the second's (the lead's prompts nam
     `apps/site/out`, `apps/fly/dist`) were removed from C: after the runs.
 - [ ] 11. The replay in a page: the v0.12 fixture (older-build sentence, recorded lines in order, a seek), a recording made on this build.
 - [ ] 12. One run of everything on a release build of the head under the GPU lock, gates exit 0, this Status.
+- Steps 8 to 12, the second agent's commits: 2be5936 (8: the layout check with the real panel, the places, `sonic-panels`' 2 tests), e187afb and 652ae78 (the
+  page proofs' code), 581d88b (9: both proofs pass), cf778d1 (10 and 11: F2 turns first, the straight flight's evidence, the reader control), f68d9ab (12: the
+  Russian pause item, start-keyboard and garden follow v0.13), a5e0983 (the final evidence of 10 to 12, the gates, this status). The package and the gitlink
+  were not touched (ecb2ffb).
+- What no machine checked in steps 8 to 12: how any line, caption, panel or sound feels to a blind, deaf or low-vision pilot (every voice check reads what reached
+  `speechSynthesis.speak`, not what the voice made of it); a real screen reader (NVDA, JAWS); real phones and a real browser zoom (headless Chrome emulates the
+  eight sizes), page heights from 601 to about 705 px, tablets with touch sticks, the longer captions of Russian, Spanish and Polish against the panels (measured,
+  not fixed: "Deferred"); a native reading of the Russian pause item changed in step 12 (a comma for "i": a one-line fit, not a reading) and of every Russian and
+  Polish line of steps 3 and 6; what Sound from above and below does to the engine from the settings screen (held in Node); the replay of a flight dead ahead
+  at a wall, which reads FAIL (found, the package's); flight regression B6 to B16 on the final head.
 - Later, the lead's, not this job's: flight regression accept-fly B6 to B16 on a local release of the final head, one independent review of
   the integrated branch and its fixes, the sound repo's s13-int to its `main` after gh_precheck (the lead pushes), the gitlink on that commit,
   the merge into `v03-lead`.
