@@ -20,6 +20,12 @@ export const CAPTION_KEEP_LIVE = 24;
 /** The mode's panels the captions stay clear of (progress-panel.ts, look-panels.ts), and by how much, px (v13-int review K2). */
 export const PANELS = '.sonic-progress, .sonic-sounds, .sonic-attitude';
 export const CAPTION_GAP_PX = 8;
+/**
+ * How far over the view's centre the lines shown end at the lowest, px: the target is there (the lessons' page proof's bound,
+ * tools/bench/src/sonic-lessons-page.ts). v13-int review K2, part 2: the captions' column right of the panels is narrower than the
+ * centred one was, a line wrapped once more, and four lines of hover-height ended 5 px over the centre at 1280 x 720.
+ */
+export const CENTRE_GAP_PX = 20;
 
 interface Box {
     readonly left: number;
@@ -83,8 +89,9 @@ export class Captions {
     /**
      * What the region holds: the last CAPTION_LINES shown; with a screen reader reading it up to CAPTION_KEEP_LIVE, the older hidden from
      * the eye. And never over the mode's panels (v13-int review K2: the longer lines of Spanish, Polish and Russian reached the progress
-     * panel and the attitude display): while a line shown meets one of PANELS (within CAPTION_GAP_PX of it), the oldest line shown is hidden
-     * from the eye too (still in the region for a screen reader) and the others move up, so the newest line is whole and the panels stay
+     * panel and the attitude display): while a line shown meets one of PANELS (within CAPTION_GAP_PX of it), or ends lower than
+     * CENTRE_GAP_PX over the view's centre (review K2, part 2: the target), the oldest line shown is hidden from the eye too (still in
+     * the region for a screen reader) and the others move up, so the newest line is whole and the panels and the view's centre stay
      * clear at every page size and in every language.
      */
     private fit(): void {
@@ -94,12 +101,24 @@ export class Captions {
         lines.forEach((el, i) => el.classList.toggle('sonic-sr-only', i < lines.length - CAPTION_LINES));
         if (this.root.hidden || !this.mode.visible) return;
         const panels = this.panelBoxes();
-        if (panels.length === 0) return;
+        const floor = this.centreFloor();
+        if (panels.length === 0 && floor === null) return;
+        const inTheWay = (el: Element): boolean => {
+            const r = el.getBoundingClientRect();
+            return meets(r, panels) || (floor !== null && r.bottom > floor);
+        };
         let shown = lines.filter((el) => !el.classList.contains('sonic-sr-only'));
-        while (shown.length > 1 && shown.some((el) => meets(el.getBoundingClientRect(), panels))) {
+        while (shown.length > 1 && shown.some(inTheWay)) {
             (shown[0] as Element).classList.add('sonic-sr-only');
             shown = shown.slice(1);
         }
+    }
+
+    /** The lowest a line shown may end: CENTRE_GAP_PX over the view's centre (null on a page without layout, a test's). */
+    private centreFloor(): number | null {
+        if (typeof this.root.getBoundingClientRect !== 'function') return null;
+        const height = this.root.ownerDocument.defaultView?.innerHeight ?? 0;
+        return height > 0 ? height / 2 - CENTRE_GAP_PX : null;
     }
 
     /** The panels on the page now, each grown by CAPTION_GAP_PX (none on a page without layout, a test's). */

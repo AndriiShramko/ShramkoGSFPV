@@ -93,8 +93,11 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
-/** The page's Captions on the stand-in: the region 92 px down, from x 388 to 1268 (1280 x 720 since K2), and the panels given. */
-async function page(panels: { left: number; right: number; top: number; h: number }[]): Promise<{ c: InstanceType<typeof import('../../../apps/fly/src/sonic/captions').Captions>; root: LayoutEl; panels: LayoutEl[]; add: (text: string, h: number) => void }> {
+/**
+ * The page's Captions on the stand-in: the region 92 px down, from x 388 to 1268 (1280 x 720 since K2), and the panels given. `innerHeight`:
+ * the window's height (the view's centre at half of it); none, as in K2's own tests: a page whose view has no height.
+ */
+async function page(panels: { left: number; right: number; top: number; h: number }[], innerHeight?: number): Promise<{ c: InstanceType<typeof import('../../../apps/fly/src/sonic/captions').Captions>; root: LayoutEl; panels: LayoutEl[]; add: (text: string, h: number) => void }> {
     const body = new LayoutEl('body');
     const els = panels.map((p) => {
         const e = new LayoutEl('section');
@@ -115,7 +118,8 @@ async function page(panels: { left: number; right: number; top: number; h: numbe
             return e;
         },
         createTextNode: (text: string) => ({ text }),
-        querySelectorAll: (sel: string) => (sel.includes('.sonic-attitude') ? els : [])
+        querySelectorAll: (sel: string) => (sel.includes('.sonic-attitude') ? els : []),
+        defaultView: innerHeight === undefined ? null : { innerHeight }
     };
     vi.stubGlobal('location', { search: '', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
     vi.stubGlobal('navigator', { languages: ['en'], language: 'en' });
@@ -179,5 +183,48 @@ describe('v13-int review K2: the captions stay clear of the panels under them', 
         (panels[0] as LayoutEl).box = { left: 900, right: 1268, top: 700 };
         c.refit();
         expect(seen(root)).toEqual(['one', 'two', 'three']);
+    });
+});
+
+// v13-int review K2, part 2 (found by the lane end's sonic-lessons-page): in the column right of the panels a line of hover-height's start wrapped
+// once more than in the centred captions, and its three lines shown ended at 355 px of 720 (before K2: 321), 5 px over the view's centre, where
+// the target is; the page proof wants 20 px (CENTRE_GAP_PX). No panel lies under them there: the bound is the view's centre itself.
+describe('v13-int review K2, part 2: the captions end 20 px over the view\'s centre', () => {
+    it('hover-height\'s start at 1280 x 720 (three lines of two rows, 84 px each, from 92 px: 356 px): the oldest is hidden from the eye, the two newest end at 266 px, 20 px or more over the centre (360)', async () => {
+        const { root, add } = await page([{ left: 12, right: 261, top: 273, h: 198 }], 720);
+        for (const t of ['title', 'keys', 'intro']) add(t, 84);
+        expect(seen(root)).toEqual(['keys', 'intro']);
+        expect(bottomOf(root)).toBe(92 + 84 + 6 + 84);
+        expect(bottomOf(root)).toBeLessThanOrEqual(360 - 20);
+        // still in the region for a screen reader
+        expect(root.children.map((l) => l.textContent)).toEqual(['title', 'keys', 'intro']);
+    });
+
+    it('lines of one row (50 px) end at 254 px: all three shown', async () => {
+        const { root, add } = await page([], 720);
+        for (const t of ['one', 'two', 'three']) add(t, 50);
+        expect(seen(root)).toEqual(['one', 'two', 'three']);
+    });
+
+    it('the newest line is never hidden, even when it alone ends under the centre', async () => {
+        const { root, add } = await page([], 720);
+        for (const t of ['one', 'two', 'three']) add(t, 300);
+        expect(seen(root)).toEqual(['three']);
+    });
+
+    it('a taller window (1280 x 800, the centre at 400) has room for all three again on a resize', async () => {
+        const { c, root, add } = await page([], 720);
+        for (const t of ['title', 'keys', 'intro']) add(t, 84);
+        expect(seen(root)).toEqual(['keys', 'intro']);
+        (root.ownerDocument as { defaultView: { innerHeight: number } }).defaultView.innerHeight = 800;
+        c.refit();
+        expect(seen(root)).toEqual(['title', 'keys', 'intro']);
+    });
+
+    it('control: the same three lines on a page whose view has no height (no centre to keep): all three shown, ending at 356 px', async () => {
+        const { root, add } = await page([{ left: 12, right: 261, top: 273, h: 198 }]);
+        for (const t of ['title', 'keys', 'intro']) add(t, 84);
+        expect(seen(root)).toEqual(['title', 'keys', 'intro']);
+        expect(bottomOf(root)).toBe(356);
     });
 });
