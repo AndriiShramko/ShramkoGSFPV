@@ -200,6 +200,23 @@ function Landing({ locale }: { locale: Locale }) {
           </div>
         </section>
 
+        {/* 1. Fly by Sound: a band right after the first screen, no section number (01-17 stay as they are) */}
+        <section id="fly-by-sound" aria-labelledby="fly-by-sound-title" className="scroll-mt-16 border-t border-line bg-surface/50">
+          <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-8 sm:py-16">
+            <p className="eyebrow">{t("soundBand.eyebrow")}</p>
+            <h2 id="fly-by-sound-title" className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {t("soundBand.h2")}
+            </h2>
+            <p className="mt-4 max-w-2xl text-lg text-ink/85">{t("soundBand.text")}</p>
+            <p className="mt-6">
+              <a href={`/${locale}/sound/`} data-track="cta_click" data-p="sound-band" className="link inline-flex min-h-11 items-center text-lg">
+                {t("soundBand.link")}
+                <span aria-hidden="true" className="ml-2">→</span>
+              </a>
+            </p>
+          </div>
+        </section>
+
         {/* 1a. News: every walkable SuperSplat scan is a place to fly; random, next on crash, your own scan */}
         <Section id="locations" index="01" eyebrow={t("locations.eyebrow")} title={t("locations.h2")} lead={t("locations.lead")} backdrop={<VideoBackdrop slot="locations" />}>
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-start">
