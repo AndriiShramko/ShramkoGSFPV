@@ -1,0 +1,654 @@
+{
+ "site": "http://127.0.0.1:8138",
+ "at": "2026-11-11T12:43:16.948Z",
+ "results": [
+  {
+   "width": "phone",
+   "page": "/ru/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\phone-ru-sound.png"
+  },
+  {
+   "width": "phone",
+   "page": "/ru/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": true,
+    "startButton": false,
+    "wide": [
+     "li.gallery-card ",
+     "figure.",
+     "button.gallery-open",
+     "img.",
+     "figcaption.mt-3 text-sm leading-snug"
+    ]
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\phone-ru-home.png"
+  },
+  {
+   "width": "phone",
+   "page": "/en/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\phone-en-sound.png"
+  },
+  {
+   "width": "phone",
+   "page": "/en/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": true,
+    "startButton": false,
+    "wide": [
+     "li.gallery-card ",
+     "figure.",
+     "button.gallery-open",
+     "img.",
+     "figcaption.mt-3 text-sm leading-snug"
+    ]
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\phone-en-home.png"
+  },
+  {
+   "width": "phone",
+   "page": "/pl/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": null
+  },
+  {
+   "width": "phone",
+   "page": "/pl/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": true,
+    "startButton": false,
+    "wide": [
+     "li.gallery-card ",
+     "figure.",
+     "button.gallery-open",
+     "img.",
+     "figcaption.mt-3 text-sm leading-snug"
+    ]
+   },
+   "shot": null
+  },
+  {
+   "width": "phone",
+   "page": "/es/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": null
+  },
+  {
+   "width": "phone",
+   "page": "/es/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 375,
+    "innerWidth": 375,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 16,
+    "gapRight": 16,
+    "band": true,
+    "startButton": false,
+    "wide": [
+     "li.gallery-card ",
+     "figure.",
+     "button.gallery-open",
+     "img.",
+     "figcaption.mt-3 text-sm leading-snug"
+    ]
+   },
+   "shot": null
+  },
+  {
+   "width": "desktop",
+   "page": "/ru/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 368,
+    "gapRight": 368,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\desktop-ru-sound.png"
+  },
+  {
+   "width": "desktop",
+   "page": "/ru/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 176,
+    "gapRight": 496,
+    "band": true,
+    "startButton": false,
+    "wide": []
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\desktop-ru-home.png"
+  },
+  {
+   "width": "desktop",
+   "page": "/en/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 368,
+    "gapRight": 368,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\desktop-en-sound.png"
+  },
+  {
+   "width": "desktop",
+   "page": "/en/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 176,
+    "gapRight": 496,
+    "band": true,
+    "startButton": false,
+    "wide": []
+   },
+   "shot": "U:\\Temp\\claude\\site-sound-shots\\local3\\desktop-en-home.png"
+  },
+  {
+   "width": "desktop",
+   "page": "/pl/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 368,
+    "gapRight": 368,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": null
+  },
+  {
+   "width": "desktop",
+   "page": "/pl/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 176,
+    "gapRight": 496,
+    "band": true,
+    "startButton": false,
+    "wide": []
+   },
+   "shot": null
+  },
+  {
+   "width": "desktop",
+   "page": "/es/sound/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "sound-start",
+     "sound-how",
+     "sound-need",
+     "sound-keys",
+     "sound-now",
+     "sound-test",
+     "sound-record",
+     "sound-who",
+     "sound-open",
+     "sound-help"
+    ],
+    "gapLeft": 368,
+    "gapRight": 368,
+    "band": null,
+    "startButton": true,
+    "wide": []
+   },
+   "shot": null
+  },
+  {
+   "width": "desktop",
+   "page": "/es/",
+   "pass": true,
+   "checks": {
+    "status200": true,
+    "noHorizontalScroll": true,
+    "oneH1": true,
+    "gap16": true,
+    "bandOrStart": true
+   },
+   "seen": {
+    "scrollWidth": 1440,
+    "innerWidth": 1440,
+    "h1": 1,
+    "h2": [
+     "fly-by-sound-title",
+     "locations-title",
+     "scale-title",
+     "tour-title",
+     "features-title",
+     "gallery-title",
+     "how-title",
+     "real-title",
+     "tune-title",
+     "numbers-title",
+     "scenes-title",
+     "radios-title",
+     "compare-title",
+     "agents-title",
+     "risks-title",
+     "faq-title",
+     "opensource-title",
+     "contact-title"
+    ],
+    "gapLeft": 176,
+    "gapRight": 496,
+    "band": true,
+    "startButton": false,
+    "wide": []
+   },
+   "shot": null
+  }
+ ]
+}
