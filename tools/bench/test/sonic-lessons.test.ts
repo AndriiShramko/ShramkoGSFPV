@@ -360,7 +360,9 @@ describe('the host around a lesson', () => {
 
     it('digits answer only a question that was asked; 0 skips it; the answer is an event with how it came', async () => {
         const r = await open('ears-headphones');
-        expect(r.host.answer(1)).toBe(false);
+        // sonic-keys: in a running lesson the digit goes to the runner, which refuses it ("Not taken", no answer event) when nothing is asked
+        expect(r.host.answer(1)).toBe(true);
+        expect(r.of('answer')).toEqual([]);
         // run until the first question is asked and its lines are said
         await r.run(240000, null, () => r.host.asking && !r.engine.speaking);
         expect(r.host.asking).toBe(true);

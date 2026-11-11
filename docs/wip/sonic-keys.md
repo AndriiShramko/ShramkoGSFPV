@@ -17,7 +17,7 @@ Branch `sonic-keys` here (from `origin/main` 31b1453) and branch `sonic-keys` in
 - [x] (e) the headphone check asks left and right only (left, right, left); `intro.2` reworded in four locales; `ears-headphones` and `ears-glossary` version 3
 - [x] package tests: `test/sonic-keys.test.ts` (9; 7 fail on the old runner, 2 are controls); suite 1199 of 1200, typecheck 0
 - [x] simulator test: `sonic-int-digits.test.ts` new case (fails on the old handler); `sonic-int-digits`, `sonic-lesson-keys`, `sonic-start-screen`, `sonicrec-survey` green
-- [ ] simulator typecheck (gates `--only typecheck,architecture`)
+- [x] simulator typecheck and architecture (gates `--only typecheck,architecture`: PASS); all 42 `tools/bench/test/sonic*` files: 727 tests, 0 failed after two expected updates (`sonic-lessons` host answer with no question now `true`, `sound-panel` kind of `target.answer`)
 - [ ] left for the lead: `pnpm listen:words` in the package (the words evidence test `test/words.test.ts` fails until it is run again: 534 lines now, 526 heard), `pnpm proof:audio` and `pnpm listen` (the new answer sound), the page check `tools/bench/src/sonic-int-review.ts` (a digit during the sound in headless Chrome), all gates, review
 
 ## Notes
