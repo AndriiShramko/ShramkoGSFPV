@@ -1046,7 +1046,7 @@
     "eyebrow": "Fly by Sound",
     "h1": "Fly an FPV drone by ear",
     "lead": "A free mode of the ShramkoGSFPV simulator where you fly by ear. It is made for blind and low-vision people, and any pilot can try it. No sight is needed: headphones, a keyboard, a gamepad or a radio, and the app speaks for itself.",
-    "status": "This is an experiment at its first stage. We are testing whether a person without sight can learn to fly an FPV drone by sound, fast and with confidence, and one day race. Pilots will give the answer, so we need testers and your feedback.",
+    "status": "This is an experiment at its first stage. Sighted FPV pilots have already flown it with their eyes closed, by sound alone. The goal we are working towards: a person without sight learns to fly an FPV drone by sound, fast and with confidence, and races. Pilots who are blind from birth will show what to improve, so we need testers and your feedback.",
     "toc": {
       "label": "On this page"
     },
@@ -1076,10 +1076,12 @@
     },
     "now": {
       "title": "What works today and what does not yet",
+      "tested": "What has been tested: sighted FPV pilots, the author and his friends, have flown with their eyes closed and passed corridors and obstacles by sound alone. It works. What has not happened yet: pilots who are blind from birth have not tried it. Their feedback is what we need to find the problems and make orientation by sound better. We listen to every report and turn it into fixes.",
       "worksTitle": "Works today",
       "works": ["28 lessons with a voice, and the sound cues.", "A keyboard, a gamepad or a radio.", "Recording your flight together with your voice, sending it to the author, a short survey.", "A link to a lesson with your sound settings (the L key).", "English, Spanish, Polish and Russian."],
       "notYetTitle": "Not yet",
-      "notYet": ["No blind pilot has tested the mode yet. We need the first feedback from you.", "The mode has not been tried with NVDA or JAWS in practice.", "Phones and tablets are not tested; for now you need a computer.", "There are no obstacle courses with a timer by sound yet, and no flying together with other pilots. They are planned; we give no dates.", "Native speakers have not yet listened to the Spanish, Polish and Russian voice lines."]
+      "notYet": ["The mode has not been tried with NVDA or JAWS in practice.", "Phones and tablets are not tested; for now you need a computer.", "There are no obstacle courses with a timer by sound yet, and no flying together with other pilots. They are planned; we give no dates.", "Native speakers have not yet listened to the Spanish, Polish and Russian voice lines."],
+      "goal": "Where this leads. There are two goals. First: blind people taking part in international competitions as FPV pilots. Second: a phone app. The camera sees the surroundings, the app analyses them and builds a sound map, and a blind person walks with headphones on, orienting by sound. Both are tested here in the simulator first: it is simpler, and many blind people can take part in analysing and improving how an image is turned into sound."
     },
     "test": {
       "title": "Join the testing",
@@ -1101,7 +1103,7 @@
     },
     "press": {
       "title": "For journalists and bloggers",
-      "story": "The story. ShramkoGSFPV, a free FPV simulator that runs in the browser, now has a Fly by Sound mode. Blind and low-vision people learn to fly an FPV drone by ear: spatial sound in headphones tells them about walls, height and open ways, and a voice leads the lessons. Nothing to install, and the code is open. The project is looking for blind testers to find out whether a person without sight can learn to fly fast and one day race. The author's next idea is to bring this sense of space by sound from the simulator into the real world.",
+      "story": "The story. ShramkoGSFPV, a free FPV simulator that runs in the browser, now has a Fly by Sound mode. Blind and low-vision people learn to fly an FPV drone by ear: spatial sound in headphones tells them about walls, height and open ways, and a voice leads the lessons. Nothing to install, and the code is open. Sighted FPV pilots have already flown it with their eyes closed, through corridors and obstacles by sound alone. Now the project is looking for testers who are blind from birth, to find the problems and to see whether a person without sight can learn to fly fast and one day race. There are two goals: blind people taking part in international competitions as FPV pilots, and a phone app that turns what its camera sees into a sound map for a blind person walking with headphones on. Both are tested in the simulator first.",
       "facts": "Facts: free, no account; 28 lessons; English, Spanish, Polish, Russian; MIT licence; made by Andrii Shramko, FPV pilot and 3DGS specialist.",
       "contact": "We will answer your questions and show the mode over a video call.",
       "write": "Write to the author",

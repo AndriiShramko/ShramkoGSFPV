@@ -1046,7 +1046,7 @@
     "eyebrow": "Fly by Sound",
     "h1": "Pilota un dron FPV de oído",
     "lead": "Un modo gratuito del simulador ShramkoGSFPV en el que se vuela de oído. Está pensado para personas ciegas o con baja visión, y cualquier piloto puede probarlo. No hace falta ver: auriculares, teclado, mando o radio, y la aplicación habla por sí sola.",
-    "status": "Es un experimento en su primera etapa. Estamos comprobando si una persona sin vista puede aprender a pilotar un dron FPV de oído, rápido y con seguridad, y con el tiempo competir en carreras. La respuesta la darán los pilotos, por eso necesitamos personas que lo prueben y tus comentarios.",
+    "status": "Es un experimento en su primera etapa. Pilotos FPV que ven ya han volado en él con los ojos cerrados, solo de oído. El objetivo hacia el que vamos: que una persona sin vista aprenda a pilotar un dron FPV de oído, rápido y con seguridad, y compita en carreras. Los pilotos ciegos de nacimiento nos mostrarán qué mejorar, por eso necesitamos personas que lo prueben y tus comentarios.",
     "toc": {
       "label": "En esta página"
     },
@@ -1076,10 +1076,12 @@
     },
     "now": {
       "title": "Qué funciona ya y qué todavía no",
+      "tested": "Lo que ya se ha probado: pilotos FPV que ven, el autor y sus amigos, han volado con los ojos cerrados y han superado pasillos y obstáculos solo de oído. Funciona. Lo que aún no ha pasado: ningún piloto ciego de nacimiento lo ha probado todavía. Sus comentarios son lo que necesitamos para encontrar los problemas y mejorar la orientación por sonido. Escuchamos cada comentario y lo convertimos en mejoras.",
       "worksTitle": "Funciona hoy",
       "works": ["28 lecciones con voz y las indicaciones sonoras.", "Teclado, mando o radio.", "Grabar tu vuelo junto con tu voz, enviarlo al autor y una breve encuesta.", "Un enlace a una lección con tu configuración de sonido (tecla L).", "Inglés, español, polaco y ruso."],
       "notYetTitle": "Todavía no",
-      "notYet": ["Ningún piloto ciego ha probado aún el modo. Necesitamos tus primeras impresiones.", "El modo no se ha probado en la práctica con NVDA ni con JAWS.", "No se ha probado en teléfonos ni tabletas; por ahora hace falta un ordenador.", "Aún no hay circuitos con obstáculos y cronómetro por sonido, ni vuelos junto a otros pilotos. Están previstos, sin fechas.", "Ningún hablante nativo ha escuchado todavía las frases en español, polaco y ruso."]
+      "notYet": ["El modo no se ha probado en la práctica con NVDA ni con JAWS.", "No se ha probado en teléfonos ni tabletas; por ahora hace falta un ordenador.", "Aún no hay circuitos con obstáculos y cronómetro por sonido, ni vuelos junto a otros pilotos. Están previstos, sin fechas.", "Ningún hablante nativo ha escuchado todavía las frases en español, polaco y ruso."],
+      "goal": "Hacia dónde va. Hay dos objetivos. El primero: que las personas ciegas puedan participar en competiciones internacionales como pilotos FPV. El segundo: una aplicación para el teléfono. La cámara ve el entorno, la aplicación lo analiza y crea un mapa sonoro, y una persona ciega camina con auriculares orientándose por el sonido. Los dos se prueban primero aquí, en el simulador: es más sencillo y permite que muchas personas ciegas participen en analizar y mejorar cómo se convierte una imagen en sonido."
     },
     "test": {
       "title": "Participa en las pruebas",
@@ -1101,7 +1103,7 @@
     },
     "press": {
       "title": "Para periodistas y blogueros",
-      "story": "La noticia. ShramkoGSFPV, un simulador FPV gratuito que funciona en el navegador, tiene ahora un modo Fly by Sound. Personas ciegas o con baja visión aprenden a pilotar un dron FPV de oído: el sonido espacial en los auriculares les indica paredes, altura y pasos libres, y una voz guía las lecciones. No hay nada que instalar y el código es abierto. El proyecto busca pilotos ciegos que lo prueben para comprobar si una persona sin vista puede aprender a volar rápido y algún día competir. La siguiente idea del autor es llevar esta orientación por sonido del simulador al mundo real.",
+      "story": "La noticia. ShramkoGSFPV, un simulador FPV gratuito que funciona en el navegador, tiene ahora un modo Fly by Sound. Personas ciegas o con baja visión aprenden a pilotar un dron FPV de oído: el sonido espacial en los auriculares les indica paredes, altura y pasos libres, y una voz guía las lecciones. No hay nada que instalar y el código es abierto. Pilotos FPV que ven ya lo han volado con los ojos cerrados, superando pasillos y obstáculos solo de oído. Ahora el proyecto busca personas ciegas de nacimiento que lo prueben, para encontrar los problemas y comprobar si alguien sin vista puede aprender a volar rápido y algún día competir. Hay dos objetivos: que las personas ciegas participen en competiciones internacionales como pilotos FPV, y una aplicación para el teléfono que convierta lo que ve su cámara en un mapa sonoro para una persona ciega con auriculares. Los dos se prueban primero en el simulador.",
       "facts": "Datos: gratis, sin cuenta; 28 lecciones; inglés, español, polaco y ruso; licencia MIT; creado por Andrii Shramko, piloto FPV y especialista en 3DGS.",
       "contact": "Respondemos a tus preguntas y te mostramos el modo por videollamada.",
       "write": "Escribir al autor",
