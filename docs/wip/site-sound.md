@@ -18,7 +18,7 @@ Scope: static site release only (apps/site, packages/i18n/locales/site, apps/sit
 
 - [x] 6. Text: sighted FPV pilots (the author and his friends) already flew with eyes closed through corridors and obstacles by sound alone; pilots blind from birth have not tried it yet; two goals (international FPV competitions for blind pilots; a phone app turning the camera's view into a sound map), both tested in the simulator first. Keys sound.now.tested, sound.now.goal (new), sound.status, sound.press.story; the 'no blind pilot has tested' item removed. en, ru, pl, es. Commit 8306a6e.
 - [x] 7. Gates on 8306a6e: typecheck, api-unittest, architecture, i18n, catalog, B18 PASS; vitest 4109/4110, the one miss sonicrec-recorder (voice sync marks) ran under a concurrent build and passes alone 39/39 twice (no recorder code touched); verify.mjs 247/247 on build 8306a6e.
-- [ ] 8. Merge into main, ship, live checks, STATE.
+- [x] 8. Merged 036b27f, ship.sh: CI 43014037641 green, release 2ce9faeaa99f, neighbours equal, 302 checks; live release.json 036b27f3, four pages carry the new text, sound-page-shots 16/16 on live; STATE.md.
 
 ## Next stage: 'Who it is for' section (owner 2026-11-11, not started)
 
