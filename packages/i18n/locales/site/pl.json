@@ -1046,7 +1046,7 @@
     "eyebrow": "Lot na słuch",
     "h1": "Lataj dronem FPV na słuch",
     "lead": "Darmowy tryb symulatora ShramkoGSFPV, w którym lata się na słuch. Powstał z myślą o osobach niewidomych i słabowidzących, ale może go wypróbować każdy pilot. Wzrok nie jest potrzebny: słuchawki, klawiatura, pad albo aparatura, a aplikacja sama mówi.",
-    "status": "To eksperyment w pierwszym etapie. Sprawdzamy, czy osoba bez wzroku może nauczyć się latać dronem FPV na słuch, szybko i pewnie, a z czasem wystartować w zawodach. Odpowiedź dadzą piloci, dlatego potrzebujemy testerów i Twoich opinii.",
+    "status": "To eksperyment w pierwszym etapie. Widzący piloci FPV latali już w nim z zamkniętymi oczami, wyłącznie na słuch. Cel, do którego zmierzamy: osoba bez wzroku uczy się latać dronem FPV na słuch, szybko i pewnie, i startuje w zawodach. Co poprawić, pokażą piloci niewidomi od urodzenia, dlatego potrzebujemy testerów i Twoich opinii.",
     "toc": {
       "label": "Na tej stronie"
     },
@@ -1076,10 +1076,12 @@
     },
     "now": {
       "title": "Co już działa, a czego jeszcze nie ma",
+      "tested": "Co już sprawdziliśmy: widzący piloci FPV, autor i jego znajomi, latali z zamkniętymi oczami i przelatywali korytarze i przeszkody wyłącznie na słuch. To działa. Czego jeszcze nie było: nie próbowali tego piloci niewidomi od urodzenia. Ich opinie są potrzebne, żeby znaleźć problemy i poprawić orientację na słuch. Wysłuchamy każdej opinii i wprowadzimy poprawki.",
       "worksTitle": "Działa już dziś",
       "works": ["28 lekcji z głosem i podpowiedzi dźwiękowe.", "Klawiatura, pad albo aparatura.", "Nagranie lotu razem z Twoim głosem, wysłanie go autorowi, krótka ankieta.", "Link do lekcji z Twoimi ustawieniami dźwięku (klawisz L).", "Angielski, hiszpański, polski i rosyjski."],
       "notYetTitle": "Jeszcze nie ma",
-      "notYet": ["Żaden niewidomy pilot nie sprawdził jeszcze tego trybu. Pierwsze opinie muszą przyjść od Ciebie.", "Tryb nie był jeszcze sprawdzony w praktyce z NVDA ani JAWS.", "Telefony i tablety nie są sprawdzone, na razie potrzebny jest komputer.", "Nie ma jeszcze tras z przeszkodami i pomiarem czasu na słuch ani latania razem z innymi pilotami. Są w planach, terminów nie podajemy.", "Kwestii mówionych po hiszpańsku, polsku i rosyjsku nie słuchali jeszcze rodzimi użytkownicy tych języków."]
+      "notYet": ["Tryb nie był jeszcze sprawdzony w praktyce z NVDA ani JAWS.", "Telefony i tablety nie są sprawdzone, na razie potrzebny jest komputer.", "Nie ma jeszcze tras z przeszkodami i pomiarem czasu na słuch ani latania razem z innymi pilotami. Są w planach, terminów nie podajemy.", "Kwestii mówionych po hiszpańsku, polsku i rosyjsku nie słuchali jeszcze rodzimi użytkownicy tych języków."],
+      "goal": "Dokąd to prowadzi. Cele są dwa. Pierwszy: żeby osoby niewidome mogły startować w międzynarodowych zawodach jako piloci FPV. Drugi: aplikacja na telefon. Kamera widzi otoczenie, aplikacja je analizuje i buduje mapę dźwiękową, a osoba niewidoma idzie w słuchawkach i orientuje się na słuch. Oba cele najpierw sprawdzamy tutaj, w symulatorze: tak jest prościej, a do pracy można zaprosić wiele osób niewidomych, żeby razem przeanalizować i ulepszyć zamianę obrazu na dźwięk."
     },
     "test": {
       "title": "Zapraszamy do testów",
@@ -1101,7 +1103,7 @@
     },
     "press": {
       "title": "Dla dziennikarzy i blogerów",
-      "story": "O czym jest ta historia. Darmowy symulator FPV ShramkoGSFPV, działający w przeglądarce, ma teraz tryb „Lot na słuch”. Osoby niewidome i słabowidzące uczą się sterować dronem FPV na słuch: dźwięk przestrzenny w słuchawkach podpowiada ściany, wysokość i wolną drogę, a lekcje prowadzi głos. Nic nie trzeba instalować, kod jest otwarty. Projekt szuka niewidomych testerów, żeby sprawdzić, czy osoba bez wzroku może szybko nauczyć się latać i kiedyś wystartować w zawodach. Następny krok w zamyśle autora: przenieść orientację w przestrzeni na słuch z symulatora do prawdziwego świata.",
+      "story": "O czym jest ta historia. Darmowy symulator FPV ShramkoGSFPV, działający w przeglądarce, ma teraz tryb „Lot na słuch”. Osoby niewidome i słabowidzące uczą się sterować dronem FPV na słuch: dźwięk przestrzenny w słuchawkach podpowiada ściany, wysokość i wolną drogę, a lekcje prowadzi głos. Nic nie trzeba instalować, kod jest otwarty. Widzący piloci FPV przelatywali już tryb z zamkniętymi oczami, korytarze i przeszkody wyłącznie na słuch. Teraz projekt szuka testerów niewidomych od urodzenia, żeby znaleźć problemy i sprawdzić, czy osoba bez wzroku może szybko nauczyć się latać i kiedyś wystartować w zawodach. Cele są dwa: żeby osoby niewidome startowały w międzynarodowych zawodach jako piloci FPV oraz aplikacja na telefon, która zamienia obraz z kamery w mapę dźwiękową dla osoby niewidomej w słuchawkach. Oba cele najpierw sprawdzamy w symulatorze.",
       "facts": "Fakty: za darmo, bez zakładania konta; 28 lekcji; angielski, hiszpański, polski, rosyjski; licencja MIT; autor Andrii Shramko, pilot FPV i specjalista od 3DGS.",
       "contact": "Odpowiemy na pytania i pokażemy tryb na wideorozmowie.",
       "write": "Napisz do autora",

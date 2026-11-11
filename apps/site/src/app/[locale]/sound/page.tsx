@@ -153,10 +153,12 @@ function Sound({ locale }: { locale: Locale }) {
             <h2 id="sound-now" className={H2}>
               {t("sound.now.title")}
             </h2>
+            <p className="mt-3 text-ink/85">{t("sound.now.tested")}</p>
             <h3 className={H3}>{t("sound.now.worksTitle")}</h3>
             <Items items={raw("sound.now.works")} />
             <h3 className={H3}>{t("sound.now.notYetTitle")}</h3>
             <Items items={raw("sound.now.notYet")} />
+            <p className="mt-5 text-ink/85">{t("sound.now.goal")}</p>
           </section>
 
           <section aria-labelledby="sound-test" className="mt-10 scroll-mt-20 rounded-xl border border-line bg-surface p-6">
