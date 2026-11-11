@@ -443,7 +443,7 @@ async function passEarsHeadphones(page: Page): Promise<void> {
 
 interface ReplayHook {
     state: { stage: string; title: string; check: { ok: boolean; summary: string } | null; notes: string[]; details: string };
-    checks: { lesson: string | null; frames: number; compared: boolean; ok: boolean | null; recorded: number; matched: number; diffs: number; cueShare: number | null; cueClassShare: number | null }[];
+    checks: { lesson: string | null; frames: number; compared: boolean; ok: boolean | null; recorded: number; matched: number; diffs: number; cueShare: number | null; cueClassShare: number | null; cueMismatches?: unknown[] }[];
 }
 const replayHook = (page: Page): Promise<ReplayHook | null> => page.evaluate(() => (window as unknown as { __gsfpv: { sonicReplay?: () => unknown } }).__gsfpv.sonicReplay?.() ?? null) as Promise<ReplayHook | null>;
 
@@ -470,7 +470,7 @@ async function r5(browser: () => Promise<BrowserContext>, served: Served): Promi
     const rows = ready.checks;
     result.r5 = { summary: ready.state.check, notes: ready.state.notes, rows, details: ready.state.details.slice(0, 600) };
     check('R5: a recording made with the browser\'s voice is checked: ears-headphones, compared, every recorded event re-derived (0 differences)', rows.length === 1 && rows[0]?.lesson === 'ears-headphones' && rows[0].compared && rows[0].diffs === 0 && rows[0].matched === rows[0].recorded && rows[0].recorded > 5, rows);
-    check('R5: the sounds agree (every frame\'s cue ids) and the panel says the replay agrees', rows[0]?.cueShare === 1 && ready.state.check?.ok === true, { rows: rows.map((r) => [r.lesson, r.cueShare, r.cueClassShare]), summary: ready.state.check });
+    check('R5: the sounds agree (every frame\'s cue ids) and the panel says the replay agrees', rows[0]?.cueShare === 1 && ready.state.check?.ok === true, { rows: rows.map((r) => [r.lesson, r.cueShare, r.cueClassShare, r.cueMismatches]), summary: ready.state.check });
     await ctx.close();
 }
 
