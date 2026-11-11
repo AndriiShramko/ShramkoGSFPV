@@ -23,7 +23,7 @@ const WIDTHS = [
 mkdirSync(OUT, { recursive: true });
 console.log(`sound-page-shots target: ${SITE}`);
 const pick = pickBrowser();
-const browser = await chromium.launch(pick.launch);
+const browser = await chromium.launch({ ...pick.launch });
 console.log(describeBrowser(pick, browser.version()));
 const results = [];
 let fails = 0;
