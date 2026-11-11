@@ -10,6 +10,6 @@ Scope: static site release only (apps/site, packages/i18n/locales/site, apps/sit
 
 - [x] 1. Locales en, ru, pl, es: sound.* changed and new keys, soundBand.*; /{lang}/sound/ page sections, nav "On this page", ol steps, h3; home band after the first screen; verify.mjs checks. Gates typecheck, i18n, catalog, B18 PASS.
 - [x] 2. Build bc8c342, verify.mjs 247/247; all gates on 65a1730: typecheck, api-unittest, architecture, i18n, catalog PASS, vitest 4108/4110 with 2 findings fixed (ru description lacked the stem the R8 test wants; the shots script must spread pick.launch) and their files re-run 33/33, B18 PASS after the lane doc went ASCII; tools/bench/scripts/sound-page-shots.mjs 16/16 (4 langs x sound and home x 375 px and 1440 px: no horizontal scroll, 16 px gap at 375, one h1, h2 order, band before #locations, start button); screenshots looked at (ru, en).
-- [ ] 3. Merge into main, push, deploy/ship.sh.
-- [ ] 4. Live checks: release.json sha, four /sound/ pages, home band, start button, no horizontal scroll at 375 px.
-- [ ] 5. STATE.md, vault note status done.
+- [x] 3. Merged into main cd16196, pushed, deploy/ship.sh cd16196: CI 43008837693 green, release 7afb559faa27, neighbours equal, 302 checks passed.
+- [x] 4. Live: release.json cd16196a; /{ru,en,pl,es}/sound/ carry the new sections and the start link; home band on ru and en; sound-page-shots.mjs 16/16 on live; accept-fly B6 B7 B9-B16 pass on live.
+- [x] 5. STATE.md; vault note status done with the live links (vault 6933548).
