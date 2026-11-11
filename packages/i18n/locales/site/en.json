@@ -1034,18 +1034,35 @@
       "flyScene": "Open the scene I picked for you"
     }
   },
+  "soundBand": {
+    "eyebrow": "Fly by Sound",
+    "h2": "You can fly an FPV drone by ear",
+    "text": "The simulator has a mode for blind and low-vision pilots: spatial sound in headphones and lessons led by a voice. Fly with a keyboard, a gamepad or a radio. Sighted pilots can try it too and feel space in a new way.",
+    "link": "How Fly by Sound works and how to help"
+  },
   "sound": {
     "title": "Fly by Sound: learn to fly a drone by ear | ShramkoGSFPV",
-    "description": "Fly by Sound teaches blind and low-vision people to fly a simulated FPV drone by ear, with spatial sound and spoken lessons. Keyboard, gamepad or radio. Free and open source.",
+    "description": "Fly by Sound teaches blind and low-vision people to fly a simulated FPV drone by ear, with spatial sound and spoken lessons. Keyboard, gamepad or radio. Free and open source; we are looking for testers.",
     "eyebrow": "Fly by Sound",
     "h1": "Fly an FPV drone by ear",
-    "lead": "A free way for blind and low-vision people to learn to fly a simulated FPV drone using spatial sound and spoken lessons. No sight is needed: it works with a keyboard, a gamepad or an RC radio, and the app speaks for itself.",
-    "status": "This is the first stage of an experiment. The sounds and lessons are being tested with pilots, and how a sound feels is for your ears to judge. Please tell us what helped and what annoyed you.",
+    "lead": "A free mode of the ShramkoGSFPV simulator where you fly by ear. It is made for blind and low-vision people, and any pilot can try it. No sight is needed: headphones, a keyboard, a gamepad or a radio, and the app speaks for itself.",
+    "status": "This is an experiment at its first stage. We are testing whether a person without sight can learn to fly an FPV drone by sound, fast and with confidence, and one day race. Pilots will give the answer, so we need testers and your feedback.",
+    "toc": {
+      "label": "On this page"
+    },
+    "newTab": "(opens in a new tab)",
     "start": {
       "title": "Start",
-      "text": "Put on headphones and press the button. The app speaks to you and begins with a short headphone check (left, right, behind), then the first lessons: hovering, walls, a corridor and rings.",
+      "text": "Put on headphones and press the button. The app speaks to you and begins with a short headphone check, then the first lessons: hovering, walls, a corridor and rings.",
       "button": "Start Fly by Sound",
-      "note": "This opens the simulator in sound mode. A computer with a recent Chrome or Edge works best."
+      "note": "This opens the simulator in sound mode. A computer with a recent Chrome or Edge works best.",
+      "tryTitle": "Try it now",
+      "steps": ["Put on wired headphones and open this page on a computer in Chrome or Edge.", "Press “Start Fly by Sound”. The app starts speaking.", "Do the short headphone check.", "Start the first lesson, hovering. The K key reads all the keys aloud.", "Flying with a radio or a gamepad: connect it before you start. A sighted helper sets up a radio once."]
+    },
+    "how": {
+      "title": "How it works",
+      "text": "The simulator turns what the drone's camera sees into sound. In your headphones you hear where a wall is, where the way is open and where the next ring is.",
+      "items": ["You hear a wall early. The sound depends on how many seconds are left before you would hit it, not on metres.", "Height is a tone that glides. The height you need has its own note: when the tones match, you are there.", "A short chime marks an open way. If you fly the wrong way, the app tells you.", "What matters sounds from its own side, left or right. That is why you need headphones.", "The motor hums under the cues. You set its volume in the settings.", "A voice leads the lessons: 28 lessons, from hovering to walls, corridors, six tunnels and rings at three heights. There are small rooms for a micro drone and a lesson in a real place captured as 3DGS (a Gaussian splat): Winter Garden.", "The menus and settings speak too: Escape opens a spoken lesson menu.", "For low vision, the lesson rooms are drawn in strong contrast and there is a large horizon display. For deaf pilots, a panel shows the sound cues."]
     },
     "need": {
       "title": "What you need",
@@ -1057,24 +1074,55 @@
       "items": ["start or stop a recording", "send the last recording to the author", "hear where you are", "hear the last spoken line again", "open the sound glossary", "go back to the last checkpoint; hold it to start the lesson again", "go to the next step", "copy a link that opens this lesson, with the sound settings you changed, to share it", "hear these keys"],
       "reader": "If a key does nothing, your screen reader may be in browse mode: press NVDA+Space in NVDA, or Insert+Z in JAWS, so the keys reach the simulator."
     },
+    "now": {
+      "title": "What works today and what does not yet",
+      "worksTitle": "Works today",
+      "works": ["28 lessons with a voice, and the sound cues.", "A keyboard, a gamepad or a radio.", "Recording your flight together with your voice, sending it to the author, a short survey.", "A link to a lesson with your sound settings (the L key).", "English, Spanish, Polish and Russian."],
+      "notYetTitle": "Not yet",
+      "notYet": ["No blind pilot has tested the mode yet. We need the first feedback from you.", "The mode has not been tried with NVDA or JAWS in practice.", "Phones and tablets are not tested; for now you need a computer.", "There are no obstacle courses with a timer by sound yet, and no flying together with other pilots. They are planned; we give no dates.", "Native speakers have not yet listened to the Spanish, Polish and Russian voice lines."]
+    },
+    "test": {
+      "title": "Join the testing",
+      "text": "Are you blind or low-vision and want to fly? Do you teach people who are? We need your experience: are the sounds clear, do the lessons help, where does a pilot get lost.",
+      "items": ["Turn on recording (T) and talk while you fly: what you hear, what is clear, what gets in the way. Your voice is recorded together with the flight, only after you allow the microphone.", "Send the recording (U); the app asks you to confirm. A short survey follows.", "Prefer not to record your voice: use the simulator's feedback form or email the author.", "We listen to the recordings together with the flight data and change the sounds and lessons based on them. How they are stored is on the privacy page.", "Want to test together with us over a video call: book a call. We speak English, Polish or Russian."],
+      "call": "Book a call",
+      "privacy": "Read what is collected, why and for how long"
+    },
     "record": {
       "title": "Recording and sending",
       "items": ["Recording is off until you agree. It is stored on your device only.", "Sending is a separate step: the app asks, and you confirm with a second key press, with the Send button, or by voice if you turned voice commands on.", "Pilots under 18 need a parent's or guardian's signed consent, confirmed by the helper, before anything can be sent.", "Voice commands use your browser's speech recognition, which sends audio to the browser's maker. They are off until you tick the box; the keys always work."],
       "privacy": "Read what is collected, why and for how long"
     },
     "helpers": {
-      "title": "For helpers, teachers and schools",
-      "items": ["A consent form template (not legal advice) and a test protocol are in the open-source repository.", "For a pilot under 18, the parent or guardian signs the consent form and the helper confirms it in the recordings panel before recording.", "Keep the volume at a safe level. A page cannot measure loudness, so a school device is calibrated once: 75 dBA is the reference for children and 80 dBA for adults."]
+      "title": "For teachers, helpers and organisations",
+      "items": ["A consent form template (not legal advice) and a test protocol are in the open-source repository.", "For a pilot under 18, the parent or guardian signs the consent form and the helper confirms it in the recordings panel before recording.", "Keep the volume at a safe level. A page cannot measure loudness, so a school device is calibrated once: 75 dBA is the reference for children and 80 dBA for adults."],
+      "lessonTitle": "How to run a lesson",
+      "lesson": ["Prepare a computer with Chrome or Edge and wired headphones for each student. Calibrate the volume beforehand.", "Start with the headphone check and the hovering lesson. Then the student goes at their own pace: R returns to the last checkpoint, holding R starts the lesson again.", "The first time, a helper sits nearby: connects the radio and confirms the consent to record.", "After the lesson, ask the student what they heard. If they agree, they can say it in a recording, and their feedback reaches us together with the flight.", "The L key copies a link to the lesson with its sound settings. Give it to the student to continue at home.", "Braille schools and organisations of blind people: write to us if you want a trial lesson or a group of testers."]
+    },
+    "press": {
+      "title": "For journalists and bloggers",
+      "story": "The story. ShramkoGSFPV, a free FPV simulator that runs in the browser, now has a Fly by Sound mode. Blind and low-vision people learn to fly an FPV drone by ear: spatial sound in headphones tells them about walls, height and open ways, and a voice leads the lessons. Nothing to install, and the code is open. The project is looking for blind testers to find out whether a person without sight can learn to fly fast and one day race. The author's next idea is to bring this sense of space by sound from the simulator into the real world.",
+      "facts": "Facts: free, no account; 28 lessons; English, Spanish, Polish, Russian; MIT licence; made by Andrii Shramko, FPV pilot and 3DGS specialist.",
+      "contact": "We will answer your questions and show the mode over a video call.",
+      "write": "Write to the author",
+      "call": "Book a call"
+    },
+    "support": {
+      "title": "How to help",
+      "items": ["Feedback. Fly and tell us what helped and what got in the way.", "A link. Send this page to a teacher, a Braille school, an organisation of blind people, a forum or a pilots' group.", "Support the development. The project is free. One person builds it with Claude Code AI agents, and the work goes as far as the Claude Code subscription limit allows. To keep going, it needs Claude Code subscriptions or help paying for them, and people's time: blind testers, teachers, sound designers, developers. If you or your organisation can help fully or in part, write to the author and we will talk it through."],
+      "wallIntro": "The people who have already helped are on this page:",
+      "wall": "Supporters"
     },
     "open": {
       "title": "Open source",
       "text": "The sound engine, the lessons, the session format and the report tool are an open-source package, Shramko Fly by Sound (MIT licence). The simulator that carries it is ShramkoGSFPV.",
       "repo": "Shramko Fly by Sound on GitHub",
-      "sim": "ShramkoGSFPV on GitHub"
+      "sim": "ShramkoGSFPV on GitHub",
+      "more": "The code is free for everyone. Want to improve the mode for blind pilots? Start with the Shramko Fly by Sound repository; the consent template and the test protocol are there too."
     },
     "help": {
       "title": "Questions and feedback",
-      "text": "Tell us what helped and what annoyed you: answer the short survey after a recording, press B in the simulator for Feedback, or write to the author.",
+      "text": "Tell us what helped and what got in the way: say it in a recording, answer the survey after a recording, use the simulator's feedback form or email the author.",
       "write": "Write to the author"
     }
   }

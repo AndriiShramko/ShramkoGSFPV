@@ -1034,18 +1034,35 @@
       "flyScene": "Otwórz scenę, którą dla Ciebie wybrałem"
     }
   },
+  "soundBand": {
+    "eyebrow": "Lot na słuch",
+    "h2": "Dronem FPV da się latać na słuch",
+    "text": "Symulator ma tryb dla niewidomych i słabowidzących pilotów: dźwięk przestrzenny w słuchawkach i lekcje prowadzone głosem. Sterujesz klawiaturą, padem albo aparaturą. Widzący pilot też może spróbować i poczuć przestrzeń na nowo.",
+    "link": "Jak działa Lot na słuch i jak pomóc projektowi"
+  },
   "sound": {
     "title": "Lot na słuch: naucz się latać dronem na słuch | ShramkoGSFPV",
-    "description": "Tryb „Lot na słuch” uczy osoby niewidome i słabowidzące latać symulowanym dronem FPV na słuch, dzięki dźwiękowi przestrzennemu i lekcjom mówionym. Klawiatura, pad lub aparatura. Za darmo i na otwartym kodzie.",
+    "description": "Tryb „Lot na słuch” uczy osoby niewidome i słabowidzące latać symulowanym dronem FPV na słuch, dzięki dźwiękowi przestrzennemu i lekcjom prowadzonym głosem. Klawiatura, pad lub aparatura. Za darmo, na otwartym kodzie, szukamy testerów.",
     "eyebrow": "Lot na słuch",
     "h1": "Lataj dronem FPV na słuch",
-    "lead": "Darmowy sposób, by osoby niewidome i słabowidzące nauczyły się latać symulowanym dronem FPV dzięki dźwiękowi przestrzennemu i lekcjom mówionym. Wzrok nie jest potrzebny: działa z klawiaturą, padem lub aparaturą RC, a aplikacja sama mówi.",
-    "status": "To pierwszy etap eksperymentu. Dźwięki i lekcje są testowane z pilotami, a to, jak coś brzmi, oceniają Twoje uszy. Powiedz nam, co pomogło, a co przeszkadzało.",
+    "lead": "Darmowy tryb symulatora ShramkoGSFPV, w którym lata się na słuch. Powstał z myślą o osobach niewidomych i słabowidzących, ale może go wypróbować każdy pilot. Wzrok nie jest potrzebny: słuchawki, klawiatura, pad albo aparatura, a aplikacja sama mówi.",
+    "status": "To eksperyment w pierwszym etapie. Sprawdzamy, czy osoba bez wzroku może nauczyć się latać dronem FPV na słuch, szybko i pewnie, a z czasem wystartować w zawodach. Odpowiedź dadzą piloci, dlatego potrzebujemy testerów i Twoich opinii.",
+    "toc": {
+      "label": "Na tej stronie"
+    },
+    "newTab": "(otworzy się w nowej karcie)",
     "start": {
       "title": "Jak zacząć",
-      "text": "Załóż słuchawki i naciśnij przycisk. Aplikacja zacznie do Ciebie mówić: najpierw krótki test słuchawek (lewo, prawo, z tyłu), potem pierwsze lekcje: zawis, ściany, korytarz i obręcze.",
+      "text": "Załóż słuchawki i naciśnij przycisk. Aplikacja zacznie do Ciebie mówić: najpierw krótki test słuchawek, potem pierwsze lekcje: zawis, ściany, korytarz i obręcze.",
       "button": "Uruchom tryb „Lot na słuch”",
-      "note": "Otworzy się symulator w trybie dźwięku. Najlepiej działa na komputerze z aktualną przeglądarką Chrome lub Edge."
+      "note": "Otworzy się symulator w trybie dźwięku. Najlepiej działa na komputerze z aktualną przeglądarką Chrome lub Edge.",
+      "tryTitle": "Jak spróbować od razu",
+      "steps": ["Załóż przewodowe słuchawki i otwórz tę stronę na komputerze w Chrome albo Edge.", "Naciśnij przycisk „Uruchom tryb «Lot na słuch»”. Aplikacja sama zacznie mówić.", "Zrób krótki test słuchawek.", "Zacznij pierwszą lekcję, zawis. Klawisz K czyta na głos wszystkie klawisze.", "Latasz z aparaturą albo padem: podłącz je przed startem. Widzący pomocnik konfiguruje aparaturę raz."]
+    },
+    "how": {
+      "title": "Jak to działa",
+      "text": "Symulator zamienia to, co widzi kamera drona, w dźwięk. W słuchawkach słychać, gdzie jest ściana, gdzie wolna droga i gdzie następna obręcz.",
+      "items": ["Ścianę słychać z wyprzedzeniem. Dźwięk zależy od tego, za ile sekund byś w nią uderzył, a nie od metrów.", "Wysokość to ton, który płynnie się przesuwa. Docelowa wysokość ma swoją nutę: kiedy tony się zgrają, jesteś na miejscu.", "Wolną drogę oznacza krótki dzwonek. Lecisz w złą stronę: aplikacja to powie.", "To, co ważne, brzmi ze swojej strony, z lewej albo z prawej. Dlatego potrzebne są słuchawki.", "Pod podpowiedziami słychać silnik. Jego głośność zmienisz w ustawieniach.", "Lekcje prowadzi głos: 28 lekcji, od zawisu przez ściany i korytarze po sześć tuneli i obręcze na trzech wysokościach. Są małe pokoje dla mikrodrona i lekcja w prawdziwym miejscu zapisanym jako 3DGS (Gaussian splat): Winter Garden.", "Menu i ustawienia też mówią: Escape otwiera mówione menu lekcji.", "Dla słabowidzących pokoje lekcji są narysowane w mocnym kontraście i jest duży wskaźnik horyzontu. Dla głuchych pilotów jest panel, na którym widać podpowiedzi dźwiękowe."]
     },
     "need": {
       "title": "Czego potrzebujesz",
@@ -1057,24 +1074,55 @@
       "items": ["rozpocznij lub zakończ nagrywanie", "wyślij ostatnie nagranie autorowi", "usłysz, gdzie jesteś", "usłysz jeszcze raz ostatnią wypowiedź", "otwórz słownik dźwięków", "wróć do ostatniego punktu kontrolnego; przytrzymaj, by zacząć lekcję od nowa", "przejdź do następnego kroku", "skopiuj link, który otwiera tę lekcję z ustawieniami dźwięku zmienionymi przez Ciebie, aby się nim podzielić", "usłysz te klawisze"],
       "reader": "Jeśli klawisz nic nie robi, czytnik ekranu może być w trybie przeglądania: naciśnij NVDA+Spacja w NVDA albo Insert+Z w JAWS, aby klawisze trafiały do symulatora."
     },
+    "now": {
+      "title": "Co już działa, a czego jeszcze nie ma",
+      "worksTitle": "Działa już dziś",
+      "works": ["28 lekcji z głosem i podpowiedzi dźwiękowe.", "Klawiatura, pad albo aparatura.", "Nagranie lotu razem z Twoim głosem, wysłanie go autorowi, krótka ankieta.", "Link do lekcji z Twoimi ustawieniami dźwięku (klawisz L).", "Angielski, hiszpański, polski i rosyjski."],
+      "notYetTitle": "Jeszcze nie ma",
+      "notYet": ["Żaden niewidomy pilot nie sprawdził jeszcze tego trybu. Pierwsze opinie muszą przyjść od Ciebie.", "Tryb nie był jeszcze sprawdzony w praktyce z NVDA ani JAWS.", "Telefony i tablety nie są sprawdzone, na razie potrzebny jest komputer.", "Nie ma jeszcze tras z przeszkodami i pomiarem czasu na słuch ani latania razem z innymi pilotami. Są w planach, terminów nie podajemy.", "Kwestii mówionych po hiszpańsku, polsku i rosyjsku nie słuchali jeszcze rodzimi użytkownicy tych języków."]
+    },
+    "test": {
+      "title": "Zapraszamy do testów",
+      "text": "Jesteś osobą niewidomą lub słabowidzącą i chcesz latać? Albo uczysz takie osoby? Potrzebujemy Twojego doświadczenia: czy dźwięki są zrozumiałe, czy lekcje pomagają, w którym momencie pilot się gubi.",
+      "items": ["Włącz nagrywanie (T) i mów na głos w czasie lotu: co słyszysz, co jest jasne, co przeszkadza. Głos nagrywa się razem z lotem, dopiero gdy zgodzisz się na mikrofon.", "Wyślij nagranie (U), aplikacja poprosi o potwierdzenie. Potem będzie krótka ankieta.", "Nie chcesz nagrywać głosu: napisz w formularzu opinii w symulatorze albo mailem do autora.", "Nagrań słuchamy razem z danymi lotu i na ich podstawie zmieniamy dźwięki i lekcje. Jak są przechowywane, opisuje strona prywatności.", "Chcesz przejść test razem z nami na wideorozmowie: umów się na rozmowę. Mówimy po angielsku, po polsku albo po rosyjsku."],
+      "call": "Umów rozmowę",
+      "privacy": "Przeczytaj, co jest zbierane, po co i jak długo"
+    },
     "record": {
       "title": "Nagrywanie i wysyłanie",
       "items": ["Nagrywanie jest wyłączone, dopóki się nie zgodzisz. Nagranie jest tylko na Twoim urządzeniu.", "Wysyłanie to osobny krok: aplikacja pyta, a Ty potwierdzasz drugim naciśnięciem klawisza, przyciskiem Wyślij albo głosem, jeśli włączysz polecenia głosowe.", "Piloci poniżej 18 lat potrzebują podpisanej zgody rodzica lub opiekuna, potwierdzonej przez pomocnika, zanim cokolwiek będzie można wysłać.", "Polecenia głosowe korzystają z rozpoznawania mowy w przeglądarce, które wysyła dźwięk do producenta przeglądarki. Są wyłączone, dopóki nie zaznaczysz pola; klawisze działają zawsze."],
       "privacy": "Przeczytaj, co jest zbierane, po co i jak długo"
     },
     "helpers": {
-      "title": "Dla pomocników, nauczycieli i szkół",
-      "items": ["Wzór formularza zgody (to nie jest porada prawna) i protokół testów są w repozytorium z otwartym kodem.", "Dla pilota poniżej 18 lat rodzic lub opiekun podpisuje formularz zgody, a pomocnik potwierdza to w panelu nagrań przed nagrywaniem.", "Utrzymuj bezpieczną głośność. Strona nie zmierzy głośności, więc urządzenie szkolne kalibruje się raz: 75 dBA to poziom odniesienia dla dzieci, 80 dBA dla dorosłych."]
+      "title": "Dla nauczycieli, pomocników i organizacji",
+      "items": ["Wzór formularza zgody (to nie jest porada prawna) i protokół testów są w repozytorium z otwartym kodem.", "Dla pilota poniżej 18 lat rodzic lub opiekun podpisuje formularz zgody, a pomocnik potwierdza to w panelu nagrań przed nagrywaniem.", "Utrzymuj bezpieczną głośność. Strona nie zmierzy głośności, więc urządzenie szkolne kalibruje się raz: 75 dBA to poziom odniesienia dla dzieci, 80 dBA dla dorosłych."],
+      "lessonTitle": "Jak poprowadzić zajęcia",
+      "lesson": ["Przygotuj komputer z Chrome albo Edge i przewodowe słuchawki dla każdego ucznia. Głośność skalibruj wcześniej.", "Zacznij od testu słuchawek i lekcji zawisu. Dalej uczeń idzie we własnym tempie: R wraca do ostatniego punktu kontrolnego, przytrzymanie R zaczyna lekcję od nowa.", "Za pierwszym razem pomocnik jest obok: podłącza aparaturę i potwierdza zgodę na nagrywanie.", "Po lekcji zapytaj ucznia, co słyszał. Jeśli się zgodzi, niech powie to w nagraniu: opinia dotrze do nas razem z lotem.", "Klawisz L kopiuje link do lekcji z ustawieniami dźwięku. Możesz go dać uczniowi, żeby kontynuował w domu.", "Szkoły dla niewidomych i organizacje osób niewidomych: napiszcie do nas, jeśli chcecie zajęcia próbne albo grupę testerów."]
+    },
+    "press": {
+      "title": "Dla dziennikarzy i blogerów",
+      "story": "O czym jest ta historia. Darmowy symulator FPV ShramkoGSFPV, działający w przeglądarce, ma teraz tryb „Lot na słuch”. Osoby niewidome i słabowidzące uczą się sterować dronem FPV na słuch: dźwięk przestrzenny w słuchawkach podpowiada ściany, wysokość i wolną drogę, a lekcje prowadzi głos. Nic nie trzeba instalować, kod jest otwarty. Projekt szuka niewidomych testerów, żeby sprawdzić, czy osoba bez wzroku może szybko nauczyć się latać i kiedyś wystartować w zawodach. Następny krok w zamyśle autora: przenieść orientację w przestrzeni na słuch z symulatora do prawdziwego świata.",
+      "facts": "Fakty: za darmo, bez zakładania konta; 28 lekcji; angielski, hiszpański, polski, rosyjski; licencja MIT; autor Andrii Shramko, pilot FPV i specjalista od 3DGS.",
+      "contact": "Odpowiemy na pytania i pokażemy tryb na wideorozmowie.",
+      "write": "Napisz do autora",
+      "call": "Umów rozmowę"
+    },
+    "support": {
+      "title": "Jak pomóc projektowi",
+      "items": ["Opinia. Polataj i powiedz nam, co pomogło, a co przeszkadzało.", "Link. Wyślij tę stronę nauczycielowi, szkole dla niewidomych, organizacji osób niewidomych, na forum albo do grupy pilotów.", "Wsparcie rozwoju. Projekt jest darmowy. Robi go jedna osoba razem z agentami AI Claude Code, a praca idzie tak daleko, jak pozwala limit subskrypcji Claude Code. Żeby iść dalej, potrzebne są subskrypcje Claude Code albo pomoc w ich opłaceniu, a także czas ludzi: niewidomych testerów, nauczycieli, realizatorów dźwięku, programistów. Jeśli Ty albo Twoja organizacja możecie pomóc w całości lub w części, napiszcie do autora, porozmawiamy."],
+      "wallIntro": "Osoby, które już pomogły projektowi, są na tej stronie:",
+      "wall": "Wspierający"
     },
     "open": {
       "title": "Otwarty kod",
       "text": "Silnik dźwięku, lekcje, format sesji i narzędzie raportów to pakiet o otwartym kodzie, Shramko Fly by Sound (licencja MIT). Symulator, który go niesie, to ShramkoGSFPV.",
       "repo": "Shramko Fly by Sound na GitHubie",
-      "sim": "ShramkoGSFPV na GitHubie"
+      "sim": "ShramkoGSFPV na GitHubie",
+      "more": "Kod jest darmowy dla wszystkich. Chcesz ulepszyć tryb dla niewidomych pilotów? Zacznij od repozytorium Shramko Fly by Sound, tam jest też wzór zgody i protokół testów."
     },
     "help": {
       "title": "Pytania i opinie",
-      "text": "Powiedz nam, co pomogło, a co przeszkadzało: odpowiedz na krótką ankietę po nagraniu, naciśnij B w symulatorze, by otworzyć Opinie, albo napisz do autora.",
+      "text": "Powiedz nam, co pomogło, a co przeszkadzało: powiedz to w nagraniu, odpowiedz na ankietę po nagraniu, napisz w formularzu opinii w symulatorze albo mailem do autora.",
       "write": "Napisz do autora"
     }
   }
