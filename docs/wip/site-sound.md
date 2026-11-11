@@ -13,3 +13,13 @@ Scope: static site release only (apps/site, packages/i18n/locales/site, apps/sit
 - [x] 3. Merged into main cd16196, pushed, deploy/ship.sh cd16196: CI 43008837693 green, release 7afb559faa27, neighbours equal, 302 checks passed.
 - [x] 4. Live: release.json cd16196a; /{ru,en,pl,es}/sound/ carry the new sections and the start link; home band on ru and en; sound-page-shots.mjs 16/16 on live; accept-fly B6 B7 B9-B16 pass on live.
 - [x] 5. STATE.md; vault note status done with the live links (vault 6933548).
+
+## Second release (site-sound-2): the owner's correction, 2026-11-11
+
+- [x] 6. Text: sighted FPV pilots (the author and his friends) already flew with eyes closed through corridors and obstacles by sound alone; pilots blind from birth have not tried it yet; two goals (international FPV competitions for blind pilots; a phone app turning the camera's view into a sound map), both tested in the simulator first. Keys sound.now.tested, sound.now.goal (new), sound.status, sound.press.story; the 'no blind pilot has tested' item removed. en, ru, pl, es. Commit 8306a6e.
+- [x] 7. Gates on 8306a6e: typecheck, api-unittest, architecture, i18n, catalog, B18 PASS; vitest 4109/4110, the one miss sonicrec-recorder (voice sync marks) ran under a concurrent build and passes alone 39/39 twice (no recorder code touched); verify.mjs 247/247 on build 8306a6e.
+- [ ] 8. Merge into main, ship, live checks, STATE.
+
+## Next stage: 'Who it is for' section (owner 2026-11-11, not started)
+
+The owner asked for an h2 'Who it is for and why' on /{lang}/sound/ with h3 blocks and anchors #blind, #pilots, #teachers, #press, #support, #developers, so a letter or post can link one audience directly. The existing sections for teachers, journalists and 'How to help' are not duplicated: their content moves into these blocks or the blocks link to them. The Russian source text is in the vault note on the site's Fly by Sound section ('Next stage' part); en, pl, es to be written naturally. The consent template and the test protocol exist in the sound repository (the page already says so), so the developers block may name them. The home band gets one or two lines in the same sense (pilots flew with eyes closed; we look for blind pilots; two goals) and a link to the section. verify.mjs: the six anchors, h3 under the new h2, h2 order updated.
