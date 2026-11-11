@@ -515,10 +515,13 @@ export class LessonHost {
 
     // ------------------------------------------------------------------ the pilot's keys
 
-    /** A digit answers the question asked; 0 skips it. False when nothing was asked (the key is not ours). */
+    /**
+     * A digit goes to the runner whenever a lesson runs (sonic-keys): it answers the question asked, or the one after the sound
+     * playing now (the headphone check), and the runner acknowledges it ("Taken" or "Not taken", with its sound). False with no lesson.
+     */
     answer(n: number): boolean {
         const run = this.runner;
-        if (!run || !this.question) return false;
+        if (!run) return false;
         const bridge = this.p.mode.bridge;
         bridge.events(run.answer(n, 'key', bridge.now()));
         this.drain();

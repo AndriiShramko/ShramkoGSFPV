@@ -564,7 +564,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     const onKeyUp = (e: KeyboardEvent): void => {
         if (rCodes.has(e.code)) mode.releaseR();
     };
-    // the digits answer a question the lesson asked (0 skips it); with none asked the key is not ours (digit-key.ts)
+    // the digits go to the running lesson, asked or not (0 skips); with no lesson the key is not ours (digit-key.ts)
     const onDigit = digitAnswerHandler({ host: () => host, paused: () => ctx.session.paused, typing });
     // a hidden tab draws no frames: the engine must not go on sounding the last layers
     const onVisibility = (): void => {
