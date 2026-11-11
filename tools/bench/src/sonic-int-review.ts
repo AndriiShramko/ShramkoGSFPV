@@ -22,7 +22,10 @@
 //   R5  a recording made with the browser's own voice (the default of a pilot; the end-to-end run is silent) replays as it was flown
 //       ears-headphones recorded and passed with the engine speaking (speed 2), the survey declined; the panel's Replay checks the recording lesson by lesson.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5]
+//   R6  (sonic-keys) a digit pressed while the headphone check plays a trial's sound answers that trial at once, before its question is said, and
+//       "Taken: 1" says so; a digit out of range during the next sound answers nothing and is said back, not dropped in silence.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6]
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
@@ -471,6 +474,51 @@ async function r5(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R6 (sonic-keys)
+
+/** Waits for the line `key` said after event `from` and its end; returns the index of the end. */
+async function lineDone(page: Page, from: number, key: string): Promise<number> {
+    const all = await until(`the line ${key} said and over`, () => events(page), (a) => {
+        const i = a.findIndex((e, j) => j >= from && e.kind === 'speech' && e.key === key);
+        return i >= 0 && a.slice(i + 1).some((e) => e.kind === 'speech' && e.key === 'speech.end');
+    }, 60000, 40);
+    const i = all.findIndex((e, j) => j >= from && e.kind === 'speech' && e.key === key);
+    return all.findIndex((e, j) => j > i && e.kind === 'speech' && e.key === 'speech.end') + 1;
+}
+
+async function r6(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R6: a digit while the headphone check plays its sound answers the trial at once and is acknowledged');
+    const ctx = await newContext(browser, served, prefsDoc(), null);
+    const page = await openLesson(ctx, served, 'ears-headphones', 'R6');
+    await until('the intro', () => probe(page), (p) => p.phase === 'intro', 60000, 80);
+    await page.keyboard.press('KeyN');
+    // trial 1: 1 pressed while its sound plays (the trial's line over, the question not yet said)
+    const t1 = await lineDone(page, 0, 'headphones.trial');
+    await sleep(700);
+    const at1 = (await events(page)).length;
+    await page.keyboard.press('Digit1');
+    await sleep(900);
+    const all1 = await events(page);
+    const said1 = spokenAfter(all1, t1);
+    const got1 = answersAfter(all1, at1);
+    result.r6 = { trial1: { spokenSinceTrialLine: said1, answers: got1 } };
+    check('R6: the digit during the sound answers trial 1 (an answer by key, value 1)', got1.length === 1 && got1[0]?.via === 'key' && got1[0]?.value === 1 && (got1[0]?.item ?? '').endsWith(':1:side'), got1);
+    check('R6: the question of trial 1 was never said (the digit came during the sound)', !said1.includes('headphones.q-side'), said1);
+    check('R6: the answer is acknowledged in words ("Taken: 1")', said1.includes('answer.got'), said1);
+    // trial 2: 7 (out of range) during its sound is refused in words, not dropped; then 2 answers it
+    const t2 = await lineDone(page, at1, 'headphones.trial');
+    await sleep(700);
+    const at2 = (await events(page)).length;
+    await page.keyboard.press('Digit7');
+    await sleep(1500);
+    const all2 = await events(page);
+    const said2 = spokenAfter(all2, at2);
+    const got2 = answersAfter(all2, at2);
+    (result.r6 as Record<string, unknown>).trial2 = { spokenAfter7: said2, answers: got2, fromTrialLine: t2 };
+    check('R6: 7 during the sound of trial 2 answers nothing and is said back (answer.range or answer.not-now)', got2.length === 0 && said2.some((k) => k === 'answer.range' || k === 'answer.not-now'), { said2, got2 });
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -501,6 +549,7 @@ async function main(): Promise<void> {
         else if (which === 'r3') await r3(fresh, served);
         else if (which === 'r4') await r4(fresh, served);
         else if (which === 'r5') await r5(fresh, served);
+        else if (which === 'r6') await r6(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
