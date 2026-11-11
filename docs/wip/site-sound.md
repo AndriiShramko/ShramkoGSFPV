@@ -23,7 +23,7 @@ Scope: static site release only (apps/site, packages/i18n/locales/site, apps/sit
 ## Third release (site-sound-3): 'Who it is for' section
 
 - [x] 9. sound.who.* (title, intro, six audiences, toStart, toTest, toOpen, otherTitle) in en, ru, pl, es; h2 'Who it is for and why' with h3 ids blind, pilots, teachers, press, support, developers; the teachers, press and support h2 folded in (helpers.title, press.title, press.story, press.contact, support.title and the development item removed); On this page sub-list; home band text and link to /{lang}/sound/#sound-who. Commit 2fe2d8c. All gates PASS on 2fe2d8c (vitest included); verify.mjs 251/251; sound-page-shots 16/16 locally; the phone screenshot looked at.
-- [ ] 10. Merge, ship, live anchors, STATE.
+- [x] 10. Merged 17a0b6d; ship.sh: CI 43023441549, release 31badf955c5b, neighbours equal, 302 checks; live release.json 17a0b6da, six anchors on four languages, shots 16/16 on live; STATE.md.
 
 ### The brief (kept for reference)
 
