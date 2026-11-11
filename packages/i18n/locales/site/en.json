@@ -1037,8 +1037,8 @@
   "soundBand": {
     "eyebrow": "Fly by Sound",
     "h2": "You can fly an FPV drone by ear",
-    "text": "The simulator has a mode for blind and low-vision pilots: spatial sound in headphones and lessons led by a voice. Fly with a keyboard, a gamepad or a radio. Sighted pilots can try it too and feel space in a new way.",
-    "link": "How Fly by Sound works and how to help"
+    "text": "Sighted FPV pilots have already flown it with their eyes closed, by sound alone. Now we are looking for blind pilots. Two goals: blind pilots at international competitions, and a phone app that builds a sound map.",
+    "link": "Who it is for and how to join"
   },
   "sound": {
     "title": "Fly by Sound: learn to fly a drone by ear | ShramkoGSFPV",
@@ -1095,23 +1095,50 @@
       "items": ["Recording is off until you agree. It is stored on your device only.", "Sending is a separate step: the app asks, and you confirm with a second key press, with the Send button, or by voice if you turned voice commands on.", "Pilots under 18 need a parent's or guardian's signed consent, confirmed by the helper, before anything can be sent.", "Voice commands use your browser's speech recognition, which sends audio to the browser's maker. They are off until you tick the box; the keys always work."],
       "privacy": "Read what is collected, why and for how long"
     },
+    "who": {
+      "title": "Who it is for and why",
+      "intro": "Each part below has its own link, so you can send someone exactly the part that is about them.",
+      "blind": {
+        "title": "For blind and low-vision people",
+        "text": "You can try it now: you need a computer, headphones and a keyboard or a radio. FPV pilots have already flown corridors and obstacles in the simulator with their eyes closed, by sound alone: it works. But we can see, and we need you. Tell us what you hear, what is clear at once and what gets in the way: you can talk while you fly, and the simulator records it. We listen to every report and make changes. There are two goals: blind pilots competing at international FPV events, and a phone app grown out of this work that lets you walk with headphones on and find your way by sound."
+      },
+      "pilots": {
+        "title": "For FPV pilots",
+        "text": "Close your eyes and fly a corridor by sound. We flew like that with friends and got through obstacles: you hear a wall early, a tone leads your height, a chime marks the way through. It is a new sense in flight. Try it and tell us where the sound let you down. Show the simulator to blind people you know: their feedback matters more than ours. The goal: one day they line up at the start of international races."
+      },
+      "teachers": {
+        "title": "For teachers, schools and organisations",
+        "text": "This is a ready lesson: a browser, headphones, and a voice leads it. A student learns to read space by sound at speed, not only while walking. We want as many blind people as possible to take part: every report helps improve how an image is turned into sound. It is all worked out in the simulator because it is simpler here; later the same system should run on a phone: the camera sees the surroundings and the app builds a sound map. Write to us if you want a trial lesson or to join the testing."
+      },
+      "press": {
+        "title": "For journalists and bloggers",
+        "text": "The story: FPV drone pilots fly through corridors and obstacles with their eyes closed, finding their way by sound alone, in a free open-source simulator. The next step is flights by blind pilots and their feedback. There are two goals: blind people at international FPV competitions, and a phone app that turns the camera's image into a sound map. The simulator is the test bench where this translation of image into sound is checked and improved together with blind people. The author answers questions by e-mail or on a call: English, Polish, Russian."
+      },
+      "support": {
+        "title": "For those who can support it",
+        "text": "The project is free; one person builds it with AI agents. Development needs Claude Code subscriptions and time. Support, even partial, brings both goals closer: competitions for blind pilots and the phone app. Write to us and we will talk about how you can help; with your consent, you will appear on the supporters wall."
+      },
+      "developers": {
+        "title": "For developers and researchers",
+        "text": "The code is open: the sound engine, the lessons, the test protocol and the consent template are in the repository. Take it, test it, and propose your own ways to turn space into sound."
+      },
+      "toStart": "Go to the start",
+      "toTest": "How to send feedback",
+      "toOpen": "The repositories: the Open source section",
+      "otherTitle": "Other ways to help"
+    },
     "helpers": {
-      "title": "For teachers, helpers and organisations",
       "items": ["A consent form template (not legal advice) and a test protocol are in the open-source repository.", "For a pilot under 18, the parent or guardian signs the consent form and the helper confirms it in the recordings panel before recording.", "Keep the volume at a safe level. A page cannot measure loudness, so a school device is calibrated once: 75 dBA is the reference for children and 80 dBA for adults."],
       "lessonTitle": "How to run a lesson",
       "lesson": ["Prepare a computer with Chrome or Edge and wired headphones for each student. Calibrate the volume beforehand.", "Start with the headphone check and the hovering lesson. Then the student goes at their own pace: R returns to the last checkpoint, holding R starts the lesson again.", "The first time, a helper sits nearby: connects the radio and confirms the consent to record.", "After the lesson, ask the student what they heard. If they agree, they can say it in a recording, and their feedback reaches us together with the flight.", "The L key copies a link to the lesson with its sound settings. Give it to the student to continue at home.", "Braille schools and organisations of blind people: write to us if you want a trial lesson or a group of testers."]
     },
     "press": {
-      "title": "For journalists and bloggers",
-      "story": "The story. ShramkoGSFPV, a free FPV simulator that runs in the browser, now has a Fly by Sound mode. Blind and low-vision people learn to fly an FPV drone by ear: spatial sound in headphones tells them about walls, height and open ways, and a voice leads the lessons. Nothing to install, and the code is open. Sighted FPV pilots have already flown it with their eyes closed, through corridors and obstacles by sound alone. Now the project is looking for testers who are blind from birth, to find the problems and to see whether a person without sight can learn to fly fast and one day race. There are two goals: blind people taking part in international competitions as FPV pilots, and a phone app that turns what its camera sees into a sound map for a blind person walking with headphones on. Both are tested in the simulator first.",
       "facts": "Facts: free, no account; 28 lessons; English, Spanish, Polish, Russian; MIT licence; made by Andrii Shramko, FPV pilot and 3DGS specialist.",
-      "contact": "We will answer your questions and show the mode over a video call.",
       "write": "Write to the author",
       "call": "Book a call"
     },
     "support": {
-      "title": "How to help",
-      "items": ["Feedback. Fly and tell us what helped and what got in the way.", "A link. Send this page to a teacher, a Braille school, an organisation of blind people, a forum or a pilots' group.", "Support the development. The project is free. One person builds it with Claude Code AI agents, and the work goes as far as the Claude Code subscription limit allows. To keep going, it needs Claude Code subscriptions or help paying for them, and people's time: blind testers, teachers, sound designers, developers. If you or your organisation can help fully or in part, write to the author and we will talk it through."],
+      "items": ["Feedback. Fly and tell us what helped and what got in the way.", "A link. Send this page to a teacher, a Braille school, an organisation of blind people, a forum or a pilots' group."],
       "wallIntro": "The people who have already helped are on this page:",
       "wall": "Supporters"
     },
