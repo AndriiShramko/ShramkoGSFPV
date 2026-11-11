@@ -1037,8 +1037,8 @@
   "soundBand": {
     "eyebrow": "Fly by Sound",
     "h2": "Se puede pilotar un dron FPV de oído",
-    "text": "El simulador tiene un modo para pilotos ciegos o con baja visión: sonido espacial en los auriculares y lecciones guiadas por una voz. Se pilota con teclado, mando o radio. Si ves, también puedes probarlo y sentir el espacio de otra manera.",
-    "link": "Cómo funciona Fly by Sound y cómo ayudar al proyecto"
+    "text": "Pilotos FPV que ven ya lo han volado con los ojos cerrados, solo de oído. Ahora buscamos pilotos ciegos. Dos objetivos: pilotos ciegos en competiciones internacionales y una aplicación para el teléfono que crea un mapa sonoro.",
+    "link": "Para quién es y cómo unirte"
   },
   "sound": {
     "title": "Fly by Sound: aprende a pilotar un dron de oído | ShramkoGSFPV",
@@ -1095,23 +1095,50 @@
       "items": ["La grabación está desactivada hasta que aceptes. Se guarda solo en tu dispositivo.", "Enviar es un paso aparte: la aplicación pregunta y tú confirmas con una segunda pulsación, con el botón Enviar o por voz si activaste las órdenes de voz.", "Los pilotos menores de 18 años necesitan el consentimiento firmado de un padre, una madre o un tutor, confirmado por quien ayuda, antes de poder enviar nada.", "Las órdenes de voz usan el reconocimiento de voz de tu navegador, que envía audio a su fabricante. Están desactivadas hasta que marques la casilla; las teclas siempre funcionan."],
       "privacy": "Lee qué se recoge, para qué y durante cuánto tiempo"
     },
+    "who": {
+      "title": "Para quién es y para qué",
+      "intro": "Cada parte de abajo tiene su propio enlace, así puedes enviar a cada persona justo la parte que le toca.",
+      "blind": {
+        "title": "Para personas ciegas o con baja visión",
+        "text": "Puedes probarlo ya: necesitas un ordenador, auriculares y un teclado o una radio. Pilotos FPV ya han superado pasillos y obstáculos en el simulador con los ojos cerrados, solo de oído: funciona. Pero nosotros vemos, y te necesitamos. Cuéntanos qué oyes, qué entiendes a la primera y qué te molesta: puedes hablar mientras vuelas y el simulador lo graba. Escuchamos cada comentario y hacemos cambios. Hay dos objetivos: que pilotos ciegos compitan en eventos internacionales de FPV, y que de este trabajo nazca una aplicación para el teléfono con la que caminar con auriculares y orientarse por el sonido."
+      },
+      "pilots": {
+        "title": "Para pilotos FPV",
+        "text": "Cierra los ojos y recorre un pasillo de oído. Así volamos con amigos y superamos obstáculos: la pared se oye antes, un tono guía la altura, un timbre marca el paso libre. Es una sensación nueva en vuelo. Pruébalo y cuéntanos dónde te falló el sonido. Enseña el simulador a personas ciegas que conozcas: sus comentarios valen más que los nuestros. El objetivo: que algún día se pongan en la salida de carreras internacionales."
+      },
+      "teachers": {
+        "title": "Para docentes, escuelas y organizaciones",
+        "text": "Es una clase lista para usar: un navegador, auriculares, y una voz guía las lecciones. El alumno aprende a entender el espacio por el sonido a velocidad, no solo al caminar. Queremos que participen tantas personas ciegas como sea posible: cada comentario ayuda a mejorar cómo se convierte una imagen en sonido. Todo se pule en el simulador porque aquí es más sencillo; después, el mismo sistema debería funcionar en un teléfono: la cámara ve el entorno y la aplicación crea un mapa sonoro. Escríbenos si queréis una clase de prueba o participar en las pruebas."
+      },
+      "press": {
+        "title": "Para periodistas y blogueros",
+        "text": "La noticia: pilotos de drones FPV recorren pasillos y obstáculos con los ojos cerrados, orientándose solo por el sonido, en un simulador gratuito de código abierto. El siguiente paso son los vuelos de pilotos ciegos y sus comentarios. Hay dos objetivos: personas ciegas en competiciones internacionales de FPV y una aplicación para el teléfono que convierte la imagen de la cámara en un mapa sonoro. El simulador es el banco de pruebas donde esta conversión de imagen en sonido se comprueba y se mejora junto con personas ciegas. El autor responde a tus preguntas por correo o en una llamada: en inglés, polaco o ruso."
+      },
+      "support": {
+        "title": "Para quien pueda apoyar",
+        "text": "El proyecto es gratuito; lo hace una sola persona con agentes de IA. El desarrollo necesita suscripciones de Claude Code y tiempo. Cualquier apoyo, aunque sea parcial, acerca los dos objetivos: competiciones para pilotos ciegos y la aplicación para el teléfono. Escríbenos y hablamos de cómo puedes ayudar; con tu permiso, aparecerás en la página de colaboradores."
+      },
+      "developers": {
+        "title": "Para desarrolladores e investigadores",
+        "text": "El código es abierto: el motor de sonido, las lecciones, el protocolo de pruebas y la plantilla de consentimiento están en el repositorio. Úsalo, pruébalo y propón tus propias formas de convertir el espacio en sonido."
+      },
+      "toStart": "Ir al inicio",
+      "toTest": "Cómo enviar comentarios",
+      "toOpen": "Los repositorios: la sección Código abierto",
+      "otherTitle": "Otras formas de ayudar"
+    },
     "helpers": {
-      "title": "Para docentes, ayudantes y organizaciones",
       "items": ["Una plantilla de consentimiento (no es asesoramiento jurídico) y un protocolo de pruebas están en el repositorio de código abierto.", "Para un piloto menor de 18 años, el padre, la madre o el tutor firma el formulario y quien ayuda lo confirma en el panel de grabaciones antes de grabar.", "Mantén el volumen a un nivel seguro. Una página no puede medir la intensidad del sonido, así que un dispositivo escolar se calibra una vez: 75 dBA es la referencia para niños y 80 dBA para adultos."],
       "lessonTitle": "Cómo dar una clase",
       "lesson": ["Prepara un ordenador con Chrome o Edge y auriculares con cable para cada alumno. Calibra el volumen de antemano.", "Empieza con la prueba de auriculares y la lección de mantenerse en el aire. Después cada alumno avanza a su ritmo: R vuelve al último punto de control y mantener R pulsada reinicia la lección.", "La primera vez, un ayudante se sienta al lado: conecta la radio y confirma el consentimiento para grabar.", "Después de la lección, pregunta al alumno qué ha oído. Si está de acuerdo, puede decirlo en una grabación y su opinión nos llegará junto con el vuelo.", "La tecla L copia un enlace a la lección con su configuración de sonido. Dáselo al alumno para que siga en casa.", "Escuelas y organizaciones de personas ciegas: escríbenos si queréis una clase de prueba o un grupo de personas que lo prueben."]
     },
     "press": {
-      "title": "Para periodistas y blogueros",
-      "story": "La noticia. ShramkoGSFPV, un simulador FPV gratuito que funciona en el navegador, tiene ahora un modo Fly by Sound. Personas ciegas o con baja visión aprenden a pilotar un dron FPV de oído: el sonido espacial en los auriculares les indica paredes, altura y pasos libres, y una voz guía las lecciones. No hay nada que instalar y el código es abierto. Pilotos FPV que ven ya lo han volado con los ojos cerrados, superando pasillos y obstáculos solo de oído. Ahora el proyecto busca personas ciegas de nacimiento que lo prueben, para encontrar los problemas y comprobar si alguien sin vista puede aprender a volar rápido y algún día competir. Hay dos objetivos: que las personas ciegas participen en competiciones internacionales como pilotos FPV, y una aplicación para el teléfono que convierta lo que ve su cámara en un mapa sonoro para una persona ciega con auriculares. Los dos se prueban primero en el simulador.",
       "facts": "Datos: gratis, sin cuenta; 28 lecciones; inglés, español, polaco y ruso; licencia MIT; creado por Andrii Shramko, piloto FPV y especialista en 3DGS.",
-      "contact": "Respondemos a tus preguntas y te mostramos el modo por videollamada.",
       "write": "Escribir al autor",
       "call": "Reservar una llamada"
     },
     "support": {
-      "title": "Cómo ayudar",
-      "items": ["Comentarios. Vuela y cuéntanos qué te ayudó y qué te molestó.", "Un enlace. Envía esta página a un docente, a una escuela o una organización de personas ciegas, a un foro o a un grupo de pilotos.", "Apoyar el desarrollo. El proyecto es gratuito. Lo hace una sola persona con agentes de IA de Claude Code, y el trabajo avanza hasta donde llega el límite de la suscripción de Claude Code. Para seguir hacen falta suscripciones de Claude Code o ayuda para pagarlas, y también tiempo de personas: pilotos ciegos que lo prueben, docentes, técnicos de sonido, desarrolladores. Si tú o tu organización podéis ayudar del todo o en parte, escribid al autor y lo hablamos."],
+      "items": ["Comentarios. Vuela y cuéntanos qué te ayudó y qué te molestó.", "Un enlace. Envía esta página a un docente, a una escuela o una organización de personas ciegas, a un foro o a un grupo de pilotos."],
       "wallIntro": "Las personas que ya han ayudado están en esta página:",
       "wall": "Colaboradores"
     },

@@ -1037,8 +1037,8 @@
   "soundBand": {
     "eyebrow": "Lot na słuch",
     "h2": "Dronem FPV da się latać na słuch",
-    "text": "Symulator ma tryb dla niewidomych i słabowidzących pilotów: dźwięk przestrzenny w słuchawkach i lekcje prowadzone głosem. Sterujesz klawiaturą, padem albo aparaturą. Widzący pilot też może spróbować i poczuć przestrzeń na nowo.",
-    "link": "Jak działa Lot na słuch i jak pomóc projektowi"
+    "text": "Widzący piloci FPV latali już w symulatorze z zamkniętymi oczami, wyłącznie na słuch. Teraz szukamy niewidomych pilotów. Cele są dwa: niewidomi piloci na międzynarodowych zawodach i aplikacja na telefon, która buduje mapę dźwiękową.",
+    "link": "Dla kogo to jest i jak dołączyć"
   },
   "sound": {
     "title": "Lot na słuch: naucz się latać dronem na słuch | ShramkoGSFPV",
@@ -1095,23 +1095,50 @@
       "items": ["Nagrywanie jest wyłączone, dopóki się nie zgodzisz. Nagranie jest tylko na Twoim urządzeniu.", "Wysyłanie to osobny krok: aplikacja pyta, a Ty potwierdzasz drugim naciśnięciem klawisza, przyciskiem Wyślij albo głosem, jeśli włączysz polecenia głosowe.", "Piloci poniżej 18 lat potrzebują podpisanej zgody rodzica lub opiekuna, potwierdzonej przez pomocnika, zanim cokolwiek będzie można wysłać.", "Polecenia głosowe korzystają z rozpoznawania mowy w przeglądarce, które wysyła dźwięk do producenta przeglądarki. Są wyłączone, dopóki nie zaznaczysz pola; klawisze działają zawsze."],
       "privacy": "Przeczytaj, co jest zbierane, po co i jak długo"
     },
+    "who": {
+      "title": "Dla kogo to jest i po co",
+      "intro": "Każda część poniżej ma własny link, więc możesz wysłać komuś dokładnie tę, która jest o nim.",
+      "blind": {
+        "title": "Dla osób niewidomych i słabowidzących",
+        "text": "Możesz spróbować już teraz: potrzebny jest komputer, słuchawki i klawiatura albo aparatura. Piloci FPV przelecieli już w symulatorze korytarze i przeszkody z zamkniętymi oczami, wyłącznie na słuch: to działa. Ale my widzimy i potrzebujemy Ciebie. Powiedz nam, co słyszysz, co jest od razu jasne, a co przeszkadza: możesz mówić w trakcie lotu, a symulator to nagra. Wysłuchamy każdej opinii i wprowadzimy poprawki. Cele są dwa: żeby niewidomi piloci startowali w międzynarodowych zawodach FPV i żeby z tej pracy wyrosła aplikacja na telefon, z którą można iść w słuchawkach i orientować się na słuch."
+      },
+      "pilots": {
+        "title": "Dla pilotów FPV",
+        "text": "Zamknij oczy i przeleć korytarz na słuch. Lataliśmy tak ze znajomymi i pokonywaliśmy przeszkody: ścianę słychać z wyprzedzeniem, wysokość prowadzi ton, przelot oznacza dzwonek. To nowe odczucie w locie. Spróbuj i powiedz nam, gdzie dźwięk zawiódł. Pokaż symulator znajomym osobom niewidomym: ich opinie są ważniejsze niż nasze. Cel: żeby kiedyś stanęli na starcie międzynarodowych wyścigów."
+      },
+      "teachers": {
+        "title": "Dla nauczycieli, szkół i organizacji",
+        "text": "To gotowe zajęcia: przeglądarka, słuchawki, a lekcje prowadzi głos. Uczeń uczy się rozumieć przestrzeń na słuch w ruchu i przy prędkości, a nie tylko podczas chodzenia. Zależy nam, żeby dołączyło jak najwięcej osób niewidomych: każda opinia pomaga ulepszyć zamianę obrazu na dźwięk. Wszystko dopracowujemy w symulatorze, bo tu jest prościej, a potem ten sam system ma działać w telefonie: kamera widzi otoczenie, a aplikacja buduje mapę dźwiękową. Napiszcie, jeśli chcecie zajęcia próbne albo udział w testach."
+      },
+      "press": {
+        "title": "Dla dziennikarzy i blogerów",
+        "text": "O czym jest ta historia: piloci dronów FPV przelatują korytarze i przeszkody z zamkniętymi oczami, orientując się wyłącznie na słuch, w darmowym symulatorze z otwartym kodem. Następny krok: loty niewidomych pilotów i ich opinie. Cele są dwa: udział osób niewidomych w międzynarodowych zawodach FPV i aplikacja na telefon, która zamienia obraz z kamery w mapę dźwiękową. Symulator jest stanowiskiem testowym, na którym tę zamianę obrazu na dźwięk sprawdzamy i ulepszamy razem z osobami niewidomymi. Autor odpowie na pytania mailowo albo w rozmowie: po angielsku, polsku lub rosyjsku."
+      },
+      "support": {
+        "title": "Dla tych, którzy mogą wesprzeć",
+        "text": "Projekt jest darmowy, robi go jedna osoba z agentami AI. Rozwój wymaga subskrypcji Claude Code i czasu. Wsparcie, nawet częściowe, przybliża oba cele: zawody dla niewidomych pilotów i aplikację na telefon. Napisz, a porozmawiamy, jak możesz pomóc; za Twoją zgodą pojawisz się na stronie wspierających."
+      },
+      "developers": {
+        "title": "Dla programistów i badaczy",
+        "text": "Kod jest otwarty: silnik dźwięku, lekcje, protokół testów i wzór zgody są w repozytorium. Bierzcie, sprawdzajcie, proponujcie własne sposoby zamiany przestrzeni na dźwięk."
+      },
+      "toStart": "Przejdź do uruchomienia",
+      "toTest": "Jak przesłać opinię",
+      "toOpen": "Repozytoria: sekcja Otwarty kod",
+      "otherTitle": "Można pomóc też tak"
+    },
     "helpers": {
-      "title": "Dla nauczycieli, pomocników i organizacji",
       "items": ["Wzór formularza zgody (to nie jest porada prawna) i protokół testów są w repozytorium z otwartym kodem.", "Dla pilota poniżej 18 lat rodzic lub opiekun podpisuje formularz zgody, a pomocnik potwierdza to w panelu nagrań przed nagrywaniem.", "Utrzymuj bezpieczną głośność. Strona nie zmierzy głośności, więc urządzenie szkolne kalibruje się raz: 75 dBA to poziom odniesienia dla dzieci, 80 dBA dla dorosłych."],
       "lessonTitle": "Jak poprowadzić zajęcia",
       "lesson": ["Przygotuj komputer z Chrome albo Edge i przewodowe słuchawki dla każdego ucznia. Głośność skalibruj wcześniej.", "Zacznij od testu słuchawek i lekcji zawisu. Dalej uczeń idzie we własnym tempie: R wraca do ostatniego punktu kontrolnego, przytrzymanie R zaczyna lekcję od nowa.", "Za pierwszym razem pomocnik jest obok: podłącza aparaturę i potwierdza zgodę na nagrywanie.", "Po lekcji zapytaj ucznia, co słyszał. Jeśli się zgodzi, niech powie to w nagraniu: opinia dotrze do nas razem z lotem.", "Klawisz L kopiuje link do lekcji z ustawieniami dźwięku. Możesz go dać uczniowi, żeby kontynuował w domu.", "Szkoły dla niewidomych i organizacje osób niewidomych: napiszcie do nas, jeśli chcecie zajęcia próbne albo grupę testerów."]
     },
     "press": {
-      "title": "Dla dziennikarzy i blogerów",
-      "story": "O czym jest ta historia. Darmowy symulator FPV ShramkoGSFPV, działający w przeglądarce, ma teraz tryb „Lot na słuch”. Osoby niewidome i słabowidzące uczą się sterować dronem FPV na słuch: dźwięk przestrzenny w słuchawkach podpowiada ściany, wysokość i wolną drogę, a lekcje prowadzi głos. Nic nie trzeba instalować, kod jest otwarty. Widzący piloci FPV przelatywali już tryb z zamkniętymi oczami, korytarze i przeszkody wyłącznie na słuch. Teraz projekt szuka testerów niewidomych od urodzenia, żeby znaleźć problemy i sprawdzić, czy osoba bez wzroku może szybko nauczyć się latać i kiedyś wystartować w zawodach. Cele są dwa: żeby osoby niewidome startowały w międzynarodowych zawodach jako piloci FPV oraz aplikacja na telefon, która zamienia obraz z kamery w mapę dźwiękową dla osoby niewidomej w słuchawkach. Oba cele najpierw sprawdzamy w symulatorze.",
       "facts": "Fakty: za darmo, bez zakładania konta; 28 lekcji; angielski, hiszpański, polski, rosyjski; licencja MIT; autor Andrii Shramko, pilot FPV i specjalista od 3DGS.",
-      "contact": "Odpowiemy na pytania i pokażemy tryb na wideorozmowie.",
       "write": "Napisz do autora",
       "call": "Umów rozmowę"
     },
     "support": {
-      "title": "Jak pomóc projektowi",
-      "items": ["Opinia. Polataj i powiedz nam, co pomogło, a co przeszkadzało.", "Link. Wyślij tę stronę nauczycielowi, szkole dla niewidomych, organizacji osób niewidomych, na forum albo do grupy pilotów.", "Wsparcie rozwoju. Projekt jest darmowy. Robi go jedna osoba razem z agentami AI Claude Code, a praca idzie tak daleko, jak pozwala limit subskrypcji Claude Code. Żeby iść dalej, potrzebne są subskrypcje Claude Code albo pomoc w ich opłaceniu, a także czas ludzi: niewidomych testerów, nauczycieli, realizatorów dźwięku, programistów. Jeśli Ty albo Twoja organizacja możecie pomóc w całości lub w części, napiszcie do autora, porozmawiamy."],
+      "items": ["Opinia. Polataj i powiedz nam, co pomogło, a co przeszkadzało.", "Link. Wyślij tę stronę nauczycielowi, szkole dla niewidomych, organizacji osób niewidomych, na forum albo do grupy pilotów."],
       "wallIntro": "Osoby, które już pomogły projektowi, są na tej stronie:",
       "wall": "Wspierający"
     },

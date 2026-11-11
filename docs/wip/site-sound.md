@@ -20,6 +20,11 @@ Scope: static site release only (apps/site, packages/i18n/locales/site, apps/sit
 - [x] 7. Gates on 8306a6e: typecheck, api-unittest, architecture, i18n, catalog, B18 PASS; vitest 4109/4110, the one miss sonicrec-recorder (voice sync marks) ran under a concurrent build and passes alone 39/39 twice (no recorder code touched); verify.mjs 247/247 on build 8306a6e.
 - [x] 8. Merged 036b27f, ship.sh: CI 43014037641 green, release 2ce9faeaa99f, neighbours equal, 302 checks; live release.json 036b27f3, four pages carry the new text, sound-page-shots 16/16 on live; STATE.md.
 
-## Next stage: 'Who it is for' section (owner 2026-11-11, not started)
+## Third release (site-sound-3): 'Who it is for' section
+
+- [x] 9. sound.who.* (title, intro, six audiences, toStart, toTest, toOpen, otherTitle) in en, ru, pl, es; h2 'Who it is for and why' with h3 ids blind, pilots, teachers, press, support, developers; the teachers, press and support h2 folded in (helpers.title, press.title, press.story, press.contact, support.title and the development item removed); On this page sub-list; home band text and link to /{lang}/sound/#sound-who. Commit 2fe2d8c. All gates PASS on 2fe2d8c (vitest included); verify.mjs 251/251; sound-page-shots 16/16 locally; the phone screenshot looked at.
+- [ ] 10. Merge, ship, live anchors, STATE.
+
+### The brief (kept for reference)
 
 The owner asked for an h2 'Who it is for and why' on /{lang}/sound/ with h3 blocks and anchors #blind, #pilots, #teachers, #press, #support, #developers, so a letter or post can link one audience directly. The existing sections for teachers, journalists and 'How to help' are not duplicated: their content moves into these blocks or the blocks link to them. The Russian source text is in the vault note on the site's Fly by Sound section ('Next stage' part); en, pl, es to be written naturally. The consent template and the test protocol exist in the sound repository (the page already says so), so the developers block may name them. The home band gets one or two lines in the same sense (pilots flew with eyes closed; we look for blind pilots; two goals) and a link to the section. verify.mjs: the six anchors, h3 under the new h2, h2 order updated.

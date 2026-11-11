@@ -209,7 +209,7 @@ function Landing({ locale }: { locale: Locale }) {
             </h2>
             <p className="mt-4 max-w-2xl text-lg text-ink/85">{t("soundBand.text")}</p>
             <p className="mt-6">
-              <a href={`/${locale}/sound/`} data-track="cta_click" data-p="sound-band" className="link inline-flex min-h-11 items-center text-lg">
+              <a href={`/${locale}/sound/#sound-who`} data-track="cta_click" data-p="sound-band" className="link inline-flex min-h-11 items-center text-lg">
                 {t("soundBand.link")}
                 <span aria-hidden="true" className="ml-2">→</span>
               </a>

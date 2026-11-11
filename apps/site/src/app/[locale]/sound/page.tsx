@@ -53,9 +53,15 @@ function Steps({ items }: { items: string[] }) {
 
 /**
  * The page's sections in reading order (the owner's site text note, part 4, "structure for screen readers"): one h1, then these h2 in this order;
- * the "On this page" list links to their ids. h3 appear only inside their own h2 (start: try it now; helpers: how to run a lesson).
+ * the "On this page" list links to their ids. h3 appear only inside their own h2 (start: try it now; now: works and not yet; who: one h3 per audience with its own
+ * anchor, AUDIENCES, so a letter or a post can link one audience; h4 inside the teachers and support blocks).
  */
-const SECTIONS = ["start", "how", "need", "keys", "now", "test", "record", "helpers", "press", "support", "open", "help"] as const;
+const SECTIONS = ["start", "how", "need", "keys", "now", "test", "record", "who", "open", "help"] as const;
+
+/** The audiences of "Who it is for and why", in order; each id is a public anchor (/{lang}/sound/#teachers is sent in letters). */
+const AUDIENCES = ["blind", "pilots", "teachers", "press", "support", "developers"] as const;
+
+const H4 = "mt-5 font-semibold text-ink";
 
 const H2 = "text-2xl font-semibold tracking-tight text-ink";
 const H3 = "mt-6 text-lg font-semibold text-ink";
@@ -96,6 +102,17 @@ function Sound({ locale }: { locale: Locale }) {
                     <a href={`#sound-${id}`} className="link inline-flex min-h-11 items-center">
                       {t(`sound.${id}.title`)}
                     </a>
+                    {id === "who" ? (
+                      <ul className="pl-4">
+                        {AUDIENCES.map((a) => (
+                          <li key={a}>
+                            <a href={`#${a}`} className="link inline-flex min-h-11 items-center text-sm">
+                              {t(`sound.who.${a}.title`)}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -189,39 +206,77 @@ function Sound({ locale }: { locale: Locale }) {
             </p>
           </section>
 
-          <section aria-labelledby="sound-helpers" className="mt-10 scroll-mt-20">
-            <h2 id="sound-helpers" className={H2}>
-              {t("sound.helpers.title")}
+          <section aria-labelledby="sound-who" className="mt-10 scroll-mt-20">
+            <h2 id="sound-who" className={H2}>
+              {t("sound.who.title")}
             </h2>
-            <Items items={raw("sound.helpers.items")} />
-            <h3 className={H3}>{t("sound.helpers.lessonTitle")}</h3>
-            <Items items={raw("sound.helpers.lesson")} />
-          </section>
-
-          <section aria-labelledby="sound-press" className="mt-10 scroll-mt-20">
-            <h2 id="sound-press" className={H2}>
-              {t("sound.press.title")}
-            </h2>
-            <p className="mt-3 text-ink/85">{t("sound.press.story")}</p>
-            <p className="mt-3 text-ink/85">{t("sound.press.facts")}</p>
-            <p className="mt-3 text-ink/85">{t("sound.press.contact")}</p>
-            <ul className="mt-3 space-y-1">
-              <li>{mail}</li>
-              <li>{call(t("sound.press.call"), "calendar-sound-press")}</li>
-            </ul>
-          </section>
-
-          <section aria-labelledby="sound-support" className="mt-10 scroll-mt-20">
-            <h2 id="sound-support" className={H2}>
-              {t("sound.support.title")}
-            </h2>
-            <Items items={raw("sound.support.items")} />
-            <p className="mt-4 text-ink/85">
-              {t("sound.support.wallIntro")}{" "}
-              <a href={`/${locale}/supporters/`} className={LINK}>
-                {t("sound.support.wall")}
-              </a>
-            </p>
+            <p className="mt-3 text-ink/85">{t("sound.who.intro")}</p>
+            {AUDIENCES.map((a) => (
+              <div key={a} className="mt-8 border-l border-accent/50 pl-4">
+                <h3 id={a} className="scroll-mt-20 text-lg font-semibold text-ink">
+                  {t(`sound.who.${a}.title`)}
+                </h3>
+                <p className="mt-3 text-ink/85">{t(`sound.who.${a}.text`)}</p>
+                {a === "blind" ? (
+                  <ul className="mt-3 space-y-1">
+                    <li>
+                      <a href="#sound-start" className={LINK}>
+                        {t("sound.who.toStart")}
+                      </a>
+                    </li>
+                    <li>
+                      <a href="#sound-test" className={LINK}>
+                        {t("sound.who.toTest")}
+                      </a>
+                    </li>
+                  </ul>
+                ) : null}
+                {a === "pilots" ? (
+                  <p className="mt-3">
+                    <a href="#sound-start" className={LINK}>
+                      {t("sound.who.toStart")}
+                    </a>
+                  </p>
+                ) : null}
+                {a === "teachers" ? (
+                  <>
+                    <Items items={raw("sound.helpers.items")} />
+                    <h4 className={H4}>{t("sound.helpers.lessonTitle")}</h4>
+                    <Items items={raw("sound.helpers.lesson")} />
+                    <p className="mt-3">{mail}</p>
+                  </>
+                ) : null}
+                {a === "press" ? (
+                  <>
+                    <p className="mt-3 text-ink/85">{t("sound.press.facts")}</p>
+                    <ul className="mt-3 space-y-1">
+                      <li>{mail}</li>
+                      <li>{call(t("sound.press.call"), "calendar-sound-press")}</li>
+                    </ul>
+                  </>
+                ) : null}
+                {a === "support" ? (
+                  <>
+                    <p className="mt-3">{mail}</p>
+                    <p className="mt-3 text-ink/85">
+                      {t("sound.support.wallIntro")}{" "}
+                      <a href={`/${locale}/supporters/`} className={LINK}>
+                        {t("sound.support.wall")}
+                      </a>
+                    </p>
+                    <h4 className={H4}>{t("sound.who.otherTitle")}</h4>
+                    <Items items={raw("sound.support.items")} />
+                  </>
+                ) : null}
+                {a === "developers" ? (
+                  <p className="mt-3">
+                    <a href="#sound-open" className={LINK}>
+                      {t("sound.who.toOpen")}
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            ))}
           </section>
 
           <section aria-labelledby="sound-open" className="mt-10 scroll-mt-20">

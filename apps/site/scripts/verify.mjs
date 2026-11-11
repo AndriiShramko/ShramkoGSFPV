@@ -93,20 +93,22 @@ for (const l of LOCALES) {
   // Fly by Sound page text (2026-11-11): one h1, the "On this page" list, the h2 in the order of the note for screen readers, h3 only inside their h2
   {
     const S = DICT[l].sound;
-    const ORDER = ["start", "how", "need", "keys", "now", "test", "record", "helpers", "press", "support", "open", "help"];
+    const ORDER = ["start", "how", "need", "keys", "now", "test", "record", "who", "open", "help"];
+    const AUD = ["blind", "pilots", "teachers", "press", "support", "developers"];
     const h2 = [...snd.matchAll(/<h2 id="sound-([a-z]+)"/g)].map((m) => m[1]);
     const navAt = snd.indexOf(`<nav aria-label="${S.toc.label}"`);
     const nav = navAt >= 0 ? snd.slice(navAt, snd.indexOf("</nav>", navAt)) : "";
     const navIds = [...nav.matchAll(/href="#sound-([a-z]+)"/g)].map((m) => m[1]);
     const ol = snd.match(/<ol[^>]*>([\s\S]*?)<\/ol>/)?.[1] ?? "";
     ok(`${l}/sound/: one h1; the h2 go ${ORDER.join(" > ")}; the "On this page" list links them in that order`, (snd.match(/<h1[ >]/g) ?? []).length === 1 && h2.join(",") === ORDER.join(",") && navIds.join(",") === ORDER.join(","), `${h2.join(",")} | ${navIds.join(",")}`);
-    ok(`${l}/sound/: the try-it steps are a numbered list of ${S.start.steps.length}, the new sections carry their lists (how ${S.how.items.length}, works ${S.now.works.length}, not yet ${S.now.notYet.length}, testing ${S.test.items.length}, lesson ${S.helpers.lesson.length}, help ${S.support.items.length}) and the four h3`, (ol.match(/<li[ >]/g) ?? []).length === S.start.steps.length && (snd.match(/<h3[ >]/g) ?? []).length === 4 && [S.how.title, S.now.title, S.now.tested, S.now.goal, S.test.title, S.press.title, S.support.title, S.helpers.lessonTitle, S.start.tryTitle].every((x) => snd.includes(`>${x}<`)));
-    ok(`${l}/sound/: the links say where they go: two to book a call, two to write to the author, the supporters wall, the privacy section, the two repositories marked as opening a new tab`, (snd.match(/href="https:\/\/calendar\.app\.google\//g) ?? []).length === 2 && (snd.match(/href="mailto:zmei116@gmail\.com"/g) ?? []).length === 2 && snd.includes(`href="/${l}/supporters/"`) && snd.includes(`>${S.support.wall}<`) && snd.split(`<span class="sr-only"> <!-- -->${S.newTab}</span>`).length - 1 === 4);
+    ok(`${l}/sound/: the try-it steps are a numbered list of ${S.start.steps.length}, the new sections carry their lists (how ${S.how.items.length}, works ${S.now.works.length}, not yet ${S.now.notYet.length}, testing ${S.test.items.length}, lesson ${S.helpers.lesson.length}, help ${S.support.items.length}), three h3 and the six audience h3, two h4`, (ol.match(/<li[ >]/g) ?? []).length === S.start.steps.length && (snd.match(/<h3[ >]/g) ?? []).length === 9 && (snd.match(/<h4[ >]/g) ?? []).length === 2 && [S.how.title, S.now.title, S.now.tested, S.now.goal, S.test.title, S.who.title, S.helpers.lessonTitle, S.who.otherTitle, S.start.tryTitle].every((x) => snd.includes(`>${x}<`)));
+    ok(`${l}/sound/: the links say where they go: two to book a call, four to write to the author (teachers, press, support, questions), the supporters wall, the privacy section, the two repositories marked as opening a new tab`, (snd.match(/href="https:\/\/calendar\.app\.google\//g) ?? []).length === 2 && (snd.match(/href="mailto:zmei116@gmail\.com"/g) ?? []).length === 4 && snd.includes(`href="/${l}/supporters/"`) && snd.includes(`>${S.support.wall}<`) && snd.split(`<span class="sr-only"> <!-- -->${S.newTab}</span>`).length - 1 === 4);
+    ok(`${l}/sound/: "Who it is for and why" carries the six audiences as h3 with the public anchors ${AUD.map((a) => "#" + a).join(" ")} in order, each linked from "On this page"`, [...snd.matchAll(/<h3 id="([a-z]+)"/g)].map((m) => m[1]).join(",") === AUD.join(",") && AUD.every((a) => nav.includes(`href="#${a}"`) && snd.includes(`>${S.who[a].title}<`)) && (snd.match(/id="(?:blind|pilots|teachers|press|support|developers)"/g) ?? []).length === 6);
     const home = readFileSync(join(OUT, l, "index.html"), "utf8");
     const band = home.indexOf('id="fly-by-sound"');
     const B = DICT[l].soundBand;
     const bandHtml = band > 0 ? home.slice(band, home.indexOf("</section>", band)) : "";
-    ok(`${l}/: the Fly by Sound band sits after the first screen and before #locations, with its h2 and the link to /${l}/sound/`, band > home.indexOf('id="top"') && band < home.indexOf('id="locations"') && bandHtml.includes(`>${B.h2}<`) && bandHtml.includes(`href="/${l}/sound/"`) && bandHtml.includes(B.link));
+    ok(`${l}/: the Fly by Sound band sits after the first screen and before #locations, with its h2 and the link to /${l}/sound/#sound-who`, band > home.indexOf('id="top"') && band < home.indexOf('id="locations"') && bandHtml.includes(`>${B.h2}<`) && bandHtml.includes(`href="/${l}/sound/#sound-who"`) && bandHtml.includes(B.link));
   }
 }
 const sitemap = readFileSync(join(OUT, "sitemap.xml"), "utf8");
