@@ -90,9 +90,9 @@ function Sound({ locale }: { locale: Locale }) {
             <p className="mt-4 inline-flex rounded-md border border-warn/50 px-3 py-1.5 text-sm text-warn">{t("sound.status")}</p>
             <nav aria-label={t("sound.toc.label")} className="mt-8">
               <p className="text-sm font-semibold text-ink">{t("sound.toc.label")}</p>
-              <ul className="mt-2 grid gap-x-6 sm:grid-cols-2">
+              <ul className="mt-2 gap-x-6 sm:columns-2">
                 {SECTIONS.map((id) => (
-                  <li key={id}>
+                  <li key={id} className="break-inside-avoid">
                     <a href={`#sound-${id}`} className="link inline-flex min-h-11 items-center">
                       {t(`sound.${id}.title`)}
                     </a>

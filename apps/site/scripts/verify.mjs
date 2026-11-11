@@ -95,12 +95,13 @@ for (const l of LOCALES) {
     const S = DICT[l].sound;
     const ORDER = ["start", "how", "need", "keys", "now", "test", "record", "helpers", "press", "support", "open", "help"];
     const h2 = [...snd.matchAll(/<h2 id="sound-([a-z]+)"/g)].map((m) => m[1]);
-    const nav = snd.match(new RegExp(`<nav aria-label="${S.toc.label}"[^>]*>([\s\S]*?)</nav>`))?.[1] ?? "";
+    const navAt = snd.indexOf(`<nav aria-label="${S.toc.label}"`);
+    const nav = navAt >= 0 ? snd.slice(navAt, snd.indexOf("</nav>", navAt)) : "";
     const navIds = [...nav.matchAll(/href="#sound-([a-z]+)"/g)].map((m) => m[1]);
     const ol = snd.match(/<ol[^>]*>([\s\S]*?)<\/ol>/)?.[1] ?? "";
     ok(`${l}/sound/: one h1; the h2 go ${ORDER.join(" > ")}; the "On this page" list links them in that order`, (snd.match(/<h1[ >]/g) ?? []).length === 1 && h2.join(",") === ORDER.join(",") && navIds.join(",") === ORDER.join(","), `${h2.join(",")} | ${navIds.join(",")}`);
     ok(`${l}/sound/: the try-it steps are a numbered list of ${S.start.steps.length}, the new sections carry their lists (how ${S.how.items.length}, works ${S.now.works.length}, not yet ${S.now.notYet.length}, testing ${S.test.items.length}, lesson ${S.helpers.lesson.length}, help ${S.support.items.length}) and the four h3`, (ol.match(/<li[ >]/g) ?? []).length === S.start.steps.length && (snd.match(/<h3[ >]/g) ?? []).length === 4 && [S.how.title, S.now.title, S.test.title, S.press.title, S.support.title, S.helpers.lessonTitle, S.start.tryTitle].every((x) => snd.includes(`>${x}<`)));
-    ok(`${l}/sound/: the links say where they go: two to book a call, two to write to the author, the supporters wall, the privacy section, the two repositories marked as opening a new tab`, (snd.match(/href="https:\/\/calendar\.app\.google\//g) ?? []).length === 2 && (snd.match(/href="mailto:zmei116@gmail\.com"/g) ?? []).length === 2 && snd.includes(`href="/${l}/supporters/"`) && snd.includes(`>${S.support.wall}<`) && (snd.match(new RegExp(S.newTab.replace(/[()]/g, "\$&"), "g")) ?? []).length === 4);
+    ok(`${l}/sound/: the links say where they go: two to book a call, two to write to the author, the supporters wall, the privacy section, the two repositories marked as opening a new tab`, (snd.match(/href="https:\/\/calendar\.app\.google\//g) ?? []).length === 2 && (snd.match(/href="mailto:zmei116@gmail\.com"/g) ?? []).length === 2 && snd.includes(`href="/${l}/supporters/"`) && snd.includes(`>${S.support.wall}<`) && snd.split(`<span class="sr-only"> <!-- -->${S.newTab}</span>`).length - 1 === 4);
     const home = readFileSync(join(OUT, l, "index.html"), "utf8");
     const band = home.indexOf('id="fly-by-sound"');
     const B = DICT[l].soundBand;
