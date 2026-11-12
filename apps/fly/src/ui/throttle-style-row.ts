@@ -80,9 +80,9 @@ export function throttleStyleRow(p: Profile, o: StyleRowOptions = {}): { el: HTM
     const live = (): void => {
         if (o.throttle && watch.rest === null) {
             const v = o.throttle();
-            if (Number.isFinite(v)) watch.update(v, performance.now());
-            // a setup with no measured rest keeps the one seen here (saved with the profile on Fly)
-            if (watch.rest !== null && !p.throttleRest) p.throttleRest = watch.rest;
+            // shown only, never saved into the profile (review M4: a throttle with no spring left in the middle for half a
+            // second here is not a measurement; only the wizard's centre step writes Profile.throttleRest)
+            if (Number.isFinite(v)) watch.update(v, performance.now(), p.deviceKey.startsWith('gp:'));
         }
         show();
     };

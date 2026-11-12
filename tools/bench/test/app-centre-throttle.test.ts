@@ -446,3 +446,75 @@ describe('the arm card offer hears the real Controls (review M1, M2)', () => {
         expect(n).toBe(0);
     });
 });
+
+describe('the builtin that decides the style (app/builtin/throttle-style.ts, review M4 and m5)', () => {
+    /** A fake flight context with what the builtin reads: prefs, keys, events, the HUD, the input host and Controls. */
+    function fakeCtx(profile: Profile) {
+        const store = new Map<string, unknown>([['input.throttleStyle', 'auto']]);
+        const prefLs: ((c: { id: string }) => void)[] = [];
+        const frameLs: (() => void)[] = [];
+        const keyLs = new Map<string, (e: { repeat: boolean }) => void>();
+        const input = { now: 'zero' as string, setThrottleStyle(st: string) { this.now = st; }, settleStyle() { /* the motors are off */ }, get throttleStyle() { return { now: this.now, pending: null }; }, centrePilot: null };
+        const controls = { source: 'hid', profile, gate: { armed: false }, lastSampleAt: 1, mapped: new Float32Array(8), flyingMode: () => 'angle' };
+        const ctx = {
+            prefs: { get: (id: string) => store.get(id), set: (id: string, v: unknown) => { store.set(id, v); for (const l of prefLs) l({ id }); }, onChange: (l: (c: { id: string }) => void) => { prefLs.push(l); return () => undefined; } },
+            keys: { on: (id: string, fn: (e: { repeat: boolean }) => void) => { keyLs.set(id, fn); return () => undefined; } },
+            events: { on: (name: string, fn: () => void) => { if (name === 'frame') frameLs.push(fn); return () => undefined; } },
+            hud: { flash: () => undefined, throttle: null }, hook: {}, input, controls
+        };
+        let now = 0;
+        vi.spyOn(performance, 'now').mockImplementation(() => now);
+        /** `ms` of frames every 16 ms with the throttle at f(t) */
+        const frames = (ms: number, f: (t: number) => number): void => {
+            for (const end = now + ms; now <= end; now += 16) { controls.mapped[2] = f(now); for (const l of frameLs) l(); }
+        };
+        return { ctx, input, controls, store, frames, key: (id: string) => keyLs.get(id)?.({ repeat: false }) };
+    }
+    it('an FPV radio armed before any still half second: a throttle left in the middle after the disarm keeps it from zero', async () => {
+        vi.stubGlobal('document', { ...doc, querySelector: () => null });
+        try {
+            const { throttleStyle } = await import('../../../apps/fly/src/app/builtin/throttle-style');
+            const f = fakeCtx({ ...FPV });
+            const off = throttleStyle.install(f.ctx as never);
+            f.frames(1000, (t) => -1 + 0.5 * (1 + Math.sin(t / 40))); // moved up and down, never still
+            f.controls.gate.armed = true; // armed straight away (throttle lowered and the switch flipped)
+            f.frames(1000, () => 0.3);
+            f.controls.gate.armed = false; // a disarm or a crash: the stick with no spring stays near the middle
+            f.frames(2000, () => 0.05);
+            expect(f.input.now).toBe('zero');
+            // control: the same radio with no arming at all, resting in the middle, is decided by that rest
+            const g = fakeCtx({ ...FPV, deviceKey: 'hid:1209:4f54:Radio2' });
+            const off2 = throttleStyle.install(g.ctx as never);
+            g.frames(2000, () => 0.05);
+            expect(g.input.now).toBe('centred');
+            off?.();
+            off2?.();
+        } finally {
+            vi.stubGlobal('document', doc);
+        }
+    });
+    it('the pilot choice is saved for that controller and not applied to another one', async () => {
+        vi.stubGlobal('document', { ...doc, querySelector: () => null });
+        try {
+            const { throttleStyle } = await import('../../../apps/fly/src/app/builtin/throttle-style');
+            const a = { ...FPV, throttleRest: 'bottom' } as Profile;
+            const f = fakeCtx(a);
+            const off = throttleStyle.install(f.ctx as never);
+            f.frames(700, () => -1);
+            expect(f.input.now).toBe('zero');
+            f.key('throttle.style'); // J
+            f.frames(100, () => -1);
+            expect(a.throttleStyle).toBe('centred');
+            expect(f.input.now).toBe('centred');
+            const b = { ...FPV, deviceKey: 'hid:0483:5710:Other', throttleRest: 'bottom' } as Profile;
+            f.controls.profile = b;
+            f.frames(700, () => -1);
+            expect(b.throttleStyle).toBeUndefined();
+            expect(f.store.get('input.throttleStyle')).toBe('auto');
+            expect(f.input.now).toBe('zero');
+            off?.();
+        } finally {
+            vi.stubGlobal('document', doc);
+        }
+    });
+});

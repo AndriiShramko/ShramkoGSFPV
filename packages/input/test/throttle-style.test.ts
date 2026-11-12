@@ -12,9 +12,10 @@ import { mulberry32 } from '../src/sim/signals';
 const DJI_REST = [-11 / 660, -8 / 660, 0];
 
 /** Feed a watch `ms` of samples at 125 Hz (8 ms, a radio's report rate) from `f(t)`, starting at `t0`; the last answer. */
-function feed(w: RestWatch, f: (t: number) => number, ms: number, t0 = 0): ReturnType<RestWatch['update']> {
-    let r = w.rest;
-    for (let t = t0; t <= t0 + ms; t += 8) r = w.update(f(t), t);
+function feed(w: RestWatch | ((v: number, t: number) => ReturnType<RestWatch['update']>), f: (t: number) => number, ms: number, t0 = 0): ReturnType<RestWatch['update']> {
+    const up = typeof w === 'function' ? w : (v: number, t: number) => w.update(v, t);
+    let r = typeof w === 'function' ? null : w.rest;
+    for (let t = t0; t <= t0 + ms; t += 8) r = up(f(t), t);
     return r;
 }
 
@@ -58,6 +59,16 @@ describe('RestWatch: the first still half second of this connection', () => {
         expect(feed(new RestWatch(), (t) => Math.sin(t / 300), 5000)).toBeNull();
         expect(feed(new RestWatch(), (t) => ((t / 8) % 2 === 0 ? 0.5 : -0.5), 5000)).toBeNull();
     });
+    it('review M4, the gamepad trap: exact zeros until first moved decide nothing; then the bottom is the bottom', () => {
+        const w = new RestWatch();
+        expect(feed((v, t) => w.update(v, t, true), () => 0, 2000)).toBeNull();
+        expect(feed((v, t) => w.update(v, t, true), () => -1, 600, 2008)).toBe('bottom');
+        // control: the same zeros through the HID path (no trap there) are a rest in the centre
+        expect(feed(new RestWatch(), () => 0, 600)).toBe('centre');
+        // a gamepad really resting in the centre decides once its value has moved at all
+        const g = new RestWatch();
+        expect(feed((v, t) => g.update(v, t, true), (t) => (t < 100 ? 0 : 0.004), 700)).toBe('centre');
+    });
     it('negative control: a controller that reports nothing yet (no sample, NaN samples) decides nothing', () => {
         const w = new RestWatch();
         expect(w.rest).toBeNull();
@@ -78,7 +89,11 @@ describe('resolveStyle: the pilot\'s choice wins, then what is measured, then th
         expect(resolveStyle({})).toEqual({ style: 'zero', why: 'default' });
         expect(resolveStyle({ springs: true })).toEqual({ style: 'centred', why: 'table' });
         expect(resolveStyle({ springs: true, wizard: 'bottom' })).toEqual({ style: 'zero', why: 'wizard' });
-        expect(resolveStyle({ springs: true, wizard: 'bottom', seen: 'centre' })).toEqual({ style: 'centred', why: 'seen' });
+        // review M4: half a second in the middle does not beat the wizard's measured bottom (or parked); the bottom seen does beat its centre
+        expect(resolveStyle({ springs: true, wizard: 'bottom', seen: 'centre' })).toEqual({ style: 'zero', why: 'wizard' });
+        expect(resolveStyle({ wizard: 'parked', seen: 'centre' })).toEqual({ style: 'zero', why: 'wizard' });
+        expect(resolveStyle({ wizard: 'centre', seen: 'bottom' })).toEqual({ style: 'zero', why: 'seen' });
+        expect(resolveStyle({ wizard: 'centre', seen: 'centre' })).toEqual({ style: 'centred', why: 'seen' });
         expect(resolveStyle({ springs: true, seen: 'bottom' })).toEqual({ style: 'zero', why: 'seen' });
         expect(resolveStyle({ springs: false, seen: 'centre', choice: 'zero' })).toEqual({ style: 'zero', why: 'choice' });
         expect(resolveStyle({ springs: true, seen: 'bottom', choice: 'centred' })).toEqual({ style: 'centred', why: 'choice' });

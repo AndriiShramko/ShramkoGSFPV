@@ -4,7 +4,9 @@
 //    down descends, the motors start with the first stick move (apps/fly/src/play/centre-pilot.ts);
 //  - 'zero': FPV, the motors start (arming) only with the throttle at the bottom, the stick is the motors' power.
 // Automatic by what is measured: where the throttle rests on this connection (RestWatch), else where the wizard saw it
-// rest (Profile.throttleRest), else the known table (a spring-centred throttle, known-devices.ts throttleSprings), else
+// rest (Profile.throttleRest), else the known table; a rest seen in the centre never overrides a wizard that measured the
+// bottom or a parked stick (review M4: an FPV radio's throttle with no spring can sit in the middle for half a second;
+// the arm card's offer proposes the centred style then) (a spring-centred throttle, known-devices.ts throttleSprings), else
 // 'zero'. The pilot's own choice (Profile.throttleStyle) always wins. Pure: no DOM, no clock of its own.
 import { TUNING, classifyThrottleRest } from './calib';
 import type { Profile, ThrottleRest, ThrottleStyle } from './calib';
@@ -31,9 +33,14 @@ export interface StyleInputs {
 
 export interface ResolvedStyle { style: ThrottleStyle; why: StyleWhy }
 
-/** The style to fly: the pilot's choice, else the rest seen now, else the wizard's rest, else the known table, else 'zero'. */
+/**
+ * The style to fly: the pilot's choice, else the rest seen now, else the wizard's rest, else the known table, else 'zero'.
+ * A centre seen now does not beat a wizard that measured the bottom or a parked stick: only the safe way (from zero) is
+ * taken from half a second of watching against a measurement.
+ */
 export function resolveStyle(i: StyleInputs): ResolvedStyle {
     if (i.choice === 'centred' || i.choice === 'zero') return { style: i.choice, why: 'choice' };
+    if (i.seen === 'centre' && i.wizard && i.wizard !== 'centre') return { style: restStyle(i.wizard), why: 'wizard' };
     if (i.seen) return { style: restStyle(i.seen), why: 'seen' };
     if (i.wizard) return { style: restStyle(i.wizard), why: 'wizard' };
     if (i.springs) return { style: 'centred', why: 'table' };
@@ -72,15 +79,27 @@ export class RestWatch {
     private sum = 0;
     private n = 0;
     private decided: ThrottleRest | null = null;
+    /** the gamepad trap: the first value, and whether a different one has been read since */
+    private first = NaN;
+    private changed = false;
 
     /** The rest seen, or null while nothing still has been seen (a controller that reports nothing yet, a moving stick). */
     get rest(): ThrottleRest | null {
         return this.decided;
     }
 
-    /** One sample of the mapped throttle at page time `tMs`; the rest once decided. Non-numbers are ignored. */
-    update(v: number, tMs: number): ThrottleRest | null {
+    /**
+     * One sample of the mapped throttle at page time `tMs`; the rest once decided. Non-numbers are ignored. `gamepad`: the
+     * value comes through the Gamepad API, where an axis may read one fixed value (0.0) until it is first moved
+     * (devices/gamepad.ts, the trap the arm gate's centre rule is for): nothing counts until the value has changed once.
+     */
+    update(v: number, tMs: number, gamepad = false): ThrottleRest | null {
         if (this.decided || !Number.isFinite(v) || !Number.isFinite(tMs)) return this.decided;
+        if (gamepad && !this.changed) {
+            if (Number.isNaN(this.first)) this.first = v;
+            if (v === this.first) return null;
+            this.changed = true;
+        }
         if (Number.isNaN(this.from) || Math.abs(v - this.from) > TUNING.STILL_TOL || tMs < this.since) {
             this.from = v;
             this.since = tMs;
@@ -100,5 +119,7 @@ export class RestWatch {
         this.sum = 0;
         this.n = 0;
         this.decided = null;
+        this.first = NaN;
+        this.changed = false;
     }
 }

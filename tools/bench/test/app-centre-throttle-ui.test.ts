@@ -8,7 +8,7 @@
 //    centred style acro shows the one line about the direct throttle, angle does not;
 //  - the HUD chip (ui/mode-chip.ts) shows the style under the mode and its popover picks the other one;
 //  - the summary panel's chip, the how-to-fly card's line, the Controls / check screen's two-way row (a press saves the
-//    choice into the profile; a rest seen on the check screen is kept when the profile had none);
+//    choice into the profile; a rest seen on the check screen is shown, never saved);
 //  - every string of locales/fly/throttle in en, es, pl and ru, and every English line that says "arm" also says "motors"
 //    (the owner's words: DJI pilots have never armed anything).
 // The 3 s is an estimate (arm-offer-logic.ts OFFER_MS); the tolerances are the calibration wizard's TUNING.
@@ -208,16 +208,17 @@ describe('the Controls / check screen row', () => {
         expect(el.getAttribute('data-style')).toBe('zero');
         expect(el.querySelector('[data-testid="throttle-style-title"]')?.textContent).toContain('Your choice for this controller.');
     });
-    it('the check screen keeps the rest it sees when the profile had none; control: a measured rest is kept', () => {
+    it('review M4: the check screen shows the rest it sees and saves none; a measured bottom is not beaten by a centre seen there', () => {
         const p = profile();
         const row = R.throttleStyleRow(p, { save: false, throttle: () => DJI_REST });
         for (clock = 0; clock <= 700; clock += 33) row.live();
-        expect(p.throttleRest).toBe('centre');
+        expect(p.throttleRest).toBeUndefined();
         expect((row.el as unknown as FakeElement).getAttribute('data-style')).toBe('centred');
         const q = profile({ throttleRest: 'bottom' });
         const r2 = R.throttleStyleRow(q, { save: false, throttle: () => DJI_REST });
         for (clock = 1000; clock <= 1700; clock += 33) r2.live();
         expect(q.throttleRest).toBe('bottom');
+        expect((r2.el as unknown as FakeElement).getAttribute('data-style')).toBe('zero');
     });
 });
 

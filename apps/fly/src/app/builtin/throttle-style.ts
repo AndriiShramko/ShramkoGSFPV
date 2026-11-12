@@ -53,6 +53,8 @@ export const throttleStyle: Feature = {
         let shown: Profile | null = null;
         let syncing = false;
         let resolved: ResolvedStyle | null = null;
+        /** the motors have run on this connection: the watch has said all it may (review M4: after a crash or a disarm a stick with no spring sits wherever it was left) */
+        let flown = false;
 
         /** The setting shows this controller's choice (no write back: it is the controller's own value). */
         const showChoice = (p: Profile | null): void => {
@@ -66,12 +68,14 @@ export const throttleStyle: Feature = {
                 // another controller (or setup): its own choice, a new watch of where its throttle rests
                 shown = p;
                 watch.reset();
+                flown = false;
                 showChoice(p);
             }
             if (!p) { resolved = null; return; }
             const c = ctx.controls;
-            // only a reporting controller with the motors off says where its throttle rests
-            if (!c.gate.armed && c.lastSampleAt > 0) watch.update(c.mapped[2], performance.now());
+            // only a reporting controller with the motors not yet run on this connection says where its throttle rests
+            if (c.gate.armed) flown = true;
+            if (!flown && c.lastSampleAt > 0) watch.update(c.mapped[2], performance.now(), c.source === 'gamepad');
             if (watch.rest) seenRests.set(p, watch.rest);
             // the Controls screen or the check screen changed the profile's choice: the setting shows it
             if (!syncing && (p.throttleStyle ?? 'auto') !== prefs.get('input.throttleStyle')) showChoice(p);
