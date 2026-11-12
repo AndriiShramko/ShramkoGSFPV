@@ -1,0 +1,1662 @@
+{
+  "name": "sonic-v13-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-12T22:34:35.529Z",
+    "gitHead": "61321008",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5440",
+  "parts": "A,B,C,C2,DE,E2,F1,F2,G,R,F2S",
+  "control": null,
+  "checks": [
+    {
+      "name": "A: the pause menu's item is a link to the mode's start screen /en/fly/?sonic=start (not the page about the mode), in a new tab, worded \"Fly by Sound: blind and low-vision pilots\", and a screen reader hears \"(opens in a new tab)\"",
+      "pass": true,
+      "value": {
+        "tag": "A",
+        "href": "/en/fly/?sonic=start",
+        "target": "_blank",
+        "rel": "noopener",
+        "label": "Fly by Sound: blind and low-vision pilots",
+        "newTab": "(opens in a new tab)"
+      }
+    },
+    {
+      "name": "A: followed, it opens the mode's start screen in a new tab (its 28 lessons, the course from the beginning), the page about the mode linked from its footer; the flight stays paused under the menu",
+      "pass": true,
+      "value": {
+        "url": "/en/fly/?sonic=start",
+        "shown": true,
+        "h1": "Fly by Sound",
+        "beginning": true,
+        "lessons": 28,
+        "about": "/en/sound/",
+        "stillPaused": true
+      }
+    },
+    {
+      "name": "B: \"Continue: Turn toward a sound\" comes first, the primary button, with its place and state; then \"Start the course from the beginning\"",
+      "pass": true,
+      "value": {
+        "group": [
+          "sonic-start-continue",
+          "sonic-start-beginning"
+        ],
+        "cont": "Continue: Turn toward a soundLesson 7 of 28, in progress"
+      }
+    },
+    {
+      "name": "B: \"Start the course from the beginning\" names lesson 1 of 28 and says the progress is kept",
+      "pass": true,
+      "value": "Start the course from the beginningLesson 1 of 28: Headphone check. Your progress is kept."
+    },
+    {
+      "name": "B: the 28 lessons in the path's order, by module, each \"Lesson N of 28\"",
+      "pass": true,
+      "value": {
+        "count": 28,
+        "modules": 8,
+        "placesOk": true
+      }
+    },
+    {
+      "name": "B: each lesson with its state from the saved progress: passed, skipped, in progress, not started",
+      "pass": true,
+      "value": {
+        "passed": {
+          "id": "ears-headphones",
+          "state": "passed",
+          "text": "Headphone checkLesson 1 of 28, passed, Fast path"
+        },
+        "skipped": {
+          "id": "hover-height",
+          "state": "skipped",
+          "text": "Hold your heightLesson 6 of 28, skipped, Fast path"
+        },
+        "current": {
+          "id": "hover-turn",
+          "state": "current",
+          "text": "Turn toward a soundLesson 7 of 28, in progress"
+        },
+        "fresh": {
+          "id": "walls-hall",
+          "state": "new",
+          "text": "A small roomLesson 10 of 28, not started, Fast path"
+        }
+      }
+    },
+    {
+      "name": "B: Reset asks first: the question (28 lessons, the settings stay), the focus on \"No, keep my progress\", the group labelled by the question",
+      "pass": true,
+      "value": {
+        "ask": "Reset your progress in all 28 lessons? Every lesson will be new again. Your sound settings stay as they are.",
+        "focus": "sonic-reset-no",
+        "group": "sonic-reset-ask"
+      }
+    },
+    {
+      "name": "B: Escape answers No: nothing is cleared, the Reset button is back with the focus",
+      "pass": true,
+      "value": {
+        "progress": [
+          "ears-headphones",
+          "hover-height",
+          "hover-turn"
+        ],
+        "current": "hover-turn",
+        "reset": true,
+        "focus": "sonic-reset"
+      }
+    },
+    {
+      "name": "B: Yes clears every lesson and the current one, keeps the sound settings (theme Clear); every lesson new, no Continue, the focus on the course's first button, the status line says so",
+      "pass": true,
+      "value": {
+        "saved": {
+          "progress": {},
+          "current": null,
+          "theme": "clear"
+        },
+        "states": [
+          "new"
+        ],
+        "cont": false,
+        "focus": "sonic-start-beginning",
+        "status": "Your progress is reset. Every lesson is new again."
+      }
+    },
+    {
+      "name": "B: after a reload every lesson is still new and there is no Continue",
+      "pass": true,
+      "value": {
+        "states": [
+          "new"
+        ],
+        "cont": false
+      }
+    },
+    {
+      "name": "C: nothing is said before a key; the first key says how the list works, then the first stop with its section and place",
+      "pass": true,
+      "value": {
+        "before": [],
+        "first": [
+          "Fly by Sound. The up and down arrows move, left and right change a setting, Enter chooses, Escape goes back.",
+          "Fly by Sound sections. Start. Item 1 of 4."
+        ]
+      }
+    },
+    {
+      "name": "C: the navigation's Settings link, Enter: the section's heading has the focus and is said; Down through the settings, each said with \"Item n of N\" (N as the page says it; v13-int step 3 and lane sonic-beacon: four switches more), to Motor volume",
+      "pass": true,
+      "value": {
+        "navAt": {
+          "testid": null,
+          "id": "",
+          "tag": "A",
+          "text": "Settings"
+        },
+        "head": {
+          "testid": null,
+          "id": "sonic-h-settings",
+          "tag": "H2",
+          "text": "Settings"
+        },
+        "headSaid": [
+          "Settings"
+        ],
+        "lines": [
+          "Sound theme: Soft. Item 1 of 16.",
+          "Calm mode: off. Calm mode makes every sound softer and slower. Item 2 of 16.",
+          "Height tone: up is a higher tone. Item 3 of 16.",
+          "Speaking speed: 2x. Item 4 of 16.",
+          "Captions on screen: on. Item 5 of 16.",
+          "My screen reader speaks: off. Item 6 of 16.",
+          "Motor sound: on. Item 7 of 16.",
+          "Motor volume: 0 dB. Item 8 of 16."
+        ],
+        "of": 16
+      }
+    },
+    {
+      "name": "C: Right and Left move Motor volume in 3 dB steps, each value said, the end said as the limit (6 dB), saved",
+      "pass": true,
+      "value": {
+        "values": [
+          "Motor volume: 3 dB",
+          "Motor volume: 6 dB",
+          "Motor volume: 6 dB. That is the limit.",
+          "Motor volume: 3 dB",
+          "Motor volume: 0 dB",
+          "Motor volume: -3 dB",
+          "Motor volume: -6 dB",
+          "Motor volume: -9 dB"
+        ],
+        "level": {
+          "value": "-9",
+          "text": "-9 dB"
+        },
+        "saved": -9
+      }
+    },
+    {
+      "name": "C: Down to Target height note (said), Enter turns it off (said), saved",
+      "pass": true,
+      "value": {
+        "target": [
+          "Target height note: on. Item 9 of 16.",
+          "Target height note: off"
+        ],
+        "saved": false
+      }
+    },
+    {
+      "name": "C: Down to Sound from above and below (said with its description and \"Item 10 of N\"), Enter turns it off (said), saved in the sound document",
+      "pass": true,
+      "value": {
+        "dirLines": [
+          "Sound from above and below: on. On: a way above or below an obstacle and the target height note also come from there, with a soft hiss good headphones can place. Off: from ahead, told by their pitch alone. The ceiling and floor come from above and below either way. Item 10 of 16.",
+          "Sound from above and below: off"
+        ],
+        "saved": false
+      }
+    },
+    {
+      "name": "C: Down to Target hum shows the way (said with its description and \"Item 11 of N\"), Enter turns it off (said), saved in the sound document (lane sonic-beacon)",
+      "pass": true,
+      "value": {
+        "beaconLines": [
+          "Target hum shows the way: on. On: the hum of the next target comes from its side, left or right, even when it is behind you, and an octave higher when you fly straight at it. Off: it comes from where the target is, and the corridor and the tunnels have no hum. Item 11 of 16.",
+          "Target hum shows the way: off"
+        ],
+        "saved": false
+      }
+    },
+    {
+      "name": "C: two Downs to the sound panel switch (the frame's stop said on the way, then \"Item 13 of N\"), Enter turns it off (said), saved beside the progress",
+      "pass": true,
+      "value": {
+        "panelLines": [
+          "Sound turns with: the way you face. Item 12 of 16.",
+          "Sound panel: see every sound: on. Item 13 of 16.",
+          "Sound panel: see every sound: off"
+        ],
+        "saved": false
+      }
+    },
+    {
+      "name": "C: Down to the horizon and height display (\"Item 14 of N\"), Enter turns it off (said), saved beside the progress",
+      "pass": true,
+      "value": {
+        "horizonLines": [
+          "Horizon and height display: on. Item 14 of 16.",
+          "Horizon and height display: off"
+        ],
+        "saved": false
+      }
+    },
+    {
+      "name": "C: Escape goes back to the first Start button, said with its section",
+      "pass": true,
+      "value": {
+        "focus": {
+          "testid": "sonic-start-beginning",
+          "id": "",
+          "tag": "BUTTON",
+          "text": "Start the course from the beginningLesson 1 of 28: Headphone check."
+        },
+        "said": [
+          "Start. Start the course from the beginning. Lesson 1 of 28: Headphone check. Item 1 of 3."
+        ]
+      }
+    },
+    {
+      "name": "C: the lines cut each other (the browser's voice cancelled for each new stop)",
+      "pass": true,
+      "value": {
+        "cancels": 33
+      }
+    },
+    {
+      "name": "C: after a reload the settings read back: Motor volume -9 dB, the target note off, sound from above and below off, the sound panel and the horizon display off",
+      "pass": true,
+      "value": {
+        "level": "-9",
+        "target": false,
+        "direction": false,
+        "soundPanel": false,
+        "attitude": false
+      }
+    },
+    {
+      "name": "C2: in a lesson that flies both panels are on the page (a pilot who never set them)",
+      "pass": true,
+      "value": {
+        "sounds": true,
+        "attitude": true
+      }
+    },
+    {
+      "name": "C2: Enter on \"Sound panel: see every sound\" takes the sound panel off the page at once (105 ms), the other one stays; Enter again puts it back (2 ms); each value said",
+      "pass": true,
+      "value": {
+        "off": {
+          "ms": 105,
+          "shown": {
+            "sounds": false,
+            "attitude": true
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": [
+          "Sound panel: see every sound: off",
+          "Sound panel: see every sound: on"
+        ]
+      }
+    },
+    {
+      "name": "C2: Enter on \"Horizon and height display\" takes the horizon display off the page at once (4 ms), the other one stays; Enter again puts it back (2 ms); each value said",
+      "pass": true,
+      "value": {
+        "off": {
+          "ms": 4,
+          "shown": {
+            "sounds": true,
+            "attitude": false
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": [
+          "Horizon and height display: off",
+          "Horizon and height display: on"
+        ]
+      }
+    },
+    {
+      "name": "C2: both switched off, the screen closed with Escape: the lesson goes on without either panel, both saved off",
+      "pass": true,
+      "value": {
+        "bothOff": {
+          "sounds": false,
+          "attitude": false
+        },
+        "after": {
+          "sounds": false,
+          "attitude": false
+        },
+        "saved": {
+          "heightDirection": true,
+          "beacon": true,
+          "soundPanel": false,
+          "attitude": false
+        }
+      }
+    },
+    {
+      "name": "C2: the lesson opened again later has neither panel on the page (read back from the saved document)",
+      "pass": true,
+      "value": {
+        "sounds": false,
+        "attitude": false
+      }
+    },
+    {
+      "name": "C2: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "D: Escape in a lesson holds the flight and opens the lesson menu; the engine was asked to say its name and how it works, then each item the arrows reach, in order, \"Item n of 8\" (the mode's speech events), and the same lines reached the browser's voice",
+      "pass": true,
+      "value": {
+        "lines": [
+          {
+            "key": "sonic.say.menuOpen",
+            "text": "Lesson menu. The up and down arrows move, Enter chooses, Escape goes back to the lesson. The same actions have keys without the menu: each item says its key."
+          },
+          {
+            "key": "menu.item",
+            "text": "Resume. Key Escape. Item 1 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Repeat the task. Key Z. Item 2 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Next step. Key N. Item 3 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Previous step. Key B. Item 4 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Next lesson. Item 5 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Lesson list. Key X. Item 6 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Sound settings. Item 7 of 8."
+          },
+          {
+            "key": "menu.item",
+            "text": "Leave the mode. Item 8 of 8."
+          }
+        ],
+        "voice": [
+          "Lesson menu. The up and down arrows move, Enter chooses, Escape goes back to the lesson. The same actions have keys without the menu: each item says its key.",
+          "Resume. Key Escape. Item 1 of 8.",
+          "Repeat the task. Key Z. Item 2 of 8.",
+          "Next step. Key N. Item 3 of 8.",
+          "Previous step. Key B. Item 4 of 8.",
+          "Next lesson. Item 5 of 8.",
+          "Lesson list. Key X. Item 6 of 8.",
+          "Sound settings. Item 7 of 8.",
+          "Leave the mode. Item 8 of 8."
+        ],
+        "focused": 7,
+        "held": true
+      }
+    },
+    {
+      "name": "D: Escape lets the flight go and the lesson goes on",
+      "pass": true,
+      "value": {
+        "lesson": "rings-first",
+        "paused": false
+      }
+    },
+    {
+      "name": "E: after a counted attempt the panel shows rings-first's place (Lesson 20 of 28), the step (2 of 2), \"Attempt 1\" and \"Counted 1 of 3\", as the hook's text",
+      "pass": true,
+      "value": {
+        "rows": [
+          "Your first ring",
+          "Lesson 20 of 28",
+          "Step 2 of 2",
+          "Attempt 1",
+          "Counted 1 of 3"
+        ],
+        "hook": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+      }
+    },
+    {
+      "name": "E: the panel is large (18 px or more), bold, opaque, in the left part of the page and not over the view's middle",
+      "pass": true,
+      "value": {
+        "text": "Your first ring\n\nLesson 20 of 28\n\nStep 2 of 2\n\nAttempt 1\n\nCounted 1 of 3",
+        "hidden": false,
+        "left": 12,
+        "top": 273,
+        "width": 237.1875,
+        "height": 198,
+        "font": "28px",
+        "weight": "700",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "edge": "rgb(0, 0, 0)",
+        "vw": 1280,
+        "vh": 720
+      }
+    },
+    {
+      "name": "E: on a light page the panel is black on white, its edge black (the page's scheme, not a fixed one)",
+      "pass": true,
+      "value": {
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "edge": "rgb(0, 0, 0)"
+      }
+    },
+    {
+      "name": "D, E: no page error in the lesson",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "E (dark page): the page is drawn for a dark colour scheme",
+      "pass": true,
+      "value": {
+        "dark": true
+      }
+    },
+    {
+      "name": "E (dark page): after a counted attempt the panel shows rings-first's place (Lesson 20 of 28), the step (2 of 2), \"Attempt 1\" and \"Counted 1 of 3\", as the hook's text",
+      "pass": true,
+      "value": {
+        "rows": [
+          "Your first ring",
+          "Lesson 20 of 28",
+          "Step 2 of 2",
+          "Attempt 1",
+          "Counted 1 of 3"
+        ],
+        "hook": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+      }
+    },
+    {
+      "name": "E (dark page): the panel is large (18 px or more), bold, opaque, in the left part of the page and not over the view's middle",
+      "pass": true,
+      "value": {
+        "text": "Your first ring\n\nLesson 20 of 28\n\nStep 2 of 2\n\nAttempt 1\n\nCounted 1 of 3",
+        "hidden": false,
+        "left": 12,
+        "top": 273,
+        "width": 237.1875,
+        "height": 198,
+        "font": "28px",
+        "weight": "700",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(0, 0, 0)",
+        "edge": "rgb(255, 255, 255)",
+        "vw": 1280,
+        "vh": 720
+      }
+    },
+    {
+      "name": "E (dark page): on a dark page the panel is white on black, its edge white (the page's scheme, not a fixed one)",
+      "pass": true,
+      "value": {
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(0, 0, 0)",
+        "edge": "rgb(255, 255, 255)"
+      }
+    },
+    {
+      "name": "E (dark page): no page error in the lesson",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "F1: the v0.12 recording of rings-first (the package's fixture) opened in the page: the summary is the older-build sentence (sonicrec.replay.check.older), the verdict \"older-build\", not marked as a failure",
+      "pass": true,
+      "value": {
+        "status": {
+          "text": "Recorded with an older build of the lessons: this build cannot check it, which says nothing against the flight. It is played as it was recorded, with the lines the pilot heard.",
+          "bad": false
+        },
+        "check": {
+          "ok": false,
+          "verdict": "older-build",
+          "summary": "Recorded with an older build of the lessons: this build cannot check it, which says nothing against the flight. It is played as it was recorded, with the lines the pilot heard."
+        },
+        "notes": [
+          "This recording has no voice."
+        ],
+        "details": "replay check: recorded with an older build (lesson rings-first is version 2 here, the session was flown with 1; the world is rings-d3fa0c6e here, the session was flown in rings-2bd64a5c; theme soft is version 2 here, the session was flown with 1), so this build cannot verify it: events 2 of 10 re-de",
+        "player": {
+          "phase": "ready",
+          "tMs": 0,
+          "durationMs": 21933,
+          "voice": "none",
+          "frame": 0,
+          "frames": 643,
+          "viewLagMs": 0,
+          "lesson": "rings-first",
+          "part": 0,
+          "parts": 1
+        }
+      }
+    },
+    {
+      "name": "F1: the player is ready on rings-first, a flight of about 22 s (the recording's last frame)",
+      "pass": true,
+      "value": {
+        "player": {
+          "phase": "ready",
+          "tMs": 0,
+          "durationMs": 21933,
+          "voice": "none",
+          "frame": 0,
+          "frames": 643,
+          "viewLagMs": 0,
+          "lesson": "rings-first",
+          "part": 0,
+          "parts": 1
+        },
+        "last": 21933
+      }
+    },
+    {
+      "name": "F1: played from the start, the browser's voice was given the older-build line first, then each of the 7 recorded lines, in the recording's order",
+      "pass": true,
+      "value": {
+        "got": [
+          "This flight was recorded with version 1 of the lesson, and this build has version 2. You hear the lines as the pilot heard them.",
+          "Your first ring",
+          "Now the ring. A low hum comes from the middle of the ring. Fly toward the hum.",
+          "If the hum is smooth, you are lined up. If it is rough, you are off to one side. Steer until it is smooth.",
+          "When you pass through the ring, you hear a bright note.",
+          "Fly through the ring.",
+          "Go.",
+          "Attempt 2."
+        ],
+        "foreign": 0
+      }
+    },
+    {
+      "name": "F1: no recorded line reached the voice before its time on the package clock (its lag on the page's clock is at least -150 ms) and none more than 2 s late",
+      "pass": true,
+      "value": {
+        "lagMs": [
+          -13,
+          -13,
+          -12,
+          -12,
+          -11,
+          5,
+          -12
+        ],
+        "times": [
+          500,
+          500,
+          500,
+          500,
+          500,
+          14383,
+          19933
+        ]
+      }
+    },
+    {
+      "name": "F1: a seek to 10 s: the position is 10 s, the lines before it are passed, played on only \"Go.\" and \"Attempt 2.\" follow (none of the five of the lesson's start again)",
+      "pass": true,
+      "value": {
+        "toMs": 10000,
+        "later": [
+          "Go.",
+          "Attempt 2."
+        ]
+      }
+    },
+    {
+      "name": "F1: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "F2: a recording made on this build (rings-first, a counted attempt) opened by the recorder's Replay button: the summary is the pass sentence, every recorded event worked out again, the verdict \"pass\", not marked as a failure",
+      "pass": true,
+      "value": {
+        "status": {
+          "text": "The replay agrees with the recording: 19 of 19 events were worked out again, and 99 % of the sounds are the same.",
+          "bad": false
+        },
+        "check": {
+          "ok": true,
+          "verdict": "pass",
+          "summary": "The replay agrees with the recording: 19 of 19 events were worked out again, and 99 % of the sounds are the same."
+        },
+        "player": {
+          "phase": "ready",
+          "tMs": 0,
+          "durationMs": 25565,
+          "voice": "ready",
+          "frame": 0,
+          "frames": 545,
+          "viewLagMs": 0,
+          "lesson": "rings-first",
+          "part": 0,
+          "parts": 1
+        },
+        "details": "replay check PASS: events 19 of 19 re-derived (largest time difference 36 ms); cues 99.3 % of 545 frames agree (99.3 % by cue kind)",
+        "notes": [],
+        "rows": [
+          {
+            "lesson": "rings-first",
+            "frames": 545,
+            "compared": true,
+            "ok": true,
+            "recorded": 19,
+            "matched": 19,
+            "diffs": 0,
+            "cueShare": 0.9926605504587156,
+            "cueClassShare": 0.9926605504587156,
+            "cueMismatches": [
+              {
+                "index": 218,
+                "t": 7418,
+                "recorded": [
+                  "safety.wall:front",
+                  "safety.wall:front-right",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed",
+                  "safety.touch",
+                  "safety.touch"
+                ],
+                "derived": [
+                  "safety.wall:front",
+                  "safety.wall:front-right",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed"
+                ]
+              },
+              {
+                "index": 528,
+                "t": 17751,
+                "recorded": [
+                  "safety.wall:front",
+                  "safety.wall:front-left",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed"
+                ],
+                "derived": [
+                  "safety.wall:front",
+                  "safety.wall:front-left",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed",
+                  "target.note",
+                  "target.note",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.praise",
+                  "target.praise",
+                  "target.praise"
+                ]
+              },
+              {
+                "index": 537,
+                "t": 18050,
+                "recorded": [
+                  "safety.wall:front",
+                  "safety.wall:front-left",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed",
+                  "target.note",
+                  "target.note",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.praise"
+                ],
+                "derived": [
+                  "safety.wall:front",
+                  "safety.wall:front-left",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.praise"
+                ]
+              },
+              {
+                "index": 541,
+                "t": 18184,
+                "recorded": [
+                  "safety.wall:front",
+                  "safety.wall:front-left",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap",
+                  "target.praise"
+                ],
+                "derived": [
+                  "safety.wall:front",
+                  "safety.wall:front-left",
+                  "target.hum",
+                  "shape.ring",
+                  "height.tone",
+                  "height.target",
+                  "room.bed",
+                  "target.lap",
+                  "target.lap",
+                  "target.lap"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "F2: played to its end",
+      "pass": true,
+      "value": {
+        "phase": "ended",
+        "durationMs": 25565
+      }
+    },
+    {
+      "name": "F2: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "G: rings-first flown to one counted attempt: the progress panel says \"Counted 1 of 3\" and the saved progress has the success",
+      "pass": true,
+      "value": {
+        "successes": 1,
+        "attempts": 1,
+        "panel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+      }
+    },
+    {
+      "name": "G: Reset my progress, Yes, over the running lesson: the saved progress is gone",
+      "pass": true,
+      "value": {
+        "progress": []
+      }
+    },
+    {
+      "name": "G: Escape closes the screen and the lesson starts again from its beginning: its title is said again, the progress panel is at the task with nothing counted, nothing saved yet",
+      "pass": true,
+      "value": {
+        "titleSaid": true,
+        "lesson": "rings-first",
+        "phase": "intro",
+        "panel": "Your first ring\nLesson 20 of 28\nStep 1 of 2\nCounted 0 of 3",
+        "progress": []
+      }
+    },
+    {
+      "name": "G: flown through the ring once more, the attempt is saved as the first (successes 1, not the old count and one), the panel says \"Counted 1 of 3\"",
+      "pass": true,
+      "value": {
+        "successes": 1,
+        "attempts": 1,
+        "panel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+      }
+    },
+    {
+      "name": "G: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F1: hover-height, Escape 1.2 s after the keys line and again 0.3 s later: intro.1 and intro.2 start and end whole (no error) after the menu closed, in order, before intro.3 (before the fix they were never handed again)",
+      "pass": true,
+      "value": {
+        "closedAtMs": 2282,
+        "lines": {
+          "intro1": {
+            "start": 13371.600000023842,
+            "end": 20800.5
+          },
+          "intro2": {
+            "start": 20852.5,
+            "end": 31120.200000047684
+          },
+          "intro3": {
+            "start": 46758,
+            "end": 54490.60000002384
+          }
+        },
+        "menuEndsAfterClose": 0,
+        "utterances": 21
+      }
+    },
+    {
+      "name": "R F1: the menu's own lines stop at the close: none of them ends later than 1 s after it (before: they spoke on for 10 s)",
+      "pass": true,
+      "value": {
+        "closedAtMs": 2282,
+        "lines": {
+          "intro1": {
+            "start": 13371.600000023842,
+            "end": 20800.5
+          },
+          "intro2": {
+            "start": 20852.5,
+            "end": 31120.200000047684
+          },
+          "intro3": {
+            "start": 46758,
+            "end": 54490.60000002384
+          }
+        },
+        "menuEndsAfterClose": 0,
+        "utterances": 21
+      }
+    },
+    {
+      "name": "R F1: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F2: the start screen over rings-first (the lesson menu's Sound settings): B, N, Z, G, R and B again write no key and no lesson event; the lesson is still rings-first, the screen still up (before the fix two B opened tunnel-long under it)",
+      "pass": true,
+      "value": {
+        "lesson": "rings-first",
+        "phase": "flying",
+        "moved": [],
+        "screen": true
+      }
+    },
+    {
+      "name": "R F4: Escape closes the screen and the focus is on the flight's region (data-testid sonic-flight, role application), not the body",
+      "pass": true,
+      "value": {
+        "testid": "sonic-flight",
+        "id": "",
+        "tag": "DIV",
+        "text": ""
+      }
+    },
+    {
+      "name": "R F2 control: the screen closed, B moves the lesson (its key event \"previous\")",
+      "pass": true,
+      "value": [
+        "previous"
+      ]
+    },
+    {
+      "name": "R F2: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F3: B 1.5 s into ears-headphones (lesson 1 of the path): the start screen; Escape: the lesson opens again from its beginning (a second \"lesson open\"), and N moves it (its key event and a lesson or speech event after it; before the fix nothing followed the key)",
+      "pass": true,
+      "value": {
+        "opens": [
+          "ears-headphones",
+          "ears-headphones"
+        ],
+        "lesson": "ears-headphones",
+        "phase": "flying",
+        "panel": "Headphone check\nLesson 1 of 28\nStep 2 of 4",
+        "afterN": [
+          "key next",
+          "lesson attempt-start",
+          "speech headphones.intro",
+          "speech sonic.say.lessonKeys",
+          "speech headphones.wired",
+          "speech headphones.os-spatial"
+        ]
+      }
+    },
+    {
+      "name": "R F3: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F5: hover-height's progress panel is on the page; while the recording of rings-first plays it is hidden (nothing of the live lesson over the replay); after the replay it is back",
+      "pass": true,
+      "value": {
+        "live": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3",
+        "during": {
+          "hidden": true,
+          "text": ""
+        },
+        "panelDuring": "",
+        "back": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3"
+      }
+    },
+    {
+      "name": "R F5: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R F7: a phone upright with touch sticks: the top bar's Pause opens the pause menu with \"Lesson menu\", which opens the lesson menu; its Next step, tapped, moves the lesson (the key event \"next\"), and the flight goes on",
+      "pass": true,
+      "value": {
+        "item": {
+          "text": "Lesson menu",
+          "disabled": false
+        },
+        "menuOpen": false,
+        "keys": [
+          "next"
+        ],
+        "paused": false
+      }
+    },
+    {
+      "name": "R F7: no page error",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "F2S: a recording made on this build (rings-first, W alone dead ahead at the front wall, a counted attempt) opened by the recorder's Replay button: the summary is the pass sentence, every recorded event worked out again, the verdict \"pass\", not marked as a failure",
+      "pass": true,
+      "value": {
+        "status": {
+          "text": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same.",
+          "bad": false
+        },
+        "check": {
+          "ok": true,
+          "verdict": "pass",
+          "summary": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same."
+        },
+        "player": {
+          "phase": "ready",
+          "tMs": 0,
+          "durationMs": 13324.600000023842,
+          "voice": "ready",
+          "frame": 0,
+          "frames": 174,
+          "viewLagMs": 0,
+          "lesson": "rings-first",
+          "part": 0,
+          "parts": 1
+        },
+        "details": "replay check PASS: events 11 of 11 re-derived (largest time difference 5 ms); cues 100.0 % of 174 frames agree (100.0 % by cue kind)",
+        "notes": [],
+        "rows": [
+          {
+            "lesson": "rings-first",
+            "frames": 174,
+            "compared": true,
+            "ok": true,
+            "recorded": 11,
+            "matched": 11,
+            "diffs": 0,
+            "cueShare": 1,
+            "cueClassShare": 1,
+            "cueMismatches": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "F2S: played to its end",
+      "pass": true,
+      "value": {
+        "phase": "ended",
+        "durationMs": 13324.600000023842
+      }
+    },
+    {
+      "name": "F2S: no page error",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "passed": 68,
+  "total": 68,
+  "shots": [
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\a-start-screen-from-pause-item.png",
+      "sha256": "87b78697114ce895d87b6e58e07aa8fc06e1e4ed9c18d5eb22b5a78a4f8db1a4",
+      "what": "the start screen the pause item opened"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\b-start-screen.png",
+      "sha256": "4be982068612bb90caace67d0d816dab7aaca13c98832ec63a5ff9bb7573f8e1",
+      "what": "the start screen with a saved progress"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\b-reset-question.png",
+      "sha256": "5444b21dcf0abf4b33b11db9c86aba31bae50f565bd10f183ef67894a2ba979c",
+      "what": "the reset question, No focused"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\c-settings.png",
+      "sha256": "7050503782a8540db73ddcd5af703e0667440a9c0c4875e21571ac23c3e8d76c",
+      "what": "the settings with Motor volume at -9 dB and the target note off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\c2-settings-over-flight.png",
+      "sha256": "51f06dbf6e60bce4882cf693ac1cac4a975d5c1023f200725aa7a3f1ff15b787",
+      "what": "the settings over the flight with both panels switched off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\d-lesson-menu.png",
+      "sha256": "1eafc30ef5287e24f6c9965d6415a5b9d834479d465c4cdc7e6855274f3dd69b",
+      "what": "the lesson menu over the flight, the last item focused"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\e-progress-panel.png",
+      "sha256": "9b2797eb365733f0c813aa8cfa1d2261669377e61ca67fe397ea71ded2f3c18e",
+      "what": "the progress panel after the first counted attempt of rings-first, light page"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\e-progress-panel-dark.png",
+      "sha256": "719a03d5a0065f16096ae14bdb114321cdd5a5ba8f26c9293f9fc16931023d80",
+      "what": "the progress panel after the first counted attempt of rings-first, dark page"
+    }
+  ],
+  "result": {
+    "release": {
+      "sha": "eda10673",
+      "sonic": "83ce612",
+      "built": "2026-11-12T22:03:40.373Z"
+    },
+    "pauseItem": {
+      "tag": "A",
+      "href": "/en/fly/?sonic=start",
+      "target": "_blank",
+      "rel": "noopener",
+      "label": "Fly by Sound: blind and low-vision pilots",
+      "newTab": "(opens in a new tab)"
+    },
+    "pausePopup": {
+      "url": "/en/fly/?sonic=start",
+      "shown": true,
+      "h1": "Fly by Sound",
+      "beginning": true,
+      "lessons": 28,
+      "about": "/en/sound/",
+      "stillPaused": true
+    },
+    "startScreen": {
+      "group": [
+        "sonic-start-continue",
+        "sonic-start-beginning"
+      ],
+      "cont": "Continue: Turn toward a soundLesson 7 of 28, in progress",
+      "contPrimary": true,
+      "course": "Start the course from the beginningLesson 1 of 28: Headphone check. Your progress is kept.",
+      "lessons": [
+        {
+          "id": "ears-headphones",
+          "state": "passed",
+          "text": "Headphone checkLesson 1 of 28, passed, Fast path"
+        },
+        {
+          "id": "hover-height",
+          "state": "skipped",
+          "text": "Hold your heightLesson 6 of 28, skipped, Fast path"
+        },
+        {
+          "id": "hover-turn",
+          "state": "current",
+          "text": "Turn toward a soundLesson 7 of 28, in progress"
+        },
+        {
+          "id": "ears-headphones",
+          "state": "passed",
+          "text": "Headphone checkLesson 1 of 28, passed, Fast path"
+        },
+        {
+          "id": "ears-glossary",
+          "state": "new",
+          "text": "Meet the soundsLesson 2 of 28, not started"
+        }
+      ],
+      "modules": 8
+    },
+    "settingsWalk": {
+      "navAt": {
+        "testid": null,
+        "id": "",
+        "tag": "A",
+        "text": "Settings"
+      },
+      "head": {
+        "testid": null,
+        "id": "sonic-h-settings",
+        "tag": "H2",
+        "text": "Settings"
+      },
+      "headSaid": [
+        "Settings"
+      ],
+      "lines": [
+        "Sound theme: Soft. Item 1 of 16.",
+        "Calm mode: off. Calm mode makes every sound softer and slower. Item 2 of 16.",
+        "Height tone: up is a higher tone. Item 3 of 16.",
+        "Speaking speed: 2x. Item 4 of 16.",
+        "Captions on screen: on. Item 5 of 16.",
+        "My screen reader speaks: off. Item 6 of 16.",
+        "Motor sound: on. Item 7 of 16.",
+        "Motor volume: 0 dB. Item 8 of 16."
+      ],
+      "of": 16
+    },
+    "motorLevel": {
+      "values": [
+        "Motor volume: 3 dB",
+        "Motor volume: 6 dB",
+        "Motor volume: 6 dB. That is the limit.",
+        "Motor volume: 3 dB",
+        "Motor volume: 0 dB",
+        "Motor volume: -3 dB",
+        "Motor volume: -6 dB",
+        "Motor volume: -9 dB"
+      ],
+      "level": {
+        "value": "-9",
+        "text": "-9 dB"
+      },
+      "saved": -9
+    },
+    "heightTarget": {
+      "target": [
+        "Target height note: on. Item 9 of 16.",
+        "Target height note: off"
+      ],
+      "saved": false
+    },
+    "switches": {
+      "dirLines": [
+        "Sound from above and below: on. On: a way above or below an obstacle and the target height note also come from there, with a soft hiss good headphones can place. Off: from ahead, told by their pitch alone. The ceiling and floor come from above and below either way. Item 10 of 16.",
+        "Sound from above and below: off"
+      ],
+      "beaconLines": [
+        "Target hum shows the way: on. On: the hum of the next target comes from its side, left or right, even when it is behind you, and an octave higher when you fly straight at it. Off: it comes from where the target is, and the corridor and the tunnels have no hum. Item 11 of 16.",
+        "Target hum shows the way: off"
+      ],
+      "panelLines": [
+        "Sound turns with: the way you face. Item 12 of 16.",
+        "Sound panel: see every sound: on. Item 13 of 16.",
+        "Sound panel: see every sound: off"
+      ],
+      "horizonLines": [
+        "Horizon and height display: on. Item 14 of 16.",
+        "Horizon and height display: off"
+      ],
+      "saved": {
+        "heightDirection": false,
+        "beacon": false,
+        "soundPanel": false,
+        "attitude": false
+      }
+    },
+    "escape": {
+      "focus": {
+        "testid": "sonic-start-beginning",
+        "id": "",
+        "tag": "BUTTON",
+        "text": "Start the course from the beginningLesson 1 of 28: Headphone check."
+      },
+      "said": [
+        "Start. Start the course from the beginning. Lesson 1 of 28: Headphone check. Item 1 of 3."
+      ]
+    },
+    "readBack": {
+      "level": "-9",
+      "target": false,
+      "direction": false,
+      "soundPanel": false,
+      "attitude": false
+    },
+    "switchesInLesson": {
+      "start": {
+        "sounds": true,
+        "attitude": true
+      },
+      "sounds": {
+        "off": {
+          "ms": 105,
+          "shown": {
+            "sounds": false,
+            "attitude": true
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": [
+          "Sound panel: see every sound: off",
+          "Sound panel: see every sound: on"
+        ]
+      },
+      "attitude": {
+        "off": {
+          "ms": 4,
+          "shown": {
+            "sounds": true,
+            "attitude": false
+          }
+        },
+        "back": {
+          "ms": 2,
+          "shown": {
+            "sounds": true,
+            "attitude": true
+          }
+        },
+        "lines": [
+          "Horizon and height display: off",
+          "Horizon and height display: on"
+        ]
+      },
+      "bothOff": {
+        "sounds": false,
+        "attitude": false
+      },
+      "after": {
+        "sounds": false,
+        "attitude": false
+      },
+      "saved": {
+        "heightDirection": true,
+        "beacon": true,
+        "soundPanel": false,
+        "attitude": false
+      }
+    },
+    "switchesAgain": {
+      "sounds": false,
+      "attitude": false
+    },
+    "lessonMenu": {
+      "lines": [
+        {
+          "key": "sonic.say.menuOpen",
+          "text": "Lesson menu. The up and down arrows move, Enter chooses, Escape goes back to the lesson. The same actions have keys without the menu: each item says its key."
+        },
+        {
+          "key": "menu.item",
+          "text": "Resume. Key Escape. Item 1 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Repeat the task. Key Z. Item 2 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Next step. Key N. Item 3 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Previous step. Key B. Item 4 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Next lesson. Item 5 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Lesson list. Key X. Item 6 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Sound settings. Item 7 of 8."
+        },
+        {
+          "key": "menu.item",
+          "text": "Leave the mode. Item 8 of 8."
+        }
+      ],
+      "voice": [
+        "Lesson menu. The up and down arrows move, Enter chooses, Escape goes back to the lesson. The same actions have keys without the menu: each item says its key.",
+        "Resume. Key Escape. Item 1 of 8.",
+        "Repeat the task. Key Z. Item 2 of 8.",
+        "Next step. Key N. Item 3 of 8.",
+        "Previous step. Key B. Item 4 of 8.",
+        "Next lesson. Item 5 of 8.",
+        "Lesson list. Key X. Item 6 of 8.",
+        "Sound settings. Item 7 of 8.",
+        "Leave the mode. Item 8 of 8."
+      ],
+      "focused": 7,
+      "held": true
+    },
+    "panel": {
+      "panel": {
+        "text": "Your first ring\n\nLesson 20 of 28\n\nStep 2 of 2\n\nAttempt 1\n\nCounted 1 of 3",
+        "hidden": false,
+        "left": 12,
+        "top": 273,
+        "width": 237.1875,
+        "height": 198,
+        "font": "28px",
+        "weight": "700",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "edge": "rgb(0, 0, 0)",
+        "vw": 1280,
+        "vh": 720
+      },
+      "hookPanel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3",
+      "attempt": 1,
+      "progress": {
+        "lessonId": "rings-first",
+        "version": 2,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 0,
+        "passed": false,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-12T22:29:39.785Z",
+        "skipped": false
+      }
+    },
+    "lessonStart": {
+      "phase": "intro",
+      "events": 18
+    },
+    "panelDark": {
+      "panel": {
+        "text": "Your first ring\n\nLesson 20 of 28\n\nStep 2 of 2\n\nAttempt 1\n\nCounted 1 of 3",
+        "hidden": false,
+        "left": 12,
+        "top": 273,
+        "width": 237.1875,
+        "height": 198,
+        "font": "28px",
+        "weight": "700",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(0, 0, 0)",
+        "edge": "rgb(255, 255, 255)",
+        "vw": 1280,
+        "vh": 720
+      },
+      "hookPanel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3",
+      "attempt": 1,
+      "progress": {
+        "lessonId": "rings-first",
+        "version": 2,
+        "attempts": 1,
+        "successes": 1,
+        "blocksPassed": 0,
+        "passed": false,
+        "bestTimeMs": null,
+        "lastAt": "2026-11-12T22:30:28.718Z",
+        "skipped": false
+      }
+    },
+    "olderSummary": {
+      "status": {
+        "text": "Recorded with an older build of the lessons: this build cannot check it, which says nothing against the flight. It is played as it was recorded, with the lines the pilot heard.",
+        "bad": false
+      },
+      "check": {
+        "ok": false,
+        "verdict": "older-build",
+        "summary": "Recorded with an older build of the lessons: this build cannot check it, which says nothing against the flight. It is played as it was recorded, with the lines the pilot heard."
+      },
+      "notes": [
+        "This recording has no voice."
+      ],
+      "details": "replay check: recorded with an older build (lesson rings-first is version 2 here, the session was flown with 1; the world is rings-d3fa0c6e here, the session was flown in rings-2bd64a5c; theme soft is version 2 here, the session was flown with 1), so this build cannot verify it: events 2 of 10 re-de",
+      "player": {
+        "phase": "ready",
+        "tMs": 0,
+        "durationMs": 21933,
+        "voice": "none",
+        "frame": 0,
+        "frames": 643,
+        "viewLagMs": 0,
+        "lesson": "rings-first",
+        "part": 0,
+        "parts": 1
+      }
+    },
+    "olderPlay": {
+      "lines": [
+        "This flight was recorded with version 1 of the lesson, and this build has version 2. You hear the lines as the pilot heard them.",
+        "Your first ring",
+        "Now the ring. A low hum comes from the middle of the ring. Fly toward the hum.",
+        "If the hum is smooth, you are lined up. If it is rough, you are off to one side. Steer until it is smooth.",
+        "When you pass through the ring, you hear a bright note.",
+        "Fly through the ring.",
+        "Go.",
+        "Attempt 2."
+      ],
+      "want": [
+        "This flight was recorded with version 1 of the lesson, and this build has version 2. You hear the lines as the pilot heard them.",
+        "Your first ring",
+        "Now the ring. A low hum comes from the middle of the ring. Fly toward the hum.",
+        "If the hum is smooth, you are lined up. If it is rough, you are off to one side. Steer until it is smooth.",
+        "When you pass through the ring, you hear a bright note.",
+        "Fly through the ring.",
+        "Go.",
+        "Attempt 2."
+      ],
+      "lagMs": [
+        -13,
+        -13,
+        -12,
+        -12,
+        -11,
+        5,
+        -12
+      ],
+      "foreign": 0
+    },
+    "seek": {
+      "toMs": 10000,
+      "later": [
+        "Go.",
+        "Attempt 2."
+      ]
+    },
+    "ownZip": "U:\\Temp\\gsfpv-sonic-v13-page\\2026-11-12\\f2-recording.zip",
+    "ownSummary": {
+      "status": {
+        "text": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same.",
+        "bad": false
+      },
+      "check": {
+        "ok": true,
+        "verdict": "pass",
+        "summary": "The replay agrees with the recording: 11 of 11 events were worked out again, and 100 % of the sounds are the same."
+      },
+      "player": {
+        "phase": "ready",
+        "tMs": 0,
+        "durationMs": 13324.600000023842,
+        "voice": "ready",
+        "frame": 0,
+        "frames": 174,
+        "viewLagMs": 0,
+        "lesson": "rings-first",
+        "part": 0,
+        "parts": 1
+      },
+      "details": "replay check PASS: events 11 of 11 re-derived (largest time difference 5 ms); cues 100.0 % of 174 frames agree (100.0 % by cue kind)",
+      "notes": [],
+      "rows": [
+        {
+          "lesson": "rings-first",
+          "frames": 174,
+          "compared": true,
+          "ok": true,
+          "recorded": 11,
+          "matched": 11,
+          "diffs": 0,
+          "cueShare": 1,
+          "cueClassShare": 1,
+          "cueMismatches": []
+        }
+      ]
+    },
+    "ownPlay": {
+      "phase": "ended",
+      "durationMs": 13324.600000023842
+    },
+    "resetBefore": {
+      "successes": 1,
+      "attempts": 1,
+      "panel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+    },
+    "resetAfter": {
+      "titleSaid": true,
+      "lesson": "rings-first",
+      "phase": "intro",
+      "panel": "Your first ring\nLesson 20 of 28\nStep 1 of 2\nCounted 0 of 3",
+      "progress": []
+    },
+    "resetSecond": {
+      "successes": 1,
+      "attempts": 1,
+      "panel": "Your first ring\nLesson 20 of 28\nStep 2 of 2\nAttempt 1\nCounted 1 of 3"
+    },
+    "reviewF1": {
+      "closedAtMs": 2282,
+      "lines": {
+        "intro1": {
+          "start": 13371.600000023842,
+          "end": 20800.5
+        },
+        "intro2": {
+          "start": 20852.5,
+          "end": 31120.200000047684
+        },
+        "intro3": {
+          "start": 46758,
+          "end": 54490.60000002384
+        }
+      },
+      "menuEndsAfterClose": 0,
+      "utterances": 21
+    },
+    "reviewF2": {
+      "lesson": "rings-first",
+      "phase": "flying",
+      "moved": [],
+      "screen": true
+    },
+    "reviewF4": {
+      "testid": "sonic-flight",
+      "id": "",
+      "tag": "DIV",
+      "text": ""
+    },
+    "reviewF2Control": [
+      "previous"
+    ],
+    "reviewF3": {
+      "opens": [
+        "ears-headphones",
+        "ears-headphones"
+      ],
+      "lesson": "ears-headphones",
+      "phase": "flying",
+      "panel": "Headphone check\nLesson 1 of 28\nStep 2 of 4",
+      "afterN": [
+        "key next",
+        "lesson attempt-start",
+        "speech headphones.intro",
+        "speech sonic.say.lessonKeys",
+        "speech headphones.wired",
+        "speech headphones.os-spatial"
+      ]
+    },
+    "reviewF5": {
+      "live": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3",
+      "during": {
+        "hidden": true,
+        "text": ""
+      },
+      "panelDuring": "",
+      "back": "Hold your height\nLesson 6 of 28\nStep 2 of 2\nAttempt 1\nCounted 0 of 3"
+    },
+    "reviewF7": {
+      "item": {
+        "text": "Lesson menu",
+        "disabled": false
+      },
+      "menuOpen": false,
+      "keys": [
+        "next"
+      ],
+      "paused": false
+    }
+  }
+}
