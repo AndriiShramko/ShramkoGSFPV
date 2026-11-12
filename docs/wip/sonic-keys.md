@@ -27,6 +27,13 @@ Branch `sonic-keys` here (from `origin/main` 31b1453) and branch `sonic-keys` in
   - all gates (gates.py): typecheck, vitest (253 files, 4120 passed, 10 skipped), api-unittest, architecture, i18n, catalog, B18 PASS. The first vitest run failed on the submodule's old words evidence; moving the pin fixed it
   - negative control: `sonic-int-digits.test.ts` of this branch on `origin/main` 31b1453 (package 09535b7), temporary worktree: the sonic-keys case fails (`expected false to be true`, 1 of 6), the rest pass; worktree removed
   - the local `main` ref is 1120 commits behind `origin/main` (not touched); compare with `origin/main`
+- [ ] fixes after the review (`docs/wip/sonic-keys-review.md`, 2026-11-12; package `sonic-keys` from ced1110):
+  - [x] B2: `ears-game` and `shapes-cube` version 3 (the only other lesson with questions, `ears-headphones`, was 3 already); package 05cce74. Test `test/sonic-keys-versions.test.ts`: recordings of both made with the runner of 09535b7 (fixtures `session-v2-*.zip`; `pass` on 09535b7) are `older-build` (failed before the bump: `fail`, 3 of 5 cases); control: the same recordings replayed as version 2 are `fail`
+  - [ ] I1: a refusal replaces the one not yet said; the intro is not held
+  - [ ] I2: record and replay agree whatever digits are pressed
+  - [ ] I3: a digit out of 1 to 3 during the trial's sound gets "Press 1, 2 or 3"
+  - [ ] caveat to claim 2: the refusal's word right after its sound
+  - [ ] checks once: package suite, `tools/bench/test/sonic*`, page probes R6 and R5, words check, pin moved
 - [ ] review and merge (the lead)
 
 ## Notes
