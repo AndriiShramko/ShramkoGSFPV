@@ -72,7 +72,7 @@ function check(id: string, label: string, extra: Record<string, string | boolean
  * kind starts on (a preset id or DRONE_NEW; default the drone flown). `o.onClose`: called once the dialog
  * is gone (the deep link's caller cleans the address bar).
  */
-export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o: { drone?: string; onClose?: () => void } = {}): void {
+export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o: { drone?: string; message?: string; onClose?: () => void } = {}): void {
     if (document.querySelector('.panel.feedback')) return;
     ctx.pause('panel');
     const openedAt = performance.now();
@@ -88,7 +88,7 @@ export function openFeedback(ctx: FlightContext, first: FeedbackKind = 'bug', o:
     const hp = h('input', { type: 'text', name: 'website', tabindex: '-1', autocomplete: 'off' }) as HTMLInputElement;
     // what the pilot wrote stays when they switch between the kinds
     const startDrone = o.drone === DRONE_NEW || (o.drone && Object.hasOwn(PRESETS, o.drone)) ? o.drone : ctx.session.presetId;
-    const draft = { message: '', contact: '', drone: startDrone, betaflight: '', logUrl: '', settings: true };
+    const draft = { message: o.message ?? '', contact: '', drone: startDrone, betaflight: '', logUrl: '', settings: true };
     const body = h('div', { class: 'fb-body' });
     const tabs = h('div', { class: 'fb-kinds', role: 'radiogroup', 'aria-label': t('fb.kind.label') });
     const status = (): HTMLParagraphElement => h('p', { class: 'fb-status', role: 'status', 'aria-live': 'polite', 'data-testid': 'fb-status' });

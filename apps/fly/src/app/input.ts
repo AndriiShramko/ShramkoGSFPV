@@ -13,6 +13,7 @@ import type { GameSpeed } from '../play/game';
 import { GamePilot } from '../play/game-pilot';
 import { LessonPilot, lessonMode, rayClearance, rayClearanceUp } from '../play/lesson-pilot';
 import { CentrePilot } from '../play/centre-pilot';
+import { openFeedback } from './builtin/feedback';
 import { groundClearance } from '../play/ground';
 import type { PlayProfile } from '../play/keys';
 import type { LessonAssists } from '@shramko/sonic-fpv';
@@ -298,7 +299,7 @@ export class InputHost {
         // opened from the pause menu (its item or the top button): Controls takes the menu's place,
         // so closing Controls flies on, whichever way it was opened
         if (ctx.menu.isOpen) ctx.menu.close();
-        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen, view });
+        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen, view, report: (text) => { r.close(); openFeedback(ctx, 'bug', { message: text }); } });
         ctx.hook.radio = r;
         r.onDone = (c) => { r.remove(); ctx.resume('controls'); this.use(c); };
         // Close / Esc: nothing changes (remove() gives the radio in use its frames back). Closed

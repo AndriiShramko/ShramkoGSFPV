@@ -20,6 +20,7 @@ import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
 import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
 import { throttleStyleRow } from './throttle-style-row';
+import { usbLookBlock } from './usb-look-block';
 import { SwitchesView } from './switches';
 import { knownNameNote, knownNote, knownOfferBlock, knownPanel } from './known-panel';
 import { LinkReadout, drawFrame, rateOf } from './device-rate';
@@ -41,6 +42,8 @@ export interface RadioScreenOptions {
     firstOpen?: boolean;
     /** 'switches': open on the Switches view of the radio in use (Settings' link); the device choice when there is none. */
     view?: 'switches';
+    /** "My controller is not in the list": open the report form with this text (app/input.ts); left out, no send action. */
+    report?: (text: string) => void;
 }
 
 type Subscribe = (cb: (f: RawFrame) => void) => void;
@@ -134,6 +137,8 @@ export class RadioScreen {
     /** Close (x) or Esc on any screen: leave with nothing changed. The caller removes the screen;
      *  remove() gives the radio in use its frame callback back. */
     onClose: (() => void) | null = null;
+    /** RadioScreenOptions.report */
+    private readonly report: ((text: string) => void) | undefined;
     wizard: CalibrationWizard | null = null;
     private hid: HidSource;
     private gp: GamepadSource;
@@ -159,6 +164,7 @@ export class RadioScreen {
         this.curDev = current?.profile ? (current.kind === 'hid' ? current.hid : current.kind === 'gamepad' ? current.gamepad : undefined) : undefined;
         this.curOnFrame = this.curDev?.onFrame ?? null;
         this.firstOpen = opts.firstOpen ?? screensOpened === 0;
+        this.report = opts.report;
         screensOpened++;
         this.body = h('div', { class: 'radio-body' });
         this.root = h('div', { class: 'screen radio interactive', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'radio-title' }, this.body);
@@ -284,7 +290,8 @@ export class RadioScreen {
             h('div', { class: 'choice' },
                 h('button', { type: 'button', class: 'btn', 'data-action': 'radio-keyboard', onclick: () => this.done({ kind: 'keyboard', profile: null }) }, t('radio.keyboard')),
                 h('p', { class: 'muted small' }, t('radio.keyboardHint'))),
-            h('p', { class: 'muted small' }, t('radio.real'))
+            h('p', { class: 'muted small' }, t('radio.real')),
+            usbLookBlock(this.report).el
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
         this.watchPads(gpRate);
