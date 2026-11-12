@@ -25,7 +25,10 @@
 //   R6  (sonic-keys) a digit pressed while the headphone check plays a trial's sound answers that trial at once, before its question is said, and
 //       "Taken: 1" says so; a digit out of range during the next sound answers nothing and is said back, not dropped in silence.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6]
+//   R7  (sonic-keys) after a failed headphone check only the trials answered wrong are asked again, without the intro, and right answers pass it.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6|r7]
+// SITE=https://gsfpv.flyreelstudio.eu runs a probe against that site instead (after a release; nothing is written to the site).
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
 import type { BrowserContext, Page } from 'playwright';
@@ -523,26 +526,93 @@ async function r6(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R7 (sonic-keys)
+
+const isSpeech = (e: Ev, keys: readonly string[]): boolean => e.kind === 'speech' && keys.includes(e.key ?? '');
+
+/**
+ * R7: after a failed headphone check only the trials answered wrong are asked again, without the intro.
+ * The sides are left, right, left; 2 (right) answers every trial of the first attempt, so trials 1 and 3 fail and trial 2 passes.
+ * The retry must ask two trials (both left: 1 answers them) and pass; the old runner asked all three again (a 1 for the right one fails).
+ */
+async function r7(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R7: after a failed headphone check only the failed trials are asked again, without the intro');
+    const ctx = await newContext(browser, served, prefsDoc(), null);
+    const page = await openLesson(ctx, served, 'ears-headphones', 'R7');
+    await until('the intro', () => probe(page), (p) => p.phase === 'intro', 60000, 80);
+    await page.keyboard.press('KeyN');
+    const first: Ev[] = [];
+    let from = 0;
+    for (let n = 1; n <= 3; n++) {
+        await lineDone(page, from, 'headphones.trial');
+        await sleep(700);
+        const at = (await events(page)).length;
+        await page.keyboard.press('Digit2');
+        await sleep(900);
+        first.push(...answersAfter(await events(page), at));
+        from = at;
+    }
+    check('R7: the first attempt took three answers by key (2 each)', first.length === 3 && first.every((e) => e.via === 'key' && e.value === 2), first);
+    const RETRY = 'lesson.ears-headphones.retry';
+    const PASS = 'lesson.ears-headphones.pass';
+    const withRetry = await until('the retry line', () => events(page), (a) => a.slice(from).some((e) => isSpeech(e, [RETRY])), 90000, 40);
+    const retryAt = withRetry.findIndex((e, j) => j >= from && isSpeech(e, [RETRY]));
+    const second: Ev[] = [];
+    let cur = retryAt;
+    let trials = 0;
+    let passed = false;
+    for (;;) {
+        const a = await until('the next trial or the pass', () => events(page), (all) => all.slice(cur + 1).some((e) => isSpeech(e, ['headphones.trial', PASS])), 60000, 40);
+        const next = a.findIndex((e, j) => j > cur && isSpeech(e, ['headphones.trial', PASS]));
+        if (a[next]?.key === PASS) {
+            passed = true;
+            break;
+        }
+        if (trials >= 4) break;
+        await lineDone(page, next, 'headphones.trial');
+        trials++;
+        await sleep(700);
+        const at = (await events(page)).length;
+        await page.keyboard.press('Digit1');
+        await sleep(900);
+        second.push(...answersAfter(await events(page), at));
+        cur = at;
+    }
+    const said = spokenAfter(await events(page), retryAt);
+    result.r7 = { firstAnswers: first, retryTrials: trials, retryAnswers: second, spokenFromRetry: said };
+    check('R7: the retry asks only the two failed trials', trials === 2 && second.length === 2, { trials, second });
+    check('R7: the retry says no intro (headphones.intro, intro.1, intro.2)', !said.some((k) => k === 'headphones.intro' || k.startsWith('lesson.ears-headphones.intro')), said);
+    check('R7: the check passes after the two trials are answered right', passed, said);
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
 
 async function main(): Promise<void> {
     const which = (process.argv[2] ?? 'r1').toLowerCase();
+    // SITE=https://... runs the probe against that site (the live one after a release) instead of the local build; no /api is needed either way
+    const site = (process.env.SITE ?? '').replace(/\/$/, '');
     let release: unknown = null;
-    try {
-        release = JSON.parse((await import('node:fs')).readFileSync(`${DIST}/release.json`, 'utf8'));
-    } catch {
-        throw new Error('dist/release.json is missing: run `node scripts/build-release.mjs` first');
+    if (site !== '') {
+        release = await (await fetch(`${site}/release.json`, { cache: 'no-store' })).json();
+        console.log(`sonic-int-review target: ${site}`);
+    } else {
+        try {
+            release = JSON.parse((await import('node:fs')).readFileSync(`${DIST}/release.json`, 'utf8'));
+        } catch {
+            throw new Error('dist/release.json is missing: run `node scripts/build-release.mjs` first');
+        }
+        if ((release as { sha?: string }).sha !== gitSha()) console.log(`NOTE: dist was built at ${(release as { sha?: string }).sha}, the tree is at ${gitSha()}`);
     }
-    if ((release as { sha?: string }).sha !== gitSha()) console.log(`NOTE: dist was built at ${(release as { sha?: string }).sha}, the tree is at ${gitSha()}`);
     await lock();
     locked = true;
     let served: Served | null = null;
     let browserHandle: Awaited<ReturnType<typeof launchChrome>>['browser'] | null = null;
     let failure: string | null = null;
     try {
-        served = await serveDist(DIST, {}, PORT);
+        served = site !== '' ? { port: 0, origin: site, stop: async () => undefined } : await serveDist(DIST, {}, PORT);
         const launched = await launchChrome({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--autoplay-policy=no-user-gesture-required'] });
         browserHandle = launched.browser;
         log('up:', launched.which.version, served.origin, JSON.stringify(release));
@@ -554,6 +624,7 @@ async function main(): Promise<void> {
         else if (which === 'r4') await r4(fresh, served);
         else if (which === 'r5') await r5(fresh, served);
         else if (which === 'r6') await r6(fresh, served);
+        else if (which === 'r7') await r7(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
@@ -565,7 +636,7 @@ async function main(): Promise<void> {
         unlock();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence(`sonic-int-review-${which}`, { site: `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
+    const file = writeEvidence(`sonic-int-review-${which}${site !== '' ? '-live' : ''}`, { site: site !== '' ? site : `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
     console.log(`${passed} of ${checks.length} checks passed in ${Math.round((Date.now() - T0) / 1000)} s; ${file}`);
     process.exit(failure === null && passed === checks.length ? 0 : 1);
 }
