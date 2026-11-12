@@ -175,6 +175,10 @@ describe('the HUD: the offer on the arm card, the arm input takes it, the acro l
         const line = root.querySelector('[data-testid="acro-throttle"]');
         expect(line?.hidden).toBe(false);
         expect(line?.textContent).toContain('half power');
+        // review m7: the line sits in the F3 block's column, after it (flows under F3, never printed over it)
+        const col = line?.parentNode;
+        expect(col?.className).toContain('osd-col');
+        expect(col?.children.map((k) => (k as FakeElement).className)).toEqual(['osd frame hidden', 'osd acro-thr']);
         acro = false;
         frames(hud, 300, 500, djiView(), null);
         expect(line?.hidden).toBe(true);

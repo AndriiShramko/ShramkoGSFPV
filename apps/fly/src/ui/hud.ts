@@ -282,7 +282,9 @@ export class Hud {
     onArm: (() => void) | null = null;
 
     constructor() {
-        this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.acroLine, this.card.el, this.card.disarm, this.keys.el, this.frameStats);
+        this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.card.el, this.card.disarm, this.keys.el,
+            // one column at the F3 block's place: the acro line flows under F3 when it is shown, never over it (review m7)
+            h('div', { class: 'osd-col' }, this.frameStats, this.acroLine));
     }
 
     /**

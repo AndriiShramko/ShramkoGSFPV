@@ -52,7 +52,7 @@ class Rig {
     /** the sticks as the hands hold them; thr 0 = the middle, where the DJI's spring puts it; the start/stop button */
     sticks = { roll: 0, pitch: 0, thr: 0, yaw: 0, button: false, sw: -1 };
     /** every channel set sent to the model, by the model's tick (the flight log's content) */
-    readonly sent: { tick: number; ch: Float32Array }[] = [];
+    readonly sent: { tick: number; ch: Float32Array; raw: Float32Array }[] = [];
     private pending: Float32Array | null = null;
 
     constructor(style: Style, mode: FlightMode = 'angle') {
@@ -98,7 +98,7 @@ class Rig {
             if (this.t % 16 === 0) this.controls.tick(this.t);
             if (this.pending) {
                 this.sim.setChannels(this.pending);
-                this.sent.push({ tick: this.sim.tick, ch: this.pending });
+                this.sent.push({ tick: this.sim.tick, ch: this.pending, raw: Float32Array.from(this.controls.mapped) });
                 this.pending = null;
             }
             this.sim.step();
@@ -282,14 +282,20 @@ describe('assists are input: the channels sent replay without the pilot to the s
         r.run(1000);
         r.sticks.thr = 0;
         r.run(1500);
-        const replay = new Sim(params('pavo20pro-3s', { crashOn: false }), new FloorWorld());
-        replay.reset(0, 0.05, 0, 0, { soc: 1 });
-        let k = 0;
-        while (replay.tick < r.sim.tick) {
-            while (k < r.sent.length && r.sent[k].tick === replay.tick) replay.setChannels(r.sent[k++].ch);
-            replay.step();
-        }
-        expect(Array.from(replay.s)).toEqual(Array.from(r.sim.s));
+        const replay = (pick: (x: Rig['sent'][number]) => Float32Array): number[] => {
+            const m = new Sim(params('pavo20pro-3s', { crashOn: false }), new FloorWorld());
+            m.reset(0, 0.05, 0, 0, { soc: 1 });
+            let k = 0;
+            while (m.tick < r.sim.tick) {
+                while (k < r.sent.length && r.sent[k].tick === m.tick) m.setChannels(pick(r.sent[k++]));
+                m.step();
+            }
+            return Array.from(m.s);
+        };
+        expect(replay((x) => x.ch)).toEqual(Array.from(r.sim.s));
+        // control (review m5): the pilot's own stick channels (before the centred pilot) replay to another flight, so the
+        // log must hold what was sent, the assisted channels, and this check can fail
+        expect(replay((x) => x.raw)).not.toEqual(Array.from(r.sim.s));
     });
 });
 
