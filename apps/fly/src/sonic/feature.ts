@@ -31,7 +31,9 @@ import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
 import { keyHintsOn } from './key-hints';
 import { KeyNames } from './key-names';
 import { ProgressPanel, followProgress, progressNow } from './progress-panel';
-import { DomLessonMenuView, LessonMenu, pauseKey, runItem } from './lesson-menu';
+import { DomLessonMenuView, LessonMenu, goHome, homeKey, pauseKey, runItem } from './lesson-menu';
+import type { HomePage, LessonMenuItem } from './lesson-menu';
+import { SoundGap } from './sound-gap';
 import { engineDicts } from './host-lines';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
@@ -478,14 +480,31 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // page's 'menu' pause, which the runner waits with: W8). P (the same binding) still opens the simulator's pause menu, which keeps
     // the feedback form and the rest. Over a dialog, the pause menu or with no lesson the key is the page's as before (`when`).
     const engineText = createTranslator(locale, engineDicts());
+    // X in a lesson (lane sonic-hints; lesson-menu.ts goHome): the mode's main menu in one press, the lesson saved and waiting, then
+    // where the pilot is. Over a dialog, the pause menu or the lesson menu the key is not the mode's (when)
+    const home: HomePage = {
+        active: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen && !lessonMenu.isOpen,
+        title: () => (h.lesson ? titles.text({ key: `lesson.${h.lesson.id}.title` }) : ''),
+        showScreen: () => showMenu(),
+        say: sayLine
+    };
+    // the item's key said with its name (lane sonic-hints): Escape resumes, Z, N and B are the lesson's, X the main menu
+    const ITEM_KEYS: Partial<Record<LessonMenuItem, () => string>> = {
+        resume: () => capOf('pause.toggle', 'Escape'),
+        repeat: () => capOf('sonic.repeat'),
+        'next-step': () => capOf('scene.next'),
+        'previous-step': () => capOf('feedback.open'),
+        lessons: () => capOf('sonic.home')
+    };
     const lessonMenu = new LessonMenu({
         say: sayLine,
         text: (line) => engineText.text(line),
         hold: (on) => (on ? ctx.pause('menu') : ctx.resume('menu')),
         readerSpeaks: () => !entry.setup.prefs.selfVoice,
+        keyOf: (item) => ITEM_KEYS[item]?.() ?? '',
         run: runItem({
             mode,
-            showScreen: (section) => showMenu(section),
+            showScreen: (section) => (section ? showMenu(section) : goHome(home)),
             leave: () => {
                 // the lesson's progress saved, then the simulator without the mode (the start screen's "Leave Fly by Sound" link)
                 h.close();
@@ -497,6 +516,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     offs.push(
         ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open()), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         () => lessonMenu.dispose(),
+        ctx.keys.on('sonic.home', homeKey(home), { when: () => home.active() }),
+        watchSoundGap(new SoundGap({
+            lessonActive: () => mode.active && h.active,
+            visible: () => document.visibilityState === 'visible',
+            audioRunning: () => (audio.ac as { state?: string } | null)?.state === undefined || (audio.ac as { state?: string }).state === 'running',
+            repeatKey: () => capOf('sonic.repeat') || 'Z',
+            say: (line) => void sayLine(line, false).catch(() => undefined)
+        }), () => audio.ac as { state?: string; resume?: () => Promise<void> } | null),
         // review F7: on a phone nothing typed Escape, so Repeat the task, Next step, Previous step and Next lesson had no way in. The pause
         // menu (the top bar's Pause button) has the lesson menu as an item while a lesson runs; it opens once the pause menu has let the
         // flight go (picking an item releases the pause menu's hold after the item runs: the lesson menu holds the flight itself)
@@ -597,5 +624,31 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         delete ctx.hook.sonicRays;
         hosts.delete(ctx);
         modes.delete(ctx);
+    };
+}
+
+/**
+ * The sound lost in a lesson (lane sonic-hints, sound-gap.ts): checked at every visibility change and once a second; a suspended
+ * context is asked to resume on the return and on the next key (a user activation). Returns what stops watching.
+ */
+function watchSoundGap(gap: SoundGap, ac: () => { state?: string; resume?: () => Promise<void> } | null): () => void {
+    const wake = (): void => {
+        const c = ac();
+        if (c?.state === 'suspended' && document.visibilityState === 'visible') void c.resume?.().catch(() => undefined);
+    };
+    const onVisibility = (): void => {
+        wake();
+        gap.check();
+    };
+    const onKey = (): void => {
+        if (gap.pending) wake();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    addEventListener('keydown', onKey, true);
+    const timer = setInterval(() => gap.check(), 1000);
+    return () => {
+        document.removeEventListener('visibilitychange', onVisibility);
+        removeEventListener('keydown', onKey, true);
+        clearInterval(timer);
     };
 }

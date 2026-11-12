@@ -4,11 +4,16 @@
 // lesson (the context stopped, the tab hidden) is said on the return, with the key that repeats the task.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createTranslator, getLesson } from '../../../packages/sonic-fpv/src';
-import { KEYMAP } from '../../../packages/prefs/src/keymap';
+import type { SpeechLine } from '../../../packages/sonic-fpv/src';
+import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src/keymap';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import { keyHintsChoice, keyHintsOn, setKeyHints } from '../../../apps/fly/src/sonic/key-hints';
 import { KeyNames } from '../../../apps/fly/src/sonic/key-names';
+import { LESSON_MENU_ITEMS, LessonMenu, homeKey } from '../../../apps/fly/src/sonic/lesson-menu';
+import type { HomePage, LessonMenuItem } from '../../../apps/fly/src/sonic/lesson-menu';
+import { keyHelpLines } from '../../../apps/fly/src/sonic/mode-keys';
+import { SoundGap } from '../../../apps/fly/src/sonic/sound-gap';
 import { mkStore } from '../../../packages/prefs/test/helpers';
 import { Rig } from './sonic-lesson-rig';
 
@@ -107,4 +112,113 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
         const tr = createTranslator('ru', engineDicts());
         expect(tr.text({ key: 'sonic.say.lessonKeys', params: { next: 'N', previous: 'B', repeat: 'Z', menu: 'Escape', home: 'X' } })).toContain('B назад');
     }, 120000);
+});
+
+const EN = createTranslator('en', engineDicts());
+
+describe('H2: the lesson menu names each item\'s key, and its first line says the same actions have keys without it', () => {
+    const KEYS: Partial<Record<LessonMenuItem, string>> = { resume: 'Escape', repeat: 'Z', 'next-step': 'N', 'previous-step': 'B', lessons: 'X' };
+    function menu(): { m: LessonMenu; said: SpeechLine[] } {
+        const said: SpeechLine[] = [];
+        const m = new LessonMenu({ say: async (l) => { said.push(l); }, text: (l) => EN.text(l), hold: () => undefined, readerSpeaks: () => false, keyOf: (i) => KEYS[i] ?? '', run: () => undefined, view: null });
+        return { m, said };
+    }
+
+    it('every item with a key says it after its name, on the button too (a screen reader reads it); the others as before', () => {
+        const { m } = menu();
+        expect(m.labels()).toEqual(['Resume, key Escape', 'Repeat the task, key Z', 'Next step, key N', 'Previous step, key B', 'Next lesson', 'Lesson list, key X', 'Sound settings', 'Leave the mode']);
+        expect(EN.text(m.itemLine(2))).toBe('Next step, key N. Item 3 of 8.');
+    });
+
+    it('opening: the menu\'s line says the actions have keys, then Resume with its key; in four languages', () => {
+        const { m, said } = menu();
+        m.open();
+        expect(EN.text(said[0]!)).toContain('The same actions have keys without the menu: each item says its key.');
+        expect(said[1]).toEqual({ key: 'menu.item', params: { label: 'Resume, key Escape', n: 1, total: LESSON_MENU_ITEMS.length } });
+        m.step(1);
+        expect(EN.text(said.at(-1)!)).toBe('Repeat the task, key Z. Item 2 of 8.');
+        const dicts = engineDicts();
+        for (const l of ['en', 'es', 'pl', 'ru'] as const) {
+            expect(dicts[l]['sonic.say.menuItemKey'], l).toMatch(/\{label\}.*\{key\}/);
+            expect(dicts[l]['sonic.say.menuOpen']!.length, l).toBeGreaterThan(dicts.en['sonic.say.menuTitle']!.length + 60);
+        }
+    });
+
+    it('the page names the items by its key table: Escape, Z, N, B and X as the router routes them on a mode\'s page', () => {
+        const names = pageNames();
+        expect([names.of('pause.toggle', 'Escape'), names.of('sonic.repeat'), names.of('scene.next'), names.of('feedback.open'), names.of('sonic.home')]).toEqual(['Escape', 'Z', 'N', 'B', 'X']);
+    });
+});
+
+describe('H3: X leaves a lesson for the main menu in one press, then says where the pilot is', () => {
+    it('X: the start screen, then "Main menu ... the lesson is saved" cutting what was said; a held key\'s repeats and X outside a lesson do nothing', () => {
+        const events: string[] = [];
+        let active = true;
+        const page: HomePage = { active: () => active, title: () => 'First rings', showScreen: () => { events.push('screen'); }, say: async (l, i) => { events.push(`${EN.text(l)} | ${i}`); } };
+        const press = homeKey(page);
+        press({ repeat: false });
+        expect(events).toEqual(['screen', 'Main menu of Fly by Sound. The lesson First rings is saved: Continue takes you back to it. | true']);
+        press({ repeat: true });
+        active = false;
+        press({ repeat: false });
+        expect(events).toHaveLength(2);
+        const ru = createTranslator('ru', engineDicts());
+        expect(ru.text({ key: 'sonic.say.homeBack', params: { title: 'X' } })).toContain('Главное меню');
+    });
+
+    it('X is the mode\'s key (only on a page entered through ?sonic=), free of every other binding; K names it', () => {
+        expect(actionFor({ code: 'KeyX', shiftKey: false }, 'flight', { sonic: true })).toBe('sonic.home');
+        expect(actionFor({ code: 'KeyX', shiftKey: false }, 'flight')).toBeNull();
+        expect(keymapProblems(KEYMAP)).toEqual([]);
+        expect(keyHelpLines((a, aria) => pageNames().of(a, aria))).toContainEqual({ key: 'sonic.say.helpHome', params: { key: 'X' } });
+    });
+});
+
+describe('H4: the sound lost in a lesson is said on the return, with the key that repeats the task', () => {
+    function gap(): { g: SoundGap; said: SpeechLine[]; s: { lesson: boolean; visible: boolean; running: boolean } } {
+        const s = { lesson: true, visible: true, running: true };
+        const said: SpeechLine[] = [];
+        const g = new SoundGap({ lessonActive: () => s.lesson, visible: () => s.visible, audioRunning: () => s.running, repeatKey: () => 'Z', say: (l) => { said.push(l); } });
+        return { g, said, s };
+    }
+
+    it('the tab hidden in a lesson: on the return one line, "The sound was interrupted. Press Z ..."; checks after it say nothing', () => {
+        const { g, said, s } = gap();
+        g.check();
+        expect(said).toEqual([]);
+        s.visible = false;
+        g.check();
+        g.check();
+        expect(g.pending).toBe(true);
+        expect(said).toEqual([]);
+        s.visible = true;
+        g.check();
+        g.check();
+        expect(said).toEqual([{ key: 'sonic.say.soundBack', params: { key: 'Z' } }]);
+        expect(EN.text(said[0]!)).toBe('The sound was interrupted. Press Z to hear this step\'s task again.');
+    });
+
+    it('the context stopped while visible: said once it runs again; control: a gap with no lesson open, or a lesson closed meanwhile, says nothing', () => {
+        const { g, said, s } = gap();
+        s.running = false;
+        g.check();
+        s.running = true;
+        g.check();
+        expect(said).toHaveLength(1);
+        const b = gap();
+        b.s.lesson = false;
+        b.s.visible = false;
+        b.g.check();
+        b.s.visible = true;
+        b.g.check();
+        expect(b.said).toEqual([]);
+        const c = gap();
+        c.s.visible = false;
+        c.g.check();
+        c.s.lesson = false;
+        c.s.visible = true;
+        c.g.check();
+        expect(c.said).toEqual([]);
+        for (const l of ['en', 'es', 'pl', 'ru'] as const) expect(engineDicts()[l]['sonic.say.soundBack'], l).toContain('{key}');
+    });
 });

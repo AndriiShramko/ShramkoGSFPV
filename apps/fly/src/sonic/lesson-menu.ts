@@ -65,6 +65,11 @@ export interface LessonMenuDeps {
     hold(on: boolean): void;
     /** "my screen reader speaks": the reader reads the focused item, the mode's voice does not say it again */
     readerSpeaks(): boolean;
+    /**
+     * The pilot's name of the key that does an item without the menu ('' when none; lane sonic-hints, the owner's complaint of
+     * 2026-11-10): the item says it after its name ("Next step, key N"), on the button too, so a screen reader reads it as well.
+     */
+    keyOf?(item: LessonMenuItem): string;
     /** what an item does once the menu is down; `code`: the key that chose it */
     run(item: LessonMenuItem, code: string): void;
     readonly view: LessonMenuView | null;
@@ -90,13 +95,20 @@ export class LessonMenu {
 
     /** The items' labels in the pilot's language, in order. */
     labels(): string[] {
-        return LESSON_MENU_ITEMS.map((id) => this.d.text({ key: ITEM_LINES[id] }));
+        return LESSON_MENU_ITEMS.map((id) => this.label(id));
+    }
+
+    /** An item's words, with the key that does it without the menu when it has one ("Next step, key N"). */
+    private label(id: LessonMenuItem): string {
+        const label = this.d.text({ key: ITEM_LINES[id] });
+        const key = this.d.keyOf?.(id) ?? '';
+        return key === '' ? label : this.d.text({ key: 'sonic.say.menuItemKey', params: { label, key } });
     }
 
     /** "Repeat the task. Item 2 of 8.": the item and its place, as the voice says it on focus. */
     itemLine(index: number): SpeechLine {
         const id = LESSON_MENU_ITEMS[index] as LessonMenuItem;
-        return { key: 'menu.item', params: { label: this.d.text({ key: ITEM_LINES[id] }), n: index + 1, total: LESSON_MENU_ITEMS.length } };
+        return { key: 'menu.item', params: { label: this.label(id), n: index + 1, total: LESSON_MENU_ITEMS.length } };
     }
 
     /** Escape in a lesson: the flight and the lesson wait, the menu is drawn and said, the focus on Resume. */
@@ -322,6 +334,34 @@ export function runItem(page: LessonMenuPage): (item: LessonMenuItem, code: stri
                 page.leave();
                 return;
         }
+    };
+}
+
+/** What X needs of the page (sonic/feature.ts; Node tests pass fakes). */
+export interface HomePage {
+    /** a lesson is open and nothing else (a dialog, the pause menu, the lesson menu) has the keys */
+    active(): boolean;
+    /** the lesson's title in the pilot's language */
+    title(): string;
+    /** the mode's start screen (its main menu) over the lesson, which waits, saved (the lesson menu's Lesson list does the same) */
+    showScreen(): void;
+    say(line: SpeechLine, interrupt: boolean): Promise<void>;
+}
+
+/**
+ * X in a lesson (lane sonic-hints, the owner's complaint of 2026-11-10: back to the main menu without scrolling a menu): the start
+ * screen in one press, then where the pilot is: "Main menu of Fly by Sound. The lesson ... is saved: Continue takes you back to it."
+ * A held key's repeats do nothing. The lesson menu's Lesson list goes the same way (goHome).
+ */
+export function goHome(page: HomePage): void {
+    const title = page.title();
+    page.showScreen();
+    void page.say({ key: 'sonic.say.homeBack', params: { title } }, true).catch(() => undefined);
+}
+
+export function homeKey(page: HomePage): (e: Pick<KeyboardEvent, 'repeat'>) => void {
+    return (e) => {
+        if (!e.repeat && page.active()) goHome(page);
     };
 }
 
