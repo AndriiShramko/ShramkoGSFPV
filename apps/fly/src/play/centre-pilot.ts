@@ -8,7 +8,9 @@
 //   - angle (DJI's N): 'velocity' control with altitude 'hold' (GameAssist, play/game.ts): the sticks ask a speed, let
 //     go the loop brakes and hovers, the left stick asks a climb or sink speed and its centre holds the height;
 //   - horizon (DJI's S): the pilot's own sticks in horizon, the altitude help (AltitudeHelp, play/assist.ts) on the throttle;
-//   - acro (DJI's M): the throttle is raw: its centre is half power (the HUD says so).
+//   - acro (DJI's M): the throttle is raw: its centre is half power (the HUD says so). So in acro a stick move does not
+//     start the motors: the throttle stick lowered all the way down does (review m6), they start at idle and the stick
+//     sets the power from there, the FPV way without an arm switch.
 // The caps are the game scheme's speed (prefs input.gameSpeed, GAME_SPEEDS) and the turn keys' rate (KEY_TURN_DPS).
 // Motors: AutoArm (via LessonPilot) starts them with the first deliberate move (a stick out of STICK_DEADBAND, or the
 // throttle above START_LIFT) and nothing has to be armed; landing (hold the stick down on the ground) stops them in
@@ -45,6 +47,9 @@ export function centreAssists(mode: FlightMode, speed: GameSpeed): LessonAssists
     return { control: 'acro', altitude: 'own', ...base };
 }
 
+/** Acro's start mark: the arm gate's own throttle-low mark (<= 5 %, ArmGate in @gsfpv/input), as a channel value. */
+export const ACRO_START_LOW = -0.9;
+
 export class CentrePilot {
     readonly pilot: LessonPilot;
     private mode: FlightMode;
@@ -52,6 +57,8 @@ export class CentrePilot {
     private lastSw: boolean | null = null;
     /** the motors were stopped by the arm input: the sticks are read as let go until they come back to the centre */
     private hush = false;
+    /** acro: the throttle stick was at the bottom on the last frame (null: no frame yet, so a stick resting there starts nothing) */
+    private wasLow: boolean | null = null;
     private readonly quiet = new Float32Array(8);
 
     constructor(private readonly env: CentreEnv) {
@@ -70,6 +77,7 @@ export class CentrePilot {
         this.pilot.reset();
         this.lastSw = null;
         this.hush = false;
+        this.wasLow = null;
     }
 
     /** A new life or scene: the loops start again from the craft's new state. */
@@ -95,6 +103,16 @@ export class CentrePilot {
         }
         this.lastSw = sw;
         let src: Float32Array = ch;
+        const low = ch[2] <= ACRO_START_LOW;
+        if (mode === 'acro' && !this.pilot.arm.want) {
+            // the raw throttle would start at the stick's centre (half power): only the stick brought down to the bottom
+            // starts the motors (an edge: a stop pressed with the stick down does not start them again)
+            if (low && this.wasLow === false && !this.hush) this.pilot.arm.request();
+            this.quiet.set(ch);
+            this.quiet[0] = 0; this.quiet[1] = 0; this.quiet[2] = 0; this.quiet[3] = 0;
+            src = this.quiet;
+        }
+        this.wasLow = low;
         if (this.hush) {
             if (flyingIntent(intentsOf(ch))) {
                 this.quiet.set(ch);

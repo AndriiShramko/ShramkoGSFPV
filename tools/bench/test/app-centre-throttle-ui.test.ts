@@ -1,4 +1,4 @@
-// Lane center-throttle, stage 2 (docs/wip/center-throttle.md 2, the five places): the screens of the left stick's style.
+// Lane center-throttle, stage 2 (docs/wip/center-throttle.md 2, the five places): the screens of the throttle stick's style.
 //  - the arm card's offer (ui/arm-offer-logic.ts): shown after the throttle has rested in the centre for 3 s while the
 //    gate waits for it in the from-zero style; not after 2.5 s, not while the stick moves, not at the bottom, not in the
 //    centred style, not for another block; a press of the controller's toggle button (Controls.armPresses) takes it while
@@ -150,6 +150,24 @@ describe('the HUD: the offer on the arm card, the arm input takes it, the acro l
         expect(root.querySelector('ol')?.hidden).toBe(true);
         expect(root.querySelector('.reason')?.textContent).toContain('no arming needed');
     });
+    it('review m2: centred, the gate blocked on its switch: the spoken line and the card say no arming, no "To arm" heading; acro says lower the stick', () => {
+        let acro = false;
+        const { hud, root } = hudWith(() => 'centred', () => acro);
+        frames(hud, 0, 400, djiView(), 'switch' as never);
+        expect(root.querySelector('.gate-msg')?.textContent).toContain('no arming needed');
+        expect(root.querySelector('h3')?.hidden).toBe(true);
+        acro = true;
+        frames(hud, 433, 800, djiView(), 'switch' as never);
+        expect(root.querySelector('.gate-msg')?.textContent).toContain('lower the throttle stick all the way down');
+        expect(root.querySelector('.reason')?.textContent).toContain('lower the throttle stick all the way down');
+    });
+    it('control (m2): from zero, the same block: the arm steps, the heading and the switch line', () => {
+        const { hud, root } = hudWith(() => 'zero');
+        frames(hud, 0, 400, djiView(), 'switch' as never);
+        expect(root.querySelector('.gate-msg')?.textContent).not.toContain('no arming needed');
+        expect(root.querySelector('h3')?.hidden).not.toBe(true);
+        expect(root.querySelector('h3')?.textContent).toBe('To arm');
+    });
     it('the centred style in acro: one line that the throttle is direct; angle: none', () => {
         let acro = true;
         const { hud, root } = hudWith(() => 'centred', () => acro);
@@ -169,7 +187,7 @@ describe('the HUD chip, the summary chip, the how-to-fly card', () => {
         const picked: string[] = [];
         const chip = new MC.ModeChip({
             current: () => 'angle', radio: () => null, pick: () => undefined, caps: [{ cap: 'M', aria: 'M' }] as never,
-            throttle: { now: () => ({ style, pending: false }), pick: (s) => { picked.push(s); style = s; }, caps: [{ cap: 'J', aria: 'J' }] as never }
+            throttle: { now: () => ({ style, next: null }), pick: (s) => { picked.push(s); style = s; }, caps: [{ cap: 'J', aria: 'J' }] as never }
         });
         const el = chip.el as unknown as FakeElement;
         expect(el.querySelector('[data-testid="mode-chip-throttle"]')?.textContent).toBe('Stick in the centre');
@@ -178,12 +196,21 @@ describe('the HUD chip, the summary chip, the how-to-fly card', () => {
         expect(el.querySelector('[data-testid="mode-chip-throttle"]')?.textContent).toBe('From zero');
         expect(el.querySelector('[data-action="throttle-zero"]')?.getAttribute('aria-checked')).toBe('true');
     });
+    it('review m4: a change waiting for the landing: the chip shows the style flying, then the next one, and checks the next', () => {
+        const chip = new MC.ModeChip({
+            current: () => 'angle', radio: () => null, pick: () => undefined, caps: [] as never,
+            throttle: { now: () => ({ style: 'centred', next: 'zero' }), pick: () => undefined, caps: [] as never }
+        });
+        const el = chip.el as unknown as FakeElement;
+        expect(el.querySelector('[data-testid="mode-chip-throttle"]')?.textContent).toBe('Stick in the centre · then From zero');
+        expect(el.querySelector('[data-action="throttle-zero"]')?.getAttribute('aria-checked')).toBe('true');
+    });
     it('control: with no radio or gamepad the chip has no style line', () => {
         const chip = new MC.ModeChip({ current: () => 'angle', radio: () => null, pick: () => undefined, caps: [] as never, throttle: { now: () => null, pick: () => undefined, caps: [] as never } });
         expect((chip.el as unknown as FakeElement).querySelector('[data-testid="mode-chip-throttle"]')?.hidden).toBe(true);
     });
     it('the summary panel says the style; none for touch and keyboard', () => {
-        expect((SM.throttleChip('centred') as unknown as FakeElement).textContent).toBe('Left stick: Stick in the centre (camera drone)');
+        expect((SM.throttleChip('centred') as unknown as FakeElement).textContent).toBe('Throttle stick: Stick in the centre (camera drone)');
         expect(SM.throttleChip(null)).toBeNull();
     });
     it('the how-to-fly card: the centred style replaces the arm row with its own line and J', () => {
@@ -202,7 +229,7 @@ describe('the Controls / check screen row', () => {
         const row = R.throttleStyleRow(p, { save: false });
         const el = row.el as unknown as FakeElement;
         expect(el.getAttribute('data-style')).toBe('centred');
-        expect(el.querySelector('[data-testid="throttle-style-title"]')?.textContent).toBe('Left stick: Stick in the centre (camera drone). Chosen automatically: your left stick rests in the centre.');
+        expect(el.querySelector('[data-testid="throttle-style-title"]')?.textContent).toBe('Throttle stick: Stick in the centre (camera drone). Chosen automatically: your throttle stick rests in the centre.');
         (el.querySelector('[data-action="throttle-style-zero"]') as FakeElement).click();
         expect(p.throttleStyle).toBe('zero');
         expect(el.getAttribute('data-style')).toBe('zero');

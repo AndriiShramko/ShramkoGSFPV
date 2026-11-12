@@ -49,15 +49,19 @@ export const modes: Feature = {
             // the pilot's choice: stored, and over any ?set.flight.mode= of this load (it no longer describes the flight)
             pick: (m) => { prefs.set('flight.mode', m); prefs.clearSession('flight.mode'); },
             caps: ctx.keys.caps('mode.cycle'),
-            // lane center-throttle: the left stick's style of the radio or gamepad in use (the one waiting for the motors to stop, if any)
+            // lane center-throttle: the throttle stick's style of the radio or gamepad in use, and the one waiting for the motors to stop
             throttle: {
                 now: () => {
                     const src = ctx.controls.source;
                     if (src !== 'hid' && src !== 'gamepad') return null;
                     const ts = ctx.input.throttleStyle;
-                    return { style: ts.pending ?? ts.now, pending: ts.pending !== null };
+                    return { style: ts.now, next: ts.pending };
                 },
-                pick: (st) => prefs.set('input.throttleStyle', st),
+                pick: (st) => {
+                    prefs.set('input.throttleStyle', st);
+                    // as J does: a change in flight waits for the motors to stop, and says so (review m4)
+                    if (ctx.input.throttleStyle.pending) ctx.hud.flash(t('throttle.afterLanding', { style: t(`set.input.throttleStyle.opt.${st}`) }), 3000);
+                },
                 caps: ctx.keys.caps('throttle.style')
             }
         });

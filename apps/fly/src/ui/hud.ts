@@ -36,6 +36,7 @@ class ArmCard {
     readonly disarm: HTMLButtonElement;
     private art = radioArt({ mini: true });
     private list: HTMLOListElement;
+    private title: HTMLElement;
     private reason = h('p', { class: 'reason' });
     private rows: { li: HTMLLIElement; text: HTMLSpanElement }[] = [];
     private armBtn: HTMLButtonElement;
@@ -65,11 +66,12 @@ class ArmCard {
             h('p', {}, t('throttle.offer.fpv')),
             h('button', { type: 'button', class: 'btn primary', 'data-action': 'throttle-centred', 'aria-keyshortcuts': 'J', onclick: () => onCentred() }, t('throttle.offer.button')),
             this.offerKeys);
-        this.el = h('div', { class: 'arm-card hidden' }, this.art.el, h('div', {}, h('h3', {}, t('arm.card.title')), this.list, this.reason, this.offer));
+        this.title = h('h3', {}, t('arm.card.title'));
+        this.el = h('div', { class: 'arm-card hidden' }, this.art.el, h('div', {}, this.title, this.list, this.reason, this.offer));
         this.disarm = h('button', { type: 'button', class: 'btn arm-disarm hidden', 'data-action': 'hud-disarm', onclick: () => onArm() }, t('arm.disarmKey'));
     }
 
-    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock, offer = false, centred = false): void {
+    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock, offer = false, centred = false, acro = false): void {
         const screenOpen = !!document.querySelector('.screen.radio');
         const key = v?.armKind === 'key';
         this.disarm.classList.toggle('hidden', !(v && key && armed && !crashed && !screenOpen));
@@ -89,8 +91,10 @@ class ArmCard {
         const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
         const plain = reasonOnly || centred;
         this.list.hidden = plain;
+        // the centred style has nothing to arm: no "To arm" heading over its one line (review m2)
+        this.title.hidden = centred && !reasonOnly;
         this.art.el.style.display = plain ? 'none' : '';
-        this.reason.textContent = reasonOnly ? t(`arm.blocked.${block}`) : centred ? t('throttle.card.centred') : '';
+        this.reason.textContent = reasonOnly ? t(`arm.blocked.${block}`) : centred ? t(acro ? 'throttle.card.acro' : 'throttle.card.centred') : '';
         this.el.classList.toggle('centred', centred && !reasonOnly);
         if (plain) return;
         const ch = v.ch;
@@ -176,8 +180,12 @@ class KeyCard {
 }
 
 /** The arm hint in the words of the input in use: keyboard and touch pilots have no arm switch. */
-function gateText(block: Exclude<ArmBlock, null>, v: ArmView | undefined): string {
+function gateText(block: Exclude<ArmBlock, null>, v: ArmView | undefined, centred = false, acro = false): string {
     const src = v?.source ?? null;
+    // the centred style (lane center-throttle): the gate is fed the start of the motors, its 'switch' is not the pilot's;
+    // the spoken line says what the card says (review m2)
+    const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
+    if (centred && !reasonOnly && (src === 'hid' || src === 'gamepad')) return t(acro ? 'throttle.card.acro' : 'throttle.card.centred');
     // easy play (v0.8): no arming; the first flying key or touch starts the motors
     if (v?.easy && block !== 'hidden' && block !== 'stale') return t(src === 'touch' ? 'play.gate.touch' : 'play.gate.keys');
     if (src === 'keyboard') {
@@ -400,13 +408,13 @@ export class Hud {
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
         const kbd = src === 'keyboard';
-        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block, this.offerShown, style === 'centred');
         const acro = style === 'centred' && !!this.throttle?.acro();
+        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block, this.offerShown, style === 'centred', acro);
         if (this.acroLine.hidden === acro) this.acroLine.hidden = !acro;
         if (acro && !this.acroLine.textContent) this.acroLine.textContent = t('throttle.acro');
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
-        const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';
+        const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view, style === 'centred', acro) : '';
         // the pilot keyboard's ground card; the game scheme's keys are on the "How to fly" card (app/builtin/how-to-fly.ts)
         const keyCard = kbd && !view?.game && say !== '' && !document.querySelector('.screen.radio');
         const easy = !!view?.easy;

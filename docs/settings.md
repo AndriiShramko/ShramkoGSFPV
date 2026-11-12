@@ -91,7 +91,7 @@ Everything you can change in [ShramkoGSFPV](https://gsfpv.flyreelstudio.eu), the
 | **Mouse sensitivity (game keys)**<br>`input.mouseSensitivity` | How far the drone turns and the camera tilts for a movement of the mouse. 1 is 0.1 degrees for each pixel of movement. Works with the game keys, while the mouse is captured (click on the view). | 1× | 0.25–3× | global |  |
 | **Invert the mouse up and down**<br>`input.mouseInvertY` | Off: moving the mouse away from you looks up, as in most games. On: it looks down, like a flight stick pulled back. | Off |  | global |  |
 | **Flight speed (game keys)**<br>`input.gameSpeed` | How fast W A S D and Space / Shift fly: slow 4 m/s across and 3 m/s up, normal 8 and 5, fast 14 and 8. A small drone cannot always reach the fast speed: it flies as fast as its tilt and the air allow. | Normal | Slow · Normal · Fast | global |  |
-| **Left stick (radio, gamepad)**<br>`input.throttleStyle` | Stick in the centre (camera drone): the left stick springs to the centre: centre holds the height, up climbs, down descends. Let go and the drone stops and hovers. The motors start when you move a stick. From zero (FPV): as FPV pilots fly: the motors start (this is called arming) only with the left stick all the way down, and the stick sets the motors' power. Automatic chooses by where your stick rests. Saved for each controller; J switches it. Touch and the keyboard always fly without arming. | Automatic (by where your stick rests) | Automatic (by where your stick rests) · Stick in the centre (camera drone) · From zero (FPV) | global | `J` |
+| **Throttle stick (radio, gamepad)**<br>`input.throttleStyle` | Stick in the centre (camera drone): the throttle stick springs to the centre: centre holds the height, up climbs, down descends. Let go and the drone stops and hovers. The motors start when you move a stick. From zero (FPV): as FPV pilots fly: the motors start (this is called arming) only with the throttle stick all the way down, and the stick sets the motors' power. Automatic chooses by where your stick rests. Saved for each controller; J switches it. Touch and the keyboard always fly without arming. | Automatic (by where your stick rests) | Automatic (by where your stick rests) · Stick in the centre (camera drone) · From zero (FPV) | global | `J` |
 | **Show "How to fly" when a scan opens**<br>`input.howToFly` | A card with the keys, or the sticks, of the input you fly with: for a keyboard, Space up and Shift down, with the mouse and W A S D. It shows once each time you open the simulator. "Do not show again" on the card switches it off here too; K or the pause menu bring it back whenever you want. | On |  | global |  |
 
 ## Drone & physics
@@ -182,7 +182,7 @@ The simulator shows each key next to its menu item.
 | `L` | Share this scene |
 | `K` | How to fly (the keys card) |
 | `F` | Full screen on / off |
-| `J` | Left stick: in the centre (camera drone) or from zero (FPV) |
+| `J` | Throttle stick: in the centre (camera drone) or from zero (FPV) |
 
 ### Keyboard flying
 

@@ -219,13 +219,33 @@ describe('the controller\'s mode switch keeps working', () => {
         r.run(2000, () => { dy = Math.max(dy, Math.abs(r.y - y0)); });
         expect(dy).toBeLessThan(0.5);
     });
-    it('acro (DJI M): the throttle is raw, the centre is half power', () => {
+    it('acro (DJI M): a stick nudge with the throttle in the centre starts nothing (no half power on the ground)', () => {
         const r = new Rig('centred', 'acro');
         r.run(300);
         r.sticks.yaw = 0.5;
-        r.run(600);
+        r.run(900);
         r.sticks.yaw = 0;
+        r.run(300);
+        expect(r.sim.armed).toBe(false);
+        expect(Math.max(...r.sent.map((x) => x.ch[2]))).toBeLessThanOrEqual(-0.99);
+    });
+    it('acro (DJI M): a stop pressed with the throttle at the bottom does not start the motors again', () => {
+        const r = new Rig('centred', 'acro');
+        r.run(300);
+        r.sticks.thr = -1;
+        r.run(600);
         expect(r.sim.armed).toBe(true);
+        r.press();
+        r.run(600);
+        expect(r.sim.armed).toBe(false);
+    });
+    it('acro (DJI M): the throttle lowered to the bottom starts the motors at idle, then the throttle is raw', () => {
+        const r = new Rig('centred', 'acro');
+        r.run(300);
+        r.sticks.thr = -1;
+        r.run(600);
+        expect(r.sim.armed).toBe(true);
+        expect(r.sent[r.sent.length - 1].ch[2]).toBeLessThanOrEqual(-0.99);
         r.sticks.thr = 0.2;
         r.run(40);
         const last = r.sent[r.sent.length - 1].ch;

@@ -28,7 +28,8 @@ export interface ModeChipHost {
      * in the popover. `now` null: no radio or gamepad (touch, keyboard), the line and the choices are not shown.
      */
     throttle?: {
-        now(): { style: 'centred' | 'zero'; pending: boolean } | null;
+        /** style: the one flying; next: a choice waiting for the motors to stop (review m4: the chip says both) */
+        now(): { style: 'centred' | 'zero'; next: 'centred' | 'zero' | null } | null;
         pick(s: 'centred' | 'zero'): void;
         /** the keys of throttle.style (the keymap's J) */
         caps: readonly KeyHint[];
@@ -102,7 +103,7 @@ export class ModeChip {
         const m = this.host.current();
         const radio = this.host.radio();
         const ts = this.host.throttle?.now() ?? null;
-        const key = `${m}|${radio ?? ''}|${ts ? `${ts.style}${ts.pending ? '*' : ''}` : ''}`;
+        const key = `${m}|${radio ?? ''}|${ts ? `${ts.style}>${ts.next ?? ''}` : ''}`;
         if (key === this.shown) return;
         this.shown = key;
         this.label.textContent = t(`mode.${m}`);
@@ -111,11 +112,11 @@ export class ModeChip {
         this.btn.dataset.mode = m;
         this.btn.classList.toggle('radio', radio !== null);
         this.thr.hidden = ts === null;
-        this.thr.textContent = ts ? t(`throttle.short.${ts.style}`) : '';
+        this.thr.textContent = ts ? t(`throttle.short.${ts.style}`) + (ts.next ? ` · ${t('throttle.chip.then', { style: t(`throttle.short.${ts.next}`) })}` : '') : '';
         this.btn.setAttribute('data-throttle', ts?.style ?? '');
         if (this.thrGroup) this.thrGroup.hidden = ts === null;
-        for (const i of this.thrItems) i.b.setAttribute('aria-checked', String(ts?.style === i.s));
-        const thrAria = ts ? `. ${t('throttle.chip.aria', { style: t(`set.input.throttleStyle.opt.${ts.style}`) })}` : '';
+        for (const i of this.thrItems) i.b.setAttribute('aria-checked', String((ts?.next ?? ts?.style) === i.s));
+        const thrAria = ts ? `. ${t('throttle.chip.aria', { style: t(`set.input.throttleStyle.opt.${ts.style}`) })}${ts.next ? `, ${t('throttle.chip.then', { style: t(`set.input.throttleStyle.opt.${ts.next}`) })}` : ''}` : '';
         this.btn.setAttribute('aria-label', `${t('mode.chip.aria', { mode: t(`mode.${m}`) })}${radio ? `. ${t('mode.radioDecides', { src: radio })}` : ''}${thrAria}`);
         this.btn.title = radio ? t('mode.radioDecides', { src: radio }) : t('mode.chip.title');
         this.note.hidden = radio === null;
