@@ -13,6 +13,11 @@ Two lanes go out in one release. Stage 1: merge, gates, local probes, push (no d
 - [x] S1.7 local release (dist of eda10673, sonic 83ce612) probes, all pass (numbers below)
 - [x] S1.8 lead note complete
 - [x] S1.9 pushed main 6f335947..7a6c8508 (code and evidence; this status line is a later docs commit). Stage 2 deploys the latest pushed main
+- [x] S2.1 verify: local main = origin/main = 2cc8e2334eefc5aad1248c07a8556545e181802b (not moved), package origin/main 83ce612; gates passed for this tree (commits after eda10673 are probes and docs). API: `git diff 57d461c..HEAD -- apps/api` is tests only, no release-api.sh. centre-throttle-probe: one extra screenshot `-dji-flip-offer.png` while the arm card offers (evidence only, local commit, pushed with the docs after the release)
+- [ ] S2.2 nginx: `bash deploy/release-nginx.sh`
+- [ ] S2.3 ship: `bash deploy/ship.sh 2cc8e233`
+- [ ] S2.4 live checks: release.json, headers, accept-fly, R9, centre-throttle-probe, sound start screen setting
+- [ ] S2.5 records: STATE.md, lane status files, push docs
 
 ## Commits on main (stage 1)
 

@@ -141,6 +141,8 @@ for (const run of RUNS.filter((r) => !only || only.includes(r.name))) {
             const s2 = await state();
             note.rested = s2;
             checks.offerAfterRest = s2.offer;
+            // evidence picture of the arm card while it offers the centred style (before the stick goes up)
+            await page.screenshot({ path: outFile.replace(/\.json$/, '-dji-flip-offer.png') }).catch(() => undefined);
             await hand({ T: 0.6 });
             await page.waitForTimeout(2000);
             const s3 = await state();
