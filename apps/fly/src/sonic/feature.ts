@@ -28,6 +28,7 @@ import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, Sessio
 import { FlightSession } from '../session';
 import { copyText } from '../share/clipboard';
 import { KeyHelp, keyHelpLines, lessonLink, shareLesson } from './mode-keys';
+import { keyHintsOn } from './key-hints';
 import { KeyNames } from './key-names';
 import { ProgressPanel, followProgress, progressNow } from './progress-panel';
 import { DomLessonMenuView, LessonMenu, pauseKey, runItem } from './lesson-menu';
@@ -185,6 +186,7 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         // the runner's lines name N, B and Z as the pilot's keyboard types them (key-names.ts), and wait for lines at his speaking speed
         keyNames: () => names.runner(),
         lessonKeys: () => names.lessonStart(),
+        keyHints: () => keyHintsOn(entry.setup.host),
         speechRate: () => entry.setup.prefs.speechRate,
         session: () => ctx.session,
         // a lesson with other walls: the flown session is replaced, the way the scene host replaces a scan (app/scene-host.ts),

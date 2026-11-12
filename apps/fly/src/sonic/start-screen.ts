@@ -36,6 +36,8 @@ import { SpokenList } from './spoken-list';
 import type { SpokenAnchor, SpokenItem } from './spoken-list';
 import { buildModel, lessonPlace } from './start-model';
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
+import { KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
+import type { KeyHintsChoice } from './key-hints';
 import { LOOK_PANELS, LOOK_PANEL_LABELS, panelOn, setPanel } from './look-prefs';
 import type { LookPanel } from './look-prefs';
 import './sonic.css';
@@ -574,7 +576,12 @@ export class StartScreen {
             select('sonic-frame', this.key('menu.setting.frame'), prefs.listenerFrame, [['heading', this.key('menu.value.heading')], ['body', this.key('menu.value.body')]], (v, said) => this.change({ listenerFrame: v as SonicPrefs['listenerFrame'] }, said)),
             // v0.13 (v13-int step 3; lane v13-look): the sound panel and the attitude display, each on unless the pilot turns it off; kept in
             // the collection beside the sound settings (look-prefs.ts), and the panels follow a change at once
-            ...LOOK_PANELS.map((which) => check(`sonic-look-${which}`, t(LOOK_PANEL_LABELS[which]), panelOn(this.d.setup.host, which), (v, said) => this.panel(which, v, said)))
+            ...LOOK_PANELS.map((which) => check(`sonic-look-${which}`, t(LOOK_PANEL_LABELS[which]), panelOn(this.d.setup.host, which), (v, said) => this.panel(which, v, said))),
+            // lane sonic-hints: the line of keys at every lesson step, brief or off (key-hints.ts)
+            select('sonic-key-hints', t('sonic.settings.keyHints'), keyHintsChoice(this.d.setup.host), KEY_HINTS_CHOICES.map((c) => [c, t(`sonic.settings.keyHints.${c}`)]), (v, said) => {
+                setKeyHints(this.d.setup.host, v as KeyHintsChoice);
+                this.sayValue(said);
+            })
         ];
         this.stop(summary, () => t('sonic.settings.layers'));
         const layerRows = LAYER_IDS.map((id: LayerId) => {

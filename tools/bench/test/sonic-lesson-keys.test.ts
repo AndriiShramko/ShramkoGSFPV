@@ -547,7 +547,7 @@ describe('B5 (W8): the runner pauses and resumes where the session\'s pause and 
         hold(r, false);
         expect(r.engine.speaking).toBe(true);
         expect(ends(r)).toHaveLength(ends0);
-        await r.run(10000, null, () => ends(r).length > ends0);
+        await r.run(20000, null, () => ends(r).length > ends0);
         expect(ends(r)).toHaveLength(ends0 + 1);
         expect(r.engine.speaking).toBe(false);
     }, 120000);
@@ -845,8 +845,8 @@ describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every les
         const r = await open('rings-first', (rr) => { rr.lessonKeys = names.lessonStart(); });
         const first = r.engine.said.slice(0, 2);
         expect(first[0]).toMatchObject({ line: getLesson('rings-first').title });
-        expect(first[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys', params: { menu: 'Escape', repeat: 'Y', next: 'N' } }, interrupt: false });
-        expect(first[1]!.text).toBe('Escape: menu. Y: repeat the task. N: next.');
+        expect(first[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys', params: { menu: 'Escape', repeat: 'Y', next: 'N', previous: 'B', home: 'X' } }, interrupt: false });
+        expect(first[1]!.text).toBe('Keys: N next, B back, Y repeat, Escape menu, X main menu.');
         expect(r.engine.said.filter((s) => s.line.key === 'sonic.say.lessonKeys')).toHaveLength(1);
         await r.run(1000, null);
         const before = r.engine.said.length;
@@ -858,7 +858,7 @@ describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every les
         const dicts = engineDicts();
         for (const l of ['en', 'es', 'pl', 'ru'] as const) {
             const text = dicts[l]['sonic.say.lessonKeys'];
-            for (const k of ['{menu}', '{repeat}', '{next}']) expect(text, `${l} ${k}`).toContain(k);
+            for (const k of ['{menu}', '{repeat}', '{next}', '{previous}', '{home}']) expect(text, `${l} ${k}`).toContain(k);
             for (const id of LESSON_MENU_ITEMS) expect(dicts[l][`sonic.say.menu${id.split('-').map((w) => w[0]!.toUpperCase() + w.slice(1)).join('')}`], `${l} ${id}`).toBeTruthy();
             for (const k of ['sonic.say.menuOpen', 'sonic.say.menuTitle', 'sonic.say.helpMenu']) expect(dicts[l][k], `${l} ${k}`).toBeTruthy();
         }

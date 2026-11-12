@@ -63,6 +63,8 @@ export interface SonicState {
      */
     soundPanel?: boolean;
     attitude?: boolean;
+    /** lane sonic-hints: the short line of keys at the start of every lesson step; absent means on, false is the pilot's "off" */
+    keyHints?: boolean;
 }
 
 export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState; sonic: SonicState }
@@ -315,6 +317,8 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
             // the panels' switches (v0.13 v13-look): kept when a boolean, else left out (shown)
             if (typeof o.soundPanel === 'boolean') sonic.soundPanel = o.soundPanel;
             if (typeof o.attitude === 'boolean') sonic.attitude = o.attitude;
+            // the keys line at every step (lane sonic-hints): kept when a boolean, else left out (on)
+            if (typeof o.keyHints === 'boolean') sonic.keyHints = o.keyHints;
             return sonic as Collections[K];
         }
     }

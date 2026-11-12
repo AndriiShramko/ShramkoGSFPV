@@ -65,6 +65,8 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
 ];
 /** Keys shipped for Fly by Sound (v0.12, docs/wip/v12-plan.md sections 1 and 3): bound at step 0, handled by the lanes' features. */
 const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
+/** Lane sonic-hints: X leaves a lesson for the mode's main menu (sonic/feature.ts). Every key of the mode: */
+const MODE_KEYS: readonly string[] = [...SHIPPED_IN_V12, 'sonic.home'];
 
 /** Keys added after the design table, by the agent whose feature handles them. */
 const ADDED_AFTER_DESIGN: Record<string, string[]> = {
@@ -79,7 +81,9 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'sonic.send': ['U'],
     'sonic.status': ['I'],
     'sonic.repeat': ['Z'],
-    'sonic.glossary': ['G']
+    'sonic.glossary': ['G'],
+    // lane sonic-hints: X, the mode's main menu from a lesson
+    'sonic.home': ['X']
 };
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
@@ -123,7 +127,7 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 and v0.12 shipped)', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...SHIPPED_IN_V12].sort());
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS].sort());
     });
 
     it('Fly by Sound\'s T U I Z G route in flight and while crashed on a page entered through ?sonic=, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
@@ -137,7 +141,7 @@ describe('v0.2 keys keep working', () => {
         }
         for (const code of Object.keys(want)) expect(FLYING_CODES).not.toContain(code);
         // the labels sit where the mode's key list reads them: keys.<action>
-        for (const action of SHIPPED_IN_V12) expect(bindingOf(action)?.labelKey).toBe(`keys.${action}`);
+        for (const action of MODE_KEYS) expect(bindingOf(action)?.labelKey).toBe(`keys.${action}`);
     });
 
     it('control: a sixth action planted on one of the five letters is caught as a double binding', () => {
@@ -172,12 +176,12 @@ describe('v0.2 keys keep working', () => {
 });
 
 describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic\')', () => {
-    const SOUND_CODES = ['KeyT', 'KeyU', 'KeyI', 'KeyZ', 'KeyG'];
+    const SOUND_CODES = ['KeyT', 'KeyU', 'KeyI', 'KeyZ', 'KeyG', 'KeyX'];
     /** The keymap as v0.12 was released (8ce53fb): the same five bindings, when 'always'. The control of the tests here. */
     const RELEASED = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
 
     it('the five and only the five are the mode\'s', () => {
-        expect(KEYMAP.filter((b) => b.when === 'sonic').map((b) => b.action)).toEqual([...SHIPPED_IN_V12]);
+        expect(KEYMAP.filter((b) => b.when === 'sonic').map((b) => b.action)).toEqual([...MODE_KEYS]);
     });
 
     it('a page without ?sonic=: T U I Z G route nothing, in flight or crashed; control: the released keymap routes all five', () => {
@@ -196,14 +200,14 @@ describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic
     it('a page without ?sonic= lists and captions none of them; with ?sonic= they are listed where the table has them; control: released, all five listed', () => {
         const plain = pageBindings().map((b) => b.action);
         const sonic = pageBindings({ sonic: true }).map((b) => b.action);
-        for (const a of SHIPPED_IN_V12) {
+        for (const a of MODE_KEYS) {
             expect(plain).not.toContain(a);
             expect(keysFor(a)).toEqual([]);
             const k = bindingOf(a)!.keys[0];
             expect(keysFor(a, { sonic: true })).toEqual([{ cap: k.cap, aria: k.aria }]);
         }
         expect(sonic).toEqual(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action));
-        expect(plain).toEqual(sonic.filter((a) => !SHIPPED_IN_V12.includes(a)));
+        expect(plain).toEqual(sonic.filter((a) => !MODE_KEYS.includes(a)));
         expect(pageBindings({ map: RELEASED }).map((b) => b.action)).toEqual(sonic);
     });
 

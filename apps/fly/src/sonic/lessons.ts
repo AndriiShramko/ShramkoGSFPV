@@ -91,8 +91,10 @@ export interface LessonPage {
     keyNames?(): RunnerKeys;
     /** the pilot's speaking speed (SonicPrefs.speechRate); absent: 1 */
     speechRate?(): number;
-    /** the names of the keys the line at every lesson's start says (key-names.ts lessonStart); absent: Escape, Z, N */
+    /** the names of the keys the line at every step's start says (key-names.ts lessonStart); absent: N, B, Z, Escape, X */
     lessonKeys?(): LessonStartKeys;
+    /** the pilot's "Key hints" (SonicState.keyHints, key-hints.ts): false leaves the line of keys out; absent: on */
+    keyHints?(): boolean;
 }
 
 /** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
@@ -160,10 +162,12 @@ export class LessonHost {
      */
     private movedFrom: LessonSession | null = null;
     /**
-     * The line at every lesson's start (v0.13 B6, M41-3), said right after the lesson's title, before the rest of its task: "Escape:
-     * menu. Z: repeat the task. N: next." with the pilot's names of those keys. Set while a lesson is entered, taken by its first line.
+     * The line of keys (v0.13 B6, M41-3; lane sonic-hints, the owner's complaint of 2026-11-10): said right after the first line of
+     * every step (a lesson's first line is its title), never again inside that step: "Keys: N next, B back, Z repeat, Escape menu, X
+     * main menu." with the pilot's names of those keys. `hintStep` is the step it was last said for (null: a lesson just opened). The
+     * pilot's "Key hints: off" (SonicState.keyHints false) leaves it out.
      */
-    private keysLine: SpeechLine | null = null;
+    private hintStep: string | null = null;
     /**
      * The runner whose counts the pilot reset (v13-int step 5: "Reset my progress" answered Yes on the start screen shown over this
      * lesson). The screen cleared the saved progress, but this runner still holds the lesson's old counts: nothing of it is saved again
@@ -273,7 +277,7 @@ export class LessonHost {
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
             this.cutSpeech = o.keepSpeech !== true && this.p.mode.bridge.speechQueue > 0;
-            this.keysLine = { key: 'sonic.say.lessonKeys', params: { ...(this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS) } };
+            this.hintStep = null;
             // the bridge's clock starts at 0 for this lesson: the engine first forgets what it heard on the last one's clock (v13-int step
             // 1, v13-host's need 2: its scene sampler keeps an active sector 0.3 s on when the clock goes back, so the first frames of this
             // lesson voiced the last one's sectors with these walls, which the replay, a new planner per lesson, does not derive). Before
@@ -284,7 +288,6 @@ export class LessonHost {
                 this.p.mode.enter({ lesson, runner, world, floorY });
             } finally {
                 this.cutSpeech = false;
-                this.keysLine = null;
             }
             if (scan) {
                 // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
@@ -403,6 +406,11 @@ export class LessonHost {
         this.checkPassed();
     }
 
+    /** The line of keys with the pilot's names of them now (a layout may change between steps). */
+    keysLine(): SpeechLine {
+        return { key: 'sonic.say.lessonKeys', params: { ...(this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS) } };
+    }
+
     /** What the runner asked of the host, carried out in order. */
     private drain(): void {
         const run = this.runner;
@@ -427,10 +435,13 @@ export class LessonHost {
                 void mode.bridge.say(a.line, a.interrupt || this.cutSpeech, { lesson: true });
                 // only the first line cuts: the lines after it queue behind it, as the runner meant them to
                 this.cutSpeech = false;
-                // a lesson's first line is its title: the keys of the lesson menu, the task and next follow it
-                const keys = this.keysLine;
-                this.keysLine = null;
-                if (keys) void mode.bridge.say(keys, false, { lesson: true });
+                // the first line of a step (a lesson's first line is its title): the step's keys follow it, once a step
+                const v = run.view();
+                const step = `${v.step}/${v.steps}`;
+                if (step !== this.hintStep) {
+                    this.hintStep = step;
+                    if (this.p.keyHints?.() !== false) void mode.bridge.say(this.keysLine(), false, { lesson: true });
+                }
                 break;
             }
             case 'cue':
