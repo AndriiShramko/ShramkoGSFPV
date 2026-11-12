@@ -69,7 +69,7 @@ class ArmCard {
         this.disarm = h('button', { type: 'button', class: 'btn arm-disarm hidden', 'data-action': 'hud-disarm', onclick: () => onArm() }, t('arm.disarmKey'));
     }
 
-    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock, offer = false): void {
+    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock, offer = false, centred = false): void {
         const screenOpen = !!document.querySelector('.screen.radio');
         const key = v?.armKind === 'key';
         this.disarm.classList.toggle('hidden', !(v && key && armed && !crashed && !screenOpen));
@@ -84,12 +84,15 @@ class ArmCard {
             if (this.offerKeys.textContent !== keys) this.offerKeys.textContent = keys;
         }
         if (!v || !show || block === null) return;
-        // no signal, hidden tab, crashed, no profile: only the reason, the steps do not apply
+        // no signal, hidden tab, crashed, no profile: only the reason, the steps do not apply. The centred style (lane
+        // center-throttle) has no arming steps either: one line says how its motors start (a stick moved)
         const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
-        this.list.hidden = reasonOnly;
-        this.art.el.style.display = reasonOnly ? 'none' : '';
-        this.reason.textContent = reasonOnly ? t(`arm.blocked.${block}`) : '';
-        if (reasonOnly) return;
+        const plain = reasonOnly || centred;
+        this.list.hidden = plain;
+        this.art.el.style.display = plain ? 'none' : '';
+        this.reason.textContent = reasonOnly ? t(`arm.blocked.${block}`) : centred ? t('throttle.card.centred') : '';
+        this.el.classList.toggle('centred', centred && !reasonOnly);
+        if (plain) return;
         const ch = v.ch;
         const u = (ch[2] + 1) / 2;
         const set = (i: number, text: string, done: boolean, now: boolean): void => {
@@ -393,7 +396,7 @@ export class Hud {
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
         const kbd = src === 'keyboard';
-        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block, this.offerShown);
+        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block, this.offerShown, style === 'centred');
         const acro = style === 'centred' && !!this.throttle?.acro();
         if (this.acroLine.hidden === acro) this.acroLine.hidden = !acro;
         if (acro && !this.acroLine.textContent) this.acroLine.textContent = t('throttle.acro');

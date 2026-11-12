@@ -127,6 +127,9 @@ describe('the HUD: the offer on the arm card, the arm input takes it, the acro l
         frames(hud, 4033, 4033, djiView(1));
         expect(root.querySelector('[data-testid="arm-offer"]')?.hidden).toBe(true);
         expect(took.length).toBe(0);
+        // the card has no arming steps in this style: its one line says how the motors start
+        expect(root.querySelector('ol')?.hidden).toBe(true);
+        expect(root.querySelector('.reason')?.textContent).toContain('no arming needed');
     });
     it('the centred style in acro: one line that the throttle is direct; angle: none', () => {
         let acro = true;

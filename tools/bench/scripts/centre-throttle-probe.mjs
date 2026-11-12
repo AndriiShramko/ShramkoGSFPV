@@ -96,6 +96,9 @@ for (const run of RUNS.filter((r) => !only || only.includes(r.name))) {
             chip: chip && !chip.hidden ? chip.textContent : null,
             offer: !!offer && !offer.hidden && !!card && !card.classList.contains('hidden'),
             armCard: !!card && !card.classList.contains('hidden'),
+            cardText: card && !card.classList.contains('hidden') ? (card.querySelector('.reason')?.textContent ?? '') : '',
+            steps: !!card && !card.querySelector('ol')?.hidden,
+            centre: g?.throttle?.().centre ?? null,
             throttle: g?.throttle ? (({ now, pending, resolved, seen, setting }) => ({ now, pending, resolved, seen, setting }))(g.throttle()) : null
         };
     });
@@ -114,9 +117,11 @@ for (const run of RUNS.filter((r) => !only || only.includes(r.name))) {
         if (run.name === 'dji-centred') {
             checks.checkRowCentred = note.checkRow?.style === 'centred';
             checks.chipCentred = s0.chip === 'Stick in the centre';
-            checks.noArmCardInCentre = !s0.armCard;
+            // the card has no arming steps, its line says the motors start with a stick
+            checks.noArmingStepsInCentre = !s0.steps && /no arming needed/.test(s0.cardText);
             await hand({ T: 0.6 });
-            await page.waitForTimeout(2500);
+            note.climb = [];
+            for (let i = 0; i < 10; i++) { await page.waitForTimeout(250); const s = await state(); note.climb.push({ alt: s.alt, armed: s.armed, centre: s.centre }); }
             const s1 = await state();
             note.up = s1;
             checks.intoTheAir = s1.armed && !s1.crashed && s0.alt !== null && s1.alt !== null && s1.alt - s0.alt >= 1.0;

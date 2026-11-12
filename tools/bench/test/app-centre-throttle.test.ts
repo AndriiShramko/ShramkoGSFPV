@@ -171,6 +171,16 @@ describe('centred, angle (DJI N): let go and it stops and hovers', () => {
     it('control: the pilot\'s own angle sticks without the velocity loop still drift past 0.3 m/s after 3 s', () => {
         expect(letGo('plain-angle').speed).toBeGreaterThan(0.3);
     });
+    it('from the ground, the left stick alone pushed up takes off and climbs past 1 m in 2.5 s (the page probe\'s first move)', () => {
+        const r = new Rig('centred');
+        r.run(300);
+        const y0 = r.y;
+        r.sticks.thr = 0.6;
+        r.run(2500);
+        expect(r.sim.armed).toBe(true);
+        expect(r.y - y0).toBeGreaterThan(1);
+    });
+
     it('the left stick up climbs, down descends, the centre holds', () => {
         const r = new Rig('centred');
         r.run(300);
