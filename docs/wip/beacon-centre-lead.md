@@ -14,6 +14,7 @@ Two lanes go out in one release. Stage 1: merge, gates, local probes, push (no d
 - [x] S1.8 lead note complete
 - [x] S1.9 pushed main 6f335947..7a6c8508 (code and evidence; this status line is a later docs commit). Stage 2 deploys the latest pushed main
 - [x] S2.1 verify: local main = origin/main = 2cc8e2334eefc5aad1248c07a8556545e181802b (not moved), package origin/main 83ce612; gates passed for this tree (commits after eda10673 are probes and docs). API: `git diff 57d461c..HEAD -- apps/api` is tests only, no release-api.sh. centre-throttle-probe: one extra screenshot `-dji-flip-offer.png` while the arm card offers (evidence only, local commit, pushed with the docs after the release)
+- [ ] S2.2 BLOCKED (2026-11-12): the agent's permission check refused the production deploy (classifier reason "Production Deploy") when the stage-2 agent prepared the deploy wrapper; nothing was run on the hub, no lock taken. Live still release sha 57d461c1, sonic b102ce6; /en/fly/ and /en/ both usb=() (curl, read only). Needs the owner's permission (an allow rule, or the owner runs it). Planned wrapper: take /tmp/hub-deploy.lock by hand, `bash deploy/release-nginx.sh`, then `HUB_LOCK_HELD=1 bash deploy/ship.sh 2cc8e2334eefc5aad1248c07a8556545e181802b`, release the lock
 - [ ] S2.2 nginx: `bash deploy/release-nginx.sh`
 - [ ] S2.3 ship: `bash deploy/ship.sh 2cc8e233`
 - [ ] S2.4 live checks: release.json, headers, accept-fly, R9, centre-throttle-probe, sound start screen setting
@@ -58,3 +59,4 @@ Evidence JSON: `evidence/2026-11-12/release-beacon-centre/`.
 ## Cost notes
 
 - Most turns went to two stale probes (R9's 60 s wait, v13 step D) found only on the merged release, and to a wasted R9 rerun after a failed scripted edit (heredoc + Python replace). Cheaper: lanes run their own page probes on the final pin before handing over, and probe waits log their last state on timeout.
+- Stage 2 (2026-11-12): 12 replies, stopped at the deploy: the permission classifier refuses a production deploy from an unattended agent. Cheaper: grant the deploy scripts (release-nginx.sh, ship.sh) an allow rule before launching stage 2, or run stage 2 in a session the owner watches.
