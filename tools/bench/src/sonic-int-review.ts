@@ -30,7 +30,11 @@
 //   R8  (sonic-hints) the keys of the moment are said at the start of every lesson step, once a step (Z does not repeat them, N does), and X
 //       leaves the lesson for the mode's main menu in one press, saying the lesson is saved.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6|r7|r8]
+//   R9  (sonic-beacon) the target hum shows the way: in the corridor (no gate) it sounds while flying, from a side when the pilot turns, never
+//       from behind; with the setting off it does not; in rings-line a one-off note of the hum (the preview of the ring after the next)
+//       is planned after the first ring. The page's hook reports the hum (feature.ts); the live site before the lane has none.
+
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6|r7|r8|r9]
 // SITE=https://gsfpv.flyreelstudio.eu runs a probe against that site instead (after a release; nothing is written to the site).
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
@@ -637,6 +641,126 @@ async function r8(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R9 (sonic-beacon)
+
+interface Hum {
+    dir: [number, number, number] | null;
+    distance: number | null;
+    hz: number | null;
+}
+/** One look of the page's hook: the runner's target, the phase and the target hum of the engine's last plan (null: the page's hook has none). */
+interface HumRow {
+    t: number;
+    target: string | null;
+    phase: string | null;
+    hum: Hum[] | null;
+    beacon: boolean | null;
+}
+
+/** Before the page's scripts: every 30 ms one HumRow into window.__hum (taken out by humRows). */
+const HUM_WATCH = `(() => {
+  window.__hum = [];
+  setInterval(() => {
+    const h = window.__gsfpv && window.__gsfpv.sonic;
+    if (!h) return;
+    const s = h(false);
+    window.__hum.push({ t: performance.now(), target: s.target ? s.target.id : null, phase: s.phase, hum: s.hum === undefined ? null : s.hum, beacon: s.beacon === undefined ? null : s.beacon });
+    if (window.__hum.length > 6000) window.__hum.splice(0, 2000);
+  }, 30);
+})();`;
+const humRows = (page: Page): Promise<HumRow[]> => page.evaluate(() => (window as unknown as { __hum: HumRow[] }).__hum.splice(0)) as Promise<HumRow[]>;
+/** The hum's own voice (it has a distance) and a one-off note of it (the preview after a gate: no distance). */
+const voices = (rows: readonly HumRow[]): Hum[] => rows.flatMap((r) => (r.hum ?? []).filter((h) => h.distance !== null && h.dir !== null));
+const notes = (rows: readonly HumRow[]): Hum[] => rows.flatMap((r) => (r.hum ?? []).filter((h) => h.distance === null && h.dir !== null));
+/** Ahead or to a side, never behind: the heading frame's z (-z ahead) at most 0 (a rounding margin). */
+const notBehind = (hs: readonly Hum[]): boolean => hs.every((h) => (h.dir as [number, number, number])[2] <= 1e-3);
+const sideOf = (h: Hum): number => (h.dir as [number, number, number])[0];
+
+/**
+ * A lesson open with its flying phase reached; then W held (forward), D and A each held 1.5 s within it (a turn or a slide to each side),
+ * the rows of the flight returned. The keys the pilot uses; nothing is driven through the hook.
+ */
+async function flyWithTurns(ctx: BrowserContext, served: Served, lesson: string, label: string): Promise<{ page: Page; rows: HumRow[]; flying: boolean }> {
+    const page = await openLesson(ctx, served, lesson, label);
+    const flying = await until(`${label}: the flying phase`, () => probe(page), (p) => p.phase === 'flying', 60000, 100).then(() => true).catch(() => false);
+    await humRows(page);
+    await page.keyboard.down('KeyW');
+    await sleep(2500);
+    await page.keyboard.down('KeyD');
+    await sleep(1500);
+    await page.keyboard.up('KeyD');
+    await sleep(1000);
+    await page.keyboard.down('KeyA');
+    await sleep(1500);
+    await page.keyboard.up('KeyA');
+    await sleep(1500);
+    await page.keyboard.up('KeyW');
+    await sleep(300);
+    const rows = (await humRows(page)).filter((r) => r.phase === 'flying');
+    return { page, rows, flying };
+}
+
+/**
+ * R9: the target hum shows the way (lane sonic-beacon, the owner's complaint of 2026-11-10: in the tunnels nothing says where to fly).
+ * The corridor (a world track, no gate): with the beacon (the default) the plan carries the target hum while flying, from a side when the
+ * pilot turns, never from behind; with the setting off it carries none (the goal has no gate, the hum has nowhere to point). rings-line
+ * (three rings): after the first ring a one-off note of the hum (the preview of the ring after the next) is planned, from ahead or a side.
+ */
+async function r9(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R9: the target hum shows the way in the corridor; none with the setting off; the preview after a ring');
+    const on = await newContext(browser, served, prefsDoc(), null);
+    await on.addInitScript({ content: HUM_WATCH });
+    const a = await flyWithTurns(on, served, 'corridor', 'R9 corridor');
+    const v = voices(a.rows);
+    const sides = v.map(sideOf);
+    const share = a.rows.length ? a.rows.filter((r) => (r.hum ?? []).some((h) => h.distance !== null)).length / a.rows.length : 0;
+    result.r9corridor = { flying: a.flying, rows: a.rows.length, hookHasHum: a.rows.some((r) => r.hum !== null), beacon: a.rows[0]?.beacon ?? null, share: Math.round(share * 100) / 100, voices: v.length, maxLeft: sides.length ? Math.min(...sides) : null, maxRight: sides.length ? Math.max(...sides) : null, behind: v.filter((h) => !notBehind([h])).length, sample: v.filter((_, i) => i % 25 === 0).slice(0, 12) };
+    check('R9: the corridor reached its flying phase', a.flying && a.rows.length > 50, { flying: a.flying, rows: a.rows.length });
+    check('R9 beacon: the page reports the target hum of the plan (the hook\'s hum) with the setting on', a.rows.length > 0 && a.rows.every((r) => r.hum !== null) && a.rows.every((r) => r.beacon === true), result.r9corridor);
+    check('R9 beacon: in the corridor (no gate) the target hum sounds in most flying frames (at least 80 %)', share >= 0.8, share);
+    check('R9 beacon: the hum comes from a side when the pilot turns (|x| at least 0.25 in some frame)', sides.some((x) => Math.abs(x) >= 0.25), { min: sides.length ? Math.min(...sides) : null, max: sides.length ? Math.max(...sides) : null });
+    check('R9 beacon: the hum never comes from behind (folded to the front half circle)', v.length > 0 && notBehind(v), v.filter((h) => !notBehind([h])).slice(0, 5));
+    await on.close();
+
+    const off = await newContext(browser, served, prefsDoc({ beacon: false }), null);
+    await off.addInitScript({ content: HUM_WATCH });
+    const b = await flyWithTurns(off, served, 'corridor', 'R9 corridor off');
+    const vOff = voices(b.rows);
+    result.r9off = { flying: b.flying, rows: b.rows.length, beacon: b.rows[0]?.beacon ?? null, voices: vOff.length, sample: vOff.slice(0, 5) };
+    check('R9: the corridor with the setting off reached its flying phase', b.flying && b.rows.length > 50, { flying: b.flying, rows: b.rows.length });
+    check('R9 off: with the setting off the plan carries no target hum in the corridor (the goal has no gate to hum at)', vOff.length === 0, result.r9off);
+    await off.close();
+
+    const rings = await newContext(browser, served, prefsDoc(), null);
+    await rings.addInitScript({ content: HUM_WATCH });
+    const page = await openLesson(rings, served, 'rings-line', 'R9 rings-line');
+    const ready = await until('R9 rings-line: the flying phase', () => probe(page), (p) => p.phase === 'flying', 60000, 100).then(() => true).catch(() => false);
+    const before = await humRows(page);
+    const first = before.at(-1)?.target ?? null;
+    await page.keyboard.down('KeyW');
+    const t0 = Date.now();
+    const rows: HumRow[] = [];
+    let passedAt = -1;
+    while (Date.now() - t0 < 40000) {
+        await sleep(200);
+        const got = await humRows(page);
+        rows.push(...got);
+        if (passedAt < 0) {
+            const i = rows.findIndex((r) => r.target !== null && first !== null && r.target !== first);
+            if (i >= 0) passedAt = i;
+        }
+        if (passedAt >= 0 && rows.length - passedAt > 100) break;
+    }
+    await page.keyboard.up('KeyW');
+    const after = passedAt >= 0 ? rows.slice(Math.max(0, passedAt - 5), passedAt + 100) : [];
+    const pre = notes(after);
+    result.r9rings = { flying: ready, first, passedAt, next: passedAt >= 0 ? rows[passedAt]!.target : null, rows: rows.length, previews: pre.length, sample: pre.slice(0, 5), notesBefore: notes(passedAt >= 0 ? rows.slice(0, Math.max(0, passedAt - 5)) : rows).length };
+    check('R9: rings-line: the first ring was passed (the target moved on)', passedAt >= 0, result.r9rings);
+    check('R9 beacon: after the ring a one-off note of the hum (the preview of the ring after the next) is planned', pre.length > 0, result.r9rings);
+    check('R9 beacon: the preview comes from ahead or a side, never from behind', pre.length > 0 && notBehind(pre), pre.slice(0, 5));
+    await rings.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -677,6 +801,7 @@ async function main(): Promise<void> {
         else if (which === 'r6') await r6(fresh, served);
         else if (which === 'r7') await r7(fresh, served);
         else if (which === 'r8') await r8(fresh, served);
+        else if (which === 'r9') await r9(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
