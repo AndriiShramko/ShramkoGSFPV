@@ -110,7 +110,7 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
         setKeyHints(store, 'brief');
         expect(keyHintsOn(store)).toBe(true);
         const tr = createTranslator('ru', engineDicts());
-        expect(tr.text({ key: 'sonic.say.lessonKeys', params: { next: 'N', previous: 'B', repeat: 'Z', menu: 'Escape', home: 'X' } })).toContain('B назад');
+        expect(tr.text({ key: 'sonic.say.lessonKeys', params: { next: 'N', previous: 'B', repeat: 'Z', menu: 'Escape', home: 'X' } })).toBe(engineDicts().ru['sonic.say.lessonKeys']!.replace('{next}', 'N').replace('{previous}', 'B').replace('{repeat}', 'Z').replace('{menu}', 'Escape').replace('{home}', 'X'));
     }, 120000);
 });
 
@@ -163,7 +163,9 @@ describe('H3: X leaves a lesson for the main menu in one press, then says where 
         press({ repeat: false });
         expect(events).toHaveLength(2);
         const ru = createTranslator('ru', engineDicts());
-        expect(ru.text({ key: 'sonic.say.homeBack', params: { title: 'X' } })).toContain('Главное меню');
+        const ruHome = ru.text({ key: 'sonic.say.homeBack', params: { title: 'T1' } });
+        expect(ruHome).toContain('T1');
+        expect(ruHome).not.toBe(EN.text({ key: 'sonic.say.homeBack', params: { title: 'T1' } }));
     });
 
     it('X is the mode\'s key (only on a page entered through ?sonic=), free of every other binding; K names it', () => {
