@@ -1,0 +1,77 @@
+{
+  "name": "sonic-int-review-r6-live",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-12T12:57:59.427Z",
+    "gitHead": "2957c92",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "release": {
+    "sha": "17a0b6da",
+    "sonic": "09535b7",
+    "built": "2026-11-11T12:52:48.844Z"
+  },
+  "git": "2957c92",
+  "seconds": 48,
+  "passed": 2,
+  "total": 6,
+  "pass": false,
+  "checks": [
+    {
+      "name": "R6: the digit during the sound answers trial 1 (an answer by key, value 1)",
+      "pass": false,
+      "value": []
+    },
+    {
+      "name": "R6: the question of trial 1 was never said (the digit came during the sound)",
+      "pass": true,
+      "value": []
+    },
+    {
+      "name": "R6: the answer is acknowledged in words (\"Taken: 1\")",
+      "pass": false,
+      "value": []
+    },
+    {
+      "name": "R6: 7 during the sound of trial 2 answers nothing and is said back with the keys that answer (answer.need-123)",
+      "pass": false,
+      "value": {
+        "said2": [],
+        "got2": []
+      }
+    },
+    {
+      "name": "R6: the refused 7 is in the recording as an input of the replay (key, answer.refused, Digit7)",
+      "pass": false,
+      "value": []
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r6": {
+      "trial1": {
+        "spokenSinceTrialLine": [],
+        "answers": []
+      },
+      "trial2": {
+        "spokenAfter7": [],
+        "answers": [],
+        "fromTrialLine": 19
+      }
+    }
+  },
+  "problems": []
+}

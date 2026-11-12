@@ -1,0 +1,115 @@
+{
+  "name": "sonic-int-review-r2",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-12T12:52:58.277Z",
+    "gitHead": "2957c92",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "2957c92",
+    "sonic": "3115137",
+    "built": "2026-11-12T12:45:22.073Z"
+  },
+  "git": "2957c92",
+  "seconds": 30,
+  "passed": 4,
+  "total": 4,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R2: the lesson was talking when T was pressed (an utterance of the intro still to come)",
+      "pass": true,
+      "value": [
+        {
+          "text": "",
+          "start": -1994,
+          "end": -1994
+        },
+        {
+          "text": "A small room",
+          "start": -1684,
+          "end": 31
+        },
+        {
+          "text": "Recording started.",
+          "start": 21238,
+          "end": null
+        }
+      ]
+    },
+    {
+      "name": "R2: the pilot hears the consent question within 2 s of pressing T (it does not wait for the lesson to finish talking)",
+      "pass": true,
+      "value": {
+        "askStartedMs": 63
+      }
+    },
+    {
+      "name": "R2: a second press is never taken as the yes before the question has been spoken",
+      "pass": true,
+      "value": {
+        "recordingAtMs": 21333,
+        "askStartedMs": 63
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r2": {
+      "timeline": [
+        {
+          "at": 0,
+          "what": "T (first press)"
+        },
+        {
+          "at": 63,
+          "what": "the question (rec.ask) starts to be spoken"
+        },
+        {
+          "at": 21056,
+          "what": "T (second press); the question had started"
+        },
+        {
+          "at": 21333,
+          "what": "the recording is on"
+        }
+      ],
+      "askStartedMs": 63,
+      "recordingAtMs": 21333,
+      "secondPressAtMs": 21056,
+      "secondPressWasHeard": true,
+      "utterances": [
+        {
+          "text": "",
+          "start": -1994,
+          "end": -1994
+        },
+        {
+          "text": "A small room",
+          "start": -1684,
+          "end": 31
+        },
+        {
+          "text": "Recording started.",
+          "start": 21238,
+          "end": null
+        }
+      ]
+    }
+  },
+  "problems": []
+}

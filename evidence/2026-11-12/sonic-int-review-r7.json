@@ -1,0 +1,171 @@
+{
+  "name": "sonic-int-review-r7",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-12T12:56:57.617Z",
+    "gitHead": "2957c92",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "2957c92",
+    "sonic": "3115137",
+    "built": "2026-11-12T12:45:22.073Z"
+  },
+  "git": "2957c92",
+  "seconds": 32,
+  "passed": 5,
+  "total": 5,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R7: the first attempt took three answers by key (2 each)",
+      "pass": true,
+      "value": [
+        {
+          "t": 10007,
+          "kind": "answer",
+          "item": "ears-headphones:1:1:side",
+          "value": 2,
+          "via": "key"
+        },
+        {
+          "t": 12316,
+          "kind": "answer",
+          "item": "ears-headphones:1:2:side",
+          "value": 2,
+          "via": "key"
+        },
+        {
+          "t": 14605,
+          "kind": "answer",
+          "item": "ears-headphones:1:3:side",
+          "value": 2,
+          "via": "key"
+        }
+      ]
+    },
+    {
+      "name": "R7: the retry asks only the two failed trials",
+      "pass": true,
+      "value": {
+        "trials": 2,
+        "second": [
+          {
+            "t": 27441,
+            "kind": "answer",
+            "item": "ears-headphones:2:1:side",
+            "value": 1,
+            "via": "key"
+          },
+          {
+            "t": 29730,
+            "kind": "answer",
+            "item": "ears-headphones:2:2:side",
+            "value": 1,
+            "via": "key"
+          }
+        ]
+      }
+    },
+    {
+      "name": "R7: the retry says no intro (headphones.intro, intro.1, intro.2)",
+      "pass": true,
+      "value": [
+        "lesson.ears-headphones.retry",
+        "lesson.ears-headphones.hint.1",
+        "headphones.trial",
+        "answer.got",
+        "headphones.trial",
+        "answer.got",
+        "headphones.good",
+        "lesson.ears-headphones.pass",
+        "fly.lesson-passed"
+      ]
+    },
+    {
+      "name": "R7: the check passes after the two trials are answered right",
+      "pass": true,
+      "value": [
+        "lesson.ears-headphones.retry",
+        "lesson.ears-headphones.hint.1",
+        "headphones.trial",
+        "answer.got",
+        "headphones.trial",
+        "answer.got",
+        "headphones.good",
+        "lesson.ears-headphones.pass",
+        "fly.lesson-passed"
+      ]
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r7": {
+      "firstAnswers": [
+        {
+          "t": 10007,
+          "kind": "answer",
+          "item": "ears-headphones:1:1:side",
+          "value": 2,
+          "via": "key"
+        },
+        {
+          "t": 12316,
+          "kind": "answer",
+          "item": "ears-headphones:1:2:side",
+          "value": 2,
+          "via": "key"
+        },
+        {
+          "t": 14605,
+          "kind": "answer",
+          "item": "ears-headphones:1:3:side",
+          "value": 2,
+          "via": "key"
+        }
+      ],
+      "retryTrials": 2,
+      "retryAnswers": [
+        {
+          "t": 27441,
+          "kind": "answer",
+          "item": "ears-headphones:2:1:side",
+          "value": 1,
+          "via": "key"
+        },
+        {
+          "t": 29730,
+          "kind": "answer",
+          "item": "ears-headphones:2:2:side",
+          "value": 1,
+          "via": "key"
+        }
+      ],
+      "spokenFromRetry": [
+        "lesson.ears-headphones.retry",
+        "lesson.ears-headphones.hint.1",
+        "headphones.trial",
+        "answer.got",
+        "headphones.trial",
+        "answer.got",
+        "headphones.good",
+        "lesson.ears-headphones.pass",
+        "fly.lesson-passed"
+      ]
+    }
+  },
+  "problems": []
+}
