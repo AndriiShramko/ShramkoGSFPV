@@ -57,7 +57,7 @@ Not in this lane's build. Known (docs/research/radios/dji-rc3.md l.143-163): the
 ## Status
 
 - [x] P1 worktree `C:/dev/gsfpv-center-throttle`, branch `center-throttle` from origin/main 6f33594 (no install yet)
-- [x] P2 plan by code (this file)
+- [x] P2 plan by code (this file, 4e4e7af)
 - [ ] S1 logic: throttle-style.ts, wizard rest, CentrePilot, InputHost, the setting and J, builtin; tests and negative controls
 - [ ] S2 the five places, strings in 4 languages, catalogue; UI tests; probe `dji-centred` / `dji-zero` with negative control
 
