@@ -16,7 +16,7 @@
 //              first (No first, then Yes; Escape is No) and keeps the sound settings.
 //   Settings   the pilot's own sound: theme, calm, height polarity, speaking speed, captions, "my screen reader speaks",
 //              motor sound, the motor's volume and the target height note (v0.13, W13), sound from above and below (v0.13, the
-//              package's heightDirection), what the sound turns with, the sound panel and the attitude display (v0.13, the look's
+//              package's heightDirection), the target hum showing the way (lane sonic-beacon, the package's beacon), what the sound turns with, the sound panel and the attitude display (v0.13, the look's
 //              switches, look-prefs.ts), each sound's volume and pitch. Each change applies at once and is saved
 //              (SonicSetup.update; the panels' switches setPanel).
 //
@@ -573,6 +573,9 @@ export class StartScreen {
             // v0.13 (v13-int step 3; the package's lane s13-elev, the owner's message 42): the cues of up and down also from above and
             // below, on unless the pilot turns it off; its description says what off does (the next stop cuts it, as any long line)
             check('sonic-height-direction', this.key('menu.setting.height-direction'), prefs.heightDirection !== false, (v, said) => this.change({ heightDirection: v }, said), this.key('menu.setting.height-direction-what')),
+            // lane sonic-beacon: the target hum folded to the side of the target and an octave up on course, on unless the pilot turns it
+            // off (the package's SonicPrefs.beacon); its description says what off does
+            check('sonic-beacon', this.key('menu.setting.beacon'), prefs.beacon !== false, (v, said) => this.change({ beacon: v }, said), this.key('menu.setting.beacon-what')),
             select('sonic-frame', this.key('menu.setting.frame'), prefs.listenerFrame, [['heading', this.key('menu.value.heading')], ['body', this.key('menu.value.body')]], (v, said) => this.change({ listenerFrame: v as SonicPrefs['listenerFrame'] }, said)),
             // v0.13 (v13-int step 3; lane v13-look): the sound panel and the attitude display, each on unless the pilot turns it off; kept in
             // the collection beside the sound settings (look-prefs.ts), and the panels follow a change at once

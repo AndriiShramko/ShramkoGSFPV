@@ -276,8 +276,9 @@ const STOPS = [
     'sonic-start-beginning', 'sonic-path-full', 'sonic-path-fast',
     'sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind',
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
-    // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
+    // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
+    // lane sonic-beacon: the target hum showing the way after sound from above and below
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */
@@ -318,9 +319,9 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         // a lesson says its own place and state, not an item number
         expect(at('lesson:ears-headphones')).toBe(`Lessons. ${titleOf('ears-headphones')}. Lesson 1 of ${SHIPPED_LESSON_IDS.length}, not started, Fast path`);
         expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first')}, not started, Fast path`);
-        // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3)
+        // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3), 15 before lane sonic-beacon's switch
         const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
-        expect(settings).toBe(15);
+        expect(settings).toBe(16);
         expect(at('sonic-theme')).toBe(`Settings. Sound theme: Soft. Item 1 of ${settings}.`);
         expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 8 of ${settings}.`);
         expect(at('sonic-height-target')).toBe(`Target height note: on. Item 9 of ${settings}.`);
@@ -503,7 +504,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         over.s.show('settings');
         expect(page.map((x) => x.line.params?.text ?? x.line.key)).toEqual(['Settings']);
         doc.key('ArrowDown');
-        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 15.');
+        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 16.');
         expect(over.engine.said).toEqual([]);
         over.s.dispose();
     });
@@ -555,31 +556,35 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         return { s, setup, store, engine: pe, started: [], closed: { n: 0 }, doc, pe };
     }
     const DIRECTION_WHAT = EN.say('menu.setting.height-direction-what').replace(/\.$/, '');
+    const BEACON_WHAT = EN.say('menu.setting.beacon-what').replace(/\.$/, '');
     const SWITCHES = [
         { id: 'sonic-height-direction', name: EN.say('menu.setting.height-direction'), n: 10, tail: `. ${DIRECTION_WHAT}` },
-        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 12, tail: '' },
-        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 13, tail: '' }
+        // lane sonic-beacon: the package's words for the target hum showing the way, its description after the value
+        { id: 'sonic-beacon', name: EN.say('menu.setting.beacon'), n: 11, tail: `. ${BEACON_WHAT}` },
+        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 13, tail: '' },
+        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 14, tail: '' }
     ] as const;
     /** what each switch keeps: the package's setting in the saved sound document, the panels in the collection beside it */
     const saved = (store: ReturnType<typeof mkStore>, id: string): unknown => {
         const c = store.collection('sonic');
-        return id === 'sonic-height-direction' ? (c.prefs as Record<string, unknown>)['heightDirection'] : id === 'sonic-look-soundPanel' ? c.soundPanel : c.attitude;
+        return id === 'sonic-height-direction' ? (c.prefs as Record<string, unknown>)['heightDirection'] : id === 'sonic-beacon' ? (c.prefs as Record<string, unknown>)['beacon'] : id === 'sonic-look-soundPanel' ? c.soundPanel : c.attitude;
     };
 
-    it('each is said with its section (coming from another one), its value and "Item n of N" (the package\'s words for sound from above and below, its description after the value); all three are on for a pilot who never set them', () => {
+    it('each is said with its section (coming from another one), its value and "Item n of N" (the package\'s words for sound from above and below and for the target hum showing the way, each description after the value); all four are on for a pilot who never set them', () => {
         const { s, engine } = withPrefs();
         expect(EN.say('menu.setting.height-direction')).toBe('Sound from above and below');
+        expect(EN.say('menu.setting.beacon')).toBe('Target hum shows the way');
         doc.key('ArrowDown');
         for (const sw of SWITCHES) {
             byTestId(doc, 'sonic-about')!.focus();
             byTestId(doc, sw.id)!.focus();
-            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 15.`, interrupt: true });
+            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 16.`, interrupt: true });
             expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(true);
         }
         // and within the section, the next stop after the long description cuts it (a line that interrupts)
         byTestId(doc, 'sonic-height-direction')!.focus();
         doc.key('ArrowDown');
-        expect(focusedId(doc)).toBe('sonic-frame');
+        expect(focusedId(doc)).toBe('sonic-beacon');
         expect(engine.said.at(-1)!.interrupt).toBe(true);
         s.dispose();
     });
@@ -598,6 +603,8 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         // at once: the engine was given the setting off; the page's panels read the store (look-prefs.ts)
         expect(setup.prefs.heightDirection).toBe(false);
         expect((pe.prefs.at(-1) as { heightDirection?: boolean }).heightDirection).toBe(false);
+        expect(setup.prefs.beacon).toBe(false);
+        expect((pe.prefs.at(-1) as { beacon?: boolean }).beacon).toBe(false);
         expect(lookPrefs.panelOn(store, 'soundPanel')).toBe(false);
         expect(lookPrefs.panelOn(store, 'attitude')).toBe(false);
         // the attitude display on again with Right: the sound panel stays off (each its own)
@@ -611,11 +618,15 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         const again = withPrefs(store);
         expect(again.setup.prefs.heightDirection).toBe(false);
         expect(byTestId(doc, 'sonic-height-direction')!.checked).toBe(false);
+        expect(again.setup.prefs.beacon).toBe(false);
+        expect(byTestId(doc, 'sonic-beacon')!.checked).toBe(false);
         expect(byTestId(doc, 'sonic-look-soundPanel')!.checked).toBe(false);
         expect(byTestId(doc, 'sonic-look-attitude')!.checked).toBe(true);
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-height-direction')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 10 of 15.`);
+        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 10 of 16.`);
+        byTestId(doc, 'sonic-beacon')!.focus();
+        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 11 of 16.`);
         again.s.dispose();
     });
 
@@ -631,6 +642,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
             expect(saved(store, sw.id), sw.id).toBe(false);
         }
         expect(setup.prefs.heightDirection).toBe(false);
+        expect(setup.prefs.beacon).toBe(false);
         expect(engine.said).toEqual([]);
         s.dispose();
     });

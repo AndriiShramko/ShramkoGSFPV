@@ -556,6 +556,10 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             const o = h.runner?.target();
             return o ? { id: o.id, pos: [o.pos[0], o.pos[1], o.pos[2]] as [number, number, number] } : null;
         })(),
+        // lane sonic-beacon: the target hum of the engine's last plan, for the acceptance (sonic-int-review.ts R9): its voice has a
+        // distance, a one-off note of it (the preview after a gate) has none; the direction is the heading frame's (-z ahead)
+        hum: (audio.engine.plan?.cues ?? []).filter((c) => c.id === 'target.hum').map((c) => ({ dir: c.dir ? [c.dir[0], c.dir[1], c.dir[2]] as [number, number, number] : null, distance: c.distance, hz: c.pitchHz })),
+        beacon: entry.setup.prefs.beacon !== false,
         cost: mode.hearCost(),
         walls: { voxelM: ctx.session.collision ? ctx.session.collision.voxelResolution : null, builtin: !!ctx.session.builtin, scene: ctx.session.scene.id, scale: ctx.session.transform.s },
         ...craftNow(ctx),

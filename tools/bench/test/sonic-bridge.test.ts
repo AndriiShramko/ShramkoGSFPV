@@ -444,7 +444,7 @@ class BridgeHost {
         const sample = this.bridge.frame()!;
         this.bridge.events(this.runner.step(sample, this.world));
         this.drain();
-        const input = this.runner.demoFrame(sample.t) ?? { sample, world: this.world, target: this.runner.target(), floorY: 0 };
+        const input = this.runner.demoFrame(sample.t) ?? { sample, world: this.world, target: this.runner.target(), beacon: this.runner.beaconTarget(), floorY: 0 }; // lane sonic-beacon: as mode.ts
         const plan = this.planner.plan(input);
         if (++this.frameNo % 2 === 0) this.frames.push({ t: sample.t, tick: sample.tick, p: sample.pos, v: sample.vel, q: sample.quat, s: sample.sticks, c: plan.cues.map((c) => c.id) });
     }

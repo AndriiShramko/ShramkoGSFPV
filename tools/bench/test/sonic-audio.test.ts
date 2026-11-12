@@ -12,7 +12,7 @@
 //    mode since v0.13 (M41-16; the motor bus it goes into: sonic-motor.test.ts), is silent when the settings turn it off,
 //    and never suspends or closes a context that is not its own (control: its own context is closed as before).
 import { describe, expect, it, vi } from 'vitest';
-import { defaultPrefs, getBuiltinTheme, getLesson } from '../../../packages/sonic-fpv/src';
+import { CuePlanner, defaultPrefs, getBuiltinTheme, getLesson } from '../../../packages/sonic-fpv/src';
 import type { AudioContextLike, FlightSample, LessonLayers, Locale, SonicFrameInput, SonicPrefs, SpeechLine, ThemeDef } from '../../../packages/sonic-fpv/src';
 import { SonicAudio } from '../../../apps/fly/src/sonic/audio';
 import type { AudioDeps, PageEngine } from '../../../apps/fly/src/sonic/audio';
@@ -484,6 +484,32 @@ describe('the engine hears the mode\'s frames', () => {
         const own: SonicFrameInput = { sample: SAMPLE, world: null, target: null, floorY: 0 };
         mode.hear(SAMPLE, own);
         expect(e.frames[1]).toBe(own);
+    });
+
+    it('hear() (lane sonic-beacon): the frame carries beaconTarget() of the runner as `beacon` beside its target(); a runner without the method and no runner give null', () => {
+        const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
+        const mode = modeWith(e);
+        mode.enter({ floorY: 0 });
+        const gate = { id: 'g1', kind: 'ring', pos: [0, 1.5, -10], size: [2, 2, 0.2], order: 1 } as const;
+        const point = { id: 'beacon:p3', kind: 'zone', pos: [4, 1.5, -6], size: [1, 1, 1], order: null } as const;
+        const bridge = (mode as unknown as { bridge: { runner: unknown } }).bridge;
+        bridge.runner = { target: () => gate, beaconTarget: () => point };
+        mode.hear(SAMPLE);
+        expect(e.frames[0]).toMatchObject({ target: gate, beacon: point });
+        // an older runner (no beaconTarget): the frame has no beacon field, so the planner hums at the target (review R6:
+        // a null beacon would silence it)
+        const zoneGate = { id: 'g1', shape: { kind: 'zone', size: [1, 1, 1] }, pos: [0, 1.5, -10], quat: [1, 0, 0, 0], order: 1, solid: false, material: 'obstacle' } as const;
+        bridge.runner = { target: () => zoneGate };
+        mode.hear(SAMPLE);
+        expect(e.frames[1]).toMatchObject({ target: zoneGate });
+        expect('beacon' in (e.frames[1] as object)).toBe(false);
+        const planner = new CuePlanner({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), layers: { on: ['target'], heightBandM: null, hazardVoices: 0 } });
+        const hum = planner.plan(e.frames[1] as SonicFrameInput).voices.find((v) => v.cue === 'target.hum');
+        expect(hum?.distance).toBeCloseTo(10, 6);
+        bridge.runner = null;
+        mode.hear(SAMPLE);
+        expect(e.frames[2]).toMatchObject({ target: null });
+        expect('beacon' in (e.frames[2] as object)).toBe(false);
     });
 
     it('control: nothing is heard while the mode is off, in playback, or with no engine', () => {
