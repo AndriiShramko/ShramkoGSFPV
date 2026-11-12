@@ -1,0 +1,75 @@
+{
+  "name": "sonic-int-review-r3",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-11T14:47:48.008Z",
+    "gitHead": "a1c5ea0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "635586d",
+    "sonic": "7dc38d7",
+    "built": "2026-11-11T14:44:14.125Z"
+  },
+  "git": "a1c5ea0",
+  "seconds": 18,
+  "passed": 4,
+  "total": 4,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R3: the question is two lines (rec.minor, rec.ask) and a reader needs both before a press counts",
+      "pass": true,
+      "value": {
+        "said": [
+          "rec.minor",
+          "rec.ask"
+        ]
+      }
+    },
+    {
+      "name": "R3: a press after the longer line but before the pair has been read is not a yes (no recording)",
+      "pass": true,
+      "value": {
+        "earlyPressAtMs": 10674,
+        "pairReadAtMs": 14905,
+        "longerLineMs": 7810
+      }
+    },
+    {
+      "name": "R3: control: once both lines have been read a press is the yes",
+      "pass": true,
+      "value": {
+        "recordingOnAtMs": 16533
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r3": {
+      "minorMs": 7095,
+      "askMs": 7810,
+      "earlyPressAtMs": 10674,
+      "recordingOnAfterEarlyPress": false,
+      "recordingOnAtMs": 16533,
+      "spokenAtThatPress": [
+        "rec.minor",
+        "rec.ask"
+      ]
+    }
+  },
+  "problems": []
+}

@@ -1,0 +1,113 @@
+{
+  "name": "sonic-int-review-r6",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-12T12:28:26.287Z",
+    "gitHead": "59867c3",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5420",
+  "release": {
+    "sha": "b6574b6",
+    "sonic": "78d4315",
+    "built": "2026-11-12T12:26:49.404Z"
+  },
+  "git": "59867c3",
+  "seconds": 15,
+  "passed": 6,
+  "total": 6,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R6: the digit during the sound answers trial 1 (an answer by key, value 1)",
+      "pass": true,
+      "value": [
+        {
+          "t": 9970,
+          "kind": "answer",
+          "item": "ears-headphones:1:1:side",
+          "value": 1,
+          "via": "key"
+        }
+      ]
+    },
+    {
+      "name": "R6: the question of trial 1 was never said (the digit came during the sound)",
+      "pass": true,
+      "value": [
+        "answer.got",
+        "headphones.trial"
+      ]
+    },
+    {
+      "name": "R6: the answer is acknowledged in words (\"Taken: 1\")",
+      "pass": true,
+      "value": [
+        "answer.got",
+        "headphones.trial"
+      ]
+    },
+    {
+      "name": "R6: 7 during the sound of trial 2 answers nothing and is said back with the keys that answer (answer.need-123)",
+      "pass": true,
+      "value": {
+        "said2": [
+          "answer.need-123"
+        ],
+        "got2": []
+      }
+    },
+    {
+      "name": "R6: the refused 7 is in the recording as an input of the replay (key, answer.refused, Digit7)",
+      "pass": true,
+      "value": [
+        {
+          "t": 12245,
+          "kind": "key",
+          "code": "Digit7",
+          "action": "answer.refused"
+        }
+      ]
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r6": {
+      "trial1": {
+        "spokenSinceTrialLine": [
+          "answer.got",
+          "headphones.trial"
+        ],
+        "answers": [
+          {
+            "t": 9970,
+            "kind": "answer",
+            "item": "ears-headphones:1:1:side",
+            "value": 1,
+            "via": "key"
+          }
+        ]
+      },
+      "trial2": {
+        "spokenAfter7": [
+          "answer.need-123"
+        ],
+        "answers": [],
+        "fromTrialLine": 20
+      }
+    }
+  },
+  "problems": []
+}

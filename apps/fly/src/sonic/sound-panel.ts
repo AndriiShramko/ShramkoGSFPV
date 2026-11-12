@@ -52,6 +52,8 @@ const KIND_OF: Readonly<Record<string, CueKind>> = {
     'target.praise': 'praise',
     'target.fanfare': 'praise',
     'target.stage': 'praise',
+    // sonic-keys: the answer sound (a digit taken, not taken, a question waiting) is a short blip, not a place on the radar
+    'target.answer': 'tick',
     'target.hum': 'target',
     'target.off': 'target',
     'target.note': 'target',

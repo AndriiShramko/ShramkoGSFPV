@@ -46,6 +46,8 @@ export interface LessonCheckRow {
     readonly diffs: number;
     readonly cueShare: number | null;
     readonly cueClassShare: number | null;
+    /** the first frames whose sounds disagree beyond the slack (what the page probes report) */
+    readonly cueMismatches: readonly { readonly index: number; readonly t: number; readonly recorded: readonly string[]; readonly derived: readonly string[] }[];
 }
 
 export interface ReplayControlDeps {
@@ -146,7 +148,8 @@ export class ReplayControl {
             matched: s.check?.events.matched ?? 0,
             diffs: s.check?.events.diffs.length ?? 0,
             cueShare: s.check?.cues.share ?? null,
-            cueClassShare: s.check?.cues.classShare ?? null
+            cueClassShare: s.check?.cues.classShare ?? null,
+            cueMismatches: s.check?.cues.mismatches.slice(0, 5) ?? []
         }));
         const player = new ReplayPlayer({ ...link.deps, onChange: () => this.deps.onChange(this.state) }, pkg, outcome.segments);
         await player.prepare();

@@ -67,6 +67,7 @@ function askingHost(): QuestionHost & { answers: number[] } {
     const answers: number[] = [];
     return {
         answers,
+        active: true,
         get asking() {
             return answers.length === 0;
         },
@@ -126,11 +127,26 @@ describe('review I1: the survey\'s digits and the lesson\'s question', () => {
         const seen = p.w.press('Digit1');
         // the survey took the key (its capture stopped the page from hearing it) and the lesson answered it too
         expect(p.survey).toEqual([{ kind: 'digit', digit: 1 }]);
-        expect(seen.stopped).toBe(true);
         expect(p.host.answers).toEqual([1]);
     });
 
-    it('the rest of the rules are as they were: a key held down, a shortcut, a text field and a page with no question are not answers', () => {
+    it('sonic-keys: in a running lesson a digit is ours with no question asked yet (the sound still plays): the lesson takes it or says it did not', () => {
+        const w = fakeWindow();
+        const answers: number[] = [];
+        const host: QuestionHost = { active: true, asking: false, answer: (n) => (answers.push(n), true) };
+        w.raw.addEventListener('keydown', digitAnswerHandler({ host: () => host, paused: () => false, typing: () => false }) as unknown as (e: never) => void, true);
+        const seen = w.press('Digit2');
+        expect(seen.prevented).toBe(true);
+        expect(w.press('Numpad1').prevented).toBe(true);
+        expect(answers).toEqual([2, 1]);
+        // no lesson running: not ours
+        const off = fakeWindow();
+        const idle: QuestionHost = { active: false, asking: false, answer: () => false };
+        off.raw.addEventListener('keydown', digitAnswerHandler({ host: () => idle, paused: () => false, typing: () => false }) as unknown as (e: never) => void, true);
+        expect(off.press('Digit2').prevented).toBe(false);
+    });
+
+    it('the rest of the rules are as they were: a key held down, a shortcut, a text field and a page with no lesson are not answers', () => {
         const p = page({ paused: () => false });
         expect(p.w.press('Digit1', { repeat: true }).prevented).toBe(false);
         expect(p.w.press('Digit1', { ctrlKey: true }).prevented).toBe(false);
