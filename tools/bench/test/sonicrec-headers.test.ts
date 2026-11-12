@@ -91,8 +91,10 @@ describe('serve-csp.mjs sends the headers nginx.conf has', () => {
         expect((await head(s.port, '/admin/')).headers.get('permissions-policy')).toBe(adminText);
         expect(mic(flyText)).toBe('self');
         for (const text of [siteText, assetsText, adminText]) expect(mic(text)).toBe('');
-        // nothing but the microphone differs between the simulator's policy and the site's
-        expect(flyText.replace('microphone=(self)', 'microphone=()')).toBe(siteText);
+        // nothing but the microphone and USB (lane center-throttle: the WebUSB helper) differs between the simulator's policy and the site's
+        expect(flyText).toContain('usb=(self)');
+        for (const text of [siteText, assetsText, adminText]) expect(text).toContain('usb=()');
+        expect(flyText.replace('microphone=(self)', 'microphone=()').replace('usb=(self)', 'usb=()')).toBe(siteText);
         expect(await headerProblems(s.port)).toEqual([]);
     });
 
