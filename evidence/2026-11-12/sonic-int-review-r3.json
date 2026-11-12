@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T12:53:19.281Z",
-    "gitHead": "2957c92",
+    "date": "2026-11-12T14:28:48.165Z",
+    "gitHead": "980d399",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,11 +16,11 @@
   },
   "site": "http://127.0.0.1:5420",
   "release": {
-    "sha": "2957c92",
-    "sonic": "3115137",
-    "built": "2026-11-12T12:45:22.073Z"
+    "sha": "980d399",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:20:40.989Z"
   },
-  "git": "2957c92",
+  "git": "980d399",
   "seconds": 18,
   "passed": 4,
   "total": 4,
@@ -40,7 +40,7 @@
       "name": "R3: a press after the longer line but before the pair has been read is not a yes (no recording)",
       "pass": true,
       "value": {
-        "earlyPressAtMs": 10673,
+        "earlyPressAtMs": 10672,
         "pairReadAtMs": 14905,
         "longerLineMs": 7810
       }
@@ -49,7 +49,7 @@
       "name": "R3: control: once both lines have been read a press is the yes",
       "pass": true,
       "value": {
-        "recordingOnAtMs": 16520
+        "recordingOnAtMs": 16632
       }
     },
     {
@@ -62,9 +62,9 @@
     "r3": {
       "minorMs": 7095,
       "askMs": 7810,
-      "earlyPressAtMs": 10673,
+      "earlyPressAtMs": 10672,
       "recordingOnAfterEarlyPress": false,
-      "recordingOnAtMs": 16520,
+      "recordingOnAtMs": 16632,
       "spokenAtThatPress": [
         "rec.minor",
         "rec.ask"

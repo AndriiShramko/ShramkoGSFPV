@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T12:52:25.766Z",
-    "gitHead": "2957c92",
+    "date": "2026-11-12T14:27:53.687Z",
+    "gitHead": "980d399",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,12 +16,12 @@
   },
   "site": "http://127.0.0.1:5420",
   "release": {
-    "sha": "2957c92",
-    "sonic": "3115137",
-    "built": "2026-11-12T12:45:22.073Z"
+    "sha": "980d399",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:20:40.989Z"
   },
-  "git": "2957c92",
-  "seconds": 66,
+  "git": "980d399",
+  "seconds": 74,
   "passed": 4,
   "total": 4,
   "pass": true,
@@ -33,7 +33,7 @@
         "question": "ears-headphones:1:1:side",
         "answers": [
           {
-            "t": 22611,
+            "t": 25472,
             "kind": "answer",
             "item": "ears-headphones:1:1:side",
             "value": 1,

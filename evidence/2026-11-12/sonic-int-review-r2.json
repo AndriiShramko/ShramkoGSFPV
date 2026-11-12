@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T12:52:58.277Z",
-    "gitHead": "2957c92",
+    "date": "2026-11-12T14:28:27.049Z",
+    "gitHead": "980d399",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,11 +16,11 @@
   },
   "site": "http://127.0.0.1:5420",
   "release": {
-    "sha": "2957c92",
-    "sonic": "3115137",
-    "built": "2026-11-12T12:45:22.073Z"
+    "sha": "980d399",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:20:40.989Z"
   },
-  "git": "2957c92",
+  "git": "980d399",
   "seconds": 30,
   "passed": 4,
   "total": 4,
@@ -32,17 +32,17 @@
       "value": [
         {
           "text": "",
-          "start": -1994,
-          "end": -1994
+          "start": -2020,
+          "end": -2020
         },
         {
           "text": "A small room",
-          "start": -1684,
-          "end": 31
+          "start": -1676,
+          "end": 12
         },
         {
           "text": "Recording started.",
-          "start": 21238,
+          "start": 21189,
           "end": null
         }
       ]
@@ -51,15 +51,15 @@
       "name": "R2: the pilot hears the consent question within 2 s of pressing T (it does not wait for the lesson to finish talking)",
       "pass": true,
       "value": {
-        "askStartedMs": 63
+        "askStartedMs": 65
       }
     },
     {
       "name": "R2: a second press is never taken as the yes before the question has been spoken",
       "pass": true,
       "value": {
-        "recordingAtMs": 21333,
-        "askStartedMs": 63
+        "recordingAtMs": 21285,
+        "askStartedMs": 65
       }
     },
     {
@@ -76,36 +76,36 @@
           "what": "T (first press)"
         },
         {
-          "at": 63,
+          "at": 65,
           "what": "the question (rec.ask) starts to be spoken"
         },
         {
-          "at": 21056,
+          "at": 21020,
           "what": "T (second press); the question had started"
         },
         {
-          "at": 21333,
+          "at": 21285,
           "what": "the recording is on"
         }
       ],
-      "askStartedMs": 63,
-      "recordingAtMs": 21333,
-      "secondPressAtMs": 21056,
+      "askStartedMs": 65,
+      "recordingAtMs": 21285,
+      "secondPressAtMs": 21020,
       "secondPressWasHeard": true,
       "utterances": [
         {
           "text": "",
-          "start": -1994,
-          "end": -1994
+          "start": -2020,
+          "end": -2020
         },
         {
           "text": "A small room",
-          "start": -1684,
-          "end": 31
+          "start": -1676,
+          "end": 12
         },
         {
           "text": "Recording started.",
-          "start": 21238,
+          "start": 21189,
           "end": null
         }
       ]

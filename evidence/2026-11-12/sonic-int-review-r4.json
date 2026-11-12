@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T12:53:58.514Z",
-    "gitHead": "2957c92",
+    "date": "2026-11-12T14:29:28.106Z",
+    "gitHead": "980d399",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,11 +16,11 @@
   },
   "site": "http://127.0.0.1:5420",
   "release": {
-    "sha": "2957c92",
-    "sonic": "3115137",
-    "built": "2026-11-12T12:45:22.073Z"
+    "sha": "980d399",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:20:40.989Z"
   },
-  "git": "2957c92",
+  "git": "980d399",
   "seconds": 37,
   "passed": 4,
   "total": 4,
@@ -32,18 +32,18 @@
       "value": [
         {
           "text": "The microphone stays on whil",
-          "called": 9,
-          "started": 646
+          "called": 17,
+          "started": 800
         },
         {
           "text": "Do you want to answer a few ",
-          "called": 8013,
+          "called": 8027,
           "started": null
         },
         {
           "text": "I have a few short questions",
-          "called": 8761,
-          "started": 8814
+          "called": 8827,
+          "started": 8887
         }
       ]
     },
@@ -51,48 +51,48 @@
       "name": "R4: the notice that the microphone stays on began to be spoken (an answer given at once did not take it away before it began)",
       "pass": true,
       "value": {
-        "noticeCalledMs": 9,
-        "noticeStartedMs": 646,
+        "noticeCalledMs": 17,
+        "noticeStartedMs": 800,
         "afterStop": [
           {
             "text": "The microphone stays on whil",
-            "called": 9,
-            "started": 646
+            "called": 17,
+            "started": 800
           },
           {
             "text": "Do you want to answer a few ",
-            "called": 8013,
+            "called": 8027,
             "started": null
           },
           {
             "text": "I have a few short questions",
-            "called": 8761,
-            "started": 8814
+            "called": 8827,
+            "started": 8887
           },
           {
             "text": "Question 2 of 9.",
-            "called": 9983,
-            "started": 10037
+            "called": 10047,
+            "started": 10119
           },
           {
             "text": "Question 3 of 9.",
-            "called": 10448,
-            "started": 10558
+            "called": 10505,
+            "started": 10641
           },
           {
             "text": "Question 4 of 9.",
-            "called": 10911,
-            "started": 10987
+            "called": 10969,
+            "started": 11061
           },
           {
             "text": "Question 5 of 9.",
-            "called": 11380,
-            "started": 11453
+            "called": 11430,
+            "started": 11537
           },
           {
             "text": "Question 6 of 9.",
-            "called": 11842,
-            "started": 11927
+            "called": 11890,
+            "started": 11966
           }
         ]
       }
@@ -102,48 +102,48 @@
       "pass": true,
       "value": {
         "noticeStartedMs": {
-          "noticeCalledMs": 9,
-          "noticeStartedMs": 646,
+          "noticeCalledMs": 17,
+          "noticeStartedMs": 800,
           "afterStop": [
             {
               "text": "The microphone stays on whil",
-              "called": 9,
-              "started": 646
+              "called": 17,
+              "started": 800
             },
             {
               "text": "Do you want to answer a few ",
-              "called": 8013,
+              "called": 8027,
               "started": null
             },
             {
               "text": "I have a few short questions",
-              "called": 8761,
-              "started": 8814
+              "called": 8827,
+              "started": 8887
             },
             {
               "text": "Question 2 of 9.",
-              "called": 9983,
-              "started": 10037
+              "called": 10047,
+              "started": 10119
             },
             {
               "text": "Question 3 of 9.",
-              "called": 10448,
-              "started": 10558
+              "called": 10505,
+              "started": 10641
             },
             {
               "text": "Question 4 of 9.",
-              "called": 10911,
-              "started": 10987
+              "called": 10969,
+              "started": 11061
             },
             {
               "text": "Question 5 of 9.",
-              "called": 11380,
-              "started": 11453
+              "called": 11430,
+              "started": 11537
             },
             {
               "text": "Question 6 of 9.",
-              "called": 11842,
-              "started": 11927
+              "called": 11890,
+              "started": 11966
             }
           ]
         }
@@ -157,48 +157,48 @@
   ],
   "result": {
     "r4": {
-      "noticeCalledMs": 9,
-      "noticeStartedMs": 646,
+      "noticeCalledMs": 17,
+      "noticeStartedMs": 800,
       "afterStop": [
         {
           "text": "The microphone stays on whil",
-          "called": 9,
-          "started": 646
+          "called": 17,
+          "started": 800
         },
         {
           "text": "Do you want to answer a few ",
-          "called": 8013,
+          "called": 8027,
           "started": null
         },
         {
           "text": "I have a few short questions",
-          "called": 8761,
-          "started": 8814
+          "called": 8827,
+          "started": 8887
         },
         {
           "text": "Question 2 of 9.",
-          "called": 9983,
-          "started": 10037
+          "called": 10047,
+          "started": 10119
         },
         {
           "text": "Question 3 of 9.",
-          "called": 10448,
-          "started": 10558
+          "called": 10505,
+          "started": 10641
         },
         {
           "text": "Question 4 of 9.",
-          "called": 10911,
-          "started": 10987
+          "called": 10969,
+          "started": 11061
         },
         {
           "text": "Question 5 of 9.",
-          "called": 11380,
-          "started": 11453
+          "called": 11430,
+          "started": 11537
         },
         {
           "text": "Question 6 of 9.",
-          "called": 11842,
-          "started": 11927
+          "called": 11890,
+          "started": 11966
         }
       ]
     }

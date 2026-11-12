@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T12:56:22.688Z",
-    "gitHead": "2957c92",
+    "date": "2026-11-12T14:31:55.315Z",
+    "gitHead": "980d399",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,12 +16,12 @@
   },
   "site": "http://127.0.0.1:5420",
   "release": {
-    "sha": "2957c92",
-    "sonic": "3115137",
-    "built": "2026-11-12T12:45:22.073Z"
+    "sha": "980d399",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:20:40.989Z"
   },
-  "git": "2957c92",
-  "seconds": 15,
+  "git": "980d399",
+  "seconds": 21,
   "passed": 6,
   "total": 6,
   "pass": true,
@@ -31,7 +31,7 @@
       "pass": true,
       "value": [
         {
-          "t": 10008,
+          "t": 12869,
           "kind": "answer",
           "item": "ears-headphones:1:1:side",
           "value": 1,
@@ -44,7 +44,8 @@
       "pass": true,
       "value": [
         "answer.got",
-        "headphones.trial"
+        "headphones.trial",
+        "sonic.say.lessonKeys"
       ]
     },
     {
@@ -52,7 +53,8 @@
       "pass": true,
       "value": [
         "answer.got",
-        "headphones.trial"
+        "headphones.trial",
+        "sonic.say.lessonKeys"
       ]
     },
     {
@@ -70,7 +72,7 @@
       "pass": true,
       "value": [
         {
-          "t": 12274,
+          "t": 18039,
           "kind": "key",
           "code": "Digit7",
           "action": "answer.refused"
@@ -88,11 +90,12 @@
       "trial1": {
         "spokenSinceTrialLine": [
           "answer.got",
-          "headphones.trial"
+          "headphones.trial",
+          "sonic.say.lessonKeys"
         ],
         "answers": [
           {
-            "t": 10008,
+            "t": 12869,
             "kind": "answer",
             "item": "ears-headphones:1:1:side",
             "value": 1,
@@ -105,7 +108,7 @@
           "answer.need-123"
         ],
         "answers": [],
-        "fromTrialLine": 20
+        "fromTrialLine": 22
       }
     }
   },

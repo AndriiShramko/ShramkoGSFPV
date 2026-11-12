@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T12:56:04.674Z",
-    "gitHead": "2957c92",
+    "date": "2026-11-12T14:31:31.617Z",
+    "gitHead": "980d399",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,12 +16,12 @@
   },
   "site": "http://127.0.0.1:5420",
   "release": {
-    "sha": "2957c92",
-    "sonic": "3115137",
-    "built": "2026-11-12T12:45:22.073Z"
+    "sha": "980d399",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:20:40.989Z"
   },
-  "git": "2957c92",
-  "seconds": 124,
+  "git": "980d399",
+  "seconds": 121,
   "passed": 3,
   "total": 3,
   "pass": true,
@@ -32,7 +32,7 @@
       "value": [
         {
           "lesson": "ears-headphones",
-          "frames": 3005,
+          "frames": 3089,
           "compared": true,
           "ok": true,
           "recorded": 40,
@@ -80,7 +80,7 @@
       "rows": [
         {
           "lesson": "ears-headphones",
-          "frames": 3005,
+          "frames": 3089,
           "compared": true,
           "ok": true,
           "recorded": 40,
@@ -91,7 +91,7 @@
           "cueMismatches": []
         }
       ],
-      "details": "replay check PASS: events 40 of 40 re-derived (largest time difference 2 ms); cues 100.0 % of 3005 frames agree (100.0 % by cue kind)"
+      "details": "replay check PASS: events 40 of 40 re-derived (largest time difference 2 ms); cues 100.0 % of 3089 frames agree (100.0 % by cue kind)"
     }
   },
   "problems": []
