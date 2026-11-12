@@ -277,7 +277,7 @@ const STOPS = [
     'sonic-hp-left', 'sonic-hp-right', 'sonic-hp-behind',
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'summary',
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */
@@ -320,7 +320,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first')}, not started, Fast path`);
         // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3)
         const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
-        expect(settings).toBe(14);
+        expect(settings).toBe(15);
         expect(at('sonic-theme')).toBe(`Settings. Sound theme: Soft. Item 1 of ${settings}.`);
         expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 8 of ${settings}.`);
         expect(at('sonic-height-target')).toBe(`Target height note: on. Item 9 of ${settings}.`);
@@ -503,7 +503,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         over.s.show('settings');
         expect(page.map((x) => x.line.params?.text ?? x.line.key)).toEqual(['Settings']);
         doc.key('ArrowDown');
-        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 14.');
+        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 15.');
         expect(over.engine.said).toEqual([]);
         over.s.dispose();
     });
@@ -573,7 +573,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         for (const sw of SWITCHES) {
             byTestId(doc, 'sonic-about')!.focus();
             byTestId(doc, sw.id)!.focus();
-            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 14.`, interrupt: true });
+            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 15.`, interrupt: true });
             expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(true);
         }
         // and within the section, the next stop after the long description cuts it (a line that interrupts)
@@ -615,7 +615,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         expect(byTestId(doc, 'sonic-look-attitude')!.checked).toBe(true);
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-height-direction')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 10 of 14.`);
+        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 10 of 15.`);
         again.s.dispose();
     });
 

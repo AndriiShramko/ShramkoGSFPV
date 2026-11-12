@@ -25,14 +25,19 @@ export interface RunnerKeys {
 /** The runner's own names, when the page has none (the package's defaults). */
 export const DEFAULT_RUNNER_KEYS: RunnerKeys = Object.freeze({ next: 'N', previous: 'B', repeat: 'Z' });
 
-/** The keys the line at every lesson's start names ("Escape: menu. Z: repeat the task. N: next.", sonic.say.lessonKeys). */
+/**
+ * The keys the line at the start of every step names (sonic.say.lessonKeys; lane sonic-hints, the owner's complaint of 2026-11-10:
+ * "which key takes me to the next step"): next, back, repeat, the lesson menu and the main menu, the keys that act in a lesson.
+ */
 export interface LessonStartKeys {
     readonly menu: string;
     readonly repeat: string;
     readonly next: string;
+    readonly previous: string;
+    readonly home: string;
 }
 
-export const DEFAULT_LESSON_START_KEYS: LessonStartKeys = Object.freeze({ menu: 'Escape', repeat: 'Z', next: 'N' });
+export const DEFAULT_LESSON_START_KEYS: LessonStartKeys = Object.freeze({ menu: 'Escape', repeat: 'Z', next: 'N', previous: 'B', home: 'X' });
 
 /** Named keys the page binds (aria = KeyboardEvent.code for these). */
 const NAMED = new Set(['Escape', 'Enter', 'Space', 'Tab', 'Backspace']);
@@ -96,12 +101,14 @@ export class KeyNames {
             .join(' ');
     }
 
-    /** The keys the line at every lesson's start names (B6): Escape (the lesson menu), Z (the task again), N (next). */
+    /** The keys the line at every step's start names: N (next), B (back), Z (the task again), Escape (the lesson menu), X (the main menu). */
     lessonStart(): LessonStartKeys {
         return {
             menu: this.of('pause.toggle', 'Escape') || DEFAULT_LESSON_START_KEYS.menu,
             repeat: this.of('sonic.repeat') || DEFAULT_LESSON_START_KEYS.repeat,
-            next: this.of('scene.next') || DEFAULT_LESSON_START_KEYS.next
+            next: this.of('scene.next') || DEFAULT_LESSON_START_KEYS.next,
+            previous: this.of('feedback.open') || DEFAULT_LESSON_START_KEYS.previous,
+            home: this.of('sonic.home') || DEFAULT_LESSON_START_KEYS.home
         };
     }
 

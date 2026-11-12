@@ -235,6 +235,8 @@ export class Rig {
     onSwap: (() => void) | null = null;
     /** the names the line at every lesson's start says (v0.13 B6; the page's are its keyboard layout's) */
     lessonKeys: LessonStartKeys = DEFAULT_LESSON_START_KEYS;
+    /** the pilot's 'Key hints at the start of each step' (lane sonic-hints): false is off */
+    keyHints = true;
     pilot: LessonPilot | null = null;
     session!: FlightSession;
     mode!: SonicMode;
@@ -317,7 +319,8 @@ export class Rig {
             clock: () => rig.clock.t,
             keyNames: () => rig.keyNames,
             speechRate: () => rig.speechRate,
-            lessonKeys: () => rig.lessonKeys
+            lessonKeys: () => rig.lessonKeys,
+            keyHints: () => rig.keyHints
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);

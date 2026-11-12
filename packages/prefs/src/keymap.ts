@@ -101,7 +101,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },
     { action: 'sonic.repeat', keys: [letter('Z')], when: 'sonic', labelKey: 'keys.sonic.repeat', status: 'shipped' },
-    { action: 'sonic.glossary', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.glossary', status: 'shipped' }
+    { action: 'sonic.glossary', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.glossary', status: 'shipped' },
+    // lane sonic-hints (the owner's complaint of 2026-11-10): X leaves a lesson for the mode's main menu (its start screen) in one
+    // press, the lesson saved. X was free (no binding, not a flying key). A key of the mode only, like the five above
+    { action: 'sonic.home', keys: [letter('X')], when: 'sonic', labelKey: 'keys.sonic.home', status: 'shipped' }
 ];
 
 /**
