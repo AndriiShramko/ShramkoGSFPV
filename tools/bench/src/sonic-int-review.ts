@@ -682,7 +682,10 @@ const sideOf = (h: Hum): number => (h.dir as [number, number, number])[0];
  */
 async function flyWithTurns(ctx: BrowserContext, served: Served, lesson: string, label: string): Promise<{ page: Page; rows: HumRow[]; flying: boolean }> {
     const page = await openLesson(ctx, served, lesson, label);
-    const flying = await until(`${label}: the flying phase`, () => probe(page), (p) => p.phase === 'flying', 60000, 100).then(() => true).catch(() => false);
+    const flying = await until(`${label}: the flying phase`, () => probe(page), (p) => p.phase === 'flying', 60000, 100).then(() => true).catch((e: Error) => {
+        log(`${label}: ${e.message.slice(0, 700)}`);
+        return false;
+    });
     await humRows(page);
     await page.keyboard.down('KeyW');
     await sleep(2500);
