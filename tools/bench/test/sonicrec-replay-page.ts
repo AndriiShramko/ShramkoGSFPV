@@ -126,7 +126,7 @@ class ModelHost {
         this.touchFlag = false;
         this.events(this.runner.step(sample, this.world));
         this.drain();
-        const input = this.runner.demoFrame(this.t) ?? { sample, world: this.world, target: this.runner.target(), floorY: 0 };
+        const input = this.runner.demoFrame(this.t) ?? { sample, world: this.world, target: this.runner.target(), beacon: this.runner.beaconTarget(), floorY: 0 }; // lane sonic-beacon: as mode.ts
         lastCues = [...this.planner.plan(input).cues];
         this.out.sample(sample);
     }

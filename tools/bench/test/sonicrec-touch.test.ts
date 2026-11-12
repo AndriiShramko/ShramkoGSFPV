@@ -100,7 +100,8 @@ class TunnelHost {
         const sample: FlightSample = { t: this.t, tick: this.tick, pos: this.pos, vel: this.vel, quat: yawQuat(this.yaw), rate: [0, 0, 0], yawDeg: this.yaw, pitchDeg: 0, rollDeg: 0, sticks: [0, 0, 0, 0], armed: true, touched, paused: false };
         this.events.push(...this.runner.step(sample, this.world));
         this.drain();
-        const plan = this.planner.plan(this.runner.demoFrame(this.t) ?? { sample, world: this.world, target: this.runner.target(), floorY: 0 });
+        // lane sonic-beacon: the beacon beside the target, as the simulator's mode.ts gives it (the replay hums at it too)
+        const plan = this.planner.plan(this.runner.demoFrame(this.t) ?? { sample, world: this.world, target: this.runner.target(), beacon: this.runner.beaconTarget(), floorY: 0 });
         const frame = this.sampler.take(this.rule ? sample : { ...sample, touched: false }, this.t, plan.cues.map((c) => c.id));
         if (frame) this.frames.push(frame);
     }
