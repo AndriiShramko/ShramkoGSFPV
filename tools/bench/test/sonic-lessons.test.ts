@@ -241,6 +241,20 @@ describe('the first lesson of each module, passed end to end by a scripted pilot
         for (const id of lesson.checkpoints.map((c) => c.id)) expect(cps).toContain(id);
     }, 600000);
 
+    it('lane sonic-beacon: the lesson host gives the engine the beacon of the runner beside its target: in the corridor (no gate) a track point while flying, the target stays null', async () => {
+        const r = await open('corridor');
+        // past the intro (its lines take their time): from the first flying frame, 10 s of the scripted pilot
+        await r.run(600000, corridor, () => r.host.runner?.phase === 'flying');
+        expect(r.host.runner?.phase).toBe('flying');
+        const from = r.engine.inputs.length;
+        await r.run(10000, corridor);
+        const flying = r.engine.inputs.slice(from).filter((i) => !('demo' in i));
+        expect(flying.length).toBeGreaterThan(100);
+        const withBeacon = flying.filter((i) => i.beacon !== undefined && i.beacon !== null);
+        expect(withBeacon.length / flying.length).toBeGreaterThan(0.8);
+        expect(withBeacon.every((i) => i.target === null && i.beacon!.id.startsWith('beacon:'))).toBe(true);
+    }, 120000);
+
     it('module 5, rings-first: through the ring r times, back to the start each time', async () => {
         const r = await open('rings-first');
         await r.run(900000, throughTheGate, () => r.passed);

@@ -736,7 +736,7 @@ async function r9(browser: () => Promise<BrowserContext>, served: Served): Promi
     const page = await openLesson(rings, served, 'rings-line', 'R9 rings-line');
     const ready = await until('R9 rings-line: the flying phase', () => probe(page), (p) => p.phase === 'flying', 60000, 100).then(() => true).catch(() => false);
     const before = await humRows(page);
-    const first = before.at(-1)?.target ?? null;
+    let first = [...before].reverse().find((r) => r.target !== null)?.target ?? null;
     await page.keyboard.down('KeyW');
     const t0 = Date.now();
     const rows: HumRow[] = [];
@@ -745,6 +745,7 @@ async function r9(browser: () => Promise<BrowserContext>, served: Served): Promi
         await sleep(200);
         const got = await humRows(page);
         rows.push(...got);
+        if (first === null) first = rows.find((r) => r.target !== null)?.target ?? null;
         if (passedAt < 0) {
             const i = rows.findIndex((r) => r.target !== null && first !== null && r.target !== first);
             if (i >= 0) passedAt = i;
@@ -754,7 +755,7 @@ async function r9(browser: () => Promise<BrowserContext>, served: Served): Promi
     await page.keyboard.up('KeyW');
     const after = passedAt >= 0 ? rows.slice(Math.max(0, passedAt - 5), passedAt + 100) : [];
     const pre = notes(after);
-    result.r9rings = { flying: ready, first, passedAt, next: passedAt >= 0 ? rows[passedAt]!.target : null, rows: rows.length, previews: pre.length, sample: pre.slice(0, 5), notesBefore: notes(passedAt >= 0 ? rows.slice(0, Math.max(0, passedAt - 5)) : rows).length };
+    result.r9rings = { flying: ready, first, passedAt, next: passedAt >= 0 ? rows[passedAt]!.target : null, rows: rows.length, previews: pre.length, sample: pre.slice(0, 5), notesBefore: notes(passedAt >= 0 ? rows.slice(0, Math.max(0, passedAt - 5)) : rows).length, targets: [...new Set(rows.map((r) => r.target))].slice(0, 8), phases: [...new Set(rows.map((r) => r.phase))] };
     check('R9: rings-line: the first ring was passed (the target moved on)', passedAt >= 0, result.r9rings);
     check('R9 beacon: after the ring a one-off note of the hum (the preview of the ring after the next) is planned', pre.length > 0, result.r9rings);
     check('R9 beacon: the preview comes from ahead or a side, never from behind', pre.length > 0 && notBehind(pre), pre.slice(0, 5));
