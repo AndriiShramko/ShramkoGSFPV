@@ -4,3 +4,4 @@ export * from './hid-layout';
 export * from './edgetx';
 export * from './known-devices';
 export * from './link';
+export * from './throttle-style';

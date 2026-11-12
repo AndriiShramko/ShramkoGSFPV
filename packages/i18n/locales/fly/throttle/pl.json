@@ -1,0 +1,11 @@
+{
+  "set.input.throttleStyle": "Lewy drążek (aparatura, pad)",
+  "set.input.throttleStyle.help": "Drążek na środku (dron z kamerą): lewy drążek sam wraca na środek: środek trzyma wysokość, w górę wznosi, w dół opuszcza. Puść go, a dron się zatrzyma i zawiśnie. Silniki ruszają, gdy poruszysz drążkiem. Od zera (FPV): tak latają piloci FPV: silniki ruszają (to się nazywa uzbrojenie) tylko z lewym drążkiem na samym dole, a drążek ustawia moc silników. Automatycznie wybiera według tego, gdzie spoczywa twój drążek. Zapisane dla każdego kontrolera; J przełącza. Ekran dotykowy i klawiatura zawsze latają bez uzbrajania.",
+  "set.input.throttleStyle.opt.auto": "Automatycznie (według tego, gdzie spoczywa drążek)",
+  "set.input.throttleStyle.opt.centred": "Drążek na środku (dron z kamerą)",
+  "set.input.throttleStyle.opt.zero": "Od zera (FPV)",
+  "keys.throttle.style": "Lewy drążek: na środku (dron z kamerą) albo od zera (FPV)",
+  "throttle.now": "Lewy drążek: {style}",
+  "throttle.afterLanding": "Lewy drążek: {style} po lądowaniu (silniki teraz pracują)",
+  "throttle.radioOnly": "To jest dla aparatury albo pada. Ekran dotykowy i klawiatura już latają bez uzbrajania (silniki ruszają same)."
+}

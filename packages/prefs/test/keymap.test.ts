@@ -61,7 +61,9 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
     // v0.8 lane A: K shows the keyboard's key card on demand (app/builtin/play.ts)
     'help.keys',
     // v0.9 lane B: F toggles full screen (app/builtin/play.ts)
-    'fullscreen.toggle'
+    'fullscreen.toggle',
+    // lane center-throttle: J, the throttle style (app/builtin/throttle-style.ts)
+    'throttle.style'
 ];
 /** Keys shipped for Fly by Sound (v0.12, docs/wip/v12-plan.md sections 1 and 3): bound at step 0, handled by the lanes' features. */
 const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
@@ -76,6 +78,8 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     // v0.9 lane B: F is full screen; the design table's F (next favourite scene) moved to Shift+F
     'fullscreen.toggle': ['F'],
     'scene.favourite': ['Shift+F'],
+    // lane center-throttle: J flips a radio's or gamepad's left stick between in the centre and from zero
+    'throttle.style': ['J'],
     // v0.12 Fly by Sound: T records, U sends, I says the status, Z repeats the last line, G opens the glossary
     'sonic.record': ['T'],
     'sonic.send': ['U'],
@@ -227,8 +231,9 @@ describe('the sound mode\'s keys exist only in the mode (v12-optin: when \'sonic
             expect(p, when).toEqual([`KeyT is bound to sonic.record and test.t (sonic / ${when})`]);
         }
         const free: KeyBinding[] = [
-            { action: 'test.a', keys: [{ code: 'KeyJ', cap: 'J', aria: 'J' }], when: 'flight', labelKey: 'keys.test.a', status: 'shipped' },
-            { action: 'test.b', keys: [{ code: 'KeyJ', cap: 'J', aria: 'J' }], when: 'crash', labelKey: 'keys.test.b', status: 'shipped' }
+            // every letter is bound since J took the last one (lane center-throttle): a digit is free
+            { action: 'test.a', keys: [{ code: 'Digit1', cap: '1', aria: '1' }], when: 'flight', labelKey: 'keys.test.a', status: 'shipped' },
+            { action: 'test.b', keys: [{ code: 'Digit1', cap: '1', aria: '1' }], when: 'crash', labelKey: 'keys.test.b', status: 'shipped' }
         ];
         expect(keymapProblems([...KEYMAP, ...free])).toEqual([]);
     });

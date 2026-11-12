@@ -16,6 +16,11 @@
 // v0.10 lane K (docs/wip/v10-k.md, the owner's message 23 item 1): the "How to fly" card shown when a scan opens.
 //  - input.howToFly: on (default) = the card with the keys (or the sticks) of the input in use shows once per visit when the
 //    scan is ready; its "Do not show again" box turns this off. K and the pause menu show it whatever this says.
+// Lane center-throttle (docs/wip/center-throttle.md, the owner's words of 2026-11-12): how a radio, gamepad or HID controller's left stick flies.
+//  - input.throttleStyle: auto = by where the throttle rests (in the centre: centred; at the bottom: from zero), centred = the stick
+//    in the centre holds the height and the motors start with the first stick move (a camera drone), zero = FPV, the motors start
+//    only with the stick at the bottom. The truth is per controller (Profile.throttleStyle, app/builtin/throttle-style.ts copies it
+//    here for the controller in use), so the store does not keep it (persist: false). J flips it. Touch and keyboard: no effect.
 import type { SettingDef } from '../schema';
 
 export const PLAY_DEFS: readonly SettingDef[] = [
@@ -25,5 +30,6 @@ export const PLAY_DEFS: readonly SettingDef[] = [
     { id: 'input.mouseSensitivity', group: 'input', scope: 'global', type: 'number', min: 0.25, max: 3, step: 0.05, unit: 'x', default: 1, apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
     { id: 'input.mouseInvertY', group: 'input', scope: 'global', type: 'bool', default: false, apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
     { id: 'input.gameSpeed', group: 'input', scope: 'global', type: 'enum', options: ['slow', 'normal', 'fast'], default: 'normal', apply: 'live', shown: ['settings'], status: 'shipped', since: 2 },
+    { id: 'input.throttleStyle', group: 'input', scope: 'global', type: 'enum', options: ['auto', 'centred', 'zero'], default: 'auto', apply: 'live', shown: ['settings', 'key', 'controls'], action: 'throttle.style', persist: false, status: 'shipped', since: 2 },
     { id: 'input.howToFly', group: 'input', scope: 'global', type: 'bool', default: true, apply: 'live', shown: ['settings'], status: 'shipped', since: 2 }
 ];

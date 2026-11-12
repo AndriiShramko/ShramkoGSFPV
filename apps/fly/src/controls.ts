@@ -14,7 +14,7 @@
 // screen) decide the arm and the mode instead when it has them, and their action ranges run app
 // actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
-import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, validModeSwitch } from '@gsfpv/input';
+import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, readThrottleRest, readThrottleStyle, validModeSwitch } from '@gsfpv/input';
 import type { ChannelTable, LinkStats, Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
@@ -144,8 +144,15 @@ export function checkProfile(v: unknown): Profile | null {
     if (p.version !== 1 || !p.axes || typeof p.axes !== 'object' || !p.deviceKey) return null;
     const kind = (p.arm as { kind?: unknown } | null)?.kind;
     if (p.arm && kind !== 'axis' && kind !== 'button' && kind !== 'key') return null;
-    if (p.modeSwitch === undefined && p.switches === undefined && p.channels === undefined && p.known === undefined) return p;
+    if (p.modeSwitch === undefined && p.switches === undefined && p.channels === undefined && p.known === undefined && p.throttleStyle === undefined && p.throttleRest === undefined) return p;
     const out: Profile = { ...p };
+    // the throttle style (lane center-throttle): a value this version does not read is automatic, the profile stays
+    const style = readThrottleStyle(p.throttleStyle);
+    if (style) out.throttleStyle = style;
+    else delete out.throttleStyle;
+    const rest = readThrottleRest(p.throttleRest);
+    if (rest) out.throttleRest = rest;
+    else delete out.throttleRest;
     if (p.channels !== undefined) {
         // the device's channel numbering (a recognised controller's): names only, so one that cannot be read goes and the profile stays
         const table = readChannelTable(p.channels);
@@ -344,6 +351,11 @@ export class Controls {
     /** A switch input of the device in use as the pilot reads it (inputLabel, with the profile's channel table): "CH6", or "button 3" on a gamepad. */
     nameOf(input: SwitchInput): string {
         return inputLabel(input, this.source === 'gamepad' ? 'gamepad' : 'hid', this.profile?.channels);
+    }
+
+    /** The source's mapped channels before any assist and the arm gate (roll, pitch, throttle, yaw, arm, mode); the same array every call. */
+    get mapped(): Float32Array {
+        return this.ch;
     }
 
     /** For the HUD; the same object every call (the HUD reads it at 10 Hz). */

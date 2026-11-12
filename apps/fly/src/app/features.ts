@@ -36,6 +36,7 @@ import { switches } from './builtin/switches';
 import { crosshair } from './builtin/crosshair';
 import { sound } from './builtin/sound';
 import { play } from './builtin/play';
+import { throttleStyle } from './builtin/throttle-style';
 import { howToFly } from './builtin/how-to-fly';
 import { nextHint } from './builtin/next-hint';
 import { sharedSettings } from './builtin/shared-settings';
@@ -77,6 +78,7 @@ export const FEATURES: readonly Feature[] = [
     crosshair,
     sound,
     play,
+    throttleStyle,
     howToFly,
     nextHint,
     sharedSettings,

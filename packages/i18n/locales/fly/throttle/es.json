@@ -1,0 +1,11 @@
+{
+  "set.input.throttleStyle": "Stick izquierdo (emisora, mando)",
+  "set.input.throttleStyle.help": "Stick en el centro (dron con cámara): el stick izquierdo vuelve solo al centro: el centro mantiene la altura, arriba sube, abajo baja. Suéltalo y el dron se detiene y se queda en el aire. Los motores arrancan cuando mueves un stick. Desde cero (FPV): como vuelan los pilotos FPV: los motores arrancan (a esto se le llama armar) solo con el stick izquierdo abajo del todo, y el stick fija la potencia de los motores. Automático elige según dónde descansa tu stick. Se guarda para cada mando; J lo cambia. La pantalla táctil y el teclado siempre vuelan sin armar.",
+  "set.input.throttleStyle.opt.auto": "Automático (según dónde descansa tu stick)",
+  "set.input.throttleStyle.opt.centred": "Stick en el centro (dron con cámara)",
+  "set.input.throttleStyle.opt.zero": "Desde cero (FPV)",
+  "keys.throttle.style": "Stick izquierdo: en el centro (dron con cámara) o desde cero (FPV)",
+  "throttle.now": "Stick izquierdo: {style}",
+  "throttle.afterLanding": "Stick izquierdo: {style} después de aterrizar (ahora los motores están en marcha)",
+  "throttle.radioOnly": "Esto es para una emisora o un mando. La pantalla táctil y el teclado ya vuelan sin armar (los motores arrancan solos)."
+}

@@ -97,6 +97,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     // recording to the author, I says the status (lesson, attempt, recording), Z repeats the last spoken line, G opens the
     // sound glossary. Keys of the mode only (v12-optin, the owner's message 40: the sound mode is not pressed on pilots who
     // did not choose it): routed and listed on a page entered through ?sonic=, nowhere else, and not in the catalogue
+    // lane center-throttle (app/builtin/throttle-style.ts): a radio's or gamepad's throttle style, stick in the centre <-> from zero
+    { action: 'throttle.style', keys: [letter('J')], when: 'always', labelKey: 'keys.throttle.style', status: 'shipped' },
     { action: 'sonic.record', keys: [letter('T')], when: 'sonic', labelKey: 'keys.sonic.record', status: 'shipped' },
     { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },

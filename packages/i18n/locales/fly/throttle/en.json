@@ -1,0 +1,11 @@
+{
+  "set.input.throttleStyle": "Left stick (radio, gamepad)",
+  "set.input.throttleStyle.help": "Stick in the centre (camera drone): the left stick springs to the centre: centre holds the height, up climbs, down descends. Let go and the drone stops and hovers. The motors start when you move a stick. From zero (FPV): as FPV pilots fly: the motors start (this is called arming) only with the left stick all the way down, and the stick sets the motors' power. Automatic chooses by where your stick rests. Saved for each controller; J switches it. Touch and the keyboard always fly without arming.",
+  "set.input.throttleStyle.opt.auto": "Automatic (by where your stick rests)",
+  "set.input.throttleStyle.opt.centred": "Stick in the centre (camera drone)",
+  "set.input.throttleStyle.opt.zero": "From zero (FPV)",
+  "keys.throttle.style": "Left stick: in the centre (camera drone) or from zero (FPV)",
+  "throttle.now": "Left stick: {style}",
+  "throttle.afterLanding": "Left stick: {style} after landing (the motors are running now)",
+  "throttle.radioOnly": "This is for a radio or a gamepad. Touch and the keyboard already fly without arming (the motors start by themselves)."
+}

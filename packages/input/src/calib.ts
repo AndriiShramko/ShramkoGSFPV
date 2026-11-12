@@ -90,6 +90,32 @@ export interface Profile {
     channels?: SwitchInput[];
     /** The known-controller entry this profile came from (known-devices.ts KnownDevice.id): its labels on the check screen. */
     known?: string;
+    /**
+     * The pilot's throttle style for this controller (throttle-style.ts): 'centred' = the stick in the centre holds the
+     * height and the motors start with the first stick move (a camera drone); 'zero' = FPV, the motors start (arming)
+     * only with the throttle at the bottom. Absent: automatic, by where the throttle rests (resolveStyle).
+     */
+    throttleStyle?: ThrottleStyle;
+    /** Where the throttle stick rested with the thumbs off, as the wizard's centre step measured it (absent: not measured). */
+    throttleRest?: ThrottleRest;
+}
+
+/** How a radio's throttle flies: from the centre (a camera drone's spring stick) or from zero (FPV). */
+export type ThrottleStyle = 'centred' | 'zero';
+/** Where a throttle stick rests let go: the middle, the bottom, or somewhere else (parked). */
+export type ThrottleRest = 'centre' | 'bottom' | 'parked';
+
+/**
+ * Where a throttle stick rests, from its mapped value (-1 bottom .. 1 top, 0 the middle; one half of the range = 1):
+ * within TUNING.CENTRE_TOL of the middle 'centre', within TUNING.END_TOL of the bottom 'bottom', else 'parked'. The
+ * wizard's own thresholds for "a stick let go" and "at its end" (docs/research/wizard-v3-user-paced-spec.md 3.3); the
+ * DJI's measured rest offsets (11 and 8 of 660 units, known-devices.ts) are well inside CENTRE_TOL. null: no number.
+ */
+export function classifyThrottleRest(v: number): ThrottleRest | null {
+    if (!Number.isFinite(v)) return null;
+    if (Math.abs(v) <= TUNING.CENTRE_TOL) return 'centre';
+    if (v <= -(1 - TUNING.END_TOL)) return 'bottom';
+    return 'parked';
 }
 
 /** What a recognised device brings to a wizard run: its channel table and its known-controller id, kept in the profile. */
@@ -1569,6 +1595,12 @@ export class CalibrationWizard {
                 ? { index: c, invert: a.invert, center: a.invert ? max : min, min, max }
                 : { index: c, invert: a.invert, center: a.center, min, max };
         }
+        // where the throttle rested at the centre step (thumbs off): its offset from the middle in halves, turned so that
+        // -1 is the throttle's bottom (an inverted throttle reads its bottom at the top of its channel)
+        const tAx = this.assigned.throttle;
+        const cr = this.results.centre;
+        const tRest = tAx && cr?.kind === 'centre' ? cr.centres.find((x) => x.ch === tAx.index) : undefined;
+        const throttleRest = tAx && tRest ? classifyThrottleRest((tAx.invert ? -1 : 1) * (tRest.pct / 100)) : null;
         return {
             version: 1,
             deviceKey: this.deviceKey,
@@ -1586,7 +1618,10 @@ export class CalibrationWizard {
             // the device's channel numbering and its known entry are not measured either: they come
             // with the device (a recognised controller) and stay through Set again and Recalibrate
             ...(this.device.channels ? { channels: this.device.channels.map((i) => ({ ...i })) } : {}),
-            ...(this.device.known ? { known: this.device.known } : {})
+            ...(this.device.known ? { known: this.device.known } : {}),
+            // the pilot's throttle style for this controller stays through Set again and Recalibrate
+            ...(this.resumed?.throttleStyle ? { throttleStyle: this.resumed.throttleStyle } : {}),
+            ...(throttleRest ? { throttleRest } : {})
         };
     }
 
