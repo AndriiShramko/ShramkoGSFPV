@@ -112,7 +112,7 @@ export class ModeChip {
         this.btn.classList.toggle('radio', radio !== null);
         this.thr.hidden = ts === null;
         this.thr.textContent = ts ? t(`throttle.short.${ts.style}`) : '';
-        this.btn.dataset.throttle = ts?.style ?? '';
+        this.btn.setAttribute('data-throttle', ts?.style ?? '');
         if (this.thrGroup) this.thrGroup.hidden = ts === null;
         for (const i of this.thrItems) i.b.setAttribute('aria-checked', String(ts?.style === i.s));
         const thrAria = ts ? `. ${t('throttle.chip.aria', { style: t(`set.input.throttleStyle.opt.${ts.style}`) })}` : '';

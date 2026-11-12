@@ -69,8 +69,8 @@ export function throttleStyleRow(p: Profile, o: StyleRowOptions = {}): { el: HTM
         if (key === shown) return;
         shown = key;
         title.textContent = text;
-        el.dataset.style = r.style;
-        el.dataset.why = r.why;
+        el.setAttribute('data-style', r.style);
+        el.setAttribute('data-why', r.why);
         for (const i of items) {
             i.b.setAttribute('aria-checked', String(i.s === r.style));
             i.b.classList.toggle('primary', i.s === r.style);
