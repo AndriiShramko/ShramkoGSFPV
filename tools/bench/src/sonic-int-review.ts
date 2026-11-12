@@ -519,7 +519,7 @@ async function r6(browser: () => Promise<BrowserContext>, served: Served): Promi
     check('R6: 7 during the sound of trial 2 answers nothing and is said back with the keys that answer (answer.need-123)', got2.length === 0 && said2.includes('answer.need-123') && !said2.includes('answer.not-now'), { said2, got2 });
     // review I2: the refused digit is written for the replay (a key event with the action answer.refused)
     const refused2 = all2.slice(at2).filter((e) => (e as { kind?: string }).kind === 'key' && (e as { action?: string }).action === 'answer.refused');
-    check('R6: the refused 7 is in the recording as the replay's input (key, answer.refused, Digit7)', refused2.length === 1 && (refused2[0] as { code?: string }).code === 'Digit7', refused2);
+    check('R6: the refused 7 is in the recording as an input of the replay (key, answer.refused, Digit7)', refused2.length === 1 && (refused2[0] as { code?: string }).code === 'Digit7', refused2);
     await ctx.close();
 }
 
