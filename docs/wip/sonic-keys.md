@@ -43,7 +43,11 @@ Branch `sonic-keys` here (from `origin/main` 31b1453) and branch `sonic-keys` in
     - page probes on the local release build b6574b6 (`scripts/build-release.mjs`; serve-csp, headless, GPU lock): R6 5 of 5, now strict: 7 during trial 2's sound said back with `answer.need-123` and never `answer.not-now`, and its `key`/`answer.refused`/`Digit7` event recorded; R5 3 of 3 (40 of 40 events, 3016 frames, cues 100 %, the panel's verdict pass). Evidence `evidence/2026-11-12/sonic-int-review-r5.json`, `-r6.json`
     - not run again: R1 to R4, the full gates (vitest of the whole tree, api-unittest, catalog, B18); not listened by a human: the new line and how the held word sounds
 - [x] B1 closed (the lead, 2026-11-12): package `sonic-keys` merged `--no-ff` into the package's `main` as 3115137 (tree equal to efd5137; secrets scan ok, diff read for personal data: none; fixtures' userAgent `vitest`), pushed to the public `main`; simulator `main` merged `--no-ff` (56c35e9) and the pin moved efd5137 → 3115137
-- [ ] the lead: all gates once on the merge, flight regression and R1-R6 on the local release build
+- [x] the lead: all gates once on the merge, flight regression and R1-R7 on the local release build (2026-11-12)
+  - gates.py on 1f57d4c: typecheck, vitest, api-unittest, architecture, i18n, catalog PASS; B18 FAIL on Cyrillic in `docs/wip/sonic-keys-review.md` and this file; the review translated to English, the quote replaced (2957c92); B18, typecheck, architecture PASS again
+  - local release build 2957c92 (serve-csp, headless): accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all true (target `http://localhost:5431`); probes R1 4/4, R2 4/4, R3 4/4, R4 4/4, R5 3/3, R6 6/6, new R7 5/5 (2 failed trials asked again, both answered 1, no intro, pass)
+  - negative control on the live site before the release (17a0b6d, package 09535b7), `SITE=` run: R6 2 of 6, R7 1 of 5 (the retry said `headphones.intro` and asked all trials again); evidence `*-live-before-17a0b6d.json`
+  - secrets scan: one false hit (`W`, the lesson key `lesson.ears-headphones.hint.1` after `retry` in the R7 evidence), allowed for that commit only
 - [ ] the lead: release (static: no `apps/api`, nginx or compose change), live checks
 
 ## Notes
