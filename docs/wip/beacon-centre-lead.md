@@ -12,7 +12,7 @@ Two lanes go out in one release. Stage 1: merge, gates, local probes, push (no d
 - [x] S1.6 gates run 1 (on 9c8f1c09): FAIL vitest (sonicrec-headers: fly policy differs from site by usb too), api-unittest (test_nginx_routes: same), b18 (pl/ru letters in docs/wip/center-throttle.md). Fixed in 80d94282. Gates run 2: all PASS, exit 0; vitest 264 files, 4265 passed, 10 skipped; api-unittest 422 OK; B18 PASS
 - [x] S1.7 local release (dist of eda10673, sonic 83ce612) probes, all pass (numbers below)
 - [x] S1.8 lead note complete
-- [ ] S1.9 push simulator main
+- [x] S1.9 pushed main 6f335947..7a6c8508 (code and evidence; this status line is a later docs commit). Stage 2 deploys the latest pushed main
 
 ## Commits on main (stage 1)
 
