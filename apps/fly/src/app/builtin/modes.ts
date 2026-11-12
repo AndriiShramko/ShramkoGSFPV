@@ -48,7 +48,18 @@ export const modes: Feature = {
             radio: () => radioSwitch(ctx),
             // the pilot's choice: stored, and over any ?set.flight.mode= of this load (it no longer describes the flight)
             pick: (m) => { prefs.set('flight.mode', m); prefs.clearSession('flight.mode'); },
-            caps: ctx.keys.caps('mode.cycle')
+            caps: ctx.keys.caps('mode.cycle'),
+            // lane center-throttle: the left stick's style of the radio or gamepad in use (the one waiting for the motors to stop, if any)
+            throttle: {
+                now: () => {
+                    const src = ctx.controls.source;
+                    if (src !== 'hid' && src !== 'gamepad') return null;
+                    const ts = ctx.input.throttleStyle;
+                    return { style: ts.pending ?? ts.now, pending: ts.pending !== null };
+                },
+                pick: (st) => prefs.set('input.throttleStyle', st),
+                caps: ctx.keys.caps('throttle.style')
+            }
         });
         // in the page's order right after the OSD it sits beside (paint and focus order)
         ctx.hud.root.after(chip.el);

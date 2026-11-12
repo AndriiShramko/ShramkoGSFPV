@@ -14,6 +14,21 @@ import { linkLines } from './link-text';
 import { keysFor } from '@gsfpv/prefs';
 import { MODE2_KEYS } from '../play/keys';
 import { gateSpoken, pilotCaps } from './controls-card-logic';
+import { ArmOffer } from './arm-offer-logic';
+
+/**
+ * The throttle style of the radio or gamepad in use (lane center-throttle; app/builtin/throttle-style.ts sets it): the arm card
+ * offers the centred style when the stick rests in the centre (ui/arm-offer-logic.ts), and in the centred style acro says in
+ * one line that the throttle is direct.
+ */
+export interface HudThrottle {
+    /** the style flying now; null: no radio or gamepad */
+    style(): 'centred' | 'zero' | null;
+    /** the craft flies acro now */
+    acro(): boolean;
+    /** the pilot took the offer (its button, the controller's arm input) */
+    centred(): void;
+}
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -24,6 +39,9 @@ class ArmCard {
     private reason = h('p', { class: 'reason' });
     private rows: { li: HTMLLIElement; text: HTMLSpanElement }[] = [];
     private armBtn: HTMLButtonElement;
+    /** "Your left stick is resting in the centre": the two ways, one button (ui/arm-offer-logic.ts says when) */
+    private offer: HTMLDivElement;
+    private offerKeys = h('p', { class: 'muted small' });
     /**
      * The drawing is in sight (set by `update`, which runs at the text's 10 Hz, cleared when the card hides
      * or shows only a reason): `live` then paints the knobs every frame. They are the pilot's own stick;
@@ -32,7 +50,7 @@ class ArmCard {
      */
     private drawn: { key: boolean; block: Exclude<ArmBlock, null> } | null = null;
 
-    constructor(onArm: () => void) {
+    constructor(onArm: () => void, onCentred: () => void) {
         const row = (): { li: HTMLLIElement; text: HTMLSpanElement } => {
             const text = h('span');
             return { li: h('li', {}, h('span', { class: 'mk' }, tickIcon()), text), text };
@@ -42,17 +60,29 @@ class ArmCard {
         this.rows[2].li.append(this.armBtn);
         this.list = h('ol', {}, ...this.rows.map((r) => r.li));
         // not a live region: the throttle % changes ten times a second. Hud.gate speaks the step instead
-        this.el = h('div', { class: 'arm-card hidden' }, this.art.el, h('div', {}, h('h3', {}, t('arm.card.title')), this.list, this.reason));
+        this.offer = h('div', { class: 'arm-offer', 'data-testid': 'arm-offer', role: 'status', hidden: true },
+            h('p', {}, t('throttle.offer.rest')),
+            h('p', {}, t('throttle.offer.fpv')),
+            h('button', { type: 'button', class: 'btn primary', 'data-action': 'throttle-centred', 'aria-keyshortcuts': 'J', onclick: () => onCentred() }, t('throttle.offer.button')),
+            this.offerKeys);
+        this.el = h('div', { class: 'arm-card hidden' }, this.art.el, h('div', {}, h('h3', {}, t('arm.card.title')), this.list, this.reason, this.offer));
         this.disarm = h('button', { type: 'button', class: 'btn arm-disarm hidden', 'data-action': 'hud-disarm', onclick: () => onArm() }, t('arm.disarmKey'));
     }
 
-    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock): void {
+    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock, offer = false): void {
         const screenOpen = !!document.querySelector('.screen.radio');
         const key = v?.armKind === 'key';
         this.disarm.classList.toggle('hidden', !(v && key && armed && !crashed && !screenOpen));
         const show = !!v && !armed && !crashed && !screenOpen && block !== null;
         this.el.classList.toggle('hidden', !show);
         this.drawn = null;
+        const offered = show && offer && !!v;
+        if (this.offer.hidden === offered) this.offer.hidden = !offered;
+        if (offered && v) {
+            // the controller's own arm input takes it too (a switch or the DJI start/stop button); a key-armed setup has none
+            const keys = v.armKind && v.armKind !== 'key' && v.armLabel ? t('throttle.offer.keys', { src: v.armLabel }) : t('throttle.offer.keysOnly');
+            if (this.offerKeys.textContent !== keys) this.offerKeys.textContent = keys;
+        }
         if (!v || !show || block === null) return;
         // no signal, hidden tab, crashed, no profile: only the reason, the steps do not apply
         const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
@@ -225,7 +255,13 @@ export class Hud {
     private statsLink = h('div', { 'data-testid': 'link-hint', class: 'detail', hidden: true });
     private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsInput, this.statsLink, this.statsDetail, this.statsDrawing, this.statsHint);
     private inputAt = -1e9;
-    private card = new ArmCard(() => this.onArm?.());
+    private card = new ArmCard(() => this.onArm?.(), () => this.throttle?.centred());
+    private offer = new ArmOffer();
+    private offerShown = false;
+    /** centred style and acro: the throttle is direct (one line under the OSD's top line) */
+    private acroLine = h('div', { class: 'osd acro-thr', 'data-testid': 'acro-throttle', hidden: true });
+    /** The throttle style of the controller in use (app/builtin/throttle-style.ts); null: never set (the arm card has no offer). */
+    throttle: HudThrottle | null = null;
     private keys = new KeyCard();
     private last = 0;
     visible = true;
@@ -235,7 +271,7 @@ export class Hud {
     onArm: (() => void) | null = null;
 
     constructor() {
-        this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.card.el, this.card.disarm, this.keys.el, this.frameStats);
+        this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.acroLine, this.card.el, this.card.disarm, this.keys.el, this.frameStats);
     }
 
     /**
@@ -335,6 +371,11 @@ export class Hud {
         // the radio drawing is the pilot's own stick: every frame. Everything else is text, at 10 Hz
         // (a number that changes with every frame cannot be read)
         this.card.live(radio && view ? view : null);
+        // every frame: a short press of the controller's arm button must not fall between two of the text's updates
+        const style = radio ? this.throttle?.style() ?? null : null;
+        const of = this.offer.update({ style, block, throttle: view ? view.ch[2] : Number.NaN, arm: view ? view.ch[4] : 0, now });
+        this.offerShown = of.show;
+        if (of.accept) this.throttle?.centred();
         if (now - this.last < 100) return;
         this.last = now;
         this.root.style.display = this.visible && !this.textOff ? '' : 'none';
@@ -352,7 +393,10 @@ export class Hud {
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
         const kbd = src === 'keyboard';
-        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block);
+        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block, this.offerShown);
+        const acro = style === 'centred' && !!this.throttle?.acro();
+        if (this.acroLine.hidden === acro) this.acroLine.hidden = !acro;
+        if (acro && !this.acroLine.textContent) this.acroLine.textContent = t('throttle.acro');
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
         const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';

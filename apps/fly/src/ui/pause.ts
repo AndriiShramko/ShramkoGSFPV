@@ -5,7 +5,7 @@
 // and which keys run them. Up / Down move between the menu's buttons; the first one has the focus.
 import type { KeyHint } from '@gsfpv/prefs';
 import { h, panel } from './dom';
-import { modeChip, statsColumn, keysBlock } from './summary';
+import { modeChip, throttleChip, statsColumn, keysBlock } from './summary';
 import type { SummaryData } from './summary';
 import { t, locale } from '../i18n';
 import { consentSettingsShown, openConsent } from '../app/analytics';
@@ -36,6 +36,8 @@ export function pauseMenu(parent: HTMLElement, entries: readonly PauseMenuEntry[
     if (summary) p.root.classList.add('has-stats');
     const chip = summary ? modeChip(summary.mode) : null;
     if (chip) p.root.querySelector('.panel-head h2')?.after(chip);
+    const thr = summary ? throttleChip(summary.throttle) : null;
+    if (thr) (chip ?? p.root.querySelector('.panel-head h2'))?.after(thr);
     const menu = h('nav', { class: 'sum-col sum-menu', 'aria-label': t('summary.menu') });
     entries.forEach((it, i) => {
         const ks = it.keys;

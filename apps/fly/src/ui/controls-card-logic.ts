@@ -119,6 +119,8 @@ export interface CardEnv {
     /** a radio's arm control: its kind ('key': Space or the ARM button) and its name ("CH5", "button 3"); null and '' when none is set up */
     armKind: 'axis' | 'button' | 'toggle' | 'key' | null;
     armLabel: string;
+    /** lane center-throttle: a radio's or gamepad's left stick flies in the centre (camera drone): no arming row, the style's own */
+    centred?: boolean;
     /** the layouts the keyboard flies with (play/keys.ts); the page leaves them out and gets the shipped tables, tests pass their own */
     gameKeys?: readonly KeyBind<GameAxis>[];
     pilotKeys?: readonly KeyBind[];
@@ -206,7 +208,7 @@ export function cardModel(kind: CardKind, env: CardEnv): CardModel {
         ...base,
         rows: [
             row('sticks', [], t('play.card.radioSticks'), t('play.card.capSticks')),
-            row('arm', ['ARM'], radioArmText(env)),
+            env.centred ? row('arm', caps('throttle.style'), t('throttle.card.centred')) : row('arm', ['ARM'], radioArmText(env)),
             row('mode', caps('mode.cycle'), t('play.card.radioMode')),
             row('pause', first(caps('pause.toggle')), t('arm.keys.pause')),
             ...common()

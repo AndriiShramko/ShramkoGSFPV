@@ -25,6 +25,8 @@ export interface SummaryShortcut {
 export interface SummaryData {
     /** the mode the craft flies now, e.g. 'angle' (null: none to show) */
     mode: string | null;
+    /** the left stick's style of the radio or gamepad in use (lane center-throttle; absent or null: touch, keyboard) */
+    throttle?: 'centred' | 'zero' | null;
     life: StatsBlock;
     session: StatsBlock;
     lifetime: DroneTotals;
@@ -59,6 +61,12 @@ export function summaryText(d: SummaryData, date = new Date()): string {
 export function modeChip(mode: string | null): HTMLElement | null {
     if (!mode) return null;
     return h('span', { class: 'sum-mode', 'data-testid': 'summary-mode', 'data-mode': mode }, t('summary.mode', { mode: t(`summary.mode.${mode}`) }));
+}
+
+/** The left stick's style beside the mode chip (lane center-throttle), in the setting's words. */
+export function throttleChip(style: 'centred' | 'zero' | null | undefined): HTMLElement | null {
+    if (!style) return null;
+    return h('span', { class: 'sum-mode sum-throttle', 'data-testid': 'summary-throttle', 'data-throttle': style }, t('throttle.now', { style: t(`set.input.throttleStyle.opt.${style}`) }));
 }
 
 /** The left column: this flight, the session, the drone's lifetime; "Copy stats". */

@@ -89,7 +89,9 @@ export const summary: Feature = {
         const data = (): SummaryData => {
             sync();
             const id = ctx.session.presetId;
-            return { mode: mode(), life: ledger.life(), session: ledger.session(), lifetime: ledger.lifetime(), drone: PRESETS[id]?.name ?? id, units: units(), shortcuts: shortcuts(ctx), save: saveStats };
+            const src = ctx.controls.source;
+            const throttle = src === 'hid' || src === 'gamepad' ? ctx.input.throttleStyle.now : null;
+            return { mode: mode(), throttle, life: ledger.life(), session: ledger.session(), lifetime: ledger.lifetime(), drone: PRESETS[id]?.name ?? id, units: units(), shortcuts: shortcuts(ctx), save: saveStats };
         };
         // the menu must open whatever happens here: without the data it is the menu alone
         if (ctx.menu instanceof PauseMenu) ctx.menu.setSummary(() => { try { return data(); } catch (e) { console.error('summary panel data', e); return null; } });

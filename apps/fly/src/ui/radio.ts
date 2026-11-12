@@ -19,6 +19,7 @@ import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, s
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
 import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
+import { throttleStyleRow } from './throttle-style-row';
 import { SwitchesView } from './switches';
 import { knownNameNote, knownNote, knownOfferBlock, knownPanel } from './known-panel';
 import { LinkReadout, drawFrame, rateOf } from './device-rate';
@@ -261,6 +262,8 @@ export class RadioScreen {
                 h('p', { class: 'radio-cur-name' }, t('radio.connected', { name: cur.profile.deviceName })),
                 h('p', { class: 'muted small' }, t('radio.rate', { hz: Math.round(curDev.rateHz) })),
                 kn ? knownOfferBlock(kn.match.device, { use: () => this.useKnownCurrent(cur, kn.offer, kn.match), keep: () => this.keepOwnCurrent(cur, kn.match) }) : null,
+                // the left stick: in the centre (camera drone) or from zero (FPV), lane center-throttle
+                throttleStyleRow(cur.profile).el,
                 h('div', { class: 'actions' },
                     h('button', { type: 'button', class: kn ? 'btn' : 'btn primary', 'data-action': 'radio-keep', onclick: () => this.keepCurrent() }, t('common.fly')),
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-setup', onclick: () => this.setupCurrent(cur) }, t('radio.recalibrate')),
@@ -910,6 +913,8 @@ export class RadioScreen {
             const modeRow = modeSwitchRow(wz, (l, a, f) => btn(l, a, f), () => { sig = ''; render(); }, p.channels);
             if (p.switches) rows.append(h('p', { class: 'wz-row-note small warn', 'data-testid': 'switches-check-note' }, t('switches.checkNote')));
             else rows.append(modeRow.el);
+            // the left stick's style the wizard detected, and the other one a press away (saved with the profile on Fly)
+            const thrRow = throttleStyleRow(p, { save: false, throttle: () => wz.state.mapped.throttle });
             const row = (k: string, info = false): HTMLLIElement => h('li', { class: info ? 'info' : '' }, h('span', { class: 'mk' }, tickIcon()), h('span', {}, t(k)));
             const rThr = row('wizard.check.throttle');
             const rArm = armKind === 'key' ? row('wizard.check.armKey', true) : row(armKind === 'toggle' ? 'wizard.check.armToggle' : 'wizard.check.arm');
@@ -924,6 +929,7 @@ export class RadioScreen {
             extra.append(rows, h('p', { class: 'wz-revhint muted small', hidden: !can.reverse }, t('wizard.reverseHint')));
             if (armKind !== 'key' && armKind !== 'toggle' && can.reverse) extra.append(h('p', { class: 'wz-armnow-hint small' }, t('wizard.check.armNowHint')));
             extra.append(
+                thrRow.el,
                 h('ul', { class: 'wz-checks', 'aria-live': 'off' }, rThr, rArm, rCen),
                 h('p', { class: 'wz-summary' }, t('wizard.summary', { order: channelOrder(p), arm: armText(st.armSource) })),
                 h('div', { class: 'wz-files' },
@@ -943,6 +949,7 @@ export class RadioScreen {
                 if (armNow) setArmNow(armNow, armLevel(s));
                 for (const [f, fill] of fills) setBar(fill, s.mapped[f], f === 'throttle');
                 modeRow.live();
+                thrRow.live();
             };
         };
 

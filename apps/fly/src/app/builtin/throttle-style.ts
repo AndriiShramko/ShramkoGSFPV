@@ -12,6 +12,7 @@
 import { RestWatch, profileStyle, readThrottleStyle } from '@gsfpv/input';
 import type { Profile, ResolvedStyle, ThrottleRest, ThrottleStyle } from '@gsfpv/input';
 import { saveProfile } from '../../controls';
+import { seenRests } from '../../ui/throttle-style-row';
 import { t } from '../../i18n';
 import type { Feature, FlightContext } from '../context';
 
@@ -71,6 +72,9 @@ export const throttleStyle: Feature = {
             const c = ctx.controls;
             // only a reporting controller with the motors off says where its throttle rests
             if (!c.gate.armed && c.lastSampleAt > 0) watch.update(c.mapped[2], performance.now());
+            if (watch.rest) seenRests.set(p, watch.rest);
+            // the Controls screen or the check screen changed the profile's choice: the setting shows it
+            if (!syncing && (p.throttleStyle ?? 'auto') !== prefs.get('input.throttleStyle')) showChoice(p);
             resolved = profileStyle(p, watch.rest);
             ctx.input.setThrottleStyle(resolved.style);
         };
@@ -106,6 +110,17 @@ export const throttleStyle: Feature = {
         const offLife = ctx.events.on('life', () => ctx.input.centrePilot?.resetFlight());
         const offSession = ctx.events.on('session', () => ctx.input.centrePilot?.resetFlight());
 
+        // the arm card's offer (ui/arm-offer-logic.ts) and the acro line (ui/hud.ts)
+        ctx.hud.throttle = {
+            style: () => (radioProfile(ctx) ? ctx.input.throttleStyle.now : null),
+            acro: () => ctx.controls.flyingMode() === 'acro',
+            centred: () => {
+                if (!radioProfile(ctx)) return;
+                prefs.set('input.throttleStyle', 'centred');
+                ctx.hud.flash(t('throttle.now', { style: styleName('centred') }), 3000);
+            }
+        };
+
         ctx.hook.throttle = () => {
             const s = ctx.input.throttleStyle;
             const v = prefs.get('input.throttleStyle');
@@ -119,6 +134,7 @@ export const throttleStyle: Feature = {
             offLife();
             offSession();
             delete ctx.hook.throttle;
+            ctx.hud.throttle = null;
         };
     }
 };
