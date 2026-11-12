@@ -452,7 +452,7 @@ async function partDE(browser: Browser, out: Record<string, unknown>): Promise<v
         // lanes sonic-keys / sonic-hints: an item with a key of its own says it before its place ("Repeat the task. Key Z. Item 2 of 8.")
         const esc = (x: string): string => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const wantRe = [new RegExp(`^${esc(SONIC['sonic.say.menuOpen'] ?? '')}$`), ...items.map((x, i) => new RegExp(`^${esc(x)}\\. (Key [A-Za-z]+\\. )?Item ${i + 1} of 8\\.$`))];
-        const said = (ts: readonly string[]): boolean => ts.length === wantRe.length && ts.every((t, i) => wantRe[i]?.test(t) === true);
+        const said = (ts: readonly (string | undefined)[]): boolean => ts.length === wantRe.length && ts.every((t, i) => wantRe[i]?.test(t ?? '') === true);
         out.lessonMenu = { lines: lines.map((e) => ({ key: e.key, text: e.text })), voice, focused: p1.menu.focused, held };
         await shot(page, 'd-lesson-menu', 'the lesson menu over the flight, the last item focused');
         check('D: Escape in a lesson holds the flight and opens the lesson menu; the engine was asked to say its name and how it works, then each item the arrows reach, in order, "Item n of 8" (the mode\'s speech events), and the same lines reached the browser\'s voice', opened?.menu.open === true && held === true && said(lines.map((e) => e.text)) && lines[0]?.key === 'sonic.say.menuOpen' && lines.slice(1).every((e) => e.key === 'menu.item') && wantRe.every((r) => voice.some((v) => r.test(v))) && p1.menu.focused === 7, out.lessonMenu);
