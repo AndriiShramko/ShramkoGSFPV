@@ -708,6 +708,9 @@ async function flyWithTurns(ctx: BrowserContext, served: Served, lesson: string,
  */
 async function r9(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
     log('R9: the target hum shows the way in the corridor; none with the setting off; the preview after a ring');
+    // Bounds (review R8 of the lane: estimates, not measured): at least 50 flying rows, a hum in at least 80 % of them, a side of |x| at
+    // least 0.25 in some frame, z at most 1e-3 (not behind). Measured on the lane's release (evidence/2026-11-12/sonic-int-review-r9.json):
+    // 283 rows, share 1.0, sides -0.66 to 0.92.
     const on = await newContext(browser, served, prefsDoc(), null);
     await on.addInitScript({ content: HUM_WATCH });
     const a = await flyWithTurns(on, served, 'corridor', 'R9 corridor');
@@ -726,9 +729,10 @@ async function r9(browser: () => Promise<BrowserContext>, served: Served): Promi
     await off.addInitScript({ content: HUM_WATCH });
     const b = await flyWithTurns(off, served, 'corridor', 'R9 corridor off');
     const vOff = voices(b.rows);
-    result.r9off = { flying: b.flying, rows: b.rows.length, beacon: b.rows[0]?.beacon ?? null, voices: vOff.length, sample: vOff.slice(0, 5) };
+    result.r9off = { flying: b.flying, rows: b.rows.length, hookHasHum: b.rows.length > 0 && b.rows.every((r) => r.hum !== null), beacon: b.rows[0]?.beacon ?? null, voices: vOff.length, sample: vOff.slice(0, 5) };
     check('R9: the corridor with the setting off reached its flying phase', b.flying && b.rows.length > 50, { flying: b.flying, rows: b.rows.length });
-    check('R9 off: with the setting off the plan carries no target hum in the corridor (the goal has no gate to hum at)', vOff.length === 0, result.r9off);
+    // review R8: only a hook that reports the plan's hum (and the setting off) can tell an absent hum; a build without the hook must fail here
+    check('R9 off: with the setting off the plan carries no target hum in the corridor (the goal has no gate to hum at)', b.rows.length > 0 && b.rows.every((r) => r.hum !== null && r.beacon === false) && vOff.length === 0, result.r9off);
     await off.close();
 
     const rings = await newContext(browser, served, prefsDoc(), null);

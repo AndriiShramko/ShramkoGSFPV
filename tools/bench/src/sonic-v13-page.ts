@@ -190,11 +190,11 @@ const saved = (page: Page): Promise<{ prefs: Record<string, unknown> | null; pro
     });
 
 /** The three switches v13-int added, as saved: the package's setting in the sound document, the two panels in the collection beside it (absent: on). */
-const savedSwitches = (page: Page): Promise<{ heightDirection: unknown; soundPanel: unknown; attitude: unknown }> =>
+const savedSwitches = (page: Page): Promise<{ heightDirection: unknown; beacon: unknown; soundPanel: unknown; attitude: unknown }> =>
     page.evaluate(() => {
         const d = JSON.parse(localStorage.getItem('gsfpv.prefs.v1') ?? 'null') as { collections?: { sonic?: { prefs?: Record<string, unknown>; soundPanel?: unknown; attitude?: unknown } } } | null;
         const s = d?.collections?.sonic;
-        return { heightDirection: s?.prefs?.heightDirection, soundPanel: s?.soundPanel, attitude: s?.attitude };
+        return { heightDirection: s?.prefs?.heightDirection, beacon: s?.prefs?.beacon, soundPanel: s?.soundPanel, attitude: s?.attitude };
     });
 
 interface SpeechEvent { kind: string; key?: string; text?: string; t?: number; what?: string; lessonId?: string }
@@ -352,8 +352,10 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         for (let i = 0; i < 8; i++) await key(page, 'ArrowDown');
         const lines = (await spoken(page)).slice(n);
         const motorFocus = await focusNow(page);
-        out.settingsWalk = { navAt, head, headSaid, lines };
-        check('C: the navigation\'s Settings link, Enter: the section\'s heading has the focus and is said; Down through the settings, each said with "Item n of 14" (v13-int step 3: three switches more), to Motor volume', navAt.text === 'Settings' && head.id === 'sonic-h-settings' && headSaid.join(' | ') === 'Settings' && lines[0] === 'Sound theme: Soft. Item 1 of 14.' && lines.length === 8 && lines.at(-1) === 'Motor volume: 0 dB. Item 8 of 14.' && motorFocus.testid === 'sonic-motor-level', out.settingsWalk);
+        // the number of settings stops as the page says it (16 since lane sonic-beacon; its review R13: no fixed number here)
+        const of = Number(/Item 1 of (\d+)[.]$/.exec(lines[0] ?? '')?.[1] ?? NaN);
+        out.settingsWalk = { navAt, head, headSaid, lines, of };
+        check('C: the navigation\'s Settings link, Enter: the section\'s heading has the focus and is said; Down through the settings, each said with "Item n of N" (N as the page says it; v13-int step 3 and lane sonic-beacon: four switches more), to Motor volume', navAt.text === 'Settings' && head.id === 'sonic-h-settings' && headSaid.join(' | ') === 'Settings' && lines[0] === `Sound theme: Soft. Item 1 of ${of}.` && of >= 14 && lines.length === 8 && lines.at(-1) === `Motor volume: 0 dB. Item 8 of ${of}.` && motorFocus.testid === 'sonic-motor-level', out.settingsWalk);
         n = (await spoken(page)).length;
         await key(page, 'ArrowRight');
         await key(page, 'ArrowRight');
@@ -371,15 +373,18 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
         const target = (await spoken(page)).slice(n);
         const targetSaved = await until('the target note saved', () => saved(page), (x) => x.prefs?.heightTarget === false, 5000).then((x) => x.prefs?.heightTarget).catch(async () => (await saved(page)).prefs?.heightTarget);
         out.heightTarget = { target, saved: targetSaved };
-        check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === 'Target height note: on. Item 9 of 14. | Target height note: off' && targetSaved === false, out.heightTarget);
+        check('C: Down to Target height note (said), Enter turns it off (said), saved', target.join(' | ') === `Target height note: on. Item 9 of ${of}. | Target height note: off` && targetSaved === false, out.heightTarget);
         await shot(page, 'c-settings', 'the settings with Motor volume at -9 dB and the target note off');
         // v13-int step 3 and 10: the three switches the integration added, by the same keys. Down to each (the stop said with its place), Enter turns
         // it off (the new value said): every line is what reached the browser's voice through the engine. Sound from above and below comes after the
-        // target note (stop 10 of 14, said with its description), the sound panel and the horizon display after the frame (12 and 13).
+        // target note (stop 10, said with its description), then the target hum showing the way (lane sonic-beacon, stop 11, with its description), the sound
+        // panel and the horizon display after the frame (13 and 14).
         const DIRECTION = EN.say('menu.setting.height-direction');
         const WHAT = EN.say('menu.setting.height-direction-what').replace(/[.]$/, '');
         const PANEL = LOOK['soniclook.setting.soundPanel'] ?? '-';
         const HORIZON = LOOK['soniclook.setting.attitude'] ?? '-';
+        const BEACON = EN.say('menu.setting.beacon');
+        const BEACON_WHAT = EN.say('menu.setting.beacon-what').replace(/[.]$/, '');
         const turn = async (downs: number): Promise<string[]> => {
             const n1 = (await spoken(page)).length;
             await key(page, 'ArrowDown', downs);
@@ -387,13 +392,15 @@ async function partC(browser: Browser, out: Record<string, unknown>): Promise<vo
             return (await spoken(page)).slice(n1);
         };
         const dirLines = await turn(1);
+        const beaconLines = await turn(1);
         const panelLines = await turn(2);
         const horizonLines = await turn(1);
-        const offSaved = await until('the three switches saved', () => savedSwitches(page), (x) => x.heightDirection === false && x.soundPanel === false && x.attitude === false, 5000).catch(async () => savedSwitches(page));
-        out.switches = { dirLines, panelLines, horizonLines, saved: offSaved };
-        check('C: Down to Sound from above and below (said with its description and "Item 10 of 14"), Enter turns it off (said), saved in the sound document', dirLines.join(' | ') === `${DIRECTION}: on. ${WHAT}. Item 10 of 14. | ${DIRECTION}: off` && offSaved.heightDirection === false, { dirLines, saved: offSaved.heightDirection });
-        check('C: two Downs to the sound panel switch (the frame\'s stop said on the way, then "Item 12 of 14"), Enter turns it off (said), saved beside the progress', panelLines.length === 3 && /Item 11 of 14[.]$/.test(panelLines[0] ?? '') && panelLines[1] === `${PANEL}: on. Item 12 of 14.` && panelLines[2] === `${PANEL}: off` && offSaved.soundPanel === false, { panelLines, saved: offSaved.soundPanel });
-        check('C: Down to the horizon and height display ("Item 13 of 14"), Enter turns it off (said), saved beside the progress', horizonLines.join(' | ') === `${HORIZON}: on. Item 13 of 14. | ${HORIZON}: off` && offSaved.attitude === false, { horizonLines, saved: offSaved.attitude });
+        const offSaved = await until('the three switches saved', () => savedSwitches(page), (x) => x.heightDirection === false && x.beacon === false && x.soundPanel === false && x.attitude === false, 5000).catch(async () => savedSwitches(page));
+        out.switches = { dirLines, beaconLines, panelLines, horizonLines, saved: offSaved };
+        check('C: Down to Sound from above and below (said with its description and "Item 10 of N"), Enter turns it off (said), saved in the sound document', dirLines.join(' | ') === `${DIRECTION}: on. ${WHAT}. Item 10 of ${of}. | ${DIRECTION}: off` && offSaved.heightDirection === false, { dirLines, saved: offSaved.heightDirection });
+        check('C: Down to Target hum shows the way (said with its description and "Item 11 of N"), Enter turns it off (said), saved in the sound document (lane sonic-beacon)', beaconLines.join(' | ') === `${BEACON}: on. ${BEACON_WHAT}. Item 11 of ${of}. | ${BEACON}: off` && offSaved.beacon === false, { beaconLines, saved: offSaved.beacon });
+        check('C: two Downs to the sound panel switch (the frame\'s stop said on the way, then "Item 13 of N"), Enter turns it off (said), saved beside the progress', panelLines.length === 3 && new RegExp(`Item 12 of ${of}[.]$`).test(panelLines[0] ?? '') && panelLines[1] === `${PANEL}: on. Item 13 of ${of}.` && panelLines[2] === `${PANEL}: off` && offSaved.soundPanel === false, { panelLines, saved: offSaved.soundPanel });
+        check('C: Down to the horizon and height display ("Item 14 of N"), Enter turns it off (said), saved beside the progress', horizonLines.join(' | ') === `${HORIZON}: on. Item 14 of ${of}. | ${HORIZON}: off` && offSaved.attitude === false, { horizonLines, saved: offSaved.attitude });
         // Escape: back to the first Start button, said
         n = (await spoken(page)).length;
         await key(page, 'Escape');

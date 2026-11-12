@@ -246,7 +246,9 @@ describe('the first lesson of each module, passed end to end by a scripted pilot
         // past the intro (its lines take their time): from the first flying frame, 10 s of the scripted pilot
         await r.run(600000, corridor, () => r.host.runner?.phase === 'flying');
         expect(r.host.runner?.phase).toBe('flying');
-        const from = r.engine.inputs.length;
+        // the rig keeps the first 5000 frames only, and the corridor's intro passes that since its intro.5 (the hum, review R3): start afresh
+        r.engine.inputs.length = 0;
+        const from = 0;
         await r.run(10000, corridor);
         const flying = r.engine.inputs.slice(from).filter((i) => !('demo' in i));
         expect(flying.length).toBeGreaterThan(100);
