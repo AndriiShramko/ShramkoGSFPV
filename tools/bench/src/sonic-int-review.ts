@@ -27,7 +27,10 @@
 //
 //   R7  (sonic-keys) after a failed headphone check only the trials answered wrong are asked again, without the intro, and right answers pass it.
 //
-// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6|r7]
+//   R8  (sonic-hints) the keys of the moment are said at the start of every lesson step, once a step (Z does not repeat them, N does), and X
+//       leaves the lesson for the mode's main menu in one press, saying the lesson is saved.
+//
+// Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6|r7|r8]
 // SITE=https://gsfpv.flyreelstudio.eu runs a probe against that site instead (after a release; nothing is written to the site).
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, rmdirSync, statSync } from 'node:fs';
@@ -586,6 +589,54 @@ async function r7(browser: () => Promise<BrowserContext>, served: Served): Promi
     await ctx.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R8 (sonic-hints)
+
+const KEYS_LINE = 'sonic.say.lessonKeys';
+const keysLines = (all: readonly Ev[], from = 0): number => spokenAfter(all, from).filter((k) => k === KEYS_LINE).length;
+const startShown = (page: Page): Promise<boolean> => page.evaluate(() => {
+    const s = document.querySelector('[data-testid="sonic-start"]') as HTMLElement | null;
+    return !!s && !s.hidden;
+});
+
+/**
+ * R8: the keys of the moment are said at the start of every lesson step, once a step (the owner's complaint of 2026-11-10), and X
+ * leaves the lesson for the mode's main menu in one press. rings-first: its first step names the keys once; Z (the same step) does not
+ * say them again; N (step 2) says them once more; X shows the start screen and says where the pilot is (sonic.say.homeBack).
+ */
+async function r8(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R8: the keys line at every step start, once a step; X from the lesson to the main menu');
+    const ctx = await newContext(browser, served, prefsDoc(), null);
+    const page = await openLesson(ctx, served, 'rings-first', 'R8');
+    const first = await until('the keys line of step 1', () => events(page), (a) => keysLines(a) >= 1, 30000, 80);
+    const firstKeys = spokenAfter(first, 0);
+    check('R8: step 1 names the keys after its first line (sonic.say.lessonKeys)', keysLines(first) === 1 && firstKeys.indexOf(KEYS_LINE) > 0, firstKeys.slice(0, 6));
+    await sleep(4000);
+    const beforeZ = (await events(page)).length;
+    await page.keyboard.press('KeyZ');
+    await sleep(5000);
+    const afterZ = await events(page);
+    check('R8: Z (the same step said again) does not say the keys again', keysLines(afterZ, beforeZ) === 0 && spokenAfter(afterZ, beforeZ).length > 0, spokenAfter(afterZ, beforeZ).slice(0, 8));
+    const beforeN = afterZ.length;
+    await page.keyboard.press('KeyN');
+    const afterN = await until('the keys line of step 2', () => events(page), (a) => keysLines(a, beforeN) >= 1, 20000, 80).catch(async () => events(page));
+    await sleep(3000);
+    const nSaid = spokenAfter(await events(page), beforeN);
+    check('R8: N (the next step) names the keys once more, after the step\'s first line', nSaid.filter((k) => k === KEYS_LINE).length === 1 && nSaid.indexOf(KEYS_LINE) > 0, nSaid.slice(0, 8));
+    result.r8 = { step1: firstKeys.slice(0, 6), z: spokenAfter(afterZ, beforeZ).slice(0, 8), n: nSaid.slice(0, 8), total: keysLines(afterN) };
+    check('R8: the start screen is not shown during the lesson', !(await startShown(page)));
+    const beforeX = (await events(page)).length;
+    await page.keyboard.press('KeyX');
+    const shown = await until('the start screen after X', () => startShown(page), (v) => v, 5000, 50).catch(() => false);
+    const xSaid = await until('the line after X', () => events(page), (a) => spokenAfter(a, beforeX).includes('sonic.say.homeBack'), 5000, 50)
+        .then((a) => spokenAfter(a, beforeX))
+        .catch(async () => spokenAfter(await events(page), beforeX));
+    check('R8: X shows the main menu (the start screen) in one press', shown === true);
+    check('R8: X says where the pilot is (sonic.say.homeBack: the lesson is saved, Continue goes back)', xSaid.includes('sonic.say.homeBack'), xSaid.slice(0, 6));
+    const cont = await page.evaluate(() => [...document.querySelectorAll('[data-testid="sonic-start"] button')].some((b) => (b.getAttribute('data-lesson') ?? '') === 'rings-first'));
+    check('R8: the main menu offers the lesson to continue (a button of rings-first)', cont);
+    await ctx.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -625,6 +676,7 @@ async function main(): Promise<void> {
         else if (which === 'r5') await r5(fresh, served);
         else if (which === 'r6') await r6(fresh, served);
         else if (which === 'r7') await r7(fresh, served);
+        else if (which === 'r8') await r8(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {

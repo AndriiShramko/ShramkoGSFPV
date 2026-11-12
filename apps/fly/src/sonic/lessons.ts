@@ -163,8 +163,8 @@ export class LessonHost {
     private movedFrom: LessonSession | null = null;
     /**
      * The line of keys (v0.13 B6, M41-3; lane sonic-hints, the owner's complaint of 2026-11-10): said right after the first line of
-     * every step (a lesson's first line is its title), never again inside that step: "Keys: N next, B back, Z repeat, Escape menu, X
-     * main menu." with the pilot's names of those keys. `hintStep` is the step it was last said for (null: a lesson just opened). The
+     * every step (a lesson's first line is its title), never again inside that step: "Next, key N. Back, key B. Repeat, key Z.
+     * Menu, key Escape. Main menu, key X." with the pilot's names of those keys. `hintStep` is the step it was last said for (null: a lesson just opened). The
      * pilot's "Key hints: off" (SonicState.keyHints false) leaves it out.
      */
     private hintStep: string | null = null;

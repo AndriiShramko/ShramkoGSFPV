@@ -846,7 +846,7 @@ describe('B6 (M41-3): Escape opens the spoken lesson menu; the line at every les
         const first = r.engine.said.slice(0, 2);
         expect(first[0]).toMatchObject({ line: getLesson('rings-first').title });
         expect(first[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys', params: { menu: 'Escape', repeat: 'Y', next: 'N', previous: 'B', home: 'X' } }, interrupt: false });
-        expect(first[1]!.text).toBe('Keys: N next, B back, Y repeat, Escape menu, X main menu.');
+        expect(first[1]!.text).toBe('Next, key N. Back, key B. Repeat, key Y. Menu, key Escape. Main menu, key X.');
         expect(r.engine.said.filter((s) => s.line.key === 'sonic.say.lessonKeys')).toHaveLength(1);
         await r.run(1000, null);
         const before = r.engine.said.length;

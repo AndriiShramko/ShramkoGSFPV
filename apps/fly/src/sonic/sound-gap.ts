@@ -1,7 +1,7 @@
 // The sound lost in a lesson (lane sonic-hints; the owner's complaint of 2026-11-10): the tab was hidden or the audio context stopped
 // (another tab, the system took the device, the browser suspended it), so the pilot missed part of a step without knowing it. On the
 // return, when the page is visible and the context runs again, one line says so and names the key that says the step's task again:
-// "The sound was interrupted. Press Z to hear this step's task again." Said once per gap, only when a lesson was open during it.
+// "The sound was interrupted. Press Z to hear the task of this step again." Said once per gap, only when a lesson was open during it.
 // sonic/feature.ts checks on every visibility change and once a second, and asks a suspended context to resume on the next key
 // (a user activation) and on the return.
 import type { SpeechLine } from '@shramko/sonic-fpv';

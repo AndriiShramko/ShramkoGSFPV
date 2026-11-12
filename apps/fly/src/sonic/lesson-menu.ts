@@ -67,7 +67,7 @@ export interface LessonMenuDeps {
     readerSpeaks(): boolean;
     /**
      * The pilot's name of the key that does an item without the menu ('' when none; lane sonic-hints, the owner's complaint of
-     * 2026-11-10): the item says it after its name ("Next step, key N"), on the button too, so a screen reader reads it as well.
+     * 2026-11-10): the item says it after its name ("Next step. Key N"), on the button too, so a screen reader reads it as well.
      */
     keyOf?(item: LessonMenuItem): string;
     /** what an item does once the menu is down; `code`: the key that chose it */
@@ -98,7 +98,7 @@ export class LessonMenu {
         return LESSON_MENU_ITEMS.map((id) => this.label(id));
     }
 
-    /** An item's words, with the key that does it without the menu when it has one ("Next step, key N"). */
+    /** An item's words, with the key that does it without the menu when it has one ("Next step. Key N"). */
     private label(id: LessonMenuItem): string {
         const label = this.d.text({ key: ITEM_LINES[id] });
         const key = this.d.keyOf?.(id) ?? '';

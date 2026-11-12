@@ -1,0 +1,94 @@
+{
+  "name": "sonic-int-review-r8-live",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-12T14:04:29.963Z",
+    "gitHead": "e993b3a",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "release": {
+    "sha": "4d188f0f",
+    "sonic": "3115137",
+    "built": "2026-11-12T13:10:31.797Z"
+  },
+  "git": "e993b3a",
+  "seconds": 56,
+  "passed": 5,
+  "total": 8,
+  "pass": false,
+  "checks": [
+    {
+      "name": "R8: step 1 names the keys after its first line (sonic.say.lessonKeys)",
+      "pass": true,
+      "value": [
+        "lesson.rings-first.title",
+        "sonic.say.lessonKeys",
+        "lesson.rings-first.intro.1"
+      ]
+    },
+    {
+      "name": "R8: Z (the same step said again) does not say the keys again",
+      "pass": true,
+      "value": [
+        "lesson.rings-first.title",
+        "lesson.rings-first.intro.1"
+      ]
+    },
+    {
+      "name": "R8: N (the next step) names the keys once more, after the step's first line",
+      "pass": false,
+      "value": [
+        "fly.go"
+      ]
+    },
+    {
+      "name": "R8: the start screen is not shown during the lesson",
+      "pass": true
+    },
+    {
+      "name": "R8: X shows the main menu (the start screen) in one press",
+      "pass": false
+    },
+    {
+      "name": "R8: X says where the pilot is (sonic.say.homeBack: the lesson is saved, Continue goes back)",
+      "pass": false,
+      "value": []
+    },
+    {
+      "name": "R8: the main menu offers the lesson to continue (a button of rings-first)",
+      "pass": true
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r8": {
+      "step1": [
+        "lesson.rings-first.title",
+        "sonic.say.lessonKeys",
+        "lesson.rings-first.intro.1"
+      ],
+      "z": [
+        "lesson.rings-first.title",
+        "lesson.rings-first.intro.1"
+      ],
+      "n": [
+        "fly.go"
+      ],
+      "total": 1
+    }
+  },
+  "problems": []
+}

@@ -46,14 +46,13 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
         const first = r.engine.said.slice(0, 2);
         expect(first[0]).toMatchObject({ line: getLesson('rings-first').title });
         expect(first[1]).toMatchObject({ line: { key: 'sonic.say.lessonKeys', params: { next: 'N', previous: 'B', repeat: 'Y', menu: 'Escape', home: 'X' } }, interrupt: false });
-        expect(first[1]!.text).toBe('Keys: N next, B back, Y repeat, Escape menu, X main menu.');
-        // one short phrase: one sentence, at most 16 words, in every language
+        expect(first[1]!.text).toBe('Next, key N. Back, key B. Repeat, key Y. Menu, key Escape. Main menu, key X.');
+        // short: at most 16 words in every language; the key-name rule (KEY_RULE) for every key it names
         const dicts = engineDicts();
         for (const l of ['en', 'es', 'pl', 'ru'] as const) {
             const text = dicts[l]['sonic.say.lessonKeys']!;
-            for (const k of ['{next}', '{previous}', '{repeat}', '{menu}', '{home}']) expect(text, `${l} ${k}`).toContain(k);
+            for (const k of ['{next}', '{previous}', '{repeat}', '{menu}', '{home}']) expect(text, `${l} ${k}`).toMatch(KEY_RULE(l, k));
             expect(text.split(/\s+/).length, l).toBeLessThanOrEqual(16);
-            expect(text.replace(/\.$/, ''), l).not.toMatch(/[.!?]/);
         }
     }, 120000);
 
@@ -116,6 +115,14 @@ describe('H1: the keys of the moment at the start of every step, once a step; th
 
 const EN = createTranslator('en', engineDicts());
 
+/**
+ * The key-name rule of the lines that name a key in a list (lane sonic-hints, the words check of 2026-11-12): the language's word for a key
+ * right before the key's name, and the name ends its sentence. Said by the Windows voices and heard by Whisper, "N next, B back" was heard
+ * as "and next, be back" and "klavisha N" without a full stop as "klavishi N"; "Next, key N." is heard exactly in the four languages.
+ */
+const KEY_WORD = { en: 'key', es: 'tecla', pl: 'klawisz', ru: '\u043a\u043b\u0430\u0432\u0438\u0448\u0430' } as const;
+const KEY_RULE = (l: keyof typeof KEY_WORD, param: string): RegExp => new RegExp(`(^|[ ,.])${KEY_WORD[l]} ${param.replace(/[{}]/g, '\\$&')}(\\.|$)`, 'iu');
+
 describe('H2: the lesson menu names each item\'s key, and its first line says the same actions have keys without it', () => {
     const KEYS: Partial<Record<LessonMenuItem, string>> = { resume: 'Escape', repeat: 'Z', 'next-step': 'N', 'previous-step': 'B', lessons: 'X' };
     function menu(): { m: LessonMenu; said: SpeechLine[] } {
@@ -126,20 +133,21 @@ describe('H2: the lesson menu names each item\'s key, and its first line says th
 
     it('every item with a key says it after its name, on the button too (a screen reader reads it); the others as before', () => {
         const { m } = menu();
-        expect(m.labels()).toEqual(['Resume, key Escape', 'Repeat the task, key Z', 'Next step, key N', 'Previous step, key B', 'Next lesson', 'Lesson list, key X', 'Sound settings', 'Leave the mode']);
-        expect(EN.text(m.itemLine(2))).toBe('Next step, key N. Item 3 of 8.');
+        expect(m.labels()).toEqual(['Resume. Key Escape', 'Repeat the task. Key Z', 'Next step. Key N', 'Previous step. Key B', 'Next lesson', 'Lesson list. Key X', 'Sound settings', 'Leave the mode']);
+        expect(EN.text(m.itemLine(2))).toBe('Next step. Key N. Item 3 of 8.');
     });
 
     it('opening: the menu\'s line says the actions have keys, then Resume with its key; in four languages', () => {
         const { m, said } = menu();
         m.open();
         expect(EN.text(said[0]!)).toContain('The same actions have keys without the menu: each item says its key.');
-        expect(said[1]).toEqual({ key: 'menu.item', params: { label: 'Resume, key Escape', n: 1, total: LESSON_MENU_ITEMS.length } });
+        expect(said[1]).toEqual({ key: 'menu.item', params: { label: 'Resume. Key Escape', n: 1, total: LESSON_MENU_ITEMS.length } });
         m.step(1);
-        expect(EN.text(said.at(-1)!)).toBe('Repeat the task, key Z. Item 2 of 8.');
+        expect(EN.text(said.at(-1)!)).toBe('Repeat the task. Key Z. Item 2 of 8.');
         const dicts = engineDicts();
         for (const l of ['en', 'es', 'pl', 'ru'] as const) {
-            expect(dicts[l]['sonic.say.menuItemKey'], l).toMatch(/\{label\}.*\{key\}/);
+            expect(dicts[l]['sonic.say.menuItemKey'], l).toMatch(/^\{label\}\. /);
+            expect(dicts[l]['sonic.say.menuItemKey'], l).toMatch(KEY_RULE(l, '{key}'));
             expect(dicts[l]['sonic.say.menuOpen']!.length, l).toBeGreaterThan(dicts.en['sonic.say.menuTitle']!.length + 60);
         }
     });
@@ -197,7 +205,7 @@ describe('H4: the sound lost in a lesson is said on the return, with the key tha
         g.check();
         g.check();
         expect(said).toEqual([{ key: 'sonic.say.soundBack', params: { key: 'Z' } }]);
-        expect(EN.text(said[0]!)).toBe('The sound was interrupted. Press Z to hear this step\'s task again.');
+        expect(EN.text(said[0]!)).toBe('The sound was interrupted. Press Z to hear the task of this step again.');
     });
 
     it('the context stopped while visible: said once it runs again; control: a gap with no lesson open, or a lesson closed meanwhile, says nothing', () => {
