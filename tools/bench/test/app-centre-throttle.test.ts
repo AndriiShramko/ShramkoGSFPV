@@ -272,3 +272,55 @@ describe('assists are input: the channels sent replay without the pilot to the s
         expect(Array.from(replay.s)).toEqual(Array.from(r.sim.s));
     });
 });
+
+describe('a lesson replaces the centred pilot; setLesson(null) puts it back (InputHost, app/input.ts)', () => {
+    it('the centred style flies by the centred pilot, a lesson takes Controls.assist, its end gives it back from the ground', async () => {
+        // KeyboardSource (made by InputHost) listens on the window and the document, and samples on a timer
+        vi.stubGlobal('addEventListener', () => undefined);
+        vi.stubGlobal('window', { setInterval: () => 0, clearInterval: () => undefined });
+        vi.stubGlobal('document', { ...doc, addEventListener: () => undefined, querySelector: () => null });
+        try {
+            const { InputHost } = await import('../../../apps/fly/src/app/input');
+            const r = new Rig('zero');
+            const session = { get sim() { return r.sim; }, paused: false, collision: null };
+            const host = new InputHost({ controls: r.controls, prefs: { get: () => undefined }, session } as never);
+            const hid = { onFrame: null as ((f: RawFrame) => void) | null, close: () => undefined };
+            host.use({ kind: 'hid', profile: r.controls.profile, hid: hid as never }, false);
+            // control: in the from-zero style a lesson's end leaves no assist (today's path)
+            host.setLesson(CP.centreAssists('angle', 'normal'));
+            host.setLesson(null);
+            expect(r.controls.assist).toBeNull();
+            expect(host.centrePilot).toBeNull();
+            host.setThrottleStyle('centred');
+            const centre = host.centrePilot;
+            expect(centre).not.toBeNull();
+            expect(r.controls.assist).not.toBeNull();
+            const centreFn = r.controls.assist;
+            // a lesson: its pilot flies, the centred one is out
+            host.setLesson(CP.centreAssists('angle', 'normal'));
+            expect(host.lessonPilot).not.toBeNull();
+            expect(host.centrePilot).toBeNull();
+            expect(r.controls.assist).not.toBe(centreFn);
+            expect(r.controls.forcedMode).toBe('angle');
+            // a style change during the lesson does not take the lesson's place
+            host.setThrottleStyle('zero');
+            host.setThrottleStyle('centred');
+            expect(host.centrePilot).toBeNull();
+            expect(host.lessonPilot).not.toBeNull();
+            // the lesson ends: the centred pilot again, no forced mode, and it flies (a stick move starts the motors)
+            host.setLesson(null);
+            expect(host.lessonPilot).toBeNull();
+            expect(host.centrePilot).toBe(centre);
+            expect(r.controls.assist).toBe(centreFn);
+            expect(r.controls.forcedMode).toBeNull();
+            r.run(500);
+            expect(r.sim.armed).toBe(false);
+            const ms = pushToFly(r);
+            expect(ms).toBeGreaterThanOrEqual(0);
+            expect(ms).toBeLessThan(500);
+        } finally {
+            vi.stubGlobal('document', doc);
+            vi.stubGlobal('window', undefined);
+        }
+    });
+});
