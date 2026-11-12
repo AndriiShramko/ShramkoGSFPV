@@ -1,8 +1,9 @@
 // Lane center-throttle, stage 2 (docs/wip/center-throttle.md 2, the five places): the screens of the left stick's style.
 //  - the arm card's offer (ui/arm-offer-logic.ts): shown after the throttle has rested in the centre for 3 s while the
 //    gate waits for it in the from-zero style; not after 2.5 s, not while the stick moves, not at the bottom, not in the
-//    centred style, not for another block; the controller's arm input (ch[4] changing) takes it while it is shown and
-//    never when it is not (control: the same flip before 3 s does nothing);
+//    centred style, not for another block; a press of the controller's toggle button (Controls.armPresses) takes it while
+//    it is shown and seen, and never when it is not (controls: the same press before 3 s, a level switch, the card hidden,
+//    a press counted under another controller do nothing; the real Controls' press: app-centre-throttle.test.ts);
 //  - the HUD (ui/hud.ts) puts the offer on its arm card and calls the throttle host's `centred` on the arm input; in the
 //    centred style acro shows the one line about the direct throttle, angle does not;
 //  - the HUD chip (ui/mode-chip.ts) shows the style under the mode and its popover picks the other one;
@@ -54,11 +55,13 @@ afterEach(() => vi.restoreAllMocks());
 
 type Style = 'centred' | 'zero' | null;
 /** Offer frames every 33 ms from `t0` to `t1` with the throttle at `thr` (a function of time) and the arm input `arm`. */
-function run(o: InstanceType<OfferMod['ArmOffer']>, t0: number, t1: number, thr: (t: number) => number, style: Style = 'zero', block: 'throttle' | 'switch' | 'center' = 'throttle', arm = -1) {
+function run(o: InstanceType<OfferMod['ArmOffer']>, t0: number, t1: number, thr: (t: number) => number, style: Style = 'zero', block: 'throttle' | 'switch' | 'center' = 'throttle', presses = 0) {
     let last = { show: false, accept: false };
-    for (let t = t0; t <= t1; t += 33) last = o.update({ style, block, throttle: thr(t), arm, now: t });
+    for (let t = t0; t <= t1; t += 33) last = o.update({ style, block, throttle: thr(t), presses, toggle: true, visible: true, profileGen: 1, now: t });
     return last;
 }
+const at = (now: number, o: Partial<{ presses: number; toggle: boolean; visible: boolean; profileGen: number }> = {}) =>
+    ({ style: 'zero' as const, block: 'throttle' as const, throttle: DJI_REST, presses: 1, toggle: true, visible: true, profileGen: 1, now, ...o });
 const DJI_REST = 11 / 660; // the DJI's measured rest offset, known-devices.ts
 
 describe('the arm card offers the centred style when the stick rests in the centre', () => {
@@ -75,13 +78,24 @@ describe('the arm card offers the centred style when the stick rests in the cent
         expect(run(new O.ArmOffer(), 0, 6000, () => DJI_REST, 'zero', 'switch').show).toBe(false);
         expect(run(new O.ArmOffer(), 0, 6000, () => DJI_REST, null).show).toBe(false);
     });
-    it('the controller\'s arm input takes it while shown; control: the same flip before 3 s does nothing', () => {
+    it('a press of the controller toggle button takes it while shown; control: the same press before 3 s does nothing', () => {
         const o = new O.ArmOffer();
         run(o, 0, 3300, () => DJI_REST);
-        expect(o.update({ style: 'zero', block: 'throttle', throttle: DJI_REST, arm: 1, now: 3333 })).toEqual({ show: false, accept: true });
+        expect(o.update(at(3333))).toEqual({ show: false, accept: true });
         const c = new O.ArmOffer();
         run(c, 0, 1000, () => DJI_REST);
-        expect(c.update({ style: 'zero', block: 'throttle', throttle: DJI_REST, arm: 1, now: 1033 }).accept).toBe(false);
+        expect(c.update(at(1033)).accept).toBe(false);
+    });
+    it('review M1: a level arm switch, a hidden card or a press under another controller never take it', () => {
+        const lvl = new O.ArmOffer();
+        run(lvl, 0, 3300, () => DJI_REST);
+        expect(lvl.update(at(3333, { toggle: false })).accept).toBe(false);
+        const hid = new O.ArmOffer();
+        for (let t = 0; t <= 3300; t += 33) hid.update(at(t, { presses: 0, visible: false }));
+        expect(hid.update(at(3333, { visible: false })).accept).toBe(false);
+        const other = new O.ArmOffer();
+        run(other, 0, 3300, () => DJI_REST);
+        expect(other.update(at(3333, { profileGen: 2 })).accept).toBe(false);
     });
 });
 
@@ -93,7 +107,7 @@ function fakeSession() {
         renderer: { latencyStats: () => ({ periodMs: 33.3, inputToScreenMs: 80 }) }
     };
 }
-const djiView = (arm = -1) => ({ ch: new Float32Array([0, 0, DJI_REST, 0, arm, 1, 0, 0]), armKind: 'toggle', armLabel: 'button 3', mode: 2, source: 'hid', easy: false, link: null, game: false });
+const djiView = (presses = 0) => ({ ch: new Float32Array([0, 0, DJI_REST, 0, -1, 1, 0, 0]), armKind: 'toggle', armLabel: 'button 3', presses, profileGen: 1, mode: 2, source: 'hid', easy: false, link: null, game: false });
 
 describe('the HUD: the offer on the arm card, the arm input takes it, the acro line', () => {
     function hudWith(style: () => Style, acro = () => false) {
@@ -117,8 +131,13 @@ describe('the HUD: the offer on the arm card, the arm input takes it, the acro l
         expect(offer?.textContent).toContain('button 3');
         (root.querySelector('[data-action="throttle-centred"]') as FakeElement).click();
         expect(took.length).toBe(1);
-        // the DJI start/stop button (a toggle: ch[4] flips) takes it too
+        // a press of the DJI start/stop button (counted by Controls even when the gate refuses it) takes it too
         frames(hud, 3433, 3433, djiView(1));
+        expect(took.length).toBe(2);
+        // control: with the HUD text hidden the offer cannot be read, so a press takes nothing
+        hud.visible = false;
+        frames(hud, 3466, 7000, djiView(1));
+        frames(hud, 7033, 7033, djiView(2));
         expect(took.length).toBe(2);
     });
     it('control: in the centred style there is no offer and the arm input takes nothing', () => {

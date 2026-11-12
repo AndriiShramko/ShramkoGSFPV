@@ -376,7 +376,11 @@ export class Hud {
         this.card.live(radio && view ? view : null);
         // every frame: a short press of the controller's arm button must not fall between two of the text's updates
         const style = radio ? this.throttle?.style() ?? null : null;
-        const of = this.offer.update({ style, block, throttle: view ? view.ch[2] : Number.NaN, arm: view ? view.ch[4] : 0, now });
+        const seen = this.visible && !this.textOff && !s.paused && !document.querySelector('.screen');
+        const of = this.offer.update({
+            style, block, throttle: view ? view.ch[2] : Number.NaN, presses: view?.presses ?? 0, toggle: view?.armKind === 'toggle',
+            visible: seen, profileGen: view?.profileGen ?? 0, now
+        });
         this.offerShown = of.show;
         if (of.accept) this.throttle?.centred();
         if (now - this.last < 100) return;

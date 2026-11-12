@@ -21,7 +21,7 @@
   "throttle.detected": "Left stick: {style}. {why}",
   "throttle.switchTo": "Switch to {style}",
   "throttle.offer.rest": "Your left stick is resting in the centre, so the motors cannot start the FPV way.",
-  "throttle.offer.fpv": "To fly like FPV, lower the left stick all the way down: that starts the motors (this is called arming).",
+  "throttle.offer.fpv": "To fly like FPV, lower the left stick all the way down, then press your controller's start/stop button or flip its arm switch: that starts the motors (this is called arming).",
   "throttle.offer.button": "Fly with the stick in the centre",
   "throttle.offer.keys": "Or press {src} on your controller, or J on the keyboard.",
   "throttle.offer.keysOnly": "Or press J on the keyboard.",

@@ -406,3 +406,43 @@ describe('centred with Space / the on-screen ARM as the arm input (review M3): o
         });
     });
 });
+
+describe('the arm card offer hears the real Controls (review M1, M2)', () => {
+    type OfferMod = typeof import('../../../apps/fly/src/ui/arm-offer-logic');
+    /** Feeds an ArmOffer from the real Controls' view every ms, as the HUD does every frame; returns how many times it was taken. */
+    function watch(r: Rig, O: OfferMod, ms: number, offer: InstanceType<OfferMod['ArmOffer']>): number {
+        let n = 0;
+        r.run(ms, () => {
+            const v = r.controls.view();
+            // arm: ch[4] as the HUD handed it before the review (no longer read; kept so the old rule can be run against this test)
+            const input = { style: 'zero' as const, block: r.controls.block, throttle: v.ch[2], arm: v.ch[4], presses: v.presses, toggle: v.armKind === 'toggle', visible: true, profileGen: v.profileGen, now: r.t };
+            const of = offer.update(input);
+            if (of.accept) n++;
+        });
+        return n;
+    }
+    it('the DJI start/stop pressed while the offer shows takes it (the gate refuses the press, ch[4] stays -1)', async () => {
+        const O = await import('../../../apps/fly/src/ui/arm-offer-logic');
+        const r = new Rig('zero');
+        r.sticks.thr = 11 / 660; // the DJI's measured rest offset (known-devices.ts)
+        const offer = new O.ArmOffer();
+        expect(watch(r, O, 3600, offer)).toBe(0);
+        r.sticks.button = true;
+        let n = watch(r, O, 200, offer);
+        r.sticks.button = false;
+        n += watch(r, O, 200, offer);
+        expect(n).toBe(1);
+        expect(r.sim.armed).toBe(false);
+    });
+    it('control: an FPV radio level switch flipped with the throttle left in the middle never takes it', async () => {
+        const O = await import('../../../apps/fly/src/ui/arm-offer-logic');
+        const r = new Rig('zero');
+        r.controls.setProfile(FPV);
+        r.sticks.thr = 0.1; // a throttle with no spring left at 55 % (inside TUNING.CENTRE_TOL)
+        const offer = new O.ArmOffer();
+        let n = watch(r, O, 3600, offer);
+        r.sticks.sw = 1;
+        n += watch(r, O, 500, offer);
+        expect(n).toBe(0);
+    });
+});

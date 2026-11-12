@@ -21,7 +21,7 @@
   "throttle.detected": "Stick izquierdo: {style}. {why}",
   "throttle.switchTo": "Cambiar a {style}",
   "throttle.offer.rest": "Tu stick izquierdo descansa en el centro, así que los motores no pueden arrancar a la manera FPV.",
-  "throttle.offer.fpv": "Para volar como en FPV, baja el stick izquierdo del todo: eso arranca los motores (a esto se le llama armar).",
+  "throttle.offer.fpv": "Para volar como en FPV, baja el stick izquierdo del todo y luego pulsa el botón de arranque/parada de tu mando o activa su interruptor de armado: eso arranca los motores (a esto se le llama armar).",
   "throttle.offer.button": "Volar con el stick en el centro",
   "throttle.offer.keys": "O pulsa {src} en tu control, o J en el teclado.",
   "throttle.offer.keysOnly": "O pulsa J en el teclado.",
