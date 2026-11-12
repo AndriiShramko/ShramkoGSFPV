@@ -42,7 +42,9 @@ Branch `sonic-keys` here (from `origin/main` 31b1453) and branch `sonic-keys` in
     - simulator: `tools/bench/test/sonic*` 42 files, 717 passed, 10 skipped, 0 failed (on 78d4315); `pnpm -r typecheck` 0 errors; `scripts/check-architecture.mjs` ok
     - page probes on the local release build b6574b6 (`scripts/build-release.mjs`; serve-csp, headless, GPU lock): R6 5 of 5, now strict: 7 during trial 2's sound said back with `answer.need-123` and never `answer.not-now`, and its `key`/`answer.refused`/`Digit7` event recorded; R5 3 of 3 (40 of 40 events, 3016 frames, cues 100 %, the panel's verdict pass). Evidence `evidence/2026-11-12/sonic-int-review-r5.json`, `-r6.json`
     - not run again: R1 to R4, the full gates (vitest of the whole tree, api-unittest, catalog, B18); not listened by a human: the new line and how the held word sounds
-- [ ] review and merge (the lead). Still blocking: B1, the package's `sonic-keys` (now efd5137) exists only locally, so the pin points at a commit GitHub lacks; the lead pushes the package branch or merges it into the package's `main` (and moves the pin if that makes a new commit)
+- [x] B1 closed (the lead, 2026-11-12): package `sonic-keys` merged `--no-ff` into the package's `main` as 3115137 (tree equal to efd5137; secrets scan ok, diff read for personal data: none; fixtures' userAgent `vitest`), pushed to the public `main`; simulator `main` merged `--no-ff` (56c35e9) and the pin moved efd5137 → 3115137
+- [ ] the lead: all gates once on the merge, flight regression and R1-R6 on the local release build
+- [ ] the lead: release (static: no `apps/api`, nginx or compose change), live checks
 
 ## Notes
 
