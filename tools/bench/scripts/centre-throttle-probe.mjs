@@ -10,7 +10,7 @@
 //   dji-bottom   the throttle held at the bottom from the connection on (screws tightened): from zero by the rest seen.
 // Pass needs every check of every run. Against the live site (no lane build) dji-centred must fail at "gets into the air".
 // The +1 m, 2.5 s and 3.5 s are estimates of "in the air" and "after the offer's 3 s", not measured on a person.
-// Usage: node centre-throttle-probe.mjs <base with the locale, e.g. http://localhost:5391/en> <out.json> [run,run...]
+// Usage: node centre-throttle-probe.mjs <base with the locale, e.g. http://localhost:5391/en> <out.json> [run,run...|all] [scene]
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -21,7 +21,10 @@ const require = createRequire(ROOT + '/tools/bench/package.json');
 const { chromium } = require('playwright');
 const base = process.argv[2] ?? 'http://localhost:5391/en';
 const outFile = process.argv[3] ?? ROOT + '/.cache/centre-throttle-probe.json';
-const only = process.argv[4] ? process.argv[4].split(',') : null;
+const only = process.argv[4] && process.argv[4] !== 'all' ? process.argv[4].split(',') : null;
+// the scene: open sky above the spawn (39e63ce9, the radio probes' scene, has something about 0.3 m over its spawn: a raw
+// half-power climb stopped there too, measured 2026-11-12)
+const scene = process.argv[5] ?? '887f27aa';
 mkdirSync(dirname(outFile), { recursive: true });
 
 const P1 = 0x00010000, P9 = 0x00090000;
@@ -68,7 +71,7 @@ const RUNS = [
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
 const browser = await chromium.launch({ ...pick.launch, headless: true });
-const out = { what: 'centre-throttle-probe.mjs: a fake DJI FPV Remote Controller 3 on navigator.hid', base, at: new Date().toISOString() };
+const out = { what: 'centre-throttle-probe.mjs: a fake DJI FPV Remote Controller 3 on navigator.hid', base, scene, at: new Date().toISOString() };
 {
     const c = await browser.newContext();
     out.browser = await browserRecord(pick, await c.newPage(), { visual: false, version: browser.version() });
@@ -103,7 +106,7 @@ for (const run of RUNS.filter((r) => !only || only.includes(r.name))) {
         };
     });
     try {
-        await page.goto(`${base}/fly/?scene=39e63ce9&nowarn=1&set.input.howToFly=false`, { waitUntil: 'load' });
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false`, { waitUntil: 'load' });
         await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && document.querySelector('.screen.radio .choice button'), null, { timeout: 120000 });
         await page.locator('.screen.radio .choice button').first().click();
         await page.waitForFunction(() => window.__gsfpv?.radio?.wizard?.state?.id === 'check', null, { timeout: 30000 });
@@ -152,11 +155,13 @@ for (const run of RUNS.filter((r) => !only || only.includes(r.name))) {
             const s4 = await state();
             note.armedFpv = s4;
             checks.armsAtZero = s4.armed;
-            await hand({ T: 0.4 });
-            await page.waitForTimeout(2000);
-            const s5 = await state();
-            note.climbFpv = s5;
-            checks.climbsFpv = s5.armed && (s5.alt ?? 0) - (s0.alt ?? 0) >= 1.0;
+            // half power as today (the stick at the middle is half power from zero): the highest point within 2 s; a
+            // raw climb may hit the scan later, the point is that the motors lift it (0.5 m: an estimate of "lifts")
+            await hand({ T: 0 });
+            let top = -Infinity;
+            note.climbFpv = [];
+            for (let i = 0; i < 10; i++) { await page.waitForTimeout(200); const s = await state(); note.climbFpv.push({ alt: s.alt, armed: s.armed, crashed: s.crashed }); top = Math.max(top, (s.alt ?? -Infinity) - (s0.alt ?? 0)); }
+            checks.liftsFpv = top >= 0.5;
         } else {
             checks.chipFromZero = s0.chip === 'From zero';
             checks.seenBottom = s0.throttle?.seen === 'bottom' && s0.throttle?.now === 'zero';

@@ -1,0 +1,119 @@
+{
+ "what": "centre-throttle-probe.mjs: a fake DJI FPV Remote Controller 3 on navigator.hid",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "scene": "887f27aa",
+ "at": "2026-11-12T20:08:45.935Z",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "156.0.8078.80",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "dji-centred": {
+  "pass": false,
+  "seconds": 13,
+  "checks": {
+   "checkRowCentred": false,
+   "chipCentred": false,
+   "noArmingStepsInCentre": false,
+   "intoTheAir": false
+  },
+  "note": {
+   "checkRow": null,
+   "start": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": null,
+    "offer": false,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": null
+   },
+   "climb": [
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    },
+    {
+     "alt": 0,
+     "armed": false,
+     "centre": null
+    }
+   ],
+   "up": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": null,
+    "offer": false,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": null
+   },
+   "letGo": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": null,
+    "offer": false,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": null
+   }
+  },
+  "errors": []
+ },
+ "pass": false
+}
