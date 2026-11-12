@@ -515,7 +515,11 @@ async function r6(browser: () => Promise<BrowserContext>, served: Served): Promi
     const said2 = spokenAfter(all2, at2);
     const got2 = answersAfter(all2, at2);
     (result.r6 as Record<string, unknown>).trial2 = { spokenAfter7: said2, answers: got2, fromTrialLine: t2 };
-    check('R6: 7 during the sound of trial 2 answers nothing and is said back (answer.range or answer.not-now)', got2.length === 0 && said2.some((k) => k === 'answer.range' || k === 'answer.not-now'), { said2, got2 });
+    // review I3: 1 to 3 are taken during the sound, so the word names them ("Press 1, 2 or 3"), never "nothing to answer now"
+    check('R6: 7 during the sound of trial 2 answers nothing and is said back with the keys that answer (answer.need-123)', got2.length === 0 && said2.includes('answer.need-123') && !said2.includes('answer.not-now'), { said2, got2 });
+    // review I2: the refused digit is written for the replay (a key event with the action answer.refused)
+    const refused2 = all2.slice(at2).filter((e) => (e as { kind?: string }).kind === 'key' && (e as { action?: string }).action === 'answer.refused');
+    check('R6: the refused 7 is in the recording as the replay's input (key, answer.refused, Digit7)', refused2.length === 1 && (refused2[0] as { code?: string }).code === 'Digit7', refused2);
     await ctx.close();
 }
 
