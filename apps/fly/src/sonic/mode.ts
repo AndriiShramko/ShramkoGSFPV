@@ -206,7 +206,10 @@ export class SonicMode {
         const e = this.bridge.engine;
         if (!this.on || this.playing || !e?.update) return;
         const t0 = performance.now();
-        e.update(input ?? { sample, world: this.bridge.world, target: this.bridge.runner?.target() ?? null, floorY: this.floorY });
+        // lane sonic-beacon: where the target hum points (the package's runner: the target, or the next track point where the goal has no
+        // gate or zone); a runner without the method gives null and the hum stays at the target
+        const runner = this.bridge.runner;
+        e.update(input ?? { sample, world: this.bridge.world, target: runner?.target() ?? null, beacon: runner?.beaconTarget?.() ?? null, floorY: this.floorY });
         this.cost[this.costN++ % COST_KEEP] = performance.now() - t0;
     }
 

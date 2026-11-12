@@ -486,6 +486,25 @@ describe('the engine hears the mode\'s frames', () => {
         expect(e.frames[1]).toBe(own);
     });
 
+    it('hear() (lane sonic-beacon): the frame carries beaconTarget() of the runner as `beacon` beside its target(); a runner without the method and no runner give null', () => {
+        const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
+        const mode = modeWith(e);
+        mode.enter({ floorY: 0 });
+        const gate = { id: 'g1', kind: 'ring', pos: [0, 1.5, -10], size: [2, 2, 0.2], order: 1 } as const;
+        const point = { id: 'beacon:p3', kind: 'zone', pos: [4, 1.5, -6], size: [1, 1, 1], order: null } as const;
+        const bridge = (mode as unknown as { bridge: { runner: unknown } }).bridge;
+        bridge.runner = { target: () => gate, beaconTarget: () => point };
+        mode.hear(SAMPLE);
+        expect(e.frames[0]).toMatchObject({ target: gate, beacon: point });
+        // an older runner (no beaconTarget): the hum stays at the target
+        bridge.runner = { target: () => gate };
+        mode.hear(SAMPLE);
+        expect(e.frames[1]).toMatchObject({ target: gate, beacon: null });
+        bridge.runner = null;
+        mode.hear(SAMPLE);
+        expect(e.frames[2]).toMatchObject({ target: null, beacon: null });
+    });
+
     it('control: nothing is heard while the mode is off, in playback, or with no engine', () => {
         const e = new FakeEngine({ theme: getBuiltinTheme('soft'), prefs: defaultPrefs(), locale: 'en', caption: () => undefined });
         const mode = modeWith(e);
