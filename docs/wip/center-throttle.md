@@ -54,10 +54,33 @@ Branch `center-throttle` from `origin/main` 6f33594, worktree `C:/dev/gsfpv-cent
 
 Not in this lane's build. Known (docs/research/radios/dji-rc3.md l.143-163): the DJI RC 2 screen controller enumerates as 2CA3:1021 with no HID interface (MTP, ADB, a DUML bulk interface), so no browser game-controller API can see it; the owner's PC never enumerated one at all (powered off or a charge-only port is possible). Possible routes, each needing a measurement on the owner's PC first: WebUSB on the bulk interface (Windows needs a WinUSB driver bound, which may break DJI's own apps), or Web Serial if a DJI VCOM port appears. Proposed: a separate research lane that plugs one in powered on and records what Windows lists. Stage 2 may add one plain line on the Controls screen: "DJI controllers with a screen do not show up as game controllers yet."
 
+## DJI controllers with a screen
+
+Web research by another agent, 2026-11-12 (confidence as stated; nothing here was measured on the owner's PC).
+
+**What is known.**
+- **DJI RC 2 (RC331)**, the 5.5-inch screen controller of the Avata 360 Fly More Combo (also sold for Mini 4 Pro, Air 3/3S, Neo, Flip; not for Avata 2). Per one working Linux bridge (rusty407/dji-rc2-linux-joystick, MIT, tested on a Mini 4 Pro RC 2): while booting it shows as 18D1:4EE7 (Google/Android vendor id), fully booted as 2CA3:1021 with three interfaces: MTP, ADB and a vendor "BULK Interface" (interface 0, bulk OUT 0x01 / IN 0x81). No HID joystick interface and no serial (VCOM) port are reported. The sticks are readable: send the DUML request `55 0d 04 33 0a 06 eb 34 40 06 01 74 24` (cmd set 0x06, cmd id 0x01) on the bulk interface; the 32-byte reply holds roll, pitch, throttle, yaw and two dials as little-endian 16-bit values, 364..1684, centre 1024. No simulator-mode packet needed; keep the drone switched off. Charge-only or C-to-C cables can stop it enumerating at all. Confidence medium.
+- **DJI RC-N2 / RC-N3** (no screen, phone holder): USB identity not verified. The older RC-N1 (RC231) is a serial port "DJI USB VCOM For Protocol (COMx)": enable simulator mode with DUML 0x06/0x24 payload 01 at 115200 baud, then poll 0x06/0x01 (38-byte reply, sticks at offsets 13/16/19/22). No bridge claims RC-N2/N3. Confidence low.
+- **DJI FPV Remote Controller 3**: 2CA3:1021 "DJI Virtual Joystick", a HID game controller (the owner's measurement); works today through the Gamepad API / WebHID. Its manual: Normal/Sport mode throttle self-centres, distance from centre sets the climb or descent rate; motors start with the stick combination (CSC); after landing hold the throttle down to stop them; Manual mode needs the F2 spring screw tightened (1.5 mm hex) so the stick stops recentring, then arms with the throttle at the bottom. Supports Liftoff, Uncrashed, DRL, DCL.
+- **DJI RC Motion 3**: not checked.
+
+**The browser path for the RC 2.** WebHID and the Gamepad API cannot see it (no HID interface); Web Serial cannot (no CDC/VCOM); no stick data over BLE is known. The only realistic route is **WebUSB** to the bulk interface, running the same DUML poll. Conditions: Chrome sees 2CA3:1021 after a full boot over a data cable; on Windows the bulk interface needs a WinUSB driver bound (a one-time Zadig-style install on that interface only, leaving MTP and ADB alone), because DJI ships no MS OS 2.0 descriptors as far as known, and if DJI Assistant 2 binds its own driver WebUSB cannot claim it; Linux needs a udev rule (the bridge ships one); macOS probably works without a driver (not verified). Fallback without WebUSB: a small local helper (libusb or the MIT bridge) exposing a virtual gamepad (vgamepad/vJoy, uinput) or a WebSocket; it needs the same WinUSB binding on Windows. For RC-N2/N3, if they appear as a VCOM port, Web Serial would work (not verified).
+
+**The owner's test (before any build).** Use a USB-A to USB-C data cable (not charge-only, not C-to-C). Plug the RC 2 into the PC, power it on, keep the drone off, wait 30-60 s for it to boot. In Chrome open `chrome://usb-internals` (Devices tab) and `chrome://device-log`:
+- 2CA3:1021 with an interface list (MTP, ADB, "BULK Interface" class 0xff): the route is open; next step is a small WebUSB test page that claims interface 0 and sends the DUML poll.
+- only 18D1:4EE7: still booting or the cable is wrong.
+- nothing: cable or port.
+Windows Device Manager with "Show hidden devices" is a second view: a "Bulk"/unknown device with a yellow mark means the WinUSB binding is the missing piece.
+
+**Not verified.** How the RC 2 enumerates on Windows (driver per interface, whether DJI Assistant 2 claims the bulk interface); whether the Avata 360's RC 2 equals the Mini 4 Pro's; whether WebUSB can claim it after WinUSB without breaking DJI Fly/Assistant; RC-N2/N3 identity; whether the RC 2 has any HID interface; DJI's exact sticks-released and landing wording for the Avata 360; any official PC-simulator mode of the RC 2.
+
+Sources: github.com/rusty407/dji-rc2-linux-joystick (rc2link.py, 70-rc2-joystick.rules); github.com/Miniontoby/DJI_RC-N1_SIMULATOR_FLY_DCL; github.com/pverhaert/DJI_RCN1_for_drone_simulators; github.com/Matsemann/mDjiController; heliguy.com Avata 360 compatibility page; dji.com/rc-2/faq; DJI FPV Remote Controller 3 User Manual v1.0 (lensrentals.com product asset 1110698.pdf); steamcommunity and mavicpilots threads on RC 2 not showing up.
+
 ## Status
 
 - [x] P1 worktree `C:/dev/gsfpv-center-throttle`, branch `center-throttle` from origin/main 6f33594 (no install yet)
 - [x] P2 plan by code (this file, 4e4e7af)
+- [x] S0 section "DJI controllers with a screen" from the research result; dependencies installed in the worktree
 - [ ] S1 logic: throttle-style.ts, wizard rest, CentrePilot, InputHost, the setting and J, builtin; tests and negative controls
 - [ ] S2 the five places, strings in 4 languages, catalogue; UI tests; probe `dji-centred` / `dji-zero` with negative control
 
