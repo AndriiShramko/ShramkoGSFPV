@@ -81,7 +81,10 @@ Sources: github.com/rusty407/dji-rc2-linux-joystick (rc2link.py, 70-rc2-joystick
 - [x] P1 worktree `C:/dev/gsfpv-center-throttle`, branch `center-throttle` from origin/main 6f33594 (no install yet)
 - [x] P2 plan by code (this file, 4e4e7af)
 - [x] S0 section "DJI controllers with a screen" from the research result; dependencies installed in the worktree
-- [ ] S1 logic: throttle-style.ts, wizard rest, CentrePilot, InputHost, the setting and J, builtin; tests and negative controls
+- [x] S1 logic (d85ed43 code, tests in the next commit): `packages/input/src/throttle-style.ts` (RestWatch, resolveStyle, profileStyle, springsOf), `classifyThrottleRest` + `Profile.throttleStyle/throttleRest` + wizard saves the rest (`calib.ts`), `checkProfile` reads both (`controls.ts`, plus `Controls.mapped`), `play/centre-pilot.ts` (CentrePilot over LessonPilot), `InputHost.setThrottleStyle/settleStyle/installStyle` (lesson precedence, waits for the motors to stop), setting `input.throttleStyle` + key J (`throttle.style`), builtin `app/builtin/throttle-style.ts` (+ test hook `__gsfpv.throttle`), strings `locales/fly/throttle/{en,es,pl,ru}.json`, catalogue regenerated, prefs tests' pinned tables updated
+  - tests: `packages/input/test/throttle-style.test.ts` 13 passed (rest in the centre with the DJI offsets, bottom, noisy, moving, nothing reported, precedence, the wizard's rest); `tools/bench/test/app-centre-throttle.test.ts` 9 passed (armed by a pitch push with no button; from zero never arms, block 'throttle', and still arms the FPV way; let go < 0.3 m/s and height within 0.5 m; up climbs / down descends; horizon holds height; acro raw throttle; start/stop stops and a held stick does not restart; recorded channels replay to the same state); `a6-reference`, sonic-pilot, app-known-controller, app-hid-source, app-gamepad, app-modes 57 passed; packages/prefs 245 passed; app-keys/settings/summary/play/controls-card/flight-ux passed; typecheck input, prefs, fly clean; `gen-catalog --check` up to date
+  - negative controls: both test files fail to load on origin/main (centre-pilot.ts and throttle-style.ts absent there); calib.ts of origin/main makes 5 of 13 input tests fail; the hush removed makes the stop test fail (1 of 9); plain angle without the velocity loop drifts past 0.3 m/s (in the suite); the from-zero stream never arms (in the suite)
+- [ ] S1 left for S2 (not built): a test that a lesson replaces the centred pilot and `setLesson(null)` puts it back (InputHost needs a FlightContext; better in the page probe); the known check screen saving the rest it sees into `Profile.throttleRest`
 - [ ] S2 the five places, strings in 4 languages, catalogue; UI tests; probe `dji-centred` / `dji-zero` with negative control
 
 ## For the lead before the merge
@@ -96,7 +99,13 @@ Sources: github.com/rusty407/dji-rc2-linux-joystick (rc2link.py, 70-rc2-joystick
 - Reuse `LessonPilot` unchanged (composed) instead of a second assist or editing a sonic-adjacent file.
 - Rest thresholds reused from the wizard's TUNING, no new numbers except the 3 s offer delay (estimate).
 - In flight a flip waits for the ground, so a flip never drops the drone.
-- J for the flip key: the only letter free in every context.
+- J for the flip key: the only letter free in every context. Every letter is now bound; keymap.test's "free letter" control uses Digit1.
+- S1: `classifyThrottleRest` lives in `calib.ts` next to TUNING (throttle-style.ts imports it): calib.ts needs it for the wizard's rest and an import back would be a cycle.
+- S1: the rest seen on a connection is not written into the profile; only the wizard's centre step writes `throttleRest`. The connection watch decides first anyway, and writing on every connect would change saved profiles silently.
+- S1: CentrePilot's ground is the game scheme's `groundClearance` on the scan's contact world (play/ground.ts), not the lesson's ray (a scan has no lesson walls).
+- S1: the arm input in the centred style only stops the motors: an arm switch turned off, or any press of a toggle button (the DJI start/stop); after a stop the sticks must come back to the centre before a move starts them (the press is made with a thumb off a stick, the other may still be pushed).
+- S1: a mode change in flight resets GameAssist and AltitudeHelp (their targets start from the craft as it is) and keeps the motors; LessonPilot is composed, not edited.
+- S1: flight tests fly over the bench's FloorWorld (tools/bench/test/game-loop.ts), not a lesson world, so they do not depend on the sonic lane's files.
 
 ## Not verified
 
@@ -104,7 +113,10 @@ Sources: github.com/rusty407/dji-rc2-linux-joystick (rc2link.py, 70-rc2-joystick
 - The DJI mode switch bits (assumed in the table) and the start/stop button bit, used for the stop edge.
 - How the velocity loop feels at the DJI's 1.2-1.7 % rest offsets (inside the 0.08 deadband by numbers only).
 - Anything about screen controllers on the owner's PC.
+- The test bounds (0.3 m/s, 0.5 m, 3 s, armed within 0.5 s) are estimates of "stops and hovers"; measured only in the bench sim with the pavo20pro-3s preset.
 
 ## Cost notes
+
+- Stage 1 (S0 + S1): most turns went to reading the wizard, Controls and the prefs tests' pinned tables, and to two quoting slips while editing test titles through python (a `'` inside a single-quoted title). Cheaper: edit test files with the Edit tool only, and a list in STATE.md of the tests that pin the settings and key tables (defs.test, keymap.test) would have saved two runs.
 
 - Plan stage: most turns went to locating the five UI places and the existing lesson machinery; a map of `Controls.assist` users and UI owners in STATE.md would have saved about five reads.
