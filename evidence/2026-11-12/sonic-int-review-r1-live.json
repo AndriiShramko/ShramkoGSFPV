@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T13:28:19.606Z",
-    "gitHead": "4d188f0",
+    "date": "2026-11-12T14:53:53.434Z",
+    "gitHead": "57d461c",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -16,12 +16,12 @@
   },
   "site": "https://gsfpv.flyreelstudio.eu",
   "release": {
-    "sha": "4d188f0f",
-    "sonic": "3115137",
-    "built": "2026-11-12T13:10:31.797Z"
+    "sha": "57d461c1",
+    "sonic": "b102ce6",
+    "built": "2026-11-12T14:38:42.382Z"
   },
-  "git": "4d188f0",
-  "seconds": 74,
+  "git": "57d461c",
+  "seconds": 76,
   "passed": 4,
   "total": 4,
   "pass": true,
@@ -33,7 +33,7 @@
         "question": "ears-headphones:1:1:side",
         "answers": [
           {
-            "t": 23063,
+            "t": 25567,
             "kind": "answer",
             "item": "ears-headphones:1:1:side",
             "value": 1,

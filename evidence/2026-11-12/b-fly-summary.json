@@ -7,14 +7,14 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T14:26:37.173Z",
-    "gitHead": "980d399",
+    "date": "2026-11-12T14:51:50.792Z",
+    "gitHead": "57d461c",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
     "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
   },
-  "site": "http://localhost:5431",
+  "site": "https://gsfpv.flyreelstudio.eu",
   "gpuLock": "C:/dev/.gpu-lock",
   "items": {
     "B6": true,
