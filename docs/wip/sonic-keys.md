@@ -2,6 +2,7 @@
 type: lane-status
 lane: sonic-keys
 plan: docs/wip/sonic-keys-plan.md
+status: closed (live 2026-11-12, release 3244586a3037 = main 4d188f0, package 3115137)
 ---
 
 # sonic-keys: digits of the sound tutorial, stage 1 (keys and response)
@@ -48,7 +49,8 @@ Branch `sonic-keys` here (from `origin/main` 31b1453) and branch `sonic-keys` in
   - local release build 2957c92 (serve-csp, headless): accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all true (target `http://localhost:5431`); probes R1 4/4, R2 4/4, R3 4/4, R4 4/4, R5 3/3, R6 6/6, new R7 5/5 (2 failed trials asked again, both answered 1, no intro, pass)
   - negative control on the live site before the release (17a0b6d, package 09535b7), `SITE=` run: R6 2 of 6, R7 1 of 5 (the retry said `headphones.intro` and asked all trials again); evidence `*-live-before-17a0b6d.json`
   - secrets scan: one false hit (`W`, the lesson key `lesson.ears-headphones.hint.1` after `retry` in the R7 evidence), allowed for that commit only
-- [ ] the lead: release (static: no `apps/api`, nginx or compose change), live checks
+- [x] the lead: release and live checks (2026-11-12): pushed `main` 4d188f0; CI 43223776228 green; `deploy/ship.sh 4d188f0`: release 3244586a3037 (previous 31badf955c5b), enforced CSP carries the 8 new hashes, neighbours equal (45 containers, 46 vhosts), 302 checks. Live `release.json` `{"sha":"4d188f0f","sonic":"3115137"}`. On live (headless): accept-fly B6-B16 all pass (target `https://gsfpv.flyreelstudio.eu`); `SITE=https://gsfpv.flyreelstudio.eu` probes R6 6 of 6, R7 5 of 5, R1 4 of 4 (evidence `*-live.json`). Nothing is sent to the server by the probes (a recording goes only on the send key's second press)
+- Left for later (not this lane): key names said aloud in the menu and the steps; a beacon to the target; a human listening to the new lines; es and pl wording by a native speaker
 
 ## Notes
 
