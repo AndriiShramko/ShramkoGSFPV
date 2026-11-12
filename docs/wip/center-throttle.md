@@ -78,6 +78,8 @@ Sources: github.com/rusty407/dji-rc2-linux-joystick (rc2link.py, 70-rc2-joystick
 
 ## Status
 
+- [x] MERGED AND LIVE (2026-11-13): lane center-throttle is in `main` 2cc8e233 and on the live site as release 96fc92065ee9 (main d02b13a6, sonic 83ce612); live checks in STATE.md and docs/wip/beacon-centre-lead.md
+
 - [x] P1 worktree `C:/dev/gsfpv-center-throttle`, branch `center-throttle` from origin/main 6f33594 (no install yet)
 - [x] P2 plan by code (this file, 4e4e7af)
 - [x] S0 section "DJI controllers with a screen" from the research result (a915afe); dependencies installed in the worktree

@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-12T14:51:50.792Z",
-    "gitHead": "57d461c",
+    "date": "2026-11-12T23:42:42.607Z",
+    "gitHead": "d02b13a6",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",

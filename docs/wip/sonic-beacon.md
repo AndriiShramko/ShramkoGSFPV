@@ -11,6 +11,8 @@ Simulator branch `sonic-beacon` from `origin/main` 6f33594 (worktree `C:/dev/gsf
 
 ## Status
 
+- [x] MERGED AND LIVE (2026-11-13): lane sonic-beacon is in `main` 2cc8e233 and on the live site as release 96fc92065ee9 (main d02b13a6, sonic 83ce612); live checks in STATE.md and docs/wip/beacon-centre-lead.md
+
 ### S1 setup and the package core
 - [x] worktrees (`C:/dev/sonic-beacon` from package main b102ce6, `C:/dev/gsfpv-sonic-beacon` from origin/main 6f33594), package `pnpm install --frozen-lockfile` exit 0, this file
 - [x] findings on the plan's open points (prefs in the session and replay, runner prefs, height code and a zone target, submodule pin): F1-F5 below
