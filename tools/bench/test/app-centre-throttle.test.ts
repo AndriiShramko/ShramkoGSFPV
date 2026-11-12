@@ -50,7 +50,7 @@ class Rig {
     pilot: InstanceType<CentreMod['CentrePilot']> | null = null;
     t = 0;
     /** the sticks as the hands hold them; thr 0 = the middle, where the DJI's spring puts it; the start/stop button */
-    sticks = { roll: 0, pitch: 0, thr: 0, yaw: 0, button: false };
+    sticks = { roll: 0, pitch: 0, thr: 0, yaw: 0, button: false, sw: -1 };
     /** every channel set sent to the model, by the model's tick (the flight log's content) */
     readonly sent: { tick: number; ch: Float32Array }[] = [];
     private pending: Float32Array | null = null;
@@ -81,7 +81,7 @@ class Rig {
 
     frame(): RawFrame {
         const s = this.sticks;
-        return { t: this.t, axes: new Float32Array([s.roll, s.pitch, s.thr, s.yaw, 0, 0, 0, 0]), buttons: s.button ? 1 << 2 : 0 };
+        return { t: this.t, axes: new Float32Array([s.roll, s.pitch, s.thr, s.yaw, s.sw, 0, 0, 0]), buttons: s.button ? 1 << 2 : 0 };
     }
 
     /** Press and release the start/stop button (two reports apart). */
@@ -322,5 +322,87 @@ describe('a lesson replaces the centred pilot; setLesson(null) puts it back (Inp
             vi.stubGlobal('document', doc);
             vi.stubGlobal('window', undefined);
         }
+    });
+});
+
+/** An FPV radio's wizard setup: the arm switch is a level switch on CH5 (axis 4), the throttle springs nowhere. */
+const FPV: Profile = { ...DJI, deviceKey: 'hid:1209:4f54:Radio', deviceName: 'Radio', known: undefined, deadband: 0, arm: { kind: 'axis', index: 4, threshold: 0.5, onAbove: true, off: -1, on: 1 } } as Profile;
+/** The DJI flown with Space / the on-screen ARM (a gamepad's usual setup, a controller without an arm entry). */
+const KEYED: Profile = { ...DJI, arm: { kind: 'key' } } as Profile;
+
+/** The real InputHost (app/input.ts) over a Rig in the from-zero path, with `profile` as the HID controller in use. */
+async function withHost(profile: Profile, fn: (r: Rig, host: InstanceType<typeof import('../../../apps/fly/src/app/input')['InputHost']>) => void): Promise<void> {
+    vi.stubGlobal('addEventListener', () => undefined);
+    vi.stubGlobal('window', { setInterval: () => 0, clearInterval: () => undefined });
+    vi.stubGlobal('document', { ...doc, addEventListener: () => undefined, querySelector: () => null });
+    try {
+        const { InputHost } = await import('../../../apps/fly/src/app/input');
+        const r = new Rig('zero');
+        r.controls.setProfile(profile);
+        const session = { get sim() { return r.sim; }, paused: false, collision: null };
+        const host = new InputHost({ controls: r.controls, prefs: { get: () => undefined }, session } as never);
+        const hid = { onFrame: null as ((f: RawFrame) => void) | null, close: () => undefined };
+        host.use({ kind: 'hid', profile, hid: hid as never }, false);
+        fn(r, host);
+    } finally {
+        vi.stubGlobal('document', doc);
+        vi.stubGlobal('window', undefined);
+    }
+}
+
+describe('a change of style never arms by itself (review B1): the arm switch must be flipped again', () => {
+    it('control: from zero from the start, the switch left on with the throttle at the bottom never arms; the gate says: the switch', async () => {
+        await withHost(FPV, (r) => {
+            r.sticks.thr = -1;
+            r.sticks.sw = 1;
+            r.run(1000);
+            expect(r.sim.armed).toBe(false);
+            expect(r.controls.block).toBe('switch');
+        });
+    });
+    it('the same hands after centred -> from zero (J, the chip, the Controls row, the automatic choice): not armed; off -> on arms as always', async () => {
+        await withHost(FPV, (r, host) => {
+            r.sticks.thr = -1;
+            r.sticks.sw = 1;
+            r.run(300);
+            host.setThrottleStyle('centred');
+            r.run(300);
+            host.setThrottleStyle('zero');
+            r.run(1000);
+            expect(r.sim.armed).toBe(false);
+            expect(r.controls.block).toBe('switch');
+            r.sticks.sw = -1;
+            r.run(100);
+            r.sticks.sw = 1;
+            r.run(300);
+            expect(r.sim.armed).toBe(true);
+        });
+    });
+    it('a lesson that ends with the motors off leaves the switch to be flipped again too', async () => {
+        await withHost(FPV, (r, host) => {
+            r.sticks.thr = -1;
+            r.sticks.sw = 1;
+            r.run(300);
+            host.setLesson(CP.centreAssists('angle', 'normal'));
+            r.run(300);
+            host.setLesson(null);
+            r.run(1000);
+            expect(r.sim.armed).toBe(false);
+        });
+    });
+});
+
+describe('centred with Space / the on-screen ARM as the arm input (review M3): one press stops the motors', () => {
+    it('a pitch push starts them, one Space press stops them within 0.5 s', async () => {
+        await withHost(KEYED, (r, host) => {
+            host.setThrottleStyle('centred');
+            r.run(300);
+            expect(pushToFly(r, 800)).toBeGreaterThanOrEqual(0);
+            r.run(1000);
+            expect(r.sim.armed).toBe(true);
+            r.controls.toggleArm();
+            r.run(500);
+            expect(r.sim.armed).toBe(false);
+        });
     });
 });

@@ -159,6 +159,8 @@ export class InputHost {
             // the controller's own throttle style flies again (the centred pilot from the ground: motors off)
             this.centre?.reset();
             this.installStyle();
+            // the arm channel changes hands (review B1): a switch left on must be flipped again; a craft still flying keeps its gate
+            if (!c.gate.armed) c.restartGate();
             return;
         }
         let pilot = this.lesson;
@@ -207,6 +209,9 @@ export class InputHost {
         this.style = this.wantStyle;
         this.centre?.reset();
         this.installStyle();
+        // the arm channel changes hands (review B1): from the centred pilot's AutoArm to the switch, or back; the
+        // switch must be seen off again and a crash hold of the old owner is dropped
+        this.ctx.controls.restartGate();
     }
 
     /**
@@ -237,9 +242,10 @@ export class InputHost {
             ground: (sim) => groundClearance(sim.contactWorld, sim.s, sim.p),
             mode: () => ctx.controls.flyingMode(),
             speed,
+            // every latched arm input is a press (review M3): a toggle button, and Space / the on-screen DISARM of a key arm
             toggleArm: () => {
                 const a = ctx.controls.profile?.arm;
-                return !!a && a.kind === 'button' && !!a.toggle;
+                return !!a && (a.kind === 'key' || (a.kind === 'button' && !!a.toggle));
             }
         });
         return this.centre;
