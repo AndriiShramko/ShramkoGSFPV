@@ -37,7 +37,9 @@ const V03_SHIPPED = [
     // v0.9 lane D (docs/wip/v09-d.md): the cinelifter's camera load, chosen on the drone picker's 3D stage
     'drone.payload',
     // v0.10 lane K (docs/wip/v10-k.md): the "How to fly" card shown when a scan opens, Settings -> Controls
-    'input.howToFly'
+    'input.howToFly',
+    // lane center-throttle (docs/wip/center-throttle.md): a radio's or gamepad's left stick, in the centre or from zero
+    'input.throttleStyle'
 ];
 
 /**
@@ -93,6 +95,8 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['input.gameSpeed', 'input', 'global', 'enum', 'normal', 'live'],
     // v0.10 lane K: the How to fly card
     ['input.howToFly', 'input', 'global', 'bool', true, 'live'],
+    // lane center-throttle: the throttle style of the controller in use
+    ['input.throttleStyle', 'input', 'global', 'enum', 'auto', 'live'],
     ['drone.current', 'drone', 'global', 'enum', 'pavo20pro-3s', 'life'],
     ['physics.gravity', 'drone', 'global', 'number', 9.81, 'life'],
     ['physics.gravityMode', 'drone', 'global', 'enum', 'honest', 'life'],
@@ -171,8 +175,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 81 settings (the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load, the v0.10 lane R device class and lane K How to fly card), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(81);
+    it('has the 82 settings (with the throttle style of lane center-throttle;the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load, the v0.10 lane R device class and lane K How to fly card), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(82);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));
@@ -226,8 +230,8 @@ describe('SCHEMA is the A.8 table', () => {
         expect(range('sound.volume')).toEqual([0, 100]);
     });
 
-    it('only the voxel view lasts one page load; nothing else opts out of storage', () => {
-        expect(SCHEMA.defs.filter((d) => d.persist === false).map((d) => d.id)).toEqual(['voxels.show']);
+    it('only the voxel view lasts one page load, and the throttle style is the controller profile value (kept in the radio profile); nothing else opts out of storage', () => {
+        expect(SCHEMA.defs.filter((d) => d.persist === false).map((d) => d.id).sort()).toEqual(['input.throttleStyle', 'voxels.show']);
     });
 
     it('drone.current lists exactly the preset files in sim-core', () => {
@@ -260,6 +264,7 @@ describe('SCHEMA is the A.8 table', () => {
             ['flight.mode', ['mode.cycle']],
             ['display.hud', ['hud.toggle']],
             ['display.frameStats', ['frameStats.toggle']],
+            ['input.throttleStyle', ['throttle.style']], // J, lane center-throttle
             ['scene.transform', ['scale.down', 'scale.up']],
             ['scene.walls', ['walls.toggle']], // C, shipped on main; its row showed no key until review C13
             ['voxels.show', ['voxels.cycle']]

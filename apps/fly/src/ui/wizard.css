@@ -352,3 +352,15 @@ body.touch-on .pm-keys { display: none; } /* flying with touch sticks: no keyboa
 body.cinema .arm-card, body.clean .arm-card, body.cinema .arm-disarm, body.clean .arm-disarm { display: none; }
 /* under a modal panel (pause menu, settings...) the arm cards and the hint stuck out below its edge */
 #ui:has(> .panel) .hud > :is(.arm-card, .arm-disarm, .gate-msg) { visibility: hidden; }
+
+/* lane center-throttle: the arm card's offer when the left stick rests in the centre (ui/hud.ts, ui/arm-offer-logic.ts) */
+.arm-card .arm-offer { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line, rgba(255,255,255,.18)); pointer-events: auto; }
+.arm-card .arm-offer p { margin: 0 0 6px; }
+.arm-card .arm-offer[hidden] { display: none; }
+/* lane center-throttle: the left stick's two-way choice (ui/throttle-style-row.ts), Controls screen and check screen */
+.throttle-style { margin: 10px 0; }
+.throttle-style .ts-head { font-size: 14px; margin: 0 0 4px; }
+.throttle-style .ts-title { margin: 0 0 6px; }
+.throttle-style .ts-choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.throttle-style .ts-opt { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 2px; white-space: normal; height: auto; }
+.throttle-style .ts-name { font-weight: 600; }

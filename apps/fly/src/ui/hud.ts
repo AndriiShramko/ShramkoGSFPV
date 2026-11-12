@@ -14,6 +14,21 @@ import { linkLines } from './link-text';
 import { keysFor } from '@gsfpv/prefs';
 import { MODE2_KEYS } from '../play/keys';
 import { gateSpoken, pilotCaps } from './controls-card-logic';
+import { ArmOffer } from './arm-offer-logic';
+
+/**
+ * The throttle style of the radio or gamepad in use (lane center-throttle; app/builtin/throttle-style.ts sets it): the arm card
+ * offers the centred style when the stick rests in the centre (ui/arm-offer-logic.ts), and in the centred style acro says in
+ * one line that the throttle is direct.
+ */
+export interface HudThrottle {
+    /** the style flying now; null: no radio or gamepad */
+    style(): 'centred' | 'zero' | null;
+    /** the craft flies acro now */
+    acro(): boolean;
+    /** the pilot took the offer (its button, the controller's arm input) */
+    centred(): void;
+}
 
 /** Disarmed with a radio: what is still needed to arm, in order, with a small live radio drawing. */
 class ArmCard {
@@ -21,9 +36,13 @@ class ArmCard {
     readonly disarm: HTMLButtonElement;
     private art = radioArt({ mini: true });
     private list: HTMLOListElement;
+    private title: HTMLElement;
     private reason = h('p', { class: 'reason' });
     private rows: { li: HTMLLIElement; text: HTMLSpanElement }[] = [];
     private armBtn: HTMLButtonElement;
+    /** "Your left stick is resting in the centre": the two ways, one button (ui/arm-offer-logic.ts says when) */
+    private offer: HTMLDivElement;
+    private offerKeys = h('p', { class: 'muted small' });
     /**
      * The drawing is in sight (set by `update`, which runs at the text's 10 Hz, cleared when the card hides
      * or shows only a reason): `live` then paints the knobs every frame. They are the pilot's own stick;
@@ -32,7 +51,7 @@ class ArmCard {
      */
     private drawn: { key: boolean; block: Exclude<ArmBlock, null> } | null = null;
 
-    constructor(onArm: () => void) {
+    constructor(onArm: () => void, onCentred: () => void) {
         const row = (): { li: HTMLLIElement; text: HTMLSpanElement } => {
             const text = h('span');
             return { li: h('li', {}, h('span', { class: 'mk' }, tickIcon()), text), text };
@@ -42,24 +61,42 @@ class ArmCard {
         this.rows[2].li.append(this.armBtn);
         this.list = h('ol', {}, ...this.rows.map((r) => r.li));
         // not a live region: the throttle % changes ten times a second. Hud.gate speaks the step instead
-        this.el = h('div', { class: 'arm-card hidden' }, this.art.el, h('div', {}, h('h3', {}, t('arm.card.title')), this.list, this.reason));
+        this.offer = h('div', { class: 'arm-offer', 'data-testid': 'arm-offer', role: 'status', hidden: true },
+            h('p', {}, t('throttle.offer.rest')),
+            h('p', {}, t('throttle.offer.fpv')),
+            h('button', { type: 'button', class: 'btn primary', 'data-action': 'throttle-centred', 'aria-keyshortcuts': 'J', onclick: () => onCentred() }, t('throttle.offer.button')),
+            this.offerKeys);
+        this.title = h('h3', {}, t('arm.card.title'));
+        this.el = h('div', { class: 'arm-card hidden' }, this.art.el, h('div', {}, this.title, this.list, this.reason, this.offer));
         this.disarm = h('button', { type: 'button', class: 'btn arm-disarm hidden', 'data-action': 'hud-disarm', onclick: () => onArm() }, t('arm.disarmKey'));
     }
 
-    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock): void {
+    update(v: ArmView | null, armed: boolean, crashed: boolean, block: ArmBlock, offer = false, centred = false, acro = false): void {
         const screenOpen = !!document.querySelector('.screen.radio');
         const key = v?.armKind === 'key';
         this.disarm.classList.toggle('hidden', !(v && key && armed && !crashed && !screenOpen));
         const show = !!v && !armed && !crashed && !screenOpen && block !== null;
         this.el.classList.toggle('hidden', !show);
         this.drawn = null;
+        const offered = show && offer && !!v;
+        if (this.offer.hidden === offered) this.offer.hidden = !offered;
+        if (offered && v) {
+            // the controller's own arm input takes it too (a switch or the DJI start/stop button); a key-armed setup has none
+            const keys = v.armKind && v.armKind !== 'key' && v.armLabel ? t('throttle.offer.keys', { src: v.armLabel }) : t('throttle.offer.keysOnly');
+            if (this.offerKeys.textContent !== keys) this.offerKeys.textContent = keys;
+        }
         if (!v || !show || block === null) return;
-        // no signal, hidden tab, crashed, no profile: only the reason, the steps do not apply
+        // no signal, hidden tab, crashed, no profile: only the reason, the steps do not apply. The centred style (lane
+        // center-throttle) has no arming steps either: one line says how its motors start (a stick moved)
         const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
-        this.list.hidden = reasonOnly;
-        this.art.el.style.display = reasonOnly ? 'none' : '';
-        this.reason.textContent = reasonOnly ? t(`arm.blocked.${block}`) : '';
-        if (reasonOnly) return;
+        const plain = reasonOnly || centred;
+        this.list.hidden = plain;
+        // the centred style has nothing to arm: no "To arm" heading over its one line (review m2)
+        this.title.hidden = centred && !reasonOnly;
+        this.art.el.style.display = plain ? 'none' : '';
+        this.reason.textContent = reasonOnly ? t(`arm.blocked.${block}`) : centred ? t(acro ? 'throttle.card.acro' : 'throttle.card.centred') : '';
+        this.el.classList.toggle('centred', centred && !reasonOnly);
+        if (plain) return;
         const ch = v.ch;
         const u = (ch[2] + 1) / 2;
         const set = (i: number, text: string, done: boolean, now: boolean): void => {
@@ -143,8 +180,12 @@ class KeyCard {
 }
 
 /** The arm hint in the words of the input in use: keyboard and touch pilots have no arm switch. */
-function gateText(block: Exclude<ArmBlock, null>, v: ArmView | undefined): string {
+function gateText(block: Exclude<ArmBlock, null>, v: ArmView | undefined, centred = false, acro = false): string {
     const src = v?.source ?? null;
+    // the centred style (lane center-throttle): the gate is fed the start of the motors, its 'switch' is not the pilot's;
+    // the spoken line says what the card says (review m2)
+    const reasonOnly = block === 'stale' || block === 'hidden' || block === 'crashed' || block === 'noProfile';
+    if (centred && !reasonOnly && (src === 'hid' || src === 'gamepad')) return t(acro ? 'throttle.card.acro' : 'throttle.card.centred');
     // easy play (v0.8): no arming; the first flying key or touch starts the motors
     if (v?.easy && block !== 'hidden' && block !== 'stale') return t(src === 'touch' ? 'play.gate.touch' : 'play.gate.keys');
     if (src === 'keyboard') {
@@ -225,7 +266,13 @@ export class Hud {
     private statsLink = h('div', { 'data-testid': 'link-hint', class: 'detail', hidden: true });
     private frameStats = h('div', { class: 'osd frame hidden' }, this.statsMain, this.statsInput, this.statsLink, this.statsDetail, this.statsDrawing, this.statsHint);
     private inputAt = -1e9;
-    private card = new ArmCard(() => this.onArm?.());
+    private card = new ArmCard(() => this.onArm?.(), () => this.throttle?.centred());
+    private offer = new ArmOffer();
+    private offerShown = false;
+    /** centred style and acro: the throttle is direct (one line under the OSD's top line) */
+    private acroLine = h('div', { class: 'osd acro-thr', 'data-testid': 'acro-throttle', hidden: true });
+    /** The throttle style of the controller in use (app/builtin/throttle-style.ts); null: never set (the arm card has no offer). */
+    throttle: HudThrottle | null = null;
     private keys = new KeyCard();
     private last = 0;
     visible = true;
@@ -235,7 +282,9 @@ export class Hud {
     onArm: (() => void) | null = null;
 
     constructor() {
-        this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.card.el, this.card.disarm, this.keys.el, this.frameStats);
+        this.root = h('div', { class: 'hud' }, this.tl, this.tr, this.bl, this.br, this.gate, this.card.el, this.card.disarm, this.keys.el,
+            // one column at the F3 block's place: the acro line flows under F3 when it is shown, never over it (review m7)
+            h('div', { class: 'osd-col' }, this.frameStats, this.acroLine));
     }
 
     /**
@@ -335,6 +384,15 @@ export class Hud {
         // the radio drawing is the pilot's own stick: every frame. Everything else is text, at 10 Hz
         // (a number that changes with every frame cannot be read)
         this.card.live(radio && view ? view : null);
+        // every frame: a short press of the controller's arm button must not fall between two of the text's updates
+        const style = radio ? this.throttle?.style() ?? null : null;
+        const seen = this.visible && !this.textOff && !s.paused && !document.querySelector('.screen');
+        const of = this.offer.update({
+            style, block, throttle: view ? view.ch[2] : Number.NaN, presses: view?.presses ?? 0, toggle: view?.armKind === 'toggle',
+            visible: seen, profileGen: view?.profileGen ?? 0, now
+        });
+        this.offerShown = of.show;
+        if (of.accept) this.throttle?.centred();
         if (now - this.last < 100) return;
         this.last = now;
         this.root.style.display = this.visible && !this.textOff ? '' : 'none';
@@ -352,10 +410,13 @@ export class Hud {
         this.tr.textContent = `${fmt(hd.volts, 1)} V  ${fmt(hd.timeS, 1)} s`;
         this.bl.textContent = `THR ${hd.throttlePct}%  ${fmt(hd.speed, 1)} m/s  ALT ${fmt(hd.altitude, 1)} m`;
         const kbd = src === 'keyboard';
-        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block);
+        const acro = style === 'centred' && !!this.throttle?.acro();
+        this.card.update(radio && view ? view : null, hd.armed, hd.crashed, block, this.offerShown, style === 'centred', acro);
+        if (this.acroLine.hidden === acro) this.acroLine.hidden = !acro;
+        if (acro && !this.acroLine.textContent) this.acroLine.textContent = t('throttle.acro');
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
-        const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view) : '';
+        const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view, style === 'centred', acro) : '';
         // the pilot keyboard's ground card; the game scheme's keys are on the "How to fly" card (app/builtin/how-to-fly.ts)
         const keyCard = kbd && !view?.game && say !== '' && !document.querySelector('.screen.radio');
         const easy = !!view?.easy;

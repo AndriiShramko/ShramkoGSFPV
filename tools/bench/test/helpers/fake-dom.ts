@@ -43,6 +43,11 @@ export class FakeElement {
     readonly attrs = new Map<string, string>();
     readonly style = fakeStyle();
     readonly classList = new FakeClassList();
+    /** `el.dataset.x = v` sets the attribute data-x (camelCase to kebab-case), as a browser does */
+    readonly dataset: Record<string, string> = new Proxy({} as Record<string, string>, {
+        set: (_o, k, v) => { this.attrs.set(`data-${String(k).replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`, String(v)); return true; },
+        get: (_o, k) => this.attrs.get(`data-${String(k).replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`)
+    });
     disabled = false;
     offsetParent: unknown = null;
     offsetHeight = 0;
@@ -92,8 +97,12 @@ export class FakeElement {
     get innerHTML(): string { return this.html; }
     set innerHTML(v: string) { this.html = v; this.replaceChildren(); }
 
-    addEventListener(): void { /* no events here */ }
-    removeEventListener(): void { /* no events here */ }
+    /** listeners are kept only so a test can `click()` (no bubbling, no layout) */
+    private listeners: { type: string; fn: (e: unknown) => void }[] = [];
+    addEventListener(type?: string, fn?: (e: unknown) => void): void { if (type && fn) this.listeners.push({ type, fn }); }
+    removeEventListener(type?: string, fn?: (e: unknown) => void): void { this.listeners = this.listeners.filter((l) => l.type !== type || l.fn !== fn); }
+    /** a mouse click on this element: its own click listeners, with `detail` 1 */
+    click(): void { for (const l of this.listeners.filter((x) => x.type === 'click')) l.fn({ detail: 1, target: this }); }
     focus(): void { /* no focus here */ }
     getBoundingClientRect(): { left: number; right: number; top: number; bottom: number; width: number; height: number } {
         return { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 };

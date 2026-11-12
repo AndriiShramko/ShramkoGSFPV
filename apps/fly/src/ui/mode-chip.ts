@@ -23,7 +23,20 @@ export interface ModeChipHost {
     pick(m: FlightMode): void;
     /** the keys of the mode action (the keymap's M) */
     caps: readonly KeyHint[];
+    /**
+     * The throttle style of the radio or gamepad in use (lane center-throttle): a second line on the chip and two choices
+     * in the popover. `now` null: no radio or gamepad (touch, keyboard), the line and the choices are not shown.
+     */
+    throttle?: {
+        /** style: the one flying; next: a choice waiting for the motors to stop (review m4: the chip says both) */
+        now(): { style: 'centred' | 'zero'; next: 'centred' | 'zero' | null } | null;
+        pick(s: 'centred' | 'zero'): void;
+        /** the keys of throttle.style (the keymap's J) */
+        caps: readonly KeyHint[];
+    };
 }
+
+const STYLES = ['centred', 'zero'] as const;
 
 const GAP = 8;
 
@@ -35,6 +48,9 @@ export class ModeChip {
     private pop: HTMLDivElement;
     private note: HTMLParagraphElement;
     private items: { m: FlightMode; b: HTMLButtonElement }[] = [];
+    private thr = h('span', { class: 'mc-thr', 'data-testid': 'mode-chip-throttle', hidden: true });
+    private thrItems: { s: 'centred' | 'zero'; b: HTMLButtonElement }[] = [];
+    private thrGroup: HTMLDivElement | null = null;
     private host: ModeChipHost;
     private shown = '';
     private placed = '';
@@ -49,16 +65,27 @@ export class ModeChip {
             'aria-haspopup': 'menu', 'aria-expanded': 'false', 'aria-controls': 'mode-pop',
             'aria-keyshortcuts': host.caps.map((k) => k.aria).join(' ') || undefined,
             onclick: (e: Event) => this.toggle((e as MouseEvent).detail === 0)
-        }, this.label, this.src, kbd());
+        }, this.label, this.src, kbd(), this.thr);
         this.note = h('p', { class: 'mc-note', hidden: true });
         for (const m of CHIP_MODES) {
             const b = h('button', { type: 'button', role: 'menuitemradio', 'aria-checked': 'false', 'data-action': `mode-${m}`, tabindex: -1, onclick: (e: Event) => this.choose(m, (e as MouseEvent).detail === 0) },
                 h('span', { class: 'mc-name' }, t(`mode.${m}`)), h('span', { class: 'mc-about' }, t(`mode.about.${m}`)));
             this.items.push({ m, b });
         }
+        const tk = host.throttle;
+        if (tk) {
+            for (const st of STYLES) {
+                const b = h('button', { type: 'button', role: 'menuitemradio', 'aria-checked': 'false', 'data-action': `throttle-${st}`, tabindex: -1, onclick: (e: Event) => this.chooseStyle(st, (e as MouseEvent).detail === 0) },
+                    h('span', { class: 'mc-name' }, t(`set.input.throttleStyle.opt.${st}`)), h('span', { class: 'mc-about' }, t(`throttle.about.${st}`)));
+                this.thrItems.push({ s: st, b });
+            }
+            const caps = tk.caps.length ? h('p', { class: 'mc-foot' }, ...tk.caps.map((k) => h('kbd', {}, k.cap)), ` ${t('keys.throttle.style')}`) : null;
+            this.thrGroup = h('div', { class: 'mc-thr-group', role: 'group', 'aria-label': t('set.input.throttleStyle'), hidden: true },
+                h('p', { class: 'mc-sub' }, t('set.input.throttleStyle')), ...this.thrItems.map((i) => i.b), caps);
+        }
         const foot = host.caps.length ? h('p', { class: 'mc-foot' }, ...host.caps.map((k) => h('kbd', {}, k.cap)), ` ${t('mode.next')}`) : null;
         this.pop = h('div', { class: 'mc-pop', id: 'mode-pop', role: 'menu', 'aria-label': t('mode.chip.title'), hidden: true },
-            ...this.items.map((i) => i.b), this.note, foot);
+            ...this.items.map((i) => i.b), this.note, foot, this.thrGroup);
         this.el = h('div', { class: 'mode-chip interactive' }, this.btn, this.pop);
         this.pop.addEventListener('keydown', (e) => this.onKey(e));
         this.btn.addEventListener('keydown', (e) => {
@@ -75,7 +102,8 @@ export class ModeChip {
     update(): void {
         const m = this.host.current();
         const radio = this.host.radio();
-        const key = `${m}|${radio ?? ''}`;
+        const ts = this.host.throttle?.now() ?? null;
+        const key = `${m}|${radio ?? ''}|${ts ? `${ts.style}>${ts.next ?? ''}` : ''}`;
         if (key === this.shown) return;
         this.shown = key;
         this.label.textContent = t(`mode.${m}`);
@@ -83,7 +111,13 @@ export class ModeChip {
         this.src.textContent = radio ?? '';
         this.btn.dataset.mode = m;
         this.btn.classList.toggle('radio', radio !== null);
-        this.btn.setAttribute('aria-label', `${t('mode.chip.aria', { mode: t(`mode.${m}`) })}${radio ? `. ${t('mode.radioDecides', { src: radio })}` : ''}`);
+        this.thr.hidden = ts === null;
+        this.thr.textContent = ts ? t(`throttle.short.${ts.style}`) + (ts.next ? ` · ${t('throttle.chip.then', { style: t(`throttle.short.${ts.next}`) })}` : '') : '';
+        this.btn.setAttribute('data-throttle', ts?.style ?? '');
+        if (this.thrGroup) this.thrGroup.hidden = ts === null;
+        for (const i of this.thrItems) i.b.setAttribute('aria-checked', String((ts?.next ?? ts?.style) === i.s));
+        const thrAria = ts ? `. ${t('throttle.chip.aria', { style: t(`set.input.throttleStyle.opt.${ts.style}`) })}${ts.next ? `, ${t('throttle.chip.then', { style: t(`set.input.throttleStyle.opt.${ts.next}`) })}` : ''}` : '';
+        this.btn.setAttribute('aria-label', `${t('mode.chip.aria', { mode: t(`mode.${m}`) })}${radio ? `. ${t('mode.radioDecides', { src: radio })}` : ''}${thrAria}`);
         this.btn.title = radio ? t('mode.radioDecides', { src: radio }) : t('mode.chip.title');
         this.note.hidden = radio === null;
         this.note.textContent = radio ? t('mode.radioDecides', { src: radio }) : '';
@@ -197,8 +231,14 @@ export class ModeChip {
         this.close(byKey);
     }
 
+    private chooseStyle(st: 'centred' | 'zero', byKey: boolean): void {
+        this.host.throttle?.pick(st);
+        this.update();
+        this.close(byKey);
+    }
+
     private onKey(e: KeyboardEvent): void {
-        const list = this.items.map((i) => i.b);
+        const list = [...this.items.map((i) => i.b), ...(this.thrGroup && !this.thrGroup.hidden ? this.thrItems.map((i) => i.b) : [])];
         const at = list.indexOf(document.activeElement as HTMLButtonElement);
         if (e.key === 'Escape') {
             // the menu's own Esc: it closes the popover, not the flight (the page's P / Esc router never sees it)

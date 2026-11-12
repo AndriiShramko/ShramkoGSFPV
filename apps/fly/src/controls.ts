@@ -14,7 +14,7 @@
 // screen) decide the arm and the mode instead when it has them, and their action ranges run app
 // actions (onSwitchAction, wired to the key router by app/builtin/switches.ts).
 
-import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, validModeSwitch } from '@gsfpv/input';
+import { ArmGate, ArmLatch, SwitchActionWatch, armByRanges, inputName, knownDevice, mapFrame, profileArmLevel, radioSetsMode, readChannelTable, readSwitches, readThrottleRest, readThrottleStyle, validModeSwitch } from '@gsfpv/input';
 import type { ChannelTable, LinkStats, Profile, RawFrame, ArmBlock, RadioDevice, SwitchAction, SwitchInput } from '@gsfpv/input';
 import { MODE_CHANNEL, modeFromChannel } from '@gsfpv/sim-core';
 import type { FlightMode } from '@gsfpv/sim-core';
@@ -144,8 +144,15 @@ export function checkProfile(v: unknown): Profile | null {
     if (p.version !== 1 || !p.axes || typeof p.axes !== 'object' || !p.deviceKey) return null;
     const kind = (p.arm as { kind?: unknown } | null)?.kind;
     if (p.arm && kind !== 'axis' && kind !== 'button' && kind !== 'key') return null;
-    if (p.modeSwitch === undefined && p.switches === undefined && p.channels === undefined && p.known === undefined) return p;
+    if (p.modeSwitch === undefined && p.switches === undefined && p.channels === undefined && p.known === undefined && p.throttleStyle === undefined && p.throttleRest === undefined) return p;
     const out: Profile = { ...p };
+    // the throttle style (lane center-throttle): a value this version does not read is automatic, the profile stays
+    const style = readThrottleStyle(p.throttleStyle);
+    if (style) out.throttleStyle = style;
+    else delete out.throttleStyle;
+    const rest = readThrottleRest(p.throttleRest);
+    if (rest) out.throttleRest = rest;
+    else delete out.throttleRest;
     if (p.channels !== undefined) {
         // the device's channel numbering (a recognised controller's): names only, so one that cannot be read goes and the profile stays
         const table = readChannelTable(p.channels);
@@ -180,6 +187,10 @@ export interface ArmView {
     ch: Float32Array; // mapped channels before the arm gate (roll, pitch, throttle, yaw, arm, mode)
     armKind: 'axis' | 'button' | 'toggle' | 'key' | null;
     armLabel: string; // "CH5", "button 3", or the Space / ARM text
+    /** presses of a latched arm input so far (Controls.armPresses): a press the gate refused still counts */
+    presses: number;
+    /** bumped by every new profile (Controls.profileGen): the arm card's offer starts again */
+    profileGen: number;
     mode: 1 | 2;
     source: Controls['source'];
     /** easy play flies (touch or keyboard with prefs input.play 'easy', v0.8): no arming, the HUD says "take off" */
@@ -207,6 +218,14 @@ export class Controls {
      */
     play: 'easy' | 'pilot' = 'pilot';
     private latch = new ArmLatch(); // keyboard arm and momentary arm buttons
+    /**
+     * Presses of a latched arm input (a toggle button such as the DJI's start/stop, Space or the on-screen ARM), counted
+     * when the press is read, before the gate may drop the latch it refused: the arm card's offer listens to them
+     * (ui/arm-offer-logic.ts), since ch[4] of a refused press is back at -1 before anything outside raw() reads it.
+     */
+    armPresses = 0;
+    /** Bumped by every setProfile. */
+    profileGen = 0;
     private armView: ArmView;
     private ch = new Float32Array([0, 0, -1, 0, -1, -1, 0, 0]);
     private out = new Float32Array(8);
@@ -234,7 +253,7 @@ export class Controls {
 
     constructor(session: FlightSession) {
         this.session = session;
-        this.armView = { ch: this.ch, armKind: null, armLabel: '', mode: 2, source: null, easy: false, link: null, game: false };
+        this.armView = { ch: this.ch, armKind: null, armLabel: '', presses: 0, profileGen: 0, mode: 2, source: null, easy: false, link: null, game: false };
     }
 
     /** A new scene (E.4): the same input, profile and arm gate feed the new session. */
@@ -261,8 +280,21 @@ export class Controls {
      */
     setProfile(p: Profile | null): void {
         this.profile = p;
-        this.latch.reset();
+        this.profileGen++;
         this.actions.reset();
+        this.restartGate();
+    }
+
+    /**
+     * Another owner of the arm channel (app/input.ts: the centred pilot or a lesson's pilot put in or taken out, the
+     * motors off): the gate starts again as for a new profile, so the arm switch must be seen off, the sticks through
+     * their centre and the throttle low again. Without it a switch left on under the centred pilot (whose AutoArm channel
+     * the old gate saw off) would arm the from-zero style by itself (review B1), and a crash hold of the old owner would
+     * re-arm at the respawn.
+     */
+    restartGate(): void {
+        this.latch.reset();
+        this.ch[4] = -1;
         this.gate = new ArmGate({ keepArmedAfterCrash: this.keepArmed });
         this.block = this.gate.block;
     }
@@ -328,7 +360,9 @@ export class Controls {
         const p = this.profile;
         if (!p) return;
         mapFrame(p, f, this.ch);
+        const before = this.latch.on;
         this.ch[4] = profileArmLevel(p, f, this.latch) ? 1 : -1;
+        if (this.latch.on !== before) this.armPresses++; // only a press flips the latch (ArmLatch.level)
         this.push(f.t);
         for (const a of this.actions.update(p.switches, f)) this.onSwitchAction?.(a);
     }
@@ -337,6 +371,7 @@ export class Controls {
     toggleArm(): void {
         if (this.profile?.arm?.kind !== 'key' || armByRanges(this.profile)) return;
         this.latch.toggle();
+        this.armPresses++;
         this.ch[4] = this.latch.on ? 1 : -1;
         this.push(performance.now()); // act at once, not at the next radio report
     }
@@ -344,6 +379,11 @@ export class Controls {
     /** A switch input of the device in use as the pilot reads it (inputLabel, with the profile's channel table): "CH6", or "button 3" on a gamepad. */
     nameOf(input: SwitchInput): string {
         return inputLabel(input, this.source === 'gamepad' ? 'gamepad' : 'hid', this.profile?.channels);
+    }
+
+    /** The source's mapped channels before any assist and the arm gate (roll, pitch, throttle, yaw, arm, mode); the same array every call. */
+    get mapped(): Float32Array {
+        return this.ch;
     }
 
     /** For the HUD; the same object every call (the HUD reads it at 10 Hz). */
@@ -364,6 +404,8 @@ export class Controls {
             if (known) v.armLabel = t(`controllers.control.${known.label}`);
         }
         v.mode = this.profile?.mode ?? getStickMode();
+        v.presses = this.armPresses;
+        v.profileGen = this.profileGen;
         v.source = this.source;
         v.easy = this.play === 'easy' && (this.source === 'touch' || this.source === 'keyboard');
         v.link = this.source === 'hid' || this.source === 'gamepad' ? this.linkOf : null;

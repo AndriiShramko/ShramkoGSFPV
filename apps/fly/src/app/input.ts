@@ -2,7 +2,7 @@
 // the keyboard and the touch sticks. The mapping and the arm gate live in controls.ts. A recognised
 // controller whose setup is older than its recognition opens the Controls screen once on its known
 // setup's offer (devices/known.ts choiceOffer; v0.8 review R1).
-import type { Profile } from '@gsfpv/input';
+import type { Profile, ThrottleStyle } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
 import { choiceOffer } from '../devices/known';
@@ -12,6 +12,9 @@ import { GAME_SPEED_IDS } from '../play/game';
 import type { GameSpeed } from '../play/game';
 import { GamePilot } from '../play/game-pilot';
 import { LessonPilot, lessonMode, rayClearance, rayClearanceUp } from '../play/lesson-pilot';
+import { CentrePilot } from '../play/centre-pilot';
+import { openFeedback } from './builtin/feedback';
+import { groundClearance } from '../play/ground';
 import type { PlayProfile } from '../play/keys';
 import type { LessonAssists } from '@shramko/sonic-fpv';
 import { loadLastInput, saveLastInput, loadProfiles, profileFor, saveProfile } from '../controls';
@@ -87,6 +90,15 @@ export class InputHost {
      * source by setLesson().
      */
     private lesson: LessonPilot | null = null;
+    /**
+     * The centred throttle style (lane center-throttle, play/centre-pilot.ts): installed in Controls.assist for a radio,
+     * gamepad or HID controller whose throttle style is 'centred' while no lesson runs. Built on first use.
+     */
+    private centre: CentrePilot | null = null;
+    private centreFn: ((ch: Float32Array, out: Float32Array, t: number) => void) | null = null;
+    /** the throttle style flying now, and the one asked for (app/builtin/throttle-style.ts); a change waits for the motors to stop */
+    private style: ThrottleStyle = 'zero';
+    private wantStyle: ThrottleStyle = 'zero';
     /** How touch and keyboard fly now (prefs input.play, set by app/builtin/play.ts through setPlay). */
     private play: PlayProfile = 'pilot';
     private lastChoice: RadioChoice | null = null;
@@ -144,6 +156,11 @@ export class InputHost {
             c.forcedMode = null;
             this.game.intents = false;
             this.easy.intents = false;
+            // the controller's own throttle style flies again (the centred pilot from the ground: motors off)
+            this.centre?.reset();
+            this.installStyle();
+            // the arm channel changes hands (review B1): a switch left on must be flipped again; a craft still flying keeps its gate
+            if (!c.gate.armed) c.restartGate();
             return;
         }
         let pilot = this.lesson;
@@ -163,6 +180,75 @@ export class InputHost {
         c.forcedMode = lessonMode(assists);
         this.game.intents = true;
         this.easy.intents = true;
+    }
+
+    /**
+     * The throttle style to fly with the radio, gamepad or HID controller in use (app/builtin/throttle-style.ts resolves
+     * it: the pilot's choice, else where the throttle rests). On the ground it applies at once; with the motors running
+     * it waits until they stop (a landing, a crash, a respawn, the arm switch), so a flip never drops the drone.
+     */
+    setThrottleStyle(s: ThrottleStyle): void {
+        this.wantStyle = s;
+        this.settleStyle();
+    }
+
+    /** The style flying now and the one waiting for the motors to stop (null: none waits). */
+    get throttleStyle(): { now: ThrottleStyle; pending: ThrottleStyle | null } {
+        return { now: this.style, pending: this.wantStyle !== this.style ? this.wantStyle : null };
+    }
+
+    /** The centred pilot while it flies the controller in use, else null. */
+    get centrePilot(): CentrePilot | null {
+        return this.centreFn && this.ctx.controls.assist === this.centreFn ? this.centre : null;
+    }
+
+    /** A style waiting for the motors to stop takes over once they have (called every frame by app/builtin/throttle-style.ts). */
+    settleStyle(): void {
+        if (this.wantStyle === this.style) return;
+        if (this.ctx.controls.gate.armed) return;
+        this.style = this.wantStyle;
+        this.centre?.reset();
+        this.installStyle();
+        // the arm channel changes hands (review B1): from the centred pilot's AutoArm to the switch, or back; the
+        // switch must be seen off again and a crash hold of the old owner is dropped
+        this.ctx.controls.restartGate();
+    }
+
+    /**
+     * Controls.assist for the style and the input in use: the centred pilot for a radio, gamepad or HID controller in
+     * the centred style, else none (the 'zero' style is the path as it always was). A lesson's pilot is left alone.
+     */
+    private installStyle(): void {
+        if (this.lesson) return;
+        const c = this.ctx.controls;
+        const radio = c.source === 'hid' || c.source === 'gamepad';
+        if (this.style === 'centred' && radio) {
+            const pilot = this.centre ?? this.makeCentre();
+            if (!this.centreFn) this.centreFn = (ch, out, t) => pilot.apply(ch, out, t);
+            c.assist = this.centreFn;
+        } else if (this.centreFn && c.assist === this.centreFn) c.assist = null;
+    }
+
+    private makeCentre(): CentrePilot {
+        const ctx = this.ctx;
+        const speed = (): GameSpeed => {
+            const v = ctx.prefs.get('input.gameSpeed');
+            return GAME_SPEED_IDS.find((id) => id === v) ?? 'normal';
+        };
+        this.centre = new CentrePilot({
+            sim: () => ctx.session.sim ?? null,
+            paused: () => ctx.session.paused,
+            // the game scheme's ground below (play/ground.ts, the scan's own walls), looked at every 33 ms by the pilot
+            ground: (sim) => groundClearance(sim.contactWorld, sim.s, sim.p),
+            mode: () => ctx.controls.flyingMode(),
+            speed,
+            // every latched arm input is a press (review M3): a toggle button, and Space / the on-screen DISARM of a key arm
+            toggleArm: () => {
+                const a = ctx.controls.profile?.arm;
+                return !!a && (a.kind === 'key' || (a.kind === 'button' && !!a.toggle));
+            }
+        });
+        return this.centre;
     }
 
     /** The lesson pilot while a lesson runs (its AutoArm, its assist), else null. */
@@ -219,7 +305,7 @@ export class InputHost {
         // opened from the pause menu (its item or the top button): Controls takes the menu's place,
         // so closing Controls flies on, whichever way it was opened
         if (ctx.menu.isOpen) ctx.menu.close();
-        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen, view });
+        const r = new RadioScreen(ctx.ui, this.lastChoice, { firstOpen, view, report: (text) => { r.close(); openFeedback(ctx, 'bug', { message: text }); } });
         ctx.hook.radio = r;
         r.onDone = (c) => { r.remove(); ctx.resume('controls'); this.use(c); };
         // Close / Esc: nothing changes (remove() gives the radio in use its frames back). Closed
@@ -260,6 +346,9 @@ export class InputHost {
         ctx.controls.useDevice(pad ? () => pad.pollNow() : null, meter ? (now) => meter.stats(now) : null);
         // a new input starts easy play from the ground: motors off until its first flying input
         if (c.kind !== prev?.kind) { this.easy.reset(); this.game.reset(); this.lesson?.reset(); }
+        // the centred style starts every new controller from the ground; its style comes from app/builtin/throttle-style.ts
+        if (c.kind !== prev?.kind || c.profile !== prev?.profile) this.centre?.reset();
+        this.installStyle();
         if (c.kind === 'touch') this.touch = this.makeTouch();
         this.keyboard.setActive(c.kind === 'keyboard');
         this.lastChoice = c;

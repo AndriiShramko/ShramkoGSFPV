@@ -62,7 +62,9 @@ export const howToFly: Feature = {
                 // the left touch stick climbs and sinks only under easy play with the altitude help on
                 altitudeHelp: ctx.controls.play === 'easy' && prefs.get('input.altitudeHelp') !== false,
                 armKind: v.armKind,
-                armLabel: v.armLabel
+                armLabel: v.armLabel,
+                // lane center-throttle: the radio's or gamepad's left stick flies in the centre (no arming)
+                centred: ctx.input.throttleStyle.now === 'centred'
             };
         };
         /** Something else is on the screen that the card must not stand on or over. */
