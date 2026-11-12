@@ -348,7 +348,10 @@ export function knownProfile(match: KnownMatch, deviceKey: string, deviceName: s
  */
 export function knownOffer(saved: Profile, match: KnownMatch | null): Profile | null {
     if (!match?.device.mapping || saved.known === match.device.id) return null;
-    return knownProfile(match, saved.deviceKey, match.device.name);
+    const p = knownProfile(match, saved.deviceKey, match.device.name);
+    // the pilot's throttle style belongs to the controller, not to its setup: the known setup keeps it (review m1)
+    if (p && saved.throttleStyle) p.throttleStyle = saved.throttleStyle;
+    return p;
 }
 
 /**

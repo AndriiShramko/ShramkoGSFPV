@@ -492,7 +492,10 @@ export class RadioScreen {
     /** Also used by tests with the simulated radio (fake HID device). `match`: a controller recognised by name, or with a channel table the wizard's profile keeps. */
     runWizard(key: string, name: string, subscribe: Subscribe, rate: DeviceRate, kind: SourceKind, match: KnownMatch | null = null): void {
         const known = match ? knownProfile(match, key, name) : null;
-        const device = known?.channels ? { channels: known.channels, known: known.known } : match ? { known: match.device.id } : {};
+        const base = known?.channels ? { channels: known.channels, known: known.known } : match ? { known: match.device.id } : {};
+        // Recalibrate keeps the pilot's throttle style of this controller (review m1)
+        const style = profileFor(key)?.throttleStyle;
+        const device = style ? { ...base, throttleStyle: style } : base;
         this.mount(new CalibrationWizard(key, name, device), key, name, subscribe, rate, kind, null, { match });
     }
 

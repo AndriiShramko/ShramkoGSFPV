@@ -4,7 +4,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { RestWatch, TUNING, classifyThrottleRest, profileStyle, readThrottleRest, readThrottleStyle, resolveStyle, restStyle, springsOf } from '../src';
 import type { Profile } from '../src';
-import { idealHuman } from '../src/sim/human';
+import { idealHuman, newWizardAdapter, runHuman } from '../src/sim/human';
+import { CalibrationWizard } from '../src/calib';
+import { knownOffer, recognise, seenFromHid } from '../src/known-devices';
+import { DJI_RC3 } from '../src/sim/devices';
 import { invSet, Rig } from './helpers';
 import { mulberry32 } from '../src/sim/signals';
 
@@ -134,5 +137,31 @@ describe('the wizard keeps where the throttle rested at its "Let go" step (Profi
         const p = run(false);
         expect(p.throttleRest).toBeDefined();
         expect(p.throttleRest).not.toBe('bottom');
+    });
+});
+
+describe('review m1: the pilot\'s throttle style outlives Recalibrate, Set again and the known setup', () => {
+    const wizardRun = (device?: import('../src').WizardDevice): CalibrationWizard => {
+        let w: CalibrationWizard | null = null;
+        const o = runHuman(() => (w = new CalibrationWizard('k', 'n', device)), newWizardAdapter(), idealHuman('AETR', invSet(0)), 180000);
+        expect(o.kind, o.problems.join('; ')).toBe('correct');
+        return w as unknown as CalibrationWizard;
+    };
+    it('Recalibrate (a new wizard told the saved choice) keeps it; control: a new wizard with none has none', () => {
+        expect(wizardRun({ throttleStyle: 'zero' }).state.profile!.throttleStyle).toBe('zero');
+        expect(wizardRun().state.profile!.throttleStyle).toBeUndefined();
+    });
+    it('a choice pressed on the check screen stays through Set again', () => {
+        const w = wizardRun();
+        w.state.profile!.throttleStyle = 'centred'; // what throttle-style-row.ts does on the check screen
+        w.redo('roll');
+        expect(w.state.profile).toBeNull();
+        expect(w.back()).toBe(true);
+        expect(w.state.profile!.throttleStyle).toBe('centred');
+    });
+    it('"Use the known setup" keeps the choice of the saved profile', () => {
+        const m = recognise(seenFromHid(DJI_RC3))!;
+        const saved = { ...wizardRun().state.profile!, deviceKey: 'hid:2ca3:1021:DJI Virtual Joystick', throttleStyle: 'zero' as const };
+        expect(knownOffer(saved, m)!.throttleStyle).toBe('zero');
     });
 });

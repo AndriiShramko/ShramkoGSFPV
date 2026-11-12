@@ -119,7 +119,8 @@ export function classifyThrottleRest(v: number): ThrottleRest | null {
 }
 
 /** What a recognised device brings to a wizard run: its channel table and its known-controller id, kept in the profile. */
-export interface WizardDevice { channels?: SwitchInput[]; known?: string }
+/** throttleStyle: the pilot's saved choice for this controller (lane center-throttle), carried through Recalibrate (review m1) */
+export interface WizardDevice { channels?: SwitchInput[]; known?: string; throttleStyle?: ThrottleStyle }
 
 /** The check screen's mode-switch row: the switch (null = none), where it is now, the positions seen, and whether a flip is watched for. */
 export interface ModeSwitchState { sw: ModeSwitch | null; pos: SwitchPos | null; seen: [boolean, boolean, boolean]; listening: boolean }
@@ -422,18 +423,22 @@ export class CalibrationWizard {
     private modeDet = new ModeSwitchDetector();
 
     private device: WizardDevice;
+    /** the pilot's throttle style: from the device options, a resumed profile, or a choice made on this check screen (kept through Set again) */
+    private styleChoice: ThrottleStyle | null = null;
 
     /** `device`: a recognised device's channel table and id (known-devices.ts), kept in the profile the wizard builds. */
     constructor(deviceKey: string, deviceName: string, device: WizardDevice = {}) {
         this.deviceKey = deviceKey;
         this.deviceName = deviceName;
         this.device = { ...(device.channels ? { channels: device.channels.map((i) => ({ ...i })) } : {}), ...(device.known ? { known: device.known } : {}) };
+        this.styleChoice = device.throttleStyle ?? null;
     }
 
     /** Resume at the check with a saved profile: ranges seeded from it, so Set again works. */
     static resume(p: Profile): CalibrationWizard {
         const w = new CalibrationWizard(p.deviceKey, p.deviceName, { channels: p.channels, known: p.known });
         w.resumed = p;
+        w.styleChoice = p.throttleStyle ?? null;
         w.started = true;
         w.assigned = copyAssigned(p.axes);
         w.armMap = copyArm(p.arm);
@@ -1037,7 +1042,12 @@ export class CalibrationWizard {
             this.keepProfile = null;
             st.checks = { throttleLow: false, armOn: null, centred: false };
             this.modeStart();
-        } else { st.profile = null; st.modeSwitch = null; }
+        } else {
+            // a choice pressed on the check screen (throttle-style-row.ts writes it into the profile) outlives Set again
+            if (st.profile?.throttleStyle) this.styleChoice = st.profile.throttleStyle;
+            else if (st.profile) this.styleChoice = null;
+            st.profile = null; st.modeSwitch = null;
+        }
         st.armSource = armSourceOf(this.armMap);
         if (this.n > 0) this.live();
         this.timers();
@@ -1620,7 +1630,7 @@ export class CalibrationWizard {
             ...(this.device.channels ? { channels: this.device.channels.map((i) => ({ ...i })) } : {}),
             ...(this.device.known ? { known: this.device.known } : {}),
             // the pilot's throttle style for this controller stays through Set again and Recalibrate
-            ...(this.resumed?.throttleStyle ? { throttleStyle: this.resumed.throttleStyle } : {}),
+            ...(this.styleChoice ? { throttleStyle: this.styleChoice } : {}),
             ...(throttleRest ? { throttleRest } : {})
         };
     }
