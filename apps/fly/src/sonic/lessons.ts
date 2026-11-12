@@ -401,7 +401,7 @@ export class LessonHost {
         const target = run.target();
         // a module-0 scene is the engine's input in place of the craft; else the craft in its world, the next gate its target
         // lane sonic-beacon: and where the target hum points (the target, or the next track point where the goal has no gate or zone)
-        const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, beacon: run.beaconTarget?.() ?? null, floorY: this.floorY };
+        const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: run.beaconTarget() } : {}), floorY: this.floorY };
         this.p.mode.hear(sample, input);
         this.p.stage.setTarget(target ? target.id : null);
         this.checkPassed();
