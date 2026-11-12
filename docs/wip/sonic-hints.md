@@ -1,6 +1,6 @@
 ---
 type: lane
-status: in progress
+status: ready for review
 summary: "Fly by Sound, stage 2 of the keys plan: the keys said aloud at every step, in the lesson menu, X to the main menu, the lost sound said on return (owner's complaint of 2026-11-10)."
 created: 2026-11-12
 ---
@@ -16,13 +16,15 @@ Branch `sonic-hints` from `origin/main` 751f647 (the local `main` is stale; `ori
 - [x] H3 X (`sonic.home`): from a lesson to the main menu (the start screen) in one press, then "Main menu of Fly by Sound. The lesson ... is saved: Continue takes you back to it." (`lesson-menu.ts` goHome/homeKey); the lesson menu's Lesson list says the same; K names X (`sonic.say.helpHome`)
 - [x] H4 the sound lost in a lesson (context not running, tab hidden): said once on the return, with Z to repeat (`sound-gap.ts`; feature.ts checks at every visibility change and once a second, asks a suspended context to resume on the return and the next key)
 - [x] gates: `pnpm -r typecheck` exit 0; `vitest run sonic keys i18n catalog packages/prefs` 119 files, 2253 passed, 11 skipped, 2 failed (app-keys and sonic-optin counted five mode keys), both updated: 42 of 42; `check-architecture.mjs` ok; no Cyrillic outside the locales in the changed files (B18 not run: it reads the public repository through the GitHub API)
-- [ ] the words check of the new lines (`listen-words --sim`, the package's tool on the simulator's locales)
+- [x] the words check of the new lines: `listen-words --sim` (package branch `sonic-hints` 898dcd3: sample values for previous, home, label; tool only), 1108 simulator lines, Windows voices + Whisper large-v3 on the GPU. Every new line under the bound 0.2: en lessonKeys 0.167 (heard "keys, and next, be back, z repeat, escape menu, x main menu": N and B heard as "and" and "be"), en soundBack 0.083, pl homeBack 0.067, ru lessonKeys 0.083; ru menuItemKey 0.25 ("klavisha" heard "klavishi", the key N heard as a word), the rest heard exactly. Report not committed (the tool writes a report for the simulator, not evidence)
 
 ## For the lead before the merge
 
 - A human listening: the step line after each step's first line, the menu items with keys, X and the line after it, the sound-gap line after a hidden tab.
 - The bench pages (`sonic-v13-page.ts`, `sonic-int-review.ts`) and accept-fly were not run; the full `vitest run` was not run (only the files above).
 - es and pl wording by a native speaker.
+- The package branch `sonic-hints` (898dcd3, `tools/listen-words.ts` only, not pushed): merge it in the package; the submodule pin was not moved (the simulator does not run the tool, and an unpushed commit cannot be pinned).
+- en: N and B inside the dense keys line are heard as "and" and "be" by Whisper; a human should judge if "Keys: N next, ..." needs commas or "key N".
 
 ## Decisions
 
