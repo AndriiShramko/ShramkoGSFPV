@@ -374,8 +374,11 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
             all[`${id}.v1.887f27aa.0.-.-.probe`] = 30000;
             localStorage.setItem(k, JSON.stringify(all));
         }, fork);
-        await p.keyboard.press('Escape');
-        await until(() => editorHook(p), (e) => !e?.open, 5000);
+        // the focus is on the clicked save button: the first Esc gives it back (review TK-3), the next one leaves
+        for (let i = 0; i < 3 && (await editorHook(p))?.open; i++) {
+            await p.keyboard.press('Escape');
+            await sleep(300);
+        }
         await p.keyboard.press('Shift+KeyB');
         await until(() => p.evaluate((s) => (document.querySelector(`${s} .ce-up`) as HTMLButtonElement | null)?.disabled === false, rowSel), (v) => v, 15000);
         // vote up on the fork
