@@ -162,6 +162,44 @@ class Closed(Exception):
     pass
 
 
+READ_LINE = "Your DJI controller is read: the simulator gets its sticks. Leave this window open while you fly."
+
+
+def plain(why):
+    """The reason a source could not be read, in words for a pilot who is not a programmer."""
+    w = (why or "").lower()
+    if "not found" in w and "dll" in w:
+        return "DJI Assistant 2 is not installed on this computer; install it from dji.com (the helper uses its USB driver)"
+    if "layout" in w:
+        return "this DJI Assistant 2 version is not known to the helper yet; please send this window's text to the author"
+    if "busy" in w:
+        return "DJI Assistant 2 (or another program) holds the controller; close DJI Assistant 2"
+    if "no dji controller" in w:
+        return "no DJI controller found; connect it with a data cable and switch it on"
+    if "no answer" in w:
+        return "the controller does not answer; switch it on, or unplug it and plug it in again"
+    return "the controller cannot be opened; unplug it and plug it in again"
+
+
+def first_look(factory, tries=50):
+    """At start, before any page: open the source, ask until one stick answer comes (at most `tries` asks), let it go.
+    (True, None) when it answered, else (False, the reason). Only the stick request is sent."""
+    s = factory()
+    try:
+        s.open()
+    except Closed as e:
+        return False, str(e)
+    try:
+        for _ in range(tries):
+            if s.read():
+                return True, None
+        return False, "no answer"
+    except Closed as e:
+        return False, str(e)
+    finally:
+        s.close()
+
+
 def find_dll():
     roots = [os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), os.environ.get("ProgramFiles", r"C:\Program Files")]
     for r in roots:
@@ -480,7 +518,10 @@ class Bridge:
     def set_state(self, state, why=None):
         if state != self.state:
             self.state = state
-            self.log("controller: %s%s" % (state, " (" + why + ")" if why else ""))
+            if state == "reading":
+                self.log(READ_LINE)
+            else:
+                self.log("Not reading the controller: %s (%s)" % (plain(why), why))
         msg = {"state": state}
         if why:
             msg["why"] = why
@@ -665,10 +706,17 @@ def main(argv=None):
         dll = a.dll or find_dll()
         factory = lambda: DjiUsb(dll)  # noqa: E731
         what = "DJI RC 2 through " + str(dll)
+    # the first look comes before listening, so a page cannot ask for the controller while it is open here
+    ok, why = first_look(factory)
     b = Bridge(factory, a.port, dev=a.dev, record=a.record)
     port = b.start()
-    print("Shramko RC bridge on ws://127.0.0.1:%d/ (%s)." % (port, what))
-    print("Open the simulator, Controls, 'My controller is not in the list', 'Fly through the RC bridge'. Ctrl+C stops.")
+    print("Shramko helper for DJI controllers on ws://127.0.0.1:%d/ (%s)." % (port, what))
+    if ok:
+        print("Your DJI controller answers. Now open the simulator and press 'Connect my controller'.")
+    else:
+        print("Not reading the controller yet: %s (%s)." % (plain(why), why))
+        print("This window keeps waiting; press 'Connect my controller' in the simulator when that is done.")
+    print("Leave this window open while you fly; close it to stop.")
     sys.stdout.flush()
     try:
         while True:

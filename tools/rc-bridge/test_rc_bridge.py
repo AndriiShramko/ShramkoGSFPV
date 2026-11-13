@@ -398,5 +398,130 @@ class Served(unittest.TestCase):
             s.close()
 
 
+class Src:
+    """A source for first_look: `answers` reads with nothing, then a stick answer; `fail` raises on open."""
+
+    def __init__(self, answers=0, fail=None):
+        self.answers, self.fail, self.reads, self.closed = answers, fail, 0, False
+
+    def open(self):
+        if self.fail:
+            raise rb.Closed(self.fail)
+
+    def read(self):
+        self.reads += 1
+        return [1024] * 6 if self.reads > self.answers else None
+
+    def close(self):
+        self.closed = True
+
+
+class Start(unittest.TestCase):
+    """C3: what the pilot reads in the helper's window at start and when the page connects."""
+
+    def test_the_reasons_are_said_in_plain_words(self):
+        said = {
+            "libusb0_dji.dll of DJI Assistant 2 not found (use --dll)": "DJI Assistant 2 is not installed",
+            "the stick channel is busy (close DJI Assistant 2 and try again): x": "close DJI Assistant 2",
+            "no DJI controller (USB 2CA3:1021 or another DJI controller) on DJI's driver: x": "connect it with a data cable",
+            "no answer": "switch it on",
+            "this libusb0_dji.dll (x) does not have the layout the bridge was measured with": "not known to the helper",
+            "usb_open: x": "unplug it and plug it in again",
+        }
+        for why, words in said.items():
+            self.assertIn(words, rb.plain(why), why)
+            self.assertNotIn("usb_", rb.plain(why))
+
+    def test_first_look_reads_one_answer_and_lets_go(self):
+        s = Src(answers=3)
+        self.assertEqual(rb.first_look(lambda: s), (True, None))
+        self.assertEqual(s.reads, 4)
+        self.assertTrue(s.closed)
+
+    def test_first_look_says_why_not(self):
+        self.assertEqual(rb.first_look(lambda: Src(fail="no DJI controller (x)")), (False, "no DJI controller (x)"))
+        s = Src(answers=99)
+        self.assertEqual(rb.first_look(lambda: s, tries=5), (False, "no answer"))
+        self.assertEqual(s.reads, 5)
+        self.assertTrue(s.closed)
+
+    def test_the_window_says_one_clear_line_when_the_page_reads_the_controller(self):
+        said = []
+        b = rb.Bridge(lambda: Src(), port=0, log=said.append, dev=True)
+        b.set_state("reading")
+        b.set_state("reading")
+        b.set_state("no-controller", "the stick channel is busy (close DJI Assistant 2 and try again): x")
+        self.assertEqual(said[0], rb.READ_LINE)
+        self.assertEqual(len(said), 2)
+        self.assertIn("close DJI Assistant 2", said[1])
+
+    def test_the_program_says_at_start_that_the_controller_answers(self):
+        import subprocess
+        p = subprocess.Popen([sys.executable, "-X", "utf8", os.path.join(HERE, "rc_bridge.py"), "--replay", REC, "--port", "0"],
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        import threading
+        stop = threading.Timer(20, p.kill)  # a program that says less than three lines must fail, not hang
+        stop.start()
+        try:
+            lines = [p.stdout.readline().strip() for _ in range(3)]
+        finally:
+            stop.cancel()
+            p.kill()
+            p.wait()
+            p.stdout.close()
+        self.assertTrue(lines[0].startswith("Shramko helper for DJI controllers on ws://127.0.0.1:"), lines)
+        self.assertEqual(lines[1], "Your DJI controller answers. Now open the simulator and press 'Connect my controller'.")
+        self.assertNotIn("bridge", " ".join(lines[1:]).lower())
+
+
+@unittest.skipUnless(os.name == "nt", "start-dji-helper.cmd is a Windows file")
+class StartCmd(unittest.TestCase):
+    """start-dji-helper.cmd in a folder of its own, with APPDATA and LOCALAPPDATA in that folder too, so the
+    "start with Windows" file never lands in the real Startup folder."""
+
+    def run_cmd(self, path_env, answer, files=("start-dji-helper.cmd", "rc_bridge.py"), args=()):
+        import shutil
+        import subprocess
+        import tempfile
+        d = tempfile.mkdtemp(prefix="dji-helper-")
+        self.addCleanup(shutil.rmtree, d, True)
+        for f in files:
+            shutil.copyfile(os.path.join(HERE, f), os.path.join(d, f))
+        env = dict(os.environ, PATH=path_env, APPDATA=os.path.join(d, "roaming"), LOCALAPPDATA=os.path.join(d, "local"))
+        os.makedirs(os.path.join(env["APPDATA"], "Microsoft", "Windows", "Start Menu", "Programs", "Startup"))
+        r = subprocess.run(["cmd", "/c", os.path.join(d, "start-dji-helper.cmd")] + list(args), input=answer, env=env,
+                           capture_output=True, text=True, timeout=60)
+        return r.stdout + r.stderr, d, env
+
+    def test_the_file_has_windows_line_ends(self):
+        with open(os.path.join(HERE, "start-dji-helper.cmd"), "rb") as f:
+            b = f.read()
+        self.assertEqual(b.count(b"\n"), b.count(b"\r\n"))
+        self.assertTrue(all(c < 128 for c in b))
+
+    def test_no_python_says_how_to_get_it(self):
+        sysdir = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")
+        stubs = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WindowsApps")  # the Store stubs, as on a clean Windows
+        out, _, _ = self.run_cmd(sysdir + ";" + stubs, "N\n")
+        self.assertIn("Python is not on this computer", out)
+        self.assertIn("no administrator rights needed", out)
+        self.assertIn("https://www.python.org/downloads/windows/", out)
+
+    def test_a_missing_program_file_is_said(self):
+        out, _, _ = self.run_cmd(os.environ["PATH"], "\n", files=("start-dji-helper.cmd",))
+        self.assertIn("rc_bridge.py is not in this folder", out)
+
+    def test_start_with_windows_is_offered_once_and_written_only_on_yes(self):
+        startup = ("Microsoft", "Windows", "Start Menu", "Programs", "Startup", "Shramko DJI helper.cmd")
+        out, d, env = self.run_cmd(os.environ["PATH"], "N\n\n", args=("--replay", "missing.json"))
+        self.assertIn("Start this helper by itself whenever Windows starts?", out)
+        self.assertIn("The helper stopped", out)
+        self.assertFalse(os.path.exists(os.path.join(env["APPDATA"], *startup)))
+        out, d, env = self.run_cmd(os.environ["PATH"], "Y\n\n", args=("--replay", "missing.json"))
+        self.assertIn("it starts with Windows from now on", out)
+        with open(os.path.join(env["APPDATA"], *startup)) as f:
+            self.assertIn('start-dji-helper.cmd" autostart', f.read())
+
+
 if __name__ == "__main__":
     unittest.main()
