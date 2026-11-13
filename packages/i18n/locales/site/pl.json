@@ -1058,6 +1058,48 @@
     "hear": {
       "title": "Co słyszę?"
     },
+    "fig": {
+      "intro": "Obrazki poniżej tylko powtarzają tekst obok nich, więc bez nich niczego nie tracisz. Liczby podane są dla domyślnego zestawu dźwięków.",
+      "height": {
+        "title": "Wysokość: wyżej dron, wyżej ton",
+        "text": [
+          "Miękki ton płynnie rośnie, gdy się wznosisz, i opada, gdy się zniżasz: o jeden stopień skali na każde pół metra.",
+          "Mniej więcej co 1,25 sekundy krótka nuta wskazuje wysokość, na której masz lecieć. Gdy twój ton i ta nuta brzmią tak samo, jesteś na miejscu.",
+          "Jeśli jesteś za wysoko albo za nisko jak na tę lekcję, ton brzęczy."
+        ]
+      },
+      "wall": {
+        "title": "Ściany: im bliżej uderzenia, tym szybsze stukanie",
+        "text": [
+          "Ściana stuka ze swojej strony, z lewej albo z prawej. Stukanie zależy od tego, ile sekund zostało do uderzenia, a nie od metrów.",
+          "Na 4 sekundy przed uderzeniem stuknięcie pada mniej więcej co 1,4 sekundy, tuż przed nim co 0,11 sekundy. Bliżej niż 2 metry stukanie przyspiesza też od samej bliskości.",
+          "Gdy do uderzenia zostaje mniej niż 1,5 sekundy, inne dźwięki cichną, żeby ścianę było dobrze słychać."
+        ]
+      },
+      "hum": {
+        "title": "Droga: buczenie z następnego pierścienia lub bramki",
+        "text": [
+          "Niskie buczenie dochodzi ze środka następnego pierścienia lub bramki, a w korytarzu lub tunelu z drogi przed tobą. Obróć się w jego stronę i leć do niego.",
+          "Gdy nos drona wskazuje na nie, z dokładnością do 8 stopni, buczenie brzmi o oktawę wyżej. Jeśli nie jesteś w jednej linii z bramką, buczenie robi się chropowate.",
+          "Im bliżej, tym częściej się powtarza: 1,2 razy na sekundę z 40 metrów, 8 razy na sekundę z 2 metrów."
+        ]
+      },
+      "gates": {
+        "title": "Pierścienie i bramki: nuta za każdą",
+        "text": [
+          "Każdy przelot przez pierścień lub bramkę daje jasną nutę, a nuty wznoszą się jak mała piosenka. Na końcu etapu długiej trasy głos mówi, który etap zaliczyłeś.",
+          "Przeleć przez pierścień od tyłu, a zabrzmią trzy opadające nuty: przelot się nie liczy, a głos poprosi, żebyś wrócił i przeleciał go od przodu.",
+          "Leć po trasie z powrotem nosem do przodu dłużej niż sekundę, a usłyszysz dwie opadające pary nut i „Lecisz w złą stronę. Zawróć.” Cofanie się ani przesuwanie w bok nigdy nie jest uznawane za lot w złą stronę."
+        ]
+      },
+      "keys": {
+        "text": [
+          "Dziewięć klawiszy trybu dźwiękowego na zwykłej klawiaturze. Co robi każdy z nich, mówi lista poniżej.",
+          "Naciśnij K w symulatorze, a poda je na głos, więc niczego nie trzeba uczyć się na pamięć."
+        ]
+      },
+      "moreTitle": "Wszystkie dźwięki w skrócie"
+    },
     "media": {
       "garden": "W tle: lot w symulatorze przez Winter Garden, skan 3DGS Andriia Shramki, miejsce jednej z lekcji dźwiękowych.",
       "pond": "W tle: prawdziwy lot FPV Andriia Shramki, nisko nad stawem w parku w Bydgoszczy.",

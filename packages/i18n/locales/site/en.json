@@ -1058,6 +1058,48 @@
     "hear": {
       "title": "What do I hear?"
     },
+    "fig": {
+      "intro": "The pictures below only repeat the text next to them, so without them you miss nothing. The numbers are those of the default sound set.",
+      "height": {
+        "title": "Height: a higher drone, a higher tone",
+        "text": [
+          "A soft tone glides up as you climb and down as you sink: one step of the musical scale for every half metre.",
+          "About every 1.25 seconds a short note marks the height to fly at. When your tone and that note sound the same, you are there.",
+          "If you are too high or too low for the lesson, the tone buzzes."
+        ]
+      },
+      "wall": {
+        "title": "Walls: the nearer the hit, the faster the knocks",
+        "text": [
+          "A wall knocks from its own side, left or right. The knocks follow the seconds left before you would hit it, not the metres.",
+          "With 4 seconds left, about one knock every 1.4 seconds; just before the hit, one every 0.11 seconds. Closer than 2 metres, nearness alone quickens them too.",
+          "With less than 1.5 seconds left, the other sounds turn down so that the wall stands out."
+        ]
+      },
+      "hum": {
+        "title": "The way: a hum from the next ring or gate",
+        "text": [
+          "A low hum comes from the middle of the next ring or gate, or from the way ahead in a corridor or a tunnel. Turn toward it and fly to it.",
+          "When your nose points at it, within 8 degrees, the hum sounds an octave higher. If you are not lined up with the gate, the hum turns rough.",
+          "It repeats faster as you get closer: 1.2 times a second from 40 metres, 8 times a second from 2 metres."
+        ]
+      },
+      "gates": {
+        "title": "Rings and gates: a note for each one",
+        "text": [
+          "Each ring or gate you pass gives a bright note, and the notes climb like a little song. At the end of a stage of a long track, the voice says which stage you passed.",
+          "Fly through a ring from behind and three notes fall: it does not count, and the voice asks you to go back and fly it from the front.",
+          "Fly back along the track nose-first for more than a second and you hear two falling pairs of notes and “You are flying back. Turn around.” Backing up or sliding aside is never called the wrong way."
+        ]
+      },
+      "keys": {
+        "text": [
+          "The nine keys of the sound mode on an ordinary keyboard. What each one does is in the list below.",
+          "Press K in the simulator and it says them aloud, so there is nothing to learn by heart."
+        ]
+      },
+      "moreTitle": "All the sounds in short"
+    },
     "media": {
       "garden": "In the background: a flight in the simulator through Winter Garden, a 3DGS scan by Andrii Shramko and the place of one of the sound lessons.",
       "pond": "In the background: a real FPV flight by Andrii Shramko, low over a pond in a park in Bydgoszcz.",

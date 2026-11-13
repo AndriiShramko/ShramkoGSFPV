@@ -12,6 +12,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import JsonLd from "@/components/JsonLd";
 import { Ext } from "@/components/kit";
+import SoundFigure from "@/components/SoundFigure";
 import { pageMetadata } from "@/lib/meta";
 
 /**
@@ -65,6 +66,12 @@ const SECTIONS = ["how", "hear", "need", "start", "now", "test", "who", "open", 
 
 /** The audiences of "Who it is for and why", in order; each id is a public anchor (/{lang}/sound/#teachers is sent in letters). */
 const AUDIENCES = ["blind", "pilots", "teachers", "press", "support", "developers"] as const;
+
+/**
+ * The figures of "What do I hear?" in order (components/SoundFigure): height, wall, target hum, rings and gates; each an h3 with its
+ * full text. The fifth figure, the keys card, sits under the keys h3 (#sound-keys).
+ */
+const FIGURES = ["height", "wall", "hum", "gates"] as const;
 
 const H4 = "mt-5 font-semibold text-ink";
 
@@ -185,6 +192,11 @@ function Sound({ locale }: { locale: Locale }) {
         </FlightSection>
 
         <Section id="hear" title={t("sound.hear.title")}>
+          <p className="mt-3 text-ink/85">{t("sound.fig.intro")}</p>
+          {FIGURES.map((f) => (
+            <SoundFigure key={f} kind={f} title={t(`sound.fig.${f}.title`)} text={raw(`sound.fig.${f}.text`)} />
+          ))}
+          <h3 className={H3}>{t("sound.fig.moreTitle")}</h3>
           <Items items={raw("sound.how.items")} />
         </Section>
 
@@ -204,6 +216,7 @@ function Sound({ locale }: { locale: Locale }) {
             {t("sound.keys.title")}
           </h3>
           <p className="mt-3 text-ink/85">{t("sound.keys.intro")}</p>
+          <SoundFigure kind="keys" text={raw("sound.fig.keys.text")} />
           <ul className="mt-3 space-y-2">
             {KEYS.map((k, i) => (
               <li key={k} className="flex items-baseline gap-3 text-ink/85">

@@ -1058,6 +1058,48 @@
     "hear": {
       "title": "¿Qué oigo?"
     },
+    "fig": {
+      "intro": "Las imágenes de abajo solo repiten el texto que tienen al lado, así que sin ellas no te pierdes nada. Las cifras son las del juego de sonidos predeterminado.",
+      "height": {
+        "title": "Altura: dron más alto, tono más alto",
+        "text": [
+          "Un tono suave sube poco a poco cuando ganas altura y baja cuando desciendes: un grado de la escala musical por cada medio metro.",
+          "Más o menos cada 1,25 segundos, una nota corta marca la altura a la que debes volar. Cuando tu tono y esa nota suenan igual, has llegado.",
+          "Si estás demasiado alto o demasiado bajo para la lección, el tono zumba."
+        ]
+      },
+      "wall": {
+        "title": "Paredes: cuanto más cerca el choque, más rápidos los golpes",
+        "text": [
+          "Una pared golpea desde su propio lado, a la izquierda o a la derecha. Los golpes siguen los segundos que faltan para chocar, no los metros.",
+          "A 4 segundos del choque, un golpe cada 1,4 segundos más o menos; justo antes, uno cada 0,11 segundos. A menos de 2 metros, la cercanía por sí sola también los acelera.",
+          "Cuando faltan menos de 1,5 segundos, los demás sonidos bajan para que la pared se oiga clara."
+        ]
+      },
+      "hum": {
+        "title": "El camino: un zumbido desde el siguiente aro o puerta",
+        "text": [
+          "Un zumbido grave sale del centro del siguiente aro o puerta, o del camino que tienes delante en un pasillo o un túnel. Gira hacia él y vuela hasta él.",
+          "Cuando el morro apunta hacia él, con un margen de 8 grados, el zumbido suena una octava más alto. Si no estás alineado con la puerta, el zumbido se vuelve áspero.",
+          "Se repite más rápido cuanto más cerca estás: 1,2 veces por segundo a 40 metros, 8 veces por segundo a 2 metros."
+        ]
+      },
+      "gates": {
+        "title": "Aros y puertas: una nota por cada uno",
+        "text": [
+          "Cada aro o puerta que pasas da una nota brillante, y las notas suben como una cancioncilla. Al final de una etapa de un circuito largo, la voz dice qué etapa has superado.",
+          "Si cruzas un aro por detrás suenan tres notas que bajan: no cuenta, y la voz te pide que vuelvas y lo cruces por delante.",
+          "Si vuelas hacia atrás por el circuito con el morro por delante más de un segundo, oyes dos pares de notas que bajan y «Vas en sentido contrario. Da la vuelta.» Retroceder o deslizarte de lado nunca cuenta como ir en sentido contrario."
+        ]
+      },
+      "keys": {
+        "text": [
+          "Las nueve teclas del modo de sonido en un teclado normal. Lo que hace cada una está en la lista de abajo.",
+          "Pulsa K en el simulador y te las dice en voz alta, así que no hace falta aprenderlas de memoria."
+        ]
+      },
+      "moreTitle": "Todos los sonidos en resumen"
+    },
     "media": {
       "garden": "De fondo: un vuelo en el simulador por Winter Garden, un escaneo 3DGS de Andrii Shramko y el lugar de una de las lecciones de sonido.",
       "pond": "De fondo: un vuelo FPV real de Andrii Shramko, a ras de un estanque en un parque de Bydgoszcz.",
