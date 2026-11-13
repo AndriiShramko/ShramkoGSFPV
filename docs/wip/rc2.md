@@ -10,10 +10,10 @@ Labels used below: [measured] = read from the owner's real RC 2 on this PC on 20
 ## Status
 
 Stage 1 RC1-hardware-and-protocol
-- [x] 1. Reference cloned to U:/Temp/gsfpv-rc2/ref and read (duml.py, rc2link.py, rc2_joystick.py, README). Commit: "rc2 stage 1" (see git log).
-- [x] 2. Native read-only stick read on the real device through libusb0_dji: works, 293/293 and 392/392 replies, evidence/2026-11-13/rc2/frames-rest*.json. Commit: "rc2 stage 1".
-- [x] 3. ADB: adb.exe 1.0.41 found at U:/tools/platform-tools; the controller is listed but stays "offline" (3 checks over about 10 minutes). No getevent possible. Commit: "rc2 stage 1".
-- [x] 4. Verdict written below. Commit: "rc2 stage 1".
+- [x] 1. Reference cloned to U:/Temp/gsfpv-rc2/ref and read (duml.py, rc2link.py, rc2_joystick.py, README). Commit 5a4e2bf6.
+- [x] 2. Native read-only stick read on the real device through libusb0_dji: works, 293/293 and 392/392 replies, evidence/2026-11-13/rc2/frames-rest*.json. Commit 5a4e2bf6.
+- [x] 3. ADB: adb.exe 1.0.41 found at U:/tools/platform-tools; the controller is listed but stays "offline" (3 checks over about 10 minutes). No getevent possible. Commit 5a4e2bf6.
+- [x] 4. Verdict written below. Commit 5a4e2bf6.
 
 Stage 2, stage 3: not started (scope comes from the lead's train plan).
 
