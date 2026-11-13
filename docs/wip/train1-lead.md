@@ -18,7 +18,13 @@ plan's order: voice, tracks, rooms. Held back: none.
       453 OK, architecture, i18n, catalog, B18 PASS). Also `python -m unittest discover -s apps/rooms/tests`: 53 tests OK.
 - [ ] I6. Local release (build of fb028968, sha256 18c32f08...; serve-csp dist 5471):
   - [x] accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against http://localhost:5471: 10 of 10 PASS (evidence/2026-11-13/train1/b-fly-*.json).
-  - [ ] Plan probe 3, tracks-page.ts run 1 on the merge: 16/18 (evidence train1/tracks-page-run1.json). FAILS:
+  - [x] Plan probe 3, tracks-page.ts run 2 on the same dist: 18/18 (evidence train1/tracks-page-run2.json), C1 C2 C3 fire.
+        C2 cause: the probe predates lane review TR-3 (5836fa89), which makes the page skip a refused newest row and load the
+        next saved one; the page loaded A's 887f27aa-cc02d13d, never the moved 887f27aa-96a928cc (skipped true). The probe now
+        accepts 'refused' or 'skipped to A's row', never the moved id (823e7997). C3: the route patches any /fly/assets/*.js.
+  - [x] Plan probe 5 (voice): analysis.json and summary.md identical in the pin 378cc50 and the lane d28d9c2 (sha256
+        f93ccfc5a94c / 46ca50a9a64f; evidence train1/voice-probe5.json).
+  - Run 1 history: tracks-page.ts run 1 on the merge: 16/18 (evidence train1/tracks-page-run1.json). FAILS:
         C3 'patched false': the probe patched only main-*.js, and the integration moved the feature into its own chunk; the route now
         patches any /fly/assets/*.js (tools/bench/src/tracks-page.ts, uncommitted before this commit, NOT re-run yet).
         C2 'the moved course is refused in the page': the page refused nothing visible: source 'server', loaded A's saved id

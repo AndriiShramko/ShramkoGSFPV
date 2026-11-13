@@ -1,0 +1,12 @@
+{
+  "probe": "train1-plan section 9 probe 5: pnpm analyze on the synthetic fixture, pinned package vs lane branch",
+  "command": "pnpm analyze -- test/fixtures/session-voice-two-lessons.zip --out <dir outside every git tree> --transcript test/fixtures/voice-two-lessons.transcript.json",
+  "pinned": { "repo": "packages/sonic-fpv", "commit": "378cc50", "exit": 0, "line": "2 lessons, 9 spots, 4 remarks, 0 echo" },
+  "lane": { "repo": "C:/dev/sonic-voice", "commit": "d28d9c2", "exit": 0, "line": "2 lessons, 9 spots, 4 remarks, 0 echo" },
+  "sha256_12": {
+    "analysis.json": { "pinned": "f93ccfc5a94c", "lane": "f93ccfc5a94c" },
+    "summary.md": { "pinned": "46ca50a9a64f", "lane": "46ca50a9a64f" }
+  },
+  "pass": true,
+  "note": "an --out inside a git tree is refused by the tool itself (exit 2), so the outputs stayed in the session's scratch folder"
+}

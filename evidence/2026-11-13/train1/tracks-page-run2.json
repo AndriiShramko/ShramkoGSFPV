@@ -1,0 +1,475 @@
+{
+  "name": "tracks-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T04:23:08.526Z",
+    "gitHead": "823e7997",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "tracks T3: the courses page probe",
+  "pass": true,
+  "checks": [
+    {
+      "name": "A look (link seed 1, 19 gates): >= 200 more pixels of the course's paint than with Shift+T",
+      "pass": true,
+      "value": {
+        "drawn": 64,
+        "on": {
+          "next": 0,
+          "later": 2607,
+          "arrow": 251
+        },
+        "off": {
+          "next": 0,
+          "later": 9,
+          "arrow": 208
+        },
+        "diff": {
+          "px": 40220,
+          "mean": [
+            51,
+            120,
+            123
+          ]
+        },
+        "drawnOff": 0
+      }
+    },
+    {
+      "name": "A Shift+T: drawn 0",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "A Shift+G: source generated",
+      "pass": true,
+      "value": {
+        "source": "generated",
+        "problem": null,
+        "ms": 19850
+      }
+    },
+    {
+      "name": "A gates > 0",
+      "pass": true,
+      "value": 8
+    },
+    {
+      "name": "A drawn > 0",
+      "pass": true,
+      "value": 47
+    },
+    {
+      "name": "A beacon points > 0",
+      "pass": true,
+      "value": 31
+    },
+    {
+      "name": "A menu: Save for everyone enabled",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "A saved: hook.saved is the server id",
+      "pass": true,
+      "value": {
+        "saved": "887f27aa-cc02d13d",
+        "problem": null
+      }
+    },
+    {
+      "name": "B fresh profile: serverTracks > 0",
+      "pass": true,
+      "value": 1
+    },
+    {
+      "name": "B Shift+T: source server",
+      "pass": true,
+      "value": {
+        "source": "server",
+        "problem": null,
+        "ms": 2497
+      }
+    },
+    {
+      "name": "B track id == A's saved id",
+      "pass": true,
+      "value": {
+        "b": "887f27aa-cc02d13d",
+        "a": "887f27aa-cc02d13d"
+      }
+    },
+    {
+      "name": "B drawn > 0",
+      "pass": true,
+      "value": 47
+    },
+    {
+      "name": "C1 another scene: serverTracks 0",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "C1 another scene: source none",
+      "pass": true,
+      "value": "none"
+    },
+    {
+      "name": "C1 menu: Load disabled",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "C2 setup: Node proves the original, refuses the moved one; the server stores it (201)",
+      "pass": true,
+      "value": {
+        "gate": 4,
+        "transform": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "centre": [
+          2.4,
+          8.4,
+          -25
+        ],
+        "into": [
+          2.4,
+          3.700000000000008,
+          -25
+        ],
+        "wallM": 4.5,
+        "nodeOriginalOk": true,
+        "nodeMovedOk": false,
+        "nodeIssues": [
+          "leg g4 to g5: a sphere of 0.5 m touches a wall (free radius along it 6 m at 14.4, 14.8, -19.4)",
+          "leg g5 to g6: a sphere of 0.5 m touches a wall (free radius along it 6 m at 2.4, 3.7, -25)"
+        ],
+        "post": 201,
+        "id": "887f27aa-96a928cc",
+        "page": {
+          "on": true,
+          "source": "server",
+          "track": {
+            "id": "887f27aa-cc02d13d",
+            "version": 1
+          },
+          "seed": 1516098951,
+          "gates": 8,
+          "next": 0,
+          "drawn": 47,
+          "laps": 0,
+          "lastLapMs": null,
+          "bestLapMs": null,
+          "beaconPoints": 31,
+          "problem": null,
+          "serverTracks": 2,
+          "saved": null
+        }
+      }
+    },
+    {
+      "name": "C2 the moved course is refused in the page (refused, or skipped to the next saved row)",
+      "pass": true,
+      "value": {
+        "serverTracks": 2,
+        "source": "server",
+        "loaded": "887f27aa-cc02d13d",
+        "moved": "887f27aa-96a928cc",
+        "saved": "887f27aa-cc02d13d",
+        "problem": null,
+        "refused": false,
+        "skipped": true
+      }
+    },
+    {
+      "name": "C3 control: script patched, hook drawn > 0, the pixel check fails",
+      "pass": true,
+      "value": {
+        "patched": true,
+        "drawn": 64,
+        "on": {
+          "next": 0,
+          "later": 9,
+          "arrow": 208
+        },
+        "off": {
+          "next": 0,
+          "later": 9,
+          "arrow": 208
+        },
+        "diff": {
+          "px": 16506,
+          "mean": [
+            95,
+            102,
+            111
+          ]
+        },
+        "drawnOff": 0
+      }
+    }
+  ],
+  "shots": [
+    {
+      "file": "C:\\dev\\gsfpv-v03\\.cache\\train1-shots\\tracks\\a-seed1-on.png",
+      "sha256": "97111f1141a8e706b5cd525c213413c54dd18d9f8cf0f2a10fdcca6c01d5652a",
+      "what": "a-seed1: course on"
+    },
+    {
+      "file": "C:\\dev\\gsfpv-v03\\.cache\\train1-shots\\tracks\\a-seed1-off.png",
+      "sha256": "33eb9069d7874a1f7b6524bb2c3ea880c3313d30f8834477082b3249c20cd337",
+      "what": "a-seed1: course off"
+    },
+    {
+      "file": "C:\\dev\\gsfpv-v03\\.cache\\train1-shots\\tracks\\a-random-on.png",
+      "sha256": "bfdbd2d09115d522a3a882a1fb1a7eefd07747cbdce9a1e9ed530c67eed0fba9",
+      "what": "a-random: course on"
+    },
+    {
+      "file": "C:\\dev\\gsfpv-v03\\.cache\\train1-shots\\tracks\\a-random-off.png",
+      "sha256": "d9682b5bd2c20794d5b912ef4ba06117812d86f91c23e24df22b32e9daa757d5",
+      "what": "a-random: course off"
+    },
+    {
+      "file": "C:\\dev\\gsfpv-v03\\.cache\\train1-shots\\tracks\\c3-seed1-on.png",
+      "sha256": "4e2aa28a7afb31b7a10f6a96c6a4e94fb2e97b2073971514ff170401f3bf1649",
+      "what": "c3-seed1: course on"
+    },
+    {
+      "file": "C:\\dev\\gsfpv-v03\\.cache\\train1-shots\\tracks\\c3-seed1-off.png",
+      "sha256": "91696442fcedb45ca80d67483d2b5e8913d4628bb3f2e9472fe74790e163a6da",
+      "what": "c3-seed1: course off"
+    }
+  ],
+  "site": "http://127.0.0.1:53427",
+  "scene": "887f27aa",
+  "other": "39e63ce9",
+  "minPx": 200,
+  "tol": 24,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "a": {
+    "link": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.1",
+        "version": 1
+      },
+      "seed": 1,
+      "gates": 19,
+      "next": 0,
+      "drawn": 64,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 63,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null
+    },
+    "look": {
+      "on": {
+        "next": 0,
+        "later": 2607,
+        "arrow": 251
+      },
+      "off": {
+        "next": 0,
+        "later": 9,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 40220,
+        "mean": [
+          51,
+          120,
+          123
+        ]
+      },
+      "drawnOff": 0
+    },
+    "generated": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.p2n9fr",
+        "version": 1
+      },
+      "seed": 1516098951,
+      "gates": 8,
+      "next": 0,
+      "drawn": 47,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 31,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null
+    },
+    "lookRandom": {
+      "on": {
+        "next": 344,
+        "later": 9,
+        "arrow": 21793
+      },
+      "off": {
+        "next": 0,
+        "later": 9,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 41956,
+        "mean": [
+          176,
+          144,
+          70
+        ]
+      },
+      "drawnOff": 0
+    },
+    "saved": "887f27aa-cc02d13d"
+  },
+  "b": {
+    "on": true,
+    "source": "server",
+    "track": {
+      "id": "887f27aa-cc02d13d",
+      "version": 1
+    },
+    "seed": 1516098951,
+    "gates": 8,
+    "next": 0,
+    "drawn": 47,
+    "laps": 0,
+    "lastLapMs": null,
+    "bestLapMs": null,
+    "beaconPoints": 31,
+    "problem": null,
+    "serverTracks": 1,
+    "saved": null
+  },
+  "c1": {
+    "on": false,
+    "source": "none",
+    "track": null,
+    "seed": null,
+    "gates": 0,
+    "next": -1,
+    "drawn": 0,
+    "laps": 0,
+    "lastLapMs": null,
+    "bestLapMs": null,
+    "beaconPoints": 0,
+    "problem": null,
+    "serverTracks": 0,
+    "saved": null
+  },
+  "c2": {
+    "gate": 4,
+    "transform": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "centre": [
+      2.4,
+      8.4,
+      -25
+    ],
+    "into": [
+      2.4,
+      3.700000000000008,
+      -25
+    ],
+    "wallM": 4.5,
+    "nodeOriginalOk": true,
+    "nodeMovedOk": false,
+    "nodeIssues": [
+      "leg g4 to g5: a sphere of 0.5 m touches a wall (free radius along it 6 m at 14.4, 14.8, -19.4)",
+      "leg g5 to g6: a sphere of 0.5 m touches a wall (free radius along it 6 m at 2.4, 3.7, -25)"
+    ],
+    "post": 201,
+    "id": "887f27aa-96a928cc",
+    "page": {
+      "on": true,
+      "source": "server",
+      "track": {
+        "id": "887f27aa-cc02d13d",
+        "version": 1
+      },
+      "seed": 1516098951,
+      "gates": 8,
+      "next": 0,
+      "drawn": 47,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 31,
+      "problem": null,
+      "serverTracks": 2,
+      "saved": null
+    }
+  },
+  "c3": {
+    "patched": true,
+    "hook": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.1",
+        "version": 1
+      },
+      "seed": 1,
+      "gates": 19,
+      "next": 0,
+      "drawn": 64,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 63,
+      "problem": null,
+      "serverTracks": 2,
+      "saved": null
+    },
+    "look": {
+      "on": {
+        "next": 0,
+        "later": 9,
+        "arrow": 208
+      },
+      "off": {
+        "next": 0,
+        "later": 9,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 16506,
+        "mean": [
+          95,
+          102,
+          111
+        ]
+      },
+      "drawnOff": 0
+    }
+  },
+  "log": []
+}
