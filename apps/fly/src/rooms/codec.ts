@@ -50,7 +50,7 @@ export function writePose(view: DataView, off: number, p: Pose): void {
 }
 
 /** One pose as the 36 bytes sent up. */
-export function encodePose(p: Pose): Uint8Array {
+export function encodePose(p: Pose): Uint8Array<ArrayBuffer> {
     const out = new Uint8Array(POSE_BYTES);
     writePose(new DataView(out.buffer), 0, p);
     return out;

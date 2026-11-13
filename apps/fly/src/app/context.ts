@@ -60,8 +60,11 @@ export interface SceneRef {
     render?: SceneRender;
 }
 
-/** Why a scene loads in flight (E.4, E.5): N, Shift+N, F, scenes.autoSwitch after a crash, a pick, back after a failed load. */
-export type SceneSwitchReason = 'next' | 'random' | 'favourite' | 'auto' | 'pick' | 'back';
+/**
+ * Why a scene loads in flight (E.4, E.5): N, Shift+N, F, scenes.autoSwitch after a crash, a pick, back after a failed load;
+ * 'room' (train 1, lane rooms): the room joined flies another scan (app/builtin/rooms.ts).
+ */
+export type SceneSwitchReason = 'next' | 'random' | 'favourite' | 'auto' | 'pick' | 'back' | 'room';
 
 /** In-page scene switching (app/scene-host.ts): the radio, the settings and the page stay. */
 export interface SceneSwitcher {

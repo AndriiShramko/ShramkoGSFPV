@@ -191,6 +191,9 @@ export class SceneHost implements SceneSwitcher {
     /**
      * Load `id` in place of the scene flown. `render`: the drawing a pasted link asked for (SuperSplat's
      * ?budget= and ?stochastic); the rotation and the cards pass none, so the catalogue's render applies.
+     * Reason 'room' (app/builtin/rooms.ts): the room's scan and render; the room's shared settings are already in the
+     * store's visit layer for `id`, so the session below starts with them; ?room= stays in the address (only the scene's
+     * own parameters are rewritten), and a load that fails goes back to the scene flown as any other reason does.
      */
     async load(id: string, reason: SceneSwitchReason, render?: SceneRender): Promise<boolean> {
         const { ctx, canvas, showcase, base } = this.d;

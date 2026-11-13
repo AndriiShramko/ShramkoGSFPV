@@ -70,7 +70,7 @@ export class RoomSocket {
     }
 
     /** One pose up (36 bytes); nothing while not joined. */
-    sendPose(bytes: Uint8Array): boolean {
+    sendPose(bytes: Uint8Array<ArrayBuffer>): boolean {
         if (this.state !== 'joined' || !this.ws || this.ws.readyState !== 1) return false;
         this.ws.send(bytes);
         return true;
