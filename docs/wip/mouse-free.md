@@ -47,6 +47,22 @@ Stage 2, M2-probe-all-windows:
   Typecheck tools/bench exit 0.
 - Commits: c72105be (probe), 8241bf2d (status, evidence, the probe's second-page start).
 
+R review fixes (independent review of the lane, findings MF-R1 to MF-R6, all minor):
+- [x] MF-R1 (export bar not covered): confirmed by reading (vx-bar has no .panel class, no aria-modal).
+  '.vx-bar' added to CURSOR_WINDOWS; test 'the video export bar holds the mouse'. Probe entry: not added
+  (an export needs a recorded life in the replays panel; see For the lead). Commit: see R-a below.
+- [x] MF-R3 (hidden survey and start screen untested): test with a selector stub (the fake DOM has no
+  ':not(...)'): hidden ones do not hold the mouse, shown ones do. The play.ts wiring test stays optional:
+  under For the lead. Commit: R-a.
+- [x] MF-R4 (lock() answered true for a lock being let go): confirmed by reading; lock() returns false while
+  `releasing` is set, and its result is `locked && !releasing`. Test with a fake document whose exit lands
+  later ('a release still on its way is not a lock'). Commit: R-a.
+- [x] MF-R5 (dead '.screen.settings', header contradicting the code): removed from CURSOR_WINDOWS (the
+  settings root is 'panel interactive settings', ui/settings/screen.ts:128, so '.panel' covers it); header
+  and the `held` getter comment now say a lock that lands while a window is up is let go. Commit: R-a.
+- R-a checks: 8 of 8 tests pass; negative control against the lane's HEAD 77379ada mouse-look.ts: NEG OK,
+  the 3 new tests fail there, the 5 old ones pass. Typecheck apps/fly and tools/bench exit 0.
+
 ## Decisions
 
 - The rule lives in MouseLook (the one place every lock goes through), not in each window: windows only add

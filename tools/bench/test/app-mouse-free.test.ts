@@ -24,7 +24,14 @@ class LockDoc {
     addEventListener(type: string, fn: () => void): void { this.listeners.push({ type, fn }); }
     removeEventListener(type: string, fn: () => void): void { this.listeners = this.listeners.filter((l) => l.type !== type || l.fn !== fn); }
     fire(): void { for (const l of this.listeners.filter((x) => x.type === 'pointerlockchange')) l.fn(); }
-    exitPointerLock(): void { if (this.pointerLockElement === null) return; this.pointerLockElement = null; this.fire(); }
+    /** a browser lets go later, as Chrome does: exits wait for leave() */
+    asyncExit = false;
+    exits: (() => void)[] = [];
+    exitPointerLock(): void {
+        const go = (): void => { if (this.pointerLockElement === null) return; this.pointerLockElement = null; this.fire(); };
+        if (this.asyncExit) this.exits.push(go); else go();
+    }
+    leave(): void { for (const g of this.exits.splice(0)) g(); }
     querySelector(sel: string): unknown { return this.base.page.querySelector(sel); }
     get page(): FakeElement { return this.base.page; }
 }
@@ -123,5 +130,50 @@ describe('a window that needs the mouse gets the mouse', () => {
         const page2 = new LockDoc();
         page2.page.append(radio);
         expect(M.cursorWindowOpen?.(page2)).toBe(true);
+    });
+
+    // review MF-R4: a click on the view between our unlock() and the browser's exit must not be answered
+    // "locked" (the exit lands a moment later and nobody is told: a flight without the mouse, no pill)
+    it('a release still on its way is not a lock: the click is refused and the next one captures', async () => {
+        const { look, lost } = rig();
+        doc.asyncExit = true;
+        const p = panel();
+        void look.lock(); // a click inside the window: the lock lands and is let go, the exit not yet done
+        await land();
+        expect(doc.pointerLockElement).toBe(target); // the browser has not let go yet
+        p.remove(); // the window closes
+        const early = look.lock(); // the pilot clicks the view before the exit landed
+        expect(await early).toBe(false);
+        doc.leave(); // the exit lands
+        expect(look.locked).toBe(false);
+        expect(lost).toHaveLength(0);
+        const again = look.lock(); // the next click
+        await land();
+        expect(await again).toBe(true);
+        expect(doc.pointerLockElement).toBe(target);
+    });
+
+    // review MF-R1: the video export bar (builtin/video-export.ts, Cancel, Retry, Close) needs the mouse
+    it('the video export bar holds the mouse', () => {
+        const bar = new FakeElement('div');
+        bar.setAttribute('class', 'vx-bar interactive');
+        const page = new LockDoc();
+        page.page.append(bar);
+        expect(M.cursorWindowOpen?.(page)).toBe(true);
+    });
+
+    // review MF-R3: the survey (sonic-session/survey-view.ts, aria-modal, hidden) and the Fly by Sound start
+    // screen stay in the page hidden; hidden they must not hold the mouse, shown they must. The fake DOM has no
+    // ':not(...)', so the page here answers by the list of selectors a browser would match.
+    it('a hidden survey or start screen does not hold the mouse, a shown one does', () => {
+        const page = (...matches: string[]): Pick<ParentNode, 'querySelector'> =>
+            ({ querySelector: (s: string) => (matches.includes(s) ? ({} as Element) : null) }) as Pick<ParentNode, 'querySelector'>;
+        expect(M.cursorWindowOpen(page())).toBe(false);
+        expect(M.cursorWindowOpen(page('[aria-modal="true"]', '[aria-modal]', '[hidden]'))).toBe(false);
+        expect(M.cursorWindowOpen(page('.sonic-start', '[hidden]'))).toBe(false);
+        expect(M.cursorWindowOpen(page('[aria-modal="true"]', '[aria-modal="true"]:not([hidden])'))).toBe(true);
+        expect(M.cursorWindowOpen(page('.sonic-start', '.sonic-start:not([hidden])'))).toBe(true);
+        // the settings root is a panel ('panel interactive settings', ui/settings/screen.ts), not '.screen.settings'
+        expect(M.CURSOR_WINDOWS as readonly string[]).not.toContain('.screen.settings');
     });
 });
