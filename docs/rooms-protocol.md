@@ -102,6 +102,27 @@ Each number is in `apps/rooms/rooms.py` with its source; "measured" names the te
 | Open rooms | 200 | estimate |
 | Hello within / silent socket closed after | 10 s / 70 s | estimates |
 | Message / text message / POST body | 64 KB / 2 KB / 4 KB | plan 2.1 / estimate / nginx `client_max_body_size 4k` |
+| Members per open room | 16; the 17th pilot gets a new open room of his scan | plan 2.3; `test_open_vote.py` |
+| Open rooms at once | 50 (503 above) | estimate; `test_open_vote.py` with the cap lowered |
+| New open rooms | 30 an hour per address; landing in one that exists is not counted | estimate; `test_open_vote.py` (the 31st gets 429) |
+| Vote window / present / proposals | 30 s / active within 120 s / 5 per 10 minutes per member | plan 2.3, 2.5; `test_open_vote.py` |
+
+## Open rooms and votes (R27, lane rooms2)
+
+`POST /api/rooms/open` `{scene: {id}}` -> 200 `{id, room}`: the open room to join (key 9 outside a room). The service
+picks the open room of that scan when pilots fly in it; else the open room with the most pilots (the page then loads its
+scan); else the empty open room of that scan; else a new one. An open room is `kind: 'persistent'`, `listed: true`,
+`name: 'open'` (the page shows its own word), cap 16, no host key, no shared settings: each pilot keeps his own drawing,
+walls and drone. Empty, it closes like a temporary room and the next press opens it again.
+
+Votes (any room): `propose {scene: {id}}` and `agree {}` from a member. The service answers with `vote` messages:
+`{type: 'vote', state, scene: {id}, by, yes: [slots], need, present, leftMs}`; `state` is `open` (to all), `passed` or
+`failed` (to all), `busy` (to the proposer only: another scan's vote is open, the message carries that vote), `same`
+(the room flies that scan already) or `wait` (5 proposals in 10 minutes; these two carry only `scene`). A vote passes as
+soon as yes > half of the members present (connected and active within 120 s: joined, sent a pose without the paused
+flag, proposed or agreed); the proposer counts once; a member who leaves takes his yes. On a pass every member gets
+`scene {room}`: the room's new scan (shared settings and course dropped); each page loads it, starts at its start and
+sends poses again; the poses of the old scan are dropped by the service. A welcome carries `vote` (the open vote or null).
 
 ## Privacy
 

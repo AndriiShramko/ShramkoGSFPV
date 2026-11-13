@@ -4,6 +4,7 @@ One asyncio process, Python stdlib only, behind our nginx on the internal networ
   GET  /api/rooms/health    {ok, rooms, pilots}
   GET  /api/rooms           listed rooms
   POST /api/rooms           {scene:{id, render?}, shared?, name?, listed?, course?} -> 201 {id, hostKey}
+  POST /api/rooms/open      {scene:{id}} -> 200 {id, room}: the open room to join with one press (R27)
   GET  /api/rooms/<id>      one room
   GET  /api/rooms/ws        WebSocket: hello -> welcome, binary poses up, one snapshot per room tick down
 Rooms live in RAM only (nothing on disk, no poses kept beyond the last one per member). Logs carry no client
@@ -25,6 +26,7 @@ from collections import deque
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import protocol as P  # noqa: E402
+import votes as V  # noqa: E402
 import ws as W  # noqa: E402
 
 PORT = 8091
@@ -51,6 +53,11 @@ MAX_TEXT = 2048                # estimate: a hello is under 300 bytes
 MAX_HEAD = 8192                # bytes of request line and headers
 MAX_BODY = 4096                # nginx client_max_body_size 4k on /api/rooms
 REQUEST_TIMEOUT_S = 10         # estimate: a request must arrive this soon
+# R27, open rooms (docs/wip/rooms2.md, Decisions): one listed room per scan that anyone lands in with one press
+PERSISTENT_CAP = 16            # rooms-plan.md 2.3: persistent rooms hold 16 pilots
+MAX_PERSISTENT = 50            # estimate: open rooms at once (one per scan flown with company; inside MAX_ROOMS)
+OPEN_CREATES_PER_HOUR = 30     # estimate, per client address: new open rooms (joining one that exists is not counted)
+OPEN_NAME = "open"             # the page shows its own word for it (rooms.open.name in the four locales)
 
 
 def log(msg: str) -> None:
@@ -116,13 +123,16 @@ class Member:
         self.slot, self.nick, self.sock, self.gate = slot, nick, sock, gate
         self.pose: bytes | None = None
         self.joined = time.monotonic()
+        self.active = 0.0  # Service.clock() of the last sign of life that counts for votes (join, flying pose, vote)
         self.kept = self.dropped = self.sent = self.skipped = 0
         self.max_buffered = 0
 
 
 class Room:
-    def __init__(self, rid: str, req: dict, host_hash: bytes, now: float):
-        self.id, self.req, self.host_hash = rid, req, host_hash
+    def __init__(self, rid: str, req: dict, host_hash: bytes, now: float, kind: str = "temp",
+                 ballot: V.Ballot | None = None):
+        self.id, self.req, self.host_hash, self.kind = rid, req, host_hash, kind
+        self.ballot = ballot or V.Ballot()
         self.members: dict[int, Member] = {}
         self.host_slot: int | None = None
         self.created = time.time()
@@ -130,7 +140,7 @@ class Room:
 
     def public(self, cap: int) -> dict:
         out = {"id": self.id, "name": self.req["name"], "scene": self.req["scene"], "cap": cap,
-               "members": len(self.members), "listed": self.req["listed"], "kind": "temp", "state": "open",
+               "members": len(self.members), "listed": self.req["listed"], "kind": self.kind, "state": "open",
                "createdAt": int(self.created)}
         for k in ("shared", "course"):
             if k in self.req:
@@ -144,13 +154,17 @@ class Room:
 class Service:
     def __init__(self, tick_hz: float = TICK_HZ, cap: int = CAP, skip_above: int | None = SKIP_ABOVE,
                  drop_above: int | None = DROP_ABOVE, pose_keep: float = POSE_KEEP_PER_S,
-                 pose_close: float = POSE_CLOSE_PER_S, empty_close_s: float = EMPTY_CLOSE_S, clock=time.monotonic):
+                 pose_close: float = POSE_CLOSE_PER_S, empty_close_s: float = EMPTY_CLOSE_S, clock=time.monotonic,
+                 persistent_cap: int = PERSISTENT_CAP, vote_s: float = V.VOTE_S, present_s: float = V.PRESENT_S):
         self.tick_hz, self.cap, self.skip_above, self.drop_above = tick_hz, cap, skip_above, drop_above
         self.pose_keep, self.pose_close, self.empty_close_s, self.clock = pose_keep, pose_close, empty_close_s, clock
         self.rooms: dict[str, Room] = {}
         self.creates = Window(CREATES_PER_HOUR, 3600, clock)
         self.creates_day = Window(CREATES_PER_DAY_EACH, 86400, clock)
         self.joins = Window(JOINS_PER_MIN, 60, clock)
+        self.persistent_cap, self.vote_s, self.present_s = persistent_cap, vote_s, present_s
+        self.opens = Window(OPEN_CREATES_PER_HOUR, 3600, clock)
+        self.proposals = Window(V.PROPOSALS, V.PROPOSALS_WINDOW_S, clock)
         self.t0 = time.monotonic()
         self.ticks = 0
         # a test switch only (--no-relay, the two-page probe's control tools/bench/src/rooms-two-page.ts): poses are
@@ -194,6 +208,7 @@ class Service:
     def tick(self) -> None:
         """One snapshot per room, built once and written to every member that keeps up."""
         self.ticks += 1
+        self.votes_due()
         ms = self.server_ms()
         for room in list(self.rooms.values()):
             poses = [(m.slot, m.pose) for m in sorted(room.members.values(), key=lambda m: m.slot) if m.pose]
@@ -223,7 +238,7 @@ class Service:
                 if not r.members and r.empty_since is not None and now - r.empty_since >= self.empty_close_s]
         for rid in gone:
             del self.rooms[rid]
-        for w in (self.creates, self.creates_day, self.joins):
+        for w in (self.creates, self.creates_day, self.joins, self.opens, self.proposals):
             w.prune()
         if gone:
             log(f"closed {len(gone)} empty rooms; open {len(self.rooms)}")
@@ -268,17 +283,19 @@ class Service:
             if method == "GET" and path == "/api/rooms/health":
                 return self._reply(writer, 200, {"ok": True, "v": P.VERSION, "rooms": len(self.rooms), "pilots": self.pilots()})
             if path == "/api/rooms" and method == "GET":
-                listed = [r.public(self.cap) for r in self.rooms.values() if r.req["listed"]]
+                listed = [r.public(self.cap_of(r)) for r in self.rooms.values() if r.req["listed"]]
                 listed.sort(key=lambda r: -r["createdAt"])
                 return self._reply(writer, 200, {"v": 1, "rooms": listed})
             if path == "/api/rooms" and method == "POST":
                 return await self._create(reader, writer, headers, client)
+            if path == "/api/rooms/open" and method == "POST":
+                return await self._open(reader, writer, headers, client)
             if path.startswith("/api/rooms/") and method == "GET":
                 rid = path[len("/api/rooms/"):]
                 room = self.rooms.get(rid) if P.ROOM_ID_RE.fullmatch(rid) else None
                 if room is None:
                     return self._reply(writer, 404, {"error": "no-room"})
-                return self._reply(writer, 200, room.public(self.cap))
+                return self._reply(writer, 200, room.public(self.cap_of(room)))
             return self._reply(writer, 404 if method in ("GET", "POST") else 405, {"error": "route"})
         except (ConnectionError, OSError):
             writer.close()
@@ -291,6 +308,114 @@ class Service:
         writer.write((f"HTTP/1.1 {code} {reason}\r\nContent-Type: application/json\r\nCache-Control: no-store\r\n"
                       f"Content-Length: {len(b)}\r\nConnection: close\r\n\r\n").encode("ascii") + b)
         writer.close()
+
+    async def _body(self, reader, writer, headers: dict):
+        """The JSON body of a POST, or None after an error reply."""
+        try:
+            n = int(headers.get("content-length", ""))
+        except ValueError:
+            self._reply(writer, 411, {"error": "length"})
+            return None
+        if not 0 < n <= MAX_BODY:
+            self._reply(writer, 413, {"error": "size"})
+            return None
+        try:
+            return json.loads(await asyncio.wait_for(reader.readexactly(n), REQUEST_TIMEOUT_S))
+        except (ValueError, RecursionError, asyncio.TimeoutError, asyncio.IncompleteReadError):
+            self._reply(writer, 400, {"error": "body"})
+            return None
+
+    def cap_of(self, room: Room) -> int:
+        return self.persistent_cap if room.kind == "persistent" else self.cap
+
+    def open_room(self, scene_id: str, client: str) -> tuple[int, dict]:
+        """R27: the open room a pilot on `scene_id` lands in with one press (docs/wip/rooms2.md, Decisions): the open
+        room of his scan when pilots fly in it; else the open room with the most pilots (company first, his page loads
+        its scan); else the empty open room of his scan; else a new one for his scan. Full rooms are skipped."""
+        mine = [r for r in self.rooms.values() if r.kind == "persistent" and len(r.members) < self.persistent_cap]
+        here = [r for r in mine if r.req["scene"]["id"] == scene_id]
+        busy_here = [r for r in here if r.members]
+        busy = [r for r in mine if r.members]
+        pick = None
+        for group in (busy_here, busy, here):
+            if group:
+                pick = max(group, key=lambda r: (len(r.members), -r.created))
+                break
+        if pick is None:
+            if len(self.rooms) >= MAX_ROOMS or sum(r.kind == "persistent" for r in self.rooms.values()) >= MAX_PERSISTENT:
+                return 503, {"error": "busy"}
+            if not self.opens.allow(client):
+                return 429, {"error": "rate"}
+            rid = secrets.token_urlsafe(8)
+            while rid in self.rooms:
+                rid = secrets.token_urlsafe(8)
+            # no host key: nobody owns an open room (the hash of a key nobody was given never matches)
+            pick = Room(rid, {"scene": {"id": scene_id}, "name": OPEN_NAME, "listed": True}, secrets.token_bytes(32),
+                        self.clock(), "persistent", V.Ballot(self.vote_s, self.clock))
+            self.rooms[rid] = pick
+            log(f"opened an open room; open {len(self.rooms)}")
+        return 200, {"id": pick.id, "room": pick.public(self.cap_of(pick))}
+
+    async def _open(self, reader, writer, headers: dict, client: str) -> None:
+        body = await self._body(reader, writer, headers)
+        if body is None:
+            return
+        sc = body.get("scene") if isinstance(body, dict) else None
+        sid = sc.get("id") if isinstance(sc, dict) else None
+        if not isinstance(sid, str) or not P.SCENE_ID_RE.fullmatch(sid):
+            return self._reply(writer, 400, {"error": "scene"})
+        code, out = self.open_room(sid, client)
+        return self._reply(writer, code, out)
+
+    # ---------------------------------------------------------------- votes (votes.py)
+    def present(self, room: Room) -> set[int]:
+        now = self.clock()
+        return {s for s, m in room.members.items() if now - m.active <= self.present_s}
+
+    def _vote_end(self, room: Room, verdict: str) -> None:
+        """Say the result to everyone; on a pass the room flies the chosen scan: every page loads it and starts there.
+        The poses of the old scan are dropped (another scan's coordinates)."""
+        msg = room.ballot.state(self.present(room), verdict)
+        v = room.ballot.close()
+        self._broadcast(room, msg)
+        if verdict == "passed" and v is not None:
+            room.req = {"scene": dict(v.scene), "name": room.req["name"], "listed": room.req["listed"]}
+            for m in room.members.values():
+                m.pose = None
+            self._broadcast(room, {"type": "scene", "room": room.public(self.cap_of(room))})
+            log("a vote moved a room")
+
+    def votes_due(self) -> None:
+        for room in list(self.rooms.values()):
+            if room.ballot.vote is not None:
+                verdict = room.ballot.check(self.present(room))
+                if verdict:
+                    self._vote_end(room, verdict)
+
+    def _propose(self, room: Room, me: Member, m: dict) -> None:
+        sc = m.get("scene")
+        sid = sc.get("id") if isinstance(sc, dict) else None
+        if not isinstance(sid, str) or not P.SCENE_ID_RE.fullmatch(sid):
+            return
+        me.active = self.clock()
+        if room.ballot.vote is None and not self.proposals.allow(f"{room.id}:{me.slot}:{me.joined}"):
+            return self._send(me.sock, {"type": "vote", "state": "wait", "scene": {"id": sid}})
+        got = room.ballot.propose({"id": sid}, me.slot, room.req["scene"]["id"], self.present(room))
+        if got == "same":
+            return self._send(me.sock, {"type": "vote", "state": "same", "scene": {"id": sid}})
+        if got == "busy":
+            return self._send(me.sock, room.ballot.state(self.present(room), "busy"))
+        self._after(room, got)
+
+    def _agree(self, room: Room, me: Member) -> None:
+        me.active = self.clock()
+        self._after(room, room.ballot.agree(me.slot, self.present(room)))
+
+    def _after(self, room: Room, got: str) -> None:
+        if got == "passed":
+            self._vote_end(room, "passed")
+        elif got == "open":
+            self._broadcast(room, room.ballot.state(self.present(room)))
 
     async def _create(self, reader, writer, headers: dict, client: str) -> None:
         try:
@@ -340,9 +465,10 @@ class Service:
         room = self.rooms.get(rid) if isinstance(rid, str) else None
         if room is None:
             return self._fail(sock, "no-room")
-        if len(room.members) >= self.cap:
+        cap = self.cap_of(room)
+        if len(room.members) >= cap:
             return self._fail(sock, "full")
-        slot = min(s for s in range(self.cap) if s not in room.members)
+        slot = min(s for s in range(cap) if s not in room.members)
         nick = P.clean_nick(hello.get("nick")) or f"Pilot-{secrets.randbelow(10000):04d}"
         taken = {m.nick for m in room.members.values()}
         base, n = nick, slot + 1
@@ -350,6 +476,7 @@ class Service:
             nick = f"{base[:P.NICK_LEN[1] - 3]}-{n}"
             n += 1
         me = Member(slot, nick, sock, PoseGate(self.pose_keep, self.pose_close, self.clock))
+        me.active = self.clock()
         key = hello.get("hostKey")
         if isinstance(key, str) and hmac.compare_digest(hashlib.sha256(key.encode()).digest(), room.host_hash):
             room.host_slot = slot
@@ -358,18 +485,24 @@ class Service:
         if room.host_slot not in room.members:
             room.host_slot = min(room.members, key=lambda s: room.members[s].joined)
         sock.send_text(json.dumps({"type": "welcome", "v": P.VERSION, "slot": slot, "nick": nick, "hostSlot": room.host_slot,
-                                   "room": room.public(self.cap), "members": room.roster(), "serverMs": self.server_ms()}))
+                                   "room": room.public(cap), "members": room.roster(), "serverMs": self.server_ms(),
+                                   "vote": room.ballot.state(self.present(room)) if room.ballot.vote else None}))
         self._broadcast(room, {"type": "joined", "slot": slot, "nick": nick, "hostSlot": room.host_slot}, but=slot)
         log(f"ws join; pilots {self.pilots()}")
         try:
             await self._serve(room, me)
         finally:
             room.members.pop(slot, None)
+            room.ballot.drop(slot)
             if room.host_slot == slot:
                 room.host_slot = min(room.members, key=lambda s: room.members[s].joined) if room.members else None
             if not room.members:
                 room.empty_since = self.clock()
             self._broadcast(room, {"type": "left", "slot": slot, "hostSlot": room.host_slot})
+            if room.ballot.vote is not None:  # fewer present: the yes votes left may now be a majority, or none is left
+                verdict = room.ballot.check(self.present(room))
+                if verdict:
+                    self._vote_end(room, verdict)
             sock.close()
             log(f"ws leave; pilots {self.pilots()}")
 
@@ -396,6 +529,8 @@ class Service:
                     me.dropped += 1
                     continue
                 me.kept += 1
+                if not data[1] & P.FLAG_PAUSED:
+                    me.active = self.clock()
                 if self.relay:
                     me.pose = data
                 continue
@@ -408,6 +543,10 @@ class Service:
                 t = m.get("t")
                 self._send(sock, {"type": "pong", "t": t if isinstance(t, (int, float)) and not isinstance(t, bool) else None,
                                   "s": self.server_ms()})
+            elif kind == "propose":
+                self._propose(room, me, m)
+            elif kind == "agree":
+                self._agree(room, me)
             elif kind == "leave":
                 sock.close(W.NORMAL, "leave")
                 return
