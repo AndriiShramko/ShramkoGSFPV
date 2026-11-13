@@ -36,6 +36,11 @@ export const RC2_REPLY_MS = 100;
 export const RC2_INFLIGHT = 4;
 /** no stick answer this long after the claim: the controller is silent (estimate) */
 export const RC2_FIRST_MS = 1500;
+/**
+ * After the first answer: requests unanswered this long, with nothing heard since the first of them was sent, end the
+ * source ('error'), so a controller that stays on the bus but goes silent is said lost (review GR-4). Estimate.
+ */
+export const RC2_SILENT_MS = 1000;
 /** bytes asked for per bulk read: the endpoint's max packet size, 512 (measured) */
 const READ_BYTES = 512;
 
@@ -139,6 +144,8 @@ export class DjiRc2Device {
     private answered: (() => void) | null = null;
     /** the sequence number of each request that is out and when it was sent, oldest first */
     private inflight: { seq: number; at: number }[] = [];
+    /** when the first request sent since the controller was last heard went out (null: heard since the last send) */
+    private unheardSince: number | null = null;
 
     constructor(readonly usb: UsbDeviceLike, o: Rc2Options = {}) {
         this.vendorId = usb.vendorId;
@@ -227,6 +234,7 @@ export class DjiRc2Device {
             if (!r.data || r.status === 'stall') continue;
             for (const f of reader.feed(new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength))) {
                 if (!isStickReply(f) || f.receiver !== RC2.PC) continue; // the controller's unasked frames
+                this.unheardSince = null; // it answers (late or not): not silent
                 // only the answer to a request still out and younger than RC2_REPLY_MS: the report is stamped on
                 // arrival, so an older answer would pass the stale rule with old stick data
                 const i = this.inflight.findIndex((q) => q.seq === f.seq);
@@ -258,11 +266,18 @@ export class DjiRc2Device {
         let seq = 1;
         let last = this.clock();
         this.inflight = [];
+        this.unheardSince = null;
         while (gen === this.gen && this.ch) {
             const t0 = this.clock();
             while (this.inflight.length && t0 - this.inflight[0]!.at >= RC2_REPLY_MS) {
                 this.inflight.shift();
                 this.unanswered++;
+            }
+            // before the first answer open()'s RC2_FIRST_MS decides (answered is set until then); measured from the
+            // first unheard request, so a page whose timers wake rarely (a hidden tab) is not called silent
+            if (this.answered === null && this.unheardSince !== null && t0 - this.unheardSince >= RC2_SILENT_MS) {
+                void this.stop('error', true);
+                return;
             }
             // one request a wake; a wake that came late (a busy page may wake this loop only once a frame) fills every
             // free slot at once, so the answers of one late wake keep coming during the next frame
@@ -271,6 +286,7 @@ export class DjiRc2Device {
             const out: Promise<unknown>[] = [];
             while (this.inflight.length < RC2_INFLIGHT && (late || out.length === 0)) {
                 this.inflight.push({ seq, at: t0 });
+                if (this.unheardSince === null) this.unheardSince = t0;
                 out.push(this.usb.transferOut(this.ch.epOut, stickRequest(seq)));
                 seq = (seq + 1) & 0xffff;
             }
@@ -308,6 +324,14 @@ export function tellWhenLost(d: { onEnd: ((why: 'unplug' | 'error' | 'closed') =
         if (why === 'closed') return;
         for (const fn of [...lostListeners]) fn(why);
     };
+}
+
+/**
+ * Does a saved profile key name the RC 2 (hidProfileKey: `hid:<vid>:<pid>:DJI RC 2:...`)? Only then a later visit
+ * looks for it with findSavedRc2, so no other granted DJI device is opened and asked on page load (review GR-5).
+ */
+export function namesRc2(keys: readonly string[]): boolean {
+    return keys.some((k) => k.startsWith('hid:') && k.includes(`:${RC2_NAME}:`));
 }
 
 /**

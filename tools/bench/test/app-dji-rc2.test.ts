@@ -358,4 +358,28 @@ describe('a later visit', () => {
             off();
         }
     });
+
+    it('review GR-4: a controller that stays on the bus but stops answering ends the source (error) within about a second', async () => {
+        const dev = new FakeRc2();
+        const { rc, src } = await sourceOn(dev);
+        const ends: string[] = [];
+        rc.onEnd = (why) => ends.push(why);
+        await sleep(100);
+        expect(ends).toEqual([]); // answering: no end
+        dev.silent = true;
+        const t0 = performance.now();
+        await until(() => ends.length > 0, 3000);
+        expect(ends).toEqual(['error']);
+        expect(performance.now() - t0).toBeLessThan(2000);
+        expect(dev.calls).toEqual(expect.arrayContaining(['release 0', 'close']));
+        src.close();
+    });
+
+    it('review GR-5: only a saved key that names the RC 2 makes a later visit open granted DJI devices', () => {
+        expect(typeof (R as unknown as Record<string, unknown>).namesRc2).toBe('function');
+        expect(R.namesRc2(['hid:2ca3:1021:DJI RC 2:12:d'])).toBe(true);
+        expect(R.namesRc2(['hid:1209:4f54:Radiomaster TX16S:24', 'gp:Xbox:5:24:'])).toBe(false);
+        expect(R.namesRc2(['gp:DJI RC 2:5:24:'])).toBe(false);
+        expect(R.namesRc2([])).toBe(false);
+    });
 });

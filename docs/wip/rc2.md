@@ -195,6 +195,28 @@ Stage G3-rc2-real (train 1c): NOT CONNECTED (2026-11-13 14:26). Steps 1-3 not do
   list under Not verified and stop).
 - [ ] 3. Windows without DJI Assistant 2, Linux, macOS by reading the code: not done in this stage (same rule).
 
+Stage fixes (train 1c review GR-1 to GR-6). GR-1 and GR-2 on branch ground-probe (b61a4d5e, see
+docs/wip/ground-probe.md), merged into rc2 (f543e04a). GR-3 to GR-6 on rc2, all six stand (none refuted):
+- [x] GR-3: README says "should be able to ... (not tested yet)" for WebUSB, and under the title "Checked so far with
+  the sticks at rest on one PC; not yet flown with a real RC 2". No test (text).
+- [x] GR-4: WebUSB: after the first answer, RC2_SILENT_MS = 1000 (estimate) of requests with nothing heard since the
+  first of them was sent ends the source with stop('error', true) (onEnd, the lost line). Counted from the first unheard
+  request, so a hidden tab whose timers wake once a second or less is not called silent. Bridge: SILENT_S = 1.0
+  (estimate) with no answer after open: set_state('no-controller', 'no answer'), the source closed, retry after
+  RETRY_S (the page stops on no-controller after it flew, dji-rc2-bridge.ts). Tests: app-dji-rc2.test.ts "review
+  GR-4" NEG OK (expected [] to equal ['error']); test_rc_bridge.py test_a_controller_that_stops_answering_is_said_lost
+  NEG OK (None != no-controller).
+- [x] GR-5: resumeInput asks findSavedRc2 only when namesRc2(keys) (a saved hid key with ":DJI RC 2:"). Test
+  app-dji-rc2.test.ts "review GR-5" on namesRc2, NEG OK (no such function on the old code); the one-line wiring in
+  app/input.ts is checked by tsc only.
+- [x] GR-6: rc_bridge.py docstring now says the site and staging; localhost only with --dev. No test (text).
+- Checks: app-dji-rc2 + app-dji-rc2-bridge 20 passed; test_rc_bridge.py 15 OK; app-ground-probe 11 + a6-reference 1
+  passed; tsc apps/fly and tools/bench clean.
+- [~] rc2-probe.mjs on a release of this commit (GR-4 changes the WebUSB ask loop the probe drives).
+- For the lead: GR-2, word the cost bound in the release notes as "one look per 33 ms of input time" (not one per
+  frame). GR-3, the helper's link and README step 5 are true only once main is pushed and the release with rc2 and
+  the nginx entry is live.
+
 ## Verdict of stage 1
 
 (a) Native read on this PC: WORKS [measured]. Stack: Python 3.11 ctypes ->

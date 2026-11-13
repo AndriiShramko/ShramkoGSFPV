@@ -227,6 +227,36 @@ class Served(unittest.TestCase):
         finally:
             s.close()
 
+    def test_a_controller_that_stops_answering_is_said_lost(self):
+        self.b.stop()
+        closed = []
+
+        class Silent:
+            def open(self):
+                pass
+
+            def read(self):
+                time.sleep(rb.REPLY_S)
+                return None
+
+            def close(self):
+                closed.append(1)
+        self.b = rb.Bridge(Silent, port=0, log=lambda *_: None, dev=True)
+        port = self.b.start()
+        s, _, _ = handshake(port, "http://localhost")
+        s.settimeout(3)  # SILENT_S (1 s) and room
+        try:
+            recv_text(s)
+            self.assertEqual(recv_text(s), {"state": "reading"})
+            try:
+                said = recv_text(s)
+            except socket.timeout:
+                said = None
+            self.assertEqual(said, {"state": "no-controller", "why": "no answer"})
+            self.assertTrue(closed)
+        finally:
+            s.close()
+
 
 if __name__ == "__main__":
     unittest.main()

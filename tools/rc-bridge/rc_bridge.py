@@ -7,8 +7,9 @@ Assistant 2 is installed, so Chrome cannot open it over WebUSB. This program rea
     ws://127.0.0.1:47310/
 
 * Bound to 127.0.0.1 only: nothing on the network can reach it.
-* Only the pages https://gsfpv.flyreelstudio.eu and http://localhost[:port] may connect (the Origin header), and only
-  under the Host 127.0.0.1:<port> or localhost:<port> (a page on another name that points at 127.0.0.1 is refused).
+* Only the site https://gsfpv.flyreelstudio.eu and the staging site https://gsfpv-staging.flyreelstudio.eu may
+  connect (the Origin header); http://localhost[:port] only with --dev. Only under the Host 127.0.0.1:<port> or
+  localhost:<port> (a page on another name that points at 127.0.0.1 is refused).
 * Read-only towards the controller: the only frame ever sent to it is the DUML stick request (set 06, id 01, empty
   payload), the frame the reference github.com/rusty407/dji-rc2-linux-joystick sends. Nothing is written to it.
 * The controller is opened only while a page is connected, and let go when the last page leaves.
@@ -48,6 +49,7 @@ VID, PID = 0x2CA3, 0x1021
 POLL_S = 0.01  # one request every 10 ms: the reference's default 100 Hz, not measured here
 REPLY_S = 0.1  # a request with no answer after this is given up (stage 1 saw every answer within 100 ms)
 RETRY_S = 2.0  # look for the controller again after this (estimate)
+SILENT_S = 1.0  # an open controller with no answer for this long is said lost and let go (estimate, review GR-4)
 DEV_DESC_OFF = 1048  # usb_device.descriptor in libusb0_dji.dll 4.8.13 amd64, measured by layout_probe.py (stage 1)
 BUS_DEVICES_OFF = 528  # usb_bus.devices in the same DLL, measured in stage 1
 GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"  # RFC 6455
@@ -449,6 +451,7 @@ class Bridge:
                 try:
                     s.open()
                     src = s
+                    heard = time.monotonic()
                     self.set_state("reading")
                 except Closed as e:
                     self.set_state("no-controller", str(e))
@@ -463,7 +466,15 @@ class Bridge:
                 self.set_state("no-controller", str(e))
                 continue
             if v:
+                heard = time.monotonic()
                 self.send_all({"v": v})
+            elif time.monotonic() - heard >= SILENT_S:
+                # still on the bus but silent (asleep, another mode): say so, let it go, look again later
+                src.close()
+                src = None
+                self.set_state("no-controller", "no answer")
+                self.stopped.wait(RETRY_S)
+                continue
             left = POLL_S - (time.monotonic() - t0)
             if left > 0:
                 time.sleep(left)

@@ -3,11 +3,13 @@
 Fly ShramkoGSFPV with a DJI RC 2 (the controller with a screen that comes with the Avata 360) on Windows,
 with no driver change.
 
+Checked so far with the sticks at rest on one PC; not yet flown with a real RC 2.
+
 ## Why it exists
 
 The RC 2 has no game-controller (HID) part. Its sticks answer a DJI (DUML) request on USB interface 0
-(class FF.43.01). On Linux, macOS, ChromeOS and Android the page can open that interface itself over WebUSB
-("Fly with this controller" in the helper). On Windows with DJI Assistant 2 installed, that interface uses DJI's
+(class FF.43.01). On Linux, macOS, ChromeOS and Android the page should be able to open that interface itself over
+WebUSB ("Fly with this controller" in the helper; not tested yet). On Windows with DJI Assistant 2 installed, that interface uses DJI's
 own libusb0 driver, and Chrome can only open interfaces that use Windows' generic driver (WinUSB). This program
 reads the sticks through DJI's own 64-bit `libusb0_dji.dll` and hands them to the page over a local WebSocket.
 Measured on 2026-11-13 on the owner's PC with his RC 2: 633 stick messages in 10 s (docs/wip/rc2.md).
