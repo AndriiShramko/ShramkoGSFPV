@@ -1,0 +1,121 @@
+{
+ "name": "gpu-select/owner-chrome-before",
+ "date": "2026-11-13T21:27:34.285Z",
+ "what": "the owner's own Chrome (his profile and settings, started by him), the live site, scene 7a475d38, before any switch; read through the Claude in Chrome extension",
+ "url": "https://gsfpv.flyreelstudio.eu/en/fly/?scene=7a475d38&nowarn=1&input=touch",
+ "page": {
+  "adapters": {
+   "high": {
+    "vendor": "intel",
+    "architecture": "gen-12lp",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+   },
+   "low": {
+    "vendor": "intel",
+    "architecture": "gen-12lp",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+   },
+   "none": {
+    "vendor": "intel",
+    "architecture": "gen-12lp",
+    "device": "",
+    "description": "",
+    "isFallbackAdapter": false
+   }
+  },
+  "webgl": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "rendererAdapter": {
+   "vendor": "intel",
+   "architecture": "gen-12lp",
+   "device": "",
+   "description": "",
+   "isFallback": false,
+   "maxBufferSize": 2147483648
+  },
+  "webgpu": true,
+  "drawing": {
+   "class": "desktop-strong",
+   "classAuto": "desktop-weak",
+   "classReasons": [
+    "intel-integrated"
+   ],
+   "classPicked": true,
+   "mode": "sorted",
+   "budgetM": 1,
+   "renderScale": 1
+  },
+  "hint": {
+   "check": {
+    "due": true,
+    "reason": "due",
+    "shown": false
+   },
+   "seen": true
+  },
+  "hintMark": "1",
+  "browser": "Chrome/140.0.0.0",
+  "brands": "Chromium 140, Not=A?Brand 24, Google Chrome 140",
+  "backbuffer": [
+   2561,
+   1187
+  ],
+  "dpr": 1.5,
+  "inner": [
+   1707,
+   791
+  ]
+ },
+ "counters": {
+  "gpuProcessFound": true,
+  "seconds": 15,
+  "perAdapter": {
+   "Intel(R) UHD Graphics": {
+    "engines": 13,
+    "max3d": 25.85,
+    "avg3d": 9.34,
+    "maxAny": 25.85,
+    "dedicatedMb": 0,
+    "sharedMb": 1643.8
+   },
+   "Microsoft Basic Render Driver": {
+    "engines": 17,
+    "max3d": 0,
+    "avg3d": 0,
+    "maxAny": 0,
+    "dedicatedMb": 0,
+    "sharedMb": 0
+   }
+  },
+  "adapters": {
+   "0x00000000_0x00012db4": "Intel(R) UHD Graphics",
+   "0x00000000_0x0001316d": "Microsoft Basic Render Driver",
+   "0x00000000_0x000131ff": "NVIDIA GeForce RTX 3070 Laptop GPU"
+  },
+  "nvidiaSmi": {
+   "available": true,
+   "gpuProcessListed": false,
+   "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU, 617.42, 0 MiB, 0 %"
+  }
+ },
+ "frames": {
+  "measured": false,
+  "why": "the extension's tab was not the tab in front of its window: Chrome ran its frames once a second (19 frames in 19 s, each 1000 ms after the last) and the page opened its pause menu by itself, so the numbers say nothing about the graphics. The frame numbers of the lane come from the same chrome.exe started visibly with a throwaway profile (fly-*.json, def-*.json), and the owner's display settings as read here (class picked desktop-strong, budget 1 M, sorted, render scale 1) are repeated there in owner-settings-intel.json and owner-settings-nvidia.json."
+ },
+ "verdict": {
+  "webgpuHigh": "intel gen-12lp",
+  "webgpuLow": "intel gen-12lp",
+  "webgpuNone": "intel gen-12lp",
+  "webgl": "Intel(R) UHD Graphics",
+  "busiestAdapter": [
+   "Intel(R) UHD Graphics: 3D max 25.85 %, shared 1643.8 MB",
+   "Microsoft Basic Render Driver: 3D max 0 %, shared 0 MB"
+  ],
+  "nvidiaSmiListsGpuProcess": false,
+  "hintOfTheLiveSite": "due, but never shown again: this browser holds the mark \"1\" (shown once), which the release of that day read as \"seen\"",
+  "deviceClass": "desktop-strong, picked by the pilot in the settings (the page's own reading is desktop-weak: intel-integrated)"
+ }
+}

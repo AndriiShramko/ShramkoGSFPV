@@ -205,9 +205,7 @@
     "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU, 617.42, 0 MiB, 0 %",
     "gpuProcessListed": false,
     "browserRows": [],
-    "otherRows": [
-      "DJI Studio.exe"
-    ]
+    "otherPrograms": 1
   },
   "gpuPage": {
     "file": "chrome-shim-gpu-page.txt",

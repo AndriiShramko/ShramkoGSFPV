@@ -9,10 +9,13 @@
 
 /* the line that stays */
 .gpu-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 13px; line-height: 1.35; color: var(--muted); }
-.gpu-line.warn .gl-text { color: var(--fg); }
+.gpu-line.gl-due .gl-text { color: var(--fg); }
 .gpu-line .gl-warn { color: var(--warn, #f0b429); }
 .gpu-line .gl-how { min-height: 30px; padding: 3px 10px; font-size: 13px; }
 .gpu-line .gl-more { display: flex; flex: 1 1 100%; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 4px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(8, 11, 16, .6); color: var(--fg); font-size: 14px; }
 .gpu-line .gl-more .sn-btn { min-height: 34px; padding: 4px 12px; }
-.gpu-line-start { margin: -4px 0 12px; }
+/* (top and bottom only: the sides stay the picker's own auto margins, which centre its column on a wide window; the height is
+   kept before the line's words arrive, so the picker under it does not jump) */
+.gpu-line-start { margin-top: -4px; margin-bottom: 12px; min-height: 1.35em; }
+.gpu-hint .gh-cost { color: var(--muted); font-size: 13px; }
 .gpu-row { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; margin-top: 8px; }

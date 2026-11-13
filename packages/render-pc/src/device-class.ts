@@ -105,8 +105,13 @@ export function isPhoneSized(s: Pick<DeviceSignals, 'userAgent' | 'screenShortSi
     return s.screenShortSide > 0 && s.screenShortSide < 600;
 }
 
-/** Intel Arc and Xe-HPG are discrete GPUs: not the integrated class of weakness. */
-const INTEL_DISCRETE = /xe[-_ ]?hpg|alchemist|battlemage|\barc\b/i;
+/**
+ * Intel Arc and Xe-HPG are discrete GPUs: not the integrated class of weakness. Chrome and Edge hide the adapter's model, so
+ * there the architecture alone says it, in the words of their WebGPU layer (Dawn): "gen-12hp" is the Arc A series and "xe-2hpg"
+ * the B series, while "gen-12lp", "xe-lpg", "xe-2lpg" and "xe-3lpg" are chips built into a processor (lane gpu-select: read
+ * from the strings of a Dawn build; no Arc card was at hand to measure).
+ */
+const INTEL_DISCRETE = /gen-?12-?hp\b|xe[-_ ]?\d?[-_ ]?hpg|alchemist|battlemage|\barc\b/i;
 
 /** An Intel integrated GPU: vendor Intel, and not Arc or Xe-HPG (discrete). The one place this is decided: the class and the GPU hint both read it. */
 export function isIntelIntegrated(g: GpuInfo | null | undefined): boolean {
@@ -155,14 +160,15 @@ export function gpuName(g: GpuInfo | null | undefined): string {
 // a hybrid-graphics laptop. Two things switch it: Chrome's flag chrome://flags/#force-high-performance-gpu, or Windows
 // Settings > System > Display > Graphics > the browser > Options > High performance. A page cannot link to a chrome:// address
 // (it can only show the text to copy). The page cannot see the second GPU (the adapter is the one in use), so the rule is the
-// combination that makes the hint worth saying: Windows, WebGPU, a real Intel integrated adapter. The page shows it once.
+// combination that makes the hint worth saying: Windows, WebGPU, a real integrated adapter. (v0.12 showed it once per browser;
+// since lane gpu-select the page shows it on every visit until the pilot says "Do not show again": apps/fly/src/sonic/gpu-hint.ts.)
 //   not due: a handheld; any system but Windows (macOS honours the request, Linux has its own switch); no WebGPU (the
-//   engine's other renderer); an adapter the browser does not name; a software (fallback) adapter, which no switch would
-//   change; any vendor but Intel (NVIDIA, AMD and Qualcomm are what the hint wants the page on); Intel Arc and Xe-HPG, which
-//   are discrete GPUs.
+//   engine's other renderer); an adapter nothing is known about; a software (fallback) adapter, which no switch would
+//   change; a card (NVIDIA, Qualcomm, an AMD adapter that is not one of AMD's integrated chips by name: what the hint wants
+//   the page on); Intel Arc and Xe-HPG, which are discrete GPUs.
 //
 // Lane gpu-select (docs/wip/gpu-select.md; measured on a hybrid laptop, Chrome 140 and Edge 157: the page gets one adapter
-// whatever powerPreference it asks for, the integrated one until the browser is switched) adds three things to the reading:
+// whatever powerPreference it asks for, the integrated one until the browser is switched) adds four things to the reading:
 //   - kind and name: what the page draws on, in words a pilot can check against his computer. The name comes from WebGL's
 //     unmasked renderer when the page read one (`glRenderer`): Chrome hides the WebGPU adapter's model, and on the WebGL
 //     path it is the only name there is.
@@ -172,6 +178,12 @@ export function gpuName(g: GpuInfo | null | undefined): string {
 //   - AMD's integrated chips, by the name WebGL gives them ("AMD Radeon(TM) Graphics", "... Vega 8 Graphics", "Radeon 780M"):
 //     a laptop with one next to an NVIDIA card is in the same place as an Intel one. Read from the names only; no AMD laptop
 //     was at hand to measure.
+//   - a browser that hides its WebGPU adapter (Firefox 160: every field empty) and rounds WebGL's name to a family
+//     ("Intel(R) HD Graphics, or similar" for the laptop's UHD chip). Only what such a name can carry is believed: an Intel
+//     name without the word Arc is an integrated chip (due; measured, Firefox drew on the Intel chip whatever was asked), an
+//     NVIDIA name is a card. An Arc name can be a card or a chip of a Core Ultra processor, Firefox's Radeon names are old
+//     card names for every Radeon, and a name of no known maker ("Mozilla", "Generic Renderer") says nothing: for those
+//     nothing is claimed (`unknown-adapter`), so nothing is shown and nothing is remembered. `approx` marks a rounded name.
 
 /** What the hint reads: the device's signals and the operating system as Client Hints name it. */
 export interface GpuHintSignals extends DeviceSignals {
@@ -199,6 +211,8 @@ export interface GpuHintReading {
     hint: 'switch' | 'software' | null;
     /** the adapter's name for the pilot ("Intel(R) UHD Graphics", else "intel gen-12lp"); '' when the browser names nothing */
     name: string;
+    /** the name is the chip's family as the browser rounds it, not its model (Firefox ends WebGL's words with ", or similar") */
+    approx: boolean;
 }
 
 /** Windows: Client Hints' platform when there is one, else the user agent (Chrome keeps "Windows NT 10.0; Win64; x64" for every Windows). */
@@ -210,16 +224,39 @@ export function isWindows(userAgent: string, platform?: string): boolean {
 /** Names of graphics that the processor draws: Chrome's SwiftShader, Mesa's llvmpipe and softpipe, Windows' Basic Render Driver (WARP). */
 const SOFTWARE_GRAPHICS = /swiftshader|llvmpipe|softpipe|software rasterizer|basic render driver|\bwarp\b/i;
 
+/** Firefox ends WebGL's renderer string with this when the name is a family it rounded the real model to. */
+const OR_SIMILAR = /,\s*or similar\s*$/i;
+
+/** An Intel Arc CARD by its model ("Arc(TM) A770", "Arc B580", "Arc Pro A60"); "Intel(R) Arc(TM) Graphics" is a chip of a Core Ultra processor. */
+const INTEL_ARC_CARD = /\barc(?:\(tm\))?\s+(?:pro\s+)?[ab]\d{2,3}/i;
+
+/** NVIDIA's cards by WebGL's words ("NVIDIA GeForce RTX 3070 Laptop GPU", Firefox's family names "GeForce GTX 980"). */
+const NVIDIA_NAME = /\bnvidia\b|geforce|quadro/i;
+
+/** The words a maker's graphics go by in WebGL's string, per adapter vendor as WebGPU names it (glOf). */
+const GL_BRANDS: Record<string, RegExp> = {
+    intel: /\bintel\b/i,
+    nvidia: NVIDIA_NAME,
+    amd: /\bamd\b|radeon|\bati\b/i,
+    qualcomm: /qualcomm|adreno/i,
+    arm: /\barm\b|mali/i,
+    apple: /apple/i,
+    'img-tec': /powervr|imagination/i,
+    samsung: /samsung|xclipse/i
+};
+
 /**
  * The model in WebGL's renderer string, as a pilot would read it in his computer's settings:
  * "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)" is "Intel(R) UHD Graphics",
  * "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)" is "SwiftShader",
- * "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)" is "Apple M1 Pro"; a string that is not ANGLE's
- * ("Mali-G78", "Apple GPU") stays as it is. '' for an empty one.
+ * "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)" is "Apple M1 Pro",
+ * "ANGLE (Intel, Vulkan 1.3.255 (Intel(R) UHD Graphics 620 (KBL GT2) (0x00005917)), Intel open-source Mesa driver)" is
+ * "Intel(R) UHD Graphics 620 (KBL GT2)"; a string that is not ANGLE's ("Mali-G78", "Apple GPU") stays as it is. Firefox's
+ * ", or similar" at the end is taken off every string (the reading's `approx` keeps that fact). '' for an empty one.
  */
 export function glRendererName(renderer: string): string {
-    let s = renderer.trim();
-    const angle = /^ANGLE \((.*)\)(?:, or similar)?$/.exec(s);
+    let s = renderer.trim().replace(OR_SIMILAR, '');
+    const angle = /^ANGLE \((.*)\)$/.exec(s);
     if (angle) {
         // "vendor, model, driver": split at the commas outside brackets (a model may hold some)
         const parts: string[] = [];
@@ -239,10 +276,14 @@ export function glRendererName(renderer: string): string {
         s = parts[1] ?? parts[0] ?? s;
     }
     if (/swiftshader/i.test(s)) return 'SwiftShader';
+    // ANGLE over Vulkan wraps the model: "Vulkan 1.3.255 (<model> (0x....))"
+    const vulkan = /^Vulkan \d+(?:\.\d+)* \((.*)\)$/.exec(s);
+    if (vulkan) s = vulkan[1] as string;
     return s
         .replace(/^ANGLE Metal Renderer: /, '')
         .replace(/\s+Direct3D\d*.*$/, '')
         .replace(/,?\s+OpenGL.*$/, '')
+        .replace(/\/PCIe\/SSE2\s*$/i, '')
         .replace(/\s+\(0x[0-9A-Fa-f]{4,8}\)\s*$/, '')
         .trim();
 }
@@ -259,22 +300,29 @@ export function isAmdIntegrated(name: string): boolean {
     return AMD_INTEGRATED.test(name);
 }
 
-/** The WebGL name when it can be trusted to be about the adapter in `g`: the same vendor, or no adapter to compare with. */
+/** The WebGL name when it can be trusted to be about the adapter in `g`: the same maker, or no adapter to compare with. */
 function glOf(s: Pick<GpuHintSignals, 'gpu' | 'glRenderer'>): string {
     const gl = s.glRenderer?.trim() ?? '';
     const vendor = s.gpu?.vendor.trim().toLowerCase() ?? '';
     if (!gl || !vendor) return gl;
-    // Firefox draws WebGL and WebGPU through different stacks: a WebGL name of another vendor is not this adapter's
-    return gl.toLowerCase().includes(vendor) || (vendor === 'amd' && /radeon|\bati\b/i.test(gl)) ? gl : '';
+    // Firefox draws WebGL and WebGPU through different stacks: a WebGL name of another maker is not this adapter's. A name
+    // may carry the maker's brand without the maker's word ("GeForce GTX 980", "Radeon R9 200 Series", "Adreno (TM) 740")
+    return (GL_BRANDS[vendor]?.test(gl) ?? false) || gl.toLowerCase().includes(vendor) ? gl : '';
 }
 
-/** Is the processor drawing the page? A fallback adapter, a software name on the adapter, or (without a WebGPU adapter) on WebGL. */
+/** Does the browser name its WebGPU adapter? (Firefox gives an adapter with every field empty.) */
+const isNamed = (g: GpuInfo | null | undefined): boolean => !!g && g.vendor.trim() !== '';
+
+/**
+ * Is the processor drawing the page? A fallback adapter, a software name on the adapter, or a software name on WebGL where
+ * WebGL's word is the only one there is (no WebGPU, or an adapter the browser does not name).
+ */
 export function isSoftwareGraphics(s: Pick<GpuHintSignals, 'webgpu' | 'gpu' | 'glRenderer'>): boolean {
     const g = s.gpu;
     if (g?.isFallback) return true;
     if (g && SOFTWARE_GRAPHICS.test(`${g.vendor} ${g.architecture} ${g.device} ${g.description}`)) return true;
-    // WebGL's name counts where WebGL is what draws: with WebGPU on a real adapter the page is not on that software path
-    return !!s.glRenderer && SOFTWARE_GRAPHICS.test(s.glRenderer) && (!s.webgpu || !g);
+    // with WebGPU on an adapter that names itself the page is not on WebGL's path, and WebGL's software name says nothing
+    return !!s.glRenderer && SOFTWARE_GRAPHICS.test(s.glRenderer) && (!s.webgpu || !isNamed(g));
 }
 
 /** What the page draws on (GraphicsKind): software first, then an integrated chip of Intel or AMD, else 'other'. */
@@ -282,11 +330,13 @@ export function graphicsKind(s: Pick<GpuHintSignals, 'webgpu' | 'gpu' | 'glRende
     if (isSoftwareGraphics(s)) return 'software';
     const g = s.gpu;
     const gl = glOf(s);
-    if (isIntelIntegrated(g)) return 'integrated';
+    // a named Intel adapter: its architecture decides, and a WebGL model that is an Arc card overrules an unknown word
+    if (isIntelIntegrated(g)) return INTEL_ARC_CARD.test(gl) ? 'other' : 'integrated';
     if (g && g.vendor.toLowerCase() === 'amd' && isAmdIntegrated(`${g.description} ${g.device} ${gl}`)) return 'integrated';
-    // no adapter to ask (WebGL, or a browser that hides it): WebGL's name alone
-    if ((!g || g.vendor.trim() === '') && gl) {
-        if (/\bintel\b/i.test(gl) && !INTEL_DISCRETE.test(gl)) return 'integrated';
+    // no adapter to ask (WebGL, or a browser that hides it): WebGL's name alone. A full model name tells an Arc card from the
+    // Arc chip of a processor; a rounded one (", or similar") that says Arc may stand for either, and is not called integrated
+    if (!isNamed(g) && gl) {
+        if (/\bintel\b/i.test(gl) && !(OR_SIMILAR.test(gl) ? /\barc\b/i : INTEL_ARC_CARD).test(gl)) return 'integrated';
         if (isAmdIntegrated(gl)) return 'integrated';
     }
     return 'other';
@@ -309,20 +359,25 @@ export function graphicsName(s: Pick<GpuHintSignals, 'gpu' | 'glRenderer'>): str
 export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
     const kind = graphicsKind(s);
     const name = graphicsName(s);
+    const approx = OR_SIMILAR.test(glOf(s));
     const handheld = looksHandheld(s);
-    const out = (due: boolean, reason: GpuHintReason): GpuHintReading => ({ due, reason, kind, hint: due ? 'switch' : kind === 'software' && !handheld ? 'software' : null, name });
+    const out = (due: boolean, reason: GpuHintReason): GpuHintReading => ({ due, reason, kind, hint: due ? 'switch' : kind === 'software' && !handheld ? 'software' : null, name, approx });
     if (handheld) return out(false, 'handheld');
     if (!isWindows(s.userAgent, s.platform)) return out(false, 'not-windows');
     if (!s.webgpu) return out(false, 'no-webgpu');
     const g = s.gpu;
-    const named = !!g && g.vendor.trim() !== '';
-    // A browser that hides its WebGPU adapter (Firefox 142: every field empty) still names the graphics through WebGL, and
-    // on the laptop both drew on the same chip whatever powerPreference was asked (the counters, docs/wip/gpu-select.md):
-    // WebGL's name then stands in for the adapter's. With neither, nothing is known.
-    const gl = named ? '' : glOf(s);
-    if (!named && !gl) return out(false, 'unknown-adapter');
-    if (g?.isFallback || kind === 'software') return out(false, 'fallback-adapter');
-    const vendor = named ? (g as GpuInfo).vendor.toLowerCase() : /\bintel\b/i.test(gl) ? 'intel' : /\bamd\b|radeon/i.test(gl) ? 'amd' : 'other';
+    if (!g || !isNamed(g)) {
+        // A browser that hides its WebGPU adapter (Firefox 160: every field empty) still names the graphics through WebGL, and
+        // on the laptop both drew on the same chip whatever powerPreference was asked (the counters, docs/wip/gpu-select.md):
+        // WebGL's name then stands in for the adapter's, as far as such a name can be believed (the header's last point).
+        const gl = glOf(s);
+        if (!gl) return out(false, 'unknown-adapter');
+        if (g?.isFallback || kind === 'software') return out(false, 'fallback-adapter');
+        if (kind === 'integrated') return out(true, 'due');
+        return out(false, NVIDIA_NAME.test(gl) ? 'not-intel' : 'unknown-adapter');
+    }
+    if (g.isFallback || kind === 'software') return out(false, 'fallback-adapter');
+    const vendor = g.vendor.toLowerCase();
     if (vendor === 'intel') return kind === 'integrated' ? out(true, 'due') : out(false, 'intel-discrete');
     // an AMD chip built into the processor, next to which a card may sit unused (the name is WebGL's: see the header)
     if (vendor === 'amd' && kind === 'integrated') return out(true, 'due');

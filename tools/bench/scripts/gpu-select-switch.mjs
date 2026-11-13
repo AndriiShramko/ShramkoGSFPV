@@ -21,10 +21,17 @@ import { createServer } from 'node:http';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { asciiJson, browserExe, gpuCountersAsync, gpuProcessPid, GPU_LOAD, mask, READ_ADAPTERS, startStockBrowser, systemInfo } from './gpu-select-probe.mjs';
+import { asciiJson, browserExe, gpuCountersAsync, gpuProcessPid, GPU_LOAD, mask, READ_ADAPTERS, startStockBrowser as startStock, systemInfo } from './gpu-select-probe.mjs';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/** Every browser this run started, so that a run stopped by hand (Ctrl+C) takes them and their profiles with it. */
+const started = new Set();
+const startStockBrowser = async (opts) => {
+    const s = await startStock(opts);
+    started.add(s);
+    return s;
+};
 const FLAG = 'force-high-performance-gpu';
 const SETTINGS = 'ms-settings:display-advancedgraphics';
 const ASK_EXTRA = ['--force-renderer-accessibility'];
@@ -76,6 +83,7 @@ async function flagUi(o, exe, result) {
     // 1. the first start: the flags page, the way a pilot reaches it from the note's address
     let stock = await startStockBrowser({ exe, label: o.label });
     result.browser = stock.version;
+    let set = false;
     try {
         const page = stock.page;
         await page.goto(`chrome://flags/#${FLAG}`, { waitUntil: 'load', timeout: 30000 });
@@ -86,8 +94,10 @@ async function flagUi(o, exe, result) {
         result.flagsPage.after = await page.evaluate(FLAG_PAGE(false));
         // the page offers its own "Relaunch" button once a flag changed: its words, for the note's wording
         result.flagsPage.relaunchButton = await page.evaluate(`(() => { const all = []; const walk = (n) => { if (!n) return; if (n.nodeType === 1) { all.push(n); if (n.shadowRoot) walk(n.shadowRoot); } for (const c of n.childNodes || []) walk(c); }; walk(document); const b = all.filter((e) => e.tagName === 'BUTTON' || e.tagName === 'CR-BUTTON').map((e) => e.textContent.replace(/\\s+/g, ' ').trim()).filter(Boolean); return b; })()`);
+        set = true;
     } finally {
-        await stock.close({ keepProfile: true });
+        // the profile is kept for the second start only when the first half went through
+        await stock.close(set ? { keepProfile: true } : false);
     }
     await sleep(1500);
     try {
@@ -139,8 +149,12 @@ foreach ($w in $wins) {
     }
 }
 
-/** Windows' Settings window: is the program running, and the texts it shows (the page's title and trail). */
-function settingsWindow() {
+/**
+ * Windows' Settings window: is the program running, is a window of it on screen, and the trail of the page it shows (its first
+ * three texts: on the graphics page "System", "Display", "Graphics"). Nothing below the trail is read: further down that page
+ * lists the person's applications, and another page can hold an account name.
+ */
+export function settingsWindow() {
     const script = `
 $ErrorActionPreference = 'SilentlyContinue'
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
@@ -158,12 +172,13 @@ if ($p) {
       $mine = [bool]$inner
     }
     if (-not $mine) { continue }
+    # (the hidden frame of the suspended program is not a window the person sees)
+    if ($w.Current.IsOffscreen) { continue }
     $out.window = $w.Current.Name
     $all = $w.FindAll([System.Windows.Automation.TreeScope]::Descendants, (New-Object System.Windows.Automation.PropertyCondition($AE::ControlTypeProperty, [System.Windows.Automation.ControlType]::Text)))
-    foreach ($e in $all) { $n = $e.Current.Name; if ($n) { $out.texts += $n.Substring(0, [Math]::Min(120, $n.Length)) } }
+    foreach ($e in $all) { $n = $e.Current.Name; if ($n) { $out.texts += $n.Substring(0, [Math]::Min(60, $n.Length)) }; if ($out.texts.Count -ge 3) { break } }
   }
-  # the page's own headings only: the list of the person's applications that follows them is not ours to record
-  $out.texts = @($out.texts | Select-Object -First 14)
+  $out.texts = @($out.texts | Select-Object -First 3)
 }
 $out | ConvertTo-Json -Compress -Depth 4
 `;
@@ -182,8 +197,14 @@ async function link(o, exe, result) {
     await new Promise((r) => server.listen(0, '127.0.0.1', r));
     const origin = `http://127.0.0.1:${server.address().port}`;
     result.page = `${origin}/ (a page of the probe with <a href="${SETTINGS}">)`;
-    const wasOpen = settingsWindow().window !== null;
-    result.settingsWindowOpenBefore = wasOpen;
+    // with a Settings window already on screen this run could not tell what the click opened, and it would have to leave the
+    // person's window on the page the click put it: it does not start
+    const before = settingsWindow();
+    result.settingsWindowOpenBefore = before.window !== null;
+    if (before.window !== null) {
+        server.close();
+        throw new Error('a Settings window is open: close it and run again');
+    }
     try {
         // (a) a fresh profile: the browser asks first. Chrome exposes its own dialogs to UI Automation only with its
         // accessibility switched on, which this switch does and nothing else (Edge has it on by itself).
@@ -202,7 +223,7 @@ async function link(o, exe, result) {
                 dialog = uiNames(stock.child.pid, 'Settings|settings|open|Open|Cancel|Always|allow');
                 if (!dialog.some((x) => x.type === 'Button')) await sleep(1500);
             }
-            result.ask = { dialog, accessibilityForced: ASK_EXTRA, settingsOpened: win.window !== null && !wasOpen, settingsWindow: win.window };
+            result.ask = { dialog, accessibilityForced: ASK_EXTRA, settingsOpened: win.window !== null, settingsWindow: win.window };
         } finally {
             await stock.close();
         }
@@ -220,8 +241,8 @@ async function link(o, exe, result) {
         }
     } finally {
         server.close();
-        // the Settings window this probe opened goes away again; one that was open before is the person's and stays
-        if (!wasOpen) powershell(`Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -Force`);
+        // the Settings window this probe opened goes away again (none was open before, or the run would not have started)
+        powershell(`Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -Force`);
     }
     result.verdict = {
         asksFirst: (result.ask?.dialog ?? []).filter((x) => x.type !== 'error').map((x) => `${x.type}: ${x.name}`).slice(0, 12),
@@ -265,6 +286,12 @@ async function main() {
     const outDir = join(REPO, 'evidence', new Date().toISOString().slice(0, 10), 'gpu-select');
     mkdirSync(outDir, { recursive: true });
     const result = { name: `gpu-select/${o.label}`, date: new Date().toISOString(), label: o.label, mode: o.mode, browserName: o.browser };
+    process.on('SIGINT', () => {
+        void (async () => {
+            for (const s of started) await s.close(false).catch(() => {});
+            process.exit(130);
+        })();
+    });
     try {
         if (o.mode === 'flag-ui') await flagUi(o, exe, result);
         else if (o.mode === 'link') await link(o, exe, result);

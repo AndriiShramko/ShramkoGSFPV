@@ -1,0 +1,379 @@
+{
+  "name": "sonic-gpuhint-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "140.0.7339.81",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T21:19:02.515Z",
+    "gitHead": "1d8f6cdb",
+    "gitDirty": true,
+    "node": "v22.16.0",
+    "platform": "win32 10.0.26200",
+    "cpu": "11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz"
+  },
+  "step": "lane gpu-select: the GPU hint in the real page (the note on every visit, the line that stays, the software case)",
+  "page": "http://localhost:5342/fly/ (Vite dev server)",
+  "note": "the real device gets what its own reading says (the owner's NVIDIA PC: no hint; a hybrid laptop on its integrated chip: the note by itself); another computer is asked for through the page's test hook, which lays signals over what the device says and runs the same code (rule, note, copy, memory, line); headless Chrome runs muted, a spoken line is a speech event and a caption",
+  "adapter": {
+    "due": true,
+    "reason": "due",
+    "kind": "integrated",
+    "hint": "switch",
+    "name": "Intel(R) UHD Graphics",
+    "approx": false,
+    "note": "switch",
+    "shown": false
+  },
+  "checks": [
+    {
+      "name": "this computer: the page reads its real adapter (\"Intel(R) UHD Graphics\", integrated, due), and the note came by itself exactly when a hint is due (due here: it came)",
+      "pass": true,
+      "value": {
+        "real": {
+          "due": true,
+          "reason": "due",
+          "kind": "integrated",
+          "hint": "switch",
+          "name": "Intel(R) UHD Graphics",
+          "approx": false,
+          "note": "switch",
+          "shown": false
+        },
+        "note": {
+          "kind": "switch",
+          "address": "chrome://flags/#force-high-performance-gpu"
+        }
+      }
+    },
+    {
+      "name": "asked as an Intel laptop on Windows would be: the hint is due, the switch note comes, the adapter is named from WebGL",
+      "pass": true,
+      "value": {
+        "due": true,
+        "reason": "due",
+        "kind": "integrated",
+        "hint": "switch",
+        "name": "Intel(R) UHD Graphics",
+        "approx": false,
+        "note": "switch",
+        "shown": true
+      }
+    },
+    {
+      "name": "the note names the integrated chip and the other card, and gives both ways: the browser's address as text, Windows' graphics page as a link with the path as words; what the switch costs and how to undo it; then \"Got it\" and \"Do not show again\"",
+      "pass": true,
+      "value": {
+        "text": "The browser is drawing this page on the integrated graphics chip (Intel(R) UHD Graphics). If this computer also has an NVIDIA or AMD graphics card, the browser is not using it: on Windows the browser, not the page, picks the card, and it ignores the page's request for the faster one. To switch:Fastest, in the browser: open this address in a new tab, choose Enabled, then press Relaunch: chrome://flags/#force-high-performance-gpu Copy the addressIn Windows: open the graphics settings (Settings, System, Display, Graphics), add this browser to the list if it is not there, choose High performance for it, then close the browser completely and start it again. If nothing changes, restart the computer. Open Windows graphics settingsThe faster card uses more power: on battery the laptop runs for a shorter time and gets warmer. To undo, choose Disabled again in the browser, or in Windows the option that lets Windows decide.Got itDo not show again",
+        "kind": "switch",
+        "address": "chrome://flags/#force-high-performance-gpu",
+        "link": "ms-settings:display-advancedgraphics",
+        "cost": "The faster card uses more power: on battery the laptop runs for a shorter time and gets warmer. To undo, choose Disabled again in the browser, or in Windows the option that lets Windows decide.",
+        "buttons": [
+          "gpu-hint-copy",
+          "gpu-hint-ok",
+          "gpu-hint-never"
+        ]
+      }
+    },
+    {
+      "name": "Copy puts the address on the clipboard (read back) and says so",
+      "pass": true,
+      "value": {
+        "clipboard": "chrome://flags/#force-high-performance-gpu",
+        "status": "Copied. Paste it into the address bar of a new tab and press Enter."
+      }
+    },
+    {
+      "name": "Got it closes the note and remembers nothing",
+      "pass": true
+    },
+    {
+      "name": "not twice in one visit: asked again as the same laptop, the hint is still due but the note does not come by itself",
+      "pass": true,
+      "value": {
+        "due": true,
+        "reason": "due",
+        "kind": "integrated",
+        "hint": "switch",
+        "name": "Intel(R) UHD Graphics",
+        "approx": false,
+        "note": "switch",
+        "shown": false
+      }
+    },
+    {
+      "name": "(the test hook can show it again on purpose)",
+      "pass": true,
+      "value": {
+        "due": true,
+        "reason": "due",
+        "kind": "integrated",
+        "hint": "switch",
+        "name": "Intel(R) UHD Graphics",
+        "approx": false,
+        "note": "switch",
+        "shown": true
+      }
+    },
+    {
+      "name": "\"Do not show again\" closes the note and is remembered by the browser",
+      "pass": true
+    },
+    {
+      "name": "the next visit after \"Do not show again\": the choice holds (remembered: off), and asked as the laptop the hint is due but stays away",
+      "pass": true,
+      "value": {
+        "memory": "off",
+        "afterOff": {
+          "due": true,
+          "reason": "due",
+          "kind": "integrated",
+          "hint": "switch",
+          "name": "Intel(R) UHD Graphics",
+          "approx": false,
+          "note": "switch",
+          "shown": false
+        }
+      }
+    },
+    {
+      "name": "a new visit of a browser that only holds the v0.12 mark (\"shown once\"): asked as the laptop, the switch note comes again (every visit while due), not the fall-back note",
+      "pass": true,
+      "value": {
+        "nextVisit": {
+          "due": true,
+          "reason": "due",
+          "kind": "integrated",
+          "hint": "switch",
+          "name": "Intel(R) UHD Graphics",
+          "approx": false,
+          "note": "switch",
+          "shown": false
+        },
+        "ownHint": true
+      }
+    },
+    {
+      "name": "asked as a browser that draws on the processor (no WebGPU adapter, WebGL on SwiftShader): the software note comes: why, the browser's own switch as text, Device Manager, nothing about a switch's cost, \"Got it\" and \"Do not show again\"",
+      "pass": true,
+      "value": {
+        "soft": {
+          "due": false,
+          "reason": "no-webgpu",
+          "kind": "software",
+          "hint": "software",
+          "name": "SwiftShader",
+          "approx": false,
+          "note": "software",
+          "shown": true
+        },
+        "softNote": {
+          "text": "The browser is drawing this page in software (SwiftShader): on the processor, not on a graphics card, so everything here runs very slowly. This usually has one of two causes:Graphics acceleration may be switched off in the browser. Open this address in a new tab, switch graphics (hardware) acceleration on, and restart the browser: chrome://settings/system Copy the addressThe graphics driver may be disabled or missing, so the browser has no graphics card to draw on.In Windows open Device Manager, Display adapters: every adapter must be enabled and have a driver installed. On a laptop a disabled integrated chip (Intel) can leave the browser with no graphics card at all, even when there is an NVIDIA card: enable the Intel adapter again.Got itDo not show again",
+          "kind": "software",
+          "address": "chrome://settings/system",
+          "link": null,
+          "cost": null,
+          "buttons": [
+            "gpu-hint-copy",
+            "gpu-hint-ok",
+            "gpu-hint-never"
+          ]
+        }
+      }
+    },
+    {
+      "name": "\"Do not show again\" on the software note is a choice of its own: on the next visit that note stays away, the switch note still comes, and the switch note's memory is untouched",
+      "pass": true,
+      "value": {
+        "softAgain": {
+          "due": false,
+          "reason": "no-webgpu",
+          "kind": "software",
+          "hint": "software",
+          "name": "SwiftShader",
+          "approx": false,
+          "note": "software",
+          "shown": false
+        },
+        "switchStill": {
+          "due": true,
+          "reason": "due",
+          "kind": "integrated",
+          "hint": "switch",
+          "name": "Intel(R) UHD Graphics",
+          "approx": false,
+          "note": "switch",
+          "shown": true
+        }
+      }
+    },
+    {
+      "name": "controls in the page: the Intel adapter as an Arc card (Chrome's word gen-12hp), on macOS, with no WebGPU, and the laptop after the switch (NVIDIA): no note",
+      "pass": true,
+      "value": {
+        "arc": {
+          "due": false,
+          "reason": "intel-discrete",
+          "kind": "other",
+          "hint": null,
+          "name": "Intel(R) Arc(TM) A770 Graphics",
+          "approx": false,
+          "note": null,
+          "shown": false
+        },
+        "mac": {
+          "due": false,
+          "reason": "not-windows",
+          "kind": "integrated",
+          "hint": null,
+          "name": "Intel(R) UHD Graphics",
+          "approx": false,
+          "note": null,
+          "shown": false
+        },
+        "noGpu": {
+          "due": false,
+          "reason": "no-webgpu",
+          "kind": "integrated",
+          "hint": null,
+          "name": "Intel(R) UHD Graphics",
+          "approx": false,
+          "note": null,
+          "shown": false
+        },
+        "nvidia": {
+          "due": false,
+          "reason": "not-intel",
+          "kind": "other",
+          "hint": null,
+          "name": "NVIDIA GeForce RTX 3070 Laptop GPU",
+          "approx": false,
+          "note": null,
+          "shown": false
+        }
+      }
+    },
+    {
+      "name": "asking \"as another computer\" (here: as the laptop after its switch, NVIDIA) never writes this browser's memory: only the page's own reading does",
+      "pass": true,
+      "value": {
+        "before": null,
+        "after": null
+      }
+    },
+    {
+      "name": "the pause menu has the line that stays, naming this computer's adapter (\"Graphics: Intel(R) UHD Graphics\"), with the warning and its button exactly when a hint is due here",
+      "pass": true,
+      "value": {
+        "text": "Graphics: Intel(R) UHD Graphics (integrated)",
+        "kind": "integrated",
+        "note": "switch",
+        "warn": "A faster graphics card may be sitting unused.",
+        "how": true
+      }
+    },
+    {
+      "name": "in the pause menu the button opens the same note in place (the address, the Windows link)",
+      "pass": true,
+      "value": {
+        "text": "The browser is drawing this page on the integrated graphics chip (Intel(R) UHD Graphics). If this computer also has an NVIDIA or AMD graphics card, the browser is not using it: on Windows the browser, not the page, picks the card, and it ignores the page's request for the faster one. To switch:Fastest, in the browser: open this address in a new tab, choose Enabled, then press Relaunch: chrome://flags/#force-high-performance-gpu Copy the addressIn Windows: open the graphics settings (Settings, System, Display, Graphics), add this browser to the list if it is not there, choose High performance for it, then close the browser completely and start it again. If nothing changes, restart the computer. Open Windows graphics settingsThe faster card uses more power: on battery the laptop runs for a shorter time and gets warmer. To undo, choose Disabled again in the browser, or in Windows the option that lets Windows decide.Got itDo not show again",
+        "kind": null,
+        "address": "chrome://flags/#force-high-performance-gpu",
+        "link": "ms-settings:display-advancedgraphics",
+        "cost": "The faster card uses more power: on battery the laptop runs for a shorter time and gets warmer. To undo, choose Disabled again in the browser, or in Windows the option that lets Windows decide.",
+        "buttons": [
+          "gpu-hint-copy",
+          "gpu-hint-ok",
+          "gpu-hint-never"
+        ]
+      }
+    },
+    {
+      "name": "\"Got it\" pressed with the keyboard closes the note in place and gives the focus back to the button that opened it",
+      "pass": true,
+      "value": {
+        "at": "gpu-line-how",
+        "note": false,
+        "expanded": "false"
+      }
+    },
+    {
+      "name": "the start screen (the scan picker) has the same line under its title and in the title's column (not at the window's edge), naming this computer's adapter, with the button exactly when a hint is due here",
+      "pass": true,
+      "value": {
+        "text": "Graphics: Intel(R) UHD Graphics (integrated)",
+        "kind": "integrated",
+        "note": "switch",
+        "afterTitle": true,
+        "how": true,
+        "left": 90,
+        "titleLeft": 90,
+        "pageLeft": 0
+      }
+    },
+    {
+      "name": "on the start screen the button opens the note in place (the address, the Windows link)",
+      "pass": true,
+      "value": {
+        "text": "The browser is drawing this page on the integrated graphics chip (Intel(R) UHD Graphics). If this computer also has an NVIDIA or AMD graphics card, the browser is not using it: on Windows the browser, not the page, picks the card, and it ignores the page's request for the faster one. To switch:Fastest, in the browser: open this address in a new tab, choose Enabled, then press Relaunch: chrome://flags/#force-high-performance-gpu Copy the addressIn Windows: open the graphics settings (Settings, System, Display, Graphics), add this browser to the list if it is not there, choose High performance for it, then close the browser completely and start it again. If nothing changes, restart the computer. Open Windows graphics settingsThe faster card uses more power: on battery the laptop runs for a shorter time and gets warmer. To undo, choose Disabled again in the browser, or in Windows the option that lets Windows decide.Got itDo not show again",
+        "kind": null,
+        "address": "chrome://flags/#force-high-performance-gpu",
+        "link": "ms-settings:display-advancedgraphics",
+        "cost": "The faster card uses more power: on battery the laptop runs for a shorter time and gets warmer. To undo, choose Disabled again in the browser, or in Windows the option that lets Windows decide.",
+        "buttons": [
+          "gpu-hint-copy",
+          "gpu-hint-ok",
+          "gpu-hint-never"
+        ]
+      }
+    },
+    {
+      "name": "in Fly by Sound on this computer: the note came by itself exactly when a hint is due here",
+      "pass": true
+    },
+    {
+      "name": "in Fly by Sound this computer's own note is said in full the first time (and remembered), and as the short reminder on the next visit, which names \"Do not show again\"",
+      "pass": true,
+      "value": {
+        "first": {
+          "long": 1,
+          "short": 0,
+          "said": "switch"
+        },
+        "second": {
+          "long": 0,
+          "short": 1,
+          "text": "Reminder: the browser is still drawing this page on the integrated graphics chip. The note on the screen says how to switch, and its button Do not show again stops this reminder."
+        }
+      }
+    },
+    {
+      "name": "in Fly by Sound the note comes and the engine says the short line (a speech event of the mode with the Windows way, and its caption)",
+      "pass": true,
+      "value": {
+        "said": [
+          "The browser is drawing this page on the integrated graphics chip. If this computer also has an NVIDIA or AMD graphics card, ask your helper to switch the browser to it: in Windows Settings, System, Display, Graphics, choose the browser, then High performance, and restart the browser."
+        ],
+        "captions": 6
+      }
+    },
+    {
+      "name": "in Fly by Sound the software note has its own spoken line (the processor draws; graphics acceleration and Device Manager)",
+      "pass": true,
+      "value": {
+        "said": [
+          "The browser is drawing this page on the processor, not on a graphics card, so everything runs very slowly. Ask your helper to switch graphics acceleration on in the browser's settings and to check that the graphics adapter is enabled and has a driver; in Windows that is Device Manager, Display adapters."
+        ]
+      }
+    },
+    {
+      "name": "no console error in the page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "pass": true
+}

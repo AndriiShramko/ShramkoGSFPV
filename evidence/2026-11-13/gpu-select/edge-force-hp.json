@@ -229,9 +229,7 @@
         "memory": "N/A"
       }
     ],
-    "otherRows": [
-      "DJI Studio.exe"
-    ]
+    "otherPrograms": 1
   },
   "gpuPage": {
     "file": "edge-force-hp-gpu-page.txt",

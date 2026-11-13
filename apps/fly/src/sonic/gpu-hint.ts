@@ -9,11 +9,17 @@
 //
 // Since lane gpu-select the note is no longer "once per browser". While the page draws on an integrated chip it comes on every
 // visit, until the pilot presses "Do not show again"; and when the page later runs on a faster card that choice is forgotten, so a
-// browser that falls back to the integrated chip (an update of the browser or of Windows can reset the switch) is told again,
-// and told that it was on the faster card before.
+// browser that falls back to the integrated chip is told again, and told that it was on the faster card before. The software
+// note has its own "Do not show again" (a computer with no graphics driver cannot act on it), which ends when the page is seen
+// on real graphics again. In Fly by Sound the long spoken line is said once per browser for each note; on later visits the
+// engine says a short reminder that names the button which stops it.
 
 /** The key of what the browser remembers about the hint (a per-browser fact, never a setting): GpuHintMemory. */
 export const GPU_HINT_KEY = 'gsfpv.hint.gpu';
+/** "Do not show again" said on the software note ('off'): a matter of its own, kept apart from the switch note's choice. */
+export const GPU_HINT_SOFT_KEY = 'gsfpv.hint.gpu.soft';
+/** The note whose long line this browser has already heard in Fly by Sound (a GpuNote), so that later visits get the short one. */
+export const GPU_HINT_SAID_KEY = 'gsfpv.hint.gpu.said';
 
 /**
  * What the browser remembers under GPU_HINT_KEY:
@@ -28,7 +34,9 @@ export const FLAG_FRAGMENT = 'force-high-performance-gpu';
 
 /**
  * Windows' own page for the per-application graphics choice (Settings, System, Display, Graphics). A page may link to it:
- * the browser asks the pilot before it opens Settings (measured in Chrome 140 and Edge 157, docs/wip/gpu-select.md).
+ * the browser asks the pilot before it opens Settings. Edge 157's question was read ("This site is trying to open Settings",
+ * Open or Cancel: evidence/2026-11-13/gpu-select/edge-link.json); Chrome 140's question is not exposed to the tool that read
+ * Edge's, so for Chrome this rests on how Chromium treats links to other programs, not on a reading (docs/wip/gpu-select.md).
  */
 export const WINDOWS_GRAPHICS_SETTINGS = 'ms-settings:display-advancedgraphics';
 
@@ -82,6 +90,8 @@ export interface GpuHintParts {
     readonly fixWindowsMore: string | null;
     /** the address of Windows' graphics page for a link (the switch notes on Windows), or null */
     readonly settingsUrl: string | null;
+    /** what the switch costs and how to undo it (the switch notes), or null */
+    readonly cost: string | null;
 }
 
 export interface GpuHintPartsOptions {
@@ -105,10 +115,20 @@ export function gpuHintParts(userAgent: string, t: (key: string) => string, o: G
     const windows = o.windows ?? true;
     if (note === 'software') {
         const address = accelerationAddress(userAgent);
-        return { note, text: withName(t('gpuhint.softText'), name), fixFlag: address ? t('gpuhint.softFixBrowser') : null, address, fixWindows: t('gpuhint.softFixDriver'), fixWindowsMore: windows ? t('gpuhint.softFixDriverWindows') : null, settingsUrl: null };
+        return { note, text: withName(t('gpuhint.softText'), name), fixFlag: address ? t('gpuhint.softFixBrowser') : null, address, fixWindows: t('gpuhint.softFixDriver'), fixWindowsMore: windows ? t('gpuhint.softFixDriverWindows') : null, settingsUrl: null, cost: null };
     }
     const address = flagsAddress(userAgent);
-    return { note, text: withName(t(note === 'back' ? 'gpuhint.textBack' : 'gpuhint.text'), name), fixFlag: address ? t('gpuhint.fixFlag').split('{button}').join(relaunchWord(userAgent)) : null, address, fixWindows: t('gpuhint.fixWindows'), fixWindowsMore: null, settingsUrl: windows ? WINDOWS_GRAPHICS_SETTINGS : null };
+    return { note, text: withName(t(note === 'back' ? 'gpuhint.textBack' : 'gpuhint.text'), name), fixFlag: address ? t('gpuhint.fixFlag').split('{button}').join(relaunchWord(userAgent)) : null, address, fixWindows: t('gpuhint.fixWindows'), fixWindowsMore: null, settingsUrl: windows ? WINDOWS_GRAPHICS_SETTINGS : null, cost: t('gpuhint.cost') };
+}
+
+/**
+ * The line the engine says in Fly by Sound for a note: the long one the first time this browser hears it for that note, a
+ * short reminder (which names the button that stops it) on later visits. `said` is what gpuHintSaid remembers.
+ */
+export function spokenLineKey(note: GpuNote, said: GpuNote | null): string {
+    const again = said === note;
+    if (note === 'software') return again ? 'sonic.say.gpuSoftwareAgain' : 'sonic.say.gpuSoftware';
+    return again ? 'sonic.say.gpuHintAgain' : 'sonic.say.gpuHint';
 }
 
 type KeyStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -145,19 +165,71 @@ export function markGpuHintSeen(store: KeyStore | null = defaultStore()): void {
     }
 }
 
-/** Remember that this browser drew the page on a faster card (which also ends "Do not show again": a later fall back is said). */
+/**
+ * Remember that this browser drew the page on a faster card. That ends "Do not show again" and the memory of what was said
+ * aloud: a later fall back is a new matter, shown and said in full.
+ */
 export function noteFastGraphics(store: KeyStore | null = defaultStore()): void {
     try {
         if (store?.getItem(GPU_HINT_KEY) !== 'fast') store?.setItem(GPU_HINT_KEY, 'fast');
+        store?.removeItem(GPU_HINT_SAID_KEY);
     } catch {
         /* blocked or full storage */
     }
 }
 
-/** Forget it (the test hook; a pilot never needs this). */
+/** Did the pilot say "Do not show again" on the software note? */
+export function gpuSoftHintOff(store: KeyStore | null = defaultStore()): boolean {
+    try {
+        return store?.getItem(GPU_HINT_SOFT_KEY) === 'off';
+    } catch {
+        return false;
+    }
+}
+
+/** Remember "Do not show again" for the software note. */
+export function markGpuSoftHintOff(store: KeyStore | null = defaultStore()): void {
+    try {
+        store?.setItem(GPU_HINT_SOFT_KEY, 'off');
+    } catch {
+        /* blocked or full storage: the note shows again next time */
+    }
+}
+
+/** The page was seen on real graphics: the software note's "Do not show again" ends (the processor drawing again is news). */
+export function noteHardwareGraphics(store: KeyStore | null = defaultStore()): void {
+    try {
+        if (store?.getItem(GPU_HINT_SOFT_KEY) !== null) store?.removeItem(GPU_HINT_SOFT_KEY);
+    } catch {
+        /* nothing stored */
+    }
+}
+
+/** The note whose long line this browser has heard in Fly by Sound, or null. */
+export function gpuHintSaid(store: KeyStore | null = defaultStore()): GpuNote | null {
+    try {
+        const v = store?.getItem(GPU_HINT_SAID_KEY);
+        return v === 'switch' || v === 'back' || v === 'software' ? v : null;
+    } catch {
+        return null;
+    }
+}
+
+/** Remember that the long line of this note was said. */
+export function markGpuHintSaid(note: GpuNote, store: KeyStore | null = defaultStore()): void {
+    try {
+        store?.setItem(GPU_HINT_SAID_KEY, note);
+    } catch {
+        /* blocked or full storage: the long line is said again next time */
+    }
+}
+
+/** Forget it all (the test hook; a pilot never needs this). */
 export function forgetGpuHint(store: KeyStore | null = defaultStore()): void {
     try {
         store?.removeItem(GPU_HINT_KEY);
+        store?.removeItem(GPU_HINT_SOFT_KEY);
+        store?.removeItem(GPU_HINT_SAID_KEY);
     } catch {
         /* nothing stored */
     }
@@ -177,23 +249,27 @@ export interface GpuHintPlan {
     show: boolean;
     /** the page runs on a faster card: remember it ('fast'), which also ends "Do not show again" */
     rememberFast: boolean;
+    /** the page runs on real graphics (a card, or an integrated chip): the software note's "Do not show again" ends */
+    hardware: boolean;
 }
 
 /**
  * What the page does with a reading: which note it calls for, whether it comes by itself, what to remember.
  *   - The switch note comes on every visit (once per page load, never over a paused flight) until "Do not show again".
  *   - After the browser was on a faster card ('fast'), the same reading is a fall back and the note says so ('back').
- *   - The software note comes once per visit whatever was remembered: "Do not show again" was said about another matter.
+ *   - The software note comes once per visit until ITS "Do not show again" (`softOff`): the switch note's choice was made
+ *     about another matter and does not silence it.
  *   - On a faster card (the rule's 'not-intel' or 'intel-discrete' on a graphics kind that is neither software nor
- *     integrated) nothing is shown and 'fast' is remembered.
+ *     integrated) nothing is shown and 'fast' is remembered. A reading nothing is known about ('unknown-adapter') is not
+ *     a faster card: nothing is remembered.
  * `force`: the test hook's way to see the note whatever was shown or remembered.
  */
-export function planGpuHint(reading: GpuHintAsk, memory: GpuHintMemory, o: { shownThisVisit: boolean; paused: boolean; force?: boolean }): GpuHintPlan {
+export function planGpuHint(reading: GpuHintAsk, memory: GpuHintMemory, o: { shownThisVisit: boolean; paused: boolean; force?: boolean; softOff?: boolean }): GpuHintPlan {
     if (reading.hint === null) {
         const fast = reading.kind === 'other' && (reading.reason === 'not-intel' || reading.reason === 'intel-discrete');
-        return { note: null, show: false, rememberFast: fast };
+        return { note: null, show: false, rememberFast: fast, hardware: fast };
     }
     const free = !o.shownThisVisit && !o.paused;
-    if (reading.hint === 'software') return { note: 'software', show: o.force === true || free, rememberFast: false };
-    return { note: memory === 'fast' ? 'back' : 'switch', show: o.force === true || (free && memory !== 'off'), rememberFast: false };
+    if (reading.hint === 'software') return { note: 'software', show: o.force === true || (free && o.softOff !== true), rememberFast: false, hardware: false };
+    return { note: memory === 'fast' ? 'back' : 'switch', show: o.force === true || (free && memory !== 'off'), rememberFast: false, hardware: true };
 }

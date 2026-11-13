@@ -10,16 +10,18 @@
 //   - When the page later runs on a faster card the choice "Do not show again" is forgotten and that fact is remembered, so a
 //     browser that falls back is told again, and told that it was on the faster card before.
 //   - The software case: a browser that draws on the processor (no WebGPU adapter; WebGL names SwiftShader or Microsoft Basic
-//     Render Driver) gets its own note: why this usually happens and how to fix it. No switch helps there.
+//     Render Driver) gets its own note: why this usually happens and how to fix it. No switch helps there. It has its own
+//     "Do not show again", which ends when the page is seen on real graphics again.
 // The rule is render-pc's gpuSwitchHintDue; the words are the dictionary's (locales/fly/gpuhint); the pieces that need no page
-// (words, addresses, the browser's memory, the plan) are sonic/gpu-hint.ts. In Fly by Sound the engine says a short version aloud:
-// a helper at the keyboard hears what the computer draws on and what to do (the note stays for whoever can see it). It changes
-// nothing in the flight: the page cannot pick the GPU, only say how to.
+// (words, addresses, the browser's memory, the plan) are sonic/gpu-hint.ts. In Fly by Sound the engine says it aloud: a helper
+// at the keyboard hears what the computer draws on and what to do, in full the first time this browser has it to say and as
+// a short reminder on later visits (the note stays for whoever can see it). It changes nothing in the flight: the page
+// cannot pick the GPU, only say how to.
 import { gpuSwitchHintDue, isWindows } from '@gsfpv/render-pc';
 import type { GpuHintReading, GpuHintSignals, GpuInfo, SplatRenderer } from '@gsfpv/render-pc';
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
-import { forgetGpuHint, gpuHintMemory, gpuHintParts, gpuHintSeen, markGpuHintSeen, noteFastGraphics, planGpuHint } from '../../sonic/gpu-hint';
+import { forgetGpuHint, gpuHintMemory, gpuHintParts, gpuHintSaid, gpuHintSeen, gpuSoftHintOff, markGpuHintSaid, markGpuHintSeen, markGpuSoftHintOff, noteFastGraphics, noteHardwareGraphics, planGpuHint, spokenLineKey } from '../../sonic/gpu-hint';
 import type { GpuHintMemory, GpuHintParts, GpuNote } from '../../sonic/gpu-hint';
 import { deviceSignals } from '../drawing';
 import { PauseMenu } from '../menu';
@@ -39,13 +41,15 @@ declare module '../test-hook' {
          * The GPU hint, for the acceptance runs: `check` reads the rule as the page would, with `over` laid over what this device says
          * (a test on an NVIDIA PC asks as an Intel laptop would), and shows the note when the plan says so (`force`: whatever was shown or
          * remembered); `seen`: the pilot said "Do not show again"; `memory`: what the browser remembers ('off', 'fast' or null);
-         * `reset` forgets it, takes the note off and makes this visit new again; `open` says whether the note is up.
+         * `reset` forgets everything, takes the note off and makes this visit new again; `again` does the same but keeps what
+         * the browser remembers (the next visit, without a reload); `open` says whether the note is up.
          */
         gpuHint?: {
             check(over?: Partial<GpuHintSignals>, o?: { force?: boolean }): GpuHintResult;
             seen(): boolean;
             memory(): GpuHintMemory;
             reset(): void;
+            again(): void;
             open(): boolean;
         };
     }
@@ -67,7 +71,9 @@ export function glRenderer(): string {
         const gl = (c.getContext('webgl2') ?? c.getContext('webgl')) as WebGLRenderingContext | null;
         if (gl) {
             const ext = gl.getExtension('WEBGL_debug_renderer_info');
-            glName = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? '');
+            const name = String(gl.getParameter(ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER) ?? '').trim();
+            // a browser that hides the graphics answers with its own name ("Mozilla", "WebKit WebGL"): that is not a name of graphics
+            glName = /^(mozilla|webkit webgl|webkit|generic renderer)$/i.test(name) ? '' : name;
             gl.getExtension('WEBGL_lose_context')?.loseContext();
         }
     } catch {
@@ -92,28 +98,33 @@ export function graphicsReading(renderer: SplatRenderer, over: Partial<GpuHintSi
 }
 
 /** The bug report's lines about the graphics: the adapter's name, its kind, whether a hint was due and what the browser remembers. */
-export function graphicsReport(renderer: SplatRenderer): { name: string; kind: string; hint: string | null; due: boolean; reason: string; memory: GpuHintMemory; webgl: string } {
+export function graphicsReport(renderer: SplatRenderer): { name: string; approx: boolean; kind: string; hint: string | null; due: boolean; reason: string; memory: GpuHintMemory; webgl: string } {
     const r = graphicsReading(renderer);
-    return { name: r.name, kind: r.kind, hint: r.hint, due: r.due, reason: r.reason, memory: gpuHintMemory(), webgl: glRenderer() };
+    return { name: r.name, approx: r.approx, kind: r.kind, hint: r.hint, due: r.due, reason: r.reason, memory: gpuHintMemory(), webgl: glRenderer() };
+}
+
+/** The adapter's name as the page shows it: a family name the browser rounded is said to be one ("... or similar"). */
+function shownName(r: Pick<GpuHintReading, 'name' | 'approx'>): string {
+    return r.name && r.approx ? t('gpuhint.nameSimilar', { name: r.name }) : r.name;
 }
 
 /** "Graphics: Intel(R) UHD Graphics (integrated)": the line that stays. */
-export function graphicsLineText(r: Pick<GpuHintReading, 'kind' | 'name'>): string {
-    const name = r.name || t('gpuhint.unnamed');
+export function graphicsLineText(r: Pick<GpuHintReading, 'kind' | 'name' | 'approx'>): string {
+    const name = shownName(r) || t('gpuhint.unnamed');
     return t(r.kind === 'integrated' ? 'gpuhint.line.integrated' : r.kind === 'software' ? 'gpuhint.line.software' : 'gpuhint.line', { name });
 }
 
 /** The words of a note for this reading (the pilot's own browser decides the addresses). */
 function partsFor(note: GpuNote, r: GpuHintReading, s: Pick<GpuHintSignals, 'userAgent' | 'platform'>): GpuHintParts {
-    return gpuHintParts(navigator.userAgent, (k) => t(k), { note, name: r.name, windows: isWindows(s.userAgent, s.platform) });
+    return gpuHintParts(navigator.userAgent, (k) => t(k), { note, name: shownName(r), windows: isWindows(s.userAgent, s.platform) });
 }
 
 /**
- * The body of a note: the lead, the browser's way with its address and a copy button, Windows' way with its link, then
- * "Got it" and (for the switch notes) "Do not show again". `close` takes the note away; `never` is called first when the
- * pilot does not want it again.
+ * The body of a note: the lead, the browser's way with its address and a copy button, Windows' way with its link, what the
+ * switch costs and how to undo it, then "Got it" and "Do not show again". `close` takes the note away; `never` is called
+ * first when the pilot does not want it again.
  */
-function noteBody(parts: GpuHintParts, close: () => void, never: (() => void) | null): HTMLElement[] {
+function noteBody(parts: GpuHintParts, close: () => void, never: () => void): HTMLElement[] {
     const status = h('div', { class: 'gh-status', role: 'status', 'aria-live': 'polite', 'data-testid': 'gpu-hint-status' });
     const body = h('div', { class: 'gh-body' }, h('p', {}, parts.text));
     if (parts.fixFlag && parts.address) {
@@ -152,27 +163,29 @@ function noteBody(parts: GpuHintParts, close: () => void, never: (() => void) | 
     if (parts.settingsUrl) windows.append(' ', h('a', { class: 'btn sn-btn', href: parts.settingsUrl, 'data-action': 'gpu-hint-settings', 'data-testid': 'gpu-hint-settings' }, t('gpuhint.openSettings')));
     body.append(windows);
     if (parts.fixWindowsMore) body.append(h('p', {}, parts.fixWindowsMore));
+    if (parts.cost) body.append(h('p', { class: 'gh-cost', 'data-testid': 'gpu-hint-cost' }, parts.cost));
     body.append(status);
-    const out: HTMLElement[] = [body, h('button', { type: 'button', class: 'btn sn-btn', 'data-action': 'gpu-hint-ok', onclick: close }, t('gpuhint.ok'))];
-    if (never) {
-        out.push(
-            h(
-                'button',
-                {
-                    type: 'button',
-                    class: 'btn sn-btn',
-                    'data-action': 'gpu-hint-never',
-                    onclick: () => {
-                        never();
-                        close();
-                    }
-                },
-                t('gpuhint.never')
-            )
-        );
-    }
-    return out;
+    return [
+        body,
+        h('button', { type: 'button', class: 'btn sn-btn', 'data-action': 'gpu-hint-ok', onclick: close }, t('gpuhint.ok')),
+        h(
+            'button',
+            {
+                type: 'button',
+                class: 'btn sn-btn',
+                'data-action': 'gpu-hint-never',
+                onclick: () => {
+                    never();
+                    close();
+                }
+            },
+            t('gpuhint.never')
+        )
+    ];
 }
+
+/** "Do not show again" for a note: the software note keeps its own choice, apart from the switch notes'. */
+const neverFor = (note: GpuNote): (() => void) => (note === 'software' ? () => markGpuSoftHintOff() : () => markGpuHintSeen());
 
 /**
  * The line that stays, with its warning and the button that opens the note in place (the start screen, the pause menu).
@@ -180,21 +193,26 @@ function noteBody(parts: GpuHintParts, close: () => void, never: (() => void) | 
  */
 export function graphicsBlock(r: GpuHintReading, note: GpuNote | null, s: Pick<GpuHintSignals, 'userAgent' | 'platform'>, where: 'start' | 'menu'): HTMLElement | null {
     if (!r.name && !note) return null;
-    const el = h('div', { class: `gpu-line gpu-line-${where}${note ? ' warn' : ''}`, 'data-testid': 'gpu-line', 'data-kind': r.kind, 'data-note': note ?? '' }, h('span', { class: 'gl-text', 'data-testid': 'gpu-line-text' }, graphicsLineText(r)));
+    const el = h('div', { class: `gpu-line gpu-line-${where}${note ? ' gl-due' : ''}`, 'data-testid': 'gpu-line', 'data-kind': r.kind, 'data-note': note ?? '' }, h('span', { class: 'gl-text', 'data-testid': 'gpu-line-text' }, graphicsLineText(r)));
     if (!note) return el;
     el.append(h('span', { class: 'gl-warn', 'data-testid': 'gpu-line-warn' }, t(`gpuhint.warn.${note}`)));
     let more: HTMLElement | null = null;
     const how = h('button', { type: 'button', class: 'btn gl-how', 'data-action': 'gpu-line-how', 'aria-expanded': 'false' }, t(note === 'software' ? 'gpuhint.howFix' : 'gpuhint.how'));
     const close = (): void => {
+        // the keyboard focus was on a button of the note: it goes back to the button that opened it, not to nowhere
+        const held = more?.contains(document.activeElement) ?? false;
         more?.remove();
         more = null;
         how.setAttribute('aria-expanded', 'false');
+        if (held) how.focus({ preventScroll: true });
     };
     how.addEventListener('click', () => {
         if (more) return close();
-        more = h('div', { class: 'gl-more gpu-hint interactive', role: 'note', 'data-testid': 'gpu-line-note' }, ...noteBody(partsFor(note, r, s), close, note === 'software' ? null : markGpuHintSeen));
+        more = h('div', { class: 'gl-more gpu-hint interactive', role: 'note', 'data-testid': 'gpu-line-note' }, ...noteBody(partsFor(note, r, s), close, neverFor(note)));
         el.append(more);
         how.setAttribute('aria-expanded', 'true');
+        // read here on purpose: the same note does not also come by itself over the flight of this visit
+        shownThisVisit = true;
     });
     el.append(how);
     return el;
@@ -238,16 +256,25 @@ function readAtStart(): Promise<{ reading: GpuHintReading; signals: GpuHintSigna
  * warning and the way out when a hint is due. It also keeps the browser's memory: on a faster card "Do not show again" ends.
  */
 export function graphicsOnStart(root: HTMLElement): void {
+    // the line's place is kept from the first paint (the adapter is asked for asynchronously), so the picker under it does
+    // not jump when the line comes
+    const slot = h('div', { class: 'gpu-line gpu-line-start', 'aria-hidden': 'true' });
+    const title = root.querySelector('h1');
+    if (title) title.after(slot);
+    else root.prepend(slot);
     void readAtStart().then(({ reading, signals }) => {
         if (!root.isConnected) return;
         const plan = planGpuHint(reading, gpuHintMemory(), { shownThisVisit: true, paused: false });
-        if (plan.rememberFast) noteFastGraphics();
+        remember(plan);
         const el = graphicsBlock(reading, plan.note, signals, 'start');
-        if (!el) return;
-        const title = root.querySelector('h1');
-        if (title) title.after(el);
-        else root.prepend(el);
+        if (el) slot.replaceWith(el);
     });
+}
+
+/** What a reading of this computer's own graphics leaves in the browser's memory (never a reading asked "as another computer"). */
+function remember(plan: { rememberFast: boolean; hardware: boolean }): void {
+    if (plan.rememberFast) noteFastGraphics();
+    if (plan.hardware) noteHardwareGraphics();
 }
 
 export const gpuHint: Feature = {
@@ -257,32 +284,44 @@ export const gpuHint: Feature = {
         let noteOff: (() => void) | null = null;
         const isOpen = (): boolean => noteEl !== null && noteEl.isConnected;
         const takeOff = (): void => {
+            const held = noteEl?.contains(document.activeElement) ?? false;
             noteOff?.();
             noteOff = null;
             noteEl = null;
+            // the note went with the keyboard focus on one of its buttons: in Fly by Sound the focus goes back to the flight
+            // (the region a screen reader passes the keys through); the plain simulator's keys work from anywhere
+            if (held) document.querySelector<HTMLElement>('[data-testid="sonic-flight"]')?.focus({ preventScroll: true });
         };
 
-        /** The note over the flight, and (in Fly by Sound) the line a helper hears. */
-        const show = (note: GpuNote, r: GpuHintReading, s: GpuHintSignals): boolean => {
+        /**
+         * The note over the flight, and (in Fly by Sound) the line a helper hears. `own`: the reading is this computer's own,
+         * so what was said is remembered (a reading asked "as another computer" writes nothing).
+         */
+        const show = (note: GpuNote, r: GpuHintReading, s: GpuHintSignals, own: boolean): boolean => {
             if (isOpen()) return false;
             takeOff();
-            const el = h('div', { class: 'gpu-hint interactive', role: 'note', 'data-testid': 'gpu-hint', 'data-note': note }, ...noteBody(partsFor(note, r, s), takeOff, note === 'software' ? null : markGpuHintSeen));
+            const el = h('div', { class: 'gpu-hint interactive', role: 'note', 'data-testid': 'gpu-hint', 'data-note': note }, ...noteBody(partsFor(note, r, s), takeOff, neverFor(note)));
             noteEl = el;
             noteOff = addSceneNote(ctx.ui, el, GPU_NOTE_MS);
             shownThisVisit = true;
-            // Fly by Sound: a helper at the keyboard hears it (queued behind the lesson's own lines, the engine's one voice)
+            // Fly by Sound: a helper at the keyboard hears it (queued behind the lesson's own lines, the engine's one voice):
+            // the long line the first time this browser has this note to say, the short reminder on later visits
             const sonic = ctx.sonic;
-            if (sonic) void sonic.engine.say({ key: note === 'software' ? 'sonic.say.gpuSoftware' : 'sonic.say.gpuHint' }, { interrupt: false }).catch(() => undefined);
+            if (sonic) {
+                const key = spokenLineKey(note, gpuHintSaid());
+                if (own) markGpuHintSaid(note);
+                void sonic.engine.say({ key }, { interrupt: false }).catch(() => undefined);
+            }
             return true;
         };
 
         const check = (over?: Partial<GpuHintSignals>, o: { force?: boolean } = {}): GpuHintResult => {
             const s = graphicsSignals(ctx.renderer.isWebGPU, ctx.renderer.gpuInfo, over);
             const reading = gpuSwitchHintDue(s);
-            const plan = planGpuHint(reading, gpuHintMemory(), { shownThisVisit, paused: ctx.session.paused, force: o.force });
+            const plan = planGpuHint(reading, gpuHintMemory(), { shownThisVisit, paused: ctx.session.paused, force: o.force, softOff: gpuSoftHintOff() });
             // the page's own reading only: a test that asks "as an NVIDIA PC would" must not write this browser's memory
-            if (plan.rememberFast && !over) noteFastGraphics();
-            return { ...reading, note: plan.note, shown: plan.show && plan.note !== null ? show(plan.note, reading, s) : false };
+            if (!over) remember(plan);
+            return { ...reading, note: plan.note, shown: plan.show && plan.note !== null ? show(plan.note, reading, s, !over) : false };
         };
 
         // when the flight runs: after a screen or a picker closes, and once the page has settled for a flight that never pauses
@@ -307,6 +346,10 @@ export const gpuHint: Feature = {
             memory: () => gpuHintMemory(),
             reset: () => {
                 forgetGpuHint();
+                takeOff();
+                shownThisVisit = false;
+            },
+            again: () => {
                 takeOff();
                 shownThisVisit = false;
             },

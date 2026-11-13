@@ -79,15 +79,17 @@ interface GpuReport {
     name: string;
     kind: string;
     webgl: string;
-    /** was the GPU hint due (the rule's reason), which note it called for, and what this browser remembers about it */
-    hint: { due: boolean; reason: string; note: string | null; memory: string | null };
+    /** the name is a family the browser rounded the model to (Firefox's ", or similar") */
+    approx: boolean;
+    /** was the GPU hint due (the rule's reason), what the reading calls for ('switch', 'software' or nothing), and what this browser remembers about it */
+    hint: { due: boolean; reason: string; says: string | null; memory: string | null };
 }
 
 async function gpu(renderer: SplatRenderer): Promise<GpuReport> {
     const api = renderer.isWebGPU ? 'webgpu' : 'webgl2';
     // the renderer's own adapter (builtin/gpu-hint.ts): the one that draws, not a second request's answer
     const g = graphicsReport(renderer);
-    const more = { name: g.name, kind: g.kind, webgl: g.webgl, hint: { due: g.due, reason: g.reason, note: g.hint, memory: g.memory } };
+    const more = { name: g.name, kind: g.kind, webgl: g.webgl, approx: g.approx, hint: { due: g.due, reason: g.reason, says: g.hint, memory: g.memory } };
     try {
         const nav = navigator as Navigator & { gpu?: { requestAdapter(): Promise<{ info?: GpuInfo } | null> } };
         const a = await nav.gpu?.requestAdapter();

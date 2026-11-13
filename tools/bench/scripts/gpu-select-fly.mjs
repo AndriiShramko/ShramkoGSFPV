@@ -12,8 +12,8 @@
 //   still   STILL seconds at rest: frame intervals (p50, p95, p99, longest), frames held, and Windows' GPU
 //           counters of the browser's GPU process per adapter at the same time.
 //   turn    the camera turns on the spot (the session's cameraOverride, as probe-v08-flight.ts): slow 360,
-//           fast 720 at 360 degrees/s, a snap of 180, back, a snap of 90; per phase the frame intervals, files asked
-//           for, and how long the nodes in view stay coarser than wanted.
+//           fast 720 at 360 degrees/s, a snap of 180, back, a snap of 90; per phase the frame intervals, the scan files
+//           fetched, the most files the engine still wanted, and how many nodes in view stay coarser than wanted.
 // Reads engine internals (gsplatDirector -> ... -> _octreeInstances[].nodeInfos, read-only, as probe-v08-lod.ts).
 // Takes the benches' GPU lock (C:/dev/.gpu-lock). Never changes a Windows setting.
 //
@@ -22,6 +22,7 @@
 // Options: --browser chrome|edge|<path>, --site <origin>, --still <s> (20), --no-turn, --load-timeout <s> (300),
 // --window (a 1296x920 window instead of a maximized one), --arg=<switch>.
 // Output: evidence/<date>/gpu-select/<label>.json (summaries; the per-frame trace is reduced to per-second rows).
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, rmdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,7 +33,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LOCK = 'C:/dev/.gpu-lock';
 
 export function parseArgs(argv) {
-    const o = { browser: 'chrome', variant: 'default', scene: '7a475d38', label: '', site: 'https://gsfpv.flyreelstudio.eu', query: '', still: 20, turn: true, loadTimeout: 300, maximized: true, extra: [], tune: {} };
+    const o = { browser: 'chrome', variant: 'default', scene: '7a475d38', label: '', site: 'https://gsfpv.flyreelstudio.eu', query: '', still: 20, turn: true, loadTimeout: 300, maximized: true, extra: [], tune: {}, cool: 0, soak: 0 };
     for (let i = 0; i < argv.length; i++) {
         const a = argv[i];
         if (a === '--browser') o.browser = argv[++i];
@@ -44,6 +45,10 @@ export function parseArgs(argv) {
         else if (a === '--still') o.still = Number(argv[++i]);
         else if (a === '--load-timeout') o.loadTimeout = Number(argv[++i]);
         else if (a === '--no-turn') o.turn = false;
+        // --cool <C>: wait until the NVIDIA card is at most that warm before the browser starts (a cold start);
+        // --soak <s>: keep the loaded scan drawing that long before the measured rest (the sustained, warmed-up state)
+        else if (a === '--cool') o.cool = Number(argv[++i]);
+        else if (a === '--soak') o.soak = Number(argv[++i]);
         else if (a === '--tune') {
             // an experiment on the engine's streaming, set in the page before the full detail is asked for:
             // underfill (lodUnderfillLimit), concurrent (the loader's parallel downloads), behind (lodBehindPenalty),
@@ -59,6 +64,30 @@ export function parseArgs(argv) {
     if (!VARIANTS[o.variant]) throw new Error(`unknown variant ${o.variant}`);
     if (!o.label) o.label = `fly-${o.scene}-${o.variant}`;
     return o;
+}
+
+/**
+ * The NVIDIA card's thermal state from nvidia-smi (null without the tool): temperature, power, the graphics clock, the
+ * power state and whether the driver says it is slowing the card down for heat. On the laptop of this lane the card
+ * reaches 81-82 C after two to three minutes of load and the driver then halves its clock ("SW thermal slowdown"),
+ * so a number without this beside it cannot be compared with another.
+ */
+export function nvidiaThermal() {
+    const r = spawnSync('nvidia-smi', ['--query-gpu=temperature.gpu,power.draw,clocks.gr,pstate,clocks_throttle_reasons.active,clocks_throttle_reasons.sw_thermal_slowdown,utilization.gpu', '--format=csv,noheader,nounits'], { encoding: 'utf8', timeout: 15000, windowsHide: true });
+    if (r.error || r.status !== 0) return null;
+    const [temp, power, clock, pstate, reasons, slow, util] = (r.stdout ?? '').trim().split(/\s*,\s*/);
+    return { tempC: Number(temp), powerW: Number(power), clockMHz: Number(clock), pstate: pstate ?? null, throttleReasons: reasons ?? null, thermalSlowdown: /^active/i.test(slow ?? ''), utilPct: Number(util) };
+}
+
+/** Waits until the NVIDIA card is at most `maxC` degrees (or `timeoutS` passed): a run that should start cold. */
+async function coolDown(maxC, timeoutS) {
+    const t0 = Date.now();
+    let at = nvidiaThermal();
+    while (at && at.tempC > maxC && Date.now() - t0 < timeoutS * 1000) {
+        await sleep(5000);
+        at = nvidiaThermal();
+    }
+    return { askedMaxC: maxC, waitedS: Math.round((Date.now() - t0) / 1000), at };
 }
 
 /** The benches' GPU lock (tools/bench/src/gpu-lock.ts): a directory made atomically, stale after 30 minutes. */
@@ -270,18 +299,24 @@ export function frameStats(rows) {
     return { frames: drawn.length, fps: r2(drawn.length / seconds), p50ms: r2(q(dts, 0.5)), p95ms: r2(q(dts, 0.95)), p99ms: r2(q(dts, 0.99)), maxMs: r2(dts[dts.length - 1]), over25ms: r2(dts.filter((x) => x > 25).length / dts.length), over50ms: r2(dts.filter((x) => x > 50).length / dts.length), ticks, tickFps: r2(ticks / seconds), held, heldShare: r2(held / ticks) };
 }
 
-/** One row per second of a trace: fps, the longest interval, files loading, governor step, render scale, splats drawn. */
+/**
+ * One row per second of a trace: frames DRAWN in it (as frameStats counts them: a tick whose "held" count did not rise),
+ * the engine's ticks, the longest interval between two ticks, files loading, governor step, render scale, splats drawn.
+ */
 export function perSecond(rows, t0) {
     const out = [];
     let cur = null;
+    let held = null;
     for (const x of rows) {
         const sec = Math.floor((x[0] - t0) / 1000);
         if (!cur || cur.s !== sec) {
             if (cur) out.push(cur);
-            cur = { s: sec, frames: 0, maxMs: 0, loading: 0, step: x[4], scale: x[5], drawn: x[6], phase: x[7] };
+            cur = { s: sec, frames: 0, ticks: 0, maxTickMs: 0, loading: 0, step: x[4], scale: x[5], drawn: x[6], phase: x[7] };
         }
-        cur.frames++;
-        cur.maxMs = Math.max(cur.maxMs, x[1]);
+        cur.ticks++;
+        if (held !== null && x[3] === held) cur.frames++;
+        held = x[3];
+        cur.maxTickMs = Math.max(cur.maxTickMs, x[1]);
         cur.loading = Math.max(cur.loading, x[2]);
         cur.step = x[4];
         cur.scale = x[5];
@@ -309,9 +344,25 @@ async function main() {
     mkdirSync(outDir, { recursive: true });
     const url = `${o.site}/en/fly/?scene=${o.scene}&nowarn=1&input=touch${o.query}`;
     const result = { name: `gpu-select/${o.label}`, date: new Date().toISOString(), label: o.label, scene: o.scene, url, browserName: o.browser, variant: o.variant, query: o.query, bandsMetres: [8, 25, 80, 'more'], inView: 'node centre within 60 degrees of the view axis, or the camera inside the node' };
-    await lock();
     let stock = null;
+    let held = false;
+    // stopped by hand (Ctrl+C): the browser and its profile go, and the lock too when it is this run's
+    process.on('SIGINT', () => {
+        void (async () => {
+            try {
+                if (stock) await stock.close(false);
+            } catch {
+                /* already gone */
+            } finally {
+                if (held) unlock();
+                process.exit(130);
+            }
+        })();
+    });
+    await lock();
+    held = true;
     try {
+        result.thermal = { cool: o.cool ? await coolDown(o.cool, 300) : null, beforeStart: nvidiaThermal() };
         stock = await startStockBrowser({ exe, label: o.label, variant: o.variant, extra: o.extra, maximized: o.maximized });
         const { cdp, context, page } = stock;
         result.launch = stock.launch;
@@ -359,15 +410,24 @@ async function main() {
         }
         // the owner's question in numbers: after the reveal, how long until what is NEAR and in view is at the level the engine
         // wants, against the same for everything in view; and the mean level shown near the camera 1, 2, 3 and 5 s after it
+        // "Sharp" is the moment a band is at the level the engine wants FOR GOOD: the first sample after the last one in which
+        // some node of the band was not there. (The first sharp sample is not it: at the reveal every node still shows the
+        // coarse level it was told to want, and the opened range shows up a sample or two later.) null: the run ended before
+        // that, or the band has no node; 0: the band never was behind.
         const after = revealAt === null ? [] : timeline.filter((x) => x.wall >= revealAt && x.view);
+        const t0 = revealAt;
         const sharp = (x, bandsIdx) => bandsIdx.every((i) => x.view[i].atWanted === x.view[i].n);
-        const firstSharp = (bandsIdx) => { const hit = after.find((x) => sharp(x, bandsIdx)); return hit ? hit.wall - revealAt : null; };
-        const shownAt = (ms, i) => { const hit = after.find((x) => x.wall - revealAt >= ms); return hit ? hit.view[i].meanShown : null; };
+        const sharpFrom = (bandsIdx) => {
+            if (!after.some((x) => bandsIdx.some((i) => x.view[i].n > 0))) return null;
+            const hit = after[after.map((x) => sharp(x, bandsIdx)).lastIndexOf(false) + 1];
+            return hit ? hit.wall - t0 : null;
+        };
+        const shownAt = (ms, i) => { const hit = after.find((x) => x.wall - t0 >= ms); return hit ? hit.view[i].meanShown : null; };
         result.order = {
-            nearSharpMs: firstSharp([0]), near25SharpMs: firstSharp([0, 1]), farSharpMs: firstSharp([2, 3]), allInViewSharpMs: firstSharp([0, 1, 2, 3]),
+            nearSharpMs: sharpFrom([0]), near25SharpMs: sharpFrom([0, 1]), farSharpMs: sharpFrom([2, 3]), allInViewSharpMs: sharpFrom([0, 1, 2, 3]),
             nearLevelShown: { atReveal: shownAt(0, 0), after1s: shownAt(1000, 0), after2s: shownAt(2000, 0), after3s: shownAt(3000, 0), after5s: shownAt(5000, 0), wantedAtEnd: after.length ? after[after.length - 1].view[0].meanWanted : null },
             farLevelShown: { atReveal: shownAt(0, 3), after1s: shownAt(1000, 3), after2s: shownAt(2000, 3), after3s: shownAt(3000, 3), after5s: shownAt(5000, 3), wantedAtEnd: after.length ? after[after.length - 1].view[3].meanWanted : null },
-            note: 'near: nodes under 8 m in view; near25: under 25 m; far: beyond 25 m; level 0 is the finest; ms count from the reveal'
+            note: 'near: nodes under 8 m in view; near25: under 25 m; far: beyond 25 m; level 0 is the finest; ms count from the reveal; "sharp" is the first sample (every 250 ms) after the last one in which a node of the band was not at the level the engine wants'
         };
         result.load = {
             revealWallMs: revealAt, settledWallMs: settledAt, timedOut: settledAt === null, visibleMs: last?.visibleMs ?? null, firstFrameMs: last?.firstFrameMs ?? null,
@@ -384,22 +444,41 @@ async function main() {
         result.gpuProcessPid = gpuPid;
         result.systemInfo = await systemInfo(cdp);
         await drain();
+        // --soak: the scan keeps drawing at rest until the card has warmed up; the frames of the soak are kept per 30 s
+        if (o.soak > 0) {
+            const soak = [];
+            const s0 = Date.now();
+            while (Date.now() - s0 < o.soak * 1000) {
+                trace.length = 0;
+                const part0 = Date.now();
+                while (Date.now() - part0 < 30000 && Date.now() - s0 < o.soak * 1000) {
+                    await sleep(500);
+                    await drain();
+                }
+                soak.push({ atS: Math.round((Date.now() - s0) / 1000), frames: frameStats(trace), thermal: nvidiaThermal() });
+            }
+            result.soak = { seconds: o.soak, parts: soak };
+        }
         trace.length = 0;
+        result.thermal.stillStart = nvidiaThermal();
         const counters = gpuPid ? gpuCountersAsync(gpuPid, o.still) : Promise.resolve({ error: 'no GPU process' });
         const stillT0 = Date.now();
         while (Date.now() - stillT0 < o.still * 1000) {
             await sleep(500);
             await drain();
         }
+        result.thermal.stillEnd = nvidiaThermal();
         const stillState = await page.evaluate(STATE);
         result.still = { seconds: o.still, frames: frameStats(trace), drawnM: r2(stillState.drawn / 1e6), budgetM: stillState.budgetM, governorStep: stillState.step, renderScale: stillState.scale, perLevelM: Object.fromEntries(Object.entries(stillState.perLevel ?? {}).map(([k, v]) => [k, r2(v / 1e6)])), ...bands(stillState), perSecond: perSecond(trace, trace.length ? trace[0][0] : 0), counters: await counters };
         // ---- turn ----
         if (o.turn) {
+            await drain(); // the rows the page gathered while the counters were read belong to the rest, not to the turn
             trace.length = 0;
             const start = await page.evaluate(TURN(TURN_SPEC));
             const total = TURN_SPEC.reduce((a, b) => a + b.dur, 0);
             const snaps = [];
             const tt0 = Date.now();
+            const turnNav = tt0 - nav0;
             while (Date.now() - tt0 < (total + 1) * 1000) {
                 await sleep(250);
                 const st = await page.evaluate(STATE);
@@ -407,13 +486,24 @@ async function main() {
                 await drain();
             }
             const phases = {};
+            const names = new Set(TURN_SPEC.map((p) => p.name));
+            let from = 0;
             for (const ph of TURN_SPEC) {
-                const rows = trace.filter((x) => x[7] === ph.name);
+                // the phase's rows and the row before its first: the interval that crosses into a phase (where the hitch of a
+                // snap lands) is the phase's own
+                const i0 = trace.findIndex((x) => x[7] === ph.name);
+                const rows = i0 < 0 ? [] : trace.slice(Math.max(0, i0 - 1)).filter((x, k) => k === 0 || x[7] === ph.name);
                 const ss = snaps.filter((x) => x.phase === ph.name);
-                const first0 = ss.find((x) => x.loading === 0 && x.pending === 0 && x.prefetch === 0);
-                phases[ph.name] = { ...ph, frames: frameStats(rows), maxLoading: ss.reduce((a, b) => Math.max(a, b.loading ?? 0), 0), maxBehindInView: ss.reduce((a, b) => Math.max(a, b.behindInView ?? 0), 0), maxNearBehind: ss.reduce((a, b) => Math.max(a, b.nearBehind ?? 0), 0), endBehindInView: ss.length ? ss[ss.length - 1].behindInView : null, endNearBehind: ss.length ? ss[ss.length - 1].nearBehind : null, msToNothingLoading: first0 && ss.length ? first0.ms - ss[0].ms : null, drawnMinM: ss.reduce((a, b) => Math.min(a, b.drawnM ?? 1e9), 1e9), drawnMaxM: ss.reduce((a, b) => Math.max(a, b.drawnM ?? 0), 0) };
+                // nothing left to load FOR GOOD: the first calm sample after the last busy one (null: the phase ended busy)
+                const calmFrom = ss[ss.map((x) => !(x.loading === 0 && x.pending === 0 && x.prefetch === 0)).lastIndexOf(true) + 1];
+                // the scan files fetched while the phase ran (by the phase's place in the turn's schedule)
+                const got = files.filter((f) => f.t - turnNav >= from * 1000 && f.t - turnNav < (from + ph.dur) * 1000);
+                from += ph.dur;
+                phases[ph.name] = { ...ph, frames: frameStats(rows), filesFetched: got.length, megabytesFetched: r2(got.reduce((a, b) => a + b.bytes, 0) / 1e6), maxLoading: ss.reduce((a, b) => Math.max(a, b.loading ?? 0), 0), maxBehindInView: ss.reduce((a, b) => Math.max(a, b.behindInView ?? 0), 0), maxNearBehind: ss.reduce((a, b) => Math.max(a, b.nearBehind ?? 0), 0), endBehindInView: ss.length ? ss[ss.length - 1].behindInView : null, endNearBehind: ss.length ? ss[ss.length - 1].nearBehind : null, msToNothingLoading: ss.length && calmFrom ? calmFrom.ms - ss[0].ms : null, drawnMinM: ss.reduce((a, b) => Math.min(a, b.drawnM ?? 1e9), 1e9), drawnMaxM: ss.reduce((a, b) => Math.max(a, b.drawnM ?? 0), 0) };
             }
-            result.turn = { start, phases, snapshots: snaps.filter((x, i) => i % 2 === 0), all: frameStats(trace) };
+            const turnFiles = files.filter((f) => f.t >= turnNav);
+            result.turn = { start, phases, filesFetched: turnFiles.length, megabytesFetched: r2(turnFiles.reduce((a, b) => a + b.bytes, 0) / 1e6), snapshots: snaps.filter((x, i) => i % 2 === 0), all: frameStats(trace.filter((x) => names.has(x[7]))) };
+            result.thermal.turnEnd = nvidiaThermal();
         }
         result.final = await page.evaluate(FINAL);
         result.tune = Object.keys(o.tune).length ? await page.evaluate('window.__gsTune || null') : null;
@@ -423,6 +513,8 @@ async function main() {
             revealS: revealAt !== null ? r2(revealAt / 1000) : null, settledS: settledAt !== null ? r2(settledAt / 1000) : null, filesMB: result.load.files.megabytes,
             order: `after the reveal: far nodes at their level in ${result.order.farSharpMs} ms, nodes under 8 m in ${result.order.nearSharpMs} ms, everything in view in ${result.order.allInViewSharpMs} ms; level shown under 8 m: ${result.order.nearLevelShown.atReveal} at the reveal, ${result.order.nearLevelShown.after2s} after 2 s, ${result.order.nearLevelShown.after5s} after 5 s (wanted ${result.order.nearLevelShown.wantedAtEnd})`,
             tune: result.tune ? result.tune.asked : null,
+            // the NVIDIA card at the end of the measured rest: without this beside it a frame rate cannot be compared
+            nvidiaAtRest: result.thermal.stillEnd ? `${result.thermal.stillEnd.tempC} C, clock ${result.thermal.stillEnd.clockMHz} MHz, ${result.thermal.stillEnd.pstate}, ${result.thermal.stillEnd.thermalSlowdown ? 'THERMAL SLOWDOWN' : 'no thermal slowdown'}` : null,
             still: `${result.still.frames.fps} frames drawn per second (the engine ticks ${result.still.frames.tickFps}/s, ${Math.round((result.still.frames.heldShare ?? 0) * 100)} % of them held), between drawn frames p50 ${result.still.frames.p50ms} ms, p95 ${result.still.frames.p95ms} ms, p99 ${result.still.frames.p99ms} ms; ${result.still.drawnM} M splats of ${result.still.budgetM} M, step ${result.still.governorStep}, scale ${result.still.renderScale}`,
             turn: result.turn ? `${result.turn.all.fps} frames drawn per second (${Math.round((result.turn.all.heldShare ?? 0) * 100)} % held), p95 ${result.turn.all.p95ms} ms, longest ${result.turn.all.maxMs} ms` : null,
             backbuffer: result.final.backbuffer, busiest: Object.entries(result.still.counters?.perAdapter ?? {}).sort((a, b) => b[1].max3d - a[1].max3d).map(([n, v]) => `${n}: 3D ${v.avg3d} % avg, ${v.max3d} % max, dedicated ${v.dedicatedMb} MB, shared ${v.sharedMb} MB`)
@@ -431,7 +523,9 @@ async function main() {
         result.error = String(e?.stack ?? e).slice(0, 1500);
     } finally {
         if (stock) await stock.close(false);
+        stock = null;
         unlock();
+        held = false;
     }
     const file = join(outDir, `${o.label}.json`);
     writeFileSync(file, asciiJson(mask(JSON.stringify(result, null, 1))) + '\n');

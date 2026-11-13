@@ -336,7 +336,9 @@ function verdict(result) {
 
 function smiRecord(gpuPid) {
     const smi = nvidiaSmi();
-    return { available: smi.available, gpu: smi.gpu ?? null, gpuProcessListed: gpuPid ? smi.pids.includes(gpuPid) : null, browserRows: smi.rows.filter((r) => /chrome|msedge|firefox/i.test(r.name)), otherRows: smi.rows.filter((r) => !/chrome|msedge|firefox/i.test(r.name)).map((r) => r.name) };
+    // only the probe's own GPU process is written out. Everything else on the card is counted, never named: the person's own
+    // browser and whatever else the person runs are not this probe's to record
+    return { available: smi.available, gpu: smi.gpu ?? null, gpuProcessListed: gpuPid ? smi.pids.includes(gpuPid) : null, browserRows: gpuPid ? smi.rows.filter((r) => r.pid === gpuPid) : [], otherBrowserProcesses: smi.rows.filter((r) => /chrome|msedge|firefox/i.test(r.name) && r.pid !== gpuPid).length, otherPrograms: smi.rows.filter((r) => !/chrome|msedge|firefox/i.test(r.name)).length };
 }
 
 /** Every process under `rootPid` with its command line (Windows), to find a browser's GPU process. */
@@ -425,7 +427,10 @@ async function firefoxRun(o, exe, outDir, result) {
         if (stage.error) throw new Error(`page: ${stage.error}`);
         result.page = stage.page;
         result.browser = { product: (/Firefox\/[\d.]+/.exec(stage.page.userAgent) ?? [''])[0], userAgent: stage.page.userAgent };
-        const mainPid = firefoxMainPid(profile) ?? child.pid;
+        // Firefox's first process hands over to another one and exits: its id is ours only while it still runs (Windows gives
+        // a freed id to the next program that starts)
+        const mainPid = firefoxMainPid(profile) ?? (child.exitCode === null ? child.pid : null);
+        if (!mainPid) throw new Error('the Firefox instance of the throwaway profile was not found');
         const tree = descendants(mainPid);
         const gpuProc = tree.find((p) => /\sgpu\s*$/.test(p.CommandLine ?? ''));
         result.gpuProcessPid = gpuProc?.ProcessId ?? null;
@@ -456,8 +461,9 @@ async function firefoxRun(o, exe, outDir, result) {
     } finally {
         server.close();
         if (!o.keep) {
-            // Firefox's first process hands over to another one: end the instance that holds OUR profile, by pid
-            for (const pid of [firefoxMainPid(profile), child.pid]) if (pid) spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true });
+            // end the instance that holds OUR profile, found by the profile's path in its command line; the first process only
+            // while it still runs (see above: never an id that may have gone to another program)
+            for (const pid of [firefoxMainPid(profile), child.exitCode === null ? child.pid : null]) if (pid) spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true });
             await sleep(2000);
             try {
                 rmSync(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 500 });
@@ -584,6 +590,18 @@ async function main() {
     }
     const result = { name: `gpu-select/${o.label}`, date: new Date().toISOString(), label: o.label, browserName: o.browser, variant: o.variant };
     let stock = null;
+    // stopped by hand (Ctrl+C): the browser of this run and its profile go with it
+    process.on('SIGINT', () => {
+        void (async () => {
+            try {
+                if (stock) await stock.close(false);
+            } catch {
+                /* already gone */
+            } finally {
+                process.exit(130);
+            }
+        })();
+    });
     try {
         stock = await startStockBrowser({ exe, label: o.label, variant: o.variant, extra: o.extra });
         const { cdp, context, page } = stock;

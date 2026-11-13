@@ -12,8 +12,10 @@ Raw files: `evidence/2026-11-13/gpu-select/` (user name masked; no serial number
 - [x] 2a. The browser's switch (`--force-high-performance-gpu`, the same as the flag) puts Chrome and Edge on the NVIDIA card.
 - [ ] 2b. Windows' per-application graphics preference: waits for the owner's own clicks (see "For the owner").
 - [x] 3a. Product: rule, note, the line that stays, the software case, the bug report's graphics block; unit tests pass.
-- [ ] 3b. Product: browser run of the page (`tools/bench/src/sonic-gpuhint-page.ts`), negative control, full gates.
-- [ ] 4. Handback: the tables below completed, "For the lead", "Not verified".
+- [x] 3b. Product after review (six reviewers, three verifiers; every confirmed finding acted on): the browser run of the
+  page (`tools/bench/src/sonic-gpuhint-page.ts`) passes 24 of 24 on this laptop.
+- [ ] 3c. Negative control and the full gates on the reviewed code.
+- [ ] 4. Handback: the tables below completed, "For the owner", "For the lead", "Not verified".
 
 (This file is filled in as the steps finish; the sections below are written with the final numbers at step 4.)
 
@@ -23,7 +25,7 @@ Raw files: `evidence/2026-11-13/gpu-select/` (user name masked; no serial number
   32.0.101.7088, NVIDIA GeForce RTX 3070 Laptop GPU driver 32.0.16.1742 (617.42); on AC power, plan Balanced with the
   "Best performance" overlay. Both adapters `Status OK`.
 - Browsers: Chrome 140.0.7339.81 (the default browser; an update to .129 has been waiting since 2025-09), Edge 157.0.4341.46
-  (never started by this user before the probe), Firefox 142.0.1.
+  (never started by this user before the probe), Firefox 160.0 (it updated itself from 142.0.1 when the probe first started it).
 - The page gets ONE adapter whatever it asks for (`powerPreference` high-performance, low-power, none): `intel gen-12lp` in
   the owner's Chrome, in a stock Chrome and in Edge; WebGL the same (Intel(R) UHD Graphics). Windows' GPU counters agree: the
   browser's GPU process has no engine on the NVIDIA adapter at all, and `nvidia-smi` does not list it.
@@ -42,7 +44,8 @@ Raw files: `evidence/2026-11-13/gpu-select/` (user name masked; no serial number
 - `apps/fly/src/sonic/gpu-hint.ts`: the words (three notes), the addresses, the browser's memory (`off`, `fast`), the plan.
 - `apps/fly/src/app/builtin/gpu-hint.ts` and `.css`: the note on every visit with "Do not show again", Windows' graphics page as
   a link, the line that stays (start screen, pause menu), the software note, the bug report's lines.
-- `packages/i18n/locales/fly/gpuhint/*` (23 keys in en, es, pl, ru) and one new spoken line `sonic.say.gpuSoftware`.
+- `packages/i18n/locales/fly/gpuhint/*` (25 keys in en, es, pl, ru) and three new spoken lines (`sonic.say.gpuSoftware`,
+  `sonic.say.gpuHintAgain`, `sonic.say.gpuSoftwareAgain`).
 - Outside the lane's own files, small: `apps/fly/src/app/boot.ts` (one call that puts the line on the scan picker),
   `apps/fly/src/app/diagnostics.ts` (the report's `browser.gpu` gains `name`, `kind`, `webgl`, `hint`),
   `tools/bench/test/sonic-int-lazy.test.ts` (the new spoken key in the allowed list).
