@@ -93,6 +93,21 @@ describe('the sticks in the simulator range', () => {
         expect(Array.from(stickAxes(stickValues(f)!, new Float32Array(8)))).toEqual([1, -1, 0.5, -0.5, 0, 0, 0, 0]);
         expect(RC2.CHANNELS.slice(0, 4)).toEqual(['roll', 'pitch', 'throttle', 'yaw']);
     });
+    it('a reply with another layout gives none: result not 0, a wrong channel number, a value out of range', () => {
+        const pay = (seq: number, edit: (p: Uint8Array) => void): DumlFrame => {
+            const f = parseFrame(reply(seq, [1024, 1024, 1024, 1024, 1024, 1024])) as DumlFrame;
+            const p = f.payload.slice();
+            edit(p);
+            return parseFrame(buildFrame({ ...f, payload: p })) as DumlFrame;
+        };
+        expect(stickValues(pay(1, () => undefined))).toEqual([1024, 1024, 1024, 1024, 1024, 1024]); // control
+        expect(stickValues(pay(2, (p) => { p[0] = 1; }))).toBeNull();
+        expect(stickValues(pay(3, (p) => { p[6] = 5; }))).toBeNull();
+        expect(stickValues(pay(4, (p) => { p[1] = 0; p[2] = 0; }))).toBeNull(); // 0
+        expect(stickValues(pay(5, (p) => { p[16] = 0xff; p[17] = 0xff; }))).toBeNull(); // 65535
+        expect(stickValues(parseFrame(reply(6, [364 - 40, 1684 + 40, 1024, 1024, 1024, 1024])) as DumlFrame)).not.toBeNull();
+        expect(stickValues(parseFrame(reply(7, [364 - 41, 1024, 1024, 1024, 1024, 1024])) as DumlFrame)).toBeNull();
+    });
     it('a payload too short for six values gives none', () => {
         const f = parseFrame(buildFrame({ sender: 6, receiver: 10, seq: 1, type: 0x80, set: 6, id: 1, payload: new Uint8Array(10) })) as DumlFrame;
         expect(stickValues(f)).toBeNull();

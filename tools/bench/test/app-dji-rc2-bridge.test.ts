@@ -69,6 +69,7 @@ describe('Rc2BridgeDevice over the bridge messages', () => {
         sock!.say({ v: [1684, 364, 1024, 1354, 1024, 1024] });
         sock!.say({ v: 'nonsense' });
         sock!.say({ v: [1, 2, 3] });
+        sock!.say({ v: [0, 65535, 1024, 1024, 1024, 1024] }); // out of 364..1684: never flown, not even clamped
         expect(src.key).toBe('hid:2ca3:1021:DJI RC 2:12:d');
         expect(d.replies).toBe(2);
         expect(frames).toHaveLength(1);

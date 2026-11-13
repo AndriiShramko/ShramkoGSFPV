@@ -9,9 +9,11 @@
 //    (0x40 request, bit 7 = response); command set; command id; payload; CRC16 of everything before it, LE
 //    (reflected poly 0x8408, seed 0x3692) [reference; both checksums matched on every frame received, measured];
 //  - the stick request: PC 0x0a -> RC 0x06, type 0x40, set 06 id 01, no payload [reference, the bytes measured];
-//  - the stick reply: set 06 id 01 with bit 7 of the type set, the request's sequence echoed; payload byte 0 a
-//    result code, then six u16 LE at payload offsets 1, 4, 7, 10, 13, 16 [reference; 1024 on all six at rest,
-//    measured] in the order roll, pitch, throttle, yaw, left dial, right dial [reference];
+//  - the stick reply: set 06 id 01 with bit 7 of the type set, the request's sequence echoed; payload byte 0 is 00
+//    in every recorded reply (the reference reads it as a result code; the recording cannot tell), then six u16 LE
+//    at payload offsets 1, 4, 7, 10, 13, 16, each followed by its channel number 1..6 [measured; 1024 on all six at
+//    rest] in the order roll, pitch, throttle, yaw, left dial, right dial [reference]; stickValues() takes a reply
+//    only in exactly this layout;
 //  - the range 364..1684 with the centre 1024 [reference; the centre measured on all six];
 //  - other frames arrive unasked (set 00 id 81 and 82, 168 bytes, about once a second each) [measured]: the reader
 //    hands them over like any frame and isStickReply() leaves them out.
@@ -151,11 +153,28 @@ export function isStickReply(f: DumlFrame, seq?: number): boolean {
     return (f.type & 0x80) !== 0 && f.set === RC2.STICK_SET && f.id === RC2.STICK_ID && (seq === undefined || f.seq === (seq & 0xffff));
 }
 
-/** The six raw values (364..1684, the order of RC2.CHANNELS) of a stick reply; null when its payload is too short. */
+/**
+ * How far past 364..1684 a raw value may lie and still be read as a stick. Estimate: the range is the reference's,
+ * the real ends were not measured (only the centre 1024 was).
+ */
+export const RC2_RANGE_MARGIN = 40;
+
+/** A raw value the stick reply may carry: 364..1684 with RC2_RANGE_MARGIN either side. */
+export function stickRawOk(v: unknown): boolean {
+    return Number.isInteger(v) && (v as number) >= RC2.MIN - RC2_RANGE_MARGIN && (v as number) <= RC2.MAX + RC2_RANGE_MARGIN;
+}
+
+/**
+ * The six raw values (364..1684, the order of RC2.CHANNELS) of a stick reply; null unless the payload has the recorded
+ * layout: byte 0 is 0, each value is followed by its channel number 1..6, and every value passes stickRawOk(). A reply
+ * with another layout or an error code is never flown as stick positions.
+ */
 export function stickValues(f: DumlFrame): number[] | null {
     const p = f.payload;
-    if (p.length < RC2.OFFSETS[5] + 2) return null;
-    return RC2.OFFSETS.map((o) => p[o] | (p[o + 1] << 8));
+    if (p.length < RC2.OFFSETS[5] + 3 || p[0] !== 0) return null;
+    if (!RC2.OFFSETS.every((o, i) => p[o + 2] === i + 1)) return null;
+    const v = RC2.OFFSETS.map((o) => p[o] | (p[o + 1] << 8));
+    return v.every(stickRawOk) ? v : null;
 }
 
 const SCALE = axisScale(RC2.MIN, RC2.MAX); // centre 1024, 660 per 1.0

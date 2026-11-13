@@ -96,6 +96,23 @@ Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native re
   tools/rc-bridge/rc_bridge.py --replay evidence/2026-11-13/rc2/frames-rest.json --wiggle.
 - [x] 5. For the lead, Not verified, cost note written below.
 
+R review fixes (independent review of train 1B; negative controls against the lane's own code at 1ca151d2, --ref HEAD,
+because the files do not exist on origin/main; vitest run as node node_modules/vitest/vitest.mjs --root <pkg>)
+- [x] RC2-R3 (major): a1b43eb1's animation-frame wake reverted; the ask loop paces by a plain timer (comment corrected).
+  Test "the ask loop paces by its timer only" (requestAnimationFrame stubbed with setImmediate): NEG OK, 7622
+  requests in 300 ms on the old code against the limit 45. Commit COMMIT1.
+- [x] RC2-R4 (minor): the WebUSB source keeps the sequence number of each request out; an answer whose request was
+  given up or is older than RC2_REPLY_MS is dropped and counted (DjiRc2Device.late). Test "answers 400 ms late never
+  fly ... open() says silent": NEG OK (old code opened and flew them). The old "130 ms late" test now uses 60 ms
+  (still within the stale rule; one request at a time would give a frame per 70 ms, the test asserts gaps < 55 ms).
+  The replay fake echoes the request's sequence, as the controller does. Commit COMMIT1.
+- [x] RC2-R9 (minor), page side: stickValues takes a reply only in the recorded layout (byte 0 is 0, channel numbers
+  1..6 after the values, each value within 364..1684 +-40, RC2_RANGE_MARGIN, estimate); the WebUSB source counts the
+  rest (DjiRc2Device.bad); the bridge source's valuesOf uses the same range. Tests in dji-duml.test.ts, app-dji-rc2
+  ("answers out of 364..1684 are dropped"), app-dji-rc2-bridge ([0, 65535, ...] not flown): NEG OK on all three.
+  dji-duml 9 passed, app-dji-rc2 + bridge + usb-look 27 passed (then 12 in app-dji-rc2), tsc of apps/fly and
+  packages/input clean. Commit COMMIT1. The bridge side (rc_bridge.py) is under R5-R8 below.
+
 ## Verdict of stage 1
 
 (a) Native read on this PC: WORKS [measured]. Stack: Python 3.11 ctypes ->

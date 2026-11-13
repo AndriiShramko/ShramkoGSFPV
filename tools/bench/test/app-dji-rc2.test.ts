@@ -91,8 +91,12 @@ class FakeRc2 {
             const chunk: number[] = [];
             while (this.replay.length) {
                 const f = this.replay.shift()!;
+                if (f[9] === 6) {
+                    // the recorded answer, its sequence set to this request's (the controller echoes it)
+                    chunk.push(...buildFrame({ ...(parseFrame(f) as DumlFrame), seq: req.seq }));
+                    break;
+                }
                 chunk.push(...f);
-                if (f[9] === 6) break;
             }
             if (chunk.length) this.queue.push(Uint8Array.from(chunk));
         } else if (this.delayMs > 0) {
@@ -164,20 +168,62 @@ describe('the stick channel through HidSource', () => {
         expect(dev.requests).toBeGreaterThan(3);
         src.close();
     });
-    it('answers 130 ms late: requests do not wait for them, so frames still come within the 100 ms stale rule', async () => {
+    it('answers 60 ms late: requests do not wait for them, so frames come far more often than one per answer time', async () => {
         // the page probe (rc2-probe.mjs, 2026-11-13) saw a request-answer chain deliver a frame every 100-210 ms on a
-        // busy page and the arm gate cut the motors; here the lateness is the bus's, the effect on the frames the same
+        // busy page and the arm gate cut the motors; one request at a time would give a frame every 70 ms here
         const dev = new FakeRc2();
-        dev.delayMs = 130;
+        dev.delayMs = 60;
         const { rc, src } = await sourceOn(dev);
         const at: number[] = [];
         src.onFrame = () => at.push(performance.now());
         await sleep(1000);
         await src.close();
         const gaps = at.slice(1).map((t, i) => t - at[i]!);
-        expect(at.length).toBeGreaterThan(15);
-        expect(Math.max(...gaps)).toBeLessThan(95);
-        expect(rc.replies).toBeGreaterThan(15);
+        expect(at.length).toBeGreaterThan(20);
+        expect(Math.max(...gaps)).toBeLessThan(55);
+        expect(rc.late).toBe(0);
+    });
+    it('answers 400 ms late never fly: their requests were given up, so the stick data is old; open() says silent', async () => {
+        const dev = new FakeRc2();
+        dev.delayMs = 400;
+        const rc = new R.DjiRc2Device(dev, { hub: new FakeHub([dev]) });
+        let reports = 0;
+        rc.addEventListener('inputreport', () => { reports++; });
+        await expect(rc.open()).rejects.toMatchObject({ why: 'silent' });
+        expect(reports).toBe(0);
+        expect(rc.replies).toBe(0);
+        expect(rc.late).toBeGreaterThan(5);
+        expect(rc.unanswered).toBeGreaterThan(5);
+    });
+    it('answers out of 364..1684 are dropped and counted, never flown as full deflection', async () => {
+        const dev = new FakeRc2();
+        const { rc, src, frames } = await sourceOn(dev);
+        await until(() => frames.length > 2);
+        dev.values = [0, 65535, 1024, 1024, 1024, 1024];
+        const n = frames.length;
+        const b0 = rc.bad;
+        await until(() => rc.bad > b0 + 5);
+        expect(rc.bad).toBeGreaterThan(b0 + 5);
+        expect(frames.length).toBeLessThanOrEqual(n + 1); // one answer may have been on its way already
+        src.close();
+    });
+    it('the ask loop paces by its timer only: animation frames add no requests', async () => {
+        // a1b43eb1 woke the loop on the next animation frame too; on a busy page that only added requests and work
+        const g = globalThis as { requestAnimationFrame?: unknown };
+        const had = g.requestAnimationFrame;
+        g.requestAnimationFrame = (f: () => void) => setImmediate(f); // not a timer: Windows timers tick about every 15 ms
+        try {
+            const dev = new FakeRc2();
+            const { src } = await sourceOn(dev);
+            const r0 = dev.requests;
+            await sleep(300);
+            const n = dev.requests - r0;
+            src.close();
+            expect(n).toBeGreaterThan(5);
+            expect(n).toBeLessThan(45); // the timer alone: at most one every RC2_POLL_MS 10 ms, 30 in 300 ms
+        } finally {
+            g.requestAnimationFrame = had;
+        }
     });
 
     it('a refused claim: Rc2Error claim, the device closed again; control: the same device claims when allowed', async () => {

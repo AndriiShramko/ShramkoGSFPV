@@ -9,7 +9,7 @@
 // nothing probes 127.0.0.1 on load. The bridge closing (stopped, or the controller pulled out) stops the source; the
 // stale rule of ArmGate disarms a radio that went silent, as for the WebUSB source.
 
-import { RC2_HID_COLLECTIONS, rc2Report } from '../../../../packages/input/src/dji-duml';
+import { RC2_HID_COLLECTIONS, rc2Report, stickRawOk } from '../../../../packages/input/src/dji-duml';
 import { RC2_FIRST_MS, RC2_NAME, RC2_VENDOR, Rc2Error } from './dji-rc2-source';
 
 /** the bridge's port (tools/rc-bridge/rc_bridge.py PORT): chosen, not measured */
@@ -37,11 +37,11 @@ export interface BridgeOptions {
 type ReportListener = (e: { reportId: number; data: DataView; timeStamp: number }) => void;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** Six raw values 364..1684, or null for anything else the bridge says. */
+/** Six raw values 364..1684 (stickRawOk: with its margin), or null for anything else the bridge says. */
 function valuesOf(m: unknown): number[] | null {
     const v = (m as { v?: unknown } | null)?.v;
     if (!Array.isArray(v) || v.length !== 6) return null;
-    return v.every((x) => Number.isInteger(x) && x >= 0 && x <= 0xffff) ? (v as number[]) : null;
+    return v.every(stickRawOk) ? (v as number[]) : null;
 }
 
 /** The RC 2 over the local bridge, shaped as a WebHID device for HidSource (see the header). */

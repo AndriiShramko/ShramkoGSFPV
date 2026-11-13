@@ -105,23 +105,12 @@ export interface Rc2Options {
     hub?: UsbHub | null;
     clock?: () => number;
     wait?: (ms: number) => Promise<void>;
-    /** the ask loop's pause between requests (default: a timer or the next animation frame, whichever is first) */
+    /** the ask loop's pause between requests (default: a plain timer) */
     pace?: (ms: number) => Promise<void>;
 }
 
 const defaultHub = (): UsbHub | null => (globalThis.navigator as unknown as { usb?: UsbHub } | undefined)?.usb ?? null;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
-/**
- * The ask loop's pause: the timer or the next animation frame, whichever comes first. In flight the page ran timers
- * only about 9 times a second (rc2-probe.mjs, 2026-11-13: 9 answers/s in the climb against 80/s on the setup screens),
- * an animation frame comes every frame, so a request goes out at least once a frame.
- */
-const pause = (ms: number): Promise<void> => new Promise((r) => {
-    let done = false;
-    const go = (): void => { if (!done) { done = true; r(); } };
-    setTimeout(go, ms);
-    (globalThis as { requestAnimationFrame?: (f: () => void) => number }).requestAnimationFrame?.(go);
-});
 
 /** The RC 2 shaped as a WebHID device for HidSource (see the header). */
 export class DjiRc2Device {
@@ -133,6 +122,10 @@ export class DjiRc2Device {
     /** stick answers and requests that went unanswered (tests, the report) */
     replies = 0;
     unanswered = 0;
+    /** answers dropped because their request was given up or is older than RC2_REPLY_MS (old stick data never flies) */
+    late = 0;
+    /** stick answers dropped because their payload is not in the recorded layout (stickValues) */
+    bad = 0;
     /** the source stopped: 'unplug' (the device left), 'error' (a transfer failed), 'closed' (let go) */
     onEnd: ((why: 'unplug' | 'error' | 'closed') => void) | null = null;
     private readonly listeners = new Set<ReportListener>();
@@ -144,8 +137,8 @@ export class DjiRc2Device {
     private gen = 0;
     /** open()'s wait for the first stick answer */
     private answered: (() => void) | null = null;
-    /** when each request that is out was sent, oldest first */
-    private inflight: number[] = [];
+    /** the sequence number of each request that is out and when it was sent, oldest first */
+    private inflight: { seq: number; at: number }[] = [];
 
     constructor(readonly usb: UsbDeviceLike, o: Rc2Options = {}) {
         this.vendorId = usb.vendorId;
@@ -153,7 +146,9 @@ export class DjiRc2Device {
         this.hub = o.hub === undefined ? defaultHub() : o.hub;
         this.clock = o.clock ?? (() => performance.now());
         this.wait = o.wait ?? sleep;
-        this.pace = o.pace ?? (o.wait ? o.wait : pause);
+        // a plain timer: an animation-frame wake (a1b43eb1) only added requests, frames and work on a busy page
+        // (rc2-probe.mjs pass 3, docs/wip/rc2.md), so it was taken out
+        this.pace = o.pace ?? this.wait;
     }
 
     /** Open, select the configuration, claim the stick channel, start asking; resolves at the first stick answer. */
@@ -232,10 +227,20 @@ export class DjiRc2Device {
             if (!r.data || r.status === 'stall') continue;
             for (const f of reader.feed(new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength))) {
                 if (!isStickReply(f) || f.receiver !== RC2.PC) continue; // the controller's unasked frames
+                // only the answer to a request still out and younger than RC2_REPLY_MS: the report is stamped on
+                // arrival, so an older answer would pass the stale rule with old stick data
+                const i = this.inflight.findIndex((q) => q.seq === f.seq);
+                const q = i < 0 ? null : this.inflight.splice(i, 1)[0]!;
+                if (!q || this.clock() - q.at >= RC2_REPLY_MS) {
+                    this.late++;
+                    continue;
+                }
                 const v = stickValues(f);
-                if (!v) continue;
+                if (!v) {
+                    this.bad++;
+                    continue;
+                }
                 this.replies++;
-                this.inflight.shift();
                 const a = this.answered;
                 this.answered = null;
                 a?.();
@@ -255,7 +260,7 @@ export class DjiRc2Device {
         this.inflight = [];
         while (gen === this.gen && this.ch) {
             const t0 = this.clock();
-            while (this.inflight.length && t0 - this.inflight[0]! >= RC2_REPLY_MS) {
+            while (this.inflight.length && t0 - this.inflight[0]!.at >= RC2_REPLY_MS) {
                 this.inflight.shift();
                 this.unanswered++;
             }
@@ -265,7 +270,7 @@ export class DjiRc2Device {
             last = t0;
             const out: Promise<unknown>[] = [];
             while (this.inflight.length < RC2_INFLIGHT && (late || out.length === 0)) {
-                this.inflight.push(t0);
+                this.inflight.push({ seq, at: t0 });
                 out.push(this.usb.transferOut(this.ch.epOut, stickRequest(seq)));
                 seq = (seq + 1) & 0xffff;
             }
