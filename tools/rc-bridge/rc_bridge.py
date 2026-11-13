@@ -23,6 +23,7 @@ Messages to the page (text, JSON):
 Usage:
     python rc_bridge.py [--port 47310] [--dll <libusb0_dji.dll>]
     python rc_bridge.py --replay <frames.json> [--wiggle]   (recorded frames of evidence/2026-11-13/rc2, no device)
+    python rc_bridge.py --replay <record.jsonl> [--start S] [--end S]   (a --record file at its recorded pace)
 Standard library only (Python 3.8 or newer).
 """
 import argparse
@@ -278,6 +279,82 @@ class Replay:
         pass
 
 
+def is_record(path):
+    """The file is a --record file (JSON lines with "t" and "v"), not a frames JSON document."""
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    m = json.loads(line)
+                except ValueError:
+                    return False
+                return isinstance(m, dict) and "t" in m and "v" in m
+    return False
+
+
+def load_record(path, start_s=None, end_s=None):
+    """The lines of a --record file as (ms from the first kept line, six values), between start_s and end_s seconds
+    counted from the record's first line. A line that does not read (cut by a stop) is skipped."""
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                m = json.loads(line)
+            except ValueError:
+                continue
+            v = m.get("v") if isinstance(m, dict) else None
+            if isinstance(m.get("t"), int) and isinstance(v, list) and len(v) == 6:
+                rows.append((m["t"], [int(x) for x in v]))
+    if not rows:
+        raise ValueError("no stick answers in " + path)
+    t0 = rows[0][0]
+    lo = t0 + (start_s or 0) * 1000
+    hi = t0 + end_s * 1000 if end_s is not None else None
+    kept = [(t, v) for t, v in rows if t >= lo and (hi is None or t < hi)]
+    if not kept:
+        raise ValueError("no stick answers between the given seconds in " + path)
+    k0 = kept[0][0]
+    return [(t - k0, v) for t, v in kept]
+
+
+class RecordReplay:
+    """A --record file played at its recorded pace from the moment a page connects (open): each read waits until the
+    next answer's recorded time and returns its values, so the page gets what the controller sent, when it sent it.
+    Once the record ends, nothing more comes (read returns None): the bridge then says the controller gave no answer,
+    as when a controller is switched off. `clock` and `sleep` are for the tests."""
+
+    paced = True  # the read loop must not add its own poll pause
+
+    def __init__(self, path, start_s=None, end_s=None, clock=time.monotonic, sleep=time.sleep):
+        self.rows = load_record(path, start_s, end_s)
+        self.clock = clock
+        self.sleep = sleep
+        self.i = 0
+        self.t0 = clock()
+
+    def open(self):
+        self.i = 0
+        self.t0 = self.clock()
+
+    def read(self):
+        if self.i >= len(self.rows):
+            self.sleep(POLL_S)
+            return None
+        t, v = self.rows[self.i]
+        wait = t / 1000.0 - (self.clock() - self.t0)
+        if wait > 0:
+            self.sleep(wait)
+        self.i += 1
+        return list(v)
+
+    def close(self):
+        pass
+
+
 # ---- WebSocket (RFC 6455, the subset a browser client needs) ----
 def accept_key(key):
     return base64.b64encode(hashlib.sha1((key + GUID).encode()).digest()).decode()
@@ -501,7 +578,7 @@ class Bridge:
                 self.stopped.wait(RETRY_S)
                 continue
             left = POLL_S - (time.monotonic() - t0)
-            if left > 0:
+            if left > 0 and not getattr(src, "paced", False):
                 time.sleep(left)
         if src:
             src.close()
@@ -546,13 +623,20 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="Shramko RC bridge: DJI RC 2 sticks on ws://127.0.0.1 for the simulator page")
     ap.add_argument("--port", type=int, default=PORT)
     ap.add_argument("--dll", default=None, help="DJI's 64-bit libusb0_dji.dll (default: found under DJI Product)")
-    ap.add_argument("--replay", default=None, help="recorded frames JSON instead of the controller")
-    ap.add_argument("--wiggle", action="store_true", help="with --replay: move roll slowly")
+    ap.add_argument("--replay", default=None, help="instead of the controller: recorded frames JSON, or a --record "
+                    "file (played at its recorded pace from the moment a page connects)")
+    ap.add_argument("--wiggle", action="store_true", help="with --replay of frames JSON: move roll slowly")
+    ap.add_argument("--start", type=float, default=None, help="with --replay of a --record file: start at this second")
+    ap.add_argument("--end", type=float, default=None, help="with --replay of a --record file: stop at this second")
     ap.add_argument("--dev", action="store_true", help="also accept pages from http://localhost[:port] (a local build)")
     ap.add_argument("--record", default=None, help="append every stick answer passed on to this file, one JSON line "
                     "each: ms since start and the six raw values (tools/rc-bridge/analyze_record.py reads it)")
     a = ap.parse_args(argv)
-    if a.replay:
+    if a.replay and is_record(a.replay):
+        load_record(a.replay, a.start, a.end)  # a file or a range with no answers stops here, before listening
+        factory = lambda: RecordReplay(a.replay, a.start, a.end)  # noqa: E731
+        what = "record replay of %s from %ss to %ss" % (a.replay, a.start or 0, "end" if a.end is None else a.end)
+    elif a.replay:
         factory = lambda: Replay(a.replay, a.wiggle)  # noqa: E731
         what = "replay of " + a.replay
     else:

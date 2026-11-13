@@ -176,6 +176,92 @@ class Recorded(unittest.TestCase):
         self.assertEqual([m["t"] for m in r["moves"]], [2000, 3000, 4000, 5000])
 
 
+OWNER = os.path.join(ROOT, "packages", "input", "test", "fixtures", "dji-rc2", "owner-session-2026-11-13.jsonl")
+
+
+class FakeClock:
+    """A clock that moves only by the replay's own sleeps (the tests read the pace without real time)."""
+
+    def __init__(self):
+        self.now = 100.0
+        self.slept = []
+
+    def clock(self):
+        return self.now
+
+    def sleep(self, s):
+        self.slept.append(s)
+        self.now += s
+
+
+class RecordReplayed(unittest.TestCase):
+    """--replay of a --record file: the answers at their recorded pace, an optional start and end second (lane connect)."""
+
+    def write(self, rows, tail=""):
+        import tempfile
+        path = os.path.join(tempfile.mkdtemp(), "rec.jsonl")
+        with open(path, "w", encoding="ascii") as f:
+            f.write("".join(json.dumps({"t": t, "v": v}) + "\n" for t, v in rows) + tail)
+        return path
+
+    def test_a_record_is_told_from_a_frames_file(self):
+        self.assertTrue(rb.is_record(OWNER))
+        self.assertFalse(rb.is_record(REC))
+
+    def test_answers_come_at_the_recorded_times(self):
+        rows = [(5000, [1024] * 6), (5016, [1100] + [1024] * 5), (5016, [1200] + [1024] * 5), (5047, [364] * 6)]
+        ck = FakeClock()
+        r = rb.RecordReplay(self.write(rows, '{"t": 9'), clock=ck.clock, sleep=ck.sleep)
+        r.open()
+        got = []
+        for _ in range(4):
+            v = r.read()
+            got.append((round((ck.now - 100.0) * 1000), v))
+        self.assertEqual(got, [(0, [1024] * 6), (16, [1100] + [1024] * 5), (16, [1200] + [1024] * 5), (47, [364] * 6)])
+        self.assertIsNone(r.read())  # the record has ended: nothing more, as a controller switched off
+        self.assertTrue(rb.RecordReplay.paced)
+
+    def test_start_and_end_seconds_cut_the_record(self):
+        rows = [(t, [1024 + t // 1000] * 6) for t in range(0, 10000, 250)]
+        ck = FakeClock()
+        r = rb.RecordReplay(self.write(rows), start_s=2, end_s=4, clock=ck.clock, sleep=ck.sleep)
+        r.open()
+        vals = []
+        while True:
+            v = r.read()
+            if v is None:
+                break
+            vals.append(v[0])
+        self.assertEqual(vals, [1026] * 4 + [1027] * 4)
+        self.assertAlmostEqual(ck.now - 100.0, 1.75 + rb.POLL_S, places=6)
+        with self.assertRaises(ValueError):
+            rb.load_record(self.write(rows), 20, 30)
+
+    def test_the_owner_session_replays_at_64_answers_a_second(self):
+        rows = rb.load_record(OWNER, 150, 160)
+        self.assertEqual(rows[0][0], 0)
+        self.assertTrue(600 <= len(rows) <= 660, len(rows))  # 64 a second measured (docs/wip/connect.md)
+        self.assertTrue(all(364 <= x <= 1684 for _, v in rows for x in v))
+
+    def test_served_record_reaches_the_page_in_order(self):
+        rows = [(i * 16, [1024 + i] + [1024] * 5) for i in range(40)]
+        path = self.write(rows)
+        b = rb.Bridge(lambda: rb.RecordReplay(path), port=0, log=lambda *_: None, dev=True)
+        port = b.start()
+        s, _, _ = handshake(port, "http://localhost:5390")
+        try:
+            recv_text(s)
+            t0 = time.monotonic()
+            msgs = [recv_text(s) for _ in range(41)]
+            took = time.monotonic() - t0
+        finally:
+            s.close()
+            b.stop()
+        sent = [m["v"][0] for m in msgs if "v" in m]
+        self.assertEqual(sent, [1024 + i for i in range(40)])
+        self.assertGreaterEqual(took, 0.6)  # 39 gaps of 16 ms: paced, not sent at once
+
+
 class Served(unittest.TestCase):
     def setUp(self):
         self.b = rb.Bridge(lambda: rb.Replay(REC, wiggle=True), port=0, log=lambda *_: None, dev=True)
