@@ -29,12 +29,13 @@ import type { LessonAssists } from '@shramko/sonic-fpv';
 import { AltitudeHelp, AutoArm } from './assist';
 import { GAME_SPEEDS, GameAssist, KEY_TURN_DPS } from './game';
 import type { GameCaps, GameKeys } from './game';
+import { GroundCache } from './ground';
 
 /** A stick within this of its centre asks for nothing (a radio's sticks rest a little off centre). */
 export const STICK_DEADBAND = 0.08;
 /** The throttle stick above this (-1 bottom .. 1 top; 0 = the middle, hold) starts the motors, as Space does. */
 export const START_LIFT = 0.25;
-/** The ground below is looked at this often, ms. */
+/** The ground below is looked at this often, ms of the input's time (play/ground.ts GroundCache: never once per report). */
 export const LESSON_PROBE_EVERY_MS = 33;
 /** How far below the craft the ground is looked for, m. */
 export const LESSON_PROBE_M = 20;
@@ -125,8 +126,8 @@ export class LessonPilot {
     private wasFlying = false;
     private rearm = false;
     private stopped = false;
-    private probeAt = -1e9;
-    private groundM: number | null = null;
+    /** the ground below as last looked at (a radio's reports come faster than looks are made) */
+    private readonly below = new GroundCache(LESSON_PROBE_EVERY_MS);
     /** the flight model's tick up to which its contacts were read (bumps()); -1: none yet */
     private bumpTick = -1;
 
@@ -149,8 +150,7 @@ export class LessonPilot {
         this.game.reset();
         this.help.reset();
         this.wasOn = false;
-        this.groundM = null;
-        this.probeAt = -1e9;
+        this.below.reset();
         this.lastT = -1;
         this.bumpTick = -1;
     }
@@ -185,11 +185,7 @@ export class LessonPilot {
     }
 
     private clearance(sim: Sim, tMs: number): number | null {
-        if (tMs - this.probeAt >= LESSON_PROBE_EVERY_MS || tMs < this.probeAt) {
-            this.probeAt = tMs;
-            this.groundM = this.env.ground(sim);
-        }
-        return this.groundM;
+        return this.below.ask(tMs, () => this.env.ground(sim));
     }
 
     /** One frame (Controls.assist): the source's intents in `ch`, the channels to fly into out[0..4]. */
