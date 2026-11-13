@@ -1,4 +1,4 @@
-"""Shramko RC bridge: the DJI RC 2's sticks for the simulator page, on Windows with no driver change.
+"""Shramko helper for DJI controllers: the DJI RC 2's sticks for the simulator page, on Windows with no driver change.
 
 On Windows the RC 2's stick channel (USB interface 0, class FF.43.01) belongs to DJI's own libusb0 driver once DJI
 Assistant 2 is installed, so Chrome cannot open it over WebUSB. This program reads the sticks through DJI's own
@@ -12,7 +12,11 @@ Assistant 2 is installed, so Chrome cannot open it over WebUSB. This program rea
   localhost:<port> (a page on another name that points at 127.0.0.1 is refused).
 * Read-only towards the controller: the only frame ever sent to it is the DUML stick request (set 06, id 01, empty
   payload), the frame the reference github.com/rusty407/dji-rc2-linux-joystick sends. Nothing is written to it.
-* The controller is opened only while a page is connected, and let go when the last page leaves.
+* The controller is opened once at start (one stick answer, so the window can say whether it is read), then only
+  while a page is connected, and let go when the last page leaves.
+* Only the DJI RC 2 (USB 2CA3:1021) is opened. Another DJI device on DJI's driver (most of them are drones, goggles and
+  air units) only with --other-dji, and never the drone 2CA3:0020.
+* A second copy started while one runs says so in one line and ends (the port is taken).
 
 Messages to the page (text, JSON):
     {"hello": "shramko-rc-bridge", "version": 1}       once, after the handshake
@@ -139,12 +143,16 @@ def stick_values(frame):
     return v if all(RAW_MIN - RAW_MARGIN <= x <= RAW_MAX + RAW_MARGIN for x in v) else None
 
 
-def pick_device(ids):
-    """Index of the device to open in a list of (vendor id, product id): the DJI RC 2 (2CA3:1021) first, else the
-    first other DJI device that is not a drone (an untested DJI controller, sent only the stick request), else None."""
+def pick_device(ids, other=False):
+    """Index of the device to open in a list of (vendor id, product id): the DJI RC 2 (2CA3:1021), else None. Only
+    with `other` (the --other-dji option, the pilot's own choice) the first other DJI device that is not a drone (an
+    untested DJI controller, sent only the stick request). DJI's driver also lists drones, goggles and air units, and
+    the helper cannot see which of them has a stick channel, so none of them is asked by default (review CN-3)."""
     for i, (vid, pid) in enumerate(ids):
         if (vid, pid) == (VID, PID):
             return i
+    if not other:
+        return None
     for i, (vid, pid) in enumerate(ids):
         if vid == VID and pid not in NOT_CONTROLLERS:
             return i
@@ -211,8 +219,9 @@ def find_dll():
 class DjiUsb:
     """The RC 2 through DJI's libusb0_dji.dll (64-bit). open() raises Closed with the reason when it cannot."""
 
-    def __init__(self, dll):
+    def __init__(self, dll, other=False):
         self.dll = dll
+        self.other = other
         self.L = None
         self.h = None
         self.seq = 1
@@ -259,9 +268,9 @@ class DjiUsb:
                 found.append((d, vid, pid))
                 d = C.c_void_p.from_address(d).value  # usb_device.next
             bus = C.c_void_p.from_address(bus).value  # usb_bus.next
-        i = pick_device([(vid, pid) for _, vid, pid in found])
+        i = pick_device([(vid, pid) for _, vid, pid in found], self.other)
         if i is None:
-            raise Closed("no DJI controller (USB 2CA3:1021 or another DJI controller) on DJI's driver: "
+            raise Closed("no DJI controller (USB 2CA3:1021" + (" or another DJI controller" if self.other else "") + ") on DJI's driver: "
                          "plug it in with a data cable and switch it on")
         dev, _, pid = found[i]
         self.pid = pid
@@ -491,6 +500,9 @@ class Bridge:
         self.stopped = threading.Event()
         self.sock = None
         self.state = None
+        # the page last said connected: said again only after the state changed, so a page that reconnects every 2 s
+        # while it waits for the controller does not push the one line that says what is missing out of the window
+        self.said_page = None
 
     # -- clients --
     def send_all(self, msg):
@@ -517,6 +529,8 @@ class Bridge:
 
     def set_state(self, state, why=None):
         if state != self.state:
+            if self.state is not None:
+                self.said_page = None  # the first state after a page came is that page's answer, not a change
             self.state = state
             if state == "reading":
                 self.log(READ_LINE)
@@ -546,7 +560,9 @@ class Bridge:
             with self.lock:
                 self.clients.add(conn)
                 self.wlocks[conn] = threading.Lock()
-            self.log("page connected: %s" % origin)
+            if origin != self.said_page:
+                self.said_page = origin
+                self.log("page connected: %s" % origin)
             self.client_loop(conn)
         except OSError:
             pass
@@ -644,10 +660,22 @@ class Bridge:
         if src:
             src.close()
 
+    def bind(self):
+        """Takes the port (no page can connect before start). OSError when another program, most often a copy of this
+        helper started earlier, holds it."""
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.bind(("127.0.0.1", self.port))
+        except OSError:
+            s.close()
+            raise
+        self.sock = s
+        self.port = s.getsockname()[1]
+        return self.port
+
     def start(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("127.0.0.1", self.port))
-        self.port = self.sock.getsockname()[1]
+        if self.sock is None:
+            self.bind()
         self.sock.listen(8)
         threading.Thread(target=self.read_loop, daemon=True).start()
         threading.Thread(target=self.accept_loop, daemon=True).start()
@@ -692,6 +720,8 @@ def main(argv=None):
     ap.add_argument("--dev", action="store_true", help="also accept pages from http://localhost[:port] (a local build)")
     ap.add_argument("--record", default=None, help="append every stick answer passed on to this file, one JSON line "
                     "each: ms since start and the six raw values (tools/rc-bridge/analyze_record.py reads it)")
+    ap.add_argument("--other-dji", action="store_true", help="when no DJI RC 2 is plugged in, also try another DJI "
+                    "device on DJI's driver as a controller (untested; only the stick request is sent; never the drone 2CA3:0020)")
     a = ap.parse_args(argv)
     if a.replay and is_record(a.replay):
         load_record(a.replay, a.start, a.end)  # a file or a range with no answers stops here, before listening
@@ -704,11 +734,20 @@ def main(argv=None):
         if struct.calcsize("P") != 8:
             sys.exit("Use 64-bit Python: DJI's libusb0_dji.dll in the amd64 folder is 64-bit.")
         dll = a.dll or find_dll()
-        factory = lambda: DjiUsb(dll)  # noqa: E731
-        what = "DJI RC 2 through " + str(dll)
+        factory = lambda: DjiUsb(dll, a.other_dji)  # noqa: E731
+        what = ("DJI RC 2 or another DJI controller" if a.other_dji else "DJI RC 2") + " through " + str(dll)
+    b = Bridge(factory, a.port, dev=a.dev, record=a.record)
+    # the port is taken before the first look, so a second copy ends here and never opens the controller (review CN-8)
+    try:
+        b.bind()
+    except OSError:
+        if b.record:
+            b.record.close()
+        print("The helper is already running in another window (port %d is taken). This window can be closed." % a.port)
+        sys.stdout.flush()
+        return 1
     # the first look comes before listening, so a page cannot ask for the controller while it is open here
     ok, why = first_look(factory)
-    b = Bridge(factory, a.port, dev=a.dev, record=a.record)
     port = b.start()
     print("Shramko helper for DJI controllers on ws://127.0.0.1:%d/ (%s)." % (port, what))
     if ok:
@@ -728,4 +767,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

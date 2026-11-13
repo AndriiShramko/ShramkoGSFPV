@@ -35,7 +35,8 @@ Stage C3-helper-start:
 
 Stage fixes (review CN-1..CN-11):
 - [x] CN-1 stands (reproduced: the new test fails on the old spring.ts for low x0.93 and high x0.9). SpringWatch keeps the landings raw and judges the spread with the last range seen; owner-rc2-session.test.ts 15 of 15 (3 new: low x0.93, high x0.9, control x0.95); NEG OK (old spring.ts: 2 failed); packages/input 265 of 265; typecheck input 0
-- [x] CN-2 partly: `expect(pads).toBeGreaterThan(0)`; SAME_TOL stays 0.03 (estimate), no real gamepad here to measure. Measured on the simulated pilots (owner-rc2-session.test.ts with SAME_TOL swapped): 0.1 and 0.12 pass all, 0.15 fails only the hand-made "two landing values" unit case, 0.2 fails one more (calib or owner tests, 1 of 50)
+- [x] CN-2 partly: `expect(pads).toBeGreaterThan(0)`; SAME_TOL stays 0.03 (estimate), no real gamepad here to measure. Measured on the simulated pilots (owner-rc2-session.test.ts with SAME_TOL swapped): 0.1 and 0.12 pass all, 0.15 fails only the hand-made "two landing values" unit case, 0.2 and 0.3 fail 1 and 2 of 50 (owner-rc2-session plus packages/input/test/calib*)
+- [x] CN-3, CN-8, CN-9, CN-10 (helper part) stand; `tools/rc-bridge/rc_bridge.py`: only 2CA3:1021 is opened, another DJI device only with `--other-dji` (so first_look never opens one by default); the port is taken before first_look, a second copy prints "The helper is already running in another window" and ends with 1, no traceback; "page connected" said once until the state changes; docstring (name, first look at start, RC 2 only, second copy). README. test_rc_bridge.py 34 of 34 (3 new/changed); NEG OK (old rc_bridge.py: 3 failed)
 
 ## Facts (measured)
 Record `U:/Temp/gsfpv-train2/rc2/rc2-rec-20261113.jsonl` (67134 lines), split at the first gap over 3 s

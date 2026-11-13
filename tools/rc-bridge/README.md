@@ -46,7 +46,10 @@ centred-throttle style: the stick starts the motors, no ARM press is needed.
 `python rc_bridge.py --dll <path>` points at another copy of `libusb0_dji.dll`; `--port` changes the port (the page
 always uses 47310). `--replay <frames.json> [--wiggle]` plays a recording instead of the controller (tests, e.g.
 `packages/input/test/fixtures/dji-rc2/frames-rest.json`); `--dev` also accepts pages from http://localhost[:port]
-(a local build).
+(a local build). Only the DJI RC 2 (USB 2CA3:1021) is opened; `--other-dji` lets the helper try another DJI device on
+DJI's driver when no RC 2 is there (untested, only the stick request is sent, never the drone 2CA3:0020): DJI's
+driver also lists drones, goggles and air units, so this is never done by default. A second copy started while one
+runs says "already running in another window" and ends.
 
 ## Safety
 

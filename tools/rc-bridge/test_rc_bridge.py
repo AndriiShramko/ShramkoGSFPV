@@ -104,11 +104,14 @@ class Duml(unittest.TestCase):
         self.assertIsNone(rb.stick_values(answer([1024, 1024, 1024, 1024, 1024, 65535])))
         self.assertIsNone(rb.stick_values(rb.build(7, sender=0x06, receiver=0x0A, typ=0x80, payload=bytes(19))))
 
-    def test_an_untested_dji_controller_is_opened_but_never_the_drone(self):
+    def test_only_the_rc2_by_default_another_dji_device_only_when_asked_never_the_drone(self):
+        # review CN-3: DJI's driver lists drones, goggles and air units; none of them is asked unless the pilot says so
         rc2, drone, other, mouse = (0x2CA3, 0x1021), (0x2CA3, 0x0020), (0x2CA3, 0x1020), (0x046D, 0xC077)
-        self.assertEqual(rb.pick_device([mouse, drone, rc2, other]), 2)
-        self.assertEqual(rb.pick_device([mouse, drone, other]), 2)
-        self.assertIsNone(rb.pick_device([mouse, drone]))
+        self.assertEqual(rb.pick_device([mouse, drone, other, rc2]), 3)
+        self.assertIsNone(rb.pick_device([mouse, drone, other]))
+        self.assertEqual(rb.pick_device([mouse, drone, other, rc2], other=True), 3)
+        self.assertEqual(rb.pick_device([mouse, drone, other], other=True), 2)
+        self.assertIsNone(rb.pick_device([mouse, drone], other=True))
         self.assertIsNone(rb.pick_device([]))
 
     def test_descriptor_check(self):
@@ -367,6 +370,30 @@ class Served(unittest.TestCase):
         finally:
             s.close()
 
+    def test_a_page_that_reconnects_while_waiting_is_said_once(self):
+        # review CN-9: the page reconnects every 2 s while the controller is missing; the window keeps its reason line
+        self.b.stop()
+        said = []
+
+        class Missing:
+            def open(self):
+                raise rb.Closed("no answer")
+
+            def close(self):
+                pass
+        self.b = rb.Bridge(Missing, port=0, log=said.append, dev=True)
+        port = self.b.start()
+        for _ in range(3):
+            s, _, _ = handshake(port, "http://localhost")
+            try:
+                recv_text(s)
+                self.assertEqual(recv_text(s)["state"], "no-controller")
+            finally:
+                s.close()
+            time.sleep(0.3)
+        self.assertEqual(sum(1 for x in said if x.startswith("page connected")), 1, said)
+        self.assertEqual(sum(1 for x in said if x.startswith("Not reading the controller")), 1, said)
+
     def test_a_controller_that_stops_answering_is_said_lost(self):
         self.b.stop()
         closed = []
@@ -472,6 +499,23 @@ class Start(unittest.TestCase):
         self.assertTrue(lines[0].startswith("Shramko helper for DJI controllers on ws://127.0.0.1:"), lines)
         self.assertEqual(lines[1], "Your DJI controller answers. Now open the simulator and press 'Connect my controller'.")
         self.assertNotIn("bridge", " ".join(lines[1:]).lower())
+
+    def test_a_second_copy_says_one_line_and_ends(self):
+        # review CN-8: a copy started while one already runs (start with Windows, then a double-click) gives no traceback
+        import subprocess
+        held = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        held.bind(("127.0.0.1", 0))
+        held.listen(1)
+        try:
+            p = subprocess.run([sys.executable, "-X", "utf8", os.path.join(HERE, "rc_bridge.py"), "--replay", REC,
+                                "--port", str(held.getsockname()[1])], capture_output=True, text=True, timeout=20)
+        finally:
+            held.close()
+        out = p.stdout + p.stderr
+        self.assertNotIn("Traceback", out)
+        self.assertIn("already running in another window", out)
+        self.assertNotIn("answers", out)  # it ended before its first look at the controller
+        self.assertEqual(p.returncode, 1)
 
 
 @unittest.skipUnless(os.name == "nt", "start-dji-helper.cmd is a Windows file")
