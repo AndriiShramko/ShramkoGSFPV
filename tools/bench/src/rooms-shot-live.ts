@@ -36,10 +36,10 @@ const FREE_CAP_M = 12;
 /** CSS that hides the name tags in the measuring shots (the tag is not the drone's body) */
 const NO_TAGS = '.rooms-tags { visibility: hidden !important; }';
 
-type V3 = [number, number, number];
-type Q = [number, number, number, number]; // w, x, y, z
+export type V3 = [number, number, number];
+export type Q = [number, number, number, number]; // w, x, y, z
 
-const qmul = (a: Q, b: Q): Q => [
+export const qmul = (a: Q, b: Q): Q => [
     a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3],
     a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2],
     a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1],
@@ -49,7 +49,7 @@ const qrot = (q: Q, v: V3): V3 => {
     const p = qmul(qmul(q, [0, v[0], v[1], v[2]]), [q[0], -q[1], -q[2], -q[3]]);
     return [p[1], p[2], p[3]];
 };
-const axisQ = (ax: V3, deg: number): Q => {
+export const axisQ = (ax: V3, deg: number): Q => {
     const h = (deg * Math.PI) / 360;
     return [Math.cos(h), ax[0] * Math.sin(h), ax[1] * Math.sin(h), ax[2] * Math.sin(h)];
 };
@@ -98,7 +98,7 @@ async function createRoom(a: Page, url: string): Promise<{ link: string; nick: s
 }
 
 /** B's camera now: the shown sim's pose tilted up by the camera uptilt (packages/render-pc renderer.ts setPose). */
-async function camera(b: Page): Promise<{ pos: V3; q: Q; fwd: V3; up: V3 }> {
+export async function camera(b: Page): Promise<{ pos: V3; q: Q; fwd: V3; up: V3 }> {
     const c = await gs<{ s: number[]; tilt: number }>(b, 'const s = h.session.shownSim.s; return { s: [s[0], s[1], s[2], s[6], s[7], s[8], s[9]], tilt: h.session.cameraUptiltDeg };');
     const q: Q = [c.s[3], c.s[4], c.s[5], c.s[6]];
     const cq = qmul(q, axisQ([1, 0, 0], c.tilt));
@@ -106,11 +106,30 @@ async function camera(b: Page): Promise<{ pos: V3; q: Q; fwd: V3; up: V3 }> {
 }
 
 /** Puts A's paused sim at `p` with the attitude `q` (w, x, y, z); A keeps sending that pose. */
-const placeA = (a: Page, p: V3, q: Q): Promise<unknown> =>
+export const placeA = (a: Page, p: V3, q: Q): Promise<unknown> =>
     gs(a, `const s = h.session.sim.s; s[0] = ${p[0]}; s[1] = ${p[1]}; s[2] = ${p[2]}; s[3] = 0; s[4] = 0; s[5] = 0; s[6] = ${q[0]}; s[7] = ${q[1]}; s[8] = ${q[2]}; s[9] = ${q[3]}; s[10] = 0; s[11] = 0; s[12] = 0; return 0;`);
 
+/**
+ * Turns B (paused) level, a few cm over where it is (RAISE_M), to the yaw whose ray through the walls (the session's voxel
+ * collision) runs free longest; returns that yaw, the free length and B's height.
+ */
+export async function levelView(b: Page): Promise<{ yaw: number; freeM: number; y: number }> {
+    const look = await gs<{ yaw: number; freeM: number; tilt: number; p: number[] }>(b, `const s = h.session.shownSim.s; const c = h.session.collision;
+        let best = { yaw: 0, freeM: -1, p: [s[0], s[1], s[2]] };
+        for (const up of ${JSON.stringify(RAISE_M)}) { const o = [s[0], s[1] + up, s[2]]; if (c && !c.isFreeAt(o[0], o[1], o[2])) continue;
+        for (let yaw = 0; yaw < 360; yaw += 5) { const a = yaw * Math.PI / 180, d = [-Math.sin(a), 0, -Math.cos(a)];
+            const hit = c ? c.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], ${FREE_CAP_M}) : null;
+            const free = hit ? Math.hypot(hit.x - o[0], hit.y - o[1], hit.z - o[2]) : ${FREE_CAP_M};
+            if (free > best.freeM) best = { yaw, freeM: free, p: o }; } }
+        return { ...best, tilt: h.session.cameraUptiltDeg };`);
+    const qB = qmul(axisQ([0, 1, 0], look.yaw), axisQ([1, 0, 0], -look.tilt));
+    await gs(b, `const s = h.session.sim.s; s[1] = ${look.p[1]}; s[6] = ${qB[0]}; s[7] = ${qB[1]}; s[8] = ${qB[2]}; s[9] = ${qB[3]}; return 0;`);
+    await sleep(800);
+    return { yaw: look.yaw, freeM: look.freeM, y: look.p[1] };
+}
+
 /** What B shows of the remotes now: the hook, the tags on the page. */
-const bState = (b: Page): Promise<Record<string, unknown>> =>
+export const bState = (b: Page): Promise<Record<string, unknown>> =>
     gs(b, `const tags = [...document.querySelectorAll('.rooms-tag')].map((e) => { const x = e.getBoundingClientRect(); return { text: e.textContent, box: [x.left, x.top, x.right, x.bottom].map((v) => Math.round(v)), opacity: e.style.opacity }; });
         return { remotes: r.remotes.map((x) => ({ slot: x.slot, pos: x.pos.map((v) => +v.toFixed(3)), ageMs: x.ageMs })), tags, hookTags: r.tags || [], drawn: r.drawn ?? null, view: [innerWidth, innerHeight] };`);
 
@@ -144,23 +163,12 @@ async function look(): Promise<void> {
         writeFileSync(join(SHOTS, `look-${mode}-start.png`), await b.screenshot());
         out.start = { ...start, bCamera: camStart.pos.map((v) => +v.toFixed(3)) };
 
-        // the sweep needs 8 m of free air in front of B: B (paused) goes RAISE_M up and turns level to the yaw whose ray through
-        // the walls (the session's voxel collision) runs free longest
-        const look = await gs<{ yaw: number; freeM: number; tilt: number; p: number[] }>(b, `const s = h.session.shownSim.s; const c = h.session.collision;
-            let best = { yaw: 0, freeM: -1, p: [s[0], s[1], s[2]] };
-            for (const up of ${JSON.stringify(RAISE_M)}) { const o = [s[0], s[1] + up, s[2]]; if (c && !c.isFreeAt(o[0], o[1], o[2])) continue;
-            for (let yaw = 0; yaw < 360; yaw += 5) { const a = yaw * Math.PI / 180, d = [-Math.sin(a), 0, -Math.cos(a)];
-                const hit = c ? c.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], ${FREE_CAP_M}) : null;
-                const free = hit ? Math.hypot(hit.x - o[0], hit.y - o[1], hit.z - o[2]) : ${FREE_CAP_M};
-                if (free > best.freeM) best = { yaw, freeM: free, p: o }; } }
-            return { ...best, tilt: h.session.cameraUptiltDeg };`);
-        out.lookDir = { yawDeg: look.yaw, freeM: +look.freeM.toFixed(2), raiseM: +(look.p[1] - camStart.pos[1]).toFixed(3) };
-        const qB = qmul(axisQ([0, 1, 0], look.yaw), axisQ([1, 0, 0], -look.tilt));
-        await gs(b, `const s = h.session.sim.s; s[1] = ${look.p[1]}; s[6] = ${qB[0]}; s[7] = ${qB[1]}; s[8] = ${qB[2]}; s[9] = ${qB[3]}; return 0;`);
-        await sleep(800);
+        // the sweep needs 8 m of free air in front of B
+        const lv = await levelView(b);
+        out.lookDir = { yawDeg: lv.yaw, freeM: +lv.freeM.toFixed(2), raiseM: +(lv.y - camStart.pos[1]).toFixed(3) };
         // the sweep: A d metres along B's view, turned 135 degrees about B's up so its arms and nose show
         const cam = await camera(b);
-        const qA = qmul(axisQ(cam.up, 135), qmul(cam.q, axisQ([1, 0, 0], 0)));
+        const qA = qmul(axisQ(cam.up, 135), cam.q);
         const at = (d: number): V3 => [cam.pos[0] + cam.fwd[0] * d, cam.pos[1] + cam.fwd[1] * d, cam.pos[2] + cam.fwd[2] * d];
         await placeA(a, at(-30), qA);
         await sleep(1500);
