@@ -35,8 +35,8 @@ export const FLAG_FRAGMENT = 'force-high-performance-gpu';
 /**
  * Windows' own page for the per-application graphics choice (Settings, System, Display, Graphics). A page may link to it:
  * the browser asks the pilot before it opens Settings. Edge 157's question was read ("This site is trying to open Settings",
- * Open or Cancel: evidence/2026-11-13/gpu-select/edge-link.json); Chrome 140's question is not exposed to the tool that read
- * Edge's, so for Chrome this rests on how Chromium treats links to other programs, not on a reading (docs/wip/gpu-select.md).
+ * Open or Cancel: evidence/2026-11-13/gpu-select/edge-link.json). In Chrome 140 the click opened nothing either until the
+ * origin was allowed (chrome-link.json); the words of its question are not exposed to the tool that read Edge's.
  */
 export const WINDOWS_GRAPHICS_SETTINGS = 'ms-settings:display-advancedgraphics';
 

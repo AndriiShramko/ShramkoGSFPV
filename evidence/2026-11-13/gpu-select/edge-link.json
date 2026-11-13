@@ -1,11 +1,11 @@
 {
   "name": "gpu-select/edge-link",
-  "date": "2026-11-13T20:18:40.107Z",
+  "date": "2026-11-13T22:57:45.094Z",
   "label": "edge-link",
   "mode": "link",
   "browserName": "edge",
-  "page": "http://127.0.0.1:6439/ (a page of the probe with <a href=\"ms-settings:display-advancedgraphics\">)",
-  "settingsWindowOpenBefore": true,
+  "page": "http://127.0.0.1:13804/ (a page of the probe with <a href=\"ms-settings:display-advancedgraphics\">)",
+  "settingsWindowOpenBefore": false,
   "browser": {
     "product": "Edg/157.0.4341.46",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36 Edg/157.0.0.0"
@@ -22,11 +22,11 @@
       },
       {
         "type": "Text",
-        "name": "http://127.0.0.1:6439 wants to open this application."
+        "name": "http://127.0.0.1:13804 wants to open this application."
       },
       {
         "type": "CheckBox",
-        "name": "Always allow http://127.0.0.1:6439 to open links of this type in the associated app"
+        "name": "Always allow http://127.0.0.1:13804 to open links of this type in the associated app"
       },
       {
         "type": "Button",
@@ -41,7 +41,7 @@
       "--force-renderer-accessibility"
     ],
     "settingsOpened": false,
-    "settingsWindow": "Settings"
+    "settingsWindow": null
   },
   "allowed": {
     "settings": {
@@ -50,18 +50,7 @@
       "texts": [
         "System",
         "Display",
-        "Graphics",
-        "Default settings",
-        "Informational icon",
-        "You'll need to restart your app or game to see your changes.",
-        "Optimizations for windowed games",
-        "Reduce latency and use advanced features in compatible games by using flip presentation model.  More about optimizations",
-        "Advanced graphics settings",
-        "Custom settings for applications",
-        "Informational icon",
-        "Custom settings only apply when apps support the feature.",
-        "Filter by:",
-        "All apps"
+        "Graphics"
       ]
     },
     "opened": true,
@@ -71,8 +60,8 @@
     "asksFirst": [
       "Window: This site is trying to open Settings.",
       "Text: This site is trying to open Settings.",
-      "Text: http://127.0.0.1:6439 wants to open this application.",
-      "CheckBox: Always allow http://127.0.0.1:6439 to open links of this type in the associated app",
+      "Text: http://127.0.0.1:13804 wants to open this application.",
+      "CheckBox: Always allow http://127.0.0.1:13804 to open links of this type in the associated app",
       "Button: Open",
       "Button: Cancel"
     ],
