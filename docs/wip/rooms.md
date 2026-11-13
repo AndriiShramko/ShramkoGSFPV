@@ -30,6 +30,8 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - Clock: JSON `ping {t}` -> `pong {t, s}` (`s` = serverMs, the clock of the snapshot header).
 
 ### Stage R2: client core (not started)
+- First step of R2: `pnpm install --frozen-lockfile` in this worktree (R1 needed no Node and did not run it; the
+  submodule `packages/sonic-fpv` is initialised at 83ce612).
 ### Stage R3: screens, speech, probe (not started)
 
 ## Findings
