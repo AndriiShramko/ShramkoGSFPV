@@ -8,14 +8,19 @@ import { BoxGeometry, Color, Entity, Mesh, MeshInstance, Quat as PcQuat, Standar
 import type { SonicObject, Vec3, WorldCheckpoint } from '@shramko/sonic-fpv';
 import { shapePrims } from '../sonic/primitives';
 import type { Prim, StageRenderer } from '../sonic/primitives';
+import type { EditPaint } from './editor/rules';
 
-type Paint = 'next' | 'later' | 'passed' | 'arrow';
-/** sRGB colours (design choice, not measured): next lime, later dim teal, passed grey, arrows amber. */
+type Paint = 'next' | 'later' | 'passed' | 'arrow' | EditPaint;
+/** sRGB colours (design choice, not measured): next lime, later dim teal, passed grey, arrows amber; in the editor the selected
+ *  gate magenta, a failing gate red, a failing selected gate orange (stage F1-finish). */
 const PAINT: Record<Paint, [number, number, number]> = {
     next: [0.65, 1, 0.1],
     later: [0.15, 0.55, 0.55],
     passed: [0.45, 0.45, 0.45],
-    arrow: [1, 0.72, 0.1]
+    arrow: [1, 0.72, 0.1],
+    selected: [1, 0.2, 1],
+    bad: [1, 0.08, 0.05],
+    'selected-bad': [1, 0.5, 0]
 };
 /** a chevron every this many metres along the path (tracks-plan 2.3) */
 export const CHEVRON_STEP_M = 2;
@@ -130,6 +135,15 @@ export class CourseStage {
                 this.arrowCount++;
             }
         }
+    }
+
+    /** The editor's paint (course/editor/rules.ts editPaints), one per gate, over whatever setNext painted. */
+    paintEdit(paints: readonly EditPaint[]): void {
+        if (!this.root) return;
+        this.gates.forEach((g, i) => {
+            const m = this.material(paints[i] ?? 'later');
+            for (const mi of g.instances) mi.material = m;
+        });
     }
 
     /** Takes the course off the screen (the materials stay for the next show). */

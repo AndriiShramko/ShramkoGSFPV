@@ -16,9 +16,9 @@
 /** Windows over the flight that need the cursor: every panel (ui/dom.ts: the pause menu, the report form,
  *  settings, rooms, ceiling and floaters, the how-to-fly card), the Controls, drones and scenes screens, any
  *  modal dialog shown, Fly by Sound's start screen (while shown) and lesson menu, the crash view, the video
- *  export bar (builtin/video-export.ts: Cancel, Retry, Close). */
+ *  export bar (builtin/video-export.ts: Cancel, Retry, Close), the course editor (course/editor/panel.ts). */
 export const CURSOR_WINDOWS = ['.panel', '.screen.radio', '.screen.drones', '.screen.scenes',
-    '[aria-modal="true"]:not([hidden])', '.sonic-start:not([hidden])', '.sonic-menu', '.crash-overlay', '.vx-bar'] as const;
+    '[aria-modal="true"]:not([hidden])', '.sonic-start:not([hidden])', '.sonic-menu', '.crash-overlay', '.vx-bar', '.course-editor'] as const;
 
 /** A window that needs the cursor is in the page. */
 export function cursorWindowOpen(root: Pick<ParentNode, 'querySelector'> = document): boolean {
