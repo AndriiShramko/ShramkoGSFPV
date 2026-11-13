@@ -203,4 +203,16 @@ describe('GroundCache', () => {
         expect(c.ask(80, look)).toBe(3);
         expect(c.looks).toBe(3);
     });
+
+    it('a quick look (under 8 ms) owes no rest: only the time slice counts', () => {
+        expect(typeof G.GroundCache).toBe('function');
+        expect(G.GROUND_SLOW_MS).toBe(8);
+        let wall = 0;
+        const c = new G.GroundCache(33, () => wall);
+        let n = 0;
+        const look = (): number => { wall += 7.9; return ++n; };
+        // a harness faster than the clock: 100 slices of input time while the clock only moves by the looks themselves
+        for (let i = 0; i < 100; i++) expect(c.ask(i * 33, look)).toBe(i + 1);
+        expect(c.looks).toBe(100);
+    });
 });

@@ -8,8 +8,9 @@
 // to 415 ms (max) a look, and a radio's every report asked for one: the page did nothing else. Two rules bound it:
 //  - the sweep goes down in pieces of PROBE_PIECE_M and stops at the first piece that touches, so no sphere tested
 //    is larger than PROBE_R + PROBE_PIECE_M / 2 and a look tests at most PROBE_M / PROBE_PIECE_M of them;
-//  - GroundCache: the pilots look through it, at most once per time slice of the input and never for more than
-//    1 / (1 + GROUND_REST) of the page's time, whatever a look costs; the reports in between get the last answer.
+//  - GroundCache: the pilots look through it, at most once per time slice of the input, and a slow look earns a rest
+//    of GROUND_REST times its own duration: looks never take more than about a quarter of the page's time, whatever
+//    a look costs; the reports in between get the last answer.
 
 import type { ContactOut, ContactWorld, SimParams } from '@gsfpv/sim-core';
 import { S } from '@gsfpv/sim-core';
@@ -53,15 +54,23 @@ export function groundClearance(world: ContactWorld | null, s: ArrayLike<number>
 /** The ground below is looked at no more often than this, ms of the input's own time (a frame's, a report's). */
 export const GROUND_EVERY_MS = 33;
 /**
- * After a look the next one waits this many times the look's own duration on the page's clock: looks take at most
- * 1 / (1 + GROUND_REST) of the page's time (a fifth), however slow a world answers. A chosen bound, not a measurement.
+ * After a slow look the next one waits this many times the look's own duration on the page's clock: slow looks take
+ * at most 1 / (1 + GROUND_REST) of the page's time (a fifth), however slow a world answers. A chosen bound, not a
+ * measurement.
  */
 export const GROUND_REST = 4;
+/**
+ * A look that took at least this long on the page's clock is slow and earns the rest, ms. Under it only the time
+ * slice counts (at most GROUND_SLOW_MS in every GROUND_EVERY_MS, a quarter), so a harness that flies faster than the
+ * clock (tests, replays) gets the same looks on every machine. Chosen: about twice the slowest look measured on scene
+ * 887f27aa (3.65 ms, ground-probe-cost.ts) and half a frame at 60 frames a second; not a measurement itself.
+ */
+export const GROUND_SLOW_MS = 8;
 
 /**
  * The ground below as last looked at, for a pilot that is asked on every input report. A new look is made only when
  * GROUND_EVERY_MS of input time have passed since the last one (or the input's time went back: a new source) and the
- * page's clock is past the rest the last look earned; otherwise the last answer is given again.
+ * page's clock is past the rest a slow last look earned; otherwise the last answer is given again.
  */
 export class GroundCache {
     /** the last answer, m (null: nothing within reach, or no look yet) */
@@ -97,7 +106,8 @@ export class GroundCache {
         this.looks++;
         const after = this.clock();
         this.doneAt = after;
-        this.restUntil = after + Math.max(0, after - before) * GROUND_REST;
+        const took = after - before;
+        this.restUntil = took >= GROUND_SLOW_MS ? after + took * GROUND_REST : -Infinity;
         return this.value;
     }
 }
