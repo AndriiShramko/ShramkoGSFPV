@@ -6,7 +6,7 @@
 //   count     N = clamp(round(4 + V / 40), 4, 24) gates for V flown m3 of usable free space.
 //   kinds     the cell's sure free radius picks the shape: >= 2.2 m a square race gate with a 1.5 m opening, >= 1.4 m a
 //             ring of 1.2 m; less: no gate there.
-//   order     a farthest-point sample of the candidate cells, then a seeded walk: each next gate 3-15 m from the last,
+//   order     a seeded walk over a strided pool of the candidate cells: each next gate 3-15 m from the last,
 //             a turn of at most 120 degrees, the leg straight and free (a swept sphere of the margin), the gate's axis the
 //             leg's direction rounded to one of 16 yaws and within 30 degrees of the leg (the proof allows 35).
 //   proof     every gate added is proven alone by checkTrack (check.ts): the leg from where the walk stands, its opening,
@@ -66,9 +66,13 @@ export const SQUARE_SIDE_M = 1.5;
 export const SQUARE_BAR_M = 0.1;
 export const RING_DIAMETER_M = 1.2;
 export const RING_TUBE_M = 0.08; // estimate: a visible tube
-/** candidates kept for the walk per gate wanted, and the most cells the farthest-point sample reads */
-const SAMPLE_PER_GATE = 8;
+/** the most candidate cells the walk reads (a stride over the usable cells; estimate: 20 000 x 24 gates stays fast) */
 const POOL_MAX = 20000;
+/** the out half keeps within this many longest legs of the start (estimate: Winter Garden walked to 56 m and ran out of
+ *  candidates at the scan's edge without it, evidence of the walk before this rule) */
+const OUT_LEGS = 2;
+/** leg sweeps a step may spend finding 4 open options (estimate) */
+const SWEEPS_PER_STEP = 64;
 
 export interface CourseOptions {
     readonly seed: number;
@@ -161,28 +165,9 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const offset = all.length > 0 ? rng.int(0, stride - 1) : 0;
     const pool: number[] = [];
     for (let k = offset; k < all.length; k += stride) pool.push(all[k]!);
-    const poolPts = pool.map((i) => cellCentre(free, i));
-    const want = Math.min(pool.length, SAMPLE_PER_GATE * N);
-    const picked: number[] = [];
-    if (want > 0) {
-        const near = new Float64Array(pool.length).fill(Infinity);
-        let cur = rng.int(0, pool.length - 1);
-        for (let k = 0; k < want; k++) {
-            picked.push(cur);
-            let far = -1, farD = -1;
-            for (let j = 0; j < pool.length; j++) {
-                const d = dist2(poolPts[j]!, poolPts[cur]!);
-                if (d < near[j]!) near[j] = d;
-                if (near[j]! > farD) {
-                    farD = near[j]!;
-                    far = j;
-                }
-            }
-            if (farD <= 0) break;
-            cur = far;
-        }
-    }
-    const cands = picked.map((j) => ({ pos: poolPts[j]!, free: clearanceM(free, pool[j]!), used: false }));
+    // the walk reads the whole (strided) pool: a farthest-point sample of 8 per gate spread 192 points over 47 000 m3 of
+    // Winter Garden, so after 1-4 gates no sample lay 3-15 m from the last (evidence run of bf7dc3d9: tries 6-11)
+    const cands = pool.map((i) => ({ pos: cellCentre(free, i), free: clearanceM(free, i), used: false }));
 
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
     const shapeFor = (freeM: number): TrackGate['shape'] =>
@@ -208,6 +193,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     let cur = startW;
     let prevDir: Vec3 | null = null;
     let tries = 0;
+    let stop = 'tries';
+    let back = false;
     const turnOk = (from: Vec3, prev: Vec3 | null, to: Vec3): Vec3 | null => {
         const leg = sub(to, from);
         const L = len(leg);
@@ -219,7 +206,11 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     };
     while (gates.length < N && tries < p.tries) {
         const options: { c: (typeof cands)[number]; u: Vec3; score: number }[] = [];
+        // out (first half): within OUT_LEGS legs of the start; back: toward the start. A walk with nothing in reach turns back.
+        if (gates.length >= Math.ceil(N / 2)) back = true;
+        const reach2 = OUT_LEGS * OUT_LEGS * p.legMaxM * p.legMaxM;
         for (const c of cands) {
+            if (!back && dist2(startW, c.pos) > reach2) continue;
             if (c.used) continue;
             const u = turnOk(cur, prevDir, c.pos);
             if (!u) continue;
@@ -227,14 +218,27 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             for (const g of flownGates) near = Math.min(near, dist2(g, c.pos));
             near = Math.min(near, dist2(startW, c.pos));
             if (near < p.spacingM * p.spacingM) continue;
-            options.push({ c, u, score: near });
+            // out: away from what is laid; back (the second half): toward the start, so the lap can close
+            options.push({ c, u, score: back ? -dist2(startW, c.pos) : near });
         }
-        if (options.length === 0) break;
         options.sort((a, b) => b.score - a.score);
-        const o = options[rng.int(0, Math.min(options.length, 4) - 1)]!;
+        // the best 4 whose leg is free (at most SWEEPS_PER_STEP sweeps); a blocked leg does not use the candidate up,
+        // it may be free from the next gate (marking it used left the walk back 20 m short of the start on Winter Garden)
+        const open: typeof options = [];
+        for (let j = 0, sweeps = 0; j < options.length && open.length < 4 && sweeps < SWEEPS_PER_STEP; j++, sweeps++) {
+            if (sweeper.free(cur, options[j]!.c.pos, p.marginM)) open.push(options[j]!);
+        }
+        if (open.length === 0) {
+            if (!back) {
+                back = true;
+                continue;
+            }
+            stop = options.length === 0 ? 'no candidate in reach' : 'no free leg';
+            break;
+        }
+        const o = open[rng.int(0, open.length - 1)]!;
         o.c.used = true;
         tries++;
-        if (!sweeper.free(cur, o.c.pos, p.marginM)) continue;
         const k = nearestYaw(o.u);
         const gate: TrackGate = { id: `g${gates.length + 1}`, shape: shapeFor(o.c.free), pos: toScan(o.c.pos), quat: yawQuatStep(k), direction: 'forward' };
         // one-gate proof: the leg from where the walk stands and this gate's opening, frame and run (the whole course is
@@ -291,6 +295,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
                 rooms: free.rooms.length,
                 volumeM3: r3(free.volumeM3),
                 tries,
+                walked: gates.length,
+                stop: gates.length >= N ? 'count' : stop,
                 closed: course.length > 0 && laps > 1,
                 proof: proof ? { ok: proof.ok, marginM: p.marginM, pathM: proof.pathM } : null
             }
