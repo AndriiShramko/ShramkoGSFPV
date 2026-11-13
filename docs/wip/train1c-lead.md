@@ -15,6 +15,14 @@ rooms-public), which is on main but not live. Lanes: look (C:/dev/gsfpv-rooms), 
 - [x] 5. deploy/live-checks.sh written (ASCII, bash -n clean, 462548a9); NOT run
 - [x] 6. this note complete
 - [x] 7. push main (plain push), see the commit that adds this line
+- [x] 8. released by the lead, 15:05-15:25 UTC: `release-nginx.sh` (nginx -t ok, /en/fly/ sends the bridge in connect-src),
+  `ship.sh 73beb77e` (release 41b9b50d183c, smoke 302 checks, neighbours equal); live release.json 73beb77e
+- [x] 9. `bash deploy/live-checks.sh U:/Temp/gsfpv-train1c/live`: LIVE CHECKS: PASS (rooms 9 of 9, accept-fly 10 of 10,
+  r9 11 of 11, centre-throttle, fast-radio, mouse-free 84 of 84, rc2-probe usb+refused)
+- [ ] 10. rc2-probe usb,bridge on the live site with the replay bridge: usb 5 of 5, bridge FAILS (bridge.connected false,
+  the bridge logs a connection closed before any request). Lane `rc2-lna` (worktree C:/dev/gsfpv-train1-base) checks
+  Chrome's local-network permission as the cause; pictures in 'Pictures for the lead' were looked at by the lead
+  (after-start, remote 2 m and 4 m, course hint at 1366 and 844): accepted
 
 ## Merged
 
