@@ -1052,8 +1052,62 @@
       "label": "On this page"
     },
     "newTab": "(opens in a new tab)",
+    "hero": {
+      "lead": "In headphones you hear where a wall is, where the way is open and where the next ring is. Free, in the browser, and the app speaks for itself."
+    },
+    "hear": {
+      "title": "What do I hear?"
+    },
+    "fig": {
+      "intro": "The pictures below only repeat the text next to them, so without them you miss nothing. The numbers are those of the default sound set.",
+      "height": {
+        "title": "Height: a higher drone, a higher tone",
+        "text": [
+          "A soft tone glides up as you climb and down as you sink: one step of the musical scale for every half metre.",
+          "About every 1.25 seconds a short note marks the height to fly at. When your tone and that note sound the same, you are there.",
+          "If you are too high or too low for the lesson, the tone buzzes."
+        ]
+      },
+      "wall": {
+        "title": "Walls: the nearer the hit, the faster the knocks",
+        "text": [
+          "A wall knocks from its own side, left or right. The knocks follow the seconds left before you would hit it, not the metres.",
+          "With 4 seconds left, about one knock every 1.4 seconds; just before the hit, one every 0.11 seconds. Closer than 2 metres, nearness alone quickens them too.",
+          "With less than 1.5 seconds left, the other sounds turn down so that the wall stands out."
+        ]
+      },
+      "hum": {
+        "title": "The way: a hum from the next ring or gate",
+        "text": [
+          "A low hum comes from the middle of the next ring or gate, or from the way ahead in a corridor or a tunnel. Turn toward it and fly to it.",
+          "When your nose points at it, within 8 degrees, the hum sounds an octave higher. If you are not lined up with the gate, the hum turns rough.",
+          "It repeats faster as you get closer: 1.2 times a second from 40 metres, 8 times a second from 2 metres."
+        ]
+      },
+      "gates": {
+        "title": "Rings and gates: a note for each one",
+        "text": [
+          "Each ring or gate you pass gives a bright note, and the notes climb like a little song. At the end of a stage of a long track, the voice says which stage you passed.",
+          "Fly through a ring from behind and three notes fall: it does not count, and the voice asks you to go back and fly it from the front.",
+          "Fly back along the track for more than a second and you hear two falling pairs of notes and “You are flying back. Turn around.”"
+        ]
+      },
+      "keys": {
+        "text": [
+          "The nine keys of the sound mode on an ordinary keyboard. What each one does is in the list below.",
+          "Press K in the simulator and it says them aloud, so there is nothing to learn by heart."
+        ]
+      },
+      "moreTitle": "What else there is"
+    },
+    "media": {
+      "garden": "In the background: a flight in the simulator through Winter Garden, a 3DGS scan by Andrii Shramko and the place of one of the sound lessons.",
+      "pond": "In the background: a real FPV flight by Andrii Shramko, flown by sight in goggles, not by sound: low over a pond in a park in Bydgoszcz.",
+      "acro": "In the background: a real FPV flight by Andrii Shramko in Bydgoszcz, flown by sight in goggles, not by sound: up along a spruce, a roll, a dive between the trees.",
+      "villa": "In the background: a flight in the simulator, flown by sight, through Modlinek Villa, a 3DGS scan by Andrii Shramko: round the tulips, then low under the table."
+    },
     "start": {
-      "title": "Start",
+      "title": "How do I start?",
       "text": "Put on headphones and press the button. The app speaks to you and begins with a short headphone check, then the first lessons: hovering, walls, a corridor and rings.",
       "button": "Start Fly by Sound",
       "note": "This opens the simulator in sound mode. A computer with a recent Chrome or Edge works best.",
@@ -1061,12 +1115,12 @@
       "steps": ["Put on wired headphones and open this page on a computer in Chrome or Edge.", "Press “Start Fly by Sound”. The app starts speaking.", "Do the short headphone check.", "Start the first lesson, hovering. The K key reads all the keys aloud.", "Flying with a radio or a gamepad: connect it before you start. A sighted helper sets up a radio once."]
     },
     "how": {
-      "title": "How it works",
+      "title": "How can one fly by sound at all?",
       "text": "The simulator turns what the drone's camera sees into sound. In your headphones you hear where a wall is, where the way is open and where the next ring is.",
       "items": ["You hear a wall early. The sound depends on how many seconds are left before you would hit it, not on metres.", "Height is a tone that glides. The height you need has its own note: when the tones match, you are there.", "A short chime marks an open way. If you fly the wrong way, the app tells you.", "What matters sounds from its own side, left or right. That is why you need headphones.", "The motor hums under the cues. You set its volume in the settings.", "A voice leads the lessons: 28 lessons, from hovering to walls, corridors, six tunnels and rings at three heights. There are small rooms for a micro drone and a lesson in a real place captured as 3DGS (a Gaussian splat): Winter Garden.", "The menus and settings speak too: Escape opens a spoken lesson menu.", "For low vision, the lesson rooms are drawn in strong contrast and there is a large horizon display. For deaf pilots, a panel shows the sound cues."]
     },
     "need": {
-      "title": "What you need",
+      "title": "What do I need?",
       "items": ["Headphones. Wired ones are best: Bluetooth adds 180 to 250 milliseconds of delay. Switch off Windows Sonic or Dolby Atmos.", "A keyboard, a gamepad or an RC radio. A sighted helper sets up a radio once.", "A comfortable volume. If a sound hurts, take off the headphones and turn the volume down.", "A helper for the first time, for the radio and, if you want to record, for the consent."]
     },
     "keys": {
