@@ -298,6 +298,9 @@ def validate_track(obj) -> list[tuple[str, str]]:
             name = c.string(a.get("name"), "author.name", 1, 80) if "name" in a else None
             if name is not None and CONTROL.search(name):
                 c.add("author.name", "must not contain control characters")
+            # lane review TR-14 f: no free text from one pilot is served to everyone
+            if isinstance(a.get("name"), str) and a.get("name") != GENERATOR_NAME:
+                c.add("author.name", f"must be '{GENERATOR_NAME}'")
 
     gen_name = None
     if "generator" in root and root["generator"] is not None:

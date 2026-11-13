@@ -24,7 +24,33 @@ export function withCourse(href: string, id: string | null): string {
 
 const BEST_KEY = 'gsfpv.course.best';
 
-export const bestKey = (id: string, version: number, drone: string): string => `${id}.v${version}.${drone}`;
+/** The best lap's key: the track, the scene and the walls it was laid on (lane review TR-10: a link's seed on another
+ *  scene, scale or walls is another course, so the walls' digest and the transform go into the key), and the drone. */
+export function bestKey(
+    tr: { readonly id: string; readonly version: number; readonly scene: { readonly id: string; readonly version?: number }; readonly transform?: readonly number[] | null; readonly generator?: { readonly params?: Record<string, unknown> } | null },
+    drone: string
+): string {
+    const digest = tr.generator?.params?.['freeDigest'];
+    const placed = Array.isArray(tr.transform) ? tr.transform.join(',') : '-';
+    return `${tr.id}.v${tr.version}.${tr.scene.id}.${tr.scene.version ?? 0}.${typeof digest === 'string' ? digest.slice(0, 16) : '-'}.${placed}.${drone}`;
+}
+
+const OFFERED_KEY = 'gsfpv.course.offered';
+
+/** Lane review TR-14 a: the offer of a scene's saved course is flashed once per scene and profile; true the first time. */
+export function firstOffer(scene: string): boolean {
+    try {
+        const raw = globalThis.localStorage?.getItem(OFFERED_KEY);
+        const v: unknown = raw ? JSON.parse(raw) : [];
+        const seen = Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+        if (seen.includes(scene)) return false;
+        // the newest 200 scenes (estimate: more than the catalogue holds)
+        globalThis.localStorage?.setItem(OFFERED_KEY, JSON.stringify([...seen, scene].slice(-200)));
+        return true;
+    } catch {
+        return true;
+    }
+}
 
 function bests(): Record<string, number> {
     try {

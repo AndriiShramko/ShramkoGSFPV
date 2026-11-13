@@ -4,6 +4,7 @@
 // (tools/bench/test/tracks-a6.test.ts). Gates are not solid. DOM-free: the A6 test runs it in Node.
 import { trackToObjects } from '@shramko/sonic-fpv';
 import type { SonicObject, TrackFile, Vec3, WorldCheckpoint } from '@shramko/sonic-fpv';
+import { S } from '@gsfpv/sim-core';
 import { LapTimer, coursePath } from '@gsfpv/tracks';
 import type { LapEvent, LapView } from '@gsfpv/tracks';
 
@@ -38,6 +39,15 @@ export class CourseRun {
         const a = this.prev;
         this.prev = [pos[0], pos[1], pos[2]];
         return a === null ? null : this.timer.step(tMs, a, this.prev);
+    }
+
+    /**
+     * One drawn frame of the feature (app/builtin/course.ts frame()): the sim's clock and the craft's position are read, never
+     * written. The A6 test drives this same function around the real sim (lane review TR-12).
+     */
+    fromSim(sim: { readonly tick: number; readonly s: ArrayLike<number> }): { ev: LapEvent | null; view: LapView } {
+        const ev = this.feed(sim.tick, [sim.s[S.px]!, sim.s[S.py]!, sim.s[S.pz]!]);
+        return { ev, view: this.view(sim.tick) };
     }
 
     pause(tMs: number): void {

@@ -9,7 +9,7 @@
   "course.hud.last": "Ostatnie {time}",
   "course.hud.best": "Najlepsze {time}",
   "course.generating": "Buduję trasę w wolnej przestrzeni tego skanu...",
-  "course.ready": "Trasa: {n} bramek. Przeleć przez bramkę 1, aby włączyć zegar. Shift+T ją ukrywa",
+  "course.ready": "Bramki: {n}. Przeleć przez bramkę 1, aby włączyć zegar. Shift+T ją ukrywa",
   "course.none": "W wolnej przestrzeni tego skanu nie mieści się żadna trasa",
   "course.noWalls": "Ten skan nie ma ścian, więc nie da się tu zbudować trasy",
   "course.failed": "Nie udało się zbudować trasy: {msg}",

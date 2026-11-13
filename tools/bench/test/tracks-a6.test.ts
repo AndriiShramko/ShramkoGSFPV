@@ -43,9 +43,10 @@ describe('A6 with the course on', () => {
         const solo = flight(null);
         const run = new CourseRun(track, { s: 1, t: [0, 0, 0] });
         let fed = 0;
+        // lane review TR-12: the feature's own per-frame path (CourseRun.fromSim, which builtin/course.ts frame() calls) gets the
+        // real sim, so a write there would show in the hash
         const withCourse = flight((sim) => {
-            run.feed(sim.tick, [sim.s[S.px], sim.s[S.py], sim.s[S.pz]]);
-            run.view(sim.tick);
+            run.fromSim(sim);
             fed++;
         });
         expect(fed).toBeGreaterThan(1000);
@@ -54,5 +55,15 @@ describe('A6 with the course on', () => {
         let k = 0;
         const perturbed = flight(null, () => ((k++ * 2654435761) % 1000) / 1000);
         expect(perturbed.hash).not.toBe(solo.hash);
+    });
+
+    it('control (TR-12): one state value written in the same per-frame path changes the hash', () => {
+        const solo = flight(null);
+        const run = new CourseRun(track, { s: 1, t: [0, 0, 0] });
+        const written = flight((sim) => {
+            run.fromSim(sim);
+            sim.s[S.vx] = (sim.s[S.vx] ?? 0) + 1e-3;
+        });
+        expect(written.hash).not.toBe(solo.hash);
     });
 });

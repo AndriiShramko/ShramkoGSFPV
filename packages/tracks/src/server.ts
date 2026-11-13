@@ -29,6 +29,8 @@ export function validateServerTrack(input: unknown): ServerCheck {
     if (scene && typeof scene.id === 'string' && !SERVER_SCENE_ID.test(scene.id)) issues.push('scene.id: must be 6-32 lowercase hex digits');
     const author = sub('author');
     if (author && typeof author.kind === 'string' && author.kind !== 'generator') issues.push("author.kind: must be 'generator'");
+    // lane review TR-14 f: no free text from one pilot is served to everyone
+    if (author && typeof author.name === 'string' && author.name !== GENERATOR_NAME) issues.push(`author.name: must be '${GENERATOR_NAME}'`);
     if ('generator' in r && r.generator === null) issues.push('generator: must name the generator');
     const gen = sub('generator');
     if (gen && typeof gen.name === 'string' && gen.name !== GENERATOR_NAME) issues.push(`generator.name: must be '${GENERATOR_NAME}'`);

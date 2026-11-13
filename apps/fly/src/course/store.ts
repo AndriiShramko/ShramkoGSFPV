@@ -23,10 +23,12 @@ export class CourseStore {
     constructor(private readonly fetchFn: Fetch = (i, init) => fetch(i, init), private readonly base = '/api/tracks') {}
 
     /** The scene's courses, newest first; [] for a scene id the server does not keep, or when the API cannot be reached. */
-    async list(scene: string): Promise<CourseRow[]> {
+    async list(scene: string, fresh = false): Promise<CourseRow[]> {
         if (!SERVER_SCENE_ID.test(scene)) return [];
         try {
-            const r = await this.fetchFn(`${this.base}?scene=${encodeURIComponent(scene)}`);
+            // fresh: past the browser's 30 s cache of the list (right after a save, lane review TR-14 c)
+            const url = `${this.base}?scene=${encodeURIComponent(scene)}`;
+            const r = await (fresh ? this.fetchFn(url, { cache: 'no-store' }) : this.fetchFn(url));
             if (!r.ok) return [];
             const j = (await r.json()) as { v?: number; tracks?: unknown };
             if (j.v !== 1 || !Array.isArray(j.tracks)) return [];

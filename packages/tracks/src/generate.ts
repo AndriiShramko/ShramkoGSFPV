@@ -62,9 +62,9 @@ export const COURSE_DEFAULTS: CourseParams = {
 /** Gate sizes, flown m (plan 2.2): the shape a cell's sure free radius allows. */
 export const SQUARE_MIN_FREE_M = 2.2; // estimate (plan 2.2)
 export const RING_MIN_FREE_M = 1.4; // estimate (plan 2.2)
-export const SQUARE_SIDE_M = 1.5;
-export const SQUARE_BAR_M = 0.1;
-export const RING_DIAMETER_M = 1.2;
+export const SQUARE_SIDE_M = 1.5; // estimate (plan 2.2): a racing gate's opening
+export const SQUARE_BAR_M = 0.1; // estimate: a visible bar
+export const RING_DIAMETER_M = 1.2; // estimate (plan 2.2): a ring a whoop passes
 export const RING_TUBE_M = 0.08; // estimate: a visible tube
 /** the most candidate cells the walk reads (a stride over the usable cells; estimate: 20 000 x 24 gates stays fast) */
 const POOL_MAX = 20000;

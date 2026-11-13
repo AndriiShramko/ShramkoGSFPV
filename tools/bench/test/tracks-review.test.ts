@@ -11,6 +11,8 @@ import type { TrackFile } from '@shramko/sonic-fpv';
 import { freeSpace, generateCourse } from '@gsfpv/tracks';
 import { CourseStage } from '../../../apps/fly/src/course/view';
 import { CourseRun, enoughGates } from '../../../apps/fly/src/course/run';
+import { bestKey, firstOffer } from '../../../apps/fly/src/course/link';
+import { CourseStore } from '../../../apps/fly/src/course/store';
 import { IDENTITY, SPAWN_A, threeRooms } from '../../../packages/tracks/test/worlds';
 
 function stageOf(): CourseStage {
@@ -89,5 +91,44 @@ describe('TR-8: too few gates', () => {
 
     it('control: enough gates at once is taken at once', () => {
         expect(enoughGates(fake([17]).make, 1, 4).tried).toBe(1);
+    });
+});
+
+describe('TR-10: the best lap key names the scene, the walls and the scale', () => {
+    it('the same seed id on another scene, other walls or another scale is another key; the same course is the same key', () => {
+        const withDigest = (d: string) => ({ ...course, generator: { ...course.generator!, params: { ...(course.generator?.params ?? {}), freeDigest: d } } }) as TrackFile;
+        const a = bestKey(withDigest('aaaa'), 'pavo20');
+        expect(bestKey(withDigest('aaaa'), 'pavo20')).toBe(a);
+        expect(bestKey({ ...withDigest('aaaa'), scene: { ...course.scene, id: '0000bbbb' } } as TrackFile, 'pavo20')).not.toBe(a);
+        expect(bestKey(withDigest('bbbb'), 'pavo20')).not.toBe(a);
+        expect(bestKey({ ...withDigest('aaaa'), transform: [0.6, 0, 0, 0] } as TrackFile, 'pavo20')).not.toBe(a);
+        expect(bestKey(withDigest('aaaa'), 'meteor75')).not.toBe(a);
+    });
+});
+
+describe('TR-14: the list after a save, the offer once per scene', () => {
+    it('list(scene, true) asks past the browser cache; list(scene) does not', async () => {
+        const inits: (RequestInit | undefined)[] = [];
+        const store = new CourseStore(async (_u, init) => {
+            inits.push(init);
+            return new Response(JSON.stringify({ v: 1, tracks: [] }), { status: 200 });
+        });
+        await store.list('0000aaaa');
+        await store.list('0000aaaa', true);
+        expect(inits[0]?.cache).toBeUndefined();
+        expect(inits[1]?.cache).toBe('no-store');
+    });
+
+    it('the offer is flashed the first time a scene is seen, not again', () => {
+        const mem = new Map<string, string>();
+        const had = (globalThis as { localStorage?: unknown }).localStorage;
+        (globalThis as { localStorage?: unknown }).localStorage = { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) };
+        try {
+            expect(firstOffer('0000aaaa')).toBe(true);
+            expect(firstOffer('0000aaaa')).toBe(false);
+            expect(firstOffer('0000bbbb')).toBe(true);
+        } finally {
+            (globalThis as { localStorage?: unknown }).localStorage = had;
+        }
     });
 });

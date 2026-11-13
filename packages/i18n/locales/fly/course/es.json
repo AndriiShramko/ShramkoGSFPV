@@ -9,7 +9,7 @@
   "course.hud.last": "Última {time}",
   "course.hud.best": "Mejor {time}",
   "course.generating": "Creando un circuito en el espacio libre de este escaneo...",
-  "course.ready": "Circuito: {n} puertas. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+  "course.ready": "Puertas: {n}. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
   "course.none": "No cabe ningún circuito en el espacio libre de este escaneo",
   "course.noWalls": "Este escaneo no tiene paredes, así que aquí no se puede crear un circuito",
   "course.failed": "No se pudo crear el circuito: {msg}",

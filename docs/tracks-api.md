@@ -19,7 +19,7 @@ scale `transform[0]`, rounded to 0.1 m.
 ## Contract of a server track
 
 The sound package's `validateTrack` (`packages/sonic-fpv/src/track/validate.ts`, ported key for key in `tracks.py`) and on
-top: `author.kind` `generator`, `generator.name` `gsfpv-course` (not null), `title` `^Course [0-9a-z-]{1,24}$`,
+top: `author.kind` `generator`, `author.name` (when given) and `generator.name` `gsfpv-course` (not null), `title` `^Course [0-9a-z-]{1,24}$`,
 `scene.kind` `scan`, `scene.id` `^[0-9a-f]{6,32}$`, `version` 1, `parent` null, 1-200 gates, unknown keys refused, NaN and
 Infinity refused (as `JSON.parse` does). Bounds against hostile files (lane review): every coordinate of a gate or the start
 within 10000 scan units, every leg (and the leg back when `laps > 1`) at most 60 flown m, `generator.params` only the

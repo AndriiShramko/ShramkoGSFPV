@@ -10,7 +10,6 @@
 // T3: on scene load the server's list for the scene is fetched (course/store.ts); Shift+T without a course (or the pause
 // menu) loads the newest saved course, proves it on the pilot's own walls in the worker (checkTrack) and refuses it with
 // hook.problem when it does not fit; "Save for everyone" in the pause menu posts the course the pilot generated.
-import { S } from '@gsfpv/sim-core';
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
 import type { Feature, FlightContext } from '../context';
@@ -18,7 +17,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { bestKey, readBest, seedOfLink, withCourse, writeBest } from '../../course/link';
+import { bestKey, firstOffer, readBest, seedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 
@@ -57,7 +56,11 @@ export const course: Feature = {
 
         const drone = (): string => ctx.session.presetId;
         const tick = (): number => ctx.session.runner.sim.tick;
-        const keyOf = (tr: TrackFile): string => bestKey(tr.id, tr.version, drone());
+        const keyOf = (tr: TrackFile): string => bestKey(tr, drone());
+        /** the course= link names a course only until the scene changes or a served course is shown (lane review TR-14 b) */
+        const dropLink = (): void => {
+            if (new URLSearchParams(location.search).has('course')) history.replaceState(history.state, '', withCourse(location.href, null));
+        };
 
         const sync = (): void => {
             const v = run?.view() ?? null;
@@ -97,9 +100,7 @@ export const course: Feature = {
 
         const frame = (): void => {
             if (!run || !hook.on) return;
-            const sim = ctx.session.runner.sim;
-            const ev = run.feed(sim.tick, [sim.s[S.px], sim.s[S.py], sim.s[S.pz]]);
-            const v = run.view(sim.tick);
+            const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
             if (ev === 'lap' || ev === 'done') {
                 const last = v.lastLapMs ?? 0;
                 const before = readBest(keyOf(run.track));
@@ -170,6 +171,7 @@ export const course: Feature = {
                     return fail(`refused: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
                 }
                 setTrack(tr, 'server', tr.generator?.seed ?? null);
+                dropLink();
                 ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
                 return;
             }
@@ -279,17 +281,17 @@ export const course: Feature = {
             if (run?.track === tr) hook.saved = r.id;
             hook.problem = null;
             ctx.hud.flash(t('course.save.done'), 4000);
-            void refresh();
+            void refresh(true);
         };
 
-        const refresh = async (): Promise<void> => {
+        const refresh = async (fresh = false): Promise<void> => {
             const scene = ctx.session.scene.id;
-            const got = await store.list(scene);
+            const got = await store.list(scene, fresh);
             if (ctx.session.scene.id !== scene) return;
             const had = hook.serverTracks;
             rows = got;
             hook.serverTracks = got.length;
-            if (had <= 0 && got.length > 0 && !run) ctx.hud.flash(t('course.server.offer'), 4000);
+            if (had <= 0 && got.length > 0 && !run && firstOffer(scene)) ctx.hud.flash(t('course.server.offer'), 4000);
         };
 
         const toggle = (): void => {
@@ -352,6 +354,7 @@ export const course: Feature = {
             setTrack(null, 'none', null);
             void refresh();
             if (linkSeed !== null) tryLink();
+            else dropLink();
         });
         const tryLink = (): void => {
             if (linkSeed === null || !ctx.session.collision) return;
