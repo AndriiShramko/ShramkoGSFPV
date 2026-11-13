@@ -90,7 +90,8 @@ function askedSonic(sources: readonly string[]): Set<string> {
 /** The keys of the namespaces only a ?sonic= page loads (the start chunk adds them, sonic/texts.ts), in English. */
 const LAZY_KEYS = new Set(['sonic', 'sonickeys'].flatMap((ns) => Object.keys(JSON.parse(readFileSync(join(ROOT, `packages/i18n/locales/fly/${ns}/en.json`), 'utf8')) as Record<string, string>)));
 /** Of those, what an ordinary page's code may name because it reads it only on a ?sonic= page: the mode's key labels, the GPU hint's line. */
-const ONLY_IN_MODE = new Set([...KEYMAP.filter((b) => b.when === 'sonic').map((b) => b.labelKey), 'sonic.say.gpuHint']);
+// train 1: the rooms' announcer (rooms/announce.ts) hands its host line sonic.say.text to the engine only while Fly by Sound runs
+const ONLY_IN_MODE = new Set([...KEYMAP.filter((b) => b.when === 'sonic').map((b) => b.labelKey), 'sonic.say.gpuHint', 'sonic.say.text']);
 /** The keys of the mode's own namespaces that `sources` name and an ordinary page would show raw. */
 function lazyAsked(sources: readonly string[]): string[] {
     return [...askedSonic(sources)].filter((k) => LAZY_KEYS.has(k) && !ONLY_IN_MODE.has(k)).sort();

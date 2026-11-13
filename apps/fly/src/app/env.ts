@@ -5,6 +5,12 @@ import { gaEvent, gaParams } from './analytics';
 
 export const q = new URLSearchParams(location.search);
 
+/**
+ * The query string as it is now, for a feature that rewrites its own parameter with history.replaceState and reads it
+ * back later in the same page (the courses' `course=`, dropped on a scene switch). Everything else reads `q`.
+ */
+export const liveSearch = (): string => location.search;
+
 export const hasWebGPU = typeof navigator !== 'undefined' && !!(navigator as Navigator & { gpu?: unknown }).gpu;
 export const hasHid = typeof navigator !== 'undefined' && 'hid' in navigator;
 export const isTouch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;

@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-12",
+ "generated": "2026-11-13",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -7,10 +7,10 @@
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 25,
+  "keys": 27,
   "rateTypes": 5,
   "flyingKeys": 12,
-  "allKeys": 35
+  "allKeys": 37
  },
  "locales": {
   "en": {
@@ -1681,6 +1681,20 @@
      "label": "Throttle stick: in the centre (camera drone) or from zero (FPV)",
      "keys": [
       "J"
+     ]
+    },
+    {
+     "action": "course.toggle",
+     "label": "Course: obstacles on / off",
+     "keys": [
+      "Shift+T"
+     ]
+    },
+    {
+     "action": "course.generate",
+     "label": "Course: a new random course",
+     "keys": [
+      "Shift+G"
      ]
     }
    ],
@@ -3774,6 +3788,20 @@
      "keys": [
       "J"
      ]
+    },
+    {
+     "action": "course.toggle",
+     "label": "Circuito: obst\u00e1culos s\u00ed / no",
+     "keys": [
+      "Shift+T"
+     ]
+    },
+    {
+     "action": "course.generate",
+     "label": "Circuito: un circuito aleatorio nuevo",
+     "keys": [
+      "Shift+G"
+     ]
     }
    ],
    "flying": [
@@ -5866,6 +5894,20 @@
      "keys": [
       "J"
      ]
+    },
+    {
+     "action": "course.toggle",
+     "label": "Trasa: przeszkody w\u0142. / wy\u0142.",
+     "keys": [
+      "Shift+T"
+     ]
+    },
+    {
+     "action": "course.generate",
+     "label": "Trasa: nowa losowa trasa",
+     "keys": [
+      "Shift+G"
+     ]
     }
    ],
    "flying": [
@@ -7957,6 +7999,20 @@
      "label": "\u0421\u0442\u0438\u043a \u0433\u0430\u0437\u0430: \u043f\u043e \u0446\u0435\u043d\u0442\u0440\u0443 (\u0434\u0440\u043e\u043d \u0441 \u043a\u0430\u043c\u0435\u0440\u043e\u0439) \u0438\u043b\u0438 \u0441 \u043d\u0443\u043b\u044f (FPV)",
      "keys": [
       "J"
+     ]
+    },
+    {
+     "action": "course.toggle",
+     "label": "\u0422\u0440\u0430\u0441\u0441\u0430: \u043f\u0440\u0435\u043f\u044f\u0442\u0441\u0442\u0432\u0438\u044f \u0432\u043a\u043b / \u0432\u044b\u043a\u043b",
+     "keys": [
+      "Shift+T"
+     ]
+    },
+    {
+     "action": "course.generate",
+     "label": "\u0422\u0440\u0430\u0441\u0441\u0430: \u043d\u043e\u0432\u0430\u044f \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u0430\u044f \u0442\u0440\u0430\u0441\u0441\u0430",
+     "keys": [
+      "Shift+G"
      ]
     }
    ],

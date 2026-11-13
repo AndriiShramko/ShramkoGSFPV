@@ -3,7 +3,7 @@
 // line `sonic.say.text`); otherwise it is written into a polite live region of its own (role=status) that a screen reader
 // reads, never into #ui wholesale. Every line appends its key to RoomsHook.said (the last 50).
 import type { SonicRuntime } from '@shramko/sonic-fpv';
-import { sayVia } from '../sonic-session/platform';
+import { sayVia } from '../app/say-via';
 import { LineBudget } from './around';
 
 export const SAID_MAX = 50;

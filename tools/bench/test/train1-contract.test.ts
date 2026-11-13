@@ -57,7 +57,8 @@ describe('train 1: one file per lane in the shared lists', () => {
         for (const [ns, DEFS] of [['course', 'COURSE_DEFS'], ['rooms', 'ROOMS_DEFS']]) {
             expect(defs).toContain(`...${DEFS}`);
             expect(existsSync(join(ROOT, `packages/prefs/src/defs/${ns}.ts`))).toBe(true);
-            expect(features).toMatch(new RegExp(`import \\{ ${ns} \\} from './builtin/${ns}';`));
+            // the integration loads the courses' feature as its own chunk through a stub (builtin/course-lazy.ts, sonic-int-lazy.test.ts)
+            expect(features).toMatch(new RegExp(`import \\{ ${ns} \\} from './builtin/${ns}(?:-lazy)?';`));
             expect(features).toMatch(new RegExp(`\\n    ${ns},?\\r?\\n`));
             expect(existsSync(join(ROOT, `apps/fly/src/${ns}/hook.ts`))).toBe(true);
         }

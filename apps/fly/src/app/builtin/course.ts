@@ -12,6 +12,7 @@
 // hook.problem when it does not fit; "Save for everyone" in the pause menu posts the course the pilot generated.
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
+import { liveSearch } from '../env';
 import type { Feature, FlightContext } from '../context';
 import type { CourseHook } from '../../course/hook';
 import { CourseRun } from '../../course/run';
@@ -45,7 +46,7 @@ export const course: Feature = {
         let job = 0;
         let busy = false;
         let saving = false;
-        let linkSeed = seedOfLink(location.search);
+        let linkSeed = seedOfLink(liveSearch());
         let pending: number | null = null;
         let checking: TrackFile | null = null;
         /** what a 'check' job is for: the server's row `index`, or a course already shown that is re-proven (TR-5) */
@@ -59,7 +60,7 @@ export const course: Feature = {
         const keyOf = (tr: TrackFile): string => bestKey(tr, drone());
         /** the course= link names a course only until the scene changes or a served course is shown (lane review TR-14 b) */
         const dropLink = (): void => {
-            if (new URLSearchParams(location.search).has('course')) history.replaceState(history.state, '', withCourse(location.href, null));
+            if (new URLSearchParams(liveSearch()).has('course')) history.replaceState(history.state, '', withCourse(location.href, null));
         };
 
         const sync = (): void => {

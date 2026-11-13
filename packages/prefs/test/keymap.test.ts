@@ -157,7 +157,10 @@ describe('v0.2 keys keep working', () => {
         for (const state of ['flight', 'crash'] as const) {
             for (const [code, action] of Object.entries(want)) {
                 expect(actionFor(press(code), state, { sonic: true }), `${code} ${state}`).toBe(action);
-                expect(actionFor(press(code, { shiftKey: true }), state, { sonic: true }), `Shift+${code} ${state}`).toBeNull();
+                // train 1: the courses' Shift+T and Shift+G are shipped 'always' and route on a ?sonic= page too (the feature ignores them
+                // there, lane tracks review R2 and TR-7); nothing else may take a shifted Fly by Sound letter
+                const shifted = actionFor(press(code, { shiftKey: true }), state, { sonic: true });
+                expect(shifted === null || SHIPPED_BY_TRACKS.includes(shifted), `Shift+${code} ${state}: ${shifted}`).toBe(true);
                 expect(actionFor(press(code, { ctrlKey: true }), state, { sonic: true }), `Ctrl+${code} ${state}`).toBeNull();
             }
         }
