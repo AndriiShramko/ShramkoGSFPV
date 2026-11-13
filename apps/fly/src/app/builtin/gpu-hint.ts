@@ -24,6 +24,8 @@ import { t } from '../../i18n';
 import { forgetGpuHint, gpuHintMemory, gpuHintParts, gpuHintSaid, gpuHintSeen, gpuSoftHintOff, markGpuHintSaid, markGpuHintSeen, markGpuSoftHintOff, noteFastGraphics, noteHardwareGraphics, planGpuHint, spokenLineKey } from '../../sonic/gpu-hint';
 import type { GpuHintMemory, GpuHintParts, GpuNote } from '../../sonic/gpu-hint';
 import { deviceSignals } from '../drawing';
+import { setGraphicsReader } from '../graphics-report';
+import type { GraphicsReport } from '../graphics-report';
 import { PauseMenu } from '../menu';
 import { addSceneNote } from '../scene-notes';
 import type { Feature, FlightContext } from '../context';
@@ -98,10 +100,12 @@ export function graphicsReading(renderer: SplatRenderer, over: Partial<GpuHintSi
 }
 
 /** The bug report's lines about the graphics: the adapter's name, its kind, whether a hint was due and what the browser remembers. */
-export function graphicsReport(renderer: SplatRenderer): { name: string; approx: boolean; kind: string; hint: string | null; due: boolean; reason: string; memory: GpuHintMemory; webgl: string } {
+export function graphicsReport(renderer: SplatRenderer): GraphicsReport {
     const r = graphicsReading(renderer);
     return { name: r.name, approx: r.approx, kind: r.kind, hint: r.hint, due: r.due, reason: r.reason, memory: gpuHintMemory(), webgl: glRenderer() };
 }
+// the report (app/diagnostics.ts) asks through app/graphics-report.ts: it must load where this module cannot (no page)
+setGraphicsReader(graphicsReport);
 
 /** The adapter's name as the page shows it: a family name the browser rounded is said to be one ("... or similar"). */
 function shownName(r: Pick<GpuHintReading, 'name' | 'approx'>): string {

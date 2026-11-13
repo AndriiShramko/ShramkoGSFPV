@@ -8,7 +8,7 @@ import type { SplatRenderer } from '@gsfpv/render-pc';
 import { droneOf } from './prefs';
 import { savedFlight } from './logs';
 import { lodReport } from './lod';
-import { graphicsReport } from './builtin/gpu-hint';
+import { graphicsReportOf } from './graphics-report';
 import { q } from './env';
 import type { FlightContext } from './context';
 
@@ -71,25 +71,28 @@ export async function releaseId(): Promise<string> {
 
 interface GpuInfo { vendor?: string; architecture?: string; device?: string; description?: string }
 
-/** The graphics of the report: `api` and `adapter` as before; lane gpu-select adds what the renderer really draws on and the hint. */
+/**
+ * The graphics of the report: `api` and `adapter` as before; lane gpu-select adds what the renderer really draws on and the
+ * hint (the page has them; where the GPU hint's feature is not loaded they are left out).
+ */
 interface GpuReport {
     api: string;
     adapter?: GpuInfo;
     /** the adapter's name as the pilot sees it ("Intel(R) UHD Graphics"), its kind (software, integrated, other) and WebGL's own words */
-    name: string;
-    kind: string;
-    webgl: string;
+    name?: string;
+    kind?: string;
+    webgl?: string;
     /** the name is a family the browser rounded the model to (Firefox's ", or similar") */
-    approx: boolean;
+    approx?: boolean;
     /** was the GPU hint due (the rule's reason), what the reading calls for ('switch', 'software' or nothing), and what this browser remembers about it */
-    hint: { due: boolean; reason: string; says: string | null; memory: string | null };
+    hint?: { due: boolean; reason: string; says: string | null; memory: string | null };
 }
 
 async function gpu(renderer: SplatRenderer): Promise<GpuReport> {
     const api = renderer.isWebGPU ? 'webgpu' : 'webgl2';
-    // the renderer's own adapter (builtin/gpu-hint.ts): the one that draws, not a second request's answer
-    const g = graphicsReport(renderer);
-    const more = { name: g.name, kind: g.kind, webgl: g.webgl, approx: g.approx, hint: { due: g.due, reason: g.reason, says: g.hint, memory: g.memory } };
+    // the renderer's own adapter (builtin/gpu-hint.ts through graphics-report.ts): the one that draws, not a second request's answer
+    const g = graphicsReportOf(renderer);
+    const more = g ? { name: g.name, kind: g.kind, webgl: g.webgl, approx: g.approx, hint: { due: g.due, reason: g.reason, says: g.hint, memory: g.memory } } : {};
     try {
         const nav = navigator as Navigator & { gpu?: { requestAdapter(): Promise<{ info?: GpuInfo } | null> } };
         const a = await nav.gpu?.requestAdapter();

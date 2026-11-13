@@ -152,6 +152,17 @@ try {
     /** this computer draws the page on a faster card (the rule's own words for it) */
     const realFast = real.hint === null && real.kind === 'other' && (real.reason === 'not-intel' || real.reason === 'intel-discrete');
     check(`this computer: the page reads its real adapter ("${real.name}", ${real.kind}, ${real.reason}), and the note came by itself exactly when a hint is due (${ownHint ? 'due here: it came' : 'not due here: none'})`, real.name.length > 0 && ownHint === (own !== null) && (own === null || own.kind === real.note), { real, note: own ? { kind: own.kind, address: own.address } : null });
+    // the bug report's graphics block, asked the way the report asks it (app/graphics-report.ts, which the GPU hint's module
+    // fills when it loads). A Vite dev server serves that module by its path, the same instance the page runs
+    const report = await page.evaluate(async () => {
+        try {
+            const m = (await import(/* @vite-ignore */ `${location.origin}/fly/src/app/graphics-report.ts`)) as { graphicsReportOf(r: unknown): Record<string, unknown> | null };
+            return m.graphicsReportOf((window as unknown as { __gsfpv: { session: { renderer: unknown } } }).__gsfpv.session.renderer);
+        } catch (e) {
+            return { error: String(e) };
+        }
+    });
+    check('the bug report\'s graphics block names this computer\'s adapter, its kind, whether the hint is due and why, and WebGL\'s own words', !!report && report.name === real.name && report.kind === real.kind && report.due === real.due && report.reason === real.reason && report.hint === real.hint && typeof report.webgl === 'string' && (report.webgl as string).length > 0, report);
     await call<void>(page, 'reset');
 
     // ---- asked as an Intel laptop on Windows would be

@@ -7,8 +7,8 @@
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-13T21:19:02.515Z",
-    "gitHead": "1d8f6cdb",
+    "date": "2026-11-13T21:39:35.165Z",
+    "gitHead": "7d4f693d",
     "gitDirty": true,
     "node": "v22.16.0",
     "platform": "win32 10.0.26200",
@@ -46,6 +46,20 @@
           "kind": "switch",
           "address": "chrome://flags/#force-high-performance-gpu"
         }
+      }
+    },
+    {
+      "name": "the bug report's graphics block names this computer's adapter, its kind, whether the hint is due and why, and WebGL's own words",
+      "pass": true,
+      "value": {
+        "name": "Intel(R) UHD Graphics",
+        "approx": false,
+        "kind": "integrated",
+        "hint": "switch",
+        "due": true,
+        "reason": "due",
+        "memory": null,
+        "webgl": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)"
       }
     },
     {
