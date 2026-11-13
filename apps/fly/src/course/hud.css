@@ -1,9 +1,12 @@
 /* The course's lines on the flight view (course/hud.ts): top centre, under the HUD's own lines; H hides them (#ui.hud-off).
    Lane review TR-11: below the flash line (.hud-note in fly.css starts at the same top expression; 76px clears a note of three
-   13px lines with its padding, an estimate from fly.css, not measured on a page). */
+   13px lines with its padding, an estimate from fly.css, not measured on a page). That fixed slot misses the note when
+   top-row.ts moves it under the buttons (#ui.note-crowded: 1366x768, a phone on its side), so hud.ts adds --course-push:
+   the block's top stays NOTE_GAP_PX under the lowest bottom the note had since the last resize (lane look L2,
+   tools/bench/src/tracks-page.ts hintClearOfTimer). */
 .course-hud {
     position: absolute;
-    top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px) + 76px);
+    top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px) + 76px + var(--course-push, 0px));
     left: 50%;
     transform: translateX(-50%);
     pointer-events: none;

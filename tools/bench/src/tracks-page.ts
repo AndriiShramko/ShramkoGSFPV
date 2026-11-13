@@ -25,7 +25,7 @@ import type { Browser, BrowserContext, Page } from 'playwright';
 import { checkTrack, flownCollision, nearestWall, withGateAt } from '@gsfpv/tracks';
 import type { TrackFile, Vec3 } from '../../../packages/sonic-fpv/src';
 import { launchChrome } from './browser';
-import { today, writeEvidence } from './evidence';
+import { REPO, today, writeEvidence } from './evidence';
 import { loadScene } from './scenes';
 import { serveTracks } from './tracks-serve';
 
@@ -186,10 +186,10 @@ async function fresh(browser: Browser): Promise<BrowserContext> {
 }
 
 /** A flight on `scene`: ready, then the Controls screen of a first flight (if it comes) answered with the keyboard. */
-async function open(ctx: BrowserContext, site: string, scene: string, log: string[]): Promise<Page> {
+async function open(ctx: BrowserContext, site: string, scene: string, log: string[], lang = 'en'): Promise<Page> {
     const page = await ctx.newPage();
     page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
-    await page.goto(`${site}/en/fly/?scene=${scene}&nowarn=1`);
+    await page.goto(`${site}/${lang}/fly/?scene=${scene}&nowarn=1`);
     const r = await until(() => status(page), (v) => v === 'ready' || v === 'error', 180000);
     if (r.v !== 'ready') throw new Error(`the flight on ${scene} is not ready: ${r.v}`);
     const radio = '.screen.radio [data-action="radio-keyboard"]';
@@ -207,6 +207,79 @@ async function open(ctx: BrowserContext, site: string, scene: string, log: strin
 
 const RE_ATTACH = /(new \w+\(`course-stage`,this\.r\.app\);)this\.r\.app\.root\.addChild\(\w+\),/;
 
+// ---------------- H hintClearOfTimer (lane look L2, finding TR-11): the course's two-line hint (the flash note, ui/hud.ts) and the
+// lap block (course/hud.ts) never intersect, at three sizes and in every language (the probe measures all four and names the one
+// with the tallest hint). Shift+G builds a new course: 'course.generating', then 'course.ready' (with Shift+T in all four) for 4 s.
+const SIZES = [
+    { w: 1920, h: 1080, phone: false },
+    { w: 1366, h: 768, phone: false },
+    { w: 844, h: 390, phone: true }
+];
+const LANGS = ['en', 'es', 'pl', 'ru'];
+const LOOK_SHOTS = process.env.LOOK_SHOTS ?? SHOTS;
+interface Box { left: number; top: number; right: number; bottom: number }
+interface HintRead { note: Box | null; block: Box | null; text: string; vw: number; vh: number }
+const readHint = (page: Page): Promise<HintRead> =>
+    page.evaluate(() => {
+        const box = (el: Element | null): { left: number; top: number; right: number; bottom: number } | null => {
+            if (!el || (el as HTMLElement).hidden || (el as HTMLElement).offsetParent === null) return null;
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 ? { left: r.left, top: r.top, right: r.right, bottom: r.bottom } : null;
+        };
+        const note = document.querySelector('#ui > .hud-note');
+        return { note: box(note), block: box(document.querySelector('[data-testid="course-hud"]')), text: note?.textContent ?? '', vw: innerWidth, vh: innerHeight };
+    });
+const meets = (a: Box, b: Box): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+async function hintClearOfTimer(browser: Browser, site: string, log: string[]): Promise<Record<string, unknown>> {
+    const rows: Record<string, unknown>[] = [];
+    const pics = new Map<string, Buffer>();
+    for (const lang of LANGS) {
+        for (const phone of [false, true]) {
+            const sizes = SIZES.filter((s) => s.phone === phone);
+            const first = sizes[0] as (typeof SIZES)[number];
+            const ctx = await browser.newContext({ viewport: { width: first.w, height: first.h }, deviceScaleFactor: 1, ...(phone ? { isMobile: true, hasTouch: true } : {}) });
+            try {
+                const page = await open(ctx, site, `${SCENE}&course=g1.1`, log, lang);
+                await until(() => course(page), (h) => h?.source === 'generated' || !!h?.problem, 90000);
+                for (const s of sizes) {
+                    await page.setViewportSize({ width: s.w, height: s.h });
+                    await sleep(800);
+                    const before = (await course(page))?.track?.id ?? null;
+                    await page.keyboard.press('Shift+KeyG');
+                    const g = await until(() => course(page), (h) => (h?.source === 'generated' && h.track?.id !== before) || !!h?.problem, 90000);
+                    // the hint is up for 4 s: two frames of layout (top-row.ts and course/hud.ts each lay out on the next frame), then read
+                    const r = await until(() => readHint(page), (v) => !!v.note && /Shift\+T/.test(v.text) && !!v.block, 3000);
+                    await sleep(400);
+                    const v = await readHint(page);
+                    const png = await page.screenshot();
+                    const clear = !!v.note && !!v.block && /Shift\+T/.test(v.text) && !meets(v.note, v.block) && v.block.bottom <= v.vh;
+                    rows.push({ lang, size: `${s.w}x${s.h}`, phone, gen: g.ok, hintUp: r.ok, clear, noteH: v.note ? Math.round(v.note.bottom - v.note.top) : null, ...v });
+                    pics.set(`${lang}-${s.w}`, png);
+                }
+            } catch (err) {
+                rows.push({ lang, phone, error: String(err).slice(0, 200) });
+            } finally {
+                await ctx.close();
+            }
+        }
+    }
+    // the language with the tallest hint (summed over the sizes) decides, its pictures go to the lead
+    const tall = (lang: string): number => rows.filter((r) => r.lang === lang).reduce((a, r) => a + ((r.noteH as number | null) ?? 0), 0);
+    const longest = [...LANGS].sort((a, b) => tall(b) - tall(a))[0] as string;
+    mkdirSync(LOOK_SHOTS, { recursive: true });
+    for (const s of SIZES) {
+        const png = pics.get(`${longest}-${s.w}`);
+        if (!png) continue;
+        const file = join(LOOK_SHOTS, `look-course-${s.w}.png`);
+        writeFileSync(file, png);
+        shots.push({ file, sha256: createHash('sha256').update(png).digest('hex'), what: `hint and lap block, ${longest}, ${s.w}x${s.h}` });
+    }
+    const all = rows.length === LANGS.length * SIZES.length && rows.every((r) => r.clear === true);
+    check(`hintClearOfTimer: the course hint and the lap block never meet (${SIZES.map((s) => `${s.w}x${s.h}`).join(', ')}; ${LANGS.join(', ')}; tallest hint ${longest})`, all, rows.map((r) => `${r.lang} ${r.size ?? ''} ${r.clear === true ? 'clear' : 'MEETS'} noteH ${r.noteH ?? '-'}${r.error ? ' ' + String(r.error) : ''}`));
+    return { longest, rows };
+}
+
 async function main(): Promise<void> {
     const served = await serveTracks();
     const out: Record<string, unknown> = { site: served.site, scene: SCENE, other: OTHER, minPx: MIN_PX, tol: TOL };
@@ -220,6 +293,10 @@ async function main(): Promise<void> {
         browser = launched.browser;
         out.browser = launched.which;
         counter = await (await browser.newContext()).newPage();
+
+        out.hint = await hintClearOfTimer(browser, served.site, log);
+        // HINT_ONLY=1: the hint check alone (its negative control on a build of origin/main)
+        if (process.env.HINT_ONLY === '1') throw new Error('HINT_ONLY');
 
         // ---------------- A
         const ctxA = await fresh(browser);
@@ -330,7 +407,7 @@ async function main(): Promise<void> {
         out.c3 = { patched, hook: ge.v, look: lookE };
         await ctxE.close();
     } catch (err) {
-        check('the run finished', false, String(err).slice(0, 300));
+        if (String(err) !== 'Error: HINT_ONLY') check('the run finished', false, String(err).slice(0, 300));
     } finally {
         await browser?.close().catch(() => undefined);
         letGo();
@@ -338,7 +415,10 @@ async function main(): Promise<void> {
     }
     out.log = log.slice(0, 20);
     const failed = checks.filter((c) => !c.pass).length;
-    const file = writeEvidence('tracks-page', { step: 'tracks T3: the courses page probe', pass: failed === 0, checks, shots, ...out });
+    // EVIDENCE_NAME: e.g. train1c/tracks-page (a subfolder of evidence/<date>/)
+    const name = process.env.EVIDENCE_NAME ?? 'tracks-page';
+    mkdirSync(join(REPO, 'evidence', today(), name, '..'), { recursive: true });
+    const file = writeEvidence(name, { step: 'tracks T3: the courses page probe', pass: failed === 0, checks, shots, ...out });
     console.log(`${checks.length - failed}/${checks.length} checks passed; evidence ${file}`);
     process.exit(failed === 0 ? 0 : 1);
 }
