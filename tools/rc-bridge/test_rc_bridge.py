@@ -485,8 +485,8 @@ class StartCmd(unittest.TestCase):
         import tempfile
         d = tempfile.mkdtemp(prefix="dji-helper-")
         self.addCleanup(shutil.rmtree, d, True)
-        for f in files:
-            shutil.copyfile(os.path.join(HERE, f), os.path.join(d, f))
+        for f in files:  # the program as the simulator page saves it (apps/fly/src/devices/helper-files.ts)
+            shutil.copyfile(os.path.join(HERE, f), os.path.join(d, "dji-helper.py" if f == "rc_bridge.py" else f))
         env = dict(os.environ, PATH=path_env, APPDATA=os.path.join(d, "roaming"), LOCALAPPDATA=os.path.join(d, "local"))
         os.makedirs(os.path.join(env["APPDATA"], "Microsoft", "Windows", "Start Menu", "Programs", "Startup"))
         r = subprocess.run(["cmd", "/c", os.path.join(d, "start-dji-helper.cmd")] + list(args), input=answer, env=env,
@@ -509,7 +509,7 @@ class StartCmd(unittest.TestCase):
 
     def test_a_missing_program_file_is_said(self):
         out, _, _ = self.run_cmd(os.environ["PATH"], "\n", files=("start-dji-helper.cmd",))
-        self.assertIn("rc_bridge.py is not in this folder", out)
+        self.assertIn("dji-helper.py is not in this folder", out)
 
     def test_start_with_windows_is_offered_once_and_written_only_on_yes(self):
         startup = ("Microsoft", "Windows", "Start Menu", "Programs", "Startup", "Shramko DJI helper.cmd")

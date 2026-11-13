@@ -8,9 +8,10 @@ cd /d "%~dp0"
 set "AUTO="
 if /i "%~1"=="autostart" set "AUTO=1"
 
-rem The program: rc_bridge.py next to this file; a second download is called "rc_bridge (1).py", so the newest wins.
+rem The program next to this file: dji-helper.py as the simulator saves it, or rc_bridge.py from the repository. A
+rem second download is called "dji-helper (1).py", so the newest wins.
 set "BR="
-for /f "delims=" %%F in ('dir /b /o-d "rc_bridge*.py" 2^>nul') do if not defined BR set "BR=%%F"
+for /f "delims=" %%F in ('dir /b /o-d "dji-helper*.py" "rc_bridge*.py" 2^>nul') do if not defined BR set "BR=%%F"
 if not defined BR goto nofile
 
 rem Python 3.8 or newer. A clean Windows has python.exe and python3.exe stubs (App execution aliases) that only print
@@ -53,7 +54,7 @@ exit /b
 
 :nofile
 echo.
-echo  rc_bridge.py is not in this folder.
+echo  dji-helper.py is not in this folder.
 echo  Download both files from the simulator (Controls, Connect my controller) into one folder,
 echo  then double-click start-dji-helper.cmd again.
 echo.

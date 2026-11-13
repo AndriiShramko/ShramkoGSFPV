@@ -15,6 +15,8 @@ import { DjiRc2Device, Rc2Error, hasStickChannel } from '../devices/dji-rc2-sour
 import type { Rc2Why, UsbDeviceLike } from '../devices/dji-rc2-source';
 import { RC_BRIDGE_SOURCE, Rc2BridgeDevice, lnaStatus } from '../devices/dji-rc2-bridge';
 import type { PermissionsLike } from '../devices/dji-rc2-bridge';
+import { HELPER_NAMES, helperFiles, helperRaw } from '../devices/helper-files';
+import type { HelperFile } from '../devices/helper-files';
 
 /** pickDji's outcome: 'none' nothing chosen, 'noapi' no WebUSB here, 'gesture' the browser wants a fresh press, 'shown' a look for the report, 'trying' a route to flying started */
 export type PickResult = 'none' | 'noapi' | 'gesture' | 'shown' | 'trying' | 'failed';
@@ -40,6 +42,8 @@ export interface UsbBlockOptions {
     permissions?: PermissionsLike | null;
     /** the helper device (tests) */
     helperDevice?: () => Rc2BridgeDevice;
+    /** the helper's two files as URLs to save (default the bundled copies, devices/helper-files.ts) */
+    helperFiles?: () => Promise<HelperFile[]>;
 }
 
 /** a quiet try to the helper only when no question can come: granted, or a browser without the permission */
@@ -130,11 +134,24 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         if (helperSay || !fly) return;
         const say = h('p', { 'data-testid': 'usb-bridge-say', role: 'status', 'aria-live': 'polite' });
         helperSay = say;
+        // one press per file saves it (C3): the repository's copy until the bundled one is ready, then a same-origin URL
+        const links = HELPER_NAMES.map((name) => h('a', { class: 'btn', href: helperRaw(name), download: name, target: '_blank', rel: 'noopener', 'data-testid': 'usb-helper-file', 'data-file': name },
+            t('usb.rc2.helperFile', { name })));
         el.append(h('div', { class: 'usb-helper', 'data-testid': 'usb-helper' },
-            h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy'), ' ',
+            h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy')),
+            h('p', { class: 'usb-helper-files' }, ...links),
+            h('p', { class: 'muted small' }, t('usb.rc2.helperNeeds'), ' ',
                 h('a', { href: RC_BRIDGE_SOURCE, target: '_blank', rel: 'noopener', 'data-testid': 'usb-bridge-get' }, t('usb.rc2.bridgeGet'))),
             h('button', { type: 'button', class: 'btn', 'data-action': 'usb-rc2-bridge', onclick: () => helperTry() }, t('usb.rc2.bridge')),
             say));
+        void (o.helperFiles ?? helperFiles)().then((files) => {
+            for (const f of files) {
+                const a = links[HELPER_NAMES.indexOf(f.name)];
+                if (!a) continue;
+                a.setAttribute('href', f.url);
+                a.removeAttribute('target');
+            }
+        }, () => undefined);
     };
     const helperTry = (): void => {
         offerHelper();

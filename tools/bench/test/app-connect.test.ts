@@ -146,3 +146,38 @@ describe('Connect my controller, the DJI step', () => {
         await (flown[0] as { close(): Promise<void> }).close();
     });
 });
+
+describe('the helper program\'s two files (C3)', () => {
+    it('the helper section saves both files with one press each: the repository copy first, then the page\'s own', async () => {
+        let give: (f: { name: 'start-dji-helper.cmd' | 'dji-helper.py'; url: string }[]) => void = () => undefined;
+        const ready = new Promise<{ name: 'start-dji-helper.cmd' | 'dji-helper.py'; url: string }[]>((r) => { give = r; });
+        const blk = B.usbLookBlock(() => undefined, () => undefined, { helper: true, permissions: null, helperFiles: () => ready,
+            helperDevice: () => new R.Rc2BridgeDevice({ socket: () => new FakeSocket(false) as never, permissions: null }) });
+        const el = blk.el as unknown as FakeElement;
+        btn(el, 'usb-rc2-bridge')!.click();
+        const links = el.querySelectorAll('[data-testid="usb-helper-file"]');
+        expect(links.map((a) => a.getAttribute('download'))).toEqual(['start-dji-helper.cmd', 'dji-helper.py']);
+        expect(links[1]!.getAttribute('href')).toBe('https://raw.githubusercontent.com/AndriiShramko/ShramkoGSFPV/main/tools/rc-bridge/rc_bridge.py');
+        expect(links[0]!.textContent).toBe('Download start-dji-helper.cmd');
+        give([{ name: 'start-dji-helper.cmd', url: 'blob:cmd' }, { name: 'dji-helper.py', url: 'blob:py' }]);
+        expect(await until(() => links[1]!.getAttribute('href') === 'blob:py')).toBe(true);
+        expect(links[0]!.getAttribute('href')).toBe('blob:cmd');
+        expect(links[0]!.getAttribute('target')).toBeNull();
+        expect(el.textContent).toContain('Python 3.8');
+        expect(el.textContent).not.toMatch(/bridge/i);
+        blk.stop();
+    });
+    it('the bundled files are the repository\'s, the .cmd with Windows line ends', async () => {
+        const F = await import('../../../apps/fly/src/devices/helper-files');
+        const { readFileSync } = await import('node:fs');
+        const got: Record<string, string> = {};
+        const files = await F.helperFiles(undefined, (text, name) => { got[name] = text; return `blob:${name}`; });
+        expect(files.map((f) => f.url)).toEqual(['blob:start-dji-helper.cmd', 'blob:dji-helper.py']);
+        const disk = (n: string) => readFileSync(new URL(`../../rc-bridge/${n}`, import.meta.url), 'utf8');
+        expect(got['dji-helper.py']).toBe(disk('rc_bridge.py'));
+        const cmd = got['start-dji-helper.cmd']!;
+        expect(cmd.replace(/\r\n/g, '\n')).toBe(disk('start-dji-helper.cmd').replace(/\r\n/g, '\n'));
+        expect(cmd.split('\n').length - 1).toBe(cmd.split('\r\n').length - 1);
+        expect(cmd).toContain('Python is not on this computer');
+    });
+});
