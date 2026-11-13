@@ -172,7 +172,11 @@ Stage fixes (review findings TK-1..TK-12 of train 2):
       loadServer(i, true); TK-6 showEd keeps edSource's id, version, parent, author, title and generator on the edited
       gates; TK-10 'Save as my course' refuses with course.edit.nothing when nothing changed, the course is on the server
       and the title is the same; TK-11 b a person's body sends generator: null; TK-7 tokens from localStorage.
-      Typecheck above; the page probe run is in the next line.
+      Typecheck above.
+- [x] F4 (6926fda8) page probe tracks-page.ts section E gains the TK-3 check (F6 to the name field, Tab walks the window
+      with the gate kept, Esc gives the focus back with the editor open). Runs: release build exit 0 (sha 6926fda8);
+      `EDITOR_ONLY=1 SONIC_PORTS=5720-5739 EVIDENCE_NAME=tracks-editor-fixes npx tsx src/tracks-page.ts` 13/13 checks
+      passed (evidence/2026-11-13/tracks-editor-fixes.json, not committed; 24 key buttons, 0 overlapping at 1920x1080).
 - Refuted: none of TK-1..TK-12 (each read in the code and confirmed; TK-8 is the plan's rule as written, changed as the
   review asked).
 ## Decisions
@@ -258,6 +262,11 @@ Stage fixes (review findings TK-1..TK-12 of train 2):
   real handler from the page. The page's course=<id>&edit=1 path was not run in a browser (only the parser is tested); whether
   the scene's list arrives after the walls on a cold load (the link waits for a refresh with walls; the session event refreshes
   again) is reasoned from the code, not observed. The es/pl/ru admin texts were not read back on the page.
+- Stage fixes: a new localStorage key gsfpv.course.tokens (edit tokens, newest 50; review TK-7). The vote rule changed on
+  the server (TK-8): an address keeps its voter for the course's life (was one UTC day), meta.json keeps at most 5000 address
+  bindings per course (an estimate); the stale "day" field of existing meta.json files is left and no longer read. The
+  admin's "Open in the editor" link is now course=<id>.v<n>&edit=1 (TK-5); old links without .v<n> still work through the
+  list. After a mouse click on a window button, Tab walks the window's buttons (TK-3); Esc first returns the focus.
 ## Not verified
 
 - T4 A2: the admin tab was run in English only (es, pl, ru texts not read on the page); the 1920 screenshot was not looked at
@@ -280,6 +289,13 @@ Stage fixes (review findings TK-1..TK-12 of train 2):
   clicks on the key buttons (the probe uses the keyboard and clicks only save and vote), the other three languages in the
   page, Esc twice with unsaved changes, and the full tracks-page run with E after the other sections.
 - T3 U1: the full key table on a ?sonic= page was not exercised (the feature ignores Shift+B when ctx.sonic is set).
+- Stage fixes: the course.ts parts TK-1 (Esc twice with changes flies the source again), TK-4 (G and a row's Edit ask
+  first; no reopen after a failure), TK-6 (saved identity flown), TK-10 (nothing-changed refusal), TK-11 b (generator
+  null) have no unit test and no probe check; they are read from the code and typechecked, and the probe's existing
+  section E (save for everyone, edit, save as my course, vote, reload) passed 13/13 with them. Not run: a real browser
+  with site storage blocked (TK-2 is tested with a throwing getter in node), the admin link with .v<n> opened in a
+  browser, the admin double click in a browser (TK-12 is tested as the pure confirmStep), a reload keeping the token
+  (TK-7 tested on a memory store), the other three languages' new texts on the page.
 
 ## Cost notes
 
@@ -311,3 +327,6 @@ Stage fixes (review findings TK-1..TK-12 of train 2):
   succession rule the Python port lacked, found only by the vitest run) and to escape sequences turning into real
   non-ASCII characters in a Python test and a heredoc (fixed with a script). Cheaper: run the TS fixture test right after
   changing fixtures; keep non-ASCII test strings in JSON fixtures written by a script; edit docs with the Edit tool only.
+- Stage fixes (about 28 replies): most turns went to reading course.ts once in full and to the many small Edit calls on it;
+  the first negative control against origin/main was useless (the whole lane is missing there), --ref HEAD was the right
+  ref. Cheaper: give each finding's fix as a small pure helper from the start, and take --ref HEAD for a fix stage.
