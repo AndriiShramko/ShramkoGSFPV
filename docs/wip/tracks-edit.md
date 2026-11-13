@@ -112,7 +112,7 @@ Stage T4-admin (admin tab apps/fly/src/admin/tracks/**, page link):
 - [ ] Left of R6-R8 after this stage: see "What the owner can do now" below.
 
 What the owner can do now (after the release of this branch):
-- Simulator, any scan with walls: C makes or shows a course (the scene's saved one first), G a new generated one, Shift+B (or
+- Simulator, any scan with walls: Shift+T shows or hides a course (the scene's saved one first), Shift+G a new generated one (packages/prefs keymap.ts), Shift+B (or
   pause menu "Edit course") opens the editor over the paused flight: Tab / Shift+Tab select a gate, arrows move it on the floor
   plane (Shift: 1 m steps), PageUp/PageDown up and down, Q/E turn 15 deg, 1-4 shape (4 = cube frame), +/- size, Insert or I adds
   a gate 4 m ahead, Delete or Backspace removes one, Ctrl+Z / Ctrl+Y undo and redo, Enter saves, Esc leaves (twice with unsaved
