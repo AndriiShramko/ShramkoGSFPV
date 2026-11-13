@@ -47,19 +47,45 @@ function at(a: readonly Sample[], t: number): [number, number, number] | null {
 }
 
 /** The delay (0..1000 ms, 5 ms steps) that best aligns B's samples with A's, and the RMS distance there. */
-export function align(a: readonly Sample[], b: readonly Sample[]): { delayMs: number; rmsM: number; n: number } {
-    let best = { delayMs: -1, rmsM: Infinity, n: 0 };
+/** A's teleports (a respawn or a reset): a step faster than this (m/s) is no flight. An estimate: well over any preset's top speed. */
+const JUMP_MPS = 80;
+/** around a teleport B's track is wrong by design for the playout plus the extrapolation (150 + 250 ms, interp.ts): skip this much each side */
+const JUMP_SKIP_MS = 400;
+
+/** The windows of A's time around its teleports. */
+export function jumps(a: readonly Sample[]): [number, number][] {
+    const w: [number, number][] = [];
+    for (let i = 1; i < a.length; i++) {
+        const dt = Math.max(1e-3, (a[i][0] - a[i - 1][0]) / 1000);
+        if (Math.hypot(a[i][1] - a[i - 1][1], a[i][2] - a[i - 1][2], a[i][3] - a[i - 1][3]) / dt > JUMP_MPS) w.push([a[i - 1][0] - JUMP_SKIP_MS, a[i][0] + JUMP_SKIP_MS]);
+    }
+    return w;
+}
+
+export function align(a: readonly Sample[], b: readonly Sample[], skip: readonly [number, number][] = []): { delayMs: number; rmsM: number; n: number; p50M: number; p90M: number; maxM: number } {
+    let best = { delayMs: -1, rmsM: Infinity, n: 0, p50M: NaN, p90M: NaN, maxM: NaN };
     for (let d = 0; d <= 1000; d += 5) {
         let sum = 0, n = 0;
         for (const s of b) {
-            const p = at(a, s[0] - d);
+            const ta = s[0] - d;
+            if (skip.some(([x, y]) => ta >= x && ta <= y)) continue;
+            const p = at(a, ta);
             if (!p) continue;
             sum += (s[1] - p[0]) ** 2 + (s[2] - p[1]) ** 2 + (s[3] - p[2]) ** 2;
             n++;
         }
-        if (n >= 20 && Math.sqrt(sum / n) < best.rmsM) best = { delayMs: d, rmsM: Math.sqrt(sum / n), n };
+        if (n >= 20 && Math.sqrt(sum / n) < best.rmsM) best = { ...best, delayMs: d, rmsM: Math.sqrt(sum / n), n };
     }
-    return best;
+    const errs: number[] = [];
+    for (const s of b) {
+        const ta = s[0] - best.delayMs;
+        if (skip.some(([x, y]) => ta >= x && ta <= y)) continue;
+        const p = at(a, ta);
+        if (p) errs.push(Math.hypot(s[1] - p[0], s[2] - p[1], s[3] - p[2]));
+    }
+    errs.sort((x, y) => x - y);
+    const q = (k: number): number => +(errs[Math.min(errs.length - 1, Math.floor(k * errs.length))] ?? NaN).toFixed(4);
+    return { ...best, p50M: q(0.5), p90M: q(0.9), maxM: q(1) };
 }
 
 const pathLen = (a: readonly Sample[]): number => a.reduce((L, s, i) => (i ? L + Math.hypot(s[1] - a[i - 1][1], s[2] - a[i - 1][2], s[3] - a[i - 1][3]) : 0), 0);
@@ -79,10 +105,13 @@ async function until(p: Page, js: string, ms: number): Promise<boolean> {
 /** A recorder in the page: every frame, the epoch time with the own position ('own') or the first remote's ('remote'). */
 const startRec = (p: Page, what: 'own' | 'remote'): Promise<unknown> => p.evaluate(`(() => {
     const h = window.__gsfpv; const out = []; window.__roomsRec = out;
-    const step = () => {
-        const t = performance.timeOrigin + performance.now();
+    const step = (ts) => {
+        // the frame's own time (the rAF timestamp, the 'now' the page's frame handlers use), not performance.now(): a
+        // callback that runs after the frame's rendering work would otherwise stamp the pose late, by a different
+        // amount every frame
+        const t = performance.timeOrigin + ts;
         if (${JSON.stringify(what)} === 'own') { const sim = h.session.shownSim || h.session.sim; if (sim) out.push([t, sim.s[0], sim.s[1], sim.s[2]]); }
-        else { const x = h.rooms.remotes[0]; out.push(x ? [t, x.pos[0], x.pos[1], x.pos[2]] : [t, NaN, NaN, NaN]); }
+        else { const x = h.rooms.remotes[0]; const g = (h.rooms.tags || []).length; out.push(x ? [t, x.pos[0], x.pos[1], x.pos[2], g] : [t, NaN, NaN, NaN, g]); }
         if (!window.__roomsRecStop) requestAnimationFrame(step);
     };
     requestAnimationFrame(step); return 0; })()`);
@@ -103,7 +132,8 @@ async function openA(page: Page, origin: string): Promise<{ page: Page; created:
 
 async function openB(L: Launched, link: string): Promise<Page> {
     const page = L.page;
-    await page.goto(`${link}&nowarn=1`);
+    // simradio=open: B flies by a simulated radio with no plan (no first-visit screen that blocks the keys, as on A)
+    await page.goto(`${link}&simradio=open&nowarn=1`);
     await waitReady(page, 180000);
     return page;
 }
@@ -139,12 +169,17 @@ async function main(): Promise<void> {
         await B.waitForTimeout(RECORD_S * 1000);
         const [a, bRaw, cRaw] = await Promise.all([stopRec(A.page), stopRec(B), stopRec(C.page)]);
         const b = bRaw.filter((s) => Number.isFinite(s[1]));
-        const fit = align(a, b);
-        const swapped = align(a, b.map((s): Sample => [s[0], s[3], s[2], s[1]]));
+        const skip = jumps(a);
+        const raw = align(a, b);
+        const fit = align(a, b, skip);
+        const swapped = align(a, b.map((s): Sample => [s[0], s[3], s[2], s[1]]), skip);
         const aState = await hook<Any>(A.page, 'return { said: [...r.said], members: r.members };');
         const bState = await hook<Any>(B, 'return { said: [...r.said], members: r.members, room: r.room, tags: r.tags };');
         const cState = await hook<Any>(C.page, 'return { room: r.room, remotes: r.remotes.length, state: r.state };');
-        out.follow = { aSamples: a.length, aPathM: +pathLen(a).toFixed(2), bFrames: bRaw.length, bWithRemote: b.length, bestDelayMs: fit.delayMs, rmsM: +fit.rmsM.toFixed(4), compared: fit.n };
+        const steps = a.slice(1).map((s, i) => Math.hypot(s[1] - a[i][1], s[2] - a[i][2], s[3] - a[i][3]) / Math.max(1e-3, (s[0] - a[i][0]) / 1000)).sort((x, y) => x - y);
+        out.follow = { aSamples: a.length, aPathM: +pathLen(a).toFixed(2), aSpeedP50: +(steps[Math.floor(steps.length / 2)] ?? 0).toFixed(2), aSpeedMax: +(steps[steps.length - 1] ?? 0).toFixed(2), bFrames: bRaw.length, bWithRemote: b.length, bestDelayMs: fit.delayMs, rmsM: +fit.rmsM.toFixed(4), p50M: fit.p50M, p90M: fit.p90M, maxM: fit.maxM, compared: fit.n, aTeleports: skip.length, skipMsEachSide: JUMP_SKIP_MS, withTeleports: raw };
+        out.bTagFrames = bRaw.filter((s) => (s as unknown as number[])[4] > 0).length;
+        out.bScreens = await B.evaluate(() => [...document.querySelectorAll('#ui .screen, #ui .panel')].map((e) => e.className).slice(0, 5));
         out.names = { aNick: A.nick, bMembers: bState.members, bTags: bState.tags, aMembers: aState.members };
         out.said = { a: aState.said, b: bState.said };
         out.control1OtherRoom = { cRoom: cState.room, sameRoom: cState.room === bState.room, cFramesWithRemote: cRaw.filter((s) => Number.isFinite(s[1])).length, cFrames: cRaw.length };
@@ -195,7 +230,7 @@ async function main(): Promise<void> {
             aMoved: f.aPathM >= MIN_PATH_M,
             rmsUnderBound: f.rmsM < RMS_BOUND_M && f.compared >= 100,
             bMembersHaveA: (bState.members as Any[]).some((m) => m.nick === A.nick),
-            bTagShown: Array.isArray(bState.tags) && bState.tags.length > 0,
+            bTagShown: out.bTagFrames > 0,
             aSaidJoined: (aState.said as string[]).includes('rooms.say.joined'),
             bSaidWelcome: (bState.said as string[]).includes('rooms.say.welcome'),
             whoOnB: out.speech.whoLast === 'rooms.say.who',
