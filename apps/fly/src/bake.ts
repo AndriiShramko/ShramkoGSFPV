@@ -275,8 +275,70 @@ export interface BakeResult {
     voxelM: number;
     /** the level of detail the walls were built from (0: full detail) */
     level: number;
+    /** share of the level's Gaussians inside the dense core the walls were built from (cropToCore) */
+    kept?: number;
     ms: { read: number; voxelize: number; total: number };
     peakJsHeapMb: number | null;
+}
+
+/**
+ * The dense core of a scan, the same rule as the published walls (tools/walls/bake-published.mjs cropBox):
+ * per axis the CROP_TAIL and 1 - CROP_TAIL quantiles of the positions, widened by CROP_MARGIN of that
+ * span plus CROP_PAD_M. Settings chosen, not measured; the offline bakes kept 98.5 to 99.9 % of the Gaussians.
+ */
+export const CROP_TAIL = 0.005;
+export const CROP_MARGIN = 0.15;
+export const CROP_PAD_M = 5;
+/** positions read for the quantiles (every n-th row); an estimate, enough for a 0.5 % tail */
+export const CROP_SAMPLE = 1_000_000;
+
+export function coreBox(axes: ArrayLike<number>[], tail = CROP_TAIL, margin = CROP_MARGIN, pad = CROP_PAD_M, sample = CROP_SAMPLE): { min: number[]; max: number[] } {
+    const min: number[] = [];
+    const max: number[] = [];
+    for (const a of axes) {
+        const step = Math.max(1, Math.floor(a.length / sample));
+        const s = new Float32Array(Math.ceil(a.length / step));
+        for (let i = 0, j = 0; i < a.length; i += step, j++) s[j] = a[i];
+        s.sort();
+        const n = s.length;
+        const lo = s[Math.max(0, Math.floor(n * tail))];
+        const hi = s[Math.min(n - 1, Math.max(0, Math.ceil(n * (1 - tail)) - 1))];
+        const m = (hi - lo) * margin + pad;
+        min.push(lo - m);
+        max.push(hi + m);
+    }
+    return { min, max };
+}
+
+type CropLib = Pick<typeof import('@playcanvas/splat-transform'), 'Column' | 'DataTable'>;
+type Table = import('@playcanvas/splat-transform').DataTable;
+
+/**
+ * The rows of `table` inside its dense core, without a copy: the kept rows are moved to the front in place
+ * and the result views the first k of every column (the same transform). Raw positions, as the columns hold them.
+ */
+export function cropToCore(st: CropLib, table: Table): { table: Table; kept: number } {
+    const x = table.getColumnByName('x')?.data;
+    const y = table.getColumnByName('y')?.data;
+    const z = table.getColumnByName('z')?.data;
+    const n = table.numRows;
+    if (!x || !y || !z || n === 0) return { table, kept: 1 };
+    const box = coreBox([x, y, z]);
+    const order = new Uint32Array(n);
+    let k = 0;
+    for (let i = 0; i < n; i++) {
+        const inside = x[i] >= box.min[0] && x[i] <= box.max[0] && y[i] >= box.min[1] && y[i] <= box.max[1] && z[i] >= box.min[2] && z[i] <= box.max[2];
+        if (inside) order[k++] = i;
+    }
+    if (k === n || k === 0) return { table, kept: 1 };
+    let r = k;
+    for (let i = 0; i < n; i++) {
+        const inside = x[i] >= box.min[0] && x[i] <= box.max[0] && y[i] >= box.min[1] && y[i] <= box.max[1] && z[i] >= box.min[2] && z[i] <= box.max[2];
+        if (!inside) order[r++] = i;
+    }
+    table.permuteRowsInPlace(order);
+    const cols = table.columns.map((c) => new st.Column(c.name, c.data.subarray(0, k)));
+    return { table: new st.DataTable(cols, table.transform), kept: k / n };
 }
 
 export interface BakeOptions {
@@ -356,8 +418,12 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const src = kind === 'lod-meta' ? st.selectLod(sources[0], level) : sources[0];
         // only what the voxeliser reads (as the CLI does): same octree, bit for bit, at half the memory
         // (15.4 M Gaussians: 2.65 GB instead of 5.6 GB with the colour columns)
-        const table = await st.materializeToDataTable(src, st.createChunkDataPool(), new Set(['position', 'geometric']));
+        const whole = await st.materializeToDataTable(src, st.createChunkDataPool(), new Set(['position', 'geometric']));
         for (const s of sources) await s.close();
+        // a few floaters kilometres out make the voxeliser walk the whole bound (Wroclaw: 13.5 km, still
+        // voxelising after 20 min): build the walls of the dense core, as the published walls are built
+        const core = cropToCore(st, whole);
+        const table = core.table;
         const tRead = performance.now();
         sample();
         onStage('voxelize');
@@ -394,7 +460,7 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const t1 = performance.now();
         sample();
         onStage('done');
-        return { json, bin, gaussians: table.numRows, solidVoxels, voxelM: used, level, ms: { read: tRead - t0, voxelize: t1 - tRead, total: t1 - t0 }, peakJsHeapMb: peak };
+        return { json, bin, gaussians: table.numRows, kept: core.kept, solidVoxels, voxelM: used, level, ms: { read: tRead - t0, voxelize: t1 - tRead, total: t1 - t0 }, peakJsHeapMb: peak };
     } finally {
         clearInterval(timer);
     }

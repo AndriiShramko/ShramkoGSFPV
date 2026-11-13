@@ -52,12 +52,15 @@ for (const c of cases) {
         await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
         await page.waitForTimeout(3000);
         r.page = await page.evaluate(READ);
+        // review WL-8: the drone stops at the published walls (20 flights into them at 25 m/s, as the ladder run did)
+        if (c.expect === 'published' && r.page?.walls?.state === 'in-use') r.tunnel = await page.evaluate(() => window.__gsfpv.session.tunnelSelfTest(20, 25));
         await page.screenshot({ path: `U:/Temp/gsfpv-train2/shots/walls-w2-${c.id}.png` });
     } catch (e) { r.fail = String(e).slice(0, 200); try { r.page = await page.evaluate(READ); } catch { /* page gone */ } }
     const w = r.page?.walls;
     const noBuild = !r.page?.bake && !w?.lastBake && w?.state !== 'baking';
     r.pass = c.expect === 'published'
         ? r.page?.status === 'ready' && w?.source === 'published' && w?.voxelM > 0 && noBuild && r.wallsFiles.length === 2 && r.errors.length === 0
+            && r.tunnel?.passes > 0 && r.tunnel?.penetrations === 0
         : r.page?.status === 'ready' && w?.source === 'none' && w?.state === 'offer' && noBuild && r.errors.length === 0;
     if (!r.pass) failed++;
     out.push(r);
@@ -65,5 +68,5 @@ for (const c of cases) {
 }
 await browser.close();
 writeFileSync(outFile, JSON.stringify(out, null, 1));
-for (const r of out) console.log(JSON.stringify({ id: r.id, pass: r.pass, readyS: r.readyS, state: r.page?.walls?.state, source: r.page?.walls?.source, voxelM: r.page?.walls?.voxelM, bake: !!r.page?.bake, files: r.wallsFiles, walls404: r.walls404, inUse: r.page?.inUse, errors: r.errors.length, fail: r.fail }));
+for (const r of out) console.log(JSON.stringify({ id: r.id, pass: r.pass, readyS: r.readyS, state: r.page?.walls?.state, source: r.page?.walls?.source, voxelM: r.page?.walls?.voxelM, bake: !!r.page?.bake, files: r.wallsFiles, walls404: r.walls404, inUse: r.page?.inUse, tunnel: r.tunnel ? { passes: r.tunnel.passes, penetrations: r.tunnel.penetrations } : null, errors: r.errors.length, fail: r.fail }));
 process.exit(failed ? 1 : 0);
