@@ -105,10 +105,23 @@ export interface Rc2Options {
     hub?: UsbHub | null;
     clock?: () => number;
     wait?: (ms: number) => Promise<void>;
+    /** the ask loop's pause between requests (default: a timer or the next animation frame, whichever is first) */
+    pace?: (ms: number) => Promise<void>;
 }
 
 const defaultHub = (): UsbHub | null => (globalThis.navigator as unknown as { usb?: UsbHub } | undefined)?.usb ?? null;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+/**
+ * The ask loop's pause: the timer or the next animation frame, whichever comes first. In flight the page ran timers
+ * only about 9 times a second (rc2-probe.mjs, 2026-11-13: 9 answers/s in the climb against 80/s on the setup screens),
+ * an animation frame comes every frame, so a request goes out at least once a frame.
+ */
+const pause = (ms: number): Promise<void> => new Promise((r) => {
+    let done = false;
+    const go = (): void => { if (!done) { done = true; r(); } };
+    setTimeout(go, ms);
+    (globalThis as { requestAnimationFrame?: (f: () => void) => number }).requestAnimationFrame?.(go);
+});
 
 /** The RC 2 shaped as a WebHID device for HidSource (see the header). */
 export class DjiRc2Device {
@@ -126,6 +139,7 @@ export class DjiRc2Device {
     private readonly hub: UsbHub | null;
     private readonly clock: () => number;
     private readonly wait: (ms: number) => Promise<void>;
+    private readonly pace: (ms: number) => Promise<void>;
     private ch: StickChannel | null = null;
     private gen = 0;
     /** open()'s wait for the first stick answer */
@@ -139,6 +153,7 @@ export class DjiRc2Device {
         this.hub = o.hub === undefined ? defaultHub() : o.hub;
         this.clock = o.clock ?? (() => performance.now());
         this.wait = o.wait ?? sleep;
+        this.pace = o.pace ?? (o.wait ? o.wait : pause);
     }
 
     /** Open, select the configuration, claim the stick channel, start asking; resolves at the first stick answer. */
@@ -264,7 +279,7 @@ export class DjiRc2Device {
                 if (gen !== this.gen) return;
             }
             const left = RC2_POLL_MS - (this.clock() - t0);
-            if (left > 0) await this.wait(left);
+            if (left > 0) await this.pace(left);
         }
     }
 }

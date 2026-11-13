@@ -106,6 +106,9 @@ function installFakeRc2(cfg) {
     const bulk = [{ endpointNumber: 1, direction: 'in', type: 'bulk' }, { endpointNumber: 1, direction: 'out', type: 'bulk' }];
     const queue = [];
     let wake = null;
+    const pending = [];
+    const mc = new MessageChannel();
+    mc.port1.onmessage = () => { if (pending.length) queue.push(pending.shift()); wake?.(); };
     const dev = {
         vendorId: 0x2ca3, productId: 0x1021, productName: 'DJI RC 2', manufacturerName: 'DJI', opened: false, configuration: null,
         configurations: [{ configurationValue: 1, interfaces: [iface(0, 0x43, bulk), iface(2, 0x42, [])] }],
@@ -117,8 +120,10 @@ function installFakeRc2(cfg) {
         async transferOut(_ep, d) {
             counts.requests++;
             const b = reply(d[6] | (d[7] << 8), values());
-            // the answer arrives 2 ms after its request, whatever the page reads (estimate; the real time was not measured)
-            setTimeout(() => { queue.push(b); wake?.(); }, 2);
+            // the answer arrives as a task of its own, as a USB completion does (a message, not a timer: in flight the
+            // page ran timers about 9 times a second); the real answer time was not measured
+            pending.push(b);
+            mc.port2.postMessage(0);
             return { status: 'ok', bytesWritten: d.length };
         },
         async transferIn() {
