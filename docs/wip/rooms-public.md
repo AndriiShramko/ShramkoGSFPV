@@ -19,7 +19,11 @@ Worktree: C:/dev/gsfpv-rooms (reused from lane rooms, clean), branch rooms-publi
       Negative controls (neg_control.py --ref origin/main): rooms-public whole file NEG OK (keymap.ts, rooms.ts, boot.ts,
       link.ts); "no key is taken" NEG OK (keymap.ts); "boot.ts opens" NEG OK (boot.ts); "spoken lines" NEG OK (rooms.ts +
       4 locales); rooms-review RV-1 NEG OK (keymap.ts); prefs keymap.test NEG OK (keymap.ts).
-- [ ] 4b. Probe rooms-two-page on a local release build of this branch, without ?rooms=1, keys 9 and 0.
+- [x] 4b. Probe rooms-two-page (commit d3228c8d: no ?rooms=1, keys 9 and 0, new check roomOnlyLinkFliesTheRoomScan:
+      page D opens /en/fly/?room=<id> with no ?scene=, joins, its address becomes scene=39e63ce9&room=<id>) on a local
+      release build of d3228c8d (`build-release.mjs` exit 0, 1903 files), GPU lock taken by the probe itself: pass, 14 of
+      14 checks, rms 0.0456 m (bound 0.15), controls 1-3 fired. Evidence evidence/2026-11-13/rooms-public-two-page.json
+      (train 1's rooms-two-page.json left as it was). Console: 8 + 8 resource 404/403 lines, the same count as train 1's run.
 
 ## Decisions
 - Keys 9 and 0, not Shift+L / Shift+O: the router reads a Shift chord no binding has as the key alone while Shift flies
@@ -47,6 +51,16 @@ Worktree: C:/dev/gsfpv-rooms (reused from lane rooms, clean), branch rooms-publi
 - Review RV-1's router fallback proposal for keys.ts is no longer needed (no rooms chord on a Shift letter).
 
 ## Not verified
-- (filled at the end of the stage)
+- Level 2 review of this lane: not done here (one per lane, run by another agent).
+- Live site: nothing deployed; the room-only link and keys 9 / 0 run only on the local rig (rooms-serve.ts).
+- A room link to a room the server does not have, in a browser: unit test only (fake fetch: 404, offline, bad id).
+- Shift held to descend plus O / L in a real browser: KeyRouter unit tests only (rooms-review RV-1, rooms-public 2).
+- Fly by Sound (?sonic=) page with keys 9 and 0 and a screen reader: not run. The two lines name the key by its cap
+  ('9', '0'), not by sonic/key-names.ts spokenKey (layout map): on AZERTY the key at Digit9 is printed 9 and types a
+  cedilla, the line says 9.
+- Whether up to 12 room lines a minute disturb a running sound lesson (rooms review RV-6): still not run.
 
 ## Cost notes
+- Most turns: finding why the first negative controls printed NEG OK while `bash -c` resolved to WSL bash (every run
+  failed for that reason); pass Git Bash by its full path (C:/Program Files/Git/usr/bin/bash.exe) to neg_control.py from
+  the start. The probe edits were cheap because rooms.md and the agent map named every file.
