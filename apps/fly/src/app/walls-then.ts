@@ -11,6 +11,8 @@ export function wallsThen(ctx: FlightContext, then: () => void): Promise<WithWal
         has: () => !!ctx.session.collision,
         // the lead line goes into the walls box above the progress (a HUD note would cover the box)
         build: ctx.hook.walls ? () => ctx.hook.walls!.build(t('walls.building')) : null,
-        scene: () => ctx.session.scene.id
+        scene: () => ctx.session.scene.id,
+        // a failed build keeps the action: it runs after the next build the pilot starts with the button
+        later: ctx.hook.walls ? (f) => ctx.hook.walls!.whenIn(f) : undefined
     }, then);
 }

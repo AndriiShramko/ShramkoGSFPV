@@ -42,7 +42,7 @@ export type WithWalls = 'now' | 'built' | 'failed' | 'moved';
  * Run `then` on walls: at once when the scan has them, else after `build` brought them, if the pilot
  * is still on the same scene. `started` runs once when a build has to happen first (a short line).
  */
-export async function withWalls(o: { has: () => boolean; build: (() => Promise<boolean>) | null; scene: () => string; started?: () => void }, then: () => void): Promise<WithWalls> {
+export async function withWalls(o: { has: () => boolean; build: (() => Promise<boolean>) | null; scene: () => string; started?: () => void; later?: (f: () => void) => void }, then: () => void): Promise<WithWalls> {
     if (o.has()) {
         then();
         return 'now';
@@ -52,7 +52,12 @@ export async function withWalls(o: { has: () => boolean; build: (() => Promise<b
     o.started?.();
     const ok = await o.build();
     if (o.scene() !== at) return 'moved';
-    if (!ok || !o.has()) return 'failed';
+    if (!ok || !o.has()) {
+        // the build failed: the action is not dropped, it runs when walls come in later (one press of the
+        // walls button, not the button and the key again), if the pilot is still on this scene
+        o.later?.(() => { if (o.scene() === at && o.has()) then(); });
+        return 'failed';
+    }
     then();
     return 'built';
 }

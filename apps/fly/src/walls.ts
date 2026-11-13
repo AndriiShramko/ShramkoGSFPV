@@ -44,6 +44,11 @@ export interface WallsHook {
      * after the walls ("First the walls of this scan, then the course."). Resolves true when the session has walls.
      */
     build(lead?: string): Promise<boolean>;
+    /**
+     * The action that waited for a build that failed: it runs when walls come in later (the pilot pressed
+     * the button again), so the lead line in the box stays true. One slot: the latest action wins.
+     */
+    whenIn(f: () => void): void;
     /** the walls box's line now (the build's progress or its result) */
     readonly line: string;
     exportZip(): Promise<Uint8Array>;
@@ -157,6 +162,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             if (lead && badge && !s.collision) badge.textContent = lead;
             return ensureAll();
         },
+        whenIn: (f) => { if (s.collision) f(); else afterIn = f; },
         get line() { return status.textContent ?? ''; },
         exportZip: async () => (await cacheP).exportZip(),
         importZip: (bytes) => importBytes(bytes),
@@ -214,6 +220,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
     });
     /** walls waiting in session.queueCollision for the craft to park (build() takes them at once) */
     let queued: { json: Uint8Array; bin: Uint8Array; sha: string; source: WallsHook['source'] } | null = null;
+    /** the action left waiting by a failed build (whenIn); runs at the next walls swap */
+    let afterIn: (() => void) | null = null;
     /** the base build now running (the button, ?bake=1, C and build() share it) */
     let running: Promise<void> | null = null;
     function startBase(): Promise<void> {
@@ -260,6 +268,10 @@ export function mountWalls(o: WallsOptions): WallsHook {
             keep(false);
             if (o.hook.info) { o.hook.info.hasCollision = true; o.hook.info.collisionSha256 = sha; }
             showSummary();
+            // the action that waited for a failed build goes on now (after this swap has finished)
+            const next = afterIn;
+            afterIn = null;
+            if (next) window.setTimeout(next, 0);
             if (source === 'bake' && was && shipped) say(t('bake.refine.swapped', { cm: cm(w.voxelM!), was: cm(was) }), 15000);
         };
     }
@@ -470,7 +482,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
         action.hidden = false;
         action.onclick = () => void startBase();
         o.hook.runBake = startBase;
-        keep(true);
+        // the offer itself does not hang over the flight (the keys build by themselves): the box keeps in
+        // sight in flight only while a build runs or after one failed (runBase)
         o.hook.downloadBaked = () => {
             const b = o.hook.bakedBytes;
             if (!b) return false;

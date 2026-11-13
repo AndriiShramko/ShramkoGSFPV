@@ -85,6 +85,40 @@ describe('withWalls: the action runs after the walls, on the same scene', () => 
         const got = await withWalls({ has: () => false, build: async () => false, scene: () => 's' }, () => { ran = true; });
         expect([got, ran]).toEqual(['failed', false]);
     });
+    it('the build failed: the action waits and runs when walls come in later, on the same scene', async () => {
+        let walls = false;
+        let later: (() => void) | null = null;
+        let ran = 0;
+        const got = await withWalls({ has: () => walls, build: async () => false, scene: () => 's', later: (f) => { later = f; } } as Parameters<typeof withWalls>[0], () => { ran++; });
+        expect(got).toBe('failed');
+        expect(ran).toBe(0);
+        expect(typeof later).toBe('function');
+        walls = true;
+        (later as unknown as () => void)();
+        expect(ran).toBe(1);
+    });
+    it('the waiting action does not run on another scene', async () => {
+        let scene = 's';
+        let later: (() => void) | null = null;
+        let ran = false;
+        await withWalls({ has: () => scene === 'b', build: async () => false, scene: () => scene, later: (f) => { later = f; } } as Parameters<typeof withWalls>[0], () => { ran = true; });
+        scene = 'b';
+        (later as unknown as (() => void) | null)?.();
+        expect(ran).toBe(false);
+    });
+});
+
+describe('the walls box in flight (review WL-7)', () => {
+    const css = text('apps/fly/src/fly.css');
+    const wallsSrc = text('apps/fly/src/walls.ts');
+    it('H hides the kept box too', () => {
+        expect(css).toContain('#ui.hud-flying:not(.hud-off) > .bake-box.keep');
+        expect(css).not.toMatch(/#ui\.hud-flying > \.bake-box\.keep/);
+    });
+    it('the build offer alone does not keep the box over the flight', () => {
+        const mount = wallsSrc.slice(wallsSrc.indexOf('// ---- phase C button, shown at once'));
+        expect(mount.slice(0, mount.indexOf('o.hook.downloadBaked'))).not.toContain('keep(true)');
+    });
 });
 
 describe('the course, C and V lead the pilot on (no "walls are missing")', () => {

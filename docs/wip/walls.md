@@ -4,6 +4,13 @@ Worktree C:/dev/gsfpv-voice, branch walls (from origin/main 2a5ac433). Ports 580
 
 ## Status
 
+Stage fixes (review findings WL-1 to WL-8):
+- [x] WL-1 (blocker, stands): deploy/deploy.sh prune skips releases/walls (grep -Ev '^(current|walls$|\.)'), deploy/rollback.sh does not list it and refuses it as an id. Simulated on U:/Temp/gsfpv-train2/walls/prune-sim2 (walls dir oldest, 7 releases): the prune list is "r2 r1", walls kept; bash -n of both scripts ok. Commit 0edd22bb.
+- [x] WL-3 (major, stands): bake.ts tooManyBlocks (now exported) and outOfRoom know "Sparse octree node count"; walls-ladder.test.ts 11 passed, NEG OK (bake.ts of fdebd19a). Commit 0edd22bb.
+- [x] WL-4 (major, stands): accept-c.ts builds the two Russian words from code points (TECH_WORDS); no Cyrillic left in the file. Commit 0edd22bb.
+- [x] WL-6 (minor, stands): a failed build keeps the waiting action (withWalls option later, WallsHook.whenIn, one slot, latest wins); it runs at the next walls swap if the scene is the same, so the lead line in the box stays true and the walls button alone brings walls and then the course. Wired in app/walls-then.ts and app/builtin/course.ts (entry only).
+- [x] WL-7 (minor, stands): fly.css '#ui.hud-flying:not(.hud-off) > .bake-box.keep' (H hides it); the mount no longer sets keep, only runBase (build running, or failed). walls-first.test.ts 22 passed (with ladder and published: 40 passed), NEG OK (walls-first.ts, walls.ts, fly.css of 0edd22bb); apps/fly tsc: 0 errors.
+
 Stage W3-lead-the-pilot:
 - [x] Merge of tracks-edit (d79b5ca4) into walls: clean, no conflict (merge commit a0637555).
 - [x] 1-4 code: apps/fly/src/walls-first.ts (ensureWalls, withWalls), WallsHook.build() and .line (walls.ts), app/walls-then.ts wallsThen(ctx, then); the course (Shift+G, menu, Shift+T load, Shift+B edit) builds walls first and goes on; C and V start the build; the ceiling and floater panels build first and open after; the build box keeps in sight in flight while it holds the offer or progress (fly.css .bake-box.keep); texts rewritten in en/es/pl/ru (course.noWalls replaced by course.wallsFirst, new walls.building; bake.done without the voxel count; no {msg} in walls and course entry lines). Test tools/bench/test/walls-first.test.ts 18 passed (ASCII only since 6a8b24db), NEG OK (rerun on 6a8b24db: NEG OK) (origin/main course.ts, builtin walls.ts, voxels.ts, 8 locale files); walls, ladder, published tests 53 passed together; packages/i18n tests 22 passed; apps/fly tsc exit 0. Commit: this one.
