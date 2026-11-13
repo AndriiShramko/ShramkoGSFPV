@@ -9,9 +9,9 @@ C:/dev/gsfpv-v03/docs/wip/sound2-plan.md.
 Stage S1-direction-motor:
 - [x] (a) package: wrong way only while flying nose-first (package train2 4c2ac75)
 - [x] (b) package: motor sound off by default, marker motorChoice, old false-to-true migration removed (package train2 1ed6103; CHANGELOG line in it)
-- [x] simulator: sound.ts pause switch and start-screen motor row save motorChoice; tests sonic-motor, sonic-audio, sonic-start-screen; probe seed sonic-optin-page (this commit)
-- [x] pin packages/sonic-fpv 378cc50 -> 1ed6103 (this commit)
-- [~] simulator sonic and sonicrec unit tests on the new pin (see Checks)
+- [x] simulator: sound.ts pause switch and start-screen motor row save motorChoice; tests sonic-motor, sonic-audio, sonic-start-screen; probe seed sonic-optin-page (e37e2bb9)
+- [x] pin packages/sonic-fpv 378cc50 -> 1ed6103 (e37e2bb9)
+- [x] simulator sonic and sonicrec unit tests on the new pin (see Checks)
 
 ## Checks (numbers printed by the commands)
 
@@ -26,6 +26,9 @@ Simulator (this worktree, tools/bench):
 - sonic-motor, sonic-audio, sonic-start-screen, sonic-optin: 86 passed.
 - Negative control (ref origin/main, sound.ts + start-screen.ts, -t motorChoice): NEG OK.
 - tsc apps/fly and tools/bench: no errors.
+- tools/bench test/sonic* + test/sonicrec* (43 files, 2 min 13 s): 741 passed, 2 failed, both 'Test timed out in 5000ms':
+  sonic-scan-world (passed when re-run alone) and sonic-bump 'walls, pillars, ceiling, floor at 0-85 deg' (9.9 s alone;
+  also times out on the old pin 378cc50, so it is not this change; load on this PC).
 
 ## Decisions
 
@@ -58,6 +61,7 @@ Simulator (this worktree, tools/bench):
 
 - No browser run: sonic-optin-page (probe seed changed) and page probes were not run (GPU lock, integration runs them).
 - Real pilot recordings with backing up were not replayed (none at hand in the package fixtures).
+- sonic-bump.test.ts 'walls, pillars...' case did not finish within its 5 s timeout here on either pin.
 
 ## Cost notes
 
