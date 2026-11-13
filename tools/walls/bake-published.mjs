@@ -160,6 +160,8 @@ async function main() {
     const manifest = existsSync(mf) && statSync(mf).size ? JSON.parse(readFileSync(mf, 'utf8')) : {};
     for (const id of ids.split(',')) {
         let row;
+        // the CDN read of hundreds of chunks drops now and then ("fetch failed" on 3 of 9 big scans on 2026-11-13); try again
+        for (let t = 0; t < 3 && (!row || /fetch failed/.test(row.reason ?? '')); t++)
         try { row = await bakeOne(id, outDir, o); } catch (e) { row = { id, ok: false, reason: `${e?.message ?? e}${e?.cause ? ` (${e.cause.code ?? ''} ${e.cause.message ?? e.cause})` : ''}`.slice(0, 300) }; }
         manifest[id] = row;
         writeFileSync(mf, JSON.stringify(manifest, null, 1));
