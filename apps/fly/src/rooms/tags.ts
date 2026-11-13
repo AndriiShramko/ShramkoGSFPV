@@ -4,6 +4,7 @@
 import { Vec3 as PcVec3 } from 'playcanvas';
 import type { Entity } from 'playcanvas';
 import type { Vec3 } from './around';
+import { nearAlpha } from './remote-stage';
 
 /** The tag sits this far above the drone, metres (estimate: clear of a 0.25 m drone). */
 const TAG_LIFT_M = 0.3;
@@ -34,6 +35,9 @@ export class NameTags {
             const cp = cam.getPosition();
             for (const tg of list) {
                 this.w.set(tg.pos[0], tg.pos[1] + TAG_LIFT_M, tg.pos[2]);
+                // the near rule (remote-stage.ts): a drone too near the camera has no tag either; in the fade band the tag fades
+                const near = nearAlpha(Math.hypot(tg.pos[0] - cp.x, tg.pos[1] - cp.y, tg.pos[2] - cp.z));
+                if (near <= 0) continue;
                 // behind the camera: no tag
                 const ahead = (this.w.x - cp.x) * fwd.x + (this.w.y - cp.y) * fwd.y + (this.w.z - cp.z) * fwd.z;
                 if (ahead <= 0) continue;
@@ -49,7 +53,7 @@ export class NameTags {
                 if (el.textContent !== tg.nick) el.textContent = tg.nick;
                 el.style.left = `${this.s.x.toFixed(1)}px`;
                 el.style.top = `${this.s.y.toFixed(1)}px`;
-                el.style.opacity = tg.frozen ? '0.5' : '1';
+                el.style.opacity = String(+((tg.frozen ? 0.5 : 1) * near).toFixed(3));
                 keep.add(tg.slot);
             }
         }

@@ -8,6 +8,7 @@
 // fastest path through the network and the server's 15 Hz tick). A tick that goes back (a new life, a new scene) or a
 // jump of that difference by more than half a second (the sender paused) starts the track again.
 // The error bound is measured on scripted poses with jitter and loss in tools/bench/test/rooms-interp.test.ts.
+import { FLAG_PAUSED } from './codec';
 import type { Pose, Quat4, Vec3 } from './codec';
 
 /** rooms-plan.md 2.2 */
@@ -84,6 +85,9 @@ export class RemoteTrack {
         const first = k[0], last = k[k.length - 1];
         if (at <= first.tick) return shown(first.pose, first.pose.pos, first.pose.quat, false, first.tick);
         if (at >= last.tick) {
+            // lane look: a paused pilot (the start screen, the menu) sends the same pose on and on and the server relays it: the
+            // drone holds still where it is, in its colour; it is not a lost connection (that one stops the poses)
+            if (last.pose.flags & FLAG_PAUSED) return shown(last.pose, last.pose.pos, last.pose.quat, false, last.tick);
             const e = Math.min(at - last.tick, this.extrap);
             const v = last.pose.vel, p = last.pose.pos;
             const pos: Vec3 = [p[0] + (v[0] * e) / 1000, p[1] + (v[1] * e) / 1000, p[2] + (v[2] * e) / 1000];

@@ -7,7 +7,9 @@
 // RoomsHook.remotes follows A's own positions (RMS after aligning the playout delay < RMS_BOUND_M), B's members hold A's
 // nickname, A's said holds the join line (B joined), B's said holds the welcome line, key 0 on B appends the who-is-around
 // line, and after A has gone B says the leave line and key 0 says nobody; then D opens /fly/?room=<id> with no ?scene= and
-// flies the room's scan in the room (rooms-public point 3). Controls that must fire: C in another room sees no remote; the rig with
+// flies the room's scan in the room (rooms-public point 3). Lane look: nearHidden (both back at the start, paused: B draws
+// no body of A, every drawn alpha 0, and no tag) and tagAtDistance (A's paused sim put TAG_AT_M along B's level view: B has
+// exactly one tag, its text A's name, its box inside the view, and A's body whole). Controls that must fire: C in another room sees no remote; the rig with
 // the relay off (rooms.py --no-relay) never shows A to B; B's samples with x and z swapped give an RMS over the bound.
 // A's trace hash equal to solo: tools/bench/test/rooms-a6.test.ts (a real-time page flight is not a fixed-step replay).
 // The whole run holds the GPU lock once (gpu-lock.ts), released on an error too. Evidence: evidence/<date>/rooms-two-page.json.
@@ -21,6 +23,7 @@ import { LOCK, lock, unlock } from './gpu-lock';
 import { REPO } from './sonicrec-serve';
 import { startRoomsRig } from './rooms-serve';
 import type { RoomsRig } from './rooms-serve';
+import { axisQ, bState as lookState, camera, levelView, placeA, qmul } from './rooms-shot-live';
 
 const DIST = join(REPO, 'dist');
 /** seconds A flies while both pages record (plan section 9) */
@@ -30,6 +33,8 @@ export const RMS_BOUND_M = 0.15;
 /** A must move at least this far for the comparison to mean anything (an estimate: a few drone lengths) */
 const MIN_PATH_M = 3;
 const SCENE = '39e63ce9';
+/** lane look: how far in front of B the tag check puts A, metres (the task: 3 m or more) */
+const TAG_AT_M = 3.5;
 
 export type Sample = [number, number, number, number];
 
@@ -191,6 +196,33 @@ async function main(): Promise<void> {
         out.control3SwappedAxes = { rmsM: +swapped.rmsM.toFixed(4), fired: swapped.rmsM > RMS_BOUND_M };
         await C.page.context().close();
 
+        // ---- lane look: both at the start (nearHidden), then A TAG_AT_M in front of B (tagAtDistance); both paused
+        // (a respawn after A's flight is not always taken at once: both paused sims are put on B's spawn point instead)
+        await hook(A.page, "h.session.pause(true, 'menu'); return 0;");
+        await hook(B, "h.session.pause(true, 'menu'); return 0;");
+        const spawn = await hook<number[]>(B, 'return [...h.session.spawn];');
+        const qStart = (await camera(B)).q;
+        await placeA(B, [spawn[0], spawn[1], spawn[2]], qStart);
+        await placeA(A.page, [spawn[0], spawn[1], spawn[2]], qStart);
+        await B.waitForTimeout(1500);
+        const atStart = await lookState(B);
+        const startDrawn = (atStart.drawn ?? []) as Any[];
+        out.nearHidden = { ...atStart };
+        const nearHidden = startDrawn.length === 1 && startDrawn.every((d) => d.alpha === 0) && (atStart.tags as Any[]).length === 0 && (atStart.hookTags as Any[]).length === 0;
+        const lv = await levelView(B);
+        const cam = await camera(B);
+        await placeA(A.page, [cam.pos[0] + cam.fwd[0] * TAG_AT_M, cam.pos[1] + cam.fwd[1] * TAG_AT_M, cam.pos[2] + cam.fwd[2] * TAG_AT_M], qmul(axisQ(cam.up, 135), cam.q));
+        await B.waitForTimeout(1500);
+        const far = await lookState(B);
+        const farTags = far.tags as { text: string; box: number[] }[];
+        const view = far.view as number[];
+        const farDrawn = (far.drawn ?? []) as Any[];
+        out.tagAtDistance = { atM: TAG_AT_M, freeM: +lv.freeM.toFixed(2), ...far };
+        const tagAtDistance = farTags.length === 1 && farTags[0].text === A.nick && farTags[0].box[0] >= 0 && farTags[0].box[1] >= 0 && farTags[0].box[2] <= view[0] && farTags[0].box[3] <= view[1] &&
+            farDrawn.length === 1 && farDrawn[0].alpha === 1 && farDrawn[0].distM >= 3;
+        await hook(A.page, "h.session.pause(false, 'menu'); return 0;");
+        await hook(B, "h.session.pause(false, 'menu'); return 0;");
+
         // ---- key 0 on B with A there, then A leaves, then key 0 again
         const n0 = bState.said.length;
         await B.keyboard.press('Digit0');
@@ -251,6 +283,8 @@ async function main(): Promise<void> {
             whoOnB: out.speech.whoLast === 'rooms.say.who',
             leftOnB: leftHeard,
             nobodyOnB: out.speech.nobodyLast === 'rooms.say.nobody',
+            nearHidden,
+            tagAtDistance,
             roomOnlyLinkFliesTheRoomScan: out.roomOnlyLink.joined && out.roomOnlyLink.scene === SCENE && out.roomOnlyLink.room === roomId,
             control1: out.control1OtherRoom.fired,
             control2: fired2,
@@ -268,7 +302,8 @@ async function main(): Promise<void> {
         for (const r of rigs) await r.stop().catch(() => undefined);
         unlock();
     }
-    const file = writeEvidence('rooms-two-page', out);
+    // EVIDENCE_DATE: the folder under evidence/ (lane look keeps its runs under 2026-11-13/train1c)
+    const file = process.env.EVIDENCE_DATE ? writeEvidence('rooms-two-page', out, process.env.EVIDENCE_DATE) : writeEvidence('rooms-two-page', out);
     console.log(JSON.stringify({ pass, checks: out.checks, follow: out.follow, c1: out.control1OtherRoom, c2: out.control2RelayOff, c3: out.control3SwappedAxes, speech: out.speech, error: out.error }));
     console.log(`evidence ${file}`);
     process.exitCode = pass ? 0 : 1;

@@ -1,0 +1,408 @@
+{
+  "name": "rooms-look-before",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T12:47:02.651Z",
+    "gitHead": "a0d74980",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "mode": "before",
+  "scene": "39e63ce9",
+  "diffLevel": 40,
+  "distancesM": [
+    0,
+    0.25,
+    0.5,
+    1,
+    2,
+    4,
+    8
+  ],
+  "aNick": "Pilot-5235",
+  "start": {
+    "remotes": [
+      {
+        "slot": 0,
+        "pos": [
+          0.686,
+          1.58,
+          0.694
+        ],
+        "ageMs": 3182
+      }
+    ],
+    "tags": [
+      {
+        "text": "Pilot-5235",
+        "box": [
+          606,
+          -737,
+          674,
+          -721
+        ],
+        "opacity": "0.5"
+      }
+    ],
+    "hookTags": [
+      0
+    ],
+    "drawn": null,
+    "view": [
+      1280,
+      800
+    ],
+    "bCamera": [
+      0.686,
+      1.581,
+      0.694
+    ]
+  },
+  "lookDir": {
+    "yawDeg": 105,
+    "freeM": 8.72,
+    "raiseM": 0.05
+  },
+  "refNoise": {
+    "box": null,
+    "pixels": 0,
+    "share": 0,
+    "w": 1280,
+    "h": 800
+  },
+  "camera": {
+    "pos": [
+      0.686,
+      1.631,
+      0.694
+    ],
+    "fwd": [
+      -0.966,
+      0,
+      0.259
+    ]
+  },
+  "rows": [
+    {
+      "d": 0,
+      "share": 0,
+      "box": null,
+      "pixels": 0,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            0.686,
+            1.631,
+            0.694
+          ],
+          "ageMs": 10816
+        }
+      ],
+      "tags": [],
+      "hookTags": [],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 0.25,
+      "share": 0.0672,
+      "box": [
+        437,
+        345,
+        842,
+        515
+      ],
+      "pixels": 19073,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            0.444,
+            1.631,
+            0.759
+          ],
+          "ageMs": 13649
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-5235",
+          "box": [
+            606,
+            -106,
+            674,
+            -89
+          ],
+          "opacity": "0.5"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 0.5,
+      "share": 0.0129,
+      "box": [
+        539,
+        373,
+        739,
+        439
+      ],
+      "pixels": 4384,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            0.203,
+            1.631,
+            0.823
+          ],
+          "ageMs": 16482
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-5235",
+          "box": [
+            606,
+            139,
+            674,
+            155
+          ],
+          "opacity": "0.5"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 1,
+      "share": 0.0031,
+      "box": [
+        590,
+        385,
+        690,
+        417
+      ],
+      "pixels": 1069,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -0.28,
+            1.631,
+            0.953
+          ],
+          "ageMs": 19382
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-5235",
+          "box": [
+            606,
+            261,
+            674,
+            278
+          ],
+          "opacity": "0.5"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 2,
+      "share": 0.0007,
+      "box": [
+        616,
+        393,
+        665,
+        408
+      ],
+      "pixels": 315,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -1.246,
+            1.631,
+            1.212
+          ],
+          "ageMs": 22182
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-5235",
+          "box": [
+            606,
+            322,
+            674,
+            339
+          ],
+          "opacity": "0.5"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 4,
+      "share": 0.0002,
+      "box": [
+        628,
+        396,
+        653,
+        404
+      ],
+      "pixels": 77,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -3.178,
+            1.631,
+            1.729
+          ],
+          "ageMs": 25049
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-5235",
+          "box": [
+            606,
+            353,
+            674,
+            369
+          ],
+          "opacity": "0.5"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 8,
+      "share": 0,
+      "box": [
+        634,
+        398,
+        646,
+        402
+      ],
+      "pixels": 22,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -7.042,
+            1.631,
+            2.765
+          ],
+          "ageMs": 27882
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-5235",
+          "box": [
+            606,
+            368,
+            674,
+            385
+          ],
+          "opacity": "0.5"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": null,
+      "view": [
+        1280,
+        800
+      ]
+    }
+  ],
+  "start2": {
+    "remotes": [
+      {
+        "slot": 0,
+        "pos": [
+          0.686,
+          1.631,
+          0.694
+        ],
+        "ageMs": 30249
+      }
+    ],
+    "tags": [],
+    "hookTags": [],
+    "drawn": null,
+    "view": [
+      1280,
+      800
+    ]
+  },
+  "console": {
+    "a": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "b": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  }
+}

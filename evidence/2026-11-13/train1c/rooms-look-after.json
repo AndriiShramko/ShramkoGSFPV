@@ -1,0 +1,476 @@
+{
+  "name": "rooms-look-after",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T13:06:00.087Z",
+    "gitHead": "d9a34993",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "mode": "after",
+  "scene": "39e63ce9",
+  "diffLevel": 40,
+  "distancesM": [
+    0,
+    0.25,
+    0.5,
+    1,
+    2,
+    4,
+    8
+  ],
+  "aNick": "Pilot-3518",
+  "start": {
+    "remotes": [
+      {
+        "slot": 0,
+        "pos": [
+          0.686,
+          1.578,
+          0.694
+        ],
+        "ageMs": 3197
+      }
+    ],
+    "tags": [],
+    "hookTags": [],
+    "drawn": [
+      {
+        "slot": 0,
+        "distM": 0.003,
+        "alpha": 0,
+        "share": 1,
+        "box": [
+          0,
+          0,
+          1280,
+          800
+        ]
+      }
+    ],
+    "view": [
+      1280,
+      800
+    ],
+    "bCamera": [
+      0.686,
+      1.581,
+      0.694
+    ]
+  },
+  "lookDir": {
+    "yawDeg": 105,
+    "freeM": 8.72,
+    "raiseM": 0.05
+  },
+  "refNoise": {
+    "box": null,
+    "pixels": 0,
+    "share": 0,
+    "w": 1280,
+    "h": 800
+  },
+  "camera": {
+    "pos": [
+      0.686,
+      1.631,
+      0.694
+    ],
+    "fwd": [
+      -0.966,
+      0,
+      0.259
+    ]
+  },
+  "rows": [
+    {
+      "d": 0,
+      "share": 0,
+      "box": null,
+      "pixels": 0,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            0.686,
+            1.631,
+            0.694
+          ],
+          "ageMs": 10696
+        }
+      ],
+      "tags": [],
+      "hookTags": [],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 0,
+          "alpha": 0,
+          "share": 1,
+          "box": [
+            0,
+            0,
+            1280,
+            800
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 0.25,
+      "share": 0,
+      "box": null,
+      "pixels": 0,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            0.444,
+            1.631,
+            0.759
+          ],
+          "ageMs": 13530
+        }
+      ],
+      "tags": [],
+      "hookTags": [],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 0.25,
+          "alpha": 0,
+          "share": 0.35368,
+          "box": [
+            295,
+            279,
+            990,
+            800
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 0.5,
+      "share": 0,
+      "box": null,
+      "pixels": 0,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            0.203,
+            1.631,
+            0.823
+          ],
+          "ageMs": 16296
+        }
+      ],
+      "tags": [],
+      "hookTags": [],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 0.5,
+          "alpha": 0,
+          "share": 0.05307,
+          "box": [
+            467,
+            341,
+            814,
+            497
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 1,
+      "share": 0.0069,
+      "box": [
+        564,
+        374,
+        715,
+        421
+      ],
+      "pixels": 3108,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -0.28,
+            1.631,
+            0.953
+          ],
+          "ageMs": 19163
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-3518",
+          "box": [
+            607,
+            261,
+            673,
+            278
+          ],
+          "opacity": "1"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 1,
+          "alpha": 1,
+          "share": 0.0111,
+          "box": [
+            553,
+            371,
+            727,
+            436
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 2,
+      "share": 0.0016,
+      "box": [
+        602,
+        387,
+        677,
+        409
+      ],
+      "pixels": 766,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -1.246,
+            1.631,
+            1.212
+          ],
+          "ageMs": 22029
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-3518",
+          "box": [
+            607,
+            322,
+            673,
+            339
+          ],
+          "opacity": "1"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 2,
+          "alpha": 1,
+          "share": 0.00259,
+          "box": [
+            597,
+            385,
+            683,
+            416
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 4,
+      "share": 0.0004,
+      "box": [
+        621,
+        393,
+        658,
+        405
+      ],
+      "pixels": 191,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -3.178,
+            1.631,
+            1.729
+          ],
+          "ageMs": 26896
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-3518",
+          "box": [
+            607,
+            353,
+            673,
+            369
+          ],
+          "opacity": "1"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 4,
+          "alpha": 1,
+          "share": 0.00063,
+          "box": [
+            618,
+            393,
+            662,
+            408
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    },
+    {
+      "d": 8,
+      "share": 0.0001,
+      "box": [
+        631,
+        397,
+        649,
+        402
+      ],
+      "pixels": 45,
+      "remotes": [
+        {
+          "slot": 0,
+          "pos": [
+            -7.042,
+            1.631,
+            2.765
+          ],
+          "ageMs": 31730
+        }
+      ],
+      "tags": [
+        {
+          "text": "Pilot-3518",
+          "box": [
+            607,
+            368,
+            673,
+            385
+          ],
+          "opacity": "1"
+        }
+      ],
+      "hookTags": [
+        0
+      ],
+      "drawn": [
+        {
+          "slot": 0,
+          "distM": 8,
+          "alpha": 1,
+          "share": 0.00016,
+          "box": [
+            629,
+            396,
+            651,
+            404
+          ]
+        }
+      ],
+      "view": [
+        1280,
+        800
+      ]
+    }
+  ],
+  "start2": {
+    "remotes": [
+      {
+        "slot": 0,
+        "pos": [
+          0.686,
+          1.631,
+          0.694
+        ],
+        "ageMs": 36063
+      }
+    ],
+    "tags": [],
+    "hookTags": [],
+    "drawn": [
+      {
+        "slot": 0,
+        "distM": 0,
+        "alpha": 0,
+        "share": 1,
+        "box": [
+          0,
+          0,
+          1280,
+          800
+        ]
+      }
+    ],
+    "view": [
+      1280,
+      800
+    ]
+  },
+  "console": {
+    "a": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "b": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  }
+}
