@@ -7,8 +7,8 @@ infographics with explanations; people ask how one flies by sound at all; it has
 ## Status
 
 Stage P1-video-layout:
-- [x] 1. Video slots and layout. config/videos.ts: slot soundHero (garden) and FLIGHTS soundHow (pond), soundStart (acro); BgVideo takes both kinds of slot; media.mjs knows pond and acro. Page: first screen with the Winter Garden loop, h1, one-line lead (sound.hero.lead), the start button, the note; h2 order how, hear, need, start, now, test, who, open, help (10 h2 became 9; keys and record are h3 with their old anchors #sound-keys, #sound-record). The first four h2 are the newcomer's questions. Real-flight strips open "how" and "start". Locales en, ru, pl, es: how/need/start titles as questions, new sound.hero.lead, sound.hear.title, sound.media.{garden,pond,acro}. verify.mjs: new h2 order, 11 h3, the three loops with posters and captions. Site typecheck PASS, i18n-check OK (1172 strings x 4).
-- [ ] 2. Build, full-page shots 1440x900 and 360x800 in en and ru (U:/Temp/gsfpv-train2/shots/sound-page-p1-*.png), look at them, fix.
+- [x] 1. (2c481232) Video slots and layout. config/videos.ts: slot soundHero (garden) and FLIGHTS soundHow (pond), soundStart (acro); BgVideo takes both kinds of slot; media.mjs knows pond and acro. Page: first screen with the Winter Garden loop, h1, one-line lead (sound.hero.lead), the start button, the note; h2 order how, hear, need, start, now, test, who, open, help (10 h2 became 9; keys and record are h3 with their old anchors #sound-keys, #sound-record). The first four h2 are the newcomer's questions. Real-flight strips open "how" and "start". Locales en, ru, pl, es: how/need/start titles as questions, new sound.hero.lead, sound.hear.title, sound.media.{garden,pond,acro}. verify.mjs: new h2 order, 11 h3, the three loops with posters and captions. Site typecheck PASS, i18n-check OK (1172 strings x 4).
+- [x] 2. Release build (scripts/build-release.mjs, exit 0, sha 2c481232), verify.mjs static part 175 PASS 0 FAIL before its browser part (that part needs a server on 8138, outside this lane's ports: not run). Probe U:/Temp/gsfpv-train2/page/shots.mjs (headless system Chrome 157, under C:/dev/.gpu-lock) on serve-csp :5740: en and ru at 1440x900 and 360x800 scrollWidth = viewport, h2 order how..help, all three loops attached (1920 AV1 at 1440, 1280 AV1 at 360), garden playing on the first screen; reduced motion at 360: no video attached (state none), poster shown; no JavaScript at 360: h1 and all 9 h2 present. Shots looked at; one fix: the eyebrow was 13 px (site class .eyebrow), now text-sm, smallest text in main 14 px on every run. Shots: U:/Temp/gsfpv-train2/shots/sound-page-p1-{en,ru}-{1440,360}.png plus -top, -how, -start crops, -reduced.
 
 ## Decisions
 
@@ -26,9 +26,20 @@ Stage P1-video-layout:
 
 ## For the lead
 
+- In this worktree packages/sonic-fpv was checked out at 09535b7 instead of the recorded 378cc50, and the fly build failed (lessonSegments not exported). I ran git submodule update packages/sonic-fpv (this worktree's own module dir) and the release built; nothing committed in the submodule.
+- Animated infographics on flying by sound do not exist yet (none of the 28 lecture ones covers it); the next stage makes them. Reusable as is: shramko-fpv-sim-scan.
+- The acro poster is a blurred frame; a sharper first frame needs a different cut point in the owner's deck clip (spec.py s10, 30-42 s), not a different poster.
+
 - tools/bench/scripts/sound-page-shots.mjs (not in this lane) reads #sound-how and prints the h2 order; it does not assert the old order in code read so far, but its log line will show the new order how,hear,need,start,now,test,who,open,help.
-- packages/sonic-fpv shows as modified in this worktree (submodule pointer); not touched, not staged.
 
 ## Not verified
 
+- The negative control of the new verify.mjs check (three loops) was not run on an old build; the live page has 0 video tags (scout-B B3), so the check cannot pass on the old page, but no command showed it fail.
+- verify.mjs browser part, sound-page-shots.mjs, accept-v06-landing L5 not run (lead, integration).
+- Video playback in H.264 fallback (headless Chrome chose AV1 everywhere); Safari and phones not tried.
+- es and pl texts of the new keys are written by the agent, not by native speakers.
+- The flashes rule: the acro loop has one roll in 12 s and the pond loop none; judged by watching the source description and posters, not measured by a flash analyser.
+
 ## Cost notes
+
+- P1: most turns went to finding the real flight clips (vault note, Publish folder, then the deck media and spec.py for their content) and to one failed release build from a stale submodule; a line in scout-B naming talks/fpv/deck_public/media and spec.py, and a clean submodule in the worktree, would have saved about 6 turns.

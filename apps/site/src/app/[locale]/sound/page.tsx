@@ -144,7 +144,7 @@ function Sound({ locale }: { locale: Locale }) {
           <BgVideo slot="soundHero" priority className="-z-20" />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-bg via-bg/80 to-bg/30" />
           <div className={`${COL} flex min-h-[calc(85svh-4rem)] flex-col justify-end pb-8 pt-24`}>
-            <p className="eyebrow">{t("sound.eyebrow")}</p>
+            <p className="eyebrow text-sm">{t("sound.eyebrow")}</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink [text-shadow:0_1px_12px_rgb(0_0_0/0.8)] sm:text-6xl">{t("sound.h1")}</h1>
             <p className="mt-4 max-w-2xl text-lg text-ink/90 sm:text-xl">{t("sound.hero.lead")}</p>
             <p className="mt-6">{start}</p>
