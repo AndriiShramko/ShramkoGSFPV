@@ -72,6 +72,55 @@ Stage V2 transcription, echo filter and the pin: DONE
 
 Package branch head after V2: 1bafe47 (voice-feedback).
 
+R review fixes (independent review of the lane, findings V-R1 to V-R10): DONE
+
+All fixes in package commit d28d9c2; tests in the new `test/analyze-review.test.ts` (12) and `test/transcribe.test.ts`.
+None of the findings was refuted: each was confirmed against the code before the fix.
+
+- [x] V-R1 (major) echo on lines of two and three sentences: CONFIRMED (echoOf compared a piece with the whole line,
+      3 s from its start only). Fix: a piece is echo when it starts between the line's event minus 3 s and the line's
+      end plus 3 s (end = next speech.end, else 450 ms per word, estimate RULES.echoMsPerWord) and matches a run of the
+      line's sentences, or (3 words or more, RULES.echoMinRun) a run of its words, under WER 0.4. Test: the reviewer's
+      Whisper pieces of en lesson.ears-headphones.intro.2 (3 pieces at +248/+3100/+7840 ms) and pl
+      lesson.ears-headphones.pass (2 pieces) all echo; the pilot's own remark inside the line is not; with speech.end the
+      span runs to it; control echo off leaves all 3 quotes. Commit d28d9c2.
+- [x] V-R2 (major) sender strings on the share-safe page: CONFIRMED. Fix: the share-safe page prints keys, lesson ids,
+      survey items, session id only through /^[a-z0-9]+([._-][a-z0-9]+)*$/i (80 max), release and sound version through
+      /^[\w.+-]{1,40}$/, created through an ISO-like pattern, otherwise `invalid`; warnings as codes
+      (`package-<code>` and fixed own codes, Analysis.warningCodes), never messages. Test: hostile speech key, survey key,
+      release, sound version and zip-entry warning: no SYSTEM/IGNORE/evil/obey on the page; control: summary.md shows
+      them. Commit d28d9c2. A pattern for the speech key in codec.ts is for the lead (below).
+- [x] V-R3 (minor) quotes used RULES.remarkWindowMs: CONFIRMED; `Analysis.windowMs` kept and used by renderSummary.
+      Test: --window-s 10, remark 7.5 s after the refused answer is quoted in the 1:42.0 row. Commit d28d9c2.
+- [x] V-R4 (minor) Math.max spread: CONFIRMED; loop instead; main() counts any Error of one package as its failure
+      (folder goes on). Tests: 200 000 extra events (lengthMs 375999); a RangeError from the first package of a folder,
+      exit 1, the second summary written. Commit d28d9c2.
+- [x] V-R5 (minor) silence phrases dropped real remarks: CONFIRMED. Fix: a whole-text phrase is dropped only from a
+      weak segment (noSpeechProb >= 0.3 or avgLogprob <= -0.6, estimates WEAK_NO_SPEECH, WEAK_LOGPROB); credit lines
+      (entries ending in *) always; summary.md header line "Transcript: N segments, E echo, dropped D (see
+      transcript.json)". Test: 'Thank you.' at 0.02/-0.1 kept, 'Thank you for watching!' at 0.4 dropped. Commit d28d9c2.
+- [x] V-R6 (minor) voice file before the lock: CONFIRMED; the lock is taken first and the file written inside the
+      try (removed in finally); the usage text says how to clear a stale lock and .voice.webm. No test (9-minute wait).
+      Commit d28d9c2.
+- [x] V-R7 (minor) idle needed centred sticks: CONFIRMED. Fix: no stick moved more than 0.1 from the stretch's start
+      (change, not position), and the time from a speech event to the next speech.end does not count (none recorded:
+      nothing skipped). Tests: throttle held at -1 gives idle at 133500; a line spoken to 136 s removes it. Commit d28d9c2.
+- [x] V-R8 (minor) phrases.json escapes: CONFIRMED (claim wrong); the 'about' now says letters are UTF-8; Status V1
+      item 4 is corrected by this line (phrases.json holds raw letters; gate B18 does not read the package). Commit d28d9c2.
+- [x] V-R9 (minor) tests: the transcribe.py tests now run (and fail) when SHRAMKO_LISTEN_PY is set but does not run;
+      cases of V-R1 and V-R2 added; the opt-in e2e is for the lead's level 3 (below). Commit d28d9c2.
+- [x] V-R10 (minor) (a) warnings `consent-voice` and `consent-guardian` (tested); (b) a repeated session id in a
+      folder is refused for the second package, exit 1 (tested); (c) tags and echo words use the transcriber's language
+      when given (tested by the pl echo case); (d) for the lead (below). Commit d28d9c2.
+- [x] Checks: package vitest analyze-review, transcribe, analyze, segments, session, replay, report: 7 files, 120
+      passed; `pnpm typecheck` exit 0. Negative controls (neg_control.py against 1bafe47): analyze.ts + rules.ts NEG OK
+      (9 of 12 failed on the old code; the 3 that passed are the two controls and the speaking case, which was then
+      changed to use centred sticks so that the old code flags idle there); transcribe.py NEG OK.
+- [x] Simulator: `packages/sonic-fpv` pinned to d28d9c2 (src, lessons, locales identical to 1bafe47: the simulator's
+      replay tests have unchanged inputs and were not re-run).
+
+Package branch head after R: d28d9c2 (voice-feedback).
+
 ## Findings
 
 - pnpm 11 passes a literal `--` to the script (`pnpm report -- x` prints "report: unknown option --", measured
@@ -103,9 +152,17 @@ Package branch head after V2: 1bafe47 (voice-feedback).
 
 ## For the lead before the merge
 
-- Merge package branch voice-feedback (head 1bafe47, local only in C:/dev/ShramkoSonicFPV) into the package main and
-  push it first; then re-pin the simulator's `packages/sonic-fpv` to the pushed commit (this lane pinned 1bafe47 in a
+- Merge package branch voice-feedback (head d28d9c2, local only in C:/dev/ShramkoSonicFPV) into the package main and
+  push it first; then re-pin the simulator's `packages/sonic-fpv` to the pushed commit (this lane pinned d28d9c2 in a
   local commit, as lane sonic-beacon did; the pin is in no remote until then).
+- Review V-R10 (d): the lane also changed the package's `src/replay/index.ts` (one export line for lessonSegments) and
+  added `evidence/listen/VF-1-transcribe.json`; both are outside the listed paths and needed: accept them at the merge.
+- Review V-R2: give the `speech` event key a pattern in `src/session/codec.ts` (for example the SAFE_KEY of
+  tools/analyze.ts) so a package with a free-text key is a problem at reading; the share-safe page already refuses it.
+- Review V-R1/V-R9, level 3: run the opt-in end-to-end check once (`SHRAMKO_VOICE_E2E=1`, GPU lock) after the echo
+  fix; its sentences file has one-sentence echo lines only; adding a two- and three-sentence line needs a TTS + GPU
+  rebuild of the fixture (`test/fixtures/make-voice-e2e.py`), not done in this lane (the unit test uses the reviewer's
+  real Whisper pieces of synthetic voices instead).
 - Simulator diff of the lane: `packages/sonic-fpv` and `apps/fly/src/sonic-session/replay-segments.ts` (a re-export)
   plus this file. Probe 5 of the plan: run `pnpm analyze -- test/fixtures/session-voice-two-lessons.zip --out <dir>
   --transcript test/fixtures/voice-two-lessons.transcript.json` in the pinned package and compare the analysis.json
@@ -139,6 +196,10 @@ Package branch head after V2: 1bafe47 (voice-feedback).
 - Timing on real speech with noise, music or the simulator's sound under it (synthetic track: voice plus -60 dBFS noise).
 - Whether the consent panel and the privacy page already cover automated transcription (texts outside this lane).
 - The thresholds of tools/feedback/rules.ts: estimates, never measured.
+- Review fixes (R): echoMsPerWord 450 and echoMinRun 3, the phrase weakness bounds 0.3 / -0.6 and the idle stick
+  change 0.1 are estimates; whether real packages record speech.end for every line (the echo span and the idle skip
+  use it) was not checked on a real recording; V-R6 (lock timeout) is fixed by reading only, no test; the opt-in GPU
+  e2e was not re-run after the echo change (level 3, lead).
 
 ## Cost notes
 
@@ -150,3 +211,8 @@ Package branch head after V2: 1bafe47 (voice-feedback).
   (two fixes), and a failed first GPU run (built-in VAD timing). A note in the package's AGENTS.md naming
   SHRAMKO_LISTEN_PY / SHRAMKO_LISTEN_CACHE on this machine and the id rule, and a tiny timing probe on one language
   before the full e2e, would have saved about ten.
+- R (review fixes): about 30 replies. Most turns went to the Write/Edit tools turning \u escapes into letters again
+  (one extra fix: helper that decodes {hex} code points) and to neg_control.py failing to start `pnpm` on Windows
+  (CreateProcess needs `node node_modules/vitest/vitest.mjs`, or `pnpm.cmd`); the reviewer's precise findings with
+  file:line and the real Whisper pieces in U:/Temp made the fixes themselves cheap. A note in the skill on both traps
+  would have saved about four.
