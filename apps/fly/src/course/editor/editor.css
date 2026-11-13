@@ -1,0 +1,78 @@
+/* The course editor's window (lane tracks, stage T3-editor-ui): on the right, over the paused flight, scrolls on its own so
+   it fits a phone held sideways (844 x 390) and a desktop (1920 x 1080). */
+.course-editor {
+    position: absolute;
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: min(380px, 48vw);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    background: rgba(12, 16, 22, 0.92);
+    color: #f2f4f7;
+    border: 1px solid #3a4656;
+    border-radius: 8px;
+    font: 0.85rem/1.35 system-ui, sans-serif;
+    z-index: 30;
+    pointer-events: auto;
+}
+.course-editor h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.course-editor h3 { margin: 10px 0 4px; font-size: 0.95rem; }
+.course-editor p { margin: 2px 0; }
+.course-editor .ce-gate { font-weight: 600; color: #a6ff1a; }
+.course-editor .bad { color: #ff7b6b; }
+.course-editor .ce-live { min-height: 1.35em; }
+.ce-keys {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 3px;
+    margin: 8px 0;
+}
+.ce-key, .course-editor button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 26px;
+    padding: 2px 6px;
+    background: #1d2633;
+    color: #f2f4f7;
+    border: 1px solid #3a4656;
+    border-radius: 4px;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.course-editor button:disabled { opacity: 0.45; cursor: default; }
+.course-editor button[aria-pressed="true"] { background: #2f5d1a; border-color: #a6ff1a; }
+.ce-key kbd {
+    flex: none;
+    min-width: 3.2em;
+    padding: 0 4px;
+    background: #f2f4f7;
+    color: #0c1016;
+    border-radius: 3px;
+    font: 600 0.8rem/1.4 ui-monospace, monospace;
+    text-align: center;
+}
+.ce-save { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.ce-save input {
+    min-width: 0;
+    padding: 3px 6px;
+    background: #0c1016;
+    color: #f2f4f7;
+    border: 1px solid #3a4656;
+    border-radius: 4px;
+    font: inherit;
+}
+.ce-list { list-style: none; margin: 0; padding: 0; }
+.ce-row { padding: 5px 0; border-top: 1px solid #2a3442; }
+.ce-row.current b { color: #a6ff1a; }
+.ce-marks { display: flex; flex-wrap: wrap; gap: 0 8px; color: #b8c2cf; font-size: 0.8rem; }
+.ce-votes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 3px; }
+.ce-mine { color: #a6ff1a; font-size: 0.8rem; }
+@media (max-height: 480px) {
+    .course-editor { font-size: 0.75rem; padding: 6px 8px; }
+    .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
+    .ce-key, .course-editor button { min-height: 22px; }
+}

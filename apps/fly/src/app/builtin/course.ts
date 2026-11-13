@@ -10,6 +10,10 @@
 // T3: on scene load the server's list for the scene is fetched (course/store.ts); Shift+T without a course (or the pause
 // menu) loads the newest saved course, proves it on the pilot's own walls in the worker (checkTrack) and refuses it with
 // hook.problem when it does not fit; "Save for everyone" in the pause menu posts the course the pilot generated.
+// Train 2, T3-editor-ui (tracks-plan 2.11): Shift+B or the pause menu opens the editor over the paused flight (its own key
+// table, course/editor/keys.ts; its window, course/editor/panel.ts): select, move, turn, shape, size, add and delete gates,
+// every change re-proven on the walls (packages/tracks editor.ts); "Save as my course" posts a pilot's course (a fork of a
+// saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
 import { liveSearch } from '../env';
@@ -21,6 +25,14 @@ import { CourseHud, lapClock } from '../../course/hud';
 import { bestKey, firstOffer, readBest, seedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
+import { S } from '@gsfpv/sim-core';
+import { canSave, edit, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import type { CourseCheck, EditorState } from '@gsfpv/tracks';
+import { myVotes, rememberVote, voterId } from '../../course/store';
+import { EditorPanel } from '../../course/editor/panel';
+import { editorKey, forwardOf } from '../../course/editor/keys';
+import type { EditorCommand, KeyPress } from '../../course/editor/keys';
+import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 
 function randomSeed(): number {
     const a = new Uint32Array(1);
@@ -33,7 +45,8 @@ export const course: Feature = {
     install(ctx: FlightContext) {
         const hook: CourseHook = {
             on: false, source: 'none', track: null, seed: null, gates: 0, next: -1, drawn: 0, laps: 0, lastLapMs: null, bestLapMs: null,
-            beaconPoints: 0, problem: null, serverTracks: -1, saved: null
+            beaconPoints: 0, problem: null, serverTracks: -1, saved: null,
+            editor: { open: false, selected: 0, changed: false, problems: 0, refused: null, said: '', votes: myVotes() }
         };
         ctx.hook.course = hook;
         const stage = new CourseStage(ctx.renderer);
@@ -54,6 +67,19 @@ export const course: Feature = {
         /** the walls the shown course was proven on (a new walls object: re-prove, lane review TR-5) */
         let provenOn: unknown = null;
         let watchdog: ReturnType<typeof setTimeout> | null = null;
+        // the editor (T3-editor-ui)
+        let ed: EditorState | null = null;
+        let panel: EditorPanel | null = null;
+        let checkFn: CourseCheck = () => [];
+        /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
+        let edSource: TrackFile | null = null;
+        let edChanged = false;
+        let leaveAsked = false;
+        let reopenAfter = false;
+        let unblock: (() => void) | null = null;
+        /** edit tokens of the pilot's own courses saved in this tab (only in memory: after a reload a save forks instead) */
+        const tokens = new Map<string, string>();
+        const edHook = hook.editor!;
 
         const drone = (): string => ctx.session.presetId;
         const tick = (): number => ctx.session.runner.sim.tick;
@@ -89,6 +115,15 @@ export const course: Feature = {
         };
 
         const setTrack = (track: TrackFile | null, source: CourseHook['source'], seed: number | null): void => {
+            const wasEditing = ed !== null;
+            if (wasEditing) closeEdit(true);
+            setRun(track, source, seed);
+            if (track && (wasEditing || reopenAfter)) {
+                reopenAfter = false;
+                openEdit();
+            }
+        };
+        const setRun = (track: TrackFile | null, source: CourseHook['source'], seed: number | null): void => {
             run = track ? new CourseRun(track, ctx.session.transform, readBest(keyOf(track))) : null;
             provenOn = track ? ctx.session.collision : null;
             hook.source = track ? source : 'none';
@@ -100,7 +135,7 @@ export const course: Feature = {
         };
 
         const frame = (): void => {
-            if (!run || !hook.on) return;
+            if (!run || !hook.on || ed) return;
             const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
             if (ev === 'lap' || ev === 'done') {
                 const last = v.lastLapMs ?? 0;
@@ -331,6 +366,7 @@ export const course: Feature = {
         });
 
         ctx.events.on('frame', () => {
+            if (ed) return;
             // TR-5: the scale feature (session.setTransform) and the walls switch fire no 'session' event
             if (run && !busy && (run.stale(ctx.session.transform) || ctx.session.collision !== provenOn)) return proveAgain();
             frame();
@@ -346,6 +382,7 @@ export const course: Feature = {
         });
         // a new scene: its walls are others, so the course goes (a link's seed is for the scene the page opened with)
         ctx.events.on('session', () => {
+            closeEdit(true);
             job++;
             disarm();
             busy = false;
@@ -357,6 +394,208 @@ export const course: Feature = {
             if (linkSeed !== null) tryLink();
             else dropLink();
         });
+        // ---------------- the editor (T3-editor-ui)
+        const scale = (): number => ctx.session.transform.s;
+        const say = (text: string, refused = false): void => {
+            edHook.said = text;
+            panel?.say(text, refused);
+        };
+        const renderList = (): void => {
+            edHook.votes = myVotes();
+            panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null);
+        };
+        const showEd = (): void => {
+            if (!ed || !panel) return;
+            const track = toTrackV1(ed.course);
+            run = new CourseRun(track, ctx.session.transform, null);
+            provenOn = ctx.session.collision;
+            hook.on = true;
+            stage.show(run.gates);
+            stage.setNext(ed.selected, run.path, track.laps > 1);
+            shownNext = ed.selected;
+            hud.update(null, 0);
+            panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
+            panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
+            edHook.open = true;
+            edHook.selected = ed.selected;
+            edHook.changed = edChanged;
+            edHook.problems = ed.problems.length;
+            sync();
+        };
+        const openEdit = (): void => {
+            if (ed || ctx.sonic) return;
+            const col = ctx.session.collision;
+            if (!col) return fail('no walls', t('course.noWalls'));
+            if (!run) {
+                hook.problem = 'no course';
+                ctx.hud.flash(t('course.edit.noCourse'), 4000);
+                return;
+            }
+            checkFn = wallsCheck(col, flownTransform());
+            edSource = run.track;
+            ed = openEditor(upgradeTrack(run.track), checkFn, 0);
+            edChanged = false;
+            leaveAsked = false;
+            edHook.refused = null;
+            ctx.pause('panel');
+            unblock = ctx.keys.block(() => ed !== null);
+            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
+            panel.defaults('', run.track.title);
+            showEd();
+            say(t('course.edit.opened'));
+            renderList();
+            void refresh(true).then(renderList);
+        };
+        /** `quiet`: the course is replaced right after (no redraw for flight) */
+        function closeEdit(quiet = false): void {
+            if (!ed) return;
+            ed = null;
+            panel?.destroy();
+            panel = null;
+            unblock?.();
+            unblock = null;
+            edHook.open = false;
+            ctx.resume('panel');
+            if (!quiet && run) {
+                run.reset();
+                draw();
+            }
+        }
+        const viewForward = (): [number, number] => {
+            const s = ctx.session.runner.sim.s;
+            return forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
+        };
+        const applyKey = (press: KeyPress): void => {
+            if (!ed || !panel) return;
+            const k = editorKey(press, viewForward());
+            if (!k) return;
+            if ('cmd' in k) return command(k.cmd);
+            leaveAsked = false;
+            const out = edit(ed, k.edit, checkFn);
+            ed = out.state;
+            if (out.ok) {
+                if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') edChanged = true;
+                edHook.refused = null;
+                showEd();
+                say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
+            } else {
+                edHook.refused = out.reason.code;
+                showEd();
+                say(refusalText(ed.course, out.reason), true);
+            }
+        };
+        const command = (c: EditorCommand): void => {
+            if (!ed || !panel) return;
+            if (c === 'exit') {
+                if (edChanged && !leaveAsked) {
+                    leaveAsked = true;
+                    return say(t('course.edit.unsaved'), true);
+                }
+                return closeEdit();
+            }
+            if (c === 'regen' || c === 'regen-same') {
+                reopenAfter = true;
+                return generate(c === 'regen-same' && hook.seed !== null ? hook.seed : randomSeed());
+            }
+            if (c === 'save-all') return void saveAll();
+            if (panel.askName()) return say(t('course.edit.name'));
+            const { name, title } = panel.names();
+            void saveMine(name, title);
+        };
+        const freshId = (like: string): string => {
+            const a = new Uint32Array(1);
+            crypto.getRandomValues(a);
+            return `${like.split('-')[0]}-${a[0]!.toString(16).padStart(8, '0')}`;
+        };
+        const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
+            if (!ed || !edSource || saving) return;
+            if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+            const name = nameIn.trim().normalize('NFC');
+            const title = titleIn.trim().normalize('NFC');
+            const edited = toTrackV1(ed.course);
+            const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
+            const baseVersion = hook.track?.version ?? edSource.version;
+            const token = serverId ? tokens.get(serverId) ?? null : null;
+            const author = { kind: 'person' as const, name };
+            const body: TrackFile = token && serverId
+                ? { ...edited, id: serverId, version: baseVersion + 1, parent: { id: serverId, version: baseVersion }, author, title }
+                : { ...edited, id: serverId ? freshId(serverId) : edited.id, version: 1, parent: serverId ? { id: serverId, version: baseVersion } : null, author, title };
+            saving = true;
+            const r = await store.saveMine(body, token);
+            saving = false;
+            if (!r.ok) {
+                hook.problem = `save: ${r.problem}`;
+                return say(t('course.save.failed', { msg: r.problem.slice(0, 120) }), true);
+            }
+            if (r.token) tokens.set(r.id, r.token);
+            hook.saved = r.id;
+            hook.source = 'server';
+            hook.track = { id: r.id, version: r.version };
+            hook.problem = null;
+            edSource = { ...body, id: r.id, version: r.version };
+            edChanged = false;
+            showEd();
+            say(t('course.edit.savedMine', { title, v: r.version }));
+            await refresh(true);
+            renderList();
+        };
+        const saveAll = async (): Promise<void> => {
+            if (!ed) return;
+            if (edChanged) return say(t('course.edit.allEdited'), true);
+            if (hook.source !== 'generated' || hook.saved !== null) return say(t('course.edit.allDone'), true);
+            await save();
+            if (hook.saved) {
+                say(t('course.save.done'));
+                showEd();
+                renderList();
+            } else say(t('course.save.failed', { msg: hook.problem ?? '' }), true);
+        };
+        const vote = async (id: string, v: 1 | -1): Promise<void> => {
+            const had = myVotes()[id] ?? 0;
+            const nv = had === v ? 0 : v;
+            const r = await store.vote(id, nv, voterId());
+            if (!r.ok) {
+                hook.problem = `vote: ${r.problem}`;
+                return say(t('course.edit.voteFailed', { msg: r.problem.slice(0, 120) }), true);
+            }
+            rememberVote(id, nv);
+            const row = rows.find((x) => x.id === id);
+            if (row) {
+                row.up = r.up;
+                row.down = r.down;
+            }
+            say(t('course.edit.voted'));
+            renderList();
+        };
+        const openRow = (id: string): void => {
+            const i = rows.findIndex((x) => x.id === id);
+            if (i < 0 || busy) return;
+            reopenAfter = true;
+            void loadServer(i);
+        };
+        addEventListener('keydown', (e: KeyboardEvent) => {
+            if (!ed || !panel) return;
+            if (panel.typing(e.target)) {
+                if (e.code === 'Escape') (e.target as HTMLElement).blur();
+                else if (e.code === 'Enter') command('save-mine');
+                else return;
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            // a button of the window keeps Enter and Space (a click)
+            if ((e.code === 'Enter' || e.code === 'Space') && e.target instanceof HTMLButtonElement && panel.root.contains(e.target)) return;
+            if (!editorKey(e, [0, -1])) return;
+            e.preventDefault();
+            e.stopPropagation();
+            applyKey(e);
+        }, true);
+        ctx.keys.on('course.edit', (e) => {
+            if (e.repeat || ctx.sonic) return;
+            openEdit();
+        });
+        ctx.menu.add({ id: 'pause.course.edit', action: 'course.edit', labelKey: 'course.edit.menu', order: 76, section: 'tools', run: () => openEdit(), enabled: () => run !== null && !busy });
+
         const tryLink = (): void => {
             if (linkSeed === null || !ctx.session.collision) return;
             const seed = linkSeed;
