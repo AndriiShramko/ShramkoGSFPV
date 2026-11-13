@@ -171,6 +171,22 @@ for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps')), .
         }
     }
 }
+// Rule 8 (train 1, lane tracks): packages/tracks (courses in scans) runs in a worker, the page and Node and gives the same
+// course everywhere: under src/ it imports only itself, @gsfpv/collision and @shramko/sonic-fpv, touches no DOM global,
+// reads no clock and no Math.random. The generator's own files (all but check.ts, the proof) use no trigonometry either.
+{
+    const pkg = join(ROOT, 'packages', 'tracks');
+    for (const f of walk(join(pkg, 'src'))) {
+        const { s, out } = imports(f);
+        for (const i of out) {
+            const own = i.startsWith('.') && (resolve(dirname(f), i) + sep).startsWith(pkg + sep);
+            if (!own && i !== '@gsfpv/collision' && i !== '@shramko/sonic-fpv') problems.push(`tracks imports ${i}: its src may import only itself, @gsfpv/collision and @shramko/sonic-fpv (${f})`);
+        }
+        if (DOM.test(s)) problems.push(`tracks touches the DOM (${f})`);
+        if (/Math\.random\s*\(|\bDate\b|performance\.now\s*\(/.test(s)) problems.push(`tracks reads a clock or Math.random (${f})`);
+        if (!f.endsWith('check.ts') && /Math\.(sin|cos|tan|atan2?|acos|asin|exp|log|pow|hypot)\s*\(/.test(s)) problems.push(`tracks generator uses non-deterministic Math (${f})`);
+    }
+}
 
 if (problems.length) {
     console.error(problems.join('\n'));
