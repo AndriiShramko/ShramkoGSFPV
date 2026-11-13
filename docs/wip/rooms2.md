@@ -32,7 +32,8 @@ Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle
   after 3 s both still on 39e63ce9; one 9 on B: both `roomScene` 7a475d38 with 1 remote, both said `rooms.vote.passed`.
   Control relay off: A2 and B2 met in one room by 9, A2 flew 33.456 m, B2 saw 0 remote frames (fired).
   rooms-two-page.ts pass, 17 of 17 checks (RMS 0.0864 m under 0.15 m over 406 samples; controls 1, 2, 3 fired).
-  Evidence: evidence/2026-11-13/rooms-open-vote.json and rooms-two-page.json (not in git, like the other evidence).
+  Evidence: U:/Temp/gsfpv-train2/rooms2/rooms-open-vote.json and rooms-two-page.json (not in git; the tracked
+  evidence/2026-11-13/rooms-two-page.json of an earlier lane was left as it was).
   First run of rooms-open-vote failed at page.goto: under SONIC_PORTS the rig picked the front's port twice; fixed in
   rooms-serve.ts (commit 4ec94a57: three ports at once).
 
