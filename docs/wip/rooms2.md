@@ -33,7 +33,11 @@ Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
   887f27aa on both pages, 9 each, A 9 + Enter, both racers build the same course, hear Go, the probe moves each craft along
   `race.path` (0.3 m per drawn frame, the sim running), results on both, the same order and totals, B's panel table, A's
   key 0 place; control: no lap before flying. dist rebuilt at ee9be881. Run 1 started (log
-  U:/Temp/gsfpv-train2/rooms2/rooms-race-run1.log); its result is the next worker's first read if this line is still [~].
+  U:/Temp/gsfpv-train2/rooms2/rooms-race-run1.log): FAILED at the panel, 2 of 11 checks (meet, control): the vote block
+  in panel.ts took the first focus back from "Race on a course" (`first =` reassigned), so A's Enter proposed a scan.
+  Fixed in commit "rooms2: panel: the race button keeps the first focus" (typecheck 0 errors). Left: rebuild dist
+  (node scripts/build-release.mjs) and run rooms-race.ts again with SONIC_PORTS=5820-5839; then run rooms-open-vote.ts
+  once (9, Tab, Enter) to see the vote still passes.
 - [x] deploy/release-rooms.sh uploads votes.py and race.py too (commit b6e919ce): before it, FILES held only ws, protocol
   and rooms, so a release of this branch would have started a rooms.py that cannot import votes (Q1) and race (Q2).
 

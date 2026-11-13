@@ -67,12 +67,15 @@ export function roomsPanel(parent: HTMLElement, m: PanelModel, onClose: () => vo
         if (v.open) {
             box.append(h('p', { role: 'status' }, t('rooms.vote.state', { scan: v.open.title, yes: v.open.yes, need: v.open.need })));
             if (!v.open.mine) {
-                first = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-agree', onclick: () => { close(); v.agree(); } }, t('rooms.vote.agree', { scan: v.open.title }));
-                box.append(first);
+                const agree = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-agree', onclick: () => { close(); v.agree(); } }, t('rooms.vote.agree', { scan: v.open.title }));
+                if (first === nickIn) first = agree;
+                box.append(agree);
             }
         } else if (v.next !== null) {
-            first = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-propose', onclick: () => { close(); v.propose(); } }, t('rooms.vote.propose', { scan: v.next }));
-            box.append(first, h('p', { class: 'muted small' }, t('rooms.vote.help')));
+            const propose = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-propose', onclick: () => { close(); v.propose(); } }, t('rooms.vote.propose', { scan: v.next }));
+            // the race button, when there is one, keeps the first focus
+            if (first === nickIn) first = propose;
+            box.append(propose, h('p', { class: 'muted small' }, t('rooms.vote.help')));
         }
         p.body.append(box);
     }
