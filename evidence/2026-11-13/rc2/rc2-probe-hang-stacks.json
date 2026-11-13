@@ -1,0 +1,195 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5393/en",
+ "at": "2026-11-13T11:33:47.738Z",
+ "browser": "156.0.8078.80",
+ "fakeAnswer": "timer",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 22,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "profiling": true,
+   "climb": [
+    {
+     "alt": -0.0019602252328614345,
+     "motors": "arming",
+     "crashed": false
+    },
+    {
+     "alt": 4.668480319437401,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 3.887762390291021,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.668939161011977,
+     "motors": "on",
+     "crashed": false
+    }
+   ],
+   "hung": true,
+   "profile": "no profile in 15 s",
+   "hungStack": [
+    {
+     "frames": [
+      "oc :2:122095",
+      "overlap :2:122346",
+      "sweepOne :2:122526",
+      "sweep :2:123031",
+      "PK :16653:80499",
+      "ground :16654:53408",
+      "clearance :16653:83610",
+      "apply :16653:84270",
+      "apply :16653:86177",
+      "centreFn :16654:53109",
+      "prepare :16651:171130",
+      "push :16651:170616",
+      "raw :16651:169217",
+      "e.kind.e.hid.e.hid.onFrame :16654:54941"
+     ],
+     "args": [
+      "page ms 135154",
+      "oc: [\"object\",\"-0.03223301676208512\",\"-3.3315196805625993\",\"0.05499392223560276\",\"10.05\"]",
+      "overlap: [\"-0.03223301676208512\",\"-3.3315196805625993\",\"0.05499392223560276\",\"10.05\"]",
+      "sweepOne: [\"-0.03223301676208512\",\"6.668480319437401\",\"0.05499392223560276\",\"-0.03223301676208512\",\"-13.3315196805626\",\"0.05499392223560276\",\"0.05\"]",
+      "sweep: [[\"-0.03223301676208512\",\"6.668480319437401\",\"0.05499392223560276\"],[\"-0.03223301676208512\",\"-13.3315196805626\",\"0.05499392223560276\"],[\"0.05\"],[\"0\"],\"1\",\"object\"]",
+      "PK: [\"object\",[\"-0.03223301676208512\",\"6.668480319437401\",\"0.05499392223560276\",\"-0.018562614160378806\",\"0.09463595555332348\",\"-0.019943620440772854\",\"0.7188928306415349\",\"-0.0019046704140224865\",\"-0.6951036402970735\",\"-0.0045165837280222\",\"2.8649209678222776\",\"0.023856191932671376\",\"2.8465971600657367\",\"0.5727228265689126\",\"0.6099381873294422\",\"0.49006181267059473\"],\"object\"]",
+      "ground: undefined"
+     ]
+    },
+    {
+     "frames": [
+      "oc :2:122095",
+      "overlap :2:122346",
+      "sweepOne :2:122526",
+      "sweep :2:123031",
+      "PK :16653:80499",
+      "ground :16654:53408",
+      "clearance :16653:83610",
+      "apply :16653:84270",
+      "apply :16653:86177",
+      "centreFn :16654:53109",
+      "prepare :16651:171130",
+      "push :16651:170616",
+      "raw :16651:169217",
+      "e.kind.e.hid.e.hid.onFrame :16654:54941"
+     ],
+     "args": [
+      "page ms 138347",
+      "oc: [\"object\",\"-0.0006662265932114097\",\"-4.112237609708979\",\"-0.0006920307107274192\",\"10.05\"]",
+      "overlap: [\"-0.0006662265932114097\",\"-4.112237609708979\",\"-0.0006920307107274192\",\"10.05\"]",
+      "sweepOne: [\"-0.0006662265932114097\",\"5.887762390291021\",\"-0.0006920307107274192\",\"-0.0006662265932114097\",\"-14.112237609708979\",\"-0.0006920307107274192\",\"0.05\"]",
+      "sweep: [[\"-0.0006662265932114097\",\"5.887762390291021\",\"-0.0006920307107274192\"],[\"-0.0006662265932114097\",\"-14.112237609708979\",\"-0.0006920307107274192\"],[\"0.05\"],[\"0\"],\"1\",\"object\"]",
+      "PK: [\"object\",[\"-0.0006662265932114097\",\"5.887762390291021\",\"-0.0006920307107274192\",\"-0.00017642587857000464\",\"2.96184302239376\",\"-0.00018402571064528468\",\"0.7057155888394272\",\"5.147009883152987e-7\",\"-0.7084952412274147\",\"-0.000028755225064104436\",\"-0.00005944697232305928\",\"-0.007284805535533407\",\"-0.00006304935243650779\",\"0.4034397202472994\",\"0.40325996329744085\",\"0.4032581600990861\"],\"object\"]",
+      "ground: undefined"
+     ]
+    },
+    {
+     "frames": [
+      "isVoxelSolid :2:118948",
+      "oc :2:122171",
+      "overlap :2:122346",
+      "sweepOne :2:122526",
+      "sweep :2:123031",
+      "PK :16653:80499",
+      "ground :16654:53408",
+      "clearance :16653:83610",
+      "apply :16653:84270",
+      "apply :16653:86177",
+      "centreFn :16654:53109",
+      "prepare :16651:171130",
+      "push :16651:170616",
+      "raw :16651:169217"
+     ],
+     "args": [
+      "page ms 141377",
+      "isVoxelSolid: [\"2143\",\"65\",\"725\"]",
+      "oc: [\"object\",\"-0.0035178565365899133\",\"-3.331060838988023\",\"0.07604690452368022\",\"10.05\"]",
+      "overlap: [\"-0.0035178565365899133\",\"-3.331060838988023\",\"0.07604690452368022\",\"10.05\"]",
+      "sweepOne: [\"-0.0035178565365899133\",\"6.668939161011977\",\"0.07604690452368022\",\"-0.0035178565365899133\",\"-13.331060838988023\",\"0.07604690452368022\",\"0.05\"]",
+      "sweep: [[\"-0.0035178565365899133\",\"6.668939161011977\",\"0.07604690452368022\"],[\"-0.0035178565365899133\",\"-13.331060838988023\",\"0.07604690452368022\"],[\"0.05\"],[\"0\"],\"1\",\"object\"]",
+      "PK: [\"object\",[\"-0.0035178565365899133\",\"6.668939161011977\",\"0.07604690452368022\",\"-0.016210346241495373\",\"0.13451634294367143\",\"0.01028127391031975\",\"0.7121174960488933\",\"0.004059594170277234\",\"-0.7020096799057723\",\"-0.007389237770046821\",\"2.5017745114882093\",\"-0.04605578736358992\",\"-2.8145699563279676\",\"0.6346209069925767\",\"0.6090404866822299\",\"0.6090550882244025\"],\"object\"]"
+     ]
+    }
+   ],
+   "errors": [],
+   "csp": [
+    "The source list for the Content Security Policy directive 'connect-src' contains an invalid source: ''self'$gsfpv_rc_bridge'. It will be ignored.",
+    "Connecting to 'http://localhost:5393/api/catalog' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletag",
+    "Fetch API cannot load http://localhost:5393/api/catalog. Refused to connect because it violates the document's Content Security Policy.",
+    "Connecting to 'http://localhost:5393/fly/showcase.json' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.goo",
+    "Fetch API cannot load http://localhost:5393/fly/showcase.json. Refused to connect because it violates the document's Content Security Policy.",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/tracks?scene=887f27aa' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https:/",
+    "Fetch API cannot load http://localhost:5393/api/tracks?scene=887f27aa. Refused to connect because it violates the document's Content Security Policy.",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage"
+   ]
+  }
+ },
+ "pass": false,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.ran": false,
+  "usb.noPageErrors": true
+ }
+}

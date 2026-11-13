@@ -1,0 +1,191 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5393/en",
+ "at": "2026-11-13T10:30:16.087Z",
+ "browser": "156.0.8078.80",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 21,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "climb": [
+    {
+     "alt": 0,
+     "armed": false
+    },
+    {
+     "alt": 0.09937954437840846,
+     "armed": true
+    },
+    {
+     "alt": 0.7505460277764731,
+     "armed": true
+    },
+    {
+     "alt": 1.5626191819018258,
+     "armed": true
+    },
+    {
+     "alt": 2.504476274008039,
+     "armed": true
+    },
+    {
+     "alt": 2.9775382055587247,
+     "armed": false
+    },
+    {
+     "alt": 2.1614864385810852,
+     "armed": true
+    },
+    {
+     "alt": 1.089592884694679,
+     "armed": false
+    },
+    {
+     "alt": -0.4481255681485419,
+     "armed": false
+    },
+    {
+     "alt": -2.068656091311783,
+     "armed": false
+    }
+   ],
+   "start": {
+    "alt": 0,
+    "armed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "off",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2
+     },
+     "now": "centred"
+    },
+    "card": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick."
+   },
+   "up": {
+    "alt": -2.0685968933974705,
+    "armed": false,
+    "crashed": true,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": -0.06859689339747047
+     },
+     "now": "centred"
+    },
+    "card": null
+   },
+   "probe": {
+    "sockets": 0,
+    "requests": 2169,
+    "replies": 2169,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "refused": {
+   "say": "Chrome could not open the controller's stick channel. On Windows this channel belongs to another driver (DJI Assistant 2 installs one), and Chrome can only open channels that use Windows' own USB driver. Nothing is broken: the controller and DJI's apps work as before, and nothing on them was changed. On this computer, use \"Fly through the RC bridge\" below: the small Shramko RC bridge program reads the sticks through DJI's own driver. Otherwise fly with the keyboard, a gamepad or a radio, and press \"Send this list\" so we know your setup. On Linux, macOS or ChromeOS the same button may work, but that has not been tested yet.",
+   "probe": {
+    "sockets": 0,
+    "requests": 0,
+    "replies": 0,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "bridge": {
+   "socketsBeforePress": 0,
+   "sayState": "flying",
+   "say": "",
+   "check": {
+    "wizard": "check",
+    "key": "hid:2ca3:1021:DJI RC 2:12:d",
+    "reportsIn2s": 185,
+    "badReports": 0
+   },
+   "axes": [
+    0.42,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": false,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.climbs": false,
+  "usb.noPageErrors": true,
+  "refused.saysClaimFailed": true,
+  "refused.stillOnControls": true,
+  "refused.noPageErrors": true,
+  "bridge.noSocketOnLoad": true,
+  "bridge.connected": true,
+  "bridge.checkScreenAtOnce": true,
+  "bridge.framesFlow": true,
+  "bridge.cspQuiet": true,
+  "bridge.noPageErrors": true
+ }
+}

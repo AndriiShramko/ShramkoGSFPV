@@ -1,0 +1,37 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5621/en",
+ "at": "2026-11-13T13:22:57.599Z",
+ "browser": "156.0.8078.80",
+ "fakeAnswer": "message",
+ "runs": {
+  "usb": {
+   "verdict": "none",
+   "threw": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=usb-rc2-fly]')\u001b[22m\n",
+   "errors": [],
+   "csp": []
+  },
+  "refused": {
+   "threw": "locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=usb-rc2-fly]')\u001b[22m\n",
+   "errors": [],
+   "csp": []
+  },
+  "bridge": {
+   "socketsBeforePress": 0,
+   "threw": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=usb-rc2-bridge]')\u001b[22m\n",
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": false,
+ "checks": {
+  "usb.verdictRc2": false,
+  "usb.ran": false,
+  "usb.noPageErrors": true,
+  "refused.ran": false,
+  "refused.noPageErrors": true,
+  "bridge.noSocketOnLoad": true,
+  "bridge.ran": false,
+  "bridge.noPageErrors": true
+ }
+}

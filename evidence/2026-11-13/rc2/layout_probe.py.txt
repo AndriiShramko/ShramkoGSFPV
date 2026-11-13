@@ -1,0 +1,36 @@
+"""Find the filename/dirname length DJI's libusb0_dji.dll was built with (read-only, no device I/O)."""
+import ctypes
+import sys
+
+d = ctypes.CDLL(sys.argv[1])
+d.usb_get_busses.restype = ctypes.c_void_p
+d.usb_init()
+print("busses", d.usb_find_busses(), "devices", d.usb_find_devices())
+bus = d.usb_get_busses()
+print("bus ptr", hex(bus or 0))
+raw = ctypes.string_at(bus, 64)
+print("bus head", raw[:32].hex())
+dirname = ctypes.string_at(bus + 16)
+print("dirname", dirname[:40])
+for n in (260, 512, 1024, 4096, 4097, 513, 511):
+    for pack in (1, 8):
+        off = 16 + n
+        if pack == 8:
+            off = (off + 7) & ~7
+        try:
+            p = ctypes.c_void_p.from_address(bus + off).value
+        except Exception:
+            continue
+        if not p or p < 0x10000:
+            continue
+        try:
+            blob = ctypes.string_at(p, 16 + 4096 + 64)
+        except Exception:
+            continue
+        i = blob.find(b"\x12\x01")
+        while i >= 0:
+            if blob[i + 8:i + 10] == b"\xa3\x2c":
+                print("MATCH dirname len", n, "pack", pack, "devices off", off, "descriptor at device+", i,
+                      "filename", ctypes.string_at(p + 16)[:40])
+                break
+            i = blob.find(b"\x12\x01", i + 1)

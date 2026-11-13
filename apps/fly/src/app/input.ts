@@ -5,6 +5,7 @@
 import type { Profile, ThrottleStyle } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
+import { findSavedRc2, namesRc2 } from '../devices/dji-rc2-source';
 import { choiceOffer } from '../devices/known';
 import { TouchSticks } from '../devices/touch';
 import { EasyPilot } from '../play/easy';
@@ -50,7 +51,9 @@ export async function resumeInput(): Promise<RadioChoice | null> {
     if (last?.kind === 'touch' || last?.kind === 'keyboard') return { kind: last.kind, profile: null };
     const keys = Object.keys(loadProfiles()).filter((k) => trusted(k, last));
     const look = (k: string): Profile | null => trusted(k, last);
-    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null) : Promise.resolve(null));
+    // the RC 2 is opened and asked only when a saved setup names it (review GR-5): no other DJI device gets requests
+    const rc2 = namesRc2(keys);
+    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null).then((c) => c ?? (rc2 ? findSavedRc2(look) : null)) : Promise.resolve(null));
     const pad = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('gp:')) ? findSavedGamepad(look) : Promise.resolve(null));
     for (const find of last?.kind === 'gamepad' ? [pad, hid] : [hid, pad]) {
         const c = await find();
@@ -238,7 +241,8 @@ export class InputHost {
         this.centre = new CentrePilot({
             sim: () => ctx.session.sim ?? null,
             paused: () => ctx.session.paused,
-            // the game scheme's ground below (play/ground.ts, the scan's own walls), looked at every 33 ms by the pilot
+            // the game scheme's ground below (play/ground.ts, the scan's own walls); the pilot asks through its GroundCache:
+            // a look every 33 ms of input time at most, never one per report
             ground: (sim) => groundClearance(sim.contactWorld, sim.s, sim.p),
             mode: () => ctx.controls.flyingMode(),
             speed,

@@ -10,12 +10,13 @@
 //  - every string in en, es, pl and ru.
 // The screen controller's interface list is the research's expectation (docs/research/radios/dji-rc3.md), not a
 // measurement: no DJI controller with a screen ever enumerated on the owner's PC.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { FakeStorage } from '../../../packages/prefs/test/helpers';
 import { fakeDocument } from './helpers/fake-dom';
 import type { FakeElement } from './helpers/fake-dom';
+import * as D from '../../../packages/input/src/dji-duml';
 
 type LookMod = typeof import('../../../apps/fly/src/devices/usb-look');
 type BlockMod = typeof import('../../../apps/fly/src/ui/usb-look-block');
@@ -38,6 +39,8 @@ const RC3 = dev(0x1021, 'DJI Virtual Joystick', [iface(0x03)]);
 const DRONE = dev(0x0020, 'Avata360-xyz', [iface(0xe0, 0x01, 0x03), iface(0x0a), iface(0x08, 0x06, 0x50), iface(0xff)]);
 const SCREEN = dev(0x1021, 'DJI RC 2', [iface(0x06, 0x01, 0x01), iface(0xff, 0x42, 0x01), iface(0xff)]);
 const BLANK = dev(0x1021, '', []);
+// the owner's RC 2 as measured on 2026-11-13 (lane rc2 stage 1): interface 0 FF.43.01 (the sticks), interface 2 FF.42.01 (ADB)
+const RC2 = { ...dev(0x1021, 'DJI RC 2', []), configurations: [{ configurationValue: 1, interfaces: [{ interfaceNumber: 0, ...iface(0xff, 0x43, 0x01) }, { interfaceNumber: 2, ...iface(0xff, 0x42, 0x01) }] }] };
 
 describe('the classifier: what the device offers', () => {
     it('reads the class codes as parts', () => {
@@ -49,6 +52,7 @@ describe('the classifier: what the device offers', () => {
         expect(L.partOf(0xe0, 0x01, 0x03)).toBe('network');
         expect(L.partOf(0x06, 0x01, 0x01)).toBe('files');
         expect(L.partOf(0xff, 0x42, 0x01)).toBe('data');
+        expect(L.partOf(0xff, 0x43, 0x01)).toBe('sticks');
         expect(L.partOf(0xdc, 0, 0)).toBe('other');
     });
     it('RC 3: connect; the drone: the drone; a screen controller: nothing readable; no descriptors: empty', () => {
@@ -57,6 +61,8 @@ describe('the classifier: what the device offers', () => {
         const s = L.lookAt(SCREEN);
         expect(s).toMatchObject({ verdict: 'none', parts: ['files', 'data'], raw: ['06.01.01', 'FF.42.01', 'FF.00.00'] });
         expect(L.lookAt(BLANK)).toMatchObject({ verdict: 'empty', parts: [], name: '' });
+        expect(L.lookAt(RC2)).toMatchObject({ verdict: 'rc2', parts: ['sticks', 'data'], raw: ['FF.43.01', 'FF.42.01'] });
+        expect(L.lookAt({ ...RC2, vendorId: 0x1234 }).verdict).toBe('none'); // the channel counts on DJI's vendor id only
     });
     it('the report text: the pilot\'s words, then the numbers', () => {
         const say = (k: string, p?: Record<string, string>): string => `${k}${p ? JSON.stringify(p) : ''}`;
@@ -103,7 +109,9 @@ describe('the block on the Controls screen', () => {
         const parts = el.querySelectorAll('[data-part]').map((li) => li.getAttribute('data-part'));
         expect(parts).toEqual(['files', 'data']);
         expect(el.querySelector('[data-testid="usb-look-verdict"]')!.getAttribute('data-verdict')).toBe('none');
-        expect(el.textContent).toContain('cannot read it yet');
+        expect(el.textContent).toContain("DJI's own data channel");
+        expect(el.textContent).not.toContain('cannot read it yet'); // the old line is gone (lane rc2)
+        expect(btn(el, 'usb-rc2-fly')).toBeNull(); // no stick channel: no fly action
         btn(el, 'usb-look-send').click();
         expect(sent).toHaveLength(1);
         expect(sent[0]).toContain('My controller is not in the list: DJI RC 2');
@@ -129,14 +137,120 @@ describe('the block on the Controls screen', () => {
     });
 });
 
+describe('the DJI RC 2 in the block (lane rc2)', () => {
+    /** a WebUSB device for the source: the RC 2's descriptors, a claim that works or not, one stick answer per request */
+    function usbRc2(claim: 'ok' | 'refused') {
+        const calls: string[] = [];
+        let wake: (() => void) | null = null;
+        const queue: Uint8Array[] = [];
+        const answer = (seq: number): Uint8Array => {
+            const p = new Uint8Array(19);
+            for (let i = 0; i < 6; i++) { p[1 + i * 3] = 0x00; p[2 + i * 3] = 0x04; p[3 + i * 3] = i + 1; }
+            return D.buildFrame({ sender: 0x06, receiver: 0x0a, seq, type: 0x80, set: 6, id: 1, payload: p });
+        };
+        return {
+            ...RC2, opened: false, configuration: null, calls,
+            open: async function (this: { opened: boolean }) { calls.push('open'); this.opened = true; },
+            close: async function (this: { opened: boolean }) { calls.push('close'); this.opened = false; },
+            selectConfiguration: async () => { calls.push('config'); },
+            claimInterface: async (n: number) => { calls.push(`claim ${n}`); if (claim === 'refused') throw Object.assign(new Error('Unable to claim interface.'), { name: 'NetworkError' }); },
+            releaseInterface: async () => { calls.push('release'); },
+            transferOut: async (_ep: number, d: Uint8Array) => { queue.push(answer(d[6] | (d[7] << 8))); wake?.(); return {}; },
+            transferIn: async () => { while (!queue.length) await new Promise<void>((r) => { wake = r; }); return { status: 'ok', data: new DataView(queue.shift()!.buffer) }; }
+        };
+    }
+    it('the RC 2 offers "Fly with this controller"; a refused claim says what is wrong, that nothing is broken, what works; the list can still be sent', async () => {
+        const d = usbRc2('refused');
+        nav.usb = { requestDevice: () => Promise.resolve(d) };
+        const flown: unknown[] = [];
+        const sent: string[] = [];
+        const el = B.usbLookBlock((x) => sent.push(x), (x) => flown.push(x)).el as unknown as FakeElement;
+        btn(el, 'usb-look').click();
+        await flush();
+        expect(el.querySelector('[data-testid="usb-look-verdict"]')!.getAttribute('data-verdict')).toBe('rc2');
+        btn(el, 'usb-rc2-fly').click();
+        for (let i = 0; i < 5; i++) await flush();
+        const say = el.querySelector('[data-testid="usb-rc2-say"]')!;
+        expect(say.getAttribute('data-state')).toBe('claim');
+        expect(say.textContent).toContain('could not open the controller');
+        expect(say.textContent).toContain('Nothing is broken');
+        expect(say.textContent).toContain('Fly with the keyboard, a gamepad or a radio');
+        // review RC2-R2: without its switch the RC bridge is neither named nor offered (pilots cannot download it yet)
+        expect(say.textContent).not.toContain('RC bridge');
+        expect(btn(el, 'usb-rc2-bridge')).toBeNull();
+        expect(flown).toEqual([]);
+        expect(d.calls).toEqual(['open', 'config', 'claim 0', 'close']);
+        btn(el, 'usb-look-send').click();
+        expect(sent[0]).toContain('if: FF.43.01 FF.42.01');
+    });
+    it('the RC bridge switch: ?rcbridge=1 turns it on and is remembered, ?rcbridge=0 turns it off; on, a refused claim names it', async () => {
+        const s = new FakeStorage();
+        expect(L.rcBridgeOn('', s)).toBe(false);
+        expect(L.rcBridgeOn('?rcbridge=1', s)).toBe(true);
+        expect(L.rcBridgeOn('', s)).toBe(true);
+        expect(L.rcBridgeOn('?rcbridge=0', s)).toBe(false);
+        expect(L.rcBridgeOn('', s)).toBe(false);
+        expect(L.rcBridgeOn('?rcbridge=1', null)).toBe(true); // storage blocked: the address alone
+        vi.stubGlobal('location', { search: '?rcbridge=1', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/?rcbridge=1', origin: 'http://127.0.0.1' });
+        try {
+            const d = usbRc2('refused');
+            nav.usb = { requestDevice: () => Promise.resolve(d) };
+            const el = B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement;
+            expect(btn(el, 'usb-rc2-bridge')).not.toBeNull();
+            // the bridge text links to the program's README in the public repository (main), a file this repo has
+            const get = el.querySelector('[data-testid="usb-bridge-get"]');
+            expect(get).not.toBeNull();
+            const href = get!.getAttribute('href') ?? '';
+            const m = /^https:\/\/github\.com\/AndriiShramko\/ShramkoGSFPV\/blob\/main\/(tools\/rc-bridge\/[\w.-]+)$/.exec(href);
+            expect(m).not.toBeNull();
+            expect(existsSync(resolve(__dirname, '../../..', m![1]))).toBe(true);
+            btn(el, 'usb-look').click();
+            await flush();
+            btn(el, 'usb-rc2-fly').click();
+            for (let i = 0; i < 5; i++) await flush();
+            const say = el.querySelector('[data-testid="usb-rc2-say"]')!;
+            expect(say.textContent).toContain('Nothing is broken');
+            expect(say.textContent).toContain('Fly through the RC bridge');
+            const none = B.usbLookBlock(() => undefined).el as unknown as FakeElement; // control: no fly, no bridge
+            expect(btn(none, 'usb-rc2-bridge')).toBeNull();
+        } finally {
+            vi.stubGlobal('location', { search: '?rcbridge=0', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
+            L.rcBridgeOn();
+            vi.stubGlobal('location', { search: '', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
+        }
+    });
+    it('a claim that works: the device answers and goes to the Controls screen; control: no fly callback, no fly action', async () => {
+        const d = usbRc2('ok');
+        nav.usb = { requestDevice: () => Promise.resolve(d) };
+        const flown: { productName: string; collections: unknown[]; close(): Promise<void> }[] = [];
+        let el = B.usbLookBlock(() => undefined, (x) => flown.push(x as never)).el as unknown as FakeElement;
+        btn(el, 'usb-look').click();
+        await flush();
+        btn(el, 'usb-rc2-fly').click();
+        const t0 = Date.now();
+        while (!flown.length && Date.now() - t0 < 2000) await new Promise((r) => setTimeout(r, 5));
+        expect(flown).toHaveLength(1);
+        expect(flown[0].productName).toBe('DJI RC 2');
+        expect(flown[0].collections).toHaveLength(1);
+        expect(el.querySelector('[data-testid="usb-rc2-say"]')!.getAttribute('data-state')).toBe('flying');
+        await flown[0].close();
+        el = B.usbLookBlock(() => undefined).el as unknown as FakeElement;
+        btn(el, 'usb-look').click();
+        await flush();
+        expect(el.querySelector('[data-testid="usb-look-verdict"]')!.getAttribute('data-verdict')).toBe('rc2');
+        expect(btn(el, 'usb-rc2-fly')).toBeNull();
+    });
+});
+
 describe('strings', () => {
     it('every key of locales/fly/usb in en, es, pl and ru, with the same placeholders', () => {
         const dir = resolve(__dirname, '../../../packages/i18n/locales/fly/usb');
         const read = (l: string): Record<string, string> => JSON.parse(readFileSync(resolve(dir, `${l}.json`), 'utf8'));
         const en = read('en');
-        const used = ['usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
-            ...(['joystick', 'storage', 'serial', 'files', 'network', 'data', 'audio', 'video', 'other'] as const).map((p) => `usb.part.${p}`),
-            ...['connect', 'drone', 'none', 'empty'].map((v) => `usb.verdict.${v}`)];
+        const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.claimBridge', 'usb.rc2.silent', 'usb.rc2.lost', 'usb.rc2.bridgeGet',
+            'usb.rc2.bridgeWhy', 'usb.rc2.bridge', 'usb.rc2.bridgeOpening', 'usb.rc2.noBridge', 'usb.rc2.bridgeNoController', 'usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
+            ...(['joystick', 'sticks', 'storage', 'serial', 'files', 'network', 'data', 'audio', 'video', 'other'] as const).map((p) => `usb.part.${p}`),
+            ...['connect', 'rc2', 'drone', 'none', 'empty'].map((v) => `usb.verdict.${v}`)];
         expect(Object.keys(en).sort()).toEqual([...used].sort());
         const ph = (s: string): string[] => (s.match(/\{\w+\}/g) ?? []).sort();
         for (const l of ['es', 'pl', 'ru']) {

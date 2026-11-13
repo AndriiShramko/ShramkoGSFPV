@@ -1,0 +1,235 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5620/en",
+ "at": "2026-11-13T13:22:07.284Z",
+ "browser": "156.0.8078.80",
+ "fakeAnswer": "message",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 21,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "profiling": false,
+   "climb": [
+    {
+     "alt": 0.07159516108902242,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 0.5930680848922263,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 1.3291200095742153,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.119055522876332,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.921528808515803,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 3.6190818532366773,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.412406589495056,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.667032924889321,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.668333731179417,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.668675823795131,
+     "motors": "on",
+     "crashed": false
+    }
+   ],
+   "profile": {
+    "msUnder": {
+     "ground": 6,
+     "sweep": 22,
+     "onFrame": 69,
+     "total": 2669
+    },
+    "top": [
+     "2055 (idle) :0",
+     "241 (program) :0",
+     "26 (garbage collector) :0",
+     "22 getInputDeclarations main-C2PXSSQt.js:856",
+     "18 block src-S1y7RuoU.js:1",
+     "14 (anon) main-C2PXSSQt.js:16651",
+     "14 (anon) main-C2PXSSQt.js:93",
+     "11 isVoxelSolid main-C2PXSSQt.js:2"
+    ]
+   },
+   "gateWatch": {
+    "maxAge": 22,
+    "ageOver100": 0,
+    "maxFrame": 44.200000047683716,
+    "frames": 80,
+    "blocks": {
+     "switch": 2
+    },
+    "replies0": 2385,
+    "t0": 28012.399999976158,
+    "repliesPerS": 95,
+    "lastCrash": null
+   },
+   "start": {
+    "alt": 0,
+    "armed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "off",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2
+     },
+     "now": "centred"
+    },
+    "card": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick."
+   },
+   "up": {
+    "alt": 4.668675823795131,
+    "armed": true,
+    "crashed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.668675823795131
+     },
+     "now": "centred"
+    },
+    "card": null
+   },
+   "topM": 4.668675823795131,
+   "probe": {
+    "sockets": 0,
+    "requests": 2630,
+    "replies": 2630,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "refused": {
+   "say": "Chrome could not open the controller's stick channel. On Windows this channel belongs to another driver (DJI Assistant 2 installs one), and Chrome can only open channels that use Windows' own USB driver. Nothing is broken: the controller and DJI's apps work as before, and nothing on them was changed. Fly with the keyboard, a gamepad or a radio for now, and press \"Send this list\" so we know your setup. On Linux, macOS or ChromeOS the same button may work, but that has not been tested yet. On this computer you can also use \"Fly through the RC bridge\" below: the small Shramko RC bridge program reads the sticks through DJI's own driver.",
+   "probe": {
+    "sockets": 0,
+    "requests": 0,
+    "replies": 0,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "bridge": {
+   "socketsBeforePress": 0,
+   "sayState": "flying",
+   "say": "",
+   "check": {
+    "wizard": "check",
+    "key": "hid:2ca3:1021:DJI RC 2:12:d",
+    "reportsIn2s": 187,
+    "badReports": 0
+   },
+   "axes": [
+    0.41,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": true,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.climbs": true,
+  "usb.noPageErrors": true,
+  "refused.saysClaimFailed": true,
+  "refused.stillOnControls": true,
+  "refused.noPageErrors": true,
+  "bridge.noSocketOnLoad": true,
+  "bridge.connected": true,
+  "bridge.checkScreenAtOnce": true,
+  "bridge.framesFlow": true,
+  "bridge.cspQuiet": true,
+  "bridge.noPageErrors": true
+ }
+}

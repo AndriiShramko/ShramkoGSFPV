@@ -12,7 +12,7 @@ import type { FlightSession } from '../session';
 import { AutoArm } from './assist';
 import { GameAssist } from './game';
 import type { GameKeys, GameSpeed } from './game';
-import { groundClearance } from './ground';
+import { GroundCache, groundClearance } from './ground';
 
 /** What the game scheme reads around it: the flight on screen now (a scene switch replaces it) and the speed setting. */
 export interface GameEnv {
@@ -21,7 +21,7 @@ export interface GameEnv {
     speed(): GameSpeed;
 }
 
-/** The ground below is looked at this often, ms (a probe is one sweep through the scan's collision). */
+/** The ground below is looked at this often, ms (a probe is a sweep through the scan's collision; play/ground.ts GroundCache). */
 export const PROBE_EVERY_MS = 33;
 
 export class GamePilot {
@@ -31,8 +31,7 @@ export class GamePilot {
     throttleSent = 0;
     private lastT = -1;
     private wasOn = false;
-    private probeAt = -1e9;
-    private ground: number | null = null;
+    private readonly below = new GroundCache(PROBE_EVERY_MS);
     private ch = new Float32Array([0, 0, -1, 0, -1, 0, 0, 0]);
     private readonly controls: Controls;
     private readonly env: GameEnv;
@@ -49,15 +48,14 @@ export class GamePilot {
 
     /** The clearance above the ground below as last looked at, m (null: none within reach); for the bench's hook. */
     get groundM(): number | null {
-        return this.ground;
+        return this.below.value;
     }
 
     /** A new life or a new scene: the height to hold, the integrals and the aim start again from the craft's new state. */
     resetFlight(): void {
         this.game.reset();
         this.wasOn = false;
-        this.ground = null;
-        this.probeAt = -1e9;
+        this.below.reset();
         this.lastT = -1;
     }
 
@@ -75,11 +73,7 @@ export class GamePilot {
 
     /** The clearance above the ground below, looked at no more often than PROBE_EVERY_MS. */
     private clearance(s: FlightSession, tMs: number): number | null {
-        if (tMs - this.probeAt >= PROBE_EVERY_MS || tMs < this.probeAt) {
-            this.probeAt = tMs;
-            this.ground = groundClearance(s.sim.contactWorld, s.sim.s, s.sim.p);
-        }
-        return this.ground;
+        return this.below.ask(tMs, () => groundClearance(s.sim.contactWorld, s.sim.s, s.sim.p));
     }
 
     /** Sends one frame through Controls (and its arm gate) at page time `tMs`. */

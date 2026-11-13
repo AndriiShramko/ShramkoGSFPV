@@ -1,0 +1,189 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5393/en",
+ "at": "2026-11-13T10:36:32.447Z",
+ "browser": "156.0.8078.80",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 21,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "climb": [
+    {
+     "alt": 0,
+     "motors": "arming",
+     "crashed": false
+    },
+    {
+     "alt": 0.07212837065165845,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 0.6407116259869459,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 1.3981901091538855,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.1869529614734216,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 1.9972272068184433,
+     "motors": "arming",
+     "crashed": false
+    },
+    {
+     "alt": 1.3225075803566195,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 0.035219758702669246,
+     "motors": "edge",
+     "crashed": false
+    },
+    {
+     "alt": -1.730911893026126,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": -2.068109867110794,
+     "motors": "on",
+     "crashed": true
+    }
+   ],
+   "gateWatch": {
+    "maxAge": 211.20000004768372,
+    "ageOver100": 15,
+    "maxFrame": 180.39999997615814,
+    "frames": 51,
+    "blocks": {
+     "switch": 20,
+     "stale": 2,
+     "throttle": 3,
+     "crashed": 3
+    },
+    "lastCrash": "{\"speed\":4.002252301570717,\"tick\":5609,\"engine\":\"rapier\",\"debris\":4,\"maxAngularSpeed\":5.00437000639383,\"staticBoxes\":164,\"event\":{\"type\":\"crash\",\"tick\":5609,\"speed\":4.002252301570717,\"nx\":0,\"ny\":1,\"nz\":0,\"px\":0.03298012517761145,\"py\":-0.09899102535938546,\"pz\":-0.0329775656610278}}"
+   },
+   "start": {
+    "alt": 0,
+    "armed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "off",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2
+     },
+     "now": "centred"
+    },
+    "card": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick."
+   },
+   "up": {
+    "alt": -2.0688520923319795,
+    "armed": false,
+    "crashed": true,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": -0.06885209233197939
+     },
+     "now": "centred"
+    },
+    "card": null
+   },
+   "topM": 2.1869529614734216,
+   "probe": {
+    "sockets": 0,
+    "requests": 2170,
+    "replies": 2170,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": [
+    "The source list for the Content Security Policy directive 'connect-src' contains an invalid source: ''self'$gsfpv_rc_bridge'. It will be ignored.",
+    "Connecting to 'http://localhost:5393/api/catalog' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletag",
+    "Fetch API cannot load http://localhost:5393/api/catalog. Refused to connect because it violates the document's Content Security Policy.",
+    "Connecting to 'http://localhost:5393/fly/showcase.json' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.goo",
+    "Fetch API cannot load http://localhost:5393/fly/showcase.json. Refused to connect because it violates the document's Content Security Policy.",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/tracks?scene=887f27aa' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https:/",
+    "Fetch API cannot load http://localhost:5393/api/tracks?scene=887f27aa. Refused to connect because it violates the document's Content Security Policy.",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage",
+    "Connecting to 'http://localhost:5393/api/e' violates the following Content Security Policy directive: \"connect-src 'self'$gsfpv_rc_bridge https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanage"
+   ]
+  }
+ },
+ "pass": true,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.climbs": true,
+  "usb.noPageErrors": true
+ }
+}

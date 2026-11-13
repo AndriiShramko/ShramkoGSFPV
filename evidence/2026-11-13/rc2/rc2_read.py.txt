@@ -1,0 +1,157 @@
+"""Read-only DJI RC 2 stick read over MI_00 through the bound libusb0_dji driver.
+
+Sends ONLY the DUML stick request 06/01 (empty payload), as the reference
+github.com/rusty407/dji-rc2-linux-joystick does. Never reads the serial string.
+Usage: python rc2_read.py <dll path> <out json> <seconds>
+"""
+import json
+import struct
+import sys
+import time
+
+import usb.backend.libusb0 as lb0
+import usb.core
+import usb.util
+
+VID, PID = 0x2CA3, 0x1021
+PC, RC = 0x0A, 0x06
+
+
+def tbl(poly, width):
+    t = []
+    for i in range(256):
+        c = i
+        for _ in range(8):
+            c = (c >> 1) ^ poly if c & 1 else c >> 1
+        t.append(c & ((1 << width) - 1))
+    return t
+
+
+T8, T16 = tbl(0x8C, 8), tbl(0x8408, 16)
+
+
+def crc8(d, s=0x77):
+    for b in d:
+        s = T8[(b ^ s) & 0xFF]
+    return s
+
+
+def crc16(d, s=0x3692):
+    for b in d:
+        s = (s >> 8) ^ T16[(b ^ s) & 0xFF]
+    return s
+
+
+def build(seq):
+    length = 13
+    head = bytearray(b"\x55") + struct.pack("<H", length | (1 << 10))
+    head.append(crc8(head))
+    pkt = head + struct.pack("<BBHBBB", PC, RC, seq & 0xFFFF, 0x40, 0x06, 0x01)
+    return bytes(pkt + struct.pack("<H", crc16(pkt)))
+
+
+def parse(buf):
+    out = []
+    while True:
+        i = buf.find(0x55)
+        if i < 0:
+            buf.clear()
+            return out
+        del buf[:i]
+        if len(buf) < 4:
+            return out
+        if crc8(buf[:3]) != buf[3]:
+            del buf[:1]
+            continue
+        n = struct.unpack_from("<H", buf, 1)[0] & 0x3FF
+        if n < 13:
+            del buf[:1]
+            continue
+        if len(buf) < n:
+            return out
+        raw = bytes(buf[:n])
+        if crc16(raw[:-2]) != struct.unpack_from("<H", raw, n - 2)[0]:
+            del buf[:1]
+            continue
+        out.append(raw)
+        del buf[:n]
+
+
+def main():
+    dll, out_path, secs = sys.argv[1], sys.argv[2], float(sys.argv[3])
+    be = lb0.get_backend(find_library=lambda _n: dll)
+    if be is None:
+        sys.exit("backend: could not load " + dll)
+    dev = usb.core.find(idVendor=VID, idProduct=PID, backend=be)
+    if dev is None:
+        sys.exit("device: not found through this backend")
+    layout = []
+    cfg = dev.get_active_configuration() if False else dev[0]
+    for intf in cfg:
+        layout.append({
+            "interface": intf.bInterfaceNumber, "alt": intf.bAlternateSetting,
+            "class": "%02X.%02X.%02X" % (intf.bInterfaceClass, intf.bInterfaceSubClass, intf.bInterfaceProtocol),
+            "endpoints": [{"address": "0x%02X" % e.bEndpointAddress, "type": e.bmAttributes & 3,
+                           "maxPacket": e.wMaxPacketSize} for e in intf]})
+    print("layout", json.dumps(layout))
+    try:
+        dev.set_configuration()
+    except usb.core.USBError as ex:
+        print("set_configuration:", ex)
+    usb.util.claim_interface(dev, 0)
+    seq = 0x34EB
+    buf = bytearray()
+    frames = []
+    t0 = time.monotonic()
+    sent = 0
+    try:
+        while time.monotonic() - t0 < secs:
+            pkt = build(seq)
+            want = seq
+            seq = (seq + 1) & 0xFFFF
+            dev.write(0x01, pkt, timeout=200)
+            sent += 1
+            tq = time.monotonic()
+            got = False
+            while not got and time.monotonic() - tq < 0.1:
+                try:
+                    data = bytes(dev.read(0x81, 16384, timeout=20))
+                except usb.core.USBTimeoutError:
+                    continue
+                except usb.core.USBError as ex:
+                    if "timeout" in str(ex).lower():
+                        continue
+                    raise
+                buf += data
+                for raw in parse(buf):
+                    s = struct.unpack_from("<H", raw, 6)[0]
+                    rec = {"t": round(time.monotonic() - t0, 4), "hex": raw.hex(),
+                           "seq": s, "type": raw[8], "set": raw[9], "id": raw[10]}
+                    if raw[8] & 0x80 and raw[9] == 0x06 and raw[10] == 0x01 and len(raw) >= 13 + 18:
+                        p = raw[11:-2]
+                        rec["values"] = [struct.unpack_from("<H", p, o)[0] for o in (1, 4, 7, 10, 13, 16)]
+                        if s == want:
+                            got = True
+                    frames.append(rec)
+            time.sleep(max(0.0, 0.05 - (time.monotonic() - tq)))
+    finally:
+        usb.util.release_interface(dev, 0)
+        usb.util.dispose_resources(dev)
+    vals = [f["values"] for f in frames if "values" in f]
+    rng = [[min(v[i] for v in vals), max(v[i] for v in vals)] for i in range(6)] if vals else []
+    doc = {"device": "DJI RC 2, USB 2CA3:1021, SN masked", "interface": 0, "epOut": "0x01", "epIn": "0x81",
+           "driver": "libusb0_dji (DJI Assistant), user library " + dll.split("/")[-1],
+           "request": build(0x34EB).hex() + " (first; seq increments)", "requestsSent": sent,
+           "seconds": secs, "replies": len(vals), "framesTotal": len(frames),
+           "channels": ["roll", "pitch", "throttle", "yaw", "left_dial", "right_dial"],
+           "rangeSeen": rng, "layout": layout, "frames": frames}
+    with open(out_path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(doc, f, indent=1)
+    print("sent", sent, "frames", len(frames), "stick replies", len(vals))
+    print("rangeSeen", rng)
+    if frames:
+        print("first", frames[0]["hex"])
+
+
+if __name__ == "__main__":
+    main()
