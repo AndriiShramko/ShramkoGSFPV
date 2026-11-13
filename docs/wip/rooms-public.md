@@ -25,7 +25,7 @@ Worktree: C:/dev/gsfpv-rooms (reused from lane rooms, clean), branch rooms-publi
       14 checks, rms 0.0456 m (bound 0.15), controls 1-3 fired. Evidence evidence/2026-11-13/rooms-public-two-page.json
       (train 1's rooms-two-page.json left as it was). Console: 8 + 8 resource 404/403 lines, the same count as train 1's run.
 
-### R review fixes (level 2 review of this lane; commit in the line of each)
+### R review fixes (level 2 review of this lane; RP-1 to RP-5 all in commit 21e80a93)
 Tests: tools/bench/test/rooms-public-review.test.ts (15). Set run: rooms-public-review, rooms-public, rooms-review, app-keys,
 train1-contract, rooms-a6, sonic-start-screen = 79 passed; i18n 22 passed; prefs keymap 30 passed; tsc --noEmit apps/fly,
 tools/bench, packages/prefs exit 0; gen-catalog rerun (key labels changed), `--check` up to date.
@@ -35,7 +35,7 @@ timeout; "lesson line" (4 locales) NEG OK by an assertion; RP-5 (link.ts, boot.t
 - [x] RP-1 major, confirmed (a running lesson takes 9 and 0, sonic/digit-key.ts; its menu takes every key, lesson-menu.ts).
       Fix (b): keys stay 9 / 0; during a lesson the welcome is rooms.say.welcomeLesson ("the digits are your answers; after
       it, press 0"), key list labels say "not during a sound lesson" (en es pl ru); keymap.ts comment and the Decision
-      corrected. Test: real digitAnswerHandler + real KeyRouter on one fake window. Commit: see RP-5 line.
+      corrected. Test: real digitAnswerHandler + real KeyRouter on one fake window. Commit 21e80a93.
 - [x] RP-2 minor, fixed: both handlers call e.preventDefault() (rooms/keys.ts roomKeys). Test: the fake window sees both
       presses prevented. The probe's read of #rooms-nick after 9 goes to the lead (below).
 - [x] RP-3 minor, fixed: 9 waits while dialogOpen() or a #ui screen / panel is up; 0 without a room is silent (and not
