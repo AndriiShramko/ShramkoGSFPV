@@ -116,6 +116,7 @@ import sessions
 import sessions_admin
 import superspl_facts
 import tracks
+import tracks_admin
 import translate
 import wind
 
@@ -178,6 +179,7 @@ _sthits: dict[str, deque] = defaultdict(deque)    # POST /api/session/start, per
 _schits: dict[str, deque] = defaultdict(deque)    # the chunks of an upload, per client
 _sqhits: dict[str, deque] = defaultdict(deque)    # finish and status, per client
 _trhits: dict[str, deque] = defaultdict(deque)    # POST /api/tracks, per client (tracks.LIMITS)
+_trvhits: dict[str, deque] = defaultdict(deque)   # POST /api/tracks/<id>/versions|vote|broken, per kind and client
 _tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
                                                   # a stranger's flood must not use up Telegram's deliveries)
 DRAIN_MAX = 1 << 20  # Handler._refuse: the largest body read and dropped before an early refusal (reports and shares: 512 KB)
@@ -1432,6 +1434,8 @@ SESSION_CHUNK_TIMEOUT = 60.0           # seconds the socket may stay silent whil
 # ---------------- courses saved for everyone per scene (train 1, lane tracks): tracks.py ----------------
 TRACKS = tracks.TrackStore(lambda: DATA_DIR, min_free_bytes=lambda: int(MIN_FREE_GB * 1e9))
 TRACK_FILE_ROUTE = re.compile(r"/api/tracks/([0-9a-f]{6,32}-[0-9a-f]{8})/v([0-9]{1,4})")
+TRACK_ACTION_ROUTE = re.compile(r"/api/tracks/([0-9a-f]{6,32}-[0-9a-f]{8})/(versions|vote|broken)")
+tracks_admin.TracksAdmin(lambda: TRACKS, ADMIN.audit).register(ADMIN)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -1680,13 +1684,16 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if method == "GET":
                 if path == "/api/tracks":
-                    scene = (urllib.parse.parse_qs(qs).get("scene") or [""])[0]
-                    return self._send(*TRACKS.list(scene, self.headers.get("If-None-Match")))
+                    q = urllib.parse.parse_qs(qs)
+                    page = (q.get("page") or ["1"])[0]
+                    return self._send(*TRACKS.list((q.get("scene") or [""])[0], self.headers.get("If-None-Match"), (q.get("sort") or ["top"])[0],
+                                                   int(page) if page.isdigit() and len(page) <= 4 else 0))
                 m = TRACK_FILE_ROUTE.fullmatch(path)
                 if not m:
                     return self._json(404, {"ok": False})
                 return self._send(*TRACKS.file(m.group(1), int(m.group(2)), self.headers.get("If-None-Match")))
-            if path != "/api/tracks":
+            act = TRACK_ACTION_ROUTE.fullmatch(path)
+            if path != "/api/tracks" and not act:
                 return self._refuse(404)
             try:
                 n = int(self.headers.get("Content-Length") or 0)
@@ -1702,8 +1709,14 @@ class Handler(BaseHTTPRequestHandler):
                 if 0 < n <= tracks.LIMITS["body_bytes"]:
                     self._drain(n)
                 return self._json(403, {"ok": False, "error": "cross-site"})
-            if not _rate(_trhits, self._client(), tracks.LIMITS["creates_per_client_hour"], 3600.0) \
-                    or not _rate(_all_hits, "tracks-create", tracks.LIMITS["creates_all_hour"], 3600.0):
+            client = self._client()
+            if act is None:
+                ok = _rate(_trhits, client, tracks.LIMITS["creates_per_client_hour"], 3600.0) \
+                    and _rate(_all_hits, "tracks-create", tracks.LIMITS["creates_all_hour"], 3600.0)
+            else:   # versions, votes and broken reports: each its own count per client (tracks-plan 2.8)
+                limit = {"versions": "versions_per_client_hour", "vote": "votes_per_client_hour", "broken": "reports_per_client_hour"}[act.group(2)]
+                ok = _rate(_trvhits, f"{act.group(2)}:{client}", tracks.LIMITS[limit], 3600.0)
+            if not ok:
                 return self._refuse(429)
             if n > tracks.LIMITS["body_bytes"]:
                 return self._refuse(413)
@@ -1712,7 +1725,14 @@ class Handler(BaseHTTPRequestHandler):
             raw = self.rfile.read(n)
             if _guard["tripped"]:
                 return self._json(507, {"ok": False, "error": "disk-full"})
-            return self._json(201, TRACKS.create(raw))
+            if act is None:
+                return self._json(201, TRACKS.create(raw))
+            tid, what = act.group(1), act.group(2)
+            if what == "versions":
+                return self._json(201, TRACKS.add_version(tid, self.headers.get("X-Track-Token"), raw))
+            if what == "vote":
+                return self._json(200, TRACKS.vote(tid, raw, client))
+            return self._json(200, TRACKS.broken(tid, raw, client))
         except tracks.TrackError as e:
             return self._json(e.status, {"ok": False, "error": e.code, **e.extra})
         except OSError:

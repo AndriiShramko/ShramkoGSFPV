@@ -67,15 +67,13 @@
       }
     }
   ],
-  "generator": {
-    "name": "gsfpv-course",
-    "params": {},
-    "seed": 12345,
-    "version": "1"
-  },
+  "generator": null,
   "id": "g1.9ix",
   "laps": 3,
-  "parent": null,
+  "parent": {
+    "id": "39e63ce9-0000abcd",
+    "version": 1
+  },
   "scene": {
     "id": "39e63ce9",
     "kind": "scan",
@@ -89,12 +87,12 @@
     ],
     "yawDeg": 0
   },
-  "title": "Course 9ix",
+  "title": "Ann's loop",
   "transform": [
     1,
     0,
     0,
     0
   ],
-  "version": 1
+  "version": 2
 }
