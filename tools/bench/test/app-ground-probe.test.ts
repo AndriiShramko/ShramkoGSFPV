@@ -215,4 +215,17 @@ describe('GroundCache', () => {
         for (let i = 0; i < 100; i++) expect(c.ask(i * 33, look)).toBe(i + 1);
         expect(c.looks).toBe(100);
     });
+
+    it('a look that took 60 s (a pause inside it) rests no longer than the cap', () => {
+        expect(typeof G.GroundCache).toBe('function');
+        const cap = 500;
+        let wall = 0;
+        const c = new G.GroundCache(33, () => wall);
+        let n = 0;
+        const look = (): number => { wall += n === 0 ? 60000 : 1; return ++n; };
+        expect(c.ask(0, look)).toBe(1); // ended at 60000
+        wall = 60000 + cap;
+        expect(c.ask(40, look)).toBe(2);
+        expect(c.looks).toBe(2);
+    });
 });
