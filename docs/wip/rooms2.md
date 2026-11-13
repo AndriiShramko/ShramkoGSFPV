@@ -1,8 +1,32 @@
-# Lane rooms2, stage Q1-open-room (R27: a room that is always there, a vote for the next scan)
+# Lane rooms2: open room and vote (Q1, R27), race in a room (Q2, plan 2.4 and 4D), review fixes
 
 Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle, ports 5820-5839.
 
 ## Status
+
+Stage fixes (review RM-1 to RM-15; no finding was refuted, all stand and are fixed or recorded):
+
+- [x] Server (commit 40efc570): RM-2 a race whose racers all left in prep ends as results; RM-3 nobody ready after
+  PREP_MS ends it as results (no countdown to nothing); RM-8 MIN_LAP_MS 3000 (estimate) refuses shorter laps; RM-12
+  race.py gets the unmasked ms (rooms.py `race_ms`), only the startAt sent is masked to 32 bits; RM-5 (service part)
+  `POST /api/rooms/open` with `here: true` skips the busy room of another scan. Tests: test_race.py 4 new,
+  test_open_vote.py 1 new; all rooms python tests 92 OK (one earlier run of the same tree had 1 failure, timing under
+  load; the rerun passed). Negative controls (neg_control.py, ref 3c05e5ab): race.py and rooms.py: NEG OK, 4 failures;
+  rooms.py alone for `here`: NEG OK, 1 failure. tools/bench/test/rooms-race.test.ts laps raised to 3300 and 3400 ms
+  (MIN_LAP_MS): 7 of 7 pass.
+- [x] Page (commit "rooms2: fixes: page"): RM-3 a racer whose build fails says `rooms.race.noCourse`; RM-4 an open
+  room puts the default `scene.transform` and `scene.walls` into the visit layer (new rooms/open-visit.ts), cleared on
+  leaving; RM-5 an open room on a scan not in the catalogue or whose load fails: the page leaves and asks
+  `openRoom(scene, here)` (api.ts `here`); RM-6 a results answer when the page is already at results or off is not
+  said; RM-7 key 9 on a scan outside the catalogue opens the panel (create, listed by choice) instead of an open room;
+  RM-9 `standing()` and the results line need `h.racer`; a page that comes in during count or run says
+  `rooms.race.watching`; a refused lap says `rooms.race.refused`; RM-10 onVote changes `h.vote` only on open, passed,
+  failed; a race `wait` says `rooms.race.wait`; RM-11 the test title is ASCII; RM-13 the race does not draw gates when
+  the course feature shows the same course (`courseFor(hook.course)` equals the race's course); RM-14 a member on
+  another scan is no racer. 4 new keys `rooms.race.{noCourse,watching,refused,wait}` in rooms/{en,es,pl,ru}.json.
+  Test tools/bench/test/rooms-race-page.test.ts 8 of 8 (5 new); neg_control.py with race-page.ts of 3c05e5ab: NEG OK.
+  Typecheck apps/fly and tools/bench: exit 0. Non-ASCII bytes in the changed non-locale files: none (python scan).
+- [ ] RM-1: rebuild dist and run rooms-race.ts and rooms-open-vote.ts with SONIC_PORTS=5820-5839.
 
 Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
 
@@ -111,12 +135,24 @@ Stage Q1-open-room (done):
   needed anyway, and the owner's rule forbids "cannot, because" answers. A proposal of the scan of the open vote counts
   as yes; a proposal of a third scan answers the open vote's state ("press 9 to agree").
 - Votes work in temporary rooms too (the same code; the room moves).
+- Deviation from plan 2.3 (review RM-15): a passed vote ends a race in the room (the course was the old scan's) instead
+  of a race blocking scan proposals. Kept: blocking would answer "cannot, because" to the proposer; the cost is that a
+  majority can end a race of the others.
+- Deviation from plan 2.4 (review RM-4, RM-15): no walls or course digest with `ready`. Instead an open room flies the
+  catalogue's default size and walls on every page (visit layer), so the generator gets the same walls for one seed; a
+  temporary room shares the host's size and walls as before. A pilot who changes size or walls inside the room leaves
+  the visit layer and may race another course; not detected.
+- A racer whose socket reconnects is a new member, not a racer: his page says `rooms.race.watching` and races the next
+  one (review RM-9; keeping a racer across a reconnect needs a member id the service does not have).
 
 ## For the lead
 
+- Review fixes: `POST /api/rooms/open` takes `here: true` (docs/rooms-protocol.md); 4 new locale keys
+  `rooms.race.{noCourse,watching,refused,wait}`. No deploy file and no limit changed.
+
 - Q2 (race): new WebSocket messages race, ready, lap, table and server file apps/rooms/race.py (rooms.py imports it).
-  A release needs `deploy/release-rooms.sh` without --compose (only apps/rooms changed: race.py is new, so the script's
-  copy of apps/rooms must take the whole folder; not checked against the script). No limit changed: MAX_TEXT 2048 holds
+  A release needs `deploy/release-rooms.sh` without --compose (its FILES list carries race.py and votes.py since
+  b6e919ce). No limit changed: MAX_TEXT 2048 holds
   every race message a page sends (under 80 bytes).
 - Keys a pilot uses, in order: 9 (outside a room: the open room of his scan or the one with pilots); 9 then Enter (in a
   room: a race on the course he flies, else the scan's newest saved course, else a new generated one; every pilot in the
@@ -137,8 +173,7 @@ Stage Q1-open-room (done):
 
 ## Not verified
 
-- Q2: no page glue yet, so nothing of the race was seen in a browser; the two-browser probe (rooms-race.ts) is not
-  written. The race timings PREP_MS 45 s, RUN_MS 15 min, MAX_LAPS 10, LATE_MS 500 ms are estimates (named in race.py).
+- Q2: the race timings PREP_MS 45 s, RUN_MS 15 min, MAX_LAPS 10, LATE_MS 500 ms are estimates (named in race.py).
 - Q2: the race's spoken lines were not heard and the flash and the panel's table not looked at on a screenshot (keys in
   `said` and DOM text only). A course that a page cannot build (no walls, generator finds nothing) leaves that pilot
   without gates; the race still runs for the others: not run in a browser.

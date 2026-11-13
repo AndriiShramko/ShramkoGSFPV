@@ -51,8 +51,10 @@ export function createRoom(base: string, body: CreateBody, f: Fetch = fetch): Pr
 }
 
 /** Lane rooms2 (R27): the open room to join from the scan `scene` (the service picks it, docs/rooms-protocol.md). */
-export function openRoom(base: string, scene: string, f: Fetch = fetch): Promise<Answer<{ id: string; room: RoomInfo }>> {
-    return call(f, `${base}/api/rooms/open`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scene: { id: scene } }) });
+/** `here`: only the open room of this scan or a new one (the page could not fly a busy room's scan; review RM-5). */
+export function openRoom(base: string, scene: string, f: Fetch = fetch, here = false): Promise<Answer<{ id: string; room: RoomInfo }>> {
+    const body = here ? { scene: { id: scene }, here: true } : { scene: { id: scene } };
+    return call(f, `${base}/api/rooms/open`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 }
 
 export function getRoom(base: string, id: string, f: Fetch = fetch): Promise<Answer<RoomInfo>> {

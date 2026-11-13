@@ -36,6 +36,8 @@ export class RacePage {
     private laps: RaceLaps | null = null;
     private started = false;
     private shownNext = -2;
+    /** the race draws its own gates (false while the course feature shows the same course) */
+    private drawn = false;
     private worker: Worker | null = null;
     private job = 0;
     /** the worker's job numbers (the build's own `job` guards a course replaced while it builds) */
@@ -70,20 +72,31 @@ export class RacePage {
         const me = this.sock.slot;
         const h = this.h;
         if (m.table) h.table = m.table;
+        // review RM-6: the table asked for by the panel after a race is old news, not said again
+        if (m.state === 'results' && (h.state === 'results' || h.state === 'off')) {
+            h.state = 'results';
+            return;
+        }
+        if (m.state === 'wait') return this.tell('rooms.race.wait', {}, true); // review RM-10: a refused proposal says why
         const fresh = m.state === 'prep' && (h.state === 'off' || h.state === 'results' || h.course !== m.course);
         if (m.state === 'prep' || m.state === 'count' || m.state === 'run') {
+            const joined = h.state === 'off' && m.state !== 'prep';
             if (fresh || h.course !== m.course) this.begin(m, me);
             h.state = m.state;
             if (typeof m.startAt === 'number') h.startAt = m.startAt;
+            // review RM-9: a page that came in during a race (a new pilot, a reconnect) is no racer; it says so once
+            if (joined && !h.racer) return this.tell('rooms.race.watching', {}, false);
         } else if (m.state === 'results') {
             this.end();
             h.state = 'results';
         } else if (m.state === 'refused' && m.slot === me) {
             h.problem = 'lap refused';
+            return this.tell('rooms.race.refused', { n: typeof m.n === 'number' ? m.n : h.sent }, false);
         }
         // a repeated prep (a pilot said ready) says nothing; the countdown has its own lines (frame)
         if (m.state === 'prep' && !fresh) return;
-        const line = raceLine(m, me, (s) => this.sock.members.get(s) ?? `#${s + 1}`);
+        // review RM-9: rows are keyed by slot; a pilot in a racer's freed slot is not that racer
+        const line = raceLine(m, h.racer ? me : null, (s) => this.sock.members.get(s) ?? `#${s + 1}`);
         if (line) this.tell(line.key, line.params, true);
     }
 
@@ -95,7 +108,8 @@ export class RacePage {
         h.startAt = null;
         h.problem = null;
         h.sent = 0;
-        h.racer = me !== null && (m.racers ?? []).includes(me);
+        // review RM-14: a member who flies another scan builds nothing (the course is the room's scan's)
+        h.racer = me !== null && (m.racers ?? []).includes(me) && this.sock.room?.scene.id === this.ctx.scene.id;
         this.count = new Countdown();
         this.laps = new RaceLaps(h.laps);
         if (h.racer) void this.build(m.course);
@@ -113,11 +127,17 @@ export class RacePage {
             track = await this.generate(ref.seed);
         } else this.h.problem = 'course';
         if (mine !== this.job || this.h.course !== course) return;
-        // a page that cannot build the course still races with everyone's table; the service starts after its wait anyway
-        if (!track) return;
+        // a page that cannot build the course says so once and keeps everyone's table (review RM-3); the service starts
+        // with the pages that built it, or ends the race when none did
+        if (!track) return this.tell('rooms.race.noCourse', {}, true);
         this.run = new CourseRun(track, this.ctx.session.transform);
-        this.stage ??= new CourseStage(this.ctx.renderer);
-        this.stage.show(this.run.gates);
+        // review RM-13: the course feature already draws this very course: its gates stay, the race only times
+        const now = (this.ctx.hook as { course?: CourseNow }).course ?? null;
+        this.drawn = !(now?.on && courseFor(now, [], 0) === course);
+        if (this.drawn) {
+            this.stage ??= new CourseStage(this.ctx.renderer);
+            this.stage.show(this.run.gates);
+        }
         this.shownNext = -2;
         this.h.built = true;
         this.h.gates = this.run.gates.length;
@@ -192,7 +212,7 @@ export class RacePage {
         }
         const next = view.running || view.next >= 0 ? view.next : -1;
         if (next !== this.shownNext) {
-            this.stage?.setNext(next, run.path, run.track.laps > 1);
+            if (this.drawn) this.stage?.setNext(next, run.path, run.track.laps > 1);
             this.shownNext = next;
         }
         h.next = view.next;
@@ -200,7 +220,8 @@ export class RacePage {
 
     /** Key 0 during or after a race: this pilot's place first (null without a table or a row of his). */
     standing(): { key: string; params: Record<string, string | number> } | null {
-        const me = this.h.table.find((r) => r.slot === this.sock.slot);
+        // review RM-9: only a racer of this race has a row of his own (rows are keyed by slot)
+        const me = this.h.racer ? this.h.table.find((r) => r.slot === this.sock.slot) : undefined;
         if (!me || this.h.state === 'off') return null;
         const n = this.h.table.length;
         return me.bestMs === null
@@ -213,6 +234,7 @@ export class RacePage {
         this.job++;
         this.run = null;
         this.stage?.hide();
+        this.drawn = false;
         this.count = null;
         this.laps = null;
         this.started = false;

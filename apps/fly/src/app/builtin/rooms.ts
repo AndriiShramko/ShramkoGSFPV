@@ -40,6 +40,7 @@ import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
 import { RacePage } from '../../rooms/race-page';
 import { tableRows } from '../../rooms/race';
+import { closeVisit, openVisit } from '../../rooms/open-visit';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
@@ -124,14 +125,21 @@ export const rooms: Feature = {
         // lane rooms2: the catalogue's order and titles, for "the next scan" and the vote lines; read once, at the first join
         let order: string[] = [];
         const titles = new Map<string, string>();
-        let catalogAsked = false;
-        const askCatalog = (): void => {
-            if (catalogAsked) return;
-            catalogAsked = true;
-            void loadCatalog().then((c) => {
-                order = c.scenes.map((s) => s.id);
-                for (const s of c.scenes) titles.set(s.id, s.title ?? s.id);
-            }, () => { catalogAsked = false; });
+        let catalog: Promise<boolean> | null = null;
+        /** true once the catalogue is read (a failed read is asked again next time) */
+        const askCatalog = (): Promise<boolean> => (catalog ??= loadCatalog().then((c) => {
+            order = c.scenes.map((s) => s.id);
+            for (const s of c.scenes) titles.set(s.id, s.title ?? s.id);
+            return true;
+        }, () => {
+            catalog = null;
+            return false;
+        }));
+        /** the visit settings an open room set, to clear on leaving (review RM-4) */
+        let aligned: { scene: string; ids: string[] } | null = null;
+        const unalign = (): void => {
+            if (aligned) closeVisit(ctx.prefs, aligned.scene, aligned.ids);
+            aligned = null;
         };
         const title = (id: string): string => titles.get(id) ?? (id === ctx.scene.id ? ctx.scene.meta?.title : undefined) ?? id;
         /** a race line: said (interrupting) and shown (lane rooms2, stage Q2) */
@@ -150,7 +158,7 @@ export const rooms: Feature = {
             h.vote = null;
             h.kind = null;
             h.roomScene = null;
-            askCatalog();
+            void askCatalog();
             if (!ROOM_ID_RE.test(room)) {
                 h.problem = 'bad-id';
                 return;
@@ -173,11 +181,18 @@ export const rooms: Feature = {
                 const id = r.scene.id;
                 // an open room has no shared settings and no drawing of its own: each pilot keeps his (lane rooms2)
                 const open = r.kind === 'persistent';
-                if (!open) applyShared(ctx.prefs, id, roomShared(r), new Map());
+                // review RM-5: an open room on a scan this page cannot fly (not in the catalogue, or its load fails):
+                // the pilot goes to the open room of his own scan instead of staying where he sees nobody
+                if (open && id !== ctx.scene.id && order.length > 0 && !order.includes(id)) return ownOpen();
+                unalign();
+                // review RM-4: an open room flies the catalogue's size and walls, so poses and seed courses match
+                if (open) aligned = { scene: id, ids: openVisit(ctx.prefs, id) };
+                else applyShared(ctx.prefs, id, roomShared(r), new Map());
                 if (id !== ctx.scene.id || (!open && !sameRender(r.scene.render, ctx.scene.render))) {
                     await ctx.scenes.load(id, 'room', r.scene.render);
                     if (ctx.scene.id !== id) {
                         h.problem = 'scene';
+                        if (open) return ownOpen();
                         return;
                     }
                 }
@@ -185,7 +200,8 @@ export const rooms: Feature = {
                 h.roomScene = id;
             };
             const onVote = (m: VoteMsg): void => {
-                h.vote = voteView(m, sock.slot);
+                // review RM-10: 'busy', 'same' and 'wait' answer a proposal; the open vote (if any) stays
+                if (m.state === 'open' || m.state === 'passed' || m.state === 'failed') h.vote = voteView(m, sock.slot);
                 const line = voteLine(m, sock.slot, title, (s) => sock.members.get(s) ?? `#${s + 1}`, keyOf('rooms.panel'));
                 const text = t(line.key, line.params);
                 announcer.announce(line.key, text, true);
@@ -298,6 +314,7 @@ export const rooms: Feature = {
                 race: rp,
                 stop: () => {
                     offFrame();
+                    unalign();
                     rp.dispose();
                     h.race = null;
                     sock.leave();
@@ -347,10 +364,26 @@ export const rooms: Feature = {
         /** lane rooms2 (R27), key 9 outside a room: the open room the service picks, no form; when the service does not
          *  answer, the panel opens instead (its list and create) with the reason in the hook */
         const joinOpen = async (): Promise<void> => {
+            // review RM-7: a scan outside the catalogue (hidden, by link) is not put in the public list: the panel
+            // opens instead, where the pilot creates a room and chooses whether it is listed
+            if ((await askCatalog()) && !order.includes(ctx.scene.id)) {
+                openPanel();
+                return;
+            }
             const a = await openRoom('', ctx.scene.id);
             if (!a.ok) {
                 h.problem = a.error;
                 openPanel();
+                return;
+            }
+            setRoomParam(a.value.id);
+            join(a.value.id);
+        };
+        /** review RM-5: the open room of the pilot's own scan (the service skips busy rooms of other scans) */
+        const ownOpen = async (): Promise<void> => {
+            const a = await openRoom('', ctx.scene.id, fetch, true);
+            if (!a.ok) {
+                h.problem = a.error;
                 return;
             }
             setRoomParam(a.value.id);
