@@ -15,7 +15,10 @@ Stage P2-figures:
 Stage P3-acceptance:
 - [x] 1. Before numbers: origin/main's apps/site and locales/site built with scripts/build-release.mjs (files restored right after), probe U:/Temp/gsfpv-train2/page/p3.mjs weight on serve-csp :5741: en/sound HTML 108172 bytes (gz file 21938), 1 CSS 55.8 KB, before load 13 requests 765.0 KB, 0 videos.
 - [x] 2. First pass on 0db75b95 (p3.mjs full on :5742, shots sound-page-p3b-*): every sheet looked at; defect: the header button "Volar ya" broke into two lines at 1440 in es. Fix 4cfbeb4e (whitespace-nowrap). Chrome repeats content in one full-page capture over 16384 px, so p3.mjs shoots clips and stitches them.
-- [~] 3. Second pass on 4cfbeb4e (:5743): ru header 1186 px in a 1152 px bar, page scrolls 34 px sideways at 1152 (nav links px-3). Fix: nav links px-2 and nowrap. Then rebuild, final shots sound-page-final-*, i18n check, typecheck.
+- [x] 3. Second pass on 4cfbeb4e (:5743): ru header 1186 px in a 1152 px bar, page scrolled 34 px sideways at 1152 (nav links px-3). Fix 77c8d2f9: nav links px-2 and nowrap.
+- [x] 4. Final pass on 77c8d2f9 (release build exit 0, p3.mjs full on :5744, log U:/Temp/gsfpv-train2/page/p3/final.log), 16 runs: scrollWidth = viewport in all (en/es/pl/ru at 1440, 1152, 360; es 320 and 768; header bar = its width everywhere, fly button 44 px high); smallest text 14 px; 0 CSP messages, 0 failed requests; 0 video requests before the load event in every run; reduced motion: 0 video requests, 0 figure animations, posters shown; no JavaScript: h1, all headings, five figures and 14746 characters of main text present, no text hidden. Headings: one h1, order 1 2 2 3 3 3 3 3 2 2 3 3 2 3 3 2 3 2 3 3 3 4 3 3 4 3 2 2 2, no level skipped. Figures: 5 of 5 with aria-hidden SVG and 182 to 566 characters of text next to them. Links: 47 per page, 20 same-origin ones fetched from the local server per language: 0 bad, 0 missing anchors; 10 external ones not fetched (local-only rule). i18n-check OK (1192 strings x 4), site typecheck exit 0.
+  Weight, en (before = origin/main, after = 77c8d2f9; serve-csp sends HTML uncompressed): HTML 108172 -> 173768 bytes (gz file 21938 -> 33068); es 178925, pl 177959, ru 206452. CSS 1 file 55.8 -> 60.2 KB. Before load: 1440 13 req 765.0 KB -> 14 req 928.3 KB; 360 13 req 765.0 KB -> 15 req 944.1 KB. First screen (load + 3 s, no scroll): 1440 18 req 4735.7 KB of which garden-1920.av1 3586.8 KB starting 541 ms after load; 360 18 req 2778.7 KB of which garden-1280.av1 1833.7 KB at 368 ms after load; reduced motion 17 req 945.0 KB. Pond and acro start only when scrolled to (3.5 to 7.2 s in the probe's scroll).
+  Looked at (sheets = the full page cut into columns; -top = the first viewport): en-1440 clean; es-1440 clean after 4cfbeb4e (was: "Volar ya" on two lines); pl-1440 clean; ru-1440 clean after 77c8d2f9 (header now fits); en-360 clean; es-360 clean; pl-360 clean; ru-360 clean; es-320 clean (the cookie banner covers the start button in the first 700 px until answered, site-wide); en-360-reduced clean (posters, still figures); en-360-nojs clean (all text, posters, no cookie banner).
 
 ## Decisions
 
@@ -49,6 +52,11 @@ Stage P3-acceptance:
 
 - tools/bench/scripts/sound-page-shots.mjs (not in this lane) reads #sound-how and prints the h2 order; it does not assert the old order in code read so far, but its log line will show the new order how,hear,need,start,now,test,who,open,help.
 
+- P3: Header.tsx changed again for every page (4cfbeb4e fly button nowrap; 77c8d2f9 nav links px-3 -> px-2 and nowrap). Measured by U:/Temp/gsfpv-train2/page/p3.mjs: at 1152 the ru header was 1186 px and the page scrolled sideways; after the fix the bar is 1152/1152 in en, es, pl, ru at 1152 and 1440. Whether origin/main already had the ru overflow was not measured.
+- P3: the sound page HTML grew from 108172 to 173768 bytes in en (gz 21938 -> 33068), ru 206452. Most of it is the five inline figures; that Next repeats their markup in the inline RSC payload is an estimate, not measured.
+- P3: en and es keep the brand "Fly by Sound" in the eyebrow and the start button ("Iniciar Fly by Sound"), pl and ru translate it ("Lot na s\u0142uch", "\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443"). Left as it was; one rule for all four is the owner's call.
+- P3: full-page captures over 16384 px repeat content in Chrome (the 360 px pages are 17452 to 20165 px tall); p3.mjs shoots clips and stitches them. Any other full-page probe of this page at 360 px will show a doubled hero at the bottom: that is the capture, not the page.
+
 ## Not verified
 
 - The negative control of the new verify.mjs check (three loops) was not run on an old build; the live page has 0 video tags (scout-B B3), so the check cannot pass on the old page, but no command showed it fail.
@@ -62,7 +70,11 @@ Stage P3-acceptance:
 - P2: Safari, Firefox and real phones not tried; headless Chrome 157 only. The 320 px check covered en and ru, pl and es at 360 only.
 - P2: the figures' story was checked against the package source, not against a recording of a real flight.
 
+- P3: external links (10: GitHub, calendar, share links) not opened; only same-origin links fetched from the local server. Videos and screenshots in headless Chrome 157 only; no real phone, Safari or Firefox. The page was not checked with a screen reader (NVDA, JAWS); heading order, aria-hidden figures and text next to each figure were checked by script only. The flash rule not measured by an analyser.
+
 ## Cost notes
+
+- P3: most turns went to the two header fixes, each needing a release build and a full probe (about 6 minutes each), and to finding that one full-page capture over 16384 px repeats content; a header width check at 1152 in all four languages in the P2 probe would have saved one build and probe round.
 
 - P2: most turns went to reading the cue rules across planner.ts, rules.ts, beacon.ts, runner.ts and the theme files (about 9 turns) and to one 320 px overflow hunt in the shared header; a fact sheet of the default theme's cue numbers with file:line in scout-B would have saved about 6 turns.
 
