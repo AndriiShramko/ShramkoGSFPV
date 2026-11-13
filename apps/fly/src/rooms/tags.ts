@@ -1,6 +1,6 @@
 // Train 1, lane rooms: name tags over the other pilots' drones: a DOM overlay over the canvas, each tag placed every frame
 // by projecting its drone's position through the flight camera. Hidden with the HUD; hidden from screen readers (the member
-// list and Shift+O say the same).
+// list and key 0 say the same).
 import { Vec3 as PcVec3 } from 'playcanvas';
 import type { Entity } from 'playcanvas';
 import type { Vec3 } from './around';

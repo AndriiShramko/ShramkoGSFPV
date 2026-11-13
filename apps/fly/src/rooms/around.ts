@@ -1,5 +1,5 @@
 // Train 1, lane rooms: "who is around" for every pilot, blind pilots first (rooms-plan.md 2.7, R28): where another drone is
-// from this pilot's own drone: metres, left / right / ahead / behind (from his own heading), above / below. Shift+O says the
+// from this pilot's own drone: metres, left / right / ahead / behind (from his own heading), above / below. key 0 says the
 // nearest pilots, and a near call is said once when another drone comes closer than NEAR_M. Pure: positions in, text keys out.
 
 export type Vec3 = readonly [number, number, number];
@@ -10,7 +10,7 @@ export type Height = 'above' | 'below' | 'level';
 
 /** Height difference that counts as above or below, metres (estimate: a drone's size plus the playout error). */
 export const LEVEL_M = 1;
-/** Pilots said by Shift+O at most (estimate: three names fit one short spoken line). */
+/** Pilots said by key 0 at most (estimate: three names fit one short spoken line). */
 export const WHO_MAX = 3;
 /** A near call when another drone comes closer than this, metres (estimate: two 5-inch quads a few spans apart). */
 export const NEAR_M = 3;
@@ -19,12 +19,12 @@ export const NEAR_REARM_M = 5;
 
 /**
  * A remote drone farther than this is not said, metres (estimate: larger than any scan flown; review RV-6: a remote pose is
- * whatever its sender wrote, so Shift+O must not say 5e38 metres).
+ * whatever its sender wrote, so key 0 must not say 5e38 metres).
  */
 export const SAY_MAX_M = 1000;
 /** The near call of one drone again only after this long, ms (estimate; review RV-6: a pose swinging 2 m / 6 m is said once). */
 export const NEAR_AGAIN_MS = 10_000;
-/** Room lines said a minute at most, Shift+O's answer not counted (estimate; review RV-6: joins, leaves and near calls). */
+/** Room lines said a minute at most, key 0's answer not counted (estimate; review RV-6: joins, leaves and near calls). */
 export const LINES_PER_MIN = 12;
 
 export interface Relation { metres: number; side: Side; height: Height }
@@ -80,7 +80,7 @@ export function nearText(n: Near, t: T): string {
     return t('rooms.say.who', { nick: n.nick, m: sayMetres(n.metres), side: t(`rooms.side.${n.side}`), height: t(`rooms.height.${n.height}`) });
 }
 
-/** Shift+O: the key said (for RoomsHook.said) and its text; nobody around says so. */
+/** Key 0 (who is around): the key said (for RoomsHook.said) and its text; nobody around says so. */
 export function whoLine(near: readonly Near[], t: T): { key: string; text: string } {
     if (near.length === 0) return { key: 'rooms.say.nobody', text: t('rooms.say.nobody') };
     return { key: 'rooms.say.who', text: near.map((n) => nearText(n, t)).join(' ') };

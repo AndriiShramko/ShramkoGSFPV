@@ -1,4 +1,4 @@
-// Train 1, lane rooms: the panel "Fly with others" (pause menu, Shift+L; rooms-plan.md 2.3, 2.7): the pilot's name, create a
+// Train 1, lane rooms: the panel "Fly with others" (pause menu, key 9; rooms-plan.md 2.3, 2.7): the pilot's name, create a
 // room on the scan flown (name, listed or not), the room's link with Copy, the pilots in the room, Leave, and the open rooms
 // as a real table with a Join button per row, refreshed every 10 s while the panel is open. Plain buttons, fields and a
 // table: reachable with Tab and read by a screen reader.

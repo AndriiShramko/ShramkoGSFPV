@@ -53,8 +53,12 @@ export function getRoom(base: string, id: string, f: Fetch = fetch): Promise<Ans
     return call(f, `${base}/api/rooms/${encodeURIComponent(id)}`);
 }
 
-export function listRooms(base: string, f: Fetch = fetch): Promise<Answer<{ v: number; rooms: RoomInfo[] }>> {
-    return call(f, `${base}/api/rooms`);
+/** A 200 without a rooms array (a static server with no rooms API answers the page's own HTML or nothing) is not a
+ *  list: answered as an error, so the panel shows "no list" instead of throwing on `value.rooms`. */
+export async function listRooms(base: string, f: Fetch = fetch): Promise<Answer<{ v: number; rooms: RoomInfo[] }>> {
+    const a = await call<{ v: number; rooms: RoomInfo[] }>(f, `${base}/api/rooms`);
+    if (a.ok && !(a.value && typeof a.value === 'object' && Array.isArray(a.value.rooms))) return { ok: false, error: 'bad-body', status: 200 };
+    return a;
 }
 
 /** The WebSocket's address for a page at `loc` (ws: on http, wss: on https). */

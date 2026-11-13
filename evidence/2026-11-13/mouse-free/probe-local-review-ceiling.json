@@ -1,0 +1,96 @@
+{
+  "what": "a window that needs the mouse gets the mouse (mouse-free-probe.mjs)",
+  "base": "http://localhost:5391/en",
+  "entries": {
+    "ceiling": {
+      "walls": true,
+      "group": "voxels",
+      "rowShown": true,
+      "opened": {
+        "locked": false,
+        "window": "panel interactive floaters-panel ceiling-panel",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "p.fl-explain",
+        "checkedTab": null,
+        "title": "Ignore collisions above",
+        "fieldText": null,
+        "fieldVisible": null,
+        "focus": "div#ceiling-panel"
+      },
+      "closed": {
+        "windowUp": false,
+        "locked": false
+      }
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "softwareGl": false,
+    "counts": true
+  },
+  "errors": [],
+  "failed": 0,
+  "checks": [
+    {
+      "name": "ceiling: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "ceiling: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive floaters-panel ceiling-panel"
+      }
+    },
+    {
+      "name": "ceiling: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "ceiling: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "p.fl-explain"
+      }
+    },
+    {
+      "name": "ceiling: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": "#ce-title",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "ceiling: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": false
+      }
+    },
+    {
+      "name": "ceiling: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": false
+        }
+      }
+    }
+  ]
+}
