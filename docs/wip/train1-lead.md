@@ -49,7 +49,10 @@ plan's order: voice, tracks, rooms. Held back: none.
         hid-source-probe.mjs /en: pass, 8 of 8 runs. Evidence train1/{sonic-int-review-r9,centre-throttle-probe,
         wizard-auto-check,hid-source-probe}.json.
 - [x] I7. Deploy order, live checks, owner tries, not verified (this note).
-- [ ] I8. Push main.
+- [x] I5c. All gates once more at the end (the probe tools/bench/src/tracks-page.ts changed): exit 0 on 87850499
+      (typecheck; vitest 284 files passed 1 skipped / 4396 tests passed 14 skipped; api-unittest 453 OK; architecture,
+      i18n, catalog, B18 PASS).
+- [x] I8. Push main (origin/main was still 8549533e: plain push; the pushed id is this commit, see git log).
 
 ## Deploy order for the lead (nothing of it was run by the integration stage)
 
