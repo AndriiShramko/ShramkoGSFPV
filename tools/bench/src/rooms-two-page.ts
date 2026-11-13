@@ -23,7 +23,7 @@ import { LOCK, lock, unlock } from './gpu-lock';
 import { REPO } from './sonicrec-serve';
 import { startRoomsRig } from './rooms-serve';
 import type { RoomsRig } from './rooms-serve';
-import { axisQ, bState, camera, levelView, placeA, qmul } from './rooms-shot-live';
+import { axisQ, bState as lookState, camera, levelView, placeA, qmul } from './rooms-shot-live';
 
 const DIST = join(REPO, 'dist');
 /** seconds A flies while both pages record (plan section 9) */
@@ -203,7 +203,7 @@ async function main(): Promise<void> {
         await hook(A.page, "h.session.pause(true, 'menu'); return 0;");
         await hook(B, "h.session.pause(true, 'menu'); return 0;");
         await B.waitForTimeout(1500);
-        const atStart = await bState(B);
+        const atStart = await lookState(B);
         const startDrawn = (atStart.drawn ?? []) as Any[];
         out.nearHidden = { ...atStart };
         const nearHidden = startDrawn.length === 1 && startDrawn.every((d) => d.alpha === 0) && (atStart.tags as Any[]).length === 0 && (atStart.hookTags as Any[]).length === 0;
@@ -211,7 +211,7 @@ async function main(): Promise<void> {
         const cam = await camera(B);
         await placeA(A.page, [cam.pos[0] + cam.fwd[0] * TAG_AT_M, cam.pos[1] + cam.fwd[1] * TAG_AT_M, cam.pos[2] + cam.fwd[2] * TAG_AT_M], qmul(axisQ(cam.up, 135), cam.q));
         await B.waitForTimeout(1500);
-        const far = await bState(B);
+        const far = await lookState(B);
         const farTags = far.tags as { text: string; box: number[] }[];
         const view = far.view as number[];
         const farDrawn = (far.drawn ?? []) as Any[];
