@@ -1,0 +1,244 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "at": "2026-11-13T15:39:35.130Z",
+ "browser": "156.0.8078.80",
+ "fakeAnswer": "message",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 21,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "profiling": false,
+   "climb": [
+    {
+     "alt": 0.005188191957379296,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 0.6427457931148184,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 1.3904841989569277,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.17984693722941,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.876758667464827,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 3.671329235332908,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.459128080150209,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.667485379274062,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.66861822849291,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.669224013856414,
+     "motors": "on",
+     "crashed": false
+    }
+   ],
+   "profile": {
+    "msUnder": {
+     "ground": 7,
+     "sweep": 20,
+     "onFrame": 70,
+     "total": 2702
+    },
+    "top": [
+     "2017 (idle) :0",
+     "241 (program) :0",
+     "35 (anon) main-D3nKgHDd.js:16651",
+     "31 (garbage collector) :0",
+     "17 getInputDeclarations main-D3nKgHDd.js:856",
+     "16 readBuffer main-D3nKgHDd.js:167",
+     "14 (anon) main-D3nKgHDd.js:93",
+     "14 generateCenters main-D3nKgHDd.js:926"
+    ]
+   },
+   "gateWatch": {
+    "maxAge": 91.79999995231628,
+    "ageOver100": 0,
+    "maxFrame": 37.199999928474426,
+    "frames": 80,
+    "blocks": {
+     "switch": 2
+    },
+    "replies0": 2374,
+    "t0": 29162.299999952316,
+    "repliesPerS": 96,
+    "lastCrash": null
+   },
+   "start": {
+    "alt": 0,
+    "armed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "off",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2
+     },
+     "now": "centred"
+    },
+    "card": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick."
+   },
+   "up": {
+    "alt": 4.669224013856414,
+    "armed": true,
+    "crashed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.669224013856414
+     },
+     "now": "centred"
+    },
+    "card": null
+   },
+   "topM": 4.669224013856414,
+   "probe": {
+    "sockets": 0,
+    "requests": 2623,
+    "replies": 2623,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "bridge": {
+   "grant": "cdp Browser.setPermission loopback-network",
+   "grantTried": [],
+   "permissions": {
+    "local-network-access": "prompt",
+    "local-network": "prompt",
+    "loopback-network": "granted"
+   },
+   "socketsBeforePress": 0,
+   "sayState": "flying",
+   "say": "",
+   "check": {
+    "wizard": "check",
+    "key": "hid:2ca3:1021:DJI RC 2:12:d",
+    "reportsIn2s": 186,
+    "badReports": 0
+   },
+   "axes": [
+    0.42,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "errors": [],
+   "csp": []
+  },
+  "bridge-nogrant": {
+   "permissions": {
+    "local-network-access": "prompt",
+    "local-network": "prompt",
+    "loopback-network": "prompt"
+   },
+   "afterMs": 208,
+   "sayState": "nobridge",
+   "say": "The RC bridge does not answer. Start start-rc-bridge.cmd on this computer, leave its window open and press the button again. If Chrome asked whether this site may reach apps on this device and you blocked it, allow it in the site settings (the icon left of the address).",
+   "sayStateAfter3s": "nobridge",
+   "sockets": 1,
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": true,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.climbs": true,
+  "usb.noPageErrors": true,
+  "bridge.noSocketOnLoad": true,
+  "bridge.connected": true,
+  "bridge.checkScreenAtOnce": true,
+  "bridge.framesFlow": true,
+  "bridge.cspQuiet": true,
+  "bridge.noPageErrors": true,
+  "bridgeNoGrant.answered": true,
+  "bridgeNoGrant.noPageErrors": true
+ }
+}

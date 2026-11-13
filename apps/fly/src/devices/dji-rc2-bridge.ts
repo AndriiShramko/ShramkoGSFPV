@@ -35,7 +35,39 @@ export interface BridgeOptions {
     socket?: (url: string) => SocketLike;
     clock?: () => number;
     wait?: (ms: number) => Promise<void>;
+    /** navigator.permissions (default the page's; null: none) */
+    permissions?: PermissionsLike | null;
 }
+
+/** The parts of navigator.permissions and PermissionStatus this module uses, so tests can hand over a fake. */
+export interface PermStatusLike {
+    readonly state: string;
+    addEventListener(type: 'change', fn: () => void): void;
+    removeEventListener(type: 'change', fn: () => void): void;
+}
+export interface PermissionsLike { query(d: { name: string }): Promise<PermStatusLike> }
+
+/**
+ * Chrome's Local Network Access (lane rc2-lna, docs/wip/rc2-lna.md): a public https page may open ws://127.0.0.1 only
+ * after the pilot allows it. Measured on Chrome 156: the permission that decides it is 'loopback-network'; older
+ * builds named it 'local-network-access'. The first name the browser knows is used; none known: no question exists
+ * (the browser behaves as before).
+ */
+export const LNA_NAMES = ['loopback-network', 'local-network-access'] as const;
+
+/** The pilot's answer so far, or null when the browser knows none of LNA_NAMES. */
+export async function lnaStatus(p: PermissionsLike | null | undefined): Promise<PermStatusLike | null> {
+    if (!p?.query) return null;
+    for (const name of LNA_NAMES) {
+        try {
+            return await p.query({ name });
+        } catch { /* unknown name in this browser: try the next */ }
+    }
+    return null;
+}
+
+const defaultPermissions = (): PermissionsLike | null =>
+    (globalThis.navigator as unknown as { permissions?: PermissionsLike } | undefined)?.permissions ?? null;
 
 type ReportListener = (e: { reportId: number; data: DataView; timeStamp: number }) => void;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -64,12 +96,52 @@ export class Rc2BridgeDevice {
     private readonly clock: () => number;
     private readonly wait: (ms: number) => Promise<void>;
     private ws: SocketLike | null = null;
+    private readonly permissions: PermissionsLike | null;
+    /** open() waiting for the pilot's answer to Chrome's question: stops that wait (close) */
+    private cancel: (() => void) | null = null;
 
     constructor(o: BridgeOptions = {}) {
         this.url = o.url ?? RC_BRIDGE_URL;
         this.socket = o.socket ?? ((u) => new WebSocket(u) as unknown as SocketLike);
         this.clock = o.clock ?? (() => performance.now());
         this.wait = o.wait ?? sleep;
+        this.permissions = o.permissions === undefined ? defaultPermissions() : o.permissions;
+    }
+
+    /**
+     * The one place of the Local Network Access rule (LNA_NAMES). 'denied': Rc2Error 'denied' with no connection.
+     * 'prompt': `asking` is called, then it connects (the attempt is what makes Chrome show its question); an attempt
+     * refused while the question is open waits for the answer: Allow connects again at once (no second press), Block
+     * is 'denied'. 'granted' or no such permission: connects as before. Then as connect().
+     */
+    open(asking?: () => void): Promise<void> {
+        if (this.opened) return Promise.resolve();
+        // no permissions API: connect in this same task, as before
+        return this.permissions?.query ? this.ask(asking) : this.connect();
+    }
+
+    private async ask(asking?: () => void): Promise<void> {
+        const st = await lnaStatus(this.permissions);
+        if (st?.state === 'denied') throw new Rc2Error('denied');
+        if (st?.state !== 'prompt') return this.connect();
+        asking?.();
+        try {
+            return await this.connect();
+        } catch (e) {
+            if (!(e instanceof Rc2Error) || e.why !== 'nobridge') throw e;
+        }
+        const answer = st.state !== 'prompt' ? st.state : await new Promise<string>((res, rej) => {
+            const on = (): void => {
+                if (st.state === 'prompt') return;
+                done();
+                res(st.state);
+            };
+            const done = (): void => { st.removeEventListener('change', on); this.cancel = null; };
+            this.cancel = () => { done(); rej(new Rc2Error('nobridge')); };
+            st.addEventListener('change', on);
+        });
+        if (answer === 'denied') throw new Rc2Error('denied');
+        return this.connect();
     }
 
     /**
@@ -77,8 +149,7 @@ export class Rc2BridgeDevice {
      * not running, or the browser refused the connection); 'nocontroller': the bridge runs but has no controller;
      * 'silent': connected, but no values within RC2_FIRST_MS.
      */
-    open(): Promise<void> {
-        if (this.opened) return Promise.resolve();
+    private connect(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             let settled = false;
             let ws: SocketLike;
@@ -135,6 +206,7 @@ export class Rc2BridgeDevice {
     }
 
     close(): Promise<void> {
+        this.cancel?.();
         this.stop('closed');
         return Promise.resolve();
     }

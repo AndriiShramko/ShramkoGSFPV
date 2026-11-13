@@ -24,6 +24,7 @@ import { copySwitches, hasModeRanges, rangesArm, rangesModeChannel, tablePairs }
 import type { Switches } from './switches';
 import type { FlightMode } from '@gsfpv/sim-core';
 import { FRAME_BUTTONS } from './frame';
+import { SpringWatch } from './spring';
 
 // the radio's flight-mode switch (Profile.modeSwitch) and its channel functions (Profile.switches)
 // live in their own modules; one import path for the app
@@ -368,6 +369,7 @@ export class CalibrationWizard {
     private maxExc = new Float64Array(0);
     private awayT = new Float64Array(0); // since when the value is a jump away from L0 (NaN = not)
     private movedRefusals = new Uint8Array(0); // centre: Measure refused because this channel moved
+    private springW: SpringWatch[] = []; // per channel: does it spring back to its middle (spring.ts)
     private fr: RawFrame = { t: 0, axes: new Float32Array(8), buttons: 0 };
     // buttons
     private lastButtons = 0;
@@ -838,6 +840,7 @@ export class CalibrationWizard {
         this.cand = new Uint8Array(n); this.L0 = F().fill(NaN); this.lvl = F().fill(NaN); this.armSt = new Uint8Array(n); this.onV = F().fill(NaN);
         this.stepMax = F(); this.swept = new Uint8Array(n); this.maxExc = F(); this.awayT = F().fill(NaN);
         this.movedRefusals = new Uint8Array(n);
+        this.springW = Array.from({ length: n }, () => new SpringWatch());
         for (let i = 0; i < n; i++) {
             const x = f.axes[i];
             this.v[i] = x; this.mins[i] = x; this.maxs[i] = x; this.rest[i] = x;
@@ -887,6 +890,7 @@ export class CalibrationWizard {
             else { this.wMin[i] = lo; this.wMax[i] = hi; this.wSum[i] += x; this.wN[i]++; }
             this.sm[i] += (x - this.sm[i]) * k;
             this.smWindow(i, t);
+            this.springW[i].update(x, t, this.mid(i), (this.maxs[i] - this.mins[i]) / 2);
             if (stir) {
                 let b = Math.floor((x + 1) * (NB / 2));
                 b = b < 0 ? 0 : b > NB - 1 ? NB - 1 : b;
@@ -937,6 +941,7 @@ export class CalibrationWizard {
         for (let i = 0; i < this.n; i++) {
             this.sm[i] += (this.v[i] - this.sm[i]) * k;
             this.smWindow(i, t);
+            this.springW[i].update(this.v[i], t, this.mid(i), (this.maxs[i] - this.mins[i]) / 2);
         }
     }
 
@@ -1610,7 +1615,11 @@ export class CalibrationWizard {
         const tAx = this.assigned.throttle;
         const cr = this.results.centre;
         const tRest = tAx && cr?.kind === 'centre' ? cr.centres.find((x) => x.ch === tAx.index) : undefined;
-        const throttleRest = tAx && tRest ? classifyThrottleRest((tAx.invert ? -1 : 1) * (tRest.pct / 100)) : null;
+        // a throttle seen to spring back to its middle (spring.ts) rests in the centre, whatever the hand did at that step:
+        // the screen asks for the throttle down, and a pilot holding a spring stick down there measured 'bottom' (the
+        // owner's DJI RC 2, 2026-11-13, docs/wip/connect.md)
+        const springs = !!tAx && tAx.index < this.springW.length && this.springW[tAx.index].springs;
+        const throttleRest = springs ? 'centre' : tAx && tRest ? classifyThrottleRest((tAx.invert ? -1 : 1) * (tRest.pct / 100)) : null;
         return {
             version: 1,
             deviceKey: this.deviceKey,
