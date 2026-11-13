@@ -27,6 +27,7 @@ from collections import deque
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import protocol as P  # noqa: E402
 import votes as V  # noqa: E402
+import race as RC  # noqa: E402
 import ws as W  # noqa: E402
 
 PORT = 8091
@@ -133,6 +134,8 @@ class Room:
                  ballot: V.Ballot | None = None):
         self.id, self.req, self.host_hash, self.kind = rid, req, host_hash, kind
         self.ballot = ballot or V.Ballot()
+        self.race: RC.Race | None = None       # lane rooms2, stage Q2: the race on time (race.py)
+        self.last_race: RC.Race | None = None  # its table, for a pilot who asks after the end
         self.members: dict[int, Member] = {}
         self.host_slot: int | None = None
         self.created = time.time()
@@ -209,6 +212,7 @@ class Service:
         """One snapshot per room, built once and written to every member that keeps up."""
         self.ticks += 1
         self.votes_due()
+        self.races_due()
         ms = self.server_ms()
         for room in list(self.rooms.values()):
             poses = [(m.slot, m.pose) for m in sorted(room.members.values(), key=lambda m: m.slot) if m.pose]
@@ -382,6 +386,7 @@ class Service:
             room.req = {"scene": dict(v.scene), "name": room.req["name"], "listed": room.req["listed"]}
             for m in room.members.values():
                 m.pose = None
+            room.race = None  # the course was the old scan's
             self._broadcast(room, {"type": "scene", "room": room.public(self.cap_of(room))})
             log("a vote moved a room")
 
@@ -416,6 +421,61 @@ class Service:
             self._vote_end(room, "passed")
         elif got == "open":
             self._broadcast(room, room.ballot.state(self.present(room)))
+
+    # ---------------------------------------------------------------- races (race.py)
+    def races_due(self) -> None:
+        now = self.server_ms()
+        for room in list(self.rooms.values()):
+            if room.race is not None:
+                self._race_step(room, room.race.due(now))
+
+    def _race_step(self, room: Room, step: str | None) -> None:
+        r = room.race
+        if r is None or step is None:
+            return
+        self._broadcast(room, r.message(step))
+        if step == "results":
+            room.last_race, room.race = r, None
+            log("a race ended")
+
+    def _race(self, room: Room, me: Member, m: dict) -> None:
+        """A proposal: the race starts for everyone present; while one is on, the proposer gets its state."""
+        course, laps = m.get("course"), m.get("laps")
+        if not isinstance(course, str) or not P.COURSE_RE.fullmatch(course):
+            return
+        if isinstance(laps, bool) or not isinstance(laps, int) or not 1 <= laps <= RC.MAX_LAPS:
+            return
+        me.active = self.clock()
+        if room.race is not None:
+            return self._send(me.sock, room.race.message())
+        if not self.proposals.allow(f"race:{room.id}:{me.slot}:{me.joined}"):
+            return self._send(me.sock, {"type": "race", "state": "wait", "course": course})
+        r = RC.Race(course, laps, me.slot, self.present(room) & set(room.members), self.server_ms())
+        r.nicks = {s: x.nick for s, x in room.members.items()}
+        room.race = r
+        self._broadcast(room, r.message())
+        log("a race was proposed")
+
+    def _ready(self, room: Room, me: Member) -> None:
+        if room.race is not None and room.race.mark_ready(me.slot, self.server_ms()):
+            self._broadcast(room, room.race.message())
+
+    def _lap(self, room: Room, me: Member, m: dict) -> None:
+        r = room.race
+        if r is None:
+            return
+        me.active = self.clock()
+        n, ms = m.get("n"), m.get("ms")
+        if not r.lap(me.slot, n, ms, self.server_ms()):
+            return self._send(me.sock, {**r.message("refused"), "slot": me.slot, "n": n})
+        r.nicks[me.slot] = me.nick
+        self._broadcast(room, {**r.message("lap"), "slot": me.slot, "n": n, "ms": ms})
+        self._race_step(room, r.due(self.server_ms()))
+
+    def _table(self, room: Room, me: Member) -> None:
+        r = room.race or room.last_race
+        if r is not None:
+            self._send(me.sock, r.message(r.state if r is room.race else "results"))
 
     async def _create(self, reader, writer, headers: dict, client: str) -> None:
         try:
@@ -486,7 +546,8 @@ class Service:
             room.host_slot = min(room.members, key=lambda s: room.members[s].joined)
         sock.send_text(json.dumps({"type": "welcome", "v": P.VERSION, "slot": slot, "nick": nick, "hostSlot": room.host_slot,
                                    "room": room.public(cap), "members": room.roster(), "serverMs": self.server_ms(),
-                                   "vote": room.ballot.state(self.present(room)) if room.ballot.vote else None}))
+                                   "vote": room.ballot.state(self.present(room)) if room.ballot.vote else None,
+                                   "race": room.race.message() if room.race else None}))
         self._broadcast(room, {"type": "joined", "slot": slot, "nick": nick, "hostSlot": room.host_slot}, but=slot)
         log(f"ws join; pilots {self.pilots()}")
         try:
@@ -494,6 +555,8 @@ class Service:
         finally:
             room.members.pop(slot, None)
             room.ballot.drop(slot)
+            if room.race is not None and room.race.drop(slot, self.server_ms()):
+                self._broadcast(room, room.race.message())
             if room.host_slot == slot:
                 room.host_slot = min(room.members, key=lambda s: room.members[s].joined) if room.members else None
             if not room.members:
@@ -547,6 +610,14 @@ class Service:
                 self._propose(room, me, m)
             elif kind == "agree":
                 self._agree(room, me)
+            elif kind == "race":
+                self._race(room, me, m)
+            elif kind == "ready":
+                self._ready(room, me)
+            elif kind == "lap":
+                self._lap(room, me, m)
+            elif kind == "table":
+                self._table(room, me)
             elif kind == "leave":
                 sock.close(W.NORMAL, "leave")
                 return

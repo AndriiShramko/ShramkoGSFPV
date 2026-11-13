@@ -124,6 +124,23 @@ flag, proposed or agreed); the proposer counts once; a member who leaves takes h
 `scene {room}`: the room's new scan (shared settings and course dropped); each page loads it, starts at its start and
 sends poses again; the poses of the old scan are dropped by the service. A welcome carries `vote` (the open vote or null).
 
+## Races (rooms-plan.md 2.4, lane rooms2 stage Q2)
+
+`race {course, laps}` from a member proposes a race on `course` ('g1.<seed>' = the generator's course of that seed on the
+room's scan, '<id>.v<n>' = a course the scan keeps on the server; COURSE_RE) with `laps` 1..10. Every member present is a
+racer. While a race is on, a second proposal is answered with the race's state to the proposer only; 5 proposals per 10
+minutes per member (else `state: 'wait'`). The service says `race` messages:
+`{type: 'race', state, course, laps, by, racers: [slots], ready: [slots], startAt, table}`, where `state` is
+`prep` (each page builds the course and sends `ready {}`), `count` (every racer ready, or 45 s passed: `startAt` is the
+server's ms of the start, 10 s ahead), `lap` (a lap was taken: also `slot`, `n`, `ms`), `refused` (to the sender only: a
+lap before `startAt`, out of order, after his last lap, or longer than the time since the start), `results` (the first
+finisher + 60 s, every racer finished or gone, or 15 minutes without a finisher; also the answer to `table {}` after
+the end) or `run` (the answer to `table {}` during the race). `lap {n, ms}` from a page: its lap n (1-based) took ms
+(the page's own lap timer; the service does not fly). `table` rows: `{slot, nick, laps, totalMs, bestMs, lastMs, done,
+place, gapMs}`, ordered finished first by total, then more laps and less total, then the best lap, then the slot;
+`gapMs` is behind the leader when on the same lap count, else null. A passed vote ends the race (another scan). A
+welcome carries `race` (the race on, or null).
+
 ## Privacy
 
 Others see only the nickname and the live pose while both are in the room. Poses are never written to disk. Client

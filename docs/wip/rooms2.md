@@ -4,6 +4,21 @@ Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle
 
 ## Status
 
+Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
+
+- [x] Q2.1 Server: apps/rooms/race.py (prep, count, run, results; table order and gaps), messages race/ready/lap/table in
+  rooms.py, welcome carries `race`, a passed vote ends the race; docs/rooms-protocol.md "Races". Test
+  apps/rooms/tests/test_race.py: 10 tests OK; all other rooms tests 77 OK. Negative control (old code has no race module,
+  so mutants): time checks of a lap removed: 1 failure + 1 error; table ordered by total only: 1 failure.
+  Commit: "rooms2: race server".
+- [ ] Q2.2 Page logic: rooms/race.ts (course id choice, countdown lines, lap reports, table lines), socket messages,
+  locales in four languages, test tools/bench/test/rooms-race.test.ts with negative control.
+- [ ] Q2.3 Page glue in app/builtin/rooms.ts: build the course (saved course by id, or the generator's worker by seed),
+  draw its gates, feed its lap timer, the key, HUD table, speech.
+- [ ] Q2.4 Two-browser probe tools/bench/src/rooms-race.ts and its run.
+
+Stage Q1-open-room (done):
+
 - [x] 1. Server: open rooms (`POST /api/rooms/open`), votes (`apps/rooms/votes.py`), protocol doc, python tests
   `apps/rooms/tests/test_open_vote.py` (24 tests OK; all 77 rooms tests OK). Commit: see git log "rooms2: server".
 - [x] 2. Page (commit "rooms2: page"): key 9 outside a room joins the open room (one press, `openRoom` in rooms/api.ts);
