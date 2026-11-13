@@ -12,8 +12,8 @@
 // Not in recordings (the recorder writes video only).
 // Fly by Sound (v0.12, docs/wip/v12-plan.md 2.2): on a page entered through ?sonic= (sonic/entry.ts) the sound engine owns
 // the one AudioContext. The pilot's sound settings decide whether the motors play there (SonicPrefs.motorSound; sound.motors
-// is not read). Since v0.13 (M41-16, the owner's message 41) they are on by default, so the pilot hears throttle and climb as
-// in real flight, and they play into the engine's motor bus (SonicEngine.motorInput: the propellers' band, levelled to a
+// is not read). v0.13 (M41-16) had them on by default; since train 2 (the owner) they are off until the pilot switches them
+// on himself (the switch saves SonicPrefs.motorChoice with motorSound, a document without it reads as off). They play into the engine's motor bus (SonicEngine.motorInput: the propellers' band, levelled to a
 // level under the cues whatever sound.volume is, the pilot's own motor level, ducked under speech) on its context; an engine
 // of an older package has no motor bus, and they play into its plain input node (SonicEngine.auxInput, before its limiter)
 // as in v0.12. No context of this feature's own is made.
@@ -87,7 +87,7 @@ export const sound: Feature = {
         /** Flips the motors: the engine's setting in the mode (it is saved with the pilot's sound settings), else sound.motors. */
         const toggle = (): void => {
             if (inMode()) {
-                sonicEntry()?.setup.update({ motorSound: !enabled() });
+                sonicEntry()?.setup.update({ motorSound: !enabled(), motorChoice: true });
                 drawSpeaker();
             } else ctx.prefs.set('sound.motors', !enabled());
         };

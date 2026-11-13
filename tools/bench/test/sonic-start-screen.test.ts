@@ -415,6 +415,19 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         again.s.dispose();
     });
 
+    it('the motor row (train 2, the owner): off by default; the pilot switching it on saves his choice (motorChoice), a new screen reads it back on', () => {
+        const { s, store, setup } = open();
+        expect(setup.prefs.motorSound).toBe(false);
+        expect(byTestId(doc, 'sonic-motor')!.checked).toBe(false);
+        byTestId(doc, 'sonic-motor')!.click();
+        expect(store.collection('sonic').prefs).toMatchObject({ motorSound: true, motorChoice: true });
+        s.dispose();
+        const again = open({ store });
+        expect(again.setup.prefs.motorSound).toBe(true);
+        expect(byTestId(doc, 'sonic-motor')!.checked).toBe(true);
+        again.s.dispose();
+    });
+
     it('the volume and pitch sliders are stops only while their part is open; the path\'s two choices go to each other with Left and Right', () => {
         const { s, engine, setup } = shown();
         doc.key('ArrowDown');

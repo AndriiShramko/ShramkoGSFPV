@@ -710,7 +710,7 @@ async function main(): Promise<void> {
         await plain.close();
         if (PARTS !== 'A') {
             // the sender: a screen reader speaks (the engine is silent and the captions are the live region), and his own sound language
-            const send = await make({ selfVoice: false, speechRate: 2, theme: 'clear', calm: true, motorSound: true, layerGainDb: { safety: -6 } }, true);
+            const send = await make({ selfVoice: false, speechRate: 2, theme: 'clear', calm: true, motorSound: true, motorChoice: true, layerGainDb: { safety: -6 } }, true);
             const links = await sender(send, out);
             await send.close();
             // the receivers: the default sound, a screen reader speaks

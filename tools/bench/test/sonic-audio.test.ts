@@ -175,10 +175,10 @@ describe('SonicSetup: the pilot\'s sound settings', () => {
         return { host, s, captions, ...f };
     }
 
-    it('the defaults when nothing is saved: the soft theme, the motor on (M41-16, v0.13), captions on, the engine speaks, the captions are not read', () => {
+    it('the defaults when nothing is saved: the soft theme, the motor off (train 2, the owner), captions on, the engine speaks, the captions are not read', () => {
         const { s, captions } = setup();
         expect(s.prefs).toEqual(defaultPrefs());
-        expect(s.prefs.motorSound).toBe(true);
+        expect(s.prefs.motorSound).toBe(false);
         expect(captions.modes).toEqual([{ visible: true, live: false }]);
     });
 
@@ -191,11 +191,11 @@ describe('SonicSetup: the pilot\'s sound settings', () => {
 
     it('update(): checked, applied to the engine and the captions at once, and saved (a new store reads it back)', () => {
         const { host, s, engines, captions } = setup();
-        const r = s.update({ selfVoice: false, speechRate: 1.25, motorSound: true });
+        const r = s.update({ selfVoice: false, speechRate: 1.25, motorSound: true, motorChoice: true });
         expect(r).toEqual({ ok: true });
         expect(engines[0]!.prefs).toMatchObject({ selfVoice: false, speechRate: 1.25, motorSound: true });
         expect(captions.modes.at(-1)).toEqual({ visible: true, live: true });
-        expect(loadSonicPrefs(host)).toMatchObject({ selfVoice: false, speechRate: 1.25, motorSound: true });
+        expect(loadSonicPrefs(host)).toMatchObject({ selfVoice: false, speechRate: 1.25, motorSound: true, motorChoice: true });
         expect(loadSonicPrefs(host)).toEqual(s.prefs);
     });
 
@@ -651,8 +651,8 @@ describe('the motor sound plugs into the engine, not into the speakers', () => {
         expect(ac.ops).toEqual(['suspend', 'resume', 'close']);
     });
 
-    it('on by default, silent when the settings say so: the default sound settings have the motor on (M41-16), and an off mix has a zero master', () => {
-        expect(defaultPrefs().motorSound).toBe(true);
+    it('off by default (train 2, the owner), silent when the settings say so: an off mix has a zero master', () => {
+        expect(defaultPrefs().motorSound).toBe(false);
         const m = motorMix({ state: { motors: [0.5, 0.5, 0.5, 0.5], volt: 11.4, omegaMaxPerVolt: 500, armed: true, crashed: false, speed: 3 }, paused: false, hidden: false, enabled: false, volume: 100 });
         expect(m.master).toBe(0);
     });
