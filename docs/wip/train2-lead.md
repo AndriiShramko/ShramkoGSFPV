@@ -19,7 +19,8 @@ Worktree C:/dev/gsfpv-v03, branch main. Lanes merged here: connect (with rc2-lna
   by another lane); the command is in Probes
 - [x] 5. deploy/live-checks.sh for this release (not run)
 - [x] 6. this note (Probes gets the rest of the results from the next worker)
-- [ ] 7. push main: NOT done. The simulator main is 6 merge and 7 integration commits ahead of origin/main, all local.
+- [ ] 7. push main: NOT done. The simulator main is ahead of origin/main by the lanes' commits, 4 merge commits and the
+  integration commits 62af8373, 6aabd2dc, 8b02da87, e35be658, 9205b3c8, 11d778f3 and the one after it, all local.
   Next worker: run the left probes, write them into Probes, then `git push origin main` and check with git fetch
 
 ## Merged
