@@ -15,5 +15,14 @@
   "course.failed": "Nie udało się zbudować trasy: {msg}",
   "course.lapDone": "Okrążenie {time}",
   "course.best": "Najlepsze okrążenie! {time}",
-  "course.off": "Trasa ukryta. Shift+T pokazuje ją znowu"
+  "course.off": "Trasa ukryta. Shift+T pokazuje ją znowu",
+  "course.menu.save": "Trasa: zapisz dla wszystkich",
+  "course.menu.load": "Trasa: leć trasą zapisaną dla tej sceny",
+  "course.server.offer": "Ta scena ma trasę zapisaną przez pilotów: Shift+T ją uruchamia",
+  "course.server.loading": "Wczytuję trasę zapisaną dla tej sceny...",
+  "course.server.loaded": "Trasa dla wszystkich: bramek {n}. Przeleć przez bramkę 1, aby włączyć stoper",
+  "course.server.refused": "Zapisana trasa nie pasuje do tutejszych ścian, więc nie jest pokazana. Shift+G tworzy nową",
+  "course.server.failed": "Nie udało się wczytać zapisanej trasy: {msg}",
+  "course.save.done": "Zapisano: każdy pilot, który otworzy tę scenę, może lecieć tą trasą",
+  "course.save.failed": "Trasa nie została zapisana: {msg}"
 }

@@ -15,5 +15,14 @@
   "course.failed": "No se pudo crear el circuito: {msg}",
   "course.lapDone": "Vuelta {time}",
   "course.best": "¡Mejor vuelta! {time}",
-  "course.off": "Circuito oculto. Shift+T lo vuelve a mostrar"
+  "course.off": "Circuito oculto. Shift+T lo vuelve a mostrar",
+  "course.menu.save": "Circuito: guardar para todos",
+  "course.menu.load": "Circuito: volar el circuito guardado de esta escena",
+  "course.server.offer": "Esta escena tiene un circuito guardado por pilotos: Shift+T lo vuela",
+  "course.server.loading": "Cargando el circuito guardado de esta escena...",
+  "course.server.loaded": "Circuito para todos: {n} puertas. Cruza la puerta 1 para iniciar el cronómetro",
+  "course.server.refused": "El circuito guardado no encaja con las paredes de aquí, así que no se muestra. Shift+G crea uno nuevo",
+  "course.server.failed": "No se pudo cargar el circuito guardado: {msg}",
+  "course.save.done": "Guardado: cada piloto que abra esta escena puede volar este circuito",
+  "course.save.failed": "El circuito no se guardó: {msg}"
 }

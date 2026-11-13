@@ -15,5 +15,14 @@
   "course.failed": "The course could not be built: {msg}",
   "course.lapDone": "Lap {time}",
   "course.best": "Best lap! {time}",
-  "course.off": "Course hidden. Shift+T shows it again"
+  "course.off": "Course hidden. Shift+T shows it again",
+  "course.menu.save": "Course: save for everyone",
+  "course.menu.load": "Course: fly the course saved for this scene",
+  "course.server.offer": "This scene has a course saved by pilots: Shift+T flies it",
+  "course.server.loading": "Loading the course saved for this scene...",
+  "course.server.loaded": "Course for everyone: {n} gates. Fly through gate 1 to start the clock",
+  "course.server.refused": "The saved course does not fit the walls here, so it is not shown. Shift+G builds a new one",
+  "course.server.failed": "The saved course could not be loaded: {msg}",
+  "course.save.done": "Saved: every pilot who opens this scene can fly this course",
+  "course.save.failed": "The course was not saved: {msg}"
 }

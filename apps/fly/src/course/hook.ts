@@ -25,4 +25,8 @@ export interface CourseHook {
     beaconPoints: number;
     /** why the last generate, load or save did not happen; null when it did */
     problem: string | null;
+    /** T3: the courses the server keeps for this scene (fetched on scene load; -1 until the answer came) */
+    serverTracks: number;
+    /** T3: the server's id of the course this tab saved for everyone; null before a save */
+    saved: string | null;
 }
