@@ -17,6 +17,16 @@ export const NEAR_M = 3;
 /** The near call is armed again only once that drone is this far again, metres (estimate: no repeats while hovering at the edge). */
 export const NEAR_REARM_M = 5;
 
+/**
+ * A remote drone farther than this is not said, metres (estimate: larger than any scan flown; review RV-6: a remote pose is
+ * whatever its sender wrote, so Shift+O must not say 5e38 metres).
+ */
+export const SAY_MAX_M = 1000;
+/** The near call of one drone again only after this long, ms (estimate; review RV-6: a pose swinging 2 m / 6 m is said once). */
+export const NEAR_AGAIN_MS = 10_000;
+/** Room lines said a minute at most, Shift+O's answer not counted (estimate; review RV-6: joins, leaves and near calls). */
+export const LINES_PER_MIN = 12;
+
 export interface Relation { metres: number; side: Side; height: Height }
 
 /** v rotated by the unit quaternion q (x, y, z, w). */
@@ -52,9 +62,10 @@ export function relation(self: Vec3, quat: Quat, other: Vec3): Relation {
 export interface Other { slot: number; nick: string; pos: Vec3 }
 export interface Near extends Relation { slot: number; nick: string }
 
-/** The other pilots nearest first, at most `max`. */
+/** The other pilots nearest first, at most `max`; a position not finite or beyond SAY_MAX_M is left out. */
 export function nearest(self: Vec3, quat: Quat, others: readonly Other[], max = WHO_MAX): Near[] {
     return others.map((o) => ({ slot: o.slot, nick: o.nick, ...relation(self, quat, o.pos) }))
+        .filter((n) => Number.isFinite(n.metres) && n.metres <= SAY_MAX_M)
         .sort((x, y) => x.metres - y.metres || x.slot - y.slot)
         .slice(0, max);
 }
@@ -75,24 +86,46 @@ export function whoLine(near: readonly Near[], t: T): { key: string; text: strin
     return { key: 'rooms.say.who', text: near.map((n) => nearText(n, t)).join(' ') };
 }
 
-/** Says each other drone once when it comes closer than NEAR_M; again only after it went beyond NEAR_REARM_M. */
+/**
+ * Says each other drone once when it comes closer than NEAR_M; again only after it went beyond NEAR_REARM_M and at least
+ * `againMs` after its last call (`now` in ms).
+ */
 export class NearWatch {
     private readonly close = new Set<number>();
+    private readonly saidAt = new Map<number, number>();
 
-    constructor(private readonly nearM = NEAR_M, private readonly rearmM = NEAR_REARM_M) {}
+    constructor(private readonly nearM = NEAR_M, private readonly rearmM = NEAR_REARM_M, private readonly againMs = NEAR_AGAIN_MS) {}
 
     /** the drones that just came near */
-    update(near: readonly Near[]): Near[] {
+    update(near: readonly Near[], now = 0): Near[] {
         const out: Near[] = [];
         const seen = new Set<number>();
         for (const n of near) {
             seen.add(n.slot);
             if (n.metres < this.nearM && !this.close.has(n.slot)) {
                 this.close.add(n.slot);
-                out.push(n);
+                const last = this.saidAt.get(n.slot);
+                if (last === undefined || now - last >= this.againMs) {
+                    this.saidAt.set(n.slot, now);
+                    out.push(n);
+                }
             } else if (n.metres > this.rearmM) this.close.delete(n.slot);
         }
         for (const s of [...this.close]) if (!seen.has(s)) this.close.delete(s);
         return out;
+    }
+}
+
+/** At most `max` lines in any `windowMs` (sliding): `take(now)` says whether one more may be said now. */
+export class LineBudget {
+    private readonly at: number[] = [];
+
+    constructor(private readonly max = LINES_PER_MIN, private readonly windowMs = 60_000) {}
+
+    take(now: number): boolean {
+        while (this.at.length > 0 && now - this.at[0]! >= this.windowMs) this.at.shift();
+        if (this.at.length >= this.max) return false;
+        this.at.push(now);
+        return true;
     }
 }

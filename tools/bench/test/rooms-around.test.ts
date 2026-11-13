@@ -65,7 +65,9 @@ describe('who is around: side and height from two positions', () => {
         expect(w.update(at(-4))).toHaveLength(0);
         expect(w.update(at(-2))).toHaveLength(0);
         expect(w.update(at(-6))).toHaveLength(0);
-        expect(w.update(at(-2))).toHaveLength(1);
+        expect(w.update(at(-2), 1000)).toHaveLength(0); // re-armed, but the same drone is called once per 10 s (review RV-6)
+        expect(w.update(at(-6), 2000)).toHaveLength(0);
+        expect(w.update(at(-2), 10_000)).toHaveLength(1);
     });
 });
 

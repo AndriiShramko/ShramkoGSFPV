@@ -4,6 +4,7 @@
 // reads, never into #ui wholesale. Every line appends its key to RoomsHook.said (the last 50).
 import type { SonicRuntime } from '@shramko/sonic-fpv';
 import { sayVia } from '../sonic-session/platform';
+import { LineBudget } from './around';
 
 export const SAID_MAX = 50;
 
@@ -11,7 +12,10 @@ export class Announcer {
     readonly region: HTMLElement;
     private readonly say: ReturnType<typeof sayVia>;
 
-    constructor(private readonly o: { runtime: () => SonicRuntime | null; said: (keys: string[]) => void; current: () => readonly string[]; doc?: Document }) {
+    /** room lines a minute (review RV-6); Shift+O's answer (interrupt) is asked for, so it is never counted or dropped */
+    private readonly budget = new LineBudget();
+
+    constructor(private readonly o: { runtime: () => SonicRuntime | null; said: (keys: string[]) => void; current: () => readonly string[]; doc?: Document; now?: () => number }) {
         const doc = o.doc ?? document;
         this.region = doc.createElement('div');
         this.region.setAttribute('role', 'status');
@@ -24,6 +28,7 @@ export class Announcer {
 
     /** Says `text` (its key goes into said). `interrupt`: the sound mode drops what it was saying (Shift+O answers at once). */
     announce(key: string, text: string, interrupt = false): void {
+        if (!interrupt && !this.budget.take((this.o.now ?? (() => performance.now()))())) return;
         this.o.said([...this.o.current(), key].slice(-SAID_MAX));
         if (this.o.runtime() !== null) {
             void this.say({ key: 'sonic.say.text', params: { text } }, { interrupt });

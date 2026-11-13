@@ -33,6 +33,7 @@ import { PoseClock, simPose } from '../../rooms/pose';
 import { RemoteStage } from '../../rooms/remote-stage';
 import type { RemoteDraw } from '../../rooms/remote-stage';
 import { RoomSocket } from '../../rooms/socket';
+import { listenRoomsKeys } from '../../rooms/keys';
 import { NameTags } from '../../rooms/tags';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -224,7 +225,7 @@ export const rooms: Feature = {
                 if (sim && inRoom && !ses.paused && now - nearAt >= NEAR_EVERY_MS) {
                     nearAt = now;
                     const me = simPose(sim, 0, false);
-                    for (const n of near.update(nearest(me.pos, me.quat, named, Infinity))) {
+                    for (const n of near.update(nearest(me.pos, me.quat, named, Infinity), now)) {
                         announcer.announce('rooms.say.near', t('rooms.say.near', { text: nearText(n, t) }));
                     }
                 }
@@ -305,22 +306,24 @@ export const rooms: Feature = {
         const offs: (() => void)[] = [];
         if (shown) {
             offs.push(ctx.menu.add({ id: 'pause.rooms', action: 'rooms.panel', labelKey: 'pause.rooms', order: 72, section: 'tools', run: openPanel }));
-            offs.push(ctx.keys.on('rooms.panel', (e) => {
-                if (e.repeat || isFormField(e.target) || document.querySelector('#ui .screen, #ui .panel')) return;
-                e.preventDefault();
-                openPanel();
-            }));
-            offs.push(ctx.keys.on('rooms.who', (e) => {
-                if (e.repeat || isFormField(e.target)) return;
-                e.preventDefault();
+            // the keymap lines stay 'planned' while hidden (review RV-1, rooms/keys.ts): this page takes the chords itself
+            offs.push(listenRoomsKeys(window, (action, e) => {
+                if (isFormField(e.target)) return false;
+                if (action === 'rooms.panel') {
+                    if (document.querySelector('#ui .screen, #ui .panel')) return false;
+                    if (!e.repeat) openPanel();
+                    return true;
+                }
+                if (e.repeat) return true;
                 const sim = ctx.session.shownSim;
                 if (!live || live.sock.state !== 'joined' || !sim) {
                     say('rooms.say.noRoom', undefined, true);
-                    return;
+                    return true;
                 }
                 const me = simPose(sim, 0, false);
                 const line = whoLine(nearest(me.pos, me.quat, others), t);
                 announcer.announce(line.key, line.text, true);
+                return true;
             }));
         }
         if (first !== null) join(first);

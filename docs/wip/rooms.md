@@ -92,7 +92,7 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 **Lane level (not a stage item):** level 2 review (one independent agent) done; its fixes below.
 
 ### R review fixes (level 2 review, findings RV-1..RV-9)
-- [x] server findings (commit: see the line after the next commit; `python -X utf8 -m unittest discover -s apps/rooms/tests`
+- [x] server findings (commit 11f2adc1; `python -X utf8 -m unittest discover -s apps/rooms/tests`
       53 OK, nginx rooms 8 OK; every NEG below by `neg_control.py --ref <lane head before the fixes>`):
   - RV-2 (major) fixed: `PoseGate.take(pose)` counts every message toward the 60/s close; junk binary and unknown text
     are no longer answered; `_send` closes a socket above `DROP_ABOVE` (rooms without poses too). `test_review.Floods`
@@ -101,7 +101,7 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   - RV-3 (major) fixed on our side: nginx rooms HTTP location passes `$request_uri`; `test_nginx_rooms` refuses `$uri`:
     NEG OK (nginx.conf). Service refuses targets outside `/api/rooms(/[A-Za-z0-9_-]{1,16})?` with 404 `route`:
     `test_review.Targets` NEG OK. The nginx half (live %0d%0a) is a level 3 probe for the lead.
-  - RV-4 (major) fixed: pl/ru placeholders without the colon (`Pokój pilota {nick}`, ru likewise); server falls back
+  - RV-4 (major) fixed: pl/ru placeholders without the colon ("Room of pilot {nick}" in both words); server falls back
     to `Room-NNNN`. `test_every_languages...` NEG OK on the two locale files alone; `test_a_room_never...` NEG OK.
   - RV-5 (major) fixed: 10 an hour AND 20 a day per address (estimate), no shared daily count (MAX_ROOMS bounds memory).
     `test_review.Budget` (24 h at full rate, a second address still creates): NEG OK.
@@ -110,7 +110,18 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
     `test_nicknames_in_one_room...` NEG OK; the blocklist half is covered by `test_a_room_never...`.
   - RV-9 (minor) fixed: RecursionError caught in `_create` and `_json`; `_conn` wraps the handler and logs one line.
     `DeepJson` NEG OK.
-- [ ] client findings RV-1 (keys), RV-6 (speech flood)
+- [x] client findings (commit: this one, "rooms review: client findings RV-1 RV-6"; vitest rooms-review, rooms-around,
+      app-keys, prefs keymap: 4 files, 66 tests OK; fly and bench `tsc --noEmit` 0 errors):
+  - RV-1 (major) fixed inside the lane's paths: the two keymap lines are back to `planned`, so an ordinary page routes
+    Shift(descent)+O to settings and Shift+L to share and lists no rooms key; a rooms page (?rooms=1 or ?room=) takes
+    the two chords in the capture phase before the router (`rooms/keys.ts` `listenRoomsKeys`). `rooms-review.test.ts`
+    RV-1: NEG OK (keymap.ts); `keymap.test.ts` with SHIPPED_BY_ROOMS = []: NEG OK. The router fallback the reviewer
+    proposes for keys.ts is the lead's file: under "For the lead".
+  - RV-6 (major) fixed: `NearWatch` calls one drone at most once per 10 s (estimate), `nearest` leaves out positions
+    not finite or beyond 1000 m (estimate), `Announcer` says at most 12 room lines a minute (estimate; Shift+O's
+    answer is never dropped). `rooms-review.test.ts` RV-6 (2 m / 6 m swing 60 s: <= 6 calls, control 120; 3e38 m says
+    nobody; 40 lines a minute say 12): NEG OK (around.ts). Joins and leaves are not merged into one line (the cap
+    bounds them); a server-side minimum stay before a rejoin is announced was not built.
 
 ## Findings
 - Load (`evidence/2026-11-13/rooms-load.json`): 50 synthetic pilots in 7 rooms, 15 poses/s each, 100 s, rooms.py as a
@@ -136,7 +147,11 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - A bad nickname is replaced by `Pilot-NNNN` (not refused); a nickname already in the room gets `-<slot+1>`.
 - Host: the holder of the host key; while nobody holds it, the oldest member. A leaving host hands it to the oldest.
 - Joins are counted at the upgrade (20/min/address), creates at POST (10/h/address, 200/day in all).
-- The blocklist only stops names that pretend to speak for the site (admin, moderator, gsfpv, ...): there is no free text.
+- The blocklist only stops names that pretend to speak for the site (admin, moderator, gsfpv, ...); it applies to
+  nicknames and room names alike (review RV-8: room names and nicknames are the only free text; there is no chat).
+- Review: the per-address create limits (10 an hour, 20 a day) replace the shared 200 a day of rooms-plan.md 2.5, which
+  one address could hold alone (RV-5); MAX_ROOMS (200 open) is the global bound.
+- Review: the rooms keys stay `planned` in the keymap while the feature is hidden (RV-1); the rooms page listens itself.
 - Snapshots carry only members that have sent a pose; a room with no pose sends nothing.
 - R2: remote drones are a simple box primitive (body, two arms, nose) in the slot's colour, 0.25 m span (estimate),
   grey when frozen: the drones3d kit costs a build per pilot and a drone in flight is a few pixels.
@@ -150,6 +165,17 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   busybox wget inside the network, because nginx gets the locations only in the next release step.
 
 ## For the lead before the merge
+- Review RV-1 (keys.ts is the lead's file): in `KeyRouter.route()`, when the chord's action has no handler that takes
+  the press and Shift is a flying key, try the key alone too (as when no binding has the chord). When
+  ROOMS_MENU_PUBLIC flips: flip the two `rooms.*` keymap lines to `shipped`, set SHIPPED_BY_ROOMS in
+  `packages/prefs/test/keymap.test.ts` back to both, replace `listenRoomsKeys` in `builtin/rooms.ts` by
+  `ctx.keys.on('rooms.panel' / 'rooms.who')`, run the catalogue generator.
+- Review RV-3, level 3: after the nginx release, request `/api/rooms%20HTTP/1.1%0d%0aX-Forwarded-For:%201.2.3.4%0d%0a...`
+  against the live site and expect 400 or 404 and no room made. The base's own `proxy_pass $api_upstream$uri`
+  locations (deploy/nginx.conf, three of them on train1-base, outside this lane) have the same pattern: worth the same
+  change to `$request_uri` (or fixed upstream paths) in a lane that owns them.
+- Review RV-6, sound mode: room lines go through `sayVia` without interrupt; whether a running Fly by Sound lesson is
+  disturbed by up to 12 room lines a minute was not run on a ?sonic= page.
 - R3: `apps/rooms/rooms.py --no-relay` is a test switch of the probe (poses taken, never relayed); compose does not pass it.
 - R3 finding for train 2: on a respawn of A, B's drone slides from the crash point to the spawn for about 0.4 s
   (`interp.ts` Hermite across the jump; probe max error 3.77 m there). A pose flag "respawned" that restarts the track
@@ -219,3 +245,8 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - R3 (second worker): about 22 replies. Most turns: the probe itself (3 runs: timing noise from performance.now(),
   Shift+O unrouted on a page with no radio, teleports in the RMS); cheaper: the plan naming rAF timestamps for page
   traces and `?simradio=open` for a page that only listens.
+- Review fixes: about 35 replies for 9 findings. Most turns: the Edit tool refusing files read only through Bash (one
+  extra Read each), neg_control failing on `pnpm` without `bash -c` (FileNotFoundError on Windows), and Edit turning
+  `ó` into a letter again; cheaper: Read every file to be edited with the Read tool in the first batch, and wrap
+  node commands for neg_control as `bash -c "export PATH=...; pnpm ..."` from the start. The findings list arrived cut
+  after RV-9: any finding after it was not seen.

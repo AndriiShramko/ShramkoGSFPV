@@ -89,8 +89,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     // train 1, lane rooms (docs/wip/train1-plan.md, "Contracts between lanes"): reserved on the train base as planned, so the
     // router does not route them yet; the lane flips its own two lines to shipped (or deletes the one it does not build) and
     // touches no other line of this table. Shift+L opens "Fly with others" (the room and its link), Shift+O says who is around
-    { action: 'rooms.panel', keys: [{ code: 'KeyL', shift: true, cap: 'Shift+L', aria: 'Shift+L' }], when: 'always', labelKey: 'keys.rooms.panel', status: 'shipped' },
-    { action: 'rooms.who', keys: [{ code: 'KeyO', shift: true, cap: 'Shift+O', aria: 'Shift+O' }], when: 'always', labelKey: 'keys.rooms.who', status: 'shipped' },
+    { action: 'rooms.panel', keys: [{ code: 'KeyL', shift: true, cap: 'Shift+L', aria: 'Shift+L' }], when: 'always', labelKey: 'keys.rooms.panel', status: 'planned' },
+    { action: 'rooms.who', keys: [{ code: 'KeyO', shift: true, cap: 'Shift+O', aria: 'Shift+O' }], when: 'always', labelKey: 'keys.rooms.who', status: 'planned' },
     // v0.8 lane A (app/builtin/play.ts): the keyboard's key card on demand (it shows by itself while the
     // drone waits on the ground); K as in "keys"
     { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' },
