@@ -8,8 +8,8 @@
 // scan (never stored; the pilot's own drone, radio and rates stay his); every frame whose time crossed the next 1/15 s it
 // sends its pose read from the shown sim (as sonic/bridge.ts reads it); the other pilots' drones are drawn 150 ms behind on
 // the server's clock (rooms/interp.ts) under their own root (rooms/remote-stage.ts), with name tags (rooms/tags.ts). Joins,
-// leaves, Shift+O (who is around) and a near call are said (rooms/announce.ts: the sound mode's speech, else a polite live
-// region). The panel "Fly with others" (pause menu, Shift+L) is rooms/panel.ts. Rooms never write into the sim, the input
+// leaves, 0 (who is around) and a near call are said (rooms/announce.ts: the sound mode's speech, else a polite live
+// region). The panel "Fly with others" (pause menu, key 9) is rooms/panel.ts. Rooms never write into the sim, the input
 // log or the runner (A6, tools/bench/test/rooms-a6.test.ts). Without a room and without the menu nothing here runs.
 import { readShared, sharedQuery } from '@gsfpv/scenes';
 import type { SharedSettings } from '@gsfpv/scenes';
@@ -17,7 +17,6 @@ import type { Feature, FlightContext } from '../context';
 import { applyShared } from '../shared-visit';
 import { q } from '../env';
 import { t } from '../../i18n';
-import { isFormField } from '../../ui/hud';
 import { sharedOf } from '../../share/shared';
 import { ROOM_ID_RE, createRoom, listRooms, socketUrl } from '../../rooms/api';
 import type { RoomInfo } from '../../rooms/api';
@@ -33,16 +32,17 @@ import { PoseClock, simPose } from '../../rooms/pose';
 import { RemoteStage } from '../../rooms/remote-stage';
 import type { RemoteDraw } from '../../rooms/remote-stage';
 import { RoomSocket } from '../../rooms/socket';
-import { listenRoomsKeys } from '../../rooms/keys';
+import { roomKeys, welcomeLine } from '../../rooms/keys';
+import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
 /**
- * THE ONE CONSTANT the lead flips after the live two-browser check (train1-plan.md section 8, step 6): true shows the pause
- * menu's "Fly with others" and Shift+L to everyone. While false they show only on a page with ?rooms=1 or ?room=.
+ * THE ONE CONSTANT (train1-plan.md section 8, step 6), flipped by lane rooms-public: true shows the pause menu's "Fly with
+ * others" (key 9) and "who is around" (key 0) to everyone. While false they showed only on a page with ?rooms=1 or ?room=.
  */
-export const ROOMS_MENU_PUBLIC = false;
+export const ROOMS_MENU_PUBLIC = true;
 
 /** Whether this page offers the panel: always once public, else only with ?rooms=1 or ?room=<id>. */
 export function roomsShown(rooms: string | null, room: string | null, isPublic: boolean = ROOMS_MENU_PUBLIC): boolean {
@@ -109,11 +109,13 @@ export const rooms: Feature = {
         const stage = new RemoteStage(ctx.renderer);
         const tags = new NameTags(ctx.ui, () => ctx.renderer.camera);
         let live: Live | null = null;
-        /** the other pilots drawn in the last frame, with their names (Shift+O, the near call) */
+        /** the other pilots drawn in the last frame, with their names (key 0, the near call) */
         let others: Other[] = [];
         let nearAt = 0;
         const near = new NearWatch();
         const say = (key: string, vars?: Record<string, string | number>, interrupt = false): void => announcer.announce(key, t(key, vars), interrupt);
+        /** the key of a rooms action as the key list shows it (9, 0), for the lines that name it */
+        const keyOf = (action: string): string => ctx.keys.caps(action)[0]?.cap ?? '';
 
         const join = (room: string, hostKey?: string): void => {
             live?.stop();
@@ -164,7 +166,11 @@ export const rooms: Feature = {
                     members();
                     h.link = roomLink(location.origin, w.room);
                     lostSaid = false;
-                    if (!welcomed) say('rooms.say.welcome', { name: w.room.name, n: sock.members.size });
+                    // with a sound lesson running the digits are the lesson's (sonic/digit-key.ts): 0 works after it (RP-1)
+                    if (!welcomed) {
+                        const line = welcomeLine(!!ctx.sonic?.runner, w.room.name, sock.members.size, keyOf('rooms.who'));
+                        say(line.key, line.params);
+                    }
                     welcomed = true;
                     void enter(w.room);
                 },
@@ -306,25 +312,25 @@ export const rooms: Feature = {
         const offs: (() => void)[] = [];
         if (shown) {
             offs.push(ctx.menu.add({ id: 'pause.rooms', action: 'rooms.panel', labelKey: 'pause.rooms', order: 72, section: 'tools', run: openPanel }));
-            // the keymap lines stay 'planned' while hidden (review RV-1, rooms/keys.ts): this page takes the chords itself
-            offs.push(listenRoomsKeys(window, (action, e) => {
-                if (isFormField(e.target)) return false;
-                if (action === 'rooms.panel') {
-                    if (document.querySelector('#ui .screen, #ui .panel')) return false;
-                    if (!e.repeat) openPanel();
-                    return true;
+            // the two keys go through the page's router like every other key (review RV-1, lane rooms-public): 9 and 0, bound
+            // nowhere else in the keymap (packages/prefs keymap.ts; the router skips text fields itself). Fly by Sound's lesson
+            // takes the digits before the router while it runs (sonic/digit-key.ts); what each key does is rooms/keys.ts
+            const inRoom = (): boolean => !!live && live.sock.state === 'joined' && !!ctx.session.shownSim;
+            const rk = roomKeys({
+                dialogUp: () => dialogOpen() || !!document.querySelector('#ui .screen, #ui .panel'),
+                inRoom,
+                openPanel,
+                sayNoRoom: () => say('rooms.say.noRoom', { panel: keyOf('rooms.panel') }, true),
+                sayWho: () => {
+                    const sim = ctx.session.shownSim;
+                    if (!sim) return;
+                    const me = simPose(sim, 0, false);
+                    const line = whoLine(nearest(me.pos, me.quat, others), t);
+                    announcer.announce(line.key, line.text, true);
                 }
-                if (e.repeat) return true;
-                const sim = ctx.session.shownSim;
-                if (!live || live.sock.state !== 'joined' || !sim) {
-                    say('rooms.say.noRoom', undefined, true);
-                    return true;
-                }
-                const me = simPose(sim, 0, false);
-                const line = whoLine(nearest(me.pos, me.quat, others), t);
-                announcer.announce(line.key, line.text, true);
-                return true;
-            }));
+            });
+            offs.push(ctx.keys.on('rooms.panel', rk.panel.run, rk.panel.opts));
+            offs.push(ctx.keys.on('rooms.who', rk.who.run, rk.who.opts));
         }
         if (first !== null) join(first);
 

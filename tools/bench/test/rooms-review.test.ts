@@ -1,51 +1,30 @@
 // Train 1, lane rooms: findings of the level 2 review (docs/wip/rooms.md, "R review fixes").
-// RV-1: an ordinary page keeps Shift+O = settings and Shift+L = share for a pilot who holds Shift to descend, and lists no
-// rooms keys; a rooms page takes the two chords before the router. RV-6: a hostile pose cannot flood a blind pilot's speech.
+// RV-1: every page keeps Shift+O = settings and Shift+L = share for a pilot who holds Shift to descend; since lane
+// rooms-public the rooms keys are 9 and 0, routed by the page's router. RV-6: a hostile pose cannot flood a blind pilot's speech.
 import { describe, expect, it } from 'vitest';
 import { KeyRouter } from '../../../apps/fly/src/app/keys';
 import { LineBudget, NearWatch, nearest, whoLine } from '../../../apps/fly/src/rooms/around';
 import type { Near, Quat } from '../../../apps/fly/src/rooms/around';
-import { listenRoomsKeys, roomsChord } from '../../../apps/fly/src/rooms/keys';
 
 const ev = (code: string, shiftKey: boolean): KeyboardEvent => ({
     code, shiftKey, ctrlKey: false, altKey: false, metaKey: false, repeat: false, target: null,
     preventDefault: () => undefined, stopImmediatePropagation: () => undefined
 }) as unknown as KeyboardEvent;
 
-describe('RV-1: the rooms keys on an ordinary page', () => {
-    it('Shift held to descend plus O opens the settings and plus L shares, with no rooms handler on the page', () => {
+describe('RV-1: the rooms keys on every page (lane rooms-public: the feature is public, its keys 9 and 0)', () => {
+    it('Shift held to descend plus O opens the settings and plus L shares, with the rooms handlers on the page too; 9 and 0 are the rooms keys', () => {
         const r = new KeyRouter({ shiftIsFlying: () => true, isText: () => false });
         const ran: string[] = [];
-        r.on('settings.open', () => { ran.push('settings.open'); });
-        r.on('share.open', () => { ran.push('share.open'); });
-        expect(r.route(ev('KeyO', true))).toBe('settings.open');
-        expect(r.route(ev('KeyL', true))).toBe('share.open');
-        expect(ran).toEqual(['settings.open', 'share.open']);
+        for (const a of ['settings.open', 'share.open', 'rooms.panel', 'rooms.who']) r.on(a, () => { ran.push(a); });
+        expect([r.route(ev('KeyO', true)), r.route(ev('KeyL', true)), r.route(ev('Digit9', false)), r.route(ev('Digit0', false)), r.route(ev('Digit0', true))])
+            .toEqual(['settings.open', 'share.open', 'rooms.panel', 'rooms.who', 'rooms.who']);
+        expect(ran).toEqual(['settings.open', 'share.open', 'rooms.panel', 'rooms.who', 'rooms.who']);
     });
 
-    it('the key list of an ordinary page has no rooms key while the feature is hidden', () => {
-        expect(new KeyRouter().listed().map((b) => b.action).filter((a) => a.startsWith('rooms.'))).toEqual([]);
-    });
-
-    it('a rooms page takes Shift+L and Shift+O before the router (capture phase) and only those', () => {
-        expect([roomsChord(ev('KeyL', true)), roomsChord(ev('KeyO', true)), roomsChord(ev('KeyO', false)), roomsChord({ code: 'KeyO', shiftKey: true, ctrlKey: true })])
-            .toEqual(['rooms.panel', 'rooms.who', null, null]);
-        let listener: ((e: Event) => void) | null = null;
-        let capture: unknown = null;
-        const target = {
-            addEventListener: (_t: string, f: (e: Event) => void, c: unknown) => { listener = f; capture = c; },
-            removeEventListener: () => { listener = null; }
-        } as unknown as EventTarget;
-        const got: string[] = [];
-        const off = listenRoomsKeys(target, (a) => { got.push(a); return true; });
-        expect(capture).toBe(true);
-        let stopped = 0;
-        const e = { ...ev('KeyO', true), stopImmediatePropagation: () => { stopped++; } } as unknown as Event;
-        listener!(e);
-        listener!(ev('KeyO', false) as unknown as Event);
-        expect([got, stopped]).toEqual([['rooms.who'], 1]);
-        off();
-        expect(listener).toBeNull();
+    it('the key list of an ordinary page lists the two rooms keys with their caps 9 and 0', () => {
+        const r = new KeyRouter();
+        expect(r.listed().map((b) => b.action).filter((a) => a.startsWith('rooms.'))).toEqual(['rooms.panel', 'rooms.who']);
+        expect([r.caps('rooms.panel'), r.caps('rooms.who')]).toEqual([[{ cap: '9', aria: '9' }], [{ cap: '0', aria: '0' }]]);
     });
 });
 

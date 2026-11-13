@@ -2,11 +2,12 @@
 // two headless browsers against the local rig of rooms-serve.ts (the release build in dist/ + apps/rooms/rooms.py).
 //   node scripts/build-release.mjs                      (once: dist/ of this tree)
 //   cd tools/bench && npx tsx src/rooms-two-page.ts
-// Page A opens 39e63ce9 with the bot pilot (?simradio=scenario) and ?rooms=1, opens 'Fly with others' with Shift+L and
-// creates a room; page B opens A's link; both record for RECORD_S seconds. Pass: B's RoomsHook.remotes follows A's own
-// positions (RMS after aligning the playout delay < RMS_BOUND_M), B's members hold A's nickname, A's said holds the join
-// line (B joined), B's said holds the welcome line, Shift+O on B appends the who-is-around line, and after A has gone B
-// says the leave line and Shift+O says nobody. Controls that must fire: C in another room sees no remote; the rig with
+// Page A opens 39e63ce9 with the bot pilot (?simradio=scenario), no ?rooms=1 (lane rooms-public: the menu is public), opens
+// 'Fly with others' with key 9 and creates a room; page B opens A's link; both record for RECORD_S seconds. Pass: B's
+// RoomsHook.remotes follows A's own positions (RMS after aligning the playout delay < RMS_BOUND_M), B's members hold A's
+// nickname, A's said holds the join line (B joined), B's said holds the welcome line, key 0 on B appends the who-is-around
+// line, and after A has gone B says the leave line and key 0 says nobody; then D opens /fly/?room=<id> with no ?scene= and
+// flies the room's scan in the room (rooms-public point 3). Controls that must fire: C in another room sees no remote; the rig with
 // the relay off (rooms.py --no-relay) never shows A to B; B's samples with x and z swapped give an RMS over the bound.
 // A's trace hash equal to solo: tools/bench/test/rooms-a6.test.ts (a real-time page flight is not a fixed-step replay).
 // The whole run holds the GPU lock once (gpu-lock.ts), released on an error too. Evidence: evidence/<date>/rooms-two-page.json.
@@ -118,10 +119,10 @@ const startRec = (p: Page, what: 'own' | 'remote'): Promise<unknown> => p.evalua
 const stopRec = (p: Page): Promise<Sample[]> => p.evaluate('(() => { window.__roomsRecStop = true; return window.__roomsRec; })()') as Promise<Sample[]>;
 
 async function openA(page: Page, origin: string): Promise<{ page: Page; created: boolean; link: string | null; nick: string; slot: number | null }> {
-    await page.goto(`${origin}/en/fly/?scene=${SCENE}&simradio=scenario&nowarn=1&rooms=1`);
+    await page.goto(`${origin}/en/fly/?scene=${SCENE}&simradio=scenario&nowarn=1`);
     await waitReady(page, 180000);
     await page.waitForTimeout(1500);
-    await page.keyboard.press('Shift+KeyL');
+    await page.keyboard.press('Digit9');
     const btn = page.locator('[data-action=rooms-create]');
     await btn.waitFor({ timeout: 10000 });
     await btn.click();
@@ -187,18 +188,28 @@ async function main(): Promise<void> {
         out.control3SwappedAxes = { rmsM: +swapped.rmsM.toFixed(4), fired: swapped.rmsM > RMS_BOUND_M };
         await C.page.context().close();
 
-        // ---- Shift+O on B with A there, then A leaves, then Shift+O again
+        // ---- key 0 on B with A there, then A leaves, then key 0 again
         const n0 = bState.said.length;
-        await B.keyboard.press('Shift+KeyO');
+        await B.keyboard.press('Digit0');
         await B.waitForTimeout(500);
         const whoSaid = await hook<string[]>(B, 'return [...r.said];');
         await A.page.close();
         const leftHeard = await until(B, "return r.said.includes('rooms.say.left') && r.remotes.length === 0;", 15000);
-        await B.keyboard.press('Shift+KeyO');
+        await B.keyboard.press('Digit0');
         await B.waitForTimeout(500);
         const afterSaid = await hook<string[]>(B, 'return [...r.said];');
         const region = await B.evaluate(() => { const e = document.querySelector('[data-testid=rooms-live]'); return e ? (e.textContent ?? '').length : -1; });
         out.speech = { who: whoSaid.slice(n0), whoLast: whoSaid[whoSaid.length - 1], leftHeard, nobodyLast: afterSaid[afterSaid.length - 1], liveRegionChars: region };
+
+        // ---- lane rooms-public point 3: D opens the room by /fly/?room=<id> alone (no ?scene=) and lands in the room's scan
+        const roomId = new URL(A.link).searchParams.get('room') ?? '';
+        const D = await (await LA.browser.newContext({ viewport: { width: 1280, height: 800 } })).newPage();
+        await D.goto(`${rig.origin}/en/fly/?room=${roomId}&simradio=open&nowarn=1`);
+        await waitReady(D, 180000);
+        const dJoined = await until(D, "return r.state === 'joined';", 20000);
+        const dUrl = new URL(D.url());
+        out.roomOnlyLink = { asked: `/en/fly/?room=${roomId}`, joined: dJoined, scene: dUrl.searchParams.get('scene'), room: dUrl.searchParams.get('room'), picker: await D.evaluate(() => (window as unknown as { __gsfpv?: { status?: string } }).__gsfpv?.status ?? null) };
+        await D.context().close();
 
         // ---- control 2: the rig with the relay off
         const rig2 = await startRoomsRig(DIST, { relay: false });
@@ -236,6 +247,7 @@ async function main(): Promise<void> {
             whoOnB: out.speech.whoLast === 'rooms.say.who',
             leftOnB: leftHeard,
             nobodyOnB: out.speech.nobodyLast === 'rooms.say.nobody',
+            roomOnlyLinkFliesTheRoomScan: out.roomOnlyLink.joined && out.roomOnlyLink.scene === SCENE && out.roomOnlyLink.room === roomId,
             control1: out.control1OtherRoom.fired,
             control2: fired2,
             control3: out.control3SwappedAxes.fired

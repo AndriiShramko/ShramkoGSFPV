@@ -13,8 +13,9 @@ const LANGS = ['en', 'es', 'pl', 'ru'];
 const RESERVED: Readonly<Record<string, string>> = {
     'course.toggle': 'Shift+T',
     'course.generate': 'Shift+G',
-    'rooms.panel': 'Shift+L',
-    'rooms.who': 'Shift+O'
+    // lane rooms-public moved the rooms keys to 9 and 0 (Shift+L / Shift+O stay share and settings for a pilot descending with Shift)
+    'rooms.panel': '9',
+    'rooms.who': '0'
 };
 const text = (p: string) => readFileSync(join(ROOT, p), 'utf8');
 
@@ -24,7 +25,7 @@ describe('train 1: the keys reserved for the lanes', () => {
             const b = KEYMAP.filter((x) => x.action === action);
             expect(b, action).toHaveLength(1);
             expect(b[0].keys.map((k) => k.cap), action).toEqual([cap]);
-            expect(b[0].keys[0].shift, action).toBe(true);
+            expect(!!b[0].keys[0].shift, action).toBe(cap.startsWith('Shift+'));
             expect(b[0].labelKey, action).toBe(`keys.${action}`);
         }
     });
