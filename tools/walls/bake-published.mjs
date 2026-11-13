@@ -160,7 +160,7 @@ async function main() {
     const manifest = existsSync(mf) && statSync(mf).size ? JSON.parse(readFileSync(mf, 'utf8')) : {};
     for (const id of ids.split(',')) {
         let row;
-        try { row = await bakeOne(id, outDir, o); } catch (e) { row = { id, ok: false, reason: String(e?.message ?? e).slice(0, 300) }; }
+        try { row = await bakeOne(id, outDir, o); } catch (e) { row = { id, ok: false, reason: `${e?.message ?? e}${e?.cause ? ` (${e.cause.code ?? ''} ${e.cause.message ?? e.cause})` : ''}`.slice(0, 300) }; }
         manifest[id] = row;
         writeFileSync(mf, JSON.stringify(manifest, null, 1));
         console.log(JSON.stringify({ id, ok: row.ok, v: row.v, level: row.level, voxelM: row.voxelM, binBytes: row.binBytes, kept: row.keptShareAtBoxLevel, s: row.seconds, reason: row.reason }));
