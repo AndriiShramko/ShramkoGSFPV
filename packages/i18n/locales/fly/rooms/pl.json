@@ -1,6 +1,6 @@
 {
-  "keys.rooms.panel": "Lot z innymi: pokój i link do niego",
-  "keys.rooms.who": "Lot z innymi: kto jest w pobliżu",
+  "keys.rooms.panel": "Lot z innymi: pokój i link do niego (nie podczas lekcji dźwiękowej)",
+  "keys.rooms.who": "Lot z innymi: kto jest w pobliżu (nie podczas lekcji dźwiękowej)",
   "pause.rooms": "Lot z innymi",
   "rooms.title": "Lot z innymi",
   "rooms.nick.label": "Twoja nazwa w pokojach",
@@ -30,6 +30,8 @@
   "rooms.list.empty": "Teraz nie ma otwartych pokoi.",
   "rooms.list.failed": "Lista pokoi się nie wczytała.",
   "rooms.say.welcome": "Jesteś w pokoju {name}. Pilotów: {n}. Naciśnij {who}, aby usłyszeć, kto jest w pobliżu.",
+  "rooms.say.welcomeLesson": "Jesteś w pokoju {name}. Pilotów: {n}. Podczas lekcji cyfry są twoimi odpowiedziami; po lekcji naciśnij {who}, aby usłyszeć, kto jest w pobliżu.",
+  "rooms.link.wait": "Szukam pokoju...",
   "rooms.say.joined": "{nick} dołącza. Pilotów: {n}.",
   "rooms.say.left": "{nick} wychodzi. Pilotów: {n}.",
   "rooms.say.youLeft": "Opuszczasz pokój.",

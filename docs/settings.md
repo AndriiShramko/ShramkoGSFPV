@@ -180,8 +180,8 @@ The simulator shows each key next to its menu item.
 | `O` | Settings |
 | `B` | Report a bug or an idea |
 | `L` | Share this scene |
-| `9` | Fly with others: the room and its link |
-| `0` | Fly with others: who is around |
+| `9` | Fly with others: the room and its link (not during a sound lesson) |
+| `0` | Fly with others: who is around (not during a sound lesson) |
 | `K` | How to fly (the keys card) |
 | `F` | Full screen on / off |
 | `J` | Throttle stick: in the centre (camera drone) or from zero (FPV) |

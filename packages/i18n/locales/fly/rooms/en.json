@@ -1,6 +1,6 @@
 {
-  "keys.rooms.panel": "Fly with others: the room and its link",
-  "keys.rooms.who": "Fly with others: who is around",
+  "keys.rooms.panel": "Fly with others: the room and its link (not during a sound lesson)",
+  "keys.rooms.who": "Fly with others: who is around (not during a sound lesson)",
   "pause.rooms": "Fly with others",
   "rooms.title": "Fly with others",
   "rooms.nick.label": "Your name in rooms",
@@ -30,6 +30,8 @@
   "rooms.list.empty": "No open rooms right now.",
   "rooms.list.failed": "The list of rooms did not load.",
   "rooms.say.welcome": "You are in the room {name}. {n} pilots. Press {who} to hear who is around.",
+  "rooms.say.welcomeLesson": "You are in the room {name}. {n} pilots. During the lesson the digits are your answers; after it, press {who} to hear who is around.",
+  "rooms.link.wait": "Looking for the room...",
   "rooms.say.joined": "{nick} joined. {n} pilots.",
   "rooms.say.left": "{nick} left. {n} pilots.",
   "rooms.say.youLeft": "You left the room.",

@@ -1,6 +1,6 @@
 {
-  "keys.rooms.panel": "Volar con otros: la sala y su enlace",
-  "keys.rooms.who": "Volar con otros: quién está cerca",
+  "keys.rooms.panel": "Volar con otros: la sala y su enlace (no durante una lección de sonido)",
+  "keys.rooms.who": "Volar con otros: quién está cerca (no durante una lección de sonido)",
   "pause.rooms": "Volar con otros",
   "rooms.title": "Volar con otros",
   "rooms.nick.label": "Tu nombre en las salas",
@@ -30,6 +30,8 @@
   "rooms.list.empty": "Ahora no hay salas abiertas.",
   "rooms.list.failed": "La lista de salas no se ha cargado.",
   "rooms.say.welcome": "Estás en la sala {name}. {n} pilotos. Pulsa {who} para saber quién está cerca.",
+  "rooms.say.welcomeLesson": "Estás en la sala {name}. {n} pilotos. Durante la lección, los números son tus respuestas; al terminarla, pulsa {who} para saber quién está cerca.",
+  "rooms.link.wait": "Buscando la sala...",
   "rooms.say.joined": "{nick} ha entrado. {n} pilotos.",
   "rooms.say.left": "{nick} ha salido. {n} pilotos.",
   "rooms.say.youLeft": "Has salido de la sala.",

@@ -18,7 +18,7 @@ import { openSettingsLink, storageBanner } from './builtin/settings';
 import { useStoreLibrary } from './scene-host';
 import { pageRender, setDrawingDefaults } from './drawing';
 import { startAnalytics } from './analytics';
-import { roomSceneLink } from '../rooms/link';
+import { openFirst } from '../rooms/link';
 
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
@@ -119,11 +119,22 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
         showPicker(null);
         openSettingsLink(ui, prefs);
     };
+    // lane rooms-public: a room link without ?scene= asks the room for its scan first, with a short line while it waits (said by a
+    // screen reader: a status region put on the page empty, then filled); no room, the picker (rooms/link.ts openFirst)
+    let wait: HTMLElement | null = null;
+    const waiting = (on: boolean): void => {
+        wait?.remove();
+        wait = null;
+        if (!on) return;
+        const el = document.createElement('p');
+        el.className = 'rooms-wait muted';
+        el.setAttribute('role', 'status');
+        ui.append(el);
+        wait = el;
+        setTimeout(() => { if (wait === el) el.textContent = t('rooms.link.wait'); }, 0);
+    };
     const start = (): void => {
-        if (sceneParam) go(sceneParam, 'paste', true);
-        // lane rooms-public: a room link without ?scene= asks the room for its scan first (rooms/link.ts); no room, the picker
-        else if (q.get('room')) void roomSceneLink(q.get('room')).then((raw) => (raw ? go(raw, 'paste', true) : picked()), picked);
-        else picked();
+        void openFirst(sceneParam, q.get('room'), { go: (raw) => go(raw, 'paste', true), picker: picked, waiting });
     };
     // GA4 (app/analytics.ts) before the first scene opens, so its scene_open is counted too. gtag.js loads
     // asynchronously: start() below rewrites ?scene= in this same task, before the tag can read the address,

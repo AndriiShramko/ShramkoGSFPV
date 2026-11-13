@@ -32,6 +32,8 @@ import { PoseClock, simPose } from '../../rooms/pose';
 import { RemoteStage } from '../../rooms/remote-stage';
 import type { RemoteDraw } from '../../rooms/remote-stage';
 import { RoomSocket } from '../../rooms/socket';
+import { roomKeys, welcomeLine } from '../../rooms/keys';
+import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -164,7 +166,11 @@ export const rooms: Feature = {
                     members();
                     h.link = roomLink(location.origin, w.room);
                     lostSaid = false;
-                    if (!welcomed) say('rooms.say.welcome', { name: w.room.name, n: sock.members.size, who: keyOf('rooms.who') });
+                    // with a sound lesson running the digits are the lesson's (sonic/digit-key.ts): 0 works after it (RP-1)
+                    if (!welcomed) {
+                        const line = welcomeLine(!!ctx.sonic?.runner, w.room.name, sock.members.size, keyOf('rooms.who'));
+                        say(line.key, line.params);
+                    }
                     welcomed = true;
                     void enter(w.room);
                 },
@@ -307,21 +313,24 @@ export const rooms: Feature = {
         if (shown) {
             offs.push(ctx.menu.add({ id: 'pause.rooms', action: 'rooms.panel', labelKey: 'pause.rooms', order: 72, section: 'tools', run: openPanel }));
             // the two keys go through the page's router like every other key (review RV-1, lane rooms-public): 9 and 0, bound
-            // nowhere else, so no pilot loses a key (packages/prefs keymap.ts; the router skips text fields itself)
-            offs.push(ctx.keys.on('rooms.panel', (e) => {
-                if (!e.repeat) openPanel();
-            }, { when: () => !document.querySelector('#ui .screen, #ui .panel') }));
-            offs.push(ctx.keys.on('rooms.who', (e) => {
-                if (e.repeat) return;
-                const sim = ctx.session.shownSim;
-                if (!live || live.sock.state !== 'joined' || !sim) {
-                    say('rooms.say.noRoom', { panel: keyOf('rooms.panel') }, true);
-                    return;
+            // nowhere else in the keymap (packages/prefs keymap.ts; the router skips text fields itself). Fly by Sound's lesson
+            // takes the digits before the router while it runs (sonic/digit-key.ts); what each key does is rooms/keys.ts
+            const inRoom = (): boolean => !!live && live.sock.state === 'joined' && !!ctx.session.shownSim;
+            const rk = roomKeys({
+                dialogUp: () => dialogOpen() || !!document.querySelector('#ui .screen, #ui .panel'),
+                inRoom,
+                openPanel,
+                sayNoRoom: () => say('rooms.say.noRoom', { panel: keyOf('rooms.panel') }, true),
+                sayWho: () => {
+                    const sim = ctx.session.shownSim;
+                    if (!sim) return;
+                    const me = simPose(sim, 0, false);
+                    const line = whoLine(nearest(me.pos, me.quat, others), t);
+                    announcer.announce(line.key, line.text, true);
                 }
-                const me = simPose(sim, 0, false);
-                const line = whoLine(nearest(me.pos, me.quat, others), t);
-                announcer.announce(line.key, line.text, true);
-            }));
+            });
+            offs.push(ctx.keys.on('rooms.panel', rk.panel.run, rk.panel.opts));
+            offs.push(ctx.keys.on('rooms.who', rk.who.run, rk.who.opts));
         }
         if (first !== null) join(first);
 

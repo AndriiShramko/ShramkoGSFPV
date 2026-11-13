@@ -89,9 +89,11 @@ export const KEYMAP: readonly KeyBinding[] = [
     // train 1, lane rooms; public since lane rooms-public (docs/wip/rooms-public.md): 9 opens "Fly with others" (the room and
     // its link), 0 says who is around, on every flight page. Not Shift+L / Shift+O (train 1's reservation): a pilot who holds
     // Shift to descend gets the key alone when no binding has the chord (app/keys.ts), so those chords are his share (L) and
-    // settings (O), and every one of the 26 letters is taken (flying, the table, the sound mode). 9 and 0 are bound nowhere
-    // (no binding, no flying key, no screen of the page reads Digit keys), sit far from W A S D and the arrows (no press by
-    // accident while flying), are the same place on every layout, and a screen reader says a digit (sonic/key-names.ts)
+    // settings (O), and every one of the 26 letters is taken (flying, the table, the sound mode). 9 and 0 are in no binding and
+    // no flying key, sit far from W A S D and the arrows (no press by accident while flying), are the same place on every layout,
+    // and a screen reader says a digit (sonic/key-names.ts). Two raw listeners read digits before the router: a running sound
+    // lesson takes every digit as its answer (sonic/digit-key.ts; the welcome line then says 0 works after it, rooms/keys.ts) and
+    // the recorder's survey takes every key while it runs (sonic-session/survey-keys.ts)
     { action: 'rooms.panel', keys: [{ code: 'Digit9', cap: '9', aria: '9' }], when: 'always', labelKey: 'keys.rooms.panel', status: 'shipped' },
     { action: 'rooms.who', keys: [{ code: 'Digit0', cap: '0', aria: '0' }], when: 'always', labelKey: 'keys.rooms.who', status: 'shipped' },
     // v0.8 lane A (app/builtin/play.ts): the keyboard's key card on demand (it shows by itself while the

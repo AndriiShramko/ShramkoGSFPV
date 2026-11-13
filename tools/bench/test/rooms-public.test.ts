@@ -71,7 +71,8 @@ describe('1. the rooms menu and keys are public', () => {
             expect(d['rooms.say.noRoom'], lang).toContain('{panel}');
         }
         const src = text('apps/fly/src/app/builtin/rooms.ts');
-        expect(src).toContain("who: keyOf('rooms.who')");
+        // the welcome's key goes through rooms/keys.ts welcomeLine (tested in rooms-public-review.test.ts, RP-1)
+        expect(src).toContain("sock.members.size, keyOf('rooms.who'))");
         expect(src).toContain("{ panel: keyOf('rooms.panel') }");
     });
 
@@ -158,13 +159,11 @@ describe('3. a room link without a scene opens the room\'s scan', () => {
         expect(await roomSceneLink(ROOM, '', fakeFetch({ ok: true, status: 200, body: room(null) }, asked))).toBeNull();
     });
 
-    it('boot.ts opens ?scene= as before and asks the room only when there is no ?scene=, before the picker', () => {
+    // a text guard only: the choice itself (scene link / room link / picker) is rooms/link.ts openFirst, tested with fake answers in
+    // rooms-public-review.test.ts (RP-5)
+    it('boot.ts starts through openFirst with ?scene= and ?room=, the picker as its fallback', () => {
         const src = text('apps/fly/src/app/boot.ts');
         const start = src.slice(src.indexOf('const start = ('), src.indexOf('startAnalytics('));
-        const scene = start.indexOf("if (sceneParam) go(sceneParam, 'paste', true);");
-        const roomAt = start.indexOf("roomSceneLink(q.get('room'))");
-        expect(scene).toBeGreaterThan(-1);
-        expect(roomAt).toBeGreaterThan(scene);
-        expect(start.indexOf('picked()', roomAt)).toBeGreaterThan(roomAt);
+        expect(start).toContain("openFirst(sceneParam, q.get('room'), { go: (raw) => go(raw, 'paste', true), picker: picked, waiting })");
     });
 });
