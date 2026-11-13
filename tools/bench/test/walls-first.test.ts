@@ -111,11 +111,11 @@ describe('walls and course lines in en, es, pl, ru: no "cannot", no number of th
     const CANNOT: Record<(typeof LANGS)[number], RegExp> = {
         en: /cannot|could not|can't|can not/i,
         es: /no se puede|no se pud/i,
-        pl: /nie da się|nie udało|nie można/i,
-        ru: /нельзя|не удалось|не получилось|невозможно/i
+        pl: /nie da si\u0119|nie uda\u0142o|nie mo\u017cna/i,
+        ru: /\u043d\u0435\u043b\u044c\u0437\u044f|\u043d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c|\u043d\u0435 \u043f\u043e\u043b\u0443\u0447\u0438\u043b\u043e\u0441\u044c|\u043d\u0435\u0432\u043e\u0437\u043c\u043e\u0436\u043d\u043e/i
     };
     // a library message, a voxel count, a Gaussian count or limit
-    const NUMBER = /\{msg\}|\{voxels\}|\{limit|\{gaussians|gaussian|million|millones|mln|млн/i;
+    const NUMBER = /\{msg\}|\{voxels\}|\{limit|\{gaussians|gaussian|million|millones|mln|\u043c\u043b\u043d/i;
     const ours = (k: string): boolean => k.startsWith('bake.') || k.startsWith('walls.') || k === 'scenes.noCollisionBadge' || k === 'voxels.noWalls';
     const courseEntry = (k: string): boolean => k.startsWith('course.') && !k.startsWith('course.edit.');
     for (const l of LANGS) {
