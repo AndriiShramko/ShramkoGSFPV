@@ -87,6 +87,11 @@
 .ce-marks { display: flex; flex-wrap: wrap; gap: 0 8px; color: #b8c2cf; font-size: 0.8rem; }
 .ce-votes { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 3px; }
 .ce-mine { color: #a6ff1a; font-size: 0.8rem; }
+/* a phone or a low window: the sound button sits alone under the top row at the right edge (fly.css .btn.speaker, 40 px at
+   right 16 px): the window keeps left of it */
+@media (max-width: 640px), (max-height: 500px) {
+    .course-editor { right: calc(max(8px, env(safe-area-inset-right)) + 56px); }
+}
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
