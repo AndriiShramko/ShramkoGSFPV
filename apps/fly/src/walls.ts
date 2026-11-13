@@ -9,7 +9,7 @@
 import type { FlightSession } from './session';
 import { t } from './i18n';
 import { h } from './ui/dom';
-import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeCollision, gpuLimitsOf, maxGaussians, memCapGb, planRefine, sceneSize } from './bake';
+import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, maxGaussians, memCapGb, planRefine, sceneSize } from './bake';
 import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
@@ -258,7 +258,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
         w.state = 'baking';
         s.pause(true, 'bake');
         try {
-            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { voxelM: BASE_VOXEL_M, size: w.size ?? undefined, limits: fake, coarsenOnOctree: true });
+            // never a refusal: the ladder takes a lighter way by itself until one fits this device
+            const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { size: w.size ?? undefined, limits: fake });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
@@ -266,13 +267,13 @@ export function mountWalls(o: WallsOptions): WallsHook {
             o.switchOn();
             s.installCollision(r.json, r.bin, sha);
             onSwap('bake')(sha);
-            o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
+            o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, level: r.level, tried: r.tried, rough: isRough(r), gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
             action.remove();
-            // a very large scan may have needed a coarser grid than 5 cm: say which
-            say(r.voxelM > BASE_VOXEL_M + 1e-6
-                ? t('bake.doneCoarse', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0), cm: cm(r.voxelM) })
+            // a large scan may have needed a lighter way: one plain line, no numbers of the technique
+            say(isRough(r)
+                ? t('bake.doneRough', { s: (r.ms.total / 1000).toFixed(0) })
                 : t('bake.done', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0) }));
             o.beacon('bake_done');
             void remember(w.keyInput, r, sha);
@@ -284,8 +285,9 @@ export function mountWalls(o: WallsOptions): WallsHook {
                 if (e.reason !== 'empty') action.remove();
                 else action.disabled = false;
             } else {
-                o.hook.bake = { ok: false, error: String((e as Error)?.message ?? e) };
-                say(t('bake.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160) }));
+                o.hook.bake = { ok: false, error: String((e as Error)?.message ?? e), noRoom: outOfRoom(e) };
+                // every lighter way ran out of room too: a plain line and the same button again
+                say(outOfRoom(e) ? t('bake.noRoom') : t('bake.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160) }));
                 action.disabled = false;
             }
             w.lastBake = o.hook.bake;
