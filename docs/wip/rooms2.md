@@ -18,20 +18,15 @@ Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle
   `press('join')`, the two-socket test by `sa.propose is not a function`.
   Typecheck apps/fly: no error in a rooms file; 17 errors elsewhere, all from this worktree's state (packages/sonic-fpv
   checked out at b102ce6 while origin/main pins 378cc50; `@gsfpv/tracks` not linked in node_modules).
-- [ ] 3. Two-browser probe on the local rig. Left to do:
-  - tools/bench/src/rooms-two-page.ts presses Digit9 on page A and expects the panel with `[data-action=rooms-create]`
-    (line 130). Key 9 now joins the open room, so A must open the panel through the pause menu ("Fly with others",
-    menu id `pause.rooms`) to create its room; the check `nineNotTypedInName` (line 276) must move to the panel opened
-    from the menu or be replaced by "9 joined the open room".
-  - New probe (proposal: tools/bench/src/rooms-open-vote.ts, same rig `startRoomsRig(dist)` of rooms-serve.ts, ports
-    5820-5839, gpu lock): page A and page B on two different scans of the release's showcase.json; each presses 9 once;
-    pass: both hooks `state=joined`, the same `room`, `kind=persistent`, each sees one remote; A presses 9 (panel opens
-    with `[data-action=rooms-propose]` focused) and Enter; B's hook `vote.mine=false`, B presses 9 once; pass: both
-    hooks `roomScene` = the proposed scan within 60 s, `ctx.scene` loaded, each sees the other's remote again, and
-    `said` holds `rooms.vote.passed` on both. Control: the rig started with `--no-relay` (rooms.py) gives no remote.
-  - tools/bench/src/train1-live.ts line 110-116: opens the panel with 9 and falls back to Shift+L. After this release 9
-    joins the open room: the live check must open the panel through the pause menu when 9 gave `kind=persistent`
-    (the live site still runs the old behaviour until the lead releases).
+- [x] 3a. Probes written (commit 8160ad2d and the commit "rooms2: train1-live"): new tools/bench/src/rooms-open-vote.ts
+  (A on 39e63ce9, B on 7a475d38, one 9 each, A proposes with 9 + Enter, one yes of two holds 3 s, B agrees with 9,
+  both in the proposed scan and see each other; control: rig with --no-relay); rooms-two-page.ts opens the panel from
+  the pause menu (`panelByMenu`, Esc then `pause.rooms`), check `nineNotTypedInName` replaced by
+  `panelShowsStoredName`; train1-live.ts: when 9 gave `kind=persistent`, leave the open room and create from the menu.
+  Typecheck tools/bench: 0 errors. Run with SONIC_PORTS=5820-5839 (the rig's ports come from that variable).
+  dist/ rebuilt at 5595851f; the worktree's packages/sonic-fpv was moved to the pinned 378cc50 (the build failed at
+  b102ce6: `lessonSegments` missing).
+- [~] 3b. Run rooms-open-vote.ts and rooms-two-page.ts on the local rig; results here.
 
 ## Decisions
 
