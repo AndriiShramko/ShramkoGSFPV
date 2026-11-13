@@ -118,32 +118,82 @@ export class CourseStore {
 
 const VOTER_KEY = 'gsfpv.course.voter';
 const VOTES_KEY = 'gsfpv.course.votes';
+const TOKENS_KEY = 'gsfpv.course.tokens';
+/** the newest edit tokens kept (review TK-7; a token is no personal data, it only lets this browser add a version) */
+export const TOKENS_KEPT = 50;
+
+type Store = Pick<Storage, 'getItem' | 'setItem'> | null | undefined;
+
+/** globalThis.localStorage, or null when the browser blocks site storage: the getter itself throws then (review TK-2, the
+ *  same guard as packages/prefs/src/browser.ts). */
+export function siteStorage(): Storage | null {
+    try {
+        return globalThis.localStorage ?? null;
+    } catch {
+        return null;
+    }
+}
+
+function read(store: Store, key: string): string | null {
+    try {
+        return store?.getItem(key) ?? null;
+    } catch {
+        return null;
+    }
+}
+
+function write(store: Store, key: string, value: string): void {
+    try {
+        store?.setItem(key, value);
+    } catch {
+        /* private mode or storage blocked: kept for this page visit only */
+    }
+}
 
 /** This browser's random voter id (tracks-plan 2.7: 128 bits kept by the browser); made once. */
-export function voterId(store: Pick<Storage, 'getItem' | 'setItem'> | undefined = globalThis.localStorage): string {
-    const had = store?.getItem(VOTER_KEY) ?? null;
+export function voterId(store: Store = siteStorage()): string {
+    const had = read(store, VOTER_KEY);
     if (had && /^[0-9a-f]{32}$/.test(had)) return had;
     const a = new Uint8Array(16);
     crypto.getRandomValues(a);
     const id = [...a].map((b) => b.toString(16).padStart(2, '0')).join('');
-    try { store?.setItem(VOTER_KEY, id); } catch { /* private mode: a new id next time */ }
+    write(store, VOTER_KEY, id);
     return id;
 }
 
 /** The votes this browser gave (course id -> 1 or -1), so the list shows the pilot's own vote after a reload. */
-export function myVotes(store: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage): Record<string, number> {
+export function myVotes(store: Store = siteStorage()): Record<string, number> {
     try {
-        const j = JSON.parse(store?.getItem(VOTES_KEY) ?? '{}') as unknown;
+        const j = JSON.parse(read(store, VOTES_KEY) ?? '{}') as unknown;
         return j && typeof j === 'object' ? (j as Record<string, number>) : {};
     } catch {
         return {};
     }
 }
 
-export function rememberVote(id: string, v: number, store: Pick<Storage, 'getItem' | 'setItem'> | undefined = globalThis.localStorage): void {
+export function rememberVote(id: string, v: number, store: Store = siteStorage()): void {
     const all = myVotes(store);
     if (v === 0) delete all[id];
     else all[id] = v;
     const keep = Object.fromEntries(Object.entries(all).slice(-500));
-    try { store?.setItem(VOTES_KEY, JSON.stringify(keep)); } catch { /* private mode */ }
+    write(store, VOTES_KEY, JSON.stringify(keep));
+}
+
+/** The edit tokens of the pilot's own courses (course id -> token), kept across reloads (review TK-7). */
+export function myTokens(store: Store = siteStorage()): Record<string, string> {
+    try {
+        const j = JSON.parse(read(store, TOKENS_KEY) ?? '{}') as unknown;
+        if (!j || typeof j !== 'object' || Array.isArray(j)) return {};
+        return Object.fromEntries(Object.entries(j as Record<string, unknown>).filter((e): e is [string, string] =>
+            SERVER_TRACK_ID.test(e[0]) && typeof e[1] === 'string' && /^[A-Za-z0-9_-]{16,128}$/.test(e[1])));
+    } catch {
+        return {};
+    }
+}
+
+export function rememberToken(id: string, token: string, store: Store = siteStorage()): void {
+    const all = myTokens(store);
+    delete all[id];
+    all[id] = token;
+    write(store, TOKENS_KEY, JSON.stringify(Object.fromEntries(Object.entries(all).slice(-TOKENS_KEPT))));
 }

@@ -22,15 +22,15 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, serverOfLink, withCourse, writeBest } from '../../course/link';
+import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
 import { canSave, edit, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
-import { myVotes, rememberVote, voterId } from '../../course/store';
+import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
-import { editorKey, forwardOf } from '../../course/editor/keys';
+import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 
@@ -61,7 +61,7 @@ export const course: Feature = {
         let saving = false;
         let linkSeed = seedOfLink(liveSearch());
         /** a served course the link names (the admin's "Open in the editor", T4-admin) and whether its editor opens */
-        let linkServer = serverOfLink(liveSearch());
+        let linkServer = servedOfLink(liveSearch());
         const linkEdit = editOfLink(liveSearch());
         let pending: number | null = null;
         let checking: TrackFile | null = null;
@@ -77,11 +77,11 @@ export const course: Feature = {
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
-        let leaveAsked = false;
+        /** the step that dropping unsaved changes was asked for ('exit', 'regen', 'row:<id>'); doing it again goes on */
+        let askedFor: string | null = null;
         let reopenAfter = false;
         let unblock: (() => void) | null = null;
-        /** edit tokens of the pilot's own courses saved in this tab (only in memory: after a reload a save forks instead) */
-        const tokens = new Map<string, string>();
+        // the edit tokens of the pilot's own courses live in localStorage (store.ts myTokens, review TK-7)
         const edHook = hook.editor!;
 
         const drone = (): string => ctx.session.presetId;
@@ -159,6 +159,7 @@ export const course: Feature = {
 
         const fail = (problem: string, text: string): void => {
             hook.problem = problem;
+            reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
             ctx.hud.flash(text, 4000);
         };
 
@@ -287,8 +288,9 @@ export const course: Feature = {
 
         /** The newest course the server keeps for this scene (or the next when it is refused): fetched, held to the contract, proven on our walls, then shown. */
         /** `only`: the course a link named; when it fails, the next saved course is NOT tried instead */
-        const loadServer = async (index = 0, only = false): Promise<void> => {
-            const row = rows[index];
+        /** `direct`: a course and version a link names, loaded without the list (review TK-5) */
+        const loadServer = async (index = 0, only = false, direct?: { id: string; version: number }): Promise<void> => {
+            const row = direct ?? rows[index];
             if (!row || (busy && index === 0)) return;
             const w = walls();
             if (!w) return fail('no walls', t('course.noWalls'));
@@ -336,8 +338,14 @@ export const course: Feature = {
             if (linkServer !== null && ctx.session.collision) {
                 const want = linkServer;
                 linkServer = null;
-                const i = rows.findIndex((r) => r.id === want);
-                if (i < 0) return fail(`link: ${want} not listed`, t('course.link.missing'));
+                // review TK-5: the list holds only the first page of sort=top (no course with broken reports): a link with
+                // its version loads the course directly
+                if (want.version !== null) {
+                    reopenAfter = linkEdit;
+                    return void loadServer(-1, true, { id: want.id, version: want.version });
+                }
+                const i = rows.findIndex((r) => r.id === want.id);
+                if (i < 0) return fail(`link: ${want.id} not listed`, t('course.link.missing'));
                 reopenAfter = linkEdit;
                 void loadServer(i, true);
             }
@@ -419,7 +427,11 @@ export const course: Feature = {
         };
         const showEd = (): void => {
             if (!ed || !panel) return;
-            const track = toTrackV1(ed.course);
+            // review TK-6: the edited gates on the source's identity (after a save: the saved id, version, author, title)
+            const v1 = toTrackV1(ed.course);
+            const track: TrackFile = edSource
+                ? { ...v1, id: edSource.id, version: edSource.version, parent: edSource.parent, author: edSource.author, title: edSource.title, generator: edSource.generator }
+                : v1;
             run = new CourseRun(track, ctx.session.transform, null);
             provenOn = ctx.session.collision;
             hook.on = true;
@@ -448,7 +460,7 @@ export const course: Feature = {
             edSource = run.track;
             ed = openEditor(upgradeTrack(run.track), checkFn, 0);
             edChanged = false;
-            leaveAsked = false;
+            askedFor = null;
             edHook.refused = null;
             ctx.pause('panel');
             unblock = ctx.keys.block(() => ed !== null);
@@ -463,12 +475,18 @@ export const course: Feature = {
         function closeEdit(quiet = false): void {
             if (!ed) return;
             ed = null;
+            reopenAfter = false; // review TK-4: a generation or load asked from the editor does not reopen it after Esc
             panel?.destroy();
             panel = null;
             unblock?.();
             unblock = null;
             edHook.open = false;
             ctx.resume('panel');
+            // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)
+            if (!quiet && edSource) {
+                run = new CourseRun(edSource, ctx.session.transform, readBest(keyOf(edSource)));
+                provenOn = ctx.session.collision;
+            }
             if (!quiet && run) {
                 run.reset();
                 draw();
@@ -483,7 +501,7 @@ export const course: Feature = {
             const k = editorKey(press, viewForward());
             if (!k) return;
             if ('cmd' in k) return command(k.cmd);
-            leaveAsked = false;
+            askedFor = null;
             const out = edit(ed, k.edit, checkFn);
             ed = out.state;
             if (out.ok) {
@@ -497,16 +515,23 @@ export const course: Feature = {
                 say(refusalText(ed.course, out.reason), true);
             }
         };
+        /** unsaved changes: the first time a step that drops them is asked, it says so (true) and does nothing; again goes on */
+        const ask = (what: string, text: string): boolean => {
+            if (!edChanged || askedFor === what) return false;
+            askedFor = what;
+            say(text, true);
+            return true;
+        };
         const command = (c: EditorCommand): void => {
             if (!ed || !panel) return;
             if (c === 'exit') {
-                if (edChanged && !leaveAsked) {
-                    leaveAsked = true;
-                    return say(t('course.edit.unsaved'), true);
-                }
+                if (ask('exit', t('course.edit.unsaved'))) return;
                 return closeEdit();
             }
+            if (c === 'focus-window') return panel.focusName();
             if (c === 'regen' || c === 'regen-same') {
+                // review TK-4: G drops the changes only when asked twice, like Esc
+                if (busy || ask('regen', t('course.edit.unsavedAgain'))) return;
                 reopenAfter = true;
                 return generate(c === 'regen-same' && hook.seed !== null ? hook.seed : randomSeed());
             }
@@ -527,12 +552,15 @@ export const course: Feature = {
             const title = titleIn.trim().normalize('NFC');
             const edited = toTrackV1(ed.course);
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
+            // review TK-10: an unchanged course already on the server is not posted again (a new title is a change)
+            if (!edChanged && serverId !== null && title === edSource.title) return say(t('course.edit.nothing'), true);
             const baseVersion = hook.track?.version ?? edSource.version;
-            const token = serverId ? tokens.get(serverId) ?? null : null;
+            const token = serverId ? myTokens()[serverId] ?? null : null;
             const author = { kind: 'person' as const, name };
+            // review TK-11 b: a person's file carries no generator block (it described the gates before the edit)
             const body: TrackFile = token && serverId
-                ? { ...edited, id: serverId, version: baseVersion + 1, parent: { id: serverId, version: baseVersion }, author, title }
-                : { ...edited, id: serverId ? freshId(serverId) : edited.id, version: 1, parent: serverId ? { id: serverId, version: baseVersion } : null, author, title };
+                ? { ...edited, id: serverId, version: baseVersion + 1, parent: { id: serverId, version: baseVersion }, author, title, generator: null }
+                : { ...edited, id: serverId ? freshId(serverId) : edited.id, version: 1, parent: serverId ? { id: serverId, version: baseVersion } : null, author, title, generator: null };
             saving = true;
             const r = await store.saveMine(body, token);
             saving = false;
@@ -540,7 +568,7 @@ export const course: Feature = {
                 hook.problem = `save: ${r.problem}`;
                 return say(t('course.save.failed', { msg: r.problem.slice(0, 120) }), true);
             }
-            if (r.token) tokens.set(r.id, r.token);
+            if (r.token) rememberToken(r.id, r.token);
             hook.saved = r.id;
             hook.source = 'server';
             hook.track = { id: r.id, version: r.version };
@@ -583,24 +611,23 @@ export const course: Feature = {
         const openRow = (id: string): void => {
             const i = rows.findIndex((x) => x.id === id);
             if (i < 0 || busy) return;
+            // review TK-4: a row's Edit drops unsaved changes only when clicked twice; the clicked course or none (only)
+            if (ask(`row:${id}`, t('course.edit.unsavedAgain'))) return;
             reopenAfter = true;
-            void loadServer(i);
+            void loadServer(i, true);
         };
+        // review TK-3: Tab walks the window's buttons when the focus is in it (gates when on the canvas), F6 enters the window,
+        // Esc inside it gives the focus back first (course/editor/keys.ts keyRoute)
         addEventListener('keydown', (e: KeyboardEvent) => {
             if (!ed || !panel) return;
-            if (panel.typing(e.target)) {
-                if (e.code === 'Escape') (e.target as HTMLElement).blur();
-                else if (e.code === 'Enter') command('save-mine');
-                else return;
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-            // a button of the window keeps Enter and Space (a click)
-            if ((e.code === 'Enter' || e.code === 'Space') && e.target instanceof HTMLButtonElement && panel.root.contains(e.target)) return;
-            if (!editorKey(e, [0, -1])) return;
+            const target = e.target;
+            const inWindow = target instanceof Node && panel.root.contains(target);
+            const route = keyRoute(e, { typing: panel.typing(target), inWindow, onButton: target instanceof HTMLButtonElement });
+            if (route === 'pass') return;
             e.preventDefault();
             e.stopPropagation();
+            if (route === 'blur') return void (target as HTMLElement).blur?.();
+            if (route === 'save') return command('save-mine');
             applyKey(e);
         }, true);
         ctx.keys.on('course.edit', (e) => {

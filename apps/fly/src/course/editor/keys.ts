@@ -4,7 +4,7 @@
 // the editor's commands. The panel's buttons run the same rows (KEY_ROWS), so the mouse and the keyboard do the same things.
 import type { EditAction } from '@gsfpv/tracks';
 
-export type EditorCommand = 'save-mine' | 'save-all' | 'exit' | 'regen' | 'regen-same';
+export type EditorCommand = 'save-mine' | 'save-all' | 'exit' | 'regen' | 'regen-same' | 'focus-window';
 
 export type EditorKey = { readonly edit: EditAction } | { readonly cmd: EditorCommand };
 
@@ -78,6 +78,7 @@ export function editorKey(e: KeyPress, forward: readonly [number, number]): Edit
         case 'KeyG': return { cmd: shift ? 'regen-same' : 'regen' };
         case 'Enter': case 'NumpadEnter': return { cmd: 'save-mine' };
         case 'Escape': return { cmd: 'exit' };
+        case 'F6': return { cmd: 'focus-window' };
         default: return null;
     }
 }
@@ -109,5 +110,31 @@ export const KEY_ROWS: readonly { readonly caps: string; readonly labelKey: stri
     { caps: 'Ctrl+Z', labelKey: 'course.edit.key.undo', press: { code: 'KeyZ', ctrlKey: true } },
     { caps: 'Ctrl+Y', labelKey: 'course.edit.key.redo', press: { code: 'KeyY', ctrlKey: true } },
     { caps: 'G', labelKey: 'course.edit.key.regen', press: { code: 'KeyG' } },
+    { caps: 'F6', labelKey: 'course.edit.key.window', press: { code: 'F6' } },
     { caps: 'Esc', labelKey: 'course.edit.key.exit', press: { code: 'Escape' } }
 ];
+
+/** Where the key press is: in a text field of the window, on another element of the window (a button), or elsewhere (the canvas). */
+export interface KeyAt {
+    readonly typing: boolean;
+    readonly inWindow: boolean;
+    readonly onButton: boolean;
+}
+
+/**
+ * What the editor's keydown listener does with a press (review TK-3, the keyboard-only path): 'pass' leaves it to the browser
+ * (Tab walks the window's buttons, Enter and Space click one, letters go into a field), 'blur' gives the focus back to the
+ * canvas (Esc inside the window; the next Esc leaves the editor), 'save' is Enter in a text field, 'edit' runs editorKey.
+ */
+export function keyRoute(e: KeyPress, at: KeyAt): 'pass' | 'blur' | 'save' | 'edit' {
+    if (at.typing) {
+        if (e.code === 'Escape') return 'blur';
+        if (e.code === 'Enter' || e.code === 'NumpadEnter') return 'save';
+        return 'pass';
+    }
+    if (at.inWindow) {
+        if (e.code === 'Tab' || e.code === 'Escape') return e.code === 'Tab' ? 'pass' : 'blur';
+        if (at.onButton && (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space')) return 'pass';
+    }
+    return editorKey(e, [0, -1]) ? 'edit' : 'pass';
+}

@@ -111,6 +111,11 @@ export class EditorPanel {
         return true;
     }
 
+    /** F6 (review TK-3): the keyboard's way into the window; Tab then walks its fields and buttons */
+    focusName(): void {
+        this.name.focus();
+    }
+
     names(): { name: string; title: string } {
         return { name: this.name.value, title: this.title.value };
     }

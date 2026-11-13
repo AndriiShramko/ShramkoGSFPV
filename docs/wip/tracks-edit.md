@@ -151,8 +151,30 @@ Stage fixes (review findings TK-1..TK-12 of train 2):
       Test apps/api/tests/test_tracks_fixes.py (4 tests) and test_tracks_edit.py's vote test (the next-day control now
       expects 429). Runs: test_tracks_fixes 6 OK (incl. the inherited Http test), test_tracks_edit + test_tracks 40 OK.
       Negative control neg_control.py --ref HEAD, files tracks.py server.py: NEG OK (1 failure, 2 errors).
-- [ ] F2 page: TK-2 storage, TK-7 tokens, TK-5 link with version, TK-3 keyboard, TK-12 admin double click.
-- [ ] F3 course.ts: TK-1, TK-4, TK-6, TK-10, TK-11 b.
+- [x] F2 page parts with a pure test: TK-2 (store.ts siteStorage(): the storage getter read inside try, used as the
+      default of voterId, myVotes, rememberVote), TK-7 (store.ts myTokens/rememberToken, localStorage key
+      gsfpv.course.tokens, id -> token, newest TOKENS_KEPT = 50), TK-5 (link.ts servedOfLink reads course=<id>.v<n>;
+      admin model.ts editorLink(locale, scene, id, version) and tab.ts passes r.version; course.ts loads a linked version
+      directly with loadServer(-1, true, {id, version}); a link without a version still looks the id up in the list),
+      TK-3 (keys.ts keyRoute: Tab and Shift+Tab pass when the focus is in the window, Esc there blurs first, Enter/Space on a
+      button pass; F6 = command focus-window, panel.focusName(), new key row 'F6'), TK-12 (model.ts confirmStep and
+      CONFIRM_GUARD_MS 600, an estimate; tab.ts ignores the confirming click sooner than that). Locales en/es/pl/ru: 3 new
+      keys course.edit.key.window, course.edit.unsavedAgain, course.edit.nothing.
+      Test tools/bench/test/tracks-fixes.test.ts (8 tests). Runs: vitest tracks-fixes + tracks-editor-ui + admin-tracks +
+      tracks-review 36 passed; packages/prefs migrate.test.ts 23 passed; tsc apps/fly and tools/bench exit 0; 0 non-ASCII
+      bytes in 11 changed code files (server.py's 2 are on origin/main already). Negative control neg_control.py --ref
+      HEAD, files store.ts link.ts keys.ts model.ts: NEG OK (by import, `confirmStep is not a function`); mutation
+      control (the 5 defaults back to globalThis.localStorage): 1 failed by `SecurityError: storage blocked`, 7 passed,
+      file restored.
+- [x] F3 course.ts without a unit test (the feature needs the page): TK-1 closeEdit(not quiet) puts run back to edSource
+      (the course editing started from or was saved as) with its best lap; TK-4 one guard `ask()` for Esc, G and a row's
+      Edit (twice when unsaved; G also waits while busy), reopenAfter = false in fail() and closeEdit(), openRow calls
+      loadServer(i, true); TK-6 showEd keeps edSource's id, version, parent, author, title and generator on the edited
+      gates; TK-10 'Save as my course' refuses with course.edit.nothing when nothing changed, the course is on the server
+      and the title is the same; TK-11 b a person's body sends generator: null; TK-7 tokens from localStorage.
+      Typecheck above; the page probe run is in the next line.
+- Refuted: none of TK-1..TK-12 (each read in the code and confirmed; TK-8 is the plan's rule as written, changed as the
+  review asked).
 ## Decisions
 
 - T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with

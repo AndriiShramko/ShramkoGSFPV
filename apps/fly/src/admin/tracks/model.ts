@@ -101,12 +101,23 @@ export function renamed(file: Record<string, unknown>, title: string): Record<st
 }
 
 /** The simulator's page with the course loaded and its editor open (course/link.ts serverOfLink, editOfLink). */
-export function editorLink(locale: string, scene: string, id: string): string {
-    const q = new URLSearchParams({ scene, course: id, edit: '1' });
+export function editorLink(locale: string, scene: string, id: string, version?: number): string {
+    // review TK-5: with the version the page loads the course directly (not through the scene's first list page)
+    const q = new URLSearchParams({ scene, course: version ? `${id}.v${version}` : id, edit: '1' });
     return `/${locale}/fly/?${q.toString()}`;
 }
 
 /** The scene list, the busiest first (ties by id), so the scene with courses to look at is on top. */
 export function sortScenes(scenes: readonly SceneCount[]): SceneCount[] {
     return [...scenes].sort((a, b) => b.tracks - a.tracks || (a.scene < b.scene ? -1 : 1));
+}
+
+/** review TK-12, ESTIMATE (not measured): a second click sooner than this after the question is the same double click */
+export const CONFIRM_GUARD_MS = 600;
+
+/** The two-click confirm of delete and reset: 'ask' (the first click), 'do' (the second), 'ignore' (the second click of a
+ *  double click, within CONFIRM_GUARD_MS of the question). */
+export function confirmStep(confirming: string | null, askedAt: number, key: string, now: number): 'ask' | 'do' | 'ignore' {
+    if (confirming !== key) return 'ask';
+    return now - askedAt < CONFIRM_GUARD_MS ? 'ignore' : 'do';
 }

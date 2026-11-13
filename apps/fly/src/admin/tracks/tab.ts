@@ -8,7 +8,7 @@ import { locale, t } from '../i18n';
 import type { AdminClient } from '../api';
 import { ApiError } from '../api';
 import { TracksAdminClient } from './api';
-import { editorLink, isHidden, markParts, matches, renamed, sortRows, sortScenes, titleIssue } from './model';
+import { confirmStep, editorLink, isHidden, markParts, matches, renamed, sortRows, sortScenes, titleIssue } from './model';
 import type { AdminTrackRow, Mark, SceneCount, SortBy } from './model';
 
 const CONFIRM_MS = 6000;
@@ -40,6 +40,7 @@ export class TracksTab {
     /** the action that asked "sure?": `delete:<id>`, `delete:<id>:<n>`, `reset-votes:<id>`, `reset-broken:<id>` */
     private confirming: string | null = null;
     private confirmTimer: ReturnType<typeof setTimeout> | null = null;
+    private askedAt = 0;
     private busy = false;
 
     constructor(api: AdminClient, private readonly say: (msg: string, bad?: boolean) => void) {
@@ -93,13 +94,16 @@ export class TracksTab {
 
     /** The first click asks "sure?" (the button's words change), the second within CONFIRM_MS does it. */
     private sure(key: string, fn: () => void): void {
-        if (this.confirming === key) {
+        const step = confirmStep(this.confirming, this.askedAt, key, Date.now());
+        if (step === 'ignore') return;
+        if (step === 'do') {
             if (this.confirmTimer !== null) clearTimeout(this.confirmTimer);
             this.confirming = null;
             fn();
             return;
         }
         this.confirming = key;
+        this.askedAt = Date.now();
         if (this.confirmTimer !== null) clearTimeout(this.confirmTimer);
         this.confirmTimer = setTimeout(() => {
             this.confirming = null;
@@ -167,7 +171,7 @@ export class TracksTab {
         const actions = h('div', { class: 'row-actions' },
             hidden
                 ? h('span', { class: 'muted', 'data-testid': 't-open-hidden' }, t('admin.tracks.openHidden'))
-                : h('a', { class: 'btn small', href: editorLink(locale, this.scene, r.id), target: '_blank', rel: 'noopener', 'data-action': 't-open' }, t('admin.tracks.open')),
+                : h('a', { class: 'btn small', href: editorLink(locale, this.scene, r.id, r.version), target: '_blank', rel: 'noopener', 'data-action': 't-open' }, t('admin.tracks.open')),
             h('button', { type: 'button', class: 'btn small', 'data-action': 't-hide', disabled: this.busy, onclick: () => void this.act(() => this.client.hide(r.id, !hidden), t(hidden ? 'admin.tracks.shownDone' : 'admin.tracks.hiddenDone')) }, t(hidden ? 'admin.tracks.show' : 'admin.tracks.hide')),
             h('button', { type: 'button', class: 'btn small', 'data-action': 't-rename', disabled: this.busy, onclick: () => { this.renaming = this.renaming === r.id ? null : r.id; this.renderList(); } }, t('admin.tracks.rename')),
             ask(`reset-votes:${r.id}`, t('admin.tracks.resetVotes'), () => void this.act(() => this.client.reset(r.id, 'votes'), t('admin.tracks.resetDone')), 't-reset-votes'),

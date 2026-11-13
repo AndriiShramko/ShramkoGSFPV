@@ -17,8 +17,15 @@ export function seedOfLink(search: string): number | null {
 /** A served course the link names: `course=<scene hex>-<8 hex>` (the server's id, tracks.py SERVER_ID; the admin's
  *  "Open in the editor", stage T4-admin), or null. */
 export function serverOfLink(search: string): string | null {
+    return servedOfLink(search)?.id ?? null;
+}
+
+/** The same with the version the admin's link names (`course=<id>.v<n>`, tracks-plan 2.10; review TK-5: the page loads that
+ *  version directly, the scene's list holds only the first page of sort=top), version null when the link names none. */
+export function servedOfLink(search: string): { id: string; version: number | null } | null {
     const v = new URLSearchParams(search).get(PARAM);
-    return v !== null && /^[0-9a-f]{6,32}-[0-9a-f]{8}$/.test(v) ? v : null;
+    const m = v === null ? null : /^([0-9a-f]{6,32}-[0-9a-f]{8})(?:\.v([1-9][0-9]{0,5}))?$/.exec(v);
+    return m ? { id: m[1]!, version: m[2] ? Number(m[2]) : null } : null;
 }
 
 /** `edit=1`: the linked course opens in the editor once it is shown. */
