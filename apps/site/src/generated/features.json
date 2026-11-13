@@ -7,10 +7,10 @@
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 29,
+  "keys": 30,
   "rateTypes": 5,
   "flyingKeys": 12,
-  "allKeys": 39
+  "allKeys": 40
  },
  "locales": {
   "en": {
@@ -1709,6 +1709,13 @@
      "label": "Course: a new random course",
      "keys": [
       "Shift+G"
+     ]
+    },
+    {
+     "action": "course.edit",
+     "label": "Course: edit the obstacles",
+     "keys": [
+      "Shift+B"
      ]
     }
    ],
@@ -3830,6 +3837,13 @@
      "keys": [
       "Shift+G"
      ]
+    },
+    {
+     "action": "course.edit",
+     "label": "Circuito: editar los obst\u00e1culos",
+     "keys": [
+      "Shift+B"
+     ]
     }
    ],
    "flying": [
@@ -5950,6 +5964,13 @@
      "keys": [
       "Shift+G"
      ]
+    },
+    {
+     "action": "course.edit",
+     "label": "Tor: edytuj przeszkody",
+     "keys": [
+      "Shift+B"
+     ]
     }
    ],
    "flying": [
@@ -8069,6 +8090,13 @@
      "label": "\u0422\u0440\u0430\u0441\u0441\u0430: \u043d\u043e\u0432\u0430\u044f \u0441\u043b\u0443\u0447\u0430\u0439\u043d\u0430\u044f \u0442\u0440\u0430\u0441\u0441\u0430",
      "keys": [
       "Shift+G"
+     ]
+    },
+    {
+     "action": "course.edit",
+     "label": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0440\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u0440\u0435\u043f\u044f\u0442\u0441\u0442\u0432\u0438\u044f",
+     "keys": [
+      "Shift+B"
      ]
     }
    ],
