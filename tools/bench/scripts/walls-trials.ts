@@ -78,11 +78,12 @@ if (mode === 'trials') {
             const res = await page.evaluate((o: { level: number; voxelM: number }) => (window as any).__gsfpv.bakeTrial(o), { level, voxelM: cm / 100 });
             res.wallS = (Date.now() - t) / 1000;
             if (res.ok && shipped) {
-                const b64: string = await page.evaluate(async () => {
-                    const b = (window as any).__gsfpv.bakedBytes;
-                    const enc = async (u: Uint8Array) => { const s = await new Promise<string>((ok) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result)); fr.readAsDataURL(new Blob([u])); }); return s.slice(s.indexOf(',') + 1); };
+                // a string, not a function: tsx would add a helper the page does not have
+                const b64: string = await g(page, `(async () => {
+                    const b = window.__gsfpv.bakedBytes;
+                    const enc = (u) => new Promise((ok) => { const fr = new FileReader(); fr.onload = () => { const s = String(fr.result); ok(s.slice(s.indexOf(',') + 1)); }; fr.readAsDataURL(new Blob([u])); });
                     return JSON.stringify([await enc(b.json), await enc(b.bin)]);
-                });
+                })()`);
                 const [j, b] = (JSON.parse(b64) as string[]).map((s) => new Uint8Array(Buffer.from(s, 'base64')));
                 const baked = collision(j, b);
                 const a = inside(baked, shipped), s2 = inside(shipped, baked);

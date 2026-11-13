@@ -9,7 +9,7 @@
 import type { FlightSession } from './session';
 import { t } from './i18n';
 import { h } from './ui/dom';
-import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, maxGaussians, memCapGb, planRefine, sceneSize } from './bake';
+import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize } from './bake';
 import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
@@ -246,9 +246,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
     function refusedText(e: BakeRefusedError, refine: boolean): string {
         if (e.reason === 'empty') return t('bake.empty');
         if (e.reason === 'no-webgpu') return t('bake.noWebgpu');
-        const n = ((e.size?.gaussians ?? 0) / 1e6).toFixed(1);
-        const max = ((e.maxGaussians || maxGaussians(limits(), memCapGb())) / 1e6).toFixed(1);
-        if (e.reason === 'gpu-buffer' || e.reason === 'memory') return refine ? t('bake.refine.refused', { n, max }) : t('bake.refused', { n, max });
+        // the pilot never sees a Gaussian count or a limit: a finer refine is simply not built
+        if (e.reason === 'gpu-buffer' || e.reason === 'memory') return refine ? t('bake.refine.refused') : t('bake.noRoom');
         return t(refine ? 'bake.refine.failed' : 'bake.failed', { msg: e.message.slice(0, 160), was: cm(w.voxelM ?? BASE_VOXEL_M) });
     }
 
