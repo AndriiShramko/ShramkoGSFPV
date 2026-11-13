@@ -15,7 +15,9 @@ import { t } from '../i18n';
 import { HidSource, hidDisplayName } from '../devices/hid';
 import { DjiRc2Device, hasStickChannel, namesRc2, tellWhenLost } from '../devices/dji-rc2-source';
 import type { UsbDeviceLike, UsbHub } from '../devices/dji-rc2-source';
-import { GamepadSource } from '../devices/gamepad';
+import { GamepadSource, gamepadKey } from '../devices/gamepad';
+import { autoRoute } from '../devices/auto-route';
+import type { PadSeenNow } from '../devices/auto-route';
 import { choiceOffer, recogniseSource } from '../devices/known';
 import { saveProfile, profileFor, loadProfiles, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
@@ -33,7 +35,12 @@ export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
 
 /** this browser has a saved DJI RC 2 setup (the helper route is offered from the start, usb-look.ts helperOffered) */
 function savedRc2(): boolean {
-    try { return namesRc2(Object.keys(loadProfiles())); } catch { return false; }
+    return namesRc2(savedKeys());
+}
+
+/** the keys of the setups saved in this browser */
+function savedKeys(): string[] {
+    try { return Object.keys(loadProfiles()); } catch { return []; }
 }
 
 export interface RadioChoice {
@@ -166,6 +173,7 @@ export class RadioScreen {
     private wzBack: (() => void) | null = null; // Back of the wizard screen (Backspace)
     private usb: UsbLookBlock | null = null; // the DJI part of the device choice (its quiet helper watch stops with the choice)
     private autoDone = false; // the device choice looked for granted devices once (lane connect C2: autoFind)
+    private hidStatusEl: HTMLElement | null = null; // the device choice's HID status line (the pad watch may open a HID device)
     private padsSeen = new Set<string>(); // pads the pad watch opened by itself: Back from their wizard does not reopen it
     private connectStep: 'hid' | 'dji' = 'hid'; // Connect my controller: the next chooser
 
@@ -319,6 +327,7 @@ export class RadioScreen {
             usb.el
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
+        this.hidStatusEl = hidStatus;
         this.watchPads(gpRate);
         if (!this.curDev && !this.autoDone) { this.autoDone = true; void this.autoFind(hidStatus, gpRate); }
     }
@@ -333,7 +342,12 @@ export class RadioScreen {
         const nav = (typeof navigator !== 'undefined' ? navigator : {}) as { hid?: { getDevices(): Promise<HIDDevice[]> }; usb?: Partial<UsbHub> };
         const hidList = HidSource.supported() ? await nav.hid?.getDevices().catch(() => [] as HIDDevice[]) ?? [] : [];
         if (gen !== this.gen) return;
-        if (hidList.length) { void this.connectHid(hidStatus, gpRate, hidList[0]); return; }
+        if (hidList.length) {
+            // review CN-4: the route with the saved setup; a pad already shown with its own saved setup is left to the pad watch
+            const r = autoRoute({ pad: this.padNow(), hid: hidList, saved: savedKeys() });
+            if (r?.kind === 'hid') { void this.connectHid(hidStatus, gpRate, hidList[r.index]); return; }
+            if (r?.kind === 'pad') return;
+        }
         const usbList: UsbDeviceLike[] = nav.usb?.getDevices ? await nav.usb.getDevices().catch(() => [] as UsbDeviceLike[]) : [];
         if (gen !== this.gen) return;
         for (const d of usbList.filter(hasStickChannel)) {
@@ -400,11 +414,35 @@ export class RadioScreen {
                 if (!p || p.connected === false || this.padsSeen.has(`${p.index}:${p.id}`)) continue;
                 this.padsSeen.add(`${p.index}:${p.id}`);
                 clearInterval(this.timer);
-                this.bindPad(p);
-                this.connectGamepad(gpRate);
+                void this.openFoundPad(p, gpRate);
                 return;
             }
         }, 250);
+    }
+
+    /** A pad on the Gamepad API, as autoRoute sees it (its key, named by a known controller table or not). */
+    private padNow(p?: Gamepad): PadSeenNow | null {
+        const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
+        const g = p ?? pads.find((x): x is Gamepad => !!x && x.connected !== false) ?? null;
+        if (!g) return null;
+        const info = { id: g.id, axes: { length: g.axes.length }, buttons: { length: g.buttons.length } };
+        return { key: gamepadKey(g), known: !!recogniseSource('gamepad', { info: () => info } as never) };
+    }
+
+    /**
+     * The pad watch found a pad. Review CN-4: an FPV radio shows on the Gamepad API by itself when it is plugged in, and
+     * the same radio granted to this site over WebHID has its setup saved under its HID key: that route opens (check
+     * screen), not a new gamepad wizard.
+     */
+    private async openFoundPad(p: Gamepad, gpRate: HTMLElement): Promise<void> {
+        const gen = this.gen;
+        const nav = (typeof navigator !== 'undefined' ? navigator : {}) as { hid?: { getDevices(): Promise<HIDDevice[]> } };
+        const hidList = HidSource.supported() ? await nav.hid?.getDevices().catch(() => [] as HIDDevice[]) ?? [] : [];
+        if (gen !== this.gen) return;
+        const r = autoRoute({ pad: this.padNow(p), hid: hidList, saved: savedKeys() });
+        if (r?.kind === 'hid' && this.hidStatusEl) { void this.connectHid(this.hidStatusEl, gpRate, hidList[r.index]); return; }
+        this.bindPad(p);
+        this.connectGamepad(gpRate);
     }
 
     /**

@@ -95,6 +95,26 @@ describe('the routing rule', () => {
     });
 });
 
+describe('a controller found by itself opens the route of its saved setup (review CN-4)', () => {
+    // a TX16S: on the Gamepad API by itself when plugged in, granted over WebHID earlier, its setup saved under hid:
+    const TX = { vendorId: 0x1209, productId: 0x4f54, productName: 'Radiomaster TX16S Joystick' };
+    const PAD = { key: 'gp:Radiomaster TX16S Joystick (Vendor: 1209 Product: 4f54):8:32:', known: false };
+    const MOUSE = { vendorId: 0x046d, productId: 0xc077, productName: 'USB Mouse' };
+    it('a saved HID setup beats a new gamepad wizard; a saved pad setup beats a granted HID device with none', async () => {
+        const A = await import('../../../apps/fly/src/devices/auto-route');
+        const hidKey = 'hid:1209:4f54:Radiomaster TX16S Joystick:19';
+        expect(A.autoRoute({ pad: PAD, hid: [MOUSE, TX], saved: [hidKey] })).toEqual({ kind: 'hid', index: 1 });
+        expect(A.autoRoute({ pad: PAD, hid: [TX], saved: [PAD.key] })).toEqual({ kind: 'pad' });
+        expect(A.autoRoute({ pad: { ...PAD, known: true }, hid: [TX], saved: [] })).toEqual({ kind: 'pad' });
+        // nothing saved: the granted HID device (its own reports) is the better way into the wizard
+        expect(A.autoRoute({ pad: PAD, hid: [TX], saved: [] })).toEqual({ kind: 'hid', index: 0 });
+        expect(A.autoRoute({ pad: PAD, hid: [], saved: [hidKey] })).toEqual({ kind: 'pad' });
+        expect(A.autoRoute({ pad: null, hid: [], saved: [] })).toBeNull();
+        // another device's saved setup with the same ids but another name is not this one's
+        expect(A.autoRoute({ pad: PAD, hid: [TX], saved: ['hid:1209:4f54:Radiomaster Pocket Joystick:19', PAD.key] })).toEqual({ kind: 'pad' });
+    });
+});
+
 describe('Connect my controller, the DJI step', () => {
     it('a refused claim goes on to the helper by itself (no ?rcbridge=1) and flies when it answers; the untested name is shown', async () => {
         nav.usb = { requestDevice: () => Promise.resolve(refused({ ...OTHER } as never)) };
