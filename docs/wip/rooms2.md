@@ -29,7 +29,13 @@ Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
   hook.ts: `RaceHook` (`window.__gsfpv.rooms.race`); 8 keys more in rooms/{en,es,pl,ru}.json (`rooms.race.standing*`,
   `rooms.race.col.*`); rooms-open-vote.ts proposes a scan with 9, Tab, Enter. Test tools/bench/test/rooms-race-page.test.ts
   3 of 3; with rooms-race and rooms-open-vote tests 16 of 16. Typecheck apps/fly and tools/bench: 0 errors.
-- [ ] Q2.4 Two-browser probe tools/bench/src/rooms-race.ts (copy rooms-open-vote.ts) and its run.
+- [~] Q2.4 Two-browser probe tools/bench/src/rooms-race.ts written (commit ee9be881; typecheck tools/bench 0 errors): scan
+  887f27aa on both pages, 9 each, A 9 + Enter, both racers build the same course, hear Go, the probe moves each craft along
+  `race.path` (0.3 m per drawn frame, the sim running), results on both, the same order and totals, B's panel table, A's
+  key 0 place; control: no lap before flying. dist rebuilt at ee9be881. Run 1 started (log
+  U:/Temp/gsfpv-train2/rooms2/rooms-race-run1.log); its result is the next worker's first read if this line is still [~].
+- [x] deploy/release-rooms.sh uploads votes.py and race.py too (commit b6e919ce): before it, FILES held only ws, protocol
+  and rooms, so a release of this branch would have started a rooms.py that cannot import votes (Q1) and race (Q2).
 
 Plan for Q2.3 (decided, not built):
 - Key: no new keymap action (packages/prefs keymap.ts is not this lane). In a room 9 opens the panel; the panel gets a
@@ -108,9 +114,13 @@ Stage Q1-open-room (done):
   A release needs `deploy/release-rooms.sh` without --compose (only apps/rooms changed: race.py is new, so the script's
   copy of apps/rooms must take the whole folder; not checked against the script). No limit changed: MAX_TEXT 2048 holds
   every race message a page sends (under 80 bytes).
-- Keys a pilot uses (as planned for Q2.3, not built yet): 9 (outside a room: the open room), 9 then Enter (in a room: a
-  race on the course he flies, else the scan's newest saved course, else a new generated one), nothing during the
-  countdown, fly gate 0 after "Go", 0 (his place and the table, then who is around), 9 (the panel with the table).
+- Keys a pilot uses, in order: 9 (outside a room: the open room of his scan or the one with pilots); 9 then Enter (in a
+  room: a race on the course he flies, else the scan's newest saved course, else a new generated one; every pilot in the
+  room races); nothing while the courses build and during the countdown 10, 3, 2, 1, Go; fly through gate 0 after Go,
+  two laps (RACE_LAPS 2 in rooms/race-page.ts, an estimate); 0 (his place and best lap, then who is around); 9 (the panel:
+  the race table under "Race on a course"). A scan proposal is now 9, Tab, Enter.
+- Release of this branch's rooms service: `bash deploy/release-rooms.sh` WITHOUT --compose (no limit changed; it now
+  uploads ws, protocol, votes, race, rooms). The page part ships with the site release.
 
 - New HTTP route `POST /api/rooms/open` on gsfpv-rooms. nginx's `location ^~ /api/rooms` already passes POST with a
   4k body; no deploy file changed. Release needs the rooms service restarted (apps/rooms changed).
@@ -125,7 +135,11 @@ Stage Q1-open-room (done):
 
 - Q2: no page glue yet, so nothing of the race was seen in a browser; the two-browser probe (rooms-race.ts) is not
   written. The race timings PREP_MS 45 s, RUN_MS 15 min, MAX_LAPS 10, LATE_MS 500 ms are estimates (named in race.py).
-- Q2: whether deploy/release-rooms.sh copies a new file of apps/rooms (race.py) was not read.
+- Q2: the race's spoken lines were not heard and the flash and the panel's table not looked at on a screenshot (keys in
+  `said` and DOM text only). A course that a page cannot build (no walls, generator finds nothing) leaves that pilot
+  without gates; the race still runs for the others: not run in a browser.
+- Q2: the probe flies by moving the craft along the course's path, not with the sticks; real flying through gates was
+  not tried.
 
 - Old-code control of test_open_vote.py: on origin/main's rooms.py the test module fails at import (no votes module),
   an error, not an assertion. The assertion control is a mutant majority rule (yes >= half): 3 failures, 1 error.
@@ -151,3 +165,6 @@ Stage Q1-open-room (done):
   run.ts, laps.ts) to find a public way to build the same course took 5 replies; it has no function to build a course
   from a seed for another feature, so the glue must drive the course worker itself. Cheaper: one scout line naming the
   course feature's public API for other lanes, and a stage split server+logic / glue / probe from the start.
+- Q2 worker 2 (glue, probe, deploy fix): the glue fit in 4 replies once the whole plan was in the status file; finding
+  how a probe can pass gates took 3 (no teleport in the page; the probe writes the sim's position along `race.path`).
+  Cheaper: a scout line naming the probe's way to fly a course, and release-rooms.sh's FILES checked at Q1.
