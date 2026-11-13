@@ -13,8 +13,9 @@ Branch `connect` from `rc2-lna` b05df5e6 (origin/main 2a5ac433 was already in it
 - [x] C1.1 rc_bridge.py `--replay` takes a `--record` file at its recorded pace, `--start`/`--end` seconds; tests; fixture `packages/input/test/fixtures/dji-rc2/owner-session-2026-11-13.jsonl` (session 2, seconds 0-205)
 - [x] C1.2 replay of session 2 on a local release of b05df5e6 (the live logic): `tools/bench/scripts/rc2-session-probe.mjs` (62905033, f890d090), timeline below; screenshots `U:/Temp/gsfpv-train2/shots/connect-session-a-*.png`
 - [x] C1.3 (f890d090) verdict below; the bottom path fixed in the wizard (`packages/input/src/spring.ts`, `calib.ts`); `packages/input/test/owner-rc2-session.test.ts` 12 passed; neg control NEG OK (old calib.ts: 'bottom'); packages/input 262 of 262; a6-reference with app-centre-throttle, -ui, app-hid-source, app-known-controller, app-dji-rc2-lna 68 of 68; typecheck input and fly 0
-  - [~] page proof of the fix: the "obey" record (`U:/Temp/gsfpv-train2/connect/obey.jsonl`, the owner's record with the throttle at 364 from 9.0 to 14.5 s) on the old build, run `obey-old` (`U:/Temp/gsfpv-train2/connect/session-obey-old.json`): Let go measured with the throttle at the bottom, check at 54.3 s, throttleRest 'bottom', after Fly 'zero' why 'wizard' to 80 s (the bug on a page, 0 page errors); left: rebuild (`node scripts/build-release.mjs`), run `REC=U:/Temp/gsfpv-train2/connect/obey.jsonl sh U:/Temp/gsfpv-train2/connect/run-session.sh obey-new 70 80` (expect centred, why wizard/seen), then `centre-throttle-probe.mjs http://localhost:5780/en <out> all` on the same server under the GPU lock
-- [~] C1.4 rates from the record are in Facts; left: whether the runner logs identical inputs (94 % of answers repeat the one before) - read `Runner.enqueue` in packages/sim-core/src/runner.ts and the flight log size in a 60 s replay
+  - [x] page proof of the fix: the "obey" record (`U:/Temp/gsfpv-train2/connect/obey.jsonl`, the owner's record with the throttle at 364 from 9.0 to 14.5 s) on the old build, run `obey-old` (`U:/Temp/gsfpv-train2/connect/session-obey-old.json`): Let go measured with the throttle at the bottom, check at 54.3 s, throttleRest 'bottom', after Fly 'zero' why 'wizard' to 80 s (the bug on a page, 0 page errors). Same record on a release of adf12c25 (source of f890d090), run `obey-new` (`U:/Temp/gsfpv-train2/connect/session-obey-new.json`, fly 70, end 140): Let go done 12.0 s with the throttle at 364, check 54.3 s, throttleRest 'centre', check screen "Chosen automatically: your throttle stick rests in the centre", at Fly 70.1 'centred' why 'wizard', 70.7 why 'seen'; armed 85.2 (throttle 1282), 4.67 m at 90; 0 page errors, 8980 answers. Shots `U:/Temp/gsfpv-train2/shots/connect-session-obey-new-{check,flight-100}.png`
+  - [x] centre-throttle-probe.mjs on the same release, :5780, under the GPU lock (`U:/Temp/gsfpv-train2/connect/centre-new.json`): pass, dji-centred 4 of 4, dji-flip 5 of 5, dji-bottom 3 of 3 checks, 0 page errors
+- [x] C1.4 (c3bca3d3 adds `logB` to the session probe) rates in Facts; the page logs one 36-byte record per physics tick that received any answer, identical or not; measured growth 1616 B/s; verdict in For the lead
 
 ## Facts (measured)
 Record `U:/Temp/gsfpv-train2/rc2/rc2-rec-20261113.jsonl` (67134 lines), split at the first gap over 3 s
@@ -50,6 +51,19 @@ answers reached the page in 200 s (64.1 per second), 0 page errors.
   centre to 160; from 160 the stick below the centre: down to the ground by 164, then the motors start and stop
   about every 0.5 to 3 s (armed/disarmed 13 times 166-197) while the stick stays 0.2-0.7 below the centre.
 
+C1.4, the page's handling of 64 answers per second (run `obey-new`, record pace, release adf12c25):
+- Controller 63.9 answers/s (record); page 64.1 answers/s handled (8980 in 140 s; run `a` 12812 in 200 s); longest
+  gap in session 2 157 ms; gaps over 100 ms: 3 in 1004 s (193.4 s: 140 ms; 472.1 s: 155 and 157 ms), over 50 ms: 13.
+- Path of one answer (read in code): `controls.ts` push -> arm gate update -> `session.input` -> `simclock.ts` push
+  (ring buffer, no allocation) -> `runner.enqueue` (one `Float32Array.from` per answer) -> `Runner.stepOnce`
+  (`packages/sim-core/src/runner.ts:741-756`) writes one 36-byte record per 1 ms tick that received any answer,
+  identical to the one before or not.
+- Flight log the runner keeps (`bytesKept()`, sampled every 100 ms): 65520 B at 70.1 s, 178308 B at 139.9 s:
+  1616 B/s (44.9 records/s of 36 B; answers that land in the same tick share one record). Cap `DEFAULT_MAX_BYTES`
+  32 MiB: reached after about 5.8 h of flight at this rate (arithmetic on the measured 1616 B/s).
+- A held gamepad already sends a keep-alive every 20 ms (`apps/fly/src/devices/gamepad.ts` KEEPALIVE_MS), 50/s;
+  the identical answers are also the bridge's keep-alive for the 100 ms stale gate (`controls.ts` tick).
+
 ## The flow
 Owner's session 2 against the page, as replayed: Controls -> "Fly through the RC bridge" -> the wizard walks on the
 sticks (no presses) -> check screen at 54 s -> Fly. The screens line up with every move in his record (each move
@@ -82,7 +96,18 @@ comes right after its screen), so the replay's timeline is taken as his.
   Set again keep it), or a press of "Change to From zero" on the check screen.
 - The path the lead described is real one second away: a pilot who obeys "throttle all the way down" at Let go at
   once gets rest 'bottom' and 'zero' (old calib.ts on the "obey" variant of his record: 'bottom'). Fixed at the cause
-  (f890d090).
+  (f890d090); proven on a page: the obey record on the new release stores 'centre' and flies 'centred' (Status), and
+  centre-throttle-probe passes 3 of 3 variants (the FPV from-zero variants included).
+- C1.4 verdict: nothing in the page's handling of 64 answers/s is wasteful enough to change. The cost per answer is
+  a few small calls and one 32-byte allocation; the log grows 1.6 KB/s, comparable to a held gamepad's 50/s
+  keep-alive. Dropping repeats would save at most the record bytes (the log), not the gate's keep-alive; that change
+  sits in `packages/sim-core/src/runner.ts` (stepOnce: skip a record equal to lastApplied), outside this lane, and is
+  not recommended now (log readers and the replay hash were not checked for it).
+- Not in this lane: session 2 has 3 answer gaps over 100 ms (140 ms at 193.4 s, during his level flight); the stale
+  gate in `controls.ts` tick disarms after 100 ms of silence, so such a gap may disarm an armed drone. Whether one of
+  the 13 disarms at 166-197 s in the replay came from it was not separated.
+- Seen on the check screen at 1600x900 (shot `connect-session-obey-new-check.png`): the throttle-style row is half
+  under the sticky Fly bar (its text shows through behind the buttons).
 - Not in this lane's files, found by the replay: in the centred style a stick held below the centre on the ground
   makes the motors start and stop every 0.5-3 s (13 times in 31 s), and full down from 4.7 m crashed (about 92 s);
   both are `apps/fly/src/play/centre-pilot.ts` / AutoArm behaviour.
@@ -91,10 +116,14 @@ comes right after its screen), so the replay's timeline is taken as his.
 
 ## Not verified
 - The live page's state during his session (style, saved choice, presses): only his stick record exists.
-- The fix on a page (the obey variant on a new build) and centre-throttle-probe: see Status.
-- Whether repeated identical answers (94 %) cost anything in the page: see Status C1.4.
+- CPU time per answer in the page (not profiled; the C1.4 verdict rests on the code path and the log growth).
+- Whether the check screen's throttle-style row comes out from under the Fly bar by scrolling (one screenshot only).
+- Which of the replay's disarms at 166-197 s came from the stale gate and which from the centred pilot.
 
 ## Cost notes
 - C1 first worker: most turns went to reading the wizard's centre and throttle steps and the throttle-style
   builtin before the replay could say what happened; the replay itself answered the question in one run.
   Cheaper: run the replay first and read code only where the timeline points.
+- C1 pass 2: about 20 turns; the most went to waiting on the 6-minute build and the two page runs. Cheaper: the
+  rebuild in the background as the first command (done), and the probe sampling `bytesKept()` from the start so the
+  log size needed no extra run.
