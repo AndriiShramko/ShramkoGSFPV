@@ -802,8 +802,9 @@ function experiencedDoc(): object {
 }
 
 /** Steers by the target hum as a blind pilot would (W held, E or Q when the hum is to a side, Space or Shift for its height) until `done`. */
-async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>): Promise<R10Probe> {
+async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>, trail?: object[]): Promise<R10Probe> {
     const held = new Set<string>();
+    let lastTrail = 0;
     const hold = async (code: string, on: boolean): Promise<void> => {
         if (on && !held.has(code)) { await page.keyboard.down(code); held.add(code); }
         if (!on && held.has(code)) { await page.keyboard.up(code); held.delete(code); }
@@ -819,6 +820,11 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         await sleep(60);
         p = await probe10(page);
         if (p.lastLine) seen.add(p.lastLine);
+        if (trail && Date.now() - lastTrail >= 2000) {
+            lastTrail = Date.now();
+            const h = (p.hum ?? []).find((x) => x.distance !== null) ?? null;
+            trail.push({ s: Math.round((Date.now() - t0) / 1000), pos: p.pos.map((c) => Math.round(c * 10) / 10), target: p.target?.id ?? null, phase: p.phase, attempt: p.attempt, hum: h ? { dir: h.dir?.map((c) => Math.round(c * 100) / 100), d: h.distance === null ? null : Math.round(h.distance * 10) / 10 } : null, keys: [...held] });
+        }
     }
     for (const c of [...held]) await hold(c, false);
     return p;
@@ -909,9 +915,15 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     check('R10 course: N makes a course; the hum\'s target is gate 1', ready?.target !== null && ready?.target !== undefined && /1$/.test(ready.target.id), result.r10course);
     if (!ready?.target) { await exp.close(); return; }
     const gate1 = ready.target.id;
-    const after1 = await steerByHum(fly, (p) => p.target !== null && p.target.id !== gate1, 90000, lines);
-    result.r10gate1 = { from: gate1, now: after1.target?.id ?? null, phase: after1.phase };
+    const trail1: object[] = [];
+    const after1 = await steerByHum(fly, (p) => p.target !== null && p.target.id !== gate1, 90000, lines, trail1);
+    await sleep(2500);
+    const atGate1 = spokenAfter(await events(fly), from);
+    result.r10gate1 = { from: gate1, now: after1.target?.id ?? null, phase: after1.phase, spokenTail: atGate1.slice(-6), trail: trail1.slice(-6) };
     check('R10 course: after flying through gate 1 the target is gate 2', after1.target !== null && after1.target.id !== gate1 && /2$/.test(after1.target.id), result.r10gate1);
+    // the gate line of a course in a world: "Stage k passed" at the gate's centre (the world's path marks a stage on each gate,
+    // packages/tracks/src/path.ts); the catalogue's fly.gate is said by no runner code (grep of packages/sonic-fpv/src)
+    check('R10 course: the gate line is said at gate 1 (fly.stage)', atGate1.includes('fly.stage'), result.r10gate1);
 
     // backing up along the leg (S held 3 s): never the wrong way
     const backFrom = (await events(fly)).length;
@@ -927,11 +939,21 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     result.r10back = { cues: [...backIds], spoken: backSpoken };
     check('R10 course: backing up along a leg is not called the wrong way (no fly.wrong-way, no safety.wrong-way)', !backSpoken.includes('fly.wrong-way') && !backIds.has('safety.wrong-way'), result.r10back);
 
-    const end = await steerByHum(fly, (p) => p.phase === 'passed' || p.phase === 'idle', 240000, lines);
+    // I: where am I (the runner's status line)
+    const iFrom = (await events(fly)).length;
+    await fly.keyboard.press('KeyI');
+    await sleep(2500);
+    const iSpoken = spokenAfter(await events(fly), iFrom);
+    result.r10where = iSpoken;
+    check('R10 course: I says where the pilot is (a status line)', iSpoken.some((k) => k.startsWith('status.')), iSpoken);
+
+    const trail: object[] = [];
+    const end = await steerByHum(fly, (p) => p.phase === 'passed' || p.phase === 'idle', 240000, lines, trail);
     await sleep(4000);
-    const all = spokenAfter(await events(fly), from);
-    result.r10end = { phase: end.phase, target: end.target?.id ?? null, gates: all.filter((k) => k === 'fly.gate').length, lastLesson: all.includes('fly.last-lesson'), lines: [...lines], spokenTail: all.slice(-15) };
-    check('R10 course: the gate line is said (fly.gate)', all.includes('fly.gate') || lines.has('fly.gate'), result.r10end);
+    const evAll = await events(fly);
+    const all = spokenAfter(evAll, from);
+    const digest = evAll.slice(from).filter((e) => e.kind !== 'speech').map((e) => `${e.kind}:${e.what ?? e.key ?? e.item ?? ''}`);
+    result.r10end = { phase: end.phase, target: end.target?.id ?? null, stages: all.filter((k) => k === 'fly.stage').length, lastLesson: all.includes('fly.last-lesson'), lines: [...lines], spoken: all.slice(-60), events: digest.slice(-60), trail };
     check('R10 course: the course was flown to its end by the hum', end.phase === 'passed' || end.phase === 'idle', result.r10end);
     check('R10 course: its end does not say "that was the last lesson" (review SN-3)', !all.includes('fly.last-lesson') && !lines.has('fly.last-lesson'), result.r10end);
     await exp.close();
