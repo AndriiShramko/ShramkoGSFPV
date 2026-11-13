@@ -1052,8 +1052,19 @@
       "label": "Na tej stronie"
     },
     "newTab": "(otworzy się w nowej karcie)",
+    "hero": {
+      "lead": "W słuchawkach słychać, gdzie jest ściana, gdzie wolna droga i gdzie następna obręcz. Za darmo, w przeglądarce, a aplikacja sama mówi."
+    },
+    "hear": {
+      "title": "Co słyszę?"
+    },
+    "media": {
+      "garden": "W tle: lot w symulatorze przez Winter Garden, skan 3DGS Andriia Shramki, miejsce jednej z lekcji dźwiękowych.",
+      "pond": "W tle: prawdziwy lot FPV Andriia Shramki, nisko nad stawem w parku w Bydgoszczy.",
+      "acro": "W tle: prawdziwy lot FPV Andriia Shramki w Bydgoszczy: w górę wzdłuż świerka, beczka, nurkowanie między drzewa."
+    },
     "start": {
-      "title": "Jak zacząć",
+      "title": "Jak zacząć?",
       "text": "Załóż słuchawki i naciśnij przycisk. Aplikacja zacznie do Ciebie mówić: najpierw krótki test słuchawek, potem pierwsze lekcje: zawis, ściany, korytarz i obręcze.",
       "button": "Uruchom tryb „Lot na słuch”",
       "note": "Otworzy się symulator w trybie dźwięku. Najlepiej działa na komputerze z aktualną przeglądarką Chrome lub Edge.",
@@ -1061,12 +1072,12 @@
       "steps": ["Załóż przewodowe słuchawki i otwórz tę stronę na komputerze w Chrome albo Edge.", "Naciśnij przycisk „Uruchom tryb «Lot na słuch»”. Aplikacja sama zacznie mówić.", "Zrób krótki test słuchawek.", "Zacznij pierwszą lekcję, zawis. Klawisz K czyta na głos wszystkie klawisze.", "Latasz z aparaturą albo padem: podłącz je przed startem. Widzący pomocnik konfiguruje aparaturę raz."]
     },
     "how": {
-      "title": "Jak to działa",
+      "title": "Jak w ogóle można latać na słuch?",
       "text": "Symulator zamienia to, co widzi kamera drona, w dźwięk. W słuchawkach słychać, gdzie jest ściana, gdzie wolna droga i gdzie następna obręcz.",
       "items": ["Ścianę słychać z wyprzedzeniem. Dźwięk zależy od tego, za ile sekund byś w nią uderzył, a nie od metrów.", "Wysokość to ton, który płynnie się przesuwa. Docelowa wysokość ma swoją nutę: kiedy tony się zgrają, jesteś na miejscu.", "Wolną drogę oznacza krótki dzwonek. Lecisz w złą stronę: aplikacja to powie.", "To, co ważne, brzmi ze swojej strony, z lewej albo z prawej. Dlatego potrzebne są słuchawki.", "Pod podpowiedziami słychać silnik. Jego głośność zmienisz w ustawieniach.", "Lekcje prowadzi głos: 28 lekcji, od zawisu przez ściany i korytarze po sześć tuneli i obręcze na trzech wysokościach. Są małe pokoje dla mikrodrona i lekcja w prawdziwym miejscu zapisanym jako 3DGS (Gaussian splat): Winter Garden.", "Menu i ustawienia też mówią: Escape otwiera mówione menu lekcji.", "Dla słabowidzących pokoje lekcji są narysowane w mocnym kontraście i jest duży wskaźnik horyzontu. Dla głuchych pilotów jest panel, na którym widać podpowiedzi dźwiękowe."]
     },
     "need": {
-      "title": "Czego potrzebujesz",
+      "title": "Czego potrzebuję?",
       "items": ["Słuchawek. Najlepsze są przewodowe: Bluetooth dodaje od 180 do 250 milisekund opóźnienia. Wyłącz Windows Sonic lub Dolby Atmos.", "Klawiatury, pada lub aparatury RC. Osoba widząca konfiguruje aparaturę jeden raz.", "Wygodnej głośności. Jeśli dźwięk boli, zdejmij słuchawki i ścisz.", "Pomocnika za pierwszym razem: przy aparaturze i, jeśli chcesz nagrywać, przy zgodzie."]
     },
     "keys": {

@@ -1052,8 +1052,19 @@
       "label": "En esta página"
     },
     "newTab": "(se abre en una pestaña nueva)",
+    "hero": {
+      "lead": "Con auriculares oyes dónde hay una pared, dónde el paso está libre y dónde está el siguiente aro. Gratis, en el navegador, y la aplicación habla sola."
+    },
+    "hear": {
+      "title": "¿Qué oigo?"
+    },
+    "media": {
+      "garden": "De fondo: un vuelo en el simulador por Winter Garden, un escaneo 3DGS de Andrii Shramko y el lugar de una de las lecciones de sonido.",
+      "pond": "De fondo: un vuelo FPV real de Andrii Shramko, a ras de un estanque en un parque de Bydgoszcz.",
+      "acro": "De fondo: un vuelo FPV real de Andrii Shramko en Bydgoszcz: sube junto a un abeto, un giro completo, un picado entre los árboles."
+    },
     "start": {
-      "title": "Empezar",
+      "title": "¿Cómo empiezo?",
       "text": "Ponte los auriculares y pulsa el botón. La aplicación te habla y empieza con una breve prueba de auriculares y las primeras lecciones: mantenerse en el aire, paredes, un pasillo y aros.",
       "button": "Iniciar Fly by Sound",
       "note": "Abre el simulador en modo sonido. Funciona mejor en un ordenador con un Chrome o un Edge recientes.",
@@ -1061,12 +1072,12 @@
       "steps": ["Ponte unos auriculares con cable y abre esta página en un ordenador con Chrome o Edge.", "Pulsa «Iniciar Fly by Sound». La aplicación empieza a hablar.", "Haz la breve prueba de auriculares.", "Empieza la primera lección, mantenerse en el aire. La tecla K dice en voz alta todas las teclas.", "Si vuelas con radio o con mando, conéctalo antes de empezar. Una persona que ve configura la radio una sola vez."]
     },
     "how": {
-      "title": "Cómo funciona",
+      "title": "¿Cómo se puede volar de oído?",
       "text": "El simulador convierte en sonido lo que ve la cámara del dron. En los auriculares oyes dónde hay una pared, dónde el paso está libre y dónde está el siguiente aro.",
       "items": ["La pared se oye con antelación. El sonido depende de cuántos segundos faltan para chocar, no de los metros.", "La altura es un tono que se desliza. La altura que buscas tiene su propia nota: cuando los tonos coinciden, has llegado.", "Un timbre corto marca un paso libre. Si vas en la dirección equivocada, la aplicación te lo dice.", "Lo importante suena desde su lado, a la izquierda o a la derecha. Por eso hacen falta auriculares.", "Bajo las indicaciones se oye el motor. Su volumen se ajusta en la configuración.", "Una voz guía las lecciones: 28 lecciones, desde mantenerse en el aire hasta paredes, pasillos, seis túneles y aros a tres alturas. Hay salas pequeñas para un microdron y una lección en un lugar real capturado como 3DGS (un Gaussian splat): Winter Garden.", "Los menús y la configuración también hablan: Escape abre un menú de la lección por voz.", "Para baja visión, las salas de las lecciones se dibujan con mucho contraste y hay un indicador de horizonte grande. Para pilotos sordos, un panel muestra las indicaciones sonoras."]
     },
     "need": {
-      "title": "Qué necesitas",
+      "title": "¿Qué necesito?",
       "items": ["Auriculares. Los de cable son mejores: el Bluetooth añade de 180 a 250 milisegundos de retraso. Desactiva Windows Sonic o Dolby Atmos.", "Un teclado, un mando o una radio RC. Una persona que vea configura la radio una sola vez.", "Un volumen cómodo. Si un sonido duele, quítate los auriculares y baja el volumen.", "Una persona que ayude la primera vez, con la radio y, si quieres grabar, con el consentimiento."]
     },
     "keys": {

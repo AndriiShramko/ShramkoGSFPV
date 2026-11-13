@@ -1,6 +1,6 @@
 import media from "@/generated/media.json";
-import { VIDEOS } from "@/config/videos";
-import type { VideoSlot } from "@/config/videos";
+import { FLIGHTS, VIDEOS } from "@/config/videos";
+import type { FlightSlot, VideoSlot } from "@/config/videos";
 
 type Clip = { video: boolean; posters: boolean };
 
@@ -18,8 +18,8 @@ type Clip = { video: boolean; posters: boolean };
  * The <video> is emitted as raw HTML because React does not serialise `muted`, and mobile browsers
  * only autoplay a video that is muted in the markup.
  */
-export default function BgVideo({ slot, className = "", priority = false, videoClass = "" }: { slot: VideoSlot; className?: string; priority?: boolean; videoClass?: string }) {
-  const { clip } = VIDEOS[slot];
+export default function BgVideo({ slot, className = "", priority = false, videoClass = "" }: { slot: VideoSlot | FlightSlot; className?: string; priority?: boolean; videoClass?: string }) {
+  const { clip } = slot in FLIGHTS ? FLIGHTS[slot as FlightSlot] : VIDEOS[slot as VideoSlot];
   const m = (media.videos as Record<string, Clip>)[clip];
   if (!m?.posters) return <div aria-hidden="true" className={`hero-fallback absolute inset-0 ${className}`} />;
   const [small, large] = media.posters;
