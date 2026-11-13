@@ -96,6 +96,14 @@ Stage Q1-open-room (done):
 
 ## For the lead
 
+- Q2 (race): new WebSocket messages race, ready, lap, table and server file apps/rooms/race.py (rooms.py imports it).
+  A release needs `deploy/release-rooms.sh` without --compose (only apps/rooms changed: race.py is new, so the script's
+  copy of apps/rooms must take the whole folder; not checked against the script). No limit changed: MAX_TEXT 2048 holds
+  every race message a page sends (under 80 bytes).
+- Keys a pilot uses (as planned for Q2.3, not built yet): 9 (outside a room: the open room), 9 then Enter (in a room: a
+  race on the course he flies, else the scan's newest saved course, else a new generated one), nothing during the
+  countdown, fly gate 0 after "Go", 0 (his place and the table, then who is around), 9 (the panel with the table).
+
 - New HTTP route `POST /api/rooms/open` on gsfpv-rooms. nginx's `location ^~ /api/rooms` already passes POST with a
   4k body; no deploy file changed. Release needs the rooms service restarted (apps/rooms changed).
 - Probes of the rig: run with SONIC_PORTS=<range>; before commit 4ec94a57 rooms-serve.ts under SONIC_PORTS served the
@@ -106,6 +114,10 @@ Stage Q1-open-room (done):
   lead copy's submodule). A worktree with the old submodule fails build-release (`lessonSegments` missing).
 
 ## Not verified
+
+- Q2: no page glue yet, so nothing of the race was seen in a browser; the two-browser probe (rooms-race.ts) is not
+  written. The race timings PREP_MS 45 s, RUN_MS 15 min, MAX_LAPS 10, LATE_MS 500 ms are estimates (named in race.py).
+- Q2: whether deploy/release-rooms.sh copies a new file of apps/rooms (race.py) was not read.
 
 - Old-code control of test_open_vote.py: on origin/main's rooms.py the test module fails at import (no votes module),
   an error, not an assertion. The assertion control is a mutant majority rule (yes >= half): 3 failures, 1 error.
@@ -127,3 +139,7 @@ Stage Q1-open-room (done):
 - Q1 worker 2 (probes, 26 replies): most turns went to waiting for the GPU lock (another lane held it ~20 min) and one
   failed run from the SONIC_PORTS port clash in rooms-serve.ts; a rig smoke check (curl the front) before the first
   browser run would have caught the clash without a lock wait.
+- Q2 worker 1 (30 replies, finished server and page logic, not the glue): reading the course feature (course.ts,
+  run.ts, laps.ts) to find a public way to build the same course took 5 replies; it has no function to build a course
+  from a seed for another feature, so the glue must drive the course worker itself. Cheaper: one scout line naming the
+  course feature's public API for other lanes, and a stage split server+logic / glue / probe from the start.
