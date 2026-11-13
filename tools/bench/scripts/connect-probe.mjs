@@ -183,7 +183,10 @@ try {
     stopHelper();
     await new Promise((r) => setTimeout(r, 1000));
 
-    await run('nohelper', {}, { rc2: true }, async (page, note) => {
+    // Chrome's Local Network Access answered 'granted' (the pilot allowed it once): headless Chrome on http://localhost
+    // says 'prompt' for 'loopback-network' (measured on 2026-11-13 by this probe), and while it asks the page waits
+    // for the Allow instead of retrying (no question may come by itself)
+    await run('nohelper', {}, { rc2: true, lna: 'granted' }, async (page, note) => {
         await page.goto(url, { waitUntil: 'load' });
         await waitFor(page, (s) => s.ready && s.radio, 120000);
         await page.waitForSelector('[data-action=radio-connect]', { timeout: 10000 });

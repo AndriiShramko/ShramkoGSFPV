@@ -21,9 +21,9 @@ Stage C2-auto-connect:
 - [x] C2.1 "The flow" below (today and new)
 - [x] C2.2 code (25c3b21b): `devices/usb-look.ts` routeOf, helperOffered, `untested`, the ?rcbridge switch retired (rcBridgeOn removed; RC_BRIDGE_KEY kept only as a name for migrate.ts); `ui/usb-look-block.ts` pickDji (USB chooser, stick channel, refused claim goes on to the helper by itself), quietHelper and the quiet watch (2000 ms between tries, chosen, not measured), the helper section built only when offered; `ui/radio.ts` "Connect my controller" (radio-connect: HID chooser, then the DJI USB chooser, a second press when Chrome wants one), autoFind once per screen (granted HID, granted RC 2 over WebUSB, else the quiet helper with a saved RC 2 setup), the pad watch opens ANY pad once per pad and screen; `app/input.ts` findSavedRc2Helper in resumeInput (only with the permission granted or absent); `tools/rc-bridge/start-rc-bridge.cmd` renamed `start-dji-helper.cmd`; locales fly/usb en/es/pl/ru: 7 new keys, 9 texts without the word bridge
   - checks: new `tools/bench/test/app-connect.test.ts` 6 tests; with app-usb-look, app-dji-rc2-bridge, app-dji-rc2-lna, app-dji-rc2, app-known-controller, app-hid-source, a6-reference, packages/prefs migrate: 89 of 89 passed; neg control NEG OK (old usb-look.ts and usb-look-block.ts: 6 of 6 failed, the routing tests by a missing export, the block tests by assertions); typecheck apps/fly 0
-- [ ] C2.3 local release (`node scripts/build-release.mjs`, about 6 minutes, in the background first) and the probes on it, ports 5780-5799, under the GPU lock: hid-source-probe, wizard-auto-check, rc2-probe usb,refused,bridge,bridge-lna. Expect rc2-probe `bridge`: the page may now connect to the replay helper by itself at load (saved RC 2 setup from the usb part, localhost has no Local Network Access question): if its press finds the check screen already open, adapt the probe (the check is "reaches the check screen or flight with the RC 2 key", not "after the press")
-- [ ] C2.4 new probe cases (a new script `tools/bench/scripts/connect-probe.mjs` in the pattern of rc2-probe.mjs): (1) a fake gamepad that appears on the Controls screen opens the wizard with no press; (2) a returning RC 2 pilot, permission granted (fake permissions.query 'granted' as rc2-probe bridge-lna does), the replay helper running: check screen or flight with no press; (3) no helper running: press usb-rc2-bridge, data-state nobridge with "1. Double-click", then start `python tools/rc-bridge/rc_bridge.py --replay evidence/2026-11-13/rc2/frames-rest.json --wiggle --dev --port <p>` and see data-state flying with no press
-- [ ] C2.5 screenshots of the Controls screen at 1920x1080 and 844x390 into U:/Temp/gsfpv-train2/shots/ (connect-c2-*.png), looked at
+- [x] C2.3 (d7ae87a9) local release of fe8b30e2 (build-release.mjs, sha256 f1429e54..., 1903 files), server :5780, under the GPU lock (`U:/Temp/gsfpv-train2/connect/run-c2.sh`, sum `run-c2.sum`): hid-source-probe exit 0, 9 of 9 runs pass; wizard-auto-check exit 0 (nobuttons, human, dji end on check, 0 errors); rc2-probe usb,refused,bridge,bridge-lna 19 of 19 checks (`connect/rc2-c2.json`). rc2-probe changed: RC2_BRIDGE_PORT sends the page's helper socket to the probe's own helper (5781; the owner's real helper holds 47310) with bypassCSP; refused expects 'helper program' and no word bridge; bridge accepts an auto connect at load (measured: none on http://localhost, Chrome says 'prompt' there, the press connected, check screen, 185 frames in 2 s); bridge-lna and bridge-nogrant reach the helper after a refused claim (a fresh profile offers it only then); usb writes `<out>-state.json` for connect-probe
+- [x] C2.4 (d7ae87a9 and this commit) `tools/bench/scripts/connect-probe.mjs` 13 of 13 checks (`connect/connect-c2b.json`): pad: Controls screen first, an unknown gamepad shown after 2 s opens the wizard with no press (2957 ms after load); returning: rc2-probe's saved state, Local Network Access faked 'granted', replay helper on 5782: straight to flight with no press (2750 ms), 188 answers in 2 s; nohelper: one press of radio-connect (HID chooser 1, USB chooser 1, claim 1) gives data-state nobridge with '1. Double-click', no word bridge on the screen; helper started 3 s later: the wizard (stir/ready) 613 ms after, no second press. First run of nohelper failed without the 'granted' fake: headless Chrome on http://localhost answers 'prompt' for loopback-network, so the page shows the asking line and waits for Allow (by design: no retry may raise the question)
+- [x] C2.5 `U:/Temp/gsfpv-train2/shots/connect-c2-controls-1920x1080.png` and `-844x390.png` looked at: 'Connect my controller' is the first, big green button with its hint under it, the old ways below, 'My controller is not in the list' as a closed details line at the end; at 844x390 the button and hint fit the first screen. An empty band of about 70 px under each hint (the empty status lines) is the old layout's. Also connect-c2-nohelper-line.png, connect-c2-{pad,returning,nohelper}.png
 - [x] C2.6 (c) on the helper side: `tools/rc-bridge/rc_bridge.py` pick_device: the RC 2 (2CA3:1021) first, else the first other 2CA3 device that is not in NOT_CONTROLLERS (the drone 2CA3:0020), logged as an untested DJI controller, only the stick request sent; test_rc_bridge.py 23 of 23 OK; neg control NEG OK (old rc_bridge.py: Duml 1 error, pick_device missing). Not run against a real other DJI controller (none here)
 
 ## Facts (measured)
@@ -171,11 +171,25 @@ comes right after its screen), so the replay's timeline is taken as his.
 - The owner's real bridge (python rc_bridge.py --record U:\Temp\gsfpv-train2\rc2\rc2-rec-20261113.jsonl, PID 38364)
   was still listening on 47310 during this stage; it was not touched. The probe uses its own port.
 
+- Lane connect C2 done in code and probes; not on a real controller. The helper's own window (rc_bridge.py main())
+  still prints 'Shramko RC bridge' and "'My controller is not in the list', 'Fly through the RC bridge'": the pilot
+  reads that window. Next small step: say 'Shramko helper for DJI controllers' and 'press Connect my controller'.
+- The old details block (usb-rc2-fly) says on a refused claim "the simulator tries it now" (usb.rc2.claimBridge) but
+  only the Connect road tries the helper by itself; the details road shows the helper button instead.
+- On the live https site a first-time pilot gets Chrome's Local Network Access question at the first helper try;
+  the page then waits on the asking line. Measured headless on http://localhost: 'prompt' as well, so a page served
+  from localhost never auto-connects without the press either (rc2-probe bridge, autoConnected false).
+
 ## Not verified
 - The live page's state during his session (style, saved choice, presses): only his stick record exists.
 - CPU time per answer in the page (not profiled; the C1.4 verdict rests on the code path and the log growth).
 - Whether the check screen's throttle-style row comes out from under the Fly bar by scrolling (one screenshot only).
 - Which of the replay's disarms at 166-197 s came from the stale gate and which from the centred pilot.
+
+- C2 with a real DJI RC 2 or another DJI controller: none was used (the owner's helper on 47310 was left alone);
+  rc_bridge.py pick_device is tested on lists of ids only.
+- The real Chrome order of choosers after one press (HID, then USB): the probe fakes both; whether Chrome on Windows
+  wants a second press there is handled in code (SecurityError gives 'usb.connect.again') but not seen in a browser.
 
 ## Cost notes
 - C1 first worker: most turns went to reading the wizard's centre and throttle steps and the throttle-style
@@ -188,3 +202,6 @@ comes right after its screen), so the replay's timeline is taken as his.
   files through Python scripts (one heredoc broke, one anchor missed `clear(this.body)`, Edit refused files read
   only by cat). Cheaper: read the exact anchor lines with the Read tool first and patch with Edit; build the release
   in the background as the first command of C2.3.
+- C2 pass 2: about 30 replies. Most went to the probe rerun waiting on the GPU lock and to learning that localhost
+  answers 'prompt' for loopback-network. Cheaper: query the permission state in the page before writing a case that
+  depends on it.
