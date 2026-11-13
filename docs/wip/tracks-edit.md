@@ -19,6 +19,11 @@ Stage T1-api (server side):
 - [x] S3 negative controls (neg_control.py, ref origin/main): test_tracks_edit on old tracks.py + server.py: NEG OK
       (5 failures, 16 errors: the errors are missing routes and methods); fixtures.test.ts on old server.ts: NEG OK
       (7 failed). docs/tracks-api.md rewritten to the new contract; deploy/README.md row updated.
+- [x] S4 (5635c676) apps/api/tests/test_admin_routes.py pins the admin route set: the 7 tracks routes added. Run:
+      test_admin_routes, test_nginx_tracks, test_sessions_admin, test_admin, test_tracks, test_tracks_edit: 75 tests OK.
+- [ ] Left of tracks-plan 2.8 for a later stage (not built here, estimates in the plan): total store cap 200 MB (the disk
+      guard stands in), a per-client read rate (nginx), honeypot and time-to-submit on create. Client side (stages T2+):
+      store.ts row filter, editor, fork/vote UI, admin tab apps/fly/src/admin/tracks/**.
 
 ## Decisions
 
@@ -56,5 +61,14 @@ Stage T1-api (server side):
 ## Not verified
 
 - Nothing on a deployed server; no browser run (server stage).
+- Whether release-api.sh plus the running container pick up a NEW module (tracks_admin.py) without --compose: the script
+  copies the named files; the container's view of apps/api was not read.
+- The full api-unittest suite and the gates were not run (integration runs them); only the six test modules above.
+- The blocklist and the allowed signs are a first guess, not measured against real pilot names.
 
 ## Cost notes
+
+- T1-api (about 35 replies): most turns went to the shared-fixture contract (the TS validator enforces the format's
+  succession rule the Python port lacked, found only by the vitest run) and to escape sequences turning into real
+  non-ASCII characters in a Python test and a heredoc (fixed with a script). Cheaper: run the TS fixture test right after
+  changing fixtures; keep non-ASCII test strings in JSON fixtures written by a script; edit docs with the Edit tool only.
