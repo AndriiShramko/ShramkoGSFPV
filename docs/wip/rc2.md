@@ -119,7 +119,28 @@ because the files do not exist on origin/main; vitest run as node node_modules/v
   (refused claim without the switch: no bridge text, no bridge button; the switch itself; with it the claim names the
   bridge) and app-dji-rc2-bridge (runs with ?rcbridge=1). NEG OK with only the old block in place (the bridge button
   appeared without the switch). app-usb-look + app-dji-rc2-bridge + app-dji-rc2 28 passed, tsc of apps/fly clean.
-  Commit COMMIT2.
+  Commit 1c7e4e38.
+- [x] RC2-R5, R6, R7, R8 (minor) and R9 bridge side, tools/rc-bridge/rc_bridge.py: (R5) each page has its own write
+  lock and a 0.5 s send timeout (SEND_TIMEOUT_S, estimate), writes happen outside the shared lock and a page that
+  takes no data is dropped; (R6) a frame from the page that is not close/ping/pong or longer than 125 bytes closes
+  the connection; (R7) http://localhost[:port] only with --dev, staging https://gsfpv-staging.flyreelstudio.eu
+  allowed (nginx serves it with the same CSP); (R8) descriptor_ok(): the 18 bytes at DEV_DESC_OFF must start 12 01,
+  otherwise a plain refusal naming the DLL path; (R9) stick_values takes only the recorded layout, range 324..1724.
+  test_rc_bridge.py 14 passed. NEG OK on the old rc_bridge.py for the whole file (origins, layout); for R5 and R6
+  separately through a scratch copy of the tests without dev=True (U:/Temp/rc2neg/test_scratch.py): old bridge, R6
+  connection not closed; R5 "late bytes 0" against 1925434 on the new one (the stalled page uses a 4 KB receive
+  buffer so it fills at once). The DLL version is not printed (no version API call added; the path is printed).
+  Commit COMMIT3.
+- [x] RC2-R11 (minor): Decisions "Poll" line and the README step 5 corrected (4 requests out; no ARM press in the
+  centred style); dji-duml.ts header no longer claims byte 0 is a result code; the two recordings copied to
+  packages/input/test/fixtures/dji-rc2/ and dji-duml.test.ts, app-dji-rc2.test.ts and test_rc_bridge.py read them
+  there. rc2-probe.mjs opens the fly page with &rcbridge=1 (R2's switch). Commit COMMIT3.
+- [ ] RC2-R1 (blocker): NOT refuted, NOT fixable in this lane. The cost is in apps/fly/src/play/ground.ts,
+  packages/collision/src/world.ts and the lesson pilot (outside this lane's paths); the lane's own CDP stacks show it.
+  Moved to "For the lead before the merge" with the reviewer's fix. Stage 3 step 4 stays unticked until then.
+- [ ] RC2-R10 (minor): left for the lead (see "For the lead"): announcing onEnd needs an in-flight message channel
+  outside this lane (radio.ts / the Controls status); no such announcer exists in this lane's files (grep for
+  aria-live and announce helpers in apps/fly/src found none usable in flight).
 
 ## Verdict of stage 1
 
@@ -204,9 +225,11 @@ every received frame, measured]:
   364..1684. With six axes the known table does not take the RC 2 for the DJI FPV Remote Controller 3 (both 2CA3:1021):
   tested (recognise returns null). No known-table entry: the throttle style auto resolves 'centred' from the rest the
   wizard and the rest watch see (1024 = middle), as lane center-throttle does for any spring-centred stick.
-- No buttons are read (their DUML is unknown): the pilot arms with Space or the on-screen ARM (key arm).
-- Poll: one request in flight, next one after the answer or 100 ms (estimate), at most every 10 ms (reference default
-  100 Hz, not measured here). First answer must come within 1500 ms (estimate) or the helper says 'silent'.
+- No buttons are read (their DUML is unknown). In the centred style the stick starts the motors, no ARM press needed.
+- Poll: a request every 10 ms (reference default 100 Hz, not measured here) while fewer than 4 are out
+  (RC2_INFLIGHT, estimate); a request unanswered after 100 ms (estimate) is given up and a later answer to it is
+  dropped (matched by sequence number). First answer must come within 1500 ms (estimate) or the helper says 'silent'.
+- Review RC2-R2: the RC bridge is offered only behind ?rcbridge=1 (remembered per browser) until it can be downloaded.
 - HidSource.close() removes the last listener: DjiRc2Device then releases the interface and closes the device, so
   nothing polls in the background (radio.ts choose() lets go of owned sources this way).
 - Stage 3 path (ii), the native bridge: adb stayed offline in stage 1, the libusb0_dji read worked. The bridge sends
@@ -249,6 +272,23 @@ every received frame, measured]:
   centre-throttle-probe.mjs should then also climb above 6 m once.
 - Stage 3: the probe's usb.climbs still fails (Status, stage 3 step 4): do not ship the RC 2 path as "flies" before it
   passes.
+- Review RC2-R1 (blocker, outside this lane): make groundClearance cheap (walk the voxel column below the craft, or
+  sweep in pieces of about 1 m so no cover sphere is large, and skip the whole-segment cover for long sweeps) and
+  limit the probe by wall-clock time taken after it returns, or run it on the frame tick instead of per input
+  report. The same probe runs for every centred-style radio and the keyboard game pilot (game-pilot.ts:78-80).
+  Reviewer's synthetic timings: 88.5 ms per probe at 5 cm voxels with the floor 0.3 m below, 434 ms with nothing
+  within 20 m, against a 33 ms interval. Then rebuild and run rc2-probe.mjs (three runs plus the negative control)
+  before the RC 2 is announced as flying; until then do not apply lead-wiring.patch.txt on a release.
+- Review RC2-R10: when applying lead-wiring.patch.txt, set d.onEnd in the fly callback so that 'unplug' and 'error'
+  (not 'closed') say one line through the Controls status / in-flight message channel, with a new key usb.rc2.lost
+  in en/es/pl/ru, e.g. en "The DJI RC 2 stopped sending its sticks (unplugged, switched off or the RC bridge was
+  closed), so the motors were stopped. Connect it again under Controls." Not added here: an unused key would sit in
+  the locales with no caller on this branch.
+- Review RC2-R2: the owner opens https://gsfpv.flyreelstudio.eu/en/fly/?rcbridge=1 once to see the bridge button.
+  Publishing the bridge as a download (then drop the switch and put the address in usb.rc2.bridgeWhy/noBridge) is
+  the lead's call.
+- Review RC2-R7: a local probe of the bridge path needs the bridge started with --dev (http://localhost pages):
+  python -X utf8 tools/rc-bridge/rc_bridge.py --replay packages/input/test/fixtures/dji-rc2/frames-rest.json --wiggle --dev
 
 ## Not verified
 - Stick decode while sticks move (nobody touched them during 35 s of recording): offsets, range and
@@ -275,6 +315,10 @@ every received frame, measured]:
 - Stage 3: start-rc-bridge.cmd was not double-clicked (the bridge was started with python directly); the 32-bit
   Python refusal path was not run.
 
+- Review fixes: the new limits (RC2_RANGE_MARGIN 40, SEND_TIMEOUT_S 0.5, the 125-byte page frame) are estimates or
+  protocol limits, not measured on the real controller; R4's sequence matching and R9's layout check were not run
+  against the real RC 2 (it was not connected); the bridge on the staging origin was not tried.
+
 ## Cost notes
 - Stage 1: most turns went to pyusb crashing on DJI's libusb0 build (3 turns to find the struct offset);
   starting straight with ctypes on the libusb0 C API would have saved them. Total about 17 replies.
@@ -293,3 +337,8 @@ every received frame, measured]:
 - Stage 3 pass 3: about 40 replies, not finished. Two 5-min blind waits on hung runs before the probe had step logs;
   then four 2.5-min runs to get a stack. A CDP Debugger.pause with frame arguments on hang, built into the probe from
   the start, would have found the ground sweep in one run instead of three passes of guessing at timers.
+- Review fixes: about 40 replies. Most went to negative controls that proved nothing at first: vitest's entry is
+  node_modules/vitest/vitest.mjs at the repo root (not under tools/bench), Windows timers tick at about 15 ms (a rAF
+  stub built on setTimeout could not show the old wake; setImmediate could), a socket buffer grows too far to show a
+  stalled page (SO_RCVBUF 4 KB did), and old-code runs that fail only on a missing new parameter (dev=True) need a
+  scratch copy of the tests. A line in the code map with the exact vitest and neg_control command would save 3 replies.

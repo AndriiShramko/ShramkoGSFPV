@@ -18,20 +18,30 @@ Measured on 2026-11-13 on the owner's PC with his RC 2: 633 stick messages in 10
    installed. Nothing else: standard library only.
 2. Connect the RC 2 with a data cable and switch it on. Close DJI Assistant 2 (it may hold the interface).
 3. Double-click `start-rc-bridge.cmd`. The window says `Shramko RC bridge on ws://127.0.0.1:47310/`. Leave it open.
-4. On https://gsfpv.flyreelstudio.eu open the simulator, Controls, "My controller is not in the list",
-   "Fly through the RC bridge". If Chrome asks whether the site may reach apps on this device, allow it.
+4. Open https://gsfpv.flyreelstudio.eu/en/fly/?rcbridge=1 once (the bridge button is behind this switch until the
+   program can be downloaded; the browser remembers it, `?rcbridge=0` hides it again). Then Controls, "My controller
+   is not in the list", "Fly through the RC bridge". If Chrome asks whether the site may reach apps on this device,
+   allow it.
 5. The first time, the wizard asks you to move each stick (as for any controller); later visits open the check screen.
-   The RC 2's buttons are not read: arm with Space or the on-screen ARM. Its left stick springs to the centre, so the
-   simulator uses the centred-throttle style.
+   The RC 2's buttons are not read. Its left stick springs to the centre, so the simulator uses the centred-throttle
+   style: the stick starts the motors, no ARM press is needed.
 
 `python rc_bridge.py --dll <path>` points at another copy of `libusb0_dji.dll`; `--port` changes the port (the page
-always uses 47310). `--replay <frames.json> [--wiggle]` plays a recording instead of the controller (tests).
+always uses 47310). `--replay <frames.json> [--wiggle]` plays a recording instead of the controller (tests, e.g.
+`packages/input/test/fixtures/dji-rc2/frames-rest.json`); `--dev` also accepts pages from http://localhost[:port]
+(a local build).
 
 ## Safety
 
 - Listens on 127.0.0.1 only; nothing on the network can connect.
-- Accepts only the pages https://gsfpv.flyreelstudio.eu and http://localhost[:port] (the browser's Origin header),
-  and only under the Host 127.0.0.1:<port> or localhost:<port>.
+- Accepts only the pages https://gsfpv.flyreelstudio.eu and https://gsfpv-staging.flyreelstudio.eu (the browser's
+  Origin header; http://localhost[:port] only with `--dev`), and only under the Host 127.0.0.1:<port> or
+  localhost:<port>.
+- A page that stops taking data for 0.5 s is dropped, so it cannot hold up another page; a page that sends anything
+  but close, ping or pong, or a frame longer than 125 bytes, is disconnected.
+- Before it walks DJI's driver structures it checks that the bytes at the measured offset are a USB device
+  descriptor; another `libusb0_dji.dll` version is refused with a plain message instead of a wrong read.
+- Only stick answers in the recorded layout (result 0, channel numbers 1..6, values 324..1724) are passed on.
 - Read-only towards the controller: the only frame it sends is the DUML stick request (set 06, id 01, empty payload).
   No settings, no firmware, nothing written.
 - Opens the controller only while a page is connected and lets it go when the last page leaves.

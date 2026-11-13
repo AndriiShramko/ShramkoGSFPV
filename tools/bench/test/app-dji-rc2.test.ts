@@ -32,7 +32,7 @@ beforeAll(async () => {
     C = await import('../../../apps/fly/src/controls');
 });
 
-const rec = JSON.parse(readFileSync(resolve(__dirname, '../../../evidence/2026-11-13/rc2/frames-rest.json'), 'utf8')) as { frames: { hex: string; set: number }[] };
+const rec = JSON.parse(readFileSync(resolve(__dirname, '../../../packages/input/test/fixtures/dji-rc2/frames-rest.json'), 'utf8')) as { frames: { hex: string; set: number }[] };
 const bytes = (hex: string): Uint8Array => Uint8Array.from(hex.match(/../g)!.map((x) => parseInt(x, 16)));
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 const until = async (ok: () => boolean, ms = 2000): Promise<void> => { const t0 = Date.now(); while (!ok() && Date.now() - t0 < ms) await sleep(5); };

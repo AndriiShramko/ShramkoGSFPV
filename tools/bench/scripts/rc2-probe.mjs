@@ -290,7 +290,7 @@ if (only.includes('usb') || only.includes('bridge')) usbCtx = await browser.newC
 if (only.includes('usb')) {
     await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
     await run('usb', usbCtx, async (page, note) => {
-        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false`, { waitUntil: 'load' });
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1&set.input.howToFly=false`, { waitUntil: 'load' });
         step('usb: loaded');
         await openHelper(page);
         step('usb: helper open');
@@ -359,7 +359,7 @@ if (only.includes('refused')) {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
     await ctx.addInitScript(installFakeRc2, { refuse: true, answer: fakeAnswer });
     await run('refused', ctx, async (page, note) => {
-        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
         await openHelper(page);
         await page.locator('[data-action=usb-look]').click();
         await page.locator('[data-action=usb-rc2-fly]').click({ timeout: 10000 });
@@ -377,7 +377,7 @@ if (only.includes('refused')) {
 if (only.includes('bridge')) {
     if (!only.includes('usb')) await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
     await run('bridge', usbCtx, async (page, note, csp) => {
-        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
         await openHelper(page);
         await page.waitForTimeout(1500);
         note.socketsBeforePress = (await state(page)).probe.sockets;

@@ -15,7 +15,7 @@ import type { DumlFrame } from '../src/dji-duml';
 import { hidProfileKey, makeHidReader } from '../src/hid-layout';
 import { recognise, seenFromHid } from '../src/known-devices';
 
-const EV = resolve(__dirname, '../../../evidence/2026-11-13/rc2');
+const EV = resolve(__dirname, 'fixtures/dji-rc2'); // copies of evidence/2026-11-13/rc2/frames-rest*.json
 interface Rec { request: string; frames: { hex: string; seq: number; set: number; id: number; type: number; values?: number[] | null }[] }
 const recs: Rec[] = ['frames-rest.json', 'frames-rest-2.json'].map((f) => JSON.parse(readFileSync(resolve(EV, f), 'utf8')) as Rec);
 const bytes = (hex: string): Uint8Array => Uint8Array.from(hex.match(/../g)!.map((x) => parseInt(x, 16)));

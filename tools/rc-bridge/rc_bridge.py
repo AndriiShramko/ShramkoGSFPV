@@ -39,8 +39,11 @@ import threading
 import time
 
 PORT = 47310  # chosen for this bridge (unassigned by IANA); not a measured number
-ALLOWED_ORIGINS = ("https://gsfpv.flyreelstudio.eu",)
-ALLOWED_LOCAL_ORIGIN_HOSTS = ("localhost",)  # http://localhost and http://localhost:<port>
+ALLOWED_ORIGINS = ("https://gsfpv.flyreelstudio.eu", "https://gsfpv-staging.flyreelstudio.eu")  # the site, staging
+ALLOWED_LOCAL_ORIGIN_HOSTS = ("localhost",)  # http://localhost and http://localhost:<port>, only with --dev
+SEND_TIMEOUT_S = 0.5  # a page that takes no data for this long is dropped (estimate: a reading page takes it at once)
+MAX_CLIENT_FRAME = 125  # the page sends only close and ping, whose bodies are at most 125 bytes (RFC 6455 5.5)
+RAW_MIN, RAW_MAX, RAW_MARGIN = 364, 1684, 40  # the reference's stick range; the margin is an estimate (dji-duml.ts)
 VID, PID = 0x2CA3, 0x1021
 POLL_S = 0.01  # one request every 10 ms: the reference's default 100 Hz, not measured here
 REPLY_S = 0.1  # a request with no answer after this is given up (stage 1 saw every answer within 100 ms)
@@ -124,9 +127,18 @@ def stick_values(frame):
     if len(frame) < 13 or frame[5] != 0x0A or not frame[8] & 0x80 or frame[9] != 0x06 or frame[10] != 0x01:
         return None
     p = frame[11:-2]
-    if len(p) < 18:
+    # only the recorded layout (packages/input/src/dji-duml.ts stickValues): byte 0 is 0, each value followed by its
+    # channel number 1..6, every value in range; anything else is never sent to the page as stick positions
+    if len(p) < 19 or p[0] != 0 or any(p[o + 2] != i + 1 for i, o in enumerate((1, 4, 7, 10, 13, 16))):
         return None
-    return [struct.unpack_from("<H", p, o)[0] for o in (1, 4, 7, 10, 13, 16)]
+    v = [struct.unpack_from("<H", p, o)[0] for o in (1, 4, 7, 10, 13, 16)]
+    return v if all(RAW_MIN - RAW_MARGIN <= x <= RAW_MAX + RAW_MARGIN for x in v) else None
+
+
+def descriptor_ok(desc):
+    """The 18 bytes read at DEV_DESC_OFF are a USB device descriptor (length 0x12, type 0x01): the DLL has the measured
+    layout. Another libusb0_dji.dll version could put other memory there."""
+    return len(desc) == 18 and desc[0] == 0x12 and desc[1] == 0x01
 
 
 # ---- sources of stick values ----
@@ -183,7 +195,11 @@ class DjiUsb:
         while bus and dev is None:
             d = C.c_void_p.from_address(bus + BUS_DEVICES_OFF).value
             while d:
-                vid, pid = struct.unpack_from("<HH", C.string_at(d + DEV_DESC_OFF, 18), 8)
+                desc = C.string_at(d + DEV_DESC_OFF, 18)
+                if not descriptor_ok(desc):
+                    raise Closed("this libusb0_dji.dll (%s) does not have the layout the bridge was measured with "
+                                 "(4.8.13 amd64): please send us its version" % self.dll)
+                vid, pid = struct.unpack_from("<HH", desc, 8)
                 if (vid, pid) == (VID, PID):
                     dev = d
                     break
@@ -229,7 +245,7 @@ class DjiUsb:
 
 
 class Replay:
-    """Recorded frames (evidence/2026-11-13/rc2/frames-rest*.json) played in a loop; --wiggle moves roll slowly."""
+    """Recorded frames (packages/input/test/fixtures/dji-rc2/frames-rest*.json) in a loop; --wiggle moves roll slowly."""
 
     def __init__(self, path, wiggle=False):
         with open(path, encoding="utf-8") as f:
@@ -265,10 +281,12 @@ def accept_key(key):
     return base64.b64encode(hashlib.sha1((key + GUID).encode()).digest()).decode()
 
 
-def origin_allowed(origin):
+def origin_allowed(origin, dev=False):
+    """The site and staging; http://localhost[:port] (a local build) only with --dev, so no other local page reads the
+    sticks."""
     if origin in ALLOWED_ORIGINS:
         return True
-    if origin.startswith("http://"):
+    if dev and origin.startswith("http://"):
         host = origin[len("http://"):]
         name, _, port = host.partition(":")
         return name in ALLOWED_LOCAL_ORIGIN_HOSTS and (port == "" or (port.isdigit() and len(port) <= 5))
@@ -304,9 +322,11 @@ def read_request(conn):
 
 
 class Bridge:
-    def __init__(self, source_factory, port=PORT, log=lambda s: print(s, flush=True)):
+    def __init__(self, source_factory, port=PORT, log=lambda s: print(s, flush=True), dev=False):
         self.source_factory = source_factory
         self.port = port
+        self.dev = dev
+        self.wlocks = {}  # one write lock per page, so a pong and a stick message never interleave
         self.log = log
         self.clients = set()
         self.lock = threading.Lock()
@@ -318,14 +338,24 @@ class Bridge:
     def send_all(self, msg):
         data = frame(json.dumps(msg, separators=(",", ":")))
         with self.lock:
-            dead = []
-            for c in self.clients:
-                try:
+            clients = [(c, self.wlocks.get(c)) for c in self.clients]
+        # written outside the shared lock, each page with its own send timeout (SEND_TIMEOUT_S): a page that stops
+        # reading is dropped and does not hold up the others (review RC2-R5)
+        for c, wl in clients:
+            try:
+                with wl or threading.Lock():
                     c.sendall(data)
-                except OSError:
-                    dead.append(c)
-            for c in dead:
-                self.clients.discard(c)
+            except OSError:
+                self.drop(c)
+
+    def drop(self, c):
+        with self.lock:
+            self.clients.discard(c)
+            self.wlocks.pop(c, None)
+        try:
+            c.close()
+        except OSError:
+            pass
 
     def set_state(self, state, why=None):
         if state != self.state:
@@ -342,7 +372,7 @@ class Bridge:
             line, hd = read_request(conn)
             origin = hd.get("origin", "")
             ok = (line is not None and line.startswith("GET / ") and hd.get("upgrade", "").lower() == "websocket"
-                  and "sec-websocket-key" in hd and origin_allowed(origin) and host_allowed(hd.get("host", ""), self.port))
+                  and "sec-websocket-key" in hd and origin_allowed(origin, self.dev) and host_allowed(hd.get("host", ""), self.port))
             if not ok:
                 conn.sendall(b"HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
                 self.log("refused a connection from origin %r" % origin[:80])
@@ -351,31 +381,33 @@ class Bridge:
             conn.sendall(("HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
                           "Sec-WebSocket-Accept: %s\r\n\r\n" % accept_key(hd["sec-websocket-key"])).encode())
             conn.sendall(frame(json.dumps({"hello": "shramko-rc-bridge", "version": 1})))
-            conn.settimeout(None)
+            conn.settimeout(SEND_TIMEOUT_S)
             with self.lock:
                 self.clients.add(conn)
+                self.wlocks[conn] = threading.Lock()
             self.log("page connected: %s" % origin)
             self.client_loop(conn)
         except OSError:
             pass
         finally:
-            with self.lock:
-                self.clients.discard(conn)
-            try:
-                conn.close()
-            except OSError:
-                pass
+            self.drop(conn)
 
     def client_loop(self, conn):
-        """Reads the page's frames: close and ping only (the page sends nothing else)."""
+        """Reads the page's frames: close, ping and pong only (the page sends nothing else). A data frame or a frame
+        longer than MAX_CLIENT_FRAME closes the connection, so a page cannot make the bridge hold its bytes (RC2-R6)."""
         buf = b""
         while not self.stopped.is_set():
-            chunk = conn.recv(4096)
+            try:
+                chunk = conn.recv(4096)
+            except socket.timeout:
+                continue  # the socket's timeout is for sending (SEND_TIMEOUT_S); a quiet page is fine
             if not chunk:
                 return
             buf += chunk
             while len(buf) >= 2:
                 op, n, at = buf[0] & 0x0F, buf[1] & 0x7F, 2
+                if op not in (8, 9, 10) or n > MAX_CLIENT_FRAME:
+                    return
                 if n == 126:
                     if len(buf) < 4:
                         break
@@ -391,7 +423,7 @@ class Bridge:
                 at += 4 if masked else 0
                 body = bytes(b ^ mask[i % 4] for i, b in enumerate(buf[at:at + n]))
                 buf = buf[at + n:]
-                with self.lock:
+                with self.wlocks.get(conn) or threading.Lock():
                     if op == 8:
                         conn.sendall(frame(body[:2], 8))
                         return
@@ -476,6 +508,7 @@ def main(argv=None):
     ap.add_argument("--dll", default=None, help="DJI's 64-bit libusb0_dji.dll (default: found under DJI Product)")
     ap.add_argument("--replay", default=None, help="recorded frames JSON instead of the controller")
     ap.add_argument("--wiggle", action="store_true", help="with --replay: move roll slowly")
+    ap.add_argument("--dev", action="store_true", help="also accept pages from http://localhost[:port] (a local build)")
     a = ap.parse_args(argv)
     if a.replay:
         factory = lambda: Replay(a.replay, a.wiggle)  # noqa: E731
@@ -486,7 +519,7 @@ def main(argv=None):
         dll = a.dll or find_dll()
         factory = lambda: DjiUsb(dll)  # noqa: E731
         what = "DJI RC 2 through " + str(dll)
-    b = Bridge(factory, a.port)
+    b = Bridge(factory, a.port, dev=a.dev)
     port = b.start()
     print("Shramko RC bridge on ws://127.0.0.1:%d/ (%s)." % (port, what))
     print("Open the simulator, Controls, 'My controller is not in the list', 'Fly through the RC bridge'. Ctrl+C stops.")
