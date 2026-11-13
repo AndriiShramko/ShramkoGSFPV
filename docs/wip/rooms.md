@@ -61,7 +61,7 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   free port, killed in afterAll and on process exit).
 - Not done in R2: name tags, member list on screen, panel, Shift+L/Shift+O, speech, live region, near call, page probe;
   remote drones are a box primitive in the slot's colour (grey when frozen), not the drones3d model.
-### Stage R3: screens, speech, probe - DONE (level 2 review left to the workflow)
+### Stage R3: screens, speech, probe - DONE
 - [x] `rooms/nick.ts` (the server's rule, default `Pilot-NNNN`, key `gsfpv.rooms.nick`), `rooms/around.ts` (`relation`,
       `nearest`, `whoLine`, `NearWatch` 3 m / re-arm 5 m, estimates), `rooms/announce.ts` (`Announcer`: sayVia with
       `sonic.say.text` when `ctx.sonic`, else its own `role=status` region on `document.body`; keys into `said`, last 50),
@@ -88,8 +88,9 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
       `rooms.say.nobody`; live region text present (27 chars). Controls fired: C in another room 0 of 599 frames with a
       remote; relay off: A flew 19.05 m, B 0 of 240 frames with a remote; x and z swapped RMS 6.3652 m. Rooms service
       tests after `--no-relay`: 42 OK. bench typecheck 0 errors.
-- [ ] level 2 review (one independent agent) and fixes: NOT done by this worker (it cannot start another agent); the
-      lead's workflow runs it. Stage R3 work is otherwise complete.
+
+**Lane level (not a stage item):** level 2 review (one independent agent) and its fixes are still to come; the stage
+workers cannot start another agent, the lead's workflow runs it.
 
 ## Findings
 - Load (`evidence/2026-11-13/rooms-load.json`): 50 synthetic pilots in 7 rooms, 15 poses/s each, 100 s, rooms.py as a
