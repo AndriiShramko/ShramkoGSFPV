@@ -28,6 +28,11 @@ export default defineConfig({
                 : { main: resolve(__dirname, 'index.html'), admin: resolve(__dirname, 'admin/index.html') }
         }
     },
-    server: { port: 5190, strictPort: true },
+    server: {
+        port: 5190,
+        strictPort: true,
+        // train 1, lane rooms: the rooms service (apps/rooms/rooms.py, default port 8091) and its WebSocket on the dev server
+        proxy: { '/api/rooms': { target: 'http://127.0.0.1:8091', ws: true } }
+    },
     preview: { port: 5191, strictPort: true }
 });

@@ -1,6 +1,7 @@
 # ShramkoGSFPV on the hub, in its own directory (GSFPV_BASE in deploy/hub.env).
-# Two containers, no host ports: nginx:alpine serves the static release behind nginx-proxy + acme,
-# a tiny python API counts events and forwards leads. The web-proxy network is external: never
+# Three containers, no host ports: nginx:alpine serves the static release behind nginx-proxy + acme,
+# a tiny python API counts events and forwards leads, gsfpv-rooms holds the rooms' WebSockets
+# (docs/rooms-protocol.md). The web-proxy network is external: never
 # created or changed from here. Neighbours are never touched.
 name: gsfpv
 
@@ -54,6 +55,28 @@ services:
     mem_limit: 192m
     cpus: 0.25
     pids_limit: 32
+    security_opt: ["no-new-privileges:true"]
+    logging: *logging
+
+  # Rooms (lane rooms, docs/rooms-protocol.md, rooms-plan.md 2.1): pilots who fly one scan together. One asyncio
+  # process holds every room socket in one thread (gsfpv-api is a thread per connection with pids_limit 32).
+  # Rooms live in RAM in train 1: no data volume. Reached only through our nginx (/api/rooms, /api/rooms/ws).
+  # Limits are the plan's; the load run (evidence/<date>/rooms-load.json) measured the process on a PC, not in them.
+  gsfpv-rooms:
+    image: python:3.12-alpine
+    container_name: gsfpv-rooms
+    restart: unless-stopped
+    command: ["python", "-u", "/app/rooms.py"]
+    read_only: true
+    volumes:
+      - ./rooms:/app:ro
+    environment:
+      PORT: "8091"
+      PYTHONDONTWRITEBYTECODE: "1"
+    networks: [gsfpv-internal]
+    mem_limit: 64m
+    cpus: 0.25
+    pids_limit: 8
     security_opt: ["no-new-privileges:true"]
     logging: *logging
 

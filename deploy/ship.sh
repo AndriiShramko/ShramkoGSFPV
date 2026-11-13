@@ -43,5 +43,5 @@ bash deploy/deploy.sh "$D/dist.tgz" "$D/SHA256SUMS" > "$D/deploy.log" 2>&1; rc=$
 tail -6 "$D/deploy.log"
 [ "$rc" = 0 ] || { echo "STOP: deploy.sh exit $rc (whole log: $D/deploy.log)"; exit 1; }
 python deploy/neighbours.py snap ".cache/nb-after-$SHA" | tail -1
-python deploy/neighbours.py diff ".cache/nb-before-$SHA" ".cache/nb-after-$SHA" --allow gsfpv-web,gsfpv-api | python -c "import sys,json; d=json.load(sys.stdin); print('neighbours equal', d.get('equal'), 'problems', d.get('problems'))"
+python deploy/neighbours.py diff ".cache/nb-before-$SHA" ".cache/nb-after-$SHA" --allow gsfpv-web,gsfpv-api,gsfpv-rooms | python -c "import sys,json; d=json.load(sys.stdin); print('neighbours equal', d.get('equal'), 'problems', d.get('problems'))"
 node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu 2>&1 | tail -2

@@ -1,0 +1,135 @@
+{
+ "what": "apps/rooms/tests/load.py: synthetic pilots against rooms.py as a plain process on this machine",
+ "date": "2026-11-13 02:10:21",
+ "machine": {
+  "os": "Windows-10-10.0.19045-SP0",
+  "cpu": "Intel64 Family 6 Model 85 Stepping 4, GenuineIntel",
+  "python": "3.11.9"
+ },
+ "containerLimitsReproduced": false,
+ "note": "The container limits (mem_limit 64m, cpus 0.25, pids_limit 8, python 3.12-alpine) were NOT applied: the Docker engine was not running on this machine. Memory is the Windows working set of the process; CPU is per cent of one core of this PC (cpus 0.25 = 25 per cent of one hub core, which may be slower or faster).",
+ "clients": 50,
+ "rooms": 7,
+ "seconds": 100.0,
+ "wallSeconds": 100.2,
+ "poseHz": 15,
+ "tickHz": 15,
+ "server": {
+  "rssStartMB": 23.07,
+  "rssEndMB": 23.9,
+  "rssPeakMB": 27.02,
+  "cpuMeanPctOfOneCore": 5.3,
+  "cpuPeakPctOfOneCore": 7.8,
+  "cpuSecondsTotal": 5.33,
+  "stderrTail": ""
+ },
+ "pilots": {
+  "posesSent": 75000,
+  "snapshotsPerSecMean": 15.0,
+  "snapshotsPerSecMin": 15.0,
+  "membersSeenMax": 8,
+  "closedEarly": 0
+ },
+ "samples": [
+  {
+   "t": 5.0,
+   "rssMB": 27.01,
+   "cpuPctOfOneCore": 5.3
+  },
+  {
+   "t": 10.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 4.4
+  },
+  {
+   "t": 15.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 5.9
+  },
+  {
+   "t": 20.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 5.6
+  },
+  {
+   "t": 25.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 5.6
+  },
+  {
+   "t": 30.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 5.6
+  },
+  {
+   "t": 35.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 4.1
+  },
+  {
+   "t": 40.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 5.6
+  },
+  {
+   "t": 45.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 4.1
+  },
+  {
+   "t": 50.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 5.3
+  },
+  {
+   "t": 55.0,
+   "rssMB": 27.02,
+   "cpuPctOfOneCore": 7.8
+  },
+  {
+   "t": 60.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 4.1
+  },
+  {
+   "t": 65.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 5.3
+  },
+  {
+   "t": 70.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 4.4
+  },
+  {
+   "t": 75.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 6.9
+  },
+  {
+   "t": 80.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 3.4
+  },
+  {
+   "t": 85.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 2.8
+  },
+  {
+   "t": 90.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 5.6
+  },
+  {
+   "t": 95.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 6.9
+  },
+  {
+   "t": 100.0,
+   "rssMB": 26.96,
+   "cpuPctOfOneCore": 7.8
+  }
+ ]
+}

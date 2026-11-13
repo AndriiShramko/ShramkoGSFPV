@@ -17,4 +17,10 @@ export interface RoomsHook {
     said: readonly string[];
     /** why the last create or join did not happen; null when it did */
     problem: string | null;
+    /** added in R3: the nickname this page joins with */
+    nick?: string;
+    /** added in R3: the room's link (https://<host>/fly/?scene=..&room=<id>) once joined; null outside a room */
+    link?: string | null;
+    /** added in R3: the slots whose name tag is placed in this frame */
+    tags?: readonly number[];
 }
