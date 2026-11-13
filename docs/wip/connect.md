@@ -17,6 +17,15 @@ Branch `connect` from `rc2-lna` b05df5e6 (origin/main 2a5ac433 was already in it
   - [x] centre-throttle-probe.mjs on the same release, :5780, under the GPU lock (`U:/Temp/gsfpv-train2/connect/centre-new.json`): pass, dji-centred 4 of 4, dji-flip 5 of 5, dji-bottom 3 of 3 checks, 0 page errors
 - [x] C1.4 (c3bca3d3 adds `logB` to the session probe) rates in Facts; the page logs one 36-byte record per physics tick that received any answer, identical or not; measured growth 1616 B/s; verdict in For the lead
 
+Stage C2-auto-connect:
+- [x] C2.1 "The flow" below (today and new)
+- [x] C2.2 code (this commit): `devices/usb-look.ts` routeOf, helperOffered, `untested`, the ?rcbridge switch retired (rcBridgeOn removed; RC_BRIDGE_KEY kept only as a name for migrate.ts); `ui/usb-look-block.ts` pickDji (USB chooser, stick channel, refused claim goes on to the helper by itself), quietHelper and the quiet watch (2000 ms between tries, chosen, not measured), the helper section built only when offered; `ui/radio.ts` "Connect my controller" (radio-connect: HID chooser, then the DJI USB chooser, a second press when Chrome wants one), autoFind once per screen (granted HID, granted RC 2 over WebUSB, else the quiet helper with a saved RC 2 setup), the pad watch opens ANY pad once per pad and screen; `app/input.ts` findSavedRc2Helper in resumeInput (only with the permission granted or absent); `tools/rc-bridge/start-rc-bridge.cmd` renamed `start-dji-helper.cmd`; locales fly/usb en/es/pl/ru: 7 new keys, 9 texts without the word bridge
+  - checks: new `tools/bench/test/app-connect.test.ts` 6 tests; with app-usb-look, app-dji-rc2-bridge, app-dji-rc2-lna, app-dji-rc2, app-known-controller, app-hid-source, a6-reference, packages/prefs migrate: 89 of 89 passed; neg control NEG OK (old usb-look.ts and usb-look-block.ts: 6 of 6 failed, the routing tests by a missing export, the block tests by assertions); typecheck apps/fly 0
+- [ ] C2.3 local release (`node scripts/build-release.mjs`, about 6 minutes, in the background first) and the probes on it, ports 5780-5799, under the GPU lock: hid-source-probe, wizard-auto-check, rc2-probe usb,refused,bridge,bridge-lna. Expect rc2-probe `bridge`: the page may now connect to the replay helper by itself at load (saved RC 2 setup from the usb part, localhost has no Local Network Access question): if its press finds the check screen already open, adapt the probe (the check is "reaches the check screen or flight with the RC 2 key", not "after the press")
+- [ ] C2.4 new probe cases (a new script `tools/bench/scripts/connect-probe.mjs` in the pattern of rc2-probe.mjs): (1) a fake gamepad that appears on the Controls screen opens the wizard with no press; (2) a returning RC 2 pilot, permission granted (fake permissions.query 'granted' as rc2-probe bridge-lna does), the replay helper running: check screen or flight with no press; (3) no helper running: press usb-rc2-bridge, data-state nobridge with "1. Double-click", then start `python tools/rc-bridge/rc_bridge.py --replay evidence/2026-11-13/rc2/frames-rest.json --wiggle --dev --port <p>` and see data-state flying with no press
+- [ ] C2.5 screenshots of the Controls screen at 1920x1080 and 844x390 into U:/Temp/gsfpv-train2/shots/ (connect-c2-*.png), looked at
+- [ ] C2.6 (c) on the helper side: `tools/rc-bridge/rc_bridge.py` opens only 2CA3:1021 (line 206); for an untested DJI controller let it fall back to another 2CA3 device that is not the drone 2CA3:0020, with a test in test_rc_bridge.py; until then the helper says "does not see the controller" for such a controller. The page side (untested name, same route) is done
+
 ## Facts (measured)
 Record `U:/Temp/gsfpv-train2/rc2/rc2-rec-20261113.jsonl` (67134 lines), split at the first gap over 3 s
 (`U:/Temp/gsfpv-train2/connect/persec.py`):
@@ -65,6 +74,54 @@ C1.4, the page's handling of 64 answers per second (run `obey-new`, record pace,
   the identical answers are also the bridge's keep-alive for the 100 ms stale gate (`controls.ts` tick).
 
 ## The flow
+Every way a controller reaches the page before C2 (code of rc2-lna b05df5e6), what the pilot pressed, and what a
+browser lets a page do with no press:
+- Gamepad API (`devices/gamepad.ts`, `devices/reconnect.ts` findSavedGamepad): no press, no chooser. Chrome shows a
+  pad to the page only after a button or stick move on it (the Gamepad API's "gamepad user gesture"; reconnect.ts
+  header: "a gamepad appears on its own once an axis is off centre"). Before C2 the Controls screen opened a pad by
+  itself only when it was a RECOGNISED controller (`ui/radio.ts` watchPads: `recognise(...).device.mapping`); any
+  other pad needed the press "Gamepad" first.
+- WebHID (`devices/hid.ts` request, HID_CHOOSER_FILTERS): a press on "Radio or controller over USB" and a pick in
+  Chrome's chooser (requestDevice needs a user activation). A device granted once comes back with
+  `navigator.hid.getDevices()` with no press; before C2 only on page load and only with a saved setup
+  (reconnect.ts findSavedHid); a granted device with no saved setup still needed the press.
+- Known devices (`devices/known.ts`, `@gsfpv/input` recognise): not a way of its own; a recognised device opens on its
+  known setup's check screen instead of the wizard.
+- WebUSB look (`ui/usb-look-block.ts`): open the details "My controller is not in the list", press "Look at my DJI
+  controller", pick in Chrome's USB chooser (vendor 2CA3). Shows what the device offers; no reading.
+- The RC 2's WebUSB source (`devices/dji-rc2-source.ts`): after the look, a second press "Fly with this controller"
+  (claim of FF.43.01). A granted RC 2 comes back with `navigator.usb.getDevices()` (no press) on load when a saved
+  setup names it (findSavedRc2). On Windows with DJI Assistant 2 the claim fails (the channel is DJI's driver's).
+- The RC bridge (`devices/dji-rc2-bridge.ts`, tools/rc-bridge): only with `?rcbridge=1` once in the address; then a
+  press "Fly through the RC bridge". The socket to ws://127.0.0.1:47310 from the public https site needs Chrome's
+  Local Network Access permission ('loopback-network', rc2-lna): the first attempt makes Chrome ask, Allow once, then
+  'granted' is remembered for the site and later attempts ask nothing. `navigator.permissions.query` reads the state
+  with no question (rc2-lna, `lnaStatus`).
+So the owner's RC 2 on Windows took: Controls -> open the details -> Look -> pick in Chrome's list -> Fly with this
+controller (refused) -> (?rcbridge=1 in the address, reload) -> start the program -> Fly through the RC bridge ->
+Allow -> wizard.
+
+The new flow (C2):
+- On load (`app/input.ts` resumeInput): as before a trusted saved setup flies at once; new, a saved RC 2 setup also
+  comes through the helper program when the permission is already 'granted' (or the browser has no such
+  permission). A 'prompt' state is never tried on load: no question on load.
+- The Controls screen with no controller in use (`ui/radio.ts` autoFind, once per screen): a granted HID device ->
+  check screen (saved) or wizard (new); else a granted RC 2 over WebUSB that claims -> the same; else, with a saved RC
+  2 setup or a granted RC 2 that did not claim, a quiet try of the helper (granted only), which keeps trying every
+  2 s while the screen is open. The pad watch opens ANY pad that appears (recognised: known setup; else the wizard),
+  once per pad and screen, so Back from its wizard does not reopen it.
+- "Connect my controller" (primary, top of the Controls screen, which is also the start screen when nothing was
+  found on load): Chrome's HID chooser (radios, game controllers); picked -> check screen or wizard. Nothing picked ->
+  Chrome's USB chooser for DJI at once; if Chrome wants a fresh press for it, the button says "Look for my DJI
+  controller" and one more press opens it. Picked: a joystick part -> it says to pick it in the first list; DJI's
+  stick channel -> claimed at once -> wizard; claim refused -> the helper program route by itself (Chrome's question
+  if not yet answered); the helper not running -> one line with the two steps ("1. Double-click start-dji-helper.cmd
+  ... 2. Leave its window open"), the button "Fly with the helper program" as the retry, and the quiet watch that
+  connects by itself once the program runs. Anything else -> the look with "Send this list" (the old details block,
+  opened, for support).
+- The routing rule in one place: `devices/usb-look.ts` routeOf (hid / rc2usb / report) and helperOffered (claim
+  failed on a DJI stick channel, or a saved RC 2 setup). No ?rcbridge switch any more.
+
 Owner's session 2 against the page, as replayed: Controls -> "Fly through the RC bridge" -> the wizard walks on the
 sticks (no presses) -> check screen at 54 s -> Fly. The screens line up with every move in his record (each move
 comes right after its screen), so the replay's timeline is taken as his.

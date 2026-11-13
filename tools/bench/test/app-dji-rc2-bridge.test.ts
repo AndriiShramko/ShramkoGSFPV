@@ -31,7 +31,7 @@ class FakeSocket {
 }
 
 beforeAll(async () => {
-    // the RC bridge is offered only behind its switch (usb-look.ts rcBridgeOn, review RC2-R2)
+    // lane connect C2: the switch is gone, the helper is offered by a saved RC 2 setup ({ helper: true } below)
     vi.stubGlobal('location', { search: '?rcbridge=1', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/?rcbridge=1', origin: 'http://127.0.0.1' });
     vi.stubGlobal('document', fakeDocument());
     vi.stubGlobal('navigator', { languages: ['en'], language: 'en' });
@@ -122,9 +122,9 @@ describe('"Fly through the RC bridge" in the helper block', () => {
     it('no connection when the block is built; the press connects; values hand the device to fly', async () => {
         FakeSocket.made = [];
         const flown: { productName: string; close(): Promise<void> }[] = [];
-        const el = B.usbLookBlock(() => undefined, (x) => flown.push(x as never)).el as unknown as FakeElement;
+        const el = B.usbLookBlock(() => undefined, (x) => flown.push(x as never), { helper: true }).el as unknown as FakeElement;
         expect(FakeSocket.made).toHaveLength(0);
-        expect(el.textContent).toContain('start-rc-bridge.cmd');
+        expect(el.textContent).toContain('start-dji-helper.cmd');
         btn(el, 'usb-rc2-bridge')!.click();
         expect(FakeSocket.made).toHaveLength(1);
         expect(FakeSocket.made[0].url).toBe('ws://127.0.0.1:47310/');
@@ -141,14 +141,14 @@ describe('"Fly through the RC bridge" in the helper block', () => {
 
     it('a bridge that does not answer: how to start it; one with no controller: how to connect it; control: no fly, no action', async () => {
         FakeSocket.made = [];
-        const el = B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement;
+        const el = B.usbLookBlock(() => undefined, () => undefined, { helper: true }).el as unknown as FakeElement;
         const say = el.querySelector('[data-testid="usb-bridge-say"]')!;
         btn(el, 'usb-rc2-bridge')!.click();
         FakeSocket.made[0].refuse();
         await flush();
         expect(say.getAttribute('data-state')).toBe('nobridge');
         expect(say.textContent).toContain('does not answer');
-        expect(say.textContent).toContain('start-rc-bridge.cmd');
+        expect(say.textContent).toContain('start-dji-helper.cmd');
         btn(el, 'usb-rc2-bridge')!.click();
         FakeSocket.made[1].onopen?.({});
         FakeSocket.made[1].say({ state: 'no-controller', why: 'x' });

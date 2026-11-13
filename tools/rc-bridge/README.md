@@ -17,9 +17,9 @@ Measured on 2026-11-13 on the owner's PC with his RC 2: 633 stick messages in 10
 ## Start it
 
 1. Needs Windows 10/11, 64-bit Python 3.8+ (`py` or `python`) and DJI Assistant 2 installed; close DJI Assistant 2.
-2. Save `rc_bridge.py` and `start-rc-bridge.cmd` from this folder into one folder on your PC.
+2. Save `rc_bridge.py` and `start-dji-helper.cmd` from this folder into one folder on your PC.
 3. Connect the RC 2 with a data cable and switch it on.
-4. Double-click `start-rc-bridge.cmd` and leave its window open (it says `Shramko RC bridge on ws://127.0.0.1:47310/`).
+4. Double-click `start-dji-helper.cmd` and leave its window open (it says `Shramko RC bridge on ws://127.0.0.1:47310/`).
 5. On https://gsfpv.flyreelstudio.eu/en/fly/?rcbridge=1 open Controls, "My controller is not in the list", "Fly through the RC bridge".
 
 Notes. Standard library only, nothing to install. The bridge button is behind the `?rcbridge=1` switch until the

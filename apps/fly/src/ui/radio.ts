@@ -8,26 +8,33 @@
 // use gets Recalibrate, Reverse channels and Switches (ui/switches.ts: which channel arms, sets the
 // flight mode or runs an action; v0.7) at the top, so none hides behind "connect a device".
 import './wizard.css';
-import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder, keepOwnSetup, knownOffer, knownProfile, recognise, resolveInput, seenFromGamepad } from '@gsfpv/input';
+import { ArmLatch, CalibrationWizard, STEP_IDS, TUNING, channelOrder, keepOwnSetup, knownOffer, knownProfile, resolveInput } from '@gsfpv/input';
 import type { ArmSource, Fn, Hint, KnownMatch, Profile, RawFrame, StepResult, Verdict, WizardState } from '@gsfpv/input';
 import { h, clear } from './dom';
 import { t } from '../i18n';
 import { HidSource, hidDisplayName } from '../devices/hid';
-import { tellWhenLost } from '../devices/dji-rc2-source';
+import { DjiRc2Device, hasStickChannel, namesRc2, tellWhenLost } from '../devices/dji-rc2-source';
+import type { UsbDeviceLike, UsbHub } from '../devices/dji-rc2-source';
 import { GamepadSource } from '../devices/gamepad';
 import { choiceOffer, recogniseSource } from '../devices/known';
-import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
+import { saveProfile, profileFor, loadProfiles, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
 import { radioArt, sideOf, knobsFrom, tickIcon } from './radio-art';
 import type { ArtState, ArtTarget } from './radio-art';
 import { modeSwitchRow, modeRowKey } from './mode-switch-row';
 import { throttleStyleRow } from './throttle-style-row';
 import { usbLookBlock } from './usb-look-block';
+import type { UsbLookBlock } from './usb-look-block';
 import { SwitchesView } from './switches';
 import { knownNameNote, knownNote, knownOfferBlock, knownPanel } from './known-panel';
 import { LinkReadout, drawFrame, rateOf } from './device-rate';
 import type { DeviceRate } from './device-rate';
 
 export type SourceKind = 'hid' | 'gamepad' | 'touch' | 'keyboard';
+
+/** this browser has a saved DJI RC 2 setup (the helper route is offered from the start, usb-look.ts helperOffered) */
+function savedRc2(): boolean {
+    try { return namesRc2(Object.keys(loadProfiles())); } catch { return false; }
+}
 
 export interface RadioChoice {
     kind: SourceKind;
@@ -157,6 +164,10 @@ export class RadioScreen {
     private primary: HTMLButtonElement | null = null; // the big green button of the wizard screen
     private guardUntil = 0; // Enter / Space do nothing until then (KEY_GUARD_MS after a stage change)
     private wzBack: (() => void) | null = null; // Back of the wizard screen (Backspace)
+    private usb: UsbLookBlock | null = null; // the DJI part of the device choice (its quiet helper watch stops with the choice)
+    private autoDone = false; // the device choice looked for granted devices once (lane connect C2: autoFind)
+    private padsSeen = new Set<string>(); // pads the pad watch opened by itself: Back from their wizard does not reopen it
+    private connectStep: 'hid' | 'dji' = 'hid'; // Connect my controller: the next chooser
 
     constructor(parent: HTMLElement, current: RadioChoice | null = null, opts: RadioScreenOptions = {}) {
         this.current = current;
@@ -238,6 +249,8 @@ export class RadioScreen {
         this.wizard = null;
         this.primary = null;
         this.wzBack = null;
+        this.usb?.stop();
+        this.usb = null;
         clear(this.body);
     }
 
@@ -250,7 +263,8 @@ export class RadioScreen {
         // the accent goes to the best way that works here: no WebHID (phones, Firefox, Safari) means
         // touch sticks on a touch screen, a gamepad elsewhere; a greyed-out green button looked tappable
         const best: SourceKind = hidOk ? 'hid' : matchMedia('(pointer: coarse)').matches ? 'touch' : 'gamepad';
-        const cls = (k: SourceKind): string => (!this.curDev && k === best ? 'btn primary' : 'btn');
+        // "Connect my controller" is the main road; the accent stays on touch where nothing else works
+        const cls = (k: SourceKind): string => (!this.curDev && k === best && k === 'touch' ? 'btn primary' : 'btn');
         const gpRate = h('span', { class: 'muted small' });
         const hidStatus = h('p', { class: 'muted small radio-status', role: 'status' });
         const cur = this.current;
@@ -277,6 +291,14 @@ export class RadioScreen {
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-reverse', onclick: () => this.checkCurrent(cur) }, t('radio.reverse')),
                     h('button', { type: 'button', class: 'btn', 'data-action': 'radio-switches', onclick: () => this.openSwitches(cur) }, t('switches.open')))));
         }
+        // lane connect C2: one action for every controller (connectAny); the ways below stay for those who know them
+        const connectSay = h('p', { class: 'muted small radio-status', role: 'status', 'data-testid': 'radio-connect-say' });
+        const connectBtn = h('button', { type: 'button', class: this.curDev ? 'btn' : 'btn primary big', 'data-action': 'radio-connect',
+            onclick: () => void this.connectAny(connectBtn, connectSay, hidStatus, gpRate) }, t(this.connectStep === 'dji' ? 'usb.connect.dji' : 'usb.connect.go'));
+        this.body.append(h('div', { class: 'choice radio-connect', 'data-testid': 'radio-connect' },
+            connectBtn, h('p', { class: 'muted small' }, t('usb.connect.hint')), connectSay));
+        const usb = usbLookBlock(this.report, (d) => { tellWhenLost(d); void this.connectHid(hidStatus, gpRate, d as unknown as HIDDevice); }, { helper: savedRc2() });
+        this.usb = usb;
         this.body.append(
             h('div', { class: 'choice' },
                 h('button', { type: 'button', class: cls('hid'), disabled: !hidOk, onclick: () => void this.connectHid(hidStatus, gpRate) }, t('radio.hid')),
@@ -294,10 +316,68 @@ export class RadioScreen {
             h('p', { class: 'muted small' }, t('radio.real')),
             // lane rc2: a DJI RC 2 whose stick channel answered goes the HID way (wizard, check screen, profile)
             // (review R10: tellWhenLost makes an unplug or a closed bridge say one line on the flight view)
-            usbLookBlock(this.report, (d) => { tellWhenLost(d); void this.connectHid(hidStatus, gpRate, d as unknown as HIDDevice); }).el
+            usb.el
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
         this.watchPads(gpRate);
+        if (!this.curDev && !this.autoDone) { this.autoDone = true; void this.autoFind(hidStatus, gpRate); }
+    }
+
+    /**
+     * Lane connect C2 (a): what the page may open with no press and no question, once per screen: a HID controller this
+     * site was granted before, a granted DJI RC 2 over WebUSB, else (a saved RC 2 setup) the helper program when Chrome
+     * already allows the page to reach it. Each goes the way a picked device goes (connectHid: check screen or wizard).
+     */
+    private async autoFind(hidStatus: HTMLElement, gpRate: HTMLElement): Promise<void> {
+        const gen = this.gen;
+        const nav = (typeof navigator !== 'undefined' ? navigator : {}) as { hid?: { getDevices(): Promise<HIDDevice[]> }; usb?: Partial<UsbHub> };
+        const hidList = HidSource.supported() ? await nav.hid?.getDevices().catch(() => [] as HIDDevice[]) ?? [] : [];
+        if (gen !== this.gen) return;
+        if (hidList.length) { void this.connectHid(hidStatus, gpRate, hidList[0]); return; }
+        const usbList: UsbDeviceLike[] = nav.usb?.getDevices ? await nav.usb.getDevices().catch(() => [] as UsbDeviceLike[]) : [];
+        if (gen !== this.gen) return;
+        for (const d of usbList.filter(hasStickChannel)) {
+            const rc = new DjiRc2Device(d);
+            try {
+                await rc.open();
+            } catch {
+                continue; // claimed by DJI's driver or silent: the helper below, or a press
+            }
+            if (gen !== this.gen) { void rc.close(); return; }
+            tellWhenLost(rc);
+            void this.connectHid(hidStatus, gpRate, rc as unknown as HIDDevice);
+            return;
+        }
+        if (gen === this.gen && this.usb && (savedRc2() || usbList.some(hasStickChannel))) void this.usb.quietHelper();
+    }
+
+    /**
+     * Lane connect C2 (b) "Connect my controller": the browser's HID chooser (radios and game controllers); nothing
+     * picked there, Chrome's USB chooser for DJI controllers (no HID part), which routes by itself (usb-look-block
+     * pickDji: the stick channel, else the helper program). Chrome opens a chooser only right after a press: when the
+     * second one cannot open at once, the button asks for one more press.
+     */
+    private async connectAny(btn: HTMLButtonElement, say: HTMLElement, hidStatus: HTMLElement, gpRate: HTMLElement): Promise<void> {
+        say.textContent = '';
+        let after = false;
+        if (this.connectStep === 'hid' && HidSource.supported()) {
+            const picked = await this.connectHid(hidStatus, gpRate);
+            if (picked) return;
+            after = true;
+        }
+        const usb = this.usb;
+        if (!usb) return;
+        const r = await usb.pickDji(after);
+        if (r === 'gesture') {
+            this.connectStep = 'dji';
+            btn.textContent = t('usb.connect.dji');
+            say.textContent = t('usb.connect.again');
+            return;
+        }
+        this.connectStep = 'hid';
+        btn.textContent = t('usb.connect.go');
+        if (r === 'none') say.textContent = t('usb.connect.none');
+        else if (r === 'noapi') say.textContent = HidSource.supported() ? t('usb.connect.none') : t('usb.connect.noApi');
     }
 
     /**
@@ -315,7 +395,10 @@ export class RadioScreen {
             if (gen !== this.gen) return;
             const pads = typeof navigator !== 'undefined' && navigator.getGamepads ? navigator.getGamepads() : [];
             for (const p of pads) {
-                if (!p || p.connected === false || !recognise(seenFromGamepad(p))?.device.mapping) continue;
+                // lane connect C2: any pad the browser shows (it does after a stick move or a button) opens by
+                // itself, a recognised one on its known setup, another in the wizard; once per pad and screen
+                if (!p || p.connected === false || this.padsSeen.has(`${p.index}:${p.id}`)) continue;
+                this.padsSeen.add(`${p.index}:${p.id}`);
                 clearInterval(this.timer);
                 this.bindPad(p);
                 this.connectGamepad(gpRate);
@@ -431,32 +514,34 @@ export class RadioScreen {
     }
 
     /** `pre`: a device already chosen (the DJI RC 2 from the USB helper, lane rc2); left out, the WebHID chooser. */
-    private async connectHid(status: HTMLElement, gpRate: HTMLElement, pre?: HIDDevice): Promise<void> {
+    private async connectHid(status: HTMLElement, gpRate: HTMLElement, pre?: HIDDevice): Promise<boolean> {
         clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (watchPads())
         const gen = this.gen;
         const src = new HidSource();
         this.owned.add(src);
         try {
             const d = pre ?? await src.request();
-            if (gen !== this.gen) return;
-            if (!d) { this.watchPads(gpRate); return; } // the chooser closed with no device: back to the choice as it was
+            if (gen !== this.gen) return !!d;
+            if (!d) { this.watchPads(gpRate); return false; } // the chooser closed with no device: back to the choice as it was
             await src.open(d);
             status.className = 'muted small radio-status';
             status.textContent = t('wizard.say.connect');
             // wait for the first report so the fingerprint includes the report length
             await new Promise<void>((res) => { src.onFrame = () => { src.onFrame = null; res(); }; setTimeout(res, 1500); });
-            if (gen !== this.gen) return;
+            if (gen !== this.gen) return true;
             this.hid = src;
             // a recognised controller by its maker's name (Windows calls the DJI only "HID Interface")
             const match = recogniseDevice('hid', src);
             const name = match?.device.mapping ? match.device.name : hidDisplayName(d);
             const sub: Subscribe = (cb) => { src.onFrame = cb; };
             this.open(src.key, name, sub, rateOf(src), 'hid', match);
+            return true;
         } catch (e) {
-            if (gen !== this.gen) return;
+            if (gen !== this.gen) return true;
             status.className = 'error small radio-status';
             status.textContent = String((e as Error).message ?? e);
             this.watchPads(gpRate); // still on the choice: the same controller on the Gamepad API may work
+            return true;
         }
     }
 

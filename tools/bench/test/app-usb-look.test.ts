@@ -175,27 +175,22 @@ describe('the DJI RC 2 in the block (lane rc2)', () => {
         expect(say.textContent).toContain('could not open the controller');
         expect(say.textContent).toContain('Nothing is broken');
         expect(say.textContent).toContain('Fly with the keyboard, a gamepad or a radio');
-        // review RC2-R2: without its switch the RC bridge is neither named nor offered (pilots cannot download it yet)
-        expect(say.textContent).not.toContain('RC bridge');
-        expect(btn(el, 'usb-rc2-bridge')).toBeNull();
+        // lane connect C2: a refused claim offers the helper program by itself, and pilots never read "bridge"
+        expect(say.textContent).not.toMatch(/bridge/i);
+        expect(say.textContent).toContain('helper program');
+        expect(btn(el, 'usb-rc2-bridge')).not.toBeNull();
         expect(flown).toEqual([]);
         expect(d.calls).toEqual(['open', 'config', 'claim 0', 'close']);
         btn(el, 'usb-look-send').click();
         expect(sent[0]).toContain('if: FF.43.01 FF.42.01');
     });
-    it('the RC bridge switch: ?rcbridge=1 turns it on and is remembered, ?rcbridge=0 turns it off; on, a refused claim names it', async () => {
-        const s = new FakeStorage();
-        expect(L.rcBridgeOn('', s)).toBe(false);
-        expect(L.rcBridgeOn('?rcbridge=1', s)).toBe(true);
-        expect(L.rcBridgeOn('', s)).toBe(true);
-        expect(L.rcBridgeOn('?rcbridge=0', s)).toBe(false);
-        expect(L.rcBridgeOn('', s)).toBe(false);
-        expect(L.rcBridgeOn('?rcbridge=1', null)).toBe(true); // storage blocked: the address alone
+    it('the helper program: ?rcbridge=1 no longer turns it on; a saved RC 2 setup does, and a refused claim names it', async () => {
         vi.stubGlobal('location', { search: '?rcbridge=1', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/?rcbridge=1', origin: 'http://127.0.0.1' });
         try {
+            expect(btn(B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement, 'usb-rc2-bridge')).toBeNull();
             const d = usbRc2('refused');
             nav.usb = { requestDevice: () => Promise.resolve(d) };
-            const el = B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement;
+            const el = B.usbLookBlock(() => undefined, () => undefined, { helper: true }).el as unknown as FakeElement;
             expect(btn(el, 'usb-rc2-bridge')).not.toBeNull();
             // the bridge text links to the program's README in the public repository (main), a file this repo has
             const get = el.querySelector('[data-testid="usb-bridge-get"]');
@@ -210,12 +205,10 @@ describe('the DJI RC 2 in the block (lane rc2)', () => {
             for (let i = 0; i < 5; i++) await flush();
             const say = el.querySelector('[data-testid="usb-rc2-say"]')!;
             expect(say.textContent).toContain('Nothing is broken');
-            expect(say.textContent).toContain('Fly through the RC bridge');
-            const none = B.usbLookBlock(() => undefined).el as unknown as FakeElement; // control: no fly, no bridge
+            expect(say.textContent).toContain('helper program');
+            const none = B.usbLookBlock(() => undefined, undefined, { helper: true }).el as unknown as FakeElement; // control: no fly, no helper
             expect(btn(none, 'usb-rc2-bridge')).toBeNull();
         } finally {
-            vi.stubGlobal('location', { search: '?rcbridge=0', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
-            L.rcBridgeOn();
             vi.stubGlobal('location', { search: '', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
         }
     });
@@ -249,6 +242,7 @@ describe('strings', () => {
         const en = read('en');
         const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.claimBridge', 'usb.rc2.silent', 'usb.rc2.lost', 'usb.rc2.bridgeGet',
             'usb.rc2.bridgeWhy', 'usb.rc2.bridge', 'usb.rc2.bridgeOpening', 'usb.rc2.bridgeAsk', 'usb.rc2.noBridge', 'usb.rc2.bridgeNoController', 'usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
+            'usb.connect.go', 'usb.connect.dji', 'usb.connect.hint', 'usb.connect.again', 'usb.connect.none', 'usb.connect.noApi', 'usb.untested',
             ...(['joystick', 'sticks', 'storage', 'serial', 'files', 'network', 'data', 'audio', 'video', 'other'] as const).map((p) => `usb.part.${p}`),
             ...['connect', 'rc2', 'drone', 'none', 'empty'].map((v) => `usb.verdict.${v}`)];
         expect(Object.keys(en).sort()).toEqual([...used].sort());

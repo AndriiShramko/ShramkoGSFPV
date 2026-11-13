@@ -147,7 +147,7 @@ describe('the helper block while Chrome asks', () => {
         const perm = new FakePerm('prompt');
         vi.stubGlobal('navigator', { languages: ['en'], language: 'en', permissions: perms(perm) });
         const flown: unknown[] = [];
-        const el = B.usbLookBlock(() => undefined, (x) => flown.push(x)).el as unknown as FakeElement;
+        const el = B.usbLookBlock(() => undefined, (x) => flown.push(x), { helper: true }).el as unknown as FakeElement;
         const say = el.querySelector('[data-testid="usb-bridge-say"]')!;
         btn(el, 'usb-rc2-bridge')!.click();
         await flush();
@@ -168,7 +168,7 @@ describe('the helper block while Chrome asks', () => {
     it('denied: the no-answer line with the site settings, no connection; a second press while asking starts over', async () => {
         FakeSocket.made = [];
         vi.stubGlobal('navigator', { languages: ['en'], language: 'en', permissions: perms(new FakePerm('denied')) });
-        const el = B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement;
+        const el = B.usbLookBlock(() => undefined, () => undefined, { helper: true }).el as unknown as FakeElement;
         const say = el.querySelector('[data-testid="usb-bridge-say"]')!;
         btn(el, 'usb-rc2-bridge')!.click();
         await flush();
@@ -179,7 +179,7 @@ describe('the helper block while Chrome asks', () => {
         const perm = new FakePerm('prompt');
         vi.stubGlobal('navigator', { languages: ['en'], language: 'en', permissions: perms(perm) });
         const flown: unknown[] = [];
-        const el2 = B.usbLookBlock(() => undefined, (x) => flown.push(x)).el as unknown as FakeElement;
+        const el2 = B.usbLookBlock(() => undefined, (x) => flown.push(x), { helper: true }).el as unknown as FakeElement;
         const say2 = el2.querySelector('[data-testid="usb-bridge-say"]')!;
         btn(el2, 'usb-rc2-bridge')!.click();
         await flush();
