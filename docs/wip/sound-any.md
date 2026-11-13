@@ -51,7 +51,7 @@ Stage fixes (review findings SN-1 to SN-10):
 - [x] SN-8: a failed course ask says one line; the free flight reopens with open(..., { quiet }) (no second no-walls line, no offer) (fixes commit 1)
 - [x] SN-9: flyCourse remembers the runner; a late answer after the pilot left opens nothing (fixes commit 1)
 - [x] SN-5: sonic-optin-page.ts (part A, en and pl) and sonic-v13-page.ts (part A) expect the scan link of page 39e63ce9 (regex on sz); typechecked, not run
-- [x] SN-7: ru scanNoWalls, courseOffer, scanWhat in the informal form; pl 'Lot na słuch' / 'na słuch' (scanNoWalls, start.scan, start.scanFlier); es scanNoWalls names 'Fly by Sound'; scanWhat in all four no longer reads the scene id ('this scan'). Rings vs gates not changed
+- [x] SN-7: ru scanNoWalls, courseOffer, scanWhat in the informal form; pl uses the mode's own name sonic.start.name (scanNoWalls, start.scan, start.scanFlier); es scanNoWalls names 'Fly by Sound'; scanWhat in all four no longer reads the scene id ('this scan'). Rings vs gates not changed
 - [x] SN-10: package CHANGELOG (b6ab45c); this file's stale lines (S1 CHANGELOG note, Not verified S2/S3) corrected, sonic-optin result recorded
 - [ ] left for integration: run sonic-optin-page and sonic-v13-page on a local release (part A); the probe items of S2 and S3 above
 - [x] tests: sonic-scan-course.test.ts case 'review SN-2/3/6/9' (rig: scan button with no free flight before, all 8 gates, idle, scan button after the course, late answer); NEG OK (ref HEAD, lessons.ts) by assertion 'expected false to be true' (the SN-2 step, first in the case); sonic-scan-free S3 case moved to sg=, NEG OK by assertion
