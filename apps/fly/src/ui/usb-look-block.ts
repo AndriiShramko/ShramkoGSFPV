@@ -76,8 +76,8 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
     // the helper try running quietly (no press), if any: a press closes it and goes on (review CN-6)
     let quietDev: Rc2BridgeDevice | null = null;
     // after a press, what the pilot must read next is brought into view (review CN-5: it was below the fold)
-    const reveal = (node: HTMLElement | null): void => {
-        (node as unknown as { scrollIntoView?: (o: ScrollIntoViewOptions) => void } | null)?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+    const reveal = (node: HTMLElement | null, block: ScrollLogicalPosition = 'start'): void => {
+        (node as unknown as { scrollIntoView?: (o: ScrollIntoViewOptions) => void } | null)?.scrollIntoView?.({ block, behavior: 'smooth' });
     };
     const el =h('details', { class: 'usb-look', 'data-testid': 'usb-look' },
         h('summary', {}, t('usb.title')),
@@ -132,6 +132,9 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
             say.setAttribute('data-state', why);
             if (why === 'claim') { offerHelper(); reveal(helperEl); }
             say.textContent = why === 'claim' ? `${t(SAY.claim)} ${t('usb.rc2.claimBridge')}` : t(SAY[why]);
+            // the line with the next step grew after the section was scrolled to (at the page's end it stayed under the
+            // fold: connect-probe nohelper on 1600x900, 2026-11-13): bring the line itself into view
+            if (why !== 'claim') reveal(say, 'nearest');
             // the helper not running: the page tries again by itself while the screen is open (no question can come)
             if (d instanceof Rc2BridgeDevice && (why === 'nobridge' || why === 'nocontroller')) startWatch();
         } finally {

@@ -178,6 +178,8 @@ describe('after a press the next step is in view and acts (review CN-5, CN-6, CN
             expect(await blk.pickDji()).toBe('trying');
             expect(await until(() => seen.includes('usb-helper'))).toBe(true);
             expect(seen[0]).toBe('usb-look');
+            // the helper does not answer: the line with "1. Double-click" itself is brought into view
+            expect(await until(() => seen.includes('usb-bridge-say'))).toBe(true);
         } finally {
             delete proto.scrollIntoView;
             blk.stop();

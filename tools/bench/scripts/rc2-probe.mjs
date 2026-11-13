@@ -433,7 +433,9 @@ if (only.includes('bridge')) {
         note.autoConnected = !!(await state(page)).wizard;
         if (!note.autoConnected) await page.locator('[data-action=usb-rc2-bridge]').click();
         // connected: the Controls screen moves on to the check (the helper and its line leave the page)
-        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 });
+        // 'asking' (Chrome's loopback question is 'prompt' on http://localhost) is passed on the way: the socket still
+        // connects; the first poll saw it in the fixes run of 2026-11-13 although the check screen came (race, not a fault)
+        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening' && s !== 'asking') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 }).catch(() => undefined);
         const said = await page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : null; });
         note.sayState = said ? said.state : 'flying';
         note.say = said?.text ?? '';
