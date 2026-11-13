@@ -78,6 +78,24 @@ describe('the owner\'s DJI RC 2 session of 2026-11-13 through the wizard', () =>
         expect(profileStyle(obeyed.profile!, 'centre')).toEqual({ style: 'centred', why: 'seen' });
     });
 
+    // review CN-1: the stir a few percent short on one end (his throttle reaching 410 instead of 364, or 1618 instead of
+    // 1684), then the throttle held down from 10.0 s as the screen asks; the throttle step completes the range later
+    const short = (scaleLow: number, scaleHigh: number) => ROWS.map((r) => {
+        let thr = r.v[2];
+        if (r.t < 9000) thr = thr < 1024 ? Math.round(1024 - (1024 - thr) * scaleLow) : Math.round(1024 + (thr - 1024) * scaleHigh);
+        if (r.t >= 10000 && r.t < 14500) thr = 364;
+        return { t: r.t, v: [r.v[0], r.v[1], thr, r.v[3], r.v[4], r.v[5]] };
+    });
+    for (const [lo, hi] of [[0.93, 1], [1, 0.9], [0.95, 1]] as [number, number][]) {
+        it(`a stir short on one end (low x${lo}, high x${hi}) and the throttle held down at "Let go": still centre`, () => {
+            const w = walk(short(lo, hi));
+            expect(w.checkAtS).not.toBeNull();
+            expect(w.centreThrottle).toBe(364);
+            expect(w.profile!.throttleRest).toBe('centre');
+            expect(profileStyle(w.profile!, null)).toEqual({ style: 'centred', why: 'wizard' });
+        });
+    }
+
     it('SpringWatch on his throttle channel: springs; the same hands on a stick with no spring: does not', () => {
         const feedCh = (vals: { t: number; x: number }[]): SpringWatch => {
             const w = new SpringWatch();
@@ -114,7 +132,7 @@ describe('FPV radios keep flying from zero (review M4): simulated pilots with ra
         }
         expect(radios).toBeGreaterThan(20);
         expect(seen.filter((s) => s.endsWith(':centre')).length).toBeLessThanOrEqual(seen.filter((s) => s.includes(':left:')).length);
-        void pads;
+        expect(pads).toBeGreaterThan(0);
     });
 
     it('resolveStyle keeps the M4 rule: a centre seen now never beats a wizard bottom', () => {

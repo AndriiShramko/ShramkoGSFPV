@@ -13,7 +13,7 @@ export const SPRING = {
     /** back within this of the middle: the wizard's CENTRE_TOL (calib.ts TUNING) */
     NEAR: 0.15,
     /**
-     * From the last moment beyond AWAY to the first inside NEAR. The owner's DJI RC 2 took 16 to 95 ms (60 returns of
+     * From the last moment beyond AWAY to the first inside NEAR. The owner's DJI RC 2 took 16 to 95 ms (59 returns of
      * four sticks in its record, measured in docs/wip/connect.md); 200 ms is twice the longest, an estimate of a
      * spring's snap on other controllers.
      */
@@ -37,8 +37,11 @@ export class SpringWatch {
     private candV = NaN;
     private candSum = 0;
     private candN = 0;
+    // landings kept raw: the middle and the range known at a landing may still grow (a stir short on one end, completed
+    // by the throttle step later); the spread is judged with the last range seen (review CN-1)
     private lo = Infinity;
     private hi = -Infinity;
+    private half = NaN;
     /** returns seen from above and from below the middle */
     above = 0;
     below = 0;
@@ -49,6 +52,7 @@ export class SpringWatch {
      */
     update(x: number, t: number, mid: number, half: number): void {
         if (!Number.isFinite(x) || !Number.isFinite(t) || !(half >= SPRING.MIN_HALF)) return;
+        this.half = half;
         const off = (x - mid) / half;
         const a = Math.abs(off);
         if (a >= SPRING.AWAY) {
@@ -80,7 +84,7 @@ export class SpringWatch {
         this.candSum += x;
         this.candN++;
         if (t - this.candT >= SPRING.STILL_MS) {
-            const v = (this.candSum / this.candN - mid) / half;
+            const v = this.candSum / this.candN;
             if (v < this.lo) this.lo = v;
             if (v > this.hi) this.hi = v;
             if (this.side > 0) this.above++;
@@ -92,6 +96,6 @@ export class SpringWatch {
 
     /** Returns from both sides, all on the same value: the stick springs to its centre. */
     get springs(): boolean {
-        return this.above > 0 && this.below > 0 && this.hi - this.lo <= SPRING.SAME_TOL;
+        return this.above > 0 && this.below > 0 && (this.hi - this.lo) / this.half <= SPRING.SAME_TOL;
     }
 }
