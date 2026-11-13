@@ -71,7 +71,7 @@ Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native re
   stack and the frame arguments three times 3 s apart; RC2_FAKE_ANSWER=timer|message picks the fake): the hang is NOT
   in this lane's code and not in the fake. Measured on the release build of a1b43eb1 (dist 11:48): refused passes in
   0.5 s; usb with the TIMER fake hangs too, at the climb (wizard to check 21 s, flight starts at 30 s, then nothing).
-  All three looks (evidence rc2-probe-hang-stacks.json/.log) are inside the centred pilot's ground probe:
+  All three looks (evidence rc2-probe-hang-stacks.json, runs.usb.hungStack; commit c0d02140) are inside the centred pilot's ground probe:
   raw -> push -> prepare -> centreFn -> CentrePilot.apply -> LessonPilot.apply -> clearance -> groundClearance
   (apps/fly/src/play/ground.ts) -> VoxelContactWorld.sweep -> sweepOne -> overlap -> sphereOverlaps with r 10.05 m
   (PROBE_M 20: the cover sphere of a 20 m sweep). The arguments differ between looks (craft y 6.67, 5.89, 6.67 m), so
@@ -217,7 +217,7 @@ every received frame, measured]:
   (apps/fly/src/app/input.ts CentrePilot ground: groundClearance in apps/fly/src/play/ground.ts) sweeps a 0.05 m
   sphere 20 m down through VoxelContactWorld.sweep, whose first step tests a 10.05 m cover sphere voxel by voxel. In
   scene 887f27aa at about 6 m it costs more than its 33 ms interval, so every input frame runs it and the page stops
-  answering (stacks in evidence/2026-11-13/rc2/rc2-probe-hang-stacks.log). Any spring-centred radio with a fast
+  answering (stacks in evidence/2026-11-13/rc2/rc2-probe-hang-stacks.json, runs.usb.hungStack). Any spring-centred radio with a fast
   report rate (WebHID 250-500 Hz) should hit it the same way [assumed, only the RC 2 fake was run]. Candidate fixes
   [not tried]: sweep in short pieces (e.g. 1 m, so each cover sphere is small) or a voxel column walk, or the lesson
   pilot's rayClearance on the scan's walls; and run the probe on the frame tick, not on every input frame.
