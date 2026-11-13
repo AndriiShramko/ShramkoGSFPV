@@ -93,7 +93,9 @@ const look = (page) => page.evaluate(() => {
         bridgeWord: screen ? /bridge/i.test(screen.innerText) : null,
         // review CN-5: the line under the button and whether the helper's line is inside the viewport
         connectSay: (document.querySelector('[data-testid=radio-connect-say]')?.textContent ?? '').slice(0, 200),
-        sayInView: say ? (() => { const r = say.getBoundingClientRect(); return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight; })() : null
+        // 1 px for the fractional bottom a 'nearest' scroll leaves (the line ends at the viewport's edge)
+        sayInView: say ? (() => { const r = say.getBoundingClientRect(); return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight + 1; })() : null,
+        sayBox: say ? (() => { const r = say.getBoundingClientRect(); return [Math.round(r.top * 10) / 10, Math.round(r.bottom * 10) / 10, innerHeight]; })() : null
     };
 });
 const waitFor = async (page, ok, ms) => {
@@ -207,6 +209,7 @@ try {
         const v = await look(page);
         note.connectSay = v.connectSay;
         note.sayInView = v.sayInView;
+        note.sayBox = v.sayBox;
         checks['nohelper.lineUnderButton'] = /just below/.test(v.connectSay);
         checks['nohelper.helperLineInView'] = v.sayInView === true;
         if (shots) await page.screenshot({ path: `${shots}/connect-c2-nohelper-line.png` }).catch(() => undefined);
