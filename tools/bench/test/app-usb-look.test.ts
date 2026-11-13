@@ -248,7 +248,7 @@ describe('strings', () => {
         const read = (l: string): Record<string, string> => JSON.parse(readFileSync(resolve(dir, `${l}.json`), 'utf8'));
         const en = read('en');
         const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.claimBridge', 'usb.rc2.silent', 'usb.rc2.lost', 'usb.rc2.bridgeGet',
-            'usb.rc2.bridgeWhy', 'usb.rc2.bridge', 'usb.rc2.bridgeOpening', 'usb.rc2.noBridge', 'usb.rc2.bridgeNoController', 'usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
+            'usb.rc2.bridgeWhy', 'usb.rc2.bridge', 'usb.rc2.bridgeOpening', 'usb.rc2.bridgeAsk', 'usb.rc2.noBridge', 'usb.rc2.bridgeNoController', 'usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
             ...(['joystick', 'sticks', 'storage', 'serial', 'files', 'network', 'data', 'audio', 'video', 'other'] as const).map((p) => `usb.part.${p}`),
             ...['connect', 'rc2', 'drone', 'none', 'empty'].map((v) => `usb.verdict.${v}`)];
         expect(Object.keys(en).sort()).toEqual([...used].sort());

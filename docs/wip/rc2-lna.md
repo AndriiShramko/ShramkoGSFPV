@@ -11,6 +11,8 @@ created: 2026-11-13
 - [x] 2. rc2-probe.mjs: grant variant and not-granted variant for https bases (0c68eea4, 46d0fd66)
 - [x] 3. Live runs with the replay bridge, port free after (evidence/2026-11-13/train1c/rc2-lna-live.json: 13 of 13 checks pass; port 47310: 0 sockets after)
 - [ ] 4. Page: permission state before connecting (prompt / granted / denied), new line in en/es/pl/ru, unit tests, neg control, local release
+  - [x] code + usb.rc2.bridgeAsk (4 languages) + tools/bench/test/app-dji-rc2-lna.test.ts; tsc fly 0 / bench 0; vitest 4 files 37 of 37; neg control NEG OK (origin/main files: exit 1); gates i18n, b18 PASS
+  - [ ] local release in a browser
 - [ ] 5. Final doc
 
 ## Facts (measured)

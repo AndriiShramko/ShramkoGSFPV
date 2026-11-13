@@ -30,23 +30,49 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
     // the RC bridge only behind its switch (rcBridgeOn): until it can be downloaded, other pilots never see it
     const bridge = !!fly && rcBridgeOn();
     const out =h('div', { class: 'usb-look-out', role: 'status', 'aria-live': 'polite', 'data-testid': 'usb-look-out' });
-    const SAY: Record<Rc2Why, string> = { claim: 'usb.rc2.claimFailed', silent: 'usb.rc2.silent', nobridge: 'usb.rc2.noBridge', nocontroller: 'usb.rc2.bridgeNoController' };
+    // denied (Chrome's Local Network Access blocked for this site): the no-answer line, which says how to allow it
+    const SAY: Record<Rc2Why, string> = { claim: 'usb.rc2.claimFailed', silent: 'usb.rc2.silent', nobridge: 'usb.rc2.noBridge', nocontroller: 'usb.rc2.bridgeNoController', denied: 'usb.rc2.noBridge' };
+    // the attempt under way, and whether it waits for the pilot's answer to Chrome's question (lane rc2-lna)
+    let current: DjiRc2Device | Rc2BridgeDevice | null = null;
+    let asking = false;
+    let run = 0;
     const tryFly = async (d: DjiRc2Device | Rc2BridgeDevice, say: HTMLElement, opening: string): Promise<void> => {
-        if (busy || !fly) return;
+        if (!fly) return;
+        if (busy) {
+            // a press while Chrome's question is open (the pilot may have closed it unanswered): start over
+            if (!asking || !(d instanceof Rc2BridgeDevice)) return;
+            void current?.close();
+        }
         busy = true;
+        asking = false;
+        current = d;
+        const my = ++run;
         say.setAttribute('data-state', 'opening');
         say.textContent = t(opening);
         try {
-            await d.open();
+            if (d instanceof Rc2BridgeDevice) {
+                await d.open(() => {
+                    if (my !== run) return;
+                    asking = true;
+                    say.setAttribute('data-state', 'asking');
+                    say.textContent = t('usb.rc2.bridgeAsk');
+                });
+            } else await d.open();
+            if (my !== run) return;
             say.setAttribute('data-state', 'flying');
             say.textContent = '';
             fly(d);
         } catch (e) {
+            if (my !== run) return;
             const why: Rc2Why = e instanceof Rc2Error ? e.why : 'claim';
             say.setAttribute('data-state', why);
             say.textContent = why === 'claim' && bridge ? `${t(SAY.claim)} ${t('usb.rc2.claimBridge')}` : t(SAY[why]);
         } finally {
-            busy = false;
+            if (my === run) {
+                busy = false;
+                asking = false;
+                current = null;
+            }
         }
     };
     const show = (l: UsbLook, dev: UsbDeviceLike | null): void => {

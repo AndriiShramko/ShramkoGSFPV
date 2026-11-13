@@ -21,6 +21,7 @@
   "usb.rc2.bridgeWhy": "Windows with DJI Assistant 2 installed: start the Shramko RC bridge program on this computer (start-rc-bridge.cmd), connect the DJI RC 2 with a data cable, switch it on, then press the button below. If Chrome asks whether this site may reach apps on this device, allow it.",
   "usb.rc2.bridge": "Fly through the RC bridge",
   "usb.rc2.bridgeOpening": "Connecting to the RC bridge...",
+  "usb.rc2.bridgeAsk": "Chrome is asking whether this site may reach apps on this device (a small window under the address bar). Press Allow: the simulator connects to the RC bridge as soon as you do. If you do not see the question, check that start-rc-bridge.cmd is open and press the button again.",
   "usb.rc2.noBridge": "The RC bridge does not answer. Start start-rc-bridge.cmd on this computer, leave its window open and press the button again. If Chrome asked whether this site may reach apps on this device and you blocked it, allow it in the site settings (the icon left of the address).",
   "usb.rc2.bridgeNoController": "The RC bridge is running but does not see the controller. Connect the DJI RC 2 with a data cable, switch it on, close DJI Assistant 2 and press the button again.",
   "usb.part.audio": "sound",
