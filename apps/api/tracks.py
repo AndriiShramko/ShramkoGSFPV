@@ -77,6 +77,8 @@ AUTHOR_KINDS = ("generator", "person")   # 'agent' of the format is not taken fr
 # hand-added ones; a gate wider than 20 m is no gate in any scan the site serves.
 SERVER_MAX_GATES = 60
 MAX_GATE_SIZE_M = 20.0
+# lane review TK-8, ESTIMATE (not measured): address -> voter bindings kept per course (the oldest dropped past it)
+VOTE_ADDR_CAP = 5000
 NAME_LEN, NAME_EXTRA = (2, 32), " -_.'"
 TITLE_LEN, TITLE_EXTRA = (3, 60), " -_.',!?#()+:&"
 # a short blocklist (tracks-plan 2.8: "the admin hides the rest"); the same words in packages/tracks/src/server.ts
@@ -748,6 +750,9 @@ class TrackStore:
         editToken}. The token is answered once; only its sha256 is kept. A fork keeps the source's origin (created by)."""
         obj = self._parse(raw)
         scene = obj["scene"]["id"]
+        # lane review TK-11 a: a generated course never has a parent, at any version the body names
+        if obj.get("parent") is not None and isinstance(obj.get("author"), dict) and obj["author"].get("kind") == "generator":
+            raise TrackError(400, "bad-parent")
         with self.lock:
             origin = parent = None
             if obj.get("parent") is not None:
@@ -819,12 +824,15 @@ class TrackStore:
         with self.lock:
             meta = self._visible(self._meta(tid))
             vh, ah = self._hash("voter", voter), self._hash("addr", f"{tid}:{client}")
-            day = _now_iso(self.now())[:10]
-            if meta.get("day") != day:
-                meta["day"], meta["addr"] = day, {}
-            if meta["addr"].get(ah, vh) != vh:
+            # lane review TK-8: the address's voter is kept for the life of the course (it was cleared each UTC day, so one
+            # address added one vote a day with a fresh voter id); the newest VOTE_ADDR_CAP bindings are kept
+            addr = meta.setdefault("addr", {})
+            if addr.get(ah, vh) != vh:
                 raise TrackError(429, "address-voted")
-            meta["addr"][ah] = vh
+            addr.pop(ah, None)
+            addr[ah] = vh
+            while len(addr) > VOTE_ADDR_CAP:
+                addr.pop(next(iter(addr)))
             if v == 0:
                 meta["voters"].pop(vh, None)
             else:

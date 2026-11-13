@@ -144,6 +144,15 @@ What the owner can do now (after the release of this branch):
   pairs; Space "drop here"; R7 voting only after a completed lap (offered on every row now); the /2 format on the server
   (marks live in meta.json); a hidden course cannot be opened in the editor from the admin (show it first); the admin's
   link opening the editor was not run in a browser (A3). The admin tab itself was checked in a browser on a local copy (A2).
+
+Stage fixes (review findings TK-1..TK-12 of train 2):
+- [x] F1 server: TK-8 (tracks.py vote: the address's voter kept for the course's life, VOTE_ADDR_CAP 5000 newest, an
+      estimate), TK-9 (server.py page.isascii() and isdigit()), TK-11 a (create() refuses any parent of a generator body).
+      Test apps/api/tests/test_tracks_fixes.py (4 tests) and test_tracks_edit.py's vote test (the next-day control now
+      expects 429). Runs: test_tracks_fixes 6 OK (incl. the inherited Http test), test_tracks_edit + test_tracks 40 OK.
+      Negative control neg_control.py --ref HEAD, files tracks.py server.py: NEG OK (1 failure, 2 errors).
+- [ ] F2 page: TK-2 storage, TK-7 tokens, TK-5 link with version, TK-3 keyboard, TK-12 admin double click.
+- [ ] F3 course.ts: TK-1, TK-4, TK-6, TK-10, TK-11 b.
 ## Decisions
 
 - T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with

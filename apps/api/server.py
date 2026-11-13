@@ -1687,7 +1687,7 @@ class Handler(BaseHTTPRequestHandler):
                     q = urllib.parse.parse_qs(qs)
                     page = (q.get("page") or ["1"])[0]
                     return self._send(*TRACKS.list((q.get("scene") or [""])[0], self.headers.get("If-None-Match"), (q.get("sort") or ["top"])[0],
-                                                   int(page) if page.isdigit() and len(page) <= 4 else 0))
+                                                   int(page) if page.isascii() and page.isdigit() and len(page) <= 4 else 0))
                 m = TRACK_FILE_ROUTE.fullmatch(path)
                 if not m:
                     return self._json(404, {"ok": False})

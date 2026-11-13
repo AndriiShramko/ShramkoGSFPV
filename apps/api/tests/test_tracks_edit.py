@@ -190,8 +190,13 @@ class Votes(Base):
         self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "voter": voter(2)}).encode(), "a1")
         self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(2)}).encode(), "a2")["up"], 1)   # control: another address
         self.tick(86400)
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(3)}).encode(), "a1")["up"], 2)   # control: the next day
-        out = self.store.vote(tid, json.dumps({"v": 0, "voter": voter(3)}).encode(), "a1")
+        # lane review TK-8: the address keeps its voter on the next days too (it was cleared each UTC day)
+        for day in range(3):
+            self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "voter": voter(10 + day)}).encode(), "a1")
+            self.tick(86400)
+        self.assertEqual(self.row(tid)["up"], 1)
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(3)}).encode(), "a3")["up"], 2)   # control: another address
+        out = self.store.vote(tid, json.dumps({"v": 0, "voter": voter(3)}).encode(), "a3")
         self.assertEqual((out["up"], out["down"]), (1, 1))                      # 0 takes it back
         meta = (self.dir / "tracks" / SCENE / tid / "meta.json").read_text(encoding="utf-8")
         self.assertNotIn(voter(1), meta)
