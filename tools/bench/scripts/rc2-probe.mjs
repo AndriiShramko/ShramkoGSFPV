@@ -475,6 +475,58 @@ if (only.includes('bridge-nogrant')) {
     checks['bridgeNoGrant.noPageErrors'] = (errorsOf['bridge-nogrant'] ?? ['not run']).length === 0;
     await ctx.close();
 }
+
+// bridge-lna (only when named; lane rc2-lna): Chrome's question simulated in the page, on any base, so the page's own
+// handling is seen in a browser: navigator.permissions.query('loopback-network') answers a fake status, and while it is
+// not 'granted' the page's sockets go to a closed port (as Chrome blocks them). 'prompt': the helper shows the asking
+// line and keeps it 3 s; after the fake Allow (state 'granted' and a change event) the wizard opens with no second
+// press. 'denied': the no-answer line (site settings), no socket. The bridge must be running, as for 'bridge'.
+const installFakeLna = ({ mode }) => {
+    const st = new EventTarget();
+    st.state = mode;
+    const q = navigator.permissions.query.bind(navigator.permissions);
+    navigator.permissions.query = (d) => (d && d.name === 'loopback-network' ? Promise.resolve(st) : q(d));
+    window.__lnaAllow = () => { st.state = 'granted'; st.dispatchEvent(new Event('change')); };
+    const Inner = window.WebSocket;
+    window.WebSocket = class extends Inner { constructor(u, ...r) { super(st.state === 'granted' ? u : 'ws://127.0.0.1:9/', ...r); } };
+};
+if (only.includes('bridge-lna')) {
+    for (const mode of ['prompt', 'denied']) {
+        const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+        await ctx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
+        await ctx.addInitScript(installFakeLna, { mode });
+        const name = `bridge-lna-${mode}`;
+        await run(name, ctx, async (page, note) => {
+            await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
+            await openHelper(page);
+            const sayOf = () => page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : { state: 'gone', text: '' }; });
+            await page.locator('[data-action=usb-rc2-bridge]').click();
+            note.clicks = 1;
+            await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return !!s && s !== 'opening'; }, null, { timeout: 10000 }).catch(() => undefined);
+            note.first = await sayOf();
+            if (mode === 'denied') {
+                note.sockets = (await state(page)).probe.sockets;
+                checks['bridgeLna.deniedSaysSettings'] = note.first.state === 'denied' && /site settings/.test(note.first.text);
+                checks['bridgeLna.deniedNoSocket'] = note.sockets === 0;
+                return;
+            }
+            await page.waitForTimeout(3000);
+            note.after3s = await sayOf();
+            note.socketsWhileAsking = (await state(page)).probe.sockets;
+            checks['bridgeLna.promptAsks'] = note.first.state === 'asking' && /Allow/.test(note.first.text) && note.after3s.state === 'asking';
+            const t0 = Date.now();
+            await page.evaluate(() => window.__lnaAllow());
+            await page.waitForFunction(() => !!window.__gsfpv?.radio?.wizard?.state, null, { timeout: 15000 }).catch(() => undefined);
+            note.wizardAfterMs = Date.now() - t0;
+            const b = await state(page);
+            note.wizard = b.wizard;
+            note.socketsAfterAllow = b.probe.sockets;
+            checks['bridgeLna.allowConnectsWithOnePress'] = !!b.wizard;
+        });
+        checks[`bridgeLna.${mode}.noPageErrors`] = (errorsOf[name] ?? ['not run']).length === 0;
+        await ctx.close();
+    }
+}
 if (usbCtx) await usbCtx.close();
 await browser.close();
 const pass = Object.keys(checks).length > 0 && Object.values(checks).every(Boolean);
