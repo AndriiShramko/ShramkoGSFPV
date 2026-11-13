@@ -511,6 +511,28 @@ no nginx change (a package is streamed by the API and passed through by the exis
 (a 20 MiB package over a real socket: the server's memory peak 0.28 MiB, against 20.1 MiB for a body that is not streamed) and, in a browser, by
 `tools/bench/src/sonicrec-admin.ts` (the admin page as a release carries it, a TEST password, a local copy of the API; **the live admin is never visited**).
 
+## Rooms (train 1, lane rooms): flying together
+
+A third container, `gsfpv-rooms` (`deploy/compose.yml`): `python:3.12-alpine`, read-only root, `./rooms:/app:ro`, only on
+`gsfpv-internal`, `mem_limit 64m`, `cpus 0.25`, `pids_limit 8`, no host port, no data volume (rooms live in RAM). One asyncio
+process (`apps/rooms/rooms.py`, stdlib only) on port 8091. Protocol, byte layouts and limits: `docs/rooms-protocol.md`.
+
+| Route | What |
+|---|---|
+| `GET /api/rooms/health` | `{ok, v, rooms, pilots}` |
+| `GET /api/rooms` | listed rooms, newest first |
+| `POST /api/rooms` | body (at most 4 KB) `{scene: {id, render?}, shared?, name?, listed?, course?}` -> 201 `{id, hostKey}` |
+| `GET /api/rooms/<id>` | one room (never its host key) |
+| `GET /api/rooms/ws` | WebSocket, protocol `rooms/1` |
+
+nginx: zones `gsfpv_rooms` (30 r/min, burst 20, estimate) and `gsfpv_rooms_ws` (4 sockets per address) after the `gsfpv_tg`
+zone; `location = /api/rooms/ws` (HTTP/1.1, `Upgrade`, `Connection "upgrade"`, read timeout 75 s) and `location ^~ /api/rooms`
+after `/api/health`; both take the address the hub's front proxy appended. Tests: `apps/api/tests/test_nginx_rooms.py`,
+`python -m unittest discover -s apps/rooms/tests`. **To deploy (once, in the release order):** after the API and before nginx,
+`bash deploy/release-rooms.sh --compose` (creates only `gsfpv-rooms`; health from inside the network), then `release-nginx.sh`,
+then `ship.sh` (its neighbour diff allows `gsfpv-web,gsfpv-api,gsfpv-rooms`). Undo: `bash deploy/release-rooms.sh --undo --compose`
+and `docker compose stop gsfpv-rooms`; with the nginx locations still in, `/api/rooms` answers 502, which the page must treat as "rooms unavailable" (stage R2 of the lane).
+
 ## Deploying a release
 
 **Scripts (2026-11-08).** The release order is three scripts, each reading `deploy/hub.env` and printing no value from it:

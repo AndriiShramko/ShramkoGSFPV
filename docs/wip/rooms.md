@@ -9,7 +9,8 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - [x] `apps/rooms/ws.py` (RFC 6455), `protocol.py` (pose 36 B, snapshot, validators), `rooms.py` (service), tests
       `test_ws`, `test_protocol`, `test_relay`, `test_rates`, `test_backpressure`, fixtures (commit: see git log, "rooms R1: service")
 - [ ] `docs/rooms-protocol.md`
-- [ ] deploy files: `compose.yml`, `nginx.conf`, `release-rooms.sh`, `ship.sh`, `README.md`; `apps/api/tests/test_nginx_rooms.py`
+- [x] deploy files: `compose.yml`, `nginx.conf`, `release-rooms.sh`, `ship.sh`, `README.md`; `apps/api/tests/test_nginx_rooms.py`
+      (commit "rooms R1: deploy files"; nginx tests 25 pass with test_nginx_routes; NEG OK against train1-base nginx.conf)
 - [ ] load run, `evidence/<date>/rooms-load.json`
 - [ ] negative controls recorded below
 
