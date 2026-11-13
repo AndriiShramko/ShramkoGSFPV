@@ -585,6 +585,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         // distance, a one-off note of it (the preview after a gate) has none; the direction is the heading frame's (-z ahead)
         hum: (audio.engine.plan?.cues ?? []).filter((c) => c.id === 'target.hum').map((c) => ({ dir: c.dir ? [c.dir[0], c.dir[1], c.dir[2]] as [number, number, number] : null, distance: c.distance, hz: c.pitchHz })),
         beacon: entry.setup.prefs.beacon !== false,
+        // train 2 (sonic-int-review.ts R10): the cue ids of the engine's last plan (a wall cue is 'safety.wall') and the motor switch
+        cues: [...new Set((audio.engine.plan?.cues ?? []).map((c) => c.id))],
+        motor: entry.setup.prefs.motorSound === true,
         cost: mode.hearCost(),
         walls: { voxelM: ctx.session.collision ? ctx.session.collision.voxelResolution : null, builtin: !!ctx.session.builtin, scene: ctx.session.scene.id, scale: ctx.session.transform.s },
         ...craftNow(ctx),
