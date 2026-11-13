@@ -32,7 +32,20 @@ Stage 2 RC2-protocol-and-webusb-source
   app/input.ts). Applied on this branch: tsc of apps/fly clean, app-centre-throttle, app-known-controller,
   app-switches, sonic-review-input 55 passed; then reverted (not committed in code). Commit fecd4d0e.
 
-Stage 3: not started.
+Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native read worked)
+- [x] 1. tools/rc-bridge/ (rc_bridge.py, start-rc-bridge.cmd, README.md, test_rc_bridge.py): DJI's libusb0_dji.dll via
+  ctypes, ws://127.0.0.1:47310/, origins https://gsfpv.flyreelstudio.eu and http://localhost[:port] only, Host
+  127.0.0.1/localhost only, read-only, controller held only while a page is connected. Unit tests 10 passed, NEG OK.
+  Real controller through the real bridge: 633 stick messages in 10 s (63.3/s), state 'reading', all six at 1024
+  (U:/Temp/gsfpv-rc2/out/bridge-real.json, a scratch client as an allowed page).
+- [x] 2. Page side: apps/fly/src/devices/dji-rc2-bridge.ts (Rc2BridgeDevice, WebHID-shaped like DjiRc2Device, same
+  profile key), helper button "Fly through the RC bridge" (connects only on the press), texts nobridge / nocontroller,
+  claimFailed points to the bridge; en/es/pl/ru. tools/bench/test/app-dji-rc2-bridge.test.ts + app-usb-look +
+  app-dji-rc2: 23 passed, NEG OK; tsc of apps/fly clean.
+- [ ] 3. CSP entry for the fly page (deploy/nginx.conf + tests), measured in the bench Chrome.
+- [ ] 4. Page probe tools/bench/scripts/rc2-probe.mjs on a local release build (fake WebUSB, refused claim, bridge),
+  negative control on a build of origin/main.
+- [ ] 5. For the lead, Not verified, cost note.
 
 ## Verdict of stage 1
 

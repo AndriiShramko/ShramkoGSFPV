@@ -78,9 +78,13 @@ export function hasStickChannel(d: Pick<UsbDeviceLike, 'vendorId' | 'configurati
     return d.vendorId === RC2_VENDOR && stickChannel(d) !== null;
 }
 
-/** Why the source could not start: the browser could not take the interface, or the controller did not answer. */
+/**
+ * Why the source could not start: the browser could not take the interface, or the controller did not answer; over
+ * the RC bridge (dji-rc2-bridge.ts): nothing answers on its port, or the bridge runs but has no controller.
+ */
+export type Rc2Why = 'claim' | 'silent' | 'nobridge' | 'nocontroller';
 export class Rc2Error extends Error {
-    constructor(readonly why: 'claim' | 'silent', readonly cause?: unknown) {
+    constructor(readonly why: Rc2Why, readonly cause?: unknown) {
         super(`DJI RC 2: ${why}`);
         this.name = 'Rc2Error';
     }

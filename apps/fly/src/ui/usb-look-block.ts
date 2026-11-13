@@ -10,7 +10,8 @@ import { t } from '../i18n';
 import { chooseDji, reportText, usbApi } from '../devices/usb-look';
 import type { UsbLook } from '../devices/usb-look';
 import { DjiRc2Device, Rc2Error, hasStickChannel } from '../devices/dji-rc2-source';
-import type { UsbDeviceLike } from '../devices/dji-rc2-source';
+import type { Rc2Why, UsbDeviceLike } from '../devices/dji-rc2-source';
+import { Rc2BridgeDevice } from '../devices/dji-rc2-bridge';
 
 export interface UsbLookBlock {
     el: HTMLElement;
@@ -20,27 +21,28 @@ export interface UsbLookBlock {
 
 /**
  * `send`: open the report form with this text; left out, there is no send action (the check screen of a test mode).
- * `fly`: fly with a DJI RC 2 whose stick channel answered (a WebHID-shaped device for HidSource); left out, no fly action.
+ * `fly`: fly with a DJI RC 2 whose stick channel answered, over WebUSB or over the RC bridge (a WebHID-shaped device
+ * for HidSource); left out, no fly actions.
  */
-export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Device) => void): UsbLookBlock {
+export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Device | Rc2BridgeDevice) => void): UsbLookBlock {
     let seen: UsbLook | null = null;
     let busy = false;
     const out = h('div', { class: 'usb-look-out', role: 'status', 'aria-live': 'polite', 'data-testid': 'usb-look-out' });
-    const tryFly = async (dev: UsbDeviceLike, say: HTMLElement): Promise<void> => {
+    const SAY: Record<Rc2Why, string> = { claim: 'usb.rc2.claimFailed', silent: 'usb.rc2.silent', nobridge: 'usb.rc2.noBridge', nocontroller: 'usb.rc2.bridgeNoController' };
+    const tryFly = async (d: DjiRc2Device | Rc2BridgeDevice, say: HTMLElement, opening: string): Promise<void> => {
         if (busy || !fly) return;
         busy = true;
         say.setAttribute('data-state', 'opening');
-        say.textContent = t('usb.rc2.opening');
-        const d = new DjiRc2Device(dev);
+        say.textContent = t(opening);
         try {
             await d.open();
             say.setAttribute('data-state', 'flying');
             say.textContent = '';
             fly(d);
         } catch (e) {
-            const why = e instanceof Rc2Error ? e.why : 'claim';
+            const why: Rc2Why = e instanceof Rc2Error ? e.why : 'claim';
             say.setAttribute('data-state', why);
-            say.textContent = t(why === 'silent' ? 'usb.rc2.silent' : 'usb.rc2.claimFailed');
+            say.textContent = t(SAY[why]);
         } finally {
             busy = false;
         }
@@ -55,7 +57,7 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         if (fly && l.verdict === 'rc2' && dev && hasStickChannel(dev)) {
             // the outcome is read out by the polite live region this block already is (role status)
             const say = h('p', { 'data-testid': 'usb-rc2-say' });
-            out.append(h('button', { type: 'button', class: 'btn primary', 'data-action': 'usb-rc2-fly', onclick: () => void tryFly(dev, say) }, t('usb.rc2.fly')), say);
+            out.append(h('button', { type: 'button', class: 'btn primary', 'data-action': 'usb-rc2-fly', onclick: () => void tryFly(new DjiRc2Device(dev), say, 'usb.rc2.opening') }, t('usb.rc2.fly')), say);
         }
         if (send) {
             out.append(h('button', { type: 'button', class: 'btn', 'data-action': 'usb-look-send',
@@ -80,5 +82,12 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         h('p', { class: 'muted small' }, t('usb.why')),
         h('button', { type: 'button', class: 'btn', 'data-action': 'usb-look', onclick: () => void look() }, t('usb.look')),
         out);
+    if (fly) {
+        // the RC bridge (tools/rc-bridge): only on this press does the page connect to 127.0.0.1, never on load
+        const say = h('p', { 'data-testid': 'usb-bridge-say', role: 'status', 'aria-live': 'polite' });
+        el.append(h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy')),
+            h('button', { type: 'button', class: 'btn', 'data-action': 'usb-rc2-bridge', onclick: () => void tryFly(new Rc2BridgeDevice(), say, 'usb.rc2.bridgeOpening') }, t('usb.rc2.bridge')),
+            say);
+    }
     return { el, get seen() { return seen; } };
 }
