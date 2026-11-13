@@ -45,7 +45,7 @@ Stage 2, M2-probe-all-windows:
   click inside keeps the mouse free" (locked true). Evidence: evidence/2026-11-13/mouse-free/probe-live.json.
 - [x] 4. No other window failed on the branch, so no code change and no new unit test in this stage.
   Typecheck tools/bench exit 0.
-- Commits: c72105be (probe), the next commit (status, evidence, the probe's second-page start).
+- Commits: c72105be (probe), 8241bf2d (status, evidence, the probe's second-page start).
 
 ## Decisions
 
