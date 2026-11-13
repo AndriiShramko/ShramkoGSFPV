@@ -21,7 +21,7 @@ import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
-import { experiencedPilot, launchFailureLine, parseSonicParam } from './start-model';
+import { experiencedPilot, freeLessonOf, launchFailureLine, parseSonicParam } from './start-model';
 import type { SonicRequest } from './start-model';
 import { allProgress, currentLesson, fliesBySound, resetProgress, setCurrentLesson, setFliesBySound } from './store';
 import { enableZoom } from './zoom';
@@ -61,14 +61,6 @@ export interface StartHandle {
     readonly setup: SonicSetup;
 }
 
-/**
- * The free flight a press asks for (train 2): SCAN_FREE_ID on a scan link's screen is the template over that link's scan at its size
- * (scanFreeLesson, transform [size, 0, 0, 0]), else null (a shipped lesson).
- */
-export function freeLessonOf(request: SonicRequest, id: string): LessonDef | null {
-    if (id !== SCAN_FREE_ID || request.kind !== 'scan') return null;
-    return scanFreeLesson(request.sceneId, [request.size, 0, 0, 0]);
-}
 
 /** Opens the start screen; a lesson chosen on it launches the flight. */
 export function startSonic(d: SonicStartDeps): StartHandle {

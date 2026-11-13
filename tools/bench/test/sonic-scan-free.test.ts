@@ -7,7 +7,8 @@ import { describe, expect, it, vi, afterEach } from 'vitest';
 const SCAN_FREE_ID = 'scan-free';
 import { modeScanPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import { experiencedPilot, parseSonicParam, scanStartOrder } from '../../../apps/fly/src/sonic/start-model';
-import { freeLessonOf } from '../../../apps/fly/src/sonic/start';
+import { freeLessonOf } from '../../../apps/fly/src/sonic/start-model';
+import { seedOfLink } from '../../../apps/fly/src/course/link';
 import { buildScanLesson } from '../../../apps/fly/src/sonic/scan-lesson';
 
 const queryOf = (href: string): URLSearchParams => new URL(href, 'https://gsfpv.flyreelstudio.eu').searchParams;
@@ -49,5 +50,15 @@ describe('fly THIS scan by sound (train 2)', () => {
         expect(scan.voxelM).toBeNull();
         expect(scan.track).toBeNull();
         expect(scan.floorY).toBeCloseTo(0.5, 9);
+    });
+
+    it('S3: the course the sighted page names (Shift+G, course=g1.<seed>) goes into the sound link; a bad course value stays behind', () => {
+        vi.stubGlobal('document', { documentElement: { lang: 'en' } });
+        const ses = { builtin: null, scene: { id: '887f27aa' }, transform: { s: 1 } };
+        const href = modeScanPage(ses, '?scene=887f27aa&course=g1.abc12&x=1');
+        expect(href).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1&course=g1.abc12');
+        expect(seedOfLink(new URL(href, 'https://gsfpv.flyreelstudio.eu').search)).toBe(parseInt('abc12', 36));
+        expect(modeScanPage(ses, '?course=evil<script>')).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1');
+        expect(modeScanPage(ses)).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1');
     });
 });

@@ -6,7 +6,7 @@
 // v0.13 (lane v13-host C2, the owner's M41-2; W7): a lesson left without passing is 'skipped' (the runner's progress.skipped, which the
 // prefs keep since v0.13), and every lesson has its place, "Lesson N of 28", counted as the runner's view counts it (on the pilot's path
 // when the lesson is on it, else on the full one), so the screen and the lesson say the same number.
-import { SCAN_FREE_ID, SHIPPED_LESSON_IDS, getLesson, isShippedLesson, lessonPaths } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, SHIPPED_LESSON_IDS, getLesson, isShippedLesson, lessonPaths, scanFreeLesson } from '@shramko/sonic-fpv';
 import { SHARED_LIMITS } from '@gsfpv/scenes';
 import type { LessonDef, LessonProgress, ModuleId, SpeechLine } from '@shramko/sonic-fpv';
 
@@ -147,6 +147,15 @@ export function parseSonicParam(raw: string | null, query?: { get(name: string):
  */
 export function experiencedPilot(progress: Readonly<Record<string, unknown>>, saidFlies: boolean): boolean {
     return saidFlies || Object.keys(progress).length > 0;
+}
+
+/**
+ * The free flight a press asks for (train 2): SCAN_FREE_ID on a scan link's screen is the template over that link's scan at its size
+ * (scanFreeLesson, transform [size, 0, 0, 0]), else null (a shipped lesson). Pure, here and not in start.ts, so a test loads it in Node.
+ */
+export function freeLessonOf(request: SonicRequest, id: string): LessonDef | null {
+    if (id !== SCAN_FREE_ID || request.kind !== 'scan') return null;
+    return scanFreeLesson(request.sceneId, [request.size, 0, 0, 0]);
 }
 
 /** The start screen's actions in order for a scan link: 'scan' (fly this scan by sound) and 'lessons' (Continue and the course). */
