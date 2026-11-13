@@ -38,6 +38,9 @@ Stage fixes (review CN-1..CN-11):
 - [x] CN-2 partly: `expect(pads).toBeGreaterThan(0)`; SAME_TOL stays 0.03 (estimate), no real gamepad here to measure. Measured on the simulated pilots (owner-rc2-session.test.ts with SAME_TOL swapped): 0.1 and 0.12 pass all, 0.15 fails only the hand-made "two landing values" unit case, 0.2 and 0.3 fail 1 and 2 of 50 (owner-rc2-session plus packages/input/test/calib*)
 - [x] CN-3, CN-8, CN-9, CN-10 (helper part) stand; `tools/rc-bridge/rc_bridge.py`: only 2CA3:1021 is opened, another DJI device only with `--other-dji` (so first_look never opens one by default); the port is taken before first_look, a second copy prints "The helper is already running in another window" and ends with 1, no traceback; "page connected" said once until the state changes; docstring (name, first look at start, RC 2 only, second copy). README. test_rc_bridge.py 34 of 34 (3 new/changed); NEG OK (old rc_bridge.py: 3 failed)
 - [x] CN-4 stands (by reading: watchPads opened any pad as a gamepad; autoFind took hidList[0]). New `apps/fly/src/devices/auto-route.ts` autoRoute: a granted HID device with a saved setup (key prefix `hid:<vid>:<pid>:<name>:`) first, then a pad with a saved setup or a known table, then any granted HID device, then the pad. `ui/radio.ts`: the pad watch asks navigator.hid.getDevices() and autoRoute before it opens the pad (openFoundPad); autoFind leaves a pad with its own saved setup to the pad watch. app-connect 9 of 9 (1 new); NEG OK only by the missing module (the rule is a new file; the screen itself is not driven by a unit test); typecheck apps/fly 0. Not run in a browser
+- [x] CN-5, CN-6, CN-7 stand (by reading; each new test fails on the old usb-look-block.ts by an assertion). `ui/usb-look-block.ts`: pickDji scrolls the opened block into view, a refused claim scrolls the helper section into view (scrollIntoView, block start); a press during a quiet helper try closes that try and goes on; "Fly with this controller" on the details road goes on to the helper after a refused claim. `ui/radio.ts` connectAny writes `usb.connect.below` under the button for 'shown', 'trying', 'failed' (new key in en, es, pl, ru; app-usb-look's key list). app-connect 12 of 12 (3 new), with app-usb-look, app-dji-rc2-bridge, app-dji-rc2-lna 34 of 34; neg control: old usb-look-block.ts, the 3 new tests failed (AssertionError); typecheck apps/fly 0. Not run in a browser (no screenshot of the scrolled state)
+- [x] CN-10 stands: spring.ts says 59 (6ed4a62b), Facts say where the snap numbers come from, rc_bridge.py docstring updated (5bf64c18)
+- [x] CN-11 stands as a test-text problem: the owner's test step in For the lead now says what a saved from-zero choice looks like and asks whether he pressed J (no code change: a saved choice beating a new wizard is the design)
 
 ## Facts (measured)
 Record `U:/Temp/gsfpv-train2/rc2/rc2-rec-20261113.jsonl` (67134 lines), split at the first gap over 3 s
@@ -54,6 +57,9 @@ Record `U:/Temp/gsfpv-train2/rc2/rc2-rec-20261113.jsonl` (67134 lines), split at
 - Fixture: the first 205 s of session 2, 13105 lines, t rebased to 0.
 - Spring snaps in session 2 (from the last sample beyond half the travel to the first within 0.15 of the middle):
   16 to 95 ms over 59 returns of the four sticks (throttle 39, yaw 6, pitch 7, roll 7); every rest is exactly 1024.
+  Measured in stage C1 with a scratch script that was not kept (the session split is `persec.py`); review CN-10 asked
+  for its name: not recoverable, so the 59 and the 16-95 ms are stage C1's printed numbers and RETURN_MS 200 stays an
+  estimate (spring.ts says so). spring.ts's comment said 60; corrected to 59.
 
 Replay of session 2 (run `a`, `U:/Temp/gsfpv-train2/connect/session-a.json`): local release of b05df5e6 on :5780, the
 bridge `--replay <fixture> --dev --port 5781`, headless Chrome 157.0.8103.52 (bypassCSP; the page's socket to 47310
@@ -246,8 +252,11 @@ comes right after its screen), so the replay's timeline is taken as his.
   buttons -> double-click start-dji-helper.cmd in Downloads -> answer the start-with-Windows question -> the window
   should say "Your DJI controller answers" -> back in the page it should connect by itself (or press "Fly with the
   helper program") -> the window says "Your DJI controller is read" -> the check screen opens (his setup is saved) ->
-  Fly: the throttle style row must say centred. Tell us what Windows and Chrome showed on the downloads and the first
-  double-click.
+  Fly: the throttle style row should say centred. If it says from zero as your choice, that is a choice saved earlier
+  on this controller (key J or the row; a new wizard keeps it by design): press J once. Tell us whether you pressed J or
+  the row in the session of 2026-11-13 (seconds 160-197 of session 2 flew with the throttle below the centre in 95.9 %
+  of answers, median raw 722: from-zero hover flying, review CN-11). Tell us what Windows and Chrome showed on the
+  downloads and the first double-click.
 
 ## Not verified
 - The live page's state during his session (style, saved choice, presses): only his stick record exists.

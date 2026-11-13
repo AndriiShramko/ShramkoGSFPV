@@ -45,5 +45,6 @@
   "usb.connect.again": "Tu mando no estaba en esa lista. Pulsa el botón una vez más: Chrome mostrará entonces los mandos DJI que no son mandos de juego.",
   "usb.connect.none": "No se eligió ningún mando. Comprueba que está encendido y que el cable transmite datos y no solo carga; luego pulsa el botón otra vez.",
   "usb.connect.noApi": "Este navegador no puede abrir mandos por USB. Usa Chrome o Edge en un ordenador, o mueve una palanca de un gamepad.",
+  "usb.connect.below": "Se está abriendo tu mando. Justo debajo verás lo que encontró el simulador y qué hacer a continuación.",
   "usb.untested": "{name} es un mando DJI con el que este simulador aún no se ha probado. Se intenta igual que el DJI RC 2."
 }

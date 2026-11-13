@@ -392,6 +392,7 @@ export class RadioScreen {
         btn.textContent = t('usb.connect.go');
         if (r === 'none') say.textContent = t('usb.connect.none');
         else if (r === 'noapi') say.textContent = HidSource.supported() ? t('usb.connect.none') : t('usb.connect.noApi');
+        else say.textContent = t('usb.connect.below'); // review CN-5: the look and the next step are in the block below (brought into view)
     }
 
     /**

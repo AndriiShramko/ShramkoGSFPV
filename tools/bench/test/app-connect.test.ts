@@ -167,6 +167,59 @@ describe('Connect my controller, the DJI step', () => {
     });
 });
 
+describe('after a press the next step is in view and acts (review CN-5, CN-6, CN-7)', () => {
+    it('a DJI pick brings the block into view, a refused claim then its helper section', async () => {
+        nav.usb = { requestDevice: () => Promise.resolve(refused({ ...RC2 } as never)) };
+        const blk = B.usbLookBlock(() => undefined, () => undefined, { permissions: null, helperDevice: () => new R.Rc2BridgeDevice({ socket: () => new FakeSocket(false) as never, permissions: null }) });
+        const proto = Object.getPrototypeOf(blk.el) as { scrollIntoView?: unknown };
+        const seen: string[] = [];
+        proto.scrollIntoView = function (this: FakeElement) { seen.push(this.getAttribute('data-testid') ?? ''); };
+        try {
+            expect(await blk.pickDji()).toBe('trying');
+            expect(await until(() => seen.includes('usb-helper'))).toBe(true);
+            expect(seen[0]).toBe('usb-look');
+        } finally {
+            delete proto.scrollIntoView;
+            blk.stop();
+        }
+    });
+    it('"Fly with this controller" on the details road goes on to the helper when the claim is refused', async () => {
+        nav.usb = { requestDevice: () => Promise.resolve(refused({ ...RC2 } as never)) };
+        const flown: unknown[] = [];
+        const blk = B.usbLookBlock(() => undefined, (d) => flown.push(d), { permissions: null, helperDevice: () => new R.Rc2BridgeDevice({ socket: () => new FakeSocket(true) as never, permissions: null }) });
+        const el = blk.el as unknown as FakeElement;
+        btn(el, 'usb-look')!.click();
+        expect(await until(() => btn(el, 'usb-rc2-fly') !== null)).toBe(true);
+        btn(el, 'usb-rc2-fly')!.click();
+        expect(await until(() => flown.length === 1)).toBe(true);
+        expect(flown[0]).toBeInstanceOf(R.Rc2BridgeDevice);
+        blk.stop();
+        await (flown[0] as { close(): Promise<void> }).close();
+    });
+    it('a press during a quiet helper try is not lost: the quiet try is let go and the press connects', async () => {
+        /** a helper socket that never answers (one quiet try under way) */
+        class Hang {
+            onopen: ((e: unknown) => void) | null = null;
+            onmessage: ((e: { data: unknown }) => void) | null = null;
+            onerror: ((e: unknown) => void) | null = null;
+            onclose: ((e: unknown) => void) | null = null;
+            close(): void { this.onclose?.({}); }
+        }
+        let made = 0;
+        const flown: unknown[] = [];
+        const blk = B.usbLookBlock(() => undefined, (d) => flown.push(d), { helper: true, permissions: null,
+            helperDevice: () => { made++; const first = made === 1; return new R.Rc2BridgeDevice({ socket: () => (first ? new Hang() : new FakeSocket(true)) as never, permissions: null }); } });
+        const el = blk.el as unknown as FakeElement;
+        void blk.quietHelper();
+        expect(await until(() => made === 1)).toBe(true);
+        btn(el, 'usb-rc2-bridge')!.click();
+        expect(await until(() => flown.length === 1)).toBe(true);
+        expect(made).toBe(2);
+        blk.stop();
+        await (flown[0] as { close(): Promise<void> }).close();
+    });
+});
+
 describe('the helper program\'s two files (C3)', () => {
     it('the helper section saves both files with one press each: the repository copy first, then the page\'s own', async () => {
         let give: (f: { name: 'start-dji-helper.cmd' | 'dji-helper.py'; url: string }[]) => void = () => undefined;

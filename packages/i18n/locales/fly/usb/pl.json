@@ -45,5 +45,6 @@
   "usb.connect.again": "Twojego kontrolera nie było na tej liście. Naciśnij przycisk jeszcze raz: Chrome pokaże wtedy kontrolery DJI, które nie są kontrolerami do gier.",
   "usb.connect.none": "Nie wybrano kontrolera. Sprawdź, czy jest włączony i czy kabel przesyła dane, a nie tylko ładuje, a potem naciśnij przycisk ponownie.",
   "usb.connect.noApi": "Ta przeglądarka nie może otwierać kontrolerów przez USB. Użyj Chrome lub Edge na komputerze albo porusz drążkiem gamepada.",
+  "usb.connect.below": "Trwa otwieranie kontrolera. Tuż poniżej widać, co znalazł symulator i co zrobić dalej.",
   "usb.untested": "{name} to kontroler DJI, z którym ten symulator nie był jeszcze testowany. Próbujemy go tak samo jak DJI RC 2."
 }

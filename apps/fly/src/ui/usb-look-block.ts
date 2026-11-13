@@ -72,7 +72,14 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
     let asking = false;
     let run = 0;
     let helperSay: HTMLElement | null = null;
-    const el = h('details', { class: 'usb-look', 'data-testid': 'usb-look' },
+    let helperEl: HTMLElement | null = null;
+    // the helper try running quietly (no press), if any: a press closes it and goes on (review CN-6)
+    let quietDev: Rc2BridgeDevice | null = null;
+    // after a press, what the pilot must read next is brought into view (review CN-5: it was below the fold)
+    const reveal = (node: HTMLElement | null): void => {
+        (node as unknown as { scrollIntoView?: (o: ScrollIntoViewOptions) => void } | null)?.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+    };
+    const el =h('details', { class: 'usb-look', 'data-testid': 'usb-look' },
         h('summary', {}, t('usb.title')),
         h('p', { class: 'muted small' }, t('usb.why')),
         h('button', { type: 'button', class: 'btn', 'data-action': 'usb-look', onclick: () => void look() }, t('usb.look')),
@@ -86,9 +93,16 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
     const tryFly = async (d: DjiRc2Device | Rc2BridgeDevice, say: HTMLElement, opening: string, then?: () => void): Promise<void> => {
         if (!fly) return;
         if (busy) {
-            // a press while Chrome's question is open (the pilot may have closed it unanswered): start over
-            if (!asking || !(d instanceof Rc2BridgeDevice)) return;
-            void current?.close();
+            if (quietDev) {
+                // a press during a quiet helper try (review CN-6): the press wins, the quiet try is let go
+                const q = quietDev;
+                quietDev = null;
+                void q.close();
+            } else {
+                // a press while Chrome's question is open (the pilot may have closed it unanswered): start over
+                if (!asking || !(d instanceof Rc2BridgeDevice)) return;
+                void current?.close();
+            }
         }
         stopWatch();
         busy = true;
@@ -116,7 +130,7 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
             const why: Rc2Why = e instanceof Rc2Error ? e.why : 'claim';
             failed = why;
             say.setAttribute('data-state', why);
-            if (why === 'claim') offerHelper();
+            if (why === 'claim') { offerHelper(); reveal(helperEl); }
             say.textContent = why === 'claim' ? `${t(SAY.claim)} ${t('usb.rc2.claimBridge')}` : t(SAY[why]);
             // the helper not running: the page tries again by itself while the screen is open (no question can come)
             if (d instanceof Rc2BridgeDevice && (why === 'nobridge' || why === 'nocontroller')) startWatch();
@@ -137,13 +151,14 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         // one press per file saves it (C3): the repository's copy until the bundled one is ready, then a same-origin URL
         const links = HELPER_NAMES.map((name) => h('a', { class: 'btn', href: helperRaw(name), download: name, target: '_blank', rel: 'noopener', 'data-testid': 'usb-helper-file', 'data-file': name },
             t('usb.rc2.helperFile', { name })));
-        el.append(h('div', { class: 'usb-helper', 'data-testid': 'usb-helper' },
+        helperEl = h('div', { class: 'usb-helper', 'data-testid': 'usb-helper' },
             h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy')),
             h('p', { class: 'usb-helper-files' }, ...links),
             h('p', { class: 'muted small' }, t('usb.rc2.helperNeeds'), ' ',
                 h('a', { href: RC_BRIDGE_SOURCE, target: '_blank', rel: 'noopener', 'data-testid': 'usb-bridge-get' }, t('usb.rc2.bridgeGet'))),
             h('button', { type: 'button', class: 'btn', 'data-action': 'usb-rc2-bridge', onclick: () => helperTry() }, t('usb.rc2.bridge')),
-            say));
+            say);
+        el.append(helperEl);
         void (o.helperFiles ?? helperFiles)().then((files) => {
             for (const f of files) {
                 const a = links[HELPER_NAMES.indexOf(f.name)];
@@ -164,13 +179,18 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         if (!(await noQuestion(perms)) || stopped || busy) return false;
         const d = helperDev();
         busy = true;
+        quietDev = d;
         try {
             await d.open();
         } catch {
+            if (quietDev !== d) return false; // a press took over (tryFly): it owns `busy` now
+            quietDev = null;
             busy = false;
             if (again) startWatch();
             return false;
         }
+        if (quietDev !== d) { void d.close(); return false; }
+        quietDev = null;
         busy = false;
         if (stopped) { void d.close(); return false; }
         offerHelper();
@@ -192,7 +212,7 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
             // the outcome is read out by the polite live region this block already is (role status)
             const s = h('p', { 'data-testid': 'usb-rc2-say' });
             say = s;
-            out.append(h('button', { type: 'button', class: 'btn primary', 'data-action': 'usb-rc2-fly', onclick: () => void tryFly(new DjiRc2Device(dev), s, 'usb.rc2.opening') }, t('usb.rc2.fly')), s);
+            out.append(h('button', { type: 'button', class: 'btn primary', 'data-action': 'usb-rc2-fly', onclick: () => void tryFly(new DjiRc2Device(dev), s, 'usb.rc2.opening', () => { if (helperOffered(l, true, false)) helperTry(); }) }, t('usb.rc2.fly')), s);
         }
         if (send) {
             out.append(h('button', { type: 'button', class: 'btn', 'data-action': 'usb-look-send',
@@ -228,6 +248,7 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         }
         const say = show(r.look, r.device);
         el.setAttribute('open', '');
+        reveal(el);
         if (routeOf(r.look) !== 'rc2usb' || !say) return 'shown';
         // the stick channel at once; a refused claim goes on to the helper program by itself (helperOffered)
         void tryFly(new DjiRc2Device(r.device), say, 'usb.rc2.opening', () => { if (helperOffered(r.look, true, false)) helperTry(); });

@@ -45,5 +45,6 @@
   "usb.connect.again": "Your controller was not in that list. Press the button once more: Chrome then shows DJI controllers that are not game controllers.",
   "usb.connect.none": "No controller was chosen. Check that it is switched on and that the cable carries data, not only charge, then press the button again.",
   "usb.connect.noApi": "This browser cannot open controllers over USB. Use Chrome or Edge on a computer, or move a stick of a gamepad.",
+  "usb.connect.below": "Your controller is being opened. What the simulator found and what to do next is just below.",
   "usb.untested": "{name} is a DJI controller this simulator has not been tested with yet. It is tried the same way as the DJI RC 2."
 }
