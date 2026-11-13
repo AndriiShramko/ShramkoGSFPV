@@ -181,6 +181,20 @@ Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-p
   app-ground-probe and a6-reference (input.ts touched): 10 files, 104 passed (log U:/Temp/gsfpv-train1c/ground-rc2/
   unit.log); test_rc_bridge.py 14 passed (pytest); tsc of apps/fly and tools/bench clean.
 
+Stage G3-rc2-real (train 1c): NOT CONNECTED (2026-11-13 14:26). Steps 1-3 not done, listed under Not verified.
+- [x] 0. Device check. The bridge's own DLL walk (scratch U:/Temp/gsfpv-train1c/ground-rc2/list_usb.py: rc_bridge's
+  find_dll + DjiUsb._lib + the same bus/device walk as DjiUsb.open, opens nothing) found DJI Assistant 2's
+  libusb0_dji.dll and printed "devices []", "rc2 False": no device at all on DJI's driver. Second way: Get-PnpDevice
+  lists 17 VID_2CA3 entries, all present=False (status Unknown). The RC 2 is unplugged or switched off.
+  Seen in passing: two of those remembered entries are VID_2CA3&PID_1021&MI_02 "USB Input Device" and
+  "HID-compliant game controller", so on some earlier plug-in Windows did see a HID game-controller part on interface
+  2 of the RC 2 (stage 1 measured no HID part). When and in which mode is unknown.
+- [ ] 1. Real bridge + page probe with sticks at rest (fps, request-to-reply p50/p95, noise, nothing arms): needs the
+  RC 2 plugged in and on.
+- [ ] 2. Section "For the lead: the owner flies the RC 2": not written in this stage (stage rule: not connected =
+  list under Not verified and stop).
+- [ ] 3. Windows without DJI Assistant 2, Linux, macOS by reading the code: not done in this stage (same rule).
+
 ## Verdict of stage 1
 
 (a) Native read on this PC: WORKS [measured]. Stack: Python 3.11 ctypes ->
@@ -367,6 +381,11 @@ every received frame, measured]:
   is the one in apps/site REPO); the README's five steps were not followed on a clean PC; the negative control used
   the lead copy's dist built at 13:12 (lead HEAD bbc9e75e is from 13:31), not a fresh build of bbc9e75e; the live
   site's CSP after the nginx release not checked.
+- Stage G3 (RC 2 not connected): the real bridge with a page on the local release, frames per second,
+  request-to-reply delay p50/p95, the noise of the six values at rest, "nothing arms"; the evidence JSON under
+  evidence/2026-11-13/train1c/ was not written; the owner's start/stop/press instructions; what a Windows pilot
+  without DJI Assistant 2 and a Linux or macOS pilot sees; decode of a moving stick and the axis directions on the
+  real controller; whether the remembered MI_02 HID game-controller entry is a real stick channel.
 
 ## Cost notes
 - Stage 1: most turns went to pyusb crashing on DJI's libusb0 build (3 turns to find the struct offset);
@@ -397,3 +416,6 @@ every received frame, measured]:
 - Stage G2: about 35 replies. Most went to finding the in-flight message channel (Hud.flash) by grep and to
   "file has not been read" edit refusals; one probe run passed first time thanks to ground-probe. A code-map line
   "in-flight note to the pilot = ctx.hud.flash (ui/hud.ts)" would have saved about 4 replies.
+- Stage G3: 8 replies; the RC 2 was not connected. Most turns went to the device check, because the bridge has no
+  listing switch (a scratch DLL walk was needed); a "--list" option in rc_bridge.py printing VID:PID only would make
+  this one command.
