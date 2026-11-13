@@ -1089,7 +1089,7 @@
         "text": [
           "Each ring or gate you pass gives a bright note, and the notes climb like a little song. At the end of a stage of a long track, the voice says which stage you passed.",
           "Fly through a ring from behind and three notes fall: it does not count, and the voice asks you to go back and fly it from the front.",
-          "Fly back along the track nose-first for more than a second and you hear two falling pairs of notes and “You are flying back. Turn around.” Backing up or sliding aside is never called the wrong way."
+          "Fly back along the track for more than a second and you hear two falling pairs of notes and “You are flying back. Turn around.”"
         ]
       },
       "keys": {
@@ -1098,12 +1098,13 @@
           "Press K in the simulator and it says them aloud, so there is nothing to learn by heart."
         ]
       },
-      "moreTitle": "All the sounds in short"
+      "moreTitle": "What else there is"
     },
     "media": {
       "garden": "In the background: a flight in the simulator through Winter Garden, a 3DGS scan by Andrii Shramko and the place of one of the sound lessons.",
-      "pond": "In the background: a real FPV flight by Andrii Shramko, low over a pond in a park in Bydgoszcz.",
-      "acro": "In the background: a real FPV flight by Andrii Shramko in Bydgoszcz: up along a spruce, a roll, a dive between the trees."
+      "pond": "In the background: a real FPV flight by Andrii Shramko, flown by sight in goggles, not by sound: low over a pond in a park in Bydgoszcz.",
+      "acro": "In the background: a real FPV flight by Andrii Shramko in Bydgoszcz, flown by sight in goggles, not by sound: up along a spruce, a roll, a dive between the trees.",
+      "villa": "In the background: a flight in the simulator, flown by sight, through Modlinek Villa, a 3DGS scan by Andrii Shramko: round the tulips, then low under the table."
     },
     "start": {
       "title": "How do I start?",

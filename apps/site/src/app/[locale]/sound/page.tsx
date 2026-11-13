@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { sonicLinkPath } from "@gsfpv/scenes/sonic-link";
 import { AUTHOR, REPO, SOUND_REPO, flyPath } from "@/config/site";
-import type { FlightSlot } from "@/config/videos";
+import type { FlightSlot, VideoSlot } from "@/config/videos";
 import type { Locale } from "@/i18n/routing";
 import BgVideo from "@/components/BgVideo";
 import BgVideos from "@/components/BgVideos";
@@ -72,6 +72,8 @@ const AUDIENCES = ["blind", "pilots", "teachers", "press", "support", "developer
  * full text. The fifth figure, the keys card, sits under the keys h3 (#sound-keys).
  */
 const FIGURES = ["height", "wall", "hum", "gates"] as const;
+/** The sound.how.items shown under "What else there is": not 0 (wall), 1 (height), 3 (left or right), which the figures tell. */
+const MORE_ITEMS = [2, 4, 5, 6, 7];
 
 const H4 = "mt-5 font-semibold text-ink";
 
@@ -85,7 +87,7 @@ const COL = "mx-auto max-w-3xl px-4 sm:px-8";
  * always sits on that scrim), then the text on the plain page. The video is decoration (aria-hidden, components/BgVideo); the caption
  * says what it shows. Reduced motion: the poster stays (components/BgVideos). An anchor jump to the h2 keeps the strip in view.
  */
-function FlightSection({ id, slot, title, caption, children }: { id: string; slot: FlightSlot; title: string; caption: string; children: ReactNode }) {
+function FlightSection({ id, slot, title, caption, children }: { id: string; slot: FlightSlot | VideoSlot; title: string; caption: string; children: ReactNode }) {
   return (
     <section aria-labelledby={`sound-${id}`} className="mt-14">
       <div className="relative isolate flex min-h-[clamp(15rem,42svh,28rem)] items-end overflow-hidden">
@@ -150,7 +152,7 @@ function Sound({ locale }: { locale: Locale }) {
         <div className="relative isolate overflow-hidden border-b border-line">
           <BgVideo slot="soundHero" priority className="-z-20" />
           <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-bg via-bg/80 to-bg/30" />
-          <div className={`${COL} flex min-h-[calc(85svh-4rem)] flex-col justify-end pb-8 pt-24`}>
+          <div className={`${COL} flex min-h-[calc(85svh-4rem)] flex-col justify-end pb-8 pt-12 sm:pt-24`}>
             <p className="eyebrow text-sm">{t("sound.eyebrow")}</p>
             <h1 className="mt-3 text-4xl font-semibold tracking-tight text-ink [text-shadow:0_1px_12px_rgb(0_0_0/0.8)] sm:text-6xl">{t("sound.h1")}</h1>
             <p className="mt-4 max-w-2xl text-lg text-ink/90 sm:text-xl">{t("sound.hero.lead")}</p>
@@ -197,7 +199,8 @@ function Sound({ locale }: { locale: Locale }) {
             <SoundFigure key={f} kind={f} title={t(`sound.fig.${f}.title`)} text={raw(`sound.fig.${f}.text`)} />
           ))}
           <h3 className={H3}>{t("sound.fig.moreTitle")}</h3>
-          <Items items={raw("sound.how.items")} />
+          {/* items 0, 1 and 3 (wall, height, left or right) are told by the figures above; a linear reader hears them once */}
+          <Items items={raw("sound.how.items").filter((_, i) => MORE_ITEMS.includes(i))} />
         </Section>
 
         <Section id="need" title={t("sound.need.title")}>
@@ -258,7 +261,7 @@ function Sound({ locale }: { locale: Locale }) {
           </p>
         </Section>
 
-        <Section id="who" title={t("sound.who.title")}>
+        <FlightSection id="who" slot="scale" title={t("sound.who.title")} caption={t("sound.media.villa")}>
           <p className="mt-3 text-ink/85">{t("sound.who.intro")}</p>
           {AUDIENCES.map((a) => (
             <div key={a} className="mt-8 border-l border-accent/50 pl-4">
@@ -326,7 +329,7 @@ function Sound({ locale }: { locale: Locale }) {
               ) : null}
             </div>
           ))}
-        </Section>
+        </FlightSection>
 
         <Section id="open" title={t("sound.open.title")}>
           <p className="mt-3 text-ink/85">{t("sound.open.text")}</p>

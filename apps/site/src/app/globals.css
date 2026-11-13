@@ -360,10 +360,10 @@ body {
     opacity: 1;
   }
   44%,
-  88% {
+  80% {
     opacity: 0;
   }
-  96%,
+  84%,
   100% {
     opacity: 1;
   }
@@ -373,11 +373,12 @@ body {
   36% {
     opacity: 0;
   }
+  /* off by 84 %: the nose is 13.4 degrees off then (sf-turn's ease-in-out from 78 %), the package drops the octave at 11 */
   44%,
-  88% {
+  80% {
     opacity: 1;
   }
-  96%,
+  84%,
   100% {
     opacity: 0;
   }

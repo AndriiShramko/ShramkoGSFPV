@@ -159,7 +159,7 @@ function HumFig() {
   );
 }
 
-/** (4) Rings and gates: one note per gate, climbing; below, nose-first back is told, backing up is not. */
+/** (4) Rings and gates: one note per gate, climbing; below, flying back along the track is told. */
 function GatesFig() {
   const gates = [90, 160, 230];
   return (
@@ -179,18 +179,16 @@ function GatesFig() {
         </g>
       </g>
       <path d="M16 112 L304 112" stroke={LINE} strokeWidth="1" />
-      <path d="M160 120 L160 194" stroke={LINE} strokeWidth="1" />
-      {[0, 160].map((dx) => (
-        <g key={dx} transform={`translate(${dx} 0)`}>
-          <g transform={`translate(112 160) rotate(${dx === 0 ? -90 : 90})`}>
-            <Drone />
-          </g>
-          <path d="M132 188 L92 188 M100 182 L92 188 L100 194" fill="none" stroke={INK} strokeWidth="2" />
-          <path d="M24 122 h52 a5 5 0 0 1 5 5 v16 a5 5 0 0 1 -5 5 h-36 l-8 8 v-8 h-8 a5 5 0 0 1 -5 -5 v-16 a5 5 0 0 1 5 -5 Z" fill="none" stroke={dx === 0 ? WARN : LINE} strokeWidth="2" />
-          <path d="M32 132 h36 M32 139 h22" stroke={dx === 0 ? WARN : LINE} strokeWidth="2" />
-          {dx === 0 ? null : <path d="M20 160 L84 118" stroke={MUTED} strokeWidth="2.5" />}
+      {/* Only flying back along the track is drawn: at the recorded packages/sonic-fpv (378cc50) wrong way is judged by velocity
+          alone (runner.ts checkDirection), so backing up is told too; a "backing up, no voice" panel would be false there. */}
+      <g transform="translate(80 0)">
+        <g transform="translate(112 160) rotate(-90)">
+          <Drone />
         </g>
-      ))}
+        <path d="M132 188 L92 188 M100 182 L92 188 L100 194" fill="none" stroke={INK} strokeWidth="2" />
+        <path d="M24 122 h52 a5 5 0 0 1 5 5 v16 a5 5 0 0 1 -5 5 h-36 l-8 8 v-8 h-8 a5 5 0 0 1 -5 -5 v-16 a5 5 0 0 1 5 -5 Z" fill="none" stroke={WARN} strokeWidth="2" />
+        <path d="M32 132 h36 M32 139 h22" stroke={WARN} strokeWidth="2" />
+      </g>
     </>
   );
 }

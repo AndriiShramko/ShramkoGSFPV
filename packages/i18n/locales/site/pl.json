@@ -1077,19 +1077,19 @@
         ]
       },
       "hum": {
-        "title": "Droga: buczenie z następnego pierścienia lub bramki",
+        "title": "Droga: buczenie z następnej obręczy lub bramki",
         "text": [
-          "Niskie buczenie dochodzi ze środka następnego pierścienia lub bramki, a w korytarzu lub tunelu z drogi przed tobą. Obróć się w jego stronę i leć do niego.",
+          "Niskie buczenie dochodzi ze środka następnej obręczy lub bramki, a w korytarzu lub tunelu z drogi przed tobą. Obróć się w jego stronę i leć do niego.",
           "Gdy nos drona wskazuje na nie, z dokładnością do 8 stopni, buczenie brzmi o oktawę wyżej. Jeśli nie jesteś w jednej linii z bramką, buczenie robi się chropowate.",
           "Im bliżej, tym częściej się powtarza: 1,2 razy na sekundę z 40 metrów, 8 razy na sekundę z 2 metrów."
         ]
       },
       "gates": {
-        "title": "Pierścienie i bramki: nuta za każdą",
+        "title": "Obręcze i bramki: nuta za każdą",
         "text": [
-          "Każdy przelot przez pierścień lub bramkę daje jasną nutę, a nuty wznoszą się jak mała piosenka. Na końcu etapu długiej trasy głos mówi, który etap zaliczyłeś.",
-          "Przeleć przez pierścień od tyłu, a zabrzmią trzy opadające nuty: przelot się nie liczy, a głos poprosi, żebyś wrócił i przeleciał go od przodu.",
-          "Leć po trasie z powrotem nosem do przodu dłużej niż sekundę, a usłyszysz dwie opadające pary nut i „Lecisz w złą stronę. Zawróć.” Cofanie się ani przesuwanie w bok nigdy nie jest uznawane za lot w złą stronę."
+          "Każdy przelot przez obręcz lub bramkę daje jasną nutę, a nuty wznoszą się jak mała piosenka. Na końcu etapu długiej trasy głos mówi, który etap zaliczyłeś.",
+          "Przeleć przez obręcz od tyłu, a zabrzmią trzy opadające nuty: przelot się nie liczy, a głos poprosi, żebyś wrócił i przeleciał ją od przodu.",
+          "Leć po trasie z powrotem dłużej niż sekundę, a usłyszysz dwie opadające pary nut i „Lecisz w złą stronę. Zawróć.”"
         ]
       },
       "keys": {
@@ -1098,12 +1098,13 @@
           "Naciśnij K w symulatorze, a poda je na głos, więc niczego nie trzeba uczyć się na pamięć."
         ]
       },
-      "moreTitle": "Wszystkie dźwięki w skrócie"
+      "moreTitle": "Co jeszcze jest"
     },
     "media": {
       "garden": "W tle: lot w symulatorze przez Winter Garden, skan 3DGS Andriia Shramki, miejsce jednej z lekcji dźwiękowych.",
-      "pond": "W tle: prawdziwy lot FPV Andriia Shramki, nisko nad stawem w parku w Bydgoszczy.",
-      "acro": "W tle: prawdziwy lot FPV Andriia Shramki w Bydgoszczy: w górę wzdłuż świerka, beczka, nurkowanie między drzewa."
+      "pond": "W tle: prawdziwy lot FPV Andriia Shramki, prowadzony wzrokiem w goglach, nie na słuch: nisko nad stawem w parku w Bydgoszczy.",
+      "acro": "W tle: prawdziwy lot FPV Andriia Shramki w Bydgoszczy, prowadzony wzrokiem w goglach, nie na słuch: w górę wzdłuż świerka, beczka, nurkowanie między drzewa.",
+      "villa": "W tle: lot w symulatorze, prowadzony wzrokiem, przez Willę Modlinek, skan 3DGS Andriia Shramki: wokół tulipanów, a potem nisko pod stołem."
     },
     "start": {
       "title": "Jak zacząć?",

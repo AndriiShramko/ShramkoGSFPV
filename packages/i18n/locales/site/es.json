@@ -1089,7 +1089,7 @@
         "text": [
           "Cada aro o puerta que pasas da una nota brillante, y las notas suben como una cancioncilla. Al final de una etapa de un circuito largo, la voz dice qué etapa has superado.",
           "Si cruzas un aro por detrás suenan tres notas que bajan: no cuenta, y la voz te pide que vuelvas y lo cruces por delante.",
-          "Si vuelas hacia atrás por el circuito con el morro por delante más de un segundo, oyes dos pares de notas que bajan y «Vas en sentido contrario. Da la vuelta.» Retroceder o deslizarte de lado nunca cuenta como ir en sentido contrario."
+          "Si recorres el circuito en sentido contrario durante más de un segundo, oyes dos pares de notas que bajan y «Vas en sentido contrario. Da la vuelta.»"
         ]
       },
       "keys": {
@@ -1098,12 +1098,13 @@
           "Pulsa K en el simulador y te las dice en voz alta, así que no hace falta aprenderlas de memoria."
         ]
       },
-      "moreTitle": "Todos los sonidos en resumen"
+      "moreTitle": "Qué más hay"
     },
     "media": {
       "garden": "De fondo: un vuelo en el simulador por Winter Garden, un escaneo 3DGS de Andrii Shramko y el lugar de una de las lecciones de sonido.",
-      "pond": "De fondo: un vuelo FPV real de Andrii Shramko, a ras de un estanque en un parque de Bydgoszcz.",
-      "acro": "De fondo: un vuelo FPV real de Andrii Shramko en Bydgoszcz: sube junto a un abeto, un giro completo, un picado entre los árboles."
+      "pond": "De fondo: un vuelo FPV real de Andrii Shramko, pilotado con la vista en gafas FPV, no de oído: a ras de un estanque en un parque de Bydgoszcz.",
+      "acro": "De fondo: un vuelo FPV real de Andrii Shramko en Bydgoszcz, pilotado con la vista en gafas FPV, no de oído: sube junto a un abeto, un giro completo, un picado entre los árboles.",
+      "villa": "De fondo: un vuelo en el simulador, pilotado con la vista, por la villa Modlinek, un escaneo 3DGS de Andrii Shramko: alrededor de los tulipanes y luego a ras, bajo la mesa."
     },
     "start": {
       "title": "¿Cómo empiezo?",
