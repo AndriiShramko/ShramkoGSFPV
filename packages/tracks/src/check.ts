@@ -170,6 +170,8 @@ export interface TrackReport {
     readonly minGapM: number;
     readonly minFreeM: number;
     readonly issues: readonly string[];
+    /** ids ('start' or a gate's) that lie outside the walls' grid: the proof stopped before any sweep (empty otherwise) */
+    readonly outside: readonly string[];
 }
 
 /** The flown start of a track: its own start, else the first gate's neighbourhood is not guessed (a track needs one). */
@@ -193,7 +195,7 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
     const out = [...(start ? [{ id: 'start', p: start.pos }] : []), ...gates.map((g) => ({ id: g.id, p: g.pos }))].filter((x) => !insideGrid(col, x.p));
     if (out.length > 0) {
         const issues = out.slice(0, 4).map((x) => `${x.id}: outside the walls' grid`);
-        return { marginM, ok: false, startClear: false, startFreeM: 0, gates: [], legs: [], pathM: 0, minGapM: 0, minFreeM: 0, issues };
+        return { marginM, ok: false, startClear: false, startFreeM: 0, gates: [], legs: [], pathM: 0, minGapM: 0, minFreeM: 0, issues, outside: out.map((x) => x.id) };
     }
     const sw = sweeperOf(col);
     const issues: string[] = [];
@@ -284,7 +286,7 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
 
     const minFree = Math.min(startFreeM, ...legs.map((l) => l.freeM), ...reports.map((g) => g.freeM));
     const ok = issues.length === 0;
-    return { marginM, ok, startClear, startFreeM: r3(startFreeM), gates: reports, legs, pathM: r3(pathM), minGapM: r3(Number.isFinite(minGap) ? minGap : 0), minFreeM: r3(minFree), issues };
+    return { marginM, ok, startClear, startFreeM: r3(startFreeM), gates: reports, legs, pathM: r3(pathM), minGapM: r3(Number.isFinite(minGap) ? minGap : 0), minFreeM: r3(minFree), issues, outside: [] };
 }
 
 /** The largest margin at which the track still passes (bisection on checkTrack; 0 when it fails even at `lo`). */

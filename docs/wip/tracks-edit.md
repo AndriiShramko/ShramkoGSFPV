@@ -25,6 +25,22 @@ Stage T1-api (server side):
       guard stands in), a per-client read rate (nginx), honeypot and time-to-submit on create. Client side (stages T2+):
       store.ts row filter, editor, fork/vote UI, admin tab apps/fly/src/admin/tracks/**.
 
+Stage T2-editor-core (package side, packages/tracks):
+- [x] E1 packages/tracks/src/format.ts: format `shramko-sonic-track/2` (Course): version 1 keys plus origin, editedBy,
+      author kind admin, path, objects (pillar, box, order null), walls; validateCourse (the version 1 part through the sound
+      package's validateTrack), readCourse (reads /1 and upgrades, reads /2), upgradeTrack (optional server marks),
+      toTrackV1, writeCourse, courseDigest, asSaved (new version or fork with the marks). check.ts TrackReport gains
+      `outside` (ids outside the walls' grid).
+- [x] E2 packages/tracks/src/editor.ts: openEditor, edit (select, select-step, move per axis in steps, turn 15 deg, dive,
+      shape, size, insert 4 m ahead, delete, order, undo, redo), canSave, wallsCheck (checkTrack without free radii),
+      reportProblems; refusal codes placement, min-gates, max-gates, size-min, size-max, order-edge, same,
+      nothing-to-undo, nothing-to-redo. Tests test/format.test.ts (8) and test/editor.test.ts (9). Run: vitest
+      packages/tracks 7 files 88 tests passed; tsc packages/tracks exit 0; ASCII check 0 non-ASCII bytes in 5 files.
+- [x] E3 negative control: neg_control.py, ref origin/main, files format.ts editor.ts index.ts check.ts: NEG OK (fails on
+      the old code by import: `upgradeTrack is not a function`). In-test assertion controls: the check switched off lets
+      the move into the floor through; a /2 file without format refused; a fork with origin null or editedBy null refused.
+- [~] E4 mutation control (refusal line removed in editor.ts must fail editor.test.ts by an assertion).
+
 ## Decisions
 
 - The /1 track file cannot hold `origin`, `editedBy` or `author.kind admin` (the sound package's validateTrack refuses
