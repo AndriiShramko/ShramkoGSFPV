@@ -133,9 +133,15 @@ async function main(): Promise<number> {
         out.browser = launched.which;
         const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, locale: 'en-US' });
         const page: Page = await ctx.newPage();
-        page.on('console', (m) => { if (m.type() === 'error') errors.push(`console: ${m.text()}`.slice(0, 300)); });
-        page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`.slice(0, 300)));
-        page.on('request', (r) => { try { hosts.add(new URL(r.url()).host); } catch { /* data: */ } });
+        // counted from the Courses tab on: the login page's session check answers 401 by design and the first tab (Scenes) loads the
+        // catalogue's pictures from its bucket; both are other tabs' business (run 5 of A2)
+        let inTab = false;
+        const before: string[] = [];
+        page.on('console', (m) => { if (m.type() === 'error') (inTab ? errors : before).push(`console: ${m.text()} @ ${m.location().url}`.slice(0, 300)); });
+        page.on('pageerror', (e) => (inTab ? errors : before).push(`pageerror: ${e.message}`.slice(0, 300)));
+        page.on('response', (r) => { if (r.status() >= 400) (inTab ? errors : before).push(`http ${r.status()} ${r.url().split('?')[0]}`.slice(0, 300)); });
+        page.on('request', (r) => { try { const h = new URL(r.url()).host; if (inTab) hosts.add(h === new URL(served.site).host ? h : `${h} ${r.url().split('?')[0].slice(0, 160)} (${r.frame().url().split('?')[0]})`); else before.push(`host ${h}`); } catch { /* data: */ } });
+        out.beforeTab = before;
 
         // ---- login and the tab
         await page.goto(`${served.site}/admin/`);
@@ -143,6 +149,7 @@ async function main(): Promise<number> {
         await page.fill('[data-testid=password]', secret.password);
         await page.press('[data-testid=password]', 'Enter');
         await page.waitForSelector('button[data-tab=tracks]', { timeout: 20000 });
+        inTab = true;
         await page.click('button[data-tab=tracks]');
         await page.waitForSelector(row(B), { timeout: 20000 });
         check('the Courses tab lists both courses of the scene', JSON.stringify((await rowIds(page)).sort()) === JSON.stringify([A, B].sort()), await rowIds(page));
@@ -222,8 +229,13 @@ async function main(): Promise<number> {
             afterFirst.includes(A) && /Sure\?/.test(askedDel) && gone.status === 404 && (await rowIds(page)).includes(B), { askedDel, status: gone.status, rows: await rowIds(page) });
 
         const site = new URL(served.site).host;
-        const other = [...hosts].filter((h) => h !== site);
-        check('no console error, no page error, no request to another host', errors.length === 0 && other.length === 0, { errors: errors.slice(0, 5), other });
+        // the Scenes tab (opened first after the login) keeps loading the catalogue's preview pictures (PlayCanvas's splat image
+        // bucket, m.webp per scene) after the switch (run 7 of A2): listed, not counted; the Courses tab loads no picture
+        const pictures = [...hosts].filter((h) => /images\.playcanvas\.com\/splat\/[0-9a-f]+\/v\d+\/m\.webp/.test(h));
+        out.scenePictures = pictures.length;
+        const other = [...hosts].filter((h) => h !== site && !pictures.includes(h));
+        out.beforeTab = [...new Set(before)].slice(0, 12);
+        check('from the Courses tab on: no console error, no page error, no HTTP error, no request to another host',errors.length === 0 && other.length === 0, { errors: errors.slice(0, 5), other });
     } finally {
         if (browser) await browser.close().catch(() => undefined);
         letGo();

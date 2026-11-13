@@ -102,13 +102,29 @@ Stage T4-admin (admin tab apps/fly/src/admin/tracks/**, page link):
       0; 0 non-ASCII bytes in 8 changed code files. Negative control: neg_control.py ref origin/main, file course/link.ts: NEG OK
       (exit 1, old link.ts has no serverOfLink). Mutation control on model.ts (markParts shows any kind's name; rename without
       NFC): 2 of 10 failed by AssertionError, file restored.
-- [ ] A2 left: the browser check of the tab on a local copy. Plan: new tools/bench/src/tracks-admin.ts on the pattern of
-      probe-admin-live-copy.ts and tracks-serve.ts (give serveTracks/startApi an extra env with ADMIN_PASSWORD_HASH from
-      .cache/admin-test.json via testSecret; ports 5720-5739; release build first): POST two fixture courses
-      (apps/api/tests/fixtures/tracks/valid-basic.json and a person fork) to the local API, log in with the test password,
-      open the Courses tab, check rows, marks, versions, votes; Hide then Show; Rename (row title and "edited by the admin");
-      Delete v1 of a 2-version course; Delete a course (two clicks); the Open link's href; screenshots 1920 and 844 to
-      U:/Temp/gsfpv-train2/shots/. Then a page run of the link (course=<id>&edit=1 opens the editor) in tracks-page.ts section E.
+- [x] A2 (5655f1f0 and the status commit) browser check of the tab on a local copy: tools/bench/src/tracks-admin.ts (release
+      dist/ under serve-csp with the admin CSP, the real server.Handler on a temporary DATA_DIR through tracks-serve.ts, which
+      gained an `apiEnv` argument; ADMIN_PASSWORD_HASH of the test password from .cache/admin-test.json, this tree's or the
+      lead copy's, read only; Telegram and mail settings blanked; takes C:/dev/.gpu-lock itself). Seeds valid-basic.json (A),
+      a pilot's fork of A with version 2 (B) and one vote, logs in, opens Courses: 15 checks (rows, B's marks "created by the
+      generator; edited by Ann (a pilot)", versions, votes, the Open link /en/fly/?scene=39e63ce9&course=A&edit=1 target
+      _blank answering 200, layout at 1920x1080 and 844x390 with 15 row buttons and 0 outside the view, hide (public list
+      leaves A out) and show, rename (public v2 file has the new title, "edited by the admin"), reset votes and both deletes
+      with the first click only asking, no error or outside request from the tab on). Runs 2 to 7 found two bugs, fixed in
+      5655f1f0: (1) tab.ts drew the rows while busy and never again, so every button stayed disabled after the first action
+      (run 2: Show disabled after Hide; now redrawn in `finally`); (2) a generated course's rename was refused by the server
+      ('title: must match Course [0-9a-z-]{1,24}': a generator's file keeps that title), so renamed() writes it as a person's
+      file named ADMIN_AUTHOR_NAME 'Admin' with generator null (model.ts); the server's marks still say the admin. Final run 8:
+      `SONIC_PORTS=5720-5739 npx tsx src/tracks-admin.ts` 15/15 passed, exit 0 (evidence/2026-11-13/tracks-admin.json, not
+      committed). Unit test tools/bench/test/admin-tracks.test.ts 11 passed (1 new); negative control neg_control.py ref HEAD
+      (before the fix) file model.ts: NEG OK. The run before the tab.ts fix is that fix's negative control (run 2 failed on
+      the disabled Show). tsc apps/fly and tools/bench exit 0; 0 non-ASCII bytes in 5 changed code files. Screenshots
+      U:/Temp/gsfpv-train2/shots/tracks-admin-1920.png and tracks-admin-844.png, the 844 one looked at: rows, marks and
+      buttons readable, the buttons wrap inside the row.
+- [ ] A3 left: a page run of the admin's link (course=<id>&edit=1 loads the served course and opens the editor). Plan: in
+      tools/bench/src/tracks-page.ts section E, after the fork is saved, open /en/fly/?scene=887f27aa&course=<fork id>&edit=1
+      in a fresh page and wait for hook.editor open with the fork's track id (needs the scene 887f27aa with walls; the fixture
+      scene 39e63ce9 gives no walls, so the admin probe cannot do it). EDITOR_ONLY=1 runs E alone (about 5 minutes).
 - [ ] Left of R6-R8 after this stage: see "What the owner can do now" below.
 
 What the owner can do now (after the release of this branch):
@@ -126,8 +142,8 @@ What the owner can do now (after the release of this branch):
   as a pilot; the admin's rename is the only admin version today; an admin edit in place needs the editor to post to
   /api/admin/tracks/<id>/versions when the admin is signed in); orbit camera and red/selected paint of a gate (T3 U3); pillar
   pairs; Space "drop here"; R7 voting only after a completed lap (offered on every row now); the /2 format on the server
-  (marks live in meta.json); a hidden course cannot be opened in the editor from the admin (show it first); R8 browser check
-  of the admin tab (A2).
+  (marks live in meta.json); a hidden course cannot be opened in the editor from the admin (show it first); the admin's
+  link opening the editor was not run in a browser (A3). The admin tab itself was checked in a browser on a local copy (A2).
 ## Decisions
 
 - T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with
@@ -169,6 +185,12 @@ What the owner can do now (after the release of this branch):
   shown first. Deletes and resets: two clicks, the server wants {confirm: true} as well.
 ## For the lead
 
+- T4 A2: a rename of a GENERATED course writes the file as a person's ('Admin', generator null), because the server keeps a
+  generator file's title to "Course <x>"; meta.json keeps creator generator and editor admin, so lists show "created by the
+  generator; edited by the admin". The admin's first tab (Scenes) loads 3 catalogue pictures from s3-eu-west-1.amazonaws.com
+  (images.playcanvas.com/splat/<scene>/v1/m.webp) even after the switch to Courses; the probe lists them and does not count
+  them. Release of A1+A2: the page (admin and fly) needs a site release; apps/api of T1 an API release.
+
 - T3 U2 screenshots: (1) the HUD's "Click to fly, or press W or Space to take off" prompt stays on screen under the open
   editor (the flight is paused, so it is wrong there) and at 844x390 the window cuts it in half; the prompt is HUD code
   outside this lane: hide it while pause reason 'panel' is set. (2) The window (top right, z-index 30) covers the HUD's
@@ -207,6 +229,10 @@ What the owner can do now (after the release of this branch):
   again) is reasoned from the code, not observed. The es/pl/ru admin texts were not read back on the page.
 ## Not verified
 
+- T4 A2: the admin tab was run in English only (es, pl, ru texts not read on the page); the 1920 screenshot was not looked at
+  (the 844 one was); the Open link was checked by its href and a 200 answer, not by opening the editor (A3); reset of broken
+  reports and the scene picker with more than one scene were not clicked.
+
 - Nothing on a deployed server; no browser run (server stage).
 - Whether release-api.sh plus the running container pick up a NEW module (tracks_admin.py) without --compose: the script
   copies the named files; the container's view of apps/api was not read.
@@ -225,6 +251,10 @@ What the owner can do now (after the release of this branch):
 - T3 U1: the full key table on a ?sonic= page was not exercised (the feature ignores Shift+B when ctx.sonic is set).
 
 ## Cost notes
+
+- T4 A2 (about 33 replies): most turns went to 8 probe runs, each finding one thing (seed body, disabled buttons, the server's
+  generator title rule, the Scenes tab's pictures). Cheaper: try the admin's rename body against TrackStore in Python before the
+  browser run, and have the probe print the page's status line on every wait timeout from the start.
 
 - T4-admin A1 (about 30 replies): most turns went to reading the admin pattern, the API row shape and the course feature's
   load path before writing; two turns to non-ASCII escapes the Write tool turned into real characters in a test. Cheaper: one
