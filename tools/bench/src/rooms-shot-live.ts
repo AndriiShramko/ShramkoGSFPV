@@ -29,6 +29,10 @@ const gs = <T>(p: Page, js: string): Promise<T> => p.evaluate(`(() => { const h 
 export const DISTANCES_M = [0, 0.25, 0.5, 1, 2, 4, 8];
 /** a pixel differs when a channel moved more than this (0..255; an estimate above the scan's frame-to-frame noise, see refNoise) */
 const DIFF_LEVEL = 40;
+/** the heights over the start B may take for the sweep, metres (estimates under the thing 0.29 m over the spawn of 39e63ce9, agent-map) */
+const RAISE_M = [0.05, 0.12, 0.2];
+/** the longest free ray looked for, metres */
+const FREE_CAP_M = 12;
 /** CSS that hides the name tags in the measuring shots (the tag is not the drone's body) */
 const NO_TAGS = '.rooms-tags { visibility: hidden !important; }';
 
@@ -52,34 +56,32 @@ const axisQ = (ax: V3, deg: number): Q => {
 
 /** The bounding box (x0, y0, x1, y1, view px) of the pixels that differ between two PNGs, decoded in a blank page. */
 async function diffBox(blank: Page, a: Buffer, b: Buffer): Promise<{ box: [number, number, number, number] | null; pixels: number; share: number; w: number; h: number }> {
-    return (await blank.evaluate(
-        async ([sa, sb, level]) => {
-            const dec = async (s: string): Promise<ImageData> => {
-                const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${s}`)).blob());
-                const c = new OffscreenCanvas(bmp.width, bmp.height);
-                const g = c.getContext('2d')!;
-                g.drawImage(bmp, 0, 0);
-                return g.getImageData(0, 0, bmp.width, bmp.height);
-            };
-            const [x, y] = [await dec(sa as string), await dec(sb as string)];
-            const w = x.width, h = x.height;
-            let x0 = w, y0 = h, x1 = -1, y1 = -1, n = 0;
-            for (let j = 0; j < h; j++)
-                for (let i = 0; i < w; i++) {
-                    const k = (j * w + i) * 4;
-                    const d = Math.max(Math.abs(x.data[k] - y.data[k]), Math.abs(x.data[k + 1] - y.data[k + 1]), Math.abs(x.data[k + 2] - y.data[k + 2]));
-                    if (d <= (level as number)) continue;
-                    n++;
-                    if (i < x0) x0 = i;
-                    if (j < y0) y0 = j;
-                    if (i > x1) x1 = i;
-                    if (j > y1) y1 = j;
-                }
-            const box = n ? [x0, y0, x1 + 1, y1 + 1] : null;
-            return { box, pixels: n, share: box ? ((box[2] - box[0]) * (box[3] - box[1])) / (w * h) : 0, w, h };
-        },
-        [a.toString('base64'), b.toString('base64'), DIFF_LEVEL] as const
-    )) as { box: [number, number, number, number] | null; pixels: number; share: number; w: number; h: number };
+    // a string, not a function: tsx would put its __name helper into a serialised function
+    return (await blank.evaluate(`(async () => {
+        const dec = async (s) => {
+            const bmp = await createImageBitmap(await (await fetch('data:image/png;base64,' + s)).blob());
+            const c = new OffscreenCanvas(bmp.width, bmp.height);
+            const g = c.getContext('2d');
+            g.drawImage(bmp, 0, 0);
+            return g.getImageData(0, 0, bmp.width, bmp.height);
+        };
+        const x = await dec(${JSON.stringify(a.toString('base64'))}), y = await dec(${JSON.stringify(b.toString('base64'))});
+        const w = x.width, h = x.height;
+        let x0 = w, y0 = h, x1 = -1, y1 = -1, n = 0;
+        for (let j = 0; j < h; j++)
+            for (let i = 0; i < w; i++) {
+                const k = (j * w + i) * 4;
+                const d = Math.max(Math.abs(x.data[k] - y.data[k]), Math.abs(x.data[k + 1] - y.data[k + 1]), Math.abs(x.data[k + 2] - y.data[k + 2]));
+                if (d <= ${DIFF_LEVEL}) continue;
+                n++;
+                if (i < x0) x0 = i;
+                if (j < y0) y0 = j;
+                if (i > x1) x1 = i;
+                if (j > y1) y1 = j;
+            }
+        const box = n ? [x0, y0, x1 + 1, y1 + 1] : null;
+        return { box, pixels: n, share: box ? ((box[2] - box[0]) * (box[3] - box[1])) / (w * h) : 0, w, h };
+    })()`)) as { box: [number, number, number, number] | null; pixels: number; share: number; w: number; h: number };
 }
 
 /** A creates a room in the page; returns the link and the nickname. */
@@ -142,6 +144,20 @@ async function look(): Promise<void> {
         writeFileSync(join(SHOTS, `look-${mode}-start.png`), await b.screenshot());
         out.start = { ...start, bCamera: camStart.pos.map((v) => +v.toFixed(3)) };
 
+        // the sweep needs 8 m of free air in front of B: B (paused) goes RAISE_M up and turns level to the yaw whose ray through
+        // the walls (the session's voxel collision) runs free longest
+        const look = await gs<{ yaw: number; freeM: number; tilt: number; p: number[] }>(b, `const s = h.session.shownSim.s; const c = h.session.collision;
+            let best = { yaw: 0, freeM: -1, p: [s[0], s[1], s[2]] };
+            for (const up of ${JSON.stringify(RAISE_M)}) { const o = [s[0], s[1] + up, s[2]]; if (c && !c.isFreeAt(o[0], o[1], o[2])) continue;
+            for (let yaw = 0; yaw < 360; yaw += 5) { const a = yaw * Math.PI / 180, d = [-Math.sin(a), 0, -Math.cos(a)];
+                const hit = c ? c.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], ${FREE_CAP_M}) : null;
+                const free = hit ? Math.hypot(hit.x - o[0], hit.y - o[1], hit.z - o[2]) : ${FREE_CAP_M};
+                if (free > best.freeM) best = { yaw, freeM: free, p: o }; } }
+            return { ...best, tilt: h.session.cameraUptiltDeg };`);
+        out.lookDir = { yawDeg: look.yaw, freeM: +look.freeM.toFixed(2), raiseM: +(look.p[1] - camStart.pos[1]).toFixed(3) };
+        const qB = qmul(axisQ([0, 1, 0], look.yaw), axisQ([1, 0, 0], -look.tilt));
+        await gs(b, `const s = h.session.sim.s; s[1] = ${look.p[1]}; s[6] = ${qB[0]}; s[7] = ${qB[1]}; s[8] = ${qB[2]}; s[9] = ${qB[3]}; return 0;`);
+        await sleep(800);
         // the sweep: A d metres along B's view, turned 135 degrees about B's up so its arms and nose show
         const cam = await camera(b);
         const qA = qmul(axisQ(cam.up, 135), qmul(cam.q, axisQ([1, 0, 0], 0)));

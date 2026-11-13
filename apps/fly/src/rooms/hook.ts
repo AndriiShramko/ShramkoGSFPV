@@ -23,4 +23,25 @@ export interface RoomsHook {
     link?: string | null;
     /** added in R3: the slots whose name tag is placed in this frame */
     tags?: readonly number[];
+    /** added by lane look: every remote drone of this frame, drawn or hidden by the near rule (remote-stage.ts) */
+    drawn?: readonly DrawnRemote[];
+}
+
+/** One remote drone in this frame as the flight camera sees it (lane look). */
+export interface DrawnRemote {
+    slot: number;
+    /** metres from the flight camera */
+    distM: number;
+    /** the near rule: 0 not drawn (body and tag), 1 whole, between: fading */
+    alpha: number;
+    /** the drone's box on the view (CSS px, clipped to the view), null when off the view; the whole view when behind the camera's near plane */
+    box: [number, number, number, number] | null;
+    /** the box's share of the view, 0..1 (also for a hidden drone: how much it would cover) */
+    share: number;
+}
+
+/** The rooms part of the page hook (window.__gsfpv.rooms) when the page has one: the drawing code adds its fields there. */
+export function roomsPageHook(): { drawn?: readonly DrawnRemote[] } | null {
+    const g = (globalThis as { __gsfpv?: { rooms?: { drawn?: readonly DrawnRemote[] } } }).__gsfpv;
+    return g?.rooms ?? null;
 }
