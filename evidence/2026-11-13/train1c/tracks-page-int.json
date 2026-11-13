@@ -1,0 +1,825 @@
+{
+  "name": "train1c/tracks-page-int",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T14:51:01.382Z",
+    "gitHead": "b42841d4",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "tracks T3: the courses page probe",
+  "pass": true,
+  "checks": [
+    {
+      "name": "hintClearOfTimer: the course hint and the lap block never meet (1920x1080, 1366x768, 844x390; en, es, pl, ru; tallest hint en)",
+      "pass": true,
+      "value": [
+        "en 1920x1080 clear noteH 50",
+        "en 1366x768 clear noteH 50",
+        "en 844x390 clear noteH 50",
+        "es 1920x1080 clear noteH 31",
+        "es 1366x768 clear noteH 31",
+        "es 844x390 clear noteH 31",
+        "pl 1920x1080 clear noteH 50",
+        "pl 1366x768 clear noteH 50",
+        "pl 844x390 clear noteH 50",
+        "ru 1920x1080 clear noteH 50",
+        "ru 1366x768 clear noteH 50",
+        "ru 844x390 clear noteH 50"
+      ]
+    },
+    {
+      "name": "A look (link seed 1, 19 gates): >= 200 more pixels of the course's paint than with Shift+T",
+      "pass": true,
+      "value": {
+        "drawn": 64,
+        "on": {
+          "next": 0,
+          "later": 72,
+          "arrow": 529
+        },
+        "off": {
+          "next": 0,
+          "later": 12,
+          "arrow": 208
+        },
+        "diff": {
+          "px": 39516,
+          "mean": [
+            47,
+            119,
+            121
+          ]
+        },
+        "drawnOff": 0
+      }
+    },
+    {
+      "name": "A Shift+T: drawn 0",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "A Shift+G: source generated",
+      "pass": true,
+      "value": {
+        "source": "generated",
+        "problem": null,
+        "ms": 20259
+      }
+    },
+    {
+      "name": "A gates > 0",
+      "pass": true,
+      "value": 12
+    },
+    {
+      "name": "A drawn > 0",
+      "pass": true,
+      "value": 66
+    },
+    {
+      "name": "A beacon points > 0",
+      "pass": true,
+      "value": 47
+    },
+    {
+      "name": "A menu: Save for everyone enabled",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "A saved: hook.saved is the server id",
+      "pass": true,
+      "value": {
+        "saved": "887f27aa-4b1407ed",
+        "problem": null
+      }
+    },
+    {
+      "name": "B fresh profile: serverTracks > 0",
+      "pass": true,
+      "value": 1
+    },
+    {
+      "name": "B Shift+T: source server",
+      "pass": true,
+      "value": {
+        "source": "server",
+        "problem": null,
+        "ms": 3063
+      }
+    },
+    {
+      "name": "B track id == A's saved id",
+      "pass": true,
+      "value": {
+        "b": "887f27aa-4b1407ed",
+        "a": "887f27aa-4b1407ed"
+      }
+    },
+    {
+      "name": "B drawn > 0",
+      "pass": true,
+      "value": 66
+    },
+    {
+      "name": "C1 another scene: serverTracks 0",
+      "pass": true,
+      "value": 0
+    },
+    {
+      "name": "C1 another scene: source none",
+      "pass": true,
+      "value": "none"
+    },
+    {
+      "name": "C1 menu: Load disabled",
+      "pass": true,
+      "value": null
+    },
+    {
+      "name": "C2 setup: Node proves the original, refuses the moved one; the server stores it (201)",
+      "pass": true,
+      "value": {
+        "gate": 6,
+        "transform": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "centre": [
+          20,
+          14.4,
+          -17.4
+        ],
+        "into": [
+          20,
+          11.400000000000004,
+          -17.4
+        ],
+        "wallM": 2.8,
+        "nodeOriginalOk": true,
+        "nodeMovedOk": false,
+        "nodeIssues": [
+          "leg g6 to g7: a sphere of 0.5 m touches a wall (free radius along it 6 m at 6.8, 9.6, -12.2)",
+          "leg g7 to g8: a sphere of 0.5 m touches a wall (free radius along it 6 m at 20, 11.4, -17.4)"
+        ],
+        "post": 201,
+        "id": "887f27aa-ba94f37e",
+        "page": {
+          "on": true,
+          "source": "server",
+          "track": {
+            "id": "887f27aa-4b1407ed",
+            "version": 1
+          },
+          "seed": 1181399605,
+          "gates": 12,
+          "next": 0,
+          "drawn": 66,
+          "laps": 0,
+          "lastLapMs": null,
+          "bestLapMs": null,
+          "beaconPoints": 47,
+          "problem": null,
+          "serverTracks": 2,
+          "saved": null
+        }
+      }
+    },
+    {
+      "name": "C2 the moved course is refused in the page (refused, or skipped to the next saved row)",
+      "pass": true,
+      "value": {
+        "serverTracks": 2,
+        "source": "server",
+        "loaded": "887f27aa-4b1407ed",
+        "moved": "887f27aa-ba94f37e",
+        "saved": "887f27aa-4b1407ed",
+        "problem": null,
+        "refused": false,
+        "skipped": true
+      }
+    },
+    {
+      "name": "C3 control: script patched, hook drawn > 0, the pixel check fails",
+      "pass": true,
+      "value": {
+        "patched": true,
+        "drawn": 64,
+        "on": {
+          "next": 0,
+          "later": 12,
+          "arrow": 208
+        },
+        "off": {
+          "next": 0,
+          "later": 12,
+          "arrow": 208
+        },
+        "diff": {
+          "px": 16710,
+          "mean": [
+            95,
+            102,
+            112
+          ]
+        },
+        "drawnOff": 0
+      }
+    }
+  ],
+  "shots": [
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\look-course-1920.png",
+      "sha256": "01949fa4bad51c95ef05add133403892d2c5bfca1d0c183ff1d96f030f16daf9",
+      "what": "hint and lap block, en, 1920x1080"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\look-course-1366.png",
+      "sha256": "09f2f9f8187195b1ed5983426679be47c69f07ade38336509e4cbb119e0c009f",
+      "what": "hint and lap block, en, 1366x768"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\look-course-844.png",
+      "sha256": "b45ff7515c6298d97ab7ba2b90d003085ff3744c3ba0f7b9ca2cc18c85ce0329",
+      "what": "hint and lap block, en, 844x390"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\a-seed1-on.png",
+      "sha256": "54d43c255329888295b153fb3f9a0ec6f8b0cde15438de71b34df28faa4e4a53",
+      "what": "a-seed1: course on"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\a-seed1-off.png",
+      "sha256": "4438b9e9c9b0cfb277491b7a3f453af06505f28637455ae41d071939983ab11a",
+      "what": "a-seed1: course off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\a-random-on.png",
+      "sha256": "7e75004b240723c4cfe559d0d178d926103496c14d3530a59ea8bf427868c872",
+      "what": "a-random: course on"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\a-random-off.png",
+      "sha256": "8b1f4a6a8f3a1b570184cf9cc3ed2ce6e08615bc71a1514df561c4a6a861b89b",
+      "what": "a-random: course off"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\c3-seed1-on.png",
+      "sha256": "e9890dee1d06844220c943cea84171e0df23e1c322faad9be9660895b70a601e",
+      "what": "c3-seed1: course on"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-train1c\\shots\\int\\tracks\\c3-seed1-off.png",
+      "sha256": "ab369f78b3d964859254afcd2b6e29a93ef542d63b63ac2354fe0d0be1f3c125",
+      "what": "c3-seed1: course off"
+    }
+  ],
+  "site": "http://127.0.0.1:64766",
+  "scene": "887f27aa",
+  "other": "39e63ce9",
+  "minPx": 200,
+  "tol": 24,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "hint": {
+    "longest": "en",
+    "rows": [
+      {
+        "lang": "en",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 920.8984375,
+          "top": 120,
+          "right": 999.1015625,
+          "bottom": 217.4375
+        },
+        "text": "Gates: 7. Fly through gate 1 to start the clock. Shift+T hides the course",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "en",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 643.8984375,
+          "top": 142,
+          "right": 722.1015625,
+          "bottom": 239.4375
+        },
+        "text": "Gates: 9. Fly through gate 1 to start the clock. Shift+T hides the course",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "en",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 382.8984375,
+          "top": 142,
+          "right": 461.1015625,
+          "bottom": 239.4375
+        },
+        "text": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "es",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 31,
+        "note": {
+          "left": 759.8828125,
+          "top": 44,
+          "right": 1160.1171875,
+          "bottom": 74.84375
+        },
+        "block": {
+          "left": 917.8828125,
+          "top": 120,
+          "right": 1002.1171875,
+          "bottom": 217.4375
+        },
+        "text": "Puertas: 21. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "es",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 123,
+        "noteH": 31,
+        "note": {
+          "left": 482.8828125,
+          "top": 86,
+          "right": 883.1171875,
+          "bottom": 116.84375
+        },
+        "block": {
+          "left": 640.8828125,
+          "top": 123,
+          "right": 725.1171875,
+          "bottom": 220.4375
+        },
+        "text": "Puertas: 18. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "es",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 123,
+        "noteH": 31,
+        "note": {
+          "left": 221.8828125,
+          "top": 86,
+          "right": 622.1171875,
+          "bottom": 116.84375
+        },
+        "block": {
+          "left": 379.8828125,
+          "top": 123,
+          "right": 464.1171875,
+          "bottom": 220.4375
+        },
+        "text": "Puertas: 21. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "pl",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 915.7265625,
+          "top": 120,
+          "right": 1004.2734375,
+          "bottom": 217.4375
+        },
+        "text": "Bramki: 12. Przele\u0107 przez bramk\u0119 1, aby w\u0142\u0105czy\u0107 zegar. Shift+T j\u0105 ukrywa",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "pl",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 638.7265625,
+          "top": 142,
+          "right": 727.2734375,
+          "bottom": 239.4375
+        },
+        "text": "Bramki: 14. Przele\u0107 przez bramk\u0119 1, aby w\u0142\u0105czy\u0107 zegar. Shift+T j\u0105 ukrywa",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "pl",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 377.7265625,
+          "top": 142,
+          "right": 466.2734375,
+          "bottom": 239.4375
+        },
+        "text": "Bramki: 21. Przele\u0107 przez bramk\u0119 1, aby w\u0142\u0105czy\u0107 zegar. Shift+T j\u0105 ukrywa",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "ru",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 919.609375,
+          "top": 120,
+          "right": 1000.390625,
+          "bottom": 217.4375
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 5. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 1, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "ru",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 639.0703125,
+          "top": 142,
+          "right": 726.9296875,
+          "bottom": 239.4375
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 14. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 1, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "ru",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 378.0703125,
+          "top": 142,
+          "right": 465.9296875,
+          "bottom": 239.4375
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 12. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 1, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 844,
+        "vh": 390
+      }
+    ]
+  },
+  "a": {
+    "link": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.1",
+        "version": 1
+      },
+      "seed": 1,
+      "gates": 19,
+      "next": 0,
+      "drawn": 64,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 63,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null
+    },
+    "look": {
+      "on": {
+        "next": 0,
+        "later": 72,
+        "arrow": 529
+      },
+      "off": {
+        "next": 0,
+        "later": 12,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 39516,
+        "mean": [
+          47,
+          119,
+          121
+        ]
+      },
+      "drawnOff": 0
+    },
+    "generated": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.jjdhrp",
+        "version": 1
+      },
+      "seed": 1181399605,
+      "gates": 12,
+      "next": 0,
+      "drawn": 66,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 47,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null
+    },
+    "lookRandom": {
+      "on": {
+        "next": 602,
+        "later": 29,
+        "arrow": 17818
+      },
+      "off": {
+        "next": 0,
+        "later": 12,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 40720,
+        "mean": [
+          158,
+          130,
+          64
+        ]
+      },
+      "drawnOff": 0
+    },
+    "saved": "887f27aa-4b1407ed"
+  },
+  "b": {
+    "on": true,
+    "source": "server",
+    "track": {
+      "id": "887f27aa-4b1407ed",
+      "version": 1
+    },
+    "seed": 1181399605,
+    "gates": 12,
+    "next": 0,
+    "drawn": 66,
+    "laps": 0,
+    "lastLapMs": null,
+    "bestLapMs": null,
+    "beaconPoints": 47,
+    "problem": null,
+    "serverTracks": 1,
+    "saved": null
+  },
+  "c1": {
+    "on": false,
+    "source": "none",
+    "track": null,
+    "seed": null,
+    "gates": 0,
+    "next": -1,
+    "drawn": 0,
+    "laps": 0,
+    "lastLapMs": null,
+    "bestLapMs": null,
+    "beaconPoints": 0,
+    "problem": null,
+    "serverTracks": 0,
+    "saved": null
+  },
+  "c2": {
+    "gate": 6,
+    "transform": [
+      1,
+      0,
+      0,
+      0
+    ],
+    "centre": [
+      20,
+      14.4,
+      -17.4
+    ],
+    "into": [
+      20,
+      11.400000000000004,
+      -17.4
+    ],
+    "wallM": 2.8,
+    "nodeOriginalOk": true,
+    "nodeMovedOk": false,
+    "nodeIssues": [
+      "leg g6 to g7: a sphere of 0.5 m touches a wall (free radius along it 6 m at 6.8, 9.6, -12.2)",
+      "leg g7 to g8: a sphere of 0.5 m touches a wall (free radius along it 6 m at 20, 11.4, -17.4)"
+    ],
+    "post": 201,
+    "id": "887f27aa-ba94f37e",
+    "page": {
+      "on": true,
+      "source": "server",
+      "track": {
+        "id": "887f27aa-4b1407ed",
+        "version": 1
+      },
+      "seed": 1181399605,
+      "gates": 12,
+      "next": 0,
+      "drawn": 66,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 47,
+      "problem": null,
+      "serverTracks": 2,
+      "saved": null
+    }
+  },
+  "c3": {
+    "patched": true,
+    "hook": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.1",
+        "version": 1
+      },
+      "seed": 1,
+      "gates": 19,
+      "next": 0,
+      "drawn": 64,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 63,
+      "problem": null,
+      "serverTracks": 2,
+      "saved": null
+    },
+    "look": {
+      "on": {
+        "next": 0,
+        "later": 12,
+        "arrow": 208
+      },
+      "off": {
+        "next": 0,
+        "later": 12,
+        "arrow": 208
+      },
+      "diff": {
+        "px": 16710,
+        "mean": [
+          95,
+          102,
+          112
+        ]
+      },
+      "drawnOff": 0
+    }
+  },
+  "log": []
+}

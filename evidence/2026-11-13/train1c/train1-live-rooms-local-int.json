@@ -1,0 +1,134 @@
+{
+  "name": "train1-live",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T14:55:27.789Z",
+    "gitHead": "b42841d4",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:53850",
+  "run": [
+    "rooms"
+  ],
+  "shots": "U:/Temp/gsfpv-train1c/shots/int/train1-live",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "rooms": {
+    "scene": "39e63ce9",
+    "keys": {
+      "panel": "Digit9",
+      "who": "Digit0"
+    },
+    "fit": {
+      "delayMs": 155,
+      "rmsM": 0.016672781638109275,
+      "n": 429,
+      "p50M": 0.0077,
+      "p90M": 0.0217,
+      "maxM": 0.1152
+    },
+    "aPathM": 86.4,
+    "bFrames": 600,
+    "bWithRemote": 600,
+    "console": {
+      "a": [],
+      "b": []
+    }
+  },
+  "checks": [
+    {
+      "name": "rooms A: created a room and has a link",
+      "pass": true,
+      "detail": {
+        "link": "<site>/fly/?scene=39e63ce9&room=yPDXqUcoJfE",
+        "nick": "Pilot-7622"
+      }
+    },
+    {
+      "name": "rooms B: joined by the link and sees a remote drone",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "rooms A moved",
+      "pass": true,
+      "detail": 86.4
+    },
+    {
+      "name": "rooms B's remote follows A: RMS < 0.15 m over >= 100 samples",
+      "pass": true,
+      "detail": {
+        "rmsM": 0.0167,
+        "n": 429,
+        "delayMs": 155,
+        "p90M": 0.0217,
+        "maxM": 0.1152
+      }
+    },
+    {
+      "name": "rooms B's member list has A's name",
+      "pass": true,
+      "detail": [
+        {
+          "slot": 0,
+          "nick": "Pilot-7622"
+        },
+        {
+          "slot": 1,
+          "nick": "Pilot-9856"
+        }
+      ]
+    },
+    {
+      "name": "rooms speech: A heard the join, B the welcome",
+      "pass": true,
+      "detail": {
+        "a": [
+          "rooms.say.welcome",
+          "rooms.say.joined",
+          "rooms.say.near"
+        ],
+        "b": [
+          "rooms.say.welcome",
+          "rooms.say.near"
+        ]
+      }
+    },
+    {
+      "name": "rooms control: C in another room sees nobody",
+      "pass": true,
+      "detail": {
+        "cRoomDiffers": true,
+        "cFramesWithRemote": 0,
+        "cFrames": 600
+      }
+    },
+    {
+      "name": "rooms control: swapped axes break the fit",
+      "pass": true,
+      "detail": 6.324
+    },
+    {
+      "name": "rooms B: the who-is-around key says who is around, then A leaves and B hears it",
+      "pass": true,
+      "detail": {
+        "key": "Digit0",
+        "whoLast": "rooms.say.who",
+        "left": true
+      }
+    }
+  ],
+  "pass": true
+}

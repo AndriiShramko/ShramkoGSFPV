@@ -1,0 +1,273 @@
+{
+  "name": "rooms-two-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T14:52:01.010Z",
+    "gitHead": "b42841d4",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "scene": "39e63ce9",
+  "recordS": 20,
+  "rmsBoundM": 0.15,
+  "gpuLock": "C:/dev/.gpu-lock",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "a": {
+    "created": true,
+    "link": "<origin>/fly/?scene=39e63ce9&room=DQyMpEvofng",
+    "nick": "Pilot-6860",
+    "slot": 0,
+    "nickField": "Pilot-6860",
+    "storedNick": "Pilot-6860"
+  },
+  "b": {
+    "joined": true,
+    "url": "<origin>/en/fly/?scene=39e63ce9&room=DQyMpEvofng&simradio=open&nowarn=1"
+  },
+  "follow": {
+    "aSamples": 600,
+    "aPathM": 81.58,
+    "aSpeedP50": 1.44,
+    "aSpeedMax": 171.73,
+    "bFrames": 599,
+    "bWithRemote": 599,
+    "bestDelayMs": 170,
+    "rmsM": 0.0655,
+    "p50M": 0.0119,
+    "p90M": 0.0507,
+    "maxM": 0.5821,
+    "compared": 443,
+    "aTeleports": 6,
+    "skipMsEachSide": 400,
+    "withTeleports": {
+      "delayMs": 150,
+      "rmsM": 0.29140344063199286,
+      "n": 594,
+      "p50M": 0.0311,
+      "p90M": 0.1917,
+      "maxM": 3.5447
+    }
+  },
+  "bTagFrames": 105,
+  "bScreens": [],
+  "names": {
+    "aNick": "Pilot-6860",
+    "bMembers": [
+      {
+        "slot": 0,
+        "nick": "Pilot-6860"
+      },
+      {
+        "slot": 1,
+        "nick": "Pilot-6440"
+      }
+    ],
+    "bTags": [],
+    "aMembers": [
+      {
+        "slot": 0,
+        "nick": "Pilot-6860"
+      },
+      {
+        "slot": 1,
+        "nick": "Pilot-6440"
+      }
+    ]
+  },
+  "said": {
+    "a": [
+      "rooms.say.welcome",
+      "rooms.say.joined",
+      "rooms.say.near"
+    ],
+    "b": [
+      "rooms.say.welcome",
+      "rooms.say.near"
+    ]
+  },
+  "control1OtherRoom": {
+    "cRoom": "S4miB6s6n18",
+    "sameRoom": false,
+    "cFramesWithRemote": 0,
+    "cFrames": 598,
+    "fired": true
+  },
+  "control3SwappedAxes": {
+    "rmsM": 6.4158,
+    "fired": true
+  },
+  "nearHidden": {
+    "remotes": [
+      {
+        "slot": 0,
+        "pos": [
+          0.686,
+          1.581,
+          0.694
+        ],
+        "ageMs": 1489
+      }
+    ],
+    "tags": [],
+    "hookTags": [],
+    "drawn": [
+      {
+        "slot": 0,
+        "distM": 0,
+        "alpha": 0,
+        "share": 1,
+        "box": [
+          0,
+          0,
+          1280,
+          800
+        ]
+      }
+    ],
+    "view": [
+      1280,
+      800
+    ]
+  },
+  "tagAtDistance": {
+    "atM": 3.5,
+    "freeM": 8.72,
+    "remotes": [
+      {
+        "slot": 0,
+        "pos": [
+          -2.695,
+          1.631,
+          1.6
+        ],
+        "ageMs": 3789
+      }
+    ],
+    "tags": [
+      {
+        "text": "Pilot-6860",
+        "box": [
+          606,
+          349,
+          674,
+          365
+        ],
+        "opacity": "1"
+      }
+    ],
+    "hookTags": [
+      0
+    ],
+    "drawn": [
+      {
+        "slot": 0,
+        "distM": 3.5,
+        "alpha": 1,
+        "share": 0.00083,
+        "box": [
+          615,
+          392,
+          665,
+          409
+        ]
+      }
+    ],
+    "view": [
+      1280,
+      800
+    ]
+  },
+  "speech": {
+    "who": [
+      "rooms.say.who"
+    ],
+    "whoLast": "rooms.say.who",
+    "leftHeard": true,
+    "nobodyLast": "rooms.say.nobody",
+    "liveRegionChars": 27
+  },
+  "roomOnlyLink": {
+    "asked": "/en/fly/?room=DQyMpEvofng",
+    "joined": true,
+    "scene": "39e63ce9",
+    "room": "DQyMpEvofng",
+    "picker": "ready"
+  },
+  "control2RelayOff": {
+    "created": true,
+    "joined": true,
+    "aPathM": 15,
+    "bFrames": 241,
+    "bFramesWithRemote": 0,
+    "bRemoteMovedM": 0,
+    "fired": true
+  },
+  "checks": {
+    "bJoined": true,
+    "nineNotTypedInName": true,
+    "aMoved": true,
+    "rmsUnderBound": true,
+    "bMembersHaveA": true,
+    "bTagShown": true,
+    "aSaidJoined": true,
+    "bSaidWelcome": true,
+    "whoOnB": true,
+    "leftOnB": true,
+    "nobodyOnB": true,
+    "nearHidden": true,
+    "tagAtDistance": true,
+    "roomOnlyLinkFliesTheRoomScan": true,
+    "control1": true,
+    "control2": true,
+    "control3": true
+  },
+  "pass": true,
+  "rigLogTail": [
+    "15:51:09 created a room; open 1",
+    "15:51:09 ws join; pilots 1",
+    "15:51:12 ws join; pilots 2",
+    "15:51:17 GET /api/rooms",
+    "15:51:17 POST /api/rooms",
+    "15:51:17 created a room; open 2",
+    "15:51:17 ws join; pilots 3",
+    "15:51:37 ws leave; pilots 2",
+    "15:51:42 ws leave; pilots 1",
+    "15:51:43 GET /api/rooms/<id>",
+    "15:51:45 ws join; pilots 2",
+    "15:51:45 ws leave; pilots 1"
+  ],
+  "console": {
+    "a": [
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "b": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "train1-live",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T14:56:02.771Z",
+    "gitHead": "b42841d4",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:53850",
+  "run": [
+    "rooms"
+  ],
+  "shots": "U:/Temp/gsfpv-train1c/shots/int/train1-live-old",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "checks": [
+    {
+      "name": "rooms ran to the end",
+      "pass": false,
+      "detail": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=rooms-create]') to be visible\u001b[22m\n"
+    }
+  ],
+  "pass": false
+}
