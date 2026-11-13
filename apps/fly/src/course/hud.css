@@ -1,0 +1,27 @@
+/* The course's lines on the flight view (course/hud.ts): top centre, under the HUD's own lines; H hides them (#ui.hud-off).
+   Lane review TR-11: below the flash line (.hud-note in fly.css starts at the same top expression; 76px clears a note of three
+   13px lines with its padding, an estimate from fly.css, not measured on a page). */
+.course-hud {
+    position: absolute;
+    top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px) + 76px);
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    text-align: center;
+    font: 600 0.85rem/1.3 system-ui, sans-serif;
+    color: #fff;
+    text-shadow: 0 1px 2px #000, 0 0 4px #000;
+    z-index: 4;
+}
+.course-hud[hidden],
+.hud-off .course-hud {
+    display: none;
+}
+.course-time {
+    font-size: 1.6rem;
+    font-variant-numeric: tabular-nums;
+}
+.course-lines {
+    white-space: pre-line;
+    font-variant-numeric: tabular-nums;
+}

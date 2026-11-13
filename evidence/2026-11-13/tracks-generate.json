@@ -1,0 +1,385 @@
+{
+  "name": "tracks-generate",
+  "context": {
+    "date": "2026-11-13T02:23:17.244Z",
+    "gitHead": "b8103a0f",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "tracks T1: the course generator on real walls",
+  "peakRssMB": 186.523,
+  "defaults": {
+    "marginM": 0.5,
+    "boxM": 80,
+    "maxCells": 4000000,
+    "enclosureMin": 0.7,
+    "rayM": 12,
+    "minRoomM3": 8,
+    "outdoorShare": 0.3,
+    "outdoorDownM": 6,
+    "outdoorNearM": 8,
+    "minCellM": 0.1
+  },
+  "scenes": [
+    {
+      "scene": "7a475d38",
+      "note": "Winter Garden at the free-garden lesson size",
+      "transform": [
+        5,
+        0,
+        0,
+        0
+      ],
+      "walls": {
+        "voxelCm": 3.2,
+        "flownCm": 16,
+        "sha256": "8b7e1d61afcb387cd2dc59f34fc45683271621d57a25f6d1fa4d400748491b1b"
+      },
+      "spawn": [
+        -1.819,
+        4.815,
+        -10.391
+      ],
+      "free": {
+        "cellM": 0.64,
+        "dims": [
+          127,
+          127,
+          127
+        ],
+        "stats": {
+          "cells": 2048383,
+          "solid": 239557,
+          "reachable": 1649111,
+          "scanned": 199581,
+          "usable": 181148,
+          "group": 1
+        },
+        "rooms": 288,
+        "volumeM3": 47486.861,
+        "outdoor": true,
+        "startFound": true,
+        "ms": 915,
+        "arraysMB": 9.767,
+        "rssGrowthMB": -34.469
+      },
+      "thresholds": [
+        {
+          "enclosureMin": 0.5,
+          "scanned": 199581,
+          "usable": 181148,
+          "volumeM3": 47486.861,
+          "rooms": 288
+        },
+        {
+          "enclosureMin": 0.7,
+          "scanned": 199581,
+          "usable": 181148,
+          "volumeM3": 47486.861,
+          "rooms": 288
+        },
+        {
+          "enclosureMin": 0.9,
+          "scanned": 199581,
+          "usable": 181148,
+          "volumeM3": 47486.861,
+          "rooms": 288
+        }
+      ],
+      "courses": [
+        {
+          "seed": 1,
+          "id": "g1.1",
+          "title": "Course 1",
+          "gates": 24,
+          "kinds": "rsrssrssrssrrsrrssrrsrrr",
+          "wanted": 24,
+          "closed": true,
+          "laps": 3,
+          "tries": 29,
+          "valid": true,
+          "proofOk": true,
+          "pathM": 252.339,
+          "minFreeM": 0.53338623046875,
+          "minGapM": 3.2,
+          "beaconPoints": 77,
+          "beaconProblems": [],
+          "proofIssues": [],
+          "genMs": 1128,
+          "checkMs": 7339
+        },
+        {
+          "seed": 2,
+          "id": "g1.2",
+          "title": "Course 2",
+          "gates": 13,
+          "kinds": "ssrsssssrsssr",
+          "wanted": 24,
+          "closed": true,
+          "laps": 3,
+          "tries": 13,
+          "valid": true,
+          "proofOk": true,
+          "pathM": 113.097,
+          "minFreeM": null,
+          "minGapM": 3.263,
+          "beaconPoints": 39,
+          "beaconProblems": [],
+          "proofIssues": [],
+          "genMs": 702,
+          "checkMs": 98
+        },
+        {
+          "seed": 3,
+          "id": "g1.3",
+          "title": "Course 3",
+          "gates": 24,
+          "kinds": "rrsrssrrrsssrsssrrrrsrsr",
+          "wanted": 24,
+          "closed": true,
+          "laps": 3,
+          "tries": 37,
+          "valid": true,
+          "proofOk": true,
+          "pathM": 247.938,
+          "minFreeM": null,
+          "minGapM": 3.263,
+          "beaconPoints": 79,
+          "beaconProblems": [],
+          "proofIssues": [],
+          "genMs": 1366,
+          "checkMs": 206
+        }
+      ]
+    },
+    {
+      "scene": "887f27aa",
+      "note": "cached scan, own size",
+      "transform": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "walls": {
+        "voxelCm": 5,
+        "flownCm": 5,
+        "sha256": "1a104522ed03688d046d2210b68cb3e66afdb07d922f2de4b6096ac9a55a0f96"
+      },
+      "spawn": [
+        0,
+        2,
+        0
+      ],
+      "free": {
+        "cellM": 0.6,
+        "dims": [
+          134,
+          91,
+          134
+        ],
+        "stats": {
+          "cells": 1633996,
+          "solid": 97237,
+          "reachable": 1470223,
+          "scanned": 102512,
+          "usable": 90939,
+          "group": 3
+        },
+        "rooms": 71,
+        "volumeM3": 19642.824,
+        "outdoor": true,
+        "startFound": true,
+        "ms": 936,
+        "arraysMB": 7.792,
+        "rssGrowthMB": -54.551
+      },
+      "thresholds": [
+        {
+          "enclosureMin": 0.5,
+          "scanned": 102512,
+          "usable": 90939,
+          "volumeM3": 19642.824,
+          "rooms": 71
+        },
+        {
+          "enclosureMin": 0.7,
+          "scanned": 102512,
+          "usable": 90939,
+          "volumeM3": 19642.824,
+          "rooms": 71
+        },
+        {
+          "enclosureMin": 0.9,
+          "scanned": 102512,
+          "usable": 90939,
+          "volumeM3": 19642.824,
+          "rooms": 71
+        }
+      ],
+      "courses": [
+        {
+          "seed": 1,
+          "id": "g1.1",
+          "title": "Course 1",
+          "gates": 17,
+          "kinds": "rssssrrssrssrrrrr",
+          "wanted": 24,
+          "closed": true,
+          "laps": 3,
+          "tries": 20,
+          "valid": true,
+          "proofOk": true,
+          "pathM": 207.044,
+          "minFreeM": 0.5755615234375,
+          "minGapM": 3.059,
+          "beaconPoints": 62,
+          "beaconProblems": [],
+          "proofIssues": [],
+          "genMs": 22028,
+          "checkMs": 136257
+        },
+        {
+          "seed": 2,
+          "id": "g1.2",
+          "title": "Course 2",
+          "gates": 22,
+          "kinds": "sssrsrssssrsrrrrrrrrrr",
+          "wanted": 24,
+          "closed": true,
+          "laps": 3,
+          "tries": 29,
+          "valid": true,
+          "proofOk": true,
+          "pathM": 239.918,
+          "minFreeM": null,
+          "minGapM": 3.118,
+          "beaconPoints": 74,
+          "beaconProblems": [],
+          "proofIssues": [],
+          "genMs": 23892,
+          "checkMs": 4712
+        },
+        {
+          "seed": 3,
+          "id": "g1.3",
+          "title": "Course 3",
+          "gates": 23,
+          "kinds": "sssssssssrrsrrrrrrrrrrr",
+          "wanted": 24,
+          "closed": true,
+          "laps": 3,
+          "tries": 33,
+          "valid": true,
+          "proofOk": true,
+          "pathM": 231.379,
+          "minFreeM": null,
+          "minGapM": 3.059,
+          "beaconPoints": 74,
+          "beaconProblems": [],
+          "proofIssues": [],
+          "genMs": 21502,
+          "checkMs": 4343
+        }
+      ]
+    },
+    {
+      "scene": "39e63ce9",
+      "note": "fixture scene of the page probes, own size",
+      "transform": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "walls": {
+        "voxelCm": 5,
+        "flownCm": 5,
+        "sha256": "cd9ec1983aaf5c49ac53b3814e85c2ff06e4a337f70a38d299e6f99a615751a5"
+      },
+      "spawn": [
+        0.686,
+        1.581,
+        0.694
+      ],
+      "free": {
+        "cellM": 0.2,
+        "dims": [
+          127,
+          51,
+          90
+        ],
+        "stats": {
+          "cells": 582930,
+          "solid": 38117,
+          "reachable": 727,
+          "scanned": 727,
+          "usable": 0,
+          "group": 1
+        },
+        "rooms": 0,
+        "volumeM3": 0,
+        "outdoor": false,
+        "startFound": false,
+        "ms": 296,
+        "arraysMB": 2.78,
+        "rssGrowthMB": -11.855
+      },
+      "thresholds": [
+        {
+          "enclosureMin": 0.5,
+          "scanned": 727,
+          "usable": 0,
+          "volumeM3": 0,
+          "rooms": 0
+        },
+        {
+          "enclosureMin": 0.7,
+          "scanned": 727,
+          "usable": 0,
+          "volumeM3": 0,
+          "rooms": 0
+        },
+        {
+          "enclosureMin": 0.9,
+          "scanned": 727,
+          "usable": 0,
+          "volumeM3": 0,
+          "rooms": 0
+        }
+      ],
+      "courses": [
+        {
+          "seed": 1,
+          "gates": 0,
+          "genMs": 1,
+          "note": "no gate fits"
+        },
+        {
+          "seed": 2,
+          "gates": 0,
+          "genMs": 21,
+          "note": "no gate fits"
+        },
+        {
+          "seed": 3,
+          "gates": 0,
+          "genMs": 16,
+          "note": "no gate fits"
+        }
+      ]
+    },
+    {
+      "scene": "bd04e182",
+      "error": "walls not loaded: Error: https://d28zzqy0iyovbz.cloudfront.net/bd04e182/v1/scene.voxel.json: 403"
+    }
+  ],
+  "summary": {
+    "courses": 9,
+    "withGates": 6,
+    "proven": 6,
+    "valid": 6
+  }
+}

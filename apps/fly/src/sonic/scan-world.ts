@@ -14,8 +14,13 @@
 // The walls and the transform are asked each time (functions), so a rescale, new walls or a scene switch need
 // nothing here. One ray costs a DDA walk of distance / (s * voxel) cells: at Winter Garden x5 the cells are 16 cm,
 // measured by tools/bench/src/sonic-rays.ts (30 rays per frame).
+//   checkpoints  (train 1, lane tracks) a generated course's path for the sound beacon: coursePath of @gsfpv/tracks
+//            through the scene transform NOW (points at most 6 m apart, one 1.5 m before each gate), so the package's
+//            worldCheckpoints / lessonTrack take it duck-typed (kind 'world'). Without a course there is no getter value
+//            (undefined) and a lesson's track stays its own gates.
 import { objectPart, shapeBoundRadius, trackToObjects } from '@shramko/sonic-fpv';
-import type { MaterialClass, Part, RayHit, SceneTransform, SonicObject, SonicWorld, TrackFile, Vec3 } from '@shramko/sonic-fpv';
+import type { MaterialClass, Part, RayHit, SceneTransform, SonicObject, SonicWorld, TrackFile, Vec3, WorldCheckpoint } from '@shramko/sonic-fpv';
+import { coursePath } from '@gsfpv/tracks';
 import { faceNormal, voxelNormal } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
 
@@ -56,11 +61,32 @@ export class ScanSonicWorld implements SonicWorld {
     private readonly track: TrackFile | null;
     private gatesFor: { s: number; t0: number; t1: number; t2: number; objects: readonly SonicObject[]; parts: readonly GatePart[] } | null = null;
 
-    constructor(id: string, version: number, src: ScanWorldSource, track: TrackFile | null = null) {
+    private course: TrackFile | null;
+    private pathFor: { s: number; t0: number; t1: number; t2: number; points: readonly WorldCheckpoint[] } | null = null;
+
+    constructor(id: string, version: number, src: ScanWorldSource, track: TrackFile | null = null, opts: { course?: TrackFile | null } = {}) {
         this.id = id;
         this.version = version;
         this.src = src;
         this.track = track;
+        this.course = opts.course ?? null;
+    }
+
+    /** The course the beacon follows (a generated or served course), or null for none. */
+    setCourse(course: TrackFile | null): void {
+        this.course = course;
+        this.pathFor = null;
+    }
+
+    /** The course's path in the flown world now, for the sound package's worldCheckpoints; undefined without a course. */
+    get checkpoints(): readonly WorldCheckpoint[] | undefined {
+        if (!this.course) return undefined;
+        const tr = this.src.transform();
+        const p = this.pathFor;
+        if (p && p.s === tr.s && p.t0 === tr.t[0] && p.t1 === tr.t[1] && p.t2 === tr.t[2]) return p.points;
+        const points = coursePath(this.course, [tr.s, tr.t[0], tr.t[1], tr.t[2]]);
+        this.pathFor = { s: tr.s, t0: tr.t[0], t1: tr.t[1], t2: tr.t[2], points };
+        return points;
     }
 
     /** The flown walls' grid as a world box (a legacy grid stores x and y negated), with the gates. */

@@ -11,7 +11,8 @@
   "dependencies": {
     "@gsfpv/collision": "workspace:*",
     "@gsfpv/input": "workspace:*",
-    "@gsfpv/sim-core": "workspace:*"
+    "@gsfpv/sim-core": "workspace:*",
+    "@gsfpv/tracks": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "0.28.2",

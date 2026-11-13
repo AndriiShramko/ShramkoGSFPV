@@ -62,6 +62,12 @@ GET  /api/superspl/explore
                  token bucket (at most 60 upstream calls in any 60 s, their limit is 120), stale
                  answers when the bucket is empty or the upstream fails, fields trimmed to what the
                  scene picker shows. Nothing from the visitor (cookies, headers, address) goes on.
+GET  /api/tracks?scene=<hex>, GET /api/tracks/<id>/v<n>, POST /api/tracks
+                 courses of gates saved for everyone per scene (train 1, tracks.py, docs/tracks-api.md): the list
+                 newest first (ETag/304, max-age 30), the file (immutable), a create (body at most 64 KB, a course of
+                 the generator, validated by the port of the sound package's validateTrack; the server issues the id
+                 and the time). DATA_DIR/tracks/<scene>/<id>/v1.json + index.json; limits in tracks.LIMITS (10 creates
+                 an hour per client, 20 courses a scene, the disk guard answers 507).
 
 Disk guard: below MIN_FREE_GB free, events are no longer written, /api/health answers 503 and
 one warning goes to the lead bot. Secrets (TG_BOT_TOKEN, TG_CHAT_ID, TG_OWNER_BOT_TOKEN,
@@ -109,6 +115,7 @@ import session_delivery
 import sessions
 import sessions_admin
 import superspl_facts
+import tracks
 import translate
 import wind
 
@@ -170,6 +177,7 @@ _all_hits: dict[str, deque] = defaultdict(deque)  # per endpoint, every visitor 
 _sthits: dict[str, deque] = defaultdict(deque)    # POST /api/session/start, per client
 _schits: dict[str, deque] = defaultdict(deque)    # the chunks of an upload, per client
 _sqhits: dict[str, deque] = defaultdict(deque)    # finish and status, per client
+_trhits: dict[str, deque] = defaultdict(deque)    # POST /api/tracks, per client (tracks.LIMITS)
 _tghits: dict[str, deque] = defaultdict(deque)    # the owner bot's webhook, per client address (not shared:
                                                   # a stranger's flood must not use up Telegram's deliveries)
 DRAIN_MAX = 1 << 20  # Handler._refuse: the largest body read and dropped before an early refusal (reports and shares: 512 KB)
@@ -1421,6 +1429,10 @@ STREAM_BLOCK = 64 * 1024               # the owner's download of a recording is 
 SESSION_DRAIN_MAX = sessions.CHUNK_BYTES + 64 * 1024   # a refused chunk is read away up to this (nginx stops a body at 1100k)
 SESSION_CHUNK_TIMEOUT = 60.0           # seconds the socket may stay silent while a chunk arrives (a thread is held meanwhile)
 
+# ---------------- courses saved for everyone per scene (train 1, lane tracks): tracks.py ----------------
+TRACKS = tracks.TrackStore(lambda: DATA_DIR, min_free_bytes=lambda: int(MIN_FREE_GB * 1e9))
+TRACK_FILE_ROUTE = re.compile(r"/api/tracks/([0-9a-f]{6,32}-[0-9a-f]{8})/v([0-9]{1,4})")
+
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "gsfpv-api"
@@ -1663,6 +1675,49 @@ class Handler(BaseHTTPRequestHandler):
         except OSError:
             return self._json(500, {"ok": False, "error": "io"})
 
+    def _tracks(self, method: str, path: str, qs: str) -> None:
+        """The courses' routes (tracks.py). Refusals are {"ok": false, "error": <code>} with their status."""
+        try:
+            if method == "GET":
+                if path == "/api/tracks":
+                    scene = (urllib.parse.parse_qs(qs).get("scene") or [""])[0]
+                    return self._send(*TRACKS.list(scene, self.headers.get("If-None-Match")))
+                m = TRACK_FILE_ROUTE.fullmatch(path)
+                if not m:
+                    return self._json(404, {"ok": False})
+                return self._send(*TRACKS.file(m.group(1), int(m.group(2)), self.headers.get("If-None-Match")))
+            if path != "/api/tracks":
+                return self._refuse(404)
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                n = -1
+            # as `start` of the sessions: a JSON content type, which a page on another site cannot send without a preflight
+            # (nginx answers none), and no cross-site fetch, so visitors' browsers cannot be made to post (lane review TR-6)
+            if (self.headers.get("Content-Type") or "").split(";")[0].strip().lower() != "application/json":
+                if 0 < n <= tracks.LIMITS["body_bytes"]:
+                    self._drain(n)
+                return self._json(415, {"ok": False, "error": "content-type"})
+            if (self.headers.get("Sec-Fetch-Site") or "").strip().lower() == "cross-site":
+                if 0 < n <= tracks.LIMITS["body_bytes"]:
+                    self._drain(n)
+                return self._json(403, {"ok": False, "error": "cross-site"})
+            if not _rate(_trhits, self._client(), tracks.LIMITS["creates_per_client_hour"], 3600.0) \
+                    or not _rate(_all_hits, "tracks-create", tracks.LIMITS["creates_all_hour"], 3600.0):
+                return self._refuse(429)
+            if n > tracks.LIMITS["body_bytes"]:
+                return self._refuse(413)
+            if n <= 0:
+                return self._json(400, {"ok": False, "error": "bad-length"})
+            raw = self.rfile.read(n)
+            if _guard["tripped"]:
+                return self._json(507, {"ok": False, "error": "disk-full"})
+            return self._json(201, TRACKS.create(raw))
+        except tracks.TrackError as e:
+            return self._json(e.status, {"ok": False, "error": e.code, **e.extra})
+        except OSError:
+            return self._json(500, {"ok": False, "error": "io"})
+
     def do_HEAD(self):
         path = self.path.split("?")[0]
         if path.startswith("/s/"):
@@ -1690,6 +1745,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._admin("GET", path, qs)
         if path.startswith("/api/session/"):
             return self._session("GET", path, qs)
+        if path == "/api/tracks" or path.startswith("/api/tracks/"):
+            return self._tracks("GET", path, qs)
         if path.startswith("/api/wind/"):
             return self._send(*WIND.handle_now(path[len("/api/wind/"):], qs, self._client()))
         page = SCENE_PAGES.handle(path, self.headers.get("If-None-Match"))
@@ -1769,6 +1826,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._admin("POST", path)
         if path.startswith("/api/session/"):
             return self._session("POST", path, self.path.partition("?")[2])
+        if path == "/api/tracks" or path.startswith("/api/tracks/"):
+            return self._tracks("POST", path, "")
         if path == "/api/share":
             if not _rate(_shits, self._client(), 12, 3600.0) or not _rate(_all_hits, "share", 300, 3600.0):
                 return self._refuse(429)

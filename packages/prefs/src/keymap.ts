@@ -107,8 +107,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     // train 1, lane tracks (docs/wip/train1-plan.md, "Contracts between lanes"): reserved on the train base as planned; the lane
     // flips its own two lines to shipped (or deletes the one it does not build) and touches no other line of this table.
     // Shift+T puts the course (the obstacles, the arrows, the lap timer) on and off in flight, Shift+G makes a new random course
-    { action: 'course.toggle', keys: [{ code: 'KeyT', shift: true, cap: 'Shift+T', aria: 'Shift+T' }], when: 'always', labelKey: 'keys.course.toggle', status: 'planned' },
-    { action: 'course.generate', keys: [{ code: 'KeyG', shift: true, cap: 'Shift+G', aria: 'Shift+G' }], when: 'always', labelKey: 'keys.course.generate', status: 'planned' },
+    { action: 'course.toggle', keys: [{ code: 'KeyT', shift: true, cap: 'Shift+T', aria: 'Shift+T' }], when: 'always', labelKey: 'keys.course.toggle', status: 'shipped' },
+    { action: 'course.generate', keys: [{ code: 'KeyG', shift: true, cap: 'Shift+G', aria: 'Shift+G' }], when: 'always', labelKey: 'keys.course.generate', status: 'shipped' },
     { action: 'sonic.record', keys: [letter('T')], when: 'sonic', labelKey: 'keys.sonic.record', status: 'shipped' },
     { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },

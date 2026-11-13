@@ -47,6 +47,9 @@ importers:
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../../packages/sim-core
+      '@gsfpv/tracks':
+        specifier: workspace:*
+        version: link:../../packages/tracks
       '@playcanvas/splat-transform':
         specifier: 3.6.4
         version: 3.6.4(playcanvas@2.23.2)
@@ -171,6 +174,15 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(@types/node@22.20.4)(vite@8.3.1(@types/node@22.20.4)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/tracks:
+    dependencies:
+      '@gsfpv/collision':
+        specifier: workspace:*
+        version: link:../collision
+      '@shramko/sonic-fpv':
+        specifier: workspace:*
+        version: link:../sonic-fpv
+
   tools/bench:
     dependencies:
       '@gsfpv/collision':
@@ -182,6 +194,9 @@ importers:
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../../packages/sim-core
+      '@gsfpv/tracks':
+        specifier: workspace:*
+        version: link:../../packages/tracks
     devDependencies:
       esbuild:
         specifier: 0.28.2

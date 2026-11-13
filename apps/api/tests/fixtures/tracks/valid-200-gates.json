@@ -1,0 +1,4040 @@
+{
+  "author": {
+    "kind": "generator",
+    "name": "gsfpv-course"
+  },
+  "created": "2026-11-13T10:00:00.000Z",
+  "format": "shramko-sonic-track/1",
+  "gates": [
+    {
+      "direction": "forward",
+      "id": "g1",
+      "pos": [
+        0.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g2",
+      "pos": [
+        2.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g3",
+      "pos": [
+        4.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g4",
+      "pos": [
+        6.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g5",
+      "pos": [
+        8.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g6",
+      "pos": [
+        10.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g7",
+      "pos": [
+        12.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g8",
+      "pos": [
+        14.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g9",
+      "pos": [
+        16.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g10",
+      "pos": [
+        18.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g11",
+      "pos": [
+        20.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g12",
+      "pos": [
+        22.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g13",
+      "pos": [
+        24.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g14",
+      "pos": [
+        26.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g15",
+      "pos": [
+        28.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g16",
+      "pos": [
+        30.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g17",
+      "pos": [
+        32.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g18",
+      "pos": [
+        34.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g19",
+      "pos": [
+        36.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g20",
+      "pos": [
+        38.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g21",
+      "pos": [
+        40.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g22",
+      "pos": [
+        42.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g23",
+      "pos": [
+        44.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g24",
+      "pos": [
+        46.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g25",
+      "pos": [
+        48.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g26",
+      "pos": [
+        50.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g27",
+      "pos": [
+        52.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g28",
+      "pos": [
+        54.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g29",
+      "pos": [
+        56.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g30",
+      "pos": [
+        58.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g31",
+      "pos": [
+        60.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g32",
+      "pos": [
+        62.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g33",
+      "pos": [
+        64.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g34",
+      "pos": [
+        66.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g35",
+      "pos": [
+        68.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g36",
+      "pos": [
+        70.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g37",
+      "pos": [
+        72.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g38",
+      "pos": [
+        74.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g39",
+      "pos": [
+        76.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g40",
+      "pos": [
+        78.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g41",
+      "pos": [
+        80.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g42",
+      "pos": [
+        82.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g43",
+      "pos": [
+        84.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g44",
+      "pos": [
+        86.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g45",
+      "pos": [
+        88.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g46",
+      "pos": [
+        90.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g47",
+      "pos": [
+        92.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g48",
+      "pos": [
+        94.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g49",
+      "pos": [
+        96.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g50",
+      "pos": [
+        98.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g51",
+      "pos": [
+        100.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g52",
+      "pos": [
+        102.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g53",
+      "pos": [
+        104.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g54",
+      "pos": [
+        106.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g55",
+      "pos": [
+        108.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g56",
+      "pos": [
+        110.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g57",
+      "pos": [
+        112.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g58",
+      "pos": [
+        114.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g59",
+      "pos": [
+        116.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g60",
+      "pos": [
+        118.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g61",
+      "pos": [
+        120.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g62",
+      "pos": [
+        122.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g63",
+      "pos": [
+        124.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g64",
+      "pos": [
+        126.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g65",
+      "pos": [
+        128.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g66",
+      "pos": [
+        130.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g67",
+      "pos": [
+        132.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g68",
+      "pos": [
+        134.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g69",
+      "pos": [
+        136.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g70",
+      "pos": [
+        138.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g71",
+      "pos": [
+        140.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g72",
+      "pos": [
+        142.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g73",
+      "pos": [
+        144.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g74",
+      "pos": [
+        146.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g75",
+      "pos": [
+        148.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g76",
+      "pos": [
+        150.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g77",
+      "pos": [
+        152.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g78",
+      "pos": [
+        154.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g79",
+      "pos": [
+        156.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g80",
+      "pos": [
+        158.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g81",
+      "pos": [
+        160.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g82",
+      "pos": [
+        162.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g83",
+      "pos": [
+        164.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g84",
+      "pos": [
+        166.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g85",
+      "pos": [
+        168.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g86",
+      "pos": [
+        170.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g87",
+      "pos": [
+        172.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g88",
+      "pos": [
+        174.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g89",
+      "pos": [
+        176.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g90",
+      "pos": [
+        178.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g91",
+      "pos": [
+        180.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g92",
+      "pos": [
+        182.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g93",
+      "pos": [
+        184.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g94",
+      "pos": [
+        186.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g95",
+      "pos": [
+        188.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g96",
+      "pos": [
+        190.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g97",
+      "pos": [
+        192.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g98",
+      "pos": [
+        194.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g99",
+      "pos": [
+        196.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g100",
+      "pos": [
+        198.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g101",
+      "pos": [
+        200.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g102",
+      "pos": [
+        202.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g103",
+      "pos": [
+        204.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g104",
+      "pos": [
+        206.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g105",
+      "pos": [
+        208.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g106",
+      "pos": [
+        210.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g107",
+      "pos": [
+        212.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g108",
+      "pos": [
+        214.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g109",
+      "pos": [
+        216.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g110",
+      "pos": [
+        218.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g111",
+      "pos": [
+        220.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g112",
+      "pos": [
+        222.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g113",
+      "pos": [
+        224.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g114",
+      "pos": [
+        226.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g115",
+      "pos": [
+        228.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g116",
+      "pos": [
+        230.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g117",
+      "pos": [
+        232.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g118",
+      "pos": [
+        234.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g119",
+      "pos": [
+        236.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g120",
+      "pos": [
+        238.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g121",
+      "pos": [
+        240.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g122",
+      "pos": [
+        242.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g123",
+      "pos": [
+        244.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g124",
+      "pos": [
+        246.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g125",
+      "pos": [
+        248.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g126",
+      "pos": [
+        250.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g127",
+      "pos": [
+        252.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g128",
+      "pos": [
+        254.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g129",
+      "pos": [
+        256.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g130",
+      "pos": [
+        258.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g131",
+      "pos": [
+        260.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g132",
+      "pos": [
+        262.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g133",
+      "pos": [
+        264.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g134",
+      "pos": [
+        266.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g135",
+      "pos": [
+        268.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g136",
+      "pos": [
+        270.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g137",
+      "pos": [
+        272.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g138",
+      "pos": [
+        274.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g139",
+      "pos": [
+        276.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g140",
+      "pos": [
+        278.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g141",
+      "pos": [
+        280.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g142",
+      "pos": [
+        282.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g143",
+      "pos": [
+        284.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g144",
+      "pos": [
+        286.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g145",
+      "pos": [
+        288.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g146",
+      "pos": [
+        290.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g147",
+      "pos": [
+        292.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g148",
+      "pos": [
+        294.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g149",
+      "pos": [
+        296.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g150",
+      "pos": [
+        298.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g151",
+      "pos": [
+        300.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g152",
+      "pos": [
+        302.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g153",
+      "pos": [
+        304.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g154",
+      "pos": [
+        306.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g155",
+      "pos": [
+        308.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g156",
+      "pos": [
+        310.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g157",
+      "pos": [
+        312.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g158",
+      "pos": [
+        314.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g159",
+      "pos": [
+        316.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g160",
+      "pos": [
+        318.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g161",
+      "pos": [
+        320.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g162",
+      "pos": [
+        322.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g163",
+      "pos": [
+        324.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g164",
+      "pos": [
+        326.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g165",
+      "pos": [
+        328.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g166",
+      "pos": [
+        330.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g167",
+      "pos": [
+        332.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g168",
+      "pos": [
+        334.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g169",
+      "pos": [
+        336.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g170",
+      "pos": [
+        338.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g171",
+      "pos": [
+        340.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g172",
+      "pos": [
+        342.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g173",
+      "pos": [
+        344.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g174",
+      "pos": [
+        346.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g175",
+      "pos": [
+        348.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g176",
+      "pos": [
+        350.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g177",
+      "pos": [
+        352.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g178",
+      "pos": [
+        354.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g179",
+      "pos": [
+        356.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g180",
+      "pos": [
+        358.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g181",
+      "pos": [
+        360.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g182",
+      "pos": [
+        362.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g183",
+      "pos": [
+        364.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g184",
+      "pos": [
+        366.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g185",
+      "pos": [
+        368.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g186",
+      "pos": [
+        370.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g187",
+      "pos": [
+        372.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g188",
+      "pos": [
+        374.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g189",
+      "pos": [
+        376.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g190",
+      "pos": [
+        378.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g191",
+      "pos": [
+        380.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g192",
+      "pos": [
+        382.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g193",
+      "pos": [
+        384.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g194",
+      "pos": [
+        386.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g195",
+      "pos": [
+        388.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g196",
+      "pos": [
+        390.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g197",
+      "pos": [
+        392.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g198",
+      "pos": [
+        394.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g199",
+      "pos": [
+        396.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g200",
+      "pos": [
+        398.0,
+        0.5,
+        0
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    }
+  ],
+  "generator": {
+    "name": "gsfpv-course",
+    "params": {},
+    "seed": 12345,
+    "version": "1"
+  },
+  "id": "g1.9ix",
+  "laps": 1,
+  "parent": null,
+  "scene": {
+    "id": "39e63ce9",
+    "kind": "scan",
+    "version": 1
+  },
+  "start": {
+    "pos": [
+      0,
+      0.2,
+      0
+    ],
+    "yawDeg": 0
+  },
+  "title": "Course 9ix",
+  "transform": [
+    1,
+    0,
+    0,
+    0
+  ],
+  "version": 1
+}
