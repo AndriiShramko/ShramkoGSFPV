@@ -47,7 +47,8 @@ Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native re
   controls) + test_nginx_routes/rooms/tracks: 34 passed; NEG OK on the old nginx.conf. Measured in the bench Chrome
   (headless, release build of this branch served by serve-csp with the lead patch): the page served with the release
   CSP opened ws://127.0.0.1:47310 with no CSP message (bridge.cspQuiet true). Commit 6bafc64f.
-- [ ] 4. Page probe tools/bench/scripts/rc2-probe.mjs (written, committed). Last run on a local release build of this
+- [x] 4. DONE in stage G2 step 4 (after the ground-probe merge): 14 of 14 checks pass, usb.climbs included; see
+  there. Older passes follow. Page probe tools/bench/scripts/rc2-probe.mjs (written, committed). Last run on a local release build of this
   branch with both lead patches applied (evidence/2026-11-13/rc2/rc2-probe-branch.json): 13 of 14 checks pass
   (usb: verdict rc2, wizard to the check screen with key hid:2ca3:1021:DJI RC 2:12:d, one axis moves on the check
   screen; refused: the claim text; bridge (replay bridge, --wiggle): no socket on load, connected, check screen at
@@ -135,10 +136,11 @@ because the files do not exist on origin/main; vitest run as node node_modules/v
   centred style); dji-duml.ts header no longer claims byte 0 is a result code; the two recordings copied to
   packages/input/test/fixtures/dji-rc2/ and dji-duml.test.ts, app-dji-rc2.test.ts and test_rc_bridge.py read them
   there. rc2-probe.mjs opens the fly page with &rcbridge=1 (R2's switch). Commit c140dbc9.
-- [ ] RC2-R1 (blocker): NOT refuted, NOT fixable in this lane. The cost is in apps/fly/src/play/ground.ts,
+- [x] RC2-R1 (blocker): fixed by the ground-probe lane (merged in stage G2); the probe climbs (G2 step 4). Old note:
+  NOT refuted, NOT fixable in this lane. The cost is in apps/fly/src/play/ground.ts,
   packages/collision/src/world.ts and the lesson pilot (outside this lane's paths); the lane's own CDP stacks show it.
   Moved to "For the lead before the merge" with the reviewer's fix. Stage 3 step 4 stays unticked until then.
-- [ ] RC2-R10 (minor): left for the lead (see "For the lead"): announcing onEnd needs an in-flight message channel
+- [x] RC2-R10 (minor): done in stage G2 step 2 (usb.rc2.lost through Hud.flash). Old note: left for the lead (see "For the lead"): announcing onEnd needs an in-flight message channel
   outside this lane (radio.ts / the Controls status); no such announcer exists in this lane's files (grep for
   aria-live and announce helpers in apps/fly/src found none usable in flight).
 
@@ -155,7 +157,16 @@ Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-p
   clean. Not unit-tested: the hud builtin's subscription itself (tsc only). Commit: the one that adds this line.
 - [x] 3. R3 check: dji-rc2-source.ts has no requestAnimationFrame; the only "animation" is the comment at line 149;
   pace defaults to the plain timer wait (o.pace ?? this.wait). Test "the ask loop paces by its timer only" stays.
-- [ ] 4. rc2-probe three runs + negative control on origin/main's build (stage 3 step 4).
+- [x] 4. Release build of 12c64876 (node scripts/build-release.mjs, 1 min 19 s), served by serve-csp on 5620 (the CSP's
+  connect-src carries ws://127.0.0.1:47310 on /en/fly/), replay bridge (rc_bridge.py --replay
+  evidence/2026-11-13/rc2/frames-rest.json --wiggle --dev), headless Chrome 156 under C:/dev/.gpu-lock:
+  rc2-probe usb,refused,bridge PASS, 14 of 14 (evidence/2026-11-13/rc2/rc2-probe-g2.json). usb: verdict rc2, check
+  screen after 21 s, climb from 0.07 m to 4.67 m in 10 samples, motors on in all, no crash; profile of the climb:
+  6 ms of 2669 ms under the ground probe, 22 ms in sweeps (ground-probe's fix). refused: claim text, stays on
+  Controls. bridge: no socket on load, connected, check screen at once, frames flow, no CSP message.
+  Negative control: the same probe against the lead copy's dist (C:/dev/gsfpv-v03/dist built 13:12 from main, no RC 2
+  code; served from a copy on 5621): FAIL, usb.verdictRc2 false, usb/refused/bridge not run
+  (evidence/2026-11-13/rc2/rc2-probe-g2-main.json). Servers and bridge stopped. RC2-R1 is closed by ground-probe.
 - [x] 5. The helper text had no link (it only named start-rc-bridge.cmd). Added: a link after usb.rc2.bridgeWhy (new key
   usb.rc2.bridgeGet, en/es/pl/ru) to RC_BRIDGE_SOURCE = https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/
   tools/rc-bridge/README.md (devices/dji-rc2-bridge.ts; the repo is the public MIT one named in apps/site/src/config/
@@ -270,6 +281,11 @@ every received frame, measured]:
   because packages/input/src/index.ts is outside this lane.
 
 ## For the lead before the merge
+- Stage G2 (train 1c) state: rc2 now contains origin/main bbc9e75e and ground-probe fe95b5d4; both lead patches are
+  real commits (60e7ea0a), R10 is done (66abc054), the bridge link and README (12c64876), the probe passes 14/14.
+  The lines below about applying the patches, R1 and R10 are history. Left for the lead: the nginx release (the
+  map $gsfpv_rc_bridge from 6bafc64f, unchanged here; nginx -t on the hub), whether to announce the bridge (drop
+  ?rcbridge=1), and the real-controller run.
 - Apply evidence/2026-11-13/rc2/lead-wiring.patch.txt (git apply): without it the helper shows the RC 2's parts and
   verdict but no "Fly with this controller" button, and a later visit does not reconnect the RC 2. It changes
   apps/fly/src/ui/radio.ts (usbLookBlock gets the fly callback; connectHid takes an optional pre-chosen device) and
@@ -346,6 +362,11 @@ every received frame, measured]:
 - Review fixes: the new limits (RC2_RANGE_MARGIN 40, SEND_TIMEOUT_S 0.5, the 125-byte page frame) are estimates or
   protocol limits, not measured on the real controller; R4's sequence matching and R9's layout check were not run
   against the real RC 2 (it was not connected); the bridge on the staging origin was not tried.
+- Stage G2: the R10 line was not seen on a page (no probe unplugs in flight; unit test of the channel plus tsc of the
+  hud builtin only); the GitHub link was not opened (no external request; the file exists in this branch and the repo
+  is the one in apps/site REPO); the README's five steps were not followed on a clean PC; the negative control used
+  the lead copy's dist built at 13:12 (lead HEAD bbc9e75e is from 13:31), not a fresh build of bbc9e75e; the live
+  site's CSP after the nginx release not checked.
 
 ## Cost notes
 - Stage 1: most turns went to pyusb crashing on DJI's libusb0 build (3 turns to find the struct offset);
@@ -373,3 +394,6 @@ every received frame, measured]:
 - Review fixes pass 2: 6 replies. Nothing left inside the lane: R1 (ground sweep) and R10 (no in-flight announcer;
   a plain WebHID unplug is not announced in flight either, grep for disconnect in apps/fly/src) need the lead's paths.
   A status line marking such items "lead-owned, lane done" would have spared this pass.
+- Stage G2: about 35 replies. Most went to finding the in-flight message channel (Hud.flash) by grep and to
+  "file has not been read" edit refusals; one probe run passed first time thanks to ground-probe. A code-map line
+  "in-flight note to the pilot = ctx.hud.flash (ui/hud.ts)" would have saved about 4 replies.
