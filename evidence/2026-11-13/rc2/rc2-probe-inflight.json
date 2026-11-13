@@ -1,0 +1,176 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5393/en",
+ "at": "2026-11-13T10:46:05.855Z",
+ "browser": "156.0.8078.80",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 21,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "climb": [
+    {
+     "alt": -0.0019594141015459865,
+     "motors": "arming",
+     "crashed": false
+    },
+    {
+     "alt": -0.0019611084508479593,
+     "motors": "edge",
+     "crashed": false
+    },
+    {
+     "alt": 0.06631974433053589,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": -0.0019747232175439944,
+     "motors": "edge",
+     "crashed": false
+    },
+    {
+     "alt": 0.06318331750239858,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 0.8680462157840232,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 1.9162674959780097,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 3.2883314256921885,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 3.245628228423481,
+     "motors": "arming",
+     "crashed": false
+    },
+    {
+     "alt": 1.9062353347177026,
+     "motors": "on",
+     "crashed": false
+    }
+   ],
+   "gateWatch": {
+    "maxAge": 263.1999999284744,
+    "ageOver100": 18,
+    "maxFrame": 202.70000004768372,
+    "frames": 38,
+    "blocks": {
+     "switch": 11,
+     "stale": 4,
+     "throttle": 4
+    },
+    "replies0": 2254,
+    "t0": 28802,
+    "repliesPerS": 9,
+    "lastCrash": null
+   },
+   "start": {
+    "alt": 0,
+    "armed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "off",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2
+     },
+     "now": "centred"
+    },
+    "card": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick."
+   },
+   "up": {
+    "alt": 1.9078400961939805,
+    "armed": true,
+    "crashed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 3.9078400961939805
+     },
+     "now": "centred"
+    },
+    "card": null
+   },
+   "topM": 3.2883314256921885,
+   "probe": {
+    "sockets": 0,
+    "requests": 2298,
+    "replies": 2294,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": true,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.climbs": true,
+  "usb.noPageErrors": true
+ }
+}

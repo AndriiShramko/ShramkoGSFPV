@@ -56,12 +56,28 @@ Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native re
   then sinks (an earlier run rose 3 m in 1.25 s and then fell and crashed: rc2-probe-branch-earlier.json).
   Negative control: the same probe (usb,refused) against the lead's dist C:/dev/gsfpv-v03/dist (built 05:09, no
   RC 2 code in it) fails: usb.verdictRc2 false (rc2-probe-old-build.json).
-  LEFT: find why the motors toggle. First suspect: frame gaps of the WebUSB source under page load trip ArmGate's
-  100 ms stale rule (the fake answers through two timer hops per request; centre-throttle-probe's fake HID uses one
-  6 ms interval and climbs). Measure in the probe: tap HidSource frames during the climb, record max gap; if gaps
-  exceed 100 ms, fix in dji-rc2-source.ts (e.g. do not wait RC2_POLL_MS with setTimeout when the answer took longer;
-  drop the probe fake's 2 ms delay to tell fake from source). Then rerun the probe (all three runs) and the
-  negative control, and tick this line.
+  CAUSE FOUND (pass 2): the stale rule. The probe now records the gate's view every animation frame during the climb
+  (__rc2Watch: age of Controls.lastSampleAt, frame interval, block reasons, answers per second). Measured on the
+  build of 6bafc64f: max sample age 211 ms, 15 of 51 frames over 100 ms, blocks stale 2 / switch 20, about 20 frames/s
+  (evidence rc2-probe-gap-watch.json; that run passed by luck). In flight the page runs timers only about 9 times a
+  second (repliesPerS 9 in the climb against about 80/s on the setup screens, rc2-probe-inflight.json), and every
+  answer needed a timer.
+  Fixes committed: 0ae0d8f6 requests no longer wait for answers (RC2_INFLIGHT 4 out at once; unit test "answers
+  130 ms late" in app-dji-rc2.test.ts, NEG OK: 14 frames instead of >15 on the old source); 0e01b73c a late wake
+  fills every free slot (probe: usb pass, climb +3.3 m, but still stale 4, 9 answers/s: rc2-probe-inflight.json);
+  a1b43eb1 the ask loop wakes on the timer OR the next animation frame (pause() in dji-rc2-source.ts) and the probe's
+  fake answers by MessageChannel instead of a 2 ms timer. Unit tests 24 passed, tsc clean.
+  LEFT: with a1b43eb1 the probe HANGS (no output, killed by timeout 360 s, usb run alone, twice): page.evaluate
+  never returns, so the page's main thread is probably busy. Unknown which half: (1) rebuild with a1b43eb1's
+  source and the OLD fake (git show 0e01b73c:tools/bench/scripts/rc2-probe.mjs > a scratch copy), run usb only;
+  (2) if that hangs, the rAF pause is the cause: revert pause() (keep 0ae0d8f6/0e01b73c) and look for another way
+  past the starved timers (e.g. the source re-sends the last answer each animation frame while the controller
+  answered within ~250 ms, like gamepad.ts; that is a safety decision: silence then disarms after ~350 ms);
+  (3) if only the MessageChannel fake hangs, go back to the timer fake. Make the probe write its out file after
+  each run so a hang leaves data. Then the probe's three runs, the negative control against origin/main's dist,
+  tick this line. Build: apply lead-wiring.patch.txt and lead-serve-csp.patch.txt, node scripts/build-release.mjs,
+  revert both (git checkout -- the three files) before committing. Bridge replay: python -X utf8
+  tools/rc-bridge/rc_bridge.py --replay evidence/2026-11-13/rc2/frames-rest.json --wiggle.
 - [x] 5. For the lead, Not verified, cost note written below.
 
 ## Verdict of stage 1
@@ -221,3 +237,6 @@ every received frame, measured]:
   fake's throttle had to rest in the centre (the hid-source-probe hands rest it at the bottom, so the wizard chose
   from-zero), and a connected helper leaves the DOM (wait for the wizard, not the status line). Writing the probe
   with spring-centred hands and a frame-gap tap from the start would have saved 3 runs.
+- Stage 3 pass 2: about 45 replies, not finished. Most went to four 3-6 min release-build + probe cycles, each changing
+  two things at once (source and fake), so the last one hung with no way to tell which; the probe also writes its
+  JSON only at the end, so a hang leaves nothing. Change one thing per build and write the out file after every run.
