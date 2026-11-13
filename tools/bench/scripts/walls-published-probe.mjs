@@ -53,7 +53,7 @@ for (const c of cases) {
         await page.waitForTimeout(3000);
         r.page = await page.evaluate(READ);
         // review WL-8: the drone stops at the published walls (20 flights into them at 25 m/s, as the ladder run did)
-        if (c.expect === 'published' && r.page?.walls?.state === 'in-use') r.tunnel = await page.evaluate(() => window.__gsfpv.session.tunnelSelfTest(20, 25));
+        if (c.expect === 'published' && r.page?.walls?.source === 'published') r.tunnel = await page.evaluate(() => window.__gsfpv.session.tunnelSelfTest(20, 25));
         await page.screenshot({ path: `U:/Temp/gsfpv-train2/shots/walls-w2-${c.id}.png` });
     } catch (e) { r.fail = String(e).slice(0, 200); try { r.page = await page.evaluate(READ); } catch { /* page gone */ } }
     const w = r.page?.walls;
