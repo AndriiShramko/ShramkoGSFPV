@@ -10,7 +10,10 @@ Stage W2-published:
 - [x] Loader order shipped, else published, else the page's build: apps/fly/src/session/loader.ts wallsPlaces / firstWalls / publishedWallsUrl, session wallsFrom, walls.ts source 'published', text bake.source.published in en/es/pl/ru (commit cb473792). Unit test tools/bench/test/walls-published.test.ts 7 passed; negative control NEG OK (loader.ts of 3e85e9e6). apps/fly tsc exit 0.
 - [x] Delivery: deploy/nginx.conf location ^~ /walls/ (root /srv/releases, 404 when missing), deploy/release-walls.sh (commit 5dbe2a2f).
 - [x] Page probe tools/bench/scripts/walls-published-probe.mjs (commit d2f2015a); run on a local release of 5dbe2a2f with Forest Floor as the stand-in: pass (see Facts W2).
-- [~] Offline bakes: Wroclaw 70b50d42 running (out U:/Temp/gsfpv-train2/walls/published), the other seven (out U:/Temp/gsfpv-train2/walls/published-b, log bake-b.log). Then the probe with Wroclaw.
+- [~] Offline bakes (results in Facts W2). Done: ab5efa0e, d10c5638, eb5f51dc. Running detached at 22:51 (started by W2 worker 1, nohup): (a) node tools/walls/bake-published.mjs U:/Temp/gsfpv-train2/walls/published-c 70b50d42,9baef54b --voxel 0.1 (log U:/Temp/gsfpv-train2/walls/bake-c.log); (b) the batch ba7aa29d,0230d903,1994c65c,2f1ddf5f into U:/Temp/gsfpv-train2/walls/published-b (log bake-b.log). Read the logs and manifest.json of each dir first; do not start them again while their node processes live (wmic process where "name='node.exe'" get CommandLine | grep bake-published).
+- [ ] Wroclaw probe: copy published-c/70b50d42 into dist/walls/ of a local release (build of the branch head; dist is not in git), serve-csp on 5800, then under the GPU lock: node tools/bench/scripts/walls-published-probe.mjs http://localhost:5800/en U:/Temp/gsfpv-train2/walls/probe-w2-b.json 70b50d42 d10c5638 (d10c5638 without its stand-in = the unpublished control).
+- [ ] If Wroclaw fails at 10 cm too (5 cm failed: a 2.7 GB GPU buffer over Dawn's 2 GiB limit), try 20 cm (--voxel 0.2) or a tighter crop (CROP_TAIL 0.02, CROP_MARGIN 0.05): the Laval box was 1198 x 367 x 905 m and needed 20 cm. Name every scan that cannot be baked with the reason.
+- [ ] Fill For the lead with the final file list and sizes (manifest.json of published, published-b, published-c).
 
 Stage W1-any-size:
 - [x] 1. Measure the 13 catalogue scans (tools/bench/scripts/walls-scan-sizes.ts; output U:/Temp/gsfpv-train2/walls/sizes.json). Commit 9105c8c6.
@@ -53,6 +56,18 @@ Ladder run, walls-trials.ts ladder, 2026-11-13, local release, headless system C
 - ab5efa0e Forest Floor: built in 10.8 s (read 3.3 s, voxelise 7.4 s), level 0, 5 cm, tried 1, not rough, 4,019,918 Gaussians, 124,612 solid voxels, peak JS heap 602 MB. Drone into the walls: tunnelSelfTest(20 passes, 25 m/s) gave 20 contacts, 0 penetrations. Line shown: "Walls built in this browser: 0.1 million voxels in 11 s. Crashes are on."
 - 70b50d42 Wroclaw: scene ready in 5.1 s; the bake was still in "voxelising on your GPU" after 1200 s (probe timeout), no error, no walls. The ladder had picked level 2 (10.77 M Gaussians, within the memory gate), so the Gaussian count is not what holds it. Cause, inference not measured: the tree bound is 13536 x 12547 x 13512 m; at 5 cm that is 2.7e5 cells per axis and the voxeliser walks that space. A per-Gaussian position histogram of Wroclaw was not taken.
 
+Facts W2 (measured 2026-11-13, this PC: RTX 4090, 274 GB RAM; tool tools/walls/bake-published.mjs, manifests in U:/Temp/gsfpv-train2/walls/published*/manifest.json):
+
+| id | result | cell | json B | bin B | kept share (level 4) | s |
+|---|---|---|---|---|---|---|
+| ab5efa0e Forest Floor | ok, v2 | 5 cm | 630 | 70,392 (same bytes count as the browser bake of scout B) | single file, no crop | 11 |
+| d10c5638 Housefly | ok, v1 | 5 cm | 634 | 1,045,292 | single file, no crop | 6 |
+| eb5f51dc Laval Castle | ok, v1, level 0 | 20 cm (5 cm: more than 16,777,216 mixed blocks after 7.6 min; 10 cm the same) | 647 | 67,193,320 | 0.9848, box 1198 x 367 x 905 m | 800 |
+| 70b50d42 Wroclaw | 5 cm failed after 12 min 53 s: "Buffer size (2699252224) exceeds the max buffer size limit (2147483648)"; 10 cm attempt cut at 22:51 (worker ended), rerun detached at 10 cm | | | | | |
+| 9baef54b University of Opole | first try "fetch failed" (network); rerun detached | | | | | |
+
+Page probe walls-published-probe.mjs on the local release of 5dbe2a2f (port 5800, U:/Temp/gsfpv-train2/walls/probe-w2-a.json), Forest Floor files as the stand-in in dist/walls/ab5efa0e/v2/: ab5efa0e ready in 4.9 s, source published, 5 cm, /walls/.../scene.voxel.json 200 and .bin 200, no bake, no page error, line "In use: 5 cm walls, ready for every pilot."; d10c5638 (nothing published) ready in 2.7 s, one 404 on /walls/, source none, state offer, no page error.
+
 ## The way
 
 W2 published walls (design): walls are built once on this PC by tools/walls/bake-published.mjs, which runs the splat-transform CLI in Node on the GPU (Dawn), reads level 0 of the scan straight from the CDN, and first crops the scan to its dense core (per axis the 0.5 % and 99.5 % quantiles of the level-4 positions plus 15 % of that span plus 5 m; settings, not measured), because a few floaters kilometres away make the voxeliser walk a bound of 13.5 km. The output is the format SuperSplat ships and the page builds and exports: scene.voxel.json + scene.voxel.bin. They live on the hub in releases/walls/<id>/v<N>/ (beside the releases, so a new release keeps them; one folder per scan version, so a new upload of a scan never gets old walls) and the site serves them from its own origin at /walls/<id>/v<N>/scene.voxel.json (deploy/nginx.conf location ^~ /walls/, 404 when missing, no-cache with ETag). deploy/release-walls.sh copies them there (temporary name, then rename) and compares sha256 local, hub and served. The page looks for walls in this order (loader.ts wallsPlaces / firstWalls): shipped by SuperSplat, else published here, else none and the walls box offers its own build (W1). A missing or broken published file only means "not published" and never stops a flight. No catalogue field and no admin screen: the 404 of one small JSON is the whole cost for a scan without published walls. Sizes: see Facts W2.
@@ -67,9 +82,18 @@ Provisional (the browser trials of step 2 are not run): a ladder of levels of de
 
 ## For the lead
 
+Release of published walls (W2; nothing uploaded by the lane):
+1. Release the page of this branch as usual (the loader asks /walls/<id>/v<N>/scene.voxel.json; until step 2 that path falls to location / and the page treats any answer that is not walls as "not published").
+2. bash deploy/release-nginx.sh (deploy/nginx.conf now has location ^~ /walls/ with root /srv/releases).
+3. bash deploy/release-walls.sh U:/Temp/gsfpv-train2/walls/published, then the same with published-b and published-c (each dir: <id>/v<N>/scene.voxel.json + .bin and manifest.json; only rows with ok:true go). The script prints local, hub and served sha256 per file and http 200, and a 404 for a scan with none; it exits 1 on any difference. The cli-*.log files beside the walls are not copied.
+4. Check on the live site: /en/fly/?scene=70b50d42 and ?scene=ab5efa0e open with the walls line "In use: ... walls, ready for every pilot." and no build button; a scan with nothing published (e.g. 0230d903 if its bake failed) still shows the build offer. Probe: node tools/bench/scripts/walls-published-probe.mjs https://gsfpv.flyreelstudio.eu/en <out.json> 70b50d42,ab5efa0e (reads only).
+Files and sizes so far: see Facts W2 (Laval bin 67 MB is the big one; Forest Floor 69 KB, Housefly 1.0 MB).
+
 - apps/fly typecheck: 6 errors, all "Cannot find module '@gsfpv/tracks'" in src/course and src/sonic, none in files of this lane; this worktree's node_modules has no link for packages/tracks (pnpm install not re-run here).
 
 ## Not verified
+
+- W2: deploy/release-walls.sh and the nginx location were not run (no SSH in this lane); the hub path $GSFPV_BASE/releases/walls being writable by the deploy user is an assumption. The page probe has no negative control on an old build (the unit test has one: NEG OK). Wroclaw with published walls was not opened in a page (its bake is not done). The crop settings (0.5 %, 15 %, 5 m) are chosen, not measured; that the drone stops at published walls in flight was not flown. The offline bakes did not take the GPU lock (Node CLI, not a browser).
 
 - accept-c.ts after its change (cc852ca1) was not run (a gate; the lead runs it). The ladder run used a release built before cc852ca1, so the reworded refine line and bake.noRoom on the base path were not seen in a page.
 
@@ -77,6 +101,8 @@ Provisional (the browser trials of step 2 are not run): a ladder of levels of de
 - The drone stopping at built walls in flight (no page probe yet).
 
 ## Cost notes
+
+- W2 worker 1: most turns went to waiting on big offline bakes whose CLI output is buffered by spawnSync until the end (no progress visible); start big bakes detached with nohup at the first turn, stream the CLI output to the log as it runs, and skip the 5 cm step for scans over 10 M Gaussians or wider than 500 m.
 
 - W1 worker 2: most turns went to waiting on a Wroclaw bake that never ended (20 min) and to a probe crash from a tsx helper inside page.evaluate; pass every in-page script as a string and give a big-scan bake a 5 minute cap per step in the probe.
 - W1 worker 1: most turns went to finding the voxel writer in the 3 MB splat-transform bundle (one grep printed a 3 MB line); grep that file only with cut -c1-150. A ready catalogue with content URLs and level counts would have saved four turns.
