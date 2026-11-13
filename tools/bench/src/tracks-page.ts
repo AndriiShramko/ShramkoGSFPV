@@ -21,7 +21,7 @@
 // build and the servers run without it. Evidence: evidence/<date>/tracks-page.json (exit 1 when a check fails). Screenshots stay out of the
 // repository (SHOTS, default the system's temp folder), their SHA-256 in the evidence.
 import { createHash } from 'node:crypto';
-import { mkdirSync, rmdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Browser, BrowserContext, Page } from 'playwright';
@@ -265,6 +265,13 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
         const op = await until(() => editorHook(p), (e) => !!e?.open, 10000);
         const winUp = await p.isVisible('.course-editor');
         check('E Shift+B: the editor is open (hook and window)', !!op.v?.open && winUp, { hook: op.v, window: winUp });
+        // stage F1-finish: no take-off prompt under the open editor (the HUD's gate line is empty while a panel pauses the flight)
+        await sleep(400);
+        const prompt = await p.evaluate(() => document.querySelector('.gate-msg')?.textContent ?? null);
+        check('E no take-off prompt under the editor (.gate-msg empty)', prompt === '' || prompt === null, { prompt });
+        // the selected gate is painted apart (one 'selected', the rest 'later' or red 'bad')
+        const pa = (await editorHook(p))?.paints ?? [];
+        check('E paint: exactly the selected gate is painted selected', pa.length > 0 && pa.filter((x) => x === 'selected' || x === 'selected-bad').length === 1 && (pa[op.v?.selected ?? 0] ?? '').startsWith('selected'), { paints: pa, selected: op.v?.selected });
         await until(() => p.evaluate(() => document.querySelectorAll('.course-editor .ce-row, .course-editor .ce-empty').length), (n) => n > 0, 10000);
 
         // "Save for everyone" from the window: the generated course becomes a server course (the fork's parent)
@@ -357,6 +364,20 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
         // en words (locales/fly/course/en.json): "created by the generator", "edited by Probe Pilot (pilot)"; never "null" (run 1 of 2026-11-13 said "created by null (generator)")
         check('E the fork in the list: created by the generator, edited by the pilot', row.v?.by === 'created by the generator' && row.v?.edited === 'edited by Probe Pilot (pilot)', row.v);
 
+        // tracks-plan 2.9: no vote before a lap on the course; a best lap of the fork in this browser (as a flown lap leaves it,
+        // course/link.ts bestKey) and the window again: the row may vote
+        const before = await p.evaluate((s) => ({ disabled: !!(document.querySelector(`${s} .ce-up`) as HTMLButtonElement | null)?.disabled, note: document.querySelector(`${s} .ce-lap`)?.textContent ?? null }), rowSel);
+        check('E vote before a lap: the fork row\'s buttons disabled, "Fly a lap of this course to vote"', before.disabled && before.note === 'Fly a lap of this course to vote', before);
+        await p.evaluate((id) => {
+            const k = 'gsfpv.course.best';
+            const all = JSON.parse(localStorage.getItem(k) ?? '{}') as Record<string, number>;
+            all[`${id}.v1.887f27aa.0.-.-.probe`] = 30000;
+            localStorage.setItem(k, JSON.stringify(all));
+        }, fork);
+        await p.keyboard.press('Escape');
+        await until(() => editorHook(p), (e) => !e?.open, 5000);
+        await p.keyboard.press('Shift+KeyB');
+        await until(() => p.evaluate((s) => (document.querySelector(`${s} .ce-up`) as HTMLButtonElement | null)?.disabled === false, rowSel), (v) => v, 15000);
         // vote up on the fork
         await p.click(`${rowSel} .ce-up`);
         const vt = await until(() => editorHook(p), (e) => e?.votes?.[fork ?? ''] === 1, 10000);
@@ -379,6 +400,23 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
             shots.push({ file, sha256: createHash('sha256').update(png).digest('hex'), what: `the editor at ${s.w}x${s.h}` });
             const inside = !!lay.box && lay.box.left >= 0 && lay.box.right <= s.w + 0.5 && lay.box.top >= 0 && (lay.box.bottom <= s.h + 0.5 || lay.scrolls);
             check(`E ${s.w}x${s.h}: the window inside the view (or scrolls), no two keys overlap`, inside && lay.keys > 0 && lay.keyOverlaps === 0, lay);
+            // stage F1-finish: the HUD's top buttons are not under the window, the save buttons are in its visible part unscrolled
+            const reach = await p.evaluate(() => {
+                const w = document.querySelector('.course-editor') as HTMLElement | null;
+                if (!w) return null;
+                w.scrollTop = 0;
+                const r = w.getBoundingClientRect();
+                // inline (no named helper: tsx keepNames would wrap it in __name, which the page does not have)
+                const tops = Array.from(document.querySelectorAll('#ui > .top-actions > *')).map((e) => e.getBoundingClientRect()).filter((b) => b.width > 0);
+                const saves = Array.from(w.querySelectorAll('.ce-save-mine, .ce-save-all')).map((e) => e.getBoundingClientRect());
+                return {
+                    topButtons: tops.length,
+                    covered: tops.filter((b) => b.left < r.right && r.left < b.right && b.top < r.bottom && r.top < b.bottom).length,
+                    saves: saves.length,
+                    savesSeen: saves.filter((b) => b.top >= r.top - 0.5 && b.bottom <= Math.min(r.bottom, innerHeight) + 0.5).length
+                };
+            });
+            check(`E ${s.w}x${s.h}: no top button under the window, both save buttons in view without scrolling`, !!reach && reach.topButtons > 0 && reach.covered === 0 && reach.saves === 2 && reach.savesSeen === 2, reach);
             sizes.push({ ...s, ...lay });
         }
         out.sizes = sizes;
@@ -402,7 +440,67 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
     return out;
 }
 
-const RE_ATTACH = /(new \w+\(`course-stage`,this\.r\.app\);)this\.r\.app\.root\.addChild\(\w+\),/;
+/** The TEST admin password and its hash (never the live one): this tree's .cache, else the lead copy's, read only; null when absent. */
+function adminSecret(): { password: string; hash: string } | null {
+    for (const f of [join(REPO, '.cache', 'admin-test.json'), 'C:/dev/gsfpv-v03/.cache/admin-test.json']) {
+        if (existsSync(f)) return JSON.parse(readFileSync(f, 'utf8')) as { password: string; hash: string };
+    }
+    return null;
+}
+
+/**
+ * E3 (stage F1-finish, the admin's link and edit): signed in on the local copy's /admin/, the admin's "Open in the editor" link
+ * course=<fork>.v1&edit=1 loads the served course and opens the editor (hook.track is the fork, the window up, the admin button
+ * offered); one gate moved (ArrowUp, Tab on when refused) and "Save as the admin's version": version 2 on the server, written
+ * under the admin's name, marked edited by the admin in the list.
+ */
+async function adminLinkFlow(browser: Browser, site: string, log: string[], fork: string | null, secret: { password: string } | null): Promise<Record<string, unknown>> {
+    if (!fork || !secret) {
+        check('E3 the admin link (needs the fork of E and .cache/admin-test.json)', false, { fork, secret: !!secret });
+        return { skipped: true };
+    }
+    const ctx = await fresh(browser);
+    try {
+        const a = await ctx.newPage();
+        await a.goto(`${site}/admin/`);
+        await a.waitForSelector('[data-testid=password]', { timeout: 30000 });
+        await a.fill('[data-testid=password]', secret.password);
+        await a.press('[data-testid=password]', 'Enter');
+        await a.waitForSelector('button[data-tab=tracks]', { timeout: 20000 });
+        await a.close();
+        const url = `${SCENE}&course=${fork}.v1&edit=1`;
+        const p = await open(ctx, site, url, log);
+        const op = await until(async () => ({ h: await course(p), e: await editorHook(p) }), (v) => (!!v.e?.open && v.h?.track?.id === fork) || !!v.h?.problem, 120000);
+        const winUp = await p.isVisible('.course-editor');
+        check('E3 the admin link course=<id>.v1&edit=1: the served course loaded, the editor open', !!op.v.e?.open && op.v.h?.track?.id === fork && op.v.h?.source === 'server' && winUp, { track: op.v.h?.track, source: op.v.h?.source, open: op.v.e?.open, problem: op.v.h?.problem, ms: op.ms });
+        const adm = await until(() => p.evaluate(() => { const b = document.querySelector('.ce-save-admin') as HTMLButtonElement | null; return !!b && !b.hidden; }), (v) => v, 10000);
+        check("E3 the admin's save button is offered (admin session)", adm.v, null);
+        const moves: unknown[] = [];
+        let moved = false;
+        for (let i = 0; i < 6 && !moved; i++) {
+            await p.keyboard.press('ArrowUp');
+            await sleep(200);
+            const e = await editorHook(p);
+            moves.push({ selected: e?.selected, changed: e?.changed, refused: e?.refused });
+            moved = !!e?.changed && e.refused === null;
+            if (!moved) {
+                await p.keyboard.press('Tab');
+                await sleep(100);
+            }
+        }
+        await p.click('.ce-save-admin');
+        const sv = await until(() => course(p), (h) => (h?.track?.version ?? 0) >= 2 || (h?.problem ?? '').startsWith('admin'), 20000);
+        const file = await (await fetch(`${site}/api/tracks/${fork}/v2`)).json().catch(() => null) as { author?: { name?: string }; id?: string } | null;
+        const rowSel = `.course-editor .ce-row[data-id="${fork}"]`;
+        const edited = await until(() => p.evaluate((s) => document.querySelector(`${s} .ce-edited`)?.textContent ?? null, rowSel), (v) => !!v && v.startsWith('edited by') && v.includes('admin'), 10000);
+        check("E3 Save as the admin's version: version 2 on the server under the admin's name, the row says edited by the admin", moved && sv.v?.track?.version === 2 && file?.id === fork && file?.author?.name === 'Admin' && edited.ok, { moved, moves, track: sv.v?.track, problem: sv.v?.problem, author: file?.author, edited: edited.v });
+        return { track: sv.v?.track, edited: edited.v, moves };
+    } finally {
+        await ctx.close();
+    }
+}
+
+const RE_ATTACH =/(new \w+\(`course-stage`,this\.r\.app\);)this\.r\.app\.root\.addChild\(\w+\),/;
 
 // ---------------- H hintClearOfTimer (lane look L2, finding TR-11): the course's two-line hint (the flash note, ui/hud.ts) and the
 // lap block (course/hud.ts) never intersect, at three sizes and in every language (the probe measures all four and names the one
@@ -487,7 +585,13 @@ async function hintClearOfTimer(browser: Browser, site: string, log: string[]): 
 }
 
 async function main(): Promise<void> {
-    const served = await serveTracks();
+    // stage F1-finish: the API knows the TEST admin password (gitignored .cache/admin-test.json of this tree or the lead copy, read
+    // only) so section E3 can sign in on the local copy; without the file E3 is skipped and says so
+    const secret = adminSecret();
+    const served = await serveTracks(join(REPO, 'dist'), secret ? {
+        ADMIN_PASSWORD_HASH: secret.hash, TG_BOT_TOKEN: '', TG_CHAT_ID: '', TG_OWNER_BOT_TOKEN: '', TG_OWNER_CHAT_ID: '', TG_OWNER_USER_ID: '',
+        TG_WEBHOOK_SECRET: '', TG_API_BASE: 'http://127.0.0.1:9', GMAIL_USER: '', GMAIL_APP_PASSWORD: '', SMTP_HOST: '127.0.0.1', SMTP_PORT: '9'
+    } : {});
     const out: Record<string, unknown> = { site: served.site, scene: SCENE, other: OTHER, minPx: MIN_PX, tol: TOL };
     const log: string[] = [];
     let browser: Browser | null = null;
@@ -503,6 +607,7 @@ async function main(): Promise<void> {
         // EDITOR_ONLY=1: the editor section alone (stage T3-editor-ui)
         if (process.env.EDITOR_ONLY === '1') {
             out.editor = await editorFlow(browser, served.site, log);
+            out.adminLink = await adminLinkFlow(browser, served.site, log, (out.editor as { fork?: { id?: string | null } }).fork?.id ?? null, secret);
             throw new Error('EDITOR_ONLY');
         }
         out.hint = await hintClearOfTimer(browser, served.site, log);
@@ -620,6 +725,7 @@ async function main(): Promise<void> {
 
         // ---------------- E the editor
         out.editor = await editorFlow(browser, served.site, log);
+        out.adminLink = await adminLinkFlow(browser, served.site, log, (out.editor as { fork?: { id?: string | null } }).fork?.id ?? null, secret);
     } catch (err) {
         if (String(err) !== 'Error: HINT_ONLY' && String(err) !== 'Error: EDITOR_ONLY') check('the run finished', false, String(err).slice(0, 300));
     } finally {
