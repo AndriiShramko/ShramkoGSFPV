@@ -275,6 +275,23 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
         check('E Save for everyone (window): enabled, hook.saved is a server id', allOn && typeof parent === 'string' && parent.startsWith(`${SCENE}-`), { allOn, parent, problem: sa.v?.problem });
         const gates0 = (await course(p))?.gates ?? 0;
 
+        // review TK-3: F6 enters the window (the name field), Tab then walks the window and does not select a gate; Esc in the
+        // window gives the focus back and leaves the editor open
+        const sel0 = (await editorHook(p))?.selected;
+        await p.keyboard.press('F6');
+        await sleep(100);
+        const f6 = await p.evaluate(() => document.activeElement?.classList.contains('ce-name') || (document.activeElement as HTMLInputElement | null)?.type === 'text');
+        await p.keyboard.press('Tab');
+        await p.keyboard.press('Tab');
+        await sleep(100);
+        const walk = await p.evaluate(() => !!document.activeElement && !!document.querySelector('.course-editor')?.contains(document.activeElement));
+        const selTab = (await editorHook(p))?.selected;
+        await p.keyboard.press('Escape');
+        await sleep(100);
+        const back = await p.evaluate(() => !document.querySelector('.course-editor')?.contains(document.activeElement));
+        const stillOpen = !!(await editorHook(p))?.open;
+        check('E keyboard: F6 to the name field, Tab walks the window (gate kept), Esc gives focus back (editor open)', f6 && walk && selTab === sel0 && back && stillOpen, { f6, walk, sel0, selTab, back, stillOpen });
+
         // move one gate: ArrowUp (the first that is not refused; Tab to the next gate when a wall is in the way)
         const moves: unknown[] = [];
         let moved = false;
