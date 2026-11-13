@@ -9,7 +9,7 @@
 //   order     a farthest-point sample of the candidate cells, then a seeded walk: each next gate 3-15 m from the last,
 //             a turn of at most 120 degrees, the leg straight and free (a swept sphere of the margin), the gate's axis the
 //             leg's direction rounded to one of 16 yaws and within 30 degrees of the leg (the proof allows 35).
-//   proof     every gate added is proven with the course before it by checkTrack (check.ts); a gate that fails is dropped
+//   proof     every gate added is proven from where the walk stands by checkTrack (check.ts); a gate that fails is dropped
 //             and the next candidate tried; the finished course is proven again and gates are dropped until it holds,
 //             and the last gate must see the start (the leg back for laps). After `tries` the course is shorter, never
 //             invalid. The proof's numbers go into generator.params.proof.
@@ -65,9 +65,10 @@ export const SQUARE_SIDE_M = 1.5;
 export const SQUARE_BAR_M = 0.1;
 export const RING_DIAMETER_M = 1.2;
 export const RING_TUBE_M = 0.08; // estimate: a visible tube
-/** candidates kept for the walk per gate wanted, and the most cells the farthest-point sample reads */
-const SAMPLE_PER_GATE = 8;
+/** the most candidate cells the walk reads (an even stride over all of them, seeded offset); estimate */
 const POOL_MAX = 20000;
+/** the walk picks among this many options farthest from the gates it has (estimate) */
+const PICK_AMONG = 4;
 
 export interface CourseOptions {
     readonly seed: number;
@@ -160,28 +161,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const offset = all.length > 0 ? rng.int(0, stride - 1) : 0;
     const pool: number[] = [];
     for (let k = offset; k < all.length; k += stride) pool.push(all[k]!);
-    const poolPts = pool.map((i) => cellCentre(free, i));
-    const want = Math.min(pool.length, SAMPLE_PER_GATE * N);
-    const picked: number[] = [];
-    if (want > 0) {
-        const near = new Float64Array(pool.length).fill(Infinity);
-        let cur = rng.int(0, pool.length - 1);
-        for (let k = 0; k < want; k++) {
-            picked.push(cur);
-            let far = -1, farD = -1;
-            for (let j = 0; j < pool.length; j++) {
-                const d = dist2(poolPts[j]!, poolPts[cur]!);
-                if (d < near[j]!) near[j] = d;
-                if (near[j]! > farD) {
-                    farD = near[j]!;
-                    far = j;
-                }
-            }
-            if (farD <= 0) break;
-            cur = far;
-        }
-    }
-    const cands = picked.map((j) => ({ pos: poolPts[j]!, free: clearanceM(free, pool[j]!), used: false }));
+    const cands = pool.map((i) => ({ pos: cellCentre(free, i), free: clearanceM(free, i), used: false }));
 
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
     const shapeFor = (freeM: number): TrackGate['shape'] =>
@@ -207,6 +187,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     let cur = startW;
     let prevDir: Vec3 | null = null;
     let tries = 0;
+    let stop: 'full' | 'no-option' | 'tries' | 'closed' = 'tries';
     const turnOk = (from: Vec3, prev: Vec3 | null, to: Vec3): Vec3 | null => {
         const leg = sub(to, from);
         const L = len(leg);
@@ -217,6 +198,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         return u;
     };
     while (gates.length < N && tries < p.tries) {
+        // out: spread away from the gates there are; back (the second half): toward the start, so the lap can close
+        const back = gates.length >= Math.ceil(N / 2);
         const options: { c: (typeof cands)[number]; u: Vec3; score: number }[] = [];
         for (const c of cands) {
             if (c.used) continue;
@@ -226,30 +209,45 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             for (const g of flownGates) near = Math.min(near, dist2(g, c.pos));
             near = Math.min(near, dist2(startW, c.pos));
             if (near < p.spacingM * p.spacingM) continue;
-            options.push({ c, u, score: near });
+            options.push({ c, u, score: back ? -dist2(c.pos, startW) : near });
         }
-        if (options.length === 0) break;
+        if (options.length === 0) {
+            stop = 'no-option';
+            break;
+        }
         options.sort((a, b) => b.score - a.score);
-        const o = options[rng.int(0, Math.min(options.length, 4) - 1)]!;
+        const o = options[rng.int(0, Math.min(options.length, PICK_AMONG) - 1)]!;
         o.c.used = true;
         tries++;
         if (!sweeper.free(cur, o.c.pos, p.marginM)) continue;
         const k = nearestYaw(o.u);
         const gate: TrackGate = { id: `g${gates.length + 1}`, shape: shapeFor(o.c.free), pos: toScan(o.c.pos), quat: yawQuatStep(k), direction: 'forward' };
-        const trial = build([...gates, gate], nearestYaw(sub(gates.length ? toFlown(gates[0]!.pos) : o.c.pos, startW)));
-        if (!checkTrack(trial, walls, T, p.marginM, false).ok) continue;
+        // the new gate proven on its own: a one-gate course from where the walk stands (its leg in, opening, frame, run
+        // through it, direction); the whole course is proven again once it is finished
+        const here: TrackFile = { ...build([gate], 0), start: { pos: toScan(cur), yawDeg: 0 } };
+        if (!checkTrack(here, walls, T, p.marginM, false).ok) continue;
         gates.push(gate);
         flownGates.push(toFlown(gate.pos));
         cur = flownGates[flownGates.length - 1]!;
         prevDir = o.u;
+        if (back && gates.length >= p.gatesMin && sweeper.free(cur, startW, p.marginM)) {
+            stop = 'closed';
+            break;
+        }
     }
 
-    // the finished course: proven whole, and its last gate sees the start (laps)
+    if (gates.length >= N) stop = 'full';
+    // the lap closes at the last gate that sees the start, if the course up to it has gatesMin gates; else the course is
+    // open: flown once from the start to its last gate (laps 1)
+    let closeAt = 0;
+    for (let k = gates.length; k >= p.gatesMin && closeAt === 0; k--) if (sweeper.free(flownGates[k - 1]!, startW, p.marginM)) closeAt = k;
+    const closed = closeAt > 0;
     const renumber = (gs: TrackGate[]): TrackGate[] => gs.map((g, i) => ({ ...g, id: `g${i + 1}` }));
-    let course = renumber(gates);
+    let course = renumber(closed ? gates.slice(0, closeAt) : gates);
+    // proven whole (the run through a gate depends on its leg out too); a gate that fails is dropped
     for (let guard = 0; guard < 2 * p.tries && course.length > 0; guard++) {
         const last = toFlown(course[course.length - 1]!.pos);
-        if (!sweeper.free(last, startW, p.marginM)) {
+        if (closed && !sweeper.free(last, startW, p.marginM)) {
             course = renumber(course.slice(0, -1));
             continue;
         }
@@ -262,7 +260,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         course = renumber(course.filter((_, i) => i !== drop));
     }
     const startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
-    const shell = build(course, startYaw);
+    const shell = { ...build(course, startYaw), laps: closed ? p.laps : 1 };
     const proof = course.length ? checkTrack(shell, walls, T, p.marginM, true) : null;
     return {
         ...shell,
@@ -278,6 +276,9 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
                 rooms: free.rooms.length,
                 volumeM3: r3(free.volumeM3),
                 tries,
+                walked: gates.length,
+                stop,
+                closed,
                 proof: proof ? { ok: proof.ok, minFreeM: proof.minFreeM, pathM: proof.pathM } : null
             }
         }

@@ -74,7 +74,13 @@ async function main(): Promise<void> {
             const genMs = performance.now() - g0;
             sample();
             if (track.gates.length === 0) return { seed, gates: 0, genMs: Math.round(genMs), note: 'no gate fits' };
-            const proof = checkTrack(track, walls, T, 0.5);
+            // the generator measured its own proof (generator.params.proof); the course is proven here once more, unmeasured
+            const own = track.generator?.params.proof as { minFreeM: number; pathM: number } | null;
+            const c0 = performance.now();
+            const check = checkTrack(track, walls, T, 0.5, false);
+            const proof = { ok: check.ok, pathM: check.pathM, minGapM: check.minGapM, minFreeM: own?.minFreeM ?? null, issues: check.issues.slice(0, 3) };
+            const checkMs = performance.now() - c0;
+            sample();
             const path = coursePath(track, T);
             const problems = pathProblems(path, track, T, sweeperOf(walls), 0.3);
             if (seed === SEEDS[0]) writeFileSync(join(dir, `tracks-generate-${sc.id}.png`), topView(track, walls, T));
@@ -85,6 +91,11 @@ async function main(): Promise<void> {
                 gates: track.gates.length,
                 kinds: track.gates.map((g) => g.shape.kind[0]).join(''),
                 wanted: track.generator?.params.wanted,
+                walked: track.generator?.params.walked,
+                stop: track.generator?.params.stop,
+                closed: track.generator?.params.closed,
+                laps: track.laps,
+                tries: track.generator?.params.tries,
                 valid: validateTrack(JSON.parse(JSON.stringify(track))).ok,
                 proofOk: proof.ok,
                 pathM: proof.pathM,
@@ -92,7 +103,9 @@ async function main(): Promise<void> {
                 minGapM: proof.minGapM,
                 beaconPoints: path.length,
                 beaconProblems: problems.slice(0, 3),
-                genMs: Math.round(genMs)
+                proofIssues: proof.issues,
+                genMs: Math.round(genMs),
+                checkMs: Math.round(checkMs)
             };
         });
         results.push({
