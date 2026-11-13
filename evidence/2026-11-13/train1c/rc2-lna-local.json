@@ -1,0 +1,47 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5621/en",
+ "at": "2026-11-13T18:10:14.351Z",
+ "browser": "157.0.8103.52",
+ "fakeAnswer": "message",
+ "runs": {
+  "bridge-lna-prompt": {
+   "clicks": 1,
+   "first": {
+    "state": "asking",
+    "text": "Chrome is asking whether this site may reach apps on this device (a small window under the address bar). Press Allow: the simulator connects to the RC bridge as soon as you do. If you do not see the question, check that start-rc-bridge.cmd is open and press the button again."
+   },
+   "after3s": {
+    "state": "asking",
+    "text": "Chrome is asking whether this site may reach apps on this device (a small window under the address bar). Press Allow: the simulator connects to the RC bridge as soon as you do. If you do not see the question, check that start-rc-bridge.cmd is open and press the button again."
+   },
+   "socketsWhileAsking": 1,
+   "wizardAfterMs": 198,
+   "wizard": "stir/ready",
+   "socketsAfterAllow": 2,
+   "errors": [],
+   "csp": [
+    "Connecting to 'ws://127.0.0.1:9/' violates the following Content Security Policy directive: \"connect-src 'self' ws://127.0.0.1:47310 https://d28zzqy0iyovbz.cloudfront.net https://s3-eu-west-1.amazonaws.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com"
+   ]
+  },
+  "bridge-lna-denied": {
+   "clicks": 1,
+   "first": {
+    "state": "denied",
+    "text": "The RC bridge does not answer. Start start-rc-bridge.cmd on this computer, leave its window open and press the button again. If Chrome asked whether this site may reach apps on this device and you blocked it, allow it in the site settings (the icon left of the address)."
+   },
+   "sockets": 0,
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": true,
+ "checks": {
+  "bridgeLna.promptAsks": true,
+  "bridgeLna.allowConnectsWithOnePress": true,
+  "bridgeLna.prompt.noPageErrors": true,
+  "bridgeLna.deniedSaysSettings": true,
+  "bridgeLna.deniedNoSocket": true,
+  "bridgeLna.denied.noPageErrors": true
+ }
+}
