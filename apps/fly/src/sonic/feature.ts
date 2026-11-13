@@ -52,7 +52,7 @@ import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
 import { askCourse, randomSeed } from './course-ask';
-import { seedOfLink } from '../course/link';
+import { soundCourseSeed } from '../app/builtin/sonic-flight';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
@@ -186,7 +186,7 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
  * goes into the tracks cache under its id and version, so the lesson that names it (scanCourseLesson) finds it without a fetch.
  */
 function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonNullable<LessonPage['course']> {
-    let linkSeed = seedOfLink(location.search);
+    let linkSeed = soundCourseSeed(location.search);
     return {
         key: () => names.of('scene.next'),
         async ask() {
@@ -332,7 +332,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     screen?.bind({
         onStart: (id) => {
             closeMenu();
-            void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
+            // the scan button makes the scan's free flight new from the page's link (review SN-2), whatever was flown before
+            void h.openFromScreen(id, entry.freeOf).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
         // closed over a lesson whose progress was reset under it (v13-int step 5), or whose runner left for the screen (review F3: B at the
         // path's first lesson), that lesson starts again from its beginning; a lesson still running goes on where it was

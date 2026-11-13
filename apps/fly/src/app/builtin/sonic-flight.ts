@@ -14,6 +14,17 @@ import { sharedNumber } from '@gsfpv/scenes';
 import { seedOfLink } from '../../course/link';
 import type { Feature, MenuItem } from '../context';
 
+/** The sound link's course seed (base 36), not course= (the sighted course feature's own name, review SN-4). 'sg': no other param of the page. */
+export const SOUND_COURSE_PARAM = 'sg';
+
+/** The course seed a sound link carries (sg=<seed in base 36>, the range of course/link.ts seedOfLink), or null. */
+export function soundCourseSeed(search: string): number | null {
+    const v = new URLSearchParams(search).get(SOUND_COURSE_PARAM);
+    if (v === null || !/^[0-9a-z]{1,7}$/.test(v)) return null;
+    const seed = parseInt(v, 36);
+    return Number.isFinite(seed) && seed >= 0 && seed <= 0xffffffff ? seed : null;
+}
+
 /** The page's language as i18n.ts writes it on <html lang> (read when the menu opens), English when it has none. */
 const pageLang = (): string => document.documentElement.lang || 'en';
 
@@ -47,9 +58,10 @@ export function modeScanPage(ses: FlownScan | null | undefined, search = ''): st
     const s = ses?.transform?.s;
     if (id === '' || typeof s !== 'number' || !Number.isFinite(s) || s <= 0) return modeStartPage();
     // S3: the course the page's address names (Shift+G writes course=g1.<seed>) goes along, so N on the sound page flies that course
-    // first (sonic/feature.ts courseOf reads it with the same seedOfLink); anything else in the address stays behind
+    // first (sonic/feature.ts courseOf reads it with soundCourseSeed); under the mode's own name, never course= (review SN-4: that
+    // name starts the sighted course feature, its gates, lap clock and best laps, on the sound page); anything else stays behind
     const seed = seedOfLink(search);
-    const course = seed === null ? '' : `&course=g1.${seed.toString(36)}`;
+    const course = seed === null ? '' : `&${SOUND_COURSE_PARAM}=${seed.toString(36)}`;
     return `/${pageLang()}/fly/?sonic=scan&scene=${encodeURIComponent(id)}&sz=${sharedNumber(s, 3)}${course}`;
 }
 
@@ -62,7 +74,8 @@ export const sonicFlight: Feature = {
         // the menu shows it as a link (MenuItem.href) to the mode's start screen for the scan flown now, read when the menu opens; it
         // stays a new tab (as before): the flight is left paused under the menu, and the pilot comes back to it where he was. run()
         // is the same page for a caller that runs items
-        const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session, location.search);
+        // location: a page always has it; Node (unit tests) does not (review SN-1)
+        const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session, typeof location === 'undefined' ? '' : location.search);
         return ctx.menu.add({ ...SOUND_PAGE_ITEM, href, run: () => void open(href(), '_blank', 'noopener') });
     }
 };

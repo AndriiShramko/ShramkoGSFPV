@@ -35,6 +35,8 @@ export interface LaunchRequest {
     readonly sceneId: string | null;
     /** train 2: the free flight over a scan link's scan (scanFreeLesson), the lesson the host opens instead of a shipped one */
     readonly free?: LessonDef | null;
+    /** the same for a later press of the start screen over the flight (review SN-2) */
+    readonly freeOf?: (id: string) => LessonDef | null;
     readonly setup: SonicSetup;
     /** the start screen, for the flight to show again */
     readonly screen: StartScreen;
@@ -122,7 +124,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                 // them while it runs and takes them off when it leaves), and the pilot hears that it takes a while
                 if (forceScanPrefs(d.prefs, lesson.world)) void setup.audio.engine.say({ key: 'sonic.say.scanLoading' }, { interrupt: false }).catch(() => undefined);
                 try {
-                    await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, free, setup, screen });
+                    await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, free, freeOf: (x) => freeLessonOf(request, x), setup, screen });
                 } catch (e) {
                     // the flight did not open: the scan lesson's size and walls are not kept for whatever the pilot does next
                     clearScanPrefs(d.prefs);

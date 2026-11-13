@@ -5,7 +5,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest';
 
 /** The template's id (sonic-fpv library.ts SCAN_FREE_ID). */
 const SCAN_FREE_ID = 'scan-free';
-import { modeScanPage } from '../../../apps/fly/src/app/builtin/sonic-flight';
+import { modeScanPage, soundCourseSeed } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import { experiencedPilot, parseSonicParam, scanStartOrder } from '../../../apps/fly/src/sonic/start-model';
 import { freeLessonOf } from '../../../apps/fly/src/sonic/start-model';
 import { seedOfLink } from '../../../apps/fly/src/course/link';
@@ -52,12 +52,17 @@ describe('fly THIS scan by sound (train 2)', () => {
         expect(scan.floorY).toBeCloseTo(0.5, 9);
     });
 
-    it('S3: the course the sighted page names (Shift+G, course=g1.<seed>) goes into the sound link; a bad course value stays behind', () => {
+    it('S3: the course the sighted page names (Shift+G, course=g1.<seed>) goes into the sound link under sg=, never course= (review SN-4); a bad course value stays behind', () => {
         vi.stubGlobal('document', { documentElement: { lang: 'en' } });
         const ses = { builtin: null, scene: { id: '887f27aa' }, transform: { s: 1 } };
         const href = modeScanPage(ses, '?scene=887f27aa&course=g1.abc12&x=1');
-        expect(href).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1&course=g1.abc12');
-        expect(seedOfLink(new URL(href, 'https://gsfpv.flyreelstudio.eu').search)).toBe(parseInt('abc12', 36));
+        expect(href).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1&sg=abc12');
+        const search = new URL(href, 'https://gsfpv.flyreelstudio.eu').search;
+        // the sighted course feature (course.ts tryLink) finds no course on the sound page; the sound page finds its seed
+        expect(seedOfLink(search)).toBeNull();
+        expect(soundCourseSeed(search)).toBe(parseInt('abc12', 36));
+        expect(soundCourseSeed('?sg=evil<x>')).toBeNull();
+        expect(soundCourseSeed('?course=g1.abc12')).toBeNull();
         expect(modeScanPage(ses, '?course=evil<script>')).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1');
         expect(modeScanPage(ses)).toBe('/en/fly/?sonic=scan&scene=887f27aa&sz=1');
     });

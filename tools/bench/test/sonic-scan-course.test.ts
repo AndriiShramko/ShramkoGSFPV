@@ -144,4 +144,74 @@ describe('N in a free scan flight, through the page host (S3 pass 2)', () => {
         expect(r.host.runner!.target()?.id).toBe(second);
         expect(r.stage.target).toBe(second);
     }, 120000);
+
+    it('review SN-2/3/6/9: the scan button opens the free flight on its own; a passed course is flown again with no ask and no "last lesson"; nothing is saved; a late answer opens nothing', async () => {
+        const track = garden();
+        const T = [5, 0, 0, 0] as const;
+        const collision = analyticCollision([-12, -1, -26], [12, 14, 26], 0.25, (_x, y) => y < 0);
+        const t = track.start!;
+        const scan: RigScan = {
+            sceneId: '7a475d38',
+            collision,
+            sha256: 'flat-floor',
+            track,
+            transform: T,
+            spawn: [T[0] * t.pos[0] + T[1], T[0] * t.pos[1] + T[2], T[0] * t.pos[2] + T[3], t.yawDeg]
+        };
+        const freeOf = (id: string) => (id === SCAN_FREE_ID ? scanFreeLesson('7a475d38', [5, 0, 0, 0]) : null);
+        let asked = 0;
+        let hold: Promise<void> | null = null;
+        rig = await Rig.make(freeOf(SCAN_FREE_ID)!, {
+            scan,
+            course: {
+                key: () => 'N',
+                ask: async () => {
+                    asked++;
+                    if (hold) await hold;
+                    return { ok: true, track };
+                }
+            }
+        });
+        const r = rig;
+        const count = (key: string): number => r.engine.said.filter((s) => s.line.key === key).length;
+        // the start screen's press over the flight (feature.ts onStart); before review SN-2 it was host.open(id)
+        const fromScreen = (): Promise<boolean> => ('openFromScreen' in r.host ? r.host.openFromScreen(SCAN_FREE_ID, freeOf) : (r.host as { open(id: string): Promise<boolean> }).open(SCAN_FREE_ID));
+        // SN-2: the start screen's scan button over a page whose host never opened the free flight
+        expect(await fromScreen()).toBe(true);
+        expect(r.host.lesson?.id).toBe(SCAN_FREE_ID);
+        await r.run(60000, null, () => count('sonic.say.courseOffer') > 0 && r.host.runner?.phase === 'flying');
+        expect(r.press('scene.next')).toBe(true);
+        await r.run(60000, null, () => count('sonic.say.courseReady') > 0 && r.host.runner?.phase === 'flying');
+        expect(asked).toBe(1);
+        // SN-3: every gate flown, then no key: the same course again, said ready once more, no second ask, no "last lesson"
+        await r.run(900000, follow, () => r.host.runner?.phase === 'passed');
+        expect(r.host.runner?.phase).toBe('passed');
+        await r.run(60000, null, () => count('sonic.say.courseReady') > 1 || asked > 1);
+        await r.run(5000);
+        expect(asked).toBe(1);
+        expect(count('sonic.say.courseMaking')).toBe(1);
+        expect(count('fly.last-lesson')).toBe(0);
+        expect(count('sonic.say.courseReady')).toBe(2);
+        expect(r.host.lesson && isScanCourse(r.host.lesson)).toBe(true);
+        expect(r.host.runner?.phase).not.toBe('passed');
+        // SN-6: the free flight and its courses keep no progress (one best time for every course in every scan before)
+        const saved = (r.store.collection('sonic') as { progress?: Record<string, unknown> }).progress ?? {};
+        expect(saved[SCAN_FREE_ID]).toBeUndefined();
+        // SN-2: after a course the scan button flies freely again, not the course kept in memory
+        expect(await fromScreen()).toBe(true);
+        expect(isScanCourse(r.host.lesson!)).toBe(false);
+        // SN-9: N, then the scan button while the worker runs: the late answer opens no course over the new flight
+        const offers = count('sonic.say.courseOffer');
+        await r.run(60000, null, () => count('sonic.say.courseOffer') > offers && r.host.runner?.phase === 'flying');
+        let release = (): void => undefined;
+        hold = new Promise<void>((res) => (release = res));
+        expect(r.press('scene.next')).toBe(true);
+        await r.run(500, null, () => asked > 1);
+        expect(asked).toBe(2);
+        expect(await fromScreen()).toBe(true);
+        release();
+        await r.run(2000);
+        expect(isScanCourse(r.host.lesson!)).toBe(false);
+        expect(count('sonic.say.courseReady')).toBe(2);
+    }, 300000);
 });

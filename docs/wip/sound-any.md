@@ -41,6 +41,17 @@ Stage S3-course-by-sound (sound2-plan 2.1, simulator only, no package change, no
 - [ ] key I (where am I) line for the course (gate k of n, metres, lap time): the runner's statusLine as it is now, not checked
 - [ ] 2.2 (explore a scan without a course): not started
 
+Stage fixes (review findings SN-1 to SN-10):
+- [x] package train2 b6ab45c: runner nextLine gives no line for SCAN_FREE_ID (no "That was the last lesson" after a course); CHANGELOG motor line corrected and the motorChoice line added (SN-3, SN-10). test/praise.test.ts new case, NEG OK (ref train2, runner.ts); package suite 1309 passed, 4 skipped (64 files); typecheck clean. Pin 8b779d4 -> b6ab45c (fixes commit 1)
+- [x] SN-1: sonic-flight.ts reads location only when it exists; sonic-optin.test.ts new case (scan page link, built-in control); NEG OK by 'location is not defined' (fixes commit 1)
+- [x] SN-2: LaunchRequest/SonicEntry.freeOf (start.ts freeLessonOf over the page's request, boot.ts passes it); LessonHost.openFromScreen(id, freeOf); feature.ts onStart uses it (fixes commit 1)
+- [x] SN-3: lessons.ts checkPassed: a passed course reopens the same course and says courseReady again; a new course only on N (fixes commit 1)
+- [x] SN-4: the sound link carries the seed as sg=<base 36> (sonic-flight.ts SOUND_COURSE_PARAM, soundCourseSeed; feature.ts courseOf reads it); never course= (fixes commit 1). 'sg' is no param of the page or of SONIC_LINK_PARAMS (grep)
+- [x] SN-6: SCAN_FREE_ID runs with progress null and saves nothing (runnerOptions, finish, observe) (fixes commit 1)
+- [x] SN-8: a failed course ask says one line; the free flight reopens with open(..., { quiet }) (no second no-walls line, no offer) (fixes commit 1)
+- [x] SN-9: flyCourse remembers the runner; a late answer after the pilot left opens nothing (fixes commit 1)
+- [x] tests: sonic-scan-course.test.ts case 'review SN-2/3/6/9' (rig: scan button with no free flight before, all 8 gates, idle, scan button after the course, late answer); NEG OK (ref HEAD, lessons.ts) by assertion 'expected false to be true' (the SN-2 step, first in the case); sonic-scan-free S3 case moved to sg=, NEG OK by assertion
+
 ## Checks (numbers printed by the commands)
 
 Package (C:/dev/ShramkoSonicFPV, node node_modules/vitest/vitest.mjs run):

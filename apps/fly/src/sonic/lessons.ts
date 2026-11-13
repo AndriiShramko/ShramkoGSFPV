@@ -121,7 +121,8 @@ export interface RunnerPlace {
 export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
     return {
         locale: page.locale,
-        progress: savedProgress(page.store, lessonId),
+        // the free flight over a scan and its courses keep no progress (review SN-6: one best time for every course in every scan)
+        progress: lessonId === SCAN_FREE_ID ? null : savedProgress(page.store, lessonId),
         sessionStartMs,
         start: place.start,
         floorY: place.floorY,
@@ -199,13 +200,26 @@ export class LessonHost {
     private free: LessonDef | null = null;
     /** The free flight as it was opened, without a course: what a course is made from and what a failed ask goes back to. */
     private freeBase: LessonDef | null = null;
+    /** the course flown now (S3): its "Course ready" line, said again when the course is passed and flown once more (SN-3) */
+    private ready: SpeechLine | null = null;
 
     /** Opens the free flight over a scan (scanFreeLesson): no track, no target, the scan's own spawn, the walls and height heard. */
     openFree(lesson: LessonDef): Promise<boolean> {
         if (lesson.id !== SCAN_FREE_ID) return Promise.resolve(false);
         this.free = lesson;
         this.freeBase = lesson;
+        this.ready = null;
         return this.open(SCAN_FREE_ID);
+    }
+
+    /**
+     * The start screen's press over a running flight (feature.ts): the scan's free flight is made new from the page's scan link
+     * (freeOf: start.ts freeLessonOf), so the scan button flies the scan after a lesson was flown first, and after a course it flies
+     * freely again, not the course kept in memory (review SN-2); any other id is a shipped lesson.
+     */
+    openFromScreen(id: string, freeOf?: (id: string) => LessonDef | null): Promise<boolean> {
+        const free = id === SCAN_FREE_ID ? freeOf?.(id) ?? null : null;
+        return free ? this.openFree(free) : this.open(id);
     }
 
     /**
@@ -218,16 +232,23 @@ export class LessonHost {
         const base = this.freeBase;
         if (!course || !base) return false;
         const say = (line: SpeechLine): void => void this.p.mode.bridge.say(line, false, { lesson: true });
+        const asked = this.runner;
         say({ key: 'sonic.say.courseMaking' });
         const a = await course.ask();
+        // review SN-9: the pilot left this flight while the worker ran (the menu, a lesson, the scan button): the answer opens nothing
+        // over what he does now
+        if (this.runner !== asked || this.lesson?.id !== SCAN_FREE_ID) return true;
         if (!a.ok) {
+            // one line for the failed ask; the free flight that opens again says neither the no-walls line nor the offer once more (SN-8)
             say({ key: a.why === 'no walls' ? 'sonic.say.scanNoWalls' : 'sonic.say.courseNone' });
             this.free = base;
-            return this.open(SCAN_FREE_ID, { keepSpeech: true });
+            this.ready = null;
+            return this.open(SCAN_FREE_ID, { keepSpeech: true, quiet: true });
         }
         this.free = scanCourseLesson(base, a.track);
         const ok = await this.open(SCAN_FREE_ID);
-        if (ok) say({ key: 'sonic.say.courseReady', params: { n: a.track.gates.length, laps: a.track.laps, key: course.key() } });
+        this.ready = ok ? { key: 'sonic.say.courseReady', params: { n: a.track.gates.length, laps: a.track.laps, key: course.key() } } : null;
+        if (this.ready) say(this.ready);
         return ok;
     }
 
@@ -269,7 +290,7 @@ export class LessonHost {
     // ------------------------------------------------------------------ opening a lesson
 
     /** Opens a lesson: its world flown, the helper's view drawn, the runner begun. Never throws for the pilot's sake: the reason goes to the console. */
-    async open(lessonId: string, o: { returnTo?: string | null; keepSpeech?: boolean } = {}): Promise<boolean> {
+    async open(lessonId: string, o: { returnTo?: string | null; keepSpeech?: boolean; quiet?: boolean } = {}): Promise<boolean> {
         const free = lessonId === SCAN_FREE_ID ? this.free : null;
         if (this.busy || !(free || isShippedLesson(lessonId))) return false;
         this.busy = true;
@@ -341,7 +362,9 @@ export class LessonHost {
                 // the walls are as fine as the scan's file: said plainly, after the intro
                 if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } }, false, { lesson: true });
                 // a free flight over a scan that has no walls (train 2): no wall can warn, said and shown (the captions), with the way to get them
-                if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
+                if (o.quiet) {
+                    // a failed course ask said its one line already (flyCourse)
+                } else if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
                 // train 2, S3: the free flight with walls names the key that asks for a course of gates in this scan (flyCourse)
                 else if (free && !isScanCourse(lesson) && this.p.course) void this.p.mode.bridge.say({ key: 'sonic.say.courseOffer', params: { key: this.p.course.key() } }, false, { lesson: true });
             }
@@ -366,7 +389,7 @@ export class LessonHost {
 
     /** What the pilot did in the lesson being left is saved (not when he reset his progress over it: its counts are void). */
     private finish(): void {
-        if (this.runner && this.runner !== this.forgotten) saveProgress(this.p.store, this.runner.progress());
+        if (this.runner && this.runner !== this.forgotten && this.lesson?.id !== SCAN_FREE_ID) saveProgress(this.p.store, this.runner.progress());
     }
 
     /**
@@ -517,7 +540,7 @@ export class LessonHost {
         if (e.kind === 'answer') this.question = null;
         else if (e.kind === 'lesson' && (e.what === 'attempt-pass' || e.what === 'attempt-fail' || e.what === 'block-pass' || e.what === 'passed')) {
             // a runner whose counts the pilot reset saves nothing (v13-int step 5)
-            if (run !== this.forgotten) saveProgress(this.p.store, run.progress());
+            if (run !== this.forgotten && this.lesson?.id !== SCAN_FREE_ID) saveProgress(this.p.store, run.progress());
             if (e.what === 'passed') this.passedAt = null;
         }
     }
@@ -535,6 +558,17 @@ export class LessonHost {
         this.passedAt ??= now;
         if (now - this.passedAt < NEXT_AFTER_MS) return;
         this.passedAt = null;
+        // a course by sound (S3) passed: the same course again for a better time, said with its key for another; a new course
+        // only on N (review SN-3: no course was asked for without a key)
+        if (this.lesson?.id === SCAN_FREE_ID && isScanCourse(this.lesson) && this.ready) {
+            this.movedFrom = run;
+            const ready = this.ready;
+            void this.open(SCAN_FREE_ID, { keepSpeech: true }).then((ok) => {
+                if (ok) void this.p.mode.bridge.say(ready, false, { lesson: true });
+                else this.toMenu();
+            });
+            return;
+        }
         void this.advance();
     }
 
