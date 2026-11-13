@@ -14,6 +14,10 @@
 //   radio       P, the menu's Controls item (the Controls screen)
 //   courseKey   Shift+G over the flight (a new course: no window opens, the capture must stay)
 //   courseMenu  P, the menu's New course item (the menu closes; no window stays)
+//   drones      P, the menu's Drone item (the drones screen)
+//   scenes      P, the menu's Scene item (the scenes screen)
+//   ceiling     P, Settings, the ceiling row's Show button (Settings closes and the ceiling panel opens in
+//               the same click: the owner's pattern, as the helper's Send this list)
 //   rooms       on a ?rooms=1 page: Shift+L (else P, Fly with others), the rooms panel
 // Per window: the capture is held before, released a moment after the window opened, the cursor over
 // the window is not 'none', a click on a harmless control inside (a text field, a search box, a
@@ -93,7 +97,7 @@ async function capture() {
     return false;
 }
 /** The windows that need the cursor (play/mouse-look.ts CURSOR_WINDOWS plus the pause menu). */
-const WINDOWS = '.panel, .pause-menu, .screen.radio, .screen.scenes, .screen.drones, .screen.settings, [aria-modal="true"]:not([hidden])';
+const WINDOWS = '.panel, .pause-menu, .screen.radio, .screen.scenes, .screen.drones, .vx-bar, [aria-modal="true"]:not([hidden])';
 /** What the open window looks like now: the top one, the cursor at its middle and on itself. */
 const look = () => page.evaluate((sel) => {
     const all = [...document.querySelectorAll(sel)].filter((e) => e.getBoundingClientRect().height > 0);
@@ -206,7 +210,7 @@ const openMenuItem = async (action) => {
     await page.locator(`[data-action="${action}"]`).click();
 };
 
-if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'courseKey', 'courseMenu'].some(runs)) {
+if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'drones', 'scenes', 'ceiling', 'courseKey', 'courseMenu'].some(runs)) {
     await start();
     await entry('helper', {
         open: async () => {
@@ -240,6 +244,21 @@ if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'courseKey', 'cours
         inside: '[data-testid=settings-search]'
     });
     await entry('radio', { open: () => openMenuItem('pause.radio'), inside: '.screen.radio [data-testid=usb-look] summary' });
+    await entry('drones', { open: () => openMenuItem('pause.drone'), inside: '#drone-title' });
+    await entry('scenes', { open: () => openMenuItem('pause.scene'), inside: '.screen.scenes h1' });
+    await entry('ceiling', {
+        open: async () => {
+            await page.keyboard.press('KeyP');
+            await page.waitForSelector('[data-action="pause.settings"], [data-action="settings.open"]', { timeout: 5000 });
+            await page.locator('[data-action="pause.settings"], [data-action="settings.open"]').first().click();
+            const show = page.locator('[data-action=ceiling-open]').first();
+            const shown = await show.waitFor({ state: 'visible', timeout: 5000 }).then(() => true, () => false);
+            out.entries.ceiling.rowShown = shown; // hidden on a scene without walls: then 'the window is open' fails
+            if (shown) await show.click();
+            await page.waitForSelector('[data-testid=ceiling-panel]', { timeout: 5000 }).catch(() => {});
+        },
+        inside: '#ce-title'
+    });
     await entry('courseKey', { open: () => page.keyboard.press('Shift+KeyG'), noWindow: true });
     await entry('courseMenu', { open: () => openMenuItem('pause.course'), noWindow: true });
 }
