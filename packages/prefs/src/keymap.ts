@@ -86,11 +86,14 @@ export const KEYMAP: readonly KeyBinding[] = [
     // v0.7 lane D1 (app/builtin/share.ts): share the scene flown now, also on the top bar, in the pause
     // menu, the crash panel and the stats card; L as in "link" (no other binding or flying key uses it)
     { action: 'share.open', keys: [letter('L')], when: 'always', labelKey: 'keys.share.open', status: 'shipped' },
-    // train 1, lane rooms (docs/wip/train1-plan.md, "Contracts between lanes"): reserved on the train base as planned, so the
-    // router does not route them yet; the lane flips its own two lines to shipped (or deletes the one it does not build) and
-    // touches no other line of this table. Shift+L opens "Fly with others" (the room and its link), Shift+O says who is around
-    { action: 'rooms.panel', keys: [{ code: 'KeyL', shift: true, cap: 'Shift+L', aria: 'Shift+L' }], when: 'always', labelKey: 'keys.rooms.panel', status: 'planned' },
-    { action: 'rooms.who', keys: [{ code: 'KeyO', shift: true, cap: 'Shift+O', aria: 'Shift+O' }], when: 'always', labelKey: 'keys.rooms.who', status: 'planned' },
+    // train 1, lane rooms; public since lane rooms-public (docs/wip/rooms-public.md): 9 opens "Fly with others" (the room and
+    // its link), 0 says who is around, on every flight page. Not Shift+L / Shift+O (train 1's reservation): a pilot who holds
+    // Shift to descend gets the key alone when no binding has the chord (app/keys.ts), so those chords are his share (L) and
+    // settings (O), and every one of the 26 letters is taken (flying, the table, the sound mode). 9 and 0 are bound nowhere
+    // (no binding, no flying key, no screen of the page reads Digit keys), sit far from W A S D and the arrows (no press by
+    // accident while flying), are the same place on every layout, and a screen reader says a digit (sonic/key-names.ts)
+    { action: 'rooms.panel', keys: [{ code: 'Digit9', cap: '9', aria: '9' }], when: 'always', labelKey: 'keys.rooms.panel', status: 'shipped' },
+    { action: 'rooms.who', keys: [{ code: 'Digit0', cap: '0', aria: '0' }], when: 'always', labelKey: 'keys.rooms.who', status: 'shipped' },
     // v0.8 lane A (app/builtin/play.ts): the keyboard's key card on demand (it shows by itself while the
     // drone waits on the ground); K as in "keys"
     { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' },

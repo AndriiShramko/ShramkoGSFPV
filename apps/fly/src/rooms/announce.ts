@@ -12,7 +12,7 @@ export class Announcer {
     readonly region: HTMLElement;
     private readonly say: ReturnType<typeof sayVia>;
 
-    /** room lines a minute (review RV-6); Shift+O's answer (interrupt) is asked for, so it is never counted or dropped */
+    /** room lines a minute (review RV-6); key 0's answer (interrupt) is asked for, so it is never counted or dropped */
     private readonly budget = new LineBudget();
 
     constructor(private readonly o: { runtime: () => SonicRuntime | null; said: (keys: string[]) => void; current: () => readonly string[]; doc?: Document; now?: () => number }) {
@@ -26,7 +26,7 @@ export class Announcer {
         this.say = sayVia(o.runtime);
     }
 
-    /** Says `text` (its key goes into said). `interrupt`: the sound mode drops what it was saying (Shift+O answers at once). */
+    /** Says `text` (its key goes into said). `interrupt`: the sound mode drops what it was saying (key 0 answers at once). */
     announce(key: string, text: string, interrupt = false): void {
         if (!interrupt && !this.budget.take((this.o.now ?? (() => performance.now()))())) return;
         this.o.said([...this.o.current(), key].slice(-SAID_MAX));

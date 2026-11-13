@@ -98,15 +98,16 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
 const TRAIN1: Record<string, string[]> = {
     'course.toggle': ['Shift+T'],
     'course.generate': ['Shift+G'],
-    'rooms.panel': ['Shift+L'],
-    'rooms.who': ['Shift+O']
+    // lane rooms-public: 9 and 0, not train 1's Shift+L / Shift+O (those stay share and settings for a pilot descending with Shift)
+    'rooms.panel': ['9'],
+    'rooms.who': ['0']
 };
 /** Lane tracks: its keys that shipped (the course on and off, a new random course). */
 const SHIPPED_BY_TRACKS: readonly string[] = ['course.toggle', 'course.generate'];
 // The two lists are kept apart by these lines, so the two lanes' edits never touch the same lines of this file:
 // lane tracks edits only the list above, lane rooms only the list below.
-/** Lane rooms: none while the feature hides behind ?rooms=1 (review RV-1: its rooms pages listen to the two chords themselves). */
-const SHIPPED_BY_ROOMS: readonly string[] = [];
+/** Lane rooms: both, since 'Fly with others' is in every pilot's menu (lane rooms-public; review RV-1's list). */
+const SHIPPED_BY_ROOMS: readonly string[] = ['rooms.panel', 'rooms.who'];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>

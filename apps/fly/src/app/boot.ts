@@ -18,6 +18,7 @@ import { openSettingsLink, storageBanner } from './builtin/settings';
 import { useStoreLibrary } from './scene-host';
 import { pageRender, setDrawingDefaults } from './drawing';
 import { startAnalytics } from './analytics';
+import { roomSceneLink } from '../rooms/link';
 
 export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<void> {
     if (!hasWebGPU) banner(ui, t('banner.noWebgpu'), 'no-webgpu');
@@ -114,12 +115,15 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
     let first = true;
     try { first = localStorage.getItem('gsfpv.warned') !== '1'; } catch { first = true; }
     const sceneParam = q.get('scene');
+    const picked = (): void => {
+        showPicker(null);
+        openSettingsLink(ui, prefs);
+    };
     const start = (): void => {
         if (sceneParam) go(sceneParam, 'paste', true);
-        else {
-            showPicker(null);
-            openSettingsLink(ui, prefs);
-        }
+        // lane rooms-public: a room link without ?scene= asks the room for its scan first (rooms/link.ts); no room, the picker
+        else if (q.get('room')) void roomSceneLink(q.get('room')).then((raw) => (raw ? go(raw, 'paste', true) : picked()), picked);
+        else picked();
     };
     // GA4 (app/analytics.ts) before the first scene opens, so its scene_open is counted too. gtag.js loads
     // asynchronously: start() below rewrites ?scene= in this same task, before the tag can read the address,

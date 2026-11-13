@@ -7,10 +7,10 @@
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 27,
+  "keys": 29,
   "rateTypes": 5,
   "flyingKeys": 12,
-  "allKeys": 37
+  "allKeys": 39
  },
  "locales": {
   "en": {
@@ -1660,6 +1660,20 @@
      "label": "Share this scene",
      "keys": [
       "L"
+     ]
+    },
+    {
+     "action": "rooms.panel",
+     "label": "Fly with others: the room and its link",
+     "keys": [
+      "9"
+     ]
+    },
+    {
+     "action": "rooms.who",
+     "label": "Fly with others: who is around",
+     "keys": [
+      "0"
      ]
     },
     {
@@ -3769,6 +3783,20 @@
      ]
     },
     {
+     "action": "rooms.panel",
+     "label": "Volar con otros: la sala y su enlace",
+     "keys": [
+      "9"
+     ]
+    },
+    {
+     "action": "rooms.who",
+     "label": "Volar con otros: qui\u00e9n est\u00e1 cerca",
+     "keys": [
+      "0"
+     ]
+    },
+    {
      "action": "help.keys",
      "label": "C\u00f3mo volar (tarjeta de teclas)",
      "keys": [
@@ -5875,6 +5903,20 @@
      ]
     },
     {
+     "action": "rooms.panel",
+     "label": "Lot z innymi: pok\u00f3j i link do niego",
+     "keys": [
+      "9"
+     ]
+    },
+    {
+     "action": "rooms.who",
+     "label": "Lot z innymi: kto jest w pobli\u017cu",
+     "keys": [
+      "0"
+     ]
+    },
+    {
      "action": "help.keys",
      "label": "Jak lata\u0107 (karta klawiszy)",
      "keys": [
@@ -7978,6 +8020,20 @@
      "label": "\u041f\u043e\u0434\u0435\u043b\u0438\u0442\u044c\u0441\u044f \u044d\u0442\u043e\u0439 \u0441\u0446\u0435\u043d\u043e\u0439",
      "keys": [
       "L"
+     ]
+    },
+    {
+     "action": "rooms.panel",
+     "label": "\u041f\u043e\u043b\u0451\u0442 \u0441 \u0434\u0440\u0443\u0433\u0438\u043c\u0438: \u043a\u043e\u043c\u043d\u0430\u0442\u0430 \u0438 \u0441\u0441\u044b\u043b\u043a\u0430 \u043d\u0430 \u043d\u0435\u0451",
+     "keys": [
+      "9"
+     ]
+    },
+    {
+     "action": "rooms.who",
+     "label": "\u041f\u043e\u043b\u0451\u0442 \u0441 \u0434\u0440\u0443\u0433\u0438\u043c\u0438: \u043a\u0442\u043e \u0440\u044f\u0434\u043e\u043c",
+     "keys": [
+      "0"
      ]
     },
     {
