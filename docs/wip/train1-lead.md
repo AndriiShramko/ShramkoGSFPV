@@ -14,8 +14,27 @@ plan's order: voice, tracks, rooms. Held back: none.
 - [x] I3. On main: merge train1-base 0d63c361, voice cade079d, tracks, rooms (no conflicts); pin packages/sonic-fpv -> 378cc50
       (fbed1010); pnpm install --frozen-lockfile exit 0.
 - [x] I4/I5a. First gates run on the merge: FAIL vitest (4 of 4410 tests) and catalog (stale); fixed below, catalogue regenerated.
-- [ ] I5b. All gates once more on the fixed tree.
-- [ ] I6. Local release build, accept-fly, lane page probes, integration probes, regression probes.
+- [x] I5b. All gates on fb028968: exit 0 (typecheck, vitest 284 files passed 1 skipped / 4396 tests passed 14 skipped, api-unittest
+      453 OK, architecture, i18n, catalog, B18 PASS). Also `python -m unittest discover -s apps/rooms/tests`: 53 tests OK.
+- [ ] I6. Local release (build of fb028968, sha256 18c32f08...; serve-csp dist 5471):
+  - [x] accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against http://localhost:5471: 10 of 10 PASS (evidence/2026-11-13/train1/b-fly-*.json).
+  - [ ] Plan probe 3, tracks-page.ts run 1 on the merge: 16/18 (evidence train1/tracks-page-run1.json). FAILS:
+        C3 'patched false': the probe patched only main-*.js, and the integration moved the feature into its own chunk; the route now
+        patches any /fly/assets/*.js (tools/bench/src/tracks-page.ts, uncommitted before this commit, NOT re-run yet).
+        C2 'the moved course is refused in the page': the page refused nothing visible: source 'server', loaded A's saved id
+        887f27aa-9e7a42f2 instead of the moved 887f27aa-bf38a155, problem null. Likely cause (not proven): loadServer in
+        builtin/course.ts falls back to the next row (index + 1) when a row fails, so a refused newest row ends as the older good
+        course; or the page accepted the moved course's check and the fallback is elsewhere. The lane's run 5 had 18/18 with a
+        different course (gate 3 near [4, 3.2, 2.6]; this run gate 8 near [24, 14.8, -10.6]). NEXT: read the 'check' result path
+        for checkFor.kind 'server' in builtin/course.ts, decide whether the probe or the page is wrong, fix with a test, re-run
+        tracks-page.ts (rebuild dist first: node scripts/build-release.mjs).
+  - [ ] Plan probe 1: `cd tools/bench && npx tsx src/rooms-two-page.ts` (own rig and GPU lock) with its three controls.
+  - [ ] Plan probe 2 (tracks with rooms in one room) and probe 4 (?sonic= scan page with a course: CourseHook.beaconPoints > 0;
+        tracks-page A already printed 'A beacon points > 0 63' on the merge) plus sonic-v13-page.ts.
+  - [ ] Plan probe 5: voice `pnpm analyze -- test/fixtures/session-voice-two-lessons.zip --out <dir> --transcript
+        test/fixtures/voice-two-lessons.transcript.json` in packages/sonic-fpv (378cc50) vs C:/dev/sonic-voice (d28d9c2): same digest.
+  - [ ] Regression: sonic-int-review.ts r9 (11 of 11), centre-throttle-probe.mjs (no own lock: wrap in the GPU lock);
+        wizard-auto-check.mjs and hid-source-probe.mjs with /en (keymap changed: course keys shipped).
 - [ ] I7. Deploy order, live checks, owner tries, not verified (this note).
 - [ ] I8. Push main.
 
@@ -41,6 +60,10 @@ plan's order: voice, tracks, rooms. Held back: none.
 - Where the real walls of the bench tests come from (no `.cache/scenes` folder in the base or in `gsfpv-v03`).
 
 ## Cost notes
+
+- Integration run 1 (about 40 replies, stopped in I6): most turns went into the four seam failures the lanes could not see
+  (main chunk closure, query-string audit, keymap test) and reading probe internals; a lane-side run of sonic-int-lazy.test.ts
+  and main-audit.test.ts on a trial merge of all three lanes would have caught them before level 3.
 
 - Planning: most turns went into finding the shared lists one grep at a time; a ready `docs/agent-map.md` would have saved about
   4 turns. `neg_control.py` needs `pnpm.cmd` (or `node node_modules/vitest/vitest.mjs`) after `--` on Windows.

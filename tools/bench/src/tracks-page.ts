@@ -310,11 +310,12 @@ async function main(): Promise<void> {
         // ---------------- C3 the root never attached
         const ctxE = await fresh(browser);
         let patched = false;
-        await ctxE.route(/\/fly\/assets\/main-[^/]+\.js$/, async (route) => {
+        // any script of the page: since the integration the courses' feature is a chunk of its own (builtin/course-lazy.ts), not main-*.js
+        await ctxE.route(/\/fly\/assets\/[^/]+\.js$/, async (route) => {
             const resp = await route.fetch();
             const body = await resp.text();
             const next = body.replace(RE_ATTACH, '$1void 0,');
-            patched = next !== body;
+            if (next !== body) patched = true;
             await route.fulfill({ response: resp, body: next });
         });
         const e = await open(ctxE, served.site, `${SCENE}&course=g1.1`, log);
