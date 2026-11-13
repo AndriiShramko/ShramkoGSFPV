@@ -86,6 +86,11 @@ export const KEYMAP: readonly KeyBinding[] = [
     // v0.7 lane D1 (app/builtin/share.ts): share the scene flown now, also on the top bar, in the pause
     // menu, the crash panel and the stats card; L as in "link" (no other binding or flying key uses it)
     { action: 'share.open', keys: [letter('L')], when: 'always', labelKey: 'keys.share.open', status: 'shipped' },
+    // train 1, lane rooms (docs/wip/train1-plan.md, "Contracts between lanes"): reserved on the train base as planned, so the
+    // router does not route them yet; the lane flips its own two lines to shipped (or deletes the one it does not build) and
+    // touches no other line of this table. Shift+L opens "Fly with others" (the room and its link), Shift+O says who is around
+    { action: 'rooms.panel', keys: [{ code: 'KeyL', shift: true, cap: 'Shift+L', aria: 'Shift+L' }], when: 'always', labelKey: 'keys.rooms.panel', status: 'planned' },
+    { action: 'rooms.who', keys: [{ code: 'KeyO', shift: true, cap: 'Shift+O', aria: 'Shift+O' }], when: 'always', labelKey: 'keys.rooms.who', status: 'planned' },
     // v0.8 lane A (app/builtin/play.ts): the keyboard's key card on demand (it shows by itself while the
     // drone waits on the ground); K as in "keys"
     { action: 'help.keys', keys: [letter('K')], when: 'always', labelKey: 'keys.help.keys', status: 'shipped' },
@@ -99,6 +104,11 @@ export const KEYMAP: readonly KeyBinding[] = [
     // did not choose it): routed and listed on a page entered through ?sonic=, nowhere else, and not in the catalogue
     // lane center-throttle (app/builtin/throttle-style.ts): a radio's or gamepad's throttle style, stick in the centre <-> from zero
     { action: 'throttle.style', keys: [letter('J')], when: 'always', labelKey: 'keys.throttle.style', status: 'shipped' },
+    // train 1, lane tracks (docs/wip/train1-plan.md, "Contracts between lanes"): reserved on the train base as planned; the lane
+    // flips its own two lines to shipped (or deletes the one it does not build) and touches no other line of this table.
+    // Shift+T puts the course (the obstacles, the arrows, the lap timer) on and off in flight, Shift+G makes a new random course
+    { action: 'course.toggle', keys: [{ code: 'KeyT', shift: true, cap: 'Shift+T', aria: 'Shift+T' }], when: 'always', labelKey: 'keys.course.toggle', status: 'planned' },
+    { action: 'course.generate', keys: [{ code: 'KeyG', shift: true, cap: 'Shift+G', aria: 'Shift+G' }], when: 'always', labelKey: 'keys.course.generate', status: 'planned' },
     { action: 'sonic.record', keys: [letter('T')], when: 'sonic', labelKey: 'keys.sonic.record', status: 'shipped' },
     { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },

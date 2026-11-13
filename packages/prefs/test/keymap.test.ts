@@ -90,6 +90,24 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'sonic.home': ['X']
 };
 
+/**
+ * Train 1 (docs/wip/train1-plan.md, "Contracts between lanes"): the chords reserved for the lanes on the train base, planned
+ * until a lane ships them. A lane that ships a key adds its action to ITS OWN list below and edits nothing else in this
+ * file; a key it does not build stays planned.
+ */
+const TRAIN1: Record<string, string[]> = {
+    'course.toggle': ['Shift+T'],
+    'course.generate': ['Shift+G'],
+    'rooms.panel': ['Shift+L'],
+    'rooms.who': ['Shift+O']
+};
+/** Lane tracks: its keys that shipped (the course on and off, a new random course). */
+const SHIPPED_BY_TRACKS: readonly string[] = [];
+// The two lists are kept apart by these lines, so the two lanes' edits never touch the same lines of this file:
+// lane tracks edits only the list above, lane rooms only the list below.
+/** Lane rooms: its keys that shipped (the room panel, who is around). */
+const SHIPPED_BY_ROOMS: readonly string[] = [];
+
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
     [...KEYMAP, { when: 'always', labelKey: `keys.${b.action}`, status: 'planned', ...b }];
@@ -97,7 +115,7 @@ const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): Ke
 describe('keymap table (1.2)', () => {
     it('has exactly the design table plus the v0.2 keys it did not list, action for action and cap for cap', () => {
         const got = Object.fromEntries(KEYMAP.map((b) => [b.action, b.keys.map((k) => k.cap)]));
-        expect(got).toEqual({ ...DESIGN_TABLE, ...V02_EXTRA, ...ADDED_AFTER_DESIGN });
+        expect(got).toEqual({ ...DESIGN_TABLE, ...V02_EXTRA, ...ADDED_AFTER_DESIGN, ...TRAIN1 });
     });
 
     it('is sound: no key twice where both listen, no flying or harness key, labels keys.<action>', () => {
@@ -131,7 +149,7 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 and v0.12 shipped)', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS].sort());
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS, ...SHIPPED_BY_TRACKS, ...SHIPPED_BY_ROOMS].sort());
     });
 
     it('Fly by Sound\'s T U I Z G route in flight and while crashed on a page entered through ?sonic=, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {

@@ -15,6 +15,8 @@ import type { VoxelController, VoxelMode, VoxelStats, VoxelStyle } from '../voxe
 import type { PrefsHook } from './prefs';
 import type { SavedFlight, Tamper } from './logs';
 import type { LodReport } from './lod';
+import type { CourseHook } from '../course/hook';
+import type { RoomsHook } from '../rooms/hook';
 
 /** A flight saved in this tab (app/logs.ts, log format /2: the kept lives). */
 export interface SavedLog {
@@ -30,6 +32,10 @@ export interface TestHook {
     status: 'loading' | 'picker' | 'ready' | 'error';
     /** the page's preferences store (app/prefs.ts), from the picker on */
     prefs?: PrefsHook;
+    /** train 1, lane tracks: the course in this scan (apps/fly/src/course/hook.ts) */
+    course?: CourseHook;
+    /** train 1, lane rooms: flying together (apps/fly/src/rooms/hook.ts) */
+    rooms?: RoomsHook;
     error?: string;
     errorCode?: string;
     /**
