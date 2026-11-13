@@ -180,7 +180,11 @@ describe('the stick channel through HidSource', () => {
         await src.close();
         const gaps = at.slice(1).map((t, i) => t - at[i]!);
         expect(at.length).toBeGreaterThan(20);
-        expect(Math.max(...gaps)).toBeLessThan(55);
+        // the middle gap, not the longest: this runs on real timers, and one stalled tick of a loaded machine (the whole
+        // suite in parallel gave one gap of 62 ms on 2026-11-13) says nothing about the request chain; a chain that
+        // waits for each answer has every gap near 70 ms, so its middle gap fails the same bound
+        const middle = [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)]!;
+        expect(middle).toBeLessThan(55);
         expect(rc.late).toBe(0);
     });
     it('answers 400 ms late never fly: their requests were given up, so the stick data is old; open() says silent', async () => {
