@@ -1,12 +1,13 @@
 // The courses' page probe (train 1, lane tracks, T3; docs/wip/train1-plan.md section 3 bullet T3, docs/wip/tracks.md). A RELEASE build of
 // this tree (dist/) under nginx's enforced CSP with a local API on a fresh DATA_DIR (tracks-serve.ts), headless Chrome (chrome.mjs through
 // browser.ts), the keyboard, and one click on the pause menu's "Save for everyone".
-//   A  scene 7a475d38 (Winter Garden; the fixture scene 39e63ce9 gives 0 gates, tracks.md Findings): Shift+G generates (hook source
+//   A  scene 887f27aa at its own size (the fixture scene 39e63ce9 gives 0 gates, tracks.md Findings; 7a475d38 gives 24 only at the
+//      free-garden lesson size, in the page at its own size it said 'nothing fits', run 1 of 2026-11-13): Shift+G generates (hook source
 //      'generated', gates > 0, drawn > 0), pixels of the course's colours in a screenshot over the one before; Shift+T hides it (drawn 0,
 //      the pixels gone); the pause menu's "Save for everyone" stores it (hook.saved).
 //   B  a fresh profile on the same scene: the list has it (serverTracks > 0), Shift+T loads it (source 'server', the same track id).
 // Controls that must fire:
-//   C1 a fresh profile on another scene (887f27aa): serverTracks 0, source 'none', the menu's "Load" disabled.
+//   C1 a fresh profile on another scene (39e63ce9): serverTracks 0, source 'none', the menu's "Load" disabled.
 //   C2 A's course with one gate moved into a wall of the scene (check.ts nearestWall + withGateAt on the walls Node loads), POSTed straight to
 //      the API (the server cannot see walls, it stores it); a fresh profile loads the newest with Shift+T: refused (problem 'refused...').
 //   C3 the same page with the course's root never attached to the scene (the release script patched in flight by a route): the hook still
@@ -28,8 +29,8 @@ import { today, writeEvidence } from './evidence';
 import { loadScene } from './scenes';
 import { serveTracks } from './tracks-serve';
 
-const SCENE = '7a475d38';
-const OTHER = '887f27aa';
+const SCENE = '887f27aa';
+const OTHER = '39e63ce9';
 const LOCK = 'C:/dev/.gpu-lock';
 const SHOTS = process.env.SHOTS ?? join(tmpdir(), 'gsfpv-tracks-page', today());
 mkdirSync(SHOTS, { recursive: true });
@@ -124,6 +125,54 @@ async function colours(png: Buffer): Promise<Record<string, number>> {
     );
 }
 const total = (c: Record<string, number>): number => Object.values(c).reduce((a, b) => a + b, 0);
+/** pixels that differ by more than DIFF in a channel between two screenshots of the same view, and their mean colour in the first */
+const DIFF = 40; // an estimate: above the frame-to-frame noise of a still view of the scan
+async function difference(a: Buffer, b: Buffer): Promise<{ px: number; mean: number[] }> {
+    return counter.evaluate(
+        async ({ a64, b64, lim }) => {
+            // no named function in here: tsx (esbuild keepNames) would wrap it in __name, which the page does not have
+            const both: Uint8ClampedArray[] = [];
+            for (const s of [a64, b64]) {
+                const img = new Image();
+                img.src = `data:image/png;base64,${s}`;
+                await img.decode();
+                const c = document.createElement('canvas');
+                c.width = img.width;
+                c.height = img.height;
+                const g = c.getContext('2d') as CanvasRenderingContext2D;
+                g.drawImage(img, 0, 0);
+                both.push(g.getImageData(0, 0, c.width, c.height).data);
+            }
+            const x = both[0] as Uint8ClampedArray;
+            const y = both[1] as Uint8ClampedArray;
+            let px = 0;
+            const sum = [0, 0, 0];
+            for (let i = 0; i < x.length; i += 4) {
+                if (Math.abs((x[i] as number) - (y[i] as number)) > lim || Math.abs((x[i + 1] as number) - (y[i + 1] as number)) > lim || Math.abs((x[i + 2] as number) - (y[i + 2] as number)) > lim) {
+                    px++;
+                    for (let k = 0; k < 3; k++) sum[k] = (sum[k] as number) + (x[i + k] as number);
+                }
+            }
+            return { px, mean: sum.map((s) => (px ? Math.round(s / px) : 0)) };
+        },
+        { a64: a.toString('base64'), b64: b.toString('base64'), lim: DIFF }
+    );
+}
+/** The course on, then off (Shift+T) in the same still view: what the course adds to the picture. */
+async function onOff(page: Page, name: string): Promise<{ on: Record<string, number>; off: Record<string, number>; diff: { px: number; mean: number[] }; drawnOff: number | null }> {
+    await sleep(1000);
+    const a = await page.screenshot();
+    await page.keyboard.press('Shift+KeyT');
+    const hid = await until(() => course(page), (h) => h?.drawn === 0, 10000);
+    await sleep(1000);
+    const b = await page.screenshot();
+    for (const [png, what] of [[a, 'on'], [b, 'off']] as const) {
+        const file = join(SHOTS, `${name}-${what}.png`);
+        writeFileSync(file, png);
+        shots.push({ file, sha256: createHash('sha256').update(png).digest('hex'), what: `${name}: course ${what}` });
+    }
+    return { on: await colours(a), off: await colours(b), diff: await difference(a, b), drawnOff: hid.v?.drawn ?? null };
+}
 async function shot(page: Page, name: string, what: string): Promise<Record<string, number>> {
     const png = await page.screenshot();
     const file = join(SHOTS, `${name}.png`);
@@ -174,24 +223,22 @@ async function main(): Promise<void> {
 
         // ---------------- A
         const ctxA = await fresh(browser);
-        const a = await open(ctxA, served.site, SCENE, log);
-        const base = await shot(a, 'a-before', 'page A before the course');
+        // the look: seed 1 by the course link (the generator's evidence seed), on then off in the same still view
+        const a = await open(ctxA, served.site, `${SCENE}&course=g1.1`, log);
+        const lk = await until(() => course(a), (h) => h?.source === 'generated' || !!h?.problem, 90000);
+        const look = await onOff(a, 'a-seed1');
+        // the paint, not the whole difference: hiding the course also hides the HUD's lap block (run 4: 16495 px changed with the root detached)
+        check(`A look (link seed 1, ${lk.v?.gates} gates): >= ${MIN_PX} more pixels of the course's paint than with Shift+T`, (lk.v?.drawn ?? 0) > 0 && total(look.on) - total(look.off) >= MIN_PX, { drawn: lk.v?.drawn, ...look });
+        check('A Shift+T: drawn 0', look.drawnOff === 0, look.drawnOff);
+        const before = lk.v?.track?.id ?? null;
         await a.keyboard.press('Shift+KeyG');
-        const gen = await until(() => course(a), (h) => h?.source === 'generated' || !!h?.problem, 90000);
+        const gen = await until(() => course(a), (h) => (h?.source === 'generated' && h.track?.id !== before) || !!h?.problem, 90000);
         const hA = gen.v;
         check('A Shift+G: source generated', hA?.source === 'generated', { source: hA?.source, problem: hA?.problem, ms: gen.ms });
         check('A gates > 0', (hA?.gates ?? 0) > 0, hA?.gates);
         check('A drawn > 0', (hA?.drawn ?? 0) > 0, hA?.drawn);
         check('A beacon points > 0', (hA?.beaconPoints ?? 0) > 0, hA?.beaconPoints);
-        await sleep(1000);
-        const on = await shot(a, 'a-on', 'page A with the course');
-        check(`A course pixels over the screenshot before >= ${MIN_PX}`, total(on) - total(base) >= MIN_PX, { base, on });
-        await a.keyboard.press('Shift+KeyT');
-        const hid = await until(() => course(a), (h) => h?.drawn === 0, 10000);
-        check('A Shift+T: drawn 0', hid.ok, { drawn: hid.v?.drawn, on: hid.v?.on });
-        await sleep(1000);
-        const off = await shot(a, 'a-off', 'page A with the course off');
-        check(`A course off: pixels back within ${MIN_PX} of before`, total(off) - total(base) < MIN_PX, { off });
+        const look2 = await onOff(a, 'a-random');
         await a.keyboard.press('Escape');
         await a.waitForSelector('.pause-menu', { timeout: 10000 });
         const saveBtn = '[data-action="pause.course.save"]';
@@ -200,7 +247,7 @@ async function main(): Promise<void> {
         const sv = await until(() => course(a), (h) => !!h?.saved || !!h?.problem, 20000);
         const saved = sv.v?.saved ?? null;
         check('A saved: hook.saved is the server id', typeof saved === 'string' && saved.startsWith(`${SCENE}-`), { saved, problem: sv.v?.problem });
-        out.a = { generated: hA, colours: { base, on, off }, saved };
+        out.a = { link: lk.v, look, generated: hA, lookRandom: look2, saved };
         await ctxA.close();
 
         // ---------------- B
@@ -246,14 +293,14 @@ async function main(): Promise<void> {
                 const nodeBad = checkTrack(bad, walls, T, 0.5, false);
                 const r = await fetch(`${served.api}/api/tracks`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '198.51.100.7' }, body: JSON.stringify(bad) });
                 const posted = (await r.json()) as { id?: string };
-                c2 = { gate: k, wallM: Math.round(nw.distance * 100) / 100, nodeOriginalOk: nodeOk, nodeMovedOk: nodeBad.ok, nodeIssues: nodeBad.issues.slice(0, 2), post: r.status, id: posted.id };
+                c2 = { gate: k, transform: T, centre, into, wallM: Math.round(nw.distance * 100) / 100, nodeOriginalOk: nodeOk, nodeMovedOk: nodeBad.ok, nodeIssues: nodeBad.issues.slice(0, 2), post: r.status, id: posted.id };
                 check('C2 setup: Node proves the original, refuses the moved one; the server stores it (201)', nodeOk && !nodeBad.ok && r.status === 201, c2);
                 const ctxD = await fresh(browser);
                 const d = await open(ctxD, served.site, SCENE, log);
                 const ldd = await until(() => course(d), (h) => (h?.serverTracks ?? -1) >= 0, 20000);
                 await d.keyboard.press('Shift+KeyT');
                 const rd = await until(() => course(d), (h) => h?.source === 'server' || !!h?.problem, 60000);
-                check('C2 the moved course is refused in the page', (rd.v?.problem ?? '').startsWith('refused') && rd.v?.source !== 'server', { serverTracks: ldd.v?.serverTracks, source: rd.v?.source, problem: rd.v?.problem });
+                check('C2 the moved course is refused in the page', (rd.v?.problem ?? '').startsWith('refused') && rd.v?.source !== 'server', { serverTracks: ldd.v?.serverTracks, source: rd.v?.source, loaded: rd.v?.track?.id, moved: posted.id, problem: rd.v?.problem });
                 c2.page = rd.v;
                 await ctxD.close();
             } else check('C2 setup: a wall near the gate', false, null);
@@ -270,15 +317,11 @@ async function main(): Promise<void> {
             patched = next !== body;
             await route.fulfill({ response: resp, body: next });
         });
-        const e = await open(ctxE, served.site, SCENE, log);
-        const baseE = await shot(e, 'c3-before', 'C3 before the course');
-        await e.keyboard.press('Shift+KeyG');
+        const e = await open(ctxE, served.site, `${SCENE}&course=g1.1`, log);
         const ge = await until(() => course(e), (h) => h?.source === 'generated' || !!h?.problem, 90000);
-        await sleep(1000);
-        const onE = await shot(e, 'c3-on', 'C3 with the course, root not attached');
-        const pixelPass = total(onE) - total(baseE) >= MIN_PX;
-        check('C3 control: script patched, hook drawn > 0, the pixel check fails', patched && (ge.v?.drawn ?? 0) > 0 && !pixelPass, { patched, drawn: ge.v?.drawn, base: baseE, on: onE });
-        out.c3 = { patched, hook: ge.v, colours: { base: baseE, on: onE } };
+        const lookE = await onOff(e, 'c3-seed1');
+        check('C3 control: script patched, hook drawn > 0, the pixel check fails', patched && (ge.v?.drawn ?? 0) > 0 && total(lookE.on) - total(lookE.off) < MIN_PX, { patched, drawn: ge.v?.drawn, ...lookE });
+        out.c3 = { patched, hook: ge.v, look: lookE };
         await ctxE.close();
     } catch (err) {
         check('the run finished', false, String(err).slice(0, 300));
