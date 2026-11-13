@@ -46,7 +46,38 @@ Stage T2-editor-core (package side, packages/tracks):
       API (asSaved builds the file; today's server takes /1: send toTrackV1 and keep the marks in meta.json), vote UI,
       admin tab, store.ts version filter, pillar pairs as `objects`.
 
+Stage T3-editor-ui (page side, apps/fly/src/course/**):
+- [x] U1 (04235d61) editor on the page: course/editor/keys.ts (key table of tracks-plan 2.11; arrows move by the world axis
+      nearest to the view; Shift 1 m; Ctrl+Z/Y; Enter save; Esc leave, twice when unsaved), texts.ts and words.ts (a locale
+      key for every refusal and problem code), panel.ts and editor.css (selected gate, problems, live region, the key table as
+      buttons, name and title, "Save as my course", "Save for everyone", the scene's courses with created by / edited by
+      marks and votes, "Edit" per row). builtin/course.ts: Shift+B (keymap `course.edit`) and the pause menu item open it;
+      flight paused (reason 'panel'), key router blocked, every change re-proven with wallsCheck; save as kind person:
+      create, fork (parent = the saved course) or new version (edit token kept in this tab only); votes. store.ts: rows of
+      any integer version >= 1 (was 1 only), saveMine, vote, voterId, myVotes, rememberVote (localStorage keys
+      gsfpv.course.voter, gsfpv.course.votes). hook.ts: CourseHook.editor. mouse-look.ts CURSOR_WINDOWS gains
+      '.course-editor'. Locales: 81 new keys in en, es, pl, ru. Test tools/bench/test/tracks-editor-ui.test.ts (8 tests).
+      Runs: that test + tracks-review + app-mouse-free: 25 passed; packages/prefs keymap + migrate: 53 passed; tsc
+      apps/fly, packages/prefs, tools/bench exit 0; 0 non-ASCII bytes in 12 changed code files. Negative control
+      (neg_control.py, ref origin/main, files store.ts mouse-look.ts, vitest with --root tools/bench): NEG OK, failed by
+      assertion (`expected [...] to include '.course-editor'`; the log keeps only the tail, so the store tests' failures on
+      the old code are not shown).
+- [ ] U2 left: tools/bench/src/tracks-page.ts (local servers, ports 5720-5739, gpu lock): open the editor on a generated
+      course (Shift+B; hook.editor.open), move one gate (ArrowUp; hook.editor.changed), add one (Insert; gates + 1), delete
+      one (Delete), type a name and "Save as my course" (hook.saved, source 'server'), see the row in the list with
+      .ce-by and .ce-edited marks, vote (.ce-up; hook.editor.votes), reload, reopen and see the count and aria-pressed.
+      Screenshots of the open editor at 1920x1080 and 844x390 into U:/Temp/gsfpv-train2/shots/tracks-editor-1920.png and
+      tracks-editor-844.png, and look at them (overlap, readable keys).
+- [ ] U3 left (not built in U1): the orbit camera around the selected gate (the drone camera stays), red drawing of a failing
+      gate (view.ts has no 'bad' paint yet; problems are shown as text), pillar pairs as key 4 (key 4 is cube for now),
+      Space "drop here" in flight, voting only after a completed lap (tracks-plan 2.9; offered on every row now).
+
 ## Decisions
+
+- T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with
+  Shift). Key 3 is the dive turn, key 4 the cube frame (the editing model has no pillar pair). Insert also on I, Delete
+  also on Backspace (laptops). "Save for everyone" stays for an unchanged generated course; a changed one is saved only
+  as a pilot's course with a name (the generator's mark would be false). A vote on the same arrow again takes it back.
 
 - The /1 track file cannot hold `origin`, `editedBy` or `author.kind admin` (the sound package's validateTrack refuses
   unknown keys; the package is a submodule, not edited here). Authorship marks live in the server's meta.json per course and
@@ -78,6 +109,11 @@ Stage T2-editor-core (package side, packages/tracks):
 
 ## For the lead
 
+- T3 U1 touches files outside apps/fly/src/course: packages/prefs/src/keymap.ts (one binding `course.edit` Shift+B, status
+  shipped) and packages/prefs/test/keymap.test.ts (lane tracks' own lists TRAIN1 and SHIPPED_BY_TRACKS only);
+  apps/fly/src/play/mouse-look.ts (CURSOR_WINDOWS + '.course-editor', as the task asked). No flight, input or collision
+  code: a6-reference not run. store.ts now keeps rows of version 2+ (the item above is done).
+
 - T2-editor-core touches only packages/tracks (src/format.ts, src/editor.ts new; src/check.ts TrackReport.outside added;
   src/index.ts exports). No flight, input or collision code: a6-reference not run. No locales yet: the refusal and problem
   codes (editor.ts EditRefusal, CourseProblem) need texts in the page stage.
@@ -108,7 +144,18 @@ Stage T2-editor-core (package side, packages/tracks):
   the plan's "touched gate and its two legs" shortcut is not built. Only analytic rooms (test/worlds.ts) were used.
 - T2: no browser run, no page; whether the sound package's future /2 matches this one is not known.
 
+- T3 U1: no browser run yet (U2): the editor window, the keys in a real page, the view-relative arrows (forwardOf takes
+  the body's -Z as forward: not checked against the camera), the paused flight under the window, the main-thread cost of
+  wallsCheck per key press on a real scan, the list after a fork and the vote after a reload were not run.
+- T3 U1: the full key table on a ?sonic= page was not exercised (the feature ignores Shift+B when ctx.sonic is set).
+
 ## Cost notes
+
+- T3-editor-ui U1 (about 40 replies, over budget): most turns went to reading the course feature, keymap, mouse rule and
+  API row shape, and to shell quoting (a heredoc with a large patch failed; the i18n module needs `location`, so the
+  locale tables moved to texts.ts; neg_control with `bash -c` ran WSL bash and gave a false NEG OK). Cheaper: write
+  patch scripts with the Write tool from the start, keep i18n-free tables in their own module, run neg_control with
+  `node vitest.mjs run --root <pkg>` directly.
 
 - T2-editor-core (about 25 replies): most turns went to the quaternion sign (a full turn writes -q; the generator's
   table writes w < 0) and a debug test whose console output vitest swallowed. Cheaper: compare rotations up to sign
