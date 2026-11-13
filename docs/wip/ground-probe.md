@@ -19,6 +19,12 @@ Logs and JSON of the runs: U:/Temp/gsfpv-train1c/ground-rc2/ (not in git). Pictu
 
 Nothing is left in this stage.
 
+Stage fixes (review findings GR-1, GR-2):
+- [x] GR-1 stands: the rest is capped, `after + Math.min(took * GROUND_REST, GROUND_REST_MAX_MS)`, 500 ms (chosen).
+  Test "a look that took 60 s ... rests no longer than the cap": app-ground-probe.test.ts 11 passed with
+  a6-reference.test.ts 1 passed (hash holds); NEG OK (fails by an assertion on the previous ground.ts).
+- [x] GR-2 stands as wording only: Decisions now say one look per 33 ms of input time, not one per frame. No code.
+
 ## Measured, old code (origin/main bbc9e75e)
 
 Command: `node node_modules/tsx/dist/cli.mjs tools/bench/src/ground-probe-cost.ts <out.json>` (Node v22, this PC, scene
@@ -170,7 +176,13 @@ The climb stops at 4.67 m on both builds: the drone meets something above the sp
   clock (unit tests with a simulated input time and the real clock) would then skip looks depending on the machine's
   speed. With the threshold such harnesses get the same looks as before on every machine.
 - A fixed time slice was chosen over a per-rendered-frame hook: the pilots have no frame callback, the frame loop is
-  outside this lane's paths, and 33 ms is at most one look per frame at the 30 frames a second measured here.
+  outside this lane's paths. The bound is one look per 33 ms of input time (at most about 30 looks a second), not one
+  per rendered frame: at 30 frames a second or more that is at most one look a frame, below it there are more looks
+  than frames (two a frame at 15 frames a second). A strict per-frame bound needs a frame counter from the lead's
+  frame loop to the pilots (review GR-2).
+- The rest after a slow look is capped at GROUND_REST_MAX_MS = 500 ms (chosen, not measured; review GR-1): a pause
+  inside a look (garbage collection, a suspended process, a system sleep) would otherwise hold the old clearance for
+  four times that pause.
 - The probe's fake paces reports with a MessageChannel, not a timer: a timer cannot go under 4 ms (250 a second).
 
 ## For the lead

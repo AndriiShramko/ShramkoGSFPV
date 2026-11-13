@@ -66,6 +66,13 @@ export const GROUND_REST = 4;
  * 887f27aa (3.65 ms, ground-probe-cost.ts) and half a frame at 60 frames a second; not a measurement itself.
  */
 export const GROUND_SLOW_MS = 8;
+/**
+ * The longest rest a slow look earns, ms of the page's clock. A pause that falls inside a look (garbage collection, a
+ * suspended tab, a system sleep) counts as the look's duration; without a cap an hour's sleep would hold the old
+ * clearance for four hours. Above GROUND_REST_MAX_MS / GROUND_REST (125 ms a look) the fifth no longer holds, but no
+ * look measured comes near that (3.65 ms on scene 887f27aa). A chosen bound, not a measurement.
+ */
+export const GROUND_REST_MAX_MS = 500;
 
 /**
  * The ground below as last looked at, for a pilot that is asked on every input report. A new look is made only when
@@ -107,7 +114,7 @@ export class GroundCache {
         const after = this.clock();
         this.doneAt = after;
         const took = after - before;
-        this.restUntil = took >= GROUND_SLOW_MS ? after + took * GROUND_REST : -Infinity;
+        this.restUntil = took >= GROUND_SLOW_MS ? after + Math.min(took * GROUND_REST, GROUND_REST_MAX_MS) : -Infinity;
         return this.value;
     }
 }
