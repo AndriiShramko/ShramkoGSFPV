@@ -18,7 +18,7 @@ Stage S2-any-scan (fly THIS scan by sound):
 - [x] package: the 7 lines measured with the four Windows voices (test/fixtures/measure-tts.ps1), lesson-schedule counts 394->401 / 277->282 (en), 480->487 and es 264, pl 357, ru 487 longer (package train2 b9ccaed)
 - [x] package: words check (SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe node tools/run-tool.mjs listen-words; it takes C:/dev/.gpu-lock itself, do not wrap it): PASS, 545 lines per language, 0 over the bound 0.2 in en, es, pl, ru, control 545 of 545 over (package train2 8b779d4)
 - [x] package whole suite 1308 passed, 4 skipped (64 files), typecheck 0 errors; pin packages/sonic-fpv 1ed6103 -> 8b779d4 (this commit)
-- [ ] simulator sonic tests on the new pin (tools/bench test/sonic*; S1 baseline 741 passed, 2 timeouts)
+- [x] simulator tools/bench test/sonic + test/sonicrec on pin 8b779d4 (43 files): 740 passed, 3 failed, all 'Test timed out in 5000ms' under load: sonic-bump 'walls, pillars...' (times out on the old pin too, S1) and two sonic-scan-world normal cases (the file alone: 7 passed)
 - [ ] simulator: pause item apps/fly/src/app/builtin/sonic-flight.ts opens /{lang}/fly/?sonic=scan&scene=<id>&sz=<size> (keep new tab: the flight stays paused under the menu, as today)
 - [ ] simulator: start-model parseSonicParam accepts 'scan' with scene and sz; start.ts onStart for the scan uses scanFreeLesson(scene, [sz,0,0,0]) instead of getLesson; forceScanPrefs with that world
 - [ ] simulator: store.ts flag "I already fly by sound" (new prefs key: run packages/prefs/test/migrate.test.ts and the pinned tables of docs/agent-map.md); start-screen.ts order: experienced (any savedProgress or the flag) = "Fly this scan by sound" first, "Lessons" second; first-timer = lessons first, then "I already fly by sound: fly this scan"; X back to lessons; texts in packages/i18n/locales/fly/sonic* in en, es, pl, ru
@@ -69,6 +69,10 @@ Simulator (this worktree, tools/bench):
 
 ## For the lead
 
+- S2: the pin is now package commit 8b779d4 on branch train2 of C:/dev/ShramkoSonicFPV (not pushed), on top of S1's 1ed6103.
+- The words check (listen-words) takes C:/dev/.gpu-lock itself: a wrapper that holds the lock deadlocks it (it happened here
+  once; I released my own lock by hand and the run finished, 35 min in all).
+
 - Pin moves to package commit 1ed6103 on branch train2 of C:/dev/ShramkoSonicFPV, which is NOT pushed (no push in this
   workflow): push the package branch (or merge it to the package main and push) before the simulator merge, or the
   submodule pin does not resolve for others.
@@ -78,6 +82,9 @@ Simulator (this worktree, tools/bench):
   regenerate them; left uncommitted.
 
 ## Not verified
+
+- S2: nothing of the simulator part is built yet (items [ ] above); no page probe, no screenshots. The package template was
+  not flown in a browser; its texts were heard only by the words check (Windows voices and Whisper), not by a person.
 
 - No browser run: sonic-optin-page (probe seed changed) and page probes were not run (GPU lock, integration runs them).
 - Real pilot recordings with backing up were not replayed (none at hand in the package fixtures).
