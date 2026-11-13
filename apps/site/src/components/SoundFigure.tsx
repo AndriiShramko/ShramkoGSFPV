@@ -180,18 +180,17 @@ function GatesFig() {
       </g>
       <path d="M16 112 L304 112" stroke={LINE} strokeWidth="1" />
       <path d="M160 120 L160 194" stroke={LINE} strokeWidth="1" />
-      <g transform="translate(96 160) rotate(-90)">
-        <Drone />
-      </g>
-      <path d="M70 182 L34 182 M42 176 L34 182 L42 188" fill="none" stroke={INK} strokeWidth="2" />
-      <path d="M30 124 h70 a6 6 0 0 1 6 6 v20 a6 6 0 0 1 -6 6 h-46 l-10 10 v-10 h-14 a6 6 0 0 1 -6 -6 v-20 a6 6 0 0 1 6 -6 Z" fill="none" stroke={WARN} strokeWidth="2" />
-      <path d="M44 140 h48 M44 148 h30" stroke={WARN} strokeWidth="2" />
-      <g transform="translate(250 160) rotate(90)">
-        <Drone />
-      </g>
-      <path d="M224 182 L188 182 M196 176 L188 182 L196 188" fill="none" stroke={INK} strokeWidth="2" />
-      <path d="M194 124 h70 a6 6 0 0 1 6 6 v20 a6 6 0 0 1 -6 6 h-46 l-10 10 v-10 h-14 a6 6 0 0 1 -6 -6 v-20 a6 6 0 0 1 6 -6 Z" fill="none" stroke={LINE} strokeWidth="2" />
-      <path d="M200 160 L264 120" stroke={MUTED} strokeWidth="2.5" />
+      {[0, 160].map((dx) => (
+        <g key={dx} transform={`translate(${dx} 0)`}>
+          <g transform={`translate(112 160) rotate(${dx === 0 ? -90 : 90})`}>
+            <Drone />
+          </g>
+          <path d="M132 188 L92 188 M100 182 L92 188 L100 194" fill="none" stroke={INK} strokeWidth="2" />
+          <path d="M24 122 h52 a5 5 0 0 1 5 5 v16 a5 5 0 0 1 -5 5 h-36 l-8 8 v-8 h-8 a5 5 0 0 1 -5 -5 v-16 a5 5 0 0 1 5 -5 Z" fill="none" stroke={dx === 0 ? WARN : LINE} strokeWidth="2" />
+          <path d="M32 132 h36 M32 139 h22" stroke={dx === 0 ? WARN : LINE} strokeWidth="2" />
+          {dx === 0 ? null : <path d="M20 160 L84 118" stroke={MUTED} strokeWidth="2.5" />}
+        </g>
+      ))}
     </>
   );
 }

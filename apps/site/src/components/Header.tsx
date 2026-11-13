@@ -21,7 +21,9 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-8">
         <a href={onLanding ? "#top" : `/${locale}/`} className="flex min-h-11 items-center gap-2 text-[15px] font-semibold tracking-tight text-ink" aria-label={t("home")}>
           <Logo />
-          <span>ShramkoGSFPV</span>
+          {/* Under 360 px the four language buttons (44 px touch targets each) and the wordmark do not fit side by side
+              (320 px: 356 px wide, U:/Temp/gsfpv-train2/page/wide.mjs); the logo stays, the link keeps its label. */}
+          <span className="max-[359px]:hidden">ShramkoGSFPV</span>
         </a>
         <nav aria-label={t("sections")} className="hidden min-[1152px]:block">
           <ul className="flex items-center gap-1">

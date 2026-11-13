@@ -9,8 +9,18 @@ infographics with explanations; people ask how one flies by sound at all; it has
 Stage P1-video-layout:
 - [x] 1. (2c481232) Video slots and layout. config/videos.ts: slot soundHero (garden) and FLIGHTS soundHow (pond), soundStart (acro); BgVideo takes both kinds of slot; media.mjs knows pond and acro. Page: first screen with the Winter Garden loop, h1, one-line lead (sound.hero.lead), the start button, the note; h2 order how, hear, need, start, now, test, who, open, help (10 h2 became 9; keys and record are h3 with their old anchors #sound-keys, #sound-record). The first four h2 are the newcomer's questions. Real-flight strips open "how" and "start". Locales en, ru, pl, es: how/need/start titles as questions, new sound.hero.lead, sound.hear.title, sound.media.{garden,pond,acro}. verify.mjs: new h2 order, 11 h3, the three loops with posters and captions. Site typecheck PASS, i18n-check OK (1172 strings x 4).
 - [x] 2. Release build (scripts/build-release.mjs, exit 0, sha 2c481232), verify.mjs static part 175 PASS 0 FAIL before its browser part (that part needs a server on 8138, outside this lane's ports: not run). Probe U:/Temp/gsfpv-train2/page/shots.mjs (headless system Chrome 157, under C:/dev/.gpu-lock) on serve-csp :5740: en and ru at 1440x900 and 360x800 scrollWidth = viewport, h2 order how..help, all three loops attached (1920 AV1 at 1440, 1280 AV1 at 360), garden playing on the first screen; reduced motion at 360: no video attached (state none), poster shown; no JavaScript at 360: h1 and all 9 h2 present. Shots looked at; one fix: the eyebrow was 13 px (site class .eyebrow), now text-sm, smallest text in main 14 px on every run. Shots: U:/Temp/gsfpv-train2/shots/sound-page-p1-{en,ru}-{1440,360}.png plus -top, -how, -start crops, -reduced.
+Stage P2-figures:
+- [x] 1. (21699f51) apps/site/src/components/SoundFigure.tsx: five inline SVG figures (height, wall, hum, gates, keys), no words inside the drawings, aria-hidden, CSS animation from globals.css (sf-* classes, only under prefers-reduced-motion: no-preference; every element's own place is the still frame). Page: "What do I hear?" has sound.fig.intro, four figures each with an h3 and 3 sentences, then the h3 sound.fig.moreTitle over the old list; the keys card under #sound-keys. Locales en, ru, pl, es: sound.fig.*. verify.mjs: h3 count 11 -> 16 and a new check of the five figures. Site typecheck PASS, i18n-check OK (1192 strings x 4).
+- [x] 2. (this commit) Release build (exit 0), verify.mjs static part 179 PASS 0 FAIL; negative control of the new figure check: aria-hidden removed from the wall SVG in out/en/sound/index.html -> that check FAILs, file restored -> 0 FAIL. Probe U:/Temp/gsfpv-train2/page/figs.mjs on serve-csp :5742 under C:/dev/.gpu-lock (system Chrome 157): en 1440, en 360, ru 320, pl 360, es 360: scrollWidth = viewport, 0 CSP messages, five figures, SVG aria-hidden, SVG markup 2358 to 6398 bytes each, text 16 px; running animations per figure 2, 2, 3, 7, 9; reduced motion: 0 animations in all five; no JavaScript: figures and texts present. Header fix for 320 px (see For the lead). Shots looked at: U:/Temp/gsfpv-train2/shots/sound-fig-p2b-*.png; one fix after the first look (the two "wrong way" panels of the gates figure: the bubble overlapped the drone).
 
 ## Decisions
+
+- P2 figures, facts: read from the recorded submodule packages/sonic-fpv (378cc50), default theme Soft (prefs.ts theme 'soft', themes/soft.json): height 0.5 m per scale step (metresPerStep), target note every 1250 ms (targetPeriodMs), buzz outside the lesson band; wall pulse period 1400 ms at 4 s to contact down to 110 ms at contact, logarithmic (rules.ts pulsePeriodMs, ttcFarS 4), nearness under 2 m quickens it (pulseDistM), other layers duck under 1.5 s (URGENT_TTC_S); hum 1.2 Hz at 40 m, 8 Hz at 2 m, an octave higher within 8 degrees of the nose (beacon.ts ON_COURSE_DEG), rough when off the gate axis; gate note climbing, wrong side three falling notes and its line, stage line, wrong way two falling pairs and "You are flying back. Turn around." after more than 1 s faster than 0.5 m/s (runner.ts). Voice lines quoted from packages/sonic-fpv/locales/<lang>.json.
+- The wall figure's tick strip is computed from those numbers in SoundFigure.tsx (wallKnocks, the same formula as pulsePeriodMs); its cursor runs the 4 s in 4 s of real time. Nothing blinks: ticks are marks in space, opacity changes at most about once a second.
+- No words inside the SVGs, so one drawing serves four languages; every number is in the text next to it.
+- No sound samples: the package's offline renderer was not wired into the site; not cheap in this stage.
+- Lecture infographics (sim-scan, sim-hours) not embedded: none explains flying by sound, and the page has no section where scan-to-browser or sim hours answer a reader's question.
+- 320 px: the shared header was 356 px wide on every page at 320 px (wordmark plus four 44 px language buttons); the wordmark text is hidden under 360 px (Header.tsx), the logo and the link label stay.
 
 - Real flights: the owner's FPV lecture deck already has his own flights cut as seamless 12 s loops (U:/ImmersiveWarsaw2026/talks/fpv/deck_public/media, cuts described in talks/fpv/scripts/spec.py). Taken: s04_fpv_view (low over a pond, Bydgoszcz park, source 71-83 s, no people) as "pond" and s10_acro_flip (up a spruce, a roll, a dive into the trees, Bydgoszcz, 30-42 s) as "acro".
 - Encoding: apps/site/scripts/encode-flight-videos.sh, ffmpeg of Shutter Encoder ("C:/Program Files/Shutter Encoder/Library/ffmpeg.exe"). Exact commands run from the repository root:
@@ -26,6 +36,9 @@ Stage P1-video-layout:
 
 ## For the lead
 
+- P2: the gates figure's text says "backing up or sliding aside is never called the wrong way" (sound.fig.gates.text, third line, all four languages). That nose-first rule is in ShramkoSonicFPV 4c2ac75, NOT in the submodule commit this branch records (378cc50: wrong way by velocity alone). Ship the page with the submodule bump that carries 4c2ac75, or drop that last sentence.
+- P2: apps/site/src/components/Header.tsx changed for every page: under 360 px the wordmark text is hidden (it made the header 356 px wide at 320 px; measured by U:/Temp/gsfpv-train2/page/wide.mjs, after the fix 320/320 in en and ru).
+
 - In this worktree packages/sonic-fpv was checked out at 09535b7 instead of the recorded 378cc50, and the fly build failed (lessonSegments not exported). I ran git submodule update packages/sonic-fpv (this worktree's own module dir) and the release built; nothing committed in the submodule.
 - Animated infographics on flying by sound do not exist yet (none of the 28 lecture ones covers it); the next stage makes them. Reusable as is: shramko-fpv-sim-scan.
 - The acro poster is a blurred frame; a sharper first frame needs a different cut point in the owner's deck clip (spec.py s10, 30-42 s), not a different poster.
@@ -40,6 +53,13 @@ Stage P1-video-layout:
 - es and pl texts of the new keys are written by the agent, not by native speakers.
 - The flashes rule: the acro loop has one roll in 12 s and the pond loop none; judged by watching the source description and posters, not measured by a flash analyser.
 
+- P2: the figures were not seen by a visual critics panel or a person; looked at by this agent only (shots p2b). The flashes rule is met by design (no element changes opacity faster than about once a second), not measured by a flash analyser.
+- P2: es, pl, ru texts of sound.fig.* are the agent's, not a native speaker's.
+- P2: Safari, Firefox and real phones not tried; headless Chrome 157 only. The 320 px check covered en and ru, pl and es at 360 only.
+- P2: the figures' story was checked against the package source, not against a recording of a real flight.
+
 ## Cost notes
+
+- P2: most turns went to reading the cue rules across planner.ts, rules.ts, beacon.ts, runner.ts and the theme files (about 9 turns) and to one 320 px overflow hunt in the shared header; a fact sheet of the default theme's cue numbers with file:line in scout-B would have saved about 6 turns.
 
 - P1: most turns went to finding the real flight clips (vault note, Publish folder, then the deck media and spec.py for their content) and to one failed release build from a stale submodule; a line in scout-B naming talks/fpv/deck_public/media and spec.py, and a clean submodule in the worktree, would have saved about 6 turns.
