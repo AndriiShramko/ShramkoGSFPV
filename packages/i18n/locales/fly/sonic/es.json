@@ -93,12 +93,12 @@
   "sonic.start.noAudio": "Este navegador no puede reproducir sonido, así que Fly by Sound no funciona aquí. Prueba con un Chrome o Edge actual.",
   "sonic.start.starting": "Empezando: {title}.",
   "sonic.start.unknown": "No hay ninguna lección llamada {id}. Elige una de la lista.",
-  "sonic.say.scanNoWalls": "Este escaneo aún no tiene paredes, así que ninguna pared te avisa: solo oyes tu altura. Para tener paredes, abre este escaneo en el simulador, pausa, construye sus paredes en el cuadro de paredes y vuelve con Volar por sonido en el menú de pausa.",
+  "sonic.say.scanNoWalls": "Este escaneo aún no tiene paredes, así que ninguna pared te avisa: solo oyes tu altura. Para tener paredes, abre este escaneo en el simulador, pausa, construye sus paredes en el cuadro de paredes y vuelve con Fly by Sound en el menú de pausa.",
   "sonic.say.courseOffer": "Pulsa {key} para un circuito de puertas en este escaneo.",
   "sonic.say.courseMaking": "Construyendo un circuito de puertas en este escaneo. Puede tardar medio minuto.",
   "sonic.say.courseReady": "Circuito listo. Puertas: {n}, vueltas: {laps}. El zumbido te lleva a la puerta 1. {key} da otro circuito.",
   "sonic.say.courseNone": "No cabe ningún circuito de puertas en este escaneo. Vuelves a volar libremente.",
   "sonic.start.scan": "Volar este escaneo por sonido",
   "sonic.start.scanFlier": "Ya vuelo por sonido: volar este escaneo",
-  "sonic.start.scanWhat": "Vuelo libre sobre el escaneo {scene} a tamaño x{size}: oyes sus paredes y tu altura. Sin aros, sin reloj."
+  "sonic.start.scanWhat": "Vuelo libre sobre este escaneo a tamaño x{size}: oyes sus paredes y tu altura. Sin aros, sin reloj."
 }

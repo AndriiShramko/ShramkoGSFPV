@@ -8,7 +8,7 @@ C:/dev/gsfpv-v03/docs/wip/sound2-plan.md.
 
 Stage S1-direction-motor:
 - [x] (a) package: wrong way only while flying nose-first (package train2 4c2ac75)
-- [x] (b) package: motor sound off by default, marker motorChoice, old false-to-true migration removed (package train2 1ed6103; CHANGELOG line in it)
+- [x] (b) package: motor sound off by default, marker motorChoice, old false-to-true migration removed (package train2 1ed6103; its CHANGELOG motor line came only in b6ab45c, review SN-10)
 - [x] simulator: sound.ts pause switch and start-screen motor row save motorChoice; tests sonic-motor, sonic-audio, sonic-start-screen; probe seed sonic-optin-page (e37e2bb9)
 - [x] pin packages/sonic-fpv 378cc50 -> 1ed6103 (e37e2bb9)
 - [x] simulator sonic and sonicrec unit tests on the new pin (see Checks)
@@ -50,6 +50,10 @@ Stage fixes (review findings SN-1 to SN-10):
 - [x] SN-6: SCAN_FREE_ID runs with progress null and saves nothing (runnerOptions, finish, observe) (fixes commit 1)
 - [x] SN-8: a failed course ask says one line; the free flight reopens with open(..., { quiet }) (no second no-walls line, no offer) (fixes commit 1)
 - [x] SN-9: flyCourse remembers the runner; a late answer after the pilot left opens nothing (fixes commit 1)
+- [x] SN-5: sonic-optin-page.ts (part A, en and pl) and sonic-v13-page.ts (part A) expect the scan link of page 39e63ce9 (regex on sz); typechecked, not run
+- [x] SN-7: ru scanNoWalls, courseOffer, scanWhat in the informal form; pl 'Lot na słuch' / 'na słuch' (scanNoWalls, start.scan, start.scanFlier); es scanNoWalls names 'Fly by Sound'; scanWhat in all four no longer reads the scene id ('this scan'). Rings vs gates not changed
+- [x] SN-10: package CHANGELOG (b6ab45c); this file's stale lines (S1 CHANGELOG note, Not verified S2/S3) corrected, sonic-optin result recorded
+- [ ] left for integration: run sonic-optin-page and sonic-v13-page on a local release (part A); the probe items of S2 and S3 above
 - [x] tests: sonic-scan-course.test.ts case 'review SN-2/3/6/9' (rig: scan button with no free flight before, all 8 gates, idle, scan button after the course, late answer); NEG OK (ref HEAD, lessons.ts) by assertion 'expected false to be true' (the SN-2 step, first in the case); sonic-scan-free S3 case moved to sg=, NEG OK by assertion
 
 ## Checks (numbers printed by the commands)
@@ -62,7 +66,8 @@ Package (C:/dev/ShramkoSonicFPV, node node_modules/vitest/vitest.mjs run):
 - Whole package suite: 1303 passed, 4 skipped (63 files, 26 s). npm run typecheck: no output (clean).
 
 Simulator (this worktree, tools/bench):
-- sonic-motor, sonic-audio, sonic-start-screen, sonic-optin: 86 passed.
+- sonic-motor, sonic-audio, sonic-start-screen, sonic-optin: 86 passed (S1 head; at 579127fe sonic-optin failed 'location is not defined', review SN-1, fixed in 8d720185).
+- Fixes stage (head 8d720185 + locales): tsc apps/fly and tools/bench clean; tools/bench sonic-scan-course, sonic-scan-free, sonic-optin, sonic-start-screen, sonic-garden, sonic-scan-bump: 73 passed (6 files); sonic-start-screen + sonic-optin after the locale change: 43 passed; packages/i18n fly-parity: 13 passed.
 - Negative control (ref origin/main, sound.ts + start-screen.ts, -t motorChoice): NEG OK.
 - tsc apps/fly and tools/bench: no errors.
 - tools/bench test/sonic* + test/sonicrec* (43 files, 2 min 13 s): 741 passed, 2 failed, both 'Test timed out in 5000ms':
@@ -72,6 +77,12 @@ Simulator (this worktree, tools/bench):
 S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/bench sonic-optin + sonic-start-screen: 42 passed. packages/prefs migrate + defs: 41 passed.
 
 ## Decisions
+
+- Fixes stage: no finding refuted; all ten stand (SN-1 reproduced by the new unit case on the old file; SN-2, SN-3 by the
+  reviewer's scratch numbers and the new rig case; SN-4 by reading: course.ts tryLink reads course= with no ctx.sonic check).
+  SN-4 is fixed inside the lane (sg=, not course=), so lane tracks' course.ts is untouched. SN-8: after a failed ask the pilot
+  still goes back to the scan's spawn (the runner has left on 'go'; a reopen is needed); only the double line was removed.
+  SN-3: a passed course is flown again from its start and courseReady is said again (it names N for another course).
 
 - S3 keys a pilot uses, in order (for the note to the owner): 1. on a sighted page, Shift+G makes a course (optional), then the pause
   menu's Fly by Sound opens the sound page for this scan; 2. on the start screen, the scan's button (Enter); 3. the free flight says
@@ -135,15 +146,16 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 
 ## Not verified
 
-- S3: nothing flown in a browser: no worker run, no hum on gate 1 or 2, no gate or lap line heard; the runner gives no target
-  before its first step, so the unit test checks the lesson and the world, not the target. The NEG OK of the checkpoints case was
-  on scan-lesson.ts only. tools/bench sonic-scan-free.test.ts (S2's, untracked) still does not load (location at import).
-  Locale parity tests and the i18n gate were not run (four keys added in all four languages).
-
-- S2: nothing of the simulator part is built yet (items [ ] above); no page probe, no screenshots. The package template was
+- Fixes stage: sonic-optin-page.ts and sonic-v13-page.ts (part A now expects /{lang}/fly/?sonic=scan&scene=39e63ce9&sz=<size>) were
+  typechecked, not run (no release build, no browser in this stage). They keep no built-in-world check for ?sonic=start (no
+  built-in world page in these probes); the built-in control is the unit case in sonic-optin.test.ts. The new rig case's NEG OK
+  stops at its first assertion (SN-2); the SN-3 old behaviour (a second ask, fly.last-lesson) was measured by the reviewer's
+  scratch test (U:/Temp/gsfpv-train2/review-sound/course-end.json), not by this case on the old code. Not checked whether the
+  course's free-garden lines ("rings") next to courseReady ("gates") read well; not changed (SN-7 last part). The changed texts
+  (sonic locales ru, pl, es, en scanWhat) are simulator lines: no TTS measure or words check runs on them.
+- S3: nothing flown in a browser: no worker run, no hum on gate 1 or 2, no gate or lap line heard. The package template was
   not flown in a browser; its texts were heard only by the words check (Windows voices and Whisper), not by a person.
-
-- No browser run: sonic-optin-page (probe seed changed) and page probes were not run (GPU lock, integration runs them).
+- No browser run: sonic-optin-page, sonic-v13-page and the other page probes were not run (GPU lock, integration runs them).
 - Real pilot recordings with backing up were not replayed (none at hand in the package fixtures).
 - sonic-bump.test.ts 'walls, pillars...' case did not finish within its 5 s timeout here on either pin.
 
@@ -158,3 +170,5 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
   with Write from the start would have saved two turns.
 - S2 pass 2: reading start-screen, lessons, feature and scan-lesson by slices took ~12 turns; a `cat > /dev/null` before a heredoc hung one call. A test that imports start.ts cannot load in Node (location at import): pure helpers belong in start-model.ts from the start.
 - S2: the package's spoken-line evidence (TTS lengths for four voices, the Whisper words check over every line) is a hidden cost of any new package line: 6 turns before the simulator was touched. A note in the scout's design that new package lines need measure-tts.ps1 and listen:words would have let the stage plan for it.
+
+- Fixes stage: about 40 replies (over the 30 budget) for ten findings; the most went to reading lessons.ts and feature.ts again by slices and to a Python one-off in a heredoc that lost its backslashes. A finding list that names the exact functions to change (it did) plus patch scripts written with Write from the start would have saved about 8.
