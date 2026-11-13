@@ -19,6 +19,16 @@ Worktree C:/dev/gsfpv-rooms, branch look from origin/main bbc9e75e. Ports 5600-5
 - [x] L2.3 U:/Temp/gsfpv-train1c/shots/look-course-1920.png, -1366.png, -844.png (en, the tallest hint: en, pl, ru 50 px, es 31 px).
   1920: hint 44..93.7 px, lap block from 120 (no push). 1366 and 844 (note under the buttons): hint ends 135.7, block from 142.
 - [x] L2.4 full tracks-page on the local release of ccbaa0a2: 19/19 checks pass, hintClearOfTimer 12 of 12 clear; evidence/2026-11-13/train1c/tracks-page.json.
+- [x] Fix LK-1 (a2cb31e8; major, stands: .course-hud is position absolute, H hides it by CSS only, the .hud-note stays up under
+  hud-off): course/hud.ts clearNote returns when the block has no offsetParent; note-slot.ts pushUnderNote holds the push for a
+  block box of zero height. Unit test course-hud-note.test.ts 4 passed; negative control NEG OK (old note-slot.ts: the LK-1 case
+  fails by an assertion). tracks-page hintClearOfTimer presses H twice and requires the block's top unchanged within 1 px.
+- [x] Fix LK-2 (c6c873c4; minor, stands): remote-stage.ts show() keeps distM and alpha on the drone and builds no boxes and no
+  drawn list per frame; rooms.drawn is a getter (Object.defineProperty, enumerable, configurable) set once per hook object,
+  deleted in dispose(). No unit test (RemoteStage needs a PlayCanvas app); the rooms-two-page probe reads drawn.
+- [x] Fix LK-3 (a2cb31e8 + this commit; minor, stands): first-tuning lines marked replaced, A pitched nose down instead of level,
+  the 0.2 m fade band called an estimate. Typecheck apps/fly and tools/bench clean.
+- [ ] Fixes probes: local release of the fixes, tracks-page HINT_ONLY=1 and rooms-two-page.
 
 ## Notes
 
