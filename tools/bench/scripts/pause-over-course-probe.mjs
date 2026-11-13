@@ -50,7 +50,7 @@ function look() {
 }
 const crosses = (a, b) => !!a && !!b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
-const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, VISUAL);
+const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
 const browser = await chromium.launch({ ...pick.launch, headless: pick.launch.headless });
 try {
     for (const size of SIZES) {
