@@ -127,7 +127,38 @@ Stage T4-admin (admin tab apps/fly/src/admin/tracks/**, page link):
       scene 39e63ce9 gives no walls, so the admin probe cannot do it). EDITOR_ONLY=1 runs E alone (about 5 minutes).
 - [ ] Left of R6-R8 after this stage: see "What the owner can do now" below.
 
-What the owner can do now (after the release of this branch):
+What the owner can do now (after the release of this branch; this list replaces the older one below where they differ):
+- Generate: Shift+G (or pause menu) lays a new course on a scan with walls; Shift+T shows or hides one (the scene's saved
+  course first).
+- Open the editor: Shift+B (or pause menu "Edit course"); the flight pauses, the take-off prompt goes, the window sits on
+  the right under the top buttons (Pause, Controls, Share stay clickable).
+- Select: Tab / Shift+Tab; the selected gate is magenta in the scan, a gate that fails the walls check is red (orange when
+  selected), the window names the problem.
+- Move: arrows on the floor plane (Shift: 1 m), PageUp / PageDown up and down, Q / E turn 15 deg; 1-4 shape, + / - size.
+- Add: Insert or I (4 m ahead of the selected gate). Delete: Delete or Backspace. Undo / redo: Ctrl+Z / Ctrl+Y.
+- Save his own copy: a name in the window, then "Save as my course" (or Enter): his course or a fork with "created by" /
+  "edited by" marks; again later = a new version of it (the edit token stays in this browser).
+- Save for everyone: "Save for everyone" stores an unchanged generated course for the scene.
+- Vote: + / - on a row of the window's list, only for a course he has flown a full lap of in this browser; before that the
+  row says "Fly a lap of this course to vote".
+- Leave: Esc (twice with unsaved changes; inside the window the first Esc gives the focus back). F6 enters the window.
+- Admin: signed in at /admin/ on the same browser, tab Courses lists every course per scene (versions, marks, votes,
+  broken reports; hide/show, rename, delete a version or the course, reset votes or reports). "Open in the editor" opens
+  course=<id>.v<n>&edit=1 with the editor open; there "Save as the admin's version" stores the edited gates as the next
+  version, marked "edited by admin", the creator kept.
+
+Still NOT done of R6-R8 after F1-finish: the orbit camera around the selected gate; pillar pairs (key 4 is a cube frame);
+Space "drop here" in flight; the /2 format on the server (marks live in meta.json); a hidden course cannot be opened in
+the editor from the admin (show it first); the vote-after-lap rule is a UI rule (tracks-plan 2.9), the server takes any
+vote.
+
+Left for the next wave (one line each):
+- Orbit camera: arrows orbit the selected gate while the drone camera stays (tracks-plan 2.11); needs a camera mode in render-pc.
+- Pillar pairs as `objects` of the /2 format and key 4 (the editing model has none; the /1 file cannot hold them).
+- Space "drop here": a gate at the drone's pose 1 m ahead while flying with the editor armed (needs a flight-time key route).
+- Server-side /2 files, and opening a hidden course in the editor from the admin (an admin read of the file route).
+
+Older list (stage T4):
 - Simulator, any scan with walls: Shift+T shows or hides a course (the scene's saved one first), Shift+G a new generated one (packages/prefs keymap.ts), Shift+B (or
   pause menu "Edit course") opens the editor over the paused flight: Tab / Shift+Tab select a gate, arrows move it on the floor
   plane (Shift: 1 m steps), PageUp/PageDown up and down, Q/E turn 15 deg, 1-4 shape (4 = cube frame), +/- size, Insert or I adds
@@ -248,6 +279,16 @@ Stage F1-finish (the lane's last stage):
   shown first. Deletes and resets: two clicks, the server wants {confirm: true} as well.
 ## For the lead
 
+- F1-finish release: site release (apps/fly page and admin); API release of the whole branch with the files relative to
+  apps/api: `server.py`, `tracks.py`, `tracks_admin.py` (new module; see the note below about --compose). F1-finish itself
+  changed no API file. apps/api python tests: `python -m unittest discover -s apps/api/tests` ran 485 tests OK (229.8 s).
+- F1-finish touches HUD files outside the lane: apps/fly/src/ui/hud.ts (update() gains `panel`, the take-off line is empty
+  while a window pauses the flight; this also hides it under the How to fly card and the feedback and drone panels, which
+  pause with the same reason) and apps/fly/src/app/flight.ts (passes `this.stack.reasons.includes('panel')`). No flight,
+  input or collision code: a6-reference not run.
+- The page probe tracks-page.ts now starts its API with the TEST admin hash from .cache/admin-test.json (this tree, else
+  the lead copy, read only) for section E3; without that file E3 fails and says why.
+
 - T4 A2: a rename of a GENERATED course writes the file as a person's ('Admin', generator null), because the server keeps a
   generator file's title to "Course <x>"; meta.json keeps creator generator and editor admin, so lists show "created by the
   generator; edited by the admin". The admin's first tab (Scenes) loads 3 catalogue pictures from s3-eu-west-1.amazonaws.com
@@ -297,6 +338,13 @@ Stage F1-finish (the lane's last stage):
   list. After a mouse click on a window button, Tab walks the window's buttons (TK-3); Esc first returns the focus.
 ## Not verified
 
+- F1-finish: the red paint of a failing gate is checked by the unit test and the hook only; no probe made a gate fail in a
+  browser (the editor refuses a new wall problem, so a red gate needs a course that is already bad there). The paint colours
+  were not read from pixels. The vote-after-lap rule was checked with a best lap written into localStorage, not with a
+  flown lap. es, pl, ru texts of the 4 new keys were not read on the page. The admin save of a course hidden by the admin
+  and the admin's "Nothing changed" refusal were not run. The take-off prompt under the How to fly card (same pause
+  reason) was not looked at.
+
 - T4 A2: the admin tab was run in English only (es, pl, ru texts not read on the page); the 1920 screenshot was not looked at
   (the 844 one was); the Open link was checked by its href and a 200 answer, not by opening the editor (A3); reset of broken
   reports and the scene picker with more than one scene were not clicked.
@@ -326,6 +374,11 @@ Stage F1-finish (the lane's last stage):
   (TK-7 tested on a memory store), the other three languages' new texts on the page.
 
 ## Cost notes
+
+- F1-finish (about 45 replies, over budget): most turns went to the Edit tool refusing edits on files only read through
+  Bash (one wasted batch of 9 edits) and to three probe runs (the probe's own Esc, the lone sound button at 844x390, a GPU
+  lock held by another lane for 9 minutes). Cheaper: open every file to be edited with the Read tool in the first batch;
+  read fly.css's small-screen rules for the top row before placing a window at the right edge.
 
 - T4 A2 (about 33 replies): most turns went to 8 probe runs, each finding one thing (seed body, disabled buttons, the server's
   generator title rule, the Scenes tab's pictures). Cheaper: try the admin's rename body against TrackStore in Python before the
