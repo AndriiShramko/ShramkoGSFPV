@@ -38,9 +38,14 @@ class LockDoc {
 
 let doc: LockDoc;
 let pending: (() => void)[];
+/** the browser resolves the request before it fires 'pointerlockchange' (the other order of events) */
+let eventLate = false;
 const target = {
     requestPointerLock(): Promise<void> {
-        return new Promise<void>((res) => pending.push(() => { doc.pointerLockElement = target; doc.fire(); res(); }));
+        return new Promise<void>((res) => pending.push(() => {
+            doc.pointerLockElement = target;
+            if (eventLate) { res(); setTimeout(() => doc.fire(), 0); } else { doc.fire(); res(); }
+        }));
     }
 };
 /** The browser grants the lock asked for. */
@@ -55,6 +60,7 @@ beforeAll(async () => {
 beforeEach(() => {
     doc = new LockDoc();
     pending = [];
+    eventLate = false;
     vi.stubGlobal('document', doc);
 });
 
@@ -151,6 +157,26 @@ describe('a window that needs the mouse gets the mouse', () => {
         await land();
         expect(await again).toBe(true);
         expect(doc.pointerLockElement).toBe(target);
+    });
+
+    // found by the probe after the MF-R4 fix: when the lock's event comes after its promise, lock() lets the
+    // lock go before onChange saw it land, so no event cleared `releasing`; every later click was refused
+    it('a lock let go before its own event was seen leaves no release hanging', async () => {
+        const { look, lost } = rig();
+        eventLate = true;
+        const p = panel();
+        const first = look.lock(); // a click inside the window
+        await land();
+        await new Promise((r) => setTimeout(r, 0)); // the late event
+        expect(await first).toBe(false);
+        expect(doc.pointerLockElement).toBeNull();
+        p.remove();
+        const again = look.lock(); // the window closed: a click on the view
+        await land();
+        await new Promise((r) => setTimeout(r, 0));
+        expect(await again).toBe(true);
+        expect(doc.pointerLockElement).toBe(target);
+        expect(lost).toHaveLength(0);
     });
 
     // review MF-R1: the video export bar (builtin/video-export.ts, Cancel, Retry, Close) needs the mouse

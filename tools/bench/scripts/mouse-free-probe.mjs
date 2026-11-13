@@ -248,6 +248,8 @@ if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'drones', 'scenes',
     await entry('scenes', { open: () => openMenuItem('pause.scene'), inside: '.screen.scenes h1' });
     await entry('ceiling', {
         open: async () => {
+            // the row's Show button needs the walls, which download beside the scan (not before 'ready')
+            out.entries.ceiling.walls = await page.waitForFunction(() => !!window.__gsfpv?.session?.baseCollision, null, { timeout: 60000 }).then(() => true, () => false);
             await page.keyboard.press('KeyP');
             await page.waitForSelector('[data-action="pause.settings"], [data-action="settings.open"]', { timeout: 5000 });
             await page.locator('[data-action="pause.settings"], [data-action="settings.open"]').first().click();

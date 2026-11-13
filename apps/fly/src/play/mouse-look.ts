@@ -73,8 +73,8 @@ export class MouseLook {
         if (!this.supported) return false;
         // a release still on its way (unlock() asked, the browser has not let go yet) is not a lock: the
         // caller shows the pill and the next click asks again, instead of a flight without the mouse
-        if (this.releasing) return false;
-        if (this.locked) return true;
+        if (this.locked) return !this.releasing;
+        this.releasing = false; // nothing is held, so nothing is being let go
         // No check of `held` before the request: the pause menu's Continue asks inside its click while the
         // menu is still up (it closes in the button's own handler). The lock lands later; onChange decides then.
         const el = this.host.target as HTMLElement & { requestPointerLock(o?: { unadjustedMovement?: boolean }): Promise<void> | undefined };
@@ -104,10 +104,12 @@ export class MouseLook {
         const now = this.locked;
         // a lock that lands while a window needs the cursor (asked before it opened): let it go, quietly
         if (now) { this.had = true; if (this.held) this.unlock(); return; }
-        if (!this.had) return;
-        this.had = false;
+        // the lock is gone: whatever release was asked for is over (also when the browser told us of the lock
+        // only after its promise, and our unlock() from lock() let it go before that event)
         const ours = this.releasing;
         this.releasing = false;
+        if (!this.had) return;
+        this.had = false;
         if (!ours) this.host.onLost();
     };
 
