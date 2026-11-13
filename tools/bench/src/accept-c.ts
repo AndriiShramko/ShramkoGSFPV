@@ -16,6 +16,8 @@ const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$
 const fly = (l: string, qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/${l}/fly/?${qs}`) + `&cb=${Math.random().toString(36).slice(2)}`;
 const SHOTS = join(REPO, 'evidence', today(), 'c');
 const CYRILLIC = new RegExp('[' + String.fromCharCode(0x400) + '-' + String.fromCharCode(0x4ff) + ']'); // code points: no such letters in this file
+// the Russian words for "Gaussian" and "million" (a walls line must not name the technique's numbers), from code points too
+const TECH_WORDS = new RegExp(String.fromCharCode(0x433, 0x430, 0x443, 0x441, 0x441) + '|' + String.fromCharCode(0x43c, 0x43b, 0x43d), 'i');
 mkdirSync(SHOTS, { recursive: true });
 const CLI_DIR = join(REPO, '.cache', 'scenes', '723068d7');
 const BAKED_DIR = join(REPO, '.cache', 'scenes', '723068d7-baked');
@@ -100,7 +102,7 @@ await browser.close();
 
 const pass = ready.status === 'ready' && before.hasCollision === false && !!bake && bake.ok === true && after.hasCollision && !after.badge && after.spawnFree
     && Math.abs(relDiff) <= 0.01 && tab.passes === 20 && tab.penetrations === 0
-    && !!refusal && refusal.ok === true && !refusal.refused && !/гаусс|млн/i.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '')
+    && !!refusal && refusal.ok === true && !refusal.refused && !TECH_WORDS.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '')
     && (gpuBusy || (!!big && big.ok === true && big.hasCollisionAfter === true));
 const file = writeEvidence('c-bake', {
     site: SITE,

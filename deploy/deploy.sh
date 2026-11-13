@@ -166,8 +166,9 @@ if [ "$SWITCH" = 1 ] && web_running; then
     echo "release $ID has no csp-hashes.conf (built before the enforced CSP): only the Report-Only header applies"
   fi
 fi
-# keep the last 5 releases, never the current one
-ls -1t releases | grep -Ev '^(current|\.)' | tail -n +6 | while read -r old; do
+# keep the last 5 releases, never the current one; releases/walls holds the published walls of every
+# scan (deploy/release-walls.sh), it is not a release and is never pruned
+ls -1t releases | grep -Ev '^(current|walls$|\.)' | tail -n +6 | while read -r old; do
   [ "$old" != "$(readlink releases/current)" ] && rm -rf "releases/$old" && echo "pruned $old"
 done
 # an upload is needed only until it is unpacked, and rollback.sh uses releases/<id>: keep the archives of the

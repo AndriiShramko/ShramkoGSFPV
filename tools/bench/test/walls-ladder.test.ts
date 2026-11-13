@@ -5,6 +5,22 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_VOXEL_M, BakeGpuError, BakeRefusedError, bakeBase, gaussiansFromMeta, isRough, memCapGb, outOfRoom, planBase } from '../../../apps/fly/src/bake';
 import type { BakeResult, GpuLimits, SceneSize } from '../../../apps/fly/src/bake';
+import * as bakeModule from '../../../apps/fly/src/bake';
+
+describe('the octree limits make the cell coarser', () => {
+    // all three limit messages of splat-transform 3.6.4 move a base bake from 5 to 10 to 20 cm on the same data
+    const tooMany = (e: unknown): boolean => (bakeModule as { tooManyBlocks?: (e: unknown) => boolean }).tooManyBlocks?.(e) ?? false;
+    it('recognises every limit message', () => {
+        expect(tooMany(new Error('Voxel output has more than 16777216 mixed blocks'))).toBe(true);
+        expect(tooMany(new Error('Sparse octree mixed-leaf count (17000000) exceeds the limit'))).toBe(true);
+        expect(tooMany(new Error('Sparse octree node count (17384514) exceeds the Laine-Karras 24-bit baseOffset limit'))).toBe(true);
+        expect(tooMany('Sparse octree node count (17384514) exceeds')).toBe(true);
+    });
+    it('leaves other failures alone', () => {
+        expect(tooMany(new Error('lod-meta.json: 404'))).toBe(false);
+        expect(tooMany(null)).toBe(false);
+    });
+});
 
 const PC: GpuLimits = { maxBufferSize: 2 ** 31, maxStorageBufferBindingSize: 2 ** 31 };
 const IGPU: GpuLimits = { maxBufferSize: 2 ** 30, maxStorageBufferBindingSize: 2 ** 30 };
@@ -71,6 +87,8 @@ describe('bakeBase: out of room takes the next step by itself', () => {
         expect(outOfRoom(new RangeError('Array buffer allocation failed'))).toBe(true);
         expect(outOfRoom(new BakeRefusedError('memory', null))).toBe(true);
         expect(outOfRoom(new Error('Sparse octree mixed-leaf count (17000000) exceeds'))).toBe(true);
+        // the third limit message of splat-transform 3.6.4 (seen offline on 0230d903 at 5 cm)
+        expect(outOfRoom(new Error('Sparse octree node count (17384514) exceeds the Laine-Karras 24-bit baseOffset limit'))).toBe(true);
         expect(outOfRoom(new BakeRefusedError('empty', null))).toBe(false);
         expect(outOfRoom(new Error('lod-meta.json: 404'))).toBe(false);
     });

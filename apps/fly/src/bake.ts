@@ -215,7 +215,7 @@ export function outOfRoom(e: unknown): boolean {
     if (e instanceof BakeGpuError) return true;
     if (e instanceof BakeRefusedError) return e.reason === 'gpu-buffer' || e.reason === 'memory' || e.reason === 'octree';
     if (e instanceof RangeError) return true;
-    return /out of memory|allocation failed|allocate|device (was )?lost|mixed blocks|mixed-leaf/i.test(String((e as { message?: unknown } | null)?.message ?? e));
+    return /out of memory|allocation failed|allocate|device (was )?lost|mixed blocks|mixed-leaf|Sparse octree node count/i.test(String((e as { message?: unknown } | null)?.message ?? e));
 }
 
 /** Refuse walls without a single solid voxel: flying through everything is not "walls built". */
@@ -310,9 +310,13 @@ function heapMb(): number | null {
  * decode ("Expected property name ... at position 1" on bd04e182). A plain fetch lets the browser
  * decode the whole file; the files are in its HTTP cache already (the renderer loaded them).
  */
-/** The library reports the format's block limit only in its message, and not always as an Error. */
-function tooManyBlocks(e: unknown): boolean {
-    return e != null && /mixed blocks/i.test(String((e as { message?: unknown }).message ?? e));
+/**
+ * The library reports the format's limits only in its message, and not always as an Error. splat-transform
+ * 3.6.4 has three: "more than N mixed blocks", "Sparse octree mixed-leaf count (...) exceeds" and
+ * "Sparse octree node count (...) exceeds the Laine-Karras 24-bit baseOffset limit"; a coarser cell helps all three.
+ */
+export function tooManyBlocks(e: unknown): boolean {
+    return e != null && /mixed blocks|Sparse octree (node|mixed-leaf) count/i.test(String((e as { message?: unknown }).message ?? e));
 }
 
 export function wholeFileSystem(st: Pick<typeof import('@playcanvas/splat-transform'), 'MemoryReadFileSystem'>, base: string, f: (u: string) => Promise<Response> = fetch): import('@playcanvas/splat-transform').ReadFileSystem {
