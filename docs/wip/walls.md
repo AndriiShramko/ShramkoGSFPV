@@ -4,6 +4,14 @@ Worktree C:/dev/gsfpv-voice, branch walls (from origin/main 2a5ac433). Ports 580
 
 ## Status
 
+Stage W2-published:
+- [x] Design (below, The way W2).
+- [x] Offline bake tool tools/walls/bake-published.mjs (commit 3e85e9e6): splat-transform 3.6.4 CLI in Node on this PC's RTX 4090 (Dawn), level 0, crop to the dense core read from level 4, 5 / 10 / 20 cm ladder, manifest.json with sizes and sha256.
+- [x] Loader order shipped, else published, else the page's build: apps/fly/src/session/loader.ts wallsPlaces / firstWalls / publishedWallsUrl, session wallsFrom, walls.ts source 'published', text bake.source.published in en/es/pl/ru (commit cb473792). Unit test tools/bench/test/walls-published.test.ts 7 passed; negative control NEG OK (loader.ts of 3e85e9e6). apps/fly tsc exit 0.
+- [x] Delivery: deploy/nginx.conf location ^~ /walls/ (root /srv/releases, 404 when missing), deploy/release-walls.sh (commit 5dbe2a2f).
+- [x] Page probe tools/bench/scripts/walls-published-probe.mjs (commit d2f2015a); run on a local release of 5dbe2a2f with Forest Floor as the stand-in: pass (see Facts W2).
+- [~] Offline bakes: Wroclaw 70b50d42 running (out U:/Temp/gsfpv-train2/walls/published), the other seven (out U:/Temp/gsfpv-train2/walls/published-b, log bake-b.log). Then the probe with Wroclaw.
+
 Stage W1-any-size:
 - [x] 1. Measure the 13 catalogue scans (tools/bench/scripts/walls-scan-sizes.ts; output U:/Temp/gsfpv-train2/walls/sizes.json). Commit 9105c8c6.
 - [x] 3a. The ladder in the page: apps/fly/src/bake.ts planBase / bakeBase / outOfRoom / isRough, level option of bakeCollision; apps/fly/src/walls.ts runBase uses bakeBase; texts bake.stage.lighter, bake.doneRough, bake.noRoom in en/es/pl/ru (bake.doneCoarse removed). Unit tests tools/bench/test/walls-ladder.test.ts (9 tests) with negative control NEG OK. Commit 9105c8c6.
@@ -46,6 +54,8 @@ Ladder run, walls-trials.ts ladder, 2026-11-13, local release, headless system C
 - 70b50d42 Wroclaw: scene ready in 5.1 s; the bake was still in "voxelising on your GPU" after 1200 s (probe timeout), no error, no walls. The ladder had picked level 2 (10.77 M Gaussians, within the memory gate), so the Gaussian count is not what holds it. Cause, inference not measured: the tree bound is 13536 x 12547 x 13512 m; at 5 cm that is 2.7e5 cells per axis and the voxeliser walks that space. A per-Gaussian position histogram of Wroclaw was not taken.
 
 ## The way
+
+W2 published walls (design): walls are built once on this PC by tools/walls/bake-published.mjs, which runs the splat-transform CLI in Node on the GPU (Dawn), reads level 0 of the scan straight from the CDN, and first crops the scan to its dense core (per axis the 0.5 % and 99.5 % quantiles of the level-4 positions plus 15 % of that span plus 5 m; settings, not measured), because a few floaters kilometres away make the voxeliser walk a bound of 13.5 km. The output is the format SuperSplat ships and the page builds and exports: scene.voxel.json + scene.voxel.bin. They live on the hub in releases/walls/<id>/v<N>/ (beside the releases, so a new release keeps them; one folder per scan version, so a new upload of a scan never gets old walls) and the site serves them from its own origin at /walls/<id>/v<N>/scene.voxel.json (deploy/nginx.conf location ^~ /walls/, 404 when missing, no-cache with ETag). deploy/release-walls.sh copies them there (temporary name, then rename) and compares sha256 local, hub and served. The page looks for walls in this order (loader.ts wallsPlaces / firstWalls): shipped by SuperSplat, else published here, else none and the walls box offers its own build (W1). A missing or broken published file only means "not published" and never stops a flight. No catalogue field and no admin screen: the 404 of one small JSON is the whole cost for a scan without published walls. Sizes: see Facts W2.
 
 Provisional (the browser trials of step 2 are not run): a ladder of levels of detail. planBase lists the finest level whose Gaussians pass the GPU-buffer and memory gates, then every coarser level. bakeBase tries them in order; a GPU out-of-memory or validation error, a RangeError (allocation), a gate refusal or the octree format limit takes the next step by itself; inside each step the existing 5 / 10 / 20 cm coarsening handles the octree format limit. The last step is tried even past the estimate. A single-file scan has one step and is tried even past the estimate. The pilot sees the stages in plain words ("taking a lighter way for this big scan"), and after a rough build one line "The walls are rough in this scan". Numbers of agreement with the shipped walls: not measured yet (step 2).
 
