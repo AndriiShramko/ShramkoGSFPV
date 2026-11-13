@@ -90,7 +90,10 @@ const look = (page) => page.evaluate(() => {
         ready: g?.status === 'ready', radio: !!screen, wizard: w ? (w.stage ? `${w.id}/${w.stage}` : w.id) : null,
         key: g?.radio?.hid?.key ?? w?.profile?.deviceKey ?? null, probe: window.__connectProbe,
         say: say ? { state: say.getAttribute('data-state'), text: (say.textContent ?? '').slice(0, 400) } : null,
-        bridgeWord: screen ? /bridge/i.test(screen.innerText) : null
+        bridgeWord: screen ? /bridge/i.test(screen.innerText) : null,
+        // review CN-5: the line under the button and whether the helper's line is inside the viewport
+        connectSay: (document.querySelector('[data-testid=radio-connect-say]')?.textContent ?? '').slice(0, 200),
+        sayInView: say ? (() => { const r = say.getBoundingClientRect(); return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight; })() : null
     };
 });
 const waitFor = async (page, ok, ms) => {
@@ -200,6 +203,12 @@ try {
         checks['nohelper.plainLine'] = a.s.say?.state === 'nobridge' && /1\. Double-click/.test(a.s.say.text);
         checks['nohelper.noWordBridge'] = a.s.bridgeWord === false;
         checks['nohelper.onePress'] = a.s.probe.usbChooser === 1 && a.s.probe.claims === 1;
+        await page.waitForTimeout(1200); // the smooth scroll settles (estimate)
+        const v = await look(page);
+        note.connectSay = v.connectSay;
+        note.sayInView = v.sayInView;
+        checks['nohelper.lineUnderButton'] = /just below/.test(v.connectSay);
+        checks['nohelper.helperLineInView'] = v.sayInView === true;
         if (shots) await page.screenshot({ path: `${shots}/connect-c2-nohelper-line.png` }).catch(() => undefined);
         await page.waitForTimeout(3000);
         startHelper();
