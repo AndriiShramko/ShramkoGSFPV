@@ -221,13 +221,14 @@ interface Box { left: number; top: number; right: number; bottom: number }
 interface HintRead { note: Box | null; block: Box | null; text: string; vw: number; vh: number }
 const readHint = (page: Page): Promise<HintRead> =>
     page.evaluate(() => {
-        const box = (el: Element | null): { left: number; top: number; right: number; bottom: number } | null => {
-            if (!el || (el as HTMLElement).hidden || (el as HTMLElement).offsetParent === null) return null;
+        // no named function in here: tsx (esbuild keepNames) would wrap it in __name, which the page does not have
+        const els = [document.querySelector<HTMLElement>('#ui > .hud-note'), document.querySelector<HTMLElement>('[data-testid="course-hud"]')];
+        const [note, block] = els.map((el) => {
+            if (!el || el.hidden || el.offsetParent === null) return null;
             const r = el.getBoundingClientRect();
             return r.width > 0 && r.height > 0 ? { left: r.left, top: r.top, right: r.right, bottom: r.bottom } : null;
-        };
-        const note = document.querySelector('#ui > .hud-note');
-        return { note: box(note), block: box(document.querySelector('[data-testid="course-hud"]')), text: note?.textContent ?? '', vw: innerWidth, vh: innerHeight };
+        });
+        return { note: note ?? null, block: block ?? null, text: els[0]?.textContent ?? '', vw: innerWidth, vh: innerHeight };
     });
 const meets = (a: Box, b: Box): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 

@@ -13,7 +13,9 @@ Worktree C:/dev/gsfpv-rooms, branch look from origin/main bbc9e75e. Ports 5600-5
   text and hidden) and sets --course-push from course/note-slot.ts pushUnderNote (block top >= note bottom + 6 px, held until a
   resize); hud.css adds it to the fixed slot. Unit test tools/bench/test/course-hud-note.test.ts 3 passed.
 - [~] L2.2 tracks-page.ts hintClearOfTimer (all four languages, 1920x1080, 1366x768, 844x390 as a touch phone; HINT_ONLY=1 runs it alone).
-- [ ] L2.2 negative control on a build of origin/main hud.ts + hud.css.
+- [x] L2.2 negative control: release built with origin/main hud.ts + hud.css (bbc9e75e), HINT_ONLY=1 tracks-page: FAIL, 6 of 12
+  meet (en, pl, ru at 1366x768 and 844x390: note 86..135.7 px, lap block from 120 px; 1920x1080 clear, note 44..93.7; es clear,
+  its hint is one line, 31 px). evidence/2026-11-13/train1c/tracks-page-hint-origin-main.json.
 - [ ] L2.3 pictures look-course-1920/1366/844.png.
 - [ ] L2.4 full tracks-page on the local release, evidence/2026-11-13/train1c/tracks-page.json.
 
