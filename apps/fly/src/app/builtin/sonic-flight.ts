@@ -75,7 +75,7 @@ export const sonicFlight: Feature = {
         // stays a new tab (as before): the flight is left paused under the menu, and the pilot comes back to it where he was. run()
         // is the same page for a caller that runs items
         // location: a page always has it; Node (unit tests) does not (review SN-1)
-        const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session, typeof location === 'undefined' ? '' : location.search);
+        const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session, typeof location === 'undefined' ? '' : new URL(location.href).search);
         return ctx.menu.add({ ...SOUND_PAGE_ITEM, href, run: () => void open(href(), '_blank', 'noopener') });
     }
 };

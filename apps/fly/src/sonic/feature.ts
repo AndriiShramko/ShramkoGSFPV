@@ -186,7 +186,9 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
  * goes into the tracks cache under its id and version, so the lesson that names it (scanCourseLesson) finds it without a fetch.
  */
 function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonNullable<LessonPage['course']> {
-    let linkSeed = soundCourseSeed(location.search);
+    // the address as it is now, read the way the other features read it (app/env.ts is the one reader of the page's query at boot;
+    // packages/prefs/test/main-audit.test.ts)
+    let linkSeed = soundCourseSeed(new URL(location.href).search);
     return {
         key: () => names.of('scene.next'),
         async ask() {
