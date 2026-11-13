@@ -110,11 +110,14 @@ export function cellOf(f: FreeSpace, p: Vec3): number {
     return x + nx * (y + ny * z);
 }
 
-/** A free radius the cell's centre surely has, flown m: the chamfer distance less one cell (the cells' own sizes). */
+/**
+ * The free radius of the cell's centre, flown m: the chamfer distance to the nearest solid cell's centre less half a cell
+ * (its near face). An estimate: the 3-4-5 chamfer is within a few percent of the true distance; checkTrack proves the gates.
+ */
 export function clearanceM(f: FreeSpace, i: number): number {
     const d = f.clearance[i]!;
     if (d === NONE) return 1e9;
-    return Math.max(0, (d * f.cellM) / 3 - f.cellM);
+    return Math.max(0, (d * f.cellM) / 3 - f.cellM / 2);
 }
 
 function fnv(h: number, v: number): number {
