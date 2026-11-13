@@ -9,7 +9,7 @@
 // Controls that must fire:
 //   C1 a fresh profile on another scene (39e63ce9): serverTracks 0, source 'none', the menu's "Load" disabled.
 //   C2 A's course with one gate moved into a wall of the scene (check.ts nearestWall + withGateAt on the walls Node loads), POSTed straight to
-//      the API (the server cannot see walls, it stores it); a fresh profile loads the newest with Shift+T: refused (problem 'refused...').
+//      the API (the server cannot see walls, it stores it); a fresh profile loads the newest with Shift+T: refused (problem 'refused...') or, with A's course still saved, skipped to it (TR-3); never shown.
 //   C3 the same page with the course's root never attached to the scene (the release script patched in flight by a route): the hook still
 //      says drawn > 0, the pixel check fails.
 //   node scripts/build-release.mjs
@@ -300,7 +300,12 @@ async function main(): Promise<void> {
                 const ldd = await until(() => course(d), (h) => (h?.serverTracks ?? -1) >= 0, 20000);
                 await d.keyboard.press('Shift+KeyT');
                 const rd = await until(() => course(d), (h) => h?.source === 'server' || !!h?.problem, 60000);
-                check('C2 the moved course is refused in the page', (rd.v?.problem ?? '').startsWith('refused') && rd.v?.source !== 'server', { serverTracks: ldd.v?.serverTracks, source: rd.v?.source, loaded: rd.v?.track?.id, moved: posted.id, problem: rd.v?.problem });
+                // lane review TR-3 (after the probe was written): a refused newest row makes the page try the next saved row, so with
+                // A's good course still on the server the page shows A's course and never the moved one; with no other row it fails 'refused'
+                const loaded = rd.v?.track?.id ?? null;
+                const refused = (rd.v?.problem ?? '').startsWith('refused') && rd.v?.source !== 'server';
+                const skipped = rd.v?.source === 'server' && loaded === saved && (ldd.v?.serverTracks ?? 0) >= 2;
+                check('C2 the moved course is refused in the page (refused, or skipped to the next saved row)', loaded !== posted.id && (refused || skipped), { serverTracks: ldd.v?.serverTracks, source: rd.v?.source, loaded, moved: posted.id, saved, problem: rd.v?.problem, refused, skipped });
                 c2.page = rd.v;
                 await ctxD.close();
             } else check('C2 setup: a wall near the gate', false, null);
