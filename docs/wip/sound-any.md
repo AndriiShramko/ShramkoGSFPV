@@ -13,6 +13,19 @@ Stage S1-direction-motor:
 - [x] pin packages/sonic-fpv 378cc50 -> 1ed6103 (e37e2bb9)
 - [x] simulator sonic and sonicrec unit tests on the new pin (see Checks)
 
+Stage S2-any-scan (fly THIS scan by sound):
+- [x] package: template lessons/scan-free.json + scanFreeLesson(sceneId, transform), SCAN_FREE_ID, catalogue LESSON_TEMPLATES, 7 lines in en/es/pl/ru, test/scan-free.test.ts (package train2 335888d)
+- [x] package: the 7 lines measured with the four Windows voices (test/fixtures/measure-tts.ps1), lesson-schedule counts 394->401 / 277->282 (en), 480->487 and es 264, pl 357, ru 487 longer (package train2 b9ccaed)
+- [~] package: words check evidence (pnpm listen:words, evidence/listen/VL-4-words.json for 545 keys; test/words.test.ts expects it); started under C:/dev/.gpu-lock, log U:/Temp/gsfpv-train2/sound/words-s2.log; see Not verified for whether it finished
+- [ ] package: whole suite green after the words evidence, then pin packages/sonic-fpv 1ed6103 -> the new train2 head
+- [ ] simulator: pause item apps/fly/src/app/builtin/sonic-flight.ts opens /{lang}/fly/?sonic=scan&scene=<id>&sz=<size> (keep new tab: the flight stays paused under the menu, as today)
+- [ ] simulator: start-model parseSonicParam accepts 'scan' with scene and sz; start.ts onStart for the scan uses scanFreeLesson(scene, [sz,0,0,0]) instead of getLesson; forceScanPrefs with that world
+- [ ] simulator: store.ts flag "I already fly by sound" (new prefs key: run packages/prefs/test/migrate.test.ts and the pinned tables of docs/agent-map.md); start-screen.ts order: experienced (any savedProgress or the flag) = "Fly this scan by sound" first, "Lessons" second; first-timer = lessons first, then "I already fly by sound: fly this scan"; X back to lessons; texts in packages/i18n/locales/fly/sonic* in en, es, pl, ru
+- [ ] simulator: feature.ts scanLesson and scan-lesson.ts buildScanLesson without a track (no loadLessonTrack, no gates; start = the scan's spawn); lessons.ts host openFree
+- [ ] simulator: a scan without walls (session.collision null): spoken and shown line plus the walls build of apps/fly/src/walls.ts if it can be called from the sound page with a small hook, else the line only and a note under For the lead
+- [ ] tests with negative controls: link carries the scene, start order first-timer and experienced, scan-free without a track
+- [ ] probe: new case in tools/bench/src/sonic-int-review.ts on a local release (ports 5700-5719): scene 887f27aa by the new link, free scan flight running, a wall cue planned flying at a wall; screenshots U:/Temp/gsfpv-train2/shots/sound-start-first.png and sound-start-experienced.png
+
 ## Checks (numbers printed by the commands)
 
 Package (C:/dev/ShramkoSonicFPV, node node_modules/vitest/vitest.mjs run):
@@ -47,6 +60,12 @@ Simulator (this worktree, tools/bench):
 - Lesson texts: package lessons/*.json and locales mention the motor only as setting names ("Motor sound", "Motor
   volume"); simulator sonic locales do not say the motor is heard by default. No text change.
 
+- S2 scan-free: the open goal is fly-distance 5000 m (the validator's top for that goal), attemptLimitS null, maxTouches null: the
+  validator needs one goal or more, and a distance no flight reaches keeps the flight open without a validator change. Layers
+  safety, height, room, voice (no target: no course). Assists as free-garden (velocity, altitude hold, 5 m/s). The template is
+  not shipped (not in SOURCES, not on a path), so the lesson ladder, LESSONS and the paths stay as they are; its keys sit in
+  the catalogue's LESSON_TEMPLATES, after the ladder's keys in every locale file. Version 1, own id 'scan-free'.
+
 ## For the lead
 
 - Pin moves to package commit 1ed6103 on branch train2 of C:/dev/ShramkoSonicFPV, which is NOT pushed (no push in this
@@ -67,3 +86,4 @@ Simulator (this worktree, tools/bench):
 
 - S1: most turns went to quoting test patches (a heredoc ate the backslash of TS \' strings); a patch script written
   with Write from the start would have saved two turns.
+- S2: the package's spoken-line evidence (TTS lengths for four voices, the Whisper words check over every line) is a hidden cost of any new package line: 6 turns before the simulator was touched. A note in the scout's design that new package lines need measure-tts.ps1 and listen:words would have let the stage plan for it.
