@@ -59,5 +59,16 @@
   "rooms.vote.passed": "Принято: все летают теперь в {scan}. Загрузка.",
   "rooms.vote.failed": "Мало голосов за {scan} ({yes} из {need}). Комната остаётся здесь.",
   "rooms.vote.same": "Комната уже летает в {scan}.",
-  "rooms.vote.wait": "Вы предложили много сканов за короткое время. Предложите {scan} снова через несколько минут."
+  "rooms.vote.wait": "Вы предложили много сканов за короткое время. Предложите {scan} снова через несколько минут.",
+  "rooms.race.button": "Гонка по трассе",
+  "rooms.race.table": "Таблица гонки",
+  "rooms.race.prep": "{nick} начинает гонку, кругов: {laps}. Готовим трассу.",
+  "rooms.race.count": "{n}",
+  "rooms.race.go": "Старт!",
+  "rooms.race.myLap": "Круг {n}, {time} секунды, место {place}.",
+  "rooms.race.myLapGap": "Круг {n}, {time} секунды, место {place}, отставание {gap} секунды.",
+  "rooms.race.finished": "{nick} финишировал, место {place}, {time} секунды.",
+  "rooms.race.results": "Гонка окончена. Первый: {nick}, {time} секунды.",
+  "rooms.race.resultsMe": "Гонка окончена. Первый: {nick}, {time} секунды. Ваше место: {place}.",
+  "rooms.race.noTimes": "Гонка окончена. Никто не прошёл круг."
 }

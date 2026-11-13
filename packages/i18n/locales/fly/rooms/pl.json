@@ -59,5 +59,16 @@
   "rooms.vote.passed": "Przyjęte: wszyscy latają teraz w {scan}. Wczytywanie.",
   "rooms.vote.failed": "Za mało głosów na tak dla {scan} ({yes} z {need}). Pokój zostaje tutaj.",
   "rooms.vote.same": "Pokój już lata w {scan}.",
-  "rooms.vote.wait": "Zaproponowałeś wiele skanów w krótkim czasie. Zaproponuj {scan} ponownie za kilka minut."
+  "rooms.vote.wait": "Zaproponowałeś wiele skanów w krótkim czasie. Zaproponuj {scan} ponownie za kilka minut.",
+  "rooms.race.button": "Wyścig na trasie",
+  "rooms.race.table": "Tabela wyścigu",
+  "rooms.race.prep": "{nick} zaczyna wyścig, okrążenia: {laps}. Przygotowanie trasy.",
+  "rooms.race.count": "{n}",
+  "rooms.race.go": "Start!",
+  "rooms.race.myLap": "Okrążenie {n}, {time} sekundy, miejsce {place}.",
+  "rooms.race.myLapGap": "Okrążenie {n}, {time} sekundy, miejsce {place}, {gap} sekundy straty.",
+  "rooms.race.finished": "{nick} na mecie, miejsce {place}, {time} sekundy.",
+  "rooms.race.results": "Koniec wyścigu. Pierwszy: {nick}, {time} sekundy.",
+  "rooms.race.resultsMe": "Koniec wyścigu. Pierwszy: {nick}, {time} sekundy. Twoje miejsce: {place}.",
+  "rooms.race.noTimes": "Koniec wyścigu. Nikt nie ukończył okrążenia."
 }

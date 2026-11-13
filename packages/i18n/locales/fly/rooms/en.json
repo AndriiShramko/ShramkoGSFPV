@@ -59,5 +59,16 @@
   "rooms.vote.passed": "Agreed: everyone flies {scan} now. Loading it.",
   "rooms.vote.failed": "Not enough yes votes for {scan} ({yes} of {need}). The room stays here.",
   "rooms.vote.same": "The room already flies {scan}.",
-  "rooms.vote.wait": "You proposed many scans in a short time. Propose {scan} again in a few minutes."
+  "rooms.vote.wait": "You proposed many scans in a short time. Propose {scan} again in a few minutes.",
+  "rooms.race.button": "Race on a course",
+  "rooms.race.table": "Race table",
+  "rooms.race.prep": "{nick} starts a race, {laps} laps. Getting the course ready.",
+  "rooms.race.count": "{n}",
+  "rooms.race.go": "Go!",
+  "rooms.race.myLap": "Lap {n}, {time} seconds, place {place}.",
+  "rooms.race.myLapGap": "Lap {n}, {time} seconds, place {place}, {gap} seconds behind.",
+  "rooms.race.finished": "{nick} finished, place {place}, {time} seconds.",
+  "rooms.race.results": "Race over. First: {nick}, {time} seconds.",
+  "rooms.race.resultsMe": "Race over. First: {nick}, {time} seconds. You are place {place}.",
+  "rooms.race.noTimes": "Race over. Nobody finished a lap."
 }

@@ -59,5 +59,16 @@
   "rooms.vote.passed": "Aceptado: todos vuelan ahora en {scan}. Cargando.",
   "rooms.vote.failed": "No hay suficientes votos a favor de {scan} ({yes} de {need}). La sala se queda aquí.",
   "rooms.vote.same": "La sala ya vuela en {scan}.",
-  "rooms.vote.wait": "Has propuesto muchos escaneos en poco tiempo. Vuelve a proponer {scan} dentro de unos minutos."
+  "rooms.vote.wait": "Has propuesto muchos escaneos en poco tiempo. Vuelve a proponer {scan} dentro de unos minutos.",
+  "rooms.race.button": "Carrera en un circuito",
+  "rooms.race.table": "Tabla de la carrera",
+  "rooms.race.prep": "{nick} empieza una carrera, {laps} vueltas. Preparando el circuito.",
+  "rooms.race.count": "{n}",
+  "rooms.race.go": "¡Ya!",
+  "rooms.race.myLap": "Vuelta {n}, {time} segundos, puesto {place}.",
+  "rooms.race.myLapGap": "Vuelta {n}, {time} segundos, puesto {place}, a {gap} segundos.",
+  "rooms.race.finished": "{nick} terminó, puesto {place}, {time} segundos.",
+  "rooms.race.results": "Carrera terminada. Primero: {nick}, {time} segundos.",
+  "rooms.race.resultsMe": "Carrera terminada. Primero: {nick}, {time} segundos. Tu puesto: {place}.",
+  "rooms.race.noTimes": "Carrera terminada. Nadie completó una vuelta."
 }

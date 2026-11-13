@@ -11,11 +11,36 @@ Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
   apps/rooms/tests/test_race.py: 10 tests OK; all other rooms tests 77 OK. Negative control (old code has no race module,
   so mutants): time checks of a lap removed: 1 failure + 1 error; table ordered by total only: 1 failure.
   Commit: "rooms2: race server".
-- [ ] Q2.2 Page logic: rooms/race.ts (course id choice, countdown lines, lap reports, table lines), socket messages,
-  locales in four languages, test tools/bench/test/rooms-race.test.ts with negative control.
-- [ ] Q2.3 Page glue in app/builtin/rooms.ts: build the course (saved course by id, or the generator's worker by seed),
-  draw its gates, feed its lap timer, the key, HUD table, speech.
-- [ ] Q2.4 Two-browser probe tools/bench/src/rooms-race.ts and its run.
+- [x] Q2.2 Page logic (commit "rooms2: race page logic"): apps/fly/src/rooms/race.ts (`courseFor`: the course flown
+  now, else the scan's newest saved course, else `g1.<new seed>`; `parseCourse`; `Countdown` 10, 3, 2, 1, go, each once,
+  a late page says only the last mark passed; `RaceLaps`: laps after the start only, numbered, up to the race laps;
+  `raceLine` for prep, my lap (with gap), another pilot finishing, results; `tableRows`); rooms/socket.ts: `race()`,
+  `ready()`, `lap()`, `table()`, event `race`, Welcome.race; 11 keys `rooms.race.*` in rooms/{en,es,pl,ru}.json.
+  Test tools/bench/test/rooms-race.test.ts: 7 of 7 pass (two RoomSockets against rooms.py: one startAt, a lap before
+  it refused, the same results table on both, B first, gap 100 ms). Negative controls: neg_control.py with origin/main
+  socket.ts: NEG OK (`sa.race is not a function`); mutant Countdown that skips marks: 2 assertion failures.
+  Typecheck apps/fly: 0 errors.
+- [ ] Q2.3 Page glue in apps/fly/src/app/builtin/rooms.ts (next worker; plan below).
+- [ ] Q2.4 Two-browser probe tools/bench/src/rooms-race.ts (copy rooms-open-vote.ts) and its run.
+
+Plan for Q2.3 (decided, not built):
+- Key: no new keymap action (packages/prefs keymap.ts is not this lane). In a room 9 opens the panel; the panel gets a
+  "Race on a course" button (`rooms.race.button`) focused first, "Propose <next scan>" after it, so a race is 9, Enter.
+  rooms-open-vote.ts then proposes a scan with 9, Tab, Enter (change it there). Key 0 during a race or after it says
+  this pilot's place line from the last table, then who is around (the table on demand); the panel shows the table
+  (`tableRows`, title `rooms.race.table`) and asks `sock.table()` when opened.
+- Proposal: `courseFor(ctx.hook.course, rows, randomSeed)`; rows from `new CourseStore().list(scene)` (course/store.ts),
+  laps = the track's laps once built (send 1 for a seed course before it is built is wrong: build first on the
+  proposer for a seed, or read `track.laps` of a saved row after `store.load`; then `sock.race(id, laps)`).
+- Every page on `race` prep: build the TrackFile (`saved`: CourseStore.load({id, version}); `seed`: the course worker
+  apps/fly/src/course/worker.ts with a CourseJob as course.ts generate() builds it, walls as course.ts walls() reads
+  them), then `new CourseRun(track, ctx.session.transform)` (course/run.ts), draw with `new CourseStage(ctx.renderer)`
+  only when the course feature does not show the same track id, `sock.ready()`.
+- Per frame: `Countdown.due(startAt - serverNow)` -> announcer + hud flash; at go `run.reset()`; then
+  `run.fromSim(ctx.session.runner.sim)` -> `RaceLaps.feed(ev, view.lastLapMs, started)` -> `sock.lap(n, ms)`; respawn
+  and crash events reset the run like course.ts does. On `race` messages: `raceLine` -> announcer.announce + flash; keep
+  the last table in the hook (`h.race = {state, course, startAt, table}`), fill RoomsHook in rooms/hook.ts.
+- On results: hide the race's gates, keep the table for 0 and the panel.
 
 Stage Q1-open-room (done):
 

@@ -6,6 +6,7 @@ import { decodeSnapshot } from './codec';
 import type { Snapshot } from './codec';
 import type { RoomInfo } from './api';
 import type { VoteMsg } from './vote';
+import type { RaceMsg } from './race';
 
 export const PROTOCOL = 'rooms/1';
 /** a ping at least this often: the server closes a socket silent for 70 s (docs/rooms-protocol.md) */
@@ -18,7 +19,7 @@ export const BACKOFF_MS: readonly number[] = [1000, 2000, 4000, 8000, 15000];
 export const FATAL: readonly string[] = ['hello', 'version', 'no-room', 'full'];
 
 export interface Member { slot: number; nick: string }
-export interface Welcome { type: 'welcome'; v: string; slot: number; nick: string; hostSlot: number | null; room: RoomInfo; members: Member[]; serverMs: number; vote?: VoteMsg | null }
+export interface Welcome { type: 'welcome'; v: string; slot: number; nick: string; hostSlot: number | null; room: RoomInfo; members: Member[]; serverMs: number; vote?: VoteMsg | null; race?: RaceMsg | null }
 export type SocketState = 'off' | 'connecting' | 'joined' | 'lost';
 
 export interface RoomSocketEvents {
@@ -31,6 +32,8 @@ export interface RoomSocketEvents {
     vote?(m: VoteMsg): void;
     /** lane rooms2: a vote passed, the room flies this scan now */
     scene?(room: RoomInfo): void;
+    /** lane rooms2, stage Q2: a race message (docs/rooms-protocol.md "Races") */
+    race?(m: RaceMsg): void;
 }
 
 export interface RoomSocketOptions {
@@ -164,6 +167,30 @@ export class RoomSocket {
         if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify({ type: 'agree' }));
     }
 
+    private sendJson(obj: Record<string, unknown>): void {
+        if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(obj));
+    }
+
+    /** lane rooms2, stage Q2: propose a race on a course id ('g1.<seed>' or '<id>.v<n>') */
+    race(course: string, laps: number): void {
+        this.sendJson({ type: 'race', course, laps });
+    }
+
+    /** the course of the race is built on this page */
+    ready(): void {
+        this.sendJson({ type: 'ready' });
+    }
+
+    /** a lap of this page's course timer, after the start */
+    lap(n: number, ms: number): void {
+        this.sendJson({ type: 'lap', n, ms });
+    }
+
+    /** ask for the race table (the race on, or the last one) */
+    table(): void {
+        this.sendJson({ type: 'table' });
+    }
+
     private ping(): void {
         if (!this.ws || this.ws.readyState !== 1) return;
         this.ws.send(JSON.stringify({ type: 'ping', t: this.now() }));
@@ -211,6 +238,9 @@ export class RoomSocket {
                     this.room = m.room as RoomInfo;
                     this.on.scene?.(this.room);
                 }
+                break;
+            case 'race':
+                if (typeof m.course === 'string' && typeof m.state === 'string') this.on.race?.(m as unknown as RaceMsg);
                 break;
             case 'error':
                 if (typeof m.code === 'string' && FATAL.includes(m.code)) this.close(m.code);
