@@ -35,7 +35,10 @@ Plan: docs/wip/train1-plan.md section 3; design docs/wip/tracks-plan.md. Branch 
 - A source 'server' and the store (apps/fly/src/course/store.ts) are T3's; setTrack(track, 'server', null) inside builtin/course.ts is the seam (make it reachable from store.ts).
 
 ### T3 server and probe
-- [ ] not started
+- [x] server: apps/api/tracks.py (store DATA_DIR/tracks/<scene>/<id>/v1.json + index.json, atomic writes with fsync, index rebuilt when lost, disk guard 507, validator port + contract, server id `<scene>-<8 hex>` and created, LIMITS table of estimates), routes wired in server.py (header, _trhits, TRACKS, _tracks); packages/tracks/src/server.ts validateServerTrack (TS twin); 27 shared fixtures (3 valid, 24 invalid) in apps/api/tests/fixtures/tracks. test_tracks.py 13/13 (controls: 413, 400 invalid fixture, 429 on the 11th, 409 on the 21st, 507, newest first + ETag 304, index rebuilt, failed write leaves nothing; each with its passing twin); fixtures.test.ts 29/29 (TS agrees on every file; control: author.kind person passes validateTrack, fails the contract); NEG OK on tracks.py+server.py and on server.ts+index.ts (absent before); test_sessions.py still OK
+- [x] nginx: `location ^~ /api/tracks` directly after `location = /api/roadmap`; test_nginx_tracks.py 4/4 (controls: block cut -> static site; 10 mutated configs each caught, among them $proxy_add_x_forwarded_for); NEG OK on nginx.conf; test_nginx_routes.py still OK (21 nginx tests); README row; docs/tracks-api.md
+- [ ] client: apps/fly/src/course/store.ts (list on scene load, load newest on request with checkTrack in the worker, "Save for everyone"), locales
+- [ ] page probe tools/bench/src/tracks-serve.ts + tracks-page.ts and its three controls; evidence/<date>/tracks-page.json
 
 ## Findings
 - Real walls are copied from C:/dev/ShramkoGSFPV/.cache/scenes (read only) into this worktree's .cache/scenes (gitignored): 7a475d38, 887f27aa, 39e63ce9, bd04e182. bd04e182 is not usable: its scene.voxel.json is missing there and the CDN answers 403.
