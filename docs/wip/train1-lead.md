@@ -3,6 +3,23 @@
 Plan: `docs/wip/train1-plan.md`. Base branch `train1-base`, worktree `C:/dev/gsfpv-train1-base`. Lanes merged into main in the
 plan's order: voice, tracks, rooms. Held back: none.
 
+## Live (2026-11-13, the lead)
+
+ROOMS LIVE CHECK: PASS - two headless browsers in one room on the live site (39e63ce9, ?rooms=1) through the hub's
+nginx-proxy: RMS 0.071 m against 0.15 m, 430 samples, delay 170 ms; other-room and swapped-axes controls fire
+(`tools/bench/src/train1-live.ts`, 14 of 14, `evidence/2026-11-13/train1-live.json`). The WebSocket Upgrade passes.
+
+- Deployed 09:21-09:47 UTC: release-api.sh tracks.py server.py; release-rooms.sh --compose; release-nginx.sh;
+  ship.sh 41372830 (release 41f17726bfd8, smoke 302 checks, neighbours equal, 46 containers).
+- Live checks 09:50-10:05 UTC: tracks list 200, cross-origin POST 400, rooms health 200, RV-3 404; train1-live 14 of 14
+  (course of 12 gates saved and loaded from the live server); accept-fly 10 of 10; R9 11 of 11; centre-throttle pass.
+- Seen by the lead on live screenshots, to fix BEFORE the rooms menu is released to everyone: (1) two pilots share the
+  start point, so the other pilot's drone is a large flat grey shape across the view there (spawn offset by slot, or do
+  not draw a remote nearer than about half a metre: measure); (2) no picture yet of the other drone with its name tag at a
+  normal distance (make one from a fixed camera pose and look at it); (3) courses: the two-line hint overlaps the lap
+  timer while it shows (TR-11).
+- Left on the live server by the check: one saved course on 887f27aa (887f27aa-830e1273).
+
 ## Status
 
 - [x] Planning: base worktree from origin/main 8549533e, designs committed, contract as code (`train1-contract.test.ts`), plan written.

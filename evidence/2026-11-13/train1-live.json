@@ -1,0 +1,211 @@
+{
+  "name": "train1-live",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T10:15:45.778Z",
+    "gitHead": "41372830",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "run": [
+    "tracks",
+    "rooms"
+  ],
+  "shots": "U:/Temp/claude/b8453c7d5e0217ef/aa3a094c-bfa6-4b35-b871-8e59496c0d08/scratchpad/live-train1",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "tracks": {
+    "scene": "887f27aa",
+    "generated": {
+      "on": true,
+      "source": "generated",
+      "track": {
+        "id": "g1.315lit",
+        "version": 1
+      },
+      "seed": 183339317,
+      "gates": 12,
+      "next": 0,
+      "drawn": 63,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 48,
+      "problem": null,
+      "serverTracks": 0,
+      "saved": null
+    },
+    "saved": "887f27aa-830e1273",
+    "loaded": {
+      "on": true,
+      "source": "server",
+      "track": {
+        "id": "887f27aa-830e1273",
+        "version": 1
+      },
+      "seed": 183339317,
+      "gates": 12,
+      "next": 0,
+      "drawn": 63,
+      "laps": 0,
+      "lastLapMs": null,
+      "bestLapMs": null,
+      "beaconPoints": 48,
+      "problem": null,
+      "serverTracks": 1,
+      "saved": null
+    },
+    "shot": "U:\\Temp\\claude\\b8453c7d5e0217ef\\aa3a094c-bfa6-4b35-b871-8e59496c0d08\\scratchpad\\live-train1\\tracks-live-course.png"
+  },
+  "rooms": {
+    "scene": "39e63ce9",
+    "fit": {
+      "delayMs": 170,
+      "rmsM": 0.07123475697202689,
+      "n": 430,
+      "p50M": 0.0356,
+      "p90M": 0.1241,
+      "maxM": 0.2143
+    },
+    "aPathM": 86.17,
+    "bFrames": 600,
+    "bWithRemote": 600,
+    "console": {
+      "a": [],
+      "b": []
+    }
+  },
+  "checks": [
+    {
+      "name": "tracks A Shift+G: a generated course with gates, drawn",
+      "pass": true,
+      "detail": {
+        "source": "generated",
+        "gates": 12,
+        "drawn": 63,
+        "problem": null
+      }
+    },
+    {
+      "name": "tracks A menu: Save for everyone enabled",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "tracks A saved on the live server",
+      "pass": true,
+      "detail": {
+        "saved": "887f27aa-830e1273",
+        "problem": null
+      }
+    },
+    {
+      "name": "tracks B fresh profile: the list has a course",
+      "pass": true,
+      "detail": 1
+    },
+    {
+      "name": "tracks B Shift+T: A's course from the server, drawn",
+      "pass": true,
+      "detail": {
+        "source": "server",
+        "id": "887f27aa-830e1273",
+        "drawn": 63,
+        "problem": null
+      }
+    },
+    {
+      "name": "rooms A: created a room and has a link",
+      "pass": true,
+      "detail": {
+        "link": "<site>/fly/?scene=39e63ce9&room=3ENzx0Ufc2Q",
+        "nick": "Pilot-0568"
+      }
+    },
+    {
+      "name": "rooms B: joined by the link and sees a remote drone",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "rooms A moved",
+      "pass": true,
+      "detail": 86.17
+    },
+    {
+      "name": "rooms B's remote follows A: RMS < 0.15 m over >= 100 samples",
+      "pass": true,
+      "detail": {
+        "rmsM": 0.0712,
+        "n": 430,
+        "delayMs": 170,
+        "p90M": 0.1241,
+        "maxM": 0.2143
+      }
+    },
+    {
+      "name": "rooms B's member list has A's name",
+      "pass": true,
+      "detail": [
+        {
+          "slot": 0,
+          "nick": "Pilot-0568"
+        },
+        {
+          "slot": 1,
+          "nick": "Pilot-3836"
+        }
+      ]
+    },
+    {
+      "name": "rooms speech: A heard the join, B the welcome",
+      "pass": true,
+      "detail": {
+        "a": [
+          "rooms.say.welcome",
+          "rooms.say.joined",
+          "rooms.say.near"
+        ],
+        "b": [
+          "rooms.say.welcome",
+          "rooms.say.near"
+        ]
+      }
+    },
+    {
+      "name": "rooms control: C in another room sees nobody",
+      "pass": true,
+      "detail": {
+        "cRoomDiffers": true,
+        "cFramesWithRemote": 0,
+        "cFrames": 600
+      }
+    },
+    {
+      "name": "rooms control: swapped axes break the fit",
+      "pass": true,
+      "detail": 6.336
+    },
+    {
+      "name": "rooms B: Shift+O says who is around, then A leaves and B hears it",
+      "pass": true,
+      "detail": {
+        "whoLast": "rooms.say.who",
+        "left": true
+      }
+    }
+  ],
+  "pass": true
+}
