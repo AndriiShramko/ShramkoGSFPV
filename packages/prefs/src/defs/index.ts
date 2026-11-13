@@ -17,6 +17,9 @@ import { RECORDING_DEFS } from './recording';
 import { CROSSHAIR_DEFS } from './crosshair';
 import { SOUND_DEFS } from './sound';
 import { PLAY_DEFS } from './play';
+// train 1 (docs/wip/train1-plan.md): one def file per lane, registered here on the train base so no lane edits this file
+import { COURSE_DEFS } from './course';
+import { ROOMS_DEFS } from './rooms';
 
 export const SCHEMA = defineSettings([
     ...FLIGHT_DEFS,
@@ -34,7 +37,9 @@ export const SCHEMA = defineSettings([
     ...RECORDING_DEFS,
     ...CROSSHAIR_DEFS,
     ...SOUND_DEFS,
-    ...PLAY_DEFS
+    ...PLAY_DEFS,
+    ...COURSE_DEFS,
+    ...ROOMS_DEFS
 ]);
 
 export { DRONE_IDS } from './drone';

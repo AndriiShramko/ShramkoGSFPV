@@ -44,6 +44,9 @@ import { sharedSettings } from './builtin/shared-settings';
 import { sonicFlight } from './builtin/sonic-flight';
 import { sonicSession } from './builtin/sonic-session';
 import { gpuHint } from './builtin/gpu-hint';
+// train 1 (docs/wip/train1-plan.md): one feature file per lane, registered here on the train base so no lane edits this file
+import { course } from './builtin/course';
+import { rooms } from './builtin/rooms';
 
 export const FEATURES: readonly Feature[] = [
     scene,
@@ -84,5 +87,7 @@ export const FEATURES: readonly Feature[] = [
     sharedSettings,
     sonicFlight,
     sonicSession,
-    gpuHint
+    gpuHint,
+    course,
+    rooms
 ];
