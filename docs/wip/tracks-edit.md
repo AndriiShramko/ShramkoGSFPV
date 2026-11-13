@@ -39,7 +39,12 @@ Stage T2-editor-core (package side, packages/tracks):
 - [x] E3 negative control: neg_control.py, ref origin/main, files format.ts editor.ts index.ts check.ts: NEG OK (fails on
       the old code by import: `upgradeTrack is not a function`). In-test assertion controls: the check switched off lets
       the move into the floor through; a /2 file without format refused; a fork with origin null or editedBy null refused.
-- [~] E4 mutation control (refusal line removed in editor.ts must fail editor.test.ts by an assertion).
+- [x] E4 mutation control: the refusal line removed from editor.ts (restored with git checkout HEAD after): editor.test.ts
+      2 of 9 failed by assertion (the floor move and the old-problem control), 7 passed. Restored file: clean status.
+- [ ] Left for the next stages: the page editor (apps/fly/src/course/editor/**: key table of tracks-plan 2.11, orbit
+      camera, red gates, live region and locales en/es/pl/ru for every refusal and problem code), save/fork through the
+      API (asSaved builds the file; today's server takes /1: send toTrackV1 and keep the marks in meta.json), vote UI,
+      admin tab, store.ts version filter, pillar pairs as `objects`.
 
 ## Decisions
 
@@ -58,7 +63,24 @@ Stage T2-editor-core (package side, packages/tracks):
 - A train-1 course (v1.json without meta.json, e.g. 887f27aa-830e1273 on the live server) is read as a generated course
   without an edit token: listed, forkable, not editable in place. The train-1 index (v 1) is rebuilt as v 2.
 
+- T2 format: /2 is defined in packages/tracks (the sound package is a submodule, not edited here), field names of
+  tracks-plan 2.6, so the sound package can adopt it as is. The generator still writes /1 (the live server and the
+  determinism digests read /1); readCourse upgrades it. Required /2 keys: origin and editedBy (null without a parent);
+  path, objects, walls may be absent (read as null, [], null). Rule: a parent requires origin and editedBy, no parent
+  forbids both. A /1 fork upgrades with origin = its parent (author null) unless the server's marks are given.
+- T2 editor: only free-space problems (outside the grid, start, gate or leg in a wall) refuse a change, and only when
+  they are new (keyed by code and gate or leg ids), so a course shown red can be repaired. A gate's axis off its leg in
+  (gate-direction) and a missing start only block saving (tracks-plan 2.11: save refused while any gate fails).
+  Undo and redo are not re-checked for refusal. Quaternions written by the editor are rounded to 1e-6 with w >= 0.
+- T2 numbers in editor.ts are the plan's key table or estimates (MOVE_STEP_M 0.1, TURN_STEP_DEG 15, SIZE_STEP_M 0.1,
+  MIN_OPENING_M 0.5, INSERT_AHEAD_M 4, UNDO_MAX 200, MIN_GATES 1 = validateTrack's least); MAX_OPENING_M and the most
+  gates reuse server.ts (MAX_GATE_SIZE_M 20, SERVER_MAX_GATES 60). None measured.
+
 ## For the lead
+
+- T2-editor-core touches only packages/tracks (src/format.ts, src/editor.ts new; src/check.ts TrackReport.outside added;
+  src/index.ts exports). No flight, input or collision code: a6-reference not run. No locales yet: the refusal and problem
+  codes (editor.ts EditRefusal, CourseProblem) need texts in the page stage.
 
 - apps/fly/src/course/store.ts:35 keeps only rows with `version === 1`: once a course has version 2 the live client drops it
   from the list. Change to any integer version >= 1 in the editor stage (or before the API release).
@@ -82,7 +104,15 @@ Stage T2-editor-core (package side, packages/tracks):
 - The full api-unittest suite and the gates were not run (integration runs them); only the six test modules above.
 - The blocklist and the allowed signs are a first guess, not measured against real pilot names.
 
+- T2: the cost of wallsCheck per edit on a real scan (the full proof without free radii, every change) was not measured;
+  the plan's "touched gate and its two legs" shortcut is not built. Only analytic rooms (test/worlds.ts) were used.
+- T2: no browser run, no page; whether the sound package's future /2 matches this one is not known.
+
 ## Cost notes
+
+- T2-editor-core (about 25 replies): most turns went to the quaternion sign (a full turn writes -q; the generator's
+  table writes w < 0) and a debug test whose console output vitest swallowed. Cheaper: compare rotations up to sign
+  from the start; print debug values through an assertion message, not console.log.
 
 - T1-api (about 35 replies): most turns went to the shared-fixture contract (the TS validator enforces the format's
   succession rule the Python port lacked, found only by the vitest run) and to escape sequences turning into real
