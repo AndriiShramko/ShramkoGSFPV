@@ -11,7 +11,7 @@ plan's order: voice, tracks, rooms. Held back: none.
       byte-identical to train1-base and were deleted before the merge (the other untracked docs are not train 1's).
 - [x] I2. Sound package: branch voice-feedback (d28d9c2) merged --no-ff into package main = 378cc50 (typecheck exit 0; tests
       62 files passed 1 skipped, 1300 passed 4 skipped), pushed to the public remote.
-- [x] I3. On main: merge train1-base 0d63c361, voice cade079d, tracks, rooms (no conflicts); pin packages/sonic-fpv -> 378cc50
+- [x] I3. On main: merge train1-base 0d63c361, voice cade079d, tracks 0b6a0e4d, rooms 1d62eb0a (no conflicts); pin packages/sonic-fpv -> 378cc50
       (fbed1010); pnpm install --frozen-lockfile exit 0.
 - [x] I4/I5a. First gates run on the merge: FAIL vitest (4 of 4410 tests) and catalog (stale); fixed below, catalogue regenerated.
 - [x] I5b. All gates on fb028968: exit 0 (typecheck, vitest 284 files passed 1 skipped / 4396 tests passed 14 skipped, api-unittest
@@ -34,15 +34,59 @@ plan's order: voice, tracks, rooms. Held back: none.
         different course (gate 3 near [4, 3.2, 2.6]; this run gate 8 near [24, 14.8, -10.6]). NEXT: read the 'check' result path
         for checkFor.kind 'server' in builtin/course.ts, decide whether the probe or the page is wrong, fix with a test, re-run
         tracks-page.ts (rebuild dist first: node scripts/build-release.mjs).
-  - [ ] Plan probe 1: `cd tools/bench && npx tsx src/rooms-two-page.ts` (own rig and GPU lock) with its three controls.
-  - [ ] Plan probe 2 (tracks with rooms in one room) and probe 4 (?sonic= scan page with a course: CourseHook.beaconPoints > 0;
-        tracks-page A already printed 'A beacon points > 0 63' on the merge) plus sonic-v13-page.ts.
-  - [ ] Plan probe 5: voice `pnpm analyze -- test/fixtures/session-voice-two-lessons.zip --out <dir> --transcript
-        test/fixtures/voice-two-lessons.transcript.json` in packages/sonic-fpv (378cc50) vs C:/dev/sonic-voice (d28d9c2): same digest.
-  - [ ] Regression: sonic-int-review.ts r9 (11 of 11), centre-throttle-probe.mjs (no own lock: wrap in the GPU lock);
-        wizard-auto-check.mjs and hid-source-probe.mjs with /en (keymap changed: course keys shipped).
-- [ ] I7. Deploy order, live checks, owner tries, not verified (this note).
+  - [x] Plan probe 1, rooms-two-page.ts on the merged dist: pass, 13 of 13 checks (evidence train1/rooms-two-page.json):
+        A flew 82.75 m in 20 s, B saw A in 599 of 599 frames, RMS 0.0926 m (p90 0.141, bound 0.15) at playout delay 190 ms
+        over 443 samples clear of A's 6 respawns; members, tag, join / welcome / who / leave / nobody lines. Controls fired:
+        another room 0 of 599 frames with a remote; relay off 0 of 240, remote moved 0 m; swapped axes RMS 6.40 m.
+  - [x] Plan probe 4: on the merged scan page A (887f27aa) CourseHook.beaconPoints 31 > 0 with a generated course (run 2;
+        63 in run 1); sonic-v13-page.ts 68 of 68 (evidence train1/sonic-v13-page.json). A ?sonic= page with a course is
+        not possible in train 1 (the sound mode never reads the course: tracks' train-2 item), so this is the part that exists.
+  - [ ] Plan probe 2 (tracks and rooms in one room): NOT RUN, no script exists and the two rigs are separate
+        (rooms-serve.ts has no tracks API, tracks-serve.ts no rooms relay). Under "Not verified".
+  - [x] Regression on the same dist (serve-csp 5471, one GPU lock for the three scripts without their own):
+        sonic-int-review.ts r9 11 of 11 (184 s); centre-throttle-probe.mjs all 3 runs pass (dji-centred, dji-flip,
+        dji-bottom); wizard-auto-check.mjs /en: nobuttons, human and dji all reach 'check' with a profile, 0 errors;
+        hid-source-probe.mjs /en: pass, 8 of 8 runs. Evidence train1/{sonic-int-review-r9,centre-throttle-probe,
+        wizard-auto-check,hid-source-probe}.json.
+- [x] I7. Deploy order, live checks, owner tries, not verified (this note).
 - [ ] I8. Push main.
+
+## Deploy order for the lead (nothing of it was run by the integration stage)
+
+Every step with the neighbour snapshots and the hub lock, as in plan section 8. Sound package main 378cc50 is already
+pushed (public), so the pin resolves.
+
+1. API: `bash deploy/release-api.sh apps/api/tracks.py apps/api/server.py` (no --compose: compose.yml changed only by the
+   new gsfpv-rooms service, which step 2 creates; no --locales: no bot or mail strings changed; no config.env change).
+   The API writes DATA_DIR/tracks/ itself (create nothing by hand). /api/tracks is unreachable until step 3.
+2. Rooms: `bash deploy/release-rooms.sh --compose` (first release: `docker compose up -d gsfpv-rooms` creates only that
+   container; health /api/rooms/health from inside the network within 40 s). Memory: mem_limit 64m, cpus 0.25,
+   pids_limit 8, read-only, rooms in RAM, no volume (the hub's free memory before it: check with the neighbour snapshot).
+3. nginx: `bash deploy/release-nginx.sh` (deploy/nginx.conf: `location ^~ /api/tracks` after `/api/roadmap`, two rooms
+   zones after `gsfpv_tg`, `/api/rooms` and `/api/rooms/ws` after `/api/health`; `nginx -t`, reload).
+4. Static: `bash deploy/ship.sh` (allow list in the neighbour diff now `gsfpv-web,gsfpv-api,gsfpv-rooms`). The rooms menu
+   stays behind `?rooms=1` (`ROOMS_MENU_PUBLIC = false` in apps/fly/src/app/builtin/rooms.ts).
+5. After the live checks below pass: a second static release with `ROOMS_MENU_PUBLIC = true` plus lane rooms' RV-1 list
+   (keymap lines `rooms.*` shipped, SHIPPED_BY_ROOMS in keymap.test.ts, `ctx.keys.on`, gen-catalog). Rollback in reverse.
+Voice deploys nothing (an offline owner tool in the package).
+
+## Live checks after the deploy
+
+- `GET /api/tracks?scene=887f27aa` 200 JSON list; a POST from another origin refused; `GET /api/rooms/health` 200.
+- Rooms RV-3: `/api/rooms%20HTTP/1.1%0d%0aX-Forwarded-For:%201.2.3.4%0d%0a...` answers 400 or 404 and makes no room.
+- `cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx src/sonic-int-review.ts r9`; accept-fly B6..B16 with SITE.
+- Two browsers with `?rooms=1` on the live site: A creates a room, B opens the link, B sees A move (the hub's nginx-proxy
+  passing `Upgrade` was never verified: the first thing to watch).
+- Tracks: Shift+G on 887f27aa, pause menu "Save for everyone", a fresh profile Shift+T loads it.
+
+## What the owner should try by hand
+
+- Fly 887f27aa (or any big scan), press Shift+G: a course of gates appears; fly the laps, see the lap time; Esc, "Save
+  for everyone"; open the same scan in another browser, Shift+T loads it.
+- Open the site with `?rooms=1`, "Fly with others" (Shift+L), send the link to a second device, fly together; Shift+O
+  says who is around.
+- Voice: nothing to try in the browser; the offline analysis of a recording package is the owner's command in the
+  package (`pnpm analyze -- <package.zip> --out <dir>`), only after the consent decision below.
 
 ## Integration fixes (seams no lane could see alone)
 
@@ -61,11 +105,44 @@ plan's order: voice, tracks, rooms. Held back: none.
 - Tests: keymap, main-audit, sonic-int-lazy, train1-contract 4 files 55 passed; with the course/tracks/rooms tests 14 files.
   Negative control: sonic-int-lazy + main-audit against the merge's features.ts, announce.ts, course.ts: NEG OK.
 
+## Open items of the lanes, for the lead (not done at the merge)
+
+- Tracks: TR-13/TR-8 (export the page's walls on 887f27aa and prove the run-4 course in Node: page and Node may prove
+  against different walls; the page gives fewer gates than Node); TR-14 d (Shift held in flight for Shift+T/Shift+G; key
+  help or other keys in train 2); TR-11 (course block vs a two-line flash, 76 px an estimate); TR-7 option (a) a KeyWhen
+  'not sonic' (train 2); TR-6 (scene id not checked against the catalogue; no owner-only removal); TR-4 (probe: T off, T on,
+  paint again); TR-5 (whether ctx.session.collision is a stable object: run 2 showed no 'moved' loop on 887f27aa).
+- Tracks, Fly by Sound (train 2): sonic/feature.ts must pass the course to ScanSonicWorld.setCourse and drop it on a new
+  scene; a lesson template for flying a course.
+- Rooms: RV-1 at the second static release (above, deploy step 5); RV-3 live check; RV-6 (up to 12 room lines a minute
+  over a running Fly by Sound lesson, not run on a ?sonic= page); the base's other `proxy_pass $api_upstream$uri`
+  locations deserve `$request_uri`; a gate or CI line for `python -m unittest discover -s apps/rooms/tests` (53 tests OK
+  here); boot.ts: a bare `/fly/?room=<id>` shows the scene picker (links carry `?scene=` until fixed); respawn slide of
+  about 0.4 s on B (a 'respawned' pose flag, train 2); `rooms.nick` is a storage key, not a setting; motor sound of
+  other drones for Fly by Sound needs the package change of rooms-plan.md 2.7 (train 2).
+- Voice: the consent panel and privacy page do not yet say that a recording may be transcribed offline on the author's
+  computer (the lane's sentence is in docs/wip/voice.md); decide before the first run on real recordings. V-R2 (a pattern
+  for the `speech` event key in the package codec), `pnpm report -- <zip>` under pnpm 11 (skip a literal `--`), the
+  opt-in end-to-end check SHRAMKO_VOICE_E2E=1: package items for a later package release.
+
+## Not verified
+
+- Plan probe 2 (tracks and rooms in the same room on one page): not run, no rig serves both (see Status).
+- Probe C2 of tracks-page took the 'skipped to the next saved row' branch; the 'refused with no other row' branch of
+  the page (course.ts line 172) was not driven in a browser on the merge.
+- A ?sonic= page with a course (does not exist in train 1).
+- Everything on the live site: no deploy in this stage; the hub's nginx-proxy passing `Upgrade` for /api/rooms/ws.
+- The memory of gsfpv-rooms under real load on the hub (the lane's load run was on a PC).
+
 ## Not verified (planning stage, kept)
 
 - Where the real walls of the bench tests come from (no `.cache/scenes` folder in the base or in `gsfpv-v03`).
 
 ## Cost notes
+
+- Integration run 2 (about 30 replies, I6 to I8): the probes were cheap once chained in one background script with one
+  log each; most turns went into reading each probe's own output format (wizard and hid write no single verdict). A
+  common `{pass, checks}` line printed by every probe would have saved about 4 turns.
 
 - Integration run 1 (about 40 replies, stopped in I6): most turns went into the four seam failures the lanes could not see
   (main chunk closure, query-string audit, keymap test) and reading probe internals; a lane-side run of sonic-int-lazy.test.ts
