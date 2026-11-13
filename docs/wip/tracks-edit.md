@@ -179,6 +179,34 @@ Stage fixes (review findings TK-1..TK-12 of train 2):
       passed (evidence/2026-11-13/tracks-editor-fixes.json, not committed; 24 key buttons, 0 overlapping at 1920x1080).
 - Refuted: none of TK-1..TK-12 (each read in the code and confirmed; TK-8 is the plan's rule as written, changed as the
   review asked).
+
+Stage F1-finish (the lane's last stage):
+- [x] P1 (d83eb7e6) HUD under the editor: ui/hud.ts update() gains `panel` (flight.ts passes pause reason 'panel'): no
+      take-off prompt while a window pauses the flight. editor.css: the window starts under the top-right row
+      (var --top-row-bottom of ui/top-row.ts), the save row is sticky at the window's bottom edge, and on low windows
+      (max-height 500 or max-width 640) the window keeps 56 px left of the lone sound button (a3a96a92). HUD files touched
+      outside the lane: apps/fly/src/ui/hud.ts (one parameter, one condition), apps/fly/src/app/flight.ts (one argument).
+- [x] P2 (d83eb7e6) R6/R7/R8 parts: course/editor/rules.ts (pure): editPaints (selected magenta, failing red, failing
+      selected orange; colours in view.ts PAINT are design choices, not measured), badGates (a leg in a wall marks both
+      ends), lappedIds/mayVote (voting only after a completed lap, tracks-plan 2.9: read from the best-lap keys
+      gsfpv.course.best, no new localStorage key), adminVersionBody (the admin's version: served id, next version, person
+      file under ADMIN_AUTHOR_NAME, generator null). view.ts paintEdit; panel.ts "Save as the admin's version" (shown only
+      when adminHinted() and GET /api/admin/session answer, as scene-default.ts does), vote buttons disabled with "Fly a
+      lap of this course to vote"; course.ts saveAdmin posts to /api/admin/tracks/<id>/versions (TracksAdminClient).
+      Locales en/es/pl/ru: 4 keys (course.edit.saveAdmin, savedAdmin, adminFirst, voteAfterLap).
+      Test tools/bench/test/tracks-finish.test.ts (5 tests). Runs: tracks-finish + tracks-editor-ui + tracks-fixes 22
+      passed; tsc apps/fly exit 0, tsc tools/bench exit 0; 0 non-ASCII bytes in the 9 changed code files (ui/hud.ts keeps
+      its 11 of origin). Negative control neg_control.py --ref HEAD, files rules.ts link.ts en.json: NEG OK (by import,
+      rules.ts absent); mutation control (selected-bad dropped, lappedIds takes any key): 2 of 5 failed by AssertionError,
+      file restored.
+- [x] P3 (d9c6b40d, dcadd124, 4th commit) probe tracks-page.ts: E checks the empty .gate-msg, the paint, no vote before
+      a lap, then a best lap written as a flown lap leaves it and the vote; at both sizes no top button under the window
+      and both save buttons in view unscrolled. New E3 adminLinkFlow (A3): signs in on the local copy's /admin/ with the
+      TEST password (.cache/admin-test.json of the lead copy, read only), opens course=<fork>.v1&edit=1, checks the
+      served course loaded and the editor open, moves a gate, "Save as the admin's version": v2 on the server under
+      'Admin', row "edited by admin". Run 1: 12/13 (the probe's Esc only returned the focus); run 2: 20/21 (844x390: the
+      sound button under the window; fixed in a3a96a92).
+- [~] P4 run 3 of E after the fix, screenshots, the full tracks-page run, apps/api python tests (485 OK, see below).
 ## Decisions
 
 - T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with
