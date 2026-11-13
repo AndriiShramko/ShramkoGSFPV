@@ -3,8 +3,9 @@
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
-import { MARGIN_M, checkTrack, freeSpace, generateCourse } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, MARGIN_M, checkTrack, freeSpace, generateCourse } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
+import { enoughGates } from './run';
 
 export interface CourseGrid {
     flip: boolean;
@@ -42,7 +43,7 @@ export interface CheckJob {
 }
 
 export type FromCourseWorker =
-    | { t: 'track'; job: number; track: TrackFile | null; ms: number }
+    | { t: 'track'; job: number; track: TrackFile | null; short?: boolean; ms: number }
     | { t: 'checked'; job: number; ok: boolean; issues: string[]; ms: number }
     | { t: 'error'; job: number; message: string };
 
@@ -87,8 +88,9 @@ scope.onmessage = (e) => {
         const meta = metadataOf(m.grid, m.nodes.length, m.leaf.length);
         const walls = m.grid.flip ? new FlippedVoxelCollision(meta, m.nodes, m.leaf) : new VoxelCollision(meta, m.nodes, m.leaf);
         const free = freeSpace(walls, { spawn: m.spawn });
-        const track = generateCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created });
-        scope.postMessage({ t: 'track', job: m.job, track: track.gates.length > 0 ? track : null, ms: Math.round(performance.now() - t0) });
+        // lane review TR-8: a course under gatesMin (a 1-gate "course" in the page) is retried with derived seeds, else refused
+        const got = enoughGates((seed) => generateCourse(free, walls, { seed, scene: m.scene, transform: m.transform, created: m.created }), m.seed, COURSE_DEFAULTS.gatesMin);
+        scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, ms: Math.round(performance.now() - t0) });
     } catch (err) {
         scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });
     }

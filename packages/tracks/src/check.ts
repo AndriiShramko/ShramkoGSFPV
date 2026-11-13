@@ -37,6 +37,19 @@ const r3 = (n: number): number => Math.round(n * 1000) / 1000;
 const v3 = (a: Vec3): Vec3 => [r3(a[0]), r3(a[1]), r3(a[2])];
 const angleDeg = (a: Vec3, b: Vec3): number => Math.acos(Math.max(-1, Math.min(1, dot(unit(a), unit(b))))) / DEG;
 
+/** `p` (in the frame `col` is queried in) lies inside the walls' voxel grid; a flipped grid is queried at (-x, -y, z). */
+export function insideGrid(col: VoxelCollision, p: Vec3): boolean {
+    const f = col.flipXY ? -1 : 1;
+    const q = [f * p[0], f * p[1], p[2]];
+    const min = [col.gridMinX, col.gridMinY, col.gridMinZ];
+    const n = [col.numVoxelsX, col.numVoxelsY, col.numVoxelsZ];
+    for (let i = 0; i < 3; i++) {
+        const lo = min[i]!, hi = lo + n[i]! * col.voxelResolution;
+        if (!(q[i]! >= lo && q[i]! <= hi)) return false;
+    }
+    return true;
+}
+
 /** The walls as the session flies them: the scan's octree under T(p) = s * p + t. */
 export function flownCollision(base: VoxelCollision, transform: readonly [number, number, number, number]): VoxelCollision {
     return transformCollision(base, transform[0], [transform[1], transform[2], transform[3]]);
@@ -173,10 +186,17 @@ export function flownStart(track: TrackFile, transform: readonly [number, number
  * (reported as the cap), which only the proof's margin needs when it is searched for (provenMargin).
  */
 export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true): TrackReport {
-    const sw = sweeperOf(col);
     const gates = trackToObjects(track, { transform });
-    const issues: string[] = [];
     const start = flownStart(track, transform);
+    // lane review TR-3: outside the walls' grid counts as free to the sweeps, and a gate far out made them run for minutes;
+    // a course is proven only inside the grid, and one that leaves it is refused before any sweep
+    const out = [...(start ? [{ id: 'start', p: start.pos }] : []), ...gates.map((g) => ({ id: g.id, p: g.pos }))].filter((x) => !insideGrid(col, x.p));
+    if (out.length > 0) {
+        const issues = out.slice(0, 4).map((x) => `${x.id}: outside the walls' grid`);
+        return { marginM, ok: false, startClear: false, startFreeM: 0, gates: [], legs: [], pathM: 0, minGapM: 0, minFreeM: 0, issues };
+    }
+    const sw = sweeperOf(col);
+    const issues: string[] = [];
     if (!start) issues.push('the track has no start pose');
     const startPos: Vec3 = start ? start.pos : gates[0]!.pos;
     const startFreeM = measure ? freeRadius(col, startPos) : sphereOverlaps(col, startPos[0], startPos[1], startPos[2], marginM) ? 0 : CAP_M;

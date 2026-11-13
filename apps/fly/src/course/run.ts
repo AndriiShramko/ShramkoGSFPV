@@ -17,8 +17,12 @@ export class CourseRun {
     private readonly timer: LapTimer;
     private prev: Vec3 | null = null;
 
+    /** the flown transform the gates were laid with (lane review TR-5: a rescale in flight must re-lay and re-prove them) */
+    readonly placedAt: string;
+
     constructor(track: TrackFile, tr: FlownTransform, bestMs: number | null = null) {
         this.track = track;
+        this.placedAt = placementOf(tr);
         const transform: [number, number, number, number] = [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0];
         this.gates = trackToObjects(track, { transform });
         this.path = coursePath(track, transform);
@@ -54,4 +58,31 @@ export class CourseRun {
     view(tMs?: number): LapView {
         return this.timer.view(tMs);
     }
+
+    /** The scene's transform is no longer the one the gates were laid with (the scale feature changed it in flight). */
+    stale(tr: FlownTransform): boolean {
+        return placementOf(tr) !== this.placedAt;
+    }
+}
+
+/** A transform as a key: scale and offset, as the session holds them. */
+export function placementOf(tr: FlownTransform): string {
+    return `${tr.s},${tr.t[0] ?? 0},${tr.t[1] ?? 0},${tr.t[2] ?? 0}`;
+}
+
+/**
+ * Lane review TR-8: a course under `gatesMin` gates is not a course. `make(seed)` is tried with `seed`, then with seeds derived
+ * from it (deterministic, so a link still rebuilds the same course on the same walls), at most `tries` times; the first with
+ * at least `gatesMin` gates wins, else none (`short` says some had gates, but too few).
+ */
+export function enoughGates(make: (seed: number) => TrackFile, seed: number, gatesMin: number, tries = 3): { track: TrackFile | null; short: boolean; tried: number } {
+    let short = false;
+    let s = seed >>> 0;
+    for (let i = 0; i < tries; i++) {
+        const t = make(s & 0x7fffffff);
+        if (t.gates.length >= gatesMin) return { track: t, short: false, tried: i + 1 };
+        if (t.gates.length > 0) short = true;
+        s = (Math.imul(s ^ (s >>> 15), 0x2c1b3c6d) + 0x9e3779b9) >>> 0;
+    }
+    return { track: null, short, tried: tries };
 }

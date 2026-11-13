@@ -49,6 +49,11 @@ export const course: Feature = {
         let linkSeed = seedOfLink(location.search);
         let pending: number | null = null;
         let checking: TrackFile | null = null;
+        /** what a 'check' job is for: the server's row `index`, or a course already shown that is re-proven (TR-5) */
+        let checkFor: { kind: 'server'; index: number } | { kind: 'again'; source: CourseHook['source']; seed: number | null } = { kind: 'server', index: 0 };
+        /** the walls the shown course was proven on (a new walls object: re-prove, lane review TR-5) */
+        let provenOn: unknown = null;
+        let watchdog: ReturnType<typeof setTimeout> | null = null;
 
         const drone = (): string => ctx.session.presetId;
         const tick = (): number => ctx.session.runner.sim.tick;
@@ -81,6 +86,7 @@ export const course: Feature = {
 
         const setTrack = (track: TrackFile | null, source: CourseHook['source'], seed: number | null): void => {
             run = track ? new CourseRun(track, ctx.session.transform, readBest(keyOf(track))) : null;
+            provenOn = track ? ctx.session.collision : null;
             hook.source = track ? source : 'none';
             hook.track = track ? { id: track.id, version: track.version } : null;
             hook.seed = track ? seed : null;
@@ -116,26 +122,59 @@ export const course: Feature = {
             ctx.hud.flash(text, 4000);
         };
 
+        // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
+        // the worker, so Shift+G and Shift+T work again. ESTIMATES: a check took 1.9 s in the page (run 5), a course 15-31 s
+        const CHECK_LIMIT_MS = 20_000;
+        const GENERATE_LIMIT_MS = 150_000; // up to three tries of enoughGates
+        const disarm = (): void => {
+            if (watchdog !== null) clearTimeout(watchdog);
+            watchdog = null;
+        };
+        const arm = (ms: number): void => {
+            disarm();
+            watchdog = setTimeout(() => {
+                watchdog = null;
+                worker?.terminate();
+                worker = null;
+                job++;
+                busy = false;
+                checking = null;
+                fail('timeout', t('course.failed', { msg: 'timeout' }));
+            }, ms);
+        };
+
         const onWorker = (e: MessageEvent<FromCourseWorker>): void => {
             const m = e.data;
             if (m.job !== job) return;
             busy = false;
+            disarm();
             if (m.t === 'error') {
                 checking = null;
                 return fail(m.message.slice(0, 200), t('course.failed', { msg: m.message.slice(0, 120) }));
             }
             if (m.t === 'checked') {
                 const tr = checking;
+                const why = checkFor;
                 checking = null;
                 if (!tr) return;
-                // a course that does not fit the pilot's own walls is never shown (the server cannot see walls)
-                if (!m.ok) return fail(`refused: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
+                if (why.kind === 'again') {
+                    // TR-5: the scene was rescaled or its walls changed under a shown course
+                    if (!m.ok) return fail(`moved: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
+                    setTrack(tr, why.source, why.seed);
+                    return;
+                }
+                // a course that does not fit the pilot's own walls is never shown (the server cannot see walls); TR-3: the next
+                // saved course is tried instead of stopping at the newest
+                if (!m.ok) {
+                    if (why.index + 1 < rows.length) return void loadServer(why.index + 1);
+                    return fail(`refused: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
+                }
                 setTrack(tr, 'server', tr.generator?.seed ?? null);
                 ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
                 return;
             }
-            if (!m.track) return fail('nothing fits', t('course.none'));
-            setTrack(m.track, 'generated', pending);
+            if (!m.track) return fail(m.short ? 'too few gates' : 'nothing fits', t('course.none'));
+            setTrack(m.track, 'generated', m.track.generator?.seed ?? pending);
             history.replaceState(history.state, '', withCourse(location.href, m.track.id));
             ctx.hud.flash(t('course.ready', { n: m.track.gates.length }), 4000);
         };
@@ -145,6 +184,7 @@ export const course: Feature = {
                 worker = new Worker(new URL('../../course/worker.ts', import.meta.url), { type: 'module' });
                 worker.onmessage = onWorker;
                 worker.onerror = (e) => {
+                    disarm();
                     busy = false;
                     checking = null;
                     fail(e.message || 'worker error', t('course.failed', { msg: e.message || 'worker error' }));
@@ -184,12 +224,30 @@ export const course: Feature = {
                 created: new Date().toISOString()
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
+            arm(GENERATE_LIMIT_MS);
         };
 
-        /** The newest course the server keeps for this scene: fetched, held to the contract, proven on our walls, then shown. */
-        const loadServer = async (): Promise<void> => {
-            const row = rows[0];
-            if (!row || busy) return;
+        /** A course on the screen proven again on the walls and scale of now (lane review TR-5); hidden until it holds. */
+        const proveAgain = (): void => {
+            const tr = run?.track;
+            const w = walls();
+            if (!tr) return;
+            const again = { kind: 'again' as const, source: hook.source, seed: hook.seed };
+            setTrack(null, 'none', null);
+            if (!w) return;
+            job++;
+            busy = true;
+            checking = tr;
+            checkFor = again;
+            const msg: CheckJob = { t: 'check', job, ...w, track: tr, transform: flownTransform() };
+            ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
+            arm(CHECK_LIMIT_MS);
+        };
+
+        /** The newest course the server keeps for this scene (or the next when it is refused): fetched, held to the contract, proven on our walls, then shown. */
+        const loadServer = async (index = 0): Promise<void> => {
+            const row = rows[index];
+            if (!row || (busy && index === 0)) return;
             const w = walls();
             if (!w) return fail('no walls', t('course.noWalls'));
             busy = true;
@@ -198,17 +256,17 @@ export const course: Feature = {
             const mine = ++job;
             const got = await store.load(row);
             if (mine !== job) return;
-            if (!got.ok) {
+            if (!got.ok || got.track.scene.id !== ctx.session.scene.id) {
                 busy = false;
-                return fail(got.problem, t('course.server.failed', { msg: got.problem.slice(0, 120) }));
-            }
-            if (got.track.scene.id !== ctx.session.scene.id) {
-                busy = false;
+                if (index + 1 < rows.length) return loadServer(index + 1);
+                if (!got.ok) return fail(got.problem, t('course.server.failed', { msg: got.problem.slice(0, 120) }));
                 return fail('another scene', t('course.server.refused'));
             }
             checking = got.track;
+            checkFor = { kind: 'server', index };
             const msg: CheckJob = { t: 'check', job: mine, ...w, track: got.track, transform: flownTransform() };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
+            arm(CHECK_LIMIT_MS);
         };
 
         const save = async (): Promise<void> => {
@@ -245,12 +303,14 @@ export const course: Feature = {
             draw();
         };
 
+        // lane review TR-7: the sound mode cannot fly a visual course yet (train 2), and Shift is its keyboard's 'down', so the
+        // keys do nothing while the mode is on (ctx.sonic is set only then); the routing itself is the lead's (keymap.test.ts:160)
         ctx.keys.on('course.toggle', (e) => {
-            if (e.repeat) return;
+            if (e.repeat || ctx.sonic) return;
             toggle();
         });
         ctx.keys.on('course.generate', (e) => {
-            if (e.repeat) return;
+            if (e.repeat || ctx.sonic) return;
             generate(randomSeed());
         });
         ctx.menu.add({ id: 'pause.course', action: 'course.generate', labelKey: 'course.menu.generate', order: 72, section: 'tools', run: () => generate(randomSeed()) });
@@ -267,7 +327,11 @@ export const course: Feature = {
             run: () => void save(), enabled: () => run !== null && hook.source === 'generated' && hook.saved === null && !saving
         });
 
-        ctx.events.on('frame', () => frame());
+        ctx.events.on('frame', () => {
+            // TR-5: the scale feature (session.setTransform) and the walls switch fire no 'session' event
+            if (run && !busy && (run.stale(ctx.session.transform) || ctx.session.collision !== provenOn)) return proveAgain();
+            frame();
+        });
         ctx.events.on('sim', (e) => {
             if (e.type === 'respawn' || e.type === 'crash') run?.reset();
         });
@@ -280,6 +344,7 @@ export const course: Feature = {
         // a new scene: its walls are others, so the course goes (a link's seed is for the scene the page opened with)
         ctx.events.on('session', () => {
             job++;
+            disarm();
             busy = false;
             checking = null;
             rows = [];

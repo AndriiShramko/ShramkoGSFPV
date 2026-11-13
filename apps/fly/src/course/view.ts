@@ -62,7 +62,12 @@ export class CourseStage {
     }
 
     private box(): Mesh {
-        this.boxMesh ??= Mesh.fromGeometry(this.r.device, new BoxGeometry({ halfExtents: new PcVec3(0.5, 0.5, 0.5) }));
+        if (!this.boxMesh) {
+            this.boxMesh = Mesh.fromGeometry(this.r.device, new BoxGeometry({ halfExtents: new PcVec3(0.5, 0.5, 0.5) }));
+            // lane review TR-4: the engine frees a mesh with its last mesh instance (hide() destroys them all), so the stage
+            // holds its own reference to the box it reuses across shows and lets it go in dispose()
+            this.boxMesh.incRefCount();
+        }
         return this.boxMesh;
     }
 
@@ -141,6 +146,10 @@ export class CourseStage {
         this.hide();
         for (const m of this.materials.values()) m.destroy();
         this.materials.clear();
+        if (this.boxMesh) {
+            this.boxMesh.decRefCount();
+            if (this.boxMesh.refCount < 1) this.boxMesh.destroy();
+        }
         this.boxMesh = null;
     }
 }

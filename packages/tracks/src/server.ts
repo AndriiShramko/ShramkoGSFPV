@@ -64,6 +64,9 @@ function paramIssues(p: Record<string, unknown>, issues: string[]): void {
     }
 }
 
+/** a coordinate beyond MAX_COORD (no Math.abs: architecture rule 8 for packages/tracks) */
+const far = (c: number): boolean => c > MAX_COORD || c < -MAX_COORD;
+
 function vec(x: unknown): [number, number, number] | null {
     return Array.isArray(x) && x.length === 3 && x.every(isNum) ? (x as [number, number, number]) : null;
 }
@@ -74,11 +77,11 @@ function boundIssues(r: Record<string, unknown>, issues: string[]): void {
     gates.forEach((g, i) => {
         const pos = vec(typeof g === 'object' && g !== null ? (g as Record<string, unknown>).pos : null);
         if (!pos) return;
-        if (pos.some((c) => Math.abs(c) > MAX_COORD)) issues.push(`gates[${i}].pos: must be within ${MAX_COORD} of the origin`);
+        if (pos.some(far)) issues.push(`gates[${i}].pos: must be within ${MAX_COORD} of the origin`);
         else pts.push(pos);
     });
     const start = typeof r.start === 'object' && r.start !== null ? vec((r.start as Record<string, unknown>).pos) : null;
-    if (start && start.some((c) => Math.abs(c) > MAX_COORD)) issues.push(`start.pos: must be within ${MAX_COORD} of the origin`);
+    if (start && start.some(far)) issues.push(`start.pos: must be within ${MAX_COORD} of the origin`);
     const t = r.transform;
     const s = Array.isArray(t) && t.length === 4 && isNum(t[0]) && t[0] > 0 && t[0] <= 1000 ? t[0] : null;
     if (s === null || pts.length === 0 || pts.length !== gates.length) return;
@@ -86,7 +89,8 @@ function boundIssues(r: Record<string, unknown>, issues: string[]): void {
     if (isNum(r.laps) && r.laps > 1 && pts.length > 1) legs.push([pts.length - 1, 0]);
     for (const [a, b] of legs) {
         const p = pts[a]!, q = pts[b]!;
-        if (Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) * s > MAX_LEG_M) {
+        const dx = p[0] - q[0], dy = p[1] - q[1], dz = p[2] - q[2];
+        if (Math.sqrt(dx * dx + dy * dy + dz * dz) * s > MAX_LEG_M) {
             issues.push(`gates[${a}]: the leg to the next gate must be at most ${MAX_LEG_M} m`);
             return;
         }
