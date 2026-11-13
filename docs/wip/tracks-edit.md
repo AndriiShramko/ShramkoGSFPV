@@ -84,6 +84,50 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
       gate (view.ts has no 'bad' paint yet; problems are shown as text), pillar pairs as key 4 (key 4 is cube for now),
       Space "drop here" in flight, voting only after a completed lap (tracks-plan 2.9; offered on every row now).
 
+
+Stage T4-admin (admin tab apps/fly/src/admin/tracks/**, page link):
+- [x] A1 (this commit) the admin's Tracks tab ("Courses"): tracks/model.ts (pure: rows, marks, order new/votes/broken, search,
+      title check 3-60, rename body, editor link, scene order), tracks/api.ts (TracksAdminClient on tracks_admin.py's 7 routes),
+      tracks/tab.ts (scene picker with counts, order, search, Refresh; per row: title, id, gates, length, created, "created by" /
+      "edited by" marks, votes +up/-down and broken reports, versions list, hidden note (admin or scene cap), fork origin;
+      buttons Open in the editor (new tab; for a hidden course a note to show it first), Hide/Show, Rename (new version marked
+      admin, the creator kept), Reset votes, Reset broken reports, Delete vN per version, Delete the course; deletes and resets
+      ask "sure?" and need a second click within 6 s). main.ts: sixth tab 'tracks'. Locales admin/tracks/{en,es,pl,ru}.json
+      (56 keys each); packages/i18n/test/admin-parity.test.ts namespace list gains 'tracks'.
+      Page: course/link.ts serverOfLink (course=<scene>-<8 hex>) and editOfLink (edit=1); builtin/course.ts loads the linked
+      served course once the scene's list and the walls are there, opens the editor when edit=1, and does NOT fall back to
+      another saved course when the linked one fails (loadServer `only`); fly locale course.link.missing in en, es, pl, ru.
+      Test tools/bench/test/admin-tracks.test.ts (10 tests). Runs: that test 10 passed; packages/i18n vitest 22 passed (after the
+      parity list fix; 1 failed before it); tracks-editor-ui + tracks-review 17 passed; tsc apps/fly exit 0, tsc tools/bench exit
+      0; 0 non-ASCII bytes in 8 changed code files. Negative control: neg_control.py ref origin/main, file course/link.ts: NEG OK
+      (exit 1, old link.ts has no serverOfLink). Mutation control on model.ts (markParts shows any kind's name; rename without
+      NFC): 2 of 10 failed by AssertionError, file restored.
+- [ ] A2 left: the browser check of the tab on a local copy. Plan: new tools/bench/src/tracks-admin.ts on the pattern of
+      probe-admin-live-copy.ts and tracks-serve.ts (give serveTracks/startApi an extra env with ADMIN_PASSWORD_HASH from
+      .cache/admin-test.json via testSecret; ports 5720-5739; release build first): POST two fixture courses
+      (apps/api/tests/fixtures/tracks/valid-basic.json and a person fork) to the local API, log in with the test password,
+      open the Courses tab, check rows, marks, versions, votes; Hide then Show; Rename (row title and "edited by the admin");
+      Delete v1 of a 2-version course; Delete a course (two clicks); the Open link's href; screenshots 1920 and 844 to
+      U:/Temp/gsfpv-train2/shots/. Then a page run of the link (course=<id>&edit=1 opens the editor) in tracks-page.ts section E.
+- [ ] Left of R6-R8 after this stage: see "What the owner can do now" below.
+
+What the owner can do now (after the release of this branch):
+- Simulator, any scan with walls: C makes or shows a course (the scene's saved one first), G a new generated one, Shift+B (or
+  pause menu "Edit course") opens the editor over the paused flight: Tab / Shift+Tab select a gate, arrows move it on the floor
+  plane (Shift: 1 m steps), PageUp/PageDown up and down, Q/E turn 15 deg, 1-4 shape (4 = cube frame), +/- size, Insert or I adds
+  a gate 4 m ahead, Delete or Backspace removes one, Ctrl+Z / Ctrl+Y undo and redo, Enter saves, Esc leaves (twice with unsaved
+  changes). Every change is re-proven on the scan's walls; a refused one says why. "Save as my course" (with a name) stores a
+  pilot's course or a fork with "created by" / "edited by" marks; "Save for everyone" stores an unchanged generated course; the
+  window lists the scene's courses with marks and +/- votes and an Edit button per row. (The key list is course/editor/keys.ts;
+  read it there for the exact keys.)
+- Admin /admin/, tab Courses: per scene every course with versions, marks, votes, broken reports; hide/show, rename, delete a
+  version or the course, reset votes or broken reports, open a course in the editor (new tab, editor already open).
+- Still NOT done of R6-R8: R6 an admin edit of the gates themselves saved as an admin version from the editor (the editor saves
+  as a pilot; the admin's rename is the only admin version today; an admin edit in place needs the editor to post to
+  /api/admin/tracks/<id>/versions when the admin is signed in); orbit camera and red/selected paint of a gate (T3 U3); pillar
+  pairs; Space "drop here"; R7 voting only after a completed lap (offered on every row now); the /2 format on the server
+  (marks live in meta.json); a hidden course cannot be opened in the editor from the admin (show it first); R8 browser check
+  of the admin tab (A2).
 ## Decisions
 
 - T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with
@@ -119,6 +163,10 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
   MIN_OPENING_M 0.5, INSERT_AHEAD_M 4, UNDO_MAX 200, MIN_GATES 1 = validateTrack's least); MAX_OPENING_M and the most
   gates reuse server.ts (MAX_GATE_SIZE_M 20, SERVER_MAX_GATES 60). None measured.
 
+- T4: the admin's rename is a new version through POST /api/admin/tracks/<id>/versions with the latest file and the new title (no
+  separate rename route: a served version's file is immutable, tracks-plan 2.6). "Open in the editor" is a link to the
+  simulator page (/<lang>/fly/?scene=..&course=<id>&edit=1) in a new tab; the public list is used there, so a hidden course is
+  shown first. Deletes and resets: two clicks, the server wants {confirm: true} as well.
 ## For the lead
 
 - T3 U2 screenshots: (1) the HUD's "Click to fly, or press W or Space to take off" prompt stays on screen under the open
@@ -153,6 +201,10 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
   difference itself still needs the browser run (unchanged). TR-11 and TR-14 d have no server side. TR-14 f rest (worker
   error text untranslated) is page side.
 
+- T4 A1: the tab was not opened in a browser (A2 left): layout, the two-click confirm, the new-tab link, every route through the
+  real handler from the page. The page's course=<id>&edit=1 path was not run in a browser (only the parser is tested); whether
+  the scene's list arrives after the walls on a cold load (the link waits for a refresh with walls; the session event refreshes
+  again) is reasoned from the code, not observed. The es/pl/ru admin texts were not read back on the page.
 ## Not verified
 
 - Nothing on a deployed server; no browser run (server stage).
@@ -173,6 +225,11 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
 - T3 U1: the full key table on a ?sonic= page was not exercised (the feature ignores Shift+B when ctx.sonic is set).
 
 ## Cost notes
+
+- T4-admin A1 (about 30 replies): most turns went to reading the admin pattern, the API row shape and the course feature's
+  load path before writing; two turns to non-ASCII escapes the Write tool turned into real characters in a test. Cheaper: one
+  scout note with the admin tab pattern and the row shape; write test strings with \u escapes through a fix script at once;
+  leave the browser probe to its own stage from the start.
 
 - T3-editor-ui U2 (about 30 replies): the probe passed on the first run; most turns went to reading the probe and the
   course feature again and to the Edit tool's read-before-edit on files only grepped. Cheaper: Read the exact slice of

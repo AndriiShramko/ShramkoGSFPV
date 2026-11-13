@@ -105,5 +105,6 @@
   "course.edit.open": "Изменить",
   "course.edit.mine": "ваш голос",
   "course.edit.voted": "Ваш голос учтён",
-  "course.edit.voteFailed": "Голос не учтён: {msg}"
+  "course.edit.voteFailed": "Голос не учтён: {msg}",
+  "course.link.missing": "Трассы из ссылки нет в списке этой сцены (возможно, она скрыта или удалена)."
 }

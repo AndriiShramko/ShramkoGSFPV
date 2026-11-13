@@ -14,6 +14,18 @@ export function seedOfLink(search: string): number | null {
     return Number.isFinite(seed) && seed >= 0 && seed <= 0xffffffff ? seed : null;
 }
 
+/** A served course the link names: `course=<scene hex>-<8 hex>` (the server's id, tracks.py SERVER_ID; the admin's
+ *  "Open in the editor", stage T4-admin), or null. */
+export function serverOfLink(search: string): string | null {
+    const v = new URLSearchParams(search).get(PARAM);
+    return v !== null && /^[0-9a-f]{6,32}-[0-9a-f]{8}$/.test(v) ? v : null;
+}
+
+/** `edit=1`: the linked course opens in the editor once it is shown. */
+export function editOfLink(search: string): boolean {
+    return new URLSearchParams(search).get('edit') === '1';
+}
+
 /** The address with `course=<id>` (or without it for null). */
 export function withCourse(href: string, id: string | null): string {
     const u = new URL(href);

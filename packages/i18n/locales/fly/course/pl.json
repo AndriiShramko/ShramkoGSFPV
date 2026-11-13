@@ -105,5 +105,6 @@
   "course.edit.open": "Edytuj",
   "course.edit.mine": "twój głos",
   "course.edit.voted": "Twój głos został policzony",
-  "course.edit.voteFailed": "Głos nie został policzony: {msg}"
+  "course.edit.voteFailed": "Głos nie został policzony: {msg}",
+  "course.link.missing": "Trasy z linku nie ma na liście tej sceny (może być ukryta lub usunięta)."
 }

@@ -105,5 +105,6 @@
   "course.edit.open": "Edit",
   "course.edit.mine": "your vote",
   "course.edit.voted": "Your vote is counted",
-  "course.edit.voteFailed": "The vote was not counted: {msg}"
+  "course.edit.voteFailed": "The vote was not counted: {msg}",
+  "course.link.missing": "The linked course is not on this scene's list (it may be hidden or deleted)."
 }

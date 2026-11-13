@@ -105,5 +105,6 @@
   "course.edit.open": "Editar",
   "course.edit.mine": "tu voto",
   "course.edit.voted": "Tu voto está contado",
-  "course.edit.voteFailed": "El voto no se contó: {msg}"
+  "course.edit.voteFailed": "El voto no se contó: {msg}",
+  "course.link.missing": "El circuito del enlace no está en la lista de esta escena (puede estar oculto o borrado)."
 }

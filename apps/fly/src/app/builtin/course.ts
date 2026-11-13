@@ -22,7 +22,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { bestKey, firstOffer, readBest, seedOfLink, withCourse, writeBest } from '../../course/link';
+import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, serverOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
@@ -60,10 +60,13 @@ export const course: Feature = {
         let busy = false;
         let saving = false;
         let linkSeed = seedOfLink(liveSearch());
+        /** a served course the link names (the admin's "Open in the editor", T4-admin) and whether its editor opens */
+        let linkServer = serverOfLink(liveSearch());
+        const linkEdit = editOfLink(liveSearch());
         let pending: number | null = null;
         let checking: TrackFile | null = null;
         /** what a 'check' job is for: the server's row `index`, or a course already shown that is re-proven (TR-5) */
-        let checkFor: { kind: 'server'; index: number } | { kind: 'again'; source: CourseHook['source']; seed: number | null } = { kind: 'server', index: 0 };
+        let checkFor: { kind: 'server'; index: number; only?: boolean } | { kind: 'again'; source: CourseHook['source']; seed: number | null } = { kind: 'server', index: 0 };
         /** the walls the shown course was proven on (a new walls object: re-prove, lane review TR-5) */
         let provenOn: unknown = null;
         let watchdog: ReturnType<typeof setTimeout> | null = null;
@@ -203,7 +206,7 @@ export const course: Feature = {
                 // a course that does not fit the pilot's own walls is never shown (the server cannot see walls); TR-3: the next
                 // saved course is tried instead of stopping at the newest
                 if (!m.ok) {
-                    if (why.index + 1 < rows.length) return void loadServer(why.index + 1);
+                    if (!why.only && why.index + 1 < rows.length) return void loadServer(why.index + 1);
                     return fail(`refused: ${m.issues.join('; ') || 'not clear'}`.slice(0, 200), t('course.server.refused'));
                 }
                 setTrack(tr, 'server', tr.generator?.seed ?? null);
@@ -283,7 +286,8 @@ export const course: Feature = {
         };
 
         /** The newest course the server keeps for this scene (or the next when it is refused): fetched, held to the contract, proven on our walls, then shown. */
-        const loadServer = async (index = 0): Promise<void> => {
+        /** `only`: the course a link named; when it fails, the next saved course is NOT tried instead */
+        const loadServer = async (index = 0, only = false): Promise<void> => {
             const row = rows[index];
             if (!row || (busy && index === 0)) return;
             const w = walls();
@@ -296,12 +300,12 @@ export const course: Feature = {
             if (mine !== job) return;
             if (!got.ok || got.track.scene.id !== ctx.session.scene.id) {
                 busy = false;
-                if (index + 1 < rows.length) return loadServer(index + 1);
+                if (!only && index + 1 < rows.length) return loadServer(index + 1);
                 if (!got.ok) return fail(got.problem, t('course.server.failed', { msg: got.problem.slice(0, 120) }));
                 return fail('another scene', t('course.server.refused'));
             }
             checking = got.track;
-            checkFor = { kind: 'server', index };
+            checkFor = { kind: 'server', index, only };
             const msg: CheckJob = { t: 'check', job: mine, ...w, track: got.track, transform: flownTransform() };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(CHECK_LIMIT_MS);
@@ -328,6 +332,15 @@ export const course: Feature = {
             rows = got;
             hook.serverTracks = got.length;
             if (had <= 0 && got.length > 0 && !run && firstOffer(scene)) ctx.hud.flash(t('course.server.offer'), 4000);
+            // the link's served course, once the walls are there (a refresh before them leaves it for the next one)
+            if (linkServer !== null && ctx.session.collision) {
+                const want = linkServer;
+                linkServer = null;
+                const i = rows.findIndex((r) => r.id === want);
+                if (i < 0) return fail(`link: ${want} not listed`, t('course.link.missing'));
+                reopenAfter = linkEdit;
+                void loadServer(i, true);
+            }
         };
 
         const toggle = (): void => {
