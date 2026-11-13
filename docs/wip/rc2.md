@@ -30,7 +30,7 @@ Stage 2 RC2-protocol-and-webusb-source
   NEG OK (old usb-look.ts, block and the four locale files). Commit 5cfb4b1e.
 - [x] 4. Lead patch for the wiring outside this lane's paths: evidence/2026-11-13/rc2/lead-wiring.patch.txt (radio.ts,
   app/input.ts). Applied on this branch: tsc of apps/fly clean, app-centre-throttle, app-known-controller,
-  app-switches, sonic-review-input 55 passed; then reverted (not committed in code). Commit (step 4 commit).
+  app-switches, sonic-review-input 55 passed; then reverted (not committed in code). Commit fecd4d0e.
 
 Stage 3: not started.
 
