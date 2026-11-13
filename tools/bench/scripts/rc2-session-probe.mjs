@@ -68,6 +68,8 @@ function installSampler(bridgePort) {
             armed: !!hd?.armed,
             block: c?.block ?? null,
             alt: r2(hd?.altitude ?? null),
+            // the flight log the runner keeps (record buffers and snapshots), bytes; C1.4
+            logB: (() => { try { return g?.session?.runner?.bytesKept?.() ?? null; } catch { return null; } })(),
             screen: !!document.querySelector('.screen.radio'),
             card: (() => { const e = document.querySelector('.arm-card'); return e && !e.classList.contains('hidden') ? (e.textContent ?? '').replace(/\s+/g, ' ').slice(0, 160) : null; })()
         });
@@ -147,4 +149,8 @@ out.events = ev;
 writeFileSync(outFile, JSON.stringify(out, null, 1));
 await browser.close();
 const last = out.rows[out.rows.length - 1] ?? {};
-console.log(JSON.stringify({ ran: !out.notes.threw, checkAtS: out.notes.checkAtS, flyAtS: out.notes.flyPressedAtS, throttleRest: out.check?.profile?.throttleRest ?? null, styleAfterFly: out.flying?.throttle?.resolved ?? null, lastRow: { s: last.s, style: last.style, why: last.why, armed: last.armed }, answers: out.answers, errors: errors.length, threw: out.notes.threw ?? null }));
+// log growth over the flight: bytes at the first row after Fly with a log, and at the last row
+const flown = out.rows.filter((r) => typeof r.logB === 'number' && r.s >= (out.notes.flyPressedAtS ?? Infinity));
+out.logGrowth = flown.length > 1 ? { fromS: flown[0].s, toS: flown[flown.length - 1].s, fromB: flown[0].logB, toB: flown[flown.length - 1].logB, bytesPerS: Math.round((flown[flown.length - 1].logB - flown[0].logB) / (flown[flown.length - 1].s - flown[0].s)) } : null;
+writeFileSync(outFile, JSON.stringify(out, null, 1));
+console.log(JSON.stringify({ logGrowth: out.logGrowth, ran: !out.notes.threw, checkAtS: out.notes.checkAtS, flyAtS: out.notes.flyPressedAtS, throttleRest: out.check?.profile?.throttleRest ?? null, styleAfterFly: out.flying?.throttle?.resolved ?? null, lastRow: { s: last.s, style: last.style, why: last.why, armed: last.armed }, answers: out.answers, errors: errors.length, threw: out.notes.threw ?? null }));
