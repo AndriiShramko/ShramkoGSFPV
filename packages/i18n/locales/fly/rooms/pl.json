@@ -1,5 +1,5 @@
 {
-  "keys.rooms.panel": "Lot z innymi: pokój i link do niego (nie podczas lekcji dźwiękowej)",
+  "keys.rooms.panel": "Lot z innymi: wejście do otwartego pokoju; w pokoju zgoda na głosowanie albo panel pokoju (nie podczas lekcji dźwiękowej)",
   "keys.rooms.who": "Lot z innymi: kto jest w pobliżu (nie podczas lekcji dźwiękowej)",
   "pause.rooms": "Lot z innymi",
   "rooms.title": "Lot z innymi",
@@ -47,5 +47,17 @@
   "rooms.side.right": "z prawej",
   "rooms.height.above": "wyżej",
   "rooms.height.below": "niżej",
-  "rooms.height.level": "na tej samej wysokości"
+  "rooms.height.level": "na tej samej wysokości",
+  "rooms.open.name": "Otwarty pokój",
+  "rooms.vote.title": "Następny skan",
+  "rooms.vote.propose": "Zaproponuj wszystkim {scan}",
+  "rooms.vote.help": "Pokój zmienia skan, gdy zgodzi się ponad połowa obecnych pilotów. Wszyscy zaczynają na starcie.",
+  "rooms.vote.agree": "Zgadzam się: {scan}",
+  "rooms.vote.state": "Głosowanie za {scan}: na tak {yes}, potrzeba {need}.",
+  "rooms.vote.open": "{nick} proponuje skan {scan}. Na tak {yes}, potrzeba {need}. Naciśnij {key}, aby się zgodzić.",
+  "rooms.vote.counted": "Zgodziłeś się na {scan}. Na tak {yes}, potrzeba {need}.",
+  "rooms.vote.passed": "Przyjęte: wszyscy latają teraz w {scan}. Wczytywanie.",
+  "rooms.vote.failed": "Za mało głosów na tak dla {scan} ({yes} z {need}). Pokój zostaje tutaj.",
+  "rooms.vote.same": "Pokój już lata w {scan}.",
+  "rooms.vote.wait": "Zaproponowałeś wiele skanów w krótkim czasie. Zaproponuj {scan} ponownie za kilka minut."
 }

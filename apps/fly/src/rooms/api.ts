@@ -18,7 +18,8 @@ export interface RoomInfo {
     cap: number;
     members: number;
     listed: boolean;
-    kind: 'temp';
+    /** 'persistent': an open room (lane rooms2, R27): no host, no shared settings */
+    kind: 'temp' | 'persistent';
     state: 'open';
     createdAt: number;
 }
@@ -47,6 +48,11 @@ async function call<T>(f: Fetch, url: string, init?: RequestInit): Promise<Answe
 
 export function createRoom(base: string, body: CreateBody, f: Fetch = fetch): Promise<Answer<{ id: string; hostKey: string }>> {
     return call(f, `${base}/api/rooms`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+}
+
+/** Lane rooms2 (R27): the open room to join from the scan `scene` (the service picks it, docs/rooms-protocol.md). */
+export function openRoom(base: string, scene: string, f: Fetch = fetch): Promise<Answer<{ id: string; room: RoomInfo }>> {
+    return call(f, `${base}/api/rooms/open`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scene: { id: scene } }) });
 }
 
 export function getRoom(base: string, id: string, f: Fetch = fetch): Promise<Answer<RoomInfo>> {

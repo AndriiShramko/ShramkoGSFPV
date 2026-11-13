@@ -25,6 +25,12 @@ export interface RoomsHook {
     tags?: readonly number[];
     /** added by lane look: every remote drone of this frame, drawn or hidden by the near rule (remote-stage.ts) */
     drawn?: readonly DrawnRemote[];
+    /** added by lane rooms2: 'persistent' for an open room (key 9), null outside a room */
+    kind?: 'temp' | 'persistent' | null;
+    /** added by lane rooms2: the room's open vote for another scan, null without one */
+    vote?: { scene: string; by: number; yes: number; need: number; mine: boolean } | null;
+    /** added by lane rooms2: the scan the room flies once this page flies it too, else null */
+    roomScene?: string | null;
 }
 
 /** One remote drone in this frame as the flight camera sees it (lane look). */

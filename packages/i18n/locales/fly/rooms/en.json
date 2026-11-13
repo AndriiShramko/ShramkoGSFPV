@@ -1,5 +1,5 @@
 {
-  "keys.rooms.panel": "Fly with others: the room and its link (not during a sound lesson)",
+  "keys.rooms.panel": "Fly with others: join the open room; in a room, agree to a vote or open the room panel (not during a sound lesson)",
   "keys.rooms.who": "Fly with others: who is around (not during a sound lesson)",
   "pause.rooms": "Fly with others",
   "rooms.title": "Fly with others",
@@ -47,5 +47,17 @@
   "rooms.side.right": "right",
   "rooms.height.above": "above",
   "rooms.height.below": "below",
-  "rooms.height.level": "same height"
+  "rooms.height.level": "same height",
+  "rooms.open.name": "Open room",
+  "rooms.vote.title": "Next scan",
+  "rooms.vote.propose": "Propose {scan} to everyone",
+  "rooms.vote.help": "The room moves when more than half of the pilots here agree. Everyone lands at the start.",
+  "rooms.vote.agree": "Agree: {scan}",
+  "rooms.vote.state": "Vote for {scan}: yes {yes} of {need} needed.",
+  "rooms.vote.open": "{nick} proposes the scan {scan}. Yes {yes} of {need} needed. Press {key} to agree.",
+  "rooms.vote.counted": "You agreed to {scan}. Yes {yes} of {need} needed.",
+  "rooms.vote.passed": "Agreed: everyone flies {scan} now. Loading it.",
+  "rooms.vote.failed": "Not enough yes votes for {scan} ({yes} of {need}). The room stays here.",
+  "rooms.vote.same": "The room already flies {scan}.",
+  "rooms.vote.wait": "You proposed many scans in a short time. Propose {scan} again in a few minutes."
 }
