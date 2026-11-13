@@ -212,7 +212,12 @@ docs/wip/ground-probe.md), merged into rc2 (f543e04a). GR-3 to GR-6 on rc2, all 
 - [x] GR-6: rc_bridge.py docstring now says the site and staging; localhost only with --dev. No test (text).
 - Checks: app-dji-rc2 + app-dji-rc2-bridge 20 passed; test_rc_bridge.py 15 OK; app-ground-probe 11 + a6-reference 1
   passed; tsc apps/fly and tools/bench clean.
-- [~] rc2-probe.mjs on a release of this commit (GR-4 changes the WebUSB ask loop the probe drives).
+- [x] rc2-probe.mjs (usb, refused, bridge) on a release of 6f404e39 (serve-csp on 5621, replay bridge --wiggle --dev,
+  under C:/dev/.gpu-lock): PASS 14 of 14 (evidence/2026-11-13/rc2/rc2-probe-fixes.json): usb climbs, bridge check
+  screen at once with key hid:2ca3:1021:DJI RC 2:12:d, 185 reports in 2 s. Two runs before it did not count: the
+  first had no bridge running (bridge.connected false, usb and refused all true); the second ran the bridge part
+  alone and the wizard stood on "stir/active" instead of "check" (the bridge part seems to rely on the usb part
+  running first in the same browser; not looked into, the probe is not changed). Servers and bridge stopped.
 - For the lead: GR-2, word the cost bound in the release notes as "one look per 33 ms of input time" (not one per
   frame). GR-3, the helper's link and README step 5 are true only once main is pushed and the release with rc2 and
   the nginx entry is live.
@@ -441,3 +446,6 @@ every received frame, measured]:
 - Stage G3: 8 replies; the RC 2 was not connected. Most turns went to the device check, because the bridge has no
   listing switch (a scratch DLL walk was needed); a "--list" option in rc_bridge.py printing VID:PID only would make
   this one command.
+- Stage fixes (GR-1 to GR-6): about 30 replies. Most went to the page probe: two of three runs did not count (no
+  replay bridge started; then the bridge part alone, which needs the usb part before it). A probe usage line in
+  docs/agent-map.md naming the replay bridge command and "run all three parts" would have saved two runs.
