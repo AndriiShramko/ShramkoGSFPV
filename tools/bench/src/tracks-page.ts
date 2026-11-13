@@ -12,6 +12,9 @@
 //      the API (the server cannot see walls, it stores it); a fresh profile loads the newest with Shift+T: refused (problem 'refused...') or, with A's course still saved, skipped to it (TR-3); never shown.
 //   C3 the same page with the course's root never attached to the scene (the release script patched in flight by a route): the hook still
 //      says drawn > 0, the pixel check fails.
+//   E  the editor (train 2, T3-editor-ui): a generated course, Shift+B, "Save for everyone" from the window, one gate moved, one added,
+//      one deleted, "Save as my course" with a name (a fork: the row says created by and edited by), a vote up, a reload keeps the vote;
+//      screenshots of the window at 1920x1080 and 844x390 (EDITOR_SHOTS). EDITOR_ONLY=1 runs E alone.
 //   node scripts/build-release.mjs
 //   cd tools/bench && npx tsx src/tracks-page.ts
 // Holds C:/dev/.gpu-lock while the browser runs (one blocking loop, mkdir or 20 s more, at most 9 minutes; let go also on an error); the
@@ -190,6 +193,12 @@ async function open(ctx: BrowserContext, site: string, scene: string, log: strin
     const page = await ctx.newPage();
     page.on('pageerror', (e) => log.push(`pageerror: ${e.message}`.slice(0, 300)));
     await page.goto(`${site}/${lang}/fly/?scene=${scene}&nowarn=1`);
+    await settle(page, scene);
+    return page;
+}
+
+/** after a load or reload: ready, the Controls screen of a first flight (if it comes) answered with the keyboard */
+async function settle(page: Page, scene: string): Promise<void> {
     const r = await until(() => status(page), (v) => v === 'ready' || v === 'error', 180000);
     if (r.v !== 'ready') throw new Error(`the flight on ${scene} is not ready: ${r.v}`);
     const radio = '.screen.radio [data-action="radio-keyboard"]';
@@ -202,7 +211,177 @@ async function open(ctx: BrowserContext, site: string, scene: string, log: strin
         /* no Controls screen */
     }
     await sleep(1500);
-    return page;
+}
+
+// ---------------- E the editor (train 2, T3-editor-ui; tracks-plan 2.11)
+interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number> }
+const editorHook = (page: Page): Promise<EditorHook | null> =>
+    page.evaluate(() => (window as unknown as { __gsfpv?: { course?: { editor?: EditorHook } } }).__gsfpv?.course?.editor ?? null);
+const EDITOR_SHOTS = process.env.EDITOR_SHOTS ?? 'U:/Temp/gsfpv-train2/shots';
+const EDITOR_SIZES = [
+    { w: 1920, h: 1080, file: 'tracks-editor-1920.png' },
+    { w: 844, h: 390, file: 'tracks-editor-844.png' }
+];
+/** the editor window's layout at the current size: inside the viewport (or scrolls), no two key buttons overlap */
+const editorLayout = (page: Page): Promise<{ box: Box | null; scrolls: boolean; keys: number; keyOverlaps: number; smallestKeyFont: number }> =>
+    page.evaluate(() => {
+        // no named function in here: tsx (esbuild keepNames) would wrap it in __name, which the page does not have
+        const w = document.querySelector('.course-editor') as HTMLElement | null;
+        if (!w) return { box: null, scrolls: false, keys: 0, keyOverlaps: 0, smallestKeyFont: 0 };
+        const r = w.getBoundingClientRect();
+        const ks = Array.from(w.querySelectorAll('.ce-key')).map((k) => k.getBoundingClientRect());
+        let overlaps = 0;
+        for (let i = 0; i < ks.length; i++)
+            for (let j = i + 1; j < ks.length; j++) {
+                const a = ks[i]!;
+                const b = ks[j]!;
+                if (a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5) overlaps++;
+            }
+        const fonts = Array.from(w.querySelectorAll('.ce-key kbd, .ce-key span')).map((k) => parseFloat(getComputedStyle(k).fontSize));
+        return {
+            box: { left: r.left, top: r.top, right: r.right, bottom: r.bottom },
+            scrolls: w.scrollHeight > w.clientHeight + 1 && getComputedStyle(w).overflowY !== 'visible',
+            keys: ks.length,
+            keyOverlaps: overlaps,
+            smallestKeyFont: fonts.length ? Math.min(...fonts) : 0
+        };
+    });
+
+/**
+ * E: a generated course (link seed 1) in the editor (Shift+B): "Save for everyone" from the window, then one gate moved (ArrowUp), one
+ * added (Insert), one deleted (Delete), a name typed and "Save as my course" (a fork of the saved one: created by the generator, edited
+ * by the pilot), the fork's row in the list with both marks, a vote up on it; a reload, the editor again: the count and aria-pressed
+ * kept. Screenshots of the open window at 1920x1080 and 844x390 (EDITOR_SHOTS).
+ */
+async function editorFlow(browser: Browser, site: string, log: string[]): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = {};
+    const ctx = await fresh(browser);
+    try {
+        const url = `${SCENE}&course=g1.1`;
+        const p = await open(ctx, site, url, log);
+        const g = await until(() => course(p), (h) => h?.source === 'generated' || !!h?.problem, 90000);
+        check('E a generated course', g.v?.source === 'generated' && (g.v?.gates ?? 0) > 0, { source: g.v?.source, gates: g.v?.gates, problem: g.v?.problem });
+        await p.keyboard.press('Shift+KeyB');
+        const op = await until(() => editorHook(p), (e) => !!e?.open, 10000);
+        const winUp = await p.isVisible('.course-editor');
+        check('E Shift+B: the editor is open (hook and window)', !!op.v?.open && winUp, { hook: op.v, window: winUp });
+        await until(() => p.evaluate(() => document.querySelectorAll('.course-editor .ce-row, .course-editor .ce-empty').length), (n) => n > 0, 10000);
+
+        // "Save for everyone" from the window: the generated course becomes a server course (the fork's parent)
+        const allOn = await p.isEnabled('.ce-save-all');
+        await p.click('.ce-save-all');
+        const sa = await until(() => course(p), (h) => !!h?.saved || !!h?.problem, 20000);
+        const parent = sa.v?.saved ?? null;
+        check('E Save for everyone (window): enabled, hook.saved is a server id', allOn && typeof parent === 'string' && parent.startsWith(`${SCENE}-`), { allOn, parent, problem: sa.v?.problem });
+        const gates0 = (await course(p))?.gates ?? 0;
+
+        // move one gate: ArrowUp (the first that is not refused; Tab to the next gate when a wall is in the way)
+        const moves: unknown[] = [];
+        let moved = false;
+        for (let i = 0; i < 6 && !moved; i++) {
+            await p.keyboard.press('ArrowUp');
+            await sleep(200);
+            const e = await editorHook(p);
+            moves.push({ selected: e?.selected, changed: e?.changed, refused: e?.refused });
+            moved = !!e?.changed && e.refused === null;
+            if (!moved) {
+                await p.keyboard.press('Tab');
+                await sleep(100);
+            }
+        }
+        check('E ArrowUp moves a gate (hook.changed, no refusal)', moved, moves);
+        // add one: Insert (4 m ahead of the selected gate; Tab on when refused)
+        let added = false;
+        const adds: unknown[] = [];
+        for (let i = 0; i < 6 && !added; i++) {
+            await p.keyboard.press('Insert');
+            await sleep(200);
+            const h = await course(p);
+            const e = await editorHook(p);
+            adds.push({ gates: h?.gates, refused: e?.refused });
+            added = h?.gates === gates0 + 1;
+            if (!added) {
+                await p.keyboard.press('Tab');
+                await sleep(100);
+            }
+        }
+        check(`E Insert adds a gate (${gates0} -> ${gates0 + 1})`, added, adds);
+        // delete one: Delete
+        let deleted = false;
+        const dels: unknown[] = [];
+        for (let i = 0; i < 6 && !deleted; i++) {
+            await p.keyboard.press('Delete');
+            await sleep(200);
+            const h = await course(p);
+            const e = await editorHook(p);
+            dels.push({ gates: h?.gates, refused: e?.refused });
+            deleted = h?.gates === gates0;
+            if (!deleted) {
+                await p.keyboard.press('Tab');
+                await sleep(100);
+            }
+        }
+        check(`E Delete removes a gate (back to ${gates0})`, deleted, dels);
+        const ed1 = await editorHook(p);
+        out.edits = { gates0, moves, adds, dels, problems: ed1?.problems, said: ed1?.said };
+
+        // "Save as my course" with a name: a fork of the parent
+        await p.fill('.ce-name', 'Probe Pilot');
+        await p.click('.ce-save-mine');
+        const sm = await until(() => course(p), (h) => (!!h?.saved && h.saved !== parent) || (h?.problem ?? '').startsWith('save'), 20000);
+        const fork = sm.v?.saved ?? null;
+        const ed2 = await editorHook(p);
+        check('E Save as my course: a new server id (a fork), source server, unchanged after', typeof fork === 'string' && fork !== parent && sm.v?.source === 'server' && ed2?.changed === false, { fork, parent, source: sm.v?.source, problem: sm.v?.problem, said: ed2?.said });
+        const rowSel = `.course-editor .ce-row[data-id="${fork}"]`;
+        const row = await until(() => p.evaluate((s) => {
+            const li = document.querySelector(s);
+            return li ? { by: li.querySelector('.ce-by')?.textContent ?? null, edited: li.querySelector('.ce-edited')?.textContent ?? null } : null;
+        }, rowSel), (v) => v !== null, 10000);
+        check('E the fork in the list: created by the generator, edited by the pilot', !!row.v?.by && (row.v?.edited ?? '').includes('Probe Pilot'), row.v);
+
+        // vote up on the fork
+        await p.click(`${rowSel} .ce-up`);
+        const vt = await until(() => editorHook(p), (e) => e?.votes?.[fork ?? ''] === 1, 10000);
+        const up1 = await p.evaluate((s) => {
+            const b = document.querySelector(`${s} .ce-up`);
+            return b ? { text: b.textContent, pressed: b.getAttribute('aria-pressed') } : null;
+        }, rowSel);
+        check('E vote up: hook.votes = 1, "+ 1", aria-pressed true', vt.v?.votes?.[fork ?? ''] === 1 && up1?.text === '+ 1' && up1.pressed === 'true', { votes: vt.v?.votes, up: up1 });
+
+        // screenshots of the open window
+        const sizes: unknown[] = [];
+        mkdirSync(EDITOR_SHOTS, { recursive: true });
+        for (const s of EDITOR_SIZES) {
+            await p.setViewportSize({ width: s.w, height: s.h });
+            await sleep(1200);
+            const lay = await editorLayout(p);
+            const png = await p.screenshot();
+            const file = join(EDITOR_SHOTS, s.file);
+            writeFileSync(file, png);
+            shots.push({ file, sha256: createHash('sha256').update(png).digest('hex'), what: `the editor at ${s.w}x${s.h}` });
+            const inside = !!lay.box && lay.box.left >= 0 && lay.box.right <= s.w + 0.5 && lay.box.top >= 0 && (lay.box.bottom <= s.h + 0.5 || lay.scrolls);
+            check(`E ${s.w}x${s.h}: the window inside the view (or scrolls), no two keys overlap`, inside && lay.keys > 0 && lay.keyOverlaps === 0, lay);
+            sizes.push({ ...s, ...lay });
+        }
+        out.sizes = sizes;
+        await p.setViewportSize({ width: 1280, height: 800 });
+
+        // reload: the vote is kept
+        await p.reload();
+        await settle(p, url);
+        await until(() => course(p), (h) => h?.source === 'generated' || !!h?.problem, 90000);
+        await p.keyboard.press('Shift+KeyB');
+        await until(() => editorHook(p), (e) => !!e?.open, 10000);
+        const after = await until(() => p.evaluate((s) => {
+            const b = document.querySelector(`${s} .ce-up`);
+            return b ? { text: b.textContent, pressed: b.getAttribute('aria-pressed') } : null;
+        }, rowSel), (v) => v !== null, 15000);
+        check('E reload: the fork row shows "+ 1" and aria-pressed true', after.v?.text === '+ 1' && after.v?.pressed === 'true', after.v);
+        out.fork = { id: fork, parent, row: row.v, vote: up1, afterReload: after.v };
+    } finally {
+        await ctx.close();
+    }
+    return out;
 }
 
 const RE_ATTACH = /(new \w+\(`course-stage`,this\.r\.app\);)this\.r\.app\.root\.addChild\(\w+\),/;
@@ -303,6 +482,11 @@ async function main(): Promise<void> {
         out.browser = launched.which;
         counter = await (await browser.newContext()).newPage();
 
+        // EDITOR_ONLY=1: the editor section alone (stage T3-editor-ui)
+        if (process.env.EDITOR_ONLY === '1') {
+            out.editor = await editorFlow(browser, served.site, log);
+            throw new Error('EDITOR_ONLY');
+        }
         out.hint = await hintClearOfTimer(browser, served.site, log);
         // HINT_ONLY=1: the hint check alone (its negative control on a build of origin/main)
         if (process.env.HINT_ONLY === '1') throw new Error('HINT_ONLY');
@@ -415,8 +599,11 @@ async function main(): Promise<void> {
         check('C3 control: script patched, hook drawn > 0, the pixel check fails', patched && (ge.v?.drawn ?? 0) > 0 && total(lookE.on) - total(lookE.off) < MIN_PX, { patched, drawn: ge.v?.drawn, ...lookE });
         out.c3 = { patched, hook: ge.v, look: lookE };
         await ctxE.close();
+
+        // ---------------- E the editor
+        out.editor = await editorFlow(browser, served.site, log);
     } catch (err) {
-        if (String(err) !== 'Error: HINT_ONLY') check('the run finished', false, String(err).slice(0, 300));
+        if (String(err) !== 'Error: HINT_ONLY' && String(err) !== 'Error: EDITOR_ONLY') check('the run finished', false, String(err).slice(0, 300));
     } finally {
         await browser?.close().catch(() => undefined);
         letGo();
