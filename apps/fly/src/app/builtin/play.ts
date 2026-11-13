@@ -29,7 +29,7 @@ import { headingDeg } from '../../play/game';
 import type { CameraAim } from '../../play/gimbal';
 import { GAME_KEYS } from '../../play/keys';
 import { FirstFlightReminder, gameCaps } from '../../ui/controls-card-logic';
-import { MouseLook } from '../../play/mouse-look';
+import { MouseLook, cursorWindowOpen } from '../../play/mouse-look';
 import { isFullscreen, toggleFullscreen } from '../../play/fullscreen';
 import { dialogOpen } from '../../devices/keyboard';
 import type { FlightSession } from '../../session';
@@ -97,10 +97,12 @@ export const play: Feature = {
             target: ctx.canvas,
             onMove: (dx, dy) => ctx.input.keyboard.mouse(dx, dy),
             // Esc (the browser's own release), alt-tab, leaving full screen: the flight pauses into the menu
-            onLost: () => { if (gameOn() && !ctx.session.paused) ctx.menu.open(); syncHint(); }
+            onLost: () => { if (gameOn() && !ctx.session.paused) ctx.menu.open(); syncHint(); },
+            // a window that needs the cursor wins: a lock that lands while one is up is let go (play/mouse-look.ts)
+            held: () => needsCursor()
         });
         /** A screen that needs the cursor is up (the pause menu counts: it is a panel). */
-        const needsCursor = (): boolean => ctx.menu.isOpen || dialogOpen() || ctx.ui.querySelector('.crash-overlay') !== null;
+        const needsCursor = (): boolean => ctx.menu.isOpen || dialogOpen() || cursorWindowOpen();
         function syncHint(): void {
             // on the ground the take-off line (ui/hud.ts) already says "click to fly": the pill is for the flight in the air
             const show = gameOn() && mouse.supported && !mouse.locked && !ctx.session.paused && !needsCursor() && !ctx.hud.groundLineShown;
@@ -145,7 +147,7 @@ export const play: Feature = {
         });
         // the cursor is let go for screens that need it; back when they are gone, if the browser lets us
         const offMousePause = ctx.events.on('pause', ({ on, reasons }) => {
-            if (on) { if (reasons.some((r) => r === 'menu' || r === 'panel' || r === 'controls' || r === 'export')) mouse.unlock(); }
+            if (on) { if (reasons.some((r) => r === 'menu' || r === 'panel' || r === 'controls' || r === 'export')) mouse.unlock(); else mouse.sync(); }
             else if (gameOn()) void mouse.lock().then(syncHint);
             syncHint();
         });
@@ -241,7 +243,8 @@ export const play: Feature = {
             if (now - lastAt < 250) return;
             lastAt = now;
             // the game scheme's mouse: let go for a screen that needs the cursor, or when something else flies
-            if (mouse.locked && (!gameOn() || ctx.ui.querySelector('.crash-overlay'))) mouse.unlock();
+            if (mouse.locked && !gameOn()) mouse.unlock();
+            mouse.sync();
             syncHint();
             // the first seconds of the first flight (game scheme, in the air, not paused, not after "Do not show again")
             const hd = ctx.session.hud();

@@ -1,0 +1,652 @@
+{
+  "what": "a window that needs the mouse gets the mouse (mouse-free-probe.mjs)",
+  "base": "http://localhost:5391/en",
+  "entries": {
+    "helper": {
+      "opened": {
+        "locked": false,
+        "window": "panel interactive feedback",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.fb-kinds",
+        "checkedTab": "bug",
+        "title": "Feedback",
+        "fieldText": "My controller is not in the list: DJI RC 2. It offers:\n- DJI's own data channel (the simulator cannot read it yet)\n- file transfer, like a phone\nUSB 2CA3:1021 \"DJI RC 2\" if: FF.43.01 06.01.01 FF.42.01",
+        "fieldVisible": true,
+        "focus": "button[bug]#fb-kind-bug"
+      },
+      "shot": "U:/Temp/gsfpv-train1b/mouse-free-helper-form.png",
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "keyB": {
+      "opened": {
+        "locked": false,
+        "window": "panel interactive feedback",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.fb-kinds",
+        "checkedTab": "bug",
+        "title": "Feedback",
+        "fieldText": "",
+        "fieldVisible": true,
+        "focus": "button[bug]#fb-kind-bug"
+      },
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "menu": {
+      "opened": {
+        "locked": false,
+        "window": "panel interactive feedback",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.fb-kinds",
+        "checkedTab": "bug",
+        "title": "Feedback",
+        "fieldText": "",
+        "fieldVisible": true,
+        "focus": "button[bug]#fb-kind-bug"
+      },
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "pause": {
+      "opened": {
+        "locked": false,
+        "window": "panel interactive pause-menu summary has-stats",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "p.muted",
+        "checkedTab": null,
+        "title": "Paused",
+        "fieldText": null,
+        "fieldVisible": null,
+        "focus": "button"
+      },
+      "continueLocked": true,
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "settings": {
+      "opened": {
+        "locked": false,
+        "window": "panel interactive settings",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.set-pane",
+        "checkedTab": null,
+        "title": "SettingsO",
+        "fieldText": null,
+        "fieldVisible": null,
+        "focus": "button"
+      },
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "radio": {
+      "opened": {
+        "locked": false,
+        "window": "screen radio interactive",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.choice",
+        "checkedTab": null,
+        "title": null,
+        "fieldText": null,
+        "fieldVisible": null,
+        "focus": "button"
+      },
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "courseKey": {
+      "after": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "courseMenu": {
+      "after": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    "rooms": {
+      "openedBy": "Shift+L",
+      "opened": {
+        "locked": false,
+        "window": "panel interactive",
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "p.muted",
+        "checkedTab": null,
+        "title": "Fly with others",
+        "fieldText": null,
+        "fieldVisible": null,
+        "focus": "input#rooms-nick"
+      },
+      "closed": {
+        "windowUp": false,
+        "locked": true
+      }
+    }
+  },
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+    "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "softwareGl": false,
+    "counts": true
+  },
+  "errors": [
+    "Cannot read properties of null (reading 'rooms')"
+  ],
+  "failed": 0,
+  "checks": [
+    {
+      "name": "helper: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "helper: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive feedback"
+      }
+    },
+    {
+      "name": "helper: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "helper: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.fb-kinds"
+      }
+    },
+    {
+      "name": "helper: the form shows its kind",
+      "pass": true,
+      "detail": {
+        "checkedTab": "bug",
+        "title": "Feedback"
+      }
+    },
+    {
+      "name": "helper: the list is in the field",
+      "pass": true,
+      "detail": {
+        "fieldText": "My controller is not in the list: DJI RC 2. It offers:\n- DJI's own data channel (the simulator cannot read it yet)\n- file transfer, like a phone\nUSB 2CA3:1021 \"DJI RC 2\" if: FF.43.01 06.01.01 FF.42.01"
+      }
+    },
+    {
+      "name": "helper: Tab reaches Send",
+      "pass": true,
+      "detail": {
+        "presses": 7,
+        "focusAtOpen": "button[bug]#fb-kind-bug"
+      }
+    },
+    {
+      "name": "helper: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": "[data-testid=fb-message]",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "helper: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "helper: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "keyB: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "keyB: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive feedback"
+      }
+    },
+    {
+      "name": "keyB: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "keyB: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.fb-kinds"
+      }
+    },
+    {
+      "name": "keyB: the form shows its kind",
+      "pass": true,
+      "detail": {
+        "checkedTab": "bug",
+        "title": "Feedback"
+      }
+    },
+    {
+      "name": "keyB: Tab reaches Send",
+      "pass": true,
+      "detail": {
+        "presses": 7,
+        "focusAtOpen": "button[bug]#fb-kind-bug"
+      }
+    },
+    {
+      "name": "keyB: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": "[data-testid=fb-message]",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "keyB: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "keyB: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "menu: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "menu: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive feedback"
+      }
+    },
+    {
+      "name": "menu: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "menu: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.fb-kinds"
+      }
+    },
+    {
+      "name": "menu: the form shows its kind",
+      "pass": true,
+      "detail": {
+        "checkedTab": "bug",
+        "title": "Feedback"
+      }
+    },
+    {
+      "name": "menu: Tab reaches Send",
+      "pass": true,
+      "detail": {
+        "presses": 7,
+        "focusAtOpen": "button[bug]#fb-kind-bug"
+      }
+    },
+    {
+      "name": "menu: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": "[data-testid=fb-message]",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "menu: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "menu: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "pause: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "pause: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive pause-menu summary has-stats"
+      }
+    },
+    {
+      "name": "pause: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "pause: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "p.muted"
+      }
+    },
+    {
+      "name": "pause: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": ".pause-menu h2",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "pause: Continue takes the capture again",
+      "pass": true,
+      "detail": {
+        "locked": true
+      }
+    },
+    {
+      "name": "pause: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "pause: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "settings: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "settings: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive settings"
+      }
+    },
+    {
+      "name": "settings: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "settings: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.set-pane"
+      }
+    },
+    {
+      "name": "settings: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": "[data-testid=settings-search]",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "settings: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "settings: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "radio: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "radio: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "screen radio interactive"
+      }
+    },
+    {
+      "name": "radio: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "radio: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "div.choice"
+      }
+    },
+    {
+      "name": "radio: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": ".screen.radio [data-testid=usb-look] summary",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "radio: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "radio: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "courseKey: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "courseKey: no window is left open",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "courseKey: the flight has the mouse (held, or a click on the view takes it)",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "courseMenu: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "courseMenu: no window is left open",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "courseMenu: the flight has the mouse (held, or a click on the view takes it)",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "rooms: the view captures the mouse before",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "rooms: the window is open",
+      "pass": true,
+      "detail": {
+        "window": "panel interactive"
+      }
+    },
+    {
+      "name": "rooms: the mouse is free while it is up",
+      "pass": true,
+      "detail": {
+        "locked": false
+      }
+    },
+    {
+      "name": "rooms: the cursor shows over the window",
+      "pass": true,
+      "detail": {
+        "cursor": "auto",
+        "cursorAtMiddle": "auto",
+        "atMiddle": "p.muted"
+      }
+    },
+    {
+      "name": "rooms: a click inside keeps the mouse free",
+      "pass": true,
+      "detail": {
+        "inside": "[data-testid=rooms-nick]",
+        "found": true,
+        "locked": false
+      }
+    },
+    {
+      "name": "rooms: the window closed",
+      "pass": true,
+      "detail": {
+        "windowUp": false,
+        "locked": true
+      }
+    },
+    {
+      "name": "rooms: a click on the view captures again",
+      "pass": true,
+      "detail": {
+        "afterClose": {
+          "windowUp": false,
+          "locked": true
+        }
+      }
+    }
+  ]
+}
