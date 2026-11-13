@@ -174,11 +174,43 @@ describe('the DJI RC 2 in the block (lane rc2)', () => {
         expect(say.getAttribute('data-state')).toBe('claim');
         expect(say.textContent).toContain('could not open the controller');
         expect(say.textContent).toContain('Nothing is broken');
-        expect(say.textContent).toContain('fly with the keyboard, a gamepad or a radio');
+        expect(say.textContent).toContain('Fly with the keyboard, a gamepad or a radio');
+        // review RC2-R2: without its switch the RC bridge is neither named nor offered (pilots cannot download it yet)
+        expect(say.textContent).not.toContain('RC bridge');
+        expect(btn(el, 'usb-rc2-bridge')).toBeNull();
         expect(flown).toEqual([]);
         expect(d.calls).toEqual(['open', 'config', 'claim 0', 'close']);
         btn(el, 'usb-look-send').click();
         expect(sent[0]).toContain('if: FF.43.01 FF.42.01');
+    });
+    it('the RC bridge switch: ?rcbridge=1 turns it on and is remembered, ?rcbridge=0 turns it off; on, a refused claim names it', async () => {
+        const s = new FakeStorage();
+        expect(L.rcBridgeOn('', s)).toBe(false);
+        expect(L.rcBridgeOn('?rcbridge=1', s)).toBe(true);
+        expect(L.rcBridgeOn('', s)).toBe(true);
+        expect(L.rcBridgeOn('?rcbridge=0', s)).toBe(false);
+        expect(L.rcBridgeOn('', s)).toBe(false);
+        expect(L.rcBridgeOn('?rcbridge=1', null)).toBe(true); // storage blocked: the address alone
+        vi.stubGlobal('location', { search: '?rcbridge=1', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/?rcbridge=1', origin: 'http://127.0.0.1' });
+        try {
+            const d = usbRc2('refused');
+            nav.usb = { requestDevice: () => Promise.resolve(d) };
+            const el = B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement;
+            expect(btn(el, 'usb-rc2-bridge')).not.toBeNull();
+            btn(el, 'usb-look').click();
+            await flush();
+            btn(el, 'usb-rc2-fly').click();
+            for (let i = 0; i < 5; i++) await flush();
+            const say = el.querySelector('[data-testid="usb-rc2-say"]')!;
+            expect(say.textContent).toContain('Nothing is broken');
+            expect(say.textContent).toContain('Fly through the RC bridge');
+            const none = B.usbLookBlock(() => undefined).el as unknown as FakeElement; // control: no fly, no bridge
+            expect(btn(none, 'usb-rc2-bridge')).toBeNull();
+        } finally {
+            vi.stubGlobal('location', { search: '?rcbridge=0', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
+            L.rcBridgeOn();
+            vi.stubGlobal('location', { search: '', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
+        }
     });
     it('a claim that works: the device answers and goes to the Controls screen; control: no fly callback, no fly action', async () => {
         const d = usbRc2('ok');
@@ -208,7 +240,7 @@ describe('strings', () => {
         const dir = resolve(__dirname, '../../../packages/i18n/locales/fly/usb');
         const read = (l: string): Record<string, string> => JSON.parse(readFileSync(resolve(dir, `${l}.json`), 'utf8'));
         const en = read('en');
-        const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.silent',
+        const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.claimBridge', 'usb.rc2.silent',
             'usb.rc2.bridgeWhy', 'usb.rc2.bridge', 'usb.rc2.bridgeOpening', 'usb.rc2.noBridge', 'usb.rc2.bridgeNoController', 'usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
             ...(['joystick', 'sticks', 'storage', 'serial', 'files', 'network', 'data', 'audio', 'video', 'other'] as const).map((p) => `usb.part.${p}`),
             ...['connect', 'rc2', 'drone', 'none', 'empty'].map((v) => `usb.verdict.${v}`)];

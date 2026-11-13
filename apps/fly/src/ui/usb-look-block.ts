@@ -7,7 +7,7 @@
 // driver) is said in plain words, and "Send this list" stays.
 import { h, clear } from './dom';
 import { t } from '../i18n';
-import { chooseDji, reportText, usbApi } from '../devices/usb-look';
+import { chooseDji, rcBridgeOn, reportText, usbApi } from '../devices/usb-look';
 import type { UsbLook } from '../devices/usb-look';
 import { DjiRc2Device, Rc2Error, hasStickChannel } from '../devices/dji-rc2-source';
 import type { Rc2Why, UsbDeviceLike } from '../devices/dji-rc2-source';
@@ -27,7 +27,9 @@ export interface UsbLookBlock {
 export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Device | Rc2BridgeDevice) => void): UsbLookBlock {
     let seen: UsbLook | null = null;
     let busy = false;
-    const out = h('div', { class: 'usb-look-out', role: 'status', 'aria-live': 'polite', 'data-testid': 'usb-look-out' });
+    // the RC bridge only behind its switch (rcBridgeOn): until it can be downloaded, other pilots never see it
+    const bridge = !!fly && rcBridgeOn();
+    const out =h('div', { class: 'usb-look-out', role: 'status', 'aria-live': 'polite', 'data-testid': 'usb-look-out' });
     const SAY: Record<Rc2Why, string> = { claim: 'usb.rc2.claimFailed', silent: 'usb.rc2.silent', nobridge: 'usb.rc2.noBridge', nocontroller: 'usb.rc2.bridgeNoController' };
     const tryFly = async (d: DjiRc2Device | Rc2BridgeDevice, say: HTMLElement, opening: string): Promise<void> => {
         if (busy || !fly) return;
@@ -42,7 +44,7 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         } catch (e) {
             const why: Rc2Why = e instanceof Rc2Error ? e.why : 'claim';
             say.setAttribute('data-state', why);
-            say.textContent = t(SAY[why]);
+            say.textContent = why === 'claim' && bridge ? `${t(SAY.claim)} ${t('usb.rc2.claimBridge')}` : t(SAY[why]);
         } finally {
             busy = false;
         }
@@ -82,7 +84,7 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
         h('p', { class: 'muted small' }, t('usb.why')),
         h('button', { type: 'button', class: 'btn', 'data-action': 'usb-look', onclick: () => void look() }, t('usb.look')),
         out);
-    if (fly) {
+    if (bridge) {
         // the RC bridge (tools/rc-bridge): only on this press does the page connect to 127.0.0.1, never on load
         const say = h('p', { 'data-testid': 'usb-bridge-say', role: 'status', 'aria-live': 'polite' });
         el.append(h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy')),

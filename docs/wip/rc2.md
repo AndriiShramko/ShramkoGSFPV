@@ -100,18 +100,26 @@ R review fixes (independent review of train 1B; negative controls against the la
 because the files do not exist on origin/main; vitest run as node node_modules/vitest/vitest.mjs --root <pkg>)
 - [x] RC2-R3 (major): a1b43eb1's animation-frame wake reverted; the ask loop paces by a plain timer (comment corrected).
   Test "the ask loop paces by its timer only" (requestAnimationFrame stubbed with setImmediate): NEG OK, 7622
-  requests in 300 ms on the old code against the limit 45. Commit COMMIT1.
+  requests in 300 ms on the old code against the limit 45. Commit 57fa540f.
 - [x] RC2-R4 (minor): the WebUSB source keeps the sequence number of each request out; an answer whose request was
   given up or is older than RC2_REPLY_MS is dropped and counted (DjiRc2Device.late). Test "answers 400 ms late never
   fly ... open() says silent": NEG OK (old code opened and flew them). The old "130 ms late" test now uses 60 ms
   (still within the stale rule; one request at a time would give a frame per 70 ms, the test asserts gaps < 55 ms).
-  The replay fake echoes the request's sequence, as the controller does. Commit COMMIT1.
+  The replay fake echoes the request's sequence, as the controller does. Commit 57fa540f.
 - [x] RC2-R9 (minor), page side: stickValues takes a reply only in the recorded layout (byte 0 is 0, channel numbers
   1..6 after the values, each value within 364..1684 +-40, RC2_RANGE_MARGIN, estimate); the WebUSB source counts the
   rest (DjiRc2Device.bad); the bridge source's valuesOf uses the same range. Tests in dji-duml.test.ts, app-dji-rc2
   ("answers out of 364..1684 are dropped"), app-dji-rc2-bridge ([0, 65535, ...] not flown): NEG OK on all three.
   dji-duml 9 passed, app-dji-rc2 + bridge + usb-look 27 passed (then 12 in app-dji-rc2), tsc of apps/fly and
-  packages/input clean. Commit COMMIT1. The bridge side (rc_bridge.py) is under R5-R8 below.
+  packages/input clean. Commit 57fa540f. The bridge side (rc_bridge.py) is under R5-R8 below.
+- [x] RC2-R2 (major): the RC bridge paragraph, its button and the bridge sentence of the claim failure are shown only
+  behind a switch (devices/usb-look.ts rcBridgeOn: the page address ?rcbridge=1 turns it on and this browser
+  remembers it under localStorage gsfpv.rcBridge; ?rcbridge=0 turns it off). usb.rc2.claimFailed no longer names the
+  bridge; the new key usb.rc2.claimBridge (en/es/pl/ru) is appended when the switch is on. Tests in app-usb-look
+  (refused claim without the switch: no bridge text, no bridge button; the switch itself; with it the claim names the
+  bridge) and app-dji-rc2-bridge (runs with ?rcbridge=1). NEG OK with only the old block in place (the bridge button
+  appeared without the switch). app-usb-look + app-dji-rc2-bridge + app-dji-rc2 28 passed, tsc of apps/fly clean.
+  Commit COMMIT2.
 
 ## Verdict of stage 1
 

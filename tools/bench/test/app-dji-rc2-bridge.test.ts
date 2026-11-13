@@ -31,7 +31,8 @@ class FakeSocket {
 }
 
 beforeAll(async () => {
-    vi.stubGlobal('location', { search: '', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
+    // the RC bridge is offered only behind its switch (usb-look.ts rcBridgeOn, review RC2-R2)
+    vi.stubGlobal('location', { search: '?rcbridge=1', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/?rcbridge=1', origin: 'http://127.0.0.1' });
     vi.stubGlobal('document', fakeDocument());
     vi.stubGlobal('navigator', { languages: ['en'], language: 'en' });
     vi.stubGlobal('matchMedia', () => ({ matches: false }));

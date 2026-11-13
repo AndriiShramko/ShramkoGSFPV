@@ -102,3 +102,30 @@ export async function chooseDji<D extends UsbLike>(api: UsbApi<D>): Promise<{ lo
         throw e;
     }
 }
+
+/** this browser remembers the RC bridge switch under this key ('1' = on) */
+export const RC_BRIDGE_KEY = 'gsfpv.rcBridge';
+interface FlagStore { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void }
+
+/**
+ * The RC bridge (tools/rc-bridge) is offered only behind a switch until pilots can download it (review RC2-R2: the
+ * program lives only in the repo, so its texts would send every other pilot to something they cannot get). The page
+ * address `?rcbridge=1` turns it on and this browser remembers it; `?rcbridge=0` turns it off.
+ */
+export function rcBridgeOn(search?: string, store?: FlagStore | null): boolean {
+    let s: FlagStore | null = null;
+    try {
+        s = store === undefined ? (globalThis as { localStorage?: FlagStore }).localStorage ?? null : store;
+    } catch { /* storage blocked: the address alone decides */ }
+    let flag: string | null = null;
+    try {
+        flag = new URLSearchParams(search ?? (globalThis as { location?: { search?: string } }).location?.search ?? '').get('rcbridge');
+    } catch { /* no address */ }
+    try {
+        if (flag === '1') s?.setItem(RC_BRIDGE_KEY, '1');
+        else if (flag === '0') s?.removeItem(RC_BRIDGE_KEY);
+        return flag === '1' || (flag !== '0' && s?.getItem(RC_BRIDGE_KEY) === '1');
+    } catch {
+        return flag === '1';
+    }
+}
