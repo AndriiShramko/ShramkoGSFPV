@@ -3,7 +3,8 @@
 // mode, with fakes for the page (no DOM in Node) and for the audio graph.
 //  - the motor's graph is built on the engine's context, and its master goes into the engine's motor bus (SonicEngine.motorInput:
 //    the propellers' band, levelled, under the cues, ducked under speech): not into the plain input node, not to the speakers;
-//  - with the sound settings as the package gives them (nothing changed by the pilot) the motor plays: on by default;
+//  - with the sound settings as the package gives them (nothing changed by the pilot) the motor is silent: off by default since
+//    train 2 (the owner); the pilot's own choice (motorSound with motorChoice) plays it, and the pause menu's switch saves it;
 //  - control: an engine of an older package (no motorInput) gets the motor on its plain input node (auxInput), as in v0.12;
 //  - control: with the motor turned off in the mode's settings no graph is made.
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -86,10 +87,19 @@ function modePage(prefs: SonicPrefs, motorBus = true): { ac: FakeAudio; bus: Fak
 
 const into = (ac: FakeAudio, node: unknown): boolean => ac.nodes.some((n) => n.to.includes(node));
 
-describe('the mode\'s motor plays into the engine\'s motor bus, on by default (M41-16)', () => {
-    it('the sound settings as the package gives them: the motor is on, its graph on the engine\'s context, its master into motorInput only', () => {
-        expect(defaultPrefs().motorSound).toBe(true);
+const ON: SonicPrefs = { ...defaultPrefs(), motorSound: true, motorChoice: true };
+
+describe('the mode\'s motor plays into the engine\'s motor bus, off by default (train 2)', () => {
+    it('the sound settings as the package gives them: the motor is off, no graph (the owner, train 2)', () => {
+        expect(defaultPrefs().motorSound).toBe(false);
         const p = modePage(defaultPrefs());
+        sound.install(p.ctx);
+        p.frame();
+        expect(p.ac.nodes).toHaveLength(0);
+    });
+
+    it('the pilot switched it on: its graph on the engine\'s context, its master into motorInput only', () => {
+        const p = modePage(ON);
         sound.install(p.ctx);
         p.frame();
         expect(into(p.ac, p.bus)).toBe(true);
@@ -100,15 +110,26 @@ describe('the mode\'s motor plays into the engine\'s motor bus, on by default (M
     });
 
     it('control: an engine of an older package (no motor bus) gets the motor on its plain input node, as in v0.12', () => {
-        const p = modePage(defaultPrefs(), false);
+        const p = modePage(ON, false);
         sound.install(p.ctx);
         p.frame();
         expect(into(p.ac, p.aux)).toBe(true);
         expect(into(p.ac, p.ac.destination)).toBe(false);
     });
 
+    it('the pause menu\'s switch saves the pilot\'s choice with the motor (motorChoice), so it is read back as his', () => {
+        const p = modePage(defaultPrefs());
+        const items: { id: string; run: () => void }[] = [];
+        (p.ctx as unknown as { menu: { add: (i: { id: string; run: () => void }) => () => void } }).menu.add = (i) => (items.push(i), () => undefined);
+        const patches: unknown[] = [];
+        setSonicEntry({ setup: { update: (patch: unknown) => patches.push(patch) } } as unknown as SonicEntry);
+        sound.install(p.ctx);
+        items.find((i) => i.id === 'pause.sound')!.run();
+        expect(patches).toEqual([{ motorSound: true, motorChoice: true }]);
+    });
+
     it('control: the motor turned off in the mode\'s settings makes no graph', () => {
-        const p = modePage({ ...defaultPrefs(), motorSound: false });
+        const p = modePage({ ...ON, motorSound: false });
         sound.install(p.ctx);
         p.frame();
         expect(p.ac.nodes).toHaveLength(0);

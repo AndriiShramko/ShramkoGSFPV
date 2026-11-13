@@ -5,7 +5,7 @@
 // it to open lessons. A page that was not entered through ?sonic= has no entry, so every hook of the mode is off, and
 // it never loads this file (the main chunk asks entry-state.ts; v12-int step 4).
 import { isBuiltinThemeId, updatePrefs } from '@shramko/sonic-fpv';
-import type { Locale, SonicPrefs, SpeechLine, SpeechOut } from '@shramko/sonic-fpv';
+import type { LessonDef, Locale, SonicPrefs, SpeechLine, SpeechOut } from '@shramko/sonic-fpv';
 import { SonicAudio } from './audio';
 import type { AudioDeps } from './audio';
 import type { CaptionMode } from './captions';
@@ -155,6 +155,10 @@ export interface SonicEntry {
     readonly lessonId: string | null;
     /** its world, built before the first flight is made on it (fly()'s `world` option), or null */
     readonly world: LessonWorld | null;
+    /** train 2: the free flight over a scan link's scan (start.ts freeLessonOf), opened by the host's openFree */
+    readonly free?: LessonDef | null;
+    /** train 2 (review SN-2): the free flight of the page's scan link for a press of the start screen over a flight (start.ts freeLessonOf) */
+    readonly freeOf?: (id: string) => LessonDef | null;
 }
 
 // The page's entry itself lives in entry-state.ts (no runtime import: the main chunk asks it on every page).
