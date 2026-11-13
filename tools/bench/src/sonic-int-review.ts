@@ -802,7 +802,7 @@ function experiencedDoc(): object {
 }
 
 /** Steers by the target hum as a blind pilot would (W held, E or Q when the hum is to a side, Space or Shift for its height) until `done`. */
-async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>, trail?: object[]): Promise<R10Probe> {
+async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>, trail?: object[], cueSeen?: Set<string>): Promise<R10Probe> {
     const held = new Set<string>();
     let lastTrail = 0;
     const hold = async (code: string, on: boolean): Promise<void> => {
@@ -815,11 +815,13 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         await hold('KeyW', v !== undefined && Math.abs(v[0]) < 0.5);
         await hold('KeyE', v !== undefined && v[0] > 0.12);
         await hold('KeyQ', v !== undefined && v[0] < -0.12);
-        await hold('Space', v !== undefined && v[1] > 0.2);
-        await hold('ShiftLeft', v !== undefined && v[1] < -0.2);
+        // height by the hum's slope: 0.08 (an estimate) is about 0.5 m at 6 m; at 0.2 the pilot of run 4 flew 1 m under gate 2 into an obstacle for 230 s
+        await hold('Space', v !== undefined && v[1] > 0.08);
+        await hold('ShiftLeft', v !== undefined && v[1] < -0.08);
         await sleep(60);
         p = await probe10(page);
         if (p.lastLine) seen.add(p.lastLine);
+        for (const c of cueSeen ? (p.cues ?? []) : []) cueSeen?.add(c);
         if (trail && Date.now() - lastTrail >= 2000) {
             lastTrail = Date.now();
             const h = (p.hum ?? []).find((x) => x.distance !== null) ?? null;
@@ -916,14 +918,18 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     if (!ready?.target) { await exp.close(); return; }
     const gate1 = ready.target.id;
     const trail1: object[] = [];
-    const after1 = await steerByHum(fly, (p) => p.target !== null && p.target.id !== gate1, 90000, lines, trail1);
-    await sleep(2500);
+    const gateCues = new Set<string>();
+    const after1 = await steerByHum(fly, (p) => p.target !== null && p.target.id !== gate1, 90000, lines, trail1, gateCues);
+    for (const t0 = Date.now(); Date.now() - t0 < 2500; ) {
+        for (const c of (await probe10(fly)).cues ?? []) gateCues.add(c);
+        await sleep(60);
+    }
     const atGate1 = spokenAfter(await events(fly), from);
-    result.r10gate1 = { from: gate1, now: after1.target?.id ?? null, phase: after1.phase, spokenTail: atGate1.slice(-6), trail: trail1.slice(-6) };
+    result.r10gate1 = { from: gate1, now: after1.target?.id ?? null, phase: after1.phase, spokenTail: atGate1.slice(-6), gateNote: gateCues.has('target.note'), trail: trail1.slice(-6) };
     check('R10 course: after flying through gate 1 the target is gate 2', after1.target !== null && after1.target.id !== gate1 && /2$/.test(after1.target.id), result.r10gate1);
-    // the gate line of a course in a world: "Stage k passed" at the gate's centre (the world's path marks a stage on each gate,
-    // packages/tracks/src/path.ts); the catalogue's fly.gate is said by no runner code (grep of packages/sonic-fpv/src)
-    check('R10 course: the gate line is said at gate 1 (fly.stage)', atGate1.includes('fly.stage'), result.r10gate1);
+    // a gate is told by its note (the gate melody, cue target.note) and the preview of the gate after it: the runner says no line
+    // at a gate (fly.gate is a catalogue key no code says, grep of packages/sonic-fpv/src; run 4 heard no fly.stage at gate 1 either)
+    check('R10 course: gate 1 is told by its note (target.note planned)', gateCues.has('target.note'), result.r10gate1);
 
     // backing up along the leg (S held 3 s): never the wrong way
     const backFrom = (await events(fly)).length;

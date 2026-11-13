@@ -36,7 +36,7 @@ export const COARSE_SAY_M = 0.1;
  * A course of gates flown by sound in any scan (train 2, S3; docs/wip/sound2-plan.md 2.1): the free flight over the scan (scan-free,
  * `free`) turned into a timed course over `track` (a course the page generated in this scan, at the size flown). The goal is the
  * package's 'timed-course' with the track's laps, so the runner's own rules hold: the hum on the next gate, the gate note and the
- * preview of the gate after it, "gate k of n", the lap time and the best time, the wrong way on the leg to the next gate. Its lines
+ * preview of the gate after it, "stage k passed" at gate k (the course path marks a stage on each gate's centre), the lap time and the best time, the wrong way on the leg to the next gate. Its lines
  * are the package's measured ones: the hum and the goal of the scan course (free-garden's intro 2 and goal, which name no place),
  * free-garden's hint and retry, scan-free's pass. The id stays SCAN_FREE_ID: no lesson of the course, never on a path or saved.
  */

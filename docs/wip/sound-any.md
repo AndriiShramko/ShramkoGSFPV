@@ -30,7 +30,10 @@ Stage S2-any-scan (fly THIS scan by sound):
 - [x] F1: tests on the changed buildScanLesson / lessons.ts / feature.ts (11 files: sonic-garden, hints, int-reader, int-replay, k1-straight, lesson-keys, lessons, reset-running, review-v13, scan-course, scan-free): 135 passed; packages/i18n suite 22 passed; gates.py --only i18n,b18: both PASS (F1 commit 1)
 - [x] F1: hook ctx.hook.sonic() also reports cues (ids of the engine's last plan, e.g. 'safety.wall:front') and motor (prefs.motorSound) (0316fc9f); sonic-int-review.ts PORT from env, case r10 (00f60cee, fixes in the F1 status commit). Release built at 0316fc9f (node scripts/build-release.mjs, dist sha 0316fc9f, sonic b6ab45c)
 - [~] F1 r10 run 3 (PORT=5701, 329 s, evidence/2026-11-13/sonic-int-review-r10.json, log U:/Temp/gsfpv-train2/sound/r10.log): 10 of 13 passed. PASS: pause link /en/fly/?sonic=scan&scene=887f27aa&sz=1; first-timer order beginning, scan-flier; experienced order scan, beginning (screenshots looked at: sound-start-first.png, sound-start-experienced.png, both right); free flight scan-free flying in 887f27aa, voxelM 0.05, no target; motor false; N -> courseMaking, courseReady, target g1; steering by the hum through g1 -> target g2; S held 3 s after g1: no fly.wrong-way, no safety.wrong-way; no fly.last-lesson; no page or console error. FAIL 1 (probe bug, fixed, not re-run): wall cue ids carry the side ('safety.wall:front' was planned), the check looked for 'safety.wall' exactly. FAIL 2 and 3 (open): no 'fly.gate' line was said at g1 (runner.ts has no say of fly.gate; grep packages/sonic-fpv/src/lesson: only fly.wrong-side line 946 and fly.stage line 1206), and after the back-up the course did not end in 240 s: at the end target g1 again, phase flying, fly.stage said over and over, one fly.wrong-side. Next: find what the plan's "gate line" is (fly.gate key in the package src outside lesson/, or the gate cue event) and why the target went back to g1 (timed-course attempt restart after a touch? respawn to the course path?), fix at the cause with a unit test and NEG, re-run r10
-- [ ] probe items (c): sonic-optin-page and sonic-v13-page part A on the local release (not run in F1)
+- [x] F1 pass 2, the gate line: no runner code says fly.gate (grep of packages/sonic-fpv/src: the key is only in i18n/catalog.ts and the locales). A gate of a gate goal is told by its note (cue event 'gate' -> planner target.note, the gate melody) and the preview hum of the gate after it; fly.stage ("Stage k passed") is said only when the world's path point at a gate's centre is crossed (packages/tracks/src/path.ts marks stage k there), and run 4 heard none at gate 1. The probe now checks target.note at gate 1 (3948fb35 and the pass 2 commit); scan-lesson.ts comment corrected
+- [x] F1 pass 2, r10 run 4 (PORT=5702, 535 s, log U:/Temp/gsfpv-train2/sound/r10-run4.log): 12 of 14 passed (wall cue 'safety.wall:front' PASS; key I PASS: status.progress, status.recording-off). FAIL 'fly.stage at gate 1' (check replaced, see above) and FAIL 'course to its end'. Cause of the second, from the new trail: after gate 1 and the back-up the craft flew at 0.5-1.4 m, about 1 m under gate 2 (hum slope y 0.15 at 6.5 m), and the probe pilot climbed only above slope 0.2: it pushed into an obstacle at z 23 for 230 s (5 touch events, attempt 1, no restart). A probe pilot defect, not the page's: threshold now 0.08 (an estimate). Run 3's restart (target g1 again, hint.1, fly.go) is the runner's design for a failed attempt with onTouch 'bump' (scan-free.json): back to the start, gate 1 again; the failure there was most likely a near miss of gate 2 (goals.ts 370-372), not measured
+- [ ] r10 run 5 with the pilot fix (pass 2 commit): not run (reply budget). Command: cd tools/bench; PORT=5702 ../../node_modules/.bin/tsx src/sonic-int-review.ts r10 (takes the lock itself; dist at 0316fc9f is still right: only the probe and a comment changed since)
+- [~] probe items (c): sonic-optin-page PARTS=A on the local release (serve-csp 5703): 12 of 13 passed; both scan link checks PASS (en and pl: /pl/fly/?sonic=scan&scene=39e63ce9&sz=1). FAIL 'T U I Z G change nothing on an ordinary page': KeyG shows the HUD note (control H too); no file of this lane binds G (keymap.ts G is course.generate with Shift, lane tracks). sonic-v13-page PARTS=A: not run, 'the GPU lock was not free for 9 minutes' (another process took C:/dev/.gpu-lock at 21:34:53, after my r10 ended)
 - [ ] (done as r10 above; notes kept) probe: new case (r10) in tools/bench/src/sonic-int-review.ts. Notes for it: its PORT is the const 5420, make it read an env (PORT=5700); it takes C:/dev/.gpu-lock itself (lock()), do not wrap it; build first with node scripts/build-release.mjs (commit before, it may run over 2 min); the start screen's scan button is testid sonic-start-scan or sonic-start-scan-flier; wait for runner phase flying before N; check what __gsfpv.sonic(false) returns for the target and how a probe flies to a gate (r9 flyWithTurns uses keys only). Case: on a local release (ports 5700-5719): scene 887f27aa by the new link, free scan flight running, a wall cue planned flying at a wall; screenshots U:/Temp/gsfpv-train2/shots/sound-start-first.png and sound-start-experienced.png
 
 Stage S3-course-by-sound (sound2-plan 2.1, simulator only, no package change, no pin move):
@@ -43,7 +46,7 @@ Stage S3-course-by-sound (sound2-plan 2.1, simulator only, no package change, no
 - [x] sonic-flight.ts modeScanPage(ses, location.search): the page's course=g1.<seed> (checked by course/link.ts seedOfLink) goes into the sound link, anything else stays behind; test case 'S3' in sonic-scan-free.test.ts, negative control (ref HEAD, sonic-flight.ts, -t S3): NEG OK by assertion (S3 pass 2 commit)
 - [x] host-level rig test: tools/bench/test/sonic-lesson-rig.ts Rig.make({ course }) (page.course; an ok answer goes into rig.courses like feature.ts's tracks cache) and scanLesson by the lesson's own track (trackOf), course world for scan-free; sonic-scan-course.test.ts 'page host' case over a flat analytic floor (packages/collision analyticCollision, the garden track at x5): courseOffer said, no target in the free flight, N in flight -> courseMaking, ask once, courseReady {n 8, laps 1, key N}, target and lit gate ring-1, a follow pilot passes ring-1, then target and lit gate ring-2. 4 passed; negative control (ref 89b2bdb6 = before S3, lessons.ts, -t 'page host'): NEG OK by assertion. sonic-scan-bump + sonic-garden: 21 passed; tsc tools/bench clean
 - [ ] probe: new case in tools/bench/src/sonic-int-review.ts on a local release (ports 5700-5719): ?sonic=scan&scene=887f27aa&sz=1, N, wait for courseReady (generation up to 31 s measured by lane tracks), __gsfpv.sonic().target is gate 1, fly through it, then gate 2; lastLine fly.gate
-- [ ] key I (where am I) line for the course (gate k of n, metres, lap time): the runner's statusLine as it is now, not checked
+- [x] key I (where am I) in the course: r10 run 4 heard status.progress then status.recording-off (the runner's statusLine as it is; no gate k of n in it)
 - [ ] 2.2 (explore a scan without a course): not started
 
 Stage fixes (review findings SN-1 to SN-10):
@@ -93,7 +96,8 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
   menu's Fly by Sound opens the sound page for this scan; 2. on the start screen, the scan's button (Enter); 3. the free flight says
   "Press N for a course of gates in this scan"; N builds it (up to about half a minute, said). N while the intro is still
   speaking only skips the intro (the runner's N), so a pilot who presses during the intro presses N once more in the flight (rig test); 4. "Course ready. Gates: n, laps: k.
-  The hum leads to gate 1": follow the hum; each gate and each lap time are said; 5. N again: another course; I: where am I;
+  The hum leads to gate 1": follow the hum; each gate is told by its note and the preview hum of the next gate (no spoken gate
+  line; F1 pass 2), the lap is a chime and its time is said; 5. N again: another course; I: where am I (lesson progress line);
   Escape or X: the menu. No new letter: every free letter is a keyboard-flying key (W A S D Q E) and Shift is the mode's down.
 - S3: the course is a scan-free lesson in memory (id SCAN_FREE_ID, version 1) with goal timed-course; no package template
   course-free yet, so no new package lines, no TTS or listen-words run. The sound page asks the course worker itself, since the
@@ -126,6 +130,15 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 
 ## For the lead
 
+- F1 pass 2: sonic-optin-page part A fails one check on this release: KeyG on an ordinary page shows the HUD note. No file of lane
+  sound binds G; the keymap's G is Shift+G course.generate (packages/prefs/src/keymap.ts:116, lane tracks). Not checked whether the
+  origin/main release fails it too.
+- F1 pass 2: the plan's "fly.gate said" has no code behind it: the package runner says no line at a gate (only the note). A spoken
+  "Gate k of n" would be a package change (runner passedGate, measured line, replay goldens); not done.
+- F1 pass 2: in a scan course the hum points straight at the next gate (runner.beaconTarget returns the gate for gate goals); the
+  course path is used only for the respawn. A leg that bends around a wall would be heard through the wall. Not seen in run 4 (the
+  stall there was the probe pilot's height), so no change.
+
 - S3 hook needed in lane tracks (apps/fly/src/app/builtin/course.ts, apps/fly/src/course/hook.ts): CourseHook has the track's id,
   not the TrackFile, and generate / load are closure functions. The sound page therefore runs its own worker job (course-ask.ts).
   Wanted: hook.course.trackFile(): TrackFile | null and hook.course.generate(seed) (or a 'course' ctx event with the track), and a
@@ -151,6 +164,11 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 
 ## Not verified
 
+- F1 pass 2: r10 with the pilot fix not run, so a course flown to its end in a browser, the lap time and the SN-3 end are not
+  shown on a page (SN-3 is covered by the rig case only). sonic-v13-page part A not run (GPU lock held by another process).
+  sonic-optin-page part A ran while r10 still held the lock (its log ends 21:29:40, r10's 21:34:47): its lock handling not checked.
+  Plan 2.2 not started.
+
 - Fixes stage: sonic-optin-page.ts and sonic-v13-page.ts (part A now expects /{lang}/fly/?sonic=scan&scene=39e63ce9&sz=<size>) were
   typechecked, not run (no release build, no browser in this stage). They keep no built-in-world check for ?sonic=start (no
   built-in world page in these probes); the built-in control is the unit case in sonic-optin.test.ts. The new rig case's NEG OK
@@ -165,6 +183,8 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 - sonic-bump.test.ts 'walls, pillars...' case did not finish within its 5 s timeout here on either pin.
 
 ## Cost notes
+
+- F1 pass 2: about 30 replies; most went to reading runner.ts and goals.ts to learn that no code says fly.gate and how a failed attempt restarts. The probe's first r10 runs logged only a 15-line spoken tail: a trail (pos, target, attempt, hum) and an event digest from the start would have shown the pilot's height stall in run 3.
 
 - F1: about 45 replies for the unit cases, the hook fields and three r10 runs; most went to finding the plan's cue ids and the hook's fields by grep (one 'cat > /dev/null' before a heredoc hung a call again). The probe's first two runs died on probe-side waits (Controls screen before Escape; hook not up yet): copying sonic-optin-page's chooseKeyboard and a guarded hook read from the start would have saved two runs.
 
