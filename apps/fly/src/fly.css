@@ -82,6 +82,8 @@ h1 { font-size: 22px; margin: 0 0 12px; } h2 { font-size: 18px; margin: 0 0 10px
 /* armed and flying (flight.ts Hud): the guidance for getting into the air goes, and comes back
    when disarmed or crashed; a card hanging over the whole flight was a pilot's complaint */
 #ui.hud-flying .touch-hint, #ui.hud-flying > .banner, #ui.hud-flying > .bake-box, #ui.hud-flying .input-note { display: none; }
+/* walls W3: the build offer of a scan without walls and its progress stay in sight in flight (walls.ts keep) */
+#ui.hud-flying > .bake-box.keep { display: flex; }
 /* H: every text on the flight view off (.hud itself is hidden by flight.ts); buttons and pads stay */
 #ui.hud-off .touch-hint, #ui.hud-off > .banner, #ui.hud-off > .bake-box, #ui.hud-off .attribution, #ui.hud-off .input-note { display: none; }
 .hud-note { position: absolute; left: 50%; top: calc(max(14px, env(safe-area-inset-top)) + 30px + var(--banner-h, 0px)); transform: translateX(-50%); max-width: min(90vw, 420px); background: rgba(0,0,0,.6); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 13px; text-align: center; }

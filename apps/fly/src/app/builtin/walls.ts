@@ -8,6 +8,7 @@ import { openFloaterPanel } from './floaters';
 import { t } from '../../i18n';
 import { beacon, q } from '../env';
 import type { Feature } from '../context';
+import { wallsThen } from '../walls-then';
 
 /** ?refine= wins; the automated modes (bot radio, latency probe) fly the shipped walls, the pilot gets the plan's choice. */
 function refineMode(): RefineMode {
@@ -33,7 +34,8 @@ export const walls: Feature = {
         ctx.hook.wallsSwitch = { on: () => ctx.session.wallsOn, set: (on) => ctx.walls.set(on, false), state: () => ctx.session.walls, header: () => ctx.session.log.header };
         ctx.keys.on('walls.toggle', (e) => {
             if (e.repeat) return;
-            if (!ctx.session.collision) ctx.hud.flash(t('walls.none'), 3500);
+            // a scan without walls: C builds them (and they fly on); with walls: on / off
+            if (!ctx.session.collision) void wallsThen(ctx, () => {});
             else ctx.walls.set(!ctx.session.wallsOn);
         });
     }

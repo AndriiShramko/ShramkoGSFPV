@@ -4,6 +4,11 @@ Worktree C:/dev/gsfpv-voice, branch walls (from origin/main 2a5ac433). Ports 580
 
 ## Status
 
+Stage W3-lead-the-pilot:
+- [x] Merge of tracks-edit (d79b5ca4) into walls: clean, no conflict (merge commit a0637555).
+- [x] 1-4 code: apps/fly/src/walls-first.ts (ensureWalls, withWalls), WallsHook.build() and .line (walls.ts), app/walls-then.ts wallsThen(ctx, then); the course (Shift+G, menu, Shift+T load, Shift+B edit) builds walls first and goes on; C and V start the build; the ceiling and floater panels build first and open after; the build box keeps in sight in flight while it holds the offer or progress (fly.css .bake-box.keep); texts rewritten in en/es/pl/ru (course.noWalls replaced by course.wallsFirst, new walls.building; bake.done without the voxel count; no {msg} in walls and course entry lines). Test tools/bench/test/walls-first.test.ts 16 passed, NEG OK (origin/main course.ts, builtin walls.ts, voxels.ts, 8 locale files); walls, ladder, published tests 53 passed together; packages/i18n tests 22 passed; apps/fly tsc exit 0. Commit: this one.
+- [ ] Page probe on a local release (port 5800): Forest Floor ab5efa0e, Shift+G, walls built, course ready, gate drawn, time key to first gate; Wroclaw 70b50d42 with the local stand-in of published walls; screenshots walls-chain-1920.png and walls-chain-844.png.
+
 Stage W2-published:
 - [x] Design (below, The way W2).
 - [x] Offline bake tool tools/walls/bake-published.mjs (commit 3e85e9e6): splat-transform 3.6.4 CLI in Node on this PC's RTX 4090 (Dawn), level 0, crop to the dense core read from level 4, 5 / 10 / 20 cm ladder, manifest.json with sizes and sha256.
