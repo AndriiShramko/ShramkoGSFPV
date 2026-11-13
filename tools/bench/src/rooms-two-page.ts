@@ -197,11 +197,13 @@ async function main(): Promise<void> {
         await C.page.context().close();
 
         // ---- lane look: both at the start (nearHidden), then A TAG_AT_M in front of B (tagAtDistance); both paused
-        await hook(A.page, 'h.session.respawnStart(); return 0;');
-        await hook(B, 'h.session.respawnStart(); return 0;');
-        await B.waitForTimeout(1500);
+        // (a respawn after A's flight is not always taken at once: both paused sims are put on B's spawn point instead)
         await hook(A.page, "h.session.pause(true, 'menu'); return 0;");
         await hook(B, "h.session.pause(true, 'menu'); return 0;");
+        const spawn = await hook<number[]>(B, 'return [...h.session.spawn];');
+        const qStart = (await camera(B)).q;
+        await placeA(B, [spawn[0], spawn[1], spawn[2]], qStart);
+        await placeA(A.page, [spawn[0], spawn[1], spawn[2]], qStart);
         await B.waitForTimeout(1500);
         const atStart = await lookState(B);
         const startDrawn = (atStart.drawn ?? []) as Any[];
