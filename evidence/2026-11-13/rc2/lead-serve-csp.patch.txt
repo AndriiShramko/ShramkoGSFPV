@@ -1,0 +1,25 @@
+diff --git a/tools/bench/scripts/serve-csp.mjs b/tools/bench/scripts/serve-csp.mjs
+index 492bcef4..19de7856 100644
+--- a/tools/bench/scripts/serve-csp.mjs
++++ b/tools/bench/scripts/serve-csp.mjs
+@@ -29,6 +29,9 @@ for (const line of conf.split('\n')) {
+ // copy of the config instead: a check of the headers can then be run against the config it must catch (a control)
+ const nginx = readFileSync(process.env.NGINX_CONF ?? new URL('../../../deploy/nginx.conf', import.meta.url), 'utf8');
+ const rest = nginx.match(/map \$uri \$gsfpv_csp_rest \{\s*default "([^"]+)";/)[1];
++// lane rc2: $gsfpv_rc_bridge (the Shramko RC bridge on ws://127.0.0.1) is filled in only for /{lang}/fly/, as nginx's map does
++const rcBridge = nginx.match(/map \$uri \$gsfpv_rc_bridge \{\s*default "";\s*"~\^\/\(en\|es\|pl\|ru\)\/fly\/" "([^"]*)";/)?.[1] ?? '';
++const restFor = (path) => rest.replace('$gsfpv_rc_bridge', /^\/(en|es|pl|ru)\/fly\//.test(path) ? rcBridge : '');
+ // the owner's admin page has its own location in nginx.conf (location ^~ /admin/): its own strict CSP in
+ // place of the site's, and try_files $uri /admin/index.html; mirrored here so /admin/ runs under the live policy
+ const adminCsp = nginx.match(/location \^~ \/admin\/ \{[^}]*?add_header Content-Security-Policy "([^"]+)" always;/)[1];
+@@ -131,8 +134,8 @@ createServer((req, res) => {
+     const headers = { 'content-type': TYPES[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store', 'permissions-policy': policy };
+     if (file.endsWith('.html')) {
+         const h = hashes.get(p) ?? hashes.get(p.replace(/index\.html$/, ''));
+-        if (h) headers['content-security-policy'] = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com ${h}; ${rest}`;
+-        else headers['content-security-policy-report-only'] = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com; ${rest}`;
++        if (h) headers['content-security-policy'] = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com ${h}; ${restFor(p)}`;
++        else headers['content-security-policy-report-only'] = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://www.googletagmanager.com; ${restFor(p)}`;
+         headers['x-csp-mode'] = h ? 'enforced' : 'report-only';
+     }
+     res.writeHead(200, headers);
