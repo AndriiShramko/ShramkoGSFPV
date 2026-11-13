@@ -142,6 +142,16 @@ because the files do not exist on origin/main; vitest run as node node_modules/v
   outside this lane (radio.ts / the Controls status); no such announcer exists in this lane's files (grep for
   aria-live and announce helpers in apps/fly/src found none usable in flight).
 
+Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-probe fe95b5d4, both clean)
+- [x] 1. lead-wiring.patch.txt and lead-serve-csp.patch.txt applied as code (git apply --3way, clean); tsc of apps/fly
+  clean. deploy/nginx.conf already carries the narrow entry (map $gsfpv_rc_bridge: " ws://127.0.0.1:47310" on
+  /{lang}/fly/ only, one host, one port; commit 6bafc64f): no change needed. Commit: the one that adds this line.
+- [ ] 2. R10: one line when the RC 2 or the bridge stops in flight (usb.rc2.lost).
+- [ ] 3. R3 check: no animation-frame wake left in dji-rc2-source.ts.
+- [ ] 4. rc2-probe three runs + negative control on origin/main's build (stage 3 step 4).
+- [ ] 5. Helper link to tools/rc-bridge and its README start lines.
+- [ ] 6. Lane unit tests after the merge.
+
 ## Verdict of stage 1
 
 (a) Native read on this PC: WORKS [measured]. Stack: Python 3.11 ctypes ->

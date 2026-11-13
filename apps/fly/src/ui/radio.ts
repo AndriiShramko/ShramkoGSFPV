@@ -291,7 +291,8 @@ export class RadioScreen {
                 h('button', { type: 'button', class: 'btn', 'data-action': 'radio-keyboard', onclick: () => this.done({ kind: 'keyboard', profile: null }) }, t('radio.keyboard')),
                 h('p', { class: 'muted small' }, t('radio.keyboardHint'))),
             h('p', { class: 'muted small' }, t('radio.real')),
-            usbLookBlock(this.report).el
+            // lane rc2: a DJI RC 2 whose stick channel answered goes the HID way (wizard, check screen, profile)
+            usbLookBlock(this.report, (d) => void this.connectHid(hidStatus, gpRate, d as unknown as HIDDevice)).el
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
         this.watchPads(gpRate);
@@ -427,13 +428,14 @@ export class RadioScreen {
         view.el.querySelector<HTMLElement>('select, button')?.focus({ preventScroll: true });
     }
 
-    private async connectHid(status: HTMLElement, gpRate: HTMLElement): Promise<void> {
+    /** `pre`: a device already chosen (the DJI RC 2 from the USB helper, lane rc2); left out, the WebHID chooser. */
+    private async connectHid(status: HTMLElement, gpRate: HTMLElement, pre?: HIDDevice): Promise<void> {
         clearInterval(this.timer); // the pilot chose: the device choice's pad watch stops (watchPads())
         const gen = this.gen;
         const src = new HidSource();
         this.owned.add(src);
         try {
-            const d = await src.request();
+            const d = pre ?? await src.request();
             if (gen !== this.gen) return;
             if (!d) { this.watchPads(gpRate); return; } // the chooser closed with no device: back to the choice as it was
             await src.open(d);

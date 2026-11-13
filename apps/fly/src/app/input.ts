@@ -5,6 +5,7 @@
 import type { Profile, ThrottleStyle } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
+import { findSavedRc2 } from '../devices/dji-rc2-source';
 import { choiceOffer } from '../devices/known';
 import { TouchSticks } from '../devices/touch';
 import { EasyPilot } from '../play/easy';
@@ -50,7 +51,7 @@ export async function resumeInput(): Promise<RadioChoice | null> {
     if (last?.kind === 'touch' || last?.kind === 'keyboard') return { kind: last.kind, profile: null };
     const keys = Object.keys(loadProfiles()).filter((k) => trusted(k, last));
     const look = (k: string): Profile | null => trusted(k, last);
-    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null) : Promise.resolve(null));
+    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null).then((c) => c ?? findSavedRc2(look)) : Promise.resolve(null));
     const pad = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('gp:')) ? findSavedGamepad(look) : Promise.resolve(null));
     for (const find of last?.kind === 'gamepad' ? [pad, hid] : [hid, pad]) {
         const c = await find();
