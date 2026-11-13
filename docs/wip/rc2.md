@@ -23,12 +23,14 @@ Stage 2 RC2-protocol-and-webusb-source
   the wizard, the check screen and profiles read it unchanged; findSavedRc2 for a later visit) and
   tools/bench/test/app-dji-rc2.test.ts (fake USBDevice replaying the recorded frames, moving sticks, refused claim,
   silent controller, unplug disarms the real Controls by the stale rule, close releases, reconnect): 8 passed,
-  NEG OK. tsc of apps/fly clean. Commit (step 2+3 commit).
+  NEG OK. tsc of apps/fly clean. Commit 5cfb4b1e.
 - [x] 3. Helper block (ui/usb-look-block.ts, devices/usb-look.ts): part 'sticks' and verdict 'rc2' for DJI + FF.43.01,
   "Fly with this controller", claim failure and silent controller in plain words in en/es/pl/ru, "Send this list"
   stays, the old "cannot read it yet" line gone. tools/bench/test/app-usb-look.test.ts + fly-parity: 23 passed,
-  NEG OK (old usb-look.ts, block and the four locale files). Commit (step 2+3 commit).
-- [ ] 4. Lead patch for the wiring outside this lane's paths (radio.ts, input.ts, index.ts) checked to apply and typecheck.
+  NEG OK (old usb-look.ts, block and the four locale files). Commit 5cfb4b1e.
+- [x] 4. Lead patch for the wiring outside this lane's paths: evidence/2026-11-13/rc2/lead-wiring.patch.txt (radio.ts,
+  app/input.ts). Applied on this branch: tsc of apps/fly clean, app-centre-throttle, app-known-controller,
+  app-switches, sonic-review-input 55 passed; then reverted (not committed in code). Commit (step 4 commit).
 
 Stage 3: not started.
 
@@ -107,9 +109,31 @@ every received frame, measured]:
   no driver change, nothing installed except pyusb in a scratch venv under U:/Temp.
 - Recorder scripts are committed as evidence (*.py.txt, so no linter or gate treats them as repo code).
 - Request pacing 50 ms was my choice for the recording (estimate, not a product number).
+- Stage 2: the RC 2 source is a WebHID-shaped device (DjiRc2Device: vendorId, productId, productName 'DJI RC 2',
+  collections = RC2_HID_COLLECTIONS, open/close, inputreport events) instead of a new source kind. HidSource, the
+  wizard, the check screen, profiles, LinkMeter and the stale disarm then work unchanged, and radio.ts needs only a
+  pre-chosen device for connectHid. Profile key: hid:2ca3:1021:DJI RC 2:12:d.
+- Six axes X Y Z Rx Ry Rz (roll, pitch, throttle, yaw, left dial, right dial, the reference's axis codes), logical
+  364..1684. With six axes the known table does not take the RC 2 for the DJI FPV Remote Controller 3 (both 2CA3:1021):
+  tested (recognise returns null). No known-table entry: the throttle style auto resolves 'centred' from the rest the
+  wizard and the rest watch see (1024 = middle), as lane center-throttle does for any spring-centred stick.
+- No buttons are read (their DUML is unknown): the pilot arms with Space or the on-screen ARM (key arm).
+- Poll: one request in flight, next one after the answer or 100 ms (estimate), at most every 10 ms (reference default
+  100 Hz, not measured here). First answer must come within 1500 ms (estimate) or the helper says 'silent'.
+- HidSource.close() removes the last listener: DjiRc2Device then releases the interface and closes the device, so
+  nothing polls in the background (radio.ts choose() lets go of owned sources this way).
+- dji-rc2-source.ts imports packages/input/src/dji-duml by relative path (precedent: apps/fly/src/voxels.worker.ts)
+  because packages/input/src/index.ts is outside this lane.
 
 ## For the lead before the merge
-- Nothing yet (stage 1 touched only docs/wip/rc2.md and evidence/2026-11-13/rc2/).
+- Apply evidence/2026-11-13/rc2/lead-wiring.patch.txt (git apply): without it the helper shows the RC 2's parts and
+  verdict but no "Fly with this controller" button, and a later visit does not reconnect the RC 2. It changes
+  apps/fly/src/ui/radio.ts (usbLookBlock gets the fly callback; connectHid takes an optional pre-chosen device) and
+  apps/fly/src/app/input.ts (resumeInput tries findSavedRc2 after findSavedHid). Checked on this branch: tsc clean,
+  4 test files that import radio.ts or input.ts, 55 passed.
+- Optional: export './dji-duml' from packages/input/src/index.ts and switch the relative import in
+  apps/fly/src/devices/dji-rc2-source.ts to '@gsfpv/input' (check name clashes first).
+- No preference or key was added: the catalogue generator does not need to run for this stage.
 
 ## Not verified
 - Stick decode while sticks move (nobody touched them during 35 s of recording): offsets, range and
@@ -119,7 +143,18 @@ every received frame, measured]:
 - Latency from request to reply: not measured (only that every reply arrived inside the 100 ms window).
 - ADB input events: adb state stayed offline.
 - Other OSes: all assumed.
+- Stage 2: no browser run. The WebUSB source was only tested against a fake USBDevice in Node; what Chrome on this PC
+  does at claimInterface (expected: refused, MI_00 is libusb0_dji) was not tried, and no page probe was run (the
+  wiring patch is not applied on this branch, so a page could not show the fly action).
+- Stage 2: the 10 ms poll and the 100 ms answer limit are not measured; the real answer time is unknown.
+- Stage 2: whether WebUSB transferIn returns several DUML frames in one read on the real device is unknown; the
+  stream reader handles both (tested).
 
 ## Cost notes
 - Stage 1: most turns went to pyusb crashing on DJI's libusb0 build (3 turns to find the struct offset);
   starting straight with ctypes on the libusb0 C API would have saved them. Total about 17 replies.
+- Stage 2: about 33 replies. Most went to finding how a new source reaches the wizard (radio.ts, reconnect.ts,
+  hid.ts, controls.ts read in slices) and to two test timing fixes (a replay of 293 answers at 10 ms is too slow for a
+  2 s wait; Controls.tick treats one late tick as a stalled page, so the stale test needs a 10 ms ticker). The
+  neg_control script needs the full node.exe path (npx is a .cmd Python cannot start). A code-map line saying
+  "a new device = a WebHID-shaped object for HidSource" would have saved about 5 replies.
