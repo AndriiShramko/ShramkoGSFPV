@@ -165,7 +165,10 @@ Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-p
   repo); the strings test lists usb.rc2.lost and usb.rc2.bridgeGet (it failed after step 2's commit, fixed here).
   app-usb-look + fly-parity 24 passed; NEG OK (--ref HEAD, old block and bridge: "expected null not to be null");
   tsc of apps/fly clean. Not checked: the GitHub address itself online (no external request from this lane).
-- [ ] 6. Lane unit tests after the merge.
+- [x] 6. Lane unit tests after the merge (at 12c64876): app-dji-rc2, app-usb-look, app-dji-rc2-bridge, dji-duml, plus the
+  wiring's app-centre-throttle, app-known-controller, app-switches, sonic-review-input, ground-probe's
+  app-ground-probe and a6-reference (input.ts touched): 10 files, 104 passed (log U:/Temp/gsfpv-train1c/ground-rc2/
+  unit.log); test_rc_bridge.py 14 passed (pytest); tsc of apps/fly and tools/bench clean.
 
 ## Verdict of stage 1
 
