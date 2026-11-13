@@ -14,7 +14,7 @@ branch rc2), see "## Held back". Condition for rooms-public: docs/wip/train1-lea
 - [x] 4. all gates once, exit 0 (numbers below)
 - [x] 5. local release + probes, evidence/2026-11-13/train1b/ (numbers below)
 - [x] 6. this note complete
-- [ ] 7. push main
+- [x] 7. push main (plain push; B18 re-run on the evidence commit: PASS)
 
 ## Merged
 
