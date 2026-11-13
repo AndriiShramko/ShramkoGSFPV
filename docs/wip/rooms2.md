@@ -26,7 +26,16 @@ Stage fixes (review RM-1 to RM-15; no finding was refuted, all stand and are fix
   another scan is no racer. 4 new keys `rooms.race.{noCourse,watching,refused,wait}` in rooms/{en,es,pl,ru}.json.
   Test tools/bench/test/rooms-race-page.test.ts 8 of 8 (5 new); neg_control.py with race-page.ts of 3c05e5ab: NEG OK.
   Typecheck apps/fly and tools/bench: exit 0. Non-ASCII bytes in the changed non-locale files: none (python scan).
-- [ ] RM-1: rebuild dist and run rooms-race.ts and rooms-open-vote.ts with SONIC_PORTS=5820-5839.
+- [~] RM-1: dist rebuilt at 4a44b358 (build-release exit 0, 1903 files). rooms-open-vote.ts (9, Tab, Enter): pass,
+  8 of 8 checks (U:/Temp/gsfpv-train2/rooms2/rooms-open-vote-run2.json). rooms-race.ts run 2: FAILED, 7 of 11 checks
+  (U:/Temp/gsfpv-train2/rooms2/rooms-race-run2.json, log rooms-race-run2.log): meet, race button focused, both racers,
+  same course built (g1.438779389, 9 gates, 25 path points), Go on both, control and the panel table pass; bothSentLaps,
+  resultsOnBoth, bothTimesSameOrder, keyZeroPlace fail: the probe moved each craft along race.path (3 rounds, 705
+  points each, 23.5 s) and neither page reported a lap (`sent` 0, problem null). Left: find why CourseRun.fromSim gives
+  no lap while the probe writes the sim position (first suspects: the 'sim' respawn or crash event resets the run on
+  each written position; the gates need a direction or a time per tick the writes do not give; the hook has no `next`,
+  so add `next` to the probe's end dump first). Note: the page's state stays 'count' after Go (the service sends no
+  'run' message; frame() works in count and run alike), not a fault. Ship the race only after this probe passes.
 
 Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
 
@@ -192,6 +201,9 @@ Stage Q1-open-room (done):
 - The vote's 30 s timeout (a vote that fails) in a browser: covered by the python tests only.
 
 ## Cost notes
+
+- Stage fixes: most turns went to editing many files by separate scripts and to the 6-minute build plus probe run; a
+  probe dump that shows the run's next gate and resets would have let this stage diagnose the lap failure in one step.
 
 - Q1 worker 1: reading the existing rooms code (server 470 lines, page glue 350 lines) and the plan took 10 replies;
   edits as one python patch script per side (server, page) kept it to 2 replies each. Four Edit calls failed because the
