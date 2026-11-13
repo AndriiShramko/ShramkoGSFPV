@@ -29,4 +29,13 @@ describe('coursePath', () => {
         const gappy = [p0, far, ...path.slice(1)];
         expect(pathProblems(gappy, track, IDENTITY).some((s) => s.includes('apart'))).toBe(true);
     });
+
+    it('a closed course ends back at the start; an open one (laps 1) ends on its last gate', () => {
+        const last = track.gates[track.gates.length - 1]!.pos;
+        expect(track.laps).toBeGreaterThan(1);
+        expect(dist(path[path.length - 1]!.pos, path[0]!.pos)).toBeLessThan(1e-9);
+        const open = coursePath({ ...track, laps: 1 }, IDENTITY);
+        expect(dist(open[open.length - 1]!.pos, last)).toBeLessThan(1e-9);
+        expect(open[open.length - 1]!.stage).toBe(track.gates.length);
+    });
 });

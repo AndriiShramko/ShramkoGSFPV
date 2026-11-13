@@ -74,11 +74,12 @@ async function main(): Promise<void> {
             const genMs = performance.now() - g0;
             sample();
             if (track.gates.length === 0) return { seed, gates: 0, genMs: Math.round(genMs), note: 'no gate fits' };
-            // the generator measured its own proof (generator.params.proof); the course is proven here once more, unmeasured
-            const own = track.generator?.params.proof as { minFreeM: number; pathM: number } | null;
+            // the generator proves unmeasured; the course is proven here once more, measured (free radius) for the first
+            // seed only: the free-radius probes are the slow part (seconds a course)
+            const measured = seed === SEEDS[0];
             const c0 = performance.now();
-            const check = checkTrack(track, walls, T, 0.5, false);
-            const proof = { ok: check.ok, pathM: check.pathM, minGapM: check.minGapM, minFreeM: own?.minFreeM ?? null, issues: check.issues.slice(0, 3) };
+            const check = checkTrack(track, walls, T, 0.5, measured);
+            const proof = { ok: check.ok, pathM: check.pathM, minGapM: check.minGapM, minFreeM: measured ? check.minFreeM : null, issues: check.issues.slice(0, 3) };
             const checkMs = performance.now() - c0;
             sample();
             const path = coursePath(track, T);
@@ -91,8 +92,6 @@ async function main(): Promise<void> {
                 gates: track.gates.length,
                 kinds: track.gates.map((g) => g.shape.kind[0]).join(''),
                 wanted: track.generator?.params.wanted,
-                walked: track.generator?.params.walked,
-                stop: track.generator?.params.stop,
                 closed: track.generator?.params.closed,
                 laps: track.laps,
                 tries: track.generator?.params.tries,

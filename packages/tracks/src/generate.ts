@@ -9,10 +9,11 @@
 //   order     a farthest-point sample of the candidate cells, then a seeded walk: each next gate 3-15 m from the last,
 //             a turn of at most 120 degrees, the leg straight and free (a swept sphere of the margin), the gate's axis the
 //             leg's direction rounded to one of 16 yaws and within 30 degrees of the leg (the proof allows 35).
-//   proof     every gate added is proven with the course before it by checkTrack (check.ts); a gate that fails is dropped
-//             and the next candidate tried; the finished course is proven again and gates are dropped until it holds,
-//             and the last gate must see the start (the leg back for laps). After `tries` the course is shorter, never
-//             invalid. The proof's numbers go into generator.params.proof.
+//   proof     every gate added is proven alone by checkTrack (check.ts): the leg from where the walk stands, its opening,
+//             frame and run; a gate that fails is dropped and the next candidate tried. The finished course is proven
+//             whole and gates are dropped until it holds. It is closed (laps) at the last gate at least half way along
+//             that sees the start, else open (laps 1). After `tries` the course is shorter, never invalid. The proof's
+//             result goes into generator.params.proof (unmeasured: ok and path length).
 import type { Pose, Quat, SceneTransform, TrackFile, TrackGate, Vec3, VoxelCollision } from './types';
 import { MARGIN_M, checkTrack, sweeperOf } from './check';
 import { cellCentre, clearanceM } from './freespace';
@@ -186,7 +187,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
     const shapeFor = (freeM: number): TrackGate['shape'] =>
         freeM >= SQUARE_MIN_FREE_M ? { kind: 'square', side: r3(SQUARE_SIDE_M / s), bar: r3(SQUARE_BAR_M / s) } : { kind: 'ring', diameter: r3(RING_DIAMETER_M / s), tube: r3(RING_TUBE_M / s) };
-    const build = (gates: TrackGate[], startYaw: number): TrackFile => ({
+    const build = (gates: TrackGate[], startYaw: number, from: Vec3 = startW, laps: number = p.laps): TrackFile => ({
         format: 'shramko-sonic-track/1',
         id: courseId(seed),
         version: 1,
@@ -195,8 +196,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         scene: { kind: 'scan', id: opts.scene.id, version: opts.scene.version },
         transform: [T[0], T[1], T[2], T[3]],
         gates,
-        laps: p.laps,
-        start: { pos: toScan(startW), yawDeg: startYaw * 22.5 } satisfies Pose,
+        laps,
+        start: { pos: toScan(from), yawDeg: startYaw * 22.5 } satisfies Pose,
         author: { kind: 'generator', name: GENERATOR_NAME },
         generator: { name: GENERATOR_NAME, version: GENERATOR_VERSION, seed, params: {} },
         created: opts.created ?? '2026-01-01T00:00:00.000Z'
@@ -236,7 +237,9 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         if (!sweeper.free(cur, o.c.pos, p.marginM)) continue;
         const k = nearestYaw(o.u);
         const gate: TrackGate = { id: `g${gates.length + 1}`, shape: shapeFor(o.c.free), pos: toScan(o.c.pos), quat: yawQuatStep(k), direction: 'forward' };
-        const trial = build([...gates, gate], nearestYaw(sub(gates.length ? toFlown(gates[0]!.pos) : o.c.pos, startW)));
+        // one-gate proof: the leg from where the walk stands and this gate's opening, frame and run (the whole course is
+        // proven once at the end); proving the whole course per candidate cost about 44 s a course on real walls
+        const trial = build([gate], k, cur);
         if (!checkTrack(trial, walls, T, p.marginM, false).ok) continue;
         gates.push(gate);
         flownGates.push(toFlown(gate.pos));
@@ -244,26 +247,36 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         prevDir = o.u;
     }
 
-    // the finished course: proven whole, and its last gate sees the start (laps)
+    // the finished course, proven whole. Closed (laps) when a gate at least half way along sees the start: the course
+    // ends there. Otherwise it stays open (laps 1, no leg back): popping gates until the last sees the start left 1-2
+    // gates on big scans.
     const renumber = (gs: TrackGate[]): TrackGate[] => gs.map((g, i) => ({ ...g, id: `g${i + 1}` }));
+    const closeAt = (gs: TrackGate[]): number => {
+        for (let n = gs.length; n >= Math.max(1, Math.ceil(gs.length / 2)); n--) if (sweeper.free(toFlown(gs[n - 1]!.pos), startW, p.marginM)) return n;
+        return 0;
+    };
     let course = renumber(gates);
+    let laps = p.laps;
     for (let guard = 0; guard < 2 * p.tries && course.length > 0; guard++) {
-        const last = toFlown(course[course.length - 1]!.pos);
-        if (!sweeper.free(last, startW, p.marginM)) {
-            course = renumber(course.slice(0, -1));
-            continue;
-        }
+        const n = closeAt(course);
+        if (n > 0) {
+            course = renumber(course.slice(0, n));
+            laps = p.laps;
+        } else laps = 1;
         const startYaw = nearestYaw(sub(toFlown(course[0]!.pos), startW));
-        const r = checkTrack(build(course, startYaw), walls, T, p.marginM, false);
+        const r = checkTrack(build(course, startYaw, startW, laps), walls, T, p.marginM, false);
         if (r.ok) break;
         const bad = r.gates.findIndex((g) => !g.clear || !g.directionOk);
         const badLeg = r.legs.findIndex((l) => !l.clear);
         const drop = bad >= 0 ? bad : badLeg >= 0 ? Math.max(0, badLeg - 1) : course.length - 1;
         course = renumber(course.filter((_, i) => i !== drop));
     }
+    if (course.length === 0) laps = p.laps;
     const startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
-    const shell = build(course, startYaw);
-    const proof = course.length ? checkTrack(shell, walls, T, p.marginM, true) : null;
+    const shell = build(course, startYaw, startW, laps);
+    // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
+    // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
+    const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false) : null;
     return {
         ...shell,
         generator: {
@@ -278,7 +291,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
                 rooms: free.rooms.length,
                 volumeM3: r3(free.volumeM3),
                 tries,
-                proof: proof ? { ok: proof.ok, minFreeM: proof.minFreeM, pathM: proof.pathM } : null
+                closed: course.length > 0 && laps > 1,
+                proof: proof ? { ok: proof.ok, marginM: p.marginM, pathM: proof.pathM } : null
             }
         }
     };

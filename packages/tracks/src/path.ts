@@ -53,7 +53,8 @@ export function coursePath(track: TrackFile, transform: SceneTransform = track.t
         } else run(cur, g, i + 1);
         cur = g;
     });
-    run(cur, start);
+    // the leg back closes the lap; an open course (laps 1, its last gate does not see the start) ends at its last gate
+    if (track.laps > 1) run(cur, start);
     return out;
 }
 
