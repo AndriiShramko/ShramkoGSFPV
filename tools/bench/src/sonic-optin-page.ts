@@ -286,9 +286,11 @@ async function ordinary(ctx: BrowserContext, out: Record<string, unknown>): Prom
     const before = await page.evaluate(() => document.body.innerText.split('Fly by Sound').length - 1);
     check('A: an ordinary flight names Fly by Sound nowhere on the page before the pause menu is opened', before === 0, { occurrences: before });
 
-    // a key no binding has, so the page's own first-key effects (the motor sound's AudioContext) are behind us
+    // a first key, so the page's own first-key effects (the motor sound's AudioContext) are behind us. J has a binding since
+    // train 1 (throttle.style: on the keyboard it only shows a note), so the probe waits until that note is gone (9 s, an
+    // estimate): at 600 ms the note ran out during the G press and read as G's doing (train 2 integration)
     await page.keyboard.press('KeyJ');
-    await sleep(600);
+    await sleep(9000);
     const keys: { key: string; changed: string[] }[] = [];
     for (const code of SOUND_KEYS) keys.push({ key: code, changed: await pressAndDiff(page, code) });
     // control: the same probe sees a key the page does route (H: the HUD's text off, its note says so), so the keys reach the router
