@@ -3,7 +3,7 @@
 //   node scripts/build-release.mjs                      (once: dist/ of this tree)
 //   cd tools/bench && npx tsx src/rooms-two-page.ts
 // Page A opens 39e63ce9 with the bot pilot (?simradio=scenario), no ?rooms=1 (lane rooms-public: the menu is public), opens
-// 'Fly with others' with key 9 and creates a room; page B opens A's link; both record for RECORD_S seconds. Pass: B's
+// 'Fly with others' from the pause menu (key 9 joins the open room since lane rooms2: rooms-open-vote.ts) and creates a room; page B opens A's link; both record for RECORD_S seconds. Pass: B's
 // RoomsHook.remotes follows A's own positions (RMS after aligning the playout delay < RMS_BOUND_M), B's members hold A's
 // nickname, A's said holds the join line (B joined), B's said holds the welcome line, key 0 on B appends the who-is-around
 // line, and after A has gone B says the leave line and key 0 says nobody; then D opens /fly/?room=<id> with no ?scene= and
@@ -123,14 +123,27 @@ const startRec = (p: Page, what: 'own' | 'remote'): Promise<unknown> => p.evalua
     requestAnimationFrame(step); return 0; })()`);
 const stopRec = (p: Page): Promise<Sample[]> => p.evaluate('(() => { window.__roomsRecStop = true; return window.__roomsRec; })()') as Promise<Sample[]>;
 
+/** Lane rooms2: key 9 joins the open room since R27, so the panel with create, link and list opens from the pause menu
+ *  ('Fly with others', menu id pause.rooms): Esc, then the item. Returns false when the menu or the item did not show. */
+export async function panelByMenu(page: Page, ms = 10000): Promise<boolean> {
+    const item = page.locator('button[data-action="pause.rooms"]');
+    await page.keyboard.press('Escape');
+    if (!(await item.waitFor({ timeout: ms / 2 }).then(() => true, () => false))) {
+        await page.keyboard.press('KeyP');
+        if (!(await item.waitFor({ timeout: ms / 2 }).then(() => true, () => false))) return false;
+    }
+    await item.click();
+    return true;
+}
+
 async function openA(page: Page, origin: string): Promise<{ page: Page; created: boolean; link: string | null; nick: string; slot: number | null; nickField: string | null; storedNick: string | null }> {
     await page.goto(`${origin}/en/fly/?scene=${SCENE}&simradio=scenario&nowarn=1`);
     await waitReady(page, 180000);
     await page.waitForTimeout(1500);
-    await page.keyboard.press('Digit9');
+    await panelByMenu(page);
     const btn = page.locator('[data-action=rooms-create]');
     await btn.waitFor({ timeout: 10000 });
-    // RP-2: the 9 that opened the panel must not be typed into the name field (the field shows the stored name)
+    // RP-2: the panel's name field shows the stored name (no key typed into it on the way)
     const nickField = await page.inputValue('#rooms-nick').catch(() => null);
     const storedNick = await hook<string | null>(page, 'return r.nick ?? null;');
     await btn.click();
@@ -273,7 +286,7 @@ async function main(): Promise<void> {
         const f = out.follow;
         const checks = {
             bJoined,
-            nineNotTypedInName: A.nickField !== null && !A.nickField.endsWith('9') && (A.storedNick === null || A.nickField === A.storedNick),
+            panelShowsStoredName: A.nickField !== null && (A.storedNick === null || A.nickField === A.storedNick),
             aMoved: f.aPathM >= MIN_PATH_M,
             rmsUnderBound: f.rmsM < RMS_BOUND_M && f.compared >= 100,
             bMembersHaveA: (bState.members as Any[]).some((m) => m.nick === A.nick),
