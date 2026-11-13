@@ -16,8 +16,9 @@ Stage S1-direction-motor:
 Stage S2-any-scan (fly THIS scan by sound):
 - [x] package: template lessons/scan-free.json + scanFreeLesson(sceneId, transform), SCAN_FREE_ID, catalogue LESSON_TEMPLATES, 7 lines in en/es/pl/ru, test/scan-free.test.ts (package train2 335888d)
 - [x] package: the 7 lines measured with the four Windows voices (test/fixtures/measure-tts.ps1), lesson-schedule counts 394->401 / 277->282 (en), 480->487 and es 264, pl 357, ru 487 longer (package train2 b9ccaed)
-- [~] package: words check evidence (pnpm listen:words, evidence/listen/VL-4-words.json for 545 keys; test/words.test.ts expects it); started under C:/dev/.gpu-lock, log U:/Temp/gsfpv-train2/sound/words-s2.log; see Not verified for whether it finished
-- [ ] package: whole suite green after the words evidence, then pin packages/sonic-fpv 1ed6103 -> the new train2 head
+- [x] package: words check (SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe node tools/run-tool.mjs listen-words; it takes C:/dev/.gpu-lock itself, do not wrap it): PASS, 545 lines per language, 0 over the bound 0.2 in en, es, pl, ru, control 545 of 545 over (package train2 8b779d4)
+- [x] package whole suite 1308 passed, 4 skipped (64 files), typecheck 0 errors; pin packages/sonic-fpv 1ed6103 -> 8b779d4 (this commit)
+- [ ] simulator sonic tests on the new pin (tools/bench test/sonic*; S1 baseline 741 passed, 2 timeouts)
 - [ ] simulator: pause item apps/fly/src/app/builtin/sonic-flight.ts opens /{lang}/fly/?sonic=scan&scene=<id>&sz=<size> (keep new tab: the flight stays paused under the menu, as today)
 - [ ] simulator: start-model parseSonicParam accepts 'scan' with scene and sz; start.ts onStart for the scan uses scanFreeLesson(scene, [sz,0,0,0]) instead of getLesson; forceScanPrefs with that world
 - [ ] simulator: store.ts flag "I already fly by sound" (new prefs key: run packages/prefs/test/migrate.test.ts and the pinned tables of docs/agent-map.md); start-screen.ts order: experienced (any savedProgress or the flag) = "Fly this scan by sound" first, "Lessons" second; first-timer = lessons first, then "I already fly by sound: fly this scan"; X back to lessons; texts in packages/i18n/locales/fly/sonic* in en, es, pl, ru
