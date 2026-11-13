@@ -12,7 +12,7 @@ Worktree: C:/dev/gsfpv-rooms (reused from lane rooms, clean), branch rooms-publi
       Shift). Spoken lines name the keys: rooms.say.welcome `{who}`, rooms.say.noRoom `{panel}`, en es pl ru.
 - [x] 3. /fly/?room=<id> without ?scene= asks GET /api/rooms/<id> for the scan (apps/fly/src/rooms/link.ts
       `roomSceneLink`, called from boot.ts before the picker); ?scene= links unchanged; no room / gone / offline: the picker.
-- [x] 4a. Tests (commit: this one, "rooms-public: menu and keys public, keys 9 and 0, room link without a scene"):
+- [x] 4a. Tests (commit 6ee9c9bf, points 1 to 3 and these tests; status and evidence 2a0d7b33):
       tools/bench rooms-public (10), rooms-review (5) = 15 passed; prefs keymap, catalogue-site, catalogue-site-drift 38
       passed; bench app-play, public-ranges, app-keys, train1-contract, sonic-start-screen, rooms-a6, rooms-around 84
       passed; i18n 22 passed; `tsc --noEmit` apps/fly, tools/bench, packages/prefs: 0 errors.
