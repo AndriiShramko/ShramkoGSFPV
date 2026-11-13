@@ -104,6 +104,13 @@ class Duml(unittest.TestCase):
         self.assertIsNone(rb.stick_values(answer([1024, 1024, 1024, 1024, 1024, 65535])))
         self.assertIsNone(rb.stick_values(rb.build(7, sender=0x06, receiver=0x0A, typ=0x80, payload=bytes(19))))
 
+    def test_an_untested_dji_controller_is_opened_but_never_the_drone(self):
+        rc2, drone, other, mouse = (0x2CA3, 0x1021), (0x2CA3, 0x0020), (0x2CA3, 0x1020), (0x046D, 0xC077)
+        self.assertEqual(rb.pick_device([mouse, drone, rc2, other]), 2)
+        self.assertEqual(rb.pick_device([mouse, drone, other]), 2)
+        self.assertIsNone(rb.pick_device([mouse, drone]))
+        self.assertIsNone(rb.pick_device([]))
+
     def test_descriptor_check(self):
         # review RC2-R8: the bytes at the measured offset must be a device descriptor before they are trusted
         self.assertTrue(rb.descriptor_ok(bytes([0x12, 0x01]) + bytes(16)))

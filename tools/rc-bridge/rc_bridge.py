@@ -47,6 +47,7 @@ SEND_TIMEOUT_S = 0.5  # a page that takes no data for this long is dropped (esti
 MAX_CLIENT_FRAME = 125  # the page sends only close and ping, whose bodies are at most 125 bytes (RFC 6455 5.5)
 RAW_MIN, RAW_MAX, RAW_MARGIN = 364, 1684, 40  # the reference's stick range; the margin is an estimate (dji-duml.ts)
 VID, PID = 0x2CA3, 0x1021
+NOT_CONTROLLERS = (0x0020,)  # DJI product ids that are drones, never opened as a controller (2CA3:0020 Avata 360)
 POLL_S = 0.01  # one request every 10 ms: the reference's default 100 Hz, not measured here
 REPLY_S = 0.1  # a request with no answer after this is given up (stage 1 saw every answer within 100 ms)
 RETRY_S = 2.0  # look for the controller again after this (estimate)
@@ -138,6 +139,18 @@ def stick_values(frame):
     return v if all(RAW_MIN - RAW_MARGIN <= x <= RAW_MAX + RAW_MARGIN for x in v) else None
 
 
+def pick_device(ids):
+    """Index of the device to open in a list of (vendor id, product id): the DJI RC 2 (2CA3:1021) first, else the
+    first other DJI device that is not a drone (an untested DJI controller, sent only the stick request), else None."""
+    for i, (vid, pid) in enumerate(ids):
+        if (vid, pid) == (VID, PID):
+            return i
+    for i, (vid, pid) in enumerate(ids):
+        if vid == VID and pid not in NOT_CONTROLLERS:
+            return i
+    return None
+
+
 def descriptor_ok(desc):
     """The 18 bytes read at DEV_DESC_OFF are a USB device descriptor (length 0x12, type 0x01): the DLL has the measured
     layout. Another libusb0_dji.dll version could put other memory there."""
@@ -165,6 +178,8 @@ class DjiUsb:
         self.L = None
         self.h = None
         self.seq = 1
+        self.pid = None
+        self.untested = False
         self.rx = bytearray()
         self.rbuf = C.create_string_buffer(16384)
 
@@ -194,8 +209,8 @@ class DjiUsb:
         L = self._lib()
         L.usb_find_busses()
         L.usb_find_devices()
-        bus, dev = L.usb_get_busses(), None
-        while bus and dev is None:
+        bus, found = L.usb_get_busses(), []
+        while bus:
             d = C.c_void_p.from_address(bus + BUS_DEVICES_OFF).value
             while d:
                 desc = C.string_at(d + DEV_DESC_OFF, 18)
@@ -203,13 +218,16 @@ class DjiUsb:
                     raise Closed("this libusb0_dji.dll (%s) does not have the layout the bridge was measured with "
                                  "(4.8.13 amd64): please send us its version" % self.dll)
                 vid, pid = struct.unpack_from("<HH", desc, 8)
-                if (vid, pid) == (VID, PID):
-                    dev = d
-                    break
+                found.append((d, vid, pid))
                 d = C.c_void_p.from_address(d).value  # usb_device.next
             bus = C.c_void_p.from_address(bus).value  # usb_bus.next
-        if dev is None:
-            raise Closed("no DJI RC 2 (USB 2CA3:1021) on DJI's driver: plug it in with a data cable and switch it on")
+        i = pick_device([(vid, pid) for _, vid, pid in found])
+        if i is None:
+            raise Closed("no DJI controller (USB 2CA3:1021 or another DJI controller) on DJI's driver: "
+                         "plug it in with a data cable and switch it on")
+        dev, _, pid = found[i]
+        self.pid = pid
+        self.untested = pid != PID
         h = L.usb_open(dev)
         if not h:
             raise Closed("usb_open: " + L.usb_strerror().decode(errors="replace"))
@@ -552,6 +570,8 @@ class Bridge:
                     s.open()
                     src = s
                     heard = time.monotonic()
+                    if getattr(s, "untested", False):
+                        self.log("an untested DJI controller (USB 2CA3:%04X): only the stick request is sent" % s.pid)
                     self.set_state("reading")
                 except Closed as e:
                     self.set_state("no-controller", str(e))
