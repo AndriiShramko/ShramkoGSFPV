@@ -84,7 +84,9 @@ class Store(unittest.TestCase):
         self.assertEqual(e.exception.status, 404)
 
     def test_twenty_first_track_of_a_scene_replaces_the_oldest(self):
-        # lane review TR-6: a refusal for ever made "Save for everyone" dead in a full scene
+        # lane review TR-6: a refusal for ever made "Save for everyone" dead in a full scene; tracks-plan 2.8: the oldest
+        # unrated course is hidden (the admin may still see and delete it), not refused
+        self.store.limits["tracks_per_scene"] = 20
         ids = []
         for i in range(20):
             self.clock[0] += 1
@@ -95,7 +97,7 @@ class Store(unittest.TestCase):
         self.assertEqual(len(rows), 20)
         self.assertEqual(rows[0]["id"], last)
         self.assertNotIn(ids[0], [r["id"] for r in rows])
-        self.assertFalse((self.dir / "tracks" / "39e63ce9" / ids[0]).exists())
+        self.assertIn(ids[0], [r["id"] for r in self.store.rows("39e63ce9", hidden=True)])
         self.assertIn(ids[1], [r["id"] for r in rows])   # control: only the oldest went
         self.assertIn("id", self.store.create(course(scene="887f27aa")))
 
@@ -200,7 +202,8 @@ class Http(unittest.TestCase):
         lst = json.loads(body)
         self.assertEqual(lst["v"], 1)
         self.assertEqual([r["id"] for r in lst["tracks"]], ids[::-1])
-        self.assertEqual(set(lst["tracks"][0]), {"id", "version", "title", "gates", "lengthM", "created"})
+        self.assertEqual(set(lst["tracks"][0]), {"id", "version", "title", "gates", "lengthM", "created", "edited", "creator", "editor",
+                                                 "parent", "origin", "up", "down", "rating", "broken"})
         self.assertIn("max-age=30", h["Cache-Control"])
         self.assertEqual(self.call("GET", "/api/tracks?scene=39e63ce9", headers={"If-None-Match": h["ETag"]})[0], 304)
         code, fh, fb = self.call("GET", f"/api/tracks/{ids[0]}/v1")
@@ -217,7 +220,7 @@ class Http(unittest.TestCase):
         self.assertEqual(self.call("POST", "/api/tracks", course(), ip="203.0.113.8")[0], 201)   # control
 
     def test_invalid_fixture_is_400(self):
-        code, _, body = self.call("POST", "/api/tracks", (FIX / "invalid-author-person.json").read_bytes())
+        code, _, body = self.call("POST", "/api/tracks", (FIX / "invalid-author-agent.json").read_bytes())
         self.assertEqual(code, 400)
         self.assertEqual(json.loads(body)["error"], "invalid")
         self.assertEqual(self.call("POST", "/api/tracks", (FIX / "valid-open-scaled.json").read_bytes(), ip="203.0.113.8")[0], 201)   # control
