@@ -64,8 +64,12 @@ class ExtraRoutes(unittest.TestCase):
     def test_server_wires_the_v07_routes(self):
         routes = {p.pattern for _m, p, _f in server.ADMIN._extra}
         sid = r"(S-[0-9]{8}-[0-9a-f]{12})"      # v0.12: the owner's Sessions tab (sessions_admin.py)
+        tid = r"([0-9a-f]{6,32}-[0-9a-f]{8})"
         self.assertEqual(routes, {r"superspl/([0-9a-f]{6,32})", r"geo/search", r"wind/climate", r"outreach", r"outreach/export\.csv",
-                                  r"sessions", f"sessions/{sid}/package", f"sessions/{sid}/resend", f"sessions/{sid}/delete"})
+                                  r"sessions", f"sessions/{sid}/package", f"sessions/{sid}/resend", f"sessions/{sid}/delete",
+                                  # train 2: the admin's courses (tracks_admin.py, tracks-plan 2.10)
+                                  r"tracks", f"tracks/{tid}/v([0-9]{{1,4}})", f"tracks/{tid}/hide", f"tracks/{tid}/delete",
+                                  f"tracks/{tid}/v([0-9]{{1,4}})/delete", f"tracks/{tid}/versions", f"tracks/{tid}/(votes|broken)/reset"})
         # control: an unknown admin path still falls through to the built-in 404
         st, _b, _h = self.api.handle("GET", "/api/admin/nothing", Headers({"Cookie": self.cookie}), lambda n: b"", "1.2.3.4")
         self.assertEqual(st, 404)
