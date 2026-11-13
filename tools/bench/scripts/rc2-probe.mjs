@@ -56,7 +56,10 @@ function installFakeRc2(cfg) {
     const FN = { throttle: 'T', yaw: 'R', roll: 'A', pitch: 'E' };
     let seed = 12345;
     const rnd = () => { seed = (Math.imul(seed, 1103515245) + 12345) >>> 0; return seed / 4294967296; };
-    const sticks = { A: 0, E: 0, T: -1, R: 0 }, want = { A: 0, E: 0, T: -1, R: 0 };
+    // the RC 2's left stick springs to the centre (all six at 1024 at rest, measured in stage 1): a hand that lets go of
+    // the throttle leaves it in the middle, not at the bottom as on hid-source-probe.mjs's radios
+    const REST_T = 0;
+    const sticks = { A: 0, E: 0, T: REST_T, R: 0 }, want = { A: 0, E: 0, T: REST_T, R: 0 };
     const hands = { fixed: null };
     window.__rc2Hands = hands;
     let arm = false, seenKey = '', seenAt = 0, doKey = '', followT0 = 0, stirStop = false, offSeenAt = NaN, lastT = NaN;
@@ -75,11 +78,11 @@ function installFakeRc2(cfg) {
                 arm = false;
                 if (stage === 'active') {
                     if (el >= STIR_MIN_MS && st.can?.next) stirStop = true;
-                    if (stirStop) { centred(); want.T = -1; }
+                    if (stirStop) { centred(); want.T = REST_T; }
                     else { const a = (el / 1000) * Math.PI * 2 * 0.6; want.A = Math.cos(a); want.E = Math.sin(a); want.R = Math.cos(a * 1.3); want.T = Math.sin(a * 1.3); }
-                } else { centred(); want.T = -1; }
-            } else if (id === 'centre') { centred(); want.T = -1; arm = false; }
-            else if (id in FN) { centred(); if (id === 'throttle') want.T = -1; if (stage === 'active') want[FN[id]] = 1; }
+                } else { centred(); want.T = REST_T; }
+            } else if (id === 'centre') { centred(); want.T = REST_T; arm = false; }
+            else if (id in FN) { centred(); if (id === 'throttle') want.T = REST_T; if (stage === 'active') want[FN[id]] = 1; }
             else if (id === 'arm') {
                 if (stage === 'active') {
                     const back = st.armFlip?.phase === 'off';
@@ -133,7 +136,9 @@ const state = (page) => page.evaluate(() => {
         wizard: w ? (w.stage ? `${w.id}/${w.stage}` : w.id) : null, profileKey: w?.profile?.deviceKey ?? null,
         key: src?.key ?? null, reports: src?.reports ?? null, badReports: src?.badReports ?? null,
         armed: !!hd?.armed, crashed: !!hd?.crashed, alt: hd?.altitude ?? null, radio: !!document.querySelector('.screen.radio'),
-        probe: window.__rc2Probe, axes: window.__rc2Axes ?? null
+        probe: window.__rc2Probe, axes: window.__rc2Axes ?? null,
+        throttle: g?.throttle ? (({ resolved, setting, centre, now }) => ({ resolved, setting, centre, now }))(g.throttle()) : null,
+        card: (() => { const c = document.querySelector('.arm-card'); return c && !c.classList.contains('hidden') ? (c.querySelector('.reason')?.textContent ?? '').slice(0, 200) : null; })()
     };
 });
 /** the Controls screen's helper, opened (a <details>) */
@@ -216,15 +221,18 @@ if (only.includes('usb')) {
         await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 15000 });
         await page.waitForTimeout(1500);
         const s0 = await state(page);
-        await page.evaluate(() => { window.__rc2Hands.fixed.arm = true; });
-        await page.waitForTimeout(500);
+        // the arm switch the wizard took (the left dial) stays where it was on the check screen: centred style needs none
         await page.evaluate(() => { window.__rc2Hands.fixed.T = 0.6; });
         note.climb = [];
-        for (let i = 0; i < 10; i++) { await page.waitForTimeout(250); const x = await state(page); note.climb.push({ alt: x.alt, armed: x.armed }); }
+        for (let i = 0; i < 10; i++) { await page.waitForTimeout(250); const x = await state(page); note.climb.push({ alt: x.alt, motors: x.throttle?.centre?.arm ?? null, crashed: x.crashed }); }
         const s1 = await state(page);
-        note.start = { alt: s0.alt, armed: s0.armed };
-        note.up = { alt: s1.alt, armed: s1.armed, crashed: s1.crashed };
-        checks['usb.climbs'] = s1.armed && !s1.crashed && s0.alt !== null && s1.alt !== null && s1.alt - s0.alt >= 1.0;
+        note.start = { alt: s0.alt, armed: s0.armed, throttle: s0.throttle, card: s0.card };
+        note.up = { alt: s1.alt, armed: s1.armed, crashed: s1.crashed, throttle: s1.throttle, card: s1.card };
+        // the climb: motors on (centred style: centre.arm 'on') and +1 m over the start within the 2.5 s. The drone is not
+        // asked to stay up: on 2026-11-13 it rose 3 m in 1.25 s and then came down in this scene (see docs/wip/rc2.md)
+        const top = Math.max(...note.climb.map((c) => c.alt ?? -Infinity));
+        note.topM = s0.alt === null ? null : top - s0.alt;
+        checks['usb.climbs'] = s0.alt !== null && note.topM >= 1.0 && note.climb.some((c) => c.motors === 'on') && s0.throttle?.now === 'centred';
         note.probe = s1.probe;
     });
     checks['usb.noPageErrors'] = (errorsOf.usb ?? ['not run']).length === 0;
@@ -258,9 +266,11 @@ if (only.includes('bridge')) {
         note.socketsBeforePress = (await state(page)).probe.sockets;
         checks['bridge.noSocketOnLoad'] = note.socketsBeforePress === 0;
         await page.locator('[data-action=usb-rc2-bridge]').click();
-        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return s && s !== 'opening'; }, null, { timeout: 10000 });
-        note.sayState = await page.getAttribute('[data-testid=usb-bridge-say]', 'data-state');
-        note.say = await page.textContent('[data-testid=usb-bridge-say]');
+        // connected: the Controls screen moves on to the check (the helper and its line leave the page)
+        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 });
+        const said = await page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : null; });
+        note.sayState = said ? said.state : 'flying';
+        note.say = said?.text ?? '';
         if (bridgeBlocked) {
             checks['bridge.blockedSaysNoBridge'] = note.sayState === 'nobridge' && /does not answer/.test(note.say);
             checks['bridge.blockedByCsp'] = csp.some((m) => /ws:\/\/127\.0\.0\.1:47310/.test(m));

@@ -42,10 +42,27 @@ Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native re
   profile key), helper button "Fly through the RC bridge" (connects only on the press), texts nobridge / nocontroller,
   claimFailed points to the bridge; en/es/pl/ru. tools/bench/test/app-dji-rc2-bridge.test.ts + app-usb-look +
   app-dji-rc2: 23 passed, NEG OK; tsc of apps/fly clean.
-- [ ] 3. CSP entry for the fly page (deploy/nginx.conf + tests), measured in the bench Chrome.
-- [ ] 4. Page probe tools/bench/scripts/rc2-probe.mjs on a local release build (fake WebUSB, refused claim, bridge),
-  negative control on a build of origin/main.
-- [ ] 5. For the lead, Not verified, cost note.
+- [x] 3. CSP: deploy/nginx.conf map $gsfpv_rc_bridge (" ws://127.0.0.1:47310" for /{lang}/fly/ only, "" elsewhere),
+  used in $gsfpv_csp_rest's connect-src. apps/api/tests/test_nginx_rc_bridge.py (5 tests incl. 3 planted-fault
+  controls) + test_nginx_routes/rooms/tracks: 34 passed; NEG OK on the old nginx.conf. Measured in the bench Chrome
+  (headless, release build of this branch served by serve-csp with the lead patch): the page served with the release
+  CSP opened ws://127.0.0.1:47310 with no CSP message (bridge.cspQuiet true). Commit 6bafc64f.
+- [ ] 4. Page probe tools/bench/scripts/rc2-probe.mjs (written, committed). Last run on a local release build of this
+  branch with both lead patches applied (evidence/2026-11-13/rc2/rc2-probe-branch.json): 13 of 14 checks pass
+  (usb: verdict rc2, wizard to the check screen with key hid:2ca3:1021:DJI RC 2:12:d, one axis moves on the check
+  screen; refused: the claim text; bridge (replay bridge, --wiggle): no socket on load, connected, check screen at
+  once, 185 frames in 2 s, no CSP message). FAILS: usb.climbs. Left stick up from the centre: throttle style
+  resolves 'centred' (why 'seen'), but centre.arm toggles 'arming'/'on' every 250 ms and the drone rises only 0.74 m
+  then sinks (an earlier run rose 3 m in 1.25 s and then fell and crashed: rc2-probe-branch-earlier.json).
+  Negative control: the same probe (usb,refused) against the lead's dist C:/dev/gsfpv-v03/dist (built 05:09, no
+  RC 2 code in it) fails: usb.verdictRc2 false (rc2-probe-old-build.json).
+  LEFT: find why the motors toggle. First suspect: frame gaps of the WebUSB source under page load trip ArmGate's
+  100 ms stale rule (the fake answers through two timer hops per request; centre-throttle-probe's fake HID uses one
+  6 ms interval and climbs). Measure in the probe: tap HidSource frames during the climb, record max gap; if gaps
+  exceed 100 ms, fix in dji-rc2-source.ts (e.g. do not wait RC2_POLL_MS with setTimeout when the answer took longer;
+  drop the probe fake's 2 ms delay to tell fake from source). Then rerun the probe (all three runs) and the
+  negative control, and tick this line.
+- [x] 5. For the lead, Not verified, cost note written below.
 
 ## Verdict of stage 1
 
@@ -135,6 +152,12 @@ every received frame, measured]:
   100 Hz, not measured here). First answer must come within 1500 ms (estimate) or the helper says 'silent'.
 - HidSource.close() removes the last listener: DjiRc2Device then releases the interface and closes the device, so
   nothing polls in the background (radio.ts choose() lets go of owned sources this way).
+- Stage 3 path (ii), the native bridge: adb stayed offline in stage 1, the libusb0_dji read worked. The bridge sends
+  decoded raw values ({"v":[6]}), not DUML bytes; Rc2BridgeDevice turns them into the same 12-byte report as the WebUSB
+  source, so both share one profile key. Port 47310 is a choice, not a measurement. Python standard library only,
+  so the owner's existing 64-bit Python runs it with nothing installed.
+- Stage 3 CSP: a second map ($gsfpv_rc_bridge on $uri) instead of a second copy of the whole policy, so the fly page
+  alone gets the loopback source and the policy text stays in one place.
 - dji-rc2-source.ts imports packages/input/src/dji-duml by relative path (precedent: apps/fly/src/voxels.worker.ts)
   because packages/input/src/index.ts is outside this lane.
 
@@ -147,6 +170,19 @@ every received frame, measured]:
 - Optional: export './dji-duml' from packages/input/src/index.ts and switch the relative import in
   apps/fly/src/devices/dji-rc2-source.ts to '@gsfpv/input' (check name clashes first).
 - No preference or key was added: the catalogue generator does not need to run for this stage.
+- Stage 3: apply evidence/2026-11-13/rc2/lead-serve-csp.patch.txt to tools/bench/scripts/serve-csp.mjs (it fills
+  $gsfpv_rc_bridge the way nginx's map does). Without it a local serve sends the literal "$gsfpv_rc_bridge" token in
+  connect-src (Chrome ignores it), so the bridge is blocked locally while every other probe works as before.
+- Stage 3, on the server: deploy/nginx.conf gains the map $gsfpv_rc_bridge and one variable in connect-src. Run
+  `nginx -t` on the hub before reload (not possible here: no nginx on this PC). Nothing else changes on the server.
+- Stage 3, how the owner starts it on his PC: DJI Assistant 2 is installed (its libusb0_dji driver is what the bridge
+  uses); plug in the RC 2 and switch it on; double-click C:/dev/gsfpv-v03/tools/rc-bridge/start-rc-bridge.cmd (after
+  the merge) and leave the window open; on the site: Controls, "My controller is not in the list", "Fly through the RC
+  bridge". The first time the wizard runs; later the check screen opens at once. Arm: Space or the on-screen ARM is
+  not needed in the centred style (the stick starts the motors). How other pilots get the program (a download, a
+  release asset) is the lead's call: today it lives only in the repo.
+- Stage 3: the probe's usb.climbs still fails (Status, stage 3 step 4): do not ship the RC 2 path as "flies" before it
+  passes.
 
 ## Not verified
 - Stick decode while sticks move (nobody touched them during 35 s of recording): offsets, range and
@@ -162,6 +198,16 @@ every received frame, measured]:
 - Stage 2: the 10 ms poll and the 100 ms answer limit are not measured; the real answer time is unknown.
 - Stage 2: whether WebUSB transferIn returns several DUML frames in one read on the real device is unknown; the
   stream reader handles both (tested).
+- Stage 3: the page probe with the REAL controller through the real bridge: the RC 2 left the USB bus between the
+  bridge's first real run (633 stick messages in 10 s, bridge-real-controller.json) and the probe (Get-PnpDevice
+  lists no VID_2CA3 device; probably switched itself off). The probe's bridge run used the recorded replay.
+- Stage 3: a moving stick through the bridge on the real controller (all six stayed at 1024).
+- Stage 3: Chrome's local-network-access permission when the LIVE https page opens ws://127.0.0.1: the bench page
+  was served from http://localhost, which is not a public origin, so no prompt could appear. Expected: Chrome asks
+  once ("apps on this device"); the helper text tells the pilot to allow it. Not measured.
+- Stage 3: nginx -t on the new map (no nginx here); the map with a variable inside $gsfpv_csp_rest is standard nginx.
+- Stage 3: start-rc-bridge.cmd was not double-clicked (the bridge was started with python directly); the 32-bit
+  Python refusal path was not run.
 
 ## Cost notes
 - Stage 1: most turns went to pyusb crashing on DJI's libusb0 build (3 turns to find the struct offset);
@@ -171,3 +217,7 @@ every received frame, measured]:
   2 s wait; Controls.tick treats one late tick as a stalled page, so the stale test needs a 10 ms ticker). The
   neg_control script needs the full node.exe path (npx is a .cmd Python cannot start). A code-map line saying
   "a new device = a WebHID-shaped object for HidSource" would have saved about 5 replies.
+- Stage 3: about 42 replies, not finished (usb.climbs). Most went to page-probe iterations (5 runs of 1-2 min): the
+  fake's throttle had to rest in the centre (the hid-source-probe hands rest it at the bottom, so the wizard chose
+  from-zero), and a connected helper leaves the DOM (wait for the wizard, not the status line). Writing the probe
+  with spring-centred hands and a frame-gap tap from the start would have saved 3 runs.
