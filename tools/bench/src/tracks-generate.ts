@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { getLesson, validateTrack } from '../../../packages/sonic-fpv/src';
 import type { LessonDef, SceneTransform, Vec3 } from '../../../packages/sonic-fpv/src';
-import { FREE_DEFAULTS, checkTrack, coursePath, flownCollision, freeSpace, generateCourse, pathProblems, sweeperOf } from '@gsfpv/tracks';
+import { FREE_DEFAULTS, checkTrack, coursePath, flownCollision, freeSpace, generateCourse, pathProblems, provenMargin, sweeperOf } from '@gsfpv/tracks';
 import type { FreeSpace } from '@gsfpv/tracks';
 import { REPO, today, writeEvidence } from './evidence';
 import { loadScene } from './scenes';
@@ -63,6 +63,7 @@ async function main(): Promise<void> {
         const free = freeSpace(walls, { spawn });
         const freeMs = performance.now() - t0;
         sample();
+        console.error(`${sc.id}: free space in ${Math.round(freeMs)} ms`);
         const thresholds = [0.5, 0.7, 0.9].map((e) => {
             const f = e === FREE_DEFAULTS.enclosureMin ? free : freeSpace(walls, { spawn, enclosureMin: e });
             sample();
@@ -73,13 +74,15 @@ async function main(): Promise<void> {
             const track = generateCourse(free, walls, { seed, scene: { id: sc.id, version: 1 }, transform: T, created: `${stamp}T00:00:00.000Z` });
             const genMs = performance.now() - g0;
             sample();
+            console.error(`${sc.id} seed ${seed}: ${track.gates.length} gates in ${Math.round(genMs)} ms (${String(track.generator?.params.stop)})`);
             if (track.gates.length === 0) return { seed, gates: 0, genMs: Math.round(genMs), note: 'no gate fits' };
-            // the generator proves unmeasured; the course is proven here once more, measured (free radius) for the first
-            // seed only: the free-radius probes are the slow part (seconds a course)
+            // the generator proves unmeasured; the course is proven here once more. Its free radius for the first seed is the
+            // proven margin (bisection of unmeasured proofs between 0.5 and 1.5 m): the measured proof's free-radius probes
+            // took 44-72 s a course on Winter Garden and did not end in 3.5 min on 887f27aa
             const measured = seed === SEEDS[0];
             const c0 = performance.now();
-            const check = checkTrack(track, walls, T, 0.5, measured);
-            const proof = { ok: check.ok, pathM: check.pathM, minGapM: check.minGapM, minFreeM: measured ? check.minFreeM : null, issues: check.issues.slice(0, 3) };
+            const check = checkTrack(track, walls, T, 0.5, false);
+            const proof = { ok: check.ok, pathM: check.pathM, minGapM: check.minGapM, minFreeM: measured && check.ok ? provenMargin(track, walls, T, 0.5, 1.5) : null, issues: check.issues.slice(0, 3) };
             const checkMs = performance.now() - c0;
             sample();
             const path = coursePath(track, T);
