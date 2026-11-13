@@ -3,7 +3,7 @@
 import { t } from '../../i18n';
 import type { Course, CourseProblem, EditRefusal, EditorState } from '@gsfpv/tracks';
 import type { CourseMark } from '../store';
-import { PROBLEM_KEYS, REFUSAL_KEYS } from './texts';
+import { PROBLEM_KEYS, REFUSAL_KEYS, markParts } from './texts';
 export { ACTION_KEYS, PROBLEM_KEYS, REFUSAL_KEYS, editorLocaleKeys } from './texts';
 
 const gateNo = (c: Course, id: string): number => c.gates.findIndex((g) => g.id === id) + 1;
@@ -49,7 +49,7 @@ export function problemsLine(s: EditorState): string {
 }
 
 export function markText(m: CourseMark | null | undefined): string {
-    if (!m) return '';
-    const kind = m.kind === 'person' ? 'person' : m.kind === 'admin' ? 'admin' : 'generator';
-    return `${m.name} (${t(`course.edit.kind.${kind}`)})`;
+    const p = markParts(m);
+    if (!p) return '';
+    return p.name ? `${p.name} (${t(p.kindKey)})` : t(p.kindKey);
 }

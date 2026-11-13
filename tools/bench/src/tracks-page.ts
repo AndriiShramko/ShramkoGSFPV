@@ -337,7 +337,8 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
             const li = document.querySelector(s);
             return li ? { by: li.querySelector('.ce-by')?.textContent ?? null, edited: li.querySelector('.ce-edited')?.textContent ?? null } : null;
         }, rowSel), (v) => v !== null, 10000);
-        check('E the fork in the list: created by the generator, edited by the pilot', !!row.v?.by && (row.v?.edited ?? '').includes('Probe Pilot'), row.v);
+        // en words (locales/fly/course/en.json): "created by the generator", "edited by Probe Pilot (pilot)"; never "null" (run 1 of 2026-11-13 said "created by null (generator)")
+        check('E the fork in the list: created by the generator, edited by the pilot', row.v?.by === 'created by the generator' && row.v?.edited === 'edited by Probe Pilot (pilot)', row.v);
 
         // vote up on the fork
         await p.click(`${rowSel} .ce-up`);

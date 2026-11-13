@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { BIG_STEP_M, KEY_ROWS, editorKey, forwardOf } from '../../../apps/fly/src/course/editor/keys';
-import { editorLocaleKeys } from '../../../apps/fly/src/course/editor/texts';
+import { editorLocaleKeys, markParts } from '../../../apps/fly/src/course/editor/texts';
 import { CourseStore, myVotes, rememberVote, voterId } from '../../../apps/fly/src/course/store';
 import { CURSOR_WINDOWS, cursorWindowOpen } from '../../../apps/fly/src/play/mouse-look';
 
@@ -127,6 +127,16 @@ describe('the store: pilot saves, votes, later versions', () => {
         expect(myVotes(mem)).toEqual({ '887f27aa-0000abcd': -1 });
         rememberVote('887f27aa-0000abcd', 0, mem);
         expect(myVotes(mem)).toEqual({});
+    });
+});
+
+describe('the list marks as the server sends them', () => {
+    it('kind pilot is a pilot with the name; a generator mark has no name and never shows "null"', () => {
+        // apps/api/tracks.py _mark: {"kind": "pilot", "name": ...}, {"kind": "generator", "name": None}, {"kind": "admin", "name": None}
+        expect(markParts({ kind: 'pilot', name: 'Probe Pilot' })).toEqual({ kindKey: 'course.edit.kind.person', name: 'Probe Pilot' });
+        expect(markParts({ kind: 'generator', name: null })).toEqual({ kindKey: 'course.edit.kind.generator', name: null });
+        expect(markParts({ kind: 'admin', name: null })).toEqual({ kindKey: 'course.edit.kind.admin', name: null });
+        expect(markParts(null)).toBeNull();
     });
 });
 

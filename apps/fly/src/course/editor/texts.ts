@@ -42,6 +42,15 @@ export const ACTION_KEYS: Record<EditAction['kind'], string> = {
     redo: 'course.edit.key.redo'
 };
 
+/** A list mark as the server sends it (apps/api/tracks.py _mark: kind 'pilot' with a name, 'admin' or 'generator' with name null) in
+ *  words: the locale key of its kind and the name, null when it has none (shown as the kind's word alone, never "null"). */
+export function markParts(m: { kind: string; name?: string | null } | null | undefined): { kindKey: string; name: string | null } | null {
+    if (!m) return null;
+    const kind = m.kind === 'pilot' || m.kind === 'person' ? 'person' : m.kind === 'admin' ? 'admin' : 'generator';
+    const name = typeof m.name === 'string' && m.name.trim() ? m.name : null;
+    return { kindKey: `course.edit.kind.${kind}`, name };
+}
+
 /** every locale key the editor uses (the test checks all four languages have each) */
 export function editorLocaleKeys(): string[] {
     const fixed = ['course.edit.title', 'course.edit.menu', 'keys.course.edit', 'course.edit.gate', 'course.edit.shape.ring', 'course.edit.shape.square',

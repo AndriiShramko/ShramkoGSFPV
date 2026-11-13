@@ -96,7 +96,7 @@
   "course.edit.gates": "gates: {n}",
   "course.edit.by": "created by {name}",
   "course.edit.editedBy": "edited by {name}",
-  "course.edit.kind.generator": "generator",
+  "course.edit.kind.generator": "the generator",
   "course.edit.kind.person": "pilot",
   "course.edit.kind.admin": "admin",
   "course.edit.votes": "for {up}, against {down}",

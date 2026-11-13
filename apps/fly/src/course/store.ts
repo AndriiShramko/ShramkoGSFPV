@@ -21,8 +21,9 @@ export interface CourseRow {
     rating?: number;
 }
 
-/** an authorship mark of a list row: kind generator, pilot (person) or admin, and the name */
-export interface CourseMark { kind: string; name: string }
+/** an authorship mark of a list row as apps/api/tracks.py _mark sends it: kind 'pilot' with the pilot's name, 'admin' or
+ *  'generator' with name null */
+export interface CourseMark { kind: string; name: string | null }
 
 export type Voted = { ok: true; up: number; down: number; v: number } | { ok: false; problem: string };
 /** a saved pilot's course: the edit token comes only with a new course or fork (kept in this tab, for its next versions) */
