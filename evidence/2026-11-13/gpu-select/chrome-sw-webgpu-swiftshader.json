@@ -1,0 +1,227 @@
+{
+  "name": "gpu-select/chrome-sw-webgpu-swiftshader",
+  "date": "2026-11-13T19:28:42.635Z",
+  "label": "chrome-sw-webgpu-swiftshader",
+  "browserName": "chrome",
+  "variant": "default",
+  "launch": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "added": [
+      "--use-webgpu-adapter=swiftshader"
+    ],
+    "env": {},
+    "profile": "throwaway (.cache/gpu-select)",
+    "visible": true
+  },
+  "browser": {
+    "product": "Chrome/140.0.7339.81",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+  },
+  "url": "https://gsfpv.flyreelstudio.eu/en/fly/",
+  "page": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
+    "secure": true,
+    "webgpu": true,
+    "cores": 16,
+    "deviceMemory": 8,
+    "dpr": 1.5,
+    "visibility": "visible",
+    "adapters": {
+      "high": null,
+      "low": null,
+      "none": null,
+      "fallback": null
+    },
+    "webgl": {
+      "high-performance": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "low-power": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "default": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    }
+  },
+  "systemInfo": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 32902,
+          "deviceId": 39520,
+          "subSysId": 538450520,
+          "revision": 1,
+          "vendorString": "",
+          "deviceString": "Intel(R) UHD Graphics",
+          "driverVendor": "Intel",
+          "driverVersion": "32.0.101.7088"
+        },
+        {
+          "vendorId": 4318,
+          "deviceId": 9373,
+          "subSysId": 538450520,
+          "revision": 161,
+          "vendorString": "",
+          "deviceString": "NVIDIA GeForce RTX 3070 Laptop GPU",
+          "driverVendor": "",
+          "driverVersion": "32.0.16.1742"
+        },
+        {
+          "vendorId": 5140,
+          "deviceId": 140,
+          "subSysId": 0,
+          "revision": 0,
+          "vendorString": "",
+          "deviceString": "Microsoft Basic Render Driver",
+          "driverVendor": "",
+          "driverVersion": "10.0.26100.9711"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "bgra8OverlaySupport": "SCALING",
+        "canSupportThreadedTextureMailbox": false,
+        "directComposition": true,
+        "directMLFeatureLevel": "Not supported",
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_D3D11",
+        "dx12FeatureLevel": "Not supported",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_lossy_etc_decode GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_request_extension GL_ANGLE_robust_client_memory GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_usage GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_color_buffer_float_rgb GL_CHROMIUM_color_buffer_float_rgba GL_CHROMIUM_copy_compressed_texture GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_EGL_image_external_wrap_modes GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_half_float GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_NV_EGL_stream_consumer_external GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_compressed_EAC_R11_signed_texture GL_OES_compressed_EAC_R11_unsigned_texture GL_OES_compressed_EAC_RG11_signed_texture GL_OES_compressed_EAC_RG11_unsigned_texture GL_OES_compressed_ETC2_RGB8_texture GL_OES_compressed_ETC2_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_sRGB8_alpha_texture GL_OES_compressed_ETC2_sRGB8_alpha8_texture GL_OES_compressed_ETC2_sRGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_vertex_array_object GL_WEBGL_video_texture ",
+        "glImplementationParts": "(gl=egl-angle,angle=d3d11)",
+        "glRenderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.101.7088)",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Intel)",
+        "glVersion": "OpenGL ES 2.0.0 (ANGLE 2.1.25846 git hash: cbc4153da8d5)",
+        "glWsExtensions": "EGL_EXT_create_context_robustness EGL_ANGLE_d3d_share_handle_client_buffer EGL_ANGLE_d3d_texture_client_buffer EGL_ANGLE_surface_d3d_texture_2d_share_handle EGL_ANGLE_query_surface_pointer EGL_ANGLE_window_fixed_size EGL_ANGLE_keyed_mutex EGL_ANGLE_surface_orientation EGL_ANGLE_direct_composition EGL_NV_post_sub_buffer EGL_KHR_create_context EGL_KHR_image EGL_KHR_image_base EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_gl_renderbuffer_image EGL_KHR_get_all_proc_addresses EGL_KHR_stream EGL_KHR_stream_consumer_gltexture EGL_NV_stream_consumer_gltexture_yuv EGL_ANGLE_stream_producer_d3d_texture EGL_ANGLE_create_context_webgl_compatibility EGL_CHROMIUM_create_context_bind_generates_resource EGL_CHROMIUM_sync_control EGL_EXT_pixel_format_float EGL_KHR_surfaceless_context EGL_ANGLE_display_texture_share_group EGL_ANGLE_display_semaphore_share_group EGL_ANGLE_create_context_client_arrays EGL_ANGLE_program_cache_control EGL_ANGLE_robust_resource_initialization EGL_ANGLE_create_context_extensions_enabled EGL_ANDROID_blob_cache EGL_ANDROID_recordable EGL_ANGLE_image_d3d11_texture EGL_ANGLE_create_context_backwards_compatible EGL_KHR_no_config_context EGL_KHR_create_context_no_error EGL_KHR_reusable_sync EGL_ANGLE_memory_usage_report ",
+        "glWsVendor": "Google Inc. (Intel)",
+        "glWsVersion": "1.5 (ANGLE 2.1.25846 git hash: cbc4153da8d5)",
+        "hardwareSupportsVulkan": false,
+        "inProcessGpu": false,
+        "initializationTime": 0.207792,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "nv12OverlaySupport": "SCALING",
+        "optimus": false,
+        "p010OverlaySupport": "SOFTWARE",
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "5.0",
+        "processCrashCount": 0,
+        "rgb10a2OverlaySupport": "SOFTWARE",
+        "sandboxed": true,
+        "skiaBackendType": "GaneshGL",
+        "subpixelFontRendering": true,
+        "supportsD3dSharedImages": true,
+        "supportsDirectML": false,
+        "supportsDx12": false,
+        "supportsOverlays": true,
+        "supportsVulkan": false,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "5.0",
+        "visibilityCallbackCallCount": 0,
+        "vulkanVersion": "Not supported",
+        "yuy2OverlaySupport": "SCALING"
+      },
+      "driverBugWorkarounds": [
+        "disable_direct_composition_sw_video_overlays",
+        "disable_mfvea_shared_device",
+        "disable_vp9_hmft_temporal_encoding",
+        "disable_vp_auto_hdr",
+        "disable_webnn_for_npu",
+        "enable_webgl_timer_query_extensions",
+        "exit_on_context_lost",
+        "force_dcomp_triple_buffer_video_swap_chain",
+        "max_msaa_sample_count_4",
+        "msaa_is_slow",
+        "no_downscaled_overlay_promotion",
+        "supports_two_yuv_hardware_overlays",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ]
+    },
+    "modelName": "",
+    "commandLine": "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" --user-data-dir=\"C:\\dev\\ShramkoGSFPV\\.cache\\gpu-select\\chrome-sw-webgpu-swiftshader-profile\" --remote-debugging-port=0 --no-first-run --no-default-browser-check --window-position=40,40 --window-size=1296,920 --use-webgpu-adapter=swiftshader --flag-switches-begin --flag-switches-end about:blank"
+  },
+  "gpuProcessPid": 22524,
+  "counters": {
+    "seconds": 4,
+    "adapters": {
+      "0x00000000_0x00012db4": "Intel(R) UHD Graphics",
+      "0x00000000_0x0001316d": "Microsoft Basic Render Driver",
+      "0x00000000_0x000131ff": "NVIDIA GeForce RTX 3070 Laptop GPU"
+    },
+    "perAdapter": {
+      "Intel(R) UHD Graphics": {
+        "engines": 13,
+        "max3d": 90.44,
+        "avg3d": 88.48,
+        "maxAny": 90.44,
+        "dedicatedMb": 0,
+        "sharedMb": 143.2
+      }
+    },
+    "busyEngines": [
+      {
+        "luid": "0x00000000_0x00012db4",
+        "adapter": "Intel(R) UHD Graphics",
+        "engine": "eng_0_engtype_3d",
+        "max": 90.44,
+        "avg": 88.48
+      }
+    ]
+  },
+  "load": {
+    "renderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "frames": 637,
+    "p50ms": 6.1,
+    "p95ms": 18.2,
+    "maxMs": 24.4
+  },
+  "nvidiaSmi": {
+    "available": true,
+    "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU, 617.42, 0 MiB, 0 %",
+    "gpuProcessListed": false,
+    "browserRows": [],
+    "otherRows": [
+      "DJI Studio.exe"
+    ]
+  },
+  "gpuPage": {
+    "file": "chrome-sw-webgpu-swiftshader-gpu-page.txt",
+    "chars": 68163,
+    "summary": [
+      "* Canvas: Hardware accelerated",
+      "* Compositing: Hardware accelerated",
+      "* Rasterization: Hardware accelerated",
+      "* Video Decode: Hardware accelerated",
+      "* WebGL: Hardware accelerated",
+      "* WebGL2: Hardware accelerated",
+      "* WebGPU: Hardware accelerated",
+      "ANGLE commit id : cbc4153da8d5",
+      "GPU0 : VENDOR= 0x8086, DEVICE=0x9a60 [Intel(R) UHD Graphics], SUBSYS=0x20181a58, REV=1, LUID={0,77236}, DRIVER_VENDOR=Intel, DRIVER_VERSION=32.0.101.7088 *ACTIVE*",
+      "GPU1 : VENDOR= 0x10de, DEVICE=0x249d [NVIDIA GeForce RTX 3070 Laptop GPU], SUBSYS=0x20181a58, REV=161, LUID={0,78335}, DRIVER_VERSION=32.0.16.1742",
+      "GPU2 : VENDOR= 0x1414, DEVICE=0x008c [Microsoft Basic Render Driver], LUID={0,78189}, DRIVER_VERSION=10.0.26100.9711",
+      "Display type : ANGLE_D3D11",
+      "GL_VENDOR : Google Inc. (Intel)",
+      "GL_RENDERER : ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.101.7088)",
+      "Dawn Info =========",
+      "<Integrated GPU> D3D12 backend - Intel(R) UHD Graphics -------------------------------------------------------",
+      "<Integrated GPU> Vulkan backend - Intel(R) UHD Graphics --------------------------------------------------------",
+      "<Integrated GPU> D3D11 backend - Intel(R) UHD Graphics -------------------------------------------------------",
+      "<Discrete GPU> D3D12 backend - NVIDIA GeForce RTX 3070 Laptop GPU ------------------------------------------------------------------",
+      "<Discrete GPU> Vulkan backend - NVIDIA GeForce RTX 3070 Laptop GPU -------------------------------------------------------------------",
+      "<Discrete GPU> D3D11 backend - NVIDIA GeForce RTX 3070 Laptop GPU ------------------------------------------------------------------"
+    ]
+  },
+  "verdict": {
+    "webgpuHigh": null,
+    "webgpuLow": null,
+    "webgpuNone": null,
+    "webgl": {
+      "high-performance": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "low-power": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "default": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+    },
+    "loadRenderer": "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "busiestAdapter": [
+      "Intel(R) UHD Graphics: 3D max 90.44 %, dedicated 0 MB, shared 143.2 MB"
+    ],
+    "nvidiaSmiListsGpuProcess": false
+  }
+}

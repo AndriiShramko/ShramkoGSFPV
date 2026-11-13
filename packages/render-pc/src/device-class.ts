@@ -160,19 +160,45 @@ export function gpuName(g: GpuInfo | null | undefined): string {
 //   engine's other renderer); an adapter the browser does not name; a software (fallback) adapter, which no switch would
 //   change; any vendor but Intel (NVIDIA, AMD and Qualcomm are what the hint wants the page on); Intel Arc and Xe-HPG, which
 //   are discrete GPUs.
+//
+// Lane gpu-select (docs/wip/gpu-select.md; measured on a hybrid laptop, Chrome 140 and Edge 157: the page gets one adapter
+// whatever powerPreference it asks for, the integrated one until the browser is switched) adds three things to the reading:
+//   - kind and name: what the page draws on, in words a pilot can check against his computer. The name comes from WebGL's
+//     unmasked renderer when the page read one (`glRenderer`): Chrome hides the WebGPU adapter's model, and on the WebGL
+//     path it is the only name there is.
+//   - the software case: a browser that draws on the processor (hardware acceleration off, or the graphics driver disabled
+//     or missing) has no WebGPU adapter at all in Chrome 140, and WebGL names SwiftShader or Microsoft Basic Render Driver.
+//     No switch helps there, so `due` stays false, and `hint` says 'software': the page tells the pilot why it is slow.
+//   - AMD's integrated chips, by the name WebGL gives them ("AMD Radeon(TM) Graphics", "... Vega 8 Graphics", "Radeon 780M"):
+//     a laptop with one next to an NVIDIA card is in the same place as an Intel one. Read from the names only; no AMD laptop
+//     was at hand to measure.
 
 /** What the hint reads: the device's signals and the operating system as Client Hints name it. */
 export interface GpuHintSignals extends DeviceSignals {
     /** navigator.userAgentData.platform ("Windows", "macOS", "Linux", ...), when the browser has it */
     platform?: string;
+    /**
+     * WebGL's name for the graphics (WEBGL_debug_renderer_info UNMASKED_RENDERER_WEBGL, e.g.
+     * "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)"), when the page read one
+     */
+    glRenderer?: string;
 }
 
 export type GpuHintReason = 'due' | 'handheld' | 'not-windows' | 'no-webgpu' | 'unknown-adapter' | 'fallback-adapter' | 'not-intel' | 'intel-discrete';
 
+/** What the page draws on: the processor, a chip built into the processor, or anything else (a card, or nothing known). */
+export type GraphicsKind = 'software' | 'integrated' | 'other';
+
 export interface GpuHintReading {
+    /** the switch hint is due: an integrated chip draws the page where a faster card may sit unused */
     due: boolean;
-    /** why: 'due', or the first thing that rules the hint out */
+    /** why: 'due', or the first thing that rules the switch hint out */
     reason: GpuHintReason;
+    kind: GraphicsKind;
+    /** what the page should tell the pilot: how to switch to the faster card, why the processor is drawing, or nothing */
+    hint: 'switch' | 'software' | null;
+    /** the adapter's name for the pilot ("Intel(R) UHD Graphics", else "intel gen-12lp"); '' when the browser names nothing */
+    name: string;
 }
 
 /** Windows: Client Hints' platform when there is one, else the user agent (Chrome keeps "Windows NT 10.0; Win64; x64" for every Windows). */
@@ -181,16 +207,119 @@ export function isWindows(userAgent: string, platform?: string): boolean {
     return /Windows NT|Win64|Win32/i.test(userAgent) && !/Windows Phone/i.test(userAgent);
 }
 
-/** Should the page tell this pilot how to put the browser on the high-performance GPU? (The section header above is the rule.) */
-export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
-    const no = (reason: GpuHintReason): GpuHintReading => ({ due: false, reason });
-    if (looksHandheld(s)) return no('handheld');
-    if (!isWindows(s.userAgent, s.platform)) return no('not-windows');
-    if (!s.webgpu) return no('no-webgpu');
+/** Names of graphics that the processor draws: Chrome's SwiftShader, Mesa's llvmpipe and softpipe, Windows' Basic Render Driver (WARP). */
+const SOFTWARE_GRAPHICS = /swiftshader|llvmpipe|softpipe|software rasterizer|basic render driver|\bwarp\b/i;
+
+/**
+ * The model in WebGL's renderer string, as a pilot would read it in his computer's settings:
+ * "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)" is "Intel(R) UHD Graphics",
+ * "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)" is "SwiftShader",
+ * "ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)" is "Apple M1 Pro"; a string that is not ANGLE's
+ * ("Mali-G78", "Apple GPU") stays as it is. '' for an empty one.
+ */
+export function glRendererName(renderer: string): string {
+    let s = renderer.trim();
+    const angle = /^ANGLE \((.*)\)(?:, or similar)?$/.exec(s);
+    if (angle) {
+        // "vendor, model, driver": split at the commas outside brackets (a model may hold some)
+        const parts: string[] = [];
+        let depth = 0;
+        let from = 0;
+        const inner = angle[1] as string;
+        for (let i = 0; i < inner.length; i++) {
+            const c = inner[i];
+            if (c === '(') depth++;
+            else if (c === ')') depth--;
+            else if (c === ',' && depth === 0) {
+                parts.push(inner.slice(from, i).trim());
+                from = i + 1;
+            }
+        }
+        parts.push(inner.slice(from).trim());
+        s = parts[1] ?? parts[0] ?? s;
+    }
+    if (/swiftshader/i.test(s)) return 'SwiftShader';
+    return s
+        .replace(/^ANGLE Metal Renderer: /, '')
+        .replace(/\s+Direct3D\d*.*$/, '')
+        .replace(/,?\s+OpenGL.*$/, '')
+        .replace(/\s+\(0x[0-9A-Fa-f]{4,8}\)\s*$/, '')
+        .trim();
+}
+
+/**
+ * AMD's integrated chips by their names: "AMD Radeon(TM) Graphics", "Radeon(TM) Vega 8 Graphics", "Radeon(TM) RX Vega 10
+ * Graphics", "Radeon 780M", "Radeon(TM) R7 Graphics". A card says RX and four digits, Pro, or a desktop Vega without
+ * the word Graphics ("Radeon RX Vega 64"): those are not matched.
+ */
+const AMD_INTEGRATED = /radeon(?:\s*\(tm\))?\s+(?:graphics\b|(?:rx\s+)?vega\s*\d+\s+(?:mobile\s+)?graphics\b|\d{3}m\b|r[357]\s+graphics\b)/i;
+
+/** Is this the name of one of AMD's integrated chips? (See AMD_INTEGRATED.) */
+export function isAmdIntegrated(name: string): boolean {
+    return AMD_INTEGRATED.test(name);
+}
+
+/** The WebGL name when it can be trusted to be about the adapter in `g`: the same vendor, or no adapter to compare with. */
+function glOf(s: Pick<GpuHintSignals, 'gpu' | 'glRenderer'>): string {
+    const gl = s.glRenderer?.trim() ?? '';
+    const vendor = s.gpu?.vendor.trim().toLowerCase() ?? '';
+    if (!gl || !vendor) return gl;
+    // Firefox draws WebGL and WebGPU through different stacks: a WebGL name of another vendor is not this adapter's
+    return gl.toLowerCase().includes(vendor) || (vendor === 'amd' && /radeon|\bati\b/i.test(gl)) ? gl : '';
+}
+
+/** Is the processor drawing the page? A fallback adapter, a software name on the adapter, or (without a WebGPU adapter) on WebGL. */
+export function isSoftwareGraphics(s: Pick<GpuHintSignals, 'webgpu' | 'gpu' | 'glRenderer'>): boolean {
     const g = s.gpu;
-    if (!g || g.vendor.trim() === '') return no('unknown-adapter');
-    if (g.isFallback) return no('fallback-adapter');
-    if (g.vendor.toLowerCase() !== 'intel') return no('not-intel');
-    if (!isIntelIntegrated(g)) return no('intel-discrete');
-    return { due: true, reason: 'due' };
+    if (g?.isFallback) return true;
+    if (g && SOFTWARE_GRAPHICS.test(`${g.vendor} ${g.architecture} ${g.device} ${g.description}`)) return true;
+    // WebGL's name counts where WebGL is what draws: with WebGPU on a real adapter the page is not on that software path
+    return !!s.glRenderer && SOFTWARE_GRAPHICS.test(s.glRenderer) && (!s.webgpu || !g);
+}
+
+/** What the page draws on (GraphicsKind): software first, then an integrated chip of Intel or AMD, else 'other'. */
+export function graphicsKind(s: Pick<GpuHintSignals, 'webgpu' | 'gpu' | 'glRenderer'>): GraphicsKind {
+    if (isSoftwareGraphics(s)) return 'software';
+    const g = s.gpu;
+    const gl = glOf(s);
+    if (isIntelIntegrated(g)) return 'integrated';
+    if (g && g.vendor.toLowerCase() === 'amd' && isAmdIntegrated(`${g.description} ${g.device} ${gl}`)) return 'integrated';
+    // no adapter to ask (WebGL, or a browser that hides it): WebGL's name alone
+    if ((!g || g.vendor.trim() === '') && gl) {
+        if (/\bintel\b/i.test(gl) && !INTEL_DISCRETE.test(gl)) return 'integrated';
+        if (isAmdIntegrated(gl)) return 'integrated';
+    }
+    return 'other';
+}
+
+/** The adapter's name for the pilot: WebGL's model when it is this adapter's, else the adapter's own words; '' when there are none. */
+export function graphicsName(s: Pick<GpuHintSignals, 'gpu' | 'glRenderer'>): string {
+    const gl = glOf(s);
+    if (gl) return glRendererName(gl);
+    const g = s.gpu;
+    if (!g) return '';
+    return (g.description.trim() || gpuName(g)).trim();
+}
+
+/**
+ * Should the page tell this pilot how to put the browser on the high-performance GPU (`due`), and what is it drawing on
+ * (`kind`, `name`, and `hint`: 'switch' when due, 'software' when the processor draws on a desktop, else null)?
+ * The section header above is the rule.
+ */
+export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
+    const kind = graphicsKind(s);
+    const name = graphicsName(s);
+    const handheld = looksHandheld(s);
+    const out = (due: boolean, reason: GpuHintReason): GpuHintReading => ({ due, reason, kind, hint: due ? 'switch' : kind === 'software' && !handheld ? 'software' : null, name });
+    if (handheld) return out(false, 'handheld');
+    if (!isWindows(s.userAgent, s.platform)) return out(false, 'not-windows');
+    if (!s.webgpu) return out(false, 'no-webgpu');
+    const g = s.gpu;
+    if (!g || g.vendor.trim() === '') return out(false, 'unknown-adapter');
+    if (g.isFallback || kind === 'software') return out(false, 'fallback-adapter');
+    const vendor = g.vendor.toLowerCase();
+    if (vendor === 'intel') return isIntelIntegrated(g) ? out(true, 'due') : out(false, 'intel-discrete');
+    // an AMD chip built into the processor, next to which a card may sit unused (the name is WebGL's: see the header)
+    if (vendor === 'amd' && kind === 'integrated') return out(true, 'due');
+    return out(false, 'not-intel');
 }

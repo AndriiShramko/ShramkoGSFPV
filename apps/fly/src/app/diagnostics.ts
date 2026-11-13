@@ -8,6 +8,7 @@ import type { SplatRenderer } from '@gsfpv/render-pc';
 import { droneOf } from './prefs';
 import { savedFlight } from './logs';
 import { lodReport } from './lod';
+import { graphicsReport } from './builtin/gpu-hint';
 import { q } from './env';
 import type { FlightContext } from './context';
 
@@ -70,14 +71,29 @@ export async function releaseId(): Promise<string> {
 
 interface GpuInfo { vendor?: string; architecture?: string; device?: string; description?: string }
 
-async function gpu(renderer: SplatRenderer): Promise<{ api: string; adapter?: GpuInfo }> {
+/** The graphics of the report: `api` and `adapter` as before; lane gpu-select adds what the renderer really draws on and the hint. */
+interface GpuReport {
+    api: string;
+    adapter?: GpuInfo;
+    /** the adapter's name as the pilot sees it ("Intel(R) UHD Graphics"), its kind (software, integrated, other) and WebGL's own words */
+    name: string;
+    kind: string;
+    webgl: string;
+    /** was the GPU hint due (the rule's reason), which note it called for, and what this browser remembers about it */
+    hint: { due: boolean; reason: string; note: string | null; memory: string | null };
+}
+
+async function gpu(renderer: SplatRenderer): Promise<GpuReport> {
     const api = renderer.isWebGPU ? 'webgpu' : 'webgl2';
+    // the renderer's own adapter (builtin/gpu-hint.ts): the one that draws, not a second request's answer
+    const g = graphicsReport(renderer);
+    const more = { name: g.name, kind: g.kind, webgl: g.webgl, hint: { due: g.due, reason: g.reason, note: g.hint, memory: g.memory } };
     try {
         const nav = navigator as Navigator & { gpu?: { requestAdapter(): Promise<{ info?: GpuInfo } | null> } };
         const a = await nav.gpu?.requestAdapter();
-        if (a?.info) return { api, adapter: { vendor: a.info.vendor, architecture: a.info.architecture, device: a.info.device, description: a.info.description } };
+        if (a?.info) return { api, adapter: { vendor: a.info.vendor, architecture: a.info.architecture, device: a.info.device, description: a.info.description }, ...more };
     } catch { /* no adapter */ }
-    return { api };
+    return { api, ...more };
 }
 
 /**

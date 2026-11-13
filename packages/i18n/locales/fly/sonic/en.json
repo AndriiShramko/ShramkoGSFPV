@@ -46,6 +46,7 @@
   "sonic.reset.no": "No, keep my progress",
   "sonic.reset.yes": "Yes, reset my progress",
   "sonic.say.gpuHint": "This page is drawing on the Intel graphics chip. If this computer also has an NVIDIA or AMD graphics card, ask your helper to switch the browser to it: in Windows Settings, System, Display, Graphics, choose the browser, Options, High performance.",
+  "sonic.say.gpuSoftware": "The browser is drawing this page on the processor, not on a graphics card, so the scan runs very slowly. Ask your helper to switch graphics acceleration on in the browser's settings, and to check in Windows Device Manager that the display adapters are enabled.",
   "sonic.say.helpCut": "Back to the flight.",
   "sonic.say.helpHome": "Press {key} to leave the lesson for the main menu. The lesson is saved.",
   "sonic.say.helpMenu": "Press {key} for the lesson menu.",

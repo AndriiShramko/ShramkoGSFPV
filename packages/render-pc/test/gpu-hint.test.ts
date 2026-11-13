@@ -5,8 +5,15 @@
 // "lovelace", an empty description), and controls that must fail: a rule that says it for every Intel adapter on any system (macOS honours
 // the page's request, Arc is discrete, a software adapter cannot be switched), one that forgets WebGPU, one that fires on an adapter the
 // browser does not name. The class rule and this one read the same Intel test (isIntelIntegrated).
+//
+// Lane gpu-select (docs/wip/gpu-select.md): the reading also says WHAT the page draws on (kind, name) and which note is due
+// (hint: 'switch', 'software' or null). The strings in the second half are the ones a hybrid laptop's browsers really gave
+// (Chrome 140, Edge 157 and Firefox 142 on Intel UHD + NVIDIA RTX 3070, evidence/2026-11-13/gpu-select/*.json): the integrated
+// chip by default, the NVIDIA card with the browser's switch on, and SwiftShader / Microsoft Basic Render Driver with no WebGPU
+// adapter at all when the browser draws on the processor. Controls: WebGL's software name must not count while WebGPU draws on a
+// real adapter, a WebGL name of another vendor is not this adapter's, a discrete AMD card is not an integrated chip.
 import { describe, it, expect } from 'vitest';
-import { classifyDevice, gpuSwitchHintDue, isIntelIntegrated, isWindows } from '../src/device-class';
+import { classifyDevice, glRendererName, gpuSwitchHintDue, graphicsKind, graphicsName, isAmdIntegrated, isIntelIntegrated, isSoftwareGraphics, isWindows } from '../src/device-class';
 import type { GpuHintReason, GpuHintSignals, GpuInfo } from '../src/device-class';
 
 const UA = {
@@ -59,7 +66,9 @@ const TABLE: Row[] = [
 describe('gpuSwitchHintDue: the truth table', () => {
     for (const row of TABLE) {
         it(`${row.due ? 'says it' : 'is quiet'}: ${row.name}`, () => {
-            expect(gpuSwitchHintDue(row.s)).toEqual({ due: row.due, reason: row.reason });
+            expect(gpuSwitchHintDue(row.s)).toMatchObject({ due: row.due, reason: row.reason });
+            // the switch note exactly when due (lane gpu-select: the reading names the note)
+            expect(gpuSwitchHintDue(row.s).hint === 'switch').toBe(row.due);
         });
     }
 
@@ -132,5 +141,128 @@ describe('the controls: wrong rules the table must catch', () => {
 
     it('the owner\'s own PC (NVIDIA) never gets the hint: the control of the whole feature', () => {
         expect(gpuSwitchHintDue(sig({ gpu: gpu({ vendor: 'nvidia', architecture: 'lovelace', description: '' }) })).due).toBe(false);
+    });
+});
+
+// ---- lane gpu-select: what the page draws on, by the words the laptop's browsers gave ----
+
+/** WebGL's renderer strings as read on the hybrid laptop (evidence/2026-11-13/gpu-select). */
+const GL = {
+    intel: 'ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)',
+    nvidia: 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Laptop GPU (0x0000249D) Direct3D11 vs_5_0 ps_5_0, D3D11)',
+    swiftshader: 'ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)',
+    warp: 'ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11)',
+    firefoxIntel: 'ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar'
+};
+/** Chrome hides the adapter's model: vendor and architecture only (what the laptop's Chrome 140 and Edge 157 gave). */
+const chromeIntel = gpu({ description: '' });
+const chromeNvidia = gpu({ vendor: 'nvidia', architecture: 'ampere', description: '' });
+
+describe('the reading says what the page draws on (lane gpu-select)', () => {
+    it('the laptop as it was: Intel UHD by default, with its model from WebGL; the switch note is due', () => {
+        const r = gpuSwitchHintDue(sig({ gpu: chromeIntel, glRenderer: GL.intel }));
+        expect(r).toEqual({ due: true, reason: 'due', kind: 'integrated', hint: 'switch', name: 'Intel(R) UHD Graphics' });
+    });
+
+    it('the same laptop with the browser switched: NVIDIA, no note, the card named', () => {
+        const r = gpuSwitchHintDue(sig({ gpu: chromeNvidia, glRenderer: GL.nvidia }));
+        expect(r).toEqual({ due: false, reason: 'not-intel', kind: 'other', hint: null, name: 'NVIDIA GeForce RTX 3070 Laptop GPU' });
+    });
+
+    it('without WebGL\'s name the adapter\'s own words are the name (vendor and architecture where the browser hides the model)', () => {
+        expect(gpuSwitchHintDue(sig({ gpu: chromeIntel })).name).toBe('intel gen-12lp');
+        expect(gpuSwitchHintDue(sig({ gpu: gpu() })).name).toBe('Intel(R) UHD Graphics');
+        expect(gpuSwitchHintDue(sig({ gpu: null, webgpu: false })).name).toBe('');
+    });
+
+    it('the browser draws on the processor (hardware acceleration off: no WebGPU adapter, WebGL is SwiftShader): the software note, not the switch', () => {
+        const r = gpuSwitchHintDue(sig({ webgpu: false, gpu: null, glRenderer: GL.swiftshader }));
+        expect(r).toEqual({ due: false, reason: 'no-webgpu', kind: 'software', hint: 'software', name: 'SwiftShader' });
+    });
+
+    it('the graphics driver disabled or missing (WebGL on Windows\' Basic Render Driver): the software note, named', () => {
+        const r = gpuSwitchHintDue(sig({ webgpu: false, gpu: null, glRenderer: GL.warp }));
+        expect(r).toEqual({ due: false, reason: 'no-webgpu', kind: 'software', hint: 'software', name: 'Microsoft Basic Render Driver' });
+    });
+
+    it('a fallback WebGPU adapter is software too, whatever it calls itself, on any desktop system; a handheld gets no note', () => {
+        expect(gpuSwitchHintDue(sig({ gpu: gpu({ vendor: 'google', architecture: 'swiftshader', description: 'SwiftShader', isFallback: true }) }))).toMatchObject({ due: false, reason: 'fallback-adapter', kind: 'software', hint: 'software' });
+        expect(gpuSwitchHintDue(sig({ gpu: gpu({ isFallback: true }) }))).toMatchObject({ due: false, reason: 'fallback-adapter', kind: 'software', hint: 'software' });
+        expect(gpuSwitchHintDue(sig({ userAgent: UA.linux, platform: 'Linux', webgpu: false, gpu: null, glRenderer: 'ANGLE (Mesa, llvmpipe (LLVM 15.0.7 256 bits), OpenGL 4.5)' }))).toMatchObject({ due: false, reason: 'not-windows', kind: 'software', hint: 'software' });
+        expect(gpuSwitchHintDue(sig({ userAgent: UA.androidPhone, platform: 'Android', maxTouchPoints: 5, screenShortSide: 412, webgpu: false, gpu: null, glRenderer: GL.swiftshader }))).toMatchObject({ reason: 'handheld', kind: 'software', hint: null });
+    });
+
+    it('an adapter that names itself as software without the fallback flag is still software (no switch would help)', () => {
+        const r = gpuSwitchHintDue(sig({ gpu: gpu({ vendor: 'microsoft', architecture: '', description: 'Microsoft Basic Render Driver' }) }));
+        expect(r).toMatchObject({ due: false, reason: 'fallback-adapter', kind: 'software', hint: 'software' });
+    });
+
+    it('control: WebGL\'s software name does not count while WebGPU draws on a real adapter (the page is not on that path)', () => {
+        const s = sig({ gpu: chromeNvidia, glRenderer: GL.swiftshader });
+        expect(isSoftwareGraphics(s)).toBe(false);
+        expect(gpuSwitchHintDue(s)).toMatchObject({ kind: 'other', hint: null, reason: 'not-intel' });
+        // and the other way round: with no adapter at all the same name is the only word there is
+        expect(isSoftwareGraphics({ webgpu: false, gpu: null, glRenderer: GL.swiftshader })).toBe(true);
+        expect(isSoftwareGraphics({ webgpu: false, gpu: null, glRenderer: GL.intel })).toBe(false);
+        expect(isSoftwareGraphics({ webgpu: false, gpu: null })).toBe(false);
+    });
+
+    it('control: a WebGL name of another vendor is not this adapter\'s (Firefox draws WebGL and WebGPU through different stacks)', () => {
+        const s = sig({ gpu: chromeNvidia, glRenderer: GL.intel });
+        expect(graphicsName(s)).toBe('nvidia ampere');
+        expect(graphicsKind(s)).toBe('other');
+        // the same vendor: WebGL's model is the name
+        expect(graphicsName(sig({ gpu: chromeNvidia, glRenderer: GL.nvidia }))).toBe('NVIDIA GeForce RTX 3070 Laptop GPU');
+    });
+
+    it('a browser that hides the adapter (Firefox 142: empty vendor) stays quiet, but the line can still name what WebGL says', () => {
+        const r = gpuSwitchHintDue(sig({ gpu: gpu({ vendor: '', architecture: '', description: '' }), glRenderer: GL.firefoxIntel }));
+        expect(r).toEqual({ due: false, reason: 'unknown-adapter', kind: 'integrated', hint: null, name: 'Intel(R) HD Graphics' });
+    });
+});
+
+describe('WebGL\'s renderer string as a name a pilot can check', () => {
+    const cases: [string, string][] = [
+        [GL.intel, 'Intel(R) UHD Graphics'],
+        [GL.nvidia, 'NVIDIA GeForce RTX 3070 Laptop GPU'],
+        [GL.swiftshader, 'SwiftShader'],
+        [GL.warp, 'Microsoft Basic Render Driver'],
+        [GL.firefoxIntel, 'Intel(R) HD Graphics'],
+        ['ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001638) Direct3D11 vs_5_0 ps_5_0, D3D11)', 'AMD Radeon(TM) Graphics'],
+        ['ANGLE (Apple, ANGLE Metal Renderer: Apple M1 Pro, Unspecified Version)', 'Apple M1 Pro'],
+        ['ANGLE (Intel, Mesa Intel(R) UHD Graphics 620 (KBL GT2), OpenGL 4.6 (Core Profile) Mesa 21.2.6)', 'Mesa Intel(R) UHD Graphics 620 (KBL GT2)'],
+        ['Mali-G78', 'Mali-G78'],
+        ['Apple GPU', 'Apple GPU'],
+        ['', '']
+    ];
+    for (const [raw, name] of cases) {
+        it(`${raw || '(empty)'} is "${name}"`, () => {
+            expect(glRendererName(raw)).toBe(name);
+        });
+    }
+});
+
+describe('AMD\'s integrated chips, by name (not measured on AMD hardware: the names are the rule)', () => {
+    const integrated = ['AMD Radeon(TM) Graphics', 'AMD Radeon(TM) Vega 8 Graphics', 'AMD Radeon(TM) RX Vega 10 Graphics', 'AMD Radeon 780M Graphics', 'AMD Radeon(TM) 680M', 'AMD Radeon(TM) R7 Graphics', 'AMD Radeon(TM) Vega 3 Mobile Graphics'];
+    const cards = ['AMD Radeon RX 6600M', 'AMD Radeon RX 7900 XT', 'Radeon RX Vega 64', 'AMD Radeon Pro 5500M', 'Radeon RX 580 Series', 'AMD Radeon(TM) RX 6700M'];
+
+    it('the names of the chips built into the processor are integrated; cards are not (controls)', () => {
+        for (const n of integrated) expect(isAmdIntegrated(n), n).toBe(true);
+        for (const n of cards) expect(isAmdIntegrated(n), n).toBe(false);
+    });
+
+    it('on Windows with WebGPU the switch note is due for an AMD chip built into the processor, and not for an AMD card or an AMD adapter with no name', () => {
+        const amd = (model: string): GpuHintSignals => sig({ gpu: gpu({ vendor: 'amd', architecture: 'rdna-3', description: '' }), glRenderer: `ANGLE (AMD, ${model} (0x00001638) Direct3D11 vs_5_0 ps_5_0, D3D11)` });
+        for (const n of integrated) expect(gpuSwitchHintDue(amd(n)), n).toMatchObject({ due: true, reason: 'due', kind: 'integrated', hint: 'switch', name: n });
+        for (const n of cards) expect(gpuSwitchHintDue(amd(n)), n).toMatchObject({ due: false, reason: 'not-intel', kind: 'other', hint: null });
+        expect(gpuSwitchHintDue(sig({ gpu: gpu({ vendor: 'amd', architecture: 'rdna-3', description: '' }) }))).toMatchObject({ due: false, reason: 'not-intel', kind: 'other' });
+        // on macOS or with no WebGPU the same chip gets no switch note
+        expect(gpuSwitchHintDue({ ...amd(integrated[0] as string), userAgent: UA.mac, platform: 'macOS' })).toMatchObject({ due: false, reason: 'not-windows', hint: null });
+        expect(gpuSwitchHintDue({ ...amd(integrated[0] as string), webgpu: false })).toMatchObject({ due: false, reason: 'no-webgpu', hint: null });
+    });
+
+    it('the device class is not touched by any of this: an AMD chip is still classed by the hints alone (the hint part only)', () => {
+        const s = sig({ gpu: gpu({ vendor: 'amd', architecture: 'rdna-3', description: '' }), glRenderer: 'ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001638) Direct3D11 vs_5_0 ps_5_0, D3D11)' });
+        expect(classifyDevice(s).cls).toBe('desktop-strong');
     });
 });

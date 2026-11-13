@@ -46,6 +46,7 @@
   "sonic.reset.no": "No, conservar mi progreso",
   "sonic.reset.yes": "Sí, borrar mi progreso",
   "sonic.say.gpuHint": "Esta página se dibuja con el chip gráfico de Intel. Si este equipo también tiene una tarjeta NVIDIA o AMD, pide a tu ayudante que cambie el navegador a ella: en Configuración de Windows, Sistema, Pantalla, Gráficos, elige el navegador, Opciones, Alto rendimiento.",
+  "sonic.say.gpuSoftware": "El navegador está dibujando esta página con el procesador, no con una tarjeta gráfica, por eso la escena va muy lenta. Pide a tu ayudante que active la aceleración gráfica en la configuración del navegador y que compruebe en el Administrador de dispositivos de Windows que los adaptadores de pantalla están habilitados.",
   "sonic.say.helpCut": "De vuelta al vuelo.",
   "sonic.say.helpHome": "Pulsa la tecla {key} para salir de la lección al menú principal. La lección se guarda.",
   "sonic.say.helpMenu": "Pulsa la tecla {key} para abrir el menú de la lección.",

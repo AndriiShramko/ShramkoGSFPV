@@ -15,6 +15,7 @@ import { fly } from './flight';
 import { linkSettings, mirrorWarned, openPagePrefs, prefsHook } from './prefs';
 import { applyShared, beginSharedVisit } from './shared-visit';
 import { openSettingsLink, storageBanner } from './builtin/settings';
+import { graphicsOnStart } from './builtin/gpu-hint';
 import { useStoreLibrary } from './scene-host';
 import { pageRender, setDrawingDefaults } from './drawing';
 import { startAnalytics } from './analytics';
@@ -80,6 +81,8 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
         picker?.remove();
         picker = new ScenePicker(ui, showcase, catalog.collections);
         picker.onPick = (raw, src) => go(raw, src);
+        // lane gpu-select: what the browser draws on, under the title, with the way out when a faster card sits unused
+        graphicsOnStart(picker.root);
         if (errorCode) picker.showError(errorCode, msg);
         hook.status = 'picker';
         hook.errorCode = errorCode ?? undefined;

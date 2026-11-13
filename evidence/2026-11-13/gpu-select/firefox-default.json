@@ -1,0 +1,171 @@
+{
+  "name": "gpu-select/firefox-default",
+  "date": "2026-11-13T19:36:05.793Z",
+  "label": "firefox-default",
+  "browserName": "firefox",
+  "variant": "default",
+  "launch": {
+    "executable": "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+    "added": [],
+    "env": {},
+    "profile": "throwaway (.cache/gpu-select)",
+    "visible": true,
+    "how": "a localhost page posts its readings back (no DevTools port)"
+  },
+  "url": "http://127.0.0.1:<port>/ (the probe page)",
+  "page": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:157.0) Gecko/20100101 Firefox/157.0",
+    "secure": true,
+    "webgpu": true,
+    "cores": 16,
+    "deviceMemory": null,
+    "dpr": 1.5,
+    "visibility": "visible",
+    "adapters": {
+      "high": {
+        "vendor": "",
+        "architecture": "",
+        "device": "",
+        "description": "",
+        "isFallbackAdapter": false,
+        "maxBufferSize": 2147483644,
+        "maxTextureDimension2D": 16384,
+        "features": 12
+      },
+      "low": {
+        "vendor": "",
+        "architecture": "",
+        "device": "",
+        "description": "",
+        "isFallbackAdapter": false,
+        "maxBufferSize": 2147483644,
+        "maxTextureDimension2D": 16384,
+        "features": 12
+      },
+      "none": {
+        "vendor": "",
+        "architecture": "",
+        "device": "",
+        "description": "",
+        "isFallbackAdapter": false,
+        "maxBufferSize": 2147483644,
+        "maxTextureDimension2D": 16384,
+        "features": 12
+      },
+      "fallback": {
+        "vendor": "",
+        "architecture": "",
+        "device": "",
+        "description": "",
+        "isFallbackAdapter": true,
+        "maxBufferSize": 2147483644,
+        "maxTextureDimension2D": 16384,
+        "features": 12
+      }
+    },
+    "webgl": {
+      "high-performance": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
+      "low-power": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
+      "default": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar"
+    }
+  },
+  "browser": {
+    "product": "Firefox/157.0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:157.0) Gecko/20100101 Firefox/157.0"
+  },
+  "gpuProcessPid": 21300,
+  "processTree": {
+    "count": 9,
+    "kinds": [
+      "?",
+      "gpu",
+      "socket",
+      "?",
+      "rdd",
+      "tab",
+      "tab",
+      "utility",
+      "tab"
+    ]
+  },
+  "countersOfPid": 21300,
+  "counters": {
+    "seconds": 6,
+    "adapters": {
+      "0x00000000_0x00012db4": "Intel(R) UHD Graphics",
+      "0x00000000_0x0001316d": "Microsoft Basic Render Driver",
+      "0x00000000_0x000131ff": "NVIDIA GeForce RTX 3070 Laptop GPU"
+    },
+    "perAdapter": {
+      "Intel(R) UHD Graphics": {
+        "engines": 13,
+        "max3d": 86.24,
+        "avg3d": 85.68,
+        "maxAny": 86.24,
+        "dedicatedMb": 0,
+        "sharedMb": 621.8
+      },
+      "Microsoft Basic Render Driver": {
+        "engines": 17,
+        "max3d": 0,
+        "avg3d": 0,
+        "maxAny": 0,
+        "dedicatedMb": 0,
+        "sharedMb": 0
+      },
+      "NVIDIA GeForce RTX 3070 Laptop GPU": {
+        "engines": 0,
+        "max3d": 0,
+        "avg3d": 0,
+        "maxAny": 0,
+        "dedicatedMb": 0,
+        "sharedMb": 0
+      }
+    },
+    "busyEngines": [
+      {
+        "luid": "0x00000000_0x00012db4",
+        "adapter": "Intel(R) UHD Graphics",
+        "engine": "eng_0_engtype_3d",
+        "max": 86.24,
+        "avg": 85.68
+      }
+    ]
+  },
+  "load": {
+    "renderer": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
+    "frames": 926,
+    "p50ms": 12.12,
+    "p95ms": 18.18,
+    "maxMs": 48.08
+  },
+  "nvidiaSmi": {
+    "available": true,
+    "gpu": "NVIDIA GeForce RTX 3070 Laptop GPU, 617.42, 0 MiB, 0 %",
+    "gpuProcessListed": false,
+    "browserRows": [],
+    "otherRows": [
+      "DJI Studio.exe"
+    ]
+  },
+  "gpuPage": {
+    "error": "about:support is not read (no automation port in a stock Firefox)"
+  },
+  "verdict": {
+    "webgpuHigh": "",
+    "webgpuLow": "",
+    "webgpuNone": "",
+    "webgl": {
+      "high-performance": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
+      "low-power": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
+      "default": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar"
+    },
+    "loadRenderer": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
+    "busiestAdapter": [
+      "Intel(R) UHD Graphics: 3D max 86.24 %, dedicated 0 MB, shared 621.8 MB",
+      "Microsoft Basic Render Driver: 3D max 0 %, dedicated 0 MB, shared 0 MB",
+      "NVIDIA GeForce RTX 3070 Laptop GPU: 3D max 0 %, dedicated 0 MB, shared 0 MB"
+    ],
+    "nvidiaSmiListsGpuProcess": false
+  }
+}
