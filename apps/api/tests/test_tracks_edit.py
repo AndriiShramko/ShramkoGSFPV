@@ -75,13 +75,13 @@ class Validator(unittest.TestCase):
     def test_pilot_texts(self):
         ok = json.loads(edit())
         self.assertEqual(tracks.validate_track(ok), [])
-        for name in ("A", "x" * 33, "Ann  K", "Ann​", "see http://x.pl", "fuckface", "Renée", "Ann;"):
+        for name in ("A", "x" * 33, "Ann  K", "Ann\u200b", "see http://x.pl", "fuckface", "Rene\u0301e", "Ann;"):
             bad = {**ok, "author": {"kind": "person", "name": name}}
             self.assertNotEqual(tracks.validate_track(bad), [], repr(name))
         for title in ("ab", "y" * 61, "Loop <b>", "www.loop.pl"):
             self.assertNotEqual(tracks.validate_track({**ok, "title": title}), [], repr(title))
         # controls: letters of any script, digits and the allowed signs pass
-        for name in ("Аня", "O'Neil-2", "Zoë_K."):
+        for name in ("\u0410\u043d\u044f", "O'Neil-2", "Zo\u00eb_K."):
             self.assertEqual(tracks.validate_track({**ok, "author": {"kind": "person", "name": name}}), [], repr(name))
         self.assertEqual(tracks.validate_track({**ok, "title": "Loop #2 (fast), ok?"}), [])
 
@@ -122,9 +122,16 @@ class ForkAndVersions(Base):
         self.assertEqual(v2, {"id": tid, "version": 2})
         f2 = json.loads(self.store.file(tid, 2, None)[1])
         self.assertEqual((f2["version"], f2["parent"], f2["id"]), (2, {"id": tid, "version": 1}, tid))
+        self.assertEqual(tracks.validate_track(f2), [])           # a client that re-checks the stored file accepts it
+        v3 = self.store.add_version(tid, out["editToken"], course(seed="again"))   # the owner generates anew
+        self.assertEqual(tracks.validate_track(json.loads(self.store.file(tid, 3, None)[1])), [])
+        self.store.delete(tid, 3)
+        self.assertEqual(self.store.add_version(tid, out["editToken"], edit())["version"], 4)   # 3 is never given twice
+        self.assertEqual(json.loads(self.store.file(tid, 4, None)[1])["parent"], {"id": tid, "version": 3})
+        self.assertEqual(v3["version"], 3)
         self.assertEqual(self.store.file(tid, 1, None)[0], 200)   # the first version stays readable
         r = self.row(tid)
-        self.assertEqual((r["version"], r["versions"], r["title"]), (2, [1, 2], "Ann's loop"))
+        self.assertEqual((r["version"], r["versions"], r["title"]), (4, [1, 2, 4], "Ann's loop"))
         self.assertEqual((r["creator"]["kind"], r["editor"]), ("generator", {"kind": "pilot", "name": "Ann"}))
         self.assertIsNotNone(r["edited"])
 

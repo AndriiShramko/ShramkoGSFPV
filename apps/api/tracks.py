@@ -242,10 +242,14 @@ def validate_track(obj) -> list[tuple[str, str]]:
     version = c.number(root.get("version"), "version", 1, 9999, integer=True) if "version" in root else None
 
     parent = root.get("parent", "missing")
+    p = None
     if parent is not None and parent != "missing":
         p = _ref(c, parent, "parent")
         if p is not None and version == 1 and tid is not None and p[0] == tid:
             c.add("parent", "version 1 cannot have a parent in the same track")
+    # the format's succession (validate.ts): a later version names the version before it in the same track
+    if _is_num(version) and float(version).is_integer() and version > 1 and tid is not None and parent != "missing" and p != (tid, version - 1):
+        c.add("parent", f"version {int(version)} must have the parent {tid} version {int(version) - 1}")
 
     title = c.string(root.get("title"), "title", 1, 120) if "title" in root else None
     if title is not None and CONTROL.search(title):
@@ -351,8 +355,8 @@ def validate_track(obj) -> list[tuple[str, str]]:
     if a is not None and author is not None and author not in AUTHOR_KINDS:
         c.add("author.kind", "must be 'generator' or 'person'")
     if author == "generator":
-        if "parent" in root and root["parent"] is not None:
-            c.add("parent", "must be null for a generated course")
+        if version == 1 and "parent" in root and root["parent"] is not None:
+            c.add("parent", "must be null for a generated course (it is no fork)")
         if title is not None and not TITLE.fullmatch(title):
             c.add("title", f"must match {TITLE.pattern}")
         # lane review TR-14 f: no free text from one pilot is served to everyone under the generator's name
@@ -796,8 +800,11 @@ class TrackStore:
                 raise TrackError(400, "scene-mismatch")
             if len(meta["versions"]) >= self.limits["versions_per_track"]:
                 raise TrackError(409, "too-many-versions")
-            last = meta["versions"][-1]["n"]
-            ver = self._write_version(obj, tid, max(v["n"] for v in meta["versions"]) + 1, {"id": tid, "version": last})
+            # a number is never given twice (a file once served is cached as immutable), and the parent is the number before
+            # it, as the format's succession wants, even when the admin deleted that version
+            n = max([meta.get("top", 0)] + [v["n"] for v in meta["versions"]]) + 1
+            ver = self._write_version(obj, tid, n, {"id": tid, "version": n - 1})
+            meta["top"] = n
             meta["versions"].append({**ver, "editor": _mark(obj.get("author"), admin)})
             self._put(meta)
         return {"id": tid, "version": ver["n"]}
