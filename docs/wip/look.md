@@ -28,7 +28,11 @@ Worktree C:/dev/gsfpv-rooms, branch look from origin/main bbc9e75e. Ports 5600-5
   deleted in dispose(). No unit test (RemoteStage needs a PlayCanvas app); the rooms-two-page probe reads drawn.
 - [x] Fix LK-3 (a2cb31e8 + this commit; minor, stands): first-tuning lines marked replaced, A pitched nose down instead of level,
   the 0.2 m fade band called an estimate. Typecheck apps/fly and tools/bench clean.
-- [ ] Fixes probes: local release of the fixes, tracks-page HINT_ONLY=1 and rooms-two-page.
+- [x] Fixes probes on the local release of 4a6bf279: tracks-page HINT_ONLY=1 hintClearOfTimer 12 of 12 clear, hStill true in
+  all 12 (block top after H twice = before: 120 px at 1920x1080, 142 px en/pl/ru and 123 px es at 1366x768 and 844x390),
+  evidence/2026-11-13/train1c/tracks-page-hint-lk1.json. rooms-two-page 17 of 17 (nearHidden: drawn alpha 0 at 0 m;
+  tagAtDistance: drawn alpha 1 at 3.5 m with its box from the getter), evidence/2026-11-13/train1c/rooms-two-page-lk2.json.
+  The probe's H step was not run against the old hud.ts (no second build); the unit test carries the negative control.
 
 ## Notes
 
@@ -75,3 +79,4 @@ about 30 px under the tag. 8 m: a few pixels under the tag; the tag is what find
 ## Cost notes
 - Most turns: finding a free 8 m line of sight in the small scan (camera inside the ceiling, then the voxel ray search) and the fresh-release rebuilds; a ready probe hook that sets a remote pose at a camera-relative distance would have saved about 6 turns.
 - L2: most turns went to waiting for the GPU lock (6 x 20 s) and one probe run lost to esbuild __name in page.evaluate; a shared helper for reading element boxes in the page would have saved a full rebuild-free rerun.
+- Fixes LK-1..3: most turns went to the 10-minute build plus two probes and to the probes writing over the shared evidence files (copied to train1c names, originals restored); an EVIDENCE_NAME variable in the probes would save that step.

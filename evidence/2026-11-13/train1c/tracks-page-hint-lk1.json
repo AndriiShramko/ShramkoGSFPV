@@ -1,0 +1,385 @@
+{
+  "name": "tracks-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T14:09:07.914Z",
+    "gitHead": "4a6bf279",
+    "gitDirty": false,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "step": "tracks T3: the courses page probe",
+  "pass": true,
+  "checks": [
+    {
+      "name": "hintClearOfTimer: the course hint and the lap block never meet (1920x1080, 1366x768, 844x390; en, es, pl, ru; tallest hint en)",
+      "pass": true,
+      "value": [
+        "en 1920x1080 clear noteH 50",
+        "en 1366x768 clear noteH 50",
+        "en 844x390 clear noteH 50",
+        "es 1920x1080 clear noteH 31",
+        "es 1366x768 clear noteH 31",
+        "es 844x390 clear noteH 31",
+        "pl 1920x1080 clear noteH 50",
+        "pl 1366x768 clear noteH 50",
+        "pl 844x390 clear noteH 50",
+        "ru 1920x1080 clear noteH 50",
+        "ru 1366x768 clear noteH 50",
+        "ru 844x390 clear noteH 50"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "file": "U:\\Temp\\gsfpv-tracks-page\\2026-11-13\\look-course-1920.png",
+      "sha256": "30fedda2f98c816ed8d006a0f3946f94824a78cf5390894a8f38664b8ce95fd2",
+      "what": "hint and lap block, en, 1920x1080"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-tracks-page\\2026-11-13\\look-course-1366.png",
+      "sha256": "0003c5b0fdeaec51611d98ef6dc510f031296dba386bc4b270a8a64c6e7008cb",
+      "what": "hint and lap block, en, 1366x768"
+    },
+    {
+      "file": "U:\\Temp\\gsfpv-tracks-page\\2026-11-13\\look-course-844.png",
+      "sha256": "6ce0d3628c843c56c60dbe9d9062a67c3d530d6961a6bbf58604d40561d651c5",
+      "what": "hint and lap block, en, 844x390"
+    }
+  ],
+  "site": "http://127.0.0.1:49716",
+  "scene": "887f27aa",
+  "other": "39e63ce9",
+  "minPx": 200,
+  "tol": 24,
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "hint": {
+    "longest": "en",
+    "rows": [
+      {
+        "lang": "en",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 920.8984375,
+          "top": 120,
+          "right": 999.1015625,
+          "bottom": 217.4375
+        },
+        "text": "Gates: 11. Fly through gate 1 to start the clock. Shift+T hides the course",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "en",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 643.8984375,
+          "top": 142,
+          "right": 722.1015625,
+          "bottom": 239.4375
+        },
+        "text": "Gates: 16. Fly through gate 1 to start the clock. Shift+T hides the course",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "en",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 382.8984375,
+          "top": 142,
+          "right": 461.1015625,
+          "bottom": 239.4375
+        },
+        "text": "Gates: 8. Fly through gate 1 to start the clock. Shift+T hides the course",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "es",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 31,
+        "note": {
+          "left": 763.3828125,
+          "top": 44,
+          "right": 1156.6171875,
+          "bottom": 74.84375
+        },
+        "block": {
+          "left": 920.8984375,
+          "top": 120,
+          "right": 999.1015625,
+          "bottom": 217.4375
+        },
+        "text": "Puertas: 8. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "es",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 123,
+        "noteH": 31,
+        "note": {
+          "left": 486.3828125,
+          "top": 86,
+          "right": 879.6171875,
+          "bottom": 116.84375
+        },
+        "block": {
+          "left": 643.8984375,
+          "top": 123,
+          "right": 722.1015625,
+          "bottom": 220.4375
+        },
+        "text": "Puertas: 4. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "es",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 123,
+        "noteH": 31,
+        "note": {
+          "left": 225.3828125,
+          "top": 86,
+          "right": 618.6171875,
+          "bottom": 116.84375
+        },
+        "block": {
+          "left": 382.8984375,
+          "top": 123,
+          "right": 461.1015625,
+          "bottom": 220.4375
+        },
+        "text": "Puertas: 5. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "pl",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 915.7265625,
+          "top": 120,
+          "right": 1004.2734375,
+          "bottom": 217.4375
+        },
+        "text": "Bramki: 22. Przele\u0107 przez bramk\u0119 1, aby w\u0142\u0105czy\u0107 zegar. Shift+T j\u0105 ukrywa",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "pl",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 638.7265625,
+          "top": 142,
+          "right": 727.2734375,
+          "bottom": 239.4375
+        },
+        "text": "Bramki: 13. Przele\u0107 przez bramk\u0119 1, aby w\u0142\u0105czy\u0107 zegar. Shift+T j\u0105 ukrywa",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "pl",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 377.7265625,
+          "top": 142,
+          "right": 466.2734375,
+          "bottom": 239.4375
+        },
+        "text": "Bramki: 4. Przele\u0107 przez bramk\u0119 1, aby w\u0142\u0105czy\u0107 zegar. Shift+T j\u0105 ukrywa",
+        "vw": 844,
+        "vh": 390
+      },
+      {
+        "lang": "ru",
+        "size": "1920x1080",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 120,
+        "noteH": 50,
+        "note": {
+          "left": 750,
+          "top": 44,
+          "right": 1170,
+          "bottom": 93.6875
+        },
+        "block": {
+          "left": 919.609375,
+          "top": 120,
+          "right": 1000.390625,
+          "bottom": 217.4375
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 9. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 1, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 1920,
+        "vh": 1080
+      },
+      {
+        "lang": "ru",
+        "size": "1366x768",
+        "phone": false,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 473,
+          "top": 86,
+          "right": 893,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 639.0703125,
+          "top": 142,
+          "right": 726.9296875,
+          "bottom": 239.4375
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 13. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 1, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 1366,
+        "vh": 768
+      },
+      {
+        "lang": "ru",
+        "size": "844x390",
+        "phone": true,
+        "gen": true,
+        "hintUp": true,
+        "clear": true,
+        "hStill": true,
+        "topAfterHH": 142,
+        "noteH": 50,
+        "note": {
+          "left": 212,
+          "top": 86,
+          "right": 632,
+          "bottom": 135.6875
+        },
+        "block": {
+          "left": 378.0703125,
+          "top": 142,
+          "right": 465.9296875,
+          "bottom": 239.4375
+        },
+        "text": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0432\u043e\u0440\u043e\u0442 15. \u041f\u0440\u043e\u043b\u0435\u0442\u0438\u0442\u0435 \u0432\u043e\u0440\u043e\u0442\u0430 1, \u0447\u0442\u043e\u0431\u044b \u043f\u043e\u0448\u0451\u043b \u043e\u0442\u0441\u0447\u0451\u0442. Shift+T \u0441\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0435\u0451",
+        "vw": 844,
+        "vh": 390
+      }
+    ]
+  },
+  "log": []
+}
