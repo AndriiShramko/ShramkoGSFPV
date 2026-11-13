@@ -237,7 +237,17 @@ Stage F1-finish (the lane's last stage):
       served course loaded and the editor open, moves a gate, "Save as the admin's version": v2 on the server under
       'Admin', row "edited by admin". Run 1: 12/13 (the probe's Esc only returned the focus); run 2: 20/21 (844x390: the
       sound button under the window; fixed in a3a96a92).
-- [~] P4 run 3 of E after the fix, screenshots, the full tracks-page run, apps/api python tests (485 OK, see below).
+- [x] P4 local release built at a3a96a92 (exit 0); the whole tracks-page probe once on it (hint flights, A-C3, E, E3):
+      `SONIC_PORTS=5720-5739 EVIDENCE_NAME=tracks-page-finish npx tsx src/tracks-page.ts` 40/40 checks passed, exit 0
+      (evidence/2026-11-13/tracks-page-finish.json, not committed; a run before it waited 9 minutes for a GPU lock held by
+      another lane and stopped). apps/api: `python -m unittest discover -s apps/api/tests` 485 tests OK.
+      Screenshots of that run, looked at:
+      tracks-editor-1920.png: the window starts under the top row, Share, Settings, Feedback, Controls and Pause are all
+      free, no take-off prompt, rows without a lap show "Fly a lap of this course to vote".
+      tracks-editor-844.png: Share, Feedback, Controls, Pause and the sound button are free beside and above the window, the
+      save row with both buttons sits at the window's bottom while the key table scrolls under it.
+      The magenta selected gate is out of the camera's view in both shots (gate 1 is behind the drone); its paint is checked
+      through the hook only.
 ## Decisions
 
 - T3: the editor key is Shift+B (no flying key, no Fly by Sound letter; Shift+E would take yaw from a pilot descending with
