@@ -75,12 +75,12 @@ class Fixtures(unittest.TestCase):
 
 class Names(unittest.TestCase):
     def test_nicknames_by_the_rule(self):
-        for ok in ("Ala", "Jan Kowalski", "O'Brien-2", "pilot_07", "Андрій", "Łódź FPV"):
+        for ok in ("Ala", "Jan Kowalski", "O'Brien-2", "pilot_07", "\u0410\u043d\u0434\u0440\u0456\u0439", "\u0141\u00f3d\u017a FPV"):
             self.assertEqual(P.clean_nick(ok), ok, ok)
         self.assertEqual(P.clean_nick("  Ala  "), "Ala")
-        self.assertEqual(P.clean_nick("école"), "école")  # NFC
+        self.assertEqual(P.clean_nick("e\u0301cole"), "\u00e9cole")  # NFC
         for bad in ("A", "x" * 21, "http://x", "www.site", "a\u0000b", "a\nb", "<b>hi</b>", "Admin", "Mod-er.ator",
-                    "GSFPV team", "--", None, 42, "a‮b"):
+                    "GSFPV team", "--", None, 42, "a\u202eb"):
             self.assertIsNone(P.clean_nick(bad), repr(bad))
 
     def test_room_names_allow_40(self):
