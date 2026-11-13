@@ -195,6 +195,10 @@ class Service:
     def server_ms(self) -> int:
         return int((time.monotonic() - self.t0) * 1000) & 0xFFFFFFFF
 
+    def race_ms(self) -> int:
+        """The same clock unmasked: race.py compares times across the 32-bit wrap (review RM-12)."""
+        return int((time.monotonic() - self.t0) * 1000)
+
     def pilots(self) -> int:
         return sum(len(r.members) for r in self.rooms.values())
 
@@ -332,7 +336,7 @@ class Service:
     def cap_of(self, room: Room) -> int:
         return self.persistent_cap if room.kind == "persistent" else self.cap
 
-    def open_room(self, scene_id: str, client: str) -> tuple[int, dict]:
+    def open_room(self, scene_id: str, client: str, own: bool = False) -> tuple[int, dict]:
         """R27: the open room a pilot on `scene_id` lands in with one press (docs/wip/rooms2.md, Decisions): the open
         room of his scan when pilots fly in it; else the open room with the most pilots (company first, his page loads
         its scan); else the empty open room of his scan; else a new one for his scan. Full rooms are skipped."""
@@ -341,7 +345,8 @@ class Service:
         busy_here = [r for r in here if r.members]
         busy = [r for r in mine if r.members]
         pick = None
-        for group in (busy_here, busy, here):
+        # here: the page could not fly the busy room's scan (review RM-5): only his own scan's room
+        for group in ((busy_here, here) if own else (busy_here, busy, here)):
             if group:
                 pick = max(group, key=lambda r: (len(r.members), -r.created))
                 break
@@ -368,7 +373,7 @@ class Service:
         sid = sc.get("id") if isinstance(sc, dict) else None
         if not isinstance(sid, str) or not P.SCENE_ID_RE.fullmatch(sid):
             return self._reply(writer, 400, {"error": "scene"})
-        code, out = self.open_room(sid, client)
+        code, out = self.open_room(sid, client, body.get("here") is True)
         return self._reply(writer, code, out)
 
     # ---------------------------------------------------------------- votes (votes.py)
@@ -424,7 +429,7 @@ class Service:
 
     # ---------------------------------------------------------------- races (race.py)
     def races_due(self) -> None:
-        now = self.server_ms()
+        now = self.race_ms()
         for room in list(self.rooms.values()):
             if room.race is not None:
                 self._race_step(room, room.race.due(now))
@@ -450,14 +455,14 @@ class Service:
             return self._send(me.sock, room.race.message())
         if not self.proposals.allow(f"race:{room.id}:{me.slot}:{me.joined}"):
             return self._send(me.sock, {"type": "race", "state": "wait", "course": course})
-        r = RC.Race(course, laps, me.slot, self.present(room) & set(room.members), self.server_ms())
+        r = RC.Race(course, laps, me.slot, self.present(room) & set(room.members), self.race_ms())
         r.nicks = {s: x.nick for s, x in room.members.items()}
         room.race = r
         self._broadcast(room, r.message())
         log("a race was proposed")
 
     def _ready(self, room: Room, me: Member) -> None:
-        if room.race is not None and room.race.mark_ready(me.slot, self.server_ms()):
+        if room.race is not None and room.race.mark_ready(me.slot, self.race_ms()):
             self._broadcast(room, room.race.message())
 
     def _lap(self, room: Room, me: Member, m: dict) -> None:
@@ -466,11 +471,11 @@ class Service:
             return
         me.active = self.clock()
         n, ms = m.get("n"), m.get("ms")
-        if not r.lap(me.slot, n, ms, self.server_ms()):
+        if not r.lap(me.slot, n, ms, self.race_ms()):
             return self._send(me.sock, {**r.message("refused"), "slot": me.slot, "n": n})
         r.nicks[me.slot] = me.nick
         self._broadcast(room, {**r.message("lap"), "slot": me.slot, "n": n, "ms": ms})
-        self._race_step(room, r.due(self.server_ms()))
+        self._race_step(room, r.due(self.race_ms()))
 
     def _table(self, room: Room, me: Member) -> None:
         r = room.race or room.last_race
@@ -555,7 +560,7 @@ class Service:
         finally:
             room.members.pop(slot, None)
             room.ballot.drop(slot)
-            if room.race is not None and room.race.drop(slot, self.server_ms()):
+            if room.race is not None and room.race.drop(slot, self.race_ms()):
                 self._broadcast(room, room.race.message())
             if room.host_slot == slot:
                 room.host_slot = min(room.members, key=lambda s: room.members[s].joined) if room.members else None

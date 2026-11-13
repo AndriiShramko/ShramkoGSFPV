@@ -21,6 +21,8 @@ AFTER_FIRST_MS = 60_000  # rooms-plan.md 2.4: the race closes at the first finis
 RUN_MS = 900_000         # estimate: a race nobody finishes ends after 15 minutes
 MAX_LAPS = 10            # estimate: the generator makes 1 to 3 laps (packages/tracks)
 LATE_MS = 500            # estimate: a lap may end this much after the server's now (the clocks' offset, the message's way)
+MIN_LAP_MS = 3_000       # estimate: no course lap is shorter (review RM-8: a 1 ms lap must not close the race)
+WRAP = 0xFFFFFFFF        # the pages' server clock is 32 bits (rooms.py server_ms); this module keeps the unmasked ms
 
 
 def order(rows: list[dict]) -> list[dict]:
@@ -58,7 +60,8 @@ class Race:
         return self._count_if(now_ms)
 
     def _count_if(self, now_ms: int) -> bool:
-        if self.state == "prep" and self.racers and (self.racers <= self.ready or now_ms - self.since >= PREP_MS):
+        # after PREP_MS the race starts with the pages that built it; with none it ends in due() (review RM-3)
+        if self.state == "prep" and self.racers and (self.racers <= self.ready or (now_ms - self.since >= PREP_MS and self.ready)):
             self.state = "count"
             self.start_at = now_ms + COUNT_MS
             return True
@@ -71,7 +74,7 @@ class Race:
         if isinstance(n, bool) or isinstance(ms, bool) or not isinstance(n, int) or not isinstance(ms, int):
             return False
         have = self.times.setdefault(slot, [])
-        if self.done(slot) or n != len(have) + 1 or ms <= 0:
+        if self.done(slot) or n != len(have) + 1 or ms < MIN_LAP_MS:
             return False
         if now_ms < self.start_at or sum(have) + ms > now_ms - self.start_at + LATE_MS:
             return False  # before the start, or a lap longer than the time since the start
@@ -93,7 +96,13 @@ class Race:
     def due(self, now_ms: int) -> str | None:
         """'count' when the wait for pages ended, 'results' when the race is over, else None."""
         if self.state == "prep":
-            return "count" if self._count_if(now_ms) else None
+            if self._count_if(now_ms):
+                return "count"
+            # every racer left (review RM-2), or no page built the course in time (RM-3): over, the room may race again
+            if not self.racers or now_ms - self.since >= PREP_MS:
+                self.state = "results"
+                return "results"
+            return None
         if self.start_at is None or now_ms < self.start_at:
             return None
         if self.state == "count":
@@ -116,4 +125,5 @@ class Race:
 
     def message(self, state: str | None = None) -> dict:
         return {"type": "race", "state": state or self.state, "course": self.course, "laps": self.laps_per_run, "by": self.by,
-                "racers": sorted(self.racers), "ready": sorted(self.ready), "startAt": self.start_at, "table": self.table()}
+                "racers": sorted(self.racers), "ready": sorted(self.ready),
+                "startAt": None if self.start_at is None else self.start_at & WRAP, "table": self.table()}

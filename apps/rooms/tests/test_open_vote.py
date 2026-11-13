@@ -20,8 +20,9 @@ class Clock:
         return self.t
 
 
-def open_room(port: int, scene: str = SCENE, client: str = "10.0.0.1") -> tuple[int, dict]:
-    return http(port, "POST", "/api/rooms/open", {"scene": {"id": scene}}, {"X-Forwarded-For": client})
+def open_room(port: int, scene: str = SCENE, client: str = "10.0.0.1", here: bool = False) -> tuple[int, dict]:
+    body = {"scene": {"id": scene}, "here": True} if here else {"scene": {"id": scene}}
+    return http(port, "POST", "/api/rooms/open", body, {"X-Forwarded-For": client})
 
 
 def until(c: Client, kind: str, state: str | None = None, limit: int = 200) -> dict:
@@ -111,6 +112,18 @@ class OpenRoomHttp(unittest.TestCase):
         _, b2 = open_room(self.port, SCENE_B)  # nobody anywhere: his own scan's room
         self.assertNotEqual(b2["id"], a["id"])
         self.assertEqual(b2["room"]["scene"]["id"], SCENE_B)
+
+    def test_here_skips_the_busy_room_of_another_scan(self):
+        # review RM-5: a page that could not fly the busy room's scan asks for its own scan's room
+        _, a = open_room(self.port)
+        c = Client(self.port)
+        try:
+            self.assertEqual(c.hello(a["id"])["type"], "welcome")
+            _, b = open_room(self.port, SCENE_B, here=True)
+            self.assertNotEqual(b["id"], a["id"])
+            self.assertEqual(b["room"]["scene"]["id"], SCENE_B)
+        finally:
+            c.close()
 
     def test_temporary_rooms_are_not_offered(self):
         tmp = create_room(self.port, name="Mine", listed=True)

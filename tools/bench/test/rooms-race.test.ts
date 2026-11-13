@@ -143,10 +143,10 @@ describe('two pilots race', () => {
         expect(startA).toBe(got.B.find((m) => m.state === 'count')?.startAt);
         sa.lap(1, 50);
         expect(await until(() => got.A.some((m) => m.state === 'refused'), 5000)).toBe(true);
-        // the countdown is the service's 10 s; then each page's lap (shorter than the time since the start)
-        expect(await until(() => (sa.clock.serverNow(performance.now()) ?? 0) > (startA ?? 0) + 600, 15000)).toBe(true);
-        sb.lap(1, 300);
-        sa.lap(1, 400);
+        // the countdown is the service's 10 s; then each page's lap (shorter than the time since the start, not under MIN_LAP_MS)
+        expect(await until(() => (sa.clock.serverNow(performance.now()) ?? 0) > (startA ?? 0) + 4600, 20000)).toBe(true);
+        sb.lap(1, 3300);
+        sa.lap(1, 3400);
         expect(await until(() => got.A.some((m) => m.state === 'results') && got.B.some((m) => m.state === 'results'), 5000)).toBe(true);
         const ta = got.A.find((m) => m.state === 'results')?.table ?? [];
         const tb = got.B.find((m) => m.state === 'results')?.table ?? [];

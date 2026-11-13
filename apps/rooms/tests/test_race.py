@@ -37,6 +37,38 @@ class Steps(unittest.TestCase):
         r.mark_ready(0, 10)
         self.assertTrue(r.drop(1, 20))
 
+    def test_every_racer_leaves_in_prep_the_race_ends(self):
+        # review RM-2: a race nobody is left in must not hold the room's races for ever
+        r = RC.Race(COURSE, 1, 0, {0, 1}, 0)
+        r.drop(0, 10)
+        self.assertFalse(r.drop(1, 20))
+        self.assertEqual(r.due(2000), "results")
+        self.assertEqual(r.state, "results")
+
+    def test_no_page_built_the_course_the_race_ends_at_the_wait(self):
+        # review RM-3: no countdown to a course nobody has
+        r = RC.Race(COURSE, 1, 0, {0, 1}, 0)
+        self.assertIsNone(r.due(RC.PREP_MS - 1))
+        self.assertEqual(r.due(RC.PREP_MS), "results")
+        self.assertIsNone(r.start_at)
+
+    def test_a_lap_shorter_than_the_minimum_is_refused(self):
+        # review RM-8: a 1 ms lap must not finish the race
+        r = race(laps=1)
+        t = r.start_at + 60_000
+        self.assertFalse(r.lap(0, 1, 1, t))
+        self.assertFalse(r.lap(0, 1, RC.MIN_LAP_MS - 1, t))
+        self.assertTrue(r.lap(0, 1, RC.MIN_LAP_MS, t))
+
+    def test_the_countdown_ends_across_the_32_bit_wrap(self):
+        # review RM-12: race.py keeps the unmasked ms; only the startAt sent is masked
+        now = (1 << 32) - 2000
+        r = race(now=now)
+        self.assertEqual(r.message()["startAt"], (now + RC.COUNT_MS) & 0xFFFFFFFF)
+        self.assertIsNone(r.due(now + RC.COUNT_MS - 1))
+        r.due(now + RC.COUNT_MS)
+        self.assertEqual(r.state, "run")
+
     def test_lap_before_the_start_is_refused(self):
         r = race()
         start = r.start_at

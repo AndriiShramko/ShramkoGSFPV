@@ -113,7 +113,9 @@ Each number is in `apps/rooms/rooms.py` with its source; "measured" names the te
 picks the open room of that scan when pilots fly in it; else the open room with the most pilots (the page then loads its
 scan); else the empty open room of that scan; else a new one. An open room is `kind: 'persistent'`, `listed: true`,
 `name: 'open'` (the page shows its own word), cap 16, no host key, no shared settings: each pilot keeps his own drawing,
-walls and drone. Empty, it closes like a temporary room and the next press opens it again.
+walls and drone. Empty, it closes like a temporary room and the next press opens it again. With `here: true` in the
+body the busy room of another scan is skipped (the page could not fly that scan): the open room of his own scan or a
+new one.
 
 Votes (any room): `propose {scene: {id}}` and `agree {}` from a member. The service answers with `vote` messages:
 `{type: 'vote', state, scene: {id}, by, yes: [slots], need, present, leftMs}`; `state` is `open` (to all), `passed` or
@@ -131,10 +133,10 @@ room's scan, '<id>.v<n>' = a course the scan keeps on the server; COURSE_RE) wit
 racer. While a race is on, a second proposal is answered with the race's state to the proposer only; 5 proposals per 10
 minutes per member (else `state: 'wait'`). The service says `race` messages:
 `{type: 'race', state, course, laps, by, racers: [slots], ready: [slots], startAt, table}`, where `state` is
-`prep` (each page builds the course and sends `ready {}`), `count` (every racer ready, or 45 s passed: `startAt` is the
-server's ms of the start, 10 s ahead), `lap` (a lap was taken: also `slot`, `n`, `ms`), `refused` (to the sender only: a
-lap before `startAt`, out of order, after his last lap, or longer than the time since the start), `results` (the first
-finisher + 60 s, every racer finished or gone, or 15 minutes without a finisher; also the answer to `table {}` after
+`prep` (each page builds the course and sends `ready {}`), `count` (every racer ready, or 45 s passed with at least one
+ready: `startAt` is the server's ms of the start, 10 s ahead, 32 bits like `serverMs`), `lap` (a lap was taken: also `slot`, `n`, `ms`), `refused` (to the sender only: a
+lap before `startAt`, out of order, after his last lap, shorter than 3 s, or longer than the time since the start),
+`results` (every racer gone in prep, nobody ready after 45 s, the first finisher + 60 s, every racer finished or gone, or 15 minutes without a finisher; also the answer to `table {}` after
 the end) or `run` (the answer to `table {}` during the race). `lap {n, ms}` from a page: its lap n (1-based) took ms
 (the page's own lap timer; the service does not fly). `table` rows: `{slot, nick, laps, totalMs, bestMs, lastMs, done,
 place, gapMs}`, ordered finished first by total, then more laps and less total, then the best lap, then the slot;
