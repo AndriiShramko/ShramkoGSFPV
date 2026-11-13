@@ -1,0 +1,121 @@
+"""Read-only DJI RC 2 stick read on Windows through DJI's libusb0_dji.dll (ctypes, no pyusb).
+
+Only standard GET_DESCRIPTOR (device, configuration) and the DUML stick request 06/01
+with an empty payload, the same frame the reference github.com/rusty407/dji-rc2-linux-joystick
+sends. The serial string is never requested.
+Usage: python rc2_read_ctypes.py <dll> <out json> <seconds>
+"""
+import ctypes as C
+import json
+import struct
+import sys
+import time
+
+sys.path.insert(0, __file__.rsplit("\\", 1)[0].rsplit("/", 1)[0])
+from rc2_read import build, parse  # noqa: E402  (own helpers, same folder)
+
+VID, PID = 0x2CA3, 0x1021
+DEV_DESC_OFF = 1048  # measured by layout_probe.py on libusb0_dji.dll 4.8.13 amd64
+
+
+def main():
+    dll, out_path, secs = sys.argv[1], sys.argv[2], float(sys.argv[3])
+    L = C.CDLL(dll)
+    L.usb_get_busses.restype = C.c_void_p
+    L.usb_open.restype = C.c_void_p
+    L.usb_open.argtypes = [C.c_void_p]
+    for f in ("usb_close", "usb_set_configuration", "usb_claim_interface", "usb_release_interface",
+              "usb_bulk_write", "usb_bulk_read", "usb_get_descriptor"):
+        getattr(L, f).restype = C.c_int
+    L.usb_close.argtypes = [C.c_void_p]
+    L.usb_set_configuration.argtypes = [C.c_void_p, C.c_int]
+    L.usb_claim_interface.argtypes = [C.c_void_p, C.c_int]
+    L.usb_release_interface.argtypes = [C.c_void_p, C.c_int]
+    L.usb_bulk_write.argtypes = [C.c_void_p, C.c_int, C.c_char_p, C.c_int, C.c_int]
+    L.usb_bulk_read.argtypes = [C.c_void_p, C.c_int, C.c_char_p, C.c_int, C.c_int]
+    L.usb_get_descriptor.argtypes = [C.c_void_p, C.c_ubyte, C.c_ubyte, C.c_void_p, C.c_int]
+    L.usb_strerror.restype = C.c_char_p
+    L.usb_init()
+    L.usb_find_busses()
+    L.usb_find_devices()
+    bus = L.usb_get_busses()
+    dev = C.c_void_p.from_address(bus + 528).value
+    desc = C.string_at(dev + DEV_DESC_OFF, 18)
+    vid, pid = struct.unpack_from("<HH", desc, 8)
+    print("device %04x:%04x bcdDevice %04x" % (vid, pid, struct.unpack_from("<H", desc, 12)[0]))
+    if (vid, pid) != (VID, PID):
+        sys.exit("not the RC 2")
+    h = L.usb_open(dev)
+    if not h:
+        sys.exit("usb_open failed: " + L.usb_strerror().decode())
+    cbuf = C.create_string_buffer(512)
+    n = L.usb_get_descriptor(h, 2, 0, cbuf, 512)
+    cfg = cbuf.raw[:max(n, 0)]
+    layout, i, cur = [], 0, None
+    while i + 2 <= len(cfg) and cfg[i] >= 2:
+        ln, ty = cfg[i], cfg[i + 1]
+        if ty == 4:
+            cur = {"interface": cfg[i + 2], "alt": cfg[i + 3],
+                   "class": "%02X.%02X.%02X" % (cfg[i + 5], cfg[i + 6], cfg[i + 7]), "endpoints": []}
+            layout.append(cur)
+        elif ty == 5 and cur is not None:
+            cur["endpoints"].append({"address": "0x%02X" % cfg[i + 2], "type": cfg[i + 3] & 3,
+                                     "maxPacket": struct.unpack_from("<H", cfg, i + 4)[0]})
+        i += ln
+    print("layout", json.dumps(layout))
+    r = L.usb_set_configuration(h, 1)
+    print("set_configuration", r, "" if r >= 0 else L.usb_strerror().decode())
+    r = L.usb_claim_interface(h, 0)
+    print("claim_interface 0", r, "" if r >= 0 else L.usb_strerror().decode())
+    if r < 0:
+        L.usb_close(h)
+        sys.exit(1)
+    seq, rx, frames, sent, errs = 0x34EB, bytearray(), [], 0, []
+    rbuf = C.create_string_buffer(16384)
+    t0 = time.monotonic()
+    try:
+        while time.monotonic() - t0 < secs:
+            pkt = build(seq)
+            want = seq
+            seq = (seq + 1) & 0xFFFF
+            w = L.usb_bulk_write(h, 0x01, pkt, len(pkt), 200)
+            sent += 1
+            if w < 0 and len(errs) < 5:
+                errs.append("write %d %s" % (w, L.usb_strerror().decode()))
+            tq, got = time.monotonic(), False
+            while not got and time.monotonic() - tq < 0.1:
+                k = L.usb_bulk_read(h, 0x81, rbuf, 16384, 20)
+                if k <= 0:
+                    continue
+                rx += rbuf.raw[:k]
+                for raw in parse(rx):
+                    s = struct.unpack_from("<H", raw, 6)[0]
+                    rec = {"t": round(time.monotonic() - t0, 4), "hex": raw.hex(), "seq": s,
+                           "type": raw[8], "set": raw[9], "id": raw[10]}
+                    if raw[8] & 0x80 and raw[9] == 0x06 and raw[10] == 0x01 and len(raw) >= 31:
+                        p = raw[11:-2]
+                        rec["values"] = [struct.unpack_from("<H", p, o)[0] for o in (1, 4, 7, 10, 13, 16)]
+                        got = got or s == want
+                    frames.append(rec)
+            time.sleep(max(0.0, 0.05 - (time.monotonic() - tq)))
+    finally:
+        L.usb_release_interface(h, 0)
+        L.usb_close(h)
+    vals = [f["values"] for f in frames if "values" in f]
+    rng = [[min(v[j] for v in vals), max(v[j] for v in vals)] for j in range(6)] if vals else []
+    doc = {"device": "DJI RC 2, USB 2CA3:1021, SN masked", "interface": 0, "epOut": "0x01", "epIn": "0x81",
+           "stack": "Python 3.11 ctypes -> libusb0_dji.dll 4.8.13 amd64 (DJI Assistant 2) -> libusb0_dji.sys",
+           "request": build(0x34EB).hex() + " (first; seq increments by one per request)",
+           "requestsSent": sent, "seconds": secs, "stickReplies": len(vals), "framesTotal": len(frames),
+           "errors": errs, "channels": ["roll", "pitch", "throttle", "yaw", "left_dial", "right_dial"],
+           "rangeSeen": rng, "layout": layout, "frames": frames}
+    with open(out_path, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(doc, f, indent=1)
+    print("sent", sent, "frames", len(frames), "stick replies", len(vals), "errors", errs[:2])
+    print("rangeSeen", rng)
+    for fr in frames[:2]:
+        print("frame", fr["hex"])
+
+
+if __name__ == "__main__":
+    main()
