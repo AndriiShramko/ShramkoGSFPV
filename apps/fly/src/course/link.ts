@@ -81,6 +81,11 @@ function bests(): Record<string, number> {
     }
 }
 
+/** every best lap this browser keeps, by bestKey (stage F1-finish: who may vote, course/editor/rules.ts lappedIds) */
+export function readBests(): Record<string, number> {
+    return bests();
+}
+
 export function readBest(key: string): number | null {
     const v = bests()[key];
     return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null;

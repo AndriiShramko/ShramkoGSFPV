@@ -33,6 +33,10 @@ import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
+import { adminVersionBody, editPaints, lappedIds, mayVote } from '../../course/editor/rules';
+import { readBests } from '../../course/link';
+import { AdminClient, ApiError, adminHinted } from '../../admin/api';
+import { TracksAdminClient } from '../../admin/tracks/api';
 
 function randomSeed(): number {
     const a = new Uint32Array(1);
@@ -46,8 +50,12 @@ export const course: Feature = {
         const hook: CourseHook = {
             on: false, source: 'none', track: null, seed: null, gates: 0, next: -1, drawn: 0, laps: 0, lastLapMs: null, bestLapMs: null,
             beaconPoints: 0, problem: null, serverTracks: -1, saved: null,
-            editor: { open: false, selected: 0, changed: false, problems: 0, refused: null, said: '', votes: myVotes() }
+            editor: { open: false, selected: 0, changed: false, problems: 0, refused: null, said: '', votes: myVotes(), paints: [], admin: false, lapped: [] }
         };
+        // stage F1-finish: an admin signed in on this browser (the hint, then the session decides, as scene-default.ts does) saves
+        // the edited gates as an admin version; a visitor's page never calls the admin API
+        const adminClient = new AdminClient();
+        let adminLive = false;
         ctx.hook.course = hook;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
@@ -423,7 +431,9 @@ export const course: Feature = {
         };
         const renderList = (): void => {
             edHook.votes = myVotes();
-            panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null);
+            const lapped = lappedIds(readBests());
+            edHook.lapped = [...lapped];
+            panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null, lapped);
         };
         const showEd = (): void => {
             if (!ed || !panel) return;
@@ -437,6 +447,10 @@ export const course: Feature = {
             hook.on = true;
             stage.show(run.gates);
             stage.setNext(ed.selected, run.path, track.laps > 1);
+            // stage F1-finish: the selected gate magenta, a failing gate red (tracks-plan 2.11)
+            const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems);
+            stage.paintEdit(paints);
+            edHook.paints = paints;
             shownNext = ed.selected;
             hud.update(null, 0);
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
@@ -464,8 +478,16 @@ export const course: Feature = {
             edHook.refused = null;
             ctx.pause('panel');
             unblock = ctx.keys.block(() => ed !== null);
-            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
+            panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
+            panel.adminOn(adminLive);
+            if (!adminLive && adminHinted()) {
+                void adminClient.resume().then((live) => {
+                    adminLive = live === true;
+                    edHook.admin = adminLive;
+                    panel?.adminOn(adminLive);
+                });
+            }
             showEd();
             say(t('course.edit.opened'));
             renderList();
@@ -591,7 +613,41 @@ export const course: Feature = {
                 renderList();
             } else say(t('course.save.failed', { msg: hook.problem ?? '' }), true);
         };
+        /** stage F1-finish (R6/R8): the admin's edit of the gates as a new version of the served course, marked edited by the admin */
+        const saveAdmin = async (titleIn: string): Promise<void> => {
+            if (!ed || !edSource || saving || !adminLive) return;
+            if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+            const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
+            if (serverId === null) return say(t('course.edit.adminFirst'), true);
+            const title = titleIn.trim().normalize('NFC') || edSource.title;
+            if (!edChanged && title === edSource.title) return say(t('course.edit.nothing'), true);
+            const base = hook.track?.version ?? edSource.version;
+            const body = adminVersionBody(toTrackV1(ed.course), serverId, base, title);
+            saving = true;
+            let r: { id: string; version: number };
+            try {
+                r = await new TracksAdminClient(adminClient).version(serverId, body as unknown as Record<string, unknown>);
+            } catch (e) {
+                const msg = e instanceof ApiError ? e.reason || `HTTP ${e.status}` : String(e);
+                hook.problem = `admin save: ${msg}`;
+                return say(t('course.save.failed', { msg: msg.slice(0, 120) }), true);
+            } finally {
+                saving = false;
+            }
+            hook.saved = serverId;
+            hook.source = 'server';
+            hook.track = { id: serverId, version: r.version };
+            hook.problem = null;
+            edSource = { ...(body as unknown as TrackFile), id: serverId, version: r.version };
+            edChanged = false;
+            showEd();
+            say(t('course.edit.savedAdmin', { title: body.title, v: r.version }));
+            await refresh(true);
+            renderList();
+        };
         const vote = async (id: string, v: 1 | -1): Promise<void> => {
+            // tracks-plan 2.9: voting only after a completed lap on that course (a UI rule, not a proof)
+            if (!mayVote(id, lappedIds(readBests()))) return say(t('course.edit.voteAfterLap'), true);
             const had = myVotes()[id] ?? 0;
             const nv = had === v ? 0 : v;
             const r = await store.vote(id, nv, voterId());

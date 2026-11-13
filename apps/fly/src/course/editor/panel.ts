@@ -7,12 +7,15 @@ import type { CourseRow } from '../store';
 import type { KeyPress } from './keys';
 import { KEY_ROWS } from './keys';
 import { markText } from './words';
+import { mayVote } from './rules';
 import './editor.css';
 
 export interface PanelHost {
     key(press: KeyPress): void;
     saveMine(name: string, title: string): void;
     saveAll(): void;
+    /** stage F1-finish: the admin's version of the edited gates (offered only with an admin session) */
+    saveAdmin(title: string): void;
     vote(id: string, v: 1 | -1): void;
     open(id: string): void;
 }
@@ -33,6 +36,7 @@ export class EditorPanel {
     private readonly title: HTMLInputElement;
     private readonly mine: HTMLButtonElement;
     private readonly all: HTMLButtonElement;
+    private readonly admin: HTMLButtonElement;
     private readonly rows: HTMLElement;
 
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
@@ -74,7 +78,11 @@ export class EditorPanel {
         this.all = el('button', 'ce-save-all', t('course.edit.saveAll'));
         this.all.type = 'button';
         this.all.addEventListener('click', () => host.saveAll());
-        save.append(this.name, this.title, this.mine, this.all);
+        this.admin = el('button', 'ce-save-admin', t('course.edit.saveAdmin'));
+        this.admin.type = 'button';
+        this.admin.hidden = true;
+        this.admin.addEventListener('click', () => host.saveAdmin(this.title.value));
+        save.append(this.name, this.title, this.mine, this.all, this.admin);
         root.append(save);
 
         root.append(el('h3', 'ce-list-title', t('course.edit.list')));
@@ -104,6 +112,11 @@ export class EditorPanel {
         this.all.disabled = !canAll;
     }
 
+    /** the admin's save button: shown only when an admin session answered */
+    adminOn(on: boolean): void {
+        this.admin.hidden = !on;
+    }
+
     /** Enter to save without a name: the name field takes the focus (true when it did) */
     askName(): boolean {
         if (this.name.value.trim()) return false;
@@ -125,7 +138,8 @@ export class EditorPanel {
         return target === this.name || target === this.title;
     }
 
-    list(rows: readonly CourseRow[], mine: Record<string, number>, current: string | null): void {
+    /** `lapped`: the course ids flown to a lap in this browser; only their rows may vote (tracks-plan 2.9) */
+    list(rows: readonly CourseRow[], mine: Record<string, number>, current: string | null, lapped: ReadonlySet<string> = new Set()): void {
         this.rows.replaceChildren();
         if (rows.length === 0) {
             this.rows.append(el('li', 'ce-empty', t('course.edit.listEmpty')));
@@ -158,6 +172,11 @@ export class EditorPanel {
             open.type = 'button';
             open.addEventListener('click', () => this.host.open(r.id));
             votes.append(up, down, open);
+            if (!mayVote(r.id, lapped)) {
+                up.disabled = true;
+                down.disabled = true;
+                votes.append(el('span', 'ce-lap', t('course.edit.voteAfterLap')));
+            }
             if (mv !== 0) votes.append(el('span', 'ce-mine', t('course.edit.mine')));
             li.append(head, marks, votes);
             this.rows.append(li);

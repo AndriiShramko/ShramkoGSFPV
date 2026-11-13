@@ -109,5 +109,9 @@
   "course.edit.mine": "your vote",
   "course.edit.voted": "Your vote is counted",
   "course.edit.voteFailed": "The vote was not counted: {msg}",
-  "course.link.missing": "The linked course is not on this scene's list (it may be hidden or deleted)."
+  "course.link.missing": "The linked course is not on this scene's list (it may be hidden or deleted).",
+  "course.edit.saveAdmin": "Save as the admin's version",
+  "course.edit.savedAdmin": "Saved as the admin's version: {title}, version {v}",
+  "course.edit.adminFirst": "Save the course for everyone first, then the admin can save a version of it",
+  "course.edit.voteAfterLap": "Fly a lap of this course to vote"
 }

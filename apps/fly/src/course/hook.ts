@@ -47,4 +47,10 @@ export interface CourseEditorHook {
     said: string;
     /** the votes this browser gave, by course id */
     votes: Record<string, number>;
+    /** stage F1-finish: the paint of every gate while editing (course/editor/rules.ts EditPaint) */
+    paints: string[];
+    /** stage F1-finish: an admin session answered, "Save as the admin's version" is offered */
+    admin: boolean;
+    /** stage F1-finish: the course ids with a completed lap in this browser (their rows may vote) */
+    lapped: string[];
 }

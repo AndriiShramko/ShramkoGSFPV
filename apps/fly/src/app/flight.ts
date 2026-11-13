@@ -134,7 +134,7 @@ class Flight implements FlightContext {
         this.voxels.frame(now);
         if (!this.crash.active) this.crash.trackCamera();
         this.crash.frame(now);
-        this.hud.update(s, this.controls.block, s.frameStats(), this.controls.view());
+        this.hud.update(s, this.controls.block, s.frameStats(), this.controls.view(), this.stack.reasons.includes('panel'));
         this.events.emit('frame', { now });
     }
 }

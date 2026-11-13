@@ -2,7 +2,8 @@
    it fits a phone held sideways (844 x 390) and a desktop (1920 x 1080). */
 .course-editor {
     position: absolute;
-    top: max(8px, env(safe-area-inset-top));
+    /* stage F1-finish: under the HUD's top-right buttons (Pause, Controls, Share stay reachable; ui/top-row.ts sets the variable) */
+    top: calc(max(8px, var(--top-row-bottom, 78px)) + 8px);
     right: max(8px, env(safe-area-inset-right));
     bottom: max(8px, env(safe-area-inset-bottom));
     width: min(380px, 48vw);
@@ -56,7 +57,21 @@
     font: 600 0.8rem/1.4 ui-monospace, monospace;
     text-align: center;
 }
-.ce-save { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+/* the save row stays at the window's bottom edge while the keys and the list scroll (844 x 390: no hunt for the save buttons) */
+.ce-save {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    padding: 4px 0;
+    background: rgb(12, 16, 22);
+    border-top: 1px solid #2a3442;
+}
+.ce-save-admin { grid-column: 1 / -1; }
+.ce-save-admin[hidden] { display: none; }
+.ce-lap { color: #b8c2cf; font-size: 0.8rem; }
 .ce-save input {
     min-width: 0;
     padding: 3px 6px;

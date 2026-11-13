@@ -374,7 +374,8 @@ export class Hud {
         if (text !== null && this.statsDrawing.textContent !== text) this.statsDrawing.textContent = text;
     }
 
-    update(s: FlightSession, block: ArmBlock, frameMs: { p50: number; p99: number }, view?: ArmView): void {
+    /** `panel`: the flight is paused for a window (pause reason 'panel', e.g. the course editor): no take-off prompt under it */
+    update(s: FlightSession, block: ArmBlock, frameMs: { p50: number; p99: number }, view?: ArmView, panel = false): void {
         const ui = this.ui;
         if (!ui) return; // not on the page yet
         const now = performance.now();
@@ -416,7 +417,7 @@ export class Hud {
         if (acro && !this.acroLine.textContent) this.acroLine.textContent = t('throttle.acro');
         // the test pilot (?simradio=scenario) flies the model directly, past the arm gate: the gate's
         // "Calibrate your controls first" was never true for it, and it printed into every bot frame
-        const say = !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view, style === 'centred', acro) : '';
+        const say = !panel && !hd.armed && !hd.crashed && block && src !== 'sim' ? gateText(block, view, style === 'centred', acro) : '';
         // the pilot keyboard's ground card; the game scheme's keys are on the "How to fly" card (app/builtin/how-to-fly.ts)
         const keyCard = kbd && !view?.game && say !== '' && !document.querySelector('.screen.radio');
         const easy = !!view?.easy;

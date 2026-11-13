@@ -109,5 +109,9 @@
   "course.edit.mine": "twój głos",
   "course.edit.voted": "Twój głos został policzony",
   "course.edit.voteFailed": "Głos nie został policzony: {msg}",
-  "course.link.missing": "Trasy z linku nie ma na liście tej sceny (może być ukryta lub usunięta)."
+  "course.link.missing": "Trasy z linku nie ma na liście tej sceny (może być ukryta lub usunięta).",
+  "course.edit.saveAdmin": "Zapisz jako wersję administratora",
+  "course.edit.savedAdmin": "Zapisano jako wersję administratora: {title}, wersja {v}",
+  "course.edit.adminFirst": "Najpierw zapisz tor dla wszystkich, potem administrator może zapisać jego wersję",
+  "course.edit.voteAfterLap": "Przeleć okrążenie tego toru, aby zagłosować"
 }
