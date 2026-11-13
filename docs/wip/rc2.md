@@ -342,3 +342,6 @@ every received frame, measured]:
   stub built on setTimeout could not show the old wake; setImmediate could), a socket buffer grows too far to show a
   stalled page (SO_RCVBUF 4 KB did), and old-code runs that fail only on a missing new parameter (dev=True) need a
   scratch copy of the tests. A line in the code map with the exact vitest and neg_control command would save 3 replies.
+- Review fixes pass 2: 6 replies. Nothing left inside the lane: R1 (ground sweep) and R10 (no in-flight announcer;
+  a plain WebHID unplug is not announced in flight either, grep for disconnect in apps/fly/src) need the lead's paths.
+  A status line marking such items "lead-owned, lane done" would have spared this pass.
