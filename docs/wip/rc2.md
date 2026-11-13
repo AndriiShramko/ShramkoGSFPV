@@ -18,9 +18,16 @@ Stage 1 RC1-hardware-and-protocol
 Stage 2 RC2-protocol-and-webusb-source
 - [x] 1. packages/input/src/dji-duml.ts (build, parse with CRC8 and CRC16, stream reader, stick decode to -1..1, HID
   description of the six axes) and packages/input/test/dji-duml.test.ts on both recordings (685 stick replies) and
-  reference vectors: 8 passed, NEG OK, tsc of packages/input clean. Commit (this commit, step 1).
-- [ ] 2. apps/fly/src/devices/dji-rc2-source.ts (WebUSB source as a HID-shaped device) and its tests.
-- [ ] 3. Helper block: fly action, claim failure in plain words in en/es/pl/ru, the old "cannot read it yet" line gone.
+  reference vectors: 8 passed, NEG OK, tsc of packages/input clean. Commit 38609d93.
+- [x] 2. apps/fly/src/devices/dji-rc2-source.ts (DjiRc2Device: WebUSB source shaped as a WebHID device, so HidSource,
+  the wizard, the check screen and profiles read it unchanged; findSavedRc2 for a later visit) and
+  tools/bench/test/app-dji-rc2.test.ts (fake USBDevice replaying the recorded frames, moving sticks, refused claim,
+  silent controller, unplug disarms the real Controls by the stale rule, close releases, reconnect): 8 passed,
+  NEG OK. tsc of apps/fly clean. Commit (step 2+3 commit).
+- [x] 3. Helper block (ui/usb-look-block.ts, devices/usb-look.ts): part 'sticks' and verdict 'rc2' for DJI + FF.43.01,
+  "Fly with this controller", claim failure and silent controller in plain words in en/es/pl/ru, "Send this list"
+  stays, the old "cannot read it yet" line gone. tools/bench/test/app-usb-look.test.ts + fly-parity: 23 passed,
+  NEG OK (old usb-look.ts, block and the four locale files). Commit (step 2+3 commit).
 - [ ] 4. Lead patch for the wiring outside this lane's paths (radio.ts, input.ts, index.ts) checked to apply and typecheck.
 
 Stage 3: not started.
