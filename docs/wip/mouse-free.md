@@ -30,7 +30,7 @@ Stage 1, M1-cause-and-fix:
 - Commit: 7fa41712 (items 1 to 4).
 
 Stage 2, M2-probe-all-windows:
-- [x] 1. tools/bench/scripts/mouse-free-probe.mjs walks every window that needs the mouse, each from a flight
+- [x] 1. tools/bench/scripts/mouse-free-probe.mjs walks 9 windows (12 after the review, see MF-R2), each from a flight
   with the capture held: helper (report form from the USB helper, fake navigator.usb), keyB, menu (Feedback),
   pause (the pause menu itself, closed with Continue), settings, radio (the Controls screen), courseKey
   (Shift+G), courseMenu (the menu's New course item), rooms (?rooms=1 page, opened by Shift+L). Per window:
@@ -62,6 +62,28 @@ R review fixes (independent review of the lane, findings MF-R1 to MF-R6, all min
   and the `held` getter comment now say a lock that lands while a window is up is let go. Commit: R-a.
 - R-a checks: 8 of 8 tests pass; negative control against the lane's HEAD 77379ada mouse-look.ts: NEG OK,
   the 3 new tests fail there, the 5 old ones pass. Typecheck apps/fly and tools/bench exit 0.
+  R-a = commit e2e77e66.
+- [x] MF-R2 (the probe did not walk every window): entries added for the drones screen (P, Drone), the
+  scenes screen (P, Scene) and the ceiling panel (P, Settings, the voxels group's Show button: Settings
+  closes and the panel opens in the same click, the owner's pattern). Stage 2 item 1 now means these 12
+  entries, not every window: not walked are floaters, share, replays, measure, import, the how-to-fly card,
+  the crash view, the export bar and the Fly by Sound screens (covered by CURSOR_WINDOWS and unit tests
+  only). Commits 9a477401, 663848e1, R-b below.
+- [x] Regression found by the probe after MF-R4 (e2e77e66): when Chrome resolves requestPointerLock before
+  it fires pointerlockchange, lock() let the lock go before onChange saw it land, so `releasing` stayed set
+  and every later click was refused (21 fails: no capture after the first window). Fix: onChange clears
+  `releasing` whenever the lock is gone, lock() clears it when nothing is held. Test 'a lock let go before
+  its own event was seen leaves no release hanging'; 9 of 9 pass; NEG OK against e2e77e66's mouse-look.ts
+  (only the new test fails). Typecheck apps/fly and tools/bench exit 0. Commit 663848e1.
+- [x] Probe on a local release build of 663848e1 (serve-csp 5391, headless, GPU lock): 83 of 84 checks pass,
+  the one fail 'ceiling: a click inside keeps the mouse free' (the Show button sat in a group the rail had
+  not picked, so Settings stayed up). After the probe picks the row's group (R-b), the ceiling entry alone on
+  the same build: 7 of 7 pass, exit 0 (walls true, group voxels, window ceiling-panel). Evidence:
+  evidence/2026-11-13/mouse-free/probe-local-review.json and probe-local-review-ceiling.json. The full
+  probe was not rerun after R-b (only the ceiling entry changed).
+- [x] MF-R6 (clash with lanes rooms-public and rc2 in the probe): no change in the lane (the key 9 and the
+  rc2 verdict exist only on the other branches); under For the lead.
+- Refuted: none; MF-R1 to MF-R6 were all confirmed by the code. R-b = the commit that adds this text.
 
 ## Decisions
 
@@ -89,7 +111,18 @@ R review fixes (independent review of the lane, findings MF-R1 to MF-R6, all min
   list with no body; serve-csp has no rooms API). The live site (same release 41372830) logs none. Lane
   rooms' path: a guard `a.value?.rooms ?? null` would quiet it. Not a mouse-free defect.
 - Level 3: run `node tools/bench/scripts/mouse-free-probe.mjs http://localhost:<port>/en <out.json>` on the
-  merged release build; all 63 checks must pass (about 3 minutes, GPU lock).
+  merged release build; all 84 checks must pass (about 5 minutes, GPU lock).
+- MF-R6, after the merge with rooms-public and rc2: in the probe's rooms entry press Digit9 first (keep the
+  Shift+L and menu fallbacks) and drop '&rooms=1' once rooms are public; read the helper entry's fieldText
+  (rc2 changes the list text for FF.43.01) and that 'Send this list' is still there beside rc2's 'Fly with
+  this controller'.
+- MF-R1, not done in the lane: a probe entry for the video export bar (needs a recorded life in the
+  replays panel before Export). CURSOR_WINDOWS has '.vx-bar' and a unit test covers it.
+- MF-R3, optional and not done: a unit test of the play.ts wiring (held = menu open or dialogOpen() or
+  cursorWindowOpen(), sync() on each pause event and on the 250 ms tick) with a fake context. The probe
+  covers it on the page.
+- dialogOpen() in devices/keyboard.ts (lane rc2) lists '.screen.settings' too; it matches nothing (the
+  settings root is 'panel interactive settings'). Not in this lane's paths.
 
 ## Not verified
 
@@ -99,6 +132,11 @@ R review fixes (independent review of the lane, findings MF-R1 to MF-R6, all min
 - (Closed in stage 2: the probe's pause entry checks that Continue takes the capture again; it passes.)
 - A real mouse: headless Chromium does not paint the OS cursor, so the screenshot shows the hover and focus
   of Send, and the probe reads the computed cursor style; nobody looked at a real cursor on a real screen.
+- After the review: the full probe was not rerun after the ceiling entry's group pick (R-b); the export
+  bar, floaters, share, replays, measure, import, how-to-fly, crash view and Fly by Sound pages are not
+  walked by the probe (CURSOR_WINDOWS and unit tests only). Whether Chrome resolves requestPointerLock before
+  or after pointerlockchange on the owner's PC: both orders are covered by unit tests, only headless Chromium
+  was run.
 - A real screen reader (NVDA, JAWS, VoiceOver) announcing each window: not run; the probe only checks
   that Send is reachable by Tab on the report form.
 - The course has no window of its own: Shift+G and the menu's New course leave no window up, and the
@@ -113,3 +151,7 @@ R review fixes (independent review of the lane, findings MF-R1 to MF-R6, all min
 - Stage 2: most turns went to finding how each window opens and which control inside is harmless (no
   send, save or create), plus one rerun because the second page of a profile skips the Controls screen.
   Cheaper: a list in the code map of every window with its opener and a safe inside control.
+- Review fixes: most turns went to the browser runs (two builds of about 2 minutes, one wait for another
+  lane's GPU lock) and to finding where the ceiling row sits (a rail group of Settings, walls load after
+  'ready'). Cheaper: a fake document in the unit test that can fire the lock event after the promise
+  (would have caught the hanging release before the probe), and the code map naming each setting's group.

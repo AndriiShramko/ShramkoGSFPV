@@ -253,6 +253,11 @@ if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'drones', 'scenes',
             await page.keyboard.press('KeyP');
             await page.waitForSelector('[data-action="pause.settings"], [data-action="settings.open"]', { timeout: 5000 });
             await page.locator('[data-action="pause.settings"], [data-action="settings.open"]').first().click();
+            // the row lives in one group of the rail (ui/settings/screen.ts set-rail-btn data-group): pick it
+            const group = await page.waitForSelector('.set-group [data-action=ceiling-open]', { state: 'attached', timeout: 5000 })
+                .then((el) => el.evaluate((e) => e.closest('.set-group')?.getAttribute('data-group') ?? null), () => null);
+            out.entries.ceiling.group = group;
+            if (group) await page.locator(`.set-rail-btn[data-group="${group}"]`).click({ timeout: 3000 }).catch(() => {});
             const show = page.locator('[data-action=ceiling-open]').first();
             const shown = await show.waitFor({ state: 'visible', timeout: 5000 }).then(() => true, () => false);
             out.entries.ceiling.rowShown = shown; // hidden on a scene without walls: then 'the window is open' fails
