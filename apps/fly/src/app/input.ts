@@ -238,7 +238,8 @@ export class InputHost {
         this.centre = new CentrePilot({
             sim: () => ctx.session.sim ?? null,
             paused: () => ctx.session.paused,
-            // the game scheme's ground below (play/ground.ts, the scan's own walls), looked at every 33 ms by the pilot
+            // the game scheme's ground below (play/ground.ts, the scan's own walls); the pilot asks through its GroundCache:
+            // a look every 33 ms of input time at most, never one per report
             ground: (sim) => groundClearance(sim.contactWorld, sim.s, sim.p),
             mode: () => ctx.controls.flyingMode(),
             speed,
