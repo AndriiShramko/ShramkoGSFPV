@@ -129,6 +129,53 @@ class Rules(unittest.TestCase):
         self.assertEqual(rb.accept_key("dGhlIHNhbXBsZSBub25jZQ=="), "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=")  # RFC 6455 sample
 
 
+class Recorded(unittest.TestCase):
+    """--record: every stick answer passed on, one JSON line {t, v}, nothing else (lane rc2-lna)."""
+
+    def test_record_has_one_line_per_answer_and_only_t_and_v(self):
+        import tempfile
+        path = os.path.join(tempfile.mkdtemp(), "rec.jsonl")
+        b = rb.Bridge(lambda: rb.Replay(REC, wiggle=True), port=0, log=lambda *_: None, dev=True, record=path)
+        port = b.start()
+        s, _, _ = handshake(port, "http://localhost:5390")
+        try:
+            recv_text(s)
+            msgs = [recv_text(s) for _ in range(30)]
+        finally:
+            s.close()
+            b.stop()
+        sent = [m["v"] for m in msgs if "v" in m]
+        with open(path, encoding="ascii") as f:
+            lines = [json.loads(x) for x in f if x.strip()]
+        self.assertGreaterEqual(len(lines), len(sent))
+        self.assertEqual([x["v"] for x in lines[:len(sent)]], sent)
+        self.assertTrue(all(set(x) == {"t", "v"} and len(x["v"]) == 6 for x in lines))
+        ts = [x["t"] for x in lines]
+        self.assertEqual(ts, sorted(ts))
+
+    def test_analysis_names_channels_in_the_order_they_moved(self):
+        import tempfile
+        import analyze_record as ar
+        path = os.path.join(tempfile.mkdtemp(), "syn.jsonl")
+        rows = []
+        for t in range(0, 6000, 10):
+            v = [1024] * 6
+            if t >= 2000: v[2] = 1600   # left stick up: channel 3 +
+            if t >= 3000: v[3] = 500    # left stick left: channel 4 -
+            if t >= 4000: v[1] = 1500   # right stick up: channel 2 +
+            if t >= 5000: v[0] = 600    # right stick left: channel 1 -
+            rows.append({"t": t, "v": v})
+        with open(path, "w", encoding="ascii") as f:
+            f.write("".join(json.dumps(r) + "\n" for r in rows) + '{"t": 1, "v": [1')  # a cut last line
+        r = ar.analyze(ar.load(path))
+        self.assertEqual(r["lines"], 600)
+        self.assertEqual([c["rest"] for c in r["channels"]], [1024] * 6)
+        self.assertEqual((r["channels"][2]["min"], r["channels"][2]["max"]), (1024, 1600))
+        self.assertEqual([(m["channel"], m["direction"], m["gesture"]) for m in r["moves"]],
+                         [(3, "+", "left stick up"), (4, "-", "left stick left"), (2, "+", "right stick up"), (1, "-", "right stick left")])
+        self.assertEqual([m["t"] for m in r["moves"]], [2000, 3000, 4000, 5000])
+
+
 class Served(unittest.TestCase):
     def setUp(self):
         self.b = rb.Bridge(lambda: rb.Replay(REC, wiggle=True), port=0, log=lambda *_: None, dev=True)

@@ -323,8 +323,31 @@ def read_request(conn):
     return lines[0], headers
 
 
+class Recorder:
+    """--record: one JSON line per stick answer passed on, {"t": ms since the bridge started, "v": the six raw values}.
+    Nothing else from the device is written (no serial number, no other frame). Appends, so a restart adds to it."""
+
+    def __init__(self, path):
+        self.f = open(path, "a", encoding="ascii", newline="\n")
+        self.t0 = time.monotonic()
+        self.lock = threading.Lock()
+
+    def write(self, v):
+        line = json.dumps({"t": int((time.monotonic() - self.t0) * 1000), "v": [int(x) for x in v]}, separators=(",", ":"))
+        with self.lock:
+            if self.f.closed:
+                return
+            self.f.write(line + "\n")
+            self.f.flush()
+
+    def close(self):
+        with self.lock:
+            self.f.close()
+
+
 class Bridge:
-    def __init__(self, source_factory, port=PORT, log=lambda s: print(s, flush=True), dev=False):
+    def __init__(self, source_factory, port=PORT, log=lambda s: print(s, flush=True), dev=False, record=None):
+        self.record = Recorder(record) if record else None
         self.source_factory = source_factory
         self.port = port
         self.dev = dev
@@ -467,6 +490,8 @@ class Bridge:
                 continue
             if v:
                 heard = time.monotonic()
+                if self.record:
+                    self.record.write(v)
                 self.send_all({"v": v})
             elif time.monotonic() - heard >= SILENT_S:
                 # still on the bus but silent (asleep, another mode): say so, let it go, look again later
@@ -511,6 +536,10 @@ class Bridge:
                 except OSError:
                     pass
             self.clients.clear()
+        if self.record:
+            # the read loop may still write one line: give it its poll period before closing the file
+            time.sleep(POLL_S * 2)
+            self.record.close()
 
 
 def main(argv=None):
@@ -520,6 +549,8 @@ def main(argv=None):
     ap.add_argument("--replay", default=None, help="recorded frames JSON instead of the controller")
     ap.add_argument("--wiggle", action="store_true", help="with --replay: move roll slowly")
     ap.add_argument("--dev", action="store_true", help="also accept pages from http://localhost[:port] (a local build)")
+    ap.add_argument("--record", default=None, help="append every stick answer passed on to this file, one JSON line "
+                    "each: ms since start and the six raw values (tools/rc-bridge/analyze_record.py reads it)")
     a = ap.parse_args(argv)
     if a.replay:
         factory = lambda: Replay(a.replay, a.wiggle)  # noqa: E731
@@ -530,7 +561,7 @@ def main(argv=None):
         dll = a.dll or find_dll()
         factory = lambda: DjiUsb(dll)  # noqa: E731
         what = "DJI RC 2 through " + str(dll)
-    b = Bridge(factory, a.port, dev=a.dev)
+    b = Bridge(factory, a.port, dev=a.dev, record=a.record)
     port = b.start()
     print("Shramko RC bridge on ws://127.0.0.1:%d/ (%s)." % (port, what))
     print("Open the simulator, Controls, 'My controller is not in the list', 'Fly through the RC bridge'. Ctrl+C stops.")
