@@ -13,6 +13,7 @@ import type { ArmSource, Fn, Hint, KnownMatch, Profile, RawFrame, StepResult, Ve
 import { h, clear } from './dom';
 import { t } from '../i18n';
 import { HidSource, hidDisplayName } from '../devices/hid';
+import { tellWhenLost } from '../devices/dji-rc2-source';
 import { GamepadSource } from '../devices/gamepad';
 import { choiceOffer, recogniseSource } from '../devices/known';
 import { saveProfile, profileFor, downloadProfile, parseProfile, getStickMode, setStickMode } from '../controls';
@@ -292,7 +293,8 @@ export class RadioScreen {
                 h('p', { class: 'muted small' }, t('radio.keyboardHint'))),
             h('p', { class: 'muted small' }, t('radio.real')),
             // lane rc2: a DJI RC 2 whose stick channel answered goes the HID way (wizard, check screen, profile)
-            usbLookBlock(this.report, (d) => void this.connectHid(hidStatus, gpRate, d as unknown as HIDDevice)).el
+            // (review R10: tellWhenLost makes an unplug or a closed bridge say one line on the flight view)
+            usbLookBlock(this.report, (d) => { tellWhenLost(d); void this.connectHid(hidStatus, gpRate, d as unknown as HIDDevice); }).el
         );
         (this.body.querySelector<HTMLElement>('.btn.primary:not([disabled])') ?? this.body.querySelector<HTMLElement>('.btn:not([disabled])'))?.focus({ preventScroll: true });
         this.watchPads(gpRate);

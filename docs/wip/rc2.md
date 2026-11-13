@@ -146,8 +146,15 @@ Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-p
 - [x] 1. lead-wiring.patch.txt and lead-serve-csp.patch.txt applied as code (git apply --3way, clean); tsc of apps/fly
   clean. deploy/nginx.conf already carries the narrow entry (map $gsfpv_rc_bridge: " ws://127.0.0.1:47310" on
   /{lang}/fly/ only, one host, one port; commit 6bafc64f): no change needed. Commit: the one that adds this line.
-- [ ] 2. R10: one line when the RC 2 or the bridge stops in flight (usb.rc2.lost).
-- [ ] 3. R3 check: no animation-frame wake left in dji-rc2-source.ts.
+- [x] 2. R10: the in-flight channel is Hud.flash (ui/hud.ts, role=status note; the walls, course and ceiling notes use
+  it). Smallest addition: onRadioLost / tellWhenLost in devices/dji-rc2-source.ts; radio.ts's fly callback (WebUSB
+  and bridge device) and findSavedRc2 (a later visit) call tellWhenLost; app/builtin/hud.ts listens and flashes
+  usb.rc2.lost (en/es/pl/ru) for 8000 ms (estimate, longer than the 2.5-4 s notes because it names a cause).
+  'closed' (the page let go) says nothing. Test "review R10" in app-dji-rc2.test.ts: 13 passed; NEG OK (--ref HEAD
+  60e7ea0a, old dji-rc2-source.ts: "expected 'undefined' to be 'function'"); fly-parity 13 passed; tsc of apps/fly
+  clean. Not unit-tested: the hud builtin's subscription itself (tsc only). Commit: the one that adds this line.
+- [x] 3. R3 check: dji-rc2-source.ts has no requestAnimationFrame; the only "animation" is the comment at line 149;
+  pace defaults to the plain timer wait (o.pace ?? this.wait). Test "the ask loop paces by its timer only" stays.
 - [ ] 4. rc2-probe three runs + negative control on origin/main's build (stage 3 step 4).
 - [ ] 5. Helper link to tools/rc-bridge and its README start lines.
 - [ ] 6. Lane unit tests after the merge.

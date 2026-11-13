@@ -290,6 +290,27 @@ export class DjiRc2Device {
 }
 
 /**
+ * Review R10: an RC 2 (WebUSB or the RC bridge) that stops on its own, unplugged, switched off or the bridge closed,
+ * says so once on the flight view. The stale rule has already stopped the motors; this only names the cause.
+ * The flight view listens (app/builtin/hud.ts: hud.flash with usb.rc2.lost); 'closed' (the page let go) says nothing.
+ */
+type LostListener = (why: 'unplug' | 'error') => void;
+const lostListeners = new Set<LostListener>();
+
+export function onRadioLost(fn: LostListener): () => void {
+    lostListeners.add(fn);
+    return () => { lostListeners.delete(fn); };
+}
+
+/** Sets the device's onEnd so that an end the pilot did not choose reaches onRadioLost's listeners. */
+export function tellWhenLost(d: { onEnd: ((why: 'unplug' | 'error' | 'closed') => void) | null }): void {
+    d.onEnd = (why) => {
+        if (why === 'closed') return;
+        for (const fn of [...lostListeners]) fn(why);
+    };
+}
+
+/**
  * A later visit: an RC 2 the browser already may open (navigator.usb.getDevices(), no chooser, no user gesture) whose
  * profile key has a saved setup. Returns it as a HID choice (HidSource over DjiRc2Device), or null.
  */
@@ -304,7 +325,9 @@ export async function findSavedRc2(lookup: (key: string) => Profile | null, hub:
     for (const d of list.filter(hasStickChannel)) {
         const src = new HidSource();
         try {
-            await src.open(new DjiRc2Device(d, { hub }) as unknown as HIDDevice);
+            const rc = new DjiRc2Device(d, { hub });
+            tellWhenLost(rc);
+            await src.open(rc as unknown as HIDDevice);
             const profile = lookup(src.key);
             if (profile) return { kind: 'hid', profile, hid: src };
         } catch { /* claimed elsewhere or silent: the Controls screen handles it */ }

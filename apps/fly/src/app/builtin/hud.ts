@@ -7,6 +7,7 @@ import type { Feature } from '../context';
 import { lodLine, lodReport } from '../lod';
 import { drawingFor, drawingLine } from '../drawing';
 import { cleanDraw } from '../clean-draw';
+import { onRadioLost } from '../../devices/dji-rc2-source';
 
 export const hud: Feature = {
     id: 'hud',
@@ -19,6 +20,8 @@ export const hud: Feature = {
         ctx.events.on('walls', ({ on }) => {
             h.flash(t(on ? 'walls.switchedOn' : 'walls.switchedOff'), 3500);
         });
+        // review R10 (lane rc2): the DJI RC 2 or its bridge stopped by itself; the stale rule already stopped the motors
+        onRadioLost(() => h.flash(t('usb.rc2.lost'), 8000));
         ctx.keys.on('hud.toggle', (e) => {
             // any form field (a slider too) keeps its H; a screen or a panel on top has its own keys
             if (e.repeat || isFormField(e.target) || document.querySelector('#ui .screen, #ui .panel')) return;

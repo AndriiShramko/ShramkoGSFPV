@@ -328,4 +328,34 @@ describe('a later visit', () => {
         expect(other.calls).toEqual(expect.arrayContaining(['open', 'claim 0', 'release 0', 'close']));
         expect(await R.findSavedRc2(() => saved, null)).toBeNull();
     });
+
+    it('review R10: an unplug in flight reaches the flight view once; letting go (closed) says nothing', async () => {
+        const mod = R as unknown as Record<string, unknown>;
+        expect(typeof mod.onRadioLost).toBe('function');
+        expect(typeof mod.tellWhenLost).toBe('function');
+        const told: string[] = [];
+        const off = R.onRadioLost((why) => told.push(why));
+        try {
+            const saved = { deviceKey: 'hid:2ca3:1021:DJI RC 2:12:d' } as Profile;
+            const dev = new FakeRc2();
+            const hub = new FakeHub([dev]);
+            const got = await R.findSavedRc2(() => saved, hub);
+            expect(got?.kind).toBe('hid');
+            hub.disconnect(dev);
+            await until(() => told.length > 0);
+            expect(told).toEqual(['unplug']);
+            const quiet = new FakeRc2();
+            const again = await R.findSavedRc2(() => saved, new FakeHub([quiet]));
+            again!.hid!.close();
+            await until(() => quiet.calls.includes('close'));
+            expect(told).toEqual(['unplug']);
+            const bare = { onEnd: null as ((why: 'unplug' | 'error' | 'closed') => void) | null };
+            R.tellWhenLost(bare);
+            bare.onEnd!('error');
+            bare.onEnd!('closed');
+            expect(told).toEqual(['unplug', 'error']);
+        } finally {
+            off();
+        }
+    });
 });
