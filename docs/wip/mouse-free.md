@@ -83,7 +83,7 @@ R review fixes (independent review of the lane, findings MF-R1 to MF-R6, all min
   probe was not rerun after R-b (only the ceiling entry changed).
 - [x] MF-R6 (clash with lanes rooms-public and rc2 in the probe): no change in the lane (the key 9 and the
   rc2 verdict exist only on the other branches); under For the lead.
-- Refuted: none; MF-R1 to MF-R6 were all confirmed by the code. R-b = the commit that adds this text.
+- Refuted: none; MF-R1 to MF-R6 were all confirmed by the code. R-b = a61b45e1.
 
 ## Decisions
 
