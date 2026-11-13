@@ -29,9 +29,38 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   `python -X utf8 apps/rooms/tests/make_fixtures.py`.
 - Clock: JSON `ping {t}` -> `pong {t, s}` (`s` = serverMs, the clock of the snapshot header).
 
-### Stage R2: client core (not started)
-- First step of R2: `pnpm install --frozen-lockfile` in this worktree (R1 needed no Node and did not run it; the
-  submodule `packages/sonic-fpv` is initialised at 83ce612).
+### Stage R2: client core - DONE
+- [x] `pnpm install --frozen-lockfile` in this worktree
+- [x] `apps/fly/src/rooms/codec.ts` (pose 36 B, snapshot), `clock.ts` (`ServerClock`, median of 8), `interp.ts`
+      (`RemoteTrack`, 150 ms playout, Hermite + slerp, 250 ms extrapolation then frozen), `pose.ts` (`simPose`,
+      `PoseClock` 15 Hz) (commit 9ccc0ab1)
+- [x] `socket.ts` (`RoomSocket`: hello, welcome, joined, left, snapshots, ping 250 ms x8 then 20 s, backoff 1-15 s,
+      fatal codes stop), `api.ts` (`createRoom`, `getRoom`, `listRooms`, `socketUrl`, `ROOM_ID_RE`) (commit cbbd6908)
+- [x] `remote-stage.ts` (`RemoteStage.show/dispose`, root `rooms-remotes`), `builtin/rooms.ts` install(), reason
+      `'room'` in `context.ts`, note in `scene-host.ts`, dev proxy `/api/rooms` (ws) in `vite.config.ts` (commit e27228b6)
+- [x] checks: `pnpm vitest run tools/bench/test/rooms-{codec,interp,socket,a6}.test.ts tools/bench/test/train1-contract.test.ts`
+      5 files, 13 tests pass; `pnpm --filter ./apps/fly typecheck` exit 0, `pnpm --filter ./tools/bench typecheck` exit 0.
+      Controls: in-test (codec with x and z swapped fails `x-and-z-differ`; mean clock moved > 50 ms, median < 1 ms; no
+      playout buffer p99 0.399 m / max 0.622 m vs bounds 0.05 / 0.15; room 2 never sees A's pose; perturb changes the
+      A6 hash) and `neg_control.py --ref train1-base` NEG OK for all four test files (old code = modules absent).
+
+**For stage R3 (screens, speech, probe): what exists**
+- `window.__gsfpv.rooms` (RoomsHook) is set on every page: without `?room=` `{state:'off', room:null, ...}` and nothing
+  runs. With `?room=<id>` filled: `state` (connecting/joined/lost/off), `room`, `slot`, `members` (sorted by slot),
+  `remotes` (slot, pos, ageMs; drawn this frame), `problem` (`bad-id`, `scene`, or a fatal server code `no-room`,
+  `full`, `version`, `hello`, or `left`). NOT filled yet: `said` (stays []), names: the nick sent is `''`, so the server
+  names everyone `Pilot-NNNN` (R3: `rooms.nick` pref in `defs/rooms.ts`, pass it as `nick` in `builtin/rooms.ts`).
+- Hooks for R3 in `builtin/rooms.ts`: the `RoomSocket` callbacks `joined` / `left` (speak there), `sock.members`,
+  `tracks` (per slot `RemoteTrack`; `sample(serverNow)` gives pos for Shift+O distance and side), the own pose is
+  `ctx.session.shownSim`. Create a room with `createRoom('', {scene:{id: ctx.scene.id, render}, shared: sharedOf(...)})`
+  then navigate or re-install with `?room=<id>`; the host key goes into `RoomSocketOptions.hostKey`.
+- Share link decision for R3: build `/fly/?scene=<id>&<shared params>&room=<rid>` (boot.ts opens a scan only from
+  `?scene=`; a bare `?room=` lands on the picker, see "For the lead").
+- Rig: `python -X utf8 -u apps/rooms/rooms.py --host 127.0.0.1 --port 8091` plus `pnpm --filter ./apps/fly dev`
+  (proxy `/api/rooms` with ws to 8091). Node tests start rooms.py themselves (`tools/bench/test/rooms-socket.test.ts`,
+  free port, killed in afterAll and on process exit).
+- Not done in R2: name tags, member list on screen, panel, Shift+L/Shift+O, speech, live region, near call, page probe;
+  remote drones are a box primitive in the slot's colour (grey when frozen), not the drones3d model.
 ### Stage R3: screens, speech, probe (not started)
 
 ## Findings
@@ -54,6 +83,14 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - Joins are counted at the upgrade (20/min/address), creates at POST (10/h/address, 200/day in all).
 - The blocklist only stops names that pretend to speak for the site (admin, moderator, gsfpv, ...): there is no free text.
 - Snapshots carry only members that have sent a pose; a room with no pose sends nothing.
+- R2: remote drones are a simple box primitive (body, two arms, nose) in the slot's colour, 0.25 m span (estimate),
+  grey when frozen: the drones3d kit costs a build per pilot and a drone in flight is a few pixels.
+- R2: the time of a remote pose is the sender's sim tick (1 ms each) mapped to server ms by the smallest
+  (serverMs - tick) of the last 64 poses; a tick going back or a jump over 500 ms (pause, new scene) restarts the track.
+- R2: the room's shared settings go into the visit layer with `applyShared` but no `beginSharedVisit` (no Keep/Reset
+  chip in a room); the drone is left out (each pilot flies his own). Poses go up only once the room's scan is flown.
+- R2: interpolation bounds measured by `rooms-interp.test.ts` on a home-link model (30 ms + 0-40 ms jitter, 10% of
+  poses and snapshots dropped, in order): p99 0.0250 m, max 0.1002 m; bounds in the test 0.05 / 0.15 m.
 - nginx `/api/rooms` rate zone 30 r/min burst 20 (estimate); `release-rooms.sh` checks health through `gsfpv-web`'s
   busybox wget inside the network, because nginx gets the locations only in the next release step.
 
@@ -64,6 +101,10 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   "## Deploying a release"; `nginx.conf`: zones after the `gsfpv_tg` line, two locations after `/api/health`.
 - Not in the lane's paths, maybe wanted: a gate or CI line that runs `python -m unittest discover -s apps/rooms/tests`
   (42 tests, about 16 s; `test_rates` and `test_relay` use real time, so a loaded machine may slow them).
+- `apps/fly/src/app/boot.ts` (not ours): a bare `/fly/?room=<id>` (the plan's link) shows the scene picker, because
+  only `?scene=` starts a flight and features install only in flight. Wanted: when `?room=` has no `?scene=`, GET
+  `/api/rooms/<id>` and `go(room.scene.id)`. Until then R3 writes the share link with `?scene=` and the shared params.
+- Sound mode (Fly by Sound) needs nothing from R2; R3 needs `sayVia` for joins, leaves and Shift+O.
 - Sound mode (Fly by Sound) needs nothing from R1; R3 speaks joins, leaves and Shift+O through `sayVia`.
 
 ## Not verified
@@ -71,9 +112,15 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - The container limits (64 MB, 0.25 CPU, pids 8) and alpine: the Docker engine is not running here.
 - nginx syntax (`nginx -t`) of the new zones and locations: no nginx binary here; checked only by the route tests.
 - `deploy/release-rooms.sh`: `bash -n` only; it was never run (no SSH, no deploy in this lane).
+- R2: the feature in a page (`builtin/rooms.ts`, `remote-stage.ts`) never ran in a browser: no page probe in R2 (the
+  plan puts the two-page probe in R3). The tests' TypeScript is not typechecked (`tools/bench` tsconfig includes only
+  `src/`); vitest ran them. serverMs wraps after 49.7 days of service uptime: not handled by `interp.ts`.
 - The hub's nginx-proxy passing `Upgrade` to our nginx (rooms-plan.md 2.1 says not verified on this hub).
 
 ## Cost notes
 - R1: about 30 replies. Most turns: a test that hung (a drain loop that read snapshots forever) and the Write tool
   turning `\uXXXX` in a test into real letters (gate B18); cheaper: give every read loop a deadline from the start and
   write non-ASCII test strings with chr() or run an ASCII check right after writing a test.
+- R2: about 33 replies. Most turns: reading the code around the join (boot, scene-host, shared-visit, bridge, a6) to
+  find the entry points one by one; cheaper: the plan's code map with the boot rule "only ?scene= starts a flight" and
+  the exact helper names (applyShared, readShared, runDeterminism's loop) would have saved about 8 replies.
