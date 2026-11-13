@@ -236,6 +236,7 @@ export class DjiRc2Device {
      */
     private async askLoop(gen: number): Promise<void> {
         let seq = 1;
+        let last = this.clock();
         this.inflight = [];
         while (gen === this.gen && this.ch) {
             const t0 = this.clock();
@@ -243,15 +244,23 @@ export class DjiRc2Device {
                 this.inflight.shift();
                 this.unanswered++;
             }
-            if (this.inflight.length < RC2_INFLIGHT) {
+            // one request a wake; a wake that came late (a busy page may wake this loop only once a frame) fills every
+            // free slot at once, so the answers of one late wake keep coming during the next frame
+            const late = t0 - last > 2 * RC2_POLL_MS;
+            last = t0;
+            const out: Promise<unknown>[] = [];
+            while (this.inflight.length < RC2_INFLIGHT && (late || out.length === 0)) {
                 this.inflight.push(t0);
+                out.push(this.usb.transferOut(this.ch.epOut, stickRequest(seq)));
+                seq = (seq + 1) & 0xffff;
+            }
+            if (out.length) {
                 try {
-                    await this.usb.transferOut(this.ch.epOut, stickRequest(seq));
+                    await Promise.all(out);
                 } catch {
                     if (gen === this.gen) void this.stop('error', true);
                     return;
                 }
-                seq = (seq + 1) & 0xffff;
                 if (gen !== this.gen) return;
             }
             const left = RC2_POLL_MS - (this.clock() - t0);

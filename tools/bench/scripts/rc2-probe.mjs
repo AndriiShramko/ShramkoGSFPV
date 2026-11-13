@@ -114,12 +114,17 @@ function installFakeRc2(cfg) {
         async selectConfiguration(v) { this.configuration = { configurationValue: v }; },
         async claimInterface() { counts.claims++; if (cfg.refuse) throw new DOMException('Unable to claim interface.', 'NetworkError'); },
         async releaseInterface() {},
-        async transferOut(_ep, d) { counts.requests++; queue.push(reply(d[6] | (d[7] << 8), values())); wake?.(); return { status: 'ok', bytesWritten: d.length }; },
+        async transferOut(_ep, d) {
+            counts.requests++;
+            const b = reply(d[6] | (d[7] << 8), values());
+            // the answer arrives 2 ms after its request, whatever the page reads (estimate; the real time was not measured)
+            setTimeout(() => { queue.push(b); wake?.(); }, 2);
+            return { status: 'ok', bytesWritten: d.length };
+        },
         async transferIn() {
             while (!queue.length) await new Promise((r) => { wake = r; });
             counts.replies++;
             const b = queue.shift();
-            await new Promise((r) => setTimeout(r, 2)); // a bus round trip (estimate; the real one was not measured)
             return { status: 'ok', data: new DataView(b.buffer) };
         }
     };
@@ -241,11 +246,11 @@ if (only.includes('usb')) {
         await page.waitForTimeout(1500);
         const s0 = await state(page);
         // the arm switch the wizard took (the left dial) stays where it was on the check screen: centred style needs none
-        await page.evaluate(() => { const w = window.__rc2Watch; if (w) Object.assign(w, { maxAge: 0, ageOver100: 0, maxFrame: 0, frames: 0, blocks: {} }); window.__rc2Hands.fixed.T = 0.6; });
+        await page.evaluate(() => { const w = window.__rc2Watch; if (w) Object.assign(w, { maxAge: 0, ageOver100: 0, maxFrame: 0, frames: 0, blocks: {}, replies0: window.__rc2Probe?.replies ?? 0, t0: performance.now() }); window.__rc2Hands.fixed.T = 0.6; });
         note.climb = [];
         for (let i = 0; i < 10; i++) { await page.waitForTimeout(250); const x = await state(page); note.climb.push({ alt: x.alt, motors: x.throttle?.centre?.arm ?? null, crashed: x.crashed }); }
         const s1 = await state(page);
-        note.gateWatch = await page.evaluate(() => { const w = window.__rc2Watch; const c = window.__gsfpv?.lastCrash; return { ...w, last: undefined, lastCrash: c ? JSON.stringify(c).slice(0, 300) : null }; });
+        note.gateWatch = await page.evaluate(() => { const w = window.__rc2Watch; const c = window.__gsfpv?.lastCrash; return { ...w, last: undefined, repliesPerS: Math.round(((window.__rc2Probe?.replies ?? 0) - w.replies0) * 1000 / (performance.now() - w.t0)), lastCrash: c ? JSON.stringify(c).slice(0, 300) : null }; });
         note.start = { alt: s0.alt, armed: s0.armed, throttle: s0.throttle, card: s0.card };
         note.up = { alt: s1.alt, armed: s1.armed, crashed: s1.crashed, throttle: s1.throttle, card: s1.card };
         // the climb: motors on (centred style: centre.arm 'on') and +1 m over the start within the 2.5 s. The drone is not
