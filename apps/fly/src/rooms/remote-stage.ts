@@ -16,12 +16,12 @@ const SPAN_M = 0.25;
 /** a 5-inch propeller's disc, metres (5 in = 0.127 m) */
 const PROP_M = 0.127;
 /**
- * The near rule (lane look, docs/wip/look.md, table "Distance"): nearer to the camera than this a drone is not drawn, body
- * and name tag. Measured by tools/bench/src/rooms-shot-live.ts (LOOK=before): the drone's box on B's view covers 6.7 % of
- * the view at 0.25 m, 1.3 % at 0.5 m, 0.3 % at 1 m (about 0.32 % / d^2); more than 2 % (a box over a seventh of the width,
- * across the middle of the view) blocks the view, and 2 % is reached at about 0.4 m.
+ * The near rule (lane look, docs/wip/look.md, tables "Distance"): nearer to the camera than this a drone is not drawn, body
+ * and name tag. Measured by tools/bench/src/rooms-shot-live.ts (LOOK=after, this model with its rotor discs): the drone's
+ * box on B's 1280x800 view covers 0.69 % of the view at 1 m, 0.16 % at 2 m, 0.04 % at 4 m (about 0.69 % / d^2); a box over
+ * 2 % of the view (wider than a seventh of the view, across its middle) blocks the view, and 2 % is reached at 0.59 m.
  */
-export const NEAR_HIDE_M = 0.4;
+export const NEAR_HIDE_M = 0.6;
 /** the fade band above NEAR_HIDE_M, metres: the drone and its tag come in over it instead of popping (an estimate) */
 export const NEAR_FADE_M = 0.2;
 
@@ -38,6 +38,8 @@ const SLOT_COLOURS: readonly [number, number, number][] = [
 const LOST: [number, number, number] = [0.45, 0.45, 0.45];
 /** the rotor discs and the nose: the slot colour mixed this far towards white, so the parts read apart */
 const LIGHT = 0.55;
+/** the body and the arms: the slot colour this dark, against the light discs */
+const DARK = 0.6;
 /** motor offset from the centre on each axis (the arms run on the diagonals), metres */
 const MOTOR_M = (SPAN_M / 2) * Math.SQRT1_2;
 /** the drone's local half sizes, metres (x: over the rotor discs, y: the height, z: over the rotor discs): its screen box */
@@ -109,7 +111,7 @@ export class RemoteStage {
         d.frozen = frozen;
         const c = frozen ? LOST : SLOT_COLOURS[slot % SLOT_COLOURS.length];
         const l = frozen ? LOST : lighter(c);
-        d.body.emissive = new Color(c[0], c[1], c[2]);
+        d.body.emissive = new Color(c[0] * DARK, c[1] * DARK, c[2] * DARK);
         d.light.emissive = new Color(l[0], l[1], l[2]);
         d.body.update();
         d.light.update();
