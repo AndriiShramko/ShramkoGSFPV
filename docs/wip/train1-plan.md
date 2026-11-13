@@ -16,15 +16,10 @@ level 3, never run the catalogue generator, never push.
 | voice | `voice`, `C:/dev/gsfpv-voice`; package branch `voice-feedback`, `C:/dev/sonic-voice` | Nothing changes on the page. The owner gets, from one recording package and one command, a one-page summary: what the pilot said and when, what happened then, the hardest places. R15-R16. |
 
 Decisions that differ from the lead's default, with the reason:
-1. The timed race in a room goes to train 2: `rooms-plan.md` 2.4 and 4D need the lap timer of lane tracks (built in this
-   train, not yet released), a race state on the server, a countdown and a table: a stage of its own, not small.
-2. Blind pilots hear the others as speech in train 1 (joins, leaves, who is around, a near call). The motor sound of other
-   drones needs a package contract change (`SonicFrameInput.others`), a new cue and a listening proof; only one lane may
-   move the package pin in a train (voice does), so it is train 2.
-3. Server tracks are generator courses only (no free text, no edit token, no votes, no admin tab): nothing a pilot types is
-   shown to others, so train 1 needs no moderation. Editor, authorship and voting are train 2.
-4. Voice is built and tested on synthetic packages only. No agent opens a real recording or its transcript (voice and
-   health data, `voice-feedback-plan.md` 7); the first run on real packages is the owner's decision.
+1. The timed race in a room goes to train 2: `rooms-plan.md` 2.4 and 4D need the lap timer of lane tracks (built in this train, not yet released), a race state on the server, a countdown and a table: a stage of its own, not small.
+2. Blind pilots hear the others as speech in train 1 (joins, leaves, who is around, a near call). The motor sound of other drones needs a package contract change (`SonicFrameInput.others`), a new cue and a listening proof; only one lane may move the package pin in a train (voice does), so it is train 2.
+3. Server tracks are generator courses only (no free text, no edit token, no votes, no admin tab): nothing a pilot types is shown to others, so train 1 needs no moderation. Editor, authorship and voting are train 2.
+4. Voice is built and tested on synthetic packages only. No agent opens a real recording or its transcript (voice and health data, `voice-feedback-plan.md` 7); the first run on real packages is the owner's decision.
 
 ## 2. Code map (entry points by name)
 
@@ -181,18 +176,15 @@ against every keyboard layout: test with `keymapProblems` before taking one). Ne
 
 ## 8. Merge order and deploy order
 
-Merge into `train1-base` (or straight into main by the integration stage): **voice, tracks, rooms**. Voice first: the
-package branch is merged into the package main and pushed, then the pin; its simulator diff is two paths. Tracks second: it
-owns the lockfile (`pnpm install` once after the merge). Rooms last: the second hunks of `nginx.conf` and README. After the
-three merges: `scripts/gen-catalog.ts` once, then level 3.
+Merge into `train1-base` (or straight into main by the integration stage): **voice, tracks, rooms**. Voice first: the package branch is merged into the package main and pushed, then the pin; its simulator diff is two paths. Tracks second: it owns the lockfile (`pnpm install` once after the merge). Rooms last: the second hunks of `nginx.conf` and README. After the three merges: `scripts/gen-catalog.ts` once, then level 3.
 
-Deploy, each step with neighbour snapshots and the hub lock: (1) the sound package is public: push its main before the
-simulator pin. (2) API: `release-api.sh` (`tracks.py`, `server.py`); the route is unreachable until nginx has its location.
-(3) rooms container: `release-rooms.sh` (`docker compose up -d gsfpv-rooms` creates only the new container; health from
-inside the network). (4) nginx: `release-nginx.sh` with both lanes' locations (`nginx -t`, reload). (5) static: `ship.sh`
-with the allow list `gsfpv-web,gsfpv-api,gsfpv-rooms`; rooms menu still behind `?rooms=1`. (6) live checks: tracks list
-and file routes, the two-browser rooms check with `?rooms=1`. (7) a second static release that shows the rooms menu item.
-Rollback in reverse order. Voice deploys nothing.
+Deploy, each step with neighbour snapshots and the hub lock:
+1. The sound package is public: push its main before the simulator pin.
+2. API: `release-api.sh` (`tracks.py`, `server.py`); the route is unreachable until nginx has its location.
+3. Rooms container: `release-rooms.sh` (`docker compose up -d gsfpv-rooms` creates only the new container; health from inside the network).
+4. nginx: `release-nginx.sh` with both lanes' locations (`nginx -t`, reload).
+5. Static: `ship.sh` with the allow list `gsfpv-web,gsfpv-api,gsfpv-rooms`; the rooms menu still behind `?rooms=1`.
+6. Live checks: the tracks list and file routes, the two-browser rooms check with `?rooms=1`; then a second static release that shows the rooms menu item. Rollback in reverse order. Voice deploys nothing.
 
 ## 9. Integration probes (final stage, once)
 
@@ -221,14 +213,10 @@ beacon stage 2 (walls lessons, scans without a track, the spoken list offering t
 ## 11. Risks
 
 - The hub's nginx-proxy may not pass `Upgrade` (not in this repository, not verified): rooms then needs a polling fallback.
-- Walls differ between pilots (refined, floater filter, ceiling): a saved course may cut a wall for someone; the load check
-  refuses it there. Whether gates and drones are hidden correctly behind splats (depth) is unknown until the first probe.
+- Walls differ between pilots (refined, floater filter, ceiling): a saved course may cut a wall for someone; the load check refuses it there. Whether gates and drones are hidden correctly behind splats (depth) is unknown until the first probe.
 - The free-space pass on a big scan may be slow or large: T1 measures it before T2 builds on it.
 - Anonymous `POST /api/tracks` and `POST /api/rooms`: only rates and caps guard them; the numbers are estimates.
 - Three lanes regenerate nothing: if a level-1 test fails only because a generated file is stale, the lane notes it.
-- A third container on the hub is the owner's decision by default yes (`rooms-plan.md` section 4); the first deploy of
-  `gsfpv-rooms` must not touch neighbours.
-- Voice: PyAV on MediaRecorder WebM and Whisper word times on Russian and Polish speech are unverified; the consent and
-  privacy texts may not cover automated transcription (the lane reports the missing sentence, the lead adds it).
-- The lead's working copy `C:/dev/gsfpv-v03` may ship a release meanwhile: the integration stage merges main into the
-  train before level 3.
+- A third container on the hub (`rooms-plan.md` section 4, owner's decision 1, default yes); the first deploy of `gsfpv-rooms` must not touch neighbours.
+- Voice: PyAV on MediaRecorder WebM and Whisper word times on Russian and Polish speech are unverified; the consent and privacy texts may not cover automated transcription (the lane reports the missing sentence, the lead adds it).
+- The lead's working copy `C:/dev/gsfpv-v03` may ship a release meanwhile: the integration stage merges main into the train before level 3.
