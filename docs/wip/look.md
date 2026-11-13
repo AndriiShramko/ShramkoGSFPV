@@ -9,15 +9,16 @@ Worktree C:/dev/gsfpv-rooms, branch look from origin/main bbc9e75e. Ports 5600-5
 - [x] L1.3 Near rule `nearAlpha` in apps/fly/src/rooms/remote-stage.ts (98bbe062, retuned 67169a7e: NEAR_HIDE_M 0.6 m, fade band 0.2 m, from the after table); tags.ts uses the same function; a paused pilot is not drawn grey (interp.ts). Hook field rooms.drawn (slot, distM, alpha, box, share) for the probes.
 - [x] L1.4 Model (98bbe062, 67169a7e): dark slot-coloured body and two diagonal arms, four light rotor discs (0.127 m) over the motors (0.25 m diagonal), light nose on -z, rotated by the remote's quaternion; per-drone materials for the fade. Proof pictures (d9a34993 probe): U:/Temp/gsfpv-train1c/shots/look-after-start.png, look-remote-2m.png, look-remote-4m.png, look-remote-8m.png.
 - [x] L1.5 Unit test tools/bench/test/rooms-look.test.ts (5 passed; negative control NEG OK with origin/main tags.ts + interp.ts: 3 of 5 fail, AssertionError). rooms-two-page.ts nearHidden + tagAtDistance (6e8aa418, 64c7cd36): 17 of 17 checks pass on the local release 67169a7e, evidence/2026-11-13/train1c/rooms-two-page.json.
-- [~] L2.1 Course hint vs lap block (TR-11): apps/fly/src/course/hud.ts watches the flash note (#ui class/style, the note's
+- [x] L2.1 (ba68ff3d) Course hint vs lap block (TR-11): apps/fly/src/course/hud.ts watches the flash note (#ui class/style, the note's
   text and hidden) and sets --course-push from course/note-slot.ts pushUnderNote (block top >= note bottom + 6 px, held until a
   resize); hud.css adds it to the fixed slot. Unit test tools/bench/test/course-hud-note.test.ts 3 passed.
-- [~] L2.2 tracks-page.ts hintClearOfTimer (all four languages, 1920x1080, 1366x768, 844x390 as a touch phone; HINT_ONLY=1 runs it alone).
+- [x] L2.2 (ba68ff3d, ccbaa0a2) tracks-page.ts hintClearOfTimer (all four languages, 1920x1080, 1366x768, 844x390 as a touch phone; HINT_ONLY=1 runs it alone).
 - [x] L2.2 negative control: release built with origin/main hud.ts + hud.css (bbc9e75e), HINT_ONLY=1 tracks-page: FAIL, 6 of 12
   meet (en, pl, ru at 1366x768 and 844x390: note 86..135.7 px, lap block from 120 px; 1920x1080 clear, note 44..93.7; es clear,
   its hint is one line, 31 px). evidence/2026-11-13/train1c/tracks-page-hint-origin-main.json.
-- [ ] L2.3 pictures look-course-1920/1366/844.png.
-- [ ] L2.4 full tracks-page on the local release, evidence/2026-11-13/train1c/tracks-page.json.
+- [x] L2.3 U:/Temp/gsfpv-train1c/shots/look-course-1920.png, -1366.png, -844.png (en, the tallest hint: en, pl, ru 50 px, es 31 px).
+  1920: hint 44..93.7 px, lap block from 120 (no push). 1366 and 844 (note under the buttons): hint ends 135.7, block from 142.
+- [x] L2.4 full tracks-page on the local release of ccbaa0a2: 19/19 checks pass, hintClearOfTimer 12 of 12 clear; evidence/2026-11-13/train1c/tracks-page.json.
 
 ## Notes
 
@@ -61,3 +62,4 @@ about 30 px under the tag. 8 m: a few pixels under the tag; the tag is what find
 
 ## Cost notes
 - Most turns: finding a free 8 m line of sight in the small scan (camera inside the ceiling, then the voxel ray search) and the fresh-release rebuilds; a ready probe hook that sets a remote pose at a camera-relative distance would have saved about 6 turns.
+- L2: most turns went to waiting for the GPU lock (6 x 20 s) and one probe run lost to esbuild __name in page.evaluate; a shared helper for reading element boxes in the page would have saved a full rebuild-free rerun.
