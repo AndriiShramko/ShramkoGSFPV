@@ -13,6 +13,9 @@
 //            on page load; "Fly through the RC bridge" connects, the check screen opens, stick frames arrive.
 //            With BRIDGE_EXPECT=blocked (the page served with a CSP that lacks the bridge) the pass is the reverse:
 //            the helper says the bridge does not answer and the browser logged a CSP refusal.
+//            On an https base (the live site) the probe first grants Chrome's Local Network Access permission for the
+//            site (grantLoopback: what a pilot's Allow does; lane rc2-lna) and records which call worked.
+//   bridge-nogrant  (only when named) a fresh profile without that grant: what the helper says, after how many ms.
 // Pass needs every check of every run. Against a build of origin/main (no RC 2 support) usb and refused must fail.
 // Usage: node rc2-probe.mjs <base with the locale, e.g. http://localhost:5393/en> <out.json> [usb,refused,bridge]
 // Prints ONE last line of JSON {pass, checks}; exit 0 only on pass.
@@ -374,10 +377,45 @@ if (only.includes('refused')) {
     await ctx.close();
 }
 
+/**
+ * On an https base Chrome's Local Network Access check stands between the page and ws://127.0.0.1 (lane rc2-lna,
+ * docs/wip/rc2-lna.md: Chrome 156 asks for 'loopback-network'). A pilot answers Chrome's prompt with Allow; headless
+ * nobody does, so the probe grants it for the site's origin before the press. The first call that does not throw is
+ * kept: CDP Browser.setPermission {name:'loopback-network'}, then Playwright's grantPermissions(['local-network-access'])
+ * (measured on 2026-11-13: both open the socket; CDP 'local-network-access' or 'local-network' alone do not).
+ * http://localhost bases need no grant (the check does not apply to a local page): nothing is called there.
+ */
+async function grantLoopback(page, note) {
+    const origin = new URL(base).origin;
+    if (!base.startsWith('https:')) { note.grant = 'not needed (http base)'; return; }
+    const tried = [];
+    const { targetInfo } = await curCdp.send('Target.getTargetInfo');
+    const bcdp = await browser.newBrowserCDPSession();
+    const calls = [
+        ['cdp Browser.setPermission loopback-network', () => bcdp.send('Browser.setPermission', { permission: { name: 'loopback-network' }, setting: 'granted', origin, browserContextId: targetInfo.browserContextId })],
+        ['playwright grantPermissions local-network-access', () => page.context().grantPermissions(['local-network-access'], { origin })]
+    ];
+    for (const [name, call] of calls) {
+        try { await call(); note.grant = name; break; } catch (e) { tried.push(`${name}: ${String(e?.message ?? e).split('\n')[0].slice(0, 160)}`); }
+    }
+    note.grantTried = tried;
+    if (!note.grant) note.grant = 'none worked';
+}
+/** in the page: what navigator.permissions says for the candidate names (an unknown name: its TypeError) */
+const permStates = (page) => page.evaluate(async () => {
+    const r = {};
+    for (const n of ['local-network-access', 'local-network', 'loopback-network']) {
+        try { r[n] = (await navigator.permissions.query({ name: n })).state; } catch (e) { r[n] = String(e?.name ?? e); }
+    }
+    return r;
+});
+
 if (only.includes('bridge')) {
     if (!only.includes('usb')) await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
     await run('bridge', usbCtx, async (page, note, csp) => {
+        if (!bridgeBlocked) await grantLoopback(page, note);
         await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
+        if (base.startsWith('https:')) note.permissions = await permStates(page);
         await openHelper(page);
         await page.waitForTimeout(1500);
         note.socketsBeforePress = (await state(page)).probe.sockets;
@@ -408,6 +446,34 @@ if (only.includes('bridge')) {
         checks['bridge.cspQuiet'] = csp.length === 0;
     });
     checks['bridge.noPageErrors'] = (errorsOf.bridge ?? ['not run']).length === 0;
+}
+
+// bridge-nogrant (only when asked for): a fresh profile on an https base without the Local Network Access grant, the
+// path of a pilot who has not answered Chrome's prompt yet (headless: the prompt never gets an answer). Records what the
+// helper says and after how many ms; passes when the line says something other than 'opening' within 10 s and the page
+// threw nothing. No grant, no Allow: what the pilot sees after Allow is the 'bridge' run.
+if (only.includes('bridge-nogrant')) {
+    const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+    await ctx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
+    await run('bridge-nogrant', ctx, async (page, note) => {
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
+        if (base.startsWith('https:')) note.permissions = await permStates(page);
+        await openHelper(page);
+        const t0 = Date.now();
+        await page.locator('[data-action=usb-rc2-bridge]').click();
+        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 }).catch(() => undefined);
+        note.afterMs = Date.now() - t0;
+        const said = await page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : null; });
+        note.sayState = said ? said.state : 'flying';
+        note.say = said?.text ?? '';
+        // 3 s later: still the same line (a pending prompt is not given up), and how many sockets the page made
+        await page.waitForTimeout(3000);
+        note.sayStateAfter3s = await page.evaluate(() => document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state') ?? 'gone');
+        note.sockets = (await state(page)).probe.sockets;
+        checks['bridgeNoGrant.answered'] = !!note.sayState && note.sayState !== 'opening';
+    });
+    checks['bridgeNoGrant.noPageErrors'] = (errorsOf['bridge-nogrant'] ?? ['not run']).length === 0;
+    await ctx.close();
 }
 if (usbCtx) await usbCtx.close();
 await browser.close();
