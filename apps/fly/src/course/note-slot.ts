@@ -6,9 +6,10 @@ export const NOTE_GAP_PX = 6;
 
 /**
  * How far the lap block must move down so that it starts NOTE_GAP_PX under the note, from both boxes as they stand with no
- * push; never less than the push held before, so the block does not jump back up when the note hides.
+ * push; never less than the push held before, so the block does not jump back up when the note hides. A block that is not
+ * laid out (H: display none, its box all zeros; review LK-1) keeps the held push.
  */
-export function pushUnderNote(note: { top: number; bottom: number } | null, block: { top: number }, held: number): number {
-    if (!note || note.bottom <= note.top) return held;
+export function pushUnderNote(note: { top: number; bottom: number } | null, block: { top: number; bottom: number }, held: number): number {
+    if (!note || note.bottom <= note.top || block.bottom <= block.top) return held;
     return Math.max(held, Math.ceil(note.bottom + NOTE_GAP_PX - block.top));
 }

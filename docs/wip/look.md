@@ -6,7 +6,7 @@ Worktree C:/dev/gsfpv-rooms, branch look from origin/main bbc9e75e. Ports 5600-5
 
 - [x] L1.1 Reproduced locally (a0d74980 + this commit): `tools/bench/src/rooms-shot-live.ts` local mode (LOOK=before|after, no SITE) on a release of bbc9e75e; U:/Temp/gsfpv-train1c/shots/look-before-start.png shows a flat grey box across the middle of B's view.
 - [x] L1.2 Distance table (below), evidence/2026-11-13/train1c/rooms-look-before.json.
-- [x] L1.3 Near rule `nearAlpha` in apps/fly/src/rooms/remote-stage.ts (98bbe062, retuned 67169a7e: NEAR_HIDE_M 0.6 m, fade band 0.2 m, from the after table); tags.ts uses the same function; a paused pilot is not drawn grey (interp.ts). Hook field rooms.drawn (slot, distM, alpha, box, share) for the probes.
+- [x] L1.3 Near rule `nearAlpha` in apps/fly/src/rooms/remote-stage.ts (98bbe062, retuned 67169a7e: NEAR_HIDE_M 0.6 m from the after table, fade band 0.2 m an estimate); tags.ts uses the same function; a paused pilot is not drawn grey (interp.ts). Hook field rooms.drawn (slot, distM, alpha, box, share) for the probes.
 - [x] L1.4 Model (98bbe062, 67169a7e): dark slot-coloured body and two diagonal arms, four light rotor discs (0.127 m) over the motors (0.25 m diagonal), light nose on -z, rotated by the remote's quaternion; per-drone materials for the fade. Proof pictures (d9a34993 probe): U:/Temp/gsfpv-train1c/shots/look-after-start.png, look-remote-2m.png, look-remote-4m.png, look-remote-8m.png.
 - [x] L1.5 Unit test tools/bench/test/rooms-look.test.ts (5 passed; negative control NEG OK with origin/main tags.ts + interp.ts: 3 of 5 fail, AssertionError). rooms-two-page.ts nearHidden + tagAtDistance (6e8aa418, 64c7cd36): 17 of 17 checks pass on the local release 67169a7e, evidence/2026-11-13/train1c/rooms-two-page.json.
 - [x] L2.1 (ba68ff3d) Course hint vs lap block (TR-11): apps/fly/src/course/hud.ts watches the flash note (#ui class/style, the note's
@@ -27,7 +27,7 @@ than the 250 ms extrapolation as a lost connection (frozen, grey). Why flat and 
 sits inside A's drone; the arms (1 cm thick, 25 cm long) and the nose box are seen edge-on from a few cm.
 
 Distance table, old code (release bbc9e75e), scene 39e63ce9, B paused 0.05 m over the start looking level at yaw 105 deg (8.72 m
-free by the voxel ray), A placed d m along B's view, turned 135 deg; share = box of the pixels that differ (level 40) from the same
+free by the voxel ray), A placed d m along B's view with B's body attitude (pitched nose down by the camera uptilt, not level; review LK-3) turned 135 deg; share = box of the pixels that differ (level 40) from the same
 view with A behind B (tags hidden in both), over 1280x800; the noise control (two reference shots) differed in 0 pixels.
 
 | d (m) | share of view | pixels | note |
@@ -42,8 +42,10 @@ view with A behind B (tags hidden in both), over 1280x800; the noise control (tw
 
 Threshold: blocking = a box over 2 % of the view (wider than a seventh of the view across its middle); share ~ 0.0032 / d^2 from
 the table gives 2 % at 0.4 m, so NEAR_HIDE_M = 0.4 and a fade band of 0.2 m (whole at 0.6 m, about 0.9 %).
+Replaced (review LK-3): that first tuning was on the old model; the code now has NEAR_HIDE_M 0.6 and NEAR_FADE_M 0.2, so a drone
+is whole at 0.8 m (from the after table below). The 0.2 m fade band is an estimate in both tunings, not measured.
 
-After (release 67169a7e, the new model, same view; A level, turned 135 deg), evidence/2026-11-13/train1c/rooms-look-after.json:
+After (release 67169a7e, the new model, same view; A pitched nose down by the camera uptilt, turned 135 deg), evidence/2026-11-13/train1c/rooms-look-after.json:
 
 | d (m) | share (pixels) | share (hook rooms.drawn, 3D box) | alpha | tag |
 |---|---|---|---|---|

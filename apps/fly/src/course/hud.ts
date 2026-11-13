@@ -66,7 +66,9 @@ export class CourseHud {
     /** Keeps the lap block out of the note's slot: under the note whenever both are up, and at the same place after the note hides. */
     private clearNote(): void {
         const note = this.watched;
-        if (this.el.hidden || !note || note.hidden || note.offsetParent === null) return;
+        // review LK-1: with H the block is display:none by CSS (#ui.hud-off) while its hidden attribute stays false; its box is
+        // then all zeros and would push it under the note from the top of the view. H back on changes #ui's class: measured again.
+        if (this.el.hidden || this.el.offsetParent === null || !note || note.hidden || note.offsetParent === null) return;
         const up = note.getBoundingClientRect();
         this.el.style.setProperty('--course-push', '0px');
         this.push = pushUnderNote(up, this.el.getBoundingClientRect(), this.push);

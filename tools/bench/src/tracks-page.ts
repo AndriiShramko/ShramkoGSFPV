@@ -254,8 +254,16 @@ async function hintClearOfTimer(browser: Browser, site: string, log: string[]): 
                     await sleep(400);
                     const v = await readHint(page);
                     const png = await page.screenshot();
-                    const clear = !!v.note && !!v.block && /Shift\+T/.test(v.text) && !meets(v.note, v.block) && v.block.bottom <= v.vh;
-                    rows.push({ lang, size: `${s.w}x${s.h}`, phone, gen: g.ok, hintUp: r.ok, clear, noteH: v.note ? Math.round(v.note.bottom - v.note.top) : null, ...v });
+                    // review LK-1: H off and on again (each flashes a note) must leave the lap block where it was
+                    await page.keyboard.press('KeyH');
+                    await sleep(400);
+                    await page.keyboard.press('KeyH');
+                    await sleep(400);
+                    const hh = await readHint(page);
+                    const hTop = hh.block ? +hh.block.top.toFixed(1) : null;
+                    const hStill = !!v.block && hTop !== null && Math.abs(hTop - v.block.top) <= 1;
+                    const clear = !!v.note && !!v.block && /Shift\+T/.test(v.text) && !meets(v.note, v.block) && v.block.bottom <= v.vh && hStill;
+                    rows.push({ lang, size: `${s.w}x${s.h}`, phone, gen: g.ok, hintUp: r.ok, clear, hStill, topAfterHH: hTop, noteH: v.note ? Math.round(v.note.bottom - v.note.top) : null, ...v });
                     pics.set(`${lang}-${s.w}`, png);
                 }
             } catch (err) {
