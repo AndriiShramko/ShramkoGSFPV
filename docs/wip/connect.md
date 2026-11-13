@@ -26,6 +26,13 @@ Stage C2-auto-connect:
 - [x] C2.5 `U:/Temp/gsfpv-train2/shots/connect-c2-controls-1920x1080.png` and `-844x390.png` looked at: 'Connect my controller' is the first, big green button with its hint under it, the old ways below, 'My controller is not in the list' as a closed details line at the end; at 844x390 the button and hint fit the first screen. An empty band of about 70 px under each hint (the empty status lines) is the old layout's. Also connect-c2-nohelper-line.png, connect-c2-{pad,returning,nohelper}.png
 - [x] C2.6 (c) on the helper side: `tools/rc-bridge/rc_bridge.py` pick_device: the RC 2 (2CA3:1021) first, else the first other 2CA3 device that is not in NOT_CONTROLLERS (the drone 2CA3:0020), logged as an untested DJI controller, only the stick request sent; test_rc_bridge.py 23 of 23 OK; neg control NEG OK (old rc_bridge.py: Duml 1 error, pick_device missing). Not run against a real other DJI controller (none here)
 
+Stage C3-helper-start:
+- [x] C3.1 (37668e3b) `tools/rc-bridge/start-dji-helper.cmd`: finds the first Python that really runs (`py -3`, `python`, `python3`, 3.8+), says how to get one, offers start with Windows once (Y only; one file in the pilot's own Startup folder); `rc_bridge.py` first_look at start (one stick answer, then let go, before listening), plain() words for every reason, READ_LINE when the page reads the controller, no word bridge in the window; `tools/rc-bridge/.gitattributes` keeps the .cmd CRLF; test_rc_bridge.py 32 of 32 OK (9 new: Start 5, StartCmd 4 run the real .cmd with APPDATA/LOCALAPPDATA in a temp folder); neg control NEG OK (old rc_bridge.py and .cmd: 5 failures, 4 errors)
+- [x] C3.2 (d530c22a) the page gives the two files itself (`apps/fly/src/devices/helper-files.ts`, Vite ?raw, a separate chunk loaded when the helper is offered; the program saved as `dji-helper.py`, the .cmd with CRLF); the public repository raw link until then; `usb.rc2.helperFile`, `usb.rc2.helperNeeds` new, `bridgeWhy`, `bridgeGet` changed in en, es, pl, ru; app-connect 8 of 8 (2 new), app-usb-look 11 of 11, typecheck apps/fly 0; neg control NEG OK (old usb-look-block.ts)
+- [x] C3.3 README "Start it" for the new start; this status (The flow as built, For the lead: no-Python options, the owner's window)
+- [x] C3.4 local release of d530c22a (build-release.mjs exit 0, 1907 files, sha256 1de88d83...): the two files are their own chunks `dist/fly/assets/start-dji-helper-*.js` and `rc_bridge-*.js`, not in main
+- [ ] left for the lead: the C3 release in a browser (press the download links; not run in a browser in this stage)
+
 ## Facts (measured)
 Record `U:/Temp/gsfpv-train2/rc2/rc2-rec-20261113.jsonl` (67134 lines), split at the first gap over 3 s
 (`U:/Temp/gsfpv-train2/connect/persec.py`):
@@ -72,6 +79,17 @@ C1.4, the page's handling of 64 answers per second (run `obey-new`, record pace,
   32 MiB: reached after about 5.8 h of flight at this rate (arithmetic on the measured 1616 B/s).
 - A held gamepad already sends a keep-alive every 20 ms (`apps/fly/src/devices/gamepad.ts` KEEPALIVE_MS), 50/s;
   the identical answers are also the bridge's keep-alive for the 100 ms stale gate (`controls.ts` tick).
+
+C3, what a Windows pilot needs today (measured on this PC, `U:/Temp/gsfpv-train2/connect/c3/clean-path.cmd`):
+- With PATH = System32 plus `%LOCALAPPDATA%\Microsoft\WindowsApps` (what a clean Windows 10/11 has; no `py.exe` in
+  C:\Windows): `where py` exit 1; `where python` exit 0 (finds the App Installer stub
+  `AppInstallerPythonRedirector.exe`); running `python -c ...` and `python3 -c ...` print "Python was not found; run
+  without arguments to install from the Microsoft Store, ..." and exit 9009. So "where" lies on a clean Windows; the
+  .cmd runs each candidate.
+- Microsoft Store ids checked by their page titles: 9PNRBTZXMB4Z "Python 3.13", 9NCVDN91XZQP "Python 3.12".
+- Public repository today (HTTP HEAD): `tools/rc-bridge/rc_bridge.py` 200, `start-rc-bridge.cmd` 200,
+  `start-dji-helper.cmd` 404 (this lane's name is not on main yet), README 200.
+- This PC: `py -0p` lists only 3.11 per user (`AppData\Local\Programs\Python\Python311`), installed without admin.
 
 ## The flow
 Every way a controller reaches the page before C2 (code of rc2-lna b05df5e6), what the pilot pressed, and what a
@@ -121,6 +139,21 @@ The new flow (C2):
   opened, for support).
 - The routing rule in one place: `devices/usb-look.ts` routeOf (hid / rc2usb / report) and helperOffered (claim
   failed on a DJI stick channel, or a saved RC 2 setup). No ?rcbridge switch any more.
+
+The flow as built (end of C3), Windows with DJI Assistant 2 and an RC 2, first time:
+1. Controls -> "Connect my controller" -> Chrome's HID list (nothing to pick) -> Chrome's USB list -> DJI RC 2 ->
+   the claim is refused -> the helper section opens by itself: why (one line), "Download start-dji-helper.cmd",
+   "Download dji-helper.py" (one press each, saved by the page itself), what it needs (Python 3.8+, no admin),
+   "Fly with the helper program", and the status line "1. Double-click ... 2. Leave its window open".
+2. Double-click start-dji-helper.cmd: no Python -> the window names the Store and python.org and opens the Store on
+   Y; Python there -> once "start with Windows?" (N by itself in 20 s) -> "Your DJI controller answers. Now open the
+   simulator and press 'Connect my controller'." or the missing thing in plain words (DJI Assistant 2 not installed,
+   close DJI Assistant 2, connect and switch on).
+3. The page's quiet watch (every 2 s) connects by itself once Chrome's Local Network Access is 'granted'; the first
+   time Chrome asks (Allow) after the press "Fly with the helper program". The window says "Your DJI controller is
+   read". The wizard walks on the sticks; the spring throttle is stored 'centre' (C1.3); check screen; Fly.
+Later visits: the saved RC 2 setup plus 'granted' -> straight to flight on load if the helper runs (with start with
+Windows it does).
 
 Owner's session 2 against the page, as replayed: Controls -> "Fly through the RC bridge" -> the wizard walks on the
 sticks (no presses) -> check screen at 54 s -> Fly. The screens line up with every move in his record (each move
@@ -180,6 +213,36 @@ comes right after its screen), so the replay's timeline is taken as his.
   the page then waits on the asking line. Measured headless on http://localhost: 'prompt' as well, so a page served
   from localhost never auto-connects without the press either (rc2-probe bridge, autoConnected false).
 
+- C3 done: the helper window now says "Shramko helper for DJI controllers" and "press 'Connect my controller'" (the
+  C2 note above is closed). The file is still `start-dji-helper.cmd` (C2's name, the page's texts use it), not
+  start-rc-bridge.cmd; the old name stays on the public repository's main until this lane is merged and pushed.
+- C3, a version that needs no Python (nothing built or installed here; prices are estimates from public price lists
+  as remembered, not measured):
+  a) Python's "embeddable package" (python.org zip, about 11 MB for 3.13, an estimate) unpacked next to the helper,
+     the .cmd calls its python.exe. No install, no admin, no packer. python.exe is signed by the Python Software
+     Foundation, so SmartScreen has nothing to stop; the pilot unpacks a zip (extract all) and double-clicks the .cmd.
+     Cost: host one zip per Python version (GitHub release asset), a few lines in the .cmd. Cheapest real option.
+  b) PyInstaller one-file .exe (about 8-12 MB, an estimate): one file to double-click. Unsigned and new, Windows
+     SmartScreen shows "Windows protected your PC" (More info -> Run anyway) on the first start, Chrome may say the
+     file is not commonly downloaded, and PyInstaller one-file exes are often flagged by antivirus heuristics. Cost:
+     a Windows build step per release.
+  c) Nuitka (compiled to C, needs a C compiler): smaller, fewer antivirus flags than b), the same SmartScreen screen.
+  d) A small native exe (Go or Rust, about 700 lines of Python ported, 2-5 MB): no runtime at all; same SmartScreen
+     screen unless signed. Cost: the port and its tests.
+  e) Code signing for b), c) or d): an OV certificate (roughly 200-400 USD a year, an estimate) shows a publisher
+     name but SmartScreen still warns until reputation builds; Microsoft's Trusted/Artifact Signing (roughly 10 USD a
+     month, an estimate; eligibility rules for individuals apply) builds reputation faster. Without signing every
+     packed exe gets the SmartScreen screen on its first start.
+  Today's .cmd on its first start: a downloaded .cmd carries the Mark of the Web; Windows usually shows "Open File -
+  Security Warning" (publisher could not be verified, Run) or SmartScreen; not seen here (see Not verified).
+- What the owner should try with his RC 2 (one short window, about 5 minutes, on a release with C3): close the old
+  helper window; Controls -> "Connect my controller" -> pick the RC 2 in the second list -> press both "Download"
+  buttons -> double-click start-dji-helper.cmd in Downloads -> answer the start-with-Windows question -> the window
+  should say "Your DJI controller answers" -> back in the page it should connect by itself (or press "Fly with the
+  helper program") -> the window says "Your DJI controller is read" -> the check screen opens (his setup is saved) ->
+  Fly: the throttle style row must say centred. Tell us what Windows and Chrome showed on the downloads and the first
+  double-click.
+
 ## Not verified
 - The live page's state during his session (style, saved choice, presses): only his stick record exists.
 - CPU time per answer in the page (not profiled; the C1.4 verdict rests on the code path and the log growth).
@@ -190,6 +253,14 @@ comes right after its screen), so the replay's timeline is taken as his.
   rc_bridge.py pick_device is tested on lists of ids only.
 - The real Chrome order of choosers after one press (HID, then USB): the probe fakes both; whether Chrome on Windows
   wants a second press there is handled in code (SecurityError gives 'usb.connect.again') but not seen in a browser.
+- C3: other DJI controllers (RC N3, RC-N2, Goggles' remotes): none here; the helper opens them untested (C2.6).
+- C3: a real person answering Chrome's Local Network Access question (only faked in probes).
+- C3: browsers other than Chrome (Edge, Opera, Firefox: no WebHID/WebUSB in Firefox; Local Network Access differs).
+- C3: what Chrome shows when the pilot saves a .cmd and a .py (dangerous-file prompts) and what Windows shows on the
+  first double-click of a downloaded .cmd (Mark of the Web): not run, it would put dialogs on the owner's desktop.
+- C3: Microsoft Store Python loading DJI's libusb0_dji.dll from Program Files (only python.org Python was used).
+- C3: the release with C3 in a browser: the build ran (see Status) but no probe pressed the download links.
+- C3: the .cmd's "start with Windows" entry after a real Windows sign-in (tested only as the file it writes).
 
 ## Cost notes
 - C1 first worker: most turns went to reading the wizard's centre and throttle steps and the throttle-style
@@ -205,3 +276,6 @@ comes right after its screen), so the replay's timeline is taken as his.
 - C2 pass 2: about 30 replies. Most went to the probe rerun waiting on the GPU lock and to learning that localhost
   answers 'prompt' for loopback-network. Cheaper: query the permission state in the page before writing a case that
   depends on it.
+- C3: about 38 replies. The most went to a hanging negative control (a test that read three lines from a
+  subprocess blocked forever on the old program) and to Edit refusing files seen only through cat. Cheaper: give
+  every subprocess read in a test a kill timer from the start, and open files with Read before the first Edit.
