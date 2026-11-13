@@ -3,7 +3,8 @@
 //   cd tools/bench && SITE=https://gsfpv.flyreelstudio.eu npx tsx src/train1-live.ts [tracks] [rooms]
 // tracks  A: Shift+G on TRACK_SCENE, the pause menu's "Save for everyone"; B (a fresh profile): the list has it, Shift+T
 //         loads the same id. It STORES ONE COURSE on that server: its id is printed so the lead can remove the file.
-// rooms   A creates a room on ROOM_SCENE behind ?rooms=1, B opens A's link, B's remote follows A (the two-page probe's
+// rooms   A creates a room on ROOM_SCENE (key 9, on a release before train 1b Shift+L; a room lives in the memory of
+//         gsfpv-rooms only and goes when its pilots leave), B opens A's link, B's remote follows A (the two-page probe's
 //         measure and bound), speech lines, A leaves. Controls: C in another room sees nobody; swapped axes break the fit.
 //         The relay-off control needs the local rig (rooms-two-page.ts) and is not run here.
 // The local probes with all their controls stay tracks-page.ts and rooms-two-page.ts. Holds the GPU lock for the run.
@@ -105,10 +106,19 @@ const startRec = (p: Page, what: 'own' | 'remote'): Promise<unknown> => p.evalua
 const stopRec = (p: Page): Promise<Sample[]> => p.evaluate('(() => { window.__roomsRecStop = true; return window.__roomsRec; })()') as Promise<Sample[]>;
 const pathLen = (a: readonly Sample[]): number => a.reduce((s, x, i) => (i ? s + Math.hypot(x[1] - a[i - 1][1], x[2] - a[i - 1][2], x[3] - a[i - 1][3]) : 0), 0);
 
+/** The keys of the release under test: 9 and 0 since the rooms went public (train 1b), Shift+L and Shift+O before. */
+let roomKeys: { panel: string; who: string } = { panel: 'Digit9', who: 'Digit0' };
+
 async function createRoom(page: Page): Promise<{ created: boolean; link: string | null; nick: string | null }> {
-    await page.keyboard.press('Shift+KeyL');
     const btn = page.locator('[data-action=rooms-create]');
-    await btn.waitFor({ timeout: 15000 });
+    await page.keyboard.press('Digit9');
+    const byNine = await btn.waitFor({ timeout: 8000 }).then(() => true, () => false);
+    if (byNine) roomKeys = { panel: 'Digit9', who: 'Digit0' };
+    else {
+        roomKeys = { panel: 'Shift+KeyL', who: 'Shift+KeyO' };
+        await page.keyboard.press('Shift+KeyL');
+        await btn.waitFor({ timeout: 15000 });
+    }
     await btn.click();
     const ok = await poll(() => rooms<boolean>(page, "return r.state === 'joined' && !!r.link;"), (v) => v, 20000);
     const st = await rooms<Any>(page, 'return { link: r.link, nick: r.nick, state: r.state, problem: r.problem || null };').catch(() => ({}) as Any);
@@ -149,13 +159,13 @@ async function roomsCheck(LA: Launched, LB: Launched, out: Any): Promise<void> {
     check('rooms control: swapped axes break the fit', swapped.rmsM > RMS_BOUND_M, +swapped.rmsM.toFixed(3));
     await c.context().close();
 
-    await b.keyboard.press('Shift+KeyO');
+    await b.keyboard.press(roomKeys.who);
     await sleep(600);
     const who = await rooms<string[]>(b, 'return [...r.said];');
     await a.context().close();
     const left = await poll(() => rooms<boolean>(b, "return r.said.includes('rooms.say.left') && r.remotes.length === 0;"), (v) => v, 20000);
-    check('rooms B: Shift+O says who is around, then A leaves and B hears it', who[who.length - 1] === 'rooms.say.who' && left.ok, { whoLast: who[who.length - 1], left: left.ok });
-    out.rooms = { scene: ROOM_SCENE, fit, aPathM: +pathLen(ra).toFixed(2), bFrames: rbRaw.length, bWithRemote: rb.length, console: { a: LA.console.filter((l) => /error/i.test(l)).slice(-6), b: LB.console.filter((l) => /error/i.test(l)).slice(-6) } };
+    check('rooms B: the who-is-around key says who is around, then A leaves and B hears it', who[who.length - 1] === 'rooms.say.who' && left.ok, { key: roomKeys.who, whoLast: who[who.length - 1], left: left.ok });
+    out.rooms = { scene: ROOM_SCENE, keys: roomKeys, fit, aPathM: +pathLen(ra).toFixed(2), bFrames: rbRaw.length, bWithRemote: rb.length, console: { a: LA.console.filter((l) => /error/i.test(l)).slice(-6), b: LB.console.filter((l) => /error/i.test(l)).slice(-6) } };
     await b.context().close();
 }
 

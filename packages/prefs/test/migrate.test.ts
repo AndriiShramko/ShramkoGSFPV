@@ -34,6 +34,8 @@ const V02: Record<string, string> = {
     // v0.9 lane N: the N-walk's bookmark and the "N was used" flag (machine-local, never migrated)
     'gsfpv.tour.v1': JSON.stringify({ v: 1, at: 1760000000000, seen: ['39e63ce9'], ss: 0 }),
     'gsfpv.nextUsed.v1': '1',
+    // train 1c lane rc2: the RC bridge switch of this browser (machine-local, never migrated)
+    'gsfpv.rcBridge': '1',
     'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD, [ALIEN.deviceKey]: ALIEN }),
     'gsfpv.stickMode': '1',
     'gsfpv.lastInput': JSON.stringify({ kind: 'hid', key: POCKET.deviceKey }),
@@ -109,7 +111,7 @@ describe('legacy migration v0 -> v1 (A.5)', () => {
         expect(m.found).not.toContain('gsfpv.bakeSecondsPerMillion');
         expect(asked).not.toContain('gsfpv.admin');
         expect(m.found).not.toContain('gsfpv.admin');
-        for (const k of ['gsfpv.tour.v1', 'gsfpv.nextUsed.v1']) {
+        for (const k of ['gsfpv.tour.v1', 'gsfpv.nextUsed.v1', 'gsfpv.rcBridge']) {
             expect(asked).not.toContain(k);
             expect(m.found).not.toContain(k);
         }

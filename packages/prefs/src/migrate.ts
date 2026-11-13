@@ -45,7 +45,10 @@ export const MACHINE_LOCAL_KEYS: Readonly<Record<string, string>> = {
     // SuperSplat list; a bookmark of this browser's walk, kept 30 days, not a setting.
     'gsfpv.tour.v1': "where this browser's N-walk through the scenes stands (scenes seen, place in the SuperSplat list), a bookmark that expires, not a pilot's choice",
     // apps/fly app/next-used.ts (v0.9 lane N): '1' once this browser used N, so the crash hint is never shown again.
-    'gsfpv.nextUsed.v1': "whether this browser already used the next-scene key, so the crash hint stays away; a fact about this browser, not a pilot's choice"
+    'gsfpv.nextUsed.v1': "whether this browser already used the next-scene key, so the crash hint stays away; a fact about this browser, not a pilot's choice",
+    // apps/fly devices/usb-look.ts (train 1c lane rc2): '1' once this browser opened the page with ?rcbridge=1, so the
+    // Controls screen offers the RC bridge (a program on this computer, tools/rc-bridge) until ?rcbridge=0.
+    'gsfpv.rcBridge': "whether this browser was told to offer the RC bridge, a program that runs on this computer only; a fact about this machine, not a pilot's choice"
 };
 
 export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<string, string> }

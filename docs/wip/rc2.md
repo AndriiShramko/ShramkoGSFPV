@@ -153,7 +153,7 @@ Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-p
   and bridge device) and findSavedRc2 (a later visit) call tellWhenLost; app/builtin/hud.ts listens and flashes
   usb.rc2.lost (en/es/pl/ru) for 8000 ms (estimate, longer than the 2.5-4 s notes because it names a cause).
   'closed' (the page let go) says nothing. Test "review R10" in app-dji-rc2.test.ts: 13 passed; NEG OK (--ref HEAD
-  60e7ea0a, old dji-rc2-source.ts: "expected 'undefined' to be 'function'"); fly-parity 13 passed; tsc of apps/fly
+  60e7ea0a, old dji-rc2-source.ts: `expected 'undefined' to be 'function'`); fly-parity 13 passed; tsc of apps/fly
   clean. Not unit-tested: the hud builtin's subscription itself (tsc only). Commit: the one that adds this line.
 - [x] 3. R3 check: dji-rc2-source.ts has no requestAnimationFrame; the only "animation" is the comment at line 149;
   pace defaults to the plain timer wait (o.pace ?? this.wait). Test "the ask loop paces by its timer only" stays.
