@@ -214,7 +214,7 @@ async function settle(page: Page, scene: string): Promise<void> {
 }
 
 // ---------------- E the editor (train 2, T3-editor-ui; tracks-plan 2.11)
-interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number> }
+interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number>; paints?: string[]; admin?: boolean }
 const editorHook = (page: Page): Promise<EditorHook | null> =>
     page.evaluate(() => (window as unknown as { __gsfpv?: { course?: { editor?: EditorHook } } }).__gsfpv?.course?.editor ?? null);
 const EDITOR_SHOTS = process.env.EDITOR_SHOTS ?? 'U:/Temp/gsfpv-train2/shots';
