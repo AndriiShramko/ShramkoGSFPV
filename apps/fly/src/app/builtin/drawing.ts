@@ -54,6 +54,9 @@ function apply(ctx: FlightContext, announce: boolean): void {
 export const drawing: Feature = {
     id: 'drawing',
     install(ctx) {
+        // a streamed scan's files, downloaded at a time: the engine's 2 on a phone or tablet (peak memory), 6 elsewhere (lane
+        // lod-view: a turn's new view arrives sooner; docs/wip/lod-view.md)
+        ctx.renderer.setParallelLoads(handheld ? 2 : 6);
         apply(ctx, true);
         const offSession = ctx.events.on('session', () => apply(ctx, true));
         const offStore = ctx.prefs.onChange((c: PrefChange) => {

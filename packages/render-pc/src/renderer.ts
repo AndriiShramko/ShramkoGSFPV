@@ -4,6 +4,10 @@
 // gsplat classes (gsplatDirector, the manager's world, indirect draw slots). It runs only after accum.ts accumMissing found
 // every member it drives, and only where stochastic is asked for; everything else here uses the public engine API.
 // Decision record: docs/decisions.md (D18, probe A1; v0.11: D84 and on).
+// A second exception since lane lod-view (docs/wip/lod-view.md): view-lod.ts puts the frame's priority into the engine's
+// choice of detail for a streamed scan (the octree instance's distances, the world's request for a new choice), and this
+// file sets the streamed files' loader to more than two downloads at a time. Both are checked for by name and left alone
+// where the engine does not have them.
 
 import {
     AppBase, AppOptions, Asset, Entity, Color, StandardMaterial, Vec3, Quat,
@@ -24,6 +28,33 @@ import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
+import { ViewLod } from './view-lod';
+import type { ViewLodStats } from './view-lod';
+
+/**
+ * The engine's own penalty for nodes behind the camera: 5 while it is the only directional rule; just over 1 while the
+ * frame's priority (view-lod.ts) is at work, which covers "behind" itself. Not 1: at 1 the engine stops looking at turns.
+ */
+const BEHIND_PENALTY = 5;
+const BEHIND_PENALTY_WITH_VIEW = 1.001;
+/** The engine looks for a new choice of detail after this turn (degrees) on its own; the frame's priority asks sooner. */
+const LOD_UPDATE_ANGLE = 90;
+/**
+ * How many levels coarser than the wanted one a node may show while the wanted file is on its way (the engine's
+ * lodUnderfillLimit, 0 by default: the node keeps what it shows until its final file arrives, and after the first reveal
+ * that file queues behind every coarser level of the whole scan). Measured on the Wroclaw scan (docs/wip/gpu-select.md):
+ * with 2, what is near reaches a usable level in 2 to 3 s instead of staying at the coarsest for more than 5, for about
+ * 9 % more bytes.
+ */
+const LOD_UNDERFILL = 2;
+/**
+ * How fast a streamed scan's detail falls with distance: one level coarser per this many times the distance (the engine's
+ * lodMultiplier, 3 by default). With 3 the far part of a city scan is drawn several times denser per pixel than the near
+ * part. 2 goes with the frame's priority: scored on the Lublin scan against a 16 M reference at 1 M and 4 M, the two
+ * together were never further from it than the engine's rule and up to 3 dB nearer (docs/wip/lod-view.md).
+ */
+const LOD_MULTIPLIER_WITH_VIEW = 2;
+const LOD_MULTIPLIER = 3;
 
 /** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
 
@@ -70,6 +101,8 @@ export interface RendererOptions {
     stochasticImpl?: StochasticImpl;
     /** upstream's `key:value,key:value` switches for the accumulating renderer (a test hook; empty = upstream's defaults) */
     accumVariant?: string;
+    /** false: the engine's own choice of detail for a streamed scan, without the frame's priority (view-lod.ts); default on */
+    viewLod?: boolean;
 }
 
 export const TONEMAPS: Record<string, number> = {
@@ -153,6 +186,8 @@ interface OctreeView {
     files?: { url: string }[];
     nodes?: { lods?: { fileIndex: number; count: number }[] }[];
     environmentUrl?: string | null;
+    /** the loader of the streamed files (internal): how many it downloads at a time (2 in engine 2.23.2) */
+    assetLoader?: { maxConcurrentLoads?: number } | null;
 }
 
 const dirOf = (u: string): string => {
@@ -243,6 +278,12 @@ export class SplatRenderer {
     private accumHeld = false;
     /** what the last setStochastic decided (the test hook, F3) */
     plan: DrawPlan = { draw: 'sorted', why: 'not-asked' };
+    /** the frame's priority in the choice of detail of a streamed scan (view-lod.ts), wanted, and at work in the last frame */
+    private viewLod: ViewLod;
+    private viewLodWanted = true;
+    private viewLodActive = false;
+    /** downloads of a streamed scan's files at a time (setParallelLoads); null: the engine's own number */
+    private parallelLoads: number | null = null;
 
     private constructor(canvas: HTMLCanvasElement, device: GraphicsDevice, opts: RendererOptions) {
         this.canvas = canvas;
@@ -250,6 +291,7 @@ export class SplatRenderer {
         this.renderScale = opts.renderScale ?? 1;
         this.stochasticImpl = opts.stochasticImpl ?? DEFAULT_STOCHASTIC_IMPL;
         this.accumVariant = opts.accumVariant ?? '';
+        this.viewLodWanted = opts.viewLod !== false;
         const app = new AppBase(canvas);
         const ao = new AppOptions();
         ao.graphicsDevice = device;
@@ -282,8 +324,12 @@ export class SplatRenderer {
         app.root.addChild(this.debrisRoot);
 
         const g = app.scene.gsplat;
-        g.lodUpdateAngle = 90;
-        g.lodBehindPenalty = 5;
+        g.lodUpdateAngle = LOD_UPDATE_ANGLE;
+        g.lodBehindPenalty = BEHIND_PENALTY;
+        g.lodUnderfillLimit = LOD_UNDERFILL;
+        this.viewLod = new ViewLod(app, cam);
+        // after the flight has placed the camera for this frame and before the engine prepares the scan
+        app.on('framerender', this.onViewLod);
         // engine 2.23: LOD is always chosen by distance (lodMode is deprecated); the budget is a target
         // the detail is raised to fill, as it was in 2.22 (stated, not left to the default)
         g.splatBudgetMode = GSPLAT_BUDGET_TARGET;
@@ -492,6 +538,8 @@ export class SplatRenderer {
                 const lodLevels = octree?.lodLevels;
                 if (lodLevels) comp.lodRangeMin = comp.lodRangeMax = lodLevels - 1;
                 if (octree && lodLevels) this.expectCoarse(octree, lodLevels - 1);
+                this.applyParallelLoads();
+                this.applyLodMultiplier();
                 resolve(e);
             });
             asset.on('progress', (rec: number, len: number) => onProgress?.(Math.min(100, (rec / Math.max(1, len)) * 100)));
@@ -618,6 +666,57 @@ export class SplatRenderer {
             ready: ours && f.ready,
             loading: ours ? f.loading : 0
         };
+    }
+
+    /**
+     * The frame's priority, once per frame: it follows the turn and asks the engine for a new choice of detail when the
+     * view has left the last one (view-lod.ts). While it is at work the engine's own "behind" penalty steps aside and the
+     * engine looks at smaller turns itself; when it is off or cannot run, the engine's rule is as before.
+     */
+    private onViewLod = (): void => {
+        const v = this.viewLod;
+        v.enabled = this.viewLodWanted;
+        if (v.enabled) v.tick(performance.now());
+        const active = v.active;
+        if (active === this.viewLodActive) return;
+        this.viewLodActive = active;
+        const g = this.app.scene.gsplat;
+        g.lodBehindPenalty = active ? BEHIND_PENALTY_WITH_VIEW : BEHIND_PENALTY;
+        g.lodUpdateAngle = active ? v.params.refreshDeg : LOD_UPDATE_ANGLE;
+    };
+
+    /** The frame's priority on or off (on by default; off: the engine's own rule and distance falloff, as before lane lod-view). */
+    setViewLod(on: boolean): void {
+        this.viewLodWanted = on;
+        this.applyLodMultiplier();
+    }
+
+    /** The scan's distance falloff: 2 with the frame's priority, the engine's 3 without (a scan in one file has no levels and no such number). */
+    private applyLodMultiplier(): void {
+        const comp = this.splat?.gsplat as (GSplatComponent & { lodMultiplier?: number }) | undefined;
+        if (comp && typeof comp.lodMultiplier === 'number') comp.lodMultiplier = this.viewLodWanted ? LOD_MULTIPLIER_WITH_VIEW : LOD_MULTIPLIER;
+    }
+
+    /** What the frame's priority is doing (the test hook, F3, the bug report). */
+    viewLodStats(): ViewLodStats {
+        return this.viewLod.stats();
+    }
+
+    /**
+     * How many files of a streamed scan are downloaded at a time (the engine's loader takes 2; more brings a turn's new
+     * view in sooner on a desktop link, and costs memory at the peak, so a handheld keeps 2). Reaches the loader by name:
+     * where the engine has no such number, nothing happens.
+     */
+    setParallelLoads(n: number): void {
+        this.parallelLoads = Math.max(1, Math.round(n));
+        this.applyParallelLoads();
+    }
+
+    private applyParallelLoads(): void {
+        if (this.parallelLoads === null) return;
+        const comp = this.splat?.gsplat as GSplatComponent | undefined;
+        const loader = (comp?.resource as unknown as { octree?: OctreeView } | null | undefined)?.octree?.assetLoader;
+        if (loader && typeof loader.maxConcurrentLoads === 'number') loader.maxConcurrentLoads = this.parallelLoads;
     }
 
     /** Open the full LOD range after the coarse level has been shown. */
@@ -1072,6 +1171,7 @@ export class SplatRenderer {
         this.ro.disconnect();
         this.accum?.destroy();
         this.accum = null;
+        this.viewLod.dispose();
         this.app.destroy();
     }
 }

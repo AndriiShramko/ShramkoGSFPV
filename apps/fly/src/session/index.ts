@@ -71,6 +71,8 @@ export interface SessionOptions {
     /** which code draws "stochastic" (?impl=engine: the bench's control arm) and upstream's switches for it (?accum=key:value,...): test switches, no pilot setting; read once by app/flight.ts */
     stochasticImpl?: StochasticImpl;
     accumVariant?: string;
+    /** false (?viewlod=0): the engine's own choice of detail, without the frame's priority (render-pc view-lod.ts); a test switch and a way back */
+    viewLod?: boolean;
     lagFrames?: number;
     renderScale?: number;
     /** fly with the scan's walls (default) or through everything (flightwalls.ts) */
@@ -341,7 +343,7 @@ export class FlightSession {
         this.compileModel();
         this.renderer = o.renderer ?? await SplatRenderer.create(canvas, {
             renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker,
-            ...(o.stochasticImpl ? { stochasticImpl: o.stochasticImpl } : {}), accumVariant: o.accumVariant ?? ''
+            ...(o.stochasticImpl ? { stochasticImpl: o.stochasticImpl } : {}), accumVariant: o.accumVariant ?? '', viewLod: o.viewLod !== false
         });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         // this scene's drawing, decided now that the device is known, before its splats load

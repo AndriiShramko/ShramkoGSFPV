@@ -16,9 +16,13 @@ const dict = (l: string) => JSON.parse(readFileSync(join(REPO, 'packages', 'i18n
 const sayIn = (d: Record<string, string>): Say => (key, vars) => (d[key] ?? key).replace(/\{(\w+)\}/g, (_m, k: string) => String(vars?.[k] ?? `{${k}}`));
 const EN = sayIn(dict('en'));
 
+/** The frame's priority as the renderer reports it (lane lod-view: render-pc view-lod.ts); the report carries it through. */
+const VIEW = { active: true, missing: [], failed: null, calls: 3, asked: 1, reordered: 2, lastMs: 1, inFrame: 10, ring: 2, out: 5, turnDegS: 0, leadDeg: 0 };
+
 const base: LodReport = {
     kind: 'lod-meta', levels: 10, range: [0, 9], mode: 'auto', drawn: 3_923_895, budgetM: 4, loading: 0,
-    contentUrl: 'https://cdn/ba7aa29d/v1/lod-meta.json', contentFailures: [], renderScale: 1, topBudgetM: 4, governorStep: 0, governorBudgetM: 4, settingBudgetM: 4, streamHitches: 0
+    contentUrl: 'https://cdn/ba7aa29d/v1/lod-meta.json', contentFailures: [], renderScale: 1, topBudgetM: 4, governorStep: 0, governorBudgetM: 4, settingBudgetM: 4, streamHitches: 0,
+    view: VIEW
 };
 
 /** The rule before review R4: any budget below the top was the governor's lowering. */
@@ -89,10 +93,10 @@ describe('lodLine', () => {
 describe('lodReport', () => {
     it('joins the renderer, the session and the governor', () => {
         const ctx = {
-            renderer: { renderScale: 0.85, lodState: () => ({ kind: 'lod-meta' as const, levels: 10, range: [0, 9] as [number, number], mode: 'auto' as const, drawn: 2_000_000, budgetM: 3, loading: 4 }) },
+            renderer: { renderScale: 0.85, lodState: () => ({ kind: 'lod-meta' as const, levels: 10, range: [0, 9] as [number, number], mode: 'auto' as const, drawn: 2_000_000, budgetM: 3, loading: 4 }), viewLodStats: () => VIEW },
             session: { scene: { contentUrl: 'u/lod-meta.json' }, contentFailures: [] },
             quality: { governor: { topBudgetMillions: 4, step: 1, streamHitches: 7, current: { renderScale: 0.85, splatBudgetMillions: 3 } }, settingBudgetMillions: 4 }
         } as unknown as Parameters<typeof lodReport>[0];
-        expect(lodReport(ctx)).toEqual({ kind: 'lod-meta', levels: 10, range: [0, 9], mode: 'auto', drawn: 2_000_000, budgetM: 3, loading: 4, contentUrl: 'u/lod-meta.json', contentFailures: [], renderScale: 0.85, topBudgetM: 4, governorStep: 1, governorBudgetM: 3, settingBudgetM: 4, streamHitches: 7 });
+        expect(lodReport(ctx)).toEqual({ kind: 'lod-meta', levels: 10, range: [0, 9], mode: 'auto', drawn: 2_000_000, budgetM: 3, loading: 4, contentUrl: 'u/lod-meta.json', contentFailures: [], renderScale: 0.85, topBudgetM: 4, governorStep: 1, governorBudgetM: 3, settingBudgetM: 4, streamHitches: 7, view: VIEW });
     });
 });

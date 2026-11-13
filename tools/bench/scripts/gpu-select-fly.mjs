@@ -33,7 +33,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LOCK = 'C:/dev/.gpu-lock';
 
 export function parseArgs(argv) {
-    const o = { browser: 'chrome', variant: 'default', scene: '7a475d38', label: '', site: 'https://gsfpv.flyreelstudio.eu', query: '', still: 20, turn: true, loadTimeout: 300, maximized: true, extra: [], tune: {}, cool: 0, soak: 0 };
+    const o = { browser: 'chrome', variant: 'default', scene: '7a475d38', label: '', site: 'https://gsfpv.flyreelstudio.eu', path: '/en/fly/', lane: 'gpu-select', query: '', still: 20, turn: true, loadTimeout: 300, maximized: true, extra: [], tune: {}, cool: 0, soak: 0 };
     for (let i = 0; i < argv.length; i++) {
         const a = argv[i];
         if (a === '--browser') o.browser = argv[++i];
@@ -41,6 +41,10 @@ export function parseArgs(argv) {
         else if (a === '--scene') o.scene = argv[++i];
         else if (a === '--label') o.label = argv[++i];
         else if (a === '--site') o.site = argv[++i].replace(/\/$/, '');
+        // the page's path on that site: /en/fly/ on the live site and a release build, /fly/ on the Vite dev server
+        else if (a === '--path') o.path = argv[++i];
+        // the evidence folder under evidence/<date>/ (another lane's runs of this probe go to its own)
+        else if (a === '--lane') o.lane = argv[++i].replace(/[^a-z0-9-]/gi, '');
         else if (a === '--query') o.query = argv[++i];
         else if (a === '--still') o.still = Number(argv[++i]);
         else if (a === '--load-timeout') o.loadTimeout = Number(argv[++i]);
@@ -340,10 +344,10 @@ async function main() {
     const exe = browserExe(o.browser);
     if (!exe) throw new Error(`no executable for --browser ${o.browser}`);
     const date = new Date().toISOString().slice(0, 10);
-    const outDir = join(REPO, 'evidence', date, 'gpu-select');
+    const outDir = join(REPO, 'evidence', date, o.lane);
     mkdirSync(outDir, { recursive: true });
-    const url = `${o.site}/en/fly/?scene=${o.scene}&nowarn=1&input=touch${o.query}`;
-    const result = { name: `gpu-select/${o.label}`, date: new Date().toISOString(), label: o.label, scene: o.scene, url, browserName: o.browser, variant: o.variant, query: o.query, bandsMetres: [8, 25, 80, 'more'], inView: 'node centre within 60 degrees of the view axis, or the camera inside the node' };
+    const url = `${o.site}${o.path}?scene=${o.scene}&nowarn=1&input=touch${o.query}`;
+    const result = { name: `${o.lane}/${o.label}`, date: new Date().toISOString(), label: o.label, scene: o.scene, url, browserName: o.browser, variant: o.variant, query: o.query, bandsMetres: [8, 25, 80, 'more'], inView: 'node centre within 60 degrees of the view axis, or the camera inside the node' };
     let stock = null;
     let held = false;
     // stopped by hand (Ctrl+C): the browser and its profile go, and the lock too when it is this run's
