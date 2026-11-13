@@ -449,7 +449,7 @@
   "walls.offHint": "Ściany wyłączone: dron przelatuje przez wszystko, bez kraks.",
   "walls.adminOff": "Autor domyślnie wyłącza ściany w tym skanie (skan z dużym szumem).",
   "walls.none": "Jeszcze nie ma ścian: C je zbuduje.",
-  "walls.building": "Buduję ściany tego skanu: postęp widać w ramce u góry.",
+  "walls.building": "Buduję ściany tego skanu.",
   "walls.switchedOn": "Ściany włączone: kraksy wracają · C",
   "walls.switchedOff": "Ściany wyłączone: przelatujesz przez wszystko · C",
   "hud.wallsOff": "BEZ ŚCIAN",

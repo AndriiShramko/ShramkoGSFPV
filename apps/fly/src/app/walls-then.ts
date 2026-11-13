@@ -9,8 +9,8 @@ import type { FlightContext } from './context';
 export function wallsThen(ctx: FlightContext, then: () => void): Promise<WithWalls> {
     return withWalls({
         has: () => !!ctx.session.collision,
-        build: ctx.hook.walls ? () => ctx.hook.walls!.build() : null,
-        scene: () => ctx.session.scene.id,
-        started: () => ctx.hud.flash(t('walls.building'), 4000)
+        // the lead line goes into the walls box above the progress (a HUD note would cover the box)
+        build: ctx.hook.walls ? () => ctx.hook.walls!.build(t('walls.building')) : null,
+        scene: () => ctx.session.scene.id
     }, then);
 }

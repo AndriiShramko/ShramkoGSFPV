@@ -270,9 +270,9 @@ export const course: Feature = {
             const wh = ctx.hook.walls;
             void withWalls({
                 has: () => !!ctx.session.collision,
-                build: wh ? () => wh.build() : null,
-                scene: () => ctx.session.scene.id,
-                started: () => ctx.hud.flash(t('course.wallsFirst'), 6000)
+                // the lead line goes into the walls box above the progress (a HUD note would cover the box)
+                build: wh ? () => wh.build(t('course.wallsFirst')) : null,
+                scene: () => ctx.session.scene.id
             }, go).then((r) => {
                 wallsWait = false;
                 // the walls box says what to press (out of room: close tabs and press again)

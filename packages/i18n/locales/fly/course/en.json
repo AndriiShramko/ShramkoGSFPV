@@ -11,7 +11,7 @@
   "course.generating": "Building a course in the free space of this scan...",
   "course.ready": "Gates: {n}. Fly through gate 1 to start the clock. Shift+T hides the course",
   "course.none": "No course fitted the free space this time. Shift+G tries another layout",
-  "course.wallsFirst": "First the walls of this scan, then the course: the box at the top shows the progress",
+  "course.wallsFirst": "First the walls of this scan, then the course.",
   "course.failed": "This course did not come out. Shift+G builds another one",
   "course.lapDone": "Lap {time}",
   "course.best": "Best lap! {time}",

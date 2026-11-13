@@ -11,7 +11,7 @@
   "course.generating": "Buduję trasę w wolnej przestrzeni tego skanu...",
   "course.ready": "Bramki: {n}. Przeleć przez bramkę 1, aby włączyć zegar. Shift+T ją ukrywa",
   "course.none": "Tym razem żadna trasa nie zmieściła się w wolnej przestrzeni. Shift+G spróbuje innego układu",
-  "course.wallsFirst": "Najpierw ściany tego skanu, potem trasa: postęp widać w ramce u góry",
+  "course.wallsFirst": "Najpierw ściany tego skanu, potem trasa.",
   "course.failed": "Ta trasa się nie zbudowała. Shift+G zbuduje inną",
   "course.lapDone": "Okrążenie {time}",
   "course.best": "Najlepsze okrążenie! {time}",

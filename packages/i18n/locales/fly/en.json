@@ -449,7 +449,7 @@
   "walls.offHint": "Walls off: the drone flies through everything, no crashes.",
   "walls.adminOff": "The author switches the walls off for this scan by default (a noisy scan).",
   "walls.none": "No walls yet: C builds them.",
-  "walls.building": "Building the walls of this scan: the box at the top shows the progress.",
+  "walls.building": "Building the walls of this scan.",
   "walls.switchedOn": "Walls on: crashes are back · C",
   "walls.switchedOff": "Walls off: you fly through everything · C",
   "hud.wallsOff": "WALLS OFF",

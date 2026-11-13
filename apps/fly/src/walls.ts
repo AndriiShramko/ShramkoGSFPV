@@ -40,9 +40,10 @@ export interface WallsHook {
     /**
      * Walls for this scan in use, for any feature that needs them (the course, C, V, free flight by
      * sound): shipped or published at once, else the browser's store, else the build here with its
-     * progress line in the walls box. Resolves true when the session has walls.
+     * progress line in the walls box. `lead`: one line in the box above the progress that says what comes
+     * after the walls ("First the walls of this scan, then the course."). Resolves true when the session has walls.
      */
-    build(): Promise<boolean>;
+    build(lead?: string): Promise<boolean>;
     /** the walls box's line now (the build's progress or its result) */
     readonly line: string;
     exportZip(): Promise<Uint8Array>;
@@ -152,20 +153,10 @@ export function mountWalls(o: WallsOptions): WallsHook {
         lastImport: null,
         ready: Promise.resolve(),
         refine: () => (w.plan?.voxelM ? runRefine(w.plan.voxelM) : Promise.resolve()),
-        build: ensureWalls({
-            has: () => !!s.collision,
-            ready: () => w.ready,
-            takeQueued: () => {
-                // walls from the store wait for the craft to park: an action that needs them takes them now
-                const q = queued;
-                if (!q || !s.wallsPending) return false;
-                clearInterval(pollTimer);
-                s.installCollision(q.json, q.bin, q.sha);
-                onSwap(q.source)(q.sha);
-                return true;
-            },
-            build: () => startBase()
-        }),
+        build: (lead) => {
+            if (lead && badge && !s.collision) badge.textContent = lead;
+            return ensureAll();
+        },
         get line() { return status.textContent ?? ''; },
         exportZip: async () => (await cacheP).exportZip(),
         importZip: (bytes) => importBytes(bytes),
@@ -206,6 +197,21 @@ export function mountWalls(o: WallsOptions): WallsHook {
     };
     o.hook.walls = w;
 
+    /** WallsHook.build without its lead line: shipped or published, the store, else one build here */
+    const ensureAll = ensureWalls({
+        has: () => !!s.collision,
+        ready: () => w.ready,
+        takeQueued: () => {
+            // walls from the store wait for the craft to park: an action that needs them takes them now
+            const q = queued;
+            if (!q || !s.wallsPending) return false;
+            clearInterval(pollTimer);
+            s.installCollision(q.json, q.bin, q.sha);
+            onSwap(q.source)(q.sha);
+            return true;
+        },
+        build: () => startBase()
+    });
     /** walls waiting in session.queueCollision for the craft to park (build() takes them at once) */
     let queued: { json: Uint8Array; bin: Uint8Array; sha: string; source: WallsHook['source'] } | null = null;
     /** the base build now running (the button, ?bake=1, C and build() share it) */
@@ -295,7 +301,9 @@ export function mountWalls(o: WallsOptions): WallsHook {
     async function runBase(): Promise<void> {
         if (busy) return;
         busy = true;
+        // the box holds only the lead line and the progress meanwhile (no dead button under them)
         action.disabled = true;
+        action.hidden = true;
         w.state = 'baking';
         keep(true);
         s.pause(true, 'bake');
@@ -333,8 +341,9 @@ export function mountWalls(o: WallsOptions): WallsHook {
                 say(outOfRoom(e) ? t('bake.noRoom') : t('bake.failed'));
                 action.disabled = false;
             }
-            // the button stays in sight with the line that says what to press
-            keep(!action.hidden && action.isConnected);
+            // the button comes back (enabled) with the line that says to press it, and stays in sight
+            if (action.isConnected) { action.hidden = false; action.disabled = false; }
+            keep(action.isConnected);
             w.lastBake = o.hook.bake;
         } finally {
             s.pause(false, 'bake');

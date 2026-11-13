@@ -449,7 +449,7 @@
   "walls.offHint": "Paredes desactivadas: el dron atraviesa todo, sin choques.",
   "walls.adminOff": "El autor desactiva por defecto las paredes de este escaneo (tiene mucho ruido).",
   "walls.none": "Aún no hay paredes: la tecla C las construye.",
-  "walls.building": "Construyendo las paredes de este escaneo: el recuadro de arriba muestra el avance.",
+  "walls.building": "Construyendo las paredes de este escaneo.",
   "walls.switchedOn": "Paredes activadas: vuelven los choques · C",
   "walls.switchedOff": "Paredes desactivadas: atraviesas todo · C",
   "hud.wallsOff": "SIN PAREDES",

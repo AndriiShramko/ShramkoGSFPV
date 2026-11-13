@@ -36,7 +36,7 @@ const READ = () => {
         boxShown: !!box && getComputedStyle(box).display !== 'none' && getComputedStyle(box).visibility !== 'hidden',
         boxKeep: !!box && box.classList.contains('keep'),
         flying: document.getElementById('ui')?.classList.contains('hud-flying') ?? null,
-        line: q('[data-testid=bake-status]'), action: q('[data-testid=walls-box] button'),
+        lead: q('[data-testid=no-collision]'), line: q('[data-testid=bake-status]'), action: q('[data-testid=walls-box] button'),
         note: note && !note.hidden ? (note.textContent || '').trim().slice(0, 200) : null
     };
 };
@@ -78,7 +78,8 @@ for (const c of cases) {
             }
             if (r.wallsInS === undefined && s.walls?.state === 'in-use') r.wallsInS = at;
             if (s.course && s.course.gates > 0 && s.course.drawn > 0) { r.firstGateS = at; break; }
-            if (s.course?.problem && s.course.problem !== 'none' && at > 1 && s.walls?.state !== 'baking') { r.problemSeen = s.course.problem; }
+            // the course feature gave up after the walls came (its problem stays set): no gate will come
+            if (s.course?.problem && r.wallsInS !== undefined && at > r.wallsInS + 3 && !s.course.gates) { r.problemSeen = s.course.problem; r.fail = `course: ${s.course.problem}`; break; }
             if (Date.now() - t0 > LIMIT_MS) { r.fail = 'timeout'; break; }
             await page.waitForTimeout(250);
         }
@@ -88,7 +89,9 @@ for (const c of cases) {
     } catch (e) { r.fail = String(e).slice(0, 200); try { r.after = await page.evaluate(READ); } catch { /* page gone */ } }
     const all = [...r.lines, ...r.notes].map((x) => x.text).join(' | ');
     r.saidMissing = /no walls|without walls|cannot|could not/i.test(all);
-    r.pass = !r.fail && r.firstGateS > 0 && r.after?.walls?.state === 'in-use' && !r.saidMissing && r.errors.length === 0;
+    // walls in: built or from the store (state in-use) or published / shipped (source set, state none)
+    const wallsIn = !!r.after?.walls && (r.after.walls.state === 'in-use' || r.after.walls.source !== 'none');
+    r.pass = !r.fail && r.firstGateS > 0 && wallsIn && !r.saidMissing && r.errors.length === 0;
     if (!r.pass) failed++;
     out.push(r);
     await ctx.close();

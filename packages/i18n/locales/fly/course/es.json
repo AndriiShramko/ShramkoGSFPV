@@ -11,7 +11,7 @@
   "course.generating": "Creando un circuito en el espacio libre de este escaneo...",
   "course.ready": "Puertas: {n}. Cruza la puerta 1 para iniciar el reloj. Shift+T lo oculta",
   "course.none": "Esta vez ningún circuito cupo en el espacio libre. Shift+G prueba otra disposición",
-  "course.wallsFirst": "Primero las paredes de este escaneo, luego el circuito: el recuadro de arriba muestra el avance",
+  "course.wallsFirst": "Primero las paredes de este escaneo, luego el circuito.",
   "course.failed": "Este circuito no salió. Shift+G crea otro",
   "course.lapDone": "Vuelta {time}",
   "course.best": "¡Mejor vuelta! {time}",
