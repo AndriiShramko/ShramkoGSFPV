@@ -86,7 +86,7 @@ interface Screen {
 }
 
 /** The start screen of a page entered through ?sonic=start in `locale`, with the saved progress given, on a fresh document. */
-function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore> } = {}): Screen {
+function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; current?: string | null; overFlight?: boolean; store?: ReturnType<typeof mkStore>; request?: ReturnType<ModelMod['parseSonicParam']>; experienced?: () => boolean; onFlies?: () => void } = {}): Screen {
     doc = stubPage();
     const store = o.store ?? mkStore();
     for (const p of Object.values(o.progress ?? {})) storeMod.saveProgress(store, p);
@@ -99,7 +99,9 @@ function open(o: { locale?: Locale; progress?: Record<string, LessonProgress>; c
     const s = new screenMod.StartScreen({
         setup,
         locale: o.locale ?? 'en',
-        request: modelMod.parseSonicParam('start'),
+        request: o.request ?? modelMod.parseSonicParam('start'),
+        ...(o.experienced ? { experienced: o.experienced } : {}),
+        ...(o.onFlies ? { onFlies: o.onFlies } : {}),
         progress: () => storeMod.allProgress(store),
         current: () => storeMod.currentLesson(store),
         onStart: (id) => void started.push(id),
@@ -138,6 +140,42 @@ describe('C1 (M41-1): the page about the mode stays linked from the start screen
             s.dispose();
             expect(doc.window.listening, l).toBe(0);
         }
+    });
+});
+
+// ------------------------------------------------------------------ train 2: a scan link
+
+describe('train 2: the start screen of a scan link (?sonic=scan&scene=&sz=) orders its buttons by the pilot', () => {
+    const scanReq = () => modelMod.parseSonicParam('scan', new URLSearchParams('sonic=scan&scene=887f27aa&sz=2'));
+    const order = (): string[] => {
+        const parent = byTestId(doc, 'sonic-start-beginning')!.parentElement!;
+        return parent.children.map((c) => c.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-start-'));
+    };
+
+    it('an experienced pilot: "Fly this scan by sound" first and primary, then the lessons; a first-timer: the lessons first, then "I already fly by sound", whose press saves the flag', () => {
+        const exp = open({ request: scanReq(), experienced: () => true });
+        expect(order()).toEqual(['sonic-start-scan', 'sonic-start-beginning']);
+        expect(byTestId(doc, 'sonic-start-scan')!.className).toContain('primary');
+        expect(byTestId(doc, 'sonic-start-beginning')!.className).not.toContain('primary');
+        byTestId(doc, 'sonic-start-scan')!.click();
+        expect(exp.started).toEqual(['scan-free']);
+        exp.s.dispose();
+
+        let flies = 0;
+        const first = open({ request: scanReq(), experienced: () => false, onFlies: () => void flies++ });
+        expect(order()).toEqual(['sonic-start-beginning', 'sonic-start-scan-flier']);
+        expect(byTestId(doc, 'sonic-start-beginning')!.className).toContain('primary');
+        expect(byTestId(doc, 'sonic-start-scan-flier')!.className).not.toContain('primary');
+        byTestId(doc, 'sonic-start-scan-flier')!.click();
+        expect(flies).toBe(1);
+        expect(first.started).toEqual(['scan-free']);
+        first.s.dispose();
+    });
+
+    it('control: the plain start screen (?sonic=start) has no scan button', () => {
+        const { s } = open();
+        expect(order()).toEqual(['sonic-start-beginning']);
+        s.dispose();
     });
 });
 
