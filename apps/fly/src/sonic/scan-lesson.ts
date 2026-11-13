@@ -32,6 +32,34 @@ import type { Prim } from './primitives';
 /** Walls with cells larger than this, flown metres, are coarse enough to say so (the same line the scene size row draws, 10 cm). */
 export const COARSE_SAY_M = 0.1;
 
+/**
+ * A course of gates flown by sound in any scan (train 2, S3; docs/wip/sound2-plan.md 2.1): the free flight over the scan (scan-free,
+ * `free`) turned into a timed course over `track` (a course the page generated in this scan, at the size flown). The goal is the
+ * package's 'timed-course' with the track's laps, so the runner's own rules hold: the hum on the next gate, the gate note and the
+ * preview of the gate after it, "gate k of n", the lap time and the best time, the wrong way on the leg to the next gate. Its lines
+ * are the package's measured ones: the hum and the goal of the scan course (free-garden's intro 2 and goal, which name no place),
+ * free-garden's hint and retry, scan-free's pass. The id stays SCAN_FREE_ID: no lesson of the course, never on a path or saved.
+ */
+export function scanCourseLesson(free: LessonDef, track: TrackFile): LessonDef {
+    const w = free.world;
+    if (w.kind !== 'scan') throw new Error(`a course flies a scan, not ${w.kind}`);
+    if (track.scene.kind !== 'scan' || track.scene.id !== w.sceneId) throw new Error(`the course is for ${track.scene.id}, the flight is over ${w.sceneId}`);
+    const on = free.layers.on.includes('target') ? free.layers.on : [...free.layers.on.slice(0, 2), 'target' as const, ...free.layers.on.slice(2)];
+    return {
+        ...free,
+        goals: [{ kind: 'timed-course', laps: track.laps }],
+        intro: [{ key: 'lesson.free-garden.intro.2', cues: ['target.hum'] }, { key: 'lesson.free-garden.goal.1' }],
+        layers: { ...free.layers, on },
+        speech: { ...free.speech, hints: [{ key: 'lesson.free-garden.hint.1' }], retry: { key: 'lesson.free-garden.retry' } },
+        world: { ...w, track: { id: track.id, version: track.version } }
+    };
+}
+
+/** A free scan flight that flies a course now (scanCourseLesson): its world names a track. */
+export function isScanCourse(lesson: LessonDef): boolean {
+    return lesson.world.kind === 'scan' && lesson.world.track !== null;
+}
+
 /** The prefs the session layer holds while a scan lesson flies: the lesson's size and the walls on. */
 export const SCAN_PREF_IDS: readonly string[] = ['scene.transform', 'scene.walls'];
 
@@ -161,14 +189,18 @@ export function flownStart(track: TrackFile, tr: { readonly s: number; readonly 
  * The lesson over the scan flown now: its world, gates, start, floor and helper's view. No track (train 2, the free flight scan-free):
  * no gates, the scan's own spawn, the walls and the floor only.
  */
-export function buildScanLesson(track: TrackFile | null, view: ScanView): ScanLesson {
+export function buildScanLesson(track: TrackFile | null, view: ScanView, opts: { course?: boolean } = {}): ScanLesson {
     const tr = view.src.transform();
     const transform: SceneTransform = [tr.s, tr.t[0] as number, tr.t[1] as number, tr.t[2] as number];
     const col = view.src.collision();
     const start = track ? flownStart(track, tr, view.spawn) : view.spawn;
     const objects = track ? trackToObjects(track, { transform }) : [];
+    // a course flown by sound (train 2, S3): the world's checkpoints are the course's path (setCourse), so a respawn goes back to
+    // the furthest path point passed; a lesson's own hand-laid track (free-garden) keeps its gates only, as it always did
+    const world = new ScanSonicWorld(view.sceneId, view.sceneVersion, view.src, track);
+    if (opts.course && track) world.setCourse(track);
     return {
-        world: new ScanSonicWorld(view.sceneId, view.sceneVersion, view.src, track),
+        world,
         floorY: floorUnder(col, start.pos),
         start,
         objects,

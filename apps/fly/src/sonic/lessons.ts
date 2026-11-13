@@ -38,8 +38,9 @@ import type { LessonWorld } from './lesson-world';
 import type { SonicMode } from './mode';
 import { worldPrims } from './primitives';
 import type { Prim } from './primitives';
-import { voxelCm, wallsAreCoarse } from './scan-lesson';
+import { isScanCourse, scanCourseLesson, voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
+import type { CourseAnswer } from './course-ask';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
 import { DEFAULT_LESSON_START_KEYS } from './key-names';
@@ -81,6 +82,11 @@ export interface LessonPage {
      * when the page cannot fly a scan. A scan that does not load rejects, and the lesson does not open.
      */
     scanLesson(lesson: LessonDef): Promise<ScanLesson | null>;
+    /**
+     * A course of gates in the scan flown now, for the free flight over a scan (train 2, S3: N there asks for one; course-ask.ts),
+     * and the name of that key as the pilot's keyboard types it. Absent: N in a free flight goes to the menu, as before.
+     */
+    course?: { ask(): Promise<CourseAnswer>; key(): string };
     /** The start screen over the flight. */
     showMenu(): void;
     /** Milliseconds, for the pause between a pass and the next lesson (performance.now). */
@@ -191,12 +197,38 @@ export class LessonHost {
 
     /** The free flight over a scan link's scan (train 2, start.ts freeLessonOf): opened by its id SCAN_FREE_ID, never on a path. */
     private free: LessonDef | null = null;
+    /** The free flight as it was opened, without a course: what a course is made from and what a failed ask goes back to. */
+    private freeBase: LessonDef | null = null;
 
     /** Opens the free flight over a scan (scanFreeLesson): no track, no target, the scan's own spawn, the walls and height heard. */
     openFree(lesson: LessonDef): Promise<boolean> {
         if (lesson.id !== SCAN_FREE_ID) return Promise.resolve(false);
         this.free = lesson;
+        this.freeBase = lesson;
         return this.open(SCAN_FREE_ID);
+    }
+
+    /**
+     * N in a free scan flight (train 2, S3): a course of gates in this scan (the page's course.ask), flown by sound as a timed course
+     * (scanCourseLesson); N in it asks for another. No course (no walls, none fits, the worker failed): said, and the free flight again.
+     * False when the page asks for none (the caller goes to the menu).
+     */
+    private async flyCourse(): Promise<boolean> {
+        const course = this.p.course;
+        const base = this.freeBase;
+        if (!course || !base) return false;
+        const say = (line: SpeechLine): void => void this.p.mode.bridge.say(line, false, { lesson: true });
+        say({ key: 'sonic.say.courseMaking' });
+        const a = await course.ask();
+        if (!a.ok) {
+            say({ key: a.why === 'no walls' ? 'sonic.say.scanNoWalls' : 'sonic.say.courseNone' });
+            this.free = base;
+            return this.open(SCAN_FREE_ID, { keepSpeech: true });
+        }
+        this.free = scanCourseLesson(base, a.track);
+        const ok = await this.open(SCAN_FREE_ID);
+        if (ok) say({ key: 'sonic.say.courseReady', params: { n: a.track.gates.length, laps: a.track.laps, key: course.key() } });
+        return ok;
     }
 
     /** A lesson world built before the page (the entry's first flight is made on it), so the first open does not build it again. */
@@ -310,6 +342,8 @@ export class LessonHost {
                 if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } }, false, { lesson: true });
                 // a free flight over a scan that has no walls (train 2): no wall can warn, said and shown (the captions), with the way to get them
                 if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
+                // train 2, S3: the free flight with walls names the key that asks for a course of gates in this scan (flyCourse)
+                else if (free && !isScanCourse(lesson) && this.p.course) void this.p.mode.bridge.say({ key: 'sonic.say.courseOffer', params: { key: this.p.course.key() } }, false, { lesson: true });
             }
             return true;
         } catch (e) {
@@ -517,7 +551,8 @@ export class LessonHost {
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        // the free flight over a scan has no lesson after it on any path: the menu
+        // the free flight over a scan has no lesson after it on any path: N asks for a course in it (S3), else the menu
+        if (id === SCAN_FREE_ID && (await this.flyCourse())) return;
         const next = id === SCAN_FREE_ID ? null : lessonAfter(id, this.p.path());
         if (next && (await this.open(next.id))) return;
         this.toMenu();

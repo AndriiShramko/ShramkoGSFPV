@@ -22,7 +22,7 @@
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
 import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
-import { DICTS, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
+import { DICTS, SCAN_FREE_ID, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
@@ -51,6 +51,8 @@ import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
+import { askCourse, randomSeed } from './course-ask';
+import { seedOfLink } from '../course/link';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
@@ -175,12 +177,32 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
         spawn: { pos: [now.spawn[0], now.spawn[1], now.spawn[2]], yawDeg: now.spawn[3] },
         // asked each time: the session is replaced by a scene switch, the walls by a refine
         src: { collision: () => ctx.session.collision, transform: () => ctx.session.transform }
-    });
+    }, { course: lesson.id === SCAN_FREE_ID });
+}
+
+/**
+ * Train 2, S3: a course of gates in the scan flown now (course-ask.ts), for N in a free scan flight. The first ask takes the seed of
+ * the page's course= link (the course Shift+G made on the sighted page that opened this one), later ones a random seed. The course
+ * goes into the tracks cache under its id and version, so the lesson that names it (scanCourseLesson) finds it without a fetch.
+ */
+function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonNullable<LessonPage['course']> {
+    let linkSeed = seedOfLink(location.search);
+    return {
+        key: () => names.of('scene.next'),
+        async ask() {
+            const seed = linkSeed ?? randomSeed();
+            linkSeed = null;
+            const a = await askCourse(ctx.session, seed);
+            if (a.ok) tracks.set(`${a.track.id}@${a.track.version}`, Promise.resolve(a.track));
+            return a;
+        }
+    };
 }
 
 /** The page as the lesson host sees it. */
 function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
+        course: courseOf(ctx, tracks, names),
         mode,
         store: ctx.prefs,
         locale,

@@ -28,6 +28,19 @@ Stage S2-any-scan (fly THIS scan by sound):
 - [ ] packages/prefs/test/migrate.test.ts with a fliesBySound document (kept when true, dropped otherwise); pinned tables of docs/agent-map.md re-run (no setting or key added, so no table change expected)
 - [ ] probe: new case in tools/bench/src/sonic-int-review.ts on a local release (ports 5700-5719): scene 887f27aa by the new link, free scan flight running, a wall cue planned flying at a wall; screenshots U:/Temp/gsfpv-train2/shots/sound-start-first.png and sound-start-experienced.png
 
+Stage S3-course-by-sound (sound2-plan 2.1, simulator only, no package change, no pin move):
+- [x] scan-lesson.ts scanCourseLesson(free, track): scan-free turned into goal timed-course (track.laps), layer target added, world.track = the course; lines are measured package lines (free-garden intro.2 with the hum cue, goal.1, hint.1, retry; scan-free pass). isScanCourse(lesson). buildScanLesson(track, view, { course }) calls ScanSonicWorld.setCourse(track) (world checkpoints = coursePath: respawn to the furthest path point passed); free-garden unchanged (commit of this line)
+- [x] course-ask.ts: courseJob / courseAnswer (pure) and askCourse: own Worker of apps/fly/src/course/worker.ts ('generate'), limit COURSE_LIMIT_MS = 150000 (the course feature's GENERATE_LIMIT_MS, an estimate there) (this commit)
+- [x] lessons.ts: LessonPage.course { ask, key }; free flight with walls says sonic.say.courseOffer; N in a free scan flight (advance) -> flyCourse: courseMaking, ask, then courseReady (n, laps, key) on the course, or scanNoWalls / courseNone and the free flight again; N in a course asks for another (this commit)
+- [x] feature.ts: courseOf(ctx, tracks, names): first ask takes the seed of the page's course= link (seedOfLink), later random; the course goes into the tracks cache (no fetch); scanLesson passes course: lesson.id === SCAN_FREE_ID (this commit)
+- [x] locales packages/i18n/locales/fly/sonic/{en,es,pl,ru}.json: sonic.say.courseOffer, courseMaking, courseReady, courseNone (this commit)
+- [x] test tools/bench/test/sonic-scan-course.test.ts: 3 passed; negative control (neg_control.py, ref origin/main, scan-lesson.ts, -t checkpoints): NEG OK
+- [ ] sonic-flight.ts modeScanPage: carry the page's course= into the sound link (so Shift+G's course is the one N flies first)
+- [ ] a host-level test in the rig (tools/bench/test/sonic-lesson-rig.ts: page.course and scanLesson by the lesson's track): N in free flight -> course lesson, runner target gate 1, gate 2 after gate 1 (the runner gives no target before its first step, so a bare runner cannot show it)
+- [ ] probe: new case in tools/bench/src/sonic-int-review.ts on a local release (ports 5700-5719): ?sonic=scan&scene=887f27aa&sz=1, N, wait for courseReady (generation up to 31 s measured by lane tracks), __gsfpv.sonic().target is gate 1, fly through it, then gate 2; lastLine fly.gate
+- [ ] key I (where am I) line for the course (gate k of n, metres, lap time): the runner's statusLine as it is now, not checked
+- [ ] 2.2 (explore a scan without a course): not started
+
 ## Checks (numbers printed by the commands)
 
 Package (C:/dev/ShramkoSonicFPV, node node_modules/vitest/vitest.mjs run):
@@ -48,6 +61,15 @@ Simulator (this worktree, tools/bench):
 S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/bench sonic-optin + sonic-start-screen: 42 passed. packages/prefs migrate + defs: 41 passed.
 
 ## Decisions
+
+- S3 keys a pilot uses, in order (for the note to the owner): 1. on a sighted page, Shift+G makes a course (optional), then the pause
+  menu's Fly by Sound opens the sound page for this scan; 2. on the start screen, the scan's button (Enter); 3. the free flight says
+  "Press N for a course of gates in this scan"; N builds it (up to about half a minute, said); 4. "Course ready. Gates: n, laps: k.
+  The hum leads to gate 1": follow the hum; each gate and each lap time are said; 5. N again: another course; I: where am I;
+  Escape or X: the menu. No new letter: every free letter is a keyboard-flying key (W A S D Q E) and Shift is the mode's down.
+- S3: the course is a scan-free lesson in memory (id SCAN_FREE_ID, version 1) with goal timed-course; no package template
+  course-free yet, so no new package lines, no TTS or listen-words run. The sound page asks the course worker itself, since the
+  course feature's track and generate() are inside its closure (lane tracks).
 
 - S2 pass 2: the pause item stays a new tab (the flight is left paused under the menu, as before). "Back to the lessons" from a free
   flight is the mode's existing menu key (the start screen with the lessons); no new key X was added. Experienced = any saved lesson
@@ -76,6 +98,14 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 
 ## For the lead
 
+- S3 hook needed in lane tracks (apps/fly/src/app/builtin/course.ts, apps/fly/src/course/hook.ts): CourseHook has the track's id,
+  not the TrackFile, and generate / load are closure functions. The sound page therefore runs its own worker job (course-ask.ts).
+  Wanted: hook.course.trackFile(): TrackFile | null and hook.course.generate(seed) (or a 'course' ctx event with the track), and a
+  way to keep the course feature's lap HUD and its clock off on a ?sonic= page (one clock: the runner's). A saved (server) course
+  by sound needs the same hook (load + check on the pilot's walls); not done.
+- S3 recordings: a course flight records lesson scan-free v1 with a track that is not a file of the release: its replay check
+  will not re-derive (the plan's "TrackFile into the session package" is not built).
+
 - S2 walls: starting the walls build from the sound page needs more than a small hook: apps/fly/src/walls.ts WallsHook has refine()
   but no bake(); the bake is wired to the box's own button inside mountWalls. The free flight only says sonic.say.scanNoWalls.
 
@@ -93,6 +123,11 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 
 ## Not verified
 
+- S3: nothing flown in a browser: no worker run, no hum on gate 1 or 2, no gate or lap line heard; the runner gives no target
+  before its first step, so the unit test checks the lesson and the world, not the target. The NEG OK of the checkpoints case was
+  on scan-lesson.ts only. tools/bench sonic-scan-free.test.ts (S2's, untracked) still does not load (location at import).
+  Locale parity tests and the i18n gate were not run (four keys added in all four languages).
+
 - S2: nothing of the simulator part is built yet (items [ ] above); no page probe, no screenshots. The package template was
   not flown in a browser; its texts were heard only by the words check (Windows voices and Whisper), not by a person.
 
@@ -101,6 +136,9 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 - sonic-bump.test.ts 'walls, pillars...' case did not finish within its 5 s timeout here on either pin.
 
 ## Cost notes
+
+- S3: about 20 of 30 turns went to reading how the runner, the host, the course feature and the keymap fit (no free letter, course
+  track hidden in a closure, runner target only after a step) before writing; a scout note naming these three facts would have saved half.
 
 - S1: most turns went to quoting test patches (a heredoc ate the backslash of TS \' strings); a patch script written
   with Write from the start would have saved two turns.
