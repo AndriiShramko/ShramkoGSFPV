@@ -125,8 +125,7 @@ for (const l of LOCALES) {
     if (l === "en") {
       // review PG-7: the hum figure's "octave higher" wave is off by 84 % of the cycle, while the nose (sf-turn, ease-in-out from 0 deg
       // at 78 % to 58 deg at 96 %) is 13.4 deg off; it stayed on to 88 % (34.5 deg off) before. The page's text says "within 8 degrees".
-      const cssDir = join(OUT, "_next", "static", "css");
-      const css = readdirSync(cssDir).filter((n) => n.endsWith(".css")).map((n) => readFileSync(join(cssDir, n), "utf8")).join("\n");
+      const css = [...snd.matchAll(/href="(\/_next\/static\/[^"]+\.css)"/g)].map((m) => readFileSync(join(OUT, m[1]), "utf8")).join("\n");
       const kf = css.match(/@keyframes sf-high\{([\s\S]*?\})\}/)?.[1] ?? "";
       const stops = [...kf.matchAll(/([0-9%,to ]+)\{opacity:([01])\}/g)].map((m) => ({ at: m[1], on: m[2] === "1" }));
       const lastOn = stops.filter((s) => s.on).flatMap((s) => s.at.split(",").map((x) => parseFloat(x))).reduce((a, b) => Math.max(a, b), -1);
