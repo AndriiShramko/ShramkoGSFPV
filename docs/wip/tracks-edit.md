@@ -62,12 +62,24 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
       (neg_control.py, ref origin/main, files store.ts mouse-look.ts, vitest with --root tools/bench): NEG OK, failed by
       assertion (`expected [...] to include '.course-editor'`; the log keeps only the tail, so the store tests' failures on
       the old code are not shown).
-- [ ] U2 left: tools/bench/src/tracks-page.ts (local servers, ports 5720-5739, gpu lock): open the editor on a generated
-      course (Shift+B; hook.editor.open), move one gate (ArrowUp; hook.editor.changed), add one (Insert; gates + 1), delete
-      one (Delete), type a name and "Save as my course" (hook.saved, source 'server'), see the row in the list with
-      .ce-by and .ce-edited marks, vote (.ce-up; hook.editor.votes), reload, reopen and see the count and aria-pressed.
-      Screenshots of the open editor at 1920x1080 and 844x390 into U:/Temp/gsfpv-train2/shots/tracks-editor-1920.png and
-      tracks-editor-844.png, and look at them (overlap, readable keys).
+- [x] U2 (086a35d2, fadb5dec) tools/bench/src/tracks-page.ts section E (EDITOR_ONLY=1 runs it alone; the full run does it
+      after C3): link seed g1.1 on 887f27aa (19 gates), Shift+B, "Save for everyone" from the window (the parent), ArrowUp
+      moves gate 1, Insert adds one (first try refused 'placement', after Tab 19 -> 20), Delete back to 19, name "Probe
+      Pilot" and "Save as my course" (a fork, new id, source server), the fork's row says "created by the generator" and
+      "edited by Probe Pilot (pilot)", vote up ("+ 1", aria-pressed true, hook.editor.votes 1), window layout at 1920x1080
+      and 844x390 (inside the view or scrolls, 23 key buttons, 0 overlapping, smallest key font 11.25 px at 844), reload and
+      reopen: "+ 1" and aria-pressed true. Run 1 found a bug the checks let through (the row said "created by null
+      (generator)" and "edited by Probe Pilot (generator)": the server's mark kinds are 'pilot' and 'generator' with name
+      null, words.ts knew only 'person'); fixed in fadb5dec: texts.ts markParts (pure, tested), words.ts markText, store.ts
+      CourseMark.name nullable, en/es kind.generator "the generator"/"el generador"; the probe now checks the exact en words.
+      The window background is opaque (run 1: the HUD's Back/Controls/Pause and REC buttons read through it).
+      Runs: release build exit 0; `EDITOR_ONLY=1 SONIC_PORTS=5720-5739 EVIDENCE_NAME=tracks-editor-u2 npx tsx
+      src/tracks-page.ts` 12/12 checks passed (evidence/2026-11-13/tracks-editor-u2.json, not committed); vitest
+      tracks-editor-ui.test.ts 9 passed; tsc apps/fly and tools/bench exit 0; 0 non-ASCII bytes in 6 changed code files.
+      Negative control: neg_control.py ref origin/main, file texts.ts: NEG OK (by import, texts.ts has no markParts there);
+      mutation control (markParts back to the old logic: only 'person', name passed through): 1 failed by AssertionError,
+      8 passed, file restored. Screenshots U:/Temp/gsfpv-train2/shots/tracks-editor-1920.png and tracks-editor-844.png
+      looked at: the keys are readable, nothing reads through the window; see For the lead for what the HUD shows.
 - [ ] U3 left (not built in U1): the orbit camera around the selected gate (the drone camera stays), red drawing of a failing
       gate (view.ts has no 'bad' paint yet; problems are shown as text), pillar pairs as key 4 (key 4 is cube for now),
       Space "drop here" in flight, voting only after a completed lap (tracks-plan 2.9; offered on every row now).
@@ -109,6 +121,15 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
 
 ## For the lead
 
+- T3 U2 screenshots: (1) the HUD's "Click to fly, or press W or Space to take off" prompt stays on screen under the open
+  editor (the flight is paused, so it is wrong there) and at 844x390 the window cuts it in half; the prompt is HUD code
+  outside this lane: hide it while pause reason 'panel' is set. (2) The window (top right, z-index 30) covers the HUD's
+  top-right buttons (share, Back, Controls, Pause) at both sizes; Esc leaves the editor, so nothing is lost, but the share
+  button is half covered at 1920. (3) At 844x390 the name fields, the save buttons and the list are reached by scrolling the
+  window. (4) The selected gate is not marked in the scene (U3: orbit camera and red/selected paint).
+- The full tracks-page run (hint flights, A-C3, then E) was not run here (about 11 minutes plus E); EDITOR_ONLY=1 runs E alone.
+  docs/agent-map.md line 64 could name EDITOR_ONLY.
+
 - T3 U1 touches files outside apps/fly/src/course: packages/prefs/src/keymap.ts (one binding `course.edit` Shift+B, status
   shipped) and packages/prefs/test/keymap.test.ts (lane tracks' own lists TRAIN1 and SHIPPED_BY_TRACKS only);
   apps/fly/src/play/mouse-look.ts (CURSOR_WINDOWS + '.course-editor', as the task asked). No flight, input or collision
@@ -144,12 +165,19 @@ Stage T3-editor-ui (page side, apps/fly/src/course/**):
   the plan's "touched gate and its two legs" shortcut is not built. Only analytic rooms (test/worlds.ts) were used.
 - T2: no browser run, no page; whether the sound package's future /2 matches this one is not known.
 
-- T3 U1: no browser run yet (U2): the editor window, the keys in a real page, the view-relative arrows (forwardOf takes
-  the body's -Z as forward: not checked against the camera), the paused flight under the window, the main-thread cost of
-  wallsCheck per key press on a real scan, the list after a fork and the vote after a reload were not run.
+- T3 U1/U2: the browser run (U2) covers the window, ArrowUp, Insert, Delete, Tab, the fork, the marks, the vote and the
+  reload. Not checked: that ArrowUp moves the gate away from the camera (forwardOf takes the body's -Z as forward; only
+  "changed, not refused" is checked), the main-thread cost of wallsCheck per key press on a real scan (not timed), mouse
+  clicks on the key buttons (the probe uses the keyboard and clicks only save and vote), the other three languages in the
+  page, Esc twice with unsaved changes, and the full tracks-page run with E after the other sections.
 - T3 U1: the full key table on a ?sonic= page was not exercised (the feature ignores Shift+B when ctx.sonic is set).
 
 ## Cost notes
+
+- T3-editor-ui U2 (about 30 replies): the probe passed on the first run; most turns went to reading the probe and the
+  course feature again and to the Edit tool's read-before-edit on files only grepped. Cheaper: Read the exact slice of
+  every file to be edited in the first batch; check list texts by their exact words from the start (a loose "includes the
+  name" check let "created by null" through).
 
 - T3-editor-ui U1 (about 40 replies, over budget): most turns went to reading the course feature, keymap, mouse rule and
   API row shape, and to shell quoting (a heredoc with a large patch failed; the i18n module needs `location`, so the
