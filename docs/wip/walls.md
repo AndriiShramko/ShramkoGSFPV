@@ -7,7 +7,9 @@ Worktree C:/dev/gsfpv-voice, branch walls (from origin/main 2a5ac433). Ports 580
 Stage W3-lead-the-pilot:
 - [x] Merge of tracks-edit (d79b5ca4) into walls: clean, no conflict (merge commit a0637555).
 - [x] 1-4 code: apps/fly/src/walls-first.ts (ensureWalls, withWalls), WallsHook.build() and .line (walls.ts), app/walls-then.ts wallsThen(ctx, then); the course (Shift+G, menu, Shift+T load, Shift+B edit) builds walls first and goes on; C and V start the build; the ceiling and floater panels build first and open after; the build box keeps in sight in flight while it holds the offer or progress (fly.css .bake-box.keep); texts rewritten in en/es/pl/ru (course.noWalls replaced by course.wallsFirst, new walls.building; bake.done without the voxel count; no {msg} in walls and course entry lines). Test tools/bench/test/walls-first.test.ts 16 passed, NEG OK (origin/main course.ts, builtin walls.ts, voxels.ts, 8 locale files); walls, ladder, published tests 53 passed together; packages/i18n tests 22 passed; apps/fly tsc exit 0. Commit: this one.
-- [ ] Page probe on a local release (port 5800): Forest Floor ab5efa0e, Shift+G, walls built, course ready, gate drawn, time key to first gate; Wroclaw 70b50d42 with the local stand-in of published walls; screenshots walls-chain-1920.png and walls-chain-844.png.
+- [x] Lead line in the walls box instead of a HUD note over it, no dead button during a build, button back and enabled after a failure (commit e744ad95; tests 40 passed with packages/i18n, tsc exit 0).
+- [x] Page probe tools/bench/scripts/walls-chain-probe.mjs (commits 1e792157, 7959a2c1, e744ad95), run under the GPU lock on local releases (port 5800). Wroclaw passes; Forest Floor walls pass, its course does not (Facts W3).
+- [ ] BLOCKED, outside this lane: Forest Floor gets walls in 9.8 s, then the course generator answers "nothing fits" at once. Cause: packages/tracks/src/generate.ts COURSE_DEFAULTS (gatesMin 4, spacingM 3 m, sizes in metres) against a scan whose whole walls grid is 6 x 5 x 5.8 m (scene.voxel.json gridBounds). A course on a small scan needs the generator (lane tracks) to scale its gates and legs to the free space, or the course entry to fly the scan at a bigger scene scale; neither is in this lane's files.
 
 Stage W2-published:
 - [x] Design (below, The way W2).
@@ -63,6 +65,12 @@ Ladder run, walls-trials.ts ladder, 2026-11-13, local release, headless system C
 - ab5efa0e Forest Floor: built in 10.8 s (read 3.3 s, voxelise 7.4 s), level 0, 5 cm, tried 1, not rough, 4,019,918 Gaussians, 124,612 solid voxels, peak JS heap 602 MB. Drone into the walls: tunnelSelfTest(20 passes, 25 m/s) gave 20 contacts, 0 penetrations. Line shown: "Walls built in this browser: 0.1 million voxels in 11 s. Crashes are on."
 - 70b50d42 Wroclaw: scene ready in 5.1 s; the bake was still in "voxelising on your GPU" after 1200 s (probe timeout), no error, no walls. The ladder had picked level 2 (10.77 M Gaussians, within the memory gate), so the Gaussian count is not what holds it. Cause, inference not measured: the tree bound is 13536 x 12547 x 13512 m; at 5 cm that is 2.7e5 cells per axis and the voxeliser walks that space. A per-Gaussian position histogram of Wroclaw was not taken.
 
+Facts W3 (measured 2026-11-14, walls-chain-probe.mjs, headless system Chrome, ?set.input.howToFly=false, the probe closes the Controls screen with its x, then presses Shift+G once):
+- Run 2 (release c5014547, U:/Temp/gsfpv-train2/walls/w3-chain-run2.json): ab5efa0e 1920x1080: after the Controls screen closed the walls box was shown (boxShown true, keep true, button "Build walls in this browser"); after Shift+G the box lines were "Building walls: reading the scan..." (0.0 s), "voxelising on your GPU" (7.8 s), "Walls built in this browser in 10 s. Crashes are on." (9.9 s); walls in use at 9.943 s, source bake; then the course: problem "nothing fits", HUD "No course fitted the free space this time. Shift+G tries another layout". No line said walls were missing; 0 page errors. 70b50d42 844x390 with published-walls stand-in (dist/walls/70b50d42/v1 from U:/Temp/gsfpv-train2/walls/release): no build, course generated, 21 gates, 72 entities drawn, Shift+G to first drawn gate 23.389 s, 0 page errors (pass false in that run only because the probe then asked for state in-use; published walls keep state none; criterion fixed in e744ad95, not rerun).
+- Run 3 (release e744ad95, U:/Temp/gsfpv-train2/walls/w3-chain.json): ab5efa0e 1920x1080: walls in 9.763 s, lead line in the box "First the walls of this scan, then the course." above "Building walls: reading the scan..." with no button under it (shot walls-chain-1920-build.png); course "nothing fits" again.
+- Forest Floor walls grid: 6.0 x 5.0 x 5.8 m (gridBounds of U:/Temp/gsfpv-train2/walls/release/ab5efa0e/v2/scene.voxel.json).
+- Screenshots looked at: U:/Temp/gsfpv-train2/shots/walls-chain-1920.png (walls in, "Walls 5 cm", no course), walls-chain-1920-build.png (run 3), walls-chain-1920-build-run2.png (run 2: the HUD note covered the badge; fixed in e744ad95), walls-chain-844.png (Wroclaw, gates drawn, "Gates: 21").
+
 Facts W2 (measured 2026-11-13, this PC: RTX 4090, 274 GB RAM; tool tools/walls/bake-published.mjs, manifests in U:/Temp/gsfpv-train2/walls/published*/manifest.json):
 
 | id | result | cell | json B | bin B | kept share (level 4) | s |
@@ -95,6 +103,13 @@ Provisional (the browser trials of step 2 are not run): a ladder of levels of de
 
 ## For the lead
 
+W3 build function for other features (lane sound's free flight by sound):
+1. `ctx.hook.walls?.build(lead?: string): Promise<boolean>` (apps/fly/src/walls.ts WallsHook.build): shipped or published walls at once, else the browser's store, else one build here with its progress in the walls box; concurrent calls share one build; true when ctx.session.collision is set.
+2. Easier: `wallsThen(ctx, then)` from apps/fly/src/app/walls-then.ts runs `then` at once when walls are there, else after the build, only if the scene did not change; it returns 'now' | 'built' | 'failed' | 'moved'.
+3. `lead` is one line shown in the walls box above the progress (say what comes after the walls, in all four languages); on 'failed' the box already says what to press (ctx.hook.walls.line holds it).
+- W3 merged tracks-edit (merge a0637555, no conflict). Files outside the walls list touched for the rule "an action that needs walls gets them": apps/fly/src/app/builtin/course.ts (entry only, not apps/fly/src/course/**), voxels.ts, ceiling.ts, floaters.ts, apps/fly/src/fly.css (.bake-box.keep).
+- W3 blocked item: see Status (generator in packages/tracks/src/generate.ts refuses a 6 m scan).
+
 Release of published walls (W2; nothing uploaded by the lane):
 1. Release the page of this branch as usual (the loader asks /walls/<id>/v<N>/scene.voxel.json; until step 2 that path falls to location / and the page treats any answer that is not walls as "not published").
 2. bash deploy/release-nginx.sh (deploy/nginx.conf now has location ^~ /walls/ with root /srv/releases).
@@ -116,6 +131,8 @@ sha256 (json+bin) of each is in release/manifest.json. A new scan version (v<N+1
 
 ## Not verified
 
+- W3: the box staying in sight while the drone flies (#ui.hud-flying with .bake-box.keep) was not seen in a page: the probe never armed the drone. The menu item "Course: a new random course" was not pressed by the probe (it calls the same generate as Shift+G). C, V, the ceiling and floater panels on a scan without walls were not run in a page (unit tested only through withWalls). The course on Forest Floor never came (blocked, see Status), so the time from the key to the first gate exists only for Wroclaw. Wroclaw was not rerun after e744ad95 (that change touches only the build path, which a published scan does not take). accept-c.ts and accept-fly.ts were not run (gates; accept-fly reads the badge text from the dictionary).
+
 - W2: deploy/release-walls.sh and the nginx location were not run (no SSH in this lane); the hub path $GSFPV_BASE/releases/walls being writable by the deploy user is an assumption. The page probe has no negative control on an old build (the unit test has one: NEG OK). Only Wroclaw (and Forest Floor before) was opened in a page with its published walls; the other 7 files were not loaded by the page (format is the same CLI output, sha256 checked). Walls from level 1 or 3 (70b50d42, 0230d903, 1994c65c, 2f1ddf5f) and at 10 or 20 cm were not compared with a level-0 5 cm bake; how close they follow the scan's surfaces is not measured. The crop settings (0.5 %, 15 %, 5 m) are chosen, not measured; that the drone stops at published walls in flight was not flown. The offline bakes did not take the GPU lock (Node CLI, not a browser).
 
 - accept-c.ts after its change (cc852ca1) was not run (a gate; the lead runs it). The ladder run used a release built before cc852ca1, so the reworded refine line and bake.noRoom on the base path were not seen in a page.
@@ -124,6 +141,8 @@ sha256 (json+bin) of each is in release/manifest.json. A new scan version (v<N+1
 - The drone stopping at built walls in flight (no page probe yet).
 
 ## Cost notes
+
+- W3 worker: most turns and 15 minutes of GPU lock went to a first probe run that pressed Shift+G under the open Controls screen (it blocks the keys) and waited 10 minutes for nothing; a probe should close .screen.radio first and stop as soon as the feature reports a problem. Checking the scan's grid size against the course generator's metre defaults before the run would have shown the Forest Floor block at once.
 
 - W2 worker 2: most turns went to waiting on bakes (Wroclaw 400 s, 1994c65c 1063 s, 2f1ddf5f 1005 s) and on two futile Wroclaw reruns at coarser cells left by worker 1; reading the CLI error line (uploadAllGaussians, a buffer of all Gaussians) before choosing the next attempt would have saved about 20 minutes of GPU and two turns.
 
