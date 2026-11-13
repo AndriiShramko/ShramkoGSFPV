@@ -27,7 +27,7 @@ Stage 1, M1-cause-and-fix:
   Send is reachable by Tab (7 presses from the focused Bug tab), on origin/main and on the fix. Nothing to fix.
 - [x] 4. tools/bench/test/app-mouse-free.test.ts: 5 tests pass; negative control NEG OK (all 5 fail on
   origin/main's mouse-look.ts and play.ts). Typecheck apps/fly and tools/bench exit 0.
-- Commit: see git log (stage 1 commit "mouse-free: a window that needs the mouse gets the mouse").
+- Commit: 7fa41712 (items 1 to 4).
 
 Stage 2: not started (named by the train plan).
 
@@ -61,4 +61,5 @@ Stage 2: not started (named by the train plan).
 
 - Stage 1: most turns went to finding how the screens open and how a probe drives the page (no existing probe
   fakes navigator.usb). Cheaper: a probe template in the code map that starts a game-scheme flight and opens
-  the Controls screen.
+  the Controls screen. Also: neg_control.py cannot start npx on Windows; call node node_modules/vitest/vitest.mjs
+  and add --reporter=json --outputFile to see which tests failed on the old code.
