@@ -130,11 +130,11 @@ because the files do not exist on origin/main; vitest run as node node_modules/v
   separately through a scratch copy of the tests without dev=True (U:/Temp/rc2neg/test_scratch.py): old bridge, R6
   connection not closed; R5 "late bytes 0" against 1925434 on the new one (the stalled page uses a 4 KB receive
   buffer so it fills at once). The DLL version is not printed (no version API call added; the path is printed).
-  Commit COMMIT3.
+  Commit c140dbc9.
 - [x] RC2-R11 (minor): Decisions "Poll" line and the README step 5 corrected (4 requests out; no ARM press in the
   centred style); dji-duml.ts header no longer claims byte 0 is a result code; the two recordings copied to
   packages/input/test/fixtures/dji-rc2/ and dji-duml.test.ts, app-dji-rc2.test.ts and test_rc_bridge.py read them
-  there. rc2-probe.mjs opens the fly page with &rcbridge=1 (R2's switch). Commit COMMIT3.
+  there. rc2-probe.mjs opens the fly page with &rcbridge=1 (R2's switch). Commit c140dbc9.
 - [ ] RC2-R1 (blocker): NOT refuted, NOT fixable in this lane. The cost is in apps/fly/src/play/ground.ts,
   packages/collision/src/world.ts and the lesson pilot (outside this lane's paths); the lane's own CDP stacks show it.
   Moved to "For the lead before the merge" with the reviewer's fix. Stage 3 step 4 stays unticked until then.
