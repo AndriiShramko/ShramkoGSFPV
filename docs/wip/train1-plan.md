@@ -203,12 +203,10 @@ Deploy, each step with neighbour snapshots and the hub lock:
 
 ## 10. Deferred to train 2
 
-Track editor, authorship, forks, voting and rating, admin edits and the admin tab (R6-R8), track format `/2`, solid gates,
-slalom pillars and dive gates, the course in the flight log and in replays, a "fly a course" sound lesson. The permanent
-room "Drony Bydgoszczy" with a scene vote and a room admin (R27), the timed race in a room, quick phrases, kick and ban,
-the motor sound of other drones (`others` layer). Voice: package additions G1-G7, the `aggregate` command, threshold
-tuning on real recordings, pulling packages from the server. Also: the menu for three kinds of newcomers, weak devices,
-beacon stage 2 (walls lessons, scans without a track, the spoken list offering the throttle style).
+- Tracks: the editor, authorship, forks, voting and rating, admin edits and the admin tab (R6-R8), track format `/2`, solid gates, slalom pillars and dive gates, the course in the flight log and in replays, a "fly a course" sound lesson.
+- Rooms: the permanent room "Drony Bydgoszczy" with a scene vote and a room admin (R27), the timed race in a room, quick phrases, kick and ban, the motor sound of other drones (`others` layer).
+- Voice: package additions G1-G7, the `aggregate` command, threshold tuning on real recordings, pulling packages from the server.
+- Also: the menu for three kinds of newcomers, weak devices, beacon stage 2 (walls lessons, scans without a track, the spoken list offering the throttle style).
 
 ## 11. Risks
 
