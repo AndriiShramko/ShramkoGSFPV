@@ -61,7 +61,33 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   free port, killed in afterAll and on process exit).
 - Not done in R2: name tags, member list on screen, panel, Shift+L/Shift+O, speech, live region, near call, page probe;
   remote drones are a box primitive in the slot's colour (grey when frozen), not the drones3d model.
-### Stage R3: screens, speech, probe (not started)
+### Stage R3: screens, speech, probe - IN PROGRESS (first worker stopped at a clean point)
+- [x] `rooms/nick.ts` (the server's rule, default `Pilot-NNNN`, key `gsfpv.rooms.nick`), `rooms/around.ts` (`relation`,
+      `nearest`, `whoLine`, `NearWatch` 3 m / re-arm 5 m, estimates), `rooms/announce.ts` (`Announcer`: sayVia with
+      `sonic.say.text` when `ctx.sonic`, else its own `role=status` region on `document.body`; keys into `said`, last 50),
+      `rooms/tags.ts` (`NameTags`, DOM overlay, `worldToScreen` of `ctx.renderer.camera`, hidden with the HUD),
+      `rooms/panel.ts` (`roomsPanel`: name, create with name and listed, link + Copy, members, Leave, open rooms table with
+      Join, refresh 10 s), `builtin/rooms.ts` rewritten (join/leave/create in page with `history.replaceState`, menu item
+      `pause.rooms` order 72 tools, keys `rooms.panel`, `rooms.who`, `ROOMS_MENU_PUBLIC`), hook fields `nick`, `link`, `tags`
+      (optional), locales `fly/rooms` x4, privacy section x4, keymap lines shipped, `SHIPPED_BY_ROOMS`, `url.ts` room/rooms
+- [x] checks: `pnpm vitest run tools/bench/test/rooms-around.test.ts tools/bench/test/app-keys.test.ts
+      packages/i18n/test/fly-parity.test.ts tools/bench/test/train1-contract.test.ts packages/prefs/test
+      tools/bench/test/rooms-{codec,interp,socket,a6}.test.ts` 23 files, 301 tests pass; typecheck apps/fly, @gsfpv/prefs,
+      tools/bench exit 0; NEG OK: rooms-around (around.ts, nick.ts absent), keymap.test (keymap.ts of train1-base),
+      main-audit (url.ts of train1-base); in-test controls: mirrored x gives the other side, a turned drone turns the side,
+      the server's refused names refused. Site `i18n-check.mjs` OK.
+- [ ] probe `tools/bench/src/rooms-serve.ts` (model `tools/bench/src/sonicrec-serve.ts`: build of apps/fly + `apps/rooms/rooms.py`
+      child, `/api/rooms` incl. the WebSocket upgrade piped to it) and `tools/bench/src/rooms-two-page.ts` (two headless
+      pages via `tools/bench/src/chrome.mjs` under ONE hold of `C:/dev/.gpu-lock`; read traps.md first; `/en` addresses):
+      A on `39e63ce9` with `?rooms=1` creates a room (click `[data-action=rooms-create]` in the panel opened by
+      `[data-action=pause.rooms]` or Shift+L, or POST /api/rooms from the page then `?room=`), B opens `__gsfpv.rooms.link`;
+      A flies a scripted bot path 20 s; pass: B `remotes` follows A's positions, RMS after aligning the 150 ms playout
+      < 0.15 m, B `members` has A's nick, B `said` has `rooms.say.joined`, Shift+O on B appends `rooms.say.who` (control:
+      after A leaves, `rooms.say.nobody`), A's trace hash = solo. Controls: B on another room id (no remote), rooms.py with
+      the relay off (needs a test flag in rooms.py, R1 has none yet), swapped axes on B's samples (RMS over bound).
+      Evidence `evidence/<date>/rooms-two-page.json`. How the bot flies: see `?tour=`/`?dash=` (BOT params in
+      packages/prefs/src/url.ts) and how `accept-fly.ts` drives a flight.
+- [ ] level 2 review (one independent agent) and fixes; then Status complete.
 
 ## Findings
 - Load (`evidence/2026-11-13/rooms-load.json`): 50 synthetic pilots in 7 rooms, 15 poses/s each, 100 s, rooms.py as a
@@ -106,6 +132,29 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   `/api/rooms/<id>` and `go(room.scene.id)`. Until then R3 writes the share link with `?scene=` and the shared params.
 - Sound mode (Fly by Sound) needs nothing from R2; R3 needs `sayVia` for joins, leaves and Shift+O.
 - Sound mode (Fly by Sound) needs nothing from R1; R3 speaks joins, leaves and Shift+O through `sayVia`.
+- R3: THE CONSTANT that shows the menu item "Fly with others" and Shift+L to everyone: `ROOMS_MENU_PUBLIC` in
+  `apps/fly/src/app/builtin/rooms.ts` (false now: only `?rooms=1` or `?room=`). Flip it after the live two-browser check
+  (plan section 8 step 6), as a second static release.
+- R3: deploy files and order are unchanged from R1 (plan section 8): step 3 `release-rooms.sh --compose`, step 4
+  `release-nginx.sh` with both lanes' locations, step 5 `ship.sh` (allow list `gsfpv-web,gsfpv-api,gsfpv-rooms`), step 6
+  the two-browser check with `?rooms=1`, then the release with `ROOMS_MENU_PUBLIC = true`. Not verified: the hub's
+  nginx-proxy passing `Upgrade` to our nginx.
+- R3, outside the lane's listed paths but the lane's own parameters (plan section 4 "URL parameters room, rooms"):
+  `packages/prefs/src/url.ts` got two entries `room` and `rooms` in `APP_URL_PARAMS_NOT_SETTINGS`, and `builtin/rooms.ts`
+  reads them through `q` of `app/env.ts`. Without that `packages/prefs/test/main-audit.test.ts` fails (3 tests; it already
+  failed on the R2 commit, which read `location.search`). NEG OK against train1-base url.ts.
+- R3: `rooms.nick` is NOT a prefs setting: the schema has no text type (`schema.ts` kinds: bool, number, enum, json with a
+  fixed kind list) and `defs.test.ts` pins 82 settings. The nickname lives under the storage key `gsfpv.rooms.nick`
+  (`apps/fly/src/rooms/nick.ts`, the server's rule). To make it a setting: a text kind in `schema.ts`, the def in
+  `defs/rooms.ts` `ROOMS_DEFS`, `set.rooms.nick` labels in four fly locales, `defs.test.ts` count 83 and its A8 row, then
+  `gen-catalog`.
+- R3: the privacy paragraph is a new section `{"id": "rooms", ...}` before "Your rights" in the four
+  `packages/i18n/locales/site/*.json` (`i18n-check.mjs` OK, 1167 strings x 4).
+- Sound mode, train 2: the motor sound of other drones needs the package change of rooms-plan.md 2.7 (`SonicFrameInput.others`
+  `{key, pos, vel, throttle}`, cue `others.motor` in a new layer `others` off in every lesson, priority 45, the 2 nearest
+  within 15 m, `safety.craft` when closer than 2 m and closing) in `C:/dev/ShramkoSonicFPV` first, then the pin; the page
+  feeds it from `builtin/rooms.ts` (`others` with `RemoteTrack.sample`, vel from the pose). Train 1 speaks only lines:
+  joins, leaves, Shift+O, the near call (through `sayVia` with the host line `sonic.say.text`).
 
 ## Not verified
 - Python 3.12 (the container's) is not on this machine; tests ran on Python 3.11.9. The code uses nothing newer than 3.10.
@@ -116,6 +165,9 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   plan puts the two-page probe in R3). The tests' TypeScript is not typechecked (`tools/bench` tsconfig includes only
   `src/`); vitest ran them. serverMs wraps after 49.7 days of service uptime: not handled by `interp.ts`.
 - The hub's nginx-proxy passing `Upgrade` to our nginx (rooms-plan.md 2.1 says not verified on this hub).
+- R3 so far: the panel, tags, announcer and Shift+L / Shift+O never ran in a browser (the two-page probe is the next
+  step); `panel.ts`, `tags.ts`, `announce.ts` have no unit test (DOM; the probe covers them). Speech through the engine
+  (`sonic.say.text`) is not heard or checked on a `?sonic=` page.
 
 ## Cost notes
 - R1: about 30 replies. Most turns: a test that hung (a drain loop that read snapshots forever) and the Write tool
@@ -124,3 +176,8 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - R2: about 33 replies. Most turns: reading the code around the join (boot, scene-host, shared-visit, bridge, a6) to
   find the entry points one by one; cheaper: the plan's code map with the boot rule "only ?scene= starts a flight" and
   the exact helper names (applyShared, readShared, runDeterminism's loop) would have saved about 8 replies.
+- R3 (first worker): about 45 replies, the probe not reached. Most turns: finding the seams one grep at a time (camera
+  `ctx.renderer.camera`, `ctx.sonic`, the speakable host line `sonic.say.text`, `ctx.hud.root`, the schema having no text
+  setting, main-audit's rule that only `app/env.ts` reads the query) and Write turning `\uXXXX` into letters again;
+  cheaper: a stage this size split into two (screens and speech; probe), the plan naming those seams, and a pre-run of
+  `packages/prefs/test` in R2 (it would have caught the `location.search` read there).

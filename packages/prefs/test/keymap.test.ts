@@ -106,7 +106,7 @@ const SHIPPED_BY_TRACKS: readonly string[] = [];
 // The two lists are kept apart by these lines, so the two lanes' edits never touch the same lines of this file:
 // lane tracks edits only the list above, lane rooms only the list below.
 /** Lane rooms: its keys that shipped (the room panel, who is around). */
-const SHIPPED_BY_ROOMS: readonly string[] = [];
+const SHIPPED_BY_ROOMS: readonly string[] = ['rooms.panel', 'rooms.who'];
 
 const press = (code: string, extra: Partial<KeyPress> = {}): KeyPress => ({ code, shiftKey: false, ...extra });
 const plant = (b: Partial<KeyBinding> & Pick<KeyBinding, 'action' | 'keys'>): KeyBinding[] =>
