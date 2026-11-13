@@ -4,8 +4,8 @@
 //   cd tools/bench && npx tsx src/rooms-open-vote.ts
 // Page A flies scan SCENE_A with the bot pilot, page B flies SCENE_B. Each presses 9 once: A lands in the open room of its
 // scan, B (nobody on its scan) lands in the room with pilots, its page loads SCENE_A. Pass: both joined, the same room,
-// kind persistent, roomScene SCENE_A, each sees the other's drone. Then A presses 9 (the panel opens with Propose
-// focused) and Enter; B's hook shows the vote as not its own; for VOTE_HOLD_MS one yes of two moves nobody; B presses 9
+// kind persistent, roomScene SCENE_A, each sees the other's drone. Then A presses 9 (the panel opens with Race focused),
+// Tab (Propose) and Enter; B's hook shows the vote as not its own; for VOTE_HOLD_MS one yes of two moves nobody; B presses 9
 // once; pass: both roomScene = the proposed scan, both said rooms.vote.passed, each sees the other's drone again.
 // Control: the rig with the relay off (rooms.py --no-relay): A2 and B2 meet by 9 in one room and B2 never sees A2 move.
 // The whole run holds the GPU lock once (gpu-lock.ts), released on an error too. Evidence: evidence/<date>/rooms-open-vote.json.
@@ -93,10 +93,11 @@ async function main(): Promise<void> {
         out.meet = { aIn, bIn, aSeesB, a: { ...a1, said: undefined }, b: { ...b1, said: undefined } };
         const met = aIn && bIn && aSeesB && a1.room !== null && a1.room === b1.room;
 
-        // ---- A proposes with 9 and Enter
+        // ---- A proposes with 9, Tab and Enter (stage Q2: "Race on a course" takes the panel's first focus)
         await A.keyboard.press('Digit9');
         const propose = A.locator('[data-action=rooms-propose]');
         const panelUp = await propose.waitFor({ timeout: 10000 }).then(() => true, () => false);
+        await A.keyboard.press('Tab');
         const focused = await A.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.action ?? null);
         await A.keyboard.press('Enter');
         const bSeesVote = await until(B, 'return !!r.vote && r.vote.mine === false;', 15000);

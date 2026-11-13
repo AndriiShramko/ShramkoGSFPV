@@ -70,5 +70,13 @@
   "rooms.race.finished": "{nick} финишировал, место {place}, {time} секунды.",
   "rooms.race.results": "Гонка окончена. Первый: {nick}, {time} секунды.",
   "rooms.race.resultsMe": "Гонка окончена. Первый: {nick}, {time} секунды. Ваше место: {place}.",
-  "rooms.race.noTimes": "Гонка окончена. Никто не прошёл круг."
+  "rooms.race.noTimes": "Гонка окончена. Никто не прошёл круг.",
+  "rooms.race.standing": "Гонка: место {place} из {n}, лучший круг {time} секунды.",
+  "rooms.race.standingNoLap": "Гонка: место {place} из {n}, кругов пока нет.",
+  "rooms.race.col.place": "Место",
+  "rooms.race.col.nick": "Пилот",
+  "rooms.race.col.laps": "Круги",
+  "rooms.race.col.total": "Всего, с",
+  "rooms.race.col.best": "Лучший круг, с",
+  "rooms.race.col.gap": "Отставание, с"
 }

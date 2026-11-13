@@ -70,5 +70,13 @@
   "rooms.race.finished": "{nick} terminó, puesto {place}, {time} segundos.",
   "rooms.race.results": "Carrera terminada. Primero: {nick}, {time} segundos.",
   "rooms.race.resultsMe": "Carrera terminada. Primero: {nick}, {time} segundos. Tu puesto: {place}.",
-  "rooms.race.noTimes": "Carrera terminada. Nadie completó una vuelta."
+  "rooms.race.noTimes": "Carrera terminada. Nadie completó una vuelta.",
+  "rooms.race.standing": "Carrera: puesto {place} de {n}, mejor vuelta {time} segundos.",
+  "rooms.race.standingNoLap": "Carrera: puesto {place} de {n}, aún sin vuelta.",
+  "rooms.race.col.place": "Puesto",
+  "rooms.race.col.nick": "Piloto",
+  "rooms.race.col.laps": "Vueltas",
+  "rooms.race.col.total": "Total, s",
+  "rooms.race.col.best": "Mejor vuelta, s",
+  "rooms.race.col.gap": "Detrás, s"
 }

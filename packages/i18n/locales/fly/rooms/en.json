@@ -70,5 +70,13 @@
   "rooms.race.finished": "{nick} finished, place {place}, {time} seconds.",
   "rooms.race.results": "Race over. First: {nick}, {time} seconds.",
   "rooms.race.resultsMe": "Race over. First: {nick}, {time} seconds. You are place {place}.",
-  "rooms.race.noTimes": "Race over. Nobody finished a lap."
+  "rooms.race.noTimes": "Race over. Nobody finished a lap.",
+  "rooms.race.standing": "Race: place {place} of {n}, best lap {time} seconds.",
+  "rooms.race.standingNoLap": "Race: place {place} of {n}, no lap yet.",
+  "rooms.race.col.place": "Place",
+  "rooms.race.col.nick": "Pilot",
+  "rooms.race.col.laps": "Laps",
+  "rooms.race.col.total": "Total, s",
+  "rooms.race.col.best": "Best lap, s",
+  "rooms.race.col.gap": "Behind, s"
 }

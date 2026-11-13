@@ -20,7 +20,15 @@ Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
   it refused, the same results table on both, B first, gap 100 ms). Negative controls: neg_control.py with origin/main
   socket.ts: NEG OK (`sa.race is not a function`); mutant Countdown that skips marks: 2 assertion failures.
   Typecheck apps/fly: 0 errors.
-- [ ] Q2.3 Page glue in apps/fly/src/app/builtin/rooms.ts (next worker; plan below).
+- [x] Q2.3 Page glue (commit "rooms2: race page glue"): apps/fly/src/rooms/race-page.ts (`RacePage`: propose with
+  `courseFor`, build the course on every racer's page: saved by CourseStore.load, seed by the course worker on the flown
+  walls; its own CourseRun and CourseStage; `ready`; countdown said and flashed on the server's clock; run reset at go;
+  laps to `sock.lap`; race lines through the Announcer and the HUD; results hide the gates and keep the table;
+  `standing()` for key 0); app/builtin/rooms.ts wires it per join (`race` event, welcome's race, frame, key 0 says the
+  place first, the panel asks `sock.table()`); panel.ts: "Race on a course" first and focused, the table under it;
+  hook.ts: `RaceHook` (`window.__gsfpv.rooms.race`); 8 keys more in rooms/{en,es,pl,ru}.json (`rooms.race.standing*`,
+  `rooms.race.col.*`); rooms-open-vote.ts proposes a scan with 9, Tab, Enter. Test tools/bench/test/rooms-race-page.test.ts
+  3 of 3; with rooms-race and rooms-open-vote tests 16 of 16. Typecheck apps/fly and tools/bench: 0 errors.
 - [ ] Q2.4 Two-browser probe tools/bench/src/rooms-race.ts (copy rooms-open-vote.ts) and its run.
 
 Plan for Q2.3 (decided, not built):

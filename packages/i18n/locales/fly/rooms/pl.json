@@ -70,5 +70,13 @@
   "rooms.race.finished": "{nick} na mecie, miejsce {place}, {time} sekundy.",
   "rooms.race.results": "Koniec wyścigu. Pierwszy: {nick}, {time} sekundy.",
   "rooms.race.resultsMe": "Koniec wyścigu. Pierwszy: {nick}, {time} sekundy. Twoje miejsce: {place}.",
-  "rooms.race.noTimes": "Koniec wyścigu. Nikt nie ukończył okrążenia."
+  "rooms.race.noTimes": "Koniec wyścigu. Nikt nie ukończył okrążenia.",
+  "rooms.race.standing": "Wyścig: miejsce {place} z {n}, najlepsze okrążenie {time} sekundy.",
+  "rooms.race.standingNoLap": "Wyścig: miejsce {place} z {n}, jeszcze bez okrążenia.",
+  "rooms.race.col.place": "Miejsce",
+  "rooms.race.col.nick": "Pilot",
+  "rooms.race.col.laps": "Okrążenia",
+  "rooms.race.col.total": "Razem, s",
+  "rooms.race.col.best": "Najlepsze okrążenie, s",
+  "rooms.race.col.gap": "Strata, s"
 }

@@ -38,6 +38,8 @@ import { RoomSocket } from '../../rooms/socket';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
+import { RacePage } from '../../rooms/race-page';
+import { tableRows } from '../../rooms/race';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
@@ -94,7 +96,7 @@ function setRoomParam(id: string | null): void {
     history.replaceState(history.state, '', u.toString());
 }
 
-interface Live { sock: RoomSocket; stop(): void }
+interface Live { sock: RoomSocket; race: RacePage; stop(): void }
 
 export const rooms: Feature = {
     id: 'rooms',
@@ -132,6 +134,12 @@ export const rooms: Feature = {
             }, () => { catalogAsked = false; });
         };
         const title = (id: string): string => titles.get(id) ?? (id === ctx.scene.id ? ctx.scene.meta?.title : undefined) ?? id;
+        /** a race line: said (interrupting) and shown (lane rooms2, stage Q2) */
+        const tell = (key: string, vars: Record<string, string | number>, interrupt: boolean): void => {
+            const text = t(key, vars);
+            announcer.announce(key, text, interrupt);
+            ctx.hud.flash(text, 4000);
+        };
         const roomName = (r: RoomInfo): string => (r.kind === 'persistent' ? t('rooms.open.name') : r.name);
 
         const join = (room: string, hostKey?: string): void => {
@@ -183,6 +191,7 @@ export const rooms: Feature = {
                 announcer.announce(line.key, text, true);
                 ctx.hud.flash(text, 6000);
             };
+            let race: RacePage | null = null;
             const sock = new RoomSocket({ url: socketUrl(location), room, nick, hostKey: hk }, {
                 state: (s) => {
                     h.state = s;
@@ -207,8 +216,10 @@ export const rooms: Feature = {
                     welcomed = true;
                     void enter(w.room);
                     if (w.vote) onVote(w.vote);
+                    if (w.race) race?.onMsg(w.race);
                 },
                 vote: onVote,
+                race: (m) => race?.onMsg(m),
                 scene: (r) => {
                     // a vote passed: the room flies another scan; this page loads it and starts there (lane rooms2)
                     h.vote = null;
@@ -235,6 +246,9 @@ export const rooms: Feature = {
                     }
                 }
             });
+            race = new RacePage(ctx, sock, tell);
+            const rp = race;
+            h.race = rp.h;
             sock.connect();
 
             const offFrame = ctx.events.on('frame', ({ now }) => {
@@ -263,6 +277,7 @@ export const rooms: Feature = {
                         if (sh.frozen) frozen.add(slot);
                     }
                 }
+                if (inRoom) rp.frame(now);
                 stage.show(draw);
                 others = named;
                 h.remotes = seen;
@@ -280,8 +295,11 @@ export const rooms: Feature = {
             });
             live = {
                 sock,
+                race: rp,
                 stop: () => {
                     offFrame();
+                    rp.dispose();
+                    h.race = null;
                     sock.leave();
                     stage.show([]);
                     tags.update([], false);
@@ -344,9 +362,13 @@ export const rooms: Feature = {
             const s = live?.sock;
             const r = s && s.state !== 'off' ? s.room : null;
             const next = proposeNext();
+            const race = s && r && s.state === 'joined' ? live?.race ?? null : null;
+            // the table on demand: the service answers with the last race's table (the hook and key 0 have it next time)
+            if (race) s?.table();
             ctx.pause('panel');
             roomsPanel(ctx.ui, {
                 nick,
+                race: race ? { start: () => void race.propose(), rows: tableRows(race.h.table) } : null,
                 vote: s && r && s.state === 'joined' ? {
                     open: h.vote ? { title: title(h.vote.scene), yes: h.vote.yes, need: h.vote.need, mine: h.vote.mine } : null,
                     next: next === null ? null : title(next),
@@ -395,7 +417,10 @@ export const rooms: Feature = {
                     if (!sim) return;
                     const me = simPose(sim, 0, false);
                     const line = whoLine(nearest(me.pos, me.quat, others), t);
-                    announcer.announce(line.key, line.text, true);
+                    // lane rooms2, stage Q2: during or after a race his place comes first, then who is around
+                    const st = live?.race.standing() ?? null;
+                    if (st) announcer.announce(st.key, t(st.key, st.params), true);
+                    announcer.announce(line.key, line.text, !st);
                 }
             });
             offs.push(ctx.keys.on('rooms.panel', rk.panel.run, rk.panel.opts));

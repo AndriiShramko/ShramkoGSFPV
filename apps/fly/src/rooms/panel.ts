@@ -21,6 +21,8 @@ export interface PanelModel {
     list(): Promise<RoomInfo[] | null>;
     /** lane rooms2 (R27): the vote block in a room; the open vote, or what Propose would ask for */
     vote?: { open: { title: string; yes: number; need: number; mine: boolean } | null; next: string | null; propose(): void; agree(): void } | null;
+    /** lane rooms2, stage Q2: "Race on a course" and the last race's table as text rows (race.ts tableRows) */
+    race?: { start(): void; rows: readonly string[][] } | null;
 }
 
 export function roomsPanel(parent: HTMLElement, m: PanelModel, onClose: () => void): { close: () => void } {
@@ -45,6 +47,20 @@ export function roomsPanel(parent: HTMLElement, m: PanelModel, onClose: () => vo
     p.body.append(h('div', { class: 'rooms-nick' }, h('label', { for: 'rooms-nick' }, t('rooms.nick.label')), ' ', nickIn, ' ', nickSave), nickNote);
 
     let first: HTMLElement = nickIn;
+    // lane rooms2, stage Q2: the race comes first in a room, so a race is 9 then Enter (the vote's Propose is one Tab further)
+    if (m.room && m.race) {
+        const rc = m.race;
+        const box = h('div', { class: 'rooms-race', 'data-testid': 'rooms-race' });
+        first = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-race', onclick: () => { close(); rc.start(); } }, t('rooms.race.button'));
+        box.append(first);
+        if (rc.rows.length > 0) {
+            const head = ['place', 'nick', 'laps', 'total', 'best', 'gap'].map((k) => h('th', { scope: 'col' }, t(`rooms.race.col.${k}`)));
+            const body = h('tbody', {});
+            for (const r of rc.rows) body.append(h('tr', {}, ...r.map((c) => h('td', {}, c))));
+            box.append(h('table', { class: 'rooms-race-table', 'data-testid': 'rooms-race-table' }, h('caption', {}, t('rooms.race.table')), h('thead', {}, h('tr', {}, ...head)), body));
+        }
+        p.body.append(box);
+    }
     if (m.room && m.vote) {
         const v = m.vote;
         const box = h('div', { class: 'rooms-vote', 'data-testid': 'rooms-vote' }, h('h3', {}, t('rooms.vote.title')));
