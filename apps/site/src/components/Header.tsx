@@ -38,7 +38,7 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
         </nav>
         <div className="flex items-center gap-2">
           <LangSwitcher locale={locale} page={page} label={t("language")} where="nav" />
-          <a href={flyPath(locale)} data-track="fly_click" className="btn-primary hidden min-h-11 px-4 text-sm md:inline-flex">
+          <a href={flyPath(locale)} data-track="fly_click" className="btn-primary hidden min-h-11 whitespace-nowrap px-4 text-sm md:inline-flex">
             {t("fly")}
           </a>
         </div>
