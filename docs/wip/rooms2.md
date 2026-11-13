@@ -36,6 +36,20 @@ Stage fixes (review RM-1 to RM-15; no finding was refuted, all stand and are fix
   each written position; the gates need a direction or a time per tick the writes do not give; the hook has no `next`,
   so add `next` to the probe's end dump first). Note: the page's state stays 'count' after Go (the service sends no
   'run' message; frame() works in count and run alike), not a fault. Ship the race only after this probe passes.
+  Pass 2 (commit 00841ac7): the probe's round now ends on the path's last point (an open course ends at its last gate;
+  before, the round stopped just short of it), fly() returns diagnostics, the hook gives `race.gatePoses` (centre,
+  quat w x y z, kind) and the probe dumps them as `courseA`. Run 3 (U:/Temp/gsfpv-train2/rooms2/rooms-race-run3.log,
+  before 00841ac7): same 7 of 11; both pages pass gates 0 and 1 (`next` 0 for 52 frames, 1 for 52) and then stay at
+  next 2 for 1645 frames over all 3 rounds; no reset (next never went back to 0), not paused (paused 0), sim clock
+  running, written point moved by the sim at most 0.11 m (A) and 0.008 m (B). So the respawn/crash theory is refuted:
+  gate 2 is never crossed forward inside its opening by the path. Offline (temporary vitest, not kept): generateCourse
+  on threeRooms, 60 seeds at identity and 30 seeds at s 1.37, t (0.3, -1.1, 2.7), the same stepping: 0 stuck, all
+  laps done. So the fault shows only on the real scan's course. Next: dist is built at 00841ac7; run rooms-race.ts
+  (run 4) and analyse `courseA` with a local-frame script (gate 2's local z and x, y of the path points near it: is the
+  path behind the gate, outside the opening, or the gate turned against the leg in). If the generated gate faces
+  against its leg in, the cause is in packages/tracks (lane tracks): stop and return blocked; if it is the probe's
+  path, fly each gate along its own normal instead (gatePoses give it). Run 4 did not start: the GPU lock was held by
+  another lane from 23:55 to past 00:05; my waiting probe was stopped so it would not be killed holding the lock.
 
 Stage Q2-race (rooms-plan.md 2.4 and 4D: a race on time in a room):
 
@@ -201,6 +215,10 @@ Stage Q1-open-room (done):
 - The vote's 30 s timeout (a vote that fails) in a browser: covered by the python tests only.
 
 ## Cost notes
+
+- Fixes pass 2 (RM-1 laps): most turns went to waiting for probe runs (one 15-minute wait on another lane's GPU lock)
+  and to an offline sweep whose output vitest swallowed (console.log is silent; write to a file). Cheaper: dump the
+  course's gates in the first probe run, so one run answers why a gate is missed.
 
 - Stage fixes: most turns went to editing many files by separate scripts and to the 6-minute build plus probe run; a
   probe dump that shows the run's next gate and resets would have let this stage diagnose the lap failure in one step.
