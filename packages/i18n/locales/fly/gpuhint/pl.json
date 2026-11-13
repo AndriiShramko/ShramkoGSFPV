@@ -2,7 +2,7 @@
   "gpuhint.copied": "Skopiowano. Wklej go w nowej karcie.",
   "gpuhint.copy": "Skopiuj adres",
   "gpuhint.copyFailed": "Nie udało się skopiować. Zaznacz adres i skopiuj go.",
-  "gpuhint.fixFlag": "Najszybciej w przeglądarce: otwórz ten adres w nowej karcie, wybierz Enabled i naciśnij Relaunch:",
+  "gpuhint.fixFlag": "Najszybciej w przeglądarce: otwórz ten adres w nowej karcie, wybierz Enabled i naciśnij {button}:",
   "gpuhint.fixWindows": "Albo w Windows: otwórz ustawienia grafiki (Ustawienia, System, Ekran, Grafika), dodaj tę przeglądarkę do listy, jeśli jej tam nie ma, wybierz dla niej Wysoka wydajność, a potem zamknij wszystkie okna przeglądarki i uruchom ją ponownie.",
   "gpuhint.how": "Jak przełączyć",
   "gpuhint.howFix": "Jak naprawić",

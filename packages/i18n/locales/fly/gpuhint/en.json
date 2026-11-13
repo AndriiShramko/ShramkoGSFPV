@@ -2,7 +2,7 @@
   "gpuhint.copied": "Copied. Paste it into a new tab.",
   "gpuhint.copy": "Copy the address",
   "gpuhint.copyFailed": "Could not copy. Select the address and copy it.",
-  "gpuhint.fixFlag": "Fastest, in the browser: open this address in a new tab, choose Enabled, then press Relaunch:",
+  "gpuhint.fixFlag": "Fastest, in the browser: open this address in a new tab, choose Enabled, then press {button}:",
   "gpuhint.fixWindows": "Or in Windows: open the graphics settings (Settings, System, Display, Graphics), add this browser to the list if it is not there, choose High performance for it, then close every window of the browser and start it again.",
   "gpuhint.how": "How to switch",
   "gpuhint.howFix": "How to fix",

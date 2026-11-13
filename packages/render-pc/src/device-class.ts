@@ -315,10 +315,15 @@ export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
     if (!isWindows(s.userAgent, s.platform)) return out(false, 'not-windows');
     if (!s.webgpu) return out(false, 'no-webgpu');
     const g = s.gpu;
-    if (!g || g.vendor.trim() === '') return out(false, 'unknown-adapter');
-    if (g.isFallback || kind === 'software') return out(false, 'fallback-adapter');
-    const vendor = g.vendor.toLowerCase();
-    if (vendor === 'intel') return isIntelIntegrated(g) ? out(true, 'due') : out(false, 'intel-discrete');
+    const named = !!g && g.vendor.trim() !== '';
+    // A browser that hides its WebGPU adapter (Firefox 142: every field empty) still names the graphics through WebGL, and
+    // on the laptop both drew on the same chip whatever powerPreference was asked (the counters, docs/wip/gpu-select.md):
+    // WebGL's name then stands in for the adapter's. With neither, nothing is known.
+    const gl = named ? '' : glOf(s);
+    if (!named && !gl) return out(false, 'unknown-adapter');
+    if (g?.isFallback || kind === 'software') return out(false, 'fallback-adapter');
+    const vendor = named ? (g as GpuInfo).vendor.toLowerCase() : /\bintel\b/i.test(gl) ? 'intel' : /\bamd\b|radeon/i.test(gl) ? 'amd' : 'other';
+    if (vendor === 'intel') return kind === 'integrated' ? out(true, 'due') : out(false, 'intel-discrete');
     // an AMD chip built into the processor, next to which a card may sit unused (the name is WebGL's: see the header)
     if (vendor === 'amd' && kind === 'integrated') return out(true, 'due');
     return out(false, 'not-intel');

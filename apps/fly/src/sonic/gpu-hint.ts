@@ -58,6 +58,15 @@ export function accelerationAddress(userAgent: string): string | null {
     return null;
 }
 
+/**
+ * The word on the button of the flags page that restarts the browser once a flag changed: "Relaunch" in Chrome, "Restart" in
+ * Edge (read from both pages, Chrome 140 and Edge 157: evidence/2026-11-13/gpu-select/*-flag-ui.json). The flags pages are in
+ * English in every language of the browser, so the word is not translated.
+ */
+export function relaunchWord(userAgent: string): string {
+    return /\bEdg(?:e|A|iOS)?\//.test(userAgent) ? 'Restart' : 'Relaunch';
+}
+
 /** Which note: how to switch to the faster card, the same after the browser fell back from it, why the processor draws. */
 export type GpuNote = 'switch' | 'back' | 'software';
 
@@ -99,7 +108,7 @@ export function gpuHintParts(userAgent: string, t: (key: string) => string, o: G
         return { note, text: withName(t('gpuhint.softText'), name), fixFlag: address ? t('gpuhint.softFixBrowser') : null, address, fixWindows: t('gpuhint.softFixDriver'), fixWindowsMore: windows ? t('gpuhint.softFixDriverWindows') : null, settingsUrl: null };
     }
     const address = flagsAddress(userAgent);
-    return { note, text: withName(t(note === 'back' ? 'gpuhint.textBack' : 'gpuhint.text'), name), fixFlag: address ? t('gpuhint.fixFlag') : null, address, fixWindows: t('gpuhint.fixWindows'), fixWindowsMore: null, settingsUrl: windows ? WINDOWS_GRAPHICS_SETTINGS : null };
+    return { note, text: withName(t(note === 'back' ? 'gpuhint.textBack' : 'gpuhint.text'), name), fixFlag: address ? t('gpuhint.fixFlag').split('{button}').join(relaunchWord(userAgent)) : null, address, fixWindows: t('gpuhint.fixWindows'), fixWindowsMore: null, settingsUrl: windows ? WINDOWS_GRAPHICS_SETTINGS : null };
 }
 
 type KeyStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;

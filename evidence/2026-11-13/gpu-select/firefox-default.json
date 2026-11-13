@@ -1,6 +1,6 @@
 {
   "name": "gpu-select/firefox-default",
-  "date": "2026-11-13T19:36:05.793Z",
+  "date": "2026-11-13T20:12:13.765Z",
   "label": "firefox-default",
   "browserName": "firefox",
   "variant": "default",
@@ -14,7 +14,7 @@
   },
   "url": "http://127.0.0.1:<port>/ (the probe page)",
   "page": {
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:157.0) Gecko/20100101 Firefox/157.0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:160.0) Gecko/20100101 Firefox/160.0",
     "secure": true,
     "webgpu": true,
     "cores": 16,
@@ -30,7 +30,7 @@
         "isFallbackAdapter": false,
         "maxBufferSize": 2147483644,
         "maxTextureDimension2D": 16384,
-        "features": 12
+        "features": 13
       },
       "low": {
         "vendor": "",
@@ -40,7 +40,7 @@
         "isFallbackAdapter": false,
         "maxBufferSize": 2147483644,
         "maxTextureDimension2D": 16384,
-        "features": 12
+        "features": 13
       },
       "none": {
         "vendor": "",
@@ -50,7 +50,7 @@
         "isFallbackAdapter": false,
         "maxBufferSize": 2147483644,
         "maxTextureDimension2D": 16384,
-        "features": 12
+        "features": 13
       },
       "fallback": {
         "vendor": "",
@@ -60,7 +60,7 @@
         "isFallbackAdapter": true,
         "maxBufferSize": 2147483644,
         "maxTextureDimension2D": 16384,
-        "features": 12
+        "features": 13
       }
     },
     "webgl": {
@@ -70,27 +70,29 @@
     }
   },
   "browser": {
-    "product": "Firefox/157.0",
-    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:157.0) Gecko/20100101 Firefox/157.0"
+    "product": "Firefox/160.0",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:160.0) Gecko/20100101 Firefox/160.0"
   },
-  "gpuProcessPid": 21300,
+  "gpuProcessPid": 22792,
   "processTree": {
-    "count": 9,
+    "count": 11,
     "kinds": [
       "?",
       "gpu",
       "socket",
-      "?",
       "rdd",
       "tab",
       "tab",
       "utility",
+      "tab",
+      "tab",
+      "tab",
       "tab"
     ]
   },
-  "countersOfPid": 21300,
+  "countersOfPid": 22792,
   "counters": {
-    "seconds": 6,
+    "seconds": 5,
     "adapters": {
       "0x00000000_0x00012db4": "Intel(R) UHD Graphics",
       "0x00000000_0x0001316d": "Microsoft Basic Render Driver",
@@ -99,11 +101,11 @@
     "perAdapter": {
       "Intel(R) UHD Graphics": {
         "engines": 13,
-        "max3d": 86.24,
-        "avg3d": 85.68,
-        "maxAny": 86.24,
+        "max3d": 93.66,
+        "avg3d": 93.15,
+        "maxAny": 93.66,
         "dedicatedMb": 0,
-        "sharedMb": 621.8
+        "sharedMb": 574.5
       },
       "Microsoft Basic Render Driver": {
         "engines": 17,
@@ -127,17 +129,88 @@
         "luid": "0x00000000_0x00012db4",
         "adapter": "Intel(R) UHD Graphics",
         "engine": "eng_0_engtype_3d",
-        "max": 86.24,
-        "avg": 85.68
+        "max": 93.66,
+        "avg": 93.15,
+        "dropped": 0
       }
     ]
   },
+  "webgpuLoad": {
+    "webgpu-high-performance": {
+      "perAdapter": {
+        "Intel(R) UHD Graphics": {
+          "engines": 13,
+          "max3d": 96.73,
+          "avg3d": 96.41,
+          "maxAny": 96.73,
+          "dedicatedMb": 0,
+          "sharedMb": 2327.6
+        },
+        "Microsoft Basic Render Driver": {
+          "engines": 0,
+          "max3d": 0,
+          "avg3d": 0,
+          "maxAny": 0,
+          "dedicatedMb": 0,
+          "sharedMb": 0
+        },
+        "NVIDIA GeForce RTX 3070 Laptop GPU": {
+          "engines": 0,
+          "max3d": 0,
+          "avg3d": 0,
+          "maxAny": 0,
+          "dedicatedMb": 0,
+          "sharedMb": 0
+        }
+      },
+      "load": {
+        "frames": 774,
+        "vendor": "",
+        "architecture": "",
+        "description": ""
+      }
+    },
+    "webgpu-low-power": {
+      "perAdapter": {
+        "Intel(R) UHD Graphics": {
+          "engines": 13,
+          "max3d": 97.25,
+          "avg3d": 96.49,
+          "maxAny": 97.25,
+          "dedicatedMb": 0,
+          "sharedMb": 5485.9
+        },
+        "Microsoft Basic Render Driver": {
+          "engines": 0,
+          "max3d": 0,
+          "avg3d": 0,
+          "maxAny": 0,
+          "dedicatedMb": 0,
+          "sharedMb": 0
+        },
+        "NVIDIA GeForce RTX 3070 Laptop GPU": {
+          "engines": 0,
+          "max3d": 0,
+          "avg3d": 0,
+          "maxAny": 0,
+          "dedicatedMb": 0,
+          "sharedMb": 0
+        }
+      },
+      "load": {
+        "frames": 831,
+        "vendor": "",
+        "architecture": "",
+        "description": ""
+      }
+    }
+  },
   "load": {
     "renderer": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
-    "frames": 926,
-    "p50ms": 12.12,
-    "p95ms": 18.18,
-    "maxMs": 48.08
+    "frames": 1086,
+    "p50ms": 6.06,
+    "p95ms": 12.12,
+    "maxMs": 38.34
   },
   "nvidiaSmi": {
     "available": true,
@@ -162,10 +235,30 @@
     },
     "loadRenderer": "ANGLE (Intel, Intel(R) HD Graphics Direct3D11 vs_5_0 ps_5_0), or similar",
     "busiestAdapter": [
-      "Intel(R) UHD Graphics: 3D max 86.24 %, dedicated 0 MB, shared 621.8 MB",
+      "Intel(R) UHD Graphics: 3D max 93.66 %, dedicated 0 MB, shared 574.5 MB",
       "Microsoft Basic Render Driver: 3D max 0 %, dedicated 0 MB, shared 0 MB",
       "NVIDIA GeForce RTX 3070 Laptop GPU: 3D max 0 %, dedicated 0 MB, shared 0 MB"
     ],
-    "nvidiaSmiListsGpuProcess": false
+    "nvidiaSmiListsGpuProcess": false,
+    "webgpuLoad": {
+      "webgpu-high-performance": {
+        "adapter": "",
+        "error": null,
+        "frames": 774,
+        "busiest": [
+          "Intel(R) UHD Graphics 96.73 %",
+          "Microsoft Basic Render Driver 0 %"
+        ]
+      },
+      "webgpu-low-power": {
+        "adapter": "",
+        "error": null,
+        "frames": 831,
+        "busiest": [
+          "Intel(R) UHD Graphics 97.25 %",
+          "Microsoft Basic Render Driver 0 %"
+        ]
+      }
+    }
   }
 }

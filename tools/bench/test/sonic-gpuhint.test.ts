@@ -13,7 +13,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { FLAG_FRAGMENT, GPU_HINT_KEY, WINDOWS_GRAPHICS_SETTINGS, accelerationAddress, flagsAddress, forgetGpuHint, gpuHintMemory, gpuHintParts, gpuHintSeen, markGpuHintSeen, noteFastGraphics, planGpuHint } from '../../../apps/fly/src/sonic/gpu-hint';
+import { FLAG_FRAGMENT, GPU_HINT_KEY, WINDOWS_GRAPHICS_SETTINGS, accelerationAddress, flagsAddress, forgetGpuHint, gpuHintMemory, gpuHintParts, gpuHintSeen, markGpuHintSeen, noteFastGraphics, planGpuHint, relaunchWord } from '../../../apps/fly/src/sonic/gpu-hint';
 import type { GpuHintAsk } from '../../../apps/fly/src/sonic/gpu-hint';
 import { hostLines } from '../../../apps/fly/src/sonic/host-lines';
 import { REPO } from '../src/evidence';
@@ -53,6 +53,12 @@ describe('the addresses the hint names', () => {
         expect(gpuHintParts(UA.chrome, lookup('en'), { note: 'software' }).settingsUrl).toBeNull();
     });
 
+    it('the button of the flags page that restarts the browser: Relaunch in Chrome and Opera, Restart in Edge', () => {
+        expect(relaunchWord(UA.chrome)).toBe('Relaunch');
+        expect(relaunchWord(UA.opera)).toBe('Relaunch');
+        expect(relaunchWord(UA.edge)).toBe('Restart');
+    });
+
     it('the browser\'s own switch for graphics acceleration: Settings, System in Chrome, Edge and Opera; Settings, General in Firefox; unknown elsewhere', () => {
         expect(accelerationAddress(UA.chrome)).toBe('chrome://settings/system');
         expect(accelerationAddress(UA.edge)).toBe('edge://settings/system');
@@ -82,10 +88,13 @@ describe('the note names both ways to switch, in every language', () => {
             expect(p.text).toMatch(/AMD/);
             expect(p.text).toMatch(/Windows/);
             expect(p.address).toBe('chrome://flags/#force-high-performance-gpu');
-            expect(p.fixFlag).toBe(d['gpuhint.fixFlag']);
-            // the words on the flag's page are English in every language of the browser
+            // the words on the flag's page are English in every language of the browser: Enabled, and the button that restarts it,
+            // which Chrome calls Relaunch and Edge calls Restart (read from both pages)
+            expect(d['gpuhint.fixFlag']).toContain('{button}');
+            expect(p.fixFlag).toBe((d['gpuhint.fixFlag'] as string).split('{button}').join('Relaunch'));
             expect(p.fixFlag).toMatch(/Enabled/);
-            expect(p.fixFlag).toMatch(/Relaunch/);
+            expect(p.fixFlag).not.toContain('{button}');
+            expect(gpuHintParts(UA.edge, lookup(l), { name: NAME }).fixFlag).toBe((d['gpuhint.fixFlag'] as string).split('{button}').join('Restart'));
             for (const re of windows[l] as RegExp[]) expect(p.fixWindows).toMatch(re);
             expect(p.settingsUrl).toBe('ms-settings:display-advancedgraphics');
             expect(p.fixWindowsMore).toBeNull();

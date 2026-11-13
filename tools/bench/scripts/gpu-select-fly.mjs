@@ -32,7 +32,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const LOCK = 'C:/dev/.gpu-lock';
 
 export function parseArgs(argv) {
-    const o = { browser: 'chrome', variant: 'default', scene: '7a475d38', label: '', site: 'https://gsfpv.flyreelstudio.eu', query: '', still: 20, turn: true, loadTimeout: 300, maximized: true, extra: [] };
+    const o = { browser: 'chrome', variant: 'default', scene: '7a475d38', label: '', site: 'https://gsfpv.flyreelstudio.eu', query: '', still: 20, turn: true, loadTimeout: 300, maximized: true, extra: [], tune: {} };
     for (let i = 0; i < argv.length; i++) {
         const a = argv[i];
         if (a === '--browser') o.browser = argv[++i];
@@ -44,6 +44,14 @@ export function parseArgs(argv) {
         else if (a === '--still') o.still = Number(argv[++i]);
         else if (a === '--load-timeout') o.loadTimeout = Number(argv[++i]);
         else if (a === '--no-turn') o.turn = false;
+        else if (a === '--tune') {
+            // an experiment on the engine's streaming, set in the page before the full detail is asked for:
+            // underfill (lodUnderfillLimit), concurrent (the loader's parallel downloads), behind (lodBehindPenalty),
+            // angle (lodUpdateAngle), cooldown (cooldownTicks). Measuring only: the product is not changed.
+            const [k, v] = argv[++i].split('=');
+            if (!['underfill', 'concurrent', 'behind', 'angle', 'cooldown'].includes(k) || !Number.isFinite(Number(v))) throw new Error(`--tune ${k}=${v}: underfill | concurrent | behind | angle | cooldown = number`);
+            o.tune[k] = Number(v);
+        }
         else if (a === '--window') o.maximized = false;
         else if (a.startsWith('--arg=')) o.extra.push(a.slice(6));
         else throw new Error(`unknown argument ${a}`);
@@ -97,6 +105,29 @@ const TRACE = `(function hookTrace() {
         if (window.__gsTrace.length < 60000) window.__gsTrace.push([Math.round(t * 10) / 10, last ? Math.round((t - last) * 100) / 100 : 0, r.splatFrame ? r.splatFrame.loading : -1, r.framesHeld, g ? g.step : -1, r.renderScale, r.app.stats.frame.gsplats, window.__gsYaw ? window.__gsYaw.phase : '']);
         last = t;
     });
+})()`;
+
+/**
+ * --tune: the engine's streaming parameters set in the page as soon as its renderer exists (before the page asks for the full
+ * detail), and what they were before. An experiment for measuring: `concurrent` reaches the loader, which is not public API.
+ */
+const TUNE = (t) => `(function tune() {
+    const h = window.__gsfpv; const s = h && h.session; const r = s && s.renderer; const a = r && r.app;
+    if (!a) { setTimeout(tune, 20); return; }
+    if (window.__gsTune) return;
+    const g = a.scene.gsplat; const t = ${JSON.stringify(t)};
+    window.__gsTune = { at: Math.round(performance.now()), asked: t, before: { underfill: g.lodUnderfillLimit, behind: g.lodBehindPenalty, angle: g.lodUpdateAngle, cooldown: g.cooldownTicks } };
+    if (t.underfill !== undefined) g.lodUnderfillLimit = t.underfill;
+    if (t.behind !== undefined) g.lodBehindPenalty = t.behind;
+    if (t.angle !== undefined) g.lodUpdateAngle = t.angle;
+    if (t.cooldown !== undefined) g.cooldownTicks = t.cooldown;
+    (function loader() {
+        const comp = r.splat && r.splat.gsplat; const oct = comp && comp.resource && comp.resource.octree; const l = oct && oct.assetLoader;
+        if (!l) { setTimeout(loader, 20); return; }
+        window.__gsTune.before.concurrent = l.maxConcurrentLoads;
+        if (t.concurrent !== undefined) l.maxConcurrentLoads = t.concurrent;
+        window.__gsTune.loaderAt = Math.round(performance.now());
+    })();
 })()`;
 
 /** The page's state in one object; the octree's nodes by distance band and by "in view". */
@@ -294,6 +325,7 @@ async function main() {
             files.push({ t: Date.now() - nav0, level: m ? Number(m[1]) : null, file: m ? `${m[1]}_${m[2]}/${m[3]}` : u.slice(u.indexOf(`/${o.scene}/`) + o.scene.length + 2).split('?')[0], bytes: Number(resp.headers()['content-length'] ?? 0) || 0, status: resp.status() });
         });
         await context.addInitScript(TRACE);
+        if (Object.keys(o.tune).length) await context.addInitScript(TUNE(o.tune));
         await page.bringToFront();
         nav0 = Date.now();
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
@@ -325,6 +357,18 @@ async function main() {
             }
             if (st.wall > o.loadTimeout * 1000) break;
         }
+        // the owner's question in numbers: after the reveal, how long until what is NEAR and in view is at the level the engine
+        // wants, against the same for everything in view; and the mean level shown near the camera 1, 2, 3 and 5 s after it
+        const after = revealAt === null ? [] : timeline.filter((x) => x.wall >= revealAt && x.view);
+        const sharp = (x, bandsIdx) => bandsIdx.every((i) => x.view[i].atWanted === x.view[i].n);
+        const firstSharp = (bandsIdx) => { const hit = after.find((x) => sharp(x, bandsIdx)); return hit ? hit.wall - revealAt : null; };
+        const shownAt = (ms, i) => { const hit = after.find((x) => x.wall - revealAt >= ms); return hit ? hit.view[i].meanShown : null; };
+        result.order = {
+            nearSharpMs: firstSharp([0]), near25SharpMs: firstSharp([0, 1]), farSharpMs: firstSharp([2, 3]), allInViewSharpMs: firstSharp([0, 1, 2, 3]),
+            nearLevelShown: { atReveal: shownAt(0, 0), after1s: shownAt(1000, 0), after2s: shownAt(2000, 0), after3s: shownAt(3000, 0), after5s: shownAt(5000, 0), wantedAtEnd: after.length ? after[after.length - 1].view[0].meanWanted : null },
+            farLevelShown: { atReveal: shownAt(0, 3), after1s: shownAt(1000, 3), after2s: shownAt(2000, 3), after3s: shownAt(3000, 3), after5s: shownAt(5000, 3), wantedAtEnd: after.length ? after[after.length - 1].view[3].meanWanted : null },
+            note: 'near: nodes under 8 m in view; near25: under 25 m; far: beyond 25 m; level 0 is the finest; ms count from the reveal'
+        };
         result.load = {
             revealWallMs: revealAt, settledWallMs: settledAt, timedOut: settledAt === null, visibleMs: last?.visibleMs ?? null, firstFrameMs: last?.firstFrameMs ?? null,
             nodes: last?.nodes ?? null, levels: last?.levels ?? null,
@@ -372,10 +416,13 @@ async function main() {
             result.turn = { start, phases, snapshots: snaps.filter((x, i) => i % 2 === 0), all: frameStats(trace) };
         }
         result.final = await page.evaluate(FINAL);
+        result.tune = Object.keys(o.tune).length ? await page.evaluate('window.__gsTune || null') : null;
         result.verdict = {
             adapter: result.final.gpuInfo ? `${result.final.gpuInfo.vendor} ${result.final.gpuInfo.architecture}` : result.final.webgpu ? 'webgpu, unnamed' : 'webgl',
             deviceClass: result.final.drawing?.class ?? null, hint: result.final.hint?.check ?? null,
             revealS: revealAt !== null ? r2(revealAt / 1000) : null, settledS: settledAt !== null ? r2(settledAt / 1000) : null, filesMB: result.load.files.megabytes,
+            order: `after the reveal: far nodes at their level in ${result.order.farSharpMs} ms, nodes under 8 m in ${result.order.nearSharpMs} ms, everything in view in ${result.order.allInViewSharpMs} ms; level shown under 8 m: ${result.order.nearLevelShown.atReveal} at the reveal, ${result.order.nearLevelShown.after2s} after 2 s, ${result.order.nearLevelShown.after5s} after 5 s (wanted ${result.order.nearLevelShown.wantedAtEnd})`,
+            tune: result.tune ? result.tune.asked : null,
             still: `${result.still.frames.fps} frames drawn per second (the engine ticks ${result.still.frames.tickFps}/s, ${Math.round((result.still.frames.heldShare ?? 0) * 100)} % of them held), between drawn frames p50 ${result.still.frames.p50ms} ms, p95 ${result.still.frames.p95ms} ms, p99 ${result.still.frames.p99ms} ms; ${result.still.drawnM} M splats of ${result.still.budgetM} M, step ${result.still.governorStep}, scale ${result.still.renderScale}`,
             turn: result.turn ? `${result.turn.all.fps} frames drawn per second (${Math.round((result.turn.all.heldShare ?? 0) * 100)} % held), p95 ${result.turn.all.p95ms} ms, longest ${result.turn.all.maxMs} ms` : null,
             backbuffer: result.final.backbuffer, busiest: Object.entries(result.still.counters?.perAdapter ?? {}).sort((a, b) => b[1].max3d - a[1].max3d).map(([n, v]) => `${n}: 3D ${v.avg3d} % avg, ${v.max3d} % max, dedicated ${v.dedicatedMb} MB, shared ${v.sharedMb} MB`)

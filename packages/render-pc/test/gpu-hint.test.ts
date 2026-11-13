@@ -215,9 +215,20 @@ describe('the reading says what the page draws on (lane gpu-select)', () => {
         expect(graphicsName(sig({ gpu: chromeNvidia, glRenderer: GL.nvidia }))).toBe('NVIDIA GeForce RTX 3070 Laptop GPU');
     });
 
-    it('a browser that hides the adapter (Firefox 142: empty vendor) stays quiet, but the line can still name what WebGL says', () => {
-        const r = gpuSwitchHintDue(sig({ gpu: gpu({ vendor: '', architecture: '', description: '' }), glRenderer: GL.firefoxIntel }));
-        expect(r).toEqual({ due: false, reason: 'unknown-adapter', kind: 'integrated', hint: null, name: 'Intel(R) HD Graphics' });
+    it('a browser that hides its WebGPU adapter (Firefox 142: every field empty): WebGL\'s name stands in, and the laptop on its Intel chip gets the note', () => {
+        const hidden = gpu({ vendor: '', architecture: '', description: '' });
+        const r = gpuSwitchHintDue(sig({ gpu: hidden, glRenderer: GL.firefoxIntel }));
+        expect(r).toEqual({ due: true, reason: 'due', kind: 'integrated', hint: 'switch', name: 'Intel(R) HD Graphics' });
+        // the same browser after the switch (WebGL names the card): quiet, and counted as a faster card
+        expect(gpuSwitchHintDue(sig({ gpu: hidden, glRenderer: GL.nvidia }))).toEqual({ due: false, reason: 'not-intel', kind: 'other', hint: null, name: 'NVIDIA GeForce RTX 3070 Laptop GPU' });
+        // Intel Arc by WebGL's name alone is a card, an AMD chip built into the processor is not
+        expect(gpuSwitchHintDue(sig({ gpu: hidden, glRenderer: 'ANGLE (Intel, Intel(R) Arc(TM) A770 Graphics Direct3D11 vs_5_0 ps_5_0), or similar' }))).toMatchObject({ due: false, reason: 'intel-discrete', kind: 'other' });
+        expect(gpuSwitchHintDue(sig({ gpu: hidden, glRenderer: 'ANGLE (AMD, AMD Radeon(TM) Graphics Direct3D11 vs_5_0 ps_5_0), or similar' }))).toMatchObject({ due: true, reason: 'due', kind: 'integrated' });
+        // control: with no WebGL name either, nothing is known and the page stays quiet (the table's two rows)
+        expect(gpuSwitchHintDue(sig({ gpu: hidden }))).toEqual({ due: false, reason: 'unknown-adapter', kind: 'other', hint: null, name: '' });
+        expect(gpuSwitchHintDue(sig({ gpu: null }))).toMatchObject({ due: false, reason: 'unknown-adapter', hint: null });
+        // control: an adapter that does name itself is never overruled by WebGL's words
+        expect(gpuSwitchHintDue(sig({ gpu: chromeNvidia, glRenderer: GL.firefoxIntel }))).toMatchObject({ due: false, reason: 'not-intel' });
     });
 });
 

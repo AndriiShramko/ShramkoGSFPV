@@ -194,7 +194,7 @@ export function nvidiaSmi() {
 }
 
 // In the page: every adapter the page can ask for, and the WebGL renderer for the same preferences.
-const READ_ADAPTERS = `(async () => {
+export const READ_ADAPTERS = `(async () => {
     const pick = (a) => {
         if (!a) return null;
         const i = a.info || {};
@@ -257,6 +257,45 @@ const LOAD = (ms) => `(async () => {
     return { renderer, frames: gaps.length, p50ms: q(0.5), p95ms: q(0.95), maxMs: q(1) };
 })()`;
 
+// In the page: a WebGPU canvas on the adapter asked for with `pp` ('high-performance', 'low-power' or '' for none), with the
+// same heavy fragment loop. Windows' counters then show which card that powerPreference really gives: the only way to tell in a
+// browser that hides adapter.info (Firefox). Returns the frames drawn and the adapter's own words.
+export const GPU_LOAD = (pp, ms) => `(async () => {
+    if (!navigator.gpu) return { error: 'no webgpu' };
+    const adapter = await navigator.gpu.requestAdapter(${pp ? `{ powerPreference: '${pp}' }` : ''});
+    if (!adapter) return { error: 'no adapter' };
+    const device = await adapter.requestDevice();
+    const c = document.createElement('canvas');
+    c.width = 1280; c.height = 720;
+    c.style.cssText = 'position:fixed;left:0;top:0;width:640px;height:360px;z-index:99999';
+    document.body.appendChild(c);
+    const ctx = c.getContext('webgpu');
+    const format = navigator.gpu.getPreferredCanvasFormat();
+    ctx.configure({ device, format, alphaMode: 'opaque' });
+    const module = device.createShaderModule({ code: 'struct U { t: f32 }; @group(0) @binding(0) var<uniform> u: U; @vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f { var p = array<vec2f, 3>(vec2f(-1.0, -1.0), vec2f(3.0, -1.0), vec2f(-1.0, 3.0)); return vec4f(p[i], 0.0, 1.0); } @fragment fn fs(@builtin(position) pos: vec4f) -> @location(0) vec4f { var z = pos.xy / 720.0; var a = 0.0; for (var i = 0; i < 220; i++) { z = vec2f(sin(z.x * 1.7 + u.t) + z.y, cos(z.y * 1.3 - u.t) + z.x) * 0.5; a += length(z); } return vec4f(fract(a), fract(a * 0.5), fract(a * 0.25), 1.0); }' });
+    const pipeline = device.createRenderPipeline({ layout: 'auto', vertex: { module, entryPoint: 'vs' }, fragment: { module, entryPoint: 'fs', targets: [{ format }] } });
+    const buf = device.createBuffer({ size: 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const bind = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: buf } }] });
+    const t0 = performance.now();
+    let frames = 0;
+    await new Promise((done) => {
+        const f = (now) => {
+            device.queue.writeBuffer(buf, 0, new Float32Array([(now - t0) / 1000, 0, 0, 0]));
+            const enc = device.createCommandEncoder();
+            const pass = enc.beginRenderPass({ colorAttachments: [{ view: ctx.getCurrentTexture().createView(), loadOp: 'clear', storeOp: 'store', clearValue: { r: 0, g: 0, b: 0, a: 1 } }] });
+            pass.setPipeline(pipeline); pass.setBindGroup(0, bind); pass.draw(3); pass.end();
+            device.queue.submit([enc.finish()]);
+            frames++;
+            if (now - t0 < ${ms}) requestAnimationFrame(f); else done();
+        };
+        requestAnimationFrame(f);
+    });
+    const info = adapter.info || {};
+    c.remove();
+    device.destroy();
+    return { frames, vendor: info.vendor || '', architecture: info.architecture || '', description: info.description || '' };
+})()`;
+
 // In chrome://gpu: the page keeps its text inside shadow roots, so walk them.
 const DEEP_TEXT = `(() => {
     const out = [];
@@ -289,7 +328,9 @@ function verdict(result) {
         webgl: result.page?.webgl ?? null,
         loadRenderer: result.load?.renderer ?? null,
         busiestAdapter: names.sort((a, b) => b[1].max3d - a[1].max3d).map(([n, v]) => `${n}: 3D max ${v.max3d} %, dedicated ${v.dedicatedMb} MB, shared ${v.sharedMb} MB`),
-        nvidiaSmiListsGpuProcess: result.nvidiaSmi?.gpuProcessListed ?? null
+        nvidiaSmiListsGpuProcess: result.nvidiaSmi?.gpuProcessListed ?? null,
+        // a WebGPU canvas asked for with each powerPreference: the adapter's own words and the busiest adapter by Windows' counters
+        webgpuLoad: result.webgpuLoad ? Object.fromEntries(Object.entries(result.webgpuLoad).map(([k, v]) => [k, { adapter: v.load && !v.load.error ? `${v.load.vendor} ${v.load.architecture}`.trim() : null, error: v.load?.error ?? null, frames: v.load?.frames ?? null, busiest: Object.entries(v.perAdapter ?? {}).sort((a, b) => b[1].max3d - a[1].max3d).map(([n, x]) => `${n} ${x.max3d} %`).slice(0, 2) }])) : null
     };
 }
 
@@ -326,17 +367,32 @@ async function firefoxRun(o, exe, outDir, result) {
     mkdirSync(profile, { recursive: true });
     // no first-run pages, no default-browser question, no telemetry prompt: nothing else changes
     writeFileSync(join(profile, 'user.js'), ['browser.shell.checkDefaultBrowser', 'browser.aboutwelcome.enabled', 'datareporting.policy.dataSubmissionEnabled', 'toolkit.telemetry.reportingpolicy.firstRun', 'browser.tabs.warnOnClose', 'app.update.auto', 'app.update.enabled'].map((k) => `user_pref("${k}", false);`).join('\n') + '\nuser_pref("browser.startup.homepage_override.mstone", "ignore");\nuser_pref("startup.homepage_welcome_url", "");\nuser_pref("startup.homepage_welcome_url.additional", "");\n');
-    const posts = {};
-    const waiters = {};
-    const got = (k) => new Promise((res) => { if (posts[k]) res(posts[k]); else waiters[k] = res; });
+    // the page says what it is about to draw ("stage"), draws it for a fixed time while Windows' counters are read here, and
+    // at the end posts everything ("result"): WebGL first, then WebGPU asked for with high-performance and with low-power
+    const events = [];
+    let wake = null;
+    const next = async (ms, what) => {
+        const t0 = Date.now();
+        while (!events.length) {
+            if (Date.now() - t0 > ms) throw new Error(`timeout: ${what}`);
+            await new Promise((r) => { wake = r; setTimeout(r, 250); });
+        }
+        return events.shift();
+    };
+    const ms = o.seconds * 1000 + 4500;
     const html = `<!doctype html><meta charset="utf-8"><title>gpu-select probe</title><body style="background:#111;color:#ddd;font:16px sans-serif"><p id="o">measuring</p><script>
 (async () => {
     const post = (path, body) => fetch(path, { method: 'POST', body: JSON.stringify(body) });
     try {
         const page = await ${READ_ADAPTERS};
-        await post('/stage', { page });
-        const load = await ${LOAD(o.seconds * 1000 + 3500)};
-        await post('/result', { page, load });
+        const loads = {};
+        await post('/stage', { name: 'webgl', page });
+        loads.webgl = await ${LOAD(ms)};
+        await post('/stage', { name: 'webgpu-high-performance' });
+        loads['webgpu-high-performance'] = await ${GPU_LOAD('high-performance', ms)}.catch((e) => ({ error: String(e && e.message || e) }));
+        await post('/stage', { name: 'webgpu-low-power' });
+        loads['webgpu-low-power'] = await ${GPU_LOAD('low-power', ms)}.catch((e) => ({ error: String(e && e.message || e) }));
+        await post('/result', { page, loads });
         document.getElementById('o').textContent = 'done';
     } catch (e) {
         await post('/result', { error: String((e && e.stack) || e) });
@@ -348,9 +404,10 @@ async function firefoxRun(o, exe, outDir, result) {
             let body = '';
             req.on('data', (c) => { body += c; });
             req.on('end', () => {
-                const k = req.url === '/stage' ? 'stage' : 'result';
-                try { posts[k] = JSON.parse(body); } catch { posts[k] = { error: 'bad json' }; }
-                waiters[k]?.(posts[k]);
+                let j;
+                try { j = JSON.parse(body); } catch { j = { error: 'bad json' }; }
+                events.push({ kind: req.url === '/stage' ? 'stage' : 'result', ...j });
+                wake?.();
                 res.writeHead(204).end();
             });
             return;
@@ -363,9 +420,8 @@ async function firefoxRun(o, exe, outDir, result) {
     const child = spawn(exe, ['-no-remote', '-new-instance', '-profile', profile, ...o.extra, url], { env: { ...process.env, ...variant.env }, stdio: 'ignore', windowsHide: false });
     result.launch = { executable: mask(exe), added: [...o.extra], env: variant.env, profile: 'throwaway (.cache/gpu-select)', visible: true, how: 'a localhost page posts its readings back (no DevTools port)' };
     result.url = 'http://127.0.0.1:<port>/ (the probe page)';
-    const timeout = (ms, what) => new Promise((_, rej) => setTimeout(() => rej(new Error(`timeout: ${what}`)), ms));
     try {
-        const stage = await Promise.race([got('stage'), got('result'), timeout(90000, 'the page did not report in 90 s')]);
+        const stage = await next(90000, 'the page did not report in 90 s');
         if (stage.error) throw new Error(`page: ${stage.error}`);
         result.page = stage.page;
         result.browser = { product: (/Firefox\/[\d.]+/.exec(stage.page.userAgent) ?? [''])[0], userAgent: stage.page.userAgent };
@@ -379,9 +435,21 @@ async function firefoxRun(o, exe, outDir, result) {
         const pid = gpuProc?.ProcessId ?? mainPid;
         result.countersOfPid = pid;
         result.counters = await gpuCountersAsync(pid, o.seconds);
-        const done = await Promise.race([got('result'), timeout(60000, 'the load did not finish in 60 s')]);
+        // the two WebGPU loads, each with its own reading of the counters
+        result.webgpuLoad = {};
+        let done = null;
+        for (;;) {
+            const ev = await next(90000, 'the page stopped reporting');
+            if (ev.kind === 'result') {
+                done = ev;
+                break;
+            }
+            await sleep(700);
+            result.webgpuLoad[ev.name] = { perAdapter: (await gpuCountersAsync(pid, o.seconds)).perAdapter ?? null };
+        }
         if (done.error) throw new Error(`page: ${done.error}`);
-        result.load = done.load;
+        result.load = done.loads.webgl;
+        for (const [k, v] of Object.entries(done.loads)) if (k !== 'webgl') result.webgpuLoad[k] = { ...(result.webgpuLoad[k] ?? {}), load: v };
         result.nvidiaSmi = smiRecord(pid);
         result.gpuPage = { error: 'about:support is not read (no automation port in a stock Firefox)' };
         result.verdict = verdict(result);
@@ -405,21 +473,29 @@ async function firefoxRun(o, exe, outDir, result) {
  * window, no Playwright launch flags; then attached over its DevTools port. `variant` and `extra` are the only
  * things added. close() ends OUR process tree by pid (never a browser the person is using) and drops the profile.
  */
-export async function startStockBrowser({ exe, label, variant = 'default', extra = [], maximized = false }) {
+export async function startStockBrowser({ exe, label, variant = 'default', extra = [], maximized = false, keepProfile = false, prefs = null }) {
     const v = VARIANTS[variant];
     const profile = join(REPO, '.cache', 'gpu-select', `${label}-profile`);
-    rmSync(profile, { recursive: true, force: true });
+    // keepProfile: the second start of a profile an earlier start prepared (a flag set in chrome://flags)
+    if (!keepProfile) rmSync(profile, { recursive: true, force: true });
     mkdirSync(profile, { recursive: true });
+    // prefs: what the profile holds before its first start (the browser reads it as its own Preferences file)
+    if (prefs) {
+        mkdirSync(join(profile, 'Default'), { recursive: true });
+        writeFileSync(join(profile, 'Default', 'Preferences'), JSON.stringify(prefs));
+    }
     const size = maximized ? ['--start-maximized'] : ['--window-position=40,40', '--window-size=1296,920'];
     const args = [`--user-data-dir=${profile}`, '--remote-debugging-port=0', '--no-first-run', '--no-default-browser-check', ...size, ...v.args, ...extra, 'about:blank'];
     const child = spawn(exe, args, { env: { ...process.env, ...v.env }, stdio: 'ignore', windowsHide: false });
     const launch = { executable: mask(exe), added: [...size, ...v.args, ...extra], env: v.env, profile: 'throwaway (.cache/gpu-select)', visible: !v.args.concat(extra).some((x) => x.startsWith('--headless')) };
     let browser = null;
-    const close = async (keep = false) => {
-        if (keep) {
+    // close(true): leave the browser running; close({ keepProfile: true }): end it but keep its profile for a second start
+    const close = async (o = false) => {
+        if (o === true || o?.keepRunning === true) {
             if (browser) await browser.close().catch(() => {});
             return;
         }
+        const keepFiles = o?.keepProfile === true;
         try {
             if (browser) await (await browser.newBrowserCDPSession()).send('Browser.close');
         } catch {
@@ -429,6 +505,7 @@ export async function startStockBrowser({ exe, label, variant = 'default', extra
         await sleep(1500);
         if (child.pid && child.exitCode === null) spawnSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true });
         await sleep(500);
+        if (keepFiles) return;
         try {
             rmSync(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 500 });
         } catch {

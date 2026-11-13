@@ -2,7 +2,7 @@
   "gpuhint.copied": "Copiado. Pégalo en una pestaña nueva.",
   "gpuhint.copy": "Copiar la dirección",
   "gpuhint.copyFailed": "No se pudo copiar. Selecciona la dirección y cópiala.",
-  "gpuhint.fixFlag": "Lo más rápido, en el navegador: abre esta dirección en una pestaña nueva, elige Enabled y pulsa Relaunch:",
+  "gpuhint.fixFlag": "Lo más rápido, en el navegador: abre esta dirección en una pestaña nueva, elige Enabled y pulsa {button}:",
   "gpuhint.fixWindows": "O en Windows: abre la configuración de gráficos (Configuración, Sistema, Pantalla, Gráficos), añade este navegador a la lista si no está, elige Alto rendimiento para él y después cierra todas las ventanas del navegador y ábrelo de nuevo.",
   "gpuhint.how": "Cómo cambiarlo",
   "gpuhint.howFix": "Cómo arreglarlo",

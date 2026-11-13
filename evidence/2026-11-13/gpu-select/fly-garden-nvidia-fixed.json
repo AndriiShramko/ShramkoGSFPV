@@ -1,0 +1,2142 @@
+{
+ "name": "gpu-select/fly-garden-nvidia-fixed",
+ "date": "2026-11-13T20:02:41.811Z",
+ "label": "fly-garden-nvidia-fixed",
+ "scene": "7a475d38",
+ "url": "https://gsfpv.flyreelstudio.eu/en/fly/?scene=7a475d38&nowarn=1&input=touch&governor=0&set.display.deviceClass=desktop-strong&drawing=sorted",
+ "browserName": "chrome",
+ "variant": "force-hp",
+ "query": "&governor=0&set.display.deviceClass=desktop-strong&drawing=sorted",
+ "bandsMetres": [
+  8,
+  25,
+  80,
+  "more"
+ ],
+ "inView": "node centre within 60 degrees of the view axis, or the camera inside the node",
+ "launch": {
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "added": [
+   "--start-maximized",
+   "--force-high-performance-gpu"
+  ],
+  "env": {},
+  "profile": "throwaway (.cache/gpu-select)",
+  "visible": true
+ },
+ "browser": {
+  "product": "Chrome/140.0.7339.81",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+ },
+ "load": {
+  "revealWallMs": 1818,
+  "settledWallMs": 6649,
+  "timedOut": false,
+  "visibleMs": 1141,
+  "firstFrameMs": 483.90000000037253,
+  "nodes": 213,
+  "levels": 6,
+  "files": {
+   "count": 190,
+   "megabytes": 196.79,
+   "perLevel": {
+    "0": {
+     "files": 16,
+     "megabytes": 21,
+     "firstMs": 6031,
+     "lastMs": 6463
+    },
+    "1": {
+     "files": 48,
+     "megabytes": 57.63,
+     "firstMs": 4632,
+     "lastMs": 5955
+    },
+    "2": {
+     "files": 48,
+     "megabytes": 52.69,
+     "firstMs": 3243,
+     "lastMs": 4396
+    },
+    "3": {
+     "files": 32,
+     "megabytes": 31.48,
+     "firstMs": 2417,
+     "lastMs": 2937
+    },
+    "4": {
+     "files": 16,
+     "megabytes": 15.77,
+     "firstMs": 1917,
+     "lastMs": 2160
+    },
+    "5": {
+     "files": 8,
+     "megabytes": 7.8,
+     "firstMs": 1159,
+     "lastMs": 1227
+    },
+    "other": {
+     "files": 22,
+     "megabytes": 10.43,
+     "firstMs": 716,
+     "lastMs": 2702
+    }
+   }
+  },
+  "order": [
+   [
+    1159,
+    5
+   ],
+   [
+    1205,
+    5
+   ],
+   [
+    1220,
+    5
+   ],
+   [
+    1224,
+    5
+   ],
+   [
+    1224,
+    5
+   ],
+   [
+    1225,
+    5
+   ],
+   [
+    1225,
+    5
+   ],
+   [
+    1227,
+    5
+   ],
+   [
+    1917,
+    4
+   ],
+   [
+    1922,
+    4
+   ],
+   [
+    1934,
+    4
+   ],
+   [
+    1952,
+    4
+   ],
+   [
+    1955,
+    4
+   ],
+   [
+    1966,
+    4
+   ],
+   [
+    1989,
+    4
+   ],
+   [
+    1993,
+    4
+   ],
+   [
+    1997,
+    4
+   ],
+   [
+    2005,
+    4
+   ],
+   [
+    2018,
+    4
+   ],
+   [
+    2029,
+    4
+   ],
+   [
+    2051,
+    4
+   ],
+   [
+    2052,
+    4
+   ],
+   [
+    2071,
+    4
+   ],
+   [
+    2160,
+    4
+   ],
+   [
+    2417,
+    3
+   ],
+   [
+    2436,
+    3
+   ],
+   [
+    2436,
+    3
+   ],
+   [
+    2455,
+    3
+   ],
+   [
+    2456,
+    3
+   ],
+   [
+    2460,
+    3
+   ],
+   [
+    2469,
+    3
+   ],
+   [
+    2474,
+    3
+   ],
+   [
+    2483,
+    3
+   ],
+   [
+    2668,
+    3
+   ],
+   [
+    2669,
+    3
+   ],
+   [
+    2671,
+    3
+   ],
+   [
+    2671,
+    3
+   ],
+   [
+    2672,
+    3
+   ],
+   [
+    2672,
+    3
+   ],
+   [
+    2673,
+    3
+   ],
+   [
+    2877,
+    3
+   ],
+   [
+    2880,
+    3
+   ],
+   [
+    2896,
+    3
+   ],
+   [
+    2917,
+    3
+   ],
+   [
+    2922,
+    3
+   ],
+   [
+    2928,
+    3
+   ],
+   [
+    2933,
+    3
+   ],
+   [
+    2934,
+    3
+   ],
+   [
+    2934,
+    3
+   ],
+   [
+    2934,
+    3
+   ],
+   [
+    2935,
+    3
+   ],
+   [
+    2935,
+    3
+   ],
+   [
+    2936,
+    3
+   ],
+   [
+    2936,
+    3
+   ],
+   [
+    2936,
+    3
+   ],
+   [
+    2937,
+    3
+   ],
+   [
+    3243,
+    2
+   ],
+   [
+    3254,
+    2
+   ],
+   [
+    3264,
+    2
+   ],
+   [
+    3270,
+    2
+   ],
+   [
+    3281,
+    2
+   ],
+   [
+    3288,
+    2
+   ],
+   [
+    3295,
+    2
+   ],
+   [
+    3298,
+    2
+   ],
+   [
+    3306,
+    2
+   ],
+   [
+    3345,
+    2
+   ],
+   [
+    3353,
+    2
+   ],
+   [
+    3360,
+    2
+   ],
+   [
+    3370,
+    2
+   ],
+   [
+    3373,
+    2
+   ],
+   [
+    3382,
+    2
+   ],
+   [
+    3428,
+    2
+   ],
+   [
+    3686,
+    2
+   ],
+   [
+    3707,
+    2
+   ],
+   [
+    3712,
+    2
+   ],
+   [
+    3717,
+    2
+   ],
+   [
+    3724,
+    2
+   ],
+   [
+    3734,
+    2
+   ],
+   [
+    3738,
+    2
+   ],
+   [
+    3759,
+    2
+   ],
+   [
+    3785,
+    2
+   ],
+   [
+    3825,
+    2
+   ],
+   [
+    3837,
+    2
+   ],
+   [
+    3844,
+    2
+   ],
+   [
+    3859,
+    2
+   ],
+   [
+    3864,
+    2
+   ],
+   [
+    3875,
+    2
+   ],
+   [
+    3887,
+    2
+   ],
+   [
+    4229,
+    2
+   ],
+   [
+    4239,
+    2
+   ],
+   [
+    4246,
+    2
+   ],
+   [
+    4257,
+    2
+   ],
+   [
+    4259,
+    2
+   ],
+   [
+    4267,
+    2
+   ],
+   [
+    4278,
+    2
+   ],
+   [
+    4299,
+    2
+   ],
+   [
+    4310,
+    2
+   ],
+   [
+    4346,
+    2
+   ],
+   [
+    4354,
+    2
+   ],
+   [
+    4360,
+    2
+   ],
+   [
+    4368,
+    2
+   ],
+   [
+    4382,
+    2
+   ],
+   [
+    4386,
+    2
+   ],
+   [
+    4396,
+    2
+   ],
+   [
+    4632,
+    1
+   ],
+   [
+    4649,
+    1
+   ],
+   [
+    4653,
+    1
+   ],
+   [
+    4655,
+    1
+   ],
+   [
+    4669,
+    1
+   ],
+   [
+    4679,
+    1
+   ],
+   [
+    4686,
+    1
+   ],
+   [
+    4705,
+    1
+   ],
+   [
+    4718,
+    1
+   ],
+   [
+    4820,
+    1
+   ],
+   [
+    4833,
+    1
+   ],
+   [
+    4841,
+    1
+   ],
+   [
+    4854,
+    1
+   ],
+   [
+    4862,
+    1
+   ],
+   [
+    4892,
+    1
+   ],
+   [
+    5134,
+    1
+   ],
+   [
+    5164,
+    1
+   ],
+   [
+    5183,
+    1
+   ],
+   [
+    5190,
+    1
+   ],
+   [
+    5205,
+    1
+   ],
+   [
+    5209,
+    1
+   ],
+   [
+    5213,
+    1
+   ],
+   [
+    5218,
+    1
+   ],
+   [
+    5238,
+    1
+   ],
+   [
+    5355,
+    1
+   ],
+   [
+    5367,
+    1
+   ],
+   [
+    5378,
+    1
+   ],
+   [
+    5384,
+    1
+   ],
+   [
+    5392,
+    1
+   ],
+   [
+    5396,
+    1
+   ],
+   [
+    5410,
+    1
+   ],
+   [
+    5415,
+    1
+   ],
+   [
+    5575,
+    1
+   ],
+   [
+    5599,
+    1
+   ],
+   [
+    5615,
+    1
+   ],
+   [
+    5618,
+    1
+   ],
+   [
+    5622,
+    1
+   ],
+   [
+    5635,
+    1
+   ],
+   [
+    5651,
+    1
+   ],
+   [
+    5658,
+    1
+   ],
+   [
+    5836,
+    1
+   ],
+   [
+    5889,
+    1
+   ],
+   [
+    5895,
+    1
+   ],
+   [
+    5905,
+    1
+   ],
+   [
+    5910,
+    1
+   ],
+   [
+    5922,
+    1
+   ],
+   [
+    5935,
+    1
+   ],
+   [
+    5955,
+    1
+   ],
+   [
+    6031,
+    0
+   ],
+   [
+    6105,
+    0
+   ],
+   [
+    6122,
+    0
+   ],
+   [
+    6122,
+    0
+   ],
+   [
+    6135,
+    0
+   ],
+   [
+    6155,
+    0
+   ],
+   [
+    6158,
+    0
+   ],
+   [
+    6170,
+    0
+   ],
+   [
+    6274,
+    0
+   ],
+   [
+    6344,
+    0
+   ],
+   [
+    6357,
+    0
+   ],
+   [
+    6369,
+    0
+   ],
+   [
+    6376,
+    0
+   ],
+   [
+    6381,
+    0
+   ],
+   [
+    6409,
+    0
+   ],
+   [
+    6463,
+    0
+   ]
+  ]
+ },
+ "loadTimeline": [
+  {
+   "wall": 792,
+   "status": "loading",
+   "stage": "connect",
+   "fraction": 0,
+   "loading": null,
+   "pending": null,
+   "prefetch": null,
+   "drawnM": null,
+   "budgetM": null,
+   "step": null,
+   "scale": null,
+   "perLevelM": null,
+   "view": null,
+   "off": null,
+   "behindInView": null,
+   "nearBehind": null
+  },
+  {
+   "wall": 1818,
+   "status": "loading",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 0,
+   "pending": 0,
+   "prefetch": 0,
+   "drawnM": 0.48,
+   "budgetM": 4,
+   "step": null,
+   "scale": 1,
+   "perLevelM": {
+    "5": 0.47
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 5,
+     "meanWanted": 5,
+     "splatsM": 0.31
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 5,
+     "splatsM": 0.01
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 39,
+     "meanShown": 5,
+     "meanWanted": 5,
+     "splatsM": 0.14
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 5,
+     "meanWanted": 5,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.17,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 3.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 0,
+   "nearBehind": 0
+  },
+  {
+   "wall": 2968,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 32,
+   "pending": 16,
+   "prefetch": 16,
+   "drawnM": 0.85,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "3": 0.44,
+    "4": 0.05,
+    "5": 0.34
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 14,
+     "meanShown": 4.46,
+     "meanWanted": 2.27,
+     "splatsM": 0.52
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 22,
+     "meanShown": 4,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 26,
+     "meanShown": 4.23,
+     "meanWanted": 3.23,
+     "splatsM": 0.29
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 46,
+   "nearBehind": 46
+  },
+  {
+   "wall": 4010,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 24,
+   "pending": 12,
+   "prefetch": 12,
+   "drawnM": 1.53,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "2": 0.57,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.21
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 34,
+     "meanShown": 3.56,
+     "meanWanted": 2.27,
+     "splatsM": 1.07
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 31,
+     "meanShown": 3.92,
+     "meanWanted": 3.23,
+     "splatsM": 0.42
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 18,
+   "nearBehind": 18
+  },
+  {
+   "wall": 5034,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 16,
+   "pending": 8,
+   "prefetch": 8,
+   "drawnM": 2.14,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "2": 1.27,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.12
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 41,
+     "meanShown": 3.15,
+     "meanWanted": 2.27,
+     "splatsM": 1.4
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 36,
+     "meanShown": 3.54,
+     "meanWanted": 3.23,
+     "splatsM": 0.69
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 11,
+   "nearBehind": 11
+  },
+  {
+   "wall": 6064,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 6,
+   "pending": 3,
+   "prefetch": 3,
+   "drawnM": 3.44,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "1": 1.38,
+    "2": 1.27,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.03
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 49,
+     "meanShown": 2.54,
+     "meanWanted": 2.27,
+     "splatsM": 2.35
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 39,
+     "meanShown": 3.23,
+     "meanWanted": 3.23,
+     "splatsM": 1.05
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 3,
+   "nearBehind": 3
+  },
+  {
+   "wall": 7093,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 0,
+   "pending": 0,
+   "prefetch": 0,
+   "drawnM": 3.95,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "0": 0.43,
+    "1": 1.49,
+    "2": 1.27,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.01
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 2.27,
+     "meanWanted": 2.27,
+     "splatsM": 2.87
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 39,
+     "meanShown": 3.23,
+     "meanWanted": 3.23,
+     "splatsM": 1.05
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 0,
+   "nearBehind": 0
+  },
+  {
+   "wall": 8119,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 0,
+   "pending": 0,
+   "prefetch": 0,
+   "drawnM": 3.95,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "0": 0.43,
+    "1": 1.49,
+    "2": 1.27,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.01
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 2.27,
+     "meanWanted": 2.27,
+     "splatsM": 2.87
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 39,
+     "meanShown": 3.23,
+     "meanWanted": 3.23,
+     "splatsM": 1.05
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 0,
+   "nearBehind": 0
+  },
+  {
+   "wall": 9140,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 0,
+   "pending": 0,
+   "prefetch": 0,
+   "drawnM": 3.95,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "0": 0.43,
+    "1": 1.49,
+    "2": 1.27,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.01
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 2.27,
+     "meanWanted": 2.27,
+     "splatsM": 2.87
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 39,
+     "meanShown": 3.23,
+     "meanWanted": 3.23,
+     "splatsM": 1.05
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 0,
+   "nearBehind": 0
+  },
+  {
+   "wall": 9649,
+   "status": "ready",
+   "stage": "done",
+   "fraction": 1,
+   "loading": 0,
+   "pending": 0,
+   "prefetch": 0,
+   "drawnM": 3.95,
+   "budgetM": 4,
+   "step": 0,
+   "scale": 1,
+   "perLevelM": {
+    "0": 0.43,
+    "1": 1.49,
+    "2": 1.27,
+    "3": 0.69,
+    "4": 0.05,
+    "5": 0.01
+   },
+   "view": [
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 2.27,
+     "meanWanted": 2.27,
+     "splatsM": 2.87
+    },
+    {
+     "n": 30,
+     "none": 0,
+     "atWanted": 30,
+     "meanShown": 3.47,
+     "meanWanted": 3.47,
+     "splatsM": 0.02
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    },
+    {
+     "n": 0,
+     "none": 0,
+     "atWanted": 0,
+     "meanShown": null,
+     "meanWanted": null,
+     "splatsM": 0
+    }
+   ],
+   "off": [
+    {
+     "n": 39,
+     "none": 0,
+     "atWanted": 39,
+     "meanShown": 3.23,
+     "meanWanted": 3.23,
+     "splatsM": 1.05
+    },
+    {
+     "n": 52,
+     "none": 0,
+     "atWanted": 52,
+     "meanShown": 4.96,
+     "meanWanted": 4.96,
+     "splatsM": 0.01
+    },
+    {
+     "n": 36,
+     "none": 6,
+     "atWanted": 30,
+     "meanShown": 5,
+     "meanWanted": 4.94,
+     "splatsM": 0
+    },
+    {
+     "n": 4,
+     "none": 1,
+     "atWanted": 3,
+     "meanShown": 5,
+     "meanWanted": 4.75,
+     "splatsM": 0
+    }
+   ],
+   "behindInView": 0,
+   "nearBehind": 0
+  }
+ ],
+ "loadFrames": {
+  "beforeReveal": {
+   "frames": 0
+  },
+  "afterReveal": {
+   "frames": 672,
+   "fps": 85.85,
+   "p50ms": 8.6,
+   "p95ms": 17.1,
+   "p99ms": 30.9,
+   "maxMs": 149.9,
+   "over25ms": 0.02,
+   "over50ms": 0,
+   "ticks": 958,
+   "tickFps": 122.39,
+   "held": 286,
+   "heldShare": 0.3
+  }
+ },
+ "gpuProcessPid": 18992,
+ "systemInfo": {
+  "gpu": {
+   "devices": [
+    {
+     "vendorId": 4318,
+     "deviceId": 9373,
+     "subSysId": 538450520,
+     "revision": 161,
+     "vendorString": "",
+     "deviceString": "NVIDIA GeForce RTX 3070 Laptop GPU",
+     "driverVendor": "",
+     "driverVersion": "32.0.16.1742"
+    },
+    {
+     "vendorId": 32902,
+     "deviceId": 39520,
+     "subSysId": 538450520,
+     "revision": 1,
+     "vendorString": "",
+     "deviceString": "Intel(R) UHD Graphics",
+     "driverVendor": "NVIDIA",
+     "driverVersion": "32.0.101.7088"
+    },
+    {
+     "vendorId": 5140,
+     "deviceId": 140,
+     "subSysId": 0,
+     "revision": 0,
+     "vendorString": "",
+     "deviceString": "Microsoft Basic Render Driver",
+     "driverVendor": "",
+     "driverVersion": "10.0.26100.9711"
+    }
+   ],
+   "auxAttributes": {
+    "amdSwitchable": false,
+    "bgra8OverlaySupport": "SOFTWARE",
+    "canSupportThreadedTextureMailbox": false,
+    "directComposition": true,
+    "directMLFeatureLevel": "Not supported",
+    "directRenderingVersion": "",
+    "displayType": "ANGLE_D3D11",
+    "dx12FeatureLevel": "Not supported",
+    "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_lossy_etc_decode GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_request_extension GL_ANGLE_robust_client_memory GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_usage GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_color_buffer_float_rgb GL_CHROMIUM_color_buffer_float_rgba GL_CHROMIUM_copy_compressed_texture GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_EGL_image_external_wrap_modes GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_half_float GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_NV_EGL_stream_consumer_external GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_compressed_EAC_R11_signed_texture GL_OES_compressed_EAC_R11_unsigned_texture GL_OES_compressed_EAC_RG11_signed_texture GL_OES_compressed_EAC_RG11_unsigned_texture GL_OES_compressed_ETC2_RGB8_texture GL_OES_compressed_ETC2_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_sRGB8_alpha_texture GL_OES_compressed_ETC2_sRGB8_alpha8_texture GL_OES_compressed_ETC2_sRGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_vertex_array_object GL_WEBGL_video_texture ",
+    "glImplementationParts": "(gl=egl-angle,angle=d3d11)",
+    "glRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 Laptop GPU (0x0000249D) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.16.1742)",
+    "glResetNotificationStrategy": 33362,
+    "glVendor": "Google Inc. (NVIDIA)",
+    "glVersion": "OpenGL ES 2.0.0 (ANGLE 2.1.25846 git hash: cbc4153da8d5)",
+    "glWsExtensions": "EGL_EXT_create_context_robustness EGL_ANGLE_d3d_share_handle_client_buffer EGL_ANGLE_d3d_texture_client_buffer EGL_ANGLE_surface_d3d_texture_2d_share_handle EGL_ANGLE_query_surface_pointer EGL_ANGLE_window_fixed_size EGL_ANGLE_keyed_mutex EGL_ANGLE_surface_orientation EGL_ANGLE_direct_composition EGL_NV_post_sub_buffer EGL_KHR_create_context EGL_KHR_image EGL_KHR_image_base EGL_KHR_gl_texture_2D_image EGL_KHR_gl_texture_cubemap_image EGL_KHR_gl_renderbuffer_image EGL_KHR_get_all_proc_addresses EGL_KHR_stream EGL_KHR_stream_consumer_gltexture EGL_NV_stream_consumer_gltexture_yuv EGL_ANGLE_stream_producer_d3d_texture EGL_ANGLE_create_context_webgl_compatibility EGL_CHROMIUM_create_context_bind_generates_resource EGL_CHROMIUM_sync_control EGL_EXT_pixel_format_float EGL_KHR_surfaceless_context EGL_ANGLE_display_texture_share_group EGL_ANGLE_display_semaphore_share_group EGL_ANGLE_create_context_client_arrays EGL_ANGLE_program_cache_control EGL_ANGLE_robust_resource_initialization EGL_ANGLE_create_context_extensions_enabled EGL_ANDROID_blob_cache EGL_ANDROID_recordable EGL_ANGLE_image_d3d11_texture EGL_ANGLE_create_context_backwards_compatible EGL_KHR_no_config_context EGL_KHR_create_context_no_error EGL_KHR_reusable_sync EGL_ANGLE_memory_usage_report ",
+    "glWsVendor": "Google Inc. (NVIDIA)",
+    "glWsVersion": "1.5 (ANGLE 2.1.25846 git hash: cbc4153da8d5)",
+    "hardwareSupportsVulkan": false,
+    "inProcessGpu": false,
+    "initializationTime": 0.331699,
+    "isAsan": false,
+    "isClangCoverage": false,
+    "jpegDecodeAcceleratorSupported": false,
+    "maxMsaaSamples": "8",
+    "nv12OverlaySupport": "SOFTWARE",
+    "optimus": false,
+    "p010OverlaySupport": "SOFTWARE",
+    "passthroughCmdDecoder": true,
+    "pixelShaderVersion": "5.0",
+    "processCrashCount": 0,
+    "rgb10a2OverlaySupport": "SOFTWARE",
+    "sandboxed": true,
+    "skiaBackendType": "GaneshGL",
+    "subpixelFontRendering": true,
+    "supportsD3dSharedImages": true,
+    "supportsDirectML": false,
+    "supportsDx12": false,
+    "supportsOverlays": true,
+    "supportsVulkan": false,
+    "targetCpuBits": 64,
+    "vertexShaderVersion": "5.0",
+    "visibilityCallbackCallCount": 0,
+    "vulkanVersion": "Not supported",
+    "yuy2OverlaySupport": "SOFTWARE"
+   },
+   "driverBugWorkarounds": [
+    "disable_d3d11_vp9_ksvc_decoding",
+    "disable_vp9_hmft_temporal_encoding",
+    "disable_webnn_for_npu",
+    "enable_webgl_timer_query_extensions",
+    "exit_on_context_lost",
+    "force_high_performance_gpu",
+    "unpack_overlapping_rows_separately_unpack_buffer",
+    "disabled_extension_GL_KHR_blend_equation_advanced",
+    "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+   ]
+  },
+  "modelName": "",
+  "commandLine": "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" --user-data-dir=\"C:\\dev\\ShramkoGSFPV\\.cache\\gpu-select\\fly-garden-nvidia-fixed-profile\" --remote-debugging-port=0 --no-first-run --no-default-browser-check --start-maximized --force-high-performance-gpu --flag-switches-begin --flag-switches-end about:blank"
+ },
+ "still": {
+  "seconds": 12,
+  "frames": {
+   "frames": 730,
+   "fps": 60.11,
+   "p50ms": 15.5,
+   "p95ms": 24.1,
+   "p99ms": 30.9,
+   "maxMs": 33,
+   "over25ms": 0.03,
+   "over50ms": 0,
+   "ticks": 1574,
+   "tickFps": 129.61,
+   "held": 844,
+   "heldShare": 0.54
+  },
+  "drawnM": 3.95,
+  "budgetM": 4,
+  "governorStep": 0,
+  "renderScale": 1,
+  "perLevelM": {
+   "0": 0.43,
+   "1": 1.49,
+   "2": 1.27,
+   "3": 0.69,
+   "4": 0.05,
+   "5": 0.01
+  },
+  "view": [
+   {
+    "n": 52,
+    "none": 0,
+    "atWanted": 52,
+    "meanShown": 2.27,
+    "meanWanted": 2.27,
+    "splatsM": 2.87
+   },
+   {
+    "n": 30,
+    "none": 0,
+    "atWanted": 30,
+    "meanShown": 3.47,
+    "meanWanted": 3.47,
+    "splatsM": 0.02
+   },
+   {
+    "n": 0,
+    "none": 0,
+    "atWanted": 0,
+    "meanShown": null,
+    "meanWanted": null,
+    "splatsM": 0
+   },
+   {
+    "n": 0,
+    "none": 0,
+    "atWanted": 0,
+    "meanShown": null,
+    "meanWanted": null,
+    "splatsM": 0
+   }
+  ],
+  "off": [
+   {
+    "n": 39,
+    "none": 0,
+    "atWanted": 39,
+    "meanShown": 3.23,
+    "meanWanted": 3.23,
+    "splatsM": 1.05
+   },
+   {
+    "n": 52,
+    "none": 0,
+    "atWanted": 52,
+    "meanShown": 4.96,
+    "meanWanted": 4.96,
+    "splatsM": 0.01
+   },
+   {
+    "n": 36,
+    "none": 6,
+    "atWanted": 30,
+    "meanShown": 5,
+    "meanWanted": 4.94,
+    "splatsM": 0
+   },
+   {
+    "n": 4,
+    "none": 1,
+    "atWanted": 3,
+    "meanShown": 5,
+    "meanWanted": 4.75,
+    "splatsM": 0
+   }
+  ],
+  "perSecond": [
+   {
+    "s": 0,
+    "frames": 130,
+    "maxMs": 9.7,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 1,
+    "frames": 129,
+    "maxMs": 9.3,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 2,
+    "frames": 130,
+    "maxMs": 10,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 3,
+    "frames": 130,
+    "maxMs": 9.5,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 4,
+    "frames": 129,
+    "maxMs": 9.8,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 5,
+    "frames": 129,
+    "maxMs": 9.9,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 6,
+    "frames": 129,
+    "maxMs": 9.7,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 7,
+    "frames": 130,
+    "maxMs": 9.5,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 8,
+    "frames": 129,
+    "maxMs": 9.9,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 9,
+    "frames": 130,
+    "maxMs": 9.4,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 10,
+    "frames": 131,
+    "maxMs": 9.5,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 11,
+    "frames": 130,
+    "maxMs": 9.3,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   },
+   {
+    "s": 12,
+    "frames": 19,
+    "maxMs": 9.8,
+    "loading": 0,
+    "step": 0,
+    "scale": 1,
+    "drawn": 3952625,
+    "phase": ""
+   }
+  ],
+  "counters": {
+   "seconds": 12,
+   "adapters": {
+    "0x00000000_0x00012db4": "Intel(R) UHD Graphics",
+    "0x00000000_0x0001316d": "Microsoft Basic Render Driver",
+    "0x00000000_0x000131ff": "NVIDIA GeForce RTX 3070 Laptop GPU"
+   },
+   "perAdapter": {
+    "Intel(R) UHD Graphics": {
+     "engines": 13,
+     "max3d": 8.89,
+     "avg3d": 7.28,
+     "maxAny": 8.89,
+     "dedicatedMb": 0,
+     "sharedMb": 56.9
+    },
+    "NVIDIA GeForce RTX 3070 Laptop GPU": {
+     "engines": 14,
+     "max3d": 97.91,
+     "avg3d": 95.09,
+     "maxAny": 97.91,
+     "dedicatedMb": 1064,
+     "sharedMb": 75.4
+    }
+   },
+   "busyEngines": [
+    {
+     "luid": "0x00000000_0x00012db4",
+     "adapter": "Intel(R) UHD Graphics",
+     "engine": "eng_0_engtype_3d",
+     "max": 8.89,
+     "avg": 7.28,
+     "dropped": 0
+    },
+    {
+     "luid": "0x00000000_0x000131ff",
+     "adapter": "NVIDIA GeForce RTX 3070 Laptop GPU",
+     "engine": "eng_0_engtype_3d",
+     "max": 97.91,
+     "avg": 95.09,
+     "dropped": 0
+    },
+    {
+     "luid": "0x00000000_0x000131ff",
+     "adapter": "NVIDIA GeForce RTX 3070 Laptop GPU",
+     "engine": "eng_4_engtype_copy",
+     "max": 21.06,
+     "avg": 13.85,
+     "dropped": 0
+    }
+   ]
+  }
+ },
+ "final": {
+  "scan": {
+   "nodes": 213,
+   "files": 51,
+   "splatsPerLevelM": {
+    "0": 15.4,
+    "1": 7.67,
+    "2": 3.82,
+    "3": 1.9,
+    "4": 0.95,
+    "5": 0.47
+   }
+  },
+  "lod": {
+   "kind": "lod-meta",
+   "levels": 6,
+   "range": [
+    0,
+    5
+   ],
+   "mode": "auto",
+   "drawn": 3952625,
+   "budgetM": 4,
+   "loading": 0,
+   "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+   "contentFailures": [],
+   "renderScale": 1,
+   "topBudgetM": 4,
+   "governorStep": 0,
+   "governorBudgetM": 4,
+   "settingBudgetM": 4,
+   "streamHitches": 42
+  },
+  "info": {
+   "webgpu": true,
+   "currentRenderer": 2,
+   "gpuSort": true,
+   "hasCollision": true,
+   "collisionSha256": "8b7e1d61afcb387cd2dc59f34fc45683271621d57a25f6d1fa4d400748491b1b",
+   "walls": "on",
+   "timings": {
+    "settingsMs": 189.19999999925494,
+    "collisionMs": 652.8999999985099,
+    "firstFrameMs": 483.90000000037253,
+    "visibleMs": 1141,
+    "reveal": "ready"
+   },
+   "spawn": [
+    -0.363742858171463,
+    0.963081955909729,
+    -2.07816481590271,
+    147.82784118453603
+   ],
+   "preset": "pavo20pro-3s",
+   "locale": "en",
+   "render": "on"
+  },
+  "drawing": {
+   "class": "desktop-strong",
+   "classAuto": "desktop-strong",
+   "classReasons": [
+    "strong"
+   ],
+   "classPicked": true,
+   "gpu": {
+    "vendor": "nvidia",
+    "architecture": "ampere",
+    "device": "",
+    "description": "",
+    "isFallback": false,
+    "maxBufferSize": 2147483648
+   },
+   "mode": "sorted",
+   "budgetM": 4,
+   "engineBudgetM": 4,
+   "renderScale": 1,
+   "drawn": "sorted"
+  },
+  "gpuInfo": {
+   "vendor": "nvidia",
+   "architecture": "ampere",
+   "device": "",
+   "description": "",
+   "isFallback": false,
+   "maxBufferSize": 2147483648
+  },
+  "webgpu": true,
+  "hint": {
+   "seen": false,
+   "open": false,
+   "check": {
+    "due": false,
+    "reason": "not-intel",
+    "shown": false
+   }
+  },
+  "contentKind": "lod-meta",
+  "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/7a475d38/v1/lod-meta.json",
+  "backbuffer": [
+   2561,
+   1238
+  ],
+  "inner": [
+   1707,
+   825
+  ],
+  "dpr": 1.5,
+  "vramMB": 667,
+  "jsHeapMB": 171,
+  "timings": {
+   "settingsMs": 189.19999999925494,
+   "collisionMs": 652.8999999985099,
+   "firstFrameMs": 483.90000000037253,
+   "visibleMs": 1141,
+   "reveal": "ready"
+  },
+  "visibility": "visible",
+  "focus": true,
+  "frameStats": {
+   "p50": 7.600000001490116,
+   "p99": 8.599999999627471,
+   "hz": 131.57894734262266
+  },
+  "camera": {
+   "pos": [
+    -0.36,
+    0.96,
+    -2.08
+   ],
+   "forward": [
+    0.5,
+    0.342,
+    0.795
+   ]
+  }
+ },
+ "verdict": {
+  "adapter": "nvidia ampere",
+  "deviceClass": "desktop-strong",
+  "hint": {
+   "due": false,
+   "reason": "not-intel",
+   "shown": false
+  },
+  "revealS": 1.82,
+  "settledS": 6.65,
+  "filesMB": 196.79,
+  "still": "60.11 frames drawn per second (the engine ticks 129.61/s, 54 % of them held), between drawn frames p50 15.5 ms, p95 24.1 ms, p99 30.9 ms; 3.95 M splats of 4 M, step 0, scale 1",
+  "turn": null,
+  "backbuffer": [
+   2561,
+   1238
+  ],
+  "busiest": [
+   "NVIDIA GeForce RTX 3070 Laptop GPU: 3D 95.09 % avg, 97.91 % max, dedicated 1064 MB, shared 75.4 MB",
+   "Intel(R) UHD Graphics: 3D 7.28 % avg, 8.89 % max, dedicated 0 MB, shared 56.9 MB"
+  ]
+ }
+}
