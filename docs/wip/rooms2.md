@@ -26,7 +26,15 @@ Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle
   Typecheck tools/bench: 0 errors. Run with SONIC_PORTS=5820-5839 (the rig's ports come from that variable).
   dist/ rebuilt at 5595851f; the worktree's packages/sonic-fpv was moved to the pinned 378cc50 (the build failed at
   b102ce6: `lessonSegments` missing).
-- [~] 3b. Run rooms-open-vote.ts and rooms-two-page.ts on the local rig; results here.
+- [x] 3b. Runs on the local rig (dist at 5595851f, SONIC_PORTS=5820-5839, headless, GPU lock taken by the probes):
+  rooms-open-vote.ts pass, 8 of 8 checks: one 9 each, both in open room k3wGAkaDQns on 39e63ce9 with 1 remote each;
+  9 on A opened the panel with `rooms-propose` focused; B saw the vote {scene 7a475d38, yes 1, need 2, mine false};
+  after 3 s both still on 39e63ce9; one 9 on B: both `roomScene` 7a475d38 with 1 remote, both said `rooms.vote.passed`.
+  Control relay off: A2 and B2 met in one room by 9, A2 flew 33.456 m, B2 saw 0 remote frames (fired).
+  rooms-two-page.ts pass, 17 of 17 checks (RMS 0.0864 m under 0.15 m over 406 samples; controls 1, 2, 3 fired).
+  Evidence: evidence/2026-11-13/rooms-open-vote.json and rooms-two-page.json (not in git, like the other evidence).
+  First run of rooms-open-vote failed at page.goto: under SONIC_PORTS the rig picked the front's port twice; fixed in
+  rooms-serve.ts (commit 4ec94a57: three ports at once).
 
 ## Decisions
 
@@ -49,15 +57,25 @@ Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle
 
 - New HTTP route `POST /api/rooms/open` on gsfpv-rooms. nginx's `location ^~ /api/rooms` already passes POST with a
   4k body; no deploy file changed. Release needs the rooms service restarted (apps/rooms changed).
+- Probes of the rig: run with SONIC_PORTS=<range>; before commit 4ec94a57 rooms-serve.ts under SONIC_PORTS served the
+  site and the front on one port (page.goto failed). Without SONIC_PORTS it was fine (random ports).
+- A pilot in the open room who wants his own room: the panel in a room offers leave, not create, so it is menu, leave,
+  menu, create (four presses). A "create a room" button in the open room's panel would cut it to two; not built here.
+- This worktree's packages/sonic-fpv was checked out at b102ce6; it is now at the pinned 378cc50 (fetched from the
+  lead copy's submodule). A worktree with the old submodule fails build-release (`lessonSegments` missing).
 
 ## Not verified
 
 - Old-code control of test_open_vote.py: on origin/main's rooms.py the test module fails at import (no votes module),
   an error, not an assertion. The assertion control is a mutant majority rule (yes >= half): 3 failures, 1 error.
 
-- The panel's vote block, the hud flash and the in-page scan change after a passed vote were not seen in a browser
-  (step 3 is the probe that does it).
-- The pause menu still opens the panel with create, link and list; only key 9's first press changed.
+- The in-page scan change after a passed vote and the propose panel are seen by rooms-open-vote.ts (hook and DOM); the
+  hud flash text and the spoken lines were not looked at on a screenshot or heard, only their keys in `said`.
+- rooms-open-vote.ts against an origin/main build (it must fail there at the first 9, which opens the panel): not run,
+  a second release build of the old tree was not made.
+- train1-live.ts's new branch (9 gave kind persistent: leave, then create from the menu) was not run: it targets the
+  live site, which still runs 73beb77e (9 opens the panel), and this workflow runs probes locally only. Typecheck only.
+- The vote's 30 s timeout (a vote that fails) in a browser: covered by the python tests only.
 
 ## Cost notes
 
@@ -65,3 +83,6 @@ Branch `rooms2` from origin/main 2a5ac433, worktree C:/dev/gsfpv-center-throttle
   edits as one python patch script per side (server, page) kept it to 2 replies each. Four Edit calls failed because the
   files had been read with cat, not Read: read files you will edit with Read. The probe did not fit in 30 replies:
   plan the probe as its own stage.
+- Q1 worker 2 (probes, 26 replies): most turns went to waiting for the GPU lock (another lane held it ~20 min) and one
+  failed run from the SONIC_PORTS port clash in rooms-serve.ts; a rig smoke check (curl the front) before the first
+  browser run would have caught the clash without a lock wait.
