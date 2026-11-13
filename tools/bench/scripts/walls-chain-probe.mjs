@@ -17,7 +17,7 @@ const cases = casesArg.split(',').map((s) => {
     return { id, w, h, shot };
 });
 const SHOTS = 'U:/Temp/gsfpv-train2/shots';
-const LIMIT_MS = 600_000;
+const LIMIT_MS = 300_000;
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 
@@ -57,7 +57,12 @@ for (const c of cases) {
         await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 240000 });
         await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
         await page.waitForTimeout(2000);
+        // the Controls screen holds the keys: close it with its x, as a pilot does; the walls box must show then
+        const x = page.locator('.screen.radio [data-action=radio-close]');
+        if (await x.count()) { await x.first().click(); await page.waitForTimeout(800); }
         r.before = await page.evaluate(READ);
+        r.controlsOpenAfter = await page.evaluate(() => !!document.querySelector('.screen.radio'));
+        if (r.before.walls?.state === 'offer') await page.screenshot({ path: `${SHOTS}/${c.shot.replace('.png', '-offer.png')}` });
         const t0 = Date.now();
         await page.keyboard.press('Shift+KeyG');
         let shotBuild = false;
