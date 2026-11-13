@@ -1,4 +1,19 @@
 {
   "keys.course.generate": "Трасса: новая случайная трасса",
-  "keys.course.toggle": "Трасса: препятствия вкл / выкл"
+  "keys.course.toggle": "Трасса: препятствия вкл / выкл",
+  "course.menu.generate": "Трасса: новая случайная трасса",
+  "course.menu.on": "Трасса: показать",
+  "course.menu.off": "Трасса: скрыть",
+  "course.hud.lap": "Круг {n} из {of}",
+  "course.hud.next": "Ворота {n} из {of}",
+  "course.hud.last": "Последний {time}",
+  "course.hud.best": "Лучший {time}",
+  "course.generating": "Строю трассу в свободном пространстве этого скана...",
+  "course.ready": "Трасса: ворот {n}. Пролетите ворота 1, чтобы пошёл отсчёт. Shift+T скрывает её",
+  "course.none": "В свободное пространство этого скана не помещается ни одна трасса",
+  "course.noWalls": "У этого скана нет стен, поэтому трассу здесь построить нельзя",
+  "course.failed": "Не удалось построить трассу: {msg}",
+  "course.lapDone": "Круг {time}",
+  "course.best": "Лучший круг! {time}",
+  "course.off": "Трасса скрыта. Shift+T снова показывает её"
 }

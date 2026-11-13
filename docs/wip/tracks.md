@@ -23,10 +23,16 @@ Plan: docs/wip/train1-plan.md section 3; design docs/wip/tracks-plan.md. Branch 
 - [x] LapTimer (packages/tracks/src/laps.ts) + packages/tracks/test/laps.test.ts 6/6; controls inside (skipped gate, backward pass, 5 s pause, respawn) fire; NEG OK on laps.ts (absent before) (1f11ed2a)
 - [x] ScanSonicWorld.checkpoints (opts.course, setCourse; coursePath at the flown transform, cached per transform) + tools/bench/test/tracks-beacon.test.ts 2/2 (world with a course: lessonTrack 'world'; control without: 'gates'); NEG OK on scan-world.ts (both tests fail on the old file); sonic-scan-world 7/7 still green; apps/fly depends on @gsfpv/tracks (lock +3 lines)
 - [x] keys: course.toggle and course.generate shipped in keymap.ts, SHIPPED_BY_TRACKS filled; tools/bench/test/tracks-keys.test.ts 2/2 (control: plain T clashes with sonic.record); NEG OK on keymap.ts. packages/prefs/test + app-keys + train1-contract: 273/274, the one failure is keymap.test.ts:160 (see "For the lead")
-- [ ] apps/fly/src/course: model (CourseRun), worker, view (CourseStage), hud + css, link, best laps; builtin/course.ts install; hook; locales
-- [ ] tools/bench/test/tracks-a6.test.ts (trace hash with the course on equals without; control: perturb)
-- [ ] typecheck @gsfpv/tracks, @gsfpv/prefs, apps/fly, tools/bench; i18n fly-parity
-- [ ] optional headless look (hook gates > 0, drawn > 0) under the GPU lock
+- [x] apps/fly/src/course: run.ts (CourseRun: flown gates, coursePath, LapTimer; fed per drawn frame with sim.tick and the craft's position), worker.ts (freeSpace + generateCourse off the main thread on a copy of session.collision), view.ts (CourseStage: own root, gates by state next/later/passed, chevrons every 2 m from the gate before the next to two ahead, BoxGeometry/TorusGeometry via Mesh.fromGeometry), hud.ts + hud.css (lap time, lap n of N, next gate, last, best; hidden with #ui.hud-off), link.ts (course=g1.<seed36>, best per id.vN.drone in localStorage 'gsfpv.course.best'); builtin/course.ts install (Shift+G, Shift+T, two pause-menu items order 72/73 section tools, hook filled, link seed rebuilt on load); locales course en/es/pl/ru (17 keys each)
+- [x] tools/bench/test/tracks-a6.test.ts 1/1: 30 s scripted flight at 60 Hz frames, CourseRun fed every frame, hash equal to solo; control inside: perturb changes the hash; NEG OK on run.ts (absent before: import-level)
+- [x] typecheck @gsfpv/tracks, @gsfpv/prefs, apps/fly, tools/bench: 0 errors; fly-parity + packages/tracks/test + tracks-beacon + tracks-keys: 35/35; check-architecture ok; no Cyrillic/Polish letters outside the locales in the new files
+- [ ] NOT DONE (budget): headless look (hook gates > 0, drawn > 0 after a generate). Left to T3's page probe.
+
+### What T3 gets (from T2)
+- Hook window.__gsfpv.course (CourseHook) filled by builtin/course.ts: on, source ('none'|'generated'), track {id, version}, seed, gates, next, drawn (CourseStage.drawn: gate parts + chevron arms, 0 when hidden), laps, lastLapMs, bestLapMs, beaconPoints (coursePath length), problem ('no walls' | 'nothing fits' | worker message).
+- Generate: key Shift+G (action course.generate) or menu item id 'pause.course'; toggle: Shift+T (course.toggle) or 'pause.course.toggle'. A generate is async (worker); poll hook.source === 'generated'. The URL gets &course=g1.<seed36> by history.replaceState after a generate; opening that link rebuilds the course when session.collision exists at install or at the next 'session' event.
+- Fixture scene 39e63ce9 gives 0 gates at the defaults (T1 finding): the probe must use 7a475d38 (Winter Garden, 0.7-1.4 s in Node) or T3 lowers minRoomM3 for small scans. Expect problem 'nothing fits' on 39e63ce9 as is.
+- A source 'server' and the store (apps/fly/src/course/store.ts) are T3's; setTrack(track, 'server', null) inside builtin/course.ts is the seam (make it reachable from store.ts).
 
 ### T3 server and probe
 - [ ] not started
@@ -43,6 +49,10 @@ Plan: docs/wip/train1-plan.md section 3; design docs/wip/tracks-plan.md. Branch 
 - The back half walks toward the start and then hovers within 3-15 m of it, so its legs cross (top views). Fine for R1 at its smallest; a better back half (a target ring around the start, no crossing legs) is open.
 
 ## Decisions
+- T2: the lap clock is the sim's tick (1 ms per step, sim-core DT), so a pause (the sim does not step) and a hidden tab add nothing; LapTimer.pause/resume is called on the 'pause' event too. Gate 0 is start and finish of a closed course; an open course (laps 1) ends at its last gate.
+- T2: best laps in localStorage (one JSON object), not IdbKv (its stores are fixed in wallcache.ts, not this lane's) and not a setting (no def added).
+- T2: no new PlayCanvas geometry kind: chevrons are two thin boxes; Mesh.fromGeometry is public and not in tools/bench/src/a1-api-check.ts USED (the check lists members, it does not scan files), so a1 was not changed.
+- T2: ScanSonicWorld gets the course by an option / setCourse, not from its lesson track, so the Winter Garden lesson keeps lessonTrack 'gates'.
 - Proof per candidate = one gate (start = where the walk stands); the whole course is proven once at the end and gates are dropped until it holds.
 - A course that cannot close stays open (laps 1) instead of losing gates until the last one sees the start.
 - check.ts keeps its trigonometry (ring outline, angles): it is the proof, not the generator; rule 8 exempts it. The generator, free space, path and rng use + - * /, Math.sqrt, Math.round/floor/ceil/trunc/imul and a 9-entry cosine table.
@@ -57,13 +67,19 @@ Plan: docs/wip/train1-plan.md section 3; design docs/wip/tracks-plan.md. Branch 
 - Sound mode: the course gives the beacon its points through coursePath (T2 wires ScanSonicWorld.checkpoints).
 - packages/prefs/test/keymap.test.ts:160 (not lane tracks' line) asserts that Shift+T and Shift+G route nothing on a ?sonic= page; with course.toggle / course.generate shipped ('always') they route the course. Fix at the merge, one line: `const shifted = actionFor(press(code, { shiftKey: true }), state, { sonic: true }); expect(shifted === null || SHIPPED_BY_TRACKS.includes(shifted), ...).toBe(true);` (measured: this is the only failure of packages/prefs/test + app-keys + train1-contract, 273/274).
 - apps/fly depends on @gsfpv/tracks now (apps/fly/package.json, lock +3 lines).
+- Sound mode still needs, to fly a generated course by sound (train 2): (1) sonic/feature.ts must pass the course to its ScanSonicWorld (`setCourse(track)` or `opts.course`) when the pilot generates or loads one, and drop it on a new scene; nothing in the sound mode reads window.__gsfpv.course; (2) a lesson template "fly a course" (world.kind 'scan', goal 'timed-course') whose track is the generated or served one instead of trackUrl (scan-lesson.ts loadLessonTrack with a fetcher); (3) speech for gate passes, laps and the best lap (the course says them only on the HUD flash now); (4) Shift+G / Shift+T work on ?sonic= pages too ('always'), so the mode's key list will list them.
+- Generated catalogue: the two keys are shipped now, so the integration stage's gen-catalog run picks them up (README, llms.txt, features.json); no setting was added (packages/prefs/src/defs/course.ts stays empty).
 
 ## Not verified
 - No unit test with a negative control for the open-course fallback and the out/back walk of the generator: they are shown only by the real-wall evidence (all 6 courses there closed, so the open branch ran on no real scan; its path side is tested in path.test.ts).
 - bd04e182: walls not on this machine (CDN 403); 39e63ce9 gives 0 gates (no usable cell at minRoomM3 8).
 - The 3 seeds 2-3 per scene have no free-radius number (only seed 1 is measured, by proven margin).
 - Determinism across browsers (only Node runs here).
+- T2 never ran in a browser (budget): the worker bundle (Vite `new URL('../../course/worker.ts')`), CourseStage drawing (colours, chevron orientation, torus size), the HUD block's place and H hiding it, the menu items, history.replaceState of the link, the localStorage best: all only typechecked. T3's page probe is the first real look.
+- Lap detection in the page is per drawn frame (straight line between frames, an estimate of the flown arc), not per 1 ms physics step: the pure LapTimer is tested per step only.
+- The localStorage key 'gsfpv.course.best' is not checked against any privacy or storage list of the site (none was read).
 
 ## Cost notes
 - T1 worker 1: most turns went to the generator's walk on real walls (three rewrites, each followed by a 2-10 min run); the evidence run without a time budget per scene hit the 900 s timeout once. Cheaper: run the evidence on one scene with a 60 s cap first, and print walked/stop/tries from the first version on.
 - T1 worker 2: most turns went to finding why the walk stalled on real walls (sample too sparse, then the walk ran to the scan's edge, then the measured proof took minutes). Cheaper: a scratch diagnostic that prints per gate distance to the start and the stop reason from the first run, and timing the measured proof separately before any full evidence run.
+- T2 worker: most turns went to reading the flight shell's seams (context, session, keys, menu, primitives, sim-core) one grep at a time, and to Write/Edit refusing files read only through Bash (locales, stub, status). Cheaper: agent-map lines for "per-frame craft position" (ctx.session.runner.sim.s / tick), "flown walls" (session.collision) and "menu item with a key" (cinema.ts), and reading every file to be edited with the Read tool from the start.

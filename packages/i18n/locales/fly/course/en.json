@@ -1,4 +1,19 @@
 {
   "keys.course.generate": "Course: a new random course",
-  "keys.course.toggle": "Course: obstacles on / off"
+  "keys.course.toggle": "Course: obstacles on / off",
+  "course.menu.generate": "Course: a new random course",
+  "course.menu.on": "Course: show",
+  "course.menu.off": "Course: hide",
+  "course.hud.lap": "Lap {n} of {of}",
+  "course.hud.next": "Gate {n} of {of}",
+  "course.hud.last": "Last {time}",
+  "course.hud.best": "Best {time}",
+  "course.generating": "Building a course in the free space of this scan...",
+  "course.ready": "Course: {n} gates. Fly through gate 1 to start the clock. Shift+T hides it",
+  "course.none": "No course fits in the free space of this scan",
+  "course.noWalls": "This scan has no walls, so no course can be built here",
+  "course.failed": "The course could not be built: {msg}",
+  "course.lapDone": "Lap {time}",
+  "course.best": "Best lap! {time}",
+  "course.off": "Course hidden. Shift+T shows it again"
 }

@@ -1,4 +1,19 @@
 {
   "keys.course.generate": "Trasa: nowa losowa trasa",
-  "keys.course.toggle": "Trasa: przeszkody wł. / wył."
+  "keys.course.toggle": "Trasa: przeszkody wł. / wył.",
+  "course.menu.generate": "Trasa: nowa losowa trasa",
+  "course.menu.on": "Trasa: pokaż",
+  "course.menu.off": "Trasa: ukryj",
+  "course.hud.lap": "Okrążenie {n} z {of}",
+  "course.hud.next": "Bramka {n} z {of}",
+  "course.hud.last": "Ostatnie {time}",
+  "course.hud.best": "Najlepsze {time}",
+  "course.generating": "Buduję trasę w wolnej przestrzeni tego skanu...",
+  "course.ready": "Trasa: {n} bramek. Przeleć przez bramkę 1, aby włączyć zegar. Shift+T ją ukrywa",
+  "course.none": "W wolnej przestrzeni tego skanu nie mieści się żadna trasa",
+  "course.noWalls": "Ten skan nie ma ścian, więc nie da się tu zbudować trasy",
+  "course.failed": "Nie udało się zbudować trasy: {msg}",
+  "course.lapDone": "Okrążenie {time}",
+  "course.best": "Najlepsze okrążenie! {time}",
+  "course.off": "Trasa ukryta. Shift+T pokazuje ją znowu"
 }
