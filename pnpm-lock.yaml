@@ -47,6 +47,9 @@ importers:
       '@gsfpv/sim-core':
         specifier: workspace:*
         version: link:../../packages/sim-core
+      '@gsfpv/tracks':
+        specifier: workspace:*
+        version: link:../../packages/tracks
       '@playcanvas/splat-transform':
         specifier: 3.6.4
         version: 3.6.4(playcanvas@2.23.2)

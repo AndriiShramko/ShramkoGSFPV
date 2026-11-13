@@ -20,7 +20,13 @@ Plan: docs/wip/train1-plan.md section 3; design docs/wip/tracks-plan.md. Branch 
 - `coursePath(track, transform = track.transform): WorldCheckpoint[]` (flown; points at most 6 m apart, one 1.5 m before each gate, stage k on gate k's centre, the return leg to the start), `pathProblems(path, track, transform, sweeper?, radius?)`.
 
 ### T2 flight
-- [ ] not started
+- [x] LapTimer (packages/tracks/src/laps.ts) + packages/tracks/test/laps.test.ts 6/6; controls inside (skipped gate, backward pass, 5 s pause, respawn) fire; NEG OK on laps.ts (absent before) (1f11ed2a)
+- [x] ScanSonicWorld.checkpoints (opts.course, setCourse; coursePath at the flown transform, cached per transform) + tools/bench/test/tracks-beacon.test.ts 2/2 (world with a course: lessonTrack 'world'; control without: 'gates'); NEG OK on scan-world.ts (both tests fail on the old file); sonic-scan-world 7/7 still green; apps/fly depends on @gsfpv/tracks (lock +3 lines)
+- [x] keys: course.toggle and course.generate shipped in keymap.ts, SHIPPED_BY_TRACKS filled; tools/bench/test/tracks-keys.test.ts 2/2 (control: plain T clashes with sonic.record); NEG OK on keymap.ts. packages/prefs/test + app-keys + train1-contract: 273/274, the one failure is keymap.test.ts:160 (see "For the lead")
+- [ ] apps/fly/src/course: model (CourseRun), worker, view (CourseStage), hud + css, link, best laps; builtin/course.ts install; hook; locales
+- [ ] tools/bench/test/tracks-a6.test.ts (trace hash with the course on equals without; control: perturb)
+- [ ] typecheck @gsfpv/tracks, @gsfpv/prefs, apps/fly, tools/bench; i18n fly-parity
+- [ ] optional headless look (hook gates > 0, drawn > 0) under the GPU lock
 
 ### T3 server and probe
 - [ ] not started
@@ -49,6 +55,8 @@ Plan: docs/wip/train1-plan.md section 3; design docs/wip/tracks-plan.md. Branch 
 ## For the lead before the merge
 - tools/bench/package.json and packages/tracks are new dependencies in pnpm-lock.yaml (lane tracks owns the lock).
 - Sound mode: the course gives the beacon its points through coursePath (T2 wires ScanSonicWorld.checkpoints).
+- packages/prefs/test/keymap.test.ts:160 (not lane tracks' line) asserts that Shift+T and Shift+G route nothing on a ?sonic= page; with course.toggle / course.generate shipped ('always') they route the course. Fix at the merge, one line: `const shifted = actionFor(press(code, { shiftKey: true }), state, { sonic: true }); expect(shifted === null || SHIPPED_BY_TRACKS.includes(shifted), ...).toBe(true);` (measured: this is the only failure of packages/prefs/test + app-keys + train1-contract, 273/274).
+- apps/fly depends on @gsfpv/tracks now (apps/fly/package.json, lock +3 lines).
 
 ## Not verified
 - No unit test with a negative control for the open-course fallback and the out/back walk of the generator: they are shown only by the real-wall evidence (all 6 courses there closed, so the open branch ran on no real scan; its path side is tested in path.test.ts).

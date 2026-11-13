@@ -102,7 +102,7 @@ const TRAIN1: Record<string, string[]> = {
     'rooms.who': ['Shift+O']
 };
 /** Lane tracks: its keys that shipped (the course on and off, a new random course). */
-const SHIPPED_BY_TRACKS: readonly string[] = [];
+const SHIPPED_BY_TRACKS: readonly string[] = ['course.toggle', 'course.generate'];
 // The two lists are kept apart by these lines, so the two lanes' edits never touch the same lines of this file:
 // lane tracks edits only the list above, lane rooms only the list below.
 /** Lane rooms: its keys that shipped (the room panel, who is around). */
