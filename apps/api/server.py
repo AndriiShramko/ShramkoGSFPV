@@ -1688,12 +1688,23 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(*TRACKS.file(m.group(1), int(m.group(2)), self.headers.get("If-None-Match")))
             if path != "/api/tracks":
                 return self._refuse(404)
-            if not _rate(_trhits, self._client(), tracks.LIMITS["creates_per_client_hour"], 3600.0):
-                return self._refuse(429)
             try:
                 n = int(self.headers.get("Content-Length") or 0)
             except ValueError:
                 n = -1
+            # as `start` of the sessions: a JSON content type, which a page on another site cannot send without a preflight
+            # (nginx answers none), and no cross-site fetch, so visitors' browsers cannot be made to post (lane review TR-6)
+            if (self.headers.get("Content-Type") or "").split(";")[0].strip().lower() != "application/json":
+                if 0 < n <= tracks.LIMITS["body_bytes"]:
+                    self._drain(n)
+                return self._json(415, {"ok": False, "error": "content-type"})
+            if (self.headers.get("Sec-Fetch-Site") or "").strip().lower() == "cross-site":
+                if 0 < n <= tracks.LIMITS["body_bytes"]:
+                    self._drain(n)
+                return self._json(403, {"ok": False, "error": "cross-site"})
+            if not _rate(_trhits, self._client(), tracks.LIMITS["creates_per_client_hour"], 3600.0) \
+                    or not _rate(_all_hits, "tracks-create", tracks.LIMITS["creates_all_hour"], 3600.0):
+                return self._refuse(429)
             if n > tracks.LIMITS["body_bytes"]:
                 return self._refuse(413)
             if n <= 0:

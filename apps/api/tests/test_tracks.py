@@ -83,15 +83,57 @@ class Store(unittest.TestCase):
             self.store.file(out["id"], 2, None)
         self.assertEqual(e.exception.status, 404)
 
-    def test_twenty_first_track_of_a_scene_is_refused(self):
+    def test_twenty_first_track_of_a_scene_replaces_the_oldest(self):
+        # lane review TR-6: a refusal for ever made "Save for everyone" dead in a full scene
+        ids = []
         for i in range(20):
             self.clock[0] += 1
-            self.store.create(course(seed=f"s{i}"))
-        with self.assertRaises(TrackError) as e:
-            self.store.create(course(seed="last"))
-        self.assertEqual((e.exception.status, e.exception.code), (409, "scene-full"))
-        # control: another scene still takes one
+            ids.append(self.store.create(course(seed=f"s{i}"))["id"])
+        self.clock[0] += 1
+        last = self.store.create(course(seed="last"))["id"]
+        rows = self.store.rows("39e63ce9")
+        self.assertEqual(len(rows), 20)
+        self.assertEqual(rows[0]["id"], last)
+        self.assertNotIn(ids[0], [r["id"] for r in rows])
+        self.assertFalse((self.dir / "tracks" / "39e63ce9" / ids[0]).exists())
+        self.assertIn(ids[1], [r["id"] for r in rows])   # control: only the oldest went
         self.assertIn("id", self.store.create(course(scene="887f27aa")))
+
+    def test_stored_file_is_compact_and_never_larger_than_a_body(self):
+        # lane review TR-1: a nested body of 64 KB was stored as 58 MB with indent=2
+        out = self.store.create(course())
+        raw = (self.dir / "tracks" / "39e63ce9" / out["id"] / "v1.json").read_bytes()
+        self.assertNotIn(b"\n  ", raw)
+        self.assertLessEqual(len(raw), len(course()) + 200)
+        deep = json.loads(BASIC)
+        nest = 0
+        for _ in range(900):
+            nest = [nest]
+        deep["generator"]["params"] = {"proof": nest}
+        with self.assertRaises(TrackError) as e:
+            self.store.create(json.dumps(deep).encode())
+        self.assertEqual(e.exception.status, 400)
+        self.assertEqual(len(list((self.dir / "tracks" / "39e63ce9").glob("*/v1.json"))), 1)
+
+    def test_huge_positions_never_reach_the_list(self):
+        # lane review TR-2: two gates at +-1e308 gave lengthM Infinity, which JSON.parse refuses, for every pilot of the scene
+        with self.assertRaises(TrackError) as e:
+            self.store.create((FIX / "invalid-pos-huge.json").read_bytes())
+        self.assertEqual(e.exception.status, 400)
+        self.store.create(course())
+        idx = self.dir / "tracks" / "39e63ce9" / "index.json"
+        rows = json.loads(idx.read_bytes())["tracks"]
+        idx.write_text(json.dumps({"v": 1, "tracks": rows + [{**rows[0], "id": "39e63ce9-0000beef", "lengthM": float("inf")}]}), encoding="utf-8")
+        code, body, _ = self.store.list("39e63ce9", None)
+        self.assertNotIn(b"Infinity", body)
+        self.assertEqual(len(json.loads(body)["tracks"]), 1)
+
+    def test_malformed_numbers_and_nesting_are_400_not_a_crash(self):
+        # lane review TR-9: a 400-digit integer and 30000 brackets killed the handler thread
+        big = BASIC.replace(b"1.5", b"1" * 400, 1)
+        self.assertNotEqual(big, BASIC)
+        self.assertNotEqual(tracks.parse_track(big)[1], [])
+        self.assertNotEqual(tracks.parse_track(b"[" * 30000 + b"]" * 30000)[1], [])
 
     def test_disk_guard_refuses_with_507(self):
         self.free[0] = 10 ** 8
@@ -185,6 +227,26 @@ class Http(unittest.TestCase):
             self.assertEqual(self.call("POST", "/api/tracks", course(seed=f"r{i}"))[0], 201, i)
         self.assertEqual(self.call("POST", "/api/tracks", course(seed="r10"))[0], 429)
         self.assertEqual(self.call("POST", "/api/tracks", course(seed="r11"), ip="198.51.100.1")[0], 201)   # control: another client
+
+    def test_cross_site_posts_are_refused(self):
+        # lane review TR-6: a text/plain POST from another site's page went through (201) from the visitor's own address
+        self.assertEqual(self.call("POST", "/api/tracks", course(), headers={"Content-Type": "text/plain"})[0], 415)
+        self.assertEqual(self.call("POST", "/api/tracks", course(), headers={"Sec-Fetch-Site": "cross-site", "Origin": "https://evil.example"})[0], 403)
+        self.assertEqual(self.call("POST", "/api/tracks", course(), headers={"Sec-Fetch-Site": "same-origin"})[0], 201)   # control
+
+    def test_all_clients_together_have_a_cap(self):
+        saved = tracks.LIMITS["creates_all_hour"]
+        tracks.LIMITS["creates_all_hour"] = 2
+        self.addCleanup(lambda: tracks.LIMITS.__setitem__("creates_all_hour", saved))
+        server._all_hits.pop("tracks-create", None)
+        self.addCleanup(lambda: server._all_hits.pop("tracks-create", None))
+        codes = [self.call("POST", "/api/tracks", course(seed=f"g{i}"), ip=f"198.51.100.{i + 10}")[0] for i in range(3)]
+        self.assertEqual(codes, [201, 201, 429])
+
+    def test_malformed_bodies_get_an_answer(self):
+        # lane review TR-9: no answer (RemoteDisconnected) for both before
+        self.assertEqual(self.call("POST", "/api/tracks", BASIC.replace(b"1.5", b"1" * 400, 1))[0], 400)
+        self.assertEqual(self.call("POST", "/api/tracks", b"[" * 30000 + b"]" * 30000, ip="203.0.113.20")[0], 400)
 
     def test_disk_guard_is_507(self):
         self.free[0] = 10 ** 8

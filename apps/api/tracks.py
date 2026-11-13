@@ -43,7 +43,8 @@ from typing import Callable
 LIMITS = {
     "body_bytes": 64 * 1024,          # POST body, also nginx client_max_body_size 64k
     "creates_per_client_hour": 10,    # server.py _rate(_trhits, client, ...)
-    "tracks_per_scene": 20,           # the 21st is refused with 409 scene-full
+    "creates_all_hour": 300,          # server.py _rate(_all_hits, "tracks-create", ...): every client together (as report, share)
+    "tracks_per_scene": 20,           # the 21st replaces the oldest of the scene (lane review TR-6)
     "list_max_age_s": 30,             # Cache-Control of the list
     "min_free_bytes": 1 * 1000 ** 3,  # below this the store refuses writes with 507 (server.py passes MIN_FREE_GB)
 }
@@ -80,7 +81,22 @@ def _js_len(s: str) -> int:
 
 
 def _is_num(v) -> bool:
-    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return False
+    try:
+        return math.isfinite(v)   # an int beyond the float range (a 400-digit literal) raises OverflowError: not a number
+    except OverflowError:
+        return False
+
+
+# Bounds against hostile files (lane review TR-1, TR-2, TR-3), ESTIMATES not measured: no scan the site serves is near 10000
+# units across (the cached scans are under 200 m), and the generator's legs are at most legMaxM 15 flown m, so 60 leaves room.
+MAX_COORD = 10000.0     # |x|, |y|, |z| of a gate or the start, in scan units
+MAX_LEG_M = 60.0        # one leg between two gates (and the leg back on a closed course), in flown m (times transform[0])
+# generator.params: the keys the generator writes (packages/tracks/src/generate.ts), flat values, and the one proof object
+PARAM_KEYS = ("marginM", "cellM", "freeDigest", "wanted", "rooms", "volumeM3", "tries", "walked", "stop", "closed", "proof")
+PROOF_KEYS = ("ok", "marginM", "pathM")
+PARAM_TEXT_MAX = 40
 
 
 class _Collector:
@@ -294,10 +310,7 @@ def validate_track(obj) -> list[tuple[str, str]]:
             if "seed" in g and g["seed"] is not None:
                 c.number(g["seed"], "generator.seed", integer=True)
             if isinstance(g.get("params"), dict):
-                try:
-                    json.dumps(g["params"], allow_nan=False)
-                except (TypeError, ValueError):
-                    c.add("generator.params", "cannot be written as JSON")
+                _params(c, g["params"])
             elif "params" in g:
                 c.add("generator.params", "must be an object")
 
@@ -324,7 +337,54 @@ def validate_track(obj) -> list[tuple[str, str]]:
         c.add("generator", "must name the generator")
     if gen_name is not None and gen_name != GENERATOR_NAME:
         c.add("generator.name", f"must be '{GENERATOR_NAME}'")
+    _bounds(c, root)
     return c.issues
+
+
+def _flat(v) -> bool:
+    return v is None or isinstance(v, bool) or _is_num(v) or (isinstance(v, str) and _js_len(v) <= PARAM_TEXT_MAX)
+
+
+def _params(c: _Collector, p: dict) -> None:
+    """generator.params: only the generator's own keys, flat values, proof null or {ok, marginM, pathM} (no arrays, depth 2)."""
+    for k, v in p.items():
+        path = f"generator.params.{k}" if isinstance(k, str) and len(k) <= 40 else "generator.params"
+        if k not in PARAM_KEYS:
+            c.add(path, "is not a known key")
+        elif k == "proof" and isinstance(v, dict):
+            for pk, pv in v.items():
+                if pk not in PROOF_KEYS or not (isinstance(pv, bool) or _is_num(pv)):
+                    c.add(f"{path}.{pk}" if isinstance(pk, str) and len(pk) <= 40 else path, "is not a known key or not a flat value")
+        elif not _flat(v):
+            c.add(path, f"must be a number, a boolean, null or a text of at most {PARAM_TEXT_MAX} characters")
+
+
+def _bounds(c: _Collector, root: dict) -> None:
+    """Positions inside MAX_COORD and legs at most MAX_LEG_M flown m, so lengthM is finite and a course stays near its scan."""
+    gates = root.get("gates") if isinstance(root.get("gates"), list) else []
+    pts = []
+    for i, g in enumerate(gates):
+        pos = g.get("pos") if isinstance(g, dict) else None
+        if isinstance(pos, list) and len(pos) == 3 and all(_is_num(x) for x in pos):
+            if any(abs(x) > MAX_COORD for x in pos):
+                c.add(f"gates[{i}].pos", f"must be within {MAX_COORD:g} of the origin")
+            else:
+                pts.append((i, pos))
+    st = root.get("start")
+    if isinstance(st, dict) and isinstance(st.get("pos"), list) and len(st["pos"]) == 3 and all(_is_num(x) for x in st["pos"]):
+        if any(abs(x) > MAX_COORD for x in st["pos"]):
+            c.add("start.pos", f"must be within {MAX_COORD:g} of the origin")
+    t = root.get("transform")
+    s = t[0] if isinstance(t, list) and len(t) == 4 and _is_num(t[0]) and 0 < t[0] <= 1000 else None
+    if s is None or not pts or len(pts) != len(gates):
+        return
+    legs = list(zip(pts, pts[1:]))
+    if _is_num(root.get("laps")) and root["laps"] > 1 and len(pts) > 1:
+        legs.append((pts[-1], pts[0]))
+    for (i, a), (_, b) in legs:
+        if math.dist(a, b) * s > MAX_LEG_M:
+            c.add(f"gates[{i}]", f"the leg to the next gate must be at most {MAX_LEG_M:g} m")
+            return
 
 
 def _reject_constant(name: str):
@@ -335,6 +395,8 @@ def parse_track(raw: bytes):
     """Bytes -> (obj, issues). NaN and Infinity are refused the way JSON.parse refuses them."""
     try:
         obj = json.loads(raw.decode("utf-8"), parse_constant=_reject_constant)
+    except RecursionError:   # thousands of nested brackets (lane review TR-9)
+        return None, [("", "not valid JSON: nested too deep")]
     except (UnicodeDecodeError, ValueError) as e:
         return None, [("", f"not valid JSON: {str(e)[:120]}")]
     return obj, validate_track(obj)
@@ -437,14 +499,14 @@ class TrackStore:
         try:
             data = json.loads(idx.read_bytes())
             if isinstance(data, dict) and isinstance(data.get("tracks"), list):
-                return data["tracks"]
+                return [r for r in data["tracks"] if _row_ok(r)]
         except (OSError, ValueError):
             pass
-        rows = self._rows_from_files(scene)
+        rows = [r for r in self._rows_from_files(scene) if _row_ok(r)]
         if rows:
             try:
-                _write_bytes(idx, json.dumps({"v": 1, "tracks": rows}, separators=(",", ":")).encode())
-            except OSError:
+                _write_bytes(idx, _compact({"v": 1, "tracks": rows}))
+            except (OSError, ValueError):
                 pass
         return rows
 
@@ -452,7 +514,7 @@ class TrackStore:
     def list(self, scene: str, if_none_match: str | None) -> tuple[int, bytes, list]:
         if not SCENE_ID.fullmatch(scene or ""):
             raise TrackError(400, "bad-scene")
-        body = json.dumps({"v": 1, "tracks": self.rows(scene)}, separators=(",", ":")).encode()
+        body = _compact({"v": 1, "tracks": self.rows(scene)})
         tag = _etag(body)
         headers = [("Content-Type", "application/json"), ("Cache-Control", f"public, max-age={self.limits['list_max_age_s']}"), ("ETag", tag)]
         if if_none_match and tag in [x.strip() for x in if_none_match.split(",")]:
@@ -485,16 +547,37 @@ class TrackStore:
         scene = obj["scene"]["id"]
         with self.lock:
             rows = self.rows(scene)
-            if len(rows) >= self.limits["tracks_per_scene"]:
-                raise TrackError(409, "scene-full")
             tid = f"{scene}-{secrets.token_hex(4)}"
             obj["id"] = tid
             obj["version"] = 1
             obj["parent"] = None
             obj["created"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.now()))
+            # compact, and never more than the body was allowed to be (lane review TR-1: indent multiplied a nested body)
+            data = _compact(obj, sort_keys=True)
+            if len(data) > self.limits["body_bytes"]:
+                raise TrackError(413, "too-large")
+            row = self._row(obj)
+            if not _row_ok(row):
+                raise TrackError(400, "invalid", issues=["gates: the length of the course is not a finite number"])
+            # a full scene drops its oldest course (lane review TR-6: a refusal for ever made "Save for everyone" dead there)
+            keep = self.limits["tracks_per_scene"] - 1
+            dropped, rows = rows[keep:], rows[:keep]
             tdir = self._dir() / scene / tid
             tdir.mkdir(parents=True, exist_ok=False)
-            _write_bytes(tdir / "v1.json", (json.dumps(obj, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
-            rows = [self._row(obj)] + rows
-            _write_bytes(self._dir() / scene / "index.json", json.dumps({"v": 1, "tracks": rows}, separators=(",", ":")).encode())
+            _write_bytes(tdir / "v1.json", data + b"\n")
+            rows = [row] + rows
+            _write_bytes(self._dir() / scene / "index.json", _compact({"v": 1, "tracks": rows}))
+            for old in dropped:
+                if isinstance(old.get("id"), str) and SERVER_ID.fullmatch(old["id"]):
+                    shutil.rmtree(self._dir() / scene / old["id"], ignore_errors=True)
         return {"id": tid, "version": 1}
+
+
+def _compact(obj, sort_keys: bool = False) -> bytes:
+    """JSON a browser's JSON.parse reads: no NaN or Infinity (ValueError instead), no indent."""
+    return json.dumps(obj, separators=(",", ":"), sort_keys=sort_keys, ensure_ascii=False, allow_nan=False).encode("utf-8")
+
+
+def _row_ok(r) -> bool:
+    """A list row a client can read: its length is a finite number (lane review TR-2: one Infinity broke a scene's list)."""
+    return isinstance(r, dict) and isinstance(r.get("id"), str) and _is_num(r.get("lengthM")) and isinstance(r.get("gates"), int)
