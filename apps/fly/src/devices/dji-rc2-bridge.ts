@@ -15,6 +15,9 @@ import { RC2_FIRST_MS, RC2_NAME, RC2_VENDOR, Rc2Error } from './dji-rc2-source';
 /** the bridge's port (tools/rc-bridge/rc_bridge.py PORT): chosen, not measured */
 export const RC_BRIDGE_PORT = 47310;
 export const RC_BRIDGE_URL = `ws://127.0.0.1:${RC_BRIDGE_PORT}/`;
+/** where a pilot gets the bridge: its folder's README in the public repository (main), which says how to start it */
+export const RC_BRIDGE_README = 'tools/rc-bridge/README.md';
+export const RC_BRIDGE_SOURCE = `https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/${RC_BRIDGE_README}`;
 /** the DJI RC 2's USB product id (2CA3:1021, measured in stage 1) */
 const RC2_PRODUCT = 0x1021;
 

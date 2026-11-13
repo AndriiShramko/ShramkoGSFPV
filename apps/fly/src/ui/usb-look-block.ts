@@ -11,7 +11,7 @@ import { chooseDji, rcBridgeOn, reportText, usbApi } from '../devices/usb-look';
 import type { UsbLook } from '../devices/usb-look';
 import { DjiRc2Device, Rc2Error, hasStickChannel } from '../devices/dji-rc2-source';
 import type { Rc2Why, UsbDeviceLike } from '../devices/dji-rc2-source';
-import { Rc2BridgeDevice } from '../devices/dji-rc2-bridge';
+import { RC_BRIDGE_SOURCE, Rc2BridgeDevice } from '../devices/dji-rc2-bridge';
 
 export interface UsbLookBlock {
     el: HTMLElement;
@@ -87,7 +87,8 @@ export function usbLookBlock(send?: (text: string) => void, fly?: (d: DjiRc2Devi
     if (bridge) {
         // the RC bridge (tools/rc-bridge): only on this press does the page connect to 127.0.0.1, never on load
         const say = h('p', { 'data-testid': 'usb-bridge-say', role: 'status', 'aria-live': 'polite' });
-        el.append(h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy')),
+        el.append(h('p', { class: 'muted small' }, t('usb.rc2.bridgeWhy'), ' ',
+            h('a', { href: RC_BRIDGE_SOURCE, target: '_blank', rel: 'noopener', 'data-testid': 'usb-bridge-get' }, t('usb.rc2.bridgeGet'))),
             h('button', { type: 'button', class: 'btn', 'data-action': 'usb-rc2-bridge', onclick: () => void tryFly(new Rc2BridgeDevice(), say, 'usb.rc2.bridgeOpening') }, t('usb.rc2.bridge')),
             say);
     }

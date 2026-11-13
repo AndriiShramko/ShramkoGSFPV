@@ -10,7 +10,7 @@
 //  - every string in en, es, pl and ru.
 // The screen controller's interface list is the research's expectation (docs/research/radios/dji-rc3.md), not a
 // measurement: no DJI controller with a screen ever enumerated on the owner's PC.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { FakeStorage } from '../../../packages/prefs/test/helpers';
@@ -197,6 +197,13 @@ describe('the DJI RC 2 in the block (lane rc2)', () => {
             nav.usb = { requestDevice: () => Promise.resolve(d) };
             const el = B.usbLookBlock(() => undefined, () => undefined).el as unknown as FakeElement;
             expect(btn(el, 'usb-rc2-bridge')).not.toBeNull();
+            // the bridge text links to the program's README in the public repository (main), a file this repo has
+            const get = el.querySelector('[data-testid="usb-bridge-get"]');
+            expect(get).not.toBeNull();
+            const href = get!.getAttribute('href') ?? '';
+            const m = /^https:\/\/github\.com\/AndriiShramko\/ShramkoGSFPV\/blob\/main\/(tools\/rc-bridge\/[\w.-]+)$/.exec(href);
+            expect(m).not.toBeNull();
+            expect(existsSync(resolve(__dirname, '../../..', m![1]))).toBe(true);
             btn(el, 'usb-look').click();
             await flush();
             btn(el, 'usb-rc2-fly').click();
@@ -240,7 +247,7 @@ describe('strings', () => {
         const dir = resolve(__dirname, '../../../packages/i18n/locales/fly/usb');
         const read = (l: string): Record<string, string> => JSON.parse(readFileSync(resolve(dir, `${l}.json`), 'utf8'));
         const en = read('en');
-        const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.claimBridge', 'usb.rc2.silent',
+        const used = ['usb.rc2.fly', 'usb.rc2.opening', 'usb.rc2.claimFailed', 'usb.rc2.claimBridge', 'usb.rc2.silent', 'usb.rc2.lost', 'usb.rc2.bridgeGet',
             'usb.rc2.bridgeWhy', 'usb.rc2.bridge', 'usb.rc2.bridgeOpening', 'usb.rc2.noBridge', 'usb.rc2.bridgeNoController', 'usb.title', 'usb.why', 'usb.look', 'usb.found', 'usb.send', 'usb.noApi', 'usb.nothingChosen', 'usb.failed', 'usb.report.head', 'usb.part.none',
             ...(['joystick', 'sticks', 'storage', 'serial', 'files', 'network', 'data', 'audio', 'video', 'other'] as const).map((p) => `usb.part.${p}`),
             ...['connect', 'rc2', 'drone', 'none', 'empty'].map((v) => `usb.verdict.${v}`)];

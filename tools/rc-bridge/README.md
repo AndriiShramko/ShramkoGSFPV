@@ -14,17 +14,17 @@ Measured on 2026-11-13 on the owner's PC with his RC 2: 633 stick messages in 10
 
 ## Start it
 
-1. Windows 10 or 11, 64-bit Python 3.8 or newer (`py` or `python` on PATH), DJI Assistant 2 (Consumer Drones Series)
-   installed. Nothing else: standard library only.
-2. Connect the RC 2 with a data cable and switch it on. Close DJI Assistant 2 (it may hold the interface).
-3. Double-click `start-rc-bridge.cmd`. The window says `Shramko RC bridge on ws://127.0.0.1:47310/`. Leave it open.
-4. Open https://gsfpv.flyreelstudio.eu/en/fly/?rcbridge=1 once (the bridge button is behind this switch until the
-   program can be downloaded; the browser remembers it, `?rcbridge=0` hides it again). Then Controls, "My controller
-   is not in the list", "Fly through the RC bridge". If Chrome asks whether the site may reach apps on this device,
-   allow it.
-5. The first time, the wizard asks you to move each stick (as for any controller); later visits open the check screen.
-   The RC 2's buttons are not read. Its left stick springs to the centre, so the simulator uses the centred-throttle
-   style: the stick starts the motors, no ARM press is needed.
+1. Needs Windows 10/11, 64-bit Python 3.8+ (`py` or `python`) and DJI Assistant 2 installed; close DJI Assistant 2.
+2. Save `rc_bridge.py` and `start-rc-bridge.cmd` from this folder into one folder on your PC.
+3. Connect the RC 2 with a data cable and switch it on.
+4. Double-click `start-rc-bridge.cmd` and leave its window open (it says `Shramko RC bridge on ws://127.0.0.1:47310/`).
+5. On https://gsfpv.flyreelstudio.eu/en/fly/?rcbridge=1 open Controls, "My controller is not in the list", "Fly through the RC bridge".
+
+Notes. Standard library only, nothing to install. The bridge button is behind the `?rcbridge=1` switch until the
+program is announced; the browser remembers it, `?rcbridge=0` hides it again. If Chrome asks whether the site may
+reach apps on this device, allow it. The first time, the wizard asks you to move each stick (as for any controller);
+later visits open the check screen. The RC 2's buttons are not read. Its left stick springs to the centre, so the
+simulator uses the centred-throttle style: the stick starts the motors, no ARM press is needed.
 
 `python rc_bridge.py --dll <path>` points at another copy of `libusb0_dji.dll`; `--port` changes the port (the page
 always uses 47310). `--replay <frames.json> [--wiggle]` plays a recording instead of the controller (tests, e.g.

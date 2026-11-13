@@ -156,7 +156,15 @@ Stage G2-rc2-wiring (train 1c; rc2 merged with origin/main bbc9e75e and ground-p
 - [x] 3. R3 check: dji-rc2-source.ts has no requestAnimationFrame; the only "animation" is the comment at line 149;
   pace defaults to the plain timer wait (o.pace ?? this.wait). Test "the ask loop paces by its timer only" stays.
 - [ ] 4. rc2-probe three runs + negative control on origin/main's build (stage 3 step 4).
-- [ ] 5. Helper link to tools/rc-bridge and its README start lines.
+- [x] 5. The helper text had no link (it only named start-rc-bridge.cmd). Added: a link after usb.rc2.bridgeWhy (new key
+  usb.rc2.bridgeGet, en/es/pl/ru) to RC_BRIDGE_SOURCE = https://github.com/AndriiShramko/ShramkoGSFPV/blob/main/
+  tools/rc-bridge/README.md (devices/dji-rc2-bridge.ts; the repo is the public MIT one named in apps/site/src/config/
+  site.ts REPO). Shown only behind ?rcbridge=1 like the rest of the bridge block. tools/rc-bridge/README.md "Start
+  it" is now five one-line steps (download the two files, plug in, double-click, the site), notes below. Test in
+  app-usb-look ("RC bridge switch": the link's path matches tools/rc-bridge/* on main and the file exists in this
+  repo); the strings test lists usb.rc2.lost and usb.rc2.bridgeGet (it failed after step 2's commit, fixed here).
+  app-usb-look + fly-parity 24 passed; NEG OK (--ref HEAD, old block and bridge: "expected null not to be null");
+  tsc of apps/fly clean. Not checked: the GitHub address itself online (no external request from this lane).
 - [ ] 6. Lane unit tests after the merge.
 
 ## Verdict of stage 1
