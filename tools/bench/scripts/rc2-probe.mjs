@@ -28,6 +28,8 @@ const base = process.argv[2] ?? 'http://localhost:5393/en';
 const outFile = process.argv[3] ?? ROOT + '/.cache/rc2-probe.json';
 const only = process.argv[4] ? process.argv[4].split(',') : ['usb', 'refused', 'bridge'];
 const bridgeBlocked = process.env.BRIDGE_EXPECT === 'blocked';
+const fakeAnswer = process.env.RC2_FAKE_ANSWER === 'timer' ? 'timer' : 'message';
+const RUN_LIMIT_MS = 120000; // a run takes 30-60 s (2026-11-13 runs); twice the longest is a hang
 const scene = '887f27aa'; // open sky above the spawn (centre-throttle-probe.mjs)
 mkdirSync(dirname(outFile), { recursive: true });
 
@@ -122,8 +124,9 @@ function installFakeRc2(cfg) {
             const b = reply(d[6] | (d[7] << 8), values());
             // the answer arrives as a task of its own, as a USB completion does (a message, not a timer: in flight the
             // page ran timers about 9 times a second); the real answer time was not measured
-            pending.push(b);
-            mc.port2.postMessage(0);
+            // RC2_FAKE_ANSWER=timer: the earlier fake, the answer 2 ms after its request (estimate)
+            if (cfg.answer === 'timer') setTimeout(() => { queue.push(b); wake?.(); }, 2);
+            else { pending.push(b); mc.port2.postMessage(0); }
             return { status: 'ok', bytesWritten: d.length };
         },
         async transferIn() {
@@ -185,36 +188,112 @@ const tapFrames = (page) => page.evaluate(() => {
     return true;
 });
 
+/** progress on stderr with the seconds since start, so a hang shows its last step */
+const T0 = Date.now();
+const step = (s) => process.stderr.write(`[${((Date.now() - T0) / 1000).toFixed(1)}s] ${s}\n`);
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
+step('launch ' + JSON.stringify(pick.launch).slice(0, 200));
 const browser = await chromium.launch({ ...pick.launch, headless: true });
-const out = { what: 'rc2-probe.mjs: the DJI RC 2 on the simulator page', base, at: new Date().toISOString(), browser: browser.version(), runs: {} };
+step('launched ' + browser.version());
+const out = { what: 'rc2-probe.mjs: the DJI RC 2 on the simulator page', base, at: new Date().toISOString(), browser: browser.version(), fakeAnswer, runs: {} };
 const checks = {};
 const errorsOf = {};
 let usbCtx = null;
 
 async function run(name, ctx, fn) {
+    step(`${name}: new page`);
     const page = await ctx.newPage();
+    step(`${name}: page open`);
+    // the debugger is on before the page loads: a page stuck later still answers Debugger.pause (a V8 interrupt)
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Debugger.enable');
+    curCdp = cdp;
     const errors = [];
     const csp = [];
     page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 200)));
     page.on('console', (m) => { if (/Content Security Policy|Refused to connect/i.test(m.text())) csp.push(m.text().slice(0, 300)); });
     const note = {};
-    try { await fn(page, note, csp); } catch (e) { note.threw = String(e?.message ?? e).slice(0, 300); checks[`${name}.ran`] = false; }
+    out.runs[name] = note;
+    // a run that does not end in RUN_LIMIT_MS (a page whose main thread is stuck: page.evaluate never returns) is
+    // stopped; the debugger pauses the page's script and records where it was
+    let timer;
+    const limit = new Promise((r) => { timer = setTimeout(() => r('hung'), RUN_LIMIT_MS); });
+    let res;
+    try { res = await Promise.race([fn(page, note, csp).then(() => 'done'), limit]); } catch (e) { note.threw = String(e?.message ?? e).slice(0, 300); checks[`${name}.ran`] = false; }
+    clearTimeout(timer);
+    if (res === 'hung') {
+        checks[`${name}.ran`] = false;
+        note.hung = true;
+        step(`${name}: hung, profile and pause`);
+        if (note.profiling) note.profile = await profileOf(cdp);
+        step(`${name}: profile ${JSON.stringify(note.profile ?? null).slice(0, 1500)}`);
+        // three looks 3 s apart: the same arguments in every look = one call that has not returned
+        note.hungStack = [];
+        for (let i = 0; i < 3; i++) {
+            if (i) await new Promise((r) => setTimeout(r, 3000));
+            note.hungStack.push(await stackOf(cdp));
+            step(`${name}: stack ${i} ${JSON.stringify(note.hungStack[i]).slice(0, 900)}`);
+        }
+    }
     note.errors = errors;
     note.csp = csp;
     errorsOf[name] = errors;
-    out.runs[name] = note;
-    await page.screenshot({ path: outFile.replace(/\.json$/, `-${name}.png`) }).catch(() => undefined);
-    await page.close();
+    writeFileSync(outFile, JSON.stringify(out, null, 1));
+    if (res !== 'hung') await page.screenshot({ path: outFile.replace(/\.json$/, `-${name}.png`) }).catch(() => undefined);
+    await Promise.race([page.close(), new Promise((r) => setTimeout(r, 5000))]);
+}
+/** where the page's script is now: Debugger.pause through CDP, the top frames (10 s at most) */
+let curCdp = null;
+/** the page's CPU profile since Profiler.start: total ms, self ms of the top functions, ms under ground/sweep */
+async function profileOf(cdp) {
+    const stop = cdp.send('Profiler.stop').then(({ profile }) => {
+        const dt = profile.timeDeltas, byId = new Map(profile.nodes.map((n) => [n.id, n]));
+        const self = new Map(), parent = new Map();
+        for (const n of profile.nodes) for (const c of n.children ?? []) parent.set(c, n.id);
+        const under = { ground: 0, sweep: 0, onFrame: 0, total: 0 };
+        for (let i = 0; i < profile.samples.length; i++) {
+            const ms = (dt[i] ?? 0) / 1000, n = byId.get(profile.samples[i]);
+            const k = `${n.callFrame.functionName || '(anon)'} ${n.callFrame.url.split('/').pop()}:${n.callFrame.lineNumber + 1}`;
+            self.set(k, (self.get(k) ?? 0) + ms);
+            under.total += ms;
+            const seen = new Set();
+            for (let id = n.id; id !== undefined; id = parent.get(id)) {
+                const f = byId.get(id).callFrame.functionName;
+                for (const w of ['ground', 'sweep', 'onFrame']) if (!seen.has(w) && f.includes(w)) { seen.add(w); under[w] += ms; }
+            }
+        }
+        const top = [...self.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${Math.round(v)} ${k}`);
+        return { msUnder: Object.fromEntries(Object.entries(under).map(([k, v]) => [k, Math.round(v)])), top };
+    });
+    return Promise.race([stop, new Promise((r) => setTimeout(() => r('no profile in 15 s'), 15000))]).catch((e) => 'profile: ' + String(e?.message ?? e).slice(0, 200));
+}
+async function stackOf(cdp) {
+    // the stack, and the numeric arguments of its top 6 frames (a craft position that blew up shows here)
+    const paused = new Promise((r) => cdp.once('Debugger.paused', async (e) => {
+        const frames = e.callFrames.slice(0, 14).map((f) => `${f.functionName || '(anon)'} ${f.url.split('/').pop()}:${f.location.lineNumber + 1}:${f.location.columnNumber + 1}`);
+        const args = [];
+        const now = await cdp.send('Debugger.evaluateOnCallFrame', { callFrameId: e.callFrames[0].callFrameId, returnByValue: true, expression: 'Math.round(performance.now())' }).catch(() => null);
+        args.push(`page ms ${now?.result?.value}`);
+        for (const f of e.callFrames.slice(0, 6)) {
+            const v = await cdp.send('Debugger.evaluateOnCallFrame', { callFrameId: f.callFrameId, returnByValue: true, expression: 'JSON.stringify(Array.from(arguments).map((a) => typeof a === "number" ? String(a) : a && typeof a.length === "number" ? Array.from(a).slice(0, 16).map(String) : typeof a))' }).catch((x) => ({ result: { value: 'eval: ' + x.message } }));
+            args.push(`${f.functionName}: ${String(v.result?.value).slice(0, 400)}`);
+        }
+        cdp.send('Debugger.resume').catch(() => undefined);
+        r({ frames, args });
+    }));
+    cdp.send('Debugger.pause').catch(() => undefined);
+    return Promise.race([paused, new Promise((r) => setTimeout(() => r('no pause in 10 s (not in script?)'), 10000))]);
 }
 
 if (only.includes('usb') || only.includes('bridge')) usbCtx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
 
 if (only.includes('usb')) {
-    await usbCtx.addInitScript(installFakeRc2, { refuse: false });
+    await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
     await run('usb', usbCtx, async (page, note) => {
         await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false`, { waitUntil: 'load' });
+        step('usb: loaded');
         await openHelper(page);
+        step('usb: helper open');
         await page.locator('[data-action=usb-look]').click();
         await page.waitForSelector('[data-testid=usb-look-verdict]', { timeout: 10000 });
         note.verdict = await page.getAttribute('[data-testid=usb-look-verdict]', 'data-verdict');
@@ -230,6 +309,7 @@ if (only.includes('usb')) {
             await page.waitForTimeout(200);
         }
         note.checkAfterS = Math.round((Date.now() - t0) / 1000);
+        step(`usb: wizard ${s.wizard} after ${note.checkAfterS} s`);
         checks['usb.checkScreen'] = s.wizard === 'check' && s.profileKey === 'hid:2ca3:1021:DJI RC 2:12:d' && s.key === s.profileKey && s.badReports === 0;
         // the sticks move on the check screen: roll from the centre to the right
         await page.evaluate(() => { window.__rc2Hands.fixed = { A: 0, E: 0, T: 0, R: 0, arm: false }; });
@@ -250,11 +330,18 @@ if (only.includes('usb')) {
         await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 15000 });
         await page.waitForTimeout(1500);
         const s0 = await state(page);
+        step('usb: flying, climb starts');
+        await curCdp.send('Profiler.enable');
+        await curCdp.send('Profiler.start');
+        note.profiling = true;
         // the arm switch the wizard took (the left dial) stays where it was on the check screen: centred style needs none
         await page.evaluate(() => { const w = window.__rc2Watch; if (w) Object.assign(w, { maxAge: 0, ageOver100: 0, maxFrame: 0, frames: 0, blocks: {}, replies0: window.__rc2Probe?.replies ?? 0, t0: performance.now() }); window.__rc2Hands.fixed.T = 0.6; });
         note.climb = [];
         for (let i = 0; i < 10; i++) { await page.waitForTimeout(250); const x = await state(page); note.climb.push({ alt: x.alt, motors: x.throttle?.centre?.arm ?? null, crashed: x.crashed }); }
         const s1 = await state(page);
+        note.profile = await profileOf(curCdp);
+        note.profiling = false;
+        step(`usb: climb done, profile ${JSON.stringify(note.profile).slice(0, 1200)}`);
         note.gateWatch = await page.evaluate(() => { const w = window.__rc2Watch; const c = window.__gsfpv?.lastCrash; return { ...w, last: undefined, repliesPerS: Math.round(((window.__rc2Probe?.replies ?? 0) - w.replies0) * 1000 / (performance.now() - w.t0)), lastCrash: c ? JSON.stringify(c).slice(0, 300) : null }; });
         note.start = { alt: s0.alt, armed: s0.armed, throttle: s0.throttle, card: s0.card };
         note.up = { alt: s1.alt, armed: s1.armed, crashed: s1.crashed, throttle: s1.throttle, card: s1.card };
@@ -270,7 +357,7 @@ if (only.includes('usb')) {
 
 if (only.includes('refused')) {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
-    await ctx.addInitScript(installFakeRc2, { refuse: true });
+    await ctx.addInitScript(installFakeRc2, { refuse: true, answer: fakeAnswer });
     await run('refused', ctx, async (page, note) => {
         await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
         await openHelper(page);
@@ -288,7 +375,7 @@ if (only.includes('refused')) {
 }
 
 if (only.includes('bridge')) {
-    if (!only.includes('usb')) await usbCtx.addInitScript(installFakeRc2, { refuse: false });
+    if (!only.includes('usb')) await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
     await run('bridge', usbCtx, async (page, note, csp) => {
         await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
         await openHelper(page);

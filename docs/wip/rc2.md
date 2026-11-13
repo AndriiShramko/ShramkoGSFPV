@@ -67,7 +67,23 @@ Stage 3 RC3-windows-path-and-probe (path (ii): adb stayed offline, the native re
   fills every free slot (probe: usb pass, climb +3.3 m, but still stale 4, 9 answers/s: rc2-probe-inflight.json);
   a1b43eb1 the ask loop wakes on the timer OR the next animation frame (pause() in dji-rc2-source.ts) and the probe's
   fake answers by MessageChannel instead of a 2 ms timer. Unit tests 24 passed, tsc clean.
-  LEFT: with a1b43eb1 the probe HANGS (no output, killed by timeout 360 s, usb run alone, twice): page.evaluate
+  PASS 3 (probe now logs each step to stderr, stops a run after 120 s, then pauses the page through CDP and records the
+  stack and the frame arguments three times 3 s apart; RC2_FAKE_ANSWER=timer|message picks the fake): the hang is NOT
+  in this lane's code and not in the fake. Measured on the release build of a1b43eb1 (dist 11:48): refused passes in
+  0.5 s; usb with the TIMER fake hangs too, at the climb (wizard to check 21 s, flight starts at 30 s, then nothing).
+  All three looks (evidence rc2-probe-hang-stacks.json/.log) are inside the centred pilot's ground probe:
+  raw -> push -> prepare -> centreFn -> CentrePilot.apply -> LessonPilot.apply -> clearance -> groundClearance
+  (apps/fly/src/play/ground.ts) -> VoxelContactWorld.sweep -> sweepOne -> overlap -> sphereOverlaps with r 10.05 m
+  (PROBE_M 20: the cover sphere of a 20 m sweep). The arguments differ between looks (craft y 6.67, 5.89, 6.67 m), so
+  it is not one endless call: the page spends all its time in repeated ground sweeps, one per input frame (each takes
+  longer than LESSON_PROBE_EVERY_MS 33, so the 33 ms limit never skips one). The "timers about 9 a second in flight"
+  of pass 2 is this same cost; a1b43eb1's animation-frame wake only adds asks, hence frames, hence sweeps.
+  LEFT for the next pass: (1) revert a1b43eb1's pause()/pace in dji-rc2-source.ts (keep 0ae0d8f6 and 0e01b73c), run
+  app-dji-rc2 + app-usb-look + app-dji-rc2-bridge and tsc of apps/fly, commit. (2) The ground probe's cost is the
+  lead's (outside this lane, see For the lead): with a fix applied as a scratch patch, rebuild and run the probe's
+  three runs, then the negative control against origin/main's dist, tick this line. Without that fix usb.climbs
+  cannot pass on this scene. Old notes of pass 2 follow.
+  (pass 2) with a1b43eb1 the probe HANGS (no output, killed by timeout 360 s, usb run alone, twice): page.evaluate
   never returns, so the page's main thread is probably busy. Unknown which half: (1) rebuild with a1b43eb1's
   source and the OLD fake (git show 0e01b73c:tools/bench/scripts/rc2-probe.mjs > a scratch copy), run usb only;
   (2) if that hangs, the rAF pause is the cause: revert pause() (keep 0ae0d8f6/0e01b73c) and look for another way
@@ -197,6 +213,15 @@ every received frame, measured]:
   bridge". The first time the wizard runs; later the check screen opens at once. Arm: Space or the on-screen ARM is
   not needed in the centred style (the stick starts the motors). How other pilots get the program (a download, a
   release asset) is the lead's call: today it lives only in the repo.
+- Stage 3, found by the rc2 probe, NOT this lane's code: the centred throttle style's ground probe
+  (apps/fly/src/app/input.ts CentrePilot ground: groundClearance in apps/fly/src/play/ground.ts) sweeps a 0.05 m
+  sphere 20 m down through VoxelContactWorld.sweep, whose first step tests a 10.05 m cover sphere voxel by voxel. In
+  scene 887f27aa at about 6 m it costs more than its 33 ms interval, so every input frame runs it and the page stops
+  answering (stacks in evidence/2026-11-13/rc2/rc2-probe-hang-stacks.log). Any spring-centred radio with a fast
+  report rate (WebHID 250-500 Hz) should hit it the same way [assumed, only the RC 2 fake was run]. Candidate fixes
+  [not tried]: sweep in short pieces (e.g. 1 m, so each cover sphere is small) or a voxel column walk, or the lesson
+  pilot's rayClearance on the scan's walls; and run the probe on the frame tick, not on every input frame.
+  centre-throttle-probe.mjs should then also climb above 6 m once.
 - Stage 3: the probe's usb.climbs still fails (Status, stage 3 step 4): do not ship the RC 2 path as "flies" before it
   passes.
 
@@ -240,3 +265,6 @@ every received frame, measured]:
 - Stage 3 pass 2: about 45 replies, not finished. Most went to four 3-6 min release-build + probe cycles, each changing
   two things at once (source and fake), so the last one hung with no way to tell which; the probe also writes its
   JSON only at the end, so a hang leaves nothing. Change one thing per build and write the out file after every run.
+- Stage 3 pass 3: about 40 replies, not finished. Two 5-min blind waits on hung runs before the probe had step logs;
+  then four 2.5-min runs to get a stack. A CDP Debugger.pause with frame arguments on hang, built into the probe from
+  the start, would have found the ground sweep in one run instead of three passes of guessing at timers.
