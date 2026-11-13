@@ -10,6 +10,7 @@
 // tab, the flight left paused under the menu. Since v0.13 (the owner's M41-1: an ordinary pilot opens the mode from the menu, no
 // address codes) the item opens the mode itself, no longer the page about it (/{lang}/sound/, which the start screen links).
 import { sonicEntry, sonicInstaller } from '../../sonic/entry-state';
+import { sharedNumber } from '@gsfpv/scenes';
 import type { Feature, MenuItem } from '../context';
 
 /** The page's language as i18n.ts writes it on <html lang> (read when the menu opens), English when it has none. */
@@ -28,13 +29,35 @@ export const modeStartPage = (): string => `/${pageLang()}/fly/?sonic=start`;
  */
 export const SOUND_PAGE_ITEM: Omit<MenuItem, 'run'> = { id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', order: 120, section: 'tools', href: modeStartPage };
 
+/** What of the flight the link to the mode takes: the scan flown and its size now (FlightSession; absent before a flight). */
+export interface FlownScan {
+    readonly builtin?: unknown;
+    readonly scene?: { readonly id: string } | null;
+    readonly transform?: { readonly s: number } | null;
+}
+
+/**
+ * Train 2 (the owner: "if I already fly by sound I just want to try other interiors and exteriors"): the mode's start screen for THIS
+ * scan, /{lang}/fly/?sonic=scan&scene=<id>&sz=<size>, so a pilot who flies by sound can fly it at the size he flies it now (the size
+ * written as a shared link writes it, 3 places). A built-in world (no scan) or no flight: the plain start screen.
+ */
+export function modeScanPage(ses: FlownScan | null | undefined): string {
+    const id = ses && !ses.builtin ? ses.scene?.id ?? '' : '';
+    const s = ses?.transform?.s;
+    if (id === '' || typeof s !== 'number' || !Number.isFinite(s) || s <= 0) return modeStartPage();
+    return `/${pageLang()}/fly/?sonic=scan&scene=${encodeURIComponent(id)}&sz=${sharedNumber(s, 3)}`;
+}
+
 export const sonicFlight: Feature = {
     id: 'sonic-flight',
     install(ctx) {
         const entry = sonicEntry();
         const install = sonicInstaller();
         if (entry) return install ? install(ctx, entry) : undefined;
-        // the menu shows it as a link (MenuItem.href); run() is the same page for a caller that runs items
-        return ctx.menu.add({ ...SOUND_PAGE_ITEM, run: () => void open(modeStartPage(), '_blank', 'noopener') });
+        // the menu shows it as a link (MenuItem.href) to the mode's start screen for the scan flown now, read when the menu opens; it
+        // stays a new tab (as before): the flight is left paused under the menu, and the pilot comes back to it where he was. run()
+        // is the same page for a caller that runs items
+        const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session);
+        return ctx.menu.add({ ...SOUND_PAGE_ITEM, href, run: () => void open(href(), '_blank', 'noopener') });
     }
 };

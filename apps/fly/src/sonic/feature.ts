@@ -134,15 +134,17 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
     const w: LessonWorldRef = lesson.world;
     if (w.kind !== 'scan') return null;
     const key = `${w.track?.id ?? ''}@${w.track?.version ?? 0}`;
-    let pending = tracks.get(key);
+    // the free flight over a scan (train 2, scan-free) names no track: nothing to fetch, no gates
+    let pending: Promise<TrackFile | null> | undefined = w.track ? tracks.get(key) : Promise.resolve(null);
     if (!pending) {
         // the release serves the track next to the page's own files, under its base (/fly/)
-        pending = loadLessonTrack(w, fetch, import.meta.env.BASE_URL);
-        tracks.set(key, pending);
-        pending.catch(() => tracks.delete(key));
+        const loading = loadLessonTrack(w, fetch, import.meta.env.BASE_URL);
+        tracks.set(key, loading);
+        loading.catch(() => tracks.delete(key));
+        pending = loading;
     }
     const say = (line: string): void => void entry.setup.audio.engine.say({ key: line }, { interrupt: false }).catch(() => undefined);
-    let track: TrackFile;
+    let track: TrackFile | null;
     try {
         track = await pending;
     } catch (e) {
@@ -541,7 +543,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
     if (entry.lessonId) {
         if (entry.world) h.seed(entry.lessonId, entry.world);
-        void h.open(entry.lessonId).then((ok) => { if (ok) focusFlight(); else showMenu(); });
+        void (entry.free ? h.openFree(entry.free) : h.open(entry.lessonId)).then((ok) => { if (ok) focusFlight(); else showMenu(); });
     } else showMenu();
     ctx.hook.sonic = (withEvents = true) => ({
         lesson: h.lesson ? h.lesson.id : null,

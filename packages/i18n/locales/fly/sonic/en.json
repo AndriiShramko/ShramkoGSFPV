@@ -92,5 +92,9 @@
   "sonic.start.lesson": "Start: {title}",
   "sonic.start.noAudio": "This browser cannot play sound, so Fly by Sound cannot run here. Try a current Chrome or Edge.",
   "sonic.start.starting": "Starting: {title}.",
-  "sonic.start.unknown": "There is no lesson called {id}. Choose one from the list."
+  "sonic.start.unknown": "There is no lesson called {id}. Choose one from the list.",
+  "sonic.say.scanNoWalls": "This scan has no walls yet, so no wall can warn you: you hear only your height. To get walls, open this scan in the simulator, pause, build its walls in the walls box, then come back by Fly by Sound in the pause menu.",
+  "sonic.start.scan": "Fly this scan by sound",
+  "sonic.start.scanFlier": "I already fly by sound: fly this scan",
+  "sonic.start.scanWhat": "Free flight over the scan {scene} at size x{size}: you hear its walls and your height. No rings, no clock."
 }

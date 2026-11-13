@@ -63,7 +63,7 @@ export async function boot(ui: HTMLElement, canvas: HTMLCanvasElement): Promise<
                 setSonicInstaller(await mode());
             },
             launch: async (r) => {
-                setSonicEntry({ setup: r.setup, lessonId: r.lessonId, world: r.world, screen: r.screen });
+                setSonicEntry({ setup: r.setup, lessonId: r.lessonId, world: r.world, free: r.free ?? null, screen: r.screen });
                 const id = r.world ? r.world.builtin.scene.id : r.sceneId ?? '';
                 await fly(ui, canvas, { id }, showcase, prefs, (code, msg) => {
                     hook.errorCode = code;

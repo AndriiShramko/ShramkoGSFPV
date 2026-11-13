@@ -129,7 +129,7 @@ export interface ScanLesson {
     readonly prims: readonly Prim[];
     /** the walls' cell size flown, m, or null when the scan has none */
     readonly voxelM: number | null;
-    readonly track: TrackFile;
+    readonly track: TrackFile | null;
 }
 
 /** The scan flown now, as the lesson reads it. */
@@ -157,13 +157,16 @@ export function flownStart(track: TrackFile, tr: { readonly s: number; readonly 
     return { pos: [tr.s * p[0] + (tr.t[0] as number), tr.s * p[1] + (tr.t[1] as number), tr.s * p[2] + (tr.t[2] as number)], yawDeg: track.start.yawDeg };
 }
 
-/** The lesson over the scan flown now: its world, gates, start, floor and helper's view. */
-export function buildScanLesson(track: TrackFile, view: ScanView): ScanLesson {
+/**
+ * The lesson over the scan flown now: its world, gates, start, floor and helper's view. No track (train 2, the free flight scan-free):
+ * no gates, the scan's own spawn, the walls and the floor only.
+ */
+export function buildScanLesson(track: TrackFile | null, view: ScanView): ScanLesson {
     const tr = view.src.transform();
     const transform: SceneTransform = [tr.s, tr.t[0] as number, tr.t[1] as number, tr.t[2] as number];
     const col = view.src.collision();
-    const start = flownStart(track, tr, view.spawn);
-    const objects = trackToObjects(track, { transform });
+    const start = track ? flownStart(track, tr, view.spawn) : view.spawn;
+    const objects = track ? trackToObjects(track, { transform }) : [];
     return {
         world: new ScanSonicWorld(view.sceneId, view.sceneVersion, view.src, track),
         floorY: floorUnder(col, start.pos),

@@ -26,7 +26,7 @@
 //              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
 //              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
@@ -189,6 +189,16 @@ export class LessonHost {
         page.onEvent((e) => this.observe(e));
     }
 
+    /** The free flight over a scan link's scan (train 2, start.ts freeLessonOf): opened by its id SCAN_FREE_ID, never on a path. */
+    private free: LessonDef | null = null;
+
+    /** Opens the free flight over a scan (scanFreeLesson): no track, no target, the scan's own spawn, the walls and height heard. */
+    openFree(lesson: LessonDef): Promise<boolean> {
+        if (lesson.id !== SCAN_FREE_ID) return Promise.resolve(false);
+        this.free = lesson;
+        return this.open(SCAN_FREE_ID);
+    }
+
     /** A lesson world built before the page (the entry's first flight is made on it), so the first open does not build it again. */
     seed(lessonId: string, world: LessonWorld): void {
         this.worlds.set(lessonId, world);
@@ -228,10 +238,11 @@ export class LessonHost {
 
     /** Opens a lesson: its world flown, the helper's view drawn, the runner begun. Never throws for the pilot's sake: the reason goes to the console. */
     async open(lessonId: string, o: { returnTo?: string | null; keepSpeech?: boolean } = {}): Promise<boolean> {
-        if (this.busy || !isShippedLesson(lessonId)) return false;
+        const free = lessonId === SCAN_FREE_ID ? this.free : null;
+        if (this.busy || !(free || isShippedLesson(lessonId))) return false;
         this.busy = true;
         try {
-            const lesson = getLesson(lessonId);
+            const lesson = free ?? getLesson(lessonId);
             this.finish();
             let world: SonicWorld;
             let floorY = 0;
@@ -271,8 +282,11 @@ export class LessonHost {
             this.demo = null;
             this.passedAt = null;
             this.returnTo = o.returnTo ?? null;
-            setCurrentLesson(this.p.store, lessonId);
-            this.url(lesson);
+            // the free flight is no lesson of the course: Continue keeps its lesson, and the address stays the scan link it came from
+            if (!free) {
+                setCurrentLesson(this.p.store, lessonId);
+                this.url(lesson);
+            }
             // G, or a lesson chosen on the start screen, while the lesson left is still talking: its queued lines (a lesson says
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
@@ -294,6 +308,8 @@ export class LessonHost {
                 this.p.mode.place(start);
                 // the walls are as fine as the scan's file: said plainly, after the intro
                 if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } }, false, { lesson: true });
+                // a free flight over a scan that has no walls (train 2): no wall can warn, said and shown (the captions), with the way to get them
+                if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
             }
             return true;
         } catch (e) {
@@ -501,7 +517,8 @@ export class LessonHost {
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        const next = lessonAfter(id, this.p.path());
+        // the free flight over a scan has no lesson after it on any path: the menu
+        const next = id === SCAN_FREE_ID ? null : lessonAfter(id, this.p.path());
         if (next && (await this.open(next.id))) return;
         this.toMenu();
     }
@@ -520,7 +537,7 @@ export class LessonHost {
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        const before = lessonBefore(id, this.p.path());
+        const before = id === SCAN_FREE_ID ? null : lessonBefore(id, this.p.path());
         if (before && (await this.open(before.id))) return;
         this.toMenu();
     }

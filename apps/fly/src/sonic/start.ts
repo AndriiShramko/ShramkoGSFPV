@@ -11,7 +11,8 @@
 // start screen offers its lesson first and nothing starts by itself. Its sound settings are in force for this visit only
 // (SonicSetup.setVisit), and the start screen says which, with a button to keep them.
 import type { Locale } from '@shramko/sonic-fpv';
-import { getLesson } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, getLesson, scanFreeLesson } from '@shramko/sonic-fpv';
+import type { LessonDef } from '@shramko/sonic-fpv';
 import type { PrefsStore } from '@gsfpv/prefs';
 import { followVisit } from './address';
 import { Captions } from './captions';
@@ -20,8 +21,9 @@ import { lessonFlightWorld } from './lesson-world';
 import type { LessonWorld } from './lesson-world';
 import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
 import { StartScreen } from './start-screen';
-import { launchFailureLine, parseSonicParam } from './start-model';
-import { allProgress, currentLesson, resetProgress, setCurrentLesson } from './store';
+import { experiencedPilot, launchFailureLine, parseSonicParam } from './start-model';
+import type { SonicRequest } from './start-model';
+import { allProgress, currentLesson, fliesBySound, resetProgress, setCurrentLesson, setFliesBySound } from './store';
 import { enableZoom } from './zoom';
 import { t } from '../i18n';
 
@@ -31,6 +33,8 @@ export interface LaunchRequest {
     readonly world: LessonWorld | null;
     /** the scan a scan lesson flies */
     readonly sceneId: string | null;
+    /** train 2: the free flight over a scan link's scan (scanFreeLesson), the lesson the host opens instead of a shipped one */
+    readonly free?: LessonDef | null;
     readonly setup: SonicSetup;
     /** the start screen, for the flight to show again */
     readonly screen: StartScreen;
@@ -57,12 +61,21 @@ export interface StartHandle {
     readonly setup: SonicSetup;
 }
 
+/**
+ * The free flight a press asks for (train 2): SCAN_FREE_ID on a scan link's screen is the template over that link's scan at its size
+ * (scanFreeLesson, transform [size, 0, 0, 0]), else null (a shipped lesson).
+ */
+export function freeLessonOf(request: SonicRequest, id: string): LessonDef | null {
+    if (id !== SCAN_FREE_ID || request.kind !== 'scan') return null;
+    return scanFreeLesson(request.sceneId, [request.size, 0, 0, 0]);
+}
+
 /** Opens the start screen; a lesson chosen on it launches the flight. */
 export function startSonic(d: SonicStartDeps): StartHandle {
     enableZoom();
     // the mode's name in the page's language (v13-int step 6: Russian and Polish name it in their own words)
     document.title = t('sonic.start.name');
-    const request = parseSonicParam(d.raw);
+    const request = parseSonicParam(d.raw, d.query);
     const captions = new Captions();
     // what of the captions fits above the panels is measured again when the page changes size (v13-int review K2, captions.ts fit)
     addEventListener('resize', () => captions.refit());
@@ -79,10 +92,15 @@ export function startSonic(d: SonicStartDeps): StartHandle {
         current: () => currentLesson(d.prefs),
         // Reset my progress (v0.13, M41-2): the lessons' progress and the current lesson go, the sound settings stay
         resetProgress: () => resetProgress(d.prefs),
+        // a scan link (train 2): the scan first for a pilot who has begun a lesson or once said he flies by sound
+        experienced: () => experiencedPilot(allProgress(d.prefs), fliesBySound(d.prefs)),
+        onFlies: () => setFliesBySound(d.prefs),
         onStart: (id) => {
             // inside the press: the context and the speech unlock; the rest follows once the engine is up
             const started = setup.audio.start();
-            setCurrentLesson(d.prefs, id);
+            const free = freeLessonOf(request, id);
+            // the free flight is no lesson of the course: Continue keeps naming the lesson the pilot is on
+            if (!free) setCurrentLesson(d.prefs, id);
             screen.hide();
             void started.then(async () => {
                 if (!setup.audio.available) {
@@ -90,7 +108,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                     screen.say(t('sonic.start.noAudio'));
                     return;
                 }
-                const lesson = getLesson(id);
+                const lesson = free ?? getLesson(id);
                 const failed = (e: unknown, line: ReturnType<typeof launchFailureLine>): void => {
                     console.warn('fly by sound: the flight did not open', e);
                     screen.show();
@@ -112,7 +130,7 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                 // them while it runs and takes them off when it leaves), and the pilot hears that it takes a while
                 if (forceScanPrefs(d.prefs, lesson.world)) void setup.audio.engine.say({ key: 'sonic.say.scanLoading' }, { interrupt: false }).catch(() => undefined);
                 try {
-                    await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, setup, screen });
+                    await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, free, setup, screen });
                 } catch (e) {
                     // the flight did not open: the scan lesson's size and walls are not kept for whatever the pilot does next
                     clearScanPrefs(d.prefs);

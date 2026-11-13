@@ -19,12 +19,13 @@ Stage S2-any-scan (fly THIS scan by sound):
 - [x] package: words check (SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe node tools/run-tool.mjs listen-words; it takes C:/dev/.gpu-lock itself, do not wrap it): PASS, 545 lines per language, 0 over the bound 0.2 in en, es, pl, ru, control 545 of 545 over (package train2 8b779d4)
 - [x] package whole suite 1308 passed, 4 skipped (64 files), typecheck 0 errors; pin packages/sonic-fpv 1ed6103 -> 8b779d4 (this commit)
 - [x] simulator tools/bench test/sonic + test/sonicrec on pin 8b779d4 (43 files): 740 passed, 3 failed, all 'Test timed out in 5000ms' under load: sonic-bump 'walls, pillars...' (times out on the old pin too, S1) and two sonic-scan-world normal cases (the file alone: 7 passed)
-- [ ] simulator: pause item apps/fly/src/app/builtin/sonic-flight.ts opens /{lang}/fly/?sonic=scan&scene=<id>&sz=<size> (keep new tab: the flight stays paused under the menu, as today)
-- [ ] simulator: start-model parseSonicParam accepts 'scan' with scene and sz; start.ts onStart for the scan uses scanFreeLesson(scene, [sz,0,0,0]) instead of getLesson; forceScanPrefs with that world
-- [ ] simulator: store.ts flag "I already fly by sound" (new prefs key: run packages/prefs/test/migrate.test.ts and the pinned tables of docs/agent-map.md); start-screen.ts order: experienced (any savedProgress or the flag) = "Fly this scan by sound" first, "Lessons" second; first-timer = lessons first, then "I already fly by sound: fly this scan"; X back to lessons; texts in packages/i18n/locales/fly/sonic* in en, es, pl, ru
-- [ ] simulator: feature.ts scanLesson and scan-lesson.ts buildScanLesson without a track (no loadLessonTrack, no gates; start = the scan's spawn); lessons.ts host openFree
-- [ ] simulator: a scan without walls (session.collision null): spoken and shown line plus the walls build of apps/fly/src/walls.ts if it can be called from the sound page with a small hook, else the line only and a note under For the lead
-- [ ] tests with negative controls: link carries the scene, start order first-timer and experienced, scan-free without a track
+- [x] simulator: pause item sonic-flight.ts modeScanPage(ctx.session) -> /{lang}/fly/?sonic=scan&scene=<id>&sz=<size> (sharedNumber 3 places); built-in world or no session -> ?sonic=start. Stays a NEW TAB: the flight stays paused under the menu, the pilot returns where he was (this commit)
+- [x] simulator: start-model parseSonicParam(raw, query) accepts 'scan' and 'scan-free' with scene (/^[A-Za-z0-9_-]{1,64}$/) and sz (SHARED_LIMITS.size, no sz = 1) -> kind 'scan'; experiencedPilot, scanStartOrder; start.ts freeLessonOf(request, id) = scanFreeLesson(scene, [sz,0,0,0]); onStart uses it (no setCurrentLesson for it), forceScanPrefs runs on its world; LaunchRequest.free -> boot.ts -> SonicEntry.free -> feature.ts h.openFree (this commit)
+- [x] simulator: prefs doc.ts SonicState.fliesBySound (kept only when true, no migration: absent = first-timer); store.ts fliesBySound / setFliesBySound; start-screen.ts: scan link puts sonic-start-scan (primary) first for an experienced pilot, else the lesson buttons first and sonic-start-scan-flier after them (its press saves the flag); 4 keys in packages/i18n/locales/fly/sonic/{en,es,pl,ru}.json (sonic.start.scan, scanFlier, scanWhat, sonic.say.scanNoWalls) (this commit)
+- [x] simulator: buildScanLesson(track | null) (no track: no gates, the scan's spawn); feature.ts scanLesson fetches no track when the lesson names none; lessons.ts openFree(lesson), open() takes SCAN_FREE_ID when set, no setCurrentLesson and no address rewrite for it (the address stays the scan link), N / previous go to the menu (this commit)
+- [x] simulator: no walls in a free flight (voxelM null): bridge.say sonic.say.scanNoWalls (spoken and in the captions) with the way to build walls. Message only: WallsHook (apps/fly/src/walls.ts) exposes refine() but no bake(); the bake starts only from the walls box's own button (see For the lead) (this commit)
+- [~] tests: tools/bench/test/sonic-scan-free.test.ts written (link, order, scan-free without a track) but it does NOT load: importing apps/fly/src/sonic/start.ts reaches a module that reads `location` at import ("ReferenceError: location is not defined"). Next step: move freeLessonOf from start.ts into start-model.ts (pure; start.ts imports it), import it from there in the test, run the test, then the negative control (neg_control.py --ref origin/main --files apps/fly/src/sonic/start-model.ts apps/fly/src/sonic/scan-lesson.ts apps/fly/src/app/builtin/sonic-flight.ts -- node ../../node_modules/vitest/vitest.mjs run test/sonic-scan-free.test.ts, from tools/bench). The NEG OK printed in this pass is void (the test failed on both codes). Also add a start-screen DOM case (button order by testid) in tools/bench/test/sonic-start-screen.test.ts
+- [ ] packages/prefs/test/migrate.test.ts with a fliesBySound document (kept when true, dropped otherwise); pinned tables of docs/agent-map.md re-run (no setting or key added, so no table change expected)
 - [ ] probe: new case in tools/bench/src/sonic-int-review.ts on a local release (ports 5700-5719): scene 887f27aa by the new link, free scan flight running, a wall cue planned flying at a wall; screenshots U:/Temp/gsfpv-train2/shots/sound-start-first.png and sound-start-experienced.png
 
 ## Checks (numbers printed by the commands)
@@ -44,7 +45,13 @@ Simulator (this worktree, tools/bench):
   sonic-scan-world (passed when re-run alone) and sonic-bump 'walls, pillars, ceiling, floor at 0-85 deg' (9.9 s alone;
   also times out on the old pin 378cc50, so it is not this change; load on this PC).
 
+S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/bench sonic-optin + sonic-start-screen: 42 passed. packages/prefs migrate + defs: 41 passed.
+
 ## Decisions
+
+- S2 pass 2: the pause item stays a new tab (the flight is left paused under the menu, as before). "Back to the lessons" from a free
+  flight is the mode's existing menu key (the start screen with the lessons); no new key X was added. Experienced = any saved lesson
+  progress or fliesBySound true.
 
 - Wrong way: the old condition (against the way forward faster than 0.5 m/s for 1 s) AND horizontal speed along the nose
   (headingBasis(yawDeg)) above the same 0.5 m/s, both over the same second; backSince resets when either fails. The
@@ -68,6 +75,9 @@ Simulator (this worktree, tools/bench):
   the catalogue's LESSON_TEMPLATES, after the ladder's keys in every locale file. Version 1, own id 'scan-free'.
 
 ## For the lead
+
+- S2 walls: starting the walls build from the sound page needs more than a small hook: apps/fly/src/walls.ts WallsHook has refine()
+  but no bake(); the bake is wired to the box's own button inside mountWalls. The free flight only says sonic.say.scanNoWalls.
 
 - S2: the pin is now package commit 8b779d4 on branch train2 of C:/dev/ShramkoSonicFPV (not pushed), on top of S1's 1ed6103.
 - The words check (listen-words) takes C:/dev/.gpu-lock itself: a wrapper that holds the lock deadlocks it (it happened here
@@ -94,4 +104,5 @@ Simulator (this worktree, tools/bench):
 
 - S1: most turns went to quoting test patches (a heredoc ate the backslash of TS \' strings); a patch script written
   with Write from the start would have saved two turns.
+- S2 pass 2: reading start-screen, lessons, feature and scan-lesson by slices took ~12 turns; a `cat > /dev/null` before a heredoc hung one call. A test that imports start.ts cannot load in Node (location at import): pure helpers belong in start-model.ts from the start.
 - S2: the package's spoken-line evidence (TTS lengths for four voices, the Whisper words check over every line) is a hidden cost of any new package line: 6 turns before the simulator was touched. A note in the scout's design that new package lines need measure-tts.ps1 and listen:words would have let the stage plan for it.
