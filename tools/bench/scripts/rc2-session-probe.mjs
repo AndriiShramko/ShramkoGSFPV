@@ -1,7 +1,9 @@
 // Lane connect, stage C1 (docs/wip/connect.md): the owner's real DJI RC 2 session played back through the RC bridge
 // into a headless page, and what the page did with it, second by second.
 // Before: the bridge plays the record at its pace from the moment the page connects:
-//   python tools/rc-bridge/rc_bridge.py --replay packages/input/test/fixtures/dji-rc2/owner-session-2026-11-13.jsonl --dev
+//   python tools/rc-bridge/rc_bridge.py --replay packages/input/test/fixtures/dji-rc2/owner-session-2026-11-13.jsonl --dev --port 5781
+// The page's socket to ws://127.0.0.1:47310/ is sent to BRIDGE_PORT (env, default 5781) and the context bypasses the
+// CSP for it, so a real bridge on 47310 (the owner's controller) is never touched.
 // The probe presses what a pilot presses: Controls, "My controller is not in the list", "Fly through the RC bridge"; the
 // wizard walks itself on the sticks of the record (its autopilot); on the check screen "Fly" at the record second
 // FLY_S (default 70: after the owner's throttle-down at 59 s and arm-dial flip at 65-66 s, before his throttle-up at
@@ -20,6 +22,7 @@ const base = process.argv[2] ?? 'http://localhost:5780/en';
 const outFile = process.argv[3] ?? ROOT + '/.cache/rc2-session-probe.json';
 const FLY_S = Number(process.argv[4] ?? 70);
 const END_S = Number(process.argv[5] ?? 200);
+const BRIDGE_PORT = Number(process.env.BRIDGE_PORT ?? 5781);
 const SHOTS_AT = [100, 160, 175, 190];
 const scene = '887f27aa'; // open sky above the spawn (docs/agent-map.md, traps)
 mkdirSync(dirname(outFile), { recursive: true });
@@ -27,13 +30,14 @@ const T0 = Date.now();
 const step = (s) => process.stderr.write(`[${((Date.now() - T0) / 1000).toFixed(1)}s] ${s}\n`);
 
 /** In the page before the app: the bridge's answers counted (first answer = record second 0) and a sampler every 100 ms. */
-function installSampler() {
+function installSampler(bridgePort) {
     const rec = { first: NaN, answers: 0, last: null, rows: [], t: () => (Number.isNaN(rec.first) ? -1 : (performance.now() - rec.first) / 1000) };
     window.__rec = rec;
     const RealWS = window.WebSocket;
     window.WebSocket = class extends RealWS {
-        constructor(...a) {
-            super(...a);
+        constructor(url, ...a) {
+            // the page's bridge address (ws://127.0.0.1:47310/) to the probe's bridge port: the real bridge may hold 47310
+            super(String(url).replace(':47310/', `:${bridgePort}/`), ...a);
             this.addEventListener('message', (e) => {
                 if (typeof e.data !== 'string' || e.data.indexOf('"v"') < 0) return;
                 if (Number.isNaN(rec.first)) rec.first = performance.now();
@@ -73,8 +77,9 @@ function installSampler() {
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 step('launched ' + browser.version());
-const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
-await ctx.addInitScript(installSampler);
+// the CSP allows the bridge on 47310 only; the replay bridge listens on BRIDGE_PORT (the real bridge may hold 47310)
+const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 }, bypassCSP: true });
+await ctx.addInitScript(installSampler, BRIDGE_PORT);
 const page = await ctx.newPage();
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 200)));
