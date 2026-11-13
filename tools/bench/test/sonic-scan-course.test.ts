@@ -3,7 +3,10 @@
 // (buildScanLesson with course: ScanSonicWorld.setCourse), and the runner's target is gate 1, then gate 2 once gate 1 is passed.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { analyticCollision } from '../../../packages/collision/src';
+import { Rig } from './sonic-lesson-rig';
+import type { Control, RigScan } from './sonic-lesson-rig';
 import { parseTrack, scanFreeLesson, validateLesson, SCAN_FREE_ID } from '../../../packages/sonic-fpv/src';
 import type { TrackFile } from '../../../packages/sonic-fpv/src';
 import { buildScanLesson, isScanCourse, scanCourseLesson } from '../../../apps/fly/src/sonic/scan-lesson';
@@ -67,4 +70,78 @@ describe('a course of gates in a free scan flight (S3)', () => {
         expect(courseAnswer({ t: 'track', job: 4, track: null, ms: 1 }, 4)).toEqual({ ok: false, why: 'none fits' });
         expect(courseAnswer({ t: 'error', job: 4, message: 'x' }, 4)).toEqual({ ok: false, why: 'failed' });
     });
+});
+
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
+const wrap = (d: number): number => ((((d + 180) % 360) + 360) % 360) - 180;
+
+/** A pilot who flies to the runner's target (as sonic-garden.test.ts follow). */
+const follow: Control = (r) => {
+    const run = r.host.runner;
+    if (!run || run.phase !== 'flying') return null;
+    const gate = run.target();
+    if (!gate) return null;
+    const p = r.pos;
+    const dx = gate.pos[0] - p[0];
+    const dz = gate.pos[2] - p[2];
+    const err = wrap((Math.atan2(dx, -dz) * 180) / Math.PI - r.yaw);
+    return {
+        turn: clamp(err / 30, -1, 1),
+        forward: Math.abs(err) > 70 ? 0 : 0.6 * Math.cos((err * Math.PI) / 180) * Math.min(1, Math.hypot(dx, dz) / 4 + 0.3),
+        lift: clamp((gate.pos[1] - p[1]) * 0.9, -1, 1)
+    };
+};
+
+describe('N in a free scan flight, through the page host (S3 pass 2)', () => {
+    let rig: Rig | null = null;
+    afterEach(() => {
+        rig?.dispose();
+        rig = null;
+        vi.restoreAllMocks();
+    });
+
+    it('N asks the page for a course: the course lesson opens, the hum leads to gate 1, then to gate 2 once gate 1 is passed', async () => {
+        const track = garden();
+        const T = [5, 0, 0, 0] as const;
+        // a flat floor at y 0 under the garden's rings at x5 (5 to 7 m up): walls the flight flies, without the scan's own file
+        const collision = analyticCollision([-12, -1, -26], [12, 14, 26], 0.25, (_x, y) => y < 0);
+        const t = track.start!;
+        const scan: RigScan = {
+            sceneId: '7a475d38',
+            collision,
+            sha256: 'flat-floor',
+            track,
+            transform: T,
+            spawn: [T[0] * t.pos[0] + T[1], T[0] * t.pos[1] + T[2], T[0] * t.pos[2] + T[3], t.yawDeg]
+        };
+        const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
+        let asked = 0;
+        rig = await Rig.make(free, { scan, course: { key: () => 'N', ask: async () => (asked++, { ok: true, track }) } });
+        const r = rig;
+        expect(await r.host.openFree(free)).toBe(true);
+        const said = (key: string): boolean => r.engine.said.some((s) => s.line.key === key);
+        // N during the intro skips the intro (the runner's next); N in the flight asks for the course
+        await r.run(60000, null, () => said('sonic.say.courseOffer') && r.host.runner?.phase === 'flying');
+        expect(said('sonic.say.courseOffer')).toBe(true);
+        expect(r.host.runner?.phase).toBe('flying');
+        // the free flight has no target
+        await r.run(200);
+        expect(r.host.runner?.target() ?? null).toBeNull();
+        expect(r.press('scene.next')).toBe(true);
+        await r.run(60000, null, () => said('sonic.say.courseReady') && r.host.runner?.phase === 'flying');
+        expect(asked).toBe(1);
+        expect(said('sonic.say.courseMaking')).toBe(true);
+        expect(r.engine.said.find((s) => s.line.key === 'sonic.say.courseReady')?.line.params).toMatchObject({ n: track.gates.length, laps: track.laps, key: 'N' });
+        expect(r.host.runner?.phase).toBe('flying');
+        const first = track.gates[0]!.id;
+        const second = track.gates[1]!.id;
+        await r.run(200);
+        expect(r.host.runner!.target()?.id).toBe(first);
+        expect(r.stage.target).toBe(first);
+        await r.run(120000, follow, () => r.of('gate').length > 0);
+        expect(r.of('gate').map((g) => g.gateId)).toEqual([first]);
+        await r.run(100);
+        expect(r.host.runner!.target()?.id).toBe(second);
+        expect(r.stage.target).toBe(second);
+    }, 120000);
 });
