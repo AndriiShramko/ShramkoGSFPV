@@ -15,7 +15,15 @@ Stage 1 RC1-hardware-and-protocol
 - [x] 3. ADB: adb.exe 1.0.41 found at U:/tools/platform-tools; the controller is listed but stays "offline" (3 checks over about 10 minutes). No getevent possible. Commit 5a4e2bf6.
 - [x] 4. Verdict written below. Commit 5a4e2bf6.
 
-Stage 2, stage 3: not started (scope comes from the lead's train plan).
+Stage 2 RC2-protocol-and-webusb-source
+- [x] 1. packages/input/src/dji-duml.ts (build, parse with CRC8 and CRC16, stream reader, stick decode to -1..1, HID
+  description of the six axes) and packages/input/test/dji-duml.test.ts on both recordings (685 stick replies) and
+  reference vectors: 8 passed, NEG OK, tsc of packages/input clean. Commit (this commit, step 1).
+- [ ] 2. apps/fly/src/devices/dji-rc2-source.ts (WebUSB source as a HID-shaped device) and its tests.
+- [ ] 3. Helper block: fly action, claim failure in plain words in en/es/pl/ru, the old "cannot read it yet" line gone.
+- [ ] 4. Lead patch for the wiring outside this lane's paths (radio.ts, input.ts, index.ts) checked to apply and typecheck.
+
+Stage 3: not started.
 
 ## Verdict of stage 1
 
