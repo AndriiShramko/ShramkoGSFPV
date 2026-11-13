@@ -31,6 +31,8 @@ export const DISTANCES_M = [0, 0.25, 0.5, 1, 2, 4, 8];
 const DIFF_LEVEL = 40;
 /** the heights over the start B may take for the sweep, metres (estimates under the thing 0.29 m over the spawn of 39e63ce9, agent-map) */
 const RAISE_M = [0.05, 0.12, 0.2];
+/** the proof pictures show A pitched nose down this much, as in forward flight (an estimate of a cruising pitch) */
+const PROOF_PITCH_DEG = 25;
 /** the longest free ray looked for, metres */
 const FREE_CAP_M = 12;
 /** CSS that hides the name tags in the measuring shots (the tag is not the drone's body) */
@@ -185,11 +187,17 @@ async function look(): Promise<void> {
             const bare = await b.screenshot({ style: NO_TAGS });
             const shot = await b.screenshot();
             writeFileSync(join(SHOTS, `look-${mode}-d${d}.png`), shot);
-            if (mode === 'after' && (d === 2 || d === 4 || d === 8)) writeFileSync(join(SHOTS, `look-remote-${d}m.png`), shot);
             const st = await bState(b);
             const diff = await diffBox(blank, ref1, bare);
             rows.push({ d, share: +diff.share.toFixed(4), box: diff.box, pixels: diff.pixels, ...st });
             console.log(JSON.stringify({ d, share: +diff.share.toFixed(4), pixels: diff.pixels, tags: (st.tags as unknown[]).length }));
+            // the proof pictures for the lead: A as in forward flight, nose down PROOF_PITCH_DEG (its top shows), same place
+            if (mode === 'after' && (d === 2 || d === 4 || d === 8)) {
+                await placeA(a, at(d), qmul(qA, axisQ([1, 0, 0], -PROOF_PITCH_DEG)));
+                await sleep(1500);
+                writeFileSync(join(SHOTS, `look-remote-${d}m.png`), await b.screenshot());
+                await placeA(a, at(d), qA);
+            }
         }
         out.rows = rows;
         // back to the start for the last picture
