@@ -47,7 +47,7 @@ const HALF: Vec3 = [MOTOR_M + PROP_M / 2, SPAN_M * 0.08, MOTOR_M + PROP_M / 2];
 
 export interface RemoteDraw { slot: number; pos: Vec3; quat: Quat4; frozen: boolean }
 
-interface Drone { e: Entity; frozen: boolean | null; alpha: number; body: StandardMaterial; light: StandardMaterial }
+interface Drone { e: Entity; frozen: boolean | null; alpha: number; distM: number; seen: number; body: StandardMaterial; light: StandardMaterial }
 
 const lighter = (c: readonly number[]): [number, number, number] => [c[0] + (1 - c[0]) * LIGHT, c[1] + (1 - c[1]) * LIGHT, c[2] + (1 - c[2]) * LIGHT];
 
@@ -63,6 +63,10 @@ export class RemoteStage {
     private readonly drones = new Map<number, Drone>();
     private readonly w = new PcVec3();
     private readonly s = new PcVec3();
+    /** show() calls so far: a drone not seen in the last one is taken off */
+    private frame = 0;
+    /** the page hook object the `drawn` getter sits on (review LK-2: worked out only when a probe reads it) */
+    private hooked: object | null = null;
 
     /** `camera`: the flight camera (the renderer's), for the near rule; without it every drone is drawn whole */
     constructor(private readonly r: { readonly app: AppBase; readonly camera?: Entity | null }) {}
@@ -101,7 +105,7 @@ export class RemoteStage {
         const m = MOTOR_M;
         for (const [i, [x, z]] of [[m, m], [-m, m], [m, -m], [-m, -m]].entries()) part(`rotor-${i}`, 'cylinder', light, x, s * 0.05, z, PROP_M, s * 0.02, PROP_M);
         this.root!.addChild(e);
-        const d: Drone = { e, frozen: null, alpha: -1, body, light };
+        const d: Drone = { e, frozen: null, alpha: -1, distM: Infinity, seen: -1, body, light };
         this.drones.set(slot, d);
         return d;
     }
@@ -157,24 +161,40 @@ export class RemoteStage {
 
     /** Draws these drones; a slot not in the list is taken off. A drone nearer the camera than the near rule allows is hidden. */
     show(list: readonly RemoteDraw[]): void {
-        const keep = new Set<number>();
+        const f = ++this.frame;
         const cp = this.r.camera?.getPosition();
-        const drawn: DrawnRemote[] = [];
         for (const x of list) {
-            keep.add(x.slot);
             const d = this.drones.get(x.slot) ?? this.build(x.slot);
+            d.seen = f;
             d.e.setPosition(x.pos[0], x.pos[1], x.pos[2]);
             d.e.setRotation(x.quat[0], x.quat[1], x.quat[2], x.quat[3]);
             this.paint(d, x.slot, x.frozen);
-            const distM = cp ? Math.hypot(x.pos[0] - cp.x, x.pos[1] - cp.y, x.pos[2] - cp.z) : Infinity;
-            const a = nearAlpha(distM);
-            this.fade(d, a);
-            const b = this.box(d.e);
-            drawn.push({ slot: x.slot, distM: +distM.toFixed(3), alpha: +a.toFixed(3), share: +b.share.toFixed(5), box: b.box });
+            d.distM = cp ? Math.hypot(x.pos[0] - cp.x, x.pos[1] - cp.y, x.pos[2] - cp.z) : Infinity;
+            this.fade(d, nearAlpha(d.distM));
         }
-        for (const [slot, d] of this.drones) if (!keep.has(slot)) this.drop(slot, d);
+        for (const [slot, d] of this.drones) if (d.seen !== f) this.drop(slot, d);
+        this.hook();
+    }
+
+    /**
+     * Review LK-2: rooms.drawn (the probes' view of the near rule) is a getter on the page hook, so the boxes and the rounding
+     * are worked out only when a probe reads it, not every frame on every page. Set once per hook object.
+     */
+    private hook(): void {
         const h = roomsPageHook();
-        if (h) h.drawn = drawn;
+        if (!h || h === this.hooked) return;
+        this.hooked = h;
+        Object.defineProperty(h, 'drawn', { get: () => this.drawn(), enumerable: true, configurable: true });
+    }
+
+    /** every remote drone of the last show(), drawn or hidden by the near rule, with its box as the camera sees it now */
+    private drawn(): DrawnRemote[] {
+        const out: DrawnRemote[] = [];
+        for (const [slot, d] of this.drones) {
+            const b = this.box(d.e);
+            out.push({ slot, distM: +d.distM.toFixed(3), alpha: +d.alpha.toFixed(3), share: +b.share.toFixed(5), box: b.box });
+        }
+        return out;
     }
 
     private drop(slot: number, d: Drone): void {
@@ -189,7 +209,8 @@ export class RemoteStage {
         for (const [slot, d] of [...this.drones]) this.drop(slot, d);
         this.root?.destroy();
         this.root = null;
-        const h = roomsPageHook();
-        if (h) h.drawn = [];
+        const h = this.hooked as { drawn?: unknown } | null;
+        if (h && h === roomsPageHook()) delete h.drawn;
+        this.hooked = null;
     }
 }
