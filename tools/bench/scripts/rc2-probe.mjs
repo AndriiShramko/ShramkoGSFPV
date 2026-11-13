@@ -153,6 +153,25 @@ const tapFrames = (page) => page.evaluate(() => {
     const orig = src.onFrame;
     src.__tapped = true;
     src.onFrame = (f) => { window.__rc2Axes = Array.from(f.axes.slice(0, 6)).map((x) => Math.round(x * 100) / 100); orig?.(f); };
+    // the gate's view every animation frame: the age of the last sample (Controls.lastSampleAt, what the 100 ms stale
+    // rule reads), the frame interval (over 80 ms the tick calls it a stalled page) and the block reasons
+    const w = { maxAge: 0, ageOver100: 0, maxFrame: 0, frames: 0, blocks: {}, last: NaN };
+    window.__rc2Watch = w;
+    const watch = () => {
+        const now = performance.now();
+        const c = window.__gsfpv?.controls;
+        if (c) {
+            const age = now - c.lastSampleAt;
+            w.maxAge = Math.max(w.maxAge, age);
+            if (age > 100) w.ageOver100++;
+            if (c.block) w.blocks[c.block] = (w.blocks[c.block] ?? 0) + 1;
+        }
+        if (w.last === w.last) w.maxFrame = Math.max(w.maxFrame, now - w.last);
+        w.last = now;
+        w.frames++;
+        requestAnimationFrame(watch);
+    };
+    requestAnimationFrame(watch);
     return true;
 });
 
@@ -222,10 +241,11 @@ if (only.includes('usb')) {
         await page.waitForTimeout(1500);
         const s0 = await state(page);
         // the arm switch the wizard took (the left dial) stays where it was on the check screen: centred style needs none
-        await page.evaluate(() => { window.__rc2Hands.fixed.T = 0.6; });
+        await page.evaluate(() => { const w = window.__rc2Watch; if (w) Object.assign(w, { maxAge: 0, ageOver100: 0, maxFrame: 0, frames: 0, blocks: {} }); window.__rc2Hands.fixed.T = 0.6; });
         note.climb = [];
         for (let i = 0; i < 10; i++) { await page.waitForTimeout(250); const x = await state(page); note.climb.push({ alt: x.alt, motors: x.throttle?.centre?.arm ?? null, crashed: x.crashed }); }
         const s1 = await state(page);
+        note.gateWatch = await page.evaluate(() => { const w = window.__rc2Watch; const c = window.__gsfpv?.lastCrash; return { ...w, last: undefined, lastCrash: c ? JSON.stringify(c).slice(0, 300) : null }; });
         note.start = { alt: s0.alt, armed: s0.armed, throttle: s0.throttle, card: s0.card };
         note.up = { alt: s1.alt, armed: s1.armed, crashed: s1.crashed, throttle: s1.throttle, card: s1.card };
         // the climb: motors on (centred style: centre.arm 'on') and +1 m over the start within the 2.5 s. The drone is not

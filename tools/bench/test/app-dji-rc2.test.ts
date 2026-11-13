@@ -67,6 +67,8 @@ class FakeRc2 {
     /** the recorded frames still to replay (null: answer with `values`) */
     replay: Uint8Array[] | null = null;
     values: number[] = CENTRE.slice();
+    /** answers come this long after their request (0: at once) */
+    delayMs = 0;
     private queue: Uint8Array[] = [];
     private wake: (() => void) | null = null;
 
@@ -93,6 +95,10 @@ class FakeRc2 {
                 if (f[9] === 6) break;
             }
             if (chunk.length) this.queue.push(Uint8Array.from(chunk));
+        } else if (this.delayMs > 0) {
+            // a slow bus or a busy page: the answer comes this long after its request
+            const a = answer(req.seq, this.values);
+            setTimeout(() => { this.queue.push(a); this.wake?.(); }, this.delayMs);
         } else {
             this.queue.push(answer(req.seq, this.values));
         }
@@ -158,6 +164,22 @@ describe('the stick channel through HidSource', () => {
         expect(dev.requests).toBeGreaterThan(3);
         src.close();
     });
+    it('answers 130 ms late: requests do not wait for them, so frames still come within the 100 ms stale rule', async () => {
+        // the page probe (rc2-probe.mjs, 2026-11-13) saw a request-answer chain deliver a frame every 100-210 ms on a
+        // busy page and the arm gate cut the motors; here the lateness is the bus's, the effect on the frames the same
+        const dev = new FakeRc2();
+        dev.delayMs = 130;
+        const { rc, src } = await sourceOn(dev);
+        const at: number[] = [];
+        src.onFrame = () => at.push(performance.now());
+        await sleep(1000);
+        await src.close();
+        const gaps = at.slice(1).map((t, i) => t - at[i]!);
+        expect(at.length).toBeGreaterThan(15);
+        expect(Math.max(...gaps)).toBeLessThan(95);
+        expect(rc.replies).toBeGreaterThan(15);
+    });
+
     it('a refused claim: Rc2Error claim, the device closed again; control: the same device claims when allowed', async () => {
         const dev = new FakeRc2();
         dev.claimFails = true;

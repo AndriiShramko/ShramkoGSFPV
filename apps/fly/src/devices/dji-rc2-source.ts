@@ -24,8 +24,16 @@ export const RC2_STICK_IFACE = { cls: 0xff, sub: 0x43, proto: 0x01 } as const;
 export const RC2_NAME = 'DJI RC 2';
 /** one stick request every 10 ms: the reference's default rate of 100 Hz (rc2_joystick.py --rate); not measured here */
 export const RC2_POLL_MS = 10;
-/** a request with no answer after this is given up and the next one sent: estimate (stage 1 saw every answer within 100 ms) */
+/** a request with no answer after this is given up (its slot freed): estimate (stage 1 saw every answer within 100 ms) */
 export const RC2_REPLY_MS = 100;
+/**
+ * Requests out at once. The next request does not wait for the answer of the last one: on a busy page (measured with
+ * tools/bench/scripts/rc2-probe.mjs on 2026-11-13: about 20 frames a second, frames up to 180 ms) a request-answer
+ * chain that waits for each answer delivered one frame every 100-210 ms, the arm gate's stale rule (100 ms) cut the
+ * motors and the drone fell. With requests already out, each answer is one task of its own. 4 is an estimate: the
+ * reference sends one at a time and the controller's queue depth was not measured.
+ */
+export const RC2_INFLIGHT = 4;
 /** no stick answer this long after the claim: the controller is silent (estimate) */
 export const RC2_FIRST_MS = 1500;
 /** bytes asked for per bulk read: the endpoint's max packet size, 512 (measured) */
@@ -120,7 +128,10 @@ export class DjiRc2Device {
     private readonly wait: (ms: number) => Promise<void>;
     private ch: StickChannel | null = null;
     private gen = 0;
+    /** open()'s wait for the first stick answer */
     private answered: (() => void) | null = null;
+    /** when each request that is out was sent, oldest first */
+    private inflight: number[] = [];
 
     constructor(readonly usb: UsbDeviceLike, o: Rc2Options = {}) {
         this.vendorId = usb.vendorId;
@@ -180,6 +191,7 @@ export class DjiRc2Device {
         this.opened = false;
         this.gen++;
         this.answered = null;
+        this.inflight = [];
         this.hub?.removeEventListener?.('disconnect', this.onDisconnect);
         const ch = this.ch;
         this.ch = null;
@@ -208,6 +220,7 @@ export class DjiRc2Device {
                 const v = stickValues(f);
                 if (!v) continue;
                 this.replies++;
+                this.inflight.shift();
                 const a = this.answered;
                 this.answered = null;
                 a?.();
@@ -217,25 +230,30 @@ export class DjiRc2Device {
         }
     }
 
-    /** One request at a time: the next goes out once the answer came (or RC2_REPLY_MS passed), at most every RC2_POLL_MS. */
+    /**
+     * A request every RC2_POLL_MS while fewer than RC2_INFLIGHT are out; a request with no answer after RC2_REPLY_MS
+     * is given up (counted in unanswered) and frees its slot. Answers do not pace the requests (see RC2_INFLIGHT).
+     */
     private async askLoop(gen: number): Promise<void> {
         let seq = 1;
+        this.inflight = [];
         while (gen === this.gen && this.ch) {
             const t0 = this.clock();
-            const got = new Promise<boolean>((res) => {
-                const prev = this.answered;
-                this.answered = () => { prev?.(); res(true); };
-                void this.wait(RC2_REPLY_MS).then(() => res(false));
-            });
-            try {
-                await this.usb.transferOut(this.ch.epOut, stickRequest(seq));
-            } catch {
-                if (gen === this.gen) void this.stop('error', true);
-                return;
+            while (this.inflight.length && t0 - this.inflight[0]! >= RC2_REPLY_MS) {
+                this.inflight.shift();
+                this.unanswered++;
             }
-            seq = (seq + 1) & 0xffff;
-            if (!(await got)) this.unanswered++;
-            if (gen !== this.gen) return;
+            if (this.inflight.length < RC2_INFLIGHT) {
+                this.inflight.push(t0);
+                try {
+                    await this.usb.transferOut(this.ch.epOut, stickRequest(seq));
+                } catch {
+                    if (gen === this.gen) void this.stop('error', true);
+                    return;
+                }
+                seq = (seq + 1) & 0xffff;
+                if (gen !== this.gen) return;
+            }
             const left = RC2_POLL_MS - (this.clock() - t0);
             if (left > 0) await this.wait(left);
         }
