@@ -118,17 +118,20 @@ const startRec = (p: Page, what: 'own' | 'remote'): Promise<unknown> => p.evalua
     requestAnimationFrame(step); return 0; })()`);
 const stopRec = (p: Page): Promise<Sample[]> => p.evaluate('(() => { window.__roomsRecStop = true; return window.__roomsRec; })()') as Promise<Sample[]>;
 
-async function openA(page: Page, origin: string): Promise<{ page: Page; created: boolean; link: string | null; nick: string; slot: number | null }> {
+async function openA(page: Page, origin: string): Promise<{ page: Page; created: boolean; link: string | null; nick: string; slot: number | null; nickField: string | null; storedNick: string | null }> {
     await page.goto(`${origin}/en/fly/?scene=${SCENE}&simradio=scenario&nowarn=1`);
     await waitReady(page, 180000);
     await page.waitForTimeout(1500);
     await page.keyboard.press('Digit9');
     const btn = page.locator('[data-action=rooms-create]');
     await btn.waitFor({ timeout: 10000 });
+    // RP-2: the 9 that opened the panel must not be typed into the name field (the field shows the stored name)
+    const nickField = await page.inputValue('#rooms-nick').catch(() => null);
+    const storedNick = await hook<string | null>(page, 'return r.nick ?? null;');
     await btn.click();
     const created = await until(page, "return r.state === 'joined' && !!r.link;", 15000);
     const st = await hook<Any>(page, 'return { link: r.link, nick: r.nick, slot: r.slot };');
-    return { page, created, link: st.link, nick: st.nick, slot: st.slot };
+    return { page, created, link: st.link, nick: st.nick, slot: st.slot, nickField, storedNick };
 }
 
 async function openB(L: Launched, link: string): Promise<Page> {
@@ -156,7 +159,7 @@ async function main(): Promise<void> {
 
         // ---- A creates, B joins by the link
         const A = await openA(LA.page, rig.origin);
-        out.a = { created: A.created, link: A.link?.replace(rig.origin, '<origin>') ?? null, nick: A.nick, slot: A.slot };
+        out.a = { created: A.created, link: A.link?.replace(rig.origin, '<origin>') ?? null, nick: A.nick, slot: A.slot, nickField: A.nickField, storedNick: A.storedNick };
         if (!A.created || !A.link) throw new Error('A did not create a room');
         const B = await openB(LB, A.link);
         const bJoined = await until(B, "return r.state === 'joined' && r.remotes.length > 0;", 30000);
@@ -238,6 +241,7 @@ async function main(): Promise<void> {
         const f = out.follow;
         const checks = {
             bJoined,
+            nineNotTypedInName: A.nickField !== null && !A.nickField.endsWith('9') && (A.storedNick === null || A.nickField === A.storedNick),
             aMoved: f.aPathM >= MIN_PATH_M,
             rmsUnderBound: f.rmsM < RMS_BOUND_M && f.compared >= 100,
             bMembersHaveA: (bState.members as Any[]).some((m) => m.nick === A.nick),

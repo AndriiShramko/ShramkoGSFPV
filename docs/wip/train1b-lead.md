@@ -7,7 +7,7 @@ Condition for rooms-public: docs/wip/train1-lead.md line 8 reads "ROOMS LIVE CHE
 ## Status
 
 - [x] 1. fetch; main = origin/main 41372830, no tracked changes; docs/agent-map.md B18 clean (ASCII only), committed
-- [ ] 2. merge --no-ff mouse-free, then rooms-public (rc2 held back)
+- [x] 2. merge --no-ff mouse-free (40e0834c), then rooms-public (c38aa2c0), no conflicts; rc2 held back
 - [ ] 3. seams (mouse rule over the rooms screen, chords, gen-catalog --check, lanes' lead items)
 - [ ] 4. all gates once
 - [ ] 5. local release + probes under the GPU lock, evidence/2026-11-13/train1b/

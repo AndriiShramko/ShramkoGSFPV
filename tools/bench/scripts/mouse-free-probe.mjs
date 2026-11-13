@@ -18,7 +18,7 @@
 //   scenes      P, the menu's Scene item (the scenes screen)
 //   ceiling     P, Settings, the ceiling row's Show button (Settings closes and the ceiling panel opens in
 //               the same click: the owner's pattern, as the helper's Send this list)
-//   rooms       on a ?rooms=1 page: Shift+L (else P, Fly with others), the rooms panel
+//   rooms       key 9 (rooms are public; else Shift+L, else P, Fly with others), the rooms panel
 // Per window: the capture is held before, released a moment after the window opened, the cursor over
 // the window is not 'none', a click on a harmless control inside (a text field, a search box, a
 // disclosure, a heading) does not take the capture, and after closing a click on the view takes it again.
@@ -270,12 +270,15 @@ if (['helper', 'keyB', 'menu', 'pause', 'settings', 'radio', 'drones', 'scenes',
     await entry('courseMenu', { open: () => openMenuItem('pause.course'), noWindow: true });
 }
 if (runs('rooms')) {
-    await start('&rooms=1');
+    // train 1B: rooms are public (no ?rooms=1), key 9 opens the panel; Shift+L and the menu stay as fallbacks
+    await start('');
     await entry('rooms', {
         open: async () => {
-            await page.keyboard.press('Shift+KeyL');
-            const up = await page.waitForSelector('[data-testid=rooms-panel]', { timeout: 2500 }).then(() => true, () => false);
-            out.entries.rooms.openedBy = up ? 'Shift+L' : 'menu';
+            const panelUp = () => page.waitForSelector('[data-testid=rooms-panel]', { timeout: 2500 }).then(() => true, () => false);
+            await page.keyboard.press('Digit9');
+            let up = await panelUp();
+            out.entries.rooms.openedBy = up ? '9' : 'menu';
+            if (!up) { await page.keyboard.press('Shift+KeyL'); up = await panelUp(); if (up) out.entries.rooms.openedBy = 'Shift+L'; }
             if (!up) await openMenuItem('pause.rooms');
             await page.waitForSelector('[data-testid=rooms-panel]', { timeout: 8000 });
         },
