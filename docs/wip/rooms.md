@@ -61,7 +61,7 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   free port, killed in afterAll and on process exit).
 - Not done in R2: name tags, member list on screen, panel, Shift+L/Shift+O, speech, live region, near call, page probe;
   remote drones are a box primitive in the slot's colour (grey when frozen), not the drones3d model.
-### Stage R3: screens, speech, probe - IN PROGRESS (first worker stopped at a clean point)
+### Stage R3: screens, speech, probe - DONE (level 2 review left to the workflow)
 - [x] `rooms/nick.ts` (the server's rule, default `Pilot-NNNN`, key `gsfpv.rooms.nick`), `rooms/around.ts` (`relation`,
       `nearest`, `whoLine`, `NearWatch` 3 m / re-arm 5 m, estimates), `rooms/announce.ts` (`Announcer`: sayVia with
       `sonic.say.text` when `ctx.sonic`, else its own `role=status` region on `document.body`; keys into `said`, last 50),
@@ -76,18 +76,20 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
       tools/bench exit 0; NEG OK: rooms-around (around.ts, nick.ts absent), keymap.test (keymap.ts of train1-base),
       main-audit (url.ts of train1-base); in-test controls: mirrored x gives the other side, a turned drone turns the side,
       the server's refused names refused. Site `i18n-check.mjs` OK.
-- [ ] probe `tools/bench/src/rooms-serve.ts` (model `tools/bench/src/sonicrec-serve.ts`: build of apps/fly + `apps/rooms/rooms.py`
-      child, `/api/rooms` incl. the WebSocket upgrade piped to it) and `tools/bench/src/rooms-two-page.ts` (two headless
-      pages via `tools/bench/src/chrome.mjs` under ONE hold of `C:/dev/.gpu-lock`; read traps.md first; `/en` addresses):
-      A on `39e63ce9` with `?rooms=1` creates a room (click `[data-action=rooms-create]` in the panel opened by
-      `[data-action=pause.rooms]` or Shift+L, or POST /api/rooms from the page then `?room=`), B opens `__gsfpv.rooms.link`;
-      A flies a scripted bot path 20 s; pass: B `remotes` follows A's positions, RMS after aligning the 150 ms playout
-      < 0.15 m, B `members` has A's nick, B `said` has `rooms.say.joined`, Shift+O on B appends `rooms.say.who` (control:
-      after A leaves, `rooms.say.nobody`), A's trace hash = solo. Controls: B on another room id (no remote), rooms.py with
-      the relay off (needs a test flag in rooms.py, R1 has none yet), swapped axes on B's samples (RMS over bound).
-      Evidence `evidence/<date>/rooms-two-page.json`. How the bot flies: see `?tour=`/`?dash=` (BOT params in
-      packages/prefs/src/url.ts) and how `accept-fly.ts` drives a flight.
-- [ ] level 2 review (one independent agent) and fixes; then Status complete.
+- [x] probe `tools/bench/src/rooms-serve.ts` (dist/ through serve-csp.mjs, rooms.py child, one front server passing
+      `/api/rooms` HTTP and the WebSocket upgrade to rooms.py) and `tools/bench/src/rooms-two-page.ts`; `rooms.py --no-relay`
+      test switch (commits fe578b56, then the probe fixes; run: `node scripts/build-release.mjs`, then in tools/bench
+      `npx tsx src/rooms-two-page.ts`, about 3 min, it takes the GPU lock itself through gpu-lock.ts, once).
+      Result `evidence/2026-11-13/rooms-two-page.json`, pass true: A flew 83.48 m in 20 s (bot, 6 teleports = respawns);
+      B's remote vs A's own positions: best delay 180 ms, RMS 0.0631 m (bound 0.15), p50 0.0103, p90 0.0545, max 0.5092,
+      444 samples compared, teleport windows +-400 ms skipped (with them: RMS 0.292 m, max 3.77 m, see Findings);
+      B members hold A's nick, name tag on screen in 144 of 601 frames, A said `rooms.say.joined`, B said
+      `rooms.say.welcome`, Shift+O on B appended `rooms.say.who`, after A closed B said `rooms.say.left` and Shift+O
+      `rooms.say.nobody`; live region text present (27 chars). Controls fired: C in another room 0 of 599 frames with a
+      remote; relay off: A flew 19.05 m, B 0 of 240 frames with a remote; x and z swapped RMS 6.3652 m. Rooms service
+      tests after `--no-relay`: 42 OK. bench typecheck 0 errors.
+- [ ] level 2 review (one independent agent) and fixes: NOT done by this worker (it cannot start another agent); the
+      lead's workflow runs it. Stage R3 work is otherwise complete.
 
 ## Findings
 - Load (`evidence/2026-11-13/rooms-load.json`): 50 synthetic pilots in 7 rooms, 15 poses/s each, 100 s, rooms.py as a
@@ -100,6 +102,12 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
 - Snapshot rate measured by `test_relay.py` within 13.5-16.5 Hz; pose gate: 30/s kept 20/s, 70/s closed (1008).
 
 ## Decisions
+- R3 probe: the join line is said to the pilots already in the room (A hears `rooms.say.joined` when B comes); the one
+  who joins hears the welcome line (`rooms.say.welcome`, room name and count). The probe checks both.
+- R3 probe: "A's trace hash equals solo" is checked by `tools/bench/test/rooms-a6.test.ts` (fixed-step determinism run
+  with the pose reader attached); a real-time page flight has no fixed frame times to hash.
+- R3 probe: B flies on `?simradio=open` (without it the first-visit flow left Shift+O unrouted in run 1); A on
+  `?simradio=scenario`. Times are rAF timestamps (performance.now() in a late callback gave 0.32 m of timing noise).
 - Byte order little-endian for the pose and the snapshot (DataView littleEndian=true in R2).
 - Clock sync uses JSON `ping {t}` -> `pong {t, s}`: a browser cannot send WebSocket ping frames from script.
 - No `./data/rooms` volume in compose for train 1: rooms live in RAM (train1-plan section 7 "nothing under DATA_DIR").
@@ -121,6 +129,10 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   busybox wget inside the network, because nginx gets the locations only in the next release step.
 
 ## For the lead before the merge
+- R3: `apps/rooms/rooms.py --no-relay` is a test switch of the probe (poses taken, never relayed); compose does not pass it.
+- R3 finding for train 2: on a respawn of A, B's drone slides from the crash point to the spawn for about 0.4 s
+  (`interp.ts` Hermite across the jump; probe max error 3.77 m there). A pose flag "respawned" that restarts the track
+  would make it snap; not in train 1.
 - Deploy order step 3: `bash deploy/release-rooms.sh --compose` (first release: creates only `gsfpv-rooms`), then
   `release-nginx.sh`; `ship.sh` now allows `gsfpv-web,gsfpv-api,gsfpv-rooms` in the neighbour diff. Never run by the lane.
 - `deploy/README.md`: the new section "Rooms (train 1, lane rooms): flying together" sits directly before
@@ -157,6 +169,8 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   joins, leaves, Shift+O, the near call (through `sayVia` with the host line `sonic.say.text`).
 
 ## Not verified
+- R3 probe ran on a local rig (serve-csp.mjs + a Node front server), not behind the hub's nginx-proxy and our nginx; headless
+  Chrome on this PC only. Speech through the engine on a `?sonic=` page was not run (the probe checks the live region path).
 - Python 3.12 (the container's) is not on this machine; tests ran on Python 3.11.9. The code uses nothing newer than 3.10.
 - The container limits (64 MB, 0.25 CPU, pids 8) and alpine: the Docker engine is not running here.
 - nginx syntax (`nginx -t`) of the new zones and locations: no nginx binary here; checked only by the route tests.
@@ -181,3 +195,6 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   setting, main-audit's rule that only `app/env.ts` reads the query) and Write turning `\uXXXX` into letters again;
   cheaper: a stage this size split into two (screens and speech; probe), the plan naming those seams, and a pre-run of
   `packages/prefs/test` in R2 (it would have caught the `location.search` read there).
+- R3 (second worker): about 22 replies. Most turns: the probe itself (3 runs: timing noise from performance.now(),
+  Shift+O unrouted on a page with no radio, teleports in the RMS); cheaper: the plan naming rAF timestamps for page
+  traces and `?simradio=open` for a page that only listens.

@@ -1,0 +1,183 @@
+{
+  "name": "rooms-two-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "156.0.8078.80",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T01:43:50.235Z",
+    "gitHead": "40d93b8e",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "scene": "39e63ce9",
+  "recordS": 20,
+  "rmsBoundM": 0.15,
+  "gpuLock": "C:/dev/.gpu-lock",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "156.0.8078.80",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "a": {
+    "created": true,
+    "link": "<origin>/fly/?scene=39e63ce9&room=x5e7s9EPtHI",
+    "nick": "Pilot-0363",
+    "slot": 0
+  },
+  "b": {
+    "joined": true,
+    "url": "<origin>/en/fly/?scene=39e63ce9&room=x5e7s9EPtHI&simradio=open&nowarn=1"
+  },
+  "follow": {
+    "aSamples": 599,
+    "aPathM": 83.48,
+    "aSpeedP50": 1.49,
+    "aSpeedMax": 167.9,
+    "bFrames": 601,
+    "bWithRemote": 601,
+    "bestDelayMs": 180,
+    "rmsM": 0.0631,
+    "p50M": 0.0103,
+    "p90M": 0.0545,
+    "maxM": 0.5092,
+    "compared": 444,
+    "aTeleports": 6,
+    "skipMsEachSide": 400,
+    "withTeleports": {
+      "delayMs": 155,
+      "rmsM": 0.29222100002602264,
+      "n": 595,
+      "p50M": 0.0421,
+      "p90M": 0.1776,
+      "maxM": 3.7709
+    }
+  },
+  "bTagFrames": 144,
+  "bScreens": [],
+  "names": {
+    "aNick": "Pilot-0363",
+    "bMembers": [
+      {
+        "slot": 0,
+        "nick": "Pilot-0363"
+      },
+      {
+        "slot": 1,
+        "nick": "Pilot-0930"
+      }
+    ],
+    "bTags": [],
+    "aMembers": [
+      {
+        "slot": 0,
+        "nick": "Pilot-0363"
+      },
+      {
+        "slot": 1,
+        "nick": "Pilot-0930"
+      }
+    ]
+  },
+  "said": {
+    "a": [
+      "rooms.say.welcome",
+      "rooms.say.joined",
+      "rooms.say.near",
+      "rooms.say.near",
+      "rooms.say.near"
+    ],
+    "b": [
+      "rooms.say.welcome",
+      "rooms.say.near",
+      "rooms.say.near",
+      "rooms.say.near"
+    ]
+  },
+  "control1OtherRoom": {
+    "cRoom": "nIFV4feS_XA",
+    "sameRoom": false,
+    "cFramesWithRemote": 0,
+    "cFrames": 599,
+    "fired": true
+  },
+  "control3SwappedAxes": {
+    "rmsM": 6.3652,
+    "fired": true
+  },
+  "speech": {
+    "who": [
+      "rooms.say.who"
+    ],
+    "whoLast": "rooms.say.who",
+    "leftHeard": true,
+    "nobodyLast": "rooms.say.nobody",
+    "liveRegionChars": 27
+  },
+  "control2RelayOff": {
+    "created": true,
+    "joined": true,
+    "aPathM": 19.05,
+    "bFrames": 240,
+    "bFramesWithRemote": 0,
+    "bRemoteMovedM": 0,
+    "fired": true
+  },
+  "checks": {
+    "bJoined": true,
+    "aMoved": true,
+    "rmsUnderBound": true,
+    "bMembersHaveA": true,
+    "bTagShown": true,
+    "aSaidJoined": true,
+    "bSaidWelcome": true,
+    "whoOnB": true,
+    "leftOnB": true,
+    "nobodyOnB": true,
+    "control1": true,
+    "control2": true,
+    "control3": true
+  },
+  "pass": true,
+  "rigLogTail": [
+    "02:43:25 POST /api/e",
+    "02:43:26 POST /api/e",
+    "02:43:27 POST /api/e",
+    "02:43:28 POST /api/e",
+    "02:43:29 POST /api/e",
+    "02:43:29 POST /api/e",
+    "02:43:30 POST /api/e",
+    "02:43:31 POST /api/e",
+    "02:43:32 POST /api/e",
+    "02:43:32 POST /api/e",
+    "02:43:33 ws leave; pilots 2",
+    "02:43:33 ws leave; pilots 1"
+  ],
+  "console": {
+    "a": [
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "b": [
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 403 ()",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "error: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ]
+  }
+}
