@@ -29,7 +29,7 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
           <ul className="flex items-center gap-1">
             {ANCHORS.map((a) => (
               <li key={a}>
-                <a href={`${base}#${a}`} className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-muted hover:text-ink">
+                <a href={`${base}#${a}`} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-2 text-sm text-muted hover:text-ink">
                   {t(`anchors.${a}`)}
                 </a>
               </li>
