@@ -26,7 +26,7 @@ Stage S2-any-scan (fly THIS scan by sound):
 - [x] simulator: no walls in a free flight (voxelM null): bridge.say sonic.say.scanNoWalls (spoken and in the captions) with the way to build walls. Message only: WallsHook (apps/fly/src/walls.ts) exposes refine() but no bake(); the bake starts only from the walls box's own button (see For the lead) (this commit)
 - [x] tests: freeLessonOf moved into start-model.ts (pure; start.ts imports it); tools/bench/test/sonic-scan-free.test.ts loads: 4 passed; negative control (neg_control.py --cwd tools/bench, ref origin/main, start-model.ts scan-lesson.ts sonic-flight.ts): NEG OK by 'modeScanPage is not a function'. Earlier NEG OKs without --cwd were void (vitest path not found from the repo root). Start-screen DOM case for the button order: not written (S3 pass 2 commit)
 - [ ] packages/prefs/test/migrate.test.ts with a fliesBySound document (kept when true, dropped otherwise); pinned tables of docs/agent-map.md re-run (no setting or key added, so no table change expected)
-- [ ] probe: new case in tools/bench/src/sonic-int-review.ts on a local release (ports 5700-5719): scene 887f27aa by the new link, free scan flight running, a wall cue planned flying at a wall; screenshots U:/Temp/gsfpv-train2/shots/sound-start-first.png and sound-start-experienced.png
+- [ ] (next) probe: new case (r10) in tools/bench/src/sonic-int-review.ts. Notes for it: its PORT is the const 5420, make it read an env (PORT=5700); it takes C:/dev/.gpu-lock itself (lock()), do not wrap it; build first with node scripts/build-release.mjs (commit before, it may run over 2 min); the start screen's scan button is testid sonic-start-scan or sonic-start-scan-flier; wait for runner phase flying before N; check what __gsfpv.sonic(false) returns for the target and how a probe flies to a gate (r9 flyWithTurns uses keys only). Case: on a local release (ports 5700-5719): scene 887f27aa by the new link, free scan flight running, a wall cue planned flying at a wall; screenshots U:/Temp/gsfpv-train2/shots/sound-start-first.png and sound-start-experienced.png
 
 Stage S3-course-by-sound (sound2-plan 2.1, simulator only, no package change, no pin move):
 - [x] scan-lesson.ts scanCourseLesson(free, track): scan-free turned into goal timed-course (track.laps), layer target added, world.track = the course; lines are measured package lines (free-garden intro.2 with the hum cue, goal.1, hint.1, retry; scan-free pass). isScanCourse(lesson). buildScanLesson(track, view, { course }) calls ScanSonicWorld.setCourse(track) (world checkpoints = coursePath: respawn to the furthest path point passed); free-garden unchanged (commit of this line)
@@ -64,7 +64,8 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 
 - S3 keys a pilot uses, in order (for the note to the owner): 1. on a sighted page, Shift+G makes a course (optional), then the pause
   menu's Fly by Sound opens the sound page for this scan; 2. on the start screen, the scan's button (Enter); 3. the free flight says
-  "Press N for a course of gates in this scan"; N builds it (up to about half a minute, said); 4. "Course ready. Gates: n, laps: k.
+  "Press N for a course of gates in this scan"; N builds it (up to about half a minute, said). N while the intro is still
+  speaking only skips the intro (the runner's N), so a pilot who presses during the intro presses N once more in the flight (rig test); 4. "Course ready. Gates: n, laps: k.
   The hum leads to gate 1": follow the hum; each gate and each lap time are said; 5. N again: another course; I: where am I;
   Escape or X: the menu. No new letter: every free letter is a keyboard-flying key (W A S D Q E) and Shift is the mode's down.
 - S3: the course is a scan-free lesson in memory (id SCAN_FREE_ID, version 1) with goal timed-course; no package template
@@ -136,6 +137,8 @@ S2 pass 2 checks: tsc apps/fly, tools/bench, packages/prefs: no errors. tools/be
 - sonic-bump.test.ts 'walls, pillars...' case did not finish within its 5 s timeout here on either pin.
 
 ## Cost notes
+
+- S3 pass 2: about 8 of 30 turns went to finding how N reaches the host (runner next skips the intro first) and how the rig flies a scan without the scan's walls file (analyticCollision flat floor); the page probe did not fit. Earlier NEG OKs without --cwd were void: neg_control.py needs --cwd tools/bench for vitest there; a line about it in the skill or agent-map would have saved a pass.
 
 - S3: about 20 of 30 turns went to reading how the runner, the host, the course feature and the keymap fit (no free letter, course
   track hidden in a closure, runner target only after a step) before writing; a scout note naming these three facts would have saved half.
