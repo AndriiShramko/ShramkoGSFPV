@@ -82,10 +82,22 @@ export function titleIssue(title: string, old: string): 'same' | 'short' | 'long
     return null;
 }
 
+/** The /1 file's author of an admin version of a generated course: /1 has no kind admin, and a file by the generator must keep the
+ *  title "Course <x>" (tracks.py validator), so a renamed generated course is written as a person's file under this name. The
+ *  server's marks still say "edited by the admin" (meta.json) and keep the generator as the creator. */
+export const ADMIN_AUTHOR_NAME = 'Admin';
+
 /** The body of a rename: the latest version's file with the new title. The server gives it the next version number, its
- *  parent and time, and marks it edited by the admin; the creator is kept (tracks_admin.py version). */
+ *  parent and time, and marks it edited by the admin; the creator is kept (tracks_admin.py version). A generator's file becomes
+ *  a person's file (ADMIN_AUTHOR_NAME, generator null): browser run A2 found the server refusing a generator file with a free title. */
 export function renamed(file: Record<string, unknown>, title: string): Record<string, unknown> {
-    return { ...file, title: title.trim().normalize('NFC') };
+    const out: Record<string, unknown> = { ...file, title: title.trim().normalize('NFC') };
+    const author = file.author as { kind?: unknown } | null | undefined;
+    if (author?.kind !== 'person') {
+        out.author = { kind: 'person', name: ADMIN_AUTHOR_NAME };
+        out.generator = null;
+    }
+    return out;
 }
 
 /** The simulator's page with the course loaded and its editor open (course/link.ts serverOfLink, editOfLink). */

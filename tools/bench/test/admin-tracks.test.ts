@@ -3,7 +3,7 @@
 // DOM and no words); the tab itself is tried in a browser against the real routes on a local copy (tools/bench/src/tracks-admin.ts), the
 // routes in apps/api/tests/test_tracks_edit.py. Every claim has a control.
 import { describe, expect, it } from 'vitest';
-import { editorLink, isHidden, markParts, matches, renamed, sortRows, sortScenes, titleIssue, TRACK_ID } from '../../../apps/fly/src/admin/tracks/model';
+import { ADMIN_AUTHOR_NAME, editorLink, isHidden,markParts, matches, renamed, sortRows, sortScenes, titleIssue, TRACK_ID } from '../../../apps/fly/src/admin/tracks/model';
 import type { AdminTrackRow } from '../../../apps/fly/src/admin/tracks/model';
 import { editOfLink, seedOfLink, serverOfLink } from '../../../apps/fly/src/course/link';
 
@@ -94,10 +94,17 @@ describe('rename', () => {
     });
 
     it('sends the latest file with only the title changed, trimmed and in NFC', () => {
-        const file = { format: 'shramko-sonic-track/1', id: 'x', version: 2, title: 'Old', gates: [{ id: 'g1' }] };
+        const file = { format: 'shramko-sonic-track/1', id: 'x', version: 2, title: 'Old', author: { kind: 'person', name: 'Ann' }, generator: null, gates: [{ id: 'g1' }] };
         const out = renamed(file, '  Cafe\u0301 run ');
         expect(out).toEqual({ ...file, title: 'Caf\u00e9 run' });
         expect(file.title).toBe('Old');
+    });
+
+    it('a generated course renamed becomes a person\'s file (the server keeps generator titles to "Course <x>")', () => {
+        const file = { format: 'shramko-sonic-track/1', id: 'x', version: 1, title: 'Course 9ix', author: { kind: 'generator', name: 'gsfpv-course' }, generator: { name: 'gsfpv-course', seed: 1 }, parent: null };
+        const out = renamed(file, 'Hangar loop');
+        expect(out).toEqual({ ...file, title: 'Hangar loop', author: { kind: 'person', name: ADMIN_AUTHOR_NAME }, generator: null });
+        expect(file.author.kind).toBe('generator');
     });
 });
 

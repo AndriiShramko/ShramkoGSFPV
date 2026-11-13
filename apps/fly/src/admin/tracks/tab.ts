@@ -84,9 +84,10 @@ export class TracksTab {
             await this.loadRows();
         } catch (e) {
             this.fail(e);
-            this.renderList();
         } finally {
+            // the rows were drawn while busy (buttons disabled): draw them again enabled (browser run A2: Show stayed disabled after Hide)
             this.busy = false;
+            this.renderList();
         }
     }
 
