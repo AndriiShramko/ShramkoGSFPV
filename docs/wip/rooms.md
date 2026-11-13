@@ -247,6 +247,6 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
   traces and `?simradio=open` for a page that only listens.
 - Review fixes: about 35 replies for 9 findings. Most turns: the Edit tool refusing files read only through Bash (one
   extra Read each), neg_control failing on `pnpm` without `bash -c` (FileNotFoundError on Windows), and Edit turning
-  `ó` into a letter again; cheaper: Read every file to be edited with the Read tool in the first batch, and wrap
+  a backslash-u escape into a letter again; cheaper: Read every file to be edited with the Read tool in the first batch, and wrap
   node commands for neg_control as `bash -c "export PATH=...; pnpm ..."` from the start. The findings list arrived cut
   after RV-9: any finding after it was not seen.
