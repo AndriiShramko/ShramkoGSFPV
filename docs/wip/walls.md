@@ -7,7 +7,11 @@ Worktree C:/dev/gsfpv-voice, branch walls (from origin/main 2a5ac433). Ports 580
 Stage W1-any-size:
 - [x] 1. Measure the 13 catalogue scans (tools/bench/scripts/walls-scan-sizes.ts; output U:/Temp/gsfpv-train2/walls/sizes.json). Commit 9105c8c6.
 - [x] 3a. The ladder in the page: apps/fly/src/bake.ts planBase / bakeBase / outOfRoom / isRough, level option of bakeCollision; apps/fly/src/walls.ts runBase uses bakeBase; texts bake.stage.lighter, bake.doneRough, bake.noRoom in en/es/pl/ru (bake.doneCoarse removed). Unit tests tools/bench/test/walls-ladder.test.ts (9 tests) with negative control NEG OK. Commit 9105c8c6.
-- [ ] 2. Browser trials (headless Chrome, GPU lock) on Wroclaw 70b50d42 and Tunis 887f27aa: time, peak memory, solid cells per step; agreement of a lower-level bake with the shipped 5 cm walls of Tunis (share of solid cells in common at 5 cm). Candidates still to measure: coarser cell at level 0; lower LOD level (built); blocks; plain occupancy grid. Only the LOD ladder is built; the other three are not measured.
+- [x] Pass 2: probe tools/bench/scripts/walls-trials.ts (modes trials and ladder) and the hook __gsfpv.bakeTrial({level, voxelM}) in apps/fly/src/walls.ts (commit 12bcf69c). No walls line names Gaussians or a limit any more: bake.refused removed, bake.refine.refused reworded in en/es/pl/ru, refusedText of the base path gives bake.noRoom; accept-c.ts now expects a build under fake small limits, not a refusal (commit cc852ca1). apps/fly typecheck: no errors besides the known @gsfpv/tracks ones.
+- [~] 3b. Ladder run (local release f2cbecd3+12bcf69c, port 5800, U:/Temp/gsfpv-train2/walls/ladder.json): Forest Floor done and stops the drone; Wroclaw did NOT finish in 20 min (see Facts). Next: crop step below, rebuild, rerun ladder.
+- [ ] 3d. Crop before voxelising (new, from the Wroclaw run): drop the Gaussians outside a dense core bound (per-axis percentile of positions plus a margin) before writeVoxel, so the 13.5 km tree bound of Wroclaw becomes the city core. Then unit test the crop rule with a negative control, rebuild, rerun ladder for 70b50d42 and ab5efa0e.
+- [ ] 2. Browser trials (the probe's first run died on a tsx helper inside page.evaluate after the first bake; fixed in cc852ca1, not rerun). Command, under the GPU lock with serve-csp on 5800: node node_modules/tsx/dist/cli.mjs tools/bench/scripts/walls-trials.ts http://localhost:5800 U:/Temp/gsfpv-train2/walls/trials.json trials "887f27aa:2@5,3@5,1@5,0@5;70b50d42:2@5,3@5,1@5,0@20". Rerun only after 3d (else Wroclaw hangs again).
+- [ ] 2 (old text). Browser trials (headless Chrome, GPU lock) on Wroclaw 70b50d42 and Tunis 887f27aa: time, peak memory, solid cells per step; agreement of a lower-level bake with the shipped 5 cm walls of Tunis (share of solid cells in common at 5 cm). Candidates still to measure: coarser cell at level 0; lower LOD level (built); blocks; plain occupancy grid. Only the LOD ladder is built; the other three are not measured.
 - [ ] 3b. Page probe on a local release (port 5800): ?bake=1 on /en?scene=70b50d42 and on ab5efa0e, wait for walls state in-use, read __gsfpv.walls.lastBake (level, tried, rough, ms, peakJsHeapMb), then fly the drone into a wall and see it stop. Template: the scout probe U:/Temp/gsfpv-train2/probe-b1.mjs.
 - [ ] 3c. If the trials show a lower level gives walls too poor (agreement with Tunis shipped walls low), add blocks: split the level-0 Gaussians by space, bake each block, join the solid cells (needs an octree writer; packages/collision has only the reader as far as read).
 
@@ -37,6 +41,10 @@ walls-scan-sizes.ts, 2026-11-13, Gaussians by level of detail (millions), from t
 - File sizes in MB: the catalogue rows read have no size field (scout-B table: Lublin 6492, Slavotovo 2916, Opole Cathedral 1199, University of Opole 922, Laval 488, Forest Floor 53, Housefly 16).
 - First level that fits the 2 GB cap (planBase): Wroclaw 2, Tunis 2, Lublin 5, Opole Cathedral 2, University of Opole 1, Muster 2, Slavotovo 3, Laval 0, Forest Floor 0, Housefly 0.
 
+Ladder run, walls-trials.ts ladder, 2026-11-13, local release, headless system Chrome, ?bake=1 on /en:
+- ab5efa0e Forest Floor: built in 10.8 s (read 3.3 s, voxelise 7.4 s), level 0, 5 cm, tried 1, not rough, 4,019,918 Gaussians, 124,612 solid voxels, peak JS heap 602 MB. Drone into the walls: tunnelSelfTest(20 passes, 25 m/s) gave 20 contacts, 0 penetrations. Line shown: "Walls built in this browser: 0.1 million voxels in 11 s. Crashes are on."
+- 70b50d42 Wroclaw: scene ready in 5.1 s; the bake was still in "voxelising on your GPU" after 1200 s (probe timeout), no error, no walls. The ladder had picked level 2 (10.77 M Gaussians, within the memory gate), so the Gaussian count is not what holds it. Cause, inference not measured: the tree bound is 13536 x 12547 x 13512 m; at 5 cm that is 2.7e5 cells per axis and the voxeliser walks that space. A per-Gaussian position histogram of Wroclaw was not taken.
+
 ## The way
 
 Provisional (the browser trials of step 2 are not run): a ladder of levels of detail. planBase lists the finest level whose Gaussians pass the GPU-buffer and memory gates, then every coarser level. bakeBase tries them in order; a GPU out-of-memory or validation error, a RangeError (allocation), a gate refusal or the octree format limit takes the next step by itself; inside each step the existing 5 / 10 / 20 cm coarsening handles the octree format limit. The last step is tried even past the estimate. A single-file scan has one step and is tried even past the estimate. The pilot sees the stages in plain words ("taking a lighter way for this big scan"), and after a rough build one line "The walls are rough in this scan". Numbers of agreement with the shipped walls: not measured yet (step 2).
@@ -53,9 +61,12 @@ Provisional (the browser trials of step 2 are not run): a ladder of levels of de
 
 ## Not verified
 
+- accept-c.ts after its change (cc852ca1) was not run (a gate; the lead runs it). The ladder run used a release built before cc852ca1, so the reworded refine line and bake.noRoom on the base path were not seen in a page.
+
 - No headless Chrome run of the new ladder: whether level 2 of Wroclaw finishes, its time, peak memory and solid cells; the agreement with Tunis shipped walls.
 - The drone stopping at built walls in flight (no page probe yet).
 
 ## Cost notes
 
+- W1 worker 2: most turns went to waiting on a Wroclaw bake that never ended (20 min) and to a probe crash from a tsx helper inside page.evaluate; pass every in-page script as a string and give a big-scan bake a 5 minute cap per step in the probe.
 - W1 worker 1: most turns went to finding the voxel writer in the 3 MB splat-transform bundle (one grep printed a 3 MB line); grep that file only with cut -c1-150. A ready catalogue with content URLs and level counts would have saved four turns.
