@@ -133,6 +133,9 @@ class Service:
         self.joins = Window(JOINS_PER_MIN, 60, clock)
         self.t0 = time.monotonic()
         self.ticks = 0
+        # a test switch only (--no-relay, the two-page probe's control tools/bench/src/rooms-two-page.ts): poses are
+        # accepted and counted but never stored, so no snapshot carries them
+        self.relay = True
         self.server: asyncio.base_events.Server | None = None
         self._tasks: list[asyncio.Task] = []
 
@@ -359,7 +362,8 @@ class Service:
                     me.dropped += 1
                     continue
                 me.kept += 1
-                me.pose = data
+                if self.relay:
+                    me.pose = data
                 continue
             if len(data) > MAX_TEXT:
                 sock.close(W.TOO_BIG, "text")
@@ -410,6 +414,7 @@ def main() -> None:
 
     async def run() -> None:
         svc = Service()
+        svc.relay = "--no-relay" not in sys.argv
         got = await svc.start(host, port)
         log(f"gsfpv-rooms {P.VERSION} on port {got}")
         await asyncio.Event().wait()
