@@ -1089,7 +1089,7 @@
         "text": [
           "Każdy przelot przez obręcz lub bramkę daje jasną nutę, a nuty wznoszą się jak mała piosenka. Na końcu etapu długiej trasy głos mówi, który etap zaliczyłeś.",
           "Przeleć przez obręcz od tyłu, a zabrzmią trzy opadające nuty: przelot się nie liczy, a głos poprosi, żebyś wrócił i przeleciał ją od przodu.",
-          "Leć po trasie z powrotem dłużej niż sekundę, a usłyszysz dwie opadające pary nut i „Lecisz w złą stronę. Zawróć.”"
+          "Leć po trasie z powrotem nosem do przodu dłużej niż sekundę, a usłyszysz dwie opadające pary nut i „Lecisz w złą stronę. Zawróć.” Cofanie się ani przesuwanie w bok nigdy nie jest uznawane za lot w złą stronę."
         ]
       },
       "keys": {
@@ -1117,7 +1117,7 @@
     "how": {
       "title": "Jak w ogóle można latać na słuch?",
       "text": "Symulator zamienia to, co widzi kamera drona, w dźwięk. W słuchawkach słychać, gdzie jest ściana, gdzie wolna droga i gdzie następna obręcz.",
-      "items": ["Ścianę słychać z wyprzedzeniem. Dźwięk zależy od tego, za ile sekund byś w nią uderzył, a nie od metrów.", "Wysokość to ton, który płynnie się przesuwa. Docelowa wysokość ma swoją nutę: kiedy tony się zgrają, jesteś na miejscu.", "Wolną drogę oznacza krótki dzwonek. Lecisz w złą stronę: aplikacja to powie.", "To, co ważne, brzmi ze swojej strony, z lewej albo z prawej. Dlatego potrzebne są słuchawki.", "Pod podpowiedziami słychać silnik. Jego głośność zmienisz w ustawieniach.", "Lekcje prowadzi głos: 28 lekcji, od zawisu przez ściany i korytarze po sześć tuneli i obręcze na trzech wysokościach. Są małe pokoje dla mikrodrona i lekcja w prawdziwym miejscu zapisanym jako 3DGS (Gaussian splat): Winter Garden.", "Menu i ustawienia też mówią: Escape otwiera mówione menu lekcji.", "Dla słabowidzących pokoje lekcji są narysowane w mocnym kontraście i jest duży wskaźnik horyzontu. Dla głuchych pilotów jest panel, na którym widać podpowiedzi dźwiękowe."]
+      "items": ["Ścianę słychać z wyprzedzeniem. Dźwięk zależy od tego, za ile sekund byś w nią uderzył, a nie od metrów.", "Wysokość to ton, który płynnie się przesuwa. Docelowa wysokość ma swoją nutę: kiedy tony się zgrają, jesteś na miejscu.", "Wolną drogę oznacza krótki dzwonek. Lecisz w złą stronę: aplikacja to powie.", "To, co ważne, brzmi ze swojej strony, z lewej albo z prawej. Dlatego potrzebne są słuchawki.", "Na początku silnika nie słychać, słyszysz tylko podpowiedzi. Dźwięk silnika włączysz w ustawieniach, tam też zmienisz jego głośność.", "Lekcje prowadzi głos: 28 lekcji, od zawisu przez ściany i korytarze po sześć tuneli i obręcze na trzech wysokościach. Są małe pokoje dla mikrodrona i lekcja w prawdziwym miejscu zapisanym jako 3DGS (Gaussian splat): Winter Garden.", "Menu i ustawienia też mówią: Escape otwiera mówione menu lekcji.", "Dla słabowidzących pokoje lekcji są narysowane w mocnym kontraście i jest duży wskaźnik horyzontu. Dla głuchych pilotów jest panel, na którym widać podpowiedzi dźwiękowe."]
     },
     "need": {
       "title": "Czego potrzebuję?",

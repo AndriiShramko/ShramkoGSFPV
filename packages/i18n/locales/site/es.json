@@ -1089,7 +1089,7 @@
         "text": [
           "Cada aro o puerta que pasas da una nota brillante, y las notas suben como una cancioncilla. Al final de una etapa de un circuito largo, la voz dice qué etapa has superado.",
           "Si cruzas un aro por detrás suenan tres notas que bajan: no cuenta, y la voz te pide que vuelvas y lo cruces por delante.",
-          "Si recorres el circuito en sentido contrario durante más de un segundo, oyes dos pares de notas que bajan y «Vas en sentido contrario. Da la vuelta.»"
+          "Si recorres el circuito en sentido contrario con el morro por delante durante más de un segundo, oyes dos pares de notas que bajan y «Vas en sentido contrario. Da la vuelta.» Retroceder o deslizarte de lado nunca cuenta como ir en sentido contrario."
         ]
       },
       "keys": {
@@ -1117,7 +1117,7 @@
     "how": {
       "title": "¿Cómo se puede volar de oído?",
       "text": "El simulador convierte en sonido lo que ve la cámara del dron. En los auriculares oyes dónde hay una pared, dónde el paso está libre y dónde está el siguiente aro.",
-      "items": ["La pared se oye con antelación. El sonido depende de cuántos segundos faltan para chocar, no de los metros.", "La altura es un tono que se desliza. La altura que buscas tiene su propia nota: cuando los tonos coinciden, has llegado.", "Un timbre corto marca un paso libre. Si vas en la dirección equivocada, la aplicación te lo dice.", "Lo importante suena desde su lado, a la izquierda o a la derecha. Por eso hacen falta auriculares.", "Bajo las indicaciones se oye el motor. Su volumen se ajusta en la configuración.", "Una voz guía las lecciones: 28 lecciones, desde mantenerse en el aire hasta paredes, pasillos, seis túneles y aros a tres alturas. Hay salas pequeñas para un microdron y una lección en un lugar real capturado como 3DGS (un Gaussian splat): Winter Garden.", "Los menús y la configuración también hablan: Escape abre un menú de la lección por voz.", "Para baja visión, las salas de las lecciones se dibujan con mucho contraste y hay un indicador de horizonte grande. Para pilotos sordos, un panel muestra las indicaciones sonoras."]
+      "items": ["La pared se oye con antelación. El sonido depende de cuántos segundos faltan para chocar, no de los metros.", "La altura es un tono que se desliza. La altura que buscas tiene su propia nota: cuando los tonos coinciden, has llegado.", "Un timbre corto marca un paso libre. Si vas en la dirección equivocada, la aplicación te lo dice.", "Lo importante suena desde su lado, a la izquierda o a la derecha. Por eso hacen falta auriculares.", "Al principio el motor no suena, así que solo oyes las indicaciones. Su sonido se activa y su volumen se ajusta en la configuración.", "Una voz guía las lecciones: 28 lecciones, desde mantenerse en el aire hasta paredes, pasillos, seis túneles y aros a tres alturas. Hay salas pequeñas para un microdron y una lección en un lugar real capturado como 3DGS (un Gaussian splat): Winter Garden.", "Los menús y la configuración también hablan: Escape abre un menú de la lección por voz.", "Para baja visión, las salas de las lecciones se dibujan con mucho contraste y hay un indicador de horizonte grande. Para pilotos sordos, un panel muestra las indicaciones sonoras."]
     },
     "need": {
       "title": "¿Qué necesito?",

@@ -117,10 +117,10 @@ for (const l of LOCALES) {
       const more = hear.slice(hear.indexOf(`>${S.fig.moreTitle}<`));
       const li = [...more.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].length;
       ok(`${l}/sound/: "What else there is" lists how.items 2, 4, 5, 6, 7 and not 0, 1, 3 (those are in the figures)`, li === 5 && [2, 4, 5, 6, 7].every((i) => more.includes(`>${S.how.items[i]}<`)) && [0, 1, 3].every((i) => !snd.includes(`>${S.how.items[i]}<`)), `${li} items`);
-      // review PG-1: at the recorded packages/sonic-fpv (378cc50) wrong way is judged by velocity alone, so the gates figure draws one
-      // wrong-way panel (one speech bubble: the told case) and no "backing up, no voice" panel
+      // review PG-1, train 2 integration: the recorded packages/sonic-fpv now judges wrong way nose-first (package 4c2ac75), so the
+      // gates figure draws two lower panels again (two speech bubbles: flying back nose-first is told, backing up is not)
       const gates = snd.match(/<svg[^>]*class="sound-fig[^"]*"[^>]*>(?:(?!<\/svg>)[\s\S])*?<\/svg>/g)?.find((s, i) => figs[i] === "gates") ?? "";
-      ok(`${l}/sound/: the gates figure has one wrong-way panel (one speech bubble)`, (gates.match(/h52 a5 5/g) ?? []).length === 1, `${(gates.match(/h52 a5 5/g) ?? []).length} bubbles`);
+      ok(`${l}/sound/: the gates figure has two wrong-way panels (two speech bubbles: told nose-first, not told backing up)`, (gates.match(/h52 a5 5/g) ?? []).length === 2, `${(gates.match(/h52 a5 5/g) ?? []).length} bubbles`);
     }
     if (l === "en") {
       // review PG-7: the hum figure's "octave higher" wave is off by 84 % of the cycle, while the nose (sf-turn, ease-in-out from 0 deg

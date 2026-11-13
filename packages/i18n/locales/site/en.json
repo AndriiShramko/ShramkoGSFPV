@@ -1089,7 +1089,7 @@
         "text": [
           "Each ring or gate you pass gives a bright note, and the notes climb like a little song. At the end of a stage of a long track, the voice says which stage you passed.",
           "Fly through a ring from behind and three notes fall: it does not count, and the voice asks you to go back and fly it from the front.",
-          "Fly back along the track for more than a second and you hear two falling pairs of notes and “You are flying back. Turn around.”"
+          "Fly back along the track nose-first for more than a second and you hear two falling pairs of notes and “You are flying back. Turn around.” Backing up or sliding aside is never called the wrong way."
         ]
       },
       "keys": {
@@ -1117,7 +1117,7 @@
     "how": {
       "title": "How can one fly by sound at all?",
       "text": "The simulator turns what the drone's camera sees into sound. In your headphones you hear where a wall is, where the way is open and where the next ring is.",
-      "items": ["You hear a wall early. The sound depends on how many seconds are left before you would hit it, not on metres.", "Height is a tone that glides. The height you need has its own note: when the tones match, you are there.", "A short chime marks an open way. If you fly the wrong way, the app tells you.", "What matters sounds from its own side, left or right. That is why you need headphones.", "The motor hums under the cues. You set its volume in the settings.", "A voice leads the lessons: 28 lessons, from hovering to walls, corridors, six tunnels and rings at three heights. There are small rooms for a micro drone and a lesson in a real place captured as 3DGS (a Gaussian splat): Winter Garden.", "The menus and settings speak too: Escape opens a spoken lesson menu.", "For low vision, the lesson rooms are drawn in strong contrast and there is a large horizon display. For deaf pilots, a panel shows the sound cues."]
+      "items": ["You hear a wall early. The sound depends on how many seconds are left before you would hit it, not on metres.", "Height is a tone that glides. The height you need has its own note: when the tones match, you are there.", "A short chime marks an open way. If you fly the wrong way, the app tells you.", "What matters sounds from its own side, left or right. That is why you need headphones.", "The motor is silent at first, so you hear only the cues. You can switch its sound on and set its volume in the settings.", "A voice leads the lessons: 28 lessons, from hovering to walls, corridors, six tunnels and rings at three heights. There are small rooms for a micro drone and a lesson in a real place captured as 3DGS (a Gaussian splat): Winter Garden.", "The menus and settings speak too: Escape opens a spoken lesson menu.", "For low vision, the lesson rooms are drawn in strong contrast and there is a large horizon display. For deaf pilots, a panel shows the sound cues."]
     },
     "need": {
       "title": "What do I need?",
