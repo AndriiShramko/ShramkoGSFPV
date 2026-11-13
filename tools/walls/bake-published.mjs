@@ -22,6 +22,25 @@ export const CROP_TAIL = 0.005;
 /** margin added on each side, as a share of the core span, plus CROP_PAD_M metres (a setting, not measured) */
 export const CROP_MARGIN = 0.15;
 export const CROP_PAD_M = 5;
+/** The voxeliser puts every Gaussian into one GPU buffer: 16 floats each (splat-transform 3.6.4
+ *  GpuVoxelization.FLOATS_PER_GAUSSIAN), and Dawn refuses a buffer over 2147483648 bytes (measured:
+ *  Wroclaw 70b50d42 level 0, "Buffer size (2699252224) exceeds the max buffer size limit (2147483648)"). */
+export const BYTES_PER_GAUSSIAN = 16 * 4;
+export const GPU_BUFFER_MAX = 2147483648;
+
+/** The finest LOD level from `start` whose kept Gaussians fit the voxeliser's buffer (the coarsest level if none does). */
+export function levelThatFits(counts, start = 0, kept = 1, max = GPU_BUFFER_MAX) {
+    const last = counts.length - 1;
+    for (let l = Math.min(start, last); l <= last; l++) {
+        if (counts[l] == null || counts[l] * kept * BYTES_PER_GAUSSIAN <= max) return l;
+    }
+    return last;
+}
+
+/** The CLI failed on the Gaussian buffer: a coarser voxel cannot help, a lower LOD level can. */
+export function isGaussianBufferError(text) {
+    return /uploadAllGaussians|exceeds the max buffer size/.test(text);
+}
 
 /** The box around the dense core of a set of positions: per axis the CROP_TAIL quantiles plus a margin. */
 export function cropBox(xs, ys, zs, tail = CROP_TAIL, margin = CROP_MARGIN, pad = CROP_PAD_M) {
@@ -91,25 +110,33 @@ async function bakeOne(id, outDir, o) {
     if (c.kind === 'lod-meta') {
         const meta = await (await fetch(c.url)).json();
         const levels = meta.lodLevels ?? 1;
-        row.level = Math.min(o.level, levels - 1);
-        row.gaussians = meta.counts?.[row.level] ?? null;
+        const counts = Array.from({ length: levels }, (_, l) => meta.counts?.[l] ?? null);
         // the dense core from a coarse level (every level halves the one above; the shape is the same)
         row.boxFromLevel = Math.min(levels - 1, 4);
         const p = await coarsePositions(c.url, c.kind, row.boxFromLevel);
         const box = cropBox(p.xs, p.ys, p.zs);
         row.box = { min: box.min.map((x) => +x.toFixed(2)), max: box.max.map((x) => +x.toFixed(2)) };
         row.keptShareAtBoxLevel = +keptShare(p.xs, p.ys, p.zs, box).toFixed(5);
-        args.splice(3, 0, '-L', String(row.level));
+        row.levelAsked = Math.min(o.level, levels - 1);
+        row.level = levelThatFits(counts, row.levelAsked, row.keptShareAtBoxLevel);
+        row.gaussians = counts[row.level];
+        row.levels = levels;
         args.push('-B', [...row.box.min, ...row.box.max].join(','));
     }
-    // the same ladder as the page: 5 cm, then coarser when the octree format is full
-    for (const v of [o.voxel, o.voxel * 2, o.voxel * 4]) {
-        const r = runCli([...args, join(dir, 'scene.voxel.json'), '--voxel-size', String(v)], join(dir, `cli-${Math.round(v * 1000)}mm.log`));
+    // the same ladder as the page: 5 cm, then coarser when the octree format is full;
+    // a Gaussian buffer over the GPU limit steps one LOD level down at the same cell size
+    const vs = [o.voxel, o.voxel * 2, o.voxel * 4];
+    for (let i = 0; i < vs.length;) {
+        const v = vs[i];
+        const cli = row.level == null ? args : [...args.slice(0, 3), '-L', String(row.level), ...args.slice(3)];
+        const r = runCli([...cli, join(dir, 'scene.voxel.json'), '--voxel-size', String(v)], join(dir, `cli-L${row.level ?? 0}-${Math.round(v * 1000)}mm.log`));
         row.voxelM = v;
         if (r.code === 0 && existsSync(join(dir, 'scene.voxel.bin'))) { row.ok = true; break; }
         row.ok = false;
         row.reason = (r.text.split('\n').find((l) => /error|Error/.test(l)) ?? `exit ${r.code}`).trim().slice(0, 300);
+        if (isGaussianBufferError(r.text) && row.level != null && row.level < row.levels - 1) { row.level++; row.gaussians = null; continue; }
         if (!/block|octree|exceed/i.test(r.text)) break;
+        i++;
     }
     if (row.ok) {
         const json = readFileSync(join(dir, 'scene.voxel.json'));
