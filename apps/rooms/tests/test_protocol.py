@@ -101,7 +101,8 @@ class RoomRequest(unittest.TestCase):
                              "listed": True, "course": "g1.12345", "shared": {"size": 2.5, "walls": "on", "wind": "off"}})
         r = P.room_request({"scene": {"id": "39e63ce9"}, "name": "<script>", "listed": "yes", "course": "a b",
                             "shared": {"size": 1000}})
-        self.assertEqual(r, {"scene": {"id": "39e63ce9"}, "name": "", "listed": False})
+        self.assertRegex(r.pop("name"), r"^Room-\d{4}$")  # a refused name falls back (review RV-4)
+        self.assertEqual(r, {"scene": {"id": "39e63ce9"}, "listed": False})
 
     def test_the_port_answers_as_the_api_does(self):
         """protocol.shared_settings and link_render are a port of apps/api/server.py: the same answers on the same input."""

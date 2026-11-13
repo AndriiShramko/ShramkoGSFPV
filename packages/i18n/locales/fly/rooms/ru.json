@@ -10,7 +10,7 @@
   "rooms.nick.bad": "Это имя нельзя использовать. Возьмите от 2 до 20 букв или цифр.",
   "rooms.create.title": "Создать комнату на этом скане",
   "rooms.create.name": "Название комнаты",
-  "rooms.create.namePlaceholder": "Комната: {nick}",
+  "rooms.create.namePlaceholder": "Комната пилота {nick}",
   "rooms.create.listed": "Показывать в списке открытых комнат",
   "rooms.create.button": "Создать комнату",
   "rooms.create.failed": "Комната не создана ({why}).",

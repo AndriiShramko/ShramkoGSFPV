@@ -10,7 +10,7 @@
   "rooms.nick.bad": "Tej nazwy nie można użyć. Użyj od 2 do 20 liter lub cyfr.",
   "rooms.create.title": "Utwórz pokój na tym skanie",
   "rooms.create.name": "Nazwa pokoju",
-  "rooms.create.namePlaceholder": "Pokój: {nick}",
+  "rooms.create.namePlaceholder": "Pokój pilota {nick}",
   "rooms.create.listed": "Pokaż go na liście otwartych pokoi",
   "rooms.create.button": "Utwórz pokój",
   "rooms.create.failed": "Pokój nie został utworzony ({why}).",

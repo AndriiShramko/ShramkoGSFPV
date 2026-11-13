@@ -89,8 +89,28 @@ design `docs/wip/rooms-plan.md` (2.1-2.5, 2.9, 4A). Requirements R25, R26, R28 a
       remote; relay off: A flew 19.05 m, B 0 of 240 frames with a remote; x and z swapped RMS 6.3652 m. Rooms service
       tests after `--no-relay`: 42 OK. bench typecheck 0 errors.
 
-**Lane level (not a stage item):** level 2 review (one independent agent) and its fixes are still to come; the stage
-workers cannot start another agent, the lead's workflow runs it.
+**Lane level (not a stage item):** level 2 review (one independent agent) done; its fixes below.
+
+### R review fixes (level 2 review, findings RV-1..RV-9)
+- [x] server findings (commit: see the line after the next commit; `python -X utf8 -m unittest discover -s apps/rooms/tests`
+      53 OK, nginx rooms 8 OK; every NEG below by `neg_control.py --ref <lane head before the fixes>`):
+  - RV-2 (major) fixed: `PoseGate.take(pose)` counts every message toward the 60/s close; junk binary and unknown text
+    are no longer answered; `_send` closes a socket above `DROP_ABOVE` (rooms without poses too). `test_review.Floods`
+    (ping flood 1008, junk flood 1008 with no error frame, non-reader in a pose-less room closed under DROP_ABOVE+200 B
+    with the rate limit off): NEG OK (rooms.py, failures=3).
+  - RV-3 (major) fixed on our side: nginx rooms HTTP location passes `$request_uri`; `test_nginx_rooms` refuses `$uri`:
+    NEG OK (nginx.conf). Service refuses targets outside `/api/rooms(/[A-Za-z0-9_-]{1,16})?` with 404 `route`:
+    `test_review.Targets` NEG OK. The nginx half (live %0d%0a) is a level 3 probe for the lead.
+  - RV-4 (major) fixed: pl/ru placeholders without the colon (`Pokój pilota {nick}`, ru likewise); server falls back
+    to `Room-NNNN`. `test_every_languages...` NEG OK on the two locale files alone; `test_a_room_never...` NEG OK.
+  - RV-5 (major) fixed: 10 an hour AND 20 a day per address (estimate), no shared daily count (MAX_ROOMS bounds memory).
+    `test_review.Budget` (24 h at full rate, a second address still creates): NEG OK.
+  - RV-7 (minor) fixed: `Window.prune()` drops empty keys, `sweep()` prunes all three windows. `Forget`: NEG OK.
+  - RV-8 (minor) fixed: room names through the blocklist (`clean_name`); nickname suffix loops until unique.
+    `test_nicknames_in_one_room...` NEG OK; the blocklist half is covered by `test_a_room_never...`.
+  - RV-9 (minor) fixed: RecursionError caught in `_create` and `_json`; `_conn` wraps the handler and logs one line.
+    `DeepJson` NEG OK.
+- [ ] client findings RV-1 (keys), RV-6 (speech flood)
 
 ## Findings
 - Load (`evidence/2026-11-13/rooms-load.json`): 50 synthetic pilots in 7 rooms, 15 poses/s each, 100 s, rooms.py as a

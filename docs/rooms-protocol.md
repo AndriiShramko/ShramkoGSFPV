@@ -46,12 +46,17 @@ sum of its fragments) is at most 65536 bytes, else close 1009. Text messages are
 5. Clock: the client sends `{type: "ping", t: <its ms>}`, the server answers `{type: "pong", t, s: <serverMs>}`.
    Use it every 20 s at least (the server closes a socket silent for 70 s; nginx's read timeout is 75 s) and, for the
    clock offset, a few times at the start (median of 8, rooms-plan.md 2.2). WebSocket ping frames are also answered.
-6. `{type: "leave"}` closes with 1000. Any other type gets `{type: "error", code: "unknown"}` and the socket stays.
+6. `{type: "leave"}` closes with 1000. Any other type, and a binary message that is not a pose, gets no answer; it
+   counts toward the close limit like every message (review RV-2).
 
 Nickname rule (`protocol.clean_nick`, rooms-plan.md 2.5): NFC, trimmed, runs of spaces made one, 2-20 characters, only
 Unicode letters and digits and ` -_.'`, at least one letter or digit, no `://` or `www.`, not a name that pretends to
 speak for the site (admin, administrator, moderator, gsfpv, shramko, system, official; without case, spaces and
-punctuation). A nickname that fails becomes `Pilot-NNNN`; one already in the room gets `-<slot+1>`.
+punctuation). A nickname that fails becomes `Pilot-NNNN`; one already in the room gets `-<n>` from `slot+1` upward
+until it is unique. A room name (`protocol.clean_name`) takes the same rule at 2-40 characters with the same blocklist;
+a missing or refused name becomes `Room-NNNN`, so no room is listed without a name (review RV-4, RV-8).
+The service answers 404 `route` to a request target other than `/api/rooms` or `/api/rooms/<1-16 of A-Za-z0-9_->`;
+nginx passes the raw `$request_uri`, never the decoded `$uri` (review RV-3).
 
 Host: the member who sent the right `hostKey`; while nobody did, the oldest member. When the host leaves, the oldest
 member takes the role (`hostSlot` in `left`). Train 1 gives the host no powers yet.
@@ -87,11 +92,12 @@ Each number is in `apps/rooms/rooms.py` with its source; "measured" names the te
 | Members per temporary room | 8 | plan 2.3; `test_relay.py` fills it and refuses the 9th |
 | Room tick | 15 Hz | plan 2.2; `test_relay.py` measures 13.5-16.5 |
 | Poses kept per socket | 20/s, the rest dropped | plan 2.5; `test_rates.py` (30/s -> 20/s; control without the limit keeps all) |
-| Poses that close a socket | above 60/s, close 1008 | plan 2.5; `test_rates.py` (70/s closes, 59/s does not) |
+| Messages that close a socket | above 60/s of any kind (poses, text, junk), close 1008 | plan 2.5; `test_rates.py` (70/s closes, 59/s does not), `test_review.py` (a ping or junk flood closes) |
 | Unsent bytes before snapshots are skipped | 16 KB | plan 2.2; `test_backpressure.py` (peak 16400 B; control without the cap 1.57 MB) |
-| Unsent bytes before a socket is closed | 256 KB | estimate |
+| Unsent bytes before a socket is closed | 256 KB, checked at every snapshot and every control message | estimate; `test_review.py` (a member that never reads in a room without poses is closed) |
 | Empty room closes after | 600 s (checked every 30 s, estimate) | plan 2.3; `test_relay.py` with a fake clock |
-| Creates | 10 an hour per address, 200 a day in all | plan 2.5; `test_relay.py` (the 11th gets 429) |
+| Creates | 10 an hour and 20 a day per address; no shared daily count (open rooms bound it) | plan 2.5, the day's share an estimate (review RV-5); `test_relay.py` (the 11th gets 429), `test_review.py` (a day at the full rate leaves creates for another address) |
+| Addresses kept for the limits | only while one of their events is inside the window (pruned every 30 s) | review RV-7; `test_review.py` |
 | Joins | 20 a minute per address (counted at the upgrade) | plan 2.5 |
 | Open rooms | 200 | estimate |
 | Hello within / silent socket closed after | 10 s / 70 s | estimates |

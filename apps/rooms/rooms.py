@@ -17,6 +17,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 import sys
 import time
@@ -36,7 +37,12 @@ DROP_ABOVE = 256 * 1024        # estimate: a reader this far behind is closed (c
 POSE_KEEP_PER_S = 20           # rooms-plan.md 2.5: poses above 20/s from one socket are dropped (tests/test_rates.py)
 POSE_CLOSE_PER_S = 60          # rooms-plan.md 2.5: a socket sending more than 60/s is closed (tests/test_rates.py)
 CREATES_PER_HOUR = 10          # rooms-plan.md 2.5, per client address
-CREATES_PER_DAY = 200          # rooms-plan.md 2.5, all clients together
+# estimate (review RV-5): an address's share of a day. rooms-plan.md 2.5 had 200 a day for all clients together, which one
+# address at 10 an hour (240 a day) could hold alone; MAX_ROOMS bounds the memory instead (tests/test_review.py)
+CREATES_PER_DAY_EACH = 20
+# review RV-2: the close limit POSE_CLOSE_PER_S counts every message of a socket (text and junk too, PoseGate.take);
+# the client sends 15 poses a second and a ping every 20 s, so it stays far below (tests/test_review.py)
+PATH_RE = re.compile(r"/api/rooms(/[A-Za-z0-9_-]{1,16})?")  # review RV-3: any other target is refused before routing
 JOINS_PER_MIN = 20             # rooms-plan.md 2.5, per client address (counted at the upgrade)
 MAX_ROOMS = 200                # estimate: open rooms at once (the day's create limit bounds it anyway)
 HELLO_TIMEOUT_S = 10           # estimate: the first message must come this soon after the upgrade
@@ -68,16 +74,28 @@ class Window:
         q.append(now)
         return True
 
+    def prune(self) -> int:
+        """Forget every key whose events all left the window (review RV-7: an address is not kept longer); keys left."""
+        now = self.clock()
+        for key in list(self.q):
+            q = self.q[key]
+            while q and now - q[0] > self.window:
+                q.popleft()
+            if not q:
+                del self.q[key]
+        return len(self.q)
+
 
 class PoseGate:
-    """Per socket: keep at most `keep` poses a second, close above `close` a second (sliding 1 s windows)."""
+    """Per socket: keep at most `keep` poses a second, close above `close` messages a second of any kind (sliding 1 s
+    windows). `take(pose=False)` counts a text or junk message: it is never kept, it only counts toward the close."""
 
     def __init__(self, keep: float = POSE_KEEP_PER_S, close: float = POSE_CLOSE_PER_S, clock=time.monotonic):
         self.keep, self.close, self.clock = keep, close, clock
         self.seen: deque = deque()
         self.kept: deque = deque()
 
-    def take(self) -> str:
+    def take(self, pose: bool = True) -> str:
         now = self.clock()
         for q in (self.seen, self.kept):
             while q and now - q[0] >= 1.0:
@@ -85,6 +103,8 @@ class PoseGate:
         self.seen.append(now)
         if len(self.seen) > self.close:
             return "close"
+        if not pose:
+            return "other"
         if len(self.kept) >= self.keep:
             return "drop"
         self.kept.append(now)
@@ -129,7 +149,7 @@ class Service:
         self.pose_keep, self.pose_close, self.empty_close_s, self.clock = pose_keep, pose_close, empty_close_s, clock
         self.rooms: dict[str, Room] = {}
         self.creates = Window(CREATES_PER_HOUR, 3600, clock)
-        self.creates_all = Window(CREATES_PER_DAY, 86400, clock)
+        self.creates_day = Window(CREATES_PER_DAY_EACH, 86400, clock)
         self.joins = Window(JOINS_PER_MIN, 60, clock)
         self.t0 = time.monotonic()
         self.ticks = 0
@@ -203,12 +223,21 @@ class Service:
                 if not r.members and r.empty_since is not None and now - r.empty_since >= self.empty_close_s]
         for rid in gone:
             del self.rooms[rid]
+        for w in (self.creates, self.creates_day, self.joins):
+            w.prune()
         if gone:
             log(f"closed {len(gone)} empty rooms; open {len(self.rooms)}")
         return len(gone)
 
     # ---------------------------------------------------------------- HTTP
     async def _conn(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        try:
+            await self._handle(reader, writer)
+        except Exception as e:  # review RV-9: one line, never a traceback (release-rooms.sh reads one as a failed release)
+            log(f"request failed: {type(e).__name__}")
+            writer.close()
+
+    async def _handle(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         try:
             head = await asyncio.wait_for(reader.readuntil(b"\r\n\r\n"), REQUEST_TIMEOUT_S)
         except (asyncio.TimeoutError, asyncio.IncompleteReadError, asyncio.LimitOverrunError, ConnectionError, OSError):
@@ -223,6 +252,8 @@ class Service:
                 return self._reply(writer, 400, {"error": "request"})
             method, target, _ = parts
             path = target.split("?", 1)[0]
+            if not PATH_RE.fullmatch(path):
+                return self._reply(writer, 404, {"error": "route"})
             headers: dict[str, str] = {}
             for ln in lines[1:]:
                 if ":" in ln:
@@ -270,14 +301,14 @@ class Service:
             return self._reply(writer, 413, {"error": "size"})
         try:
             body = json.loads(await asyncio.wait_for(reader.readexactly(n), REQUEST_TIMEOUT_S))
-        except (ValueError, asyncio.TimeoutError, asyncio.IncompleteReadError):
+        except (ValueError, RecursionError, asyncio.TimeoutError, asyncio.IncompleteReadError):
             return self._reply(writer, 400, {"error": "body"})
         req = P.room_request(body)
         if req is None:
             return self._reply(writer, 400, {"error": "scene"})
         if len(self.rooms) >= MAX_ROOMS:
             return self._reply(writer, 503, {"error": "busy"})
-        if not self.creates.allow(client) or not self.creates_all.allow("*"):
+        if not self.creates.allow(client) or not self.creates_day.allow(client):
             return self._reply(writer, 429, {"error": "rate"})
         rid = secrets.token_urlsafe(8)
         while rid in self.rooms:
@@ -313,8 +344,11 @@ class Service:
             return self._fail(sock, "full")
         slot = min(s for s in range(self.cap) if s not in room.members)
         nick = P.clean_nick(hello.get("nick")) or f"Pilot-{secrets.randbelow(10000):04d}"
-        if nick in {m.nick for m in room.members.values()}:
-            nick = f"{nick[:P.NICK_LEN[1] - 3]}-{slot + 1}"
+        taken = {m.nick for m in room.members.values()}
+        base, n = nick, slot + 1
+        while nick in taken:  # review RV-8: 'Bob-3' asked by another pilot must not make two of it
+            nick = f"{base[:P.NICK_LEN[1] - 3]}-{n}"
+            n += 1
         me = Member(slot, nick, sock, PoseGate(self.pose_keep, self.pose_close, self.clock))
         key = hello.get("hostKey")
         if isinstance(key, str) and hmac.compare_digest(hashlib.sha256(key.encode()).digest(), room.host_hash):
@@ -350,14 +384,14 @@ class Service:
             if msg is None:
                 return
             op, data = msg
+            pose = op == W.OP_BINARY and P.is_pose(data)
+            verdict = me.gate.take(pose)
+            if verdict == "close":
+                sock.close(W.POLICY, "rate")
+                return
             if op == W.OP_BINARY:
-                if not P.is_pose(data):
-                    self._send(sock, {"type": "error", "code": "pose"})
+                if not pose:  # review RV-2: junk is counted, never answered
                     continue
-                verdict = me.gate.take()
-                if verdict == "close":
-                    sock.close(W.POLICY, "rate")
-                    return
                 if verdict == "drop":
                     me.dropped += 1
                     continue
@@ -377,8 +411,7 @@ class Service:
             elif kind == "leave":
                 sock.close(W.NORMAL, "leave")
                 return
-            else:
-                self._send(sock, {"type": "error", "code": "unknown"})
+            # review RV-2: an unknown message is counted by the gate and not answered
 
     @staticmethod
     def _json(msg) -> dict | None:
@@ -386,12 +419,18 @@ class Service:
             return None
         try:
             v = json.loads(msg[1].decode("utf-8"))
-        except ValueError:
+        except (ValueError, RecursionError):
             return None
         return v if isinstance(v, dict) else None
 
-    @staticmethod
-    def _send(sock: W.ServerSocket, obj: dict) -> None:
+    def _send(self, sock: W.ServerSocket, obj: dict) -> None:
+        """A control message; a socket that stopped reading is closed here too (review RV-2: in a room where nobody sent
+        a pose, tick() never looks at its buffer)."""
+        if sock.closed:
+            return
+        if self.drop_above is not None and sock.buffered() > self.drop_above:
+            sock.close(W.POLICY, "slow")
+            return
         sock.send_text(json.dumps(obj, separators=(",", ":"), ensure_ascii=False))
 
     def _fail(self, sock: W.ServerSocket, code: str) -> None:

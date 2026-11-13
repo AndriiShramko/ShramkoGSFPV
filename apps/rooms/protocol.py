@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 import re
+import secrets
 import struct
 import unicodedata
 from decimal import ROUND_HALF_UP, Decimal
@@ -106,14 +107,30 @@ def clean_text(v, lo: int, hi: int) -> str | None:
     return s
 
 
+def _blocked(s: str) -> bool:
+    bare = re.sub(r"[ \-_.']", "", s.lower())
+    return any(w in bare for w in _BLOCK)
+
+
 def clean_nick(v) -> str | None:
     s = clean_text(v, *NICK_LEN)
-    if s is None:
-        return None
-    bare = re.sub(r"[ \-_.']", "", s.lower())
-    if any(w in bare for w in _BLOCK):
+    if s is None or _blocked(s):
         return None
     return s
+
+
+def clean_name(v) -> str | None:
+    """A room name: the nickname's rule at NAME_LEN, the same blocklist (a room name is shown to every visitor)."""
+    s = clean_text(v, *NAME_LEN)
+    if s is None or _blocked(s):
+        return None
+    return s
+
+
+def fallback_name() -> str:
+    """The name of a room whose asked name was missing or refused: never empty (the list's row header, the Join button's
+    label and the welcome line need one); the form of the nickname's own fallback 'Pilot-NNNN'."""
+    return f"Room-{secrets.randbelow(10000):04d}"
 
 
 SCENE_ID_RE = re.compile(r"[0-9a-f]{6,32}")      # apps/api/server.py _ID_RE
@@ -189,7 +206,7 @@ def room_request(b) -> dict | None:
     scene: dict = {"id": sc["id"]}
     if render := link_render(sc.get("render")):
         scene["render"] = render
-    out: dict = {"scene": scene, "name": clean_text(b.get("name"), *NAME_LEN) or "", "listed": b.get("listed") is True}
+    out: dict = {"scene": scene, "name": clean_name(b.get("name")) or fallback_name(), "listed": b.get("listed") is True}
     if shared := shared_settings(b.get("shared")):
         out["shared"] = shared
     c = b.get("course")

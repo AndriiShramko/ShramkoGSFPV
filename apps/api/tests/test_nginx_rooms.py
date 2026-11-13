@@ -55,8 +55,11 @@ def http_problems(conf: str) -> list[str]:
             out.append(f"{uri}: body limit is not 4k")
         if not re.search(r"limit_req\s+zone=gsfpv_rooms\s", b):
             out.append(f"{uri}: no rate zone")
-        if not UPSTREAM.search(b) or not re.search(r"proxy_pass\s+\$rooms_upstream\$uri;", b):
+        if not UPSTREAM.search(b) or not re.search(r"proxy_pass\s+\$rooms_upstream\$request_uri;", b):
             out.append(f"{uri}: not passed to gsfpv-rooms")
+        # review RV-3: a variable proxy_pass with the decoded $uri lets %0d%0a split the upstream request
+        if re.search(r"proxy_pass\s+\$rooms_upstream\$uri\b", b):
+            out.append(f"{uri}: the decoded $uri is passed upstream (header injection)")
         if not re.search(r'add_header\s+Cache-Control\s+"no-store"\s+always;', b):
             out.append(f"{uri}: cacheable")
         if not re.search(r'proxy_set_header\s+Cookie\s+"";', b):
