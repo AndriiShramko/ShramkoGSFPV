@@ -329,6 +329,7 @@
   "bake.inUse": "In use: {cm} cm walls, {source}.",
   "bake.inUseNone": "No walls in use.",
   "bake.source.shipped": "from SuperSplat",
+  "bake.source.published": "ready for every pilot",
   "bake.source.bake": "built in this browser",
   "bake.source.cache": "from this browser's store",
   "bake.source.import": "imported",

@@ -329,6 +329,7 @@
   "bake.inUse": "W użyciu: ściany {cm} cm, {source}.",
   "bake.inUseNone": "Brak ścian w użyciu.",
   "bake.source.shipped": "z SuperSplat",
+  "bake.source.published": "gotowe dla każdego pilota",
   "bake.source.bake": "zbudowane w tej przeglądarce",
   "bake.source.cache": "zapisane w tej przeglądarce",
   "bake.source.import": "zaimportowane",

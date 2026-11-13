@@ -20,7 +20,7 @@ export type RefineMode = 'auto' | 'offer' | 'off';
 export interface WallsHook {
     /** parked: a refine was due, but the walls are switched off */
     state: 'checking' | 'none' | 'offer' | 'parked' | 'baking' | 'queued' | 'in-use' | 'refused' | 'failed';
-    source: 'shipped' | 'bake' | 'cache' | 'import' | 'none';
+    source: 'shipped' | 'published' | 'bake' | 'cache' | 'import' | 'none';
     voxelM: number | null;
     readonly sha: string | null;
     plan: RefinePlan | null;
@@ -129,7 +129,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
 
     const w: WallsHook = {
         state: 'checking',
-        source: shipped ? 'shipped' : 'none',
+        source: shipped ? (s.wallsFrom === 'published' ? 'published' : 'shipped') : 'none',
         voxelM: shipped?.voxelM ?? null,
         get sha() { return s.collisionSha256; },
         plan: null,

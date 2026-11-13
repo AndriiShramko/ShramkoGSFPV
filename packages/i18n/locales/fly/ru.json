@@ -329,6 +329,7 @@
   "bake.inUse": "Сейчас: стены {cm} см, {source}.",
   "bake.inUseNone": "Стен сейчас нет.",
   "bake.source.shipped": "из SuperSplat",
+  "bake.source.published": "готовы для всех пилотов",
   "bake.source.bake": "построены в этом браузере",
   "bake.source.cache": "из памяти этого браузера",
   "bake.source.import": "импортированы",

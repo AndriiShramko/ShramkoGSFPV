@@ -329,6 +329,7 @@
   "bake.inUse": "En uso: paredes de {cm} cm, {source}.",
   "bake.inUseNone": "No hay paredes en uso.",
   "bake.source.shipped": "de SuperSplat",
+  "bake.source.published": "listas para todos los pilotos",
   "bake.source.bake": "construidas en este navegador",
   "bake.source.cache": "guardadas en este navegador",
   "bake.source.import": "importadas",
