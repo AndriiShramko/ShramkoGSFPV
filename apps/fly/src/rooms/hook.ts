@@ -59,6 +59,8 @@ export interface RaceHook {
     problem: string | null;
     /** the course's line through its gates, flown world (the probes fly it) */
     path: readonly (readonly number[])[];
+    /** the gates as the lap timer checks them, flown world: centre, rotation (w, x, y, z) and opening kind (probes) */
+    gatePoses: readonly { readonly pos: readonly number[]; readonly quat: readonly number[]; readonly kind: string }[];
 }
 
 /** One remote drone in this frame as the flight camera sees it (lane look). */

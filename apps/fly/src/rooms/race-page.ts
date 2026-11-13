@@ -29,7 +29,7 @@ function randomSeed(): number {
 export type Tell = (key: string, params: Record<string, string | number>, interrupt: boolean) => void;
 
 export class RacePage {
-    readonly h: RaceHook = { state: 'off', course: null, laps: 0, startAt: null, racer: false, built: false, gates: 0, next: -1, sent: 0, table: [], problem: null, path: [] };
+    readonly h: RaceHook = { state: 'off', course: null, laps: 0, startAt: null, racer: false, built: false, gates: 0, next: -1, sent: 0, table: [], problem: null, path: [], gatePoses: [] };
     private run: CourseRun | null = null;
     private stage: CourseStage | null = null;
     private count: Countdown | null = null;
@@ -142,6 +142,7 @@ export class RacePage {
         this.h.built = true;
         this.h.gates = this.run.gates.length;
         this.h.path = this.run.path.map((p) => [p.pos[0], p.pos[1], p.pos[2]]);
+        this.h.gatePoses = this.run.gates.map((g) => ({ pos: [...g.pos], quat: [...g.quat], kind: g.shape.kind }));
         this.sock.ready();
     }
 
@@ -242,6 +243,7 @@ export class RacePage {
         this.h.gates = 0;
         this.h.next = -1;
         this.h.path = [];
+        this.h.gatePoses = [];
     }
 
     /** A new scan: the race's course was the old scan's. */

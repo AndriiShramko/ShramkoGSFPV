@@ -46,22 +46,32 @@ async function until(p: Page, js: string, ms: number): Promise<boolean> {
 const raceState = (p: Page): Promise<Any> => hook<Any>(p, 'return x ? { state: x.state, course: x.course, laps: x.laps, racer: x.racer, built: x.built, gates: x.gates, sent: x.sent, problem: x.problem, pathPoints: x.path.length, table: x.table.map((t) => ({ slot: t.slot, nick: t.nick, laps: t.laps, totalMs: t.totalMs, bestMs: t.bestMs, place: t.place })), slot: r.slot, said: r.said.filter((k) => k.startsWith(\'rooms.race.\')) } : null;');
 
 /** The craft moved along the race's path `rounds` times (one step per drawn frame, the sim running); resolves when done. */
-function fly(p: Page, rounds: number): Promise<number> {
+function fly(p: Page, rounds: number): Promise<Any> {
     return p.evaluate(`new Promise((done) => {
         const h = window.__gsfpv; const P = h.rooms.race.path; const pts = [];
-        for (let k = 0; k < ${rounds}; k++) for (let i = 0; i + 1 < P.length; i++) {
-            const a = P[i], b = P[i + 1]; const d = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]); const n = Math.max(1, Math.ceil(d / ${STEP_M}));
-            for (let j = 0; j < n; j++) pts.push([a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n, a[2] + (b[2] - a[2]) * j / n]);
+        for (let k = 0; k < ${rounds}; k++) {
+            for (let i = 0; i + 1 < P.length; i++) {
+                const a = P[i], b = P[i + 1]; const d = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]); const n = Math.max(1, Math.ceil(d / ${STEP_M}));
+                for (let j = 0; j < n; j++) pts.push([a[0] + (b[0] - a[0]) * j / n, a[1] + (b[1] - a[1]) * j / n, a[2] + (b[2] - a[2]) * j / n]);
+            }
+            // the path's last point too: an open course ends at its last gate, which the round must reach
+            const z = P[P.length - 1]; pts.push([z[0], z[1], z[2]]);
         }
-        let i = 0;
+        // diagnostics: how far the sim moved the craft from the written point by the next frame, the sim clock, the next gate
+        const d = { drift: 0, tick0: null, tick1: null, paused: 0, nexts: {} };
+        let i = 0; let last = null;
         const step = () => {
             const sim = (h.session.runner && h.session.runner.sim) || h.session.sim;
+            if (sim && last) d.drift = Math.max(d.drift, Math.hypot(sim.s[0] - last[0], sim.s[1] - last[1], sim.s[2] - last[2]));
+            if (sim) { if (d.tick0 === null) d.tick0 = sim.tick; d.tick1 = sim.tick; }
+            if (h.session.paused) d.paused++;
+            const nx = h.rooms.race.next; d.nexts[nx] = (d.nexts[nx] || 0) + 1;
             const q = pts[i++];
-            if (sim && q) { sim.s[0] = q[0]; sim.s[1] = q[1]; sim.s[2] = q[2]; sim.s[3] = 0; sim.s[4] = 0; sim.s[5] = 0; }
-            if (i < pts.length) requestAnimationFrame(step); else done(pts.length);
+            if (sim && q) { sim.s[0] = q[0]; sim.s[1] = q[1]; sim.s[2] = q[2]; sim.s[3] = 0; sim.s[4] = 0; sim.s[5] = 0; last = q; }
+            if (i < pts.length) requestAnimationFrame(step); else done({ pts: pts.length, ...d });
         };
         requestAnimationFrame(step);
-    })`) as Promise<number>;
+    })`) as Promise<Any>;
 }
 
 async function open(L: Launched, url: string): Promise<Page> {
@@ -107,6 +117,8 @@ async function main(): Promise<void> {
         const [aBuilt, bBuilt] = await Promise.all([A, B].map((p) => until(p, 'return !!x && x.built && x.path.length > 1;', BUILD_MS)));
         const [aGo, bGo] = await Promise.all([A, B].map((p) => until(p, "return !!x && (x.state === 'count' || x.state === 'run') && r.said.includes('rooms.race.go');", 90000)));
         const [a0, b0] = await Promise.all([raceState(A), raceState(B)]);
+        // the course as A's lap timer checks it (diagnostics when no lap comes)
+        out.courseA = await hook<Any>(A, 'return { path: x.path, gates: x.gatePoses };');
         out.start = { panelUp, focused, aPrep, bPrep, aBuilt, bBuilt, aGo, bGo, a: a0, b: b0 };
         const control = a0?.sent === 0 && b0?.sent === 0 && [...(a0?.table ?? []), ...(b0?.table ?? [])].every((t: Any) => t.laps === 0);
 
