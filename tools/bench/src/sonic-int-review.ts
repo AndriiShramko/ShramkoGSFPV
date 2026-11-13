@@ -784,7 +784,11 @@ interface R10Probe extends Probe {
     lastLine: string | null;
     pos: [number, number, number];
 }
-const probe10 = (page: Page): Promise<R10Probe> => probe(page) as Promise<R10Probe>;
+/** The hook's state; before the sound chunk has put its hook up, an empty one (no lesson). */
+const probe10 = (page: Page): Promise<R10Probe> => page.evaluate(() => {
+    const f = (window as unknown as { __gsfpv?: { sonic?: (e?: boolean) => unknown } }).__gsfpv?.sonic;
+    return typeof f === 'function' ? f(false) : { lesson: null, phase: null, attempt: 0, asking: false, question: null, engine: 'none', speechQueue: 0, target: null, hum: null, cues: [], motor: false, walls: { voxelM: null, builtin: false, scene: '', scale: 1 }, lastLine: null, pos: [0, 0, 0] };
+}) as Promise<R10Probe>;
 const scanOrder = (page: Page): Promise<string[]> => page.evaluate(() => {
     const b = document.querySelector('[data-testid="sonic-start-beginning"]');
     return b?.parentElement ? [...b.parentElement.children].map((c) => c.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-start-')) : [];
@@ -834,6 +838,12 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     page.on('pageerror', (e) => problems.push(`R10 sighted: pageerror ${e.message.slice(0, 300)}`));
     await page.goto(`${served.origin}/en/fly/?scene=${SCAN}&nowarn=1&render=off`);
     await until('the sighted flight', () => page.evaluate(() => (window as unknown as Hook).__gsfpv?.status ?? null), (v) => v === 'ready', 120000, 250);
+    // the Controls screen first (as sonic-optin-page.ts chooseKeyboard): the pause menu opens only over the flight
+    await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 });
+    await page.focus('.screen.radio [data-action="radio-keyboard"]');
+    await page.keyboard.press('Enter');
+    await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
+    await sleep(800);
     await page.keyboard.press('Escape');
     await page.waitForSelector('.pause-menu', { timeout: 10000 });
     const href = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySound"]')?.getAttribute('href') ?? null);
@@ -874,13 +884,15 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     // at a wall: W held up to 20 s (an estimate), the plan's cue ids collected
     const ids = new Set<string>();
     await fly.keyboard.down('KeyW');
-    for (const t0 = Date.now(); Date.now() - t0 < 20000 && !ids.has('safety.wall'); ) {
+    // the plan's ids carry the side: 'safety.wall:front' (measured in the first R10 run, 2026-11-13)
+    const wall = (): boolean => [...ids].some((c) => c.startsWith('safety.wall'));
+    for (const t0 = Date.now(); Date.now() - t0 < 20000 && !wall(); ) {
         for (const c of (await probe10(fly)).cues ?? []) ids.add(c);
         await sleep(80);
     }
     await fly.keyboard.up('KeyW');
     result.r10cues = [...ids];
-    check('R10: flying at a wall a wall cue is planned (safety.wall)', ids.has('safety.wall'), [...ids]);
+    check('R10: flying at a wall a wall cue is planned (safety.wall:<side>)', wall(), [...ids]);
 
     // N: a course of gates
     const from = (await events(fly)).length;
