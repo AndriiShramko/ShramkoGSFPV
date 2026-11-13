@@ -54,6 +54,8 @@ interface PhaseCHook {
     bake?: Record<string, unknown>;
     bakedBytes?: { json: Uint8Array; bin: Uint8Array };
     runBake?: () => Promise<void>;
+    /** probes only: one bake at a given level and cell, nothing installed; the bytes go to bakedBytes */
+    bakeTrial?: (o: { level: number; voxelM: number }) => Promise<Record<string, unknown>>;
     downloadBaked?: () => boolean;
     walls?: WallsHook;
     info?: Record<string, unknown>;
@@ -397,6 +399,17 @@ export function mountWalls(o: WallsOptions): WallsHook {
         await (await cacheP).clear();
         storeInfo.textContent = t('bake.store.cleared');
     }
+
+    // probes compare ways of building (walls stage W1): the device's real limit, not the estimate
+    o.hook.bakeTrial = async ({ level, voxelM }) => {
+        try {
+            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, () => {}, { level, voxelM, coarsenOnOctree: true, size: w.size ?? undefined, capGb: Number.POSITIVE_INFINITY, limits: null });
+            o.hook.bakedBytes = { json: r.json, bin: r.bin };
+            return { ok: true, level: r.level, voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length };
+        } catch (e) {
+            return { ok: false, level, voxelM, error: String((e as Error)?.message ?? e).slice(0, 200), noRoom: outOfRoom(e) };
+        }
+    };
 
     // ---- phase C button, shown at once
     if (!shipped) {
