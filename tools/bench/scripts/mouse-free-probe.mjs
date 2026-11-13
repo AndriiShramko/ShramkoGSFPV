@@ -73,8 +73,10 @@ await page.addInitScript(installUsb);
 /** Open a flight page and pick the keyboard on the first Controls screen. */
 async function start(extra = '') {
     await page.goto(`${base}/fly/?scene=39e63ce9&nowarn=1&render=off&set.input.howToFly=false&set.input.play=easy${extra}`, { waitUntil: 'load' });
-    await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && document.querySelector('.screen.radio [data-action=radio-keyboard]'), null, { timeout: 120000 });
-    await page.locator('[data-action=radio-keyboard]').click();
+    await page.waitForFunction(() => window.__gsfpv?.status === 'ready', null, { timeout: 120000 });
+    // the first page asks for the controls; a later page of the same profile remembers the keyboard
+    const asks = await page.waitForSelector('.screen.radio [data-action=radio-keyboard]', { timeout: 6000 }).then(() => true, () => false);
+    if (asks) await page.locator('[data-action=radio-keyboard]').click();
     await page.waitForFunction(() => !document.querySelector('.screen.radio'), null, { timeout: 15000 });
     await settle(page, 1000);
 }
