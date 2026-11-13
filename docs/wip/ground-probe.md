@@ -8,12 +8,14 @@ Logs and JSON of the runs: U:/Temp/gsfpv-train1c/ground-rc2/ (not in git). Pictu
 - [x] 1. Measured first (script `tools/bench/src/ground-probe-cost.ts`, numbers under "Measured, old code"). f6e51e46
 - [x] 2. Cost bound by design: (a) the sweep in 0.1 m pieces with an early exit, (b) GroundCache in both pilots.
   Old against new on a grid: "Measured, new code". 64bc147d
-- [x] 3. centre-throttle-probe.mjs on the local release of 64bc147d: pass (dji-centred 4 of 4, dji-flip 5 of 5,
-  dji-bottom 3 of 3, no page errors). a6-reference.test.ts: 1 passed (its pinned hash holds). Step 4's commit.
+- [x] 3. centre-throttle-probe.mjs on the local release of 53cb7243 (and before that of 64bc147d): pass (dji-centred
+  4 of 4, dji-flip 5 of 5, dji-bottom 3 of 3, no page errors). a6-reference.test.ts: 1 passed (its pinned hash
+  holds). 53cb7243
 - [x] 4. Probe `tools/bench/scripts/fast-radio-probe.mjs` (500, 1000 and the RC 2 pattern 500b4, 20 s each): pass on
-  the release of 64bc147d, fails on a build of origin/main's sources. Numbers under "Fast radio probe". Step 4's commit.
-- [x] 5. Unit tests `tools/bench/test/app-ground-probe.test.ts` (9 tests), negative control NEG OK: 7 of 9 fail by
-  an assertion on origin/main's sources. 64bc147d
+  the releases of 64bc147d and 53cb7243, fails on a build of origin/main's sources. Numbers under "Fast radio
+  probe". 53cb7243
+- [x] 5. Unit tests `tools/bench/test/app-ground-probe.test.ts` (10 tests), negative control NEG OK: 7 of the first
+  9 fail by an assertion on origin/main's sources. 64bc147d, the tenth test in 53cb7243
 
 Nothing is left in this stage.
 
@@ -119,6 +121,10 @@ New build (release of 64bc147d, port 5620), U:/Temp/gsfpv-train1c/ground-rc2/fas
 Two earlier runs of the new build (fast-new-1.json, fast-new-2.json, before the bounds and the 6 ms timer were set):
 frames/s 29.9 to 30.0, longest frame gap 70.7 to 95.4 ms, longest task gap 23.4 to 31.5 ms.
 
+Final code (release of 53cb7243, port 5622), fast-final-53cb.json, pass, exit 0: r500 500 reports/s, 30.0 frames/s,
+frame gap 69.6 ms, task gap 30.7 ms; r1000 1002, 30.0, 72.0, 37.0; r500b4 501, 29.9, 92.5, 27.9; each climbs 4.67 m,
+span 0.0 m, 0 armed drops, not crashed. centre-throttle-probe.mjs on the same release: pass, 12 of 12 checks.
+
 Negative control: the same probe on a build of origin/main's sources (the four changed source files put back to
 origin/main bbc9e75e, `node scripts/build-release.mjs`, copy kept in U:/Temp/gsfpv-train1c/ground-rc2/dist-old, port
 5621), U:/Temp/gsfpv-train1c/ground-rc2/fast-old-final.json, fail, exit 1:
@@ -135,8 +141,8 @@ flown), but the drone climbs and holds. The stall of the rc2 lane (motors toggle
 arrive several in one task: with the RC 2 pattern (r500b4) origin/main toggles the motors (7 drops out of armed, 16 arm
 state changes), climbs 3.38 m, sinks and crashes; the new build flies the same pattern like the other two.
 
-Bounds in the probe, from these runs: FPS_MIN 24 (new 29.9 to 30.0, old 4.6 to 6.9), FRAME_GAP_MAX_MS 150 (new 70.7
-to 95.4 over three runs, old 177.9 to 640.5), TASK_GAP_MAX_MS 100 (new 23.4 to 36.0, old 174.4 to 689.4). The climb of
+Bounds in the probe, from these runs: FPS_MIN 24 (new 29.9 to 30.0, old 4.6 to 6.9), FRAME_GAP_MAX_MS 150 (new 69.6
+to 95.4 over four runs, old 177.9 to 640.5), TASK_GAP_MAX_MS 100 (new 23.4 to 37.0, old 174.4 to 689.4). The climb of
 1 m and the 0.5 m hold are the bounds of centre-throttle-probe.mjs and app-centre-throttle.test.ts (estimates there).
 The climb stops at 4.67 m on both builds: the drone meets something above the spawn of 887f27aa there (the rc2 lane's
 "6.67 m" is the same place in world height).
@@ -155,10 +161,14 @@ The climb stops at 4.67 m on both builds: the drone meets something above the sp
   work in centimetres; a quarter of a millimetre is under what they can react to. The unit test pins 0.25 mm.
 - GroundCache (apps/fly/src/play/ground.ts) is used by LessonPilot (so by CentrePilot and the lessons) and GamePilot.
   Rule 1, unchanged: a look at most every 33 ms of the input's own time (a report's timeStamp, a frame's time). Rule 2,
-  new: after a look the next one waits GROUND_REST = 4 times the look's own duration on the page clock, so looks take
-  at most a fifth of the page's time whatever a world costs. With the measured look (max 3.65 ms, rest 14.6 ms) rule 2
-  never delays a look that rule 1 allows, so looks happen when they did before; rule 2 is the bound for a slow world.
-  GROUND_REST is a chosen share, not a measurement.
+  new: after a slow look (GROUND_SLOW_MS = 8 ms or more on the page clock) the next one waits GROUND_REST = 4 times
+  the look's own duration, so slow looks take at most a fifth of the page's time whatever a world costs; quick looks
+  take at most 8 ms in every 33 ms. With the measured look (max 3.65 ms) rule 2 never applies on this scene, so looks
+  happen when they did before; rule 2 is the bound for a slow world. Both numbers are chosen, not measured (8 ms is
+  about twice the slowest look measured and half a frame at 60 frames a second).
+- Why the 8 ms threshold: the first version (64bc147d) rested after every look. A harness that flies faster than the
+  clock (unit tests with a simulated input time and the real clock) would then skip looks depending on the machine's
+  speed. With the threshold such harnesses get the same looks as before on every machine.
 - A fixed time slice was chosen over a per-rendered-frame hook: the pilots have no frame callback, the frame loop is
   outside this lane's paths, and 33 ms is at most one look per frame at the 30 frames a second measured here.
 - The probe's fake paces reports with a MessageChannel, not a timer: a timer cannot go under 4 ms (250 a second).
@@ -167,11 +177,14 @@ The climb stops at 4.67 m on both builds: the drone meets something above the sp
 
 - New files for docs/agent-map.md (not this lane's file): `tools/bench/scripts/fast-radio-probe.mjs <base with /en>
   <out.json> [runs 500,1000,500b4] [scene]` (needs the GPU lock around it, env FAST_RADIO_SHOTS for the pictures);
-  `tools/bench/src/ground-probe-cost.ts [out.json] [cost,pieces,diff,rate]` (Node, about 4 minutes on the old code,
-  under 1 minute now without "pieces"... the part "diff" still runs the old 20 m sweep as the reference).
+  `tools/bench/src/ground-probe-cost.ts [out.json] [cost,pieces,diff,rate]` (Node; the parts "cost" and "diff" still
+  run the old 20 m sweep as the reference, so the script takes a few minutes).
 - After branch rc2 is merged on top of this: rerun the rc2 lane's rc2-probe.mjs (usb.climbs was open there because of
   this cost) before the RC 2 is called flying. Not run here: rc2's code is not on this branch.
-- dist/ in this worktree is the release of 64bc147d (the later commit changes no source of the page).
+- dist/ in this worktree is the release of 53cb7243 (the last commit after it changes this file only).
+- tools/bench/test/sonic-bump.test.ts: its test "walls, pillars, ceiling, floor at 0-85 deg and 1-5 m/s" runs into
+  the 5 s test limit on this PC, on origin/main's sources as well (run alone, three times: twice with this branch,
+  once with origin/main's ground.ts, lesson-pilot.ts, game-pilot.ts; 1 failed, 6 passed each time). Not this lane's.
 - The scene cache .cache/scenes/887f27aa in this worktree was copied from C:/dev/gsfpv-v03/.cache (read only there).
 
 ## Not verified
@@ -189,11 +202,14 @@ The climb stops at 4.67 m on both builds: the drone meets something above the sp
 
 ## Checks run
 
-- tools/bench/test/app-ground-probe.test.ts: 9 passed. On origin/main's ground.ts, lesson-pilot.ts, game-pilot.ts:
+- tools/bench/test/app-ground-probe.test.ts: 10 passed (the tenth, "a quick look owes no rest", was added with
+  53cb7243; the negative control was run on the first 9). On origin/main's ground.ts, lesson-pilot.ts, game-pilot.ts:
   7 failed by an assertion (10.05 m sphere against 0.101; 20 m sweep against 0.1; 40 looks against 9, twice; no
   GroundCache, three times), 2 passed (the answer equals the whole sweep; an instant look every 33 ms: both are
   "nothing moved" checks). NEG OK.
-- app-centre-throttle.test.ts 21 passed, app-game.test.ts 27 passed, a6-reference.test.ts 1 passed.
+- app-centre-throttle.test.ts 21 passed, app-game.test.ts 27 passed, a6-reference.test.ts 1 passed (again on the
+  final code: 59 passed in the four files together).
+- Tests that import the pilots or ground.ts (8 files, on 64bc147d): 99 passed, 1 failed (the sonic-bump limit above).
 - tsc --noEmit: apps/fly clean, tools/bench clean.
 
 ## Cost notes
@@ -202,3 +218,5 @@ The climb stops at 4.67 m on both builds: the drone meets something above the sp
   and a timer period that could not deliver its own rate. Cheaper: read the rc2 evidence for "four reports in one
   wake" before writing the fake, and build old and new releases in one background command from the start (done).
 - A shell heredoc ate a backslash in a regex of the probe (one extra turn): edit files with the Edit tool only.
+- The rest rule on the real clock had to be narrowed after the code was built and probed (one more build and probe
+  run). Cheaper: run every test file that imports the changed pilots before the first release build.
