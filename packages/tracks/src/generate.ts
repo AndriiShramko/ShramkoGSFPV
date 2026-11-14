@@ -243,7 +243,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         const gate: TrackGate = { id: `g${gates.length + 1}`, shape: shapeFor(o.c.free), pos: toScan(o.c.pos), quat: yawQuatStep(k), direction: 'forward' };
         // one-gate proof: the leg from where the walk stands and this gate's opening, frame and run (the whole course is
         // proven once at the end); proving the whole course per candidate cost about 44 s a course on real walls
-        const trial = build([gate], k, cur);
+        const trial = build([gate], k, cur, 1); // open: the one-gate proof has no leg out (laps did not matter to it before K1)
         if (!checkTrack(trial, walls, T, p.marginM, false).ok) continue;
         gates.push(gate);
         flownGates.push(toFlown(gate.pos));

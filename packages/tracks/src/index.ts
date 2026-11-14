@@ -6,6 +6,7 @@ export * from './freespace';
 export * from './generate';
 export * from './path';
 export * from './laps';
+export * from './fly';
 export * from './server';
 export * from './format';
 export * from './editor';

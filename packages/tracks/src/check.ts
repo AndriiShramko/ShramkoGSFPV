@@ -12,6 +12,7 @@ import { quatRotate, trackToObjects } from '@shramko/sonic-fpv';
 import type { SonicObject, TrackFile, Vec3 } from '@shramko/sonic-fpv';
 import { VoxelContactWorld, sphereOverlaps, transformCollision } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
+import { gateExit } from './path';
 
 /** The plan's margin: openings and legs are clear by this much, flown metres. */
 export const MARGIN_M = 0.5;
@@ -276,6 +277,13 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
         if (!sw.free(from, to, marginM)) clear = false;
         probe(from);
         probe(to);
+        // K1: the turn after a gate the path flies through first (path.ts gateExit) is a leg of its own
+        const after = i + 1 < gates.length ? gates[i + 1]!.pos : track.laps > 1 ? startPos : null;
+        const exit = gateExit(g.pos, axis, legIn, after ? sub(after, g.pos) : null);
+        if (exit && after && !sw.free(exit, after, marginM)) {
+            clear = false;
+            issues.push(`gate ${g.id}: the turn after it (from ${v3(exit).join(', ')}) is not clear by ${marginM} m`);
+        }
         const directionOk = inDeg <= AXIS_TOLERANCE_DEG;
         const turnDeg = angleDeg(legIn, legOut);
         if (!clear) issues.push(`gate ${g.id}: the opening, its frame or the run through it is not clear by ${marginM} m (free radius ${r3(free)} m)`);
