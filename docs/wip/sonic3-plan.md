@@ -28,9 +28,9 @@ new position; (e) silence until (c). On Wroclaw additionally the walls are built
 ## The direct road (design)
 
 Entry points (main chunk, `apps/fly/src/app/builtin/sonic-flight.ts`, shim only):
-- Key: new KEYMAP action `sonic.inPlace`, `when: 'always'`, Shift+S (every plain letter is taken: A D E Q S W fly, the rest are
-  bound; Shift+S is free). Add to `packages/prefs/test/keymap.test.ts` DESIGN_TABLE and `tools/bench/test/app-keys.test.ts`.
-- Pause item `pause.flyBySound` becomes an action item (no href, no new tab), label "Fly by Sound here (Shift+S)"; when on,
+- Key: new KEYMAP action `sonic.inPlace`, `when: 'always'`, Backslash (every plain letter is bound; not Backslash: in the game scheme Shift
+  descends and keys.ts reads Shift+<letter> as a chord first, so Backslash would fire while descending and pitching back). Add to `packages/prefs/test/keymap.test.ts` DESIGN_TABLE and `tools/bench/test/app-keys.test.ts`.
+- Pause item `pause.flyBySound` becomes an action item (no href, no new tab), label "Fly by Sound here (Backslash)"; when on,
   "Switch off Fly by Sound". A second item keeps "Lessons (opens in a new tab)" to `/{lang}/fly/?sonic=start`.
 - The press (a user gesture) calls `switchOn(ctx)`: `import('../../sonic/lazy-start')`, then `loadMode()`; both chunks exist.
 
@@ -47,7 +47,7 @@ In the lazy chunk, new `apps/fly/src/sonic/in-place.ts`:
   `wallsForFree` already builds them through `this.p.walls` (app/walls-then.ts `wallsThen`, called, not changed) with
   sonic.say.wallsBuilding / wallsStill / wallsIn, and the flight goes on.
 - First-timer (no saved progress and `fliesBySound` unset, store.ts): one spoken introduction line, new key
-  `sonic.say.inPlaceIntro` in en es pl ru: "Fly by Sound is on. Shift+S switches it off, N makes a course, K says all keys. The
+  `sonic.say.inPlaceIntro` in en es pl ru: "Fly by Sound is on. Backslash switches it off, N makes a course, K says all keys. The
   lessons teach it step by step: Escape, then Lessons." Then `setFliesBySound(prefs)` so it is said once.
 - `switchOff()`: `off()`, `setSonicEntry(null)`, `setup.audio` closed, `document.body.classList.remove('sonic-mode')`,
   scan prefs cleared (`clearScanPrefs`); the flight goes on where it is.
@@ -57,8 +57,8 @@ In the lazy chunk, new `apps/fly/src/sonic/in-place.ts`:
 Tests (unit, each with a negative control on origin/main):
 - `tools/bench/test/sonic-in-place.test.ts`: the pause item has no href and runs switchOn; the key toggles; entry set and
   cleared; openFree here keeps the pose (fake mode); the intro line once for a first-timer, never for a pilot with progress.
-- keymap tables: Shift+S present, no conflict (`keymapProblems` empty).
+- keymap tables: Backslash present, no conflict (`keymapProblems` empty).
 
 Browser proof (own stage, release build first): Tunis and Wroclaw (walls stand-in `U:/Temp/gsfpv-train2/walls/release/70b50d42`,
-served as in docs/wip/walls.md): fly, Shift+S, hear the intro and the first cue within seconds, position unchanged
-(`__gsfpv.session` pose before and after), Wroclaw says the walls build and goes on, N makes a course, Shift+S off.
+served as in docs/wip/walls.md): fly, Backslash, hear the intro and the first cue within seconds, position unchanged
+(`__gsfpv.session` pose before and after), Wroclaw says the walls build and goes on, N makes a course, Backslash off.

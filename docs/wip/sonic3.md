@@ -13,8 +13,7 @@ Stage Z1-any-scene-in-place:
 - [ ] Step 2: the in-place switch. Left, in this order (details in sonic3-plan.md "The direct road"):
   1. Package (train3): a free template for a built-in world too (scanFreeLesson only takes a scan), plus locale key
      sonic.say.inPlaceIntro in pkg/locales en es pl ru if engine lines live there, else in packages/i18n/locales/fly/sonic.
-  2. KEYMAP action sonic.inPlace (Shift+S, when 'always'); check KeyRouter shiftIsFlying (app/flight.ts) does not swallow
-     Shift+S when Shift is a flight key; tables keymap.test.ts DESIGN_TABLE and app-keys.test.ts.
+  2. KEYMAP action sonic.inPlace (Backslash, when 'always'; check its cap on Polish and Russian layouts); tables keymap.test.ts DESIGN_TABLE and app-keys.test.ts.
   3. apps/fly/src/sonic/in-place.ts switchOn/switchOff (setup, setSonicEntry, installSonicFlight, off).
   4. lessons.ts openFree(lesson, { here: true }): start = current pose, no mode.place.
   5. sonic-flight.ts: pause item becomes an action (on/off label), second item to the lessons page, key handler.
@@ -37,7 +36,8 @@ Stage Z1-any-scene-in-place:
 
 - In place = install sonic/feature.ts installSonicFlight on the running flight context after the press (the KeyRouter's sonic
   option is already a live function of sonicEntry()), not a new page.
-- Key Shift+S: every plain letter is bound (keymap.ts), Shift+S is not.
+- Key Backslash: every plain letter is bound (keymap.ts) and no binding names Backslash (grep 'Slash' in keymap.ts: 0). Not
+  Backslash: Shift is a flying key in the game scheme (app/keys.ts shiftIsFlying note), Backslash would fire while descending.
 
 ## For the lead
 
@@ -50,7 +50,7 @@ Stage Z1-any-scene-in-place:
 - The live walk did not reach the first cue: the probe looked for '.screen button' and the start screen uses other markup, so it
   pressed nothing in the new tab. The screenshots show the screen; what the second press does was read in code (lessons.ts open,
   mode.place(start)), not seen in a browser.
-- Shift+S under the KeyRouter's shiftIsFlying setting: not checked.
+- Backslash on Polish and Russian keyboard layouts (code Backslash exists on both; its printed cap not checked).
 - gates.py was not run (no simulator source changed except a new probe script and docs).
 
 ## Cost notes
