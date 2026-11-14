@@ -27,8 +27,29 @@ Stage Z2-design-speed-and-space:
   (rear timbre, approach, ILD at speed, reverb floor, turn-and-listen lesson), the ear pilot check and speed lesson ladder, later
   designs (web camera head tracking, HRTF pick test, phone app), build stages Z3 to Z8 with files and tests.
 - [x] gates.py --only vitest,architecture,i18n,b18 on eac597c8: all four PASS (vitest 133 s), logs U:/Temp/gsfpv-gates-20261114-222253.
-- [ ] Z3 ear pilot and baseline, Z4 reach and budget, Z5 racing line, Z6 space codes, Z7 speed lessons, Z8 browser proof
-  (plan section 6).
+- [ ] Z4 reach and budget, Z5 racing line, Z6 space codes, Z7 speed lessons, Z8 browser proof (plan section 6).
+
+Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commits):
+- [x] Package train3 6079170: src/pilot/perceive.ts (Ear: FramePlan voices to percepts: 2 loudest after layer gain and
+  urgent duck, side by 10 deg / 2 dB ILD, 29 % front-back flips seeded per voice, hum elevation and on-course octave from
+  its pitch against a learned base note; never reads distance), src/pilot/ear-pilot.ts (EarPilot: 250 ms delay, turn to
+  the hum's side, 1.5 s hum memory, dodge, urgent brake, ceiling/floor by timbre), src/pilot/craft.ts (velocity craft,
+  8 m/s2, 180 deg/s, climb 3 m/s), src/pilot/ladder.ts (flyLesson, ladder: runner + planner host loop, pass = runner
+  attempt-pass with 0 touches within 3 x course length / speed; trace hook), tools/ear-pilot.ts (ladder over lessons,
+  writes JSON), tools/ear-debug.ts (one flight's trace). Typecheck tsconfig.core.json: 0 errors.
+- [x] First 'before' run (package rules of train3 2ec8653, beacon on, soft theme), evidence/ear-pilot/2026-11-14-train3-2ec8653.json.
+- [ ] LEFT, in this order:
+  1. Corridor: every rung times out (also 1 m/s). Run `node tools/run-tool.mjs ear-debug corridor 1 500 40` and find
+     whether the pilot stalls (pilot fix) or the runner's goals (fly-distance 15, then track-end) never report
+     attempt-pass (ladder fix: count goal 'met' events); then rerun the baseline with the full ladder (rungs 1..22).
+  2. test/ear-pilot.test.ts: left/right swapped (mapPlan mirrors dir x) fails at rung 1 on rings-course; deaf (voices [])
+     fails; distances zeroed (VoicePlan.distance 0, ActiveCue.distance null) gives the same hash; the import lines of
+     src/pilot/ear-pilot.ts and perceive.ts name no src/world, src/sense or SonicWorld. Negative control: the test file
+     must fail without src/pilot (new module: control = the swapped and deaf cases themselves fail by assertion).
+  3. Simulator tools/bench/src/ear-pilot-scan.ts on Tunis 887f27aa and Wroclaw 70b50d42 (walls stand-in), plan section 4.
+  4. Z4 speed part: src/cues/reach.ts, budget.ts, wiring in planner.ts, sampler.ts rangeS, freeway.ts depth; tests
+     reach.test.ts, budget.test.ts with negative controls; replay version bumps; ear pilot after-run; pin move.
+  5. gates.py --only vitest,architecture,i18n,b18 on the worktree before handing over.
 
 ## Facts (measured)
 
@@ -46,6 +67,9 @@ Stage Z2-design-speed-and-space:
 - The runner itself places the craft at its start pose when a lesson begins (package runner.ts begin, 'place' action), so
   keeping the position needs the start = the craft's pose (feature.ts scanLesson `here`), not only skipping mode.place.
 
+- Z3 baseline (tools/ear-pilot.ts, package train3 6079170 on rules of 2ec8653, beacon on, theme soft, seeds 1 2 3, rungs
+  1 2 3 4 6 8 10 m/s): rings-course median top 3 m/s (by seed 3, 2, 3; above it: touches and fails); corridor 0 (every rung
+  timeout, cause not found). Runtime 31 s corridor, 4 s rings.
 - Z2: the numbers of plan Part 2 section 1 are constants read from the package code (train3 2ec8653: sampler.ts, rules.ts,
   beacon.ts, freeway.ts, planner.ts, voices.ts, themes/*.json printed by a node one-liner), the seconds are those constants
   divided by the speed; nothing in Z2 was measured by a run. Lesson speed caps: lessons/*.json maxSpeedMps 0 to 5, 12 lessons at 3.
@@ -81,6 +105,8 @@ Stage Z2-design-speed-and-space:
 - Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
 
 ## Not verified
+- Z3: the corridor baseline of 0 may be a fault of the ladder or the pilot, not of the cues (LEFT item 1). The ear pilot's
+  gains (turn 120 deg/s, dodge 1 m/s, brake 0.3, memory 1.5 s, delay 250 ms) are estimates; rungs 12 to 22 not run.
 - Z2: the plan's speed tiers, look-ahead, stream counts and pass marks are estimates; no ear pilot exists yet to measure them.
 - Z2: the onset counts at speed (about 44 per second, soft theme) are arithmetic from theme constants, not a recording of the
   engine.
@@ -104,3 +130,5 @@ Stage Z2-design-speed-and-space:
   before editing would have saved four replies.
 - 2026-11-14 Z2: most replies went to finding each cue's reach constant across six package files and three theme JSONs; a
   generated table of every cue's reach constant (name, file, unit) in the package's docs would have made it one read.
+- 2026-11-14 Z3: most replies went to reading the planner's frame types and the runner's host loop to build the ear
+  pilot; a short doc of the host loop contract (actions, events, pass) next to test/helpers/pilot.ts would have saved four.
