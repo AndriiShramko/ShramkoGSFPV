@@ -1,0 +1,445 @@
+{
+ "name": "lod-view/review-product",
+ "date": "2026-11-14T09:05:11.721Z",
+ "label": "review-product",
+ "scene": "70b50d42",
+ "url": "http://localhost:5342/fly/?scene=70b50d42&nowarn=1&input=touch&governor=0&budget=1",
+ "variant": "default",
+ "budgetM": 1,
+ "view": null,
+ "forceDeg": 0,
+ "lodUpdateAngle": 90,
+ "tune": {},
+ "bandsMetres": [
+  25,
+  100,
+  400,
+  "more"
+ ],
+ "thermalBefore": {
+  "tempC": 81,
+  "powerW": 34.62,
+  "clockMHz": 1290,
+  "pstate": "P0",
+  "throttleReasons": "0x0000000000000001",
+  "thermalSlowdown": false,
+  "utilPct": 0
+ },
+ "browser": {
+  "product": "Chrome/140.0.7339.81",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+ },
+ "revealS": 4.62,
+ "scan": {
+  "nodes": 1624,
+  "levels": 10,
+  "files": 413,
+  "scale": 1,
+  "min": [
+   -6719.2,
+   -6085.8,
+   -6866.8
+  ],
+  "max": [
+   6817,
+   6460.9,
+   6644.9
+  ],
+  "splatsPerLevelM": {
+   "0": 43.09,
+   "1": 21.55,
+   "2": 10.77,
+   "3": 5.39,
+   "4": 2.69,
+   "5": 1.35,
+   "6": 0.67,
+   "7": 0.34,
+   "8": 0.17,
+   "9": 0.08
+  },
+  "start": {
+   "pos": [
+    -11.9,
+    3.1,
+    -16.8
+   ],
+   "yawDeg": 86.8,
+   "pitchDeg": 20
+  },
+  "fov": 115,
+  "horizontalFov": true,
+  "aspect": 2.068
+ },
+ "setup": {
+  "at": 2023,
+  "cfg": {
+   "view": false,
+   "predict": 0,
+   "force": 0,
+   "ring": 25,
+   "ringFactor": 1.6,
+   "far": 80,
+   "farFactor": 16,
+   "angle": 90,
+   "tune": {},
+   "product": true
+  },
+  "before": {
+   "underfill": 2,
+   "behind": 5,
+   "angle": 90,
+   "cooldown": 100
+  },
+  "view": {
+   "installedAt": 2023,
+   "on": false,
+   "calls": 34,
+   "ms": 4.50000000372529,
+   "forced": 0,
+   "inFrustum": 0,
+   "ring": 0,
+   "out": 0
+  }
+ },
+ "places": [
+  {
+   "place": "start",
+   "settledS": 6.03,
+   "timedOut": false,
+   "megabytes": 183.35,
+   "frames": {
+    "frames": 102,
+    "fps": 25.68,
+    "p50ms": 39,
+    "p95ms": 74.5,
+    "p99ms": 78.4,
+    "maxMs": 79.3,
+    "over25ms": 0.91,
+    "over50ms": 0.09,
+    "ticks": 201,
+    "tickFps": 50.6,
+    "held": 99,
+    "heldShare": 0.49
+   },
+   "state": {
+    "t": 13162,
+    "loading": 0,
+    "drawn": 970332,
+    "budgetM": 1,
+    "step": 0,
+    "scale": 0.85,
+    "held": 373,
+    "place": "start",
+    "pending": 0,
+    "prefetch": 0,
+    "inFrustum": {
+     "n": 794,
+     "none": 0,
+     "atWanted": 794,
+     "meanShown": 6.63,
+     "meanWanted": 6.63,
+     "splatsM": 0.85
+    },
+    "outside": {
+     "n": 830,
+     "none": 10,
+     "atWanted": 820,
+     "meanShown": 8.31,
+     "meanWanted": 8.32,
+     "splatsM": 0.12
+    },
+    "centre": {
+     "n": 64,
+     "none": 0,
+     "atWanted": 64,
+     "meanShown": 6.16,
+     "meanWanted": 6.16,
+     "splatsM": 0.44
+    },
+    "bands": [
+     {
+      "n": 226,
+      "none": 0,
+      "atWanted": 226,
+      "meanShown": 5.27,
+      "meanWanted": 5.27,
+      "splatsM": 0.7
+     },
+     {
+      "n": 478,
+      "none": 0,
+      "atWanted": 478,
+      "meanShown": 6.99,
+      "meanWanted": 6.99,
+      "splatsM": 0.14
+     },
+     {
+      "n": 86,
+      "none": 0,
+      "atWanted": 86,
+      "meanShown": 8.1,
+      "meanWanted": 8.1,
+      "splatsM": 0.01
+     },
+     {
+      "n": 4,
+      "none": 0,
+      "atWanted": 4,
+      "meanShown": 9,
+      "meanWanted": 9,
+      "splatsM": 0
+     }
+    ],
+    "shareInFrustum": 0.875,
+    "areaLevel": 7.02,
+    "areaEmptyShare": 0
+   },
+   "picture": "review-product-start.jpg"
+  },
+  {
+   "place": "up0",
+   "heightM": 0,
+   "pitchDeg": -20,
+   "settledS": 0.34,
+   "timedOut": false,
+   "megabytesHere": 14.45,
+   "frames": {
+    "frames": 122,
+    "fps": 30.65,
+    "p50ms": 32.4,
+    "p95ms": 58.6,
+    "p99ms": 66.5,
+    "maxMs": 66.6,
+    "over25ms": 0.86,
+    "over50ms": 0.14,
+    "ticks": 234,
+    "tickFps": 58.8,
+    "held": 112,
+    "heldShare": 0.48
+   },
+   "state": {
+    "t": 21537,
+    "loading": 0,
+    "drawn": 961455,
+    "budgetM": 1,
+    "step": 0,
+    "scale": 0.85,
+    "held": 588,
+    "place": "up0",
+    "pending": 0,
+    "prefetch": 0,
+    "inFrustum": {
+     "n": 746,
+     "none": 0,
+     "atWanted": 746,
+     "meanShown": 6.63,
+     "meanWanted": 6.63,
+     "splatsM": 0.82
+    },
+    "outside": {
+     "n": 878,
+     "none": 11,
+     "atWanted": 867,
+     "meanShown": 8.29,
+     "meanWanted": 8.29,
+     "splatsM": 0.14
+    },
+    "centre": {
+     "n": 38,
+     "none": 0,
+     "atWanted": 38,
+     "meanShown": 5.68,
+     "meanWanted": 5.68,
+     "splatsM": 0.42
+    },
+    "bands": [
+     {
+      "n": 207,
+      "none": 0,
+      "atWanted": 207,
+      "meanShown": 5.24,
+      "meanWanted": 5.24,
+      "splatsM": 0.68
+     },
+     {
+      "n": 453,
+      "none": 0,
+      "atWanted": 453,
+      "meanShown": 6.98,
+      "meanWanted": 6.98,
+      "splatsM": 0.13
+     },
+     {
+      "n": 83,
+      "none": 0,
+      "atWanted": 83,
+      "meanShown": 8.11,
+      "meanWanted": 8.11,
+      "splatsM": 0.01
+     },
+     {
+      "n": 3,
+      "none": 0,
+      "atWanted": 3,
+      "meanShown": 9,
+      "meanWanted": 9,
+      "splatsM": 0
+     }
+    ],
+    "shareInFrustum": 0.856,
+    "areaLevel": 7.04,
+    "areaEmptyShare": 0
+   },
+   "firstSeconds": [
+    {
+     "ms": 255,
+     "loading": 8,
+     "pending": 0,
+     "drawnM": 0.89,
+     "share": 0.756,
+     "inM": 0.68,
+     "area": 7.18,
+     "shown": 6.91,
+     "wanted": 6.89,
+     "centreShown": 5.89,
+     "centreWanted": 5.79,
+     "behind": 11
+    },
+    {
+     "ms": 1284,
+     "loading": 0,
+     "pending": 0,
+     "drawnM": 0.96,
+     "share": 0.856,
+     "inM": 0.82,
+     "area": 7.04,
+     "shown": 6.63,
+     "wanted": 6.63,
+     "centreShown": 5.68,
+     "centreWanted": 5.68,
+     "behind": 0
+    },
+    {
+     "ms": 2323,
+     "loading": 0,
+     "pending": 0,
+     "drawnM": 0.96,
+     "share": 0.856,
+     "inM": 0.82,
+     "area": 7.04,
+     "shown": 6.63,
+     "wanted": 6.63,
+     "centreShown": 5.68,
+     "centreWanted": 5.68,
+     "behind": 0
+    }
+   ],
+   "picture": "review-product-up0.jpg"
+  }
+ ],
+ "megabytes": 197.8,
+ "filesFetched": 844,
+ "viewStats": {
+  "installedAt": 2023,
+  "on": false,
+  "calls": 36,
+  "ms": 5.300000008195639,
+  "forced": 0,
+  "inFrustum": 0,
+  "ring": 0,
+  "out": 0
+ },
+ "product": {
+  "viewLod": {
+   "active": true,
+   "missing": [],
+   "failed": null,
+   "calls": 36,
+   "asked": 2,
+   "reordered": 71006,
+   "lastMs": 0.5,
+   "inFrame": 746,
+   "ring": 178,
+   "out": 700,
+   "turnDegS": 0,
+   "leadDeg": 0
+  },
+  "engine": {
+   "lodBehindPenalty": 1.001,
+   "lodUpdateAngle": 6,
+   "lodUnderfillLimit": 2,
+   "cooldownTicks": 100,
+   "lodMultiplier": 2,
+   "parallelLoads": 6
+  }
+ },
+ "thermalAfter": {
+  "tempC": 82,
+  "powerW": 34.81,
+  "clockMHz": 1290,
+  "pstate": "P0",
+  "throttleReasons": "0x0000000000000001",
+  "thermalSlowdown": false,
+  "utilPct": 0
+ },
+ "page": {
+  "gpu": {
+   "vendor": "intel",
+   "architecture": "gen-12lp",
+   "device": "",
+   "description": "",
+   "isFallback": false,
+   "maxBufferSize": 2147483648
+  },
+  "cls": "desktop-weak",
+  "drawn": "sorted",
+  "backbuffer": [
+   2176,
+   1052
+  ],
+  "lod": {
+   "kind": "lod-meta",
+   "levels": 10,
+   "range": [
+    0,
+    9
+   ],
+   "mode": "auto",
+   "drawn": 961455,
+   "budgetM": 1,
+   "loading": 0,
+   "contentUrl": "https://d28zzqy0iyovbz.cloudfront.net/70b50d42/v1/lod-meta.json",
+   "contentFailures": [],
+   "renderScale": 0.85,
+   "topBudgetM": 1,
+   "governorStep": 0,
+   "governorBudgetM": 1,
+   "settingBudgetM": 1,
+   "streamHitches": 138,
+   "view": {
+    "active": true,
+    "missing": [],
+    "failed": null,
+    "calls": 36,
+    "asked": 2,
+    "reordered": 71006,
+    "lastMs": 0.5,
+    "inFrame": 746,
+    "ring": 178,
+    "out": 700,
+    "turnDegS": 0,
+    "leadDeg": 0
+   }
+  }
+ },
+ "verdict": {
+  "adapter": "intel gen-12lp",
+  "scan": "1624 nodes, 10 levels, 43.09 M splats",
+  "places": [
+   "start: 88 % of 0.97 M drawn splats in the frame (0.85 M), level over the picture 7.02 (by node 6.63, centre 6.16), empty 0 %, 25.68 frames/s, settled 6.03 s",
+   "up0: 86 % of 0.96 M drawn splats in the frame (0.82 M), level over the picture 7.04 (by node 6.63, centre 5.68), empty 0 %, 30.65 frames/s, settled 0.34 s"
+  ],
+  "turns": [],
+  "megabytes": 197.8
+ }
+}

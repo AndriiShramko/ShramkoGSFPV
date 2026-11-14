@@ -13,7 +13,31 @@
 import { afterEach, describe, it, expect } from 'vitest';
 import { Mat4, Vec3 } from 'playcanvas';
 import type { AppBase, Entity } from 'playcanvas';
-import { ENGINE_LOD_MULTIPLIER, MAX_LEAD_DEG, MIN_ASK_MS, TIER_PREFETCH, TIER_SWITCH, TIER_VISIBLE, TURN_MIN_DEG_S, VIEW_LOD_DEFAULTS, ViewLod, frameHalfAngles, leadDeg, nearFirstRank, outsideFrame, rampFor, turnOf, turned, viewFactor, viewLodMissing } from '../src/view-lod';
+import { ENGINE_LOD_MULTIPLIER, ENGINE_RULE, MAX_LEAD_DEG, MIN_ASK_MS, TIER_PREFETCH, TIER_SWITCH, TIER_VISIBLE, TURN_MIN_DEG_S, VIEW_LOD_DEFAULTS, ViewLod, frameHalfAngles, leadDeg, lodRule, nearFirstRank, outsideFrame, rampFor, turnOf, turned, viewFactor, viewLodMissing } from '../src/view-lod';
+
+// review 2026-11-14: the engine's parameters follow whether the frame's priority is AT WORK, not whether it is wanted, so
+// a load where it failed or cannot run on the engine is drawn as before the lane (the multiplier included)
+describe('the engine\'s parameters (lodRule)', () => {
+    it('not at work: the engine\'s rule as the renderer set it before the lane (control)', () => {
+        expect(lodRule(false)).toEqual({ behindPenalty: 5, updateAngle: 90, lodMultiplier: 3 });
+        expect(lodRule(false, 6)).toEqual(ENGINE_RULE);
+    });
+
+    it('at work: the penalty just over 1 (the engine still looks at turns), the refresh angle, multiplier 2', () => {
+        const r = lodRule(true, 6);
+        expect(r.behindPenalty).toBeGreaterThan(1);
+        expect(r.behindPenalty).toBeLessThan(1.01);
+        expect(r.updateAngle).toBe(6);
+        expect(r.lodMultiplier).toBe(2);
+        expect(lodRule(true).updateAngle).toBe(VIEW_LOD_DEFAULTS.refreshDeg);
+    });
+
+    it('a result can be changed without changing the engine\'s rule', () => {
+        const r = lodRule(false);
+        r.lodMultiplier = 9;
+        expect(ENGINE_RULE.lodMultiplier).toBe(ENGINE_LOD_MULTIPLIER);
+    });
+});
 
 const D2R = Math.PI / 180;
 const deg = (rad: number): number => rad / D2R;

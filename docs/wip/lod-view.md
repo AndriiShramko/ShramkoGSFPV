@@ -1,7 +1,7 @@
 # Lane lod-view: the splat budget goes to what is in the frame
 
-Branch `lod-view`, cut from `gpu-select` (43958c56) on the owner's laptop, 2026-11-13. LOCAL ONLY: the laptop's agent was told
-to push `gpu-select` and nothing else, so this branch waits for the owner's word.
+Branch `lod-view`, cut from `gpu-select` (43958c56) on the owner's laptop, 2026-11-13; pushed with the owner's word on
+2026-11-14 (main untouched). A trial merge onto main 197c2760 has no conflicts.
 Labels: [measured] on this laptop; [reference] read in code or documentation.
 Raw files: `evidence/2026-11-13/lod-view/`: every run's JSON, and eight pictures (Lublin at 1 M, engine against product:
 the 40 m place, looking down, after the 185 degree turn; Wroclaw at 4 M, the level view). The other pictures the JSON
@@ -22,14 +22,23 @@ emptiness when the drone turns fast left, right, up or down."
 - [x] Experiments in the live page (the probe replaces the engine's distance at run time): the frame's priority, the
   distance falloff, a look-ahead from the turn rate.
 - [x] Product: `packages/render-pc/src/view-lod.ts`, wired into the renderer and the app, on by default, `?viewlod=0`
-  switches it off; 30 unit tests; measured again as the product (the Vite dev server) against the same reference.
-- [x] Gates on this branch, on the laptop: `pnpm -r typecheck`, the unit tests (296 files, 4583 tests: 4568 pass, 15 skipped,
-  none fail), `check-architecture`, `gen-catalog --check`, the site's `i18n:check` and B18 pass. The API's Python tests
+  switches it off; 33 unit tests; measured again as the product (the Vite dev server) against the same reference.
+- [x] Gates on this branch, on the laptop: `pnpm -r typecheck`, the unit tests (296 files, 4586 tests: 4571 pass, 15 skipped,
+  none fail; run again after the review's fix), `check-architecture`, `gen-catalog --check`, the site's `i18n:check` and B18 pass. The API's Python tests
   were not run again (no Python file changed since `gpu-select`, where they passed). The first full run caught two things
   this lane had to follow: the report's unit test (`tools/bench/test/app-lod.test.ts`) and the list of URL parameters
   (`packages/prefs/src/url.ts` gains `viewlod`).
+- [x] Pushed on 2026-11-14 with the owner's word, then checked again against the engine's sources: the file priority sum
+  and which end of it loads first, every reader of a node's distance (the budget balancer, the download rank, and the
+  colour refresh of spherical harmonics, which only refreshes a node outside the frame less often), where `framerender`
+  falls in the frame, the engine's own turn test, when the files' loader exists. One fault: the scan's multiplier followed
+  the WISH for the frame's priority, not whether it was at work, so a rule that failed or could not run on the engine
+  left multiplier 2 behind; now all three engine parameters follow `lodRule(active)`. Eight product values of the Lublin
+  table were from an earlier run and are now those of `score-ref16-p1-off.json` (no conclusion changes). After the fix,
+  in the page (Wroclaw at 1 M, `evidence/2026-11-14/lod-view/review-*.json`): with the rule at work the engine runs at
+  penalty 1.001, angle 6 and multiplier 2; with `?viewlod=0` at 5, 90 and 3.
 - [ ] Not done: a real phone or tablet; the lead's decision on the second engine-internals exception (render-pc's rule
-  is the public engine API); pushing the branch.
+  is the public engine API).
 
 ## What others do [reference, read 2026-11-13]
 
@@ -72,12 +81,12 @@ scores like the live site (19.10, 19.53, 19.16 at the three places).
 
 | Picture | 1 M engine | 1 M product | 4 M engine | 4 M product |
 |---|---|---|---|---|
-| start place (whole city) | 19.09 | 19.28 | 22.91 | 23.17 |
+| start place (whole city) | 19.09 | 19.29 | 22.91 | 23.17 |
 | 40 m higher | 19.54 | 19.89 | 23.37 | 23.88 |
 | 140 m higher | 19.16 | 19.09 | 23.02 | 22.87 |
-| yaw 95: at once / after 1.5 s / settled | 18.14 | 19.02 / 19.49 / 19.49 | 21.47 | 22.72 / 23.46 / 23.53 |
-| yaw 185: at once / after 1.5 s / settled | 18.86 | 20.21 / 20.70 / 20.98 | 21.46 | 23.16 / 23.16 / 24.48 |
-| pitch down 35: at once / after 1.5 s / settled | 18.62 | 19.14 / 20.24 / 20.24 | 21.60 | 22.46 / 24.14 / 24.14 |
+| yaw 95: at once / after 1.5 s / settled | 18.14 | 19.00 / 19.49 / 19.49 | 21.47 | 22.72 / 23.53 / 23.53 |
+| yaw 185: at once / after 1.5 s / settled | 18.86 | 20.21 / 20.99 / 20.99 | 21.46 | 23.30 / 23.58 / 24.49 |
+| pitch down 35: at once / after 1.5 s / settled | 18.62 | 19.14 / 20.24 / 20.24 | 21.60 | 22.39 / 24.14 / 24.14 |
 
 (The engine's pictures do not change after a turn: it keeps what it chose.) In splats: after the 185 degree turn the
 product has 0.37 M of its 0.96 M in the frame against the engine's 0.14 M, and 1.38 M against 0.52 M at 4 M; looking
@@ -161,17 +170,19 @@ against 304 MB) and everything is at its final level after 10.9 s against 8.9 s.
   tier + (level + rank) / levels, comes out as "nearest first by the frame's distance" for a node's wanted level and for
   its next finer level alike, instead of "the coarser level of the whole scan first, a node's next level last". A node that
   shows nothing keeps the engine's order (coarse first fills holes).
-- `packages/render-pc/src/renderer.ts`: makes the `ViewLod`, ticks it at `framerender`; while it is at work
-  `lodBehindPenalty` is 1.001 (ours covers "behind"; at 1 the engine stops looking at turns) and `lodUpdateAngle` 6, else 5
-  and 90 as before. New: `lodUnderfillLimit` 2 (was the engine's 0), the scan's `lodMultiplier` 2 with the frame's
-  priority and the engine's 3 without, `setParallelLoads` (the loader's private `maxConcurrentLoads`, by name),
-  `setViewLod`, `viewLodStats`. The header names the second exception to "public engine API only".
+- `packages/render-pc/src/renderer.ts`: makes the `ViewLod`, ticks it at `framerender` (after the engine's `update`,
+  before its `render`, where the choice is made). The engine's parameters follow whether it is at work (`lodRule` in
+  view-lod.ts): at work `lodBehindPenalty` 1.001 (ours covers "behind"; at 1 the engine stops looking at turns),
+  `lodUpdateAngle` 6 and the scan's `lodMultiplier` 2; off, failed, or on an engine without the members, 5, 90 and 3 as
+  before. New either way: `lodUnderfillLimit` 2 (was the engine's 0) and `setParallelLoads` (the loader's private
+  `maxConcurrentLoads`, by name); also `setViewLod`, `viewLodStats`. The header names the second exception to "public engine API only".
 - `packages/render-pc/src/index.ts`: exports.
 - App: `apps/fly/src/app/flight.ts` passes `?viewlod=0` to the session, `apps/fly/src/session/index.ts` to the renderer
   (the same path as `?accum=`), and `packages/prefs/src/url.ts` lists the parameter; `apps/fly/src/app/builtin/drawing.ts`
   sets six parallel loads, two on a phone or tablet; `apps/fly/src/app/lod.ts` adds `view` (the stats) to the report of
   `window.__gsfpv.lod()` and of a bug report.
-- Tests: `packages/render-pc/test/view-lod.test.ts`, 30: the geometry, the factor, the turn and its look-ahead, the
+- Tests: `packages/render-pc/test/view-lod.test.ts`, 33: the engine's parameters with the rule at work and without it
+  (control: the engine's own, as before the lane), the geometry, the factor, the turn and its look-ahead, the
   download order (the engine's own sum with the near-first rank), and the wrapper on a stand-in for the engine's instance
   (kept in the frame, multiplied outside, the scan's own multiplier, asks on turn and roll and not too often, the leading
   side of a turn kept and the trailing side not, files asked nearest first, a fault caught, dispose). Controls: no levels
@@ -197,7 +208,8 @@ against 304 MB) and everything is at its final level after 10.9 s against 8.9 s.
 
 - The owner asked for this ("if nobody has it, build it"), which is his decision on the second engine-internals
   exception; `docs/decisions.md` has no entry for it yet.
-- `?viewlod=0` gives the old behaviour for a load: the engine's rule, multiplier 3, penalty 5, angle 90. `lodUnderfillLimit`
-  2 and the parallel loads stay on either way.
+- `?viewlod=0` gives the old behaviour for a load (the engine's rule, multiplier 3, penalty 5, angle 90), and so does a
+  rule that failed or cannot run on the engine (the report's `view.failed` and `view.missing` say which).
+  `lodUnderfillLimit` 2 and the parallel loads stay on either way.
 - The governor sees more splats in the frame for the same budget, most of all when the view leaves the scan: it will step
   down sooner there. Its steps were not retuned.

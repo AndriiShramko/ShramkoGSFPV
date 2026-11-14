@@ -28,17 +28,9 @@ import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
-import { ViewLod } from './view-lod';
+import { ENGINE_RULE, ViewLod, lodRule } from './view-lod';
 import type { ViewLodStats } from './view-lod';
 
-/**
- * The engine's own penalty for nodes behind the camera: 5 while it is the only directional rule; just over 1 while the
- * frame's priority (view-lod.ts) is at work, which covers "behind" itself. Not 1: at 1 the engine stops looking at turns.
- */
-const BEHIND_PENALTY = 5;
-const BEHIND_PENALTY_WITH_VIEW = 1.001;
-/** The engine looks for a new choice of detail after this turn (degrees) on its own; the frame's priority asks sooner. */
-const LOD_UPDATE_ANGLE = 90;
 /**
  * How many levels coarser than the wanted one a node may show while the wanted file is on its way (the engine's
  * lodUnderfillLimit, 0 by default: the node keeps what it shows until its final file arrives, and after the first reveal
@@ -47,14 +39,6 @@ const LOD_UPDATE_ANGLE = 90;
  * 9 % more bytes.
  */
 const LOD_UNDERFILL = 2;
-/**
- * How fast a streamed scan's detail falls with distance: one level coarser per this many times the distance (the engine's
- * lodMultiplier, 3 by default). With 3 the far part of a city scan is drawn several times denser per pixel than the near
- * part. 2 goes with the frame's priority: scored on the Lublin scan against a 16 M reference at 1 M and 4 M, the two
- * together were never further from it than the engine's rule and up to 3 dB nearer (docs/wip/lod-view.md).
- */
-const LOD_MULTIPLIER_WITH_VIEW = 2;
-const LOD_MULTIPLIER = 3;
 
 /** What the HUD shows about the delay (see LatencyGuard, inputToScreenMs). */
 
@@ -324,8 +308,8 @@ export class SplatRenderer {
         app.root.addChild(this.debrisRoot);
 
         const g = app.scene.gsplat;
-        g.lodUpdateAngle = LOD_UPDATE_ANGLE;
-        g.lodBehindPenalty = BEHIND_PENALTY;
+        g.lodUpdateAngle = ENGINE_RULE.updateAngle;
+        g.lodBehindPenalty = ENGINE_RULE.behindPenalty;
         g.lodUnderfillLimit = LOD_UNDERFILL;
         this.viewLod = new ViewLod(app, cam);
         // after the flight has placed the camera for this frame and before the engine prepares the scan
@@ -670,8 +654,8 @@ export class SplatRenderer {
 
     /**
      * The frame's priority, once per frame: it follows the turn and asks the engine for a new choice of detail when the
-     * view has left the last one (view-lod.ts). While it is at work the engine's own "behind" penalty steps aside and the
-     * engine looks at smaller turns itself; when it is off or cannot run, the engine's rule is as before.
+     * view has left the last one (view-lod.ts). The engine's parameters follow whether it is AT WORK (lodRule: the "behind"
+     * penalty, the turn angle, the scan's multiplier): off, failed or unable to run, the engine's rule is as before.
      */
     private onViewLod = (): void => {
         const v = this.viewLod;
@@ -680,21 +664,22 @@ export class SplatRenderer {
         const active = v.active;
         if (active === this.viewLodActive) return;
         this.viewLodActive = active;
+        const rule = lodRule(active, v.params.refreshDeg);
         const g = this.app.scene.gsplat;
-        g.lodBehindPenalty = active ? BEHIND_PENALTY_WITH_VIEW : BEHIND_PENALTY;
-        g.lodUpdateAngle = active ? v.params.refreshDeg : LOD_UPDATE_ANGLE;
+        g.lodBehindPenalty = rule.behindPenalty;
+        g.lodUpdateAngle = rule.updateAngle;
+        this.applyLodMultiplier();
     };
 
-    /** The frame's priority on or off (on by default; off: the engine's own rule and distance falloff, as before lane lod-view). */
+    /** The frame's priority on or off from the next frame (on by default; off: the engine's own rule and distance falloff, as before lane lod-view). */
     setViewLod(on: boolean): void {
         this.viewLodWanted = on;
-        this.applyLodMultiplier();
     }
 
-    /** The scan's distance falloff: 2 with the frame's priority, the engine's 3 without (a scan in one file has no levels and no such number). */
+    /** The scan's distance falloff by the rule at work (lodRule): 2 while the frame's priority works, else the engine's 3 (a scan in one file has no such number). */
     private applyLodMultiplier(): void {
         const comp = this.splat?.gsplat as (GSplatComponent & { lodMultiplier?: number }) | undefined;
-        if (comp && typeof comp.lodMultiplier === 'number') comp.lodMultiplier = this.viewLodWanted ? LOD_MULTIPLIER_WITH_VIEW : LOD_MULTIPLIER;
+        if (comp && typeof comp.lodMultiplier === 'number') comp.lodMultiplier = lodRule(this.viewLodActive).lodMultiplier;
     }
 
     /** What the frame's priority is doing (the test hook, F3, the bug report). */

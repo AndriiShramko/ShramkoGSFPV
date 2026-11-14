@@ -58,6 +58,31 @@ export const VIEW_LOD_DEFAULTS: ViewLodParams = { ringDeg: 25, ringLevels: 0.5, 
 /** The engine's lodMultiplier where a scan does not say its own. */
 export const ENGINE_LOD_MULTIPLIER = 3;
 
+/** The engine's parameters for the choice of detail that the renderer sets (scene.gsplat and the scan's component). */
+export interface LodRule {
+    /** lodBehindPenalty: how much further a node behind the camera counts */
+    behindPenalty: number;
+    /** lodUpdateAngle: the turn (degrees) after which the engine chooses again by itself */
+    updateAngle: number;
+    /** the scan's lodMultiplier: one level coarser per this many times the distance */
+    lodMultiplier: number;
+}
+
+/** The engine's own rule, as the renderer set it before lane lod-view: penalty 5 behind, a new choice after 90 degrees, multiplier 3. */
+export const ENGINE_RULE: Readonly<LodRule> = { behindPenalty: 5, updateAngle: 90, lodMultiplier: ENGINE_LOD_MULTIPLIER };
+
+/**
+ * The rule while the frame's priority is AT WORK, else the engine's own: a load with it switched off, failed, or on an
+ * engine without the members it needs is drawn as before the lane. At work: the penalty steps aside (the frame's factor
+ * covers "behind"; just over 1, since at 1 the engine stops looking at turns), the engine itself looks again after
+ * refreshDeg, and the multiplier is 2 (with 3 the far part of a city scan is drawn several times denser per pixel than the
+ * near part). Scored on Lublin against a 16 M reference at 1 M and 4 M, the two together came up to 3 dB nearer to it than
+ * the engine's rule, and 0.1 dB further at the highest place (docs/wip/lod-view.md).
+ */
+export function lodRule(active: boolean, refreshDeg: number = VIEW_LOD_DEFAULTS.refreshDeg): LodRule {
+    return active ? { behindPenalty: 1.001, updateAngle: refreshDeg, lodMultiplier: 2 } : { ...ENGINE_RULE };
+}
+
 /** The ramp of the distance factor: 1 in the frame, ringFactor at ringDeg beyond its edge, farFactor from farDeg on. */
 export interface ViewRamp {
     ringDeg: number;
