@@ -100,7 +100,7 @@ async function until<T>(get: () => Promise<T>, ok: (v: T) => boolean, ms: number
 
 /** The page counting colours: about:blank of its own context (no CSP), a PNG decoded into a 2D canvas. */
 let counter: Page;
-async function colours(png: Buffer): Promise<Record<string, number>> {
+async function colours(png: Buffer, table: Record<string, [number, number, number]> = PAINT): Promise<Record<string, number>> {
     return counter.evaluate(
         async ({ b64, paint, tol }) => {
             const img = new Image();
@@ -124,9 +124,14 @@ async function colours(png: Buffer): Promise<Record<string, number>> {
             }
             return out;
         },
-        { b64: png.toString('base64'), paint: PAINT, tol: TOL }
+        { b64: png.toString('base64'), paint: table, tol: TOL }
     );
 }
+/** stage K2: view.ts PAINT selected (magenta) in 8-bit sRGB, counted only while the editor is open */
+const SELECTED_PAINT: Record<string, [number, number, number]> = { selected: [255, 51, 255] };
+/** the selected gate's pixels that make it "in view" (an estimate, as MIN_PX: a gate a few metres away covers thousands) */
+const MIN_SEL_PX = 200;
+const selectedPx = async (p: Page): Promise<number> => (await colours(await p.screenshot(), SELECTED_PAINT)).selected ?? 0;
 const total = (c: Record<string, number>): number => Object.values(c).reduce((a, b) => a + b, 0);
 /** pixels that differ by more than DIFF in a channel between two screenshots of the same view, and their mean colour in the first */
 const DIFF = 40; // an estimate: above the frame-to-frame noise of a still view of the scan
@@ -214,13 +219,13 @@ async function settle(page: Page, scene: string): Promise<void> {
 }
 
 // ---------------- E the editor (train 2, T3-editor-ui; tracks-plan 2.11)
-interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number>; paints?: string[]; admin?: boolean }
+interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number>; paints?: string[]; admin?: boolean; view?: { eye: number[]; at: number[] } | null }
 const editorHook = (page: Page): Promise<EditorHook | null> =>
     page.evaluate(() => (window as unknown as { __gsfpv?: { course?: { editor?: EditorHook } } }).__gsfpv?.course?.editor ?? null);
 const EDITOR_SHOTS = process.env.EDITOR_SHOTS ?? 'U:/Temp/gsfpv-train2/shots';
 const EDITOR_SIZES = [
-    { w: 1920, h: 1080, file: 'tracks-editor-1920.png' },
-    { w: 844, h: 390, file: 'tracks-editor-844.png' }
+    { w: 1920, h: 1080, file: 'tracks2-editor-1920.png' },
+    { w: 844, h: 390, file: 'tracks2-editor-844.png' }
 ];
 /** the editor window's layout at the current size: inside the viewport (or scrolls), no two key buttons overlap */
 const editorLayout = (page: Page): Promise<{ box: Box | null; scrolls: boolean; keys: number; keyOverlaps: number; smallestKeyFont: number }> =>
@@ -272,6 +277,18 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
         // the selected gate is painted apart (one 'selected', the rest 'later' or red 'bad')
         const pa = (await editorHook(p))?.paints ?? [];
         check('E paint: exactly the selected gate is painted selected', pa.length > 0 && pa.filter((x) => x === 'selected' || x === 'selected-bad').length === 1 && (pa[op.v?.selected ?? 0] ?? '').startsWith('selected'), { paints: pa, selected: op.v?.selected });
+        // stage K2: the editor's camera looks at the selected gate on opening and after Tab (it was behind the drone before)
+        const v1 = (await editorHook(p))?.view ?? null;
+        const px1 = await selectedPx(p);
+        check('E camera: the selected gate in view on opening (hook view, magenta pixels on screen)', !!v1 && px1 >= MIN_SEL_PX, { view: v1, px: px1, min: MIN_SEL_PX });
+        await p.keyboard.press('Tab');
+        await sleep(400);
+        const e2 = await editorHook(p);
+        const px2 = await selectedPx(p);
+        const camMoved = !!v1 && !!e2?.view && e2.view.at.some((x, i) => Math.abs(x - (v1.at[i] ?? 0)) > 1e-6);
+        check('E camera: after Tab the camera looks at the newly selected gate, in view', e2?.selected !== op.v?.selected && camMoved && px2 >= MIN_SEL_PX, { selected: e2?.selected, view: e2?.view, px: px2 });
+        await p.keyboard.press('Shift+Tab');
+        await sleep(300);
         await until(() => p.evaluate(() => document.querySelectorAll('.course-editor .ce-row, .course-editor .ce-empty').length), (n) => n > 0, 10000);
 
         // "Save for everyone" from the window: the generated course becomes a server course (the fork's parent)
@@ -403,6 +420,8 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
             shots.push({ file, sha256: createHash('sha256').update(png).digest('hex'), what: `the editor at ${s.w}x${s.h}` });
             const inside = !!lay.box && lay.box.left >= 0 && lay.box.right <= s.w + 0.5 && lay.box.top >= 0 && (lay.box.bottom <= s.h + 0.5 || lay.scrolls);
             check(`E ${s.w}x${s.h}: the window inside the view (or scrolls), no two keys overlap`, inside && lay.keys > 0 && lay.keyOverlaps === 0, lay);
+            const spx = (await colours(png, SELECTED_PAINT)).selected ?? 0;
+            check(`E ${s.w}x${s.h}: the selected gate is on the screenshot (magenta pixels)`, spx >= MIN_SEL_PX, { px: spx, file: s.file });
             // stage F1-finish: the HUD's top buttons are not under the window, the save buttons are in its visible part unscrolled
             const reach = await p.evaluate(() => {
                 const w = document.querySelector('.course-editor') as HTMLElement | null;
