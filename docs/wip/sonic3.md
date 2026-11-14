@@ -42,11 +42,28 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   default off as the plan says; both run on rungs 1..22, table in Facts "Z3 before table". Corridor is 0 in every variant.
 - [x] 2. test/ear-pilot.test.ts (package afec518): 5 of 5 pass; the swapped and deaf cases are the controls (each fails the
   lowest rung on rings-course by assertion while the true sound passes it with seeds 1 2 3).
+- [x] 4a. Package 2d83aa9: src/cues/budget.ts (TierGate: tiers at 3, 8, 15 m/s, down at 85 %, hold 500 ms; applyBudget:
+  streams by rank urgent hazard, guide, open-way chime, other hazards, shape; tier 1 keeps 3 and no shape, tier 2 and up
+  keeps 2 and the chime replaces the hazards; previews never cut; layerPlanOn: ticks and height tone off at tier 2 and up).
+  Pure, NOT wired into the planner yet. test/budget.test.ts 7 of 7.
+- [x] Pin of packages/sonic-fpv moved to package train3 2d83aa9 (this commit; the engine imports neither src/pilot nor budget.ts).
 - [ ] LEFT, in this order:
   3. Simulator tools/bench/src/ear-pilot-scan.ts on Tunis 887f27aa and Wroclaw 70b50d42 (walls stand-in), plan section 4.
-  4. Z4 speed part: src/cues/reach.ts, budget.ts, wiring in planner.ts, sampler.ts rangeS, freeway.ts depth; tests
-     reach.test.ts, budget.test.ts with negative controls; replay version bumps; ear pilot after-run; pin move.
-  5. gates.py --only vitest,architecture,i18n,b18 on the worktree before handing over.
+  4b. Wire budget.ts into planner.ts plan(): tried and reverted in pass 2 (diff: `tiers = new TierGate()` field, reset,
+     `tier = tiers.update(length(s.vel), t)` before height/speed, `applyBudget(requests, tier, urgentKeys)` before
+     `moving.assign`, urgentKeys = scene.hazards with isUrgent as `safety:${h.sector}`, FramePlan `tier?`, cut keys into
+     `dropped`). With it 8 package tests fail (themes unbumped): elevation.test.ts 4 open-way chime cases (the chime is
+     checked in frames flown at speed), cues.test.ts "at most 8 moving voices, hazards first", lesson-schedule.test.ts
+     ears-shapes (shape cut at tier 1: 0.74 of frames heard, needs 0.9; fix: never cut the shape trace in a lesson whose
+     layers have no target, or keep budget off in module 0), beacon-listen.test.ts tunnel-wide and beacon-target.test.ts
+     (recordings at speed replay differently: bump themes/clear, race, soft "version" 2 to 3; then replay.test.ts and
+     sonic-keys-versions.test.ts expectations about the build's own version need the new number: with the bump 11 fail).
+     Log U:/Temp/gsfpv-train3/sonic3/pkg-vitest-z4.log, pkg-z4-fails.log.
+  4c. src/cues/reach.ts (plan 2.1 table as data, reachM(cue, speedMps)), wiring in sampler.ts rangeS and freeway.ts depth by
+     time, test/reach.test.ts with a negative control.
+  4d. Ear pilot after-run (tools/ear-pilot.ts, rungs 1..22, both columns) against the before table; a course that loses
+     more than one rung is not handed over. Then move the pin again.
+  5. gates.py --only vitest,architecture,i18n,b18 on the worktree before handing over (pass 2 ran it on this commit: see Facts).
 
 ## Facts (measured)
 
