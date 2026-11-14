@@ -40,6 +40,16 @@ export function lappedIds(bests: Record<string, unknown>): Set<string> {
     return out;
 }
 
+/** stage K2: the pilot's best completed lap of a course over its versions and drones (ms), sent with a vote; null: none. */
+export function lapOf(id: string, bests: Record<string, unknown>): number | null {
+    let best: number | null = null;
+    for (const [k, v] of Object.entries(bests)) {
+        if (!k.startsWith(`${id}.v`) || typeof v !== 'number' || !Number.isFinite(v) || v <= 0) continue;
+        if (best === null || v < best) best = v;
+    }
+    return best;
+}
+
 /** tracks-plan 2.9: the vote buttons of a row are offered only after a completed lap on that course. */
 export function mayVote(id: string, lapped: ReadonlySet<string>): boolean {
     return lapped.has(id);

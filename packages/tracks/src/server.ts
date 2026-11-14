@@ -82,8 +82,8 @@ export function textIssues(path: string, s: string, len: readonly [number, numbe
 export const MAX_COORD = 10000;
 /** one leg between two gates (and the leg back on a closed course), flown m */
 export const MAX_LEG_M = 60;
-/** the keys generateCourse writes into generator.params */
-export const PARAM_KEYS: readonly string[] = ['marginM', 'cellM', 'freeDigest', 'wanted', 'rooms', 'volumeM3', 'tries', 'walked', 'stop', 'closed', 'proof'];
+/** the keys generateCourse writes into generator.params (scale, legMinM, legMaxM: a smaller course of fitCourse, review T2-2) */
+export const PARAM_KEYS: readonly string[] = ['marginM', 'cellM', 'freeDigest', 'wanted', 'rooms', 'volumeM3', 'tries', 'walked', 'stop', 'closed', 'proof', 'scale', 'legMinM', 'legMaxM'];
 const PROOF_KEYS: readonly string[] = ['ok', 'marginM', 'pathM'];
 const PARAM_TEXT_MAX = 40;
 

@@ -27,14 +27,16 @@ import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, wi
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
-import { canSave, edit, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
+import type { RayFn } from '../../course/editor/camera';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
-import { adminVersionBody, editPaints, lappedIds, mayVote } from '../../course/editor/rules';
+import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
 import { TracksAdminClient } from '../../admin/tracks/api';
@@ -83,6 +85,25 @@ export const course: Feature = {
         let ed: EditorState | null = null;
         let panel: EditorPanel | null = null;
         let checkFn: CourseCheck = () => [];
+        /** stage K2: the walls as a ray for the editor's camera, and that camera's forward on the floor */
+        let camRay: RayFn | null = null;
+        let camForward: readonly [number, number] | null = null;
+        let camView: GateView | null = null;
+        /** stage K2.6: the camera looks right of the gate by the share of the width the editor's window covers, so the gate is in the free part */
+        const aim = (): void => {
+            if (!camView || !panel) return;
+            const w = window.innerWidth;
+            const left = panel.root.getBoundingClientRect().left;
+            const free = w > 0 ? left / w : 1;
+            const cc = ctx.renderer.camera.camera;
+            const fov = cc?.fov ?? 115;
+            const h = cc && !cc.horizontalFov ? (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * (w / Math.max(1, window.innerHeight))) * 180) / Math.PI : fov;
+            const look = aimAt(camView.eye, camView.at, free, h);
+            ctx.session.cameraOverride = true;
+            ctx.renderer.setCameraLookAt(camView.eye[0], camView.eye[1], camView.eye[2], look[0], look[1], look[2]);
+            edHook.view = { eye: [...camView.eye], at: [...camView.at], look: [...look], free };
+        };
+        const onResize = (): void => aim();
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
@@ -175,7 +196,8 @@ export const course: Feature = {
         // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
         // the worker, so Shift+G and Shift+T work again. ESTIMATES: a check took 1.9 s in the page (run 5), a course 15-31 s
         const CHECK_LIMIT_MS = 20_000;
-        const GENERATE_LIMIT_MS = 150_000; // up to three tries of enoughGates
+        // up to 9 tries of fitCourse; the worker stops by FIT_BUDGET_MS (120 s, packages/tracks fit.ts) once it has a course
+        const GENERATE_LIMIT_MS = 150_000;
         const disarm = (): void => {
             if (watchdog !== null) clearTimeout(watchdog);
             watchdog = null;
@@ -455,9 +477,17 @@ export const course: Feature = {
             stage.paintEdit(paints);
             edHook.paints = paints;
             shownNext = ed.selected;
+            // stage K2: the selected gate in view (the paused drone may face away from it)
+            const sg = run.gates[ed.selected];
+            if (sg) {
+                const s = ctx.session.runner.sim.s;
+                camView = gateCamera(sg.pos, [s[S.px] ?? 0, s[S.py] ?? 0, s[S.pz] ?? 0], camRay);
+                camForward = camView.forward;
+            }
             hud.update(null, 0);
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
+            aim();
             edHook.open = true;
             edHook.selected = ed.selected;
             edHook.changed = edChanged;
@@ -469,11 +499,24 @@ export const course: Feature = {
             const col = ctx.session.collision;
             if (!col) return fail('no walls', t('course.noWalls'));
             if (!run) {
-                hook.problem = 'no course';
-                ctx.hud.flash(t('course.edit.noCourse'), 4000);
-                return;
+                // stage K2 (the owner's rule: lead him on): no course yet, so one is made and the editor opens on it
+                // review T2-4: pressed while a course is being made, the editor opens on it when it arrives
+                if (busy) {
+                    reopenAfter = true;
+                    if (!checking) ctx.hud.flash(t('course.generating'), 2500);
+                    return;
+                }
+                hook.problem = null;
+                reopenAfter = true;
+                return generate(randomSeed());
             }
-            checkFn = wallsCheck(col, flownTransform());
+            // review T2-1: a smaller course (K1.2) is edited at the margin it was laid with, as the worker proves it
+            checkFn = wallsCheck(col, flownTransform(), marginOf(run.track));
+            const fc = flownCollision(col, flownTransform());
+            camRay = (o, d, max) => {
+                const h = fc.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], max);
+                return h ? Math.hypot(h.x - o[0], h.y - o[1], h.z - o[2]) : null;
+            };
             edSource = run.track;
             ed = openEditor(upgradeTrack(run.track), checkFn, 0);
             edChanged = false;
@@ -484,6 +527,7 @@ export const course: Feature = {
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
+            window.addEventListener('resize', onResize);
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;
@@ -506,6 +550,11 @@ export const course: Feature = {
             unblock?.();
             unblock = null;
             edHook.open = false;
+            edHook.view = null;
+            camForward = null;
+            camView = null;
+            window.removeEventListener('resize', onResize);
+            ctx.session.cameraOverride = false;
             ctx.resume('panel');
             // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)
             if (!quiet && edSource) {
@@ -518,6 +567,8 @@ export const course: Feature = {
             }
         }
         const viewForward = (): [number, number] => {
+            // stage K2: the arrows follow the camera that shows the gate, not the drone's heading
+            if (camForward) return [camForward[0], camForward[1]];
             const s = ctx.session.runner.sim.s;
             return forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
         };
@@ -653,7 +704,7 @@ export const course: Feature = {
             if (!mayVote(id, lappedIds(readBests()))) return say(t('course.edit.voteAfterLap'), true);
             const had = myVotes()[id] ?? 0;
             const nv = had === v ? 0 : v;
-            const r = await store.vote(id, nv, voterId());
+            const r = await store.vote(id, nv, voterId(), lapOf(id, readBests()));
             if (!r.ok) {
                 hook.problem = `vote: ${r.problem}`;
                 return say(t('course.edit.voteFailed', { msg: r.problem.slice(0, 120) }), true);

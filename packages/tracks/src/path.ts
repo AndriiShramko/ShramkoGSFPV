@@ -9,11 +9,35 @@ import type { Sweeper } from './check';
 export const PATH_STEP_M = 6;
 /** The point before each gate, m. */
 export const BEFORE_GATE_M = 1.5;
+/** The point after a gate the path turns hard at, along its axis, m (estimate; capped as check.ts caps its run through the gate). */
+export const AFTER_GATE_M = 1;
+/** A leg out more than 60 degrees off the gate's axis gets the point after the gate (estimate: cos 60). */
+export const EXIT_TURN_COS = 0.5;
 
 const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const mul = (a: Vec3, k: number): Vec3 => [a[0] * k, a[1] * k, a[2] * k];
 const len = (a: Vec3): number => Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+
+/** The way a gate with quaternion (w, x, y, z) is passed: its local -Z in the world. */
+export function gateAxis(q: readonly number[]): Vec3 {
+    const [w, x, y, z] = q as [number, number, number, number];
+    return [-2 * (x * z + w * y), -2 * (y * z - w * x), -(1 - 2 * (x * x + y * y))];
+}
+
+/**
+ * The point after a gate that the path flies through before it turns (lane tracks2, K1): without it a leg out that turns
+ * back more than 90 degrees from the axis only touches the gate's plane at the centre and the lap detector (a forward
+ * crossing per frame) never counts the gate. Set when the leg out is more than 60 degrees off the axis, and after the last
+ * gate of an open course (`legOut` null). Inside the run check.ts proves through the gate: at most 0.4 of the shorter leg.
+ */
+export function gateExit(centre: Vec3, axis: Vec3, legIn: Vec3, legOut: Vec3 | null): Vec3 | null {
+    const lin = len(legIn);
+    const lout = legOut ? len(legOut) : lin;
+    if (legOut && lout > 1e-9 && (axis[0] * legOut[0] + axis[1] * legOut[1] + axis[2] * legOut[2]) / lout >= EXIT_TURN_COS) return null;
+    const e = Math.min(AFTER_GATE_M, 0.4 * Math.min(lin, lout || lin));
+    return e > 1e-6 ? add(centre, mul(axis, e)) : null;
+}
 
 function flatDir(v: Vec3, fallback: Vec3): Vec3 {
     const h = Math.sqrt(v[0] * v[0] + v[2] * v[2]);
@@ -52,6 +76,12 @@ export function coursePath(track: TrackFile, transform: SceneTransform = track.t
             run(before, g, i + 1);
         } else run(cur, g, i + 1);
         cur = g;
+        const next = i + 1 < gates.length ? gates[i + 1]! : track.laps > 1 ? start : null;
+        const exit = gateExit(g, gateAxis(track.gates[i]!.quat), sub(g, i > 0 ? gates[i - 1]! : start), next ? sub(next, g) : null);
+        if (exit) {
+            run(g, exit);
+            cur = exit;
+        }
     });
     // the leg back closes the lap; an open course (laps 1, its last gate does not see the start) ends at its last gate
     if (track.laps > 1) run(cur, start);

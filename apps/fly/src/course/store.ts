@@ -90,10 +90,12 @@ export class CourseStore {
     }
 
     /** A vote on a course: 1 up, -1 down, 0 takes it back; `voter` is this browser's random id (voterId()). */
-    async vote(id: string, v: 1 | -1 | 0, voter: string): Promise<Voted> {
+    async vote(id: string, v: 1 | -1 | 0, voter: string, lapMs: number | null = null): Promise<Voted> {
         if (!SERVER_TRACK_ID.test(id) || !/^[0-9a-f]{32}$/.test(voter)) return { ok: false, problem: 'bad-vote' };
+        // stage K2: the server takes a vote only with the pilot's completed lap of the course (tracks-plan 2.9, apps/api/tracks.py)
+        const body = lapMs !== null && v !== 0 ? { v, voter, lap: Math.round(lapMs) } : { v, voter };
         try {
-            const r = await this.fetchFn(`${this.base}/${encodeURIComponent(id)}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ v, voter }) });
+            const r = await this.fetchFn(`${this.base}/${encodeURIComponent(id)}/vote`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             const j = (await r.json().catch(() => ({}))) as { up?: unknown; down?: unknown; v?: unknown; error?: unknown };
             if (r.ok && typeof j.up === 'number' && typeof j.down === 'number') return { ok: true, up: j.up, down: j.down, v: typeof j.v === 'number' ? j.v : v };
             return { ok: false, problem: `http ${r.status}${typeof j.error === 'string' ? ` ${j.error}` : ''}` };

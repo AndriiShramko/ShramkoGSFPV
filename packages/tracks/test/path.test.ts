@@ -30,12 +30,16 @@ describe('coursePath', () => {
         expect(pathProblems(gappy, track, IDENTITY).some((s) => s.includes('apart'))).toBe(true);
     });
 
-    it('a closed course ends back at the start; an open one (laps 1) ends on its last gate', () => {
+    it('a closed course ends back at the start; an open one (laps 1) ends just through its last gate', () => {
         const last = track.gates[track.gates.length - 1]!.pos;
         expect(track.laps).toBeGreaterThan(1);
         expect(dist(path[path.length - 1]!.pos, path[0]!.pos)).toBeLessThan(1e-9);
         const open = coursePath({ ...track, laps: 1 }, IDENTITY);
-        expect(dist(open[open.length - 1]!.pos, last)).toBeLessThan(1e-9);
-        expect(open[open.length - 1]!.stage).toBe(track.gates.length);
+        // K1: the last stage point is the gate's centre, the path goes on through it (at most AFTER_GATE_M) and ends there
+        expect(dist(open[open.length - 2]!.pos, last)).toBeLessThan(1e-9);
+        expect(open[open.length - 2]!.stage).toBe(track.gates.length);
+        const tail = dist(open[open.length - 1]!.pos, last);
+        expect(tail).toBeGreaterThan(0.1);
+        expect(tail).toBeLessThanOrEqual(1 + 1e-5); // the quaternion is rounded to 1e-6
     });
 });
