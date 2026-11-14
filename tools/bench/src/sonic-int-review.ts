@@ -802,7 +802,16 @@ function experiencedDoc(): object {
 }
 
 /** Steers by the target hum as a blind pilot would (W held, E or Q when the hum is to a side, Space or Shift for its height) until `done`. */
-async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>, trail?: object[], cueSeen?: Set<string>): Promise<R10Probe> {
+/** What a steered flight did: horizontal speed samples (m/s, while W was held), dodges out of a stall, gates passed. */
+interface SteerStats { speeds: number[]; dodges: number; targets: string[] }
+
+/** The median of a list (0 for none). */
+const median = (xs: readonly number[]): number => {
+    const s = [...xs].sort((a, b) => a - b);
+    return s.length === 0 ? 0 : s.length % 2 === 1 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2;
+};
+
+async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>, trail?: object[], cueSeen?: Set<string>, speedMps?: number, stats?: SteerStats): Promise<R10Probe> {
     const held = new Set<string>();
     let lastTrail = 0;
     const hold = async (code: string, on: boolean): Promise<void> => {
@@ -810,9 +819,32 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         if (!on && held.has(code)) { await page.keyboard.up(code); held.delete(code); }
     };
     let p = await probe10(page);
+    let prev = { pos: p.pos, t: Date.now() };
+    let speed = 0;
+    // a stall: W held and the craft moved under 0.3 m in 3 s (estimates); the pilot climbs, then side-steps, as the ear pilot dodges
+    let stallFrom = { pos: p.pos, t: Date.now() };
+    let side = 1;
     for (const t0 = Date.now(); !done(p) && Date.now() - t0 < ms; ) {
         const v = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir as [number, number, number] | undefined;
-        await hold('KeyW', v !== undefined && Math.abs(v[0]) < 0.5);
+        const ahead = v !== undefined && Math.abs(v[0]) < 0.5;
+        // the speed asked: W pulsed to hold the horizontal speed under speedMps (none: W held)
+        await hold('KeyW', ahead && (speedMps === undefined || speed < speedMps));
+        if (held.has('KeyW') && stats) stats.speeds.push(speed);
+        if (stats && p.target && stats.targets[stats.targets.length - 1] !== p.target.id) stats.targets.push(p.target.id);
+        if (!ahead || Math.hypot(p.pos[0] - stallFrom.pos[0], p.pos[2] - stallFrom.pos[2]) > 0.3) stallFrom = { pos: p.pos, t: Date.now() };
+        else if (Date.now() - stallFrom.t > 3000) {
+            if (stats) stats.dodges++;
+            for (const c of [...held]) await hold(c, false);
+            await hold('Space', true);
+            await sleep(1200);
+            await hold('Space', false);
+            const code = side > 0 ? 'KeyD' : 'KeyA';
+            side = -side;
+            await hold(code, true);
+            await sleep(900);
+            await hold(code, false);
+            stallFrom = { pos: (await probe10(page)).pos, t: Date.now() };
+        }
         await hold('KeyE', v !== undefined && v[0] > 0.12);
         await hold('KeyQ', v !== undefined && v[0] < -0.12);
         // height by the hum's slope: 0.08 (an estimate) is about 0.5 m at 6 m; at 0.2 the pilot of run 4 flew 1 m under gate 2 into an obstacle for 230 s
@@ -820,6 +852,11 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         await hold('ShiftLeft', v !== undefined && v[1] < -0.08);
         await sleep(60);
         p = await probe10(page);
+        const now = Date.now();
+        if (now - prev.t >= 200) {
+            speed = Math.hypot(p.pos[0] - prev.pos[0], p.pos[2] - prev.pos[2]) / ((now - prev.t) / 1000);
+            prev = { pos: p.pos, t: now };
+        }
         if (p.lastLine) seen.add(p.lastLine);
         for (const c of cueSeen ? (p.cues ?? []) : []) cueSeen?.add(c);
         if (trail && Date.now() - lastTrail >= 2000) {
@@ -854,10 +891,10 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     await sleep(800);
     await page.keyboard.press('Escape');
     await page.waitForSelector('.pause-menu', { timeout: 10000 });
-    const href = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySound"]')?.getAttribute('href') ?? null);
+    const href = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySoundLessons"]')?.getAttribute('href') ?? null);
     result.r10link = href;
     check(`R10: the pause menu links this scan by sound (/en/fly/?sonic=scan&scene=${SCAN}&sz=<size>)`, new RegExp(`^/en/fly/\\?sonic=scan&scene=${SCAN}&sz=\\d+(\\.\\d+)?$`).test(href ?? ''), href);
-    const [first] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
+    const [first] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySoundLessons"]')]);
     first.on('pageerror', (e) => problems.push(`R10 first: pageerror ${e.message.slice(0, 300)}`));
     await until('the start screen (first-timer)', () => first.evaluate(() => !!document.querySelector('[data-testid="sonic-start-beginning"]')), (v) => v, 60000);
     const firstOrder = await scanOrder(first);
@@ -965,6 +1002,82 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
     await exp.close();
 }
 
+/**
+ * R11: the owner's path of train 3 (message 51): an ordinary flight in scene Z5_SCENE (default 887f27aa), the Controls screen,
+ * then ONE press of Backslash switches Fly by Sound on in place; the first planned cue and the first spoken line are timed from
+ * that press. N makes a course; the pilot of steerByHum flies it to its end with W pulsed to hold Z5_SPEEDS (m/s, one fresh
+ * page per speed, default "2,5"; the scan's free flight caps at 5). Z5_WALLS names the walls of the run in the evidence only:
+ * the shell puts or leaves out dist/walls/<scene>/ (the stand-in or none: then the page builds them on N).
+ */
+async function r11(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    const scene = process.env.Z5_SCENE ?? SCAN;
+    const speeds = (process.env.Z5_SPEEDS ?? '2,5').split(',').map(Number).filter((x) => x > 0);
+    const shots = process.env.Z5_SHOTS ?? 'U:/Temp/gsfpv-train3/shots';
+    mkdirSync(shots, { recursive: true });
+    result.r11 = { scene, walls: process.env.Z5_WALLS ?? 'as served', runs: [] as object[] };
+    for (const speed of speeds) {
+        log(`R11: ${scene}, Backslash in place, a course at ${speed} m/s`);
+        const ctx = await newContext(browser, served, prefsDoc(), null);
+        const page = await ctx.newPage();
+        const tag = `R11 ${scene} ${speed}`;
+        page.on('pageerror', (e) => problems.push(`${tag}: pageerror ${e.message.slice(0, 300)}`));
+        page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) problems.push(`${tag}: console ${m.text().slice(0, 300)}`); });
+        const wallsFiles: string[] = [];
+        page.on('response', (r) => { if (new URL(r.url()).pathname.startsWith('/walls/')) wallsFiles.push(`${new URL(r.url()).pathname} ${r.status()}`); });
+        await page.goto(`${served.origin}/en/fly/?scene=${scene}&nowarn=1&render=off`);
+        await until('the ordinary flight', () => page.evaluate(() => (window as unknown as Hook).__gsfpv?.status ?? null), (v) => v === 'ready', 180000, 250);
+        await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 });
+        await page.focus('.screen.radio [data-action="radio-keyboard"]');
+        await page.keyboard.press('Enter');
+        await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
+        await sleep(800);
+        // the one press: Backslash; nothing else is pressed until the first cue
+        const t0 = Date.now();
+        await page.keyboard.press('Backslash');
+        let firstCue: { s: number; cues: string[] } | null = null;
+        let firstLine: { s: number; key: string } | null = null;
+        const phases = new Set<string>();
+        const on = await until('the first cue after Backslash', async () => {
+            const p = await probe10(page);
+            if (p.phase) phases.add(p.phase);
+            if (firstCue === null && (p.cues ?? []).length > 0) firstCue = { s: (Date.now() - t0) / 1000, cues: (p.cues ?? []).slice(0, 6) };
+            if (firstLine === null) {
+                const sp = spokenAfter(await events(page), 0);
+                if (sp.length > 0) firstLine = { s: (Date.now() - t0) / 1000, key: sp[0] };
+            }
+            return p;
+        }, (p) => firstCue !== null && p.lesson === 'scan-free' && p.phase === 'flying', 120000, 100).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
+        await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-inplace.png`, fullPage: false });
+        const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null };
+        (result.r11 as { runs: object[] }).runs.push(run);
+        check(`${tag}: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue`, on !== null && firstCue !== null, run);
+        if (on === null) { await ctx.close(); continue; }
+        // N: a course (walls first when the scan has none: wallsThen builds them)
+        const from = (await events(page)).length;
+        const lines = new Set<string>();
+        await page.keyboard.press('KeyN');
+        const tN = Date.now();
+        const ready = await until('the course', async () => {
+            const p = await probe10(page);
+            if (p.lastLine) lines.add(p.lastLine);
+            return p;
+        }, (p) => p.target !== null || lines.has('sonic.say.courseNone') || lines.has('sonic.say.scanNoWalls'), 420000, 250).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
+        run.course = { s: (Date.now() - tN) / 1000, target: ready?.target?.id ?? null, lines: [...lines], wallsFiles: wallsFiles.slice(0, 6), walls: ready?.walls ?? null };
+        check(`${tag}: N makes a course (gate 1 is the hum's target)`, ready?.target !== null && ready?.target !== undefined, run.course);
+        if (!ready?.target) { await ctx.close(); continue; }
+        const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
+        const trail: object[] = [];
+        const tF = Date.now();
+        const end = await steerByHum(page, (p) => p.phase === 'passed' || p.phase === 'idle', 360000, lines, trail, undefined, speed, stats);
+        await sleep(3000);
+        const spoken = spokenAfter(await events(page), from);
+        await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
+        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-12), trail: trail.slice(-8) };
+        check(`${tag}: the course was flown to its end by the hum`, end.phase === 'passed' || end.phase === 'idle', run.flight);
+        await ctx.close();
+    }
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -1007,6 +1120,7 @@ async function main(): Promise<void> {
         else if (which === 'r8') await r8(fresh, served);
         else if (which === 'r9') await r9(fresh, served);
         else if (which === 'r10') await r10(fresh, served);
+        else if (which === 'r11') await r11(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
