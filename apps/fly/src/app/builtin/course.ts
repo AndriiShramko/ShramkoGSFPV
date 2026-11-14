@@ -196,7 +196,8 @@ export const course: Feature = {
         // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
         // the worker, so Shift+G and Shift+T work again. ESTIMATES: a check took 1.9 s in the page (run 5), a course 15-31 s
         const CHECK_LIMIT_MS = 20_000;
-        const GENERATE_LIMIT_MS = 150_000; // up to three tries of enoughGates
+        // up to 9 tries of fitCourse; the worker stops by FIT_BUDGET_MS (120 s, packages/tracks fit.ts) once it has a course
+        const GENERATE_LIMIT_MS = 150_000;
         const disarm = (): void => {
             if (watchdog !== null) clearTimeout(watchdog);
             watchdog = null;

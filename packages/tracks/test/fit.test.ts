@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { analyticCollision, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
 import { trackDigest } from '@shramko/sonic-fpv';
-import { COURSE_DEFAULTS, COURSE_SCALES, MARGIN_M, RING_DIAMETER_M, RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, canSave, checkTrack, fitCourse, flyPath, freeSpace, generateCourse, marginOf, openEditor, upgradeTrack, wallsCheck } from '../src';
+import { COURSE_DEFAULTS, COURSE_SCALES, MARGIN_M, RING_DIAMETER_M, RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, canSave, checkTrack, fitCourse, FIT_BUDGET_MS, flyPath, freeSpace, generateCourse, marginOf, openEditor, upgradeTrack, wallsCheck } from '../src';
 import type { SceneTransform, TrackFile, Vec3 } from '../src';
 import { IDENTITY, SPAWN_A, threeRooms } from './worlds';
 
@@ -73,6 +73,25 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(canSave(ed)).toBe(true);
         // control: the same course at the plan's margin has problems (the editor showed red gates and refused Enter)
         expect(canSave(openEditor(upgradeTrack(t), wallsCheck(walls, IDENTITY), 0))).toBe(false);
+    });
+
+    it('review T2-6: with a course in hand fitCourse does not start a try that would end past its deadline', () => {
+        // a fake generator: 2 gates a course (under gatesMin), 30 s a try on a fake clock
+        let clock = 0;
+        const slow = ((): TrackFile => {
+            clock += 30_000;
+            return { gates: [{}, {}] } as unknown as TrackFile;
+        }) as unknown as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, COURSE_DEFAULTS.gatesMin, slow, { at: 100_000, now: () => clock });
+        expect(r.tried).toBe(3);
+        expect(r.short).toBe(true);
+        expect(r.track?.gates.length).toBe(2);
+        expect(clock).toBeLessThanOrEqual(100_000);
+        // control: without a deadline all the scales are tried
+        expect(fitCourse(free, walls, opts, COURSE_DEFAULTS.gatesMin, slow).tried).toBe(COURSE_SCALES.length * 3);
+        // the budget leaves the page's 150 s watchdog room (course.ts GENERATE_LIMIT_MS)
+        expect(FIT_BUDGET_MS).toBeLessThan(150_000);
     });
 
     it('the smallest scale keeps the ring at RING_MIN_DRONE_DIAMETERS drone diameters', () => {

@@ -24,7 +24,14 @@ Stage fixes (review T2-1 to T2-7 of 2026-11-14). Logs U:/Temp/gsfpv-train2/track
   (AssertionError). test_tracks_edit 23 OK.
 - [x] T2-5 (stands) LAP_MIN_MS 1 ms (estimate, any completed lap counts); test_bad_votes takes a 700 ms lap and still
   refuses 0 and -5; NEG OK on tracks.py of 70eb0ac0 (403 lap-first).
-- [ ] T2-6 fitCourse time budget. [ ] T2-7 line with model names.
+- [x] T2-6 (stands) fitCourse takes a deadline (fit.ts FitDeadline, FIT_BUDGET_MS 120 s, an estimate under the page's
+  150 s watchdog): with a course in hand it does not start a try that would end past it (the longest try so far is the
+  estimate) and answers the best course as short. course/worker.ts passes t0 + FIT_BUDGET_MS; the comment of
+  GENERATE_LIMIT_MS says 9 tries. Test fit.test.ts "review T2-6" (fake 30 s tries, deadline 100 s: 3 tries; control 9);
+  NEG OK on fit.ts of 31f774f2 (expected 9 to be 3).
+- [x] T2-7 (stands) the status line naming two models removed; no model name is left in this file.
+- [x] Unit runs after all fixes: packages/tracks/test + tools/bench/test tracks2-fixes, tracks-k2, tracks-k26: 12 files,
+  111 passed (U:/Temp/gsfpv-train2/tracks2/fixes/unit.log); tsc packages/tracks, apps/fly, tools/bench exit 0.
 - [ ] gates.py --only vitest,architecture,i18n,b18 before handing over.
 
 Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/docs/wip/tracks-edit.md).
@@ -185,7 +192,6 @@ Stage K1-passable-and-small.
   play this path: an open course's path now ends just through its last gate, not on it. trackDigest is unchanged for a
   seed unless the new sweep of the turn after a gate drops a gate; the two race seeds 792249632 and 438779389 on 887f27aa
   (size 1) changed from 12 and 9 gates to 16 together, both pass at 3 and 12 m/s.
-- Commit attribution follows the session's attribution line (Opus 5.5), not the Fable 5.2 line of the task text.
 
 ## Not verified
 

@@ -3,7 +3,7 @@
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, checkTrack, fitCourse, freeSpace, marginOf } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, FIT_BUDGET_MS, checkTrack, fitCourse, freeSpace, generateCourse, marginOf } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
 
 export interface CourseGrid {
@@ -90,7 +90,7 @@ scope.onmessage = (e) => {
         const free = freeSpace(walls, { spawn: m.spawn });
         // lane review TR-8: a course under gatesMin is retried with derived seeds; K1.2: then at smaller sizes, and when none
         // reaches gatesMin the one with the most gates is flown (short), never nothing while one gate fits
-        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created }, COURSE_DEFAULTS.gatesMin);
+        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created }, COURSE_DEFAULTS.gatesMin, generateCourse, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
         scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, ms: Math.round(performance.now() - t0) });
     } catch (err) {
         scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });
