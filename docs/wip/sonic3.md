@@ -5,6 +5,18 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into train3 2e1618f):
+- [x] SO-1 stands: in place the mode applied LESSON_FLIGHT (bump 'slide') as a 'life' setting on enter and took it back on
+  leave, so every switch started a new life (in the air: stopped dead; crashed or held: the scene spawn). Fix: ModeStart.here
+  (mode.ts), lessons.ts passes it; in place no lesson bump, so leave() changes nothing. Test sonic-in-place.test.ts "switched
+  off while flying ... while crashed": 9 of 9; NEG OK (old mode.ts and lessons.ts: bump 'slide' after the switch on).
+  sonic-scan-bump + sonic-mode: 9 of 9; apps/fly tsc 0 errors. The forced 'scene.walls' 'on' stays (see For the lead).
+- [x] SO-2 stands: package lessons/scan-free.json version 1 -> 2 (d341b4f, branch train3-fixes from the old pin 4e7cef6, so
+  the unpinned speed lessons of 9c40ed2 stay out of the pin; merged into train3 as 2e1618f). Package test/scan-free.test.ts new
+  case, NEG OK on the old lesson file; package suite 1336 passed, 4 skipped; simulator tests that use scan-free (5 files): 44 of 44.
+- [x] SO-5 stands: Facts now give the measured range 0.23 to 3.3 s with the run names.
+- [x] SO-6 stands: Facts table has the Tunis 5 m/s fixed-pilot row.
+
 Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820/5821, headless Chrome 157, GPU lock):
 - [x] Release build (dist sha cc103a49, 1930 files). Probe r11 in tools/bench/src/sonic-int-review.ts (2f972a90): ordinary
   flight, Controls screen, ONE press of Backslash, first cue and first line timed, N, the course flown to its end with W
@@ -146,12 +158,16 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 ## Facts (measured)
 
 - Z5 browser runs (tools/bench/src/sonic-int-review.ts r10 and r11, evidence copies in U:/Temp/gsfpv-train3/sonic3/z5-*.json,
-  shots U:/Temp/gsfpv-train3/shots/z5-*.png). Backslash to first planned cue (height.tone, room.bed) 0.23 to 0.39 s, first
-  spoken line lesson.scan-free.title 0.24 to 0.40 s, in every run; phases intro then flying; nothing else pressed.
+  shots U:/Temp/gsfpv-train3/shots/z5-*.png). Backslash to first planned cue (height.tone, room.bed): 0.23 to 0.35 s in
+  z5-r11-tunis.json (0.268, 0.251), z5-r11-wroclaw.json (0.283, 0.233) and the second run of z5-r11-wroclaw2.json (0.350);
+  1.783 s in the first run of z5-r11-wroclaw2.json and 3.317 s in z5-r11-tunis2.json (both the first press of a fresh page
+  in the fixed-pilot reruns; the cause of the longer time is not measured). Range over all runs: 0.23 to 3.3 s. First spoken
+  line lesson.scan-free.title 0.235 to 3.321 s; phases intro then flying; nothing else pressed.
   | Scene, walls | asked m/s | N to gate 1 | course | flight | W-held speed median / max | dodges |
   |---|---|---|---|---|---|---|
   | Tunis, shipped | 2 | 51.8 s | passed, 12 gates | 139 s | 0.43 / 1.99 | 2 |
   | Tunis, shipped | 5 | 47.3 s | passed on attempt 3 (2 fails at g7) | 108 s | 4.19 / 5.00 | 0 |
+  | Tunis, shipped, fixed pilot (z5-r11-tunis2.json) | 5 | 33.9 s | passed, 3-gate course looped 3 times (9 gate changes) | 50 s | 2.8 / 4.86 | 0 |
   | Wroclaw, stand-in | 2 | 110.5 s | passed (attempt 1 failed at g15) | 172 s | 0.51 / 1.99 | 0 |
   | Wroclaw, stand-in | 5 | 59.3 s | NOT passed: stuck at g10 (pilot fault, see Status) | 363 s cap | 2.84 / 4.98 | 1 |
   | Wroclaw, stand-in, fixed pilot | 5 | 61.9 s | passed on attempt 3 (6 gates) | 89 s | 3.73 / 5.00 | 0 |
@@ -262,7 +278,7 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - The three ear-pilot tables (rings-course median top speed, seeds 1 2 3; corridor 0 in every column, a pillar on the path):
   before 3 m/s (2 loudest) and 6 m/s (hum attended); after the stream budget 3 and 4 m/s (tier edge 4.5); after the racing
   line 4 and 6 m/s (6 6 6). Details in Facts "Z4 pass 2, the three tables".
-- What a listener should notice: one press, sound within half a second (height tone and room bed), then the spoken intro
+- What a listener should notice: one press, sound within 0.23 to 3.3 s (Facts Z5; under half a second in 5 of 7 runs; height tone and room bed), then the spoken intro
   once; near walls their pulses on that side; on N "making a course", then the hum of gate 1: it is louder in the ear it is
   on, and in a course with the line on (not shipped yet) it beats when the craft is off the line; at a gate its note and a
   short preview of the next; above 4.5 m/s fewer streams (tier 1: three), from 8 m/s two and the open-way chime instead of

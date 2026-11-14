@@ -66,6 +66,12 @@ export interface ModeStart {
     readonly world?: SonicWorld | null;
     /** world y of the floor: the height layer's zero (default 0) */
     readonly floorY?: number;
+    /**
+     * switched on in place (train 3, in-place.ts): the flight goes on as it was, so the lesson's bump (LESSON_FLIGHT) is not applied.
+     * A new rule is a new life (session applyLifeSettings): in the air the craft would stop dead, crashed or held it would go to the
+     * scene's spawn, on the switch on and again on the switch off (review SO-1).
+     */
+    readonly here?: boolean;
 }
 
 export class SonicMode {
@@ -125,7 +131,8 @@ export class SonicMode {
         this.floorY = o.floorY ?? 0;
         h.setLesson(this.lesson ? this.lesson.assists : null);
         // a lesson on a scan flies with the lesson's bump too (v13-int step 4): a lesson world brings it itself (lesson-world.ts)
-        this.lessonFlight(this.lesson?.world.kind === 'scan' ? LESSON_FLIGHT : null);
+        // in place (o.here) the flight keeps its own rules: no new life on the switch on, none on the switch off
+        this.lessonFlight(this.lesson?.world.kind === 'scan' && o.here !== true ? LESSON_FLIGHT : null);
         const b = this.bridge;
         b.world = o.world ?? null;
         b.layers = this.lesson ? this.lesson.layers : null;

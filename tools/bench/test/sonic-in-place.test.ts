@@ -15,6 +15,7 @@ import { InPlaceSwitch, firstTimer, freeHere } from '../../../apps/fly/src/sonic
 import type { InPlaceDeps } from '../../../apps/fly/src/sonic/in-place-model';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
 import { analyticCollision } from '../../../packages/collision/src';
+import { S } from '../../../packages/sim-core/src';
 import { Rig } from './sonic-lesson-rig';
 import type { RigScan } from './sonic-lesson-rig';
 import { SCAN_FREE_ID, parseTrack, scanFreeLesson } from '../../../packages/sonic-fpv/src';
@@ -199,5 +200,43 @@ describe('the free flight opened in place keeps the craft where it is', () => {
         expect(await r.host.openFree(free)).toBe(true);
         await r.run(500);
         expect(fromSpawn()).toBeLessThan(1);
+    });
+
+    // review SO-1: switching off (and on) in place started a new life (the lesson's bump LESSON_FLIGHT applied as a 'life' setting):
+    // in the air the craft stopped dead, crashed it went to the scene's spawn. In place the flight keeps its own rules.
+    it('switched off while flying: pose and velocity unchanged, no new life; switched off while crashed: the craft stays where it is', async () => {
+        const track = garden();
+        const scan = scanOf(track);
+        const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
+        const r = await Rig.make(free, { scan });
+        rig = r;
+        let lives = 0;
+        const onLife = r.session.onLife;
+        r.session.onLife = (...a: Parameters<NonNullable<typeof onLife>>) => {
+            lives++;
+            onLife?.(...a);
+        };
+        expect(await r.host.openFree(free, { here: true })).toBe(true);
+        expect(r.session.lifeOverrides().bump).toBeUndefined();
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(3000, () => ({ forward: 1 }));
+        const s = r.session.sim.s;
+        expect(s[S.hold]).toBe(0);
+        expect(r.speed).toBeGreaterThan(1);
+        const pos = [...r.pos];
+        const vel = [...r.vel];
+        const before = lives;
+        r.mode.leave();
+        expect(lives).toBe(before);
+        expect(Math.hypot(r.pos[0] - (pos[0] as number), r.pos[1] - (pos[1] as number), r.pos[2] - (pos[2] as number))).toBeLessThan(0.1);
+        expect(Math.hypot(r.vel[0] - (vel[0] as number), r.vel[1] - (vel[1] as number), r.vel[2] - (vel[2] as number))).toBeLessThan(0.01);
+        // crashed: switched on again in place, then off with the craft down where it is
+        expect(await r.host.openFree(free, { here: true })).toBe(true);
+        await r.run(500);
+        const at = [...r.pos];
+        r.session.sim.s[S.crashed] = 1;
+        r.mode.leave();
+        expect(Math.hypot(r.pos[0] - (at[0] as number), r.pos[2] - (at[2] as number))).toBeLessThan(0.1);
+        expect(Math.hypot(r.pos[0] - scan.spawn[0], r.pos[2] - scan.spawn[2])).toBeGreaterThan(1);
     });
 });

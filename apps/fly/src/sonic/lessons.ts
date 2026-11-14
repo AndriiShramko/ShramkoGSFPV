@@ -403,7 +403,7 @@ export class LessonHost {
             this.p.mode.bridge.engine?.reset?.();
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
-                this.p.mode.enter({ lesson, runner, world, floorY });
+                this.p.mode.enter({ lesson, runner, world, floorY, here });
             } finally {
                 this.cutSpeech = false;
             }
