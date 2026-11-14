@@ -18,6 +18,7 @@ import type { FloaterPanel } from '../../ui/floaters';
 import { t } from '../../i18n';
 import { pilotSet } from '../prefs';
 import type { Feature, FlightContext } from '../context';
+import { wallsThen } from '../walls-then';
 
 // window.__gsfpv.floaters (test-hook.ts is the shell's; this feature adds its part, like the others)
 declare module '../test-hook' {
@@ -75,7 +76,9 @@ export function openFloaterPanel(ctx: FlightContext): void {
     const base = ctx.session.baseCollision;
     const flown = ctx.session.collision;
     if (!base || !flown) {
-        ctx.hud.flash(t('walls.none'), 3500);
+        // walls W3: the filter needs walls, so they are built first and the panel opens after
+        if (!flown) void wallsThen(ctx, () => openFloaterPanel(ctx));
+        else ctx.hud.flash(t('walls.none'), 3500);
         return;
     }
     const comps = componentsOf(base);

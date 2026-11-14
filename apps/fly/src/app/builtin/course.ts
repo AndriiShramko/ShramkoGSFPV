@@ -18,6 +18,7 @@ import type { TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
 import { liveSearch } from '../env';
 import type { Feature, FlightContext } from '../context';
+import { withWalls } from '../../walls-first';
 import type { CourseHook } from '../../course/hook';
 import { CourseRun } from '../../course/run';
 import { CourseStage } from '../../course/view';
@@ -211,7 +212,7 @@ export const course: Feature = {
                 job++;
                 busy = false;
                 checking = null;
-                fail('timeout', t('course.failed', { msg: 'timeout' }));
+                fail('timeout', t('course.failed'));
             }, ms);
         };
 
@@ -222,7 +223,7 @@ export const course: Feature = {
             disarm();
             if (m.t === 'error') {
                 checking = null;
-                return fail(m.message.slice(0, 200), t('course.failed', { msg: m.message.slice(0, 120) }));
+                return fail(m.message.slice(0, 200), t('course.failed'));
             }
             if (m.t === 'checked') {
                 const tr = checking;
@@ -260,7 +261,7 @@ export const course: Feature = {
                     disarm();
                     busy = false;
                     checking = null;
-                    fail(e.message || 'worker error', t('course.failed', { msg: e.message || 'worker error' }));
+                    fail(e.message || 'worker error', t('course.failed'));
                 };
             }
             return worker;
@@ -280,10 +281,34 @@ export const course: Feature = {
             return [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0];
         };
 
+        /**
+         * Walls W3 (the owner's rule): a course needs walls, so on a scan without them they come first (published at once,
+         * else the build with its progress line in the walls box), then `go` runs; no line that says walls are missing.
+         */
+        let wallsWait = false;
+        const wallsFirst = (go: () => void): void => {
+            if (wallsWait) return;
+            wallsWait = true;
+            hook.problem = null;
+            const wh = ctx.hook.walls;
+            void withWalls({
+                has: () => !!ctx.session.collision,
+                // the lead line goes into the walls box above the progress (a HUD note would cover the box)
+                build: wh ? () => wh.build(t('course.wallsFirst')) : null,
+                scene: () => ctx.session.scene.id,
+                // a failed build keeps the course waiting: the walls button brings the walls and then the course
+                later: wh ? (f) => wh.whenIn(f) : undefined
+            }, go).then((r) => {
+                wallsWait = false;
+                // the walls box says what to press (out of room: close tabs and press again)
+                if (r === 'failed') fail('walls not built', wh?.line || t('bake.failed'));
+            });
+        };
+
         const generate = (seed: number): void => {
             const s = ctx.session;
             const w = walls();
-            if (!w) return fail('no walls', t('course.noWalls'));
+            if (!w) return wallsFirst(() => generate(seed));
             if (busy) return;
             busy = true;
             hook.problem = null;
@@ -324,7 +349,7 @@ export const course: Feature = {
             const row = direct ?? rows[index];
             if (!row || (busy && index === 0)) return;
             const w = walls();
-            if (!w) return fail('no walls', t('course.noWalls'));
+            if (!w) return wallsFirst(() => void loadServer(index, only, direct));
             busy = true;
             hook.problem = null;
             ctx.hud.flash(t('course.server.loading'), 2500);
@@ -334,7 +359,7 @@ export const course: Feature = {
             if (!got.ok || got.track.scene.id !== ctx.session.scene.id) {
                 busy = false;
                 if (!only && index + 1 < rows.length) return loadServer(index + 1);
-                if (!got.ok) return fail(got.problem, t('course.server.failed', { msg: got.problem.slice(0, 120) }));
+                if (!got.ok) return fail(got.problem, t('course.server.failed'));
                 return fail('another scene', t('course.server.refused'));
             }
             checking = got.track;
@@ -350,7 +375,7 @@ export const course: Feature = {
             const tr = run.track;
             const r = await store.save(tr);
             saving = false;
-            if (!r.ok) return fail(`save: ${r.problem}`, t('course.save.failed', { msg: r.problem.slice(0, 120) }));
+            if (!r.ok) return fail(`save: ${r.problem}`, t('course.save.failed'));
             if (run?.track === tr) hook.saved = r.id;
             hook.problem = null;
             ctx.hud.flash(t('course.save.done'), 4000);
@@ -497,9 +522,8 @@ export const course: Feature = {
         const openEdit = (): void => {
             if (ed || ctx.sonic) return;
             const col = ctx.session.collision;
-            if (!col) return fail('no walls', t('course.noWalls'));
-            if (!run) {
-                // stage K2 (the owner's rule: lead him on): no course yet, so one is made and the editor opens on it
+            // walls W3: no walls or no course yet: both come by themselves and the editor opens on the new course
+            if (!col || !run) {
                 // review T2-4: pressed while a course is being made, the editor opens on it when it arrives
                 if (busy) {
                     reopenAfter = true;

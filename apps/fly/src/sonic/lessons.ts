@@ -50,6 +50,8 @@ import type { LessonStartKeys, RunnerKeys } from './key-names';
 export const NEXT_AFTER_MS = 1500;
 /** The events the page keeps for the test hook, at most. */
 export const EVENT_LOG_CAP = 600;
+/** While the walls of a free scan flight are built, "still building" is said this often, ms (a setting, not measured). */
+export const WALLS_STILL_MS = 20000;
 
 /** What the host draws the helper's view with (PrimitiveStage; a recorder in tests). */
 export interface StagePort {
@@ -87,6 +89,11 @@ export interface LessonPage {
      * and the name of that key as the pilot's keyboard types it. Absent: N in a free flight goes to the menu, as before.
      */
     course?: { ask(): Promise<CourseAnswer>; key(): string };
+    /**
+     * Walls for the scan flown (walls lane, feature.ts through app/walls-then.ts wallsThen): built here when the scan has none,
+     * with their progress in the walls box; true when the session has walls. Absent: the free flight only says it has none.
+     */
+    walls?: { build(): Promise<boolean> };
     /** The start screen over the flight. */
     showMenu(): void;
     /** Milliseconds, for the pause between a pass and the next lesson (performance.now). */
@@ -252,6 +259,42 @@ export class LessonHost {
         return ok;
     }
 
+    /** the page clock when the walls build of a free flight began or last said it goes on; null when no build runs */
+    private wallsSaid: number | null = null;
+
+    /**
+     * A free flight over a scan without walls (the owner's rule, walls lane): the walls are built by themselves while the pilot
+     * flies on hearing his height; the build is said, every WALLS_STILL_MS it is said that it goes on, and when the walls are in
+     * the free flight opens again with them (walls heard, the course offer). A failed build says one line and the flight goes on.
+     */
+    private wallsForFree(walls: NonNullable<LessonPage['walls']>): void {
+        if (this.wallsSaid !== null) return;
+        const say = (line: SpeechLine): void => void this.p.mode.bridge.say(line, false, { lesson: true });
+        say({ key: 'sonic.say.wallsBuilding' });
+        this.wallsSaid = this.p.clock();
+        const asked = this.runner;
+        const done = (ok: boolean): void => {
+            this.wallsSaid = null;
+            // the pilot left this flight while the walls were built: the walls stay for later, nothing opens over what he does now
+            if (this.runner !== asked || this.lesson?.id !== SCAN_FREE_ID) return;
+            if (!ok) {
+                say({ key: 'sonic.say.wallsFailed' });
+                return;
+            }
+            say({ key: 'sonic.say.wallsIn' });
+            void this.open(SCAN_FREE_ID, { keepSpeech: true });
+        };
+        walls.build().then(done, () => done(false));
+    }
+
+    /** The build of the free flight's walls goes on: said again every WALLS_STILL_MS of the page clock. */
+    private wallsTick(): void {
+        if (this.wallsSaid === null || this.lesson?.id !== SCAN_FREE_ID) return;
+        if (this.p.clock() - this.wallsSaid < WALLS_STILL_MS) return;
+        this.wallsSaid = this.p.clock();
+        void this.p.mode.bridge.say({ key: 'sonic.say.wallsStill' }, false, { lesson: true });
+    }
+
     /** A lesson world built before the page (the entry's first flight is made on it), so the first open does not build it again. */
     seed(lessonId: string, world: LessonWorld): void {
         this.worlds.set(lessonId, world);
@@ -364,7 +407,8 @@ export class LessonHost {
                 // a free flight over a scan that has no walls (train 2): no wall can warn, said and shown (the captions), with the way to get them
                 if (o.quiet) {
                     // a failed course ask said its one line already (flyCourse)
-                } else if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
+                } else if (free && scan.voxelM === null && this.p.walls) this.wallsForFree(this.p.walls);
+                else if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
                 // train 2, S3: the free flight with walls names the key that asks for a course of gates in this scan (flyCourse)
                 else if (free && !isScanCourse(lesson) && this.p.course) void this.p.mode.bridge.say({ key: 'sonic.say.courseOffer', params: { key: this.p.course.key() } }, false, { lesson: true });
             }
@@ -489,6 +533,7 @@ export class LessonHost {
     private drain(): void {
         const run = this.runner;
         if (!run) return;
+        this.wallsTick();
         for (const a of run.takeActions()) this.act(a, run);
     }
 

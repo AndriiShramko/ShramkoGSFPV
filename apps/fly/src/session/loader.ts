@@ -115,6 +115,43 @@ export interface LoadedWalls {
     ms: number;
 }
 
+/** Where the walls of a scan came from: SuperSplat beside the scan, or built once and published on this site. */
+export type WallsFrom = 'shipped' | 'published';
+
+/**
+ * Published walls (docs/wip/walls.md, W2): built once offline (tools/walls/bake-published.mjs) and served by
+ * this site under its own origin, one folder per scan version, in the format SuperSplat ships.
+ */
+export function publishedWallsUrl(sceneId: string, version: number, origin: string = globalThis.location?.origin ?? ''): string {
+    return `${origin}/walls/${sceneId}/v${version}/scene.voxel.json`;
+}
+
+/** The places to look for a scan's walls, in order: shipped first, then published. */
+export function wallsPlaces(scene: Pick<ResolvedScene, 'id' | 'version' | 'collisionUrl'>, origin?: string): { from: WallsFrom; url: string }[] {
+    const out: { from: WallsFrom; url: string }[] = [];
+    if (scene.collisionUrl) out.push({ from: 'shipped', url: scene.collisionUrl });
+    out.push({ from: 'published', url: publishedWallsUrl(scene.id, scene.version, origin) });
+    return out;
+}
+
+/**
+ * The first walls found, in the order of wallsPlaces; null: none anywhere (the page offers its own build).
+ * A shipped file that fails stays an error as before; a published one that is missing, broken or answered by
+ * a page instead of a file only means "not published", so it never stops the flight.
+ */
+export async function firstWalls(places: { from: WallsFrom; url: string }[], load: (url: string) => Promise<LoadedWalls | null>): Promise<(LoadedWalls & { from: WallsFrom }) | null> {
+    for (const p of places) {
+        let w: LoadedWalls | null;
+        if (p.from === 'published') {
+            try { w = await load(p.url); } catch { w = null; }
+        } else {
+            w = await load(p.url);
+        }
+        if (w) return { ...w, from: p.from };
+    }
+    return null;
+}
+
 /** What the loader reads of the session it loads for. */
 export interface LoaderHost {
     readonly renderer: SplatRenderer | undefined;

@@ -46,6 +46,7 @@ import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
 import type { LessonPage } from './lessons';
+import { wallsThen } from '../app/walls-then';
 import { PrimitiveStage, worldPrims } from './primitives';
 import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
@@ -205,6 +206,8 @@ function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonN
 function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
         course: courseOf(ctx, tracks, names),
+        // walls lane: a free flight over a scan without walls gets them built (progress in the walls box) and goes on with them
+        walls: { build: () => wallsThen(ctx, () => {}).then((r) => r === 'now' || r === 'built') },
         mode,
         store: ctx.prefs,
         locale,

@@ -15,13 +15,14 @@ KEY="${GSFPV_KEY:-$HOME/.ssh/id_ed25519}"
 KEY="${KEY/#\~/$HOME}"
 SSH=(ssh -p "$PORT" -i "$KEY" -o BatchMode=yes "$HOST")
 if [ -z "${1:-}" ]; then
-  "${SSH[@]}" "cd '$GSFPV_BASE/releases' && ls -1t | grep -Ev '^(current|[.])'; echo \"current -> \$(readlink current)\""
+  "${SSH[@]}" "cd '$GSFPV_BASE/releases' && ls -1t | grep -Ev '^(current|walls\$|[.])'; echo \"current -> \$(readlink current)\""
   exit 0
 fi
 "${SSH[@]}" bash -s -- "$1" "$GSFPV_BASE" <<'REMOTE'
 set -euo pipefail
 ID="$1"
 cd "$2/releases"
+[ "$ID" != walls ] || { echo "walls holds the published walls, not a release"; exit 1; }
 [ -d "$ID" ] || { echo "no release $ID"; exit 1; }
 prev=$(readlink current 2>/dev/null || echo none)
 point() { ln -sfn "$1" .current-new; mv -T .current-new current; }

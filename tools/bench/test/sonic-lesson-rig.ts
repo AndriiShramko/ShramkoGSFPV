@@ -252,7 +252,7 @@ export class Rig {
      * A page on the first lesson's world (or, with `scan`, on that scan). `store`: the pilot's saved state of an earlier page
      * (progress, best times) instead of an empty one.
      */
-    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course'] } = {}): Promise<Rig> {
+    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course']; walls?: LessonPage['walls'] } = {}): Promise<Rig> {
         const rig = new Rig();
         if (o.store) rig.store = o.store;
         const scan = o.scan ?? null;
@@ -328,6 +328,7 @@ export class Rig {
                       }
                   }
                 : undefined,
+            walls: o.walls,
             showMenu: () => { rig.menus++; },
             clock: () => rig.clock.t,
             keyNames: () => rig.keyNames,

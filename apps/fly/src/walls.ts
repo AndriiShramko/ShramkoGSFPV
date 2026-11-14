@@ -9,10 +9,11 @@
 import type { FlightSession } from './session';
 import { t } from './i18n';
 import { h } from './ui/dom';
-import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeCollision, gpuLimitsOf, maxGaussians, memCapGb, planRefine, sceneSize } from './bake';
+import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize } from './bake';
 import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
+import { ensureWalls } from './walls-first';
 
 /** auto: the plan decides (a short refine starts by itself); offer: never by itself; off: test modes */
 export type RefineMode = 'auto' | 'offer' | 'off';
@@ -20,7 +21,7 @@ export type RefineMode = 'auto' | 'offer' | 'off';
 export interface WallsHook {
     /** parked: a refine was due, but the walls are switched off */
     state: 'checking' | 'none' | 'offer' | 'parked' | 'baking' | 'queued' | 'in-use' | 'refused' | 'failed';
-    source: 'shipped' | 'bake' | 'cache' | 'import' | 'none';
+    source: 'shipped' | 'published' | 'bake' | 'cache' | 'import' | 'none';
     voxelM: number | null;
     readonly sha: string | null;
     plan: RefinePlan | null;
@@ -36,6 +37,20 @@ export interface WallsHook {
     /** resolves when the store was asked and the plan made */
     ready: Promise<void>;
     refine(): Promise<void>;
+    /**
+     * Walls for this scan in use, for any feature that needs them (the course, C, V, free flight by
+     * sound): shipped or published at once, else the browser's store, else the build here with its
+     * progress line in the walls box. `lead`: one line in the box above the progress that says what comes
+     * after the walls ("First the walls of this scan, then the course."). Resolves true when the session has walls.
+     */
+    build(lead?: string): Promise<boolean>;
+    /**
+     * The action that waited for a build that failed: it runs when walls come in later (the pilot pressed
+     * the button again), so the lead line in the box stays true. One slot: the latest action wins.
+     */
+    whenIn(f: () => void): void;
+    /** the walls box's line now (the build's progress or its result) */
+    readonly line: string;
     exportZip(): Promise<Uint8Array>;
     importZip(bytes: Uint8Array): Promise<ImportReport>;
     /** the scene was switched (E.4): the box and the walls line go, the timers stop */
@@ -54,6 +69,8 @@ interface PhaseCHook {
     bake?: Record<string, unknown>;
     bakedBytes?: { json: Uint8Array; bin: Uint8Array };
     runBake?: () => Promise<void>;
+    /** probes only: one bake at a given level and cell, nothing installed; the bytes go to bakedBytes */
+    bakeTrial?: (o: { level: number; voxelM: number }) => Promise<Record<string, unknown>>;
     downloadBaked?: () => boolean;
     walls?: WallsHook;
     info?: Record<string, unknown>;
@@ -127,7 +144,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
 
     const w: WallsHook = {
         state: 'checking',
-        source: shipped ? 'shipped' : 'none',
+        source: shipped ? (s.wallsFrom === 'published' ? 'published' : 'shipped') : 'none',
         voxelM: shipped?.voxelM ?? null,
         get sha() { return s.collisionSha256; },
         plan: null,
@@ -141,6 +158,12 @@ export function mountWalls(o: WallsOptions): WallsHook {
         lastImport: null,
         ready: Promise.resolve(),
         refine: () => (w.plan?.voxelM ? runRefine(w.plan.voxelM) : Promise.resolve()),
+        build: (lead) => {
+            if (lead && badge && !s.collision) badge.textContent = lead;
+            return ensureAll();
+        },
+        whenIn: (f) => { if (s.collision) f(); else afterIn = f; },
+        get line() { return status.textContent ?? ''; },
         exportZip: async () => (await cacheP).exportZip(),
         importZip: (bytes) => importBytes(bytes),
         install: (json, bin) => {
@@ -149,7 +172,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
                 onSwap('import')(sha);
                 return { ok: true, sha };
             } catch (e) {
-                say(e instanceof BakeRefusedError && e.reason === 'empty' ? t('bake.empty') : t('bake.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160) }));
+                say(e instanceof BakeRefusedError && e.reason === 'empty' ? t('bake.empty') : t('bake.failed'));
                 return { ok: false, sha: s.collisionSha256, error: e instanceof BakeRefusedError ? e.reason : String((e as Error)?.message ?? e) };
             }
         },
@@ -180,6 +203,36 @@ export function mountWalls(o: WallsOptions): WallsHook {
     };
     o.hook.walls = w;
 
+    /** WallsHook.build without its lead line: shipped or published, the store, else one build here */
+    const ensureAll = ensureWalls({
+        has: () => !!s.collision,
+        ready: () => w.ready,
+        takeQueued: () => {
+            // walls from the store wait for the craft to park: an action that needs them takes them now
+            const q = queued;
+            if (!q || !s.wallsPending) return false;
+            clearInterval(pollTimer);
+            s.installCollision(q.json, q.bin, q.sha);
+            onSwap(q.source)(q.sha);
+            return true;
+        },
+        build: () => startBase()
+    });
+    /** walls waiting in session.queueCollision for the craft to park (build() takes them at once) */
+    let queued: { json: Uint8Array; bin: Uint8Array; sha: string; source: WallsHook['source'] } | null = null;
+    /** the action left waiting by a failed build (whenIn); runs at the next walls swap */
+    let afterIn: (() => void) | null = null;
+    /** the base build now running (the button, ?bake=1, C and build() share it) */
+    let running: Promise<void> | null = null;
+    function startBase(): Promise<void> {
+        if (!running) running = runBase().finally(() => { running = null; });
+        return running;
+    }
+    /** The box stays in sight while it holds the build offer or its progress, in flight too (fly.css .bake-box.keep). */
+    function keep(on: boolean): void {
+        box.classList.toggle('keep', on);
+    }
+
     function say(text: string, hideAfterMs = 0): void {
         status.textContent = text;
         clearTimeout(hideTimer);
@@ -209,16 +262,23 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.state = 'in-use';
             w.source = source;
             w.voxelM = s.collision?.voxelResolution ?? w.voxelM;
+            queued = null;
             badge?.remove();
             if (action.dataset.action === 'bake') action.hidden = true;
+            keep(false);
             if (o.hook.info) { o.hook.info.hasCollision = true; o.hook.info.collisionSha256 = sha; }
             showSummary();
+            // the action that waited for a failed build goes on now (after this swap has finished)
+            const next = afterIn;
+            afterIn = null;
+            if (next) window.setTimeout(next, 0);
             if (source === 'bake' && was && shipped) say(t('bake.refine.swapped', { cm: cm(w.voxelM!), was: cm(was) }), 15000);
         };
     }
 
     function queue(json: Uint8Array, bin: Uint8Array, sha: string, source: WallsHook['source']): void {
         w.state = 'queued';
+        queued = { json, bin, sha, source };
         s.queueCollision(json, bin, sha, onSwap(source));
         if (!s.wallsPending) return;
         // not parked (armed once since the last reset): the next respawn or restart takes them
@@ -244,36 +304,39 @@ export function mountWalls(o: WallsOptions): WallsHook {
     function refusedText(e: BakeRefusedError, refine: boolean): string {
         if (e.reason === 'empty') return t('bake.empty');
         if (e.reason === 'no-webgpu') return t('bake.noWebgpu');
-        const n = ((e.size?.gaussians ?? 0) / 1e6).toFixed(1);
-        const max = ((e.maxGaussians || maxGaussians(limits(), memCapGb())) / 1e6).toFixed(1);
-        if (e.reason === 'gpu-buffer' || e.reason === 'memory') return refine ? t('bake.refine.refused', { n, max }) : t('bake.refused', { n, max });
-        return t(refine ? 'bake.refine.failed' : 'bake.failed', { msg: e.message.slice(0, 160), was: cm(w.voxelM ?? BASE_VOXEL_M) });
+        // the pilot never sees a Gaussian count or a limit: a finer refine is simply not built
+        if (e.reason === 'gpu-buffer' || e.reason === 'memory') return refine ? t('bake.refine.refused') : t('bake.noRoom');
+        return t(refine ? 'bake.refine.failed' : 'bake.failed', { was: cm(w.voxelM ?? BASE_VOXEL_M) });
     }
 
-    // ---- phase C: walls for a scan without any (the flight holds still meanwhile, as before)
+    // ---- phase C: walls for a scan without any. The flight is never held meanwhile (a running step
+    // cannot be stopped, splat-transform has no abort): the pilot flies on without walls, and they go
+    // in at once if the drone sits parked, else at its next start (queue); an action that waits for
+    // them (course, sound flight) takes them at once (ensureWalls takeQueued).
     async function runBase(): Promise<void> {
         if (busy) return;
         busy = true;
+        // the box holds only the lead line and the progress meanwhile (no dead button under them)
         action.disabled = true;
+        action.hidden = true;
         w.state = 'baking';
-        s.pause(true, 'bake');
+        keep(true);
         try {
-            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { voxelM: BASE_VOXEL_M, size: w.size ?? undefined, limits: fake, coarsenOnOctree: true });
+            // never a refusal: the ladder takes a lighter way by itself until one fits this device,
+            // and skips a step that would run too long before it starts (planBase, STEP_MAX_S)
+            const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { size: w.size ?? undefined, limits: fake, sPerMillion: loadBakeSpeed() });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
             // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
             o.switchOn();
-            s.installCollision(r.json, r.bin, sha);
-            onSwap('bake')(sha);
-            o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
+            queue(r.json, r.bin, sha, 'bake');
+            o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, level: r.level, tried: r.tried, rough: isRough(r), gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
             action.remove();
-            // a very large scan may have needed a coarser grid than 5 cm: say which
-            say(r.voxelM > BASE_VOXEL_M + 1e-6
-                ? t('bake.doneCoarse', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0), cm: cm(r.voxelM) })
-                : t('bake.done', { voxels: (r.solidVoxels / 1e6).toFixed(1), s: (r.ms.total / 1000).toFixed(0) }));
+            // a large scan may have needed a lighter way: one plain line, no numbers of the technique
+            say(t(s.wallsPending ? 'bake.doneNext' : isRough(r) ? 'bake.doneRough' : 'bake.done', { s: (r.ms.total / 1000).toFixed(0) }));
             o.beacon('bake_done');
             void remember(w.keyInput, r, sha);
         } catch (e) {
@@ -281,16 +344,22 @@ export function mountWalls(o: WallsOptions): WallsHook {
             if (e instanceof BakeRefusedError) {
                 o.hook.bake = { ok: false, refused: true, reason: e.reason, gaussians: e.size?.gaussians ?? 0, limit: e.maxGaussians };
                 say(refusedText(e, false));
-                if (e.reason !== 'empty') action.remove();
+                // only a browser without WebGPU has no way on here; out of room and empty walls keep the button
+                if (e.reason === 'no-webgpu') action.remove();
                 else action.disabled = false;
             } else {
-                o.hook.bake = { ok: false, error: String((e as Error)?.message ?? e) };
-                say(t('bake.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160) }));
+                o.hook.bake = { ok: false, error: String((e as Error)?.message ?? e), noRoom: outOfRoom(e) };
+                // every lighter way ran out of room too: a plain line and the same button again
+                // the library's own words stay in the hook and the console, the pilot gets the way on
+                console.warn('walls build', e);
+                say(outOfRoom(e) ? t('bake.noRoom') : t('bake.failed'));
                 action.disabled = false;
             }
+            // the button comes back (enabled) with the line that says to press it, and stays in sight
+            if (action.isConnected) { action.hidden = false; action.disabled = false; }
+            keep(action.isConnected);
             w.lastBake = o.hook.bake;
         } finally {
-            s.pause(false, 'bake');
             busy = false;
         }
     }
@@ -319,7 +388,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.state = 'failed';
             o.hook.bake = e instanceof BakeRefusedError ? { ok: false, kind: 'refine', refused: true, reason: e.reason } : { ok: false, kind: 'refine', error: String((e as Error)?.message ?? e) };
             w.lastBake = o.hook.bake;
-            say(e instanceof BakeRefusedError ? refusedText(e, true) : t('bake.refine.failed', { msg: String((e as Error)?.message ?? e).slice(0, 160), was: cm(was ?? shipped.voxelM) }));
+            say(e instanceof BakeRefusedError ? refusedText(e, true) : t('bake.refine.failed', { was: cm(was ?? shipped.voxelM) }));
             // a failure that is not a refusal (a lost device, a network drop) may pass on a second try
             if (!(e instanceof BakeRefusedError) && w.plan?.voxelM) prompt({ ...w.plan, action: w.plan.action === 'offer-long' ? 'offer-long' : 'offer' });
         } finally {
@@ -372,7 +441,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         try {
             rep = await c.importZip(bytes);
         } catch (e) {
-            storeInfo.textContent = t('bake.store.importFailed', { msg: String((e as Error)?.message ?? e).slice(0, 160) });
+            storeInfo.textContent = t('bake.store.importFailed');
             throw e;
         }
         w.lastImport = rep;
@@ -396,13 +465,26 @@ export function mountWalls(o: WallsOptions): WallsHook {
         storeInfo.textContent = t('bake.store.cleared');
     }
 
+    // probes compare ways of building (walls stage W1): the device's real limit, not the estimate
+    o.hook.bakeTrial = async ({ level, voxelM }) => {
+        try {
+            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, () => {}, { level, voxelM, coarsenOnOctree: true, size: w.size ?? undefined, capGb: Number.POSITIVE_INFINITY, limits: null });
+            o.hook.bakedBytes = { json: r.json, bin: r.bin };
+            return { ok: true, level: r.level, voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length };
+        } catch (e) {
+            return { ok: false, level, voxelM, error: String((e as Error)?.message ?? e).slice(0, 200), noRoom: outOfRoom(e) };
+        }
+    };
+
     // ---- phase C button, shown at once
     if (!shipped) {
         action.dataset.action = 'bake';
         action.textContent = t('bake.button');
         action.hidden = false;
-        action.onclick = () => void runBase();
-        o.hook.runBake = runBase;
+        action.onclick = () => void startBase();
+        o.hook.runBake = startBase;
+        // the offer itself does not hang over the flight (the keys build by themselves): the box keeps in
+        // sight in flight only while a build runs or after one failed (runBase)
         o.hook.downloadBaked = () => {
             const b = o.hook.bakedBytes;
             if (!b) return false;
@@ -417,12 +499,12 @@ export function mountWalls(o: WallsOptions): WallsHook {
         const c = await cacheP;
         w.cacheKind = c.kind;
         // `ready` means "decided": a bake started here runs on after it
-        if (o.mode === 'off') { w.state = shipped ? 'none' : 'offer'; if (!shipped && o.bakeNow) void runBase(); return; }
+        if (o.mode === 'off') { w.state = shipped ? 'none' : 'offer'; if (!shipped && o.bakeNow) void startBase(); return; }
         try {
             w.size = await sceneSize(s.scene.contentUrl, s.scene.contentKind);
         } catch {
             w.state = shipped ? 'none' : 'offer';
-            if (!shipped && o.bakeNow) void runBase();
+            if (!shipped && o.bakeNow) void startBase();
             return; // offline: the button still bakes, it reads the size itself
         }
         let voxelM: number | null = BASE_VOXEL_M;
@@ -445,7 +527,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             return;
         }
         void c.markStale(w.keyInput, w.key).catch(() => 0);
-        if (!shipped) { w.state = 'offer'; if (o.bakeNow) void runBase(); return; }
+        if (!shipped) { w.state = 'offer'; if (o.bakeNow) void startBase(); return; }
         const plan = w.plan!;
         if (plan.action === 'auto' || plan.action === 'offer' || plan.action === 'offer-long') prompt(plan);
         else w.state = plan.action === 'refused' ? 'refused' : 'none';

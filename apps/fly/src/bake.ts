@@ -40,6 +40,14 @@ export const AUTO_MAX_S = 20;
 export const OFFER_MAX_S = 180;
 /** Longer than this: refused (a local 16 m tile around the drone is the answer, not built yet). */
 export const OFFER_LONG_MAX_S = 600;
+/** Browser base bake (read + crop + voxelise, 5 cm) per million Gaussians of the level: 9.5 s, measured
+ *  by tools/bench/scripts/walls-trials.ts on 2026-11-14 (RTX 4090, headless Chrome): Wroclaw level 1
+ *  203.5 s / 21.47 M = 9.48; Tunis 6.3 to 6.9, Wroclaw level 2 6.8. A device that measured slower
+ *  (loadBakeSpeed) uses its own number. */
+export const LADDER_S_PER_MILLION = 9.5;
+/** A ladder step whose estimate is longer than this is skipped before it starts (the library has no
+ *  abort, so a running step cannot be cut short). A setting, not measured. */
+export const STEP_MAX_S = 150;
 
 export interface SceneSize {
     kind: 'meta' | 'lod-meta';
@@ -49,6 +57,8 @@ export interface SceneSize {
     from: 'tree' | 'counts' | 'count' | 'none';
     /** ETag (or Last-Modified) of the scene file: part of the walls cache key */
     etag: string | null;
+    /** Gaussians of every level of detail, finest first (a streamed scan; absent: only `gaussians`) */
+    byLevel?: number[];
 }
 
 interface LodNode {
@@ -69,13 +79,28 @@ export function lod0FromTree(tree: LodNode | undefined): number {
     return n;
 }
 
+/** Gaussians of every level over the tree's leaves (index = level); zeros where the tree is silent. */
+export function levelsFromTree(tree: LodNode | undefined, levels: number): number[] {
+    const out = new Array<number>(Math.max(1, levels)).fill(0);
+    const stack: LodNode[] = tree ? [tree] : [];
+    while (stack.length) {
+        const node = stack.pop()!;
+        for (const [k, v] of Object.entries(node.lods ?? {})) {
+            const i = Number(k);
+            if (typeof v?.count === 'number' && Number.isFinite(v.count) && i >= 0 && i < out.length) out[i] += v.count;
+        }
+        if (Array.isArray(node.children)) stack.push(...node.children);
+    }
+    return out;
+}
+
 /** How many Gaussians a bake would voxelise, from the scene's own metadata. */
 export function gaussiansFromMeta(m: { count?: number; counts?: number[]; lodLevels?: number; tree?: LodNode }, kind: 'meta' | 'lod-meta', etag: string | null = null): SceneSize {
     if (kind === 'meta') return { kind, gaussians: m.count ?? 0, lodLevels: 1, from: typeof m.count === 'number' ? 'count' : 'none', etag };
     const tree = lod0FromTree(m.tree);
     const lodLevels = m.lodLevels ?? m.counts?.length ?? 1;
-    if (tree > 0) return { kind, gaussians: tree, lodLevels, from: 'tree', etag };
-    if (typeof m.counts?.[0] === 'number') return { kind, gaussians: m.counts[0], lodLevels, from: 'counts', etag };
+    if (tree > 0) return { kind, gaussians: tree, lodLevels, from: 'tree', etag, byLevel: levelsFromTree(m.tree, lodLevels) };
+    if (typeof m.counts?.[0] === 'number') return { kind, gaussians: m.counts[0], lodLevels, from: 'counts', etag, byLevel: m.counts.slice() };
     if (typeof m.count === 'number') return { kind, gaussians: m.count, lodLevels, from: 'count', etag };
     return { kind, gaussians: 0, lodLevels, from: 'none', etag };
 }
@@ -163,6 +188,54 @@ export function checkBake(size: SceneSize, voxelM: number, o: { limits: GpuLimit
     if (o.shipped && predictNodes(o.shipped, voxelM) > MAX_PREDICTED_NODES) throw new BakeRefusedError('octree', size, 0, `${Math.round(predictNodes(o.shipped, voxelM))} nodes predicted`);
 }
 
+/** One way to build walls for a scan without them: which level of detail, which cell. */
+export interface BaseStep {
+    level: number;
+    voxelM: number;
+    /** Gaussians this step reads */
+    gaussians: number;
+}
+
+/**
+ * The ladder of a base bake (walls stage W1): it never refuses a scan. Every level of detail holds
+ * half the Gaussians of the one above (measured on the 13 catalogue scans, walls-scan-sizes.ts), so
+ * the finest level that passes the GPU-buffer and memory gates comes first and every coarser level
+ * after it, for when the device runs out of memory anyway. A cell too small for the octree format
+ * is the bake's own business (it goes 2x and 4x coarser on the same data). A single-file scan has
+ * one level: it is tried even past the estimate (the estimate is not the device's real limit).
+ */
+export function planBase(size: SceneSize, o: { limits: GpuLimits | null; capGb: number; sPerMillion?: number; maxS?: number }): BaseStep[] {
+    const levels = size.byLevel && size.byLevel.length ? size.byLevel : [size.gaussians];
+    const max = maxGaussians(o.limits, o.capGb);
+    const steps = levels.map((g, level) => ({ level, voxelM: BASE_VOXEL_M, gaussians: g })).filter((s) => s.gaussians > 0);
+    const first = steps.findIndex((s) => s.gaussians <= max);
+    if (first < 0) return steps.length ? [steps[steps.length - 1]] : [{ level: 0, voxelM: BASE_VOXEL_M, gaussians: size.gaussians }];
+    // time: a step that would run longer than maxS is skipped before it starts (never the last one)
+    const spm = Math.max(o.sPerMillion ?? 0, LADDER_S_PER_MILLION);
+    const maxS = o.maxS ?? STEP_MAX_S;
+    let i = first;
+    while (i < steps.length - 1 && stepSeconds(steps[i], spm) > maxS) i++;
+    return steps.slice(i);
+}
+
+/** Estimated seconds of one ladder step on a device that bakes `sPerMillion` s per million Gaussians. */
+export function stepSeconds(step: BaseStep, sPerMillion: number): number {
+    return (step.gaussians / 1e6) * sPerMillion;
+}
+
+/** Walls of a lower level or a coarser cell than the base: the pilot is told so in one line. */
+export function isRough(r: { level: number; voxelM: number }): boolean {
+    return r.level > 0 || r.voxelM > BASE_VOXEL_M + 1e-6;
+}
+
+/** The device or the tab ran out of room for this step: the next, lighter step may still fit. */
+export function outOfRoom(e: unknown): boolean {
+    if (e instanceof BakeGpuError) return true;
+    if (e instanceof BakeRefusedError) return e.reason === 'gpu-buffer' || e.reason === 'memory' || e.reason === 'octree';
+    if (e instanceof RangeError) return true;
+    return /out of memory|allocation failed|allocate|device (was )?lost|mixed blocks|mixed-leaf|Sparse octree node count/i.test(String((e as { message?: unknown } | null)?.message ?? e));
+}
+
 /** Refuse walls without a single solid voxel: flying through everything is not "walls built". */
 export function assertWalls(json: Uint8Array, bin: Uint8Array): number {
     let solid = 0;
@@ -218,8 +291,72 @@ export interface BakeResult {
     gaussians: number;
     solidVoxels: number;
     voxelM: number;
+    /** the level of detail the walls were built from (0: full detail) */
+    level: number;
+    /** share of the level's Gaussians inside the dense core the walls were built from (cropToCore) */
+    kept?: number;
     ms: { read: number; voxelize: number; total: number };
     peakJsHeapMb: number | null;
+}
+
+/**
+ * The dense core of a scan, the same rule as the published walls (tools/walls/bake-published.mjs cropBox):
+ * per axis the CROP_TAIL and 1 - CROP_TAIL quantiles of the positions, widened by CROP_MARGIN of that
+ * span plus CROP_PAD_M. Settings chosen, not measured; the offline bakes kept 98.5 to 99.9 % of the Gaussians.
+ */
+export const CROP_TAIL = 0.005;
+export const CROP_MARGIN = 0.15;
+export const CROP_PAD_M = 5;
+/** positions read for the quantiles (every n-th row); an estimate, enough for a 0.5 % tail */
+export const CROP_SAMPLE = 1_000_000;
+
+export function coreBox(axes: ArrayLike<number>[], tail = CROP_TAIL, margin = CROP_MARGIN, pad = CROP_PAD_M, sample = CROP_SAMPLE): { min: number[]; max: number[] } {
+    const min: number[] = [];
+    const max: number[] = [];
+    for (const a of axes) {
+        const step = Math.max(1, Math.floor(a.length / sample));
+        const s = new Float32Array(Math.ceil(a.length / step));
+        for (let i = 0, j = 0; i < a.length; i += step, j++) s[j] = a[i];
+        s.sort();
+        const n = s.length;
+        const lo = s[Math.max(0, Math.floor(n * tail))];
+        const hi = s[Math.min(n - 1, Math.max(0, Math.ceil(n * (1 - tail)) - 1))];
+        const m = (hi - lo) * margin + pad;
+        min.push(lo - m);
+        max.push(hi + m);
+    }
+    return { min, max };
+}
+
+type CropLib = Pick<typeof import('@playcanvas/splat-transform'), 'Column' | 'DataTable'>;
+type Table = import('@playcanvas/splat-transform').DataTable;
+
+/**
+ * The rows of `table` inside its dense core, without a copy: the kept rows are moved to the front in place
+ * and the result views the first k of every column (the same transform). Raw positions, as the columns hold them.
+ */
+export function cropToCore(st: CropLib, table: Table): { table: Table; kept: number } {
+    const x = table.getColumnByName('x')?.data;
+    const y = table.getColumnByName('y')?.data;
+    const z = table.getColumnByName('z')?.data;
+    const n = table.numRows;
+    if (!x || !y || !z || n === 0) return { table, kept: 1 };
+    const box = coreBox([x, y, z]);
+    const order = new Uint32Array(n);
+    let k = 0;
+    for (let i = 0; i < n; i++) {
+        const inside = x[i] >= box.min[0] && x[i] <= box.max[0] && y[i] >= box.min[1] && y[i] <= box.max[1] && z[i] >= box.min[2] && z[i] <= box.max[2];
+        if (inside) order[k++] = i;
+    }
+    if (k === n || k === 0) return { table, kept: 1 };
+    let r = k;
+    for (let i = 0; i < n; i++) {
+        const inside = x[i] >= box.min[0] && x[i] <= box.max[0] && y[i] >= box.min[1] && y[i] <= box.max[1] && z[i] >= box.min[2] && z[i] <= box.max[2];
+        if (!inside) order[r++] = i;
+    }
+    table.permuteRowsInPlace(order);
+    const cols = table.columns.map((c) => new st.Column(c.name, c.data.subarray(0, k)));
+    return { table: new st.DataTable(cols, table.transform), kept: k / n };
 }
 
 export interface BakeOptions {
@@ -232,6 +369,8 @@ export interface BakeOptions {
     size?: SceneSize;
     /** the shipped walls, for the octree-size gate of a refine */
     shipped?: { voxelM: number; nodes: number } | null;
+    /** the level of detail of a streamed scan to build from (default 0, full detail) */
+    level?: number;
     /** test only: pretend the device has these limits */
     limits?: GpuLimits | null;
     capGb?: number;
@@ -251,9 +390,13 @@ function heapMb(): number | null {
  * decode ("Expected property name ... at position 1" on bd04e182). A plain fetch lets the browser
  * decode the whole file; the files are in its HTTP cache already (the renderer loaded them).
  */
-/** The library reports the format's block limit only in its message, and not always as an Error. */
-function tooManyBlocks(e: unknown): boolean {
-    return e != null && /mixed blocks/i.test(String((e as { message?: unknown }).message ?? e));
+/**
+ * The library reports the format's limits only in its message, and not always as an Error. splat-transform
+ * 3.6.4 has three: "more than N mixed blocks", "Sparse octree mixed-leaf count (...) exceeds" and
+ * "Sparse octree node count (...) exceeds the Laine-Karras 24-bit baseOffset limit"; a coarser cell helps all three.
+ */
+export function tooManyBlocks(e: unknown): boolean {
+    return e != null && /mixed blocks|Sparse octree (node|mixed-leaf) count/i.test(String((e as { message?: unknown }).message ?? e));
 }
 
 export function wholeFileSystem(st: Pick<typeof import('@playcanvas/splat-transform'), 'MemoryReadFileSystem'>, base: string, f: (u: string) => Promise<Response> = fetch): import('@playcanvas/splat-transform').ReadFileSystem {
@@ -277,7 +420,9 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
     const timer = window.setInterval(sample, 200);
     try {
         onStage('size');
-        const size = o.size ?? await sceneSize(contentUrl, kind);
+        const full = o.size ?? await sceneSize(contentUrl, kind);
+        const level = kind === 'lod-meta' ? Math.max(0, Math.min(o.level ?? 0, full.lodLevels - 1)) : 0;
+        const size = level > 0 && full.byLevel?.[level] ? { ...full, gaussians: full.byLevel[level] } : full;
         const limits = o.limits !== undefined ? o.limits : gpuLimitsOf(device);
         checkBake(size, voxelM, { limits, capGb: o.capGb ?? memCapGb(), webgpu: (device as unknown as { isWebGPU?: boolean }).isWebGPU !== false, shipped: o.shipped ?? null });
         onStage('read');
@@ -288,11 +433,15 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const file = contentUrl.slice(base.length);
         const fs = wholeFileSystem(st, base);
         const sources = await st.readFile({ filename: file, inputFormat: kind === 'lod-meta' ? 'lod' : 'sog', fileSystem: fs });
-        const src = kind === 'lod-meta' ? st.selectLod(sources[0], 0) : sources[0];
+        const src = kind === 'lod-meta' ? st.selectLod(sources[0], level) : sources[0];
         // only what the voxeliser reads (as the CLI does): same octree, bit for bit, at half the memory
         // (15.4 M Gaussians: 2.65 GB instead of 5.6 GB with the colour columns)
-        const table = await st.materializeToDataTable(src, st.createChunkDataPool(), new Set(['position', 'geometric']));
+        const whole = await st.materializeToDataTable(src, st.createChunkDataPool(), new Set(['position', 'geometric']));
         for (const s of sources) await s.close();
+        // a few floaters kilometres out make the voxeliser walk the whole bound (Wroclaw: 13.5 km, still
+        // voxelising after 20 min): build the walls of the dense core, as the published walls are built
+        const core = cropToCore(st, whole);
+        const table = core.table;
         const tRead = performance.now();
         sample();
         onStage('voxelize');
@@ -329,8 +478,37 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
         const t1 = performance.now();
         sample();
         onStage('done');
-        return { json, bin, gaussians: table.numRows, solidVoxels, voxelM: used, ms: { read: tRead - t0, voxelize: t1 - tRead, total: t1 - t0 }, peakJsHeapMb: peak };
+        return { json, bin, gaussians: table.numRows, kept: core.kept, solidVoxels, voxelM: used, level, ms: { read: tRead - t0, voxelize: t1 - tRead, total: t1 - t0 }, peakJsHeapMb: peak };
     } finally {
         clearInterval(timer);
     }
+}
+
+export type BaseStage = 'size' | 'read' | 'voxelize' | 'lighter' | 'done';
+
+/**
+ * Walls for a scan without any, whatever its size: the ladder of planBase, one step after another
+ * until one fits this device. Only a failure that is not about room (no WebGPU, a network error,
+ * empty walls) ends it early. `bake` is bakeCollision (a test passes its own).
+ */
+export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & { bake?: typeof bakeCollision; sPerMillion?: number | null } = {}): Promise<BakeResult & { tried: number }> {
+    const bake = o.bake ?? bakeCollision;
+    onStage('size');
+    const size = o.size ?? await sceneSize(contentUrl, kind);
+    const limits = o.limits !== undefined ? o.limits : gpuLimitsOf(device);
+    // the seconds per million this device measured on its last bake (if slower than the trials)
+    const steps = planBase(size, { limits, capGb: o.capGb ?? memCapGb(), sPerMillion: o.sPerMillion ?? undefined });
+    let last: unknown = null;
+    for (let i = 0; i < steps.length; i++) {
+        if (i > 0) onStage('lighter');
+        try {
+            // a step the plan let through past the estimate (the last level) is tried for real
+            const r = await bake(contentUrl, kind, device, (s) => onStage(s), { ...o, size, level: steps[i].level, voxelM: steps[i].voxelM, coarsenOnOctree: true, capGb: i === steps.length - 1 ? Number.POSITIVE_INFINITY : o.capGb, limits: i === steps.length - 1 ? null : o.limits });
+            return { ...r, tried: i + 1 };
+        } catch (e) {
+            last = e;
+            if (!outOfRoom(e)) throw e;
+        }
+    }
+    throw last;
 }
