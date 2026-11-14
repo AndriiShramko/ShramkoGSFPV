@@ -12,7 +12,7 @@ import { gunzipSync } from 'node:zlib';
 import { openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
 import { fitCourse, flownCollision, freeSpace, qualityBounds, qualityMap, heightAbove, inDenseBand, tileOf } from '@gsfpv/tracks';
-import type { SceneTransform, Vec3 } from '@gsfpv/tracks';
+import type { SceneTransform, Vec3, WalkInfo } from '@gsfpv/tracks';
 
 /** a tile counts as visited when a gate stands within this many flown m of its centre (estimate: one long leg's half) */
 export const VISIT_M = 8;
@@ -61,7 +61,8 @@ function main(): void {
     const visitT = Math.ceil(VISIT_M / q.tileM);
     for (let seed = from; seed < from + seeds; seed++) {
         const g0 = performance.now();
-        const fit = fitCourse(free, walls, { seed, scene: { id: scene, version: 1 }, transform: T, quality: withQ ? q : undefined });
+        const walks: WalkInfo[] = [];
+        const fit = fitCourse(free, walls, { seed, scene: { id: scene, version: 1 }, transform: T, quality: withQ ? q : undefined, onWalk: (w) => walks.push(w) });
         const ms = Math.round(performance.now() - g0);
         const gates = fit.track?.gates ?? [];
         const pos = gates.map((g) => g.pos as Vec3);
@@ -82,7 +83,9 @@ function main(): void {
         let reach = 0;
         for (const p of pos) reach = Math.max(reach, Math.hypot(p[0] - spawn[0], p[2] - spawn[2]));
         const P = (fit.track?.generator?.params ?? {}) as Record<string, unknown>;
-        const row = { seed, stop: P.stop, farM: P.farM, outGates: P.outGates, walked: P.walked, wanted: P.wanted, tries: P.tries, gates: gates.length, scale: fit.scale, inBand, visited: seen.size, reachM: Math.round(reach), heights, ms };
+        // CR-1, CR-4: the walk of the kept try (the last with as many gates as the course) and every try's cut
+        const W = [...walks].reverse().find((w) => w.kept === gates.length) ?? null;
+        const row = { seed, stop: P.stop, farM: W?.farM, outGates: W?.outGates, backtracks: W?.backtracks, walked: P.walked, cutClose: W?.cutClose, drops: W?.drops.join(','), wanted: P.wanted, tries: P.tries, fits: walks.length, walks: walks.map((w) => `${w.walked}-${w.cutClose}-${w.drops.length}=${w.kept}`).join(' '), gates: gates.length, scale: fit.scale, inBand, visited: seen.size, reachM: Math.round(reach), heights, ms };
         rows.push(row);
         console.log(JSON.stringify(row));
     }

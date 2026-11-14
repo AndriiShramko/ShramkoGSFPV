@@ -5,7 +5,8 @@
 import { describe, expect, it } from 'vitest';
 import { analyticCollision } from '@gsfpv/collision';
 import { validateTrack } from '@shramko/sonic-fpv';
-import { denseBand, freeSpace, generateCourse, inDenseBand, qualityBounds, qualityMap } from '../src';
+import { denseBand, freeSpace, generateCourse, inDenseBand, qualityBounds, qualityMap, validateServerTrack } from '../src';
+import type { WalkInfo } from '../src';
 import type { Vec3 } from '../src';
 import { IDENTITY } from './worlds';
 
@@ -71,7 +72,16 @@ describe('a course over the quality map', () => {
             for (const g of t.gates) expect(inDenseBand(q, g.pos as Vec3)).toBe(true);
             expect(reach(t.gates)).toBeGreaterThanOrEqual(STREET_M / 2);
             expect(validateTrack(JSON.parse(JSON.stringify(t))).ok).toBe(true);
+            // CR-1: a course over the map can be saved: the server's params whitelist takes it as it is
+            const sv = validateServerTrack(JSON.parse(JSON.stringify(t)));
+            expect(sv.ok ? [] : sv.issues).toEqual([]);
         }
+        // CR-1: the walk's diagnostics come through onWalk
+        let w: WalkInfo | null = null;
+        const t1 = generateCourse(free, walls, { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED, quality: q, onWalk: (x) => { w = x; } });
+        expect(w).not.toBeNull();
+        expect(w!.kept).toBe(t1.gates.length);
+        expect(w!.walked - w!.cutClose - w!.drops.length).toBe(w!.kept);
         // control: without the map the walk keeps within two legs (30 m) of the start
         const old = generateCourse(free, walls, { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED });
         expect(reach(old.gates)).toBeLessThan(STREET_M / 2);

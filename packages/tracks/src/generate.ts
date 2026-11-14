@@ -95,6 +95,29 @@ export interface CourseOptions {
     /** G2: where the scan is good (quality.ts). Gates go into its dense band over well-scanned tiles and the walk spreads
      *  over the whole box instead of keeping within OUT_LEGS legs of the start. Without it every course is as before. */
     readonly quality?: QualityMap;
+    /** CR-1: what the walk did (audits and probes). Not written into the file: the server keeps a fixed list of params keys
+     *  (server.ts PARAM_KEYS, apps/api/tracks.py), and these are diagnostics, not the course. */
+    readonly onWalk?: (w: WalkInfo) => void;
+}
+
+/** CR-1, CR-4: the walk of one generateCourse call, handed to CourseOptions.onWalk */
+export interface WalkInfo {
+    /** the dense band used, m above the ground (null without a quality map) */
+    readonly band: readonly [number, number] | null;
+    readonly banded: boolean;
+    /** the seeded far target's steps from the start, m (0 without one) */
+    readonly farM: number;
+    /** gates laid when the walk turned home (-1: it never did) */
+    readonly outGates: number;
+    readonly backtracks: number;
+    readonly wanted: number;
+    /** gates the walk laid before the course was proven whole */
+    readonly walked: number;
+    /** gates cut because the course closes at an earlier gate that sees the start */
+    readonly cutClose: number;
+    /** gates dropped by the whole-course proof: 'gate' (opening or direction), 'leg' (blocked leg), 'last' (no reason found) */
+    readonly drops: readonly string[];
+    readonly kept: number;
 }
 
 /** G2: the band candidates are used when there are at least this many per wanted gate (estimate), else every candidate */
@@ -332,6 +355,12 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             cur = prev.cur;
             curCell = prev.cell;
             prevDir = prev.dir;
+            // CR-6: a step-back below the gate where the walk turned home puts it back on the way out (else the out half
+            // ends short of the far target and the walk heads home from a gate of the out half)
+            if (toT !== null && outGates > gates.length) {
+                back = false;
+                outGates = -1;
+            }
             continue;
         }
         if (open.length === 0) {
@@ -370,9 +399,12 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     };
     let course = renumber(gates);
     let laps = p.laps;
+    let cutClose = 0;
+    const drops: string[] = [];
     for (let guard = 0; guard < 2 * p.tries && course.length > 0; guard++) {
         const n = closeAt(course);
         if (n > 0) {
+            cutClose += course.length - n;
             course = renumber(course.slice(0, n));
             laps = p.laps;
         } else laps = 1;
@@ -382,6 +414,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         const bad = r.gates.findIndex((g) => !g.clear || !g.directionOk);
         const badLeg = r.legs.findIndex((l) => !l.clear);
         const drop = bad >= 0 ? bad : badLeg >= 0 ? Math.max(0, badLeg - 1) : course.length - 1;
+        drops.push(bad >= 0 ? 'gate' : badLeg >= 0 ? 'leg' : 'last');
         course = renumber(course.filter((_, i) => i !== drop));
     }
     if (course.length === 0) laps = p.laps;
@@ -390,6 +423,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
     const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false, true) : null;
+    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length });
     return {
         ...shell,
         generator: {
@@ -409,9 +443,9 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
                 closed: course.length > 0 && laps > 1,
                 proof: proof ? { ok: proof.ok, marginM: p.marginM, pathM: proof.pathM } : null,
                 // only a scaled course says so: the plan's size keeps its params and trackDigest as before K1.2
-                ...(k !== 1 ? { scale: k, legMinM: r3(p.legMinM), legMaxM: r3(p.legMaxM) } : {}),
-                // G2: only a course laid over a quality map says so (courses without one keep their trackDigest)
-                ...(Q ? { band: [r3(Q.band[0]), r3(Q.band[1])], banded, farM: r3(farM), outGates, backtracks } : {})
+                ...(k !== 1 ? { scale: k, legMinM: r3(p.legMinM), legMaxM: r3(p.legMaxM) } : {})
+                // CR-1: the walk's diagnostics of a course over a quality map go to opts.onWalk, not here: the server
+                // refuses params keys it does not know (generator.version '2' marks such a course)
             }
         }
     };
