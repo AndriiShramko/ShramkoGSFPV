@@ -5,6 +5,24 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820/5821, headless Chrome 157, GPU lock):
+- [x] Release build (dist sha cc103a49, 1930 files). Probe r11 in tools/bench/src/sonic-int-review.ts (2f972a90): ordinary
+  flight, Controls screen, ONE press of Backslash, first cue and first line timed, N, the course flown to its end with W
+  pulsed to hold a speed (Z5_SCENE, Z5_SPEEDS, Z5_WALLS); r10 now reads the lessons item pause.flyBySoundLessons.
+- [x] r10 (old case, Tunis): 14 of 14 PASS, course flown to its end (phase passed, 4 fly.stage lines, no last-lesson line).
+- [x] r11 Tunis 887f27aa (shipped walls): 7 of 7 PASS at 2 and 5 m/s (Facts Z5).
+- [x] r11 Wroclaw 70b50d42 (stand-in walls): 2 m/s PASS; 5 m/s FAIL: the probe's pilot held Shift with E (a chord, no
+  turn) on a ledge 2 m above gate 10 for 270 s. Pilot fixed in ac9290c6 (turn first, then height; stall = no move and no turn).
+- [~] Rerun with the fixed pilot (U:/Temp/gsfpv-train3/sonic3/z5-rerun.sh): Wroclaw stand-in 5 and 2 m/s, Tunis 5 m/s;
+  results in z5-r11-wroclaw2.json, z5-r11-tunis2.json there (see the last line of this block).
+- [ ] Wroclaw with walls BUILT: N said sonic.say.wallsStill and no course came in 420 s. Probe ran with render=off; the
+  walls lane's bakes ran with rendering on. Next: Z5_RENDER=on (probe reads it since this commit), empty dist/walls/70b50d42,
+  Z5_SCENE=70b50d42 Z5_SPEEDS=3 node node_modules/tsx/dist/cli.mjs tools/bench/src/sonic-int-review.ts r11 (PORT 5822); if
+  still no course, read wallsThen's state in __gsfpv (walls hook) and stop: walls code is outside this lane.
+- [ ] Speed lessons: NOT BUILT (Z4 LEFT item 6), so "the speed lessons open and end" cannot be shown. Also left from Z4:
+  line-side proof run, racingLine on in scan courses, rear timbre, reach.ts, ear-pilot-scan.ts.
+- [x] gates.py --only vitest,architecture,i18n,b18 on 2f972a90: all four PASS (vitest 129 s).
+
 Stage Z1-any-scene-in-place:
 - [x] Step 1: owner's path walked on the LIVE site (read only), Tunis 887f27aa and Wroclaw 70b50d42; findings in
   sonic3-plan.md "What stops a pilot today"; probe tools/bench/scripts/sonic-walk-probe.mjs (this commit).
@@ -103,6 +121,19 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## Facts (measured)
 
+- Z5 browser runs (tools/bench/src/sonic-int-review.ts r10 and r11, evidence copies in U:/Temp/gsfpv-train3/sonic3/z5-*.json,
+  shots U:/Temp/gsfpv-train3/shots/z5-*.png). Backslash to first planned cue (height.tone, room.bed) 0.23 to 0.39 s, first
+  spoken line lesson.scan-free.title 0.24 to 0.40 s, in every run; phases intro then flying; nothing else pressed.
+  | Scene, walls | asked m/s | N to gate 1 | course | flight | W-held speed median / max | dodges |
+  |---|---|---|---|---|---|---|
+  | Tunis, shipped | 2 | 51.8 s | passed, 12 gates | 139 s | 0.43 / 1.99 | 2 |
+  | Tunis, shipped | 5 | 47.3 s | passed on attempt 3 (2 fails at g7) | 108 s | 4.19 / 5.00 | 0 |
+  | Wroclaw, stand-in | 2 | 110.5 s | passed (attempt 1 failed at g15) | 172 s | 0.51 / 1.99 | 0 |
+  | Wroclaw, stand-in | 5 | 59.3 s | NOT passed: stuck at g10 (pilot fault, see Status) | 363 s cap | 2.84 / 4.98 | 1 |
+  | Wroclaw, built | 3 | none in 420 s (sonic.say.wallsStill) | - | - | - | - |
+  The median of W-held samples is low at 2 m/s because W is pulsed and each restart from a turn is sampled.
+  /walls/70b50d42/v1/scene.voxel.json and .bin answered 200 in the stand-in runs. r10 Tunis: 14 of 14 in 936 s.
+
 - Z4 pass 2, the three tables (tools/ear-pilot.ts, beacon on, soft theme, seeds 1 2 3, rungs 1 2 3 4 6 8 10 12 15 18 22,
   budget on in both after-columns; package evidence/ear-pilot/2026-11-14-after-speed2-*.json and -after-line-*.json):
 
@@ -196,6 +227,20 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## For the lead
 
+- Pilot's guide (Z5). Keys a pilot uses: Backslash switches Fly by Sound on and off over any flight (also the pause item
+  "Fly by Sound here"); W S forward and back, Q E turn, A D side, Space and Shift up and down (turn first: Shift with a letter
+  is a chord); N makes a course of gates here (walls first when the scan has none); B the previous; R back to the last
+  checkpoint (held: the start); I where am I; Z repeat the last line; G the glossary of sounds; K all keys; T record, U send;
+  X home; Escape the menu with "Fly by Sound lessons" (new tab).
+- The three ear-pilot tables (rings-course median top speed, seeds 1 2 3; corridor 0 in every column, a pillar on the path):
+  before 3 m/s (2 loudest) and 6 m/s (hum attended); after the stream budget 3 and 4 m/s (tier edge 4.5); after the racing
+  line 4 and 6 m/s (6 6 6). Details in Facts "Z4 pass 2, the three tables".
+- What a listener should notice: one press, sound within half a second (height tone and room bed), then the spoken intro
+  once; near walls their pulses on that side; on N "making a course", then the hum of gate 1: it is louder in the ear it is
+  on, and in a course with the line on (not shipped yet) it beats when the craft is off the line; at a gate its note and a
+  short preview of the next; above 4.5 m/s fewer streams (tier 1: three), from 8 m/s two and the open-way chime instead of
+  the hazards, the height ticks off. Front and back can still be confused: turn a little and hear where the hum moves.
+
 - Z4: the pin points at package train3 e133411 (local only, not pushed). The stream budget is a lesson opt-in
   (layers.speedBudget), on only in scan-free; courses and speed lessons get it when they are built.
 
@@ -253,3 +298,6 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - 2026-11-14 Z4 pass 2: most replies went to the audio proof setup (reading proofs.ts and the evidence writer) and then
   waiting for the GPU lock another job held; a proof that needs no GPU (offline audio) should not take the GPU lock, or the
   lock should name its holder so a worker knows whether to wait.
+- 2026-11-15 Z5-prove: most turns went to waiting for browser runs (GPU lock held 15 min by another job, then 10 to 15 min per
+  run); one script queueing every run with the next one's setup would have cut the waits to one call; the walls-built case
+  should have been run first with rendering on, as the walls lane did.

@@ -1029,7 +1029,7 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) problems.push(`${tag}: console ${m.text().slice(0, 300)}`); });
         const wallsFiles: string[] = [];
         page.on('response', (r) => { if (new URL(r.url()).pathname.startsWith('/walls/')) wallsFiles.push(`${new URL(r.url()).pathname} ${r.status()}`); });
-        await page.goto(`${served.origin}/en/fly/?scene=${scene}&nowarn=1&render=off`);
+        await page.goto(`${served.origin}/en/fly/?scene=${scene}&nowarn=1${process.env.Z5_RENDER === 'on' ? '' : '&render=off'}`);
         await until('the ordinary flight', () => page.evaluate(() => (window as unknown as Hook).__gsfpv?.status ?? null), (v) => v === 'ready', 180000, 250);
         await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 });
         await page.focus('.screen.radio [data-action="radio-keyboard"]');
