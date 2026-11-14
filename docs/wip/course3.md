@@ -26,8 +26,14 @@ Stage G1-progress (the owner's message 51: "I do not understand whether it hung 
 - [x] Fly by Sound: both lines spoken through the spoken-line hook (app/say-via.ts sayVia, key sonic.say.text; the walls through
   a new WallsOptions.speak set in app/builtin/walls.ts), on every new step and else every 20 s.
 - [x] Unit tests tools/bench/test/course-progress.test.ts (13) with walls-ladder.test.ts: 26/26 passed; typecheck apps/fly and tools/bench clean.
-- [ ] Gates before handing over (vitest, architecture, i18n, b18).
-- [ ] See the line once in a browser (walls build and course on a local release).
+- [x] Negative controls: old bake.ts -> the onStep test fails ("expected [] to deeply equal [[10770000,0],[5390000,1]]");
+  old course/en.json -> the locale test fails by assertion (neg_control.py NEG OK). Commit 39eefbc0.
+- [x] Gates vitest, architecture, i18n, b18: all PASS (vitest 99 s; logs U:/Temp/gsfpv-gates-20261114-215628).
+- [ ] LEFT: see the line once in a browser: node scripts/build-release.mjs; serve-csp dist 5720; under C:/dev/.gpu-lock
+  open http://localhost:5720/en?scene=887f27aa (Tunis, shipped walls) and press Shift+G: read __gsfpv.course.progress every
+  second until the course; then /en?scene=70b50d42&bake=1 with the stand-in walls NOT served (so the build runs) and read
+  __gsfpv.walls.progress and the walls box line ([data-testid=bake-status]) every second. Screenshot to
+  U:/Temp/gsfpv-train3/shots/. Not started.
 
 ## Facts (measured)
 
@@ -63,4 +69,11 @@ Stage G1-progress (the owner's message 51: "I do not understand whether it hung 
 - The rates are Node rates; the worker in the browser may differ. The line re-estimates every later try from the real one.
 - The spoken lines were not heard (no browser run with Fly by Sound in this stage).
 
+- tools/bench/test/a6-reference.test.ts was not run: no flight, input or collision logic changed (walls.ts only its line).
+- The HUD flash re-drawn every second was not looked at (flicker or overlap with other HUD notes unknown).
+
 ## Cost notes
+
+- G1-progress: most turns went to finding the measured rates (audit .sum files, walls probe JSONs scattered under
+  U:/Temp/gsfpv-train2) and to reading walls.ts and builtin/course.ts whole; an agent-map line for "walls build progress"
+  and "course worker messages" plus one rates table in docs would have saved about 8 turns.
