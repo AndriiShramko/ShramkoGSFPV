@@ -16,8 +16,16 @@ Stage E2 (next worker), in this order:
     test tools/bench/test/editor3-check.test.ts (3 tests) plus tracks2-fixes T2-1 moved to edMargin; 7 touched files 35/35
     pass, NEG OK on origin/main course.ts (fails at `not.toMatch(/wallsCheck\(/)`), apps/fly tsc 0
   - [x] the probe re-run on a local release of c1e5bf55 (Facts, E2.1): every key's frame gap 35 ms or less, no long task
-- [ ] E2.2 the edit camera: W A S D, E up, Q down, right mouse button held looks, wheel speed (The design, Camera)
-- [ ] E2.3 click to select, PlayCanvas TranslateGizmo + RotateGizmo + ScaleGizmo on the selected gate, one undo step per drag
+- [x] E2.2 the edit camera: W A S D, E up, Q down, Shift faster, right mouse button held (or a left drag on empty space)
+  looks, wheel speed 0.5-20 m/s with a flash line; starts where the flight camera is; Tab glides to the gate (code, this commit)
+- [x] E2.3 click to select (ray against bounding spheres), TranslateGizmo + RotateGizmo + ScaleGizmo (centre box only,
+  uniform) on a stand-in entity at the selected gate, the gate follows live (one redraw per frame), one undo step per drag;
+  snap 0.1 m, 15 deg, 0.1 of the opening, Ctrl held free (code, this commit)
+  - files: course/editor/fly-cam.ts, pick.ts, drag.ts (pure), view-mouse.ts (canvas, keys, gizmos), keys.ts (Q and E to
+    the camera, [ and ] turn), course.ts wiring; locales course.edit.opened (new text), course.edit.camSpeed (new), 4 languages
+  - test tools/bench/test/editor3-mouse.test.ts (10 tests) + tracks-editor-ui.test.ts updated: 22/22 pass with
+    editor3-check; NEG OK (neg_control.py, origin/main keys.ts: the Q/E tests fail); apps/fly tsc 0
+  - [ ] NOT yet run in a browser: the gizmos, the click, the camera keys (next: E2.6 or a smoke probe first)
 - [ ] E2.4 the small panel at the selected gate, Add gate by a click on the place, the top bar
 - [ ] E2.5 arm flies, disarm edits (The design, Flying through)
 - [ ] E2.6 browser proof on a local release, the owner's path on 70b50d42 (local walls stand-in) and 887f27aa
@@ -141,6 +149,13 @@ button shows the table.
 
 ## Not verified
 
+- E2.2/E2.3 in a browser: whether PlayCanvas 2.23.2's gizmos draw and drag on our renderer camera (the gizmo layer is added to
+  the camera's layers), whether the fly page's own canvas listeners (pointer lock request on click) disturb a click while the
+  editor is open, whether a live redraw per frame (stage.show of all gates) is smooth on Wroclaw's 24 gates. enableShape
+  names 'face' (TranslateGizmo) and 'face', 'xyz' (RotateGizmo) are wrapped in try: not checked which exist.
+- The new numbers are estimates, not measured: CAM_SPEED_M_S 4, CAM_WHEEL_STEP 1.35, CAM_FAST 3, CAM_DEG_PER_PX 0.2,
+  PICK_PAD_M 0.15, CLICK_SLOP_PX 4, turn gizmo size 1.5.
+
 - Why the owner's Tab did nothing (headless Tab worked); see Facts.
 - The probe ran headless on this PC's GPU at 30 frames per second; the owner's laptop numbers will differ.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
@@ -152,3 +167,6 @@ button shows the table.
   minutes cost one reply; reading the whole PlayCanvas export line cost context. The fix did not fit in the 30 replies.
 - E1 pass 2 (E2.1): about 25 replies; most went to finding the test layout (apps/fly tests live in tools/bench/test) and the
   probe JSON shape; a line in docs/agent-map.md on both would have saved four replies.
+- E2 mouse-and-camera: about 30 replies; most went to finding the gate frames (scan vs flown, w-first quaternions) and the
+  PlayCanvas gizmo API in a 77k-line d.ts; a note in agent-map.md on the course frames and the quaternion order would save
+  five replies. No browser run fitted.

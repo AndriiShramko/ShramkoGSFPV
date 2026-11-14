@@ -28,7 +28,7 @@
   "keys.course.edit": "Tor: edytuj przeszkody",
   "course.edit.menu": "Tor: edytuj przeszkody",
   "course.edit.title": "Edytor toru",
-  "course.edit.opened": "Edytor otwarty, lot wstrzymany. Tab wybiera bramkę, strzałki ją przesuwają, Esc wychodzi",
+  "course.edit.opened": "Edytor otwarty. W A S D przesuwają widok, E w górę, Q w dół, przytrzymaj prawy przycisk myszy, by się rozejrzeć, kółko zmienia prędkość. Kliknij bramkę i przeciągnij jej strzałki, pierścienie lub środkowy sześcian. Esc wychodzi",
   "course.edit.gate": "Bramka {n} z {of}: {shape}, {size} m",
   "course.edit.shape.ring": "obręcz",
   "course.edit.shape.square": "kwadrat",
@@ -113,5 +113,6 @@
   "course.edit.saveAdmin": "Zapisz jako wersję administratora",
   "course.edit.savedAdmin": "Zapisano jako wersję administratora: {title}, wersja {v}",
   "course.edit.adminFirst": "Najpierw zapisz tor dla wszystkich, potem administrator może zapisać jego wersję",
-  "course.edit.voteAfterLap": "Przeleć okrążenie tego toru, aby zagłosować"
+  "course.edit.voteAfterLap": "Przeleć okrążenie tego toru, aby zagłosować",
+  "course.edit.camSpeed": "Prędkość widoku {v} m/s"
 }

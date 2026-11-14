@@ -28,7 +28,7 @@
   "keys.course.edit": "Circuito: editar los obstáculos",
   "course.edit.menu": "Circuito: editar los obstáculos",
   "course.edit.title": "Editor del circuito",
-  "course.edit.opened": "Editor abierto, el vuelo está en pausa. Tab elige una puerta, las flechas la mueven, Esc sale",
+  "course.edit.opened": "Editor abierto. W A S D mueven la vista, E sube, Q baja, mantén el botón derecho del ratón para mirar alrededor, la rueda cambia la velocidad. Haz clic en una puerta y arrastra sus flechas, anillos o el cubo central. Esc sale",
   "course.edit.gate": "Puerta {n} de {of}: {shape}, {size} m",
   "course.edit.shape.ring": "aro",
   "course.edit.shape.square": "cuadrado",
@@ -113,5 +113,6 @@
   "course.edit.saveAdmin": "Guardar como versión del administrador",
   "course.edit.savedAdmin": "Guardado como versión del administrador: {title}, versión {v}",
   "course.edit.adminFirst": "Primero guarda el circuito para todos; después el administrador puede guardar una versión",
-  "course.edit.voteAfterLap": "Vuela una vuelta de este circuito para votar"
+  "course.edit.voteAfterLap": "Vuela una vuelta de este circuito para votar",
+  "course.edit.camSpeed": "Velocidad de la vista {v} m/s"
 }

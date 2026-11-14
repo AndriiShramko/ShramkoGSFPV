@@ -28,7 +28,7 @@
   "keys.course.edit": "Course: edit the obstacles",
   "course.edit.menu": "Course: edit the obstacles",
   "course.edit.title": "Course editor",
-  "course.edit.opened": "Editor open, the flight is paused. Tab selects a gate, the arrows move it, Esc leaves",
+  "course.edit.opened": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate and drag its arrows, rings or centre box. Esc leaves",
   "course.edit.gate": "Gate {n} of {of}: {shape}, {size} m",
   "course.edit.shape.ring": "ring",
   "course.edit.shape.square": "square",
@@ -113,5 +113,6 @@
   "course.edit.saveAdmin": "Save as the admin's version",
   "course.edit.savedAdmin": "Saved as the admin's version: {title}, version {v}",
   "course.edit.adminFirst": "Save the course for everyone first, then the admin can save a version of it",
-  "course.edit.voteAfterLap": "Fly a lap of this course to vote"
+  "course.edit.voteAfterLap": "Fly a lap of this course to vote",
+  "course.edit.camSpeed": "View speed {v} m/s"
 }

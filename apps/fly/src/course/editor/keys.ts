@@ -63,8 +63,9 @@ export function editorKey(e: KeyPress, forward: readonly [number, number]): Edit
         case 'Tab': return { edit: { kind: 'select-step', step: shift ? -1 : 1 } };
         case 'PageUp': return { edit: shift ? { kind: 'move', axis: 1, steps: 1, stepM: BIG_STEP_M } : { kind: 'move', axis: 1, steps: 1 } };
         case 'PageDown': return { edit: shift ? { kind: 'move', axis: 1, steps: -1, stepM: BIG_STEP_M } : { kind: 'move', axis: 1, steps: -1 } };
-        case 'KeyQ': return { edit: { kind: 'turn', steps: -1 } };
-        case 'KeyE': return { edit: { kind: 'turn', steps: 1 } };
+        // lane editor3 E2: Q and E are the edit camera's down and up (course/editor/fly-cam.ts); [ and ] turn the gate
+        case 'BracketLeft': return { edit: { kind: 'turn', steps: -1 } };
+        case 'BracketRight': return { edit: { kind: 'turn', steps: 1 } };
         case 'Digit1': case 'Numpad1': return { edit: { kind: 'shape', to: 'ring' } };
         case 'Digit2': case 'Numpad2': return { edit: { kind: 'shape', to: 'square' } };
         case 'Digit3': case 'Numpad3': return { edit: { kind: 'dive' } };
@@ -96,8 +97,8 @@ export const KEY_ROWS: readonly { readonly caps: string; readonly labelKey: stri
     { caps: 'Right', labelKey: 'course.edit.key.right', press: { code: 'ArrowRight' } },
     { caps: 'PgUp', labelKey: 'course.edit.key.up', press: { code: 'PageUp' } },
     { caps: 'PgDn', labelKey: 'course.edit.key.down', press: { code: 'PageDown' } },
-    { caps: 'Q', labelKey: 'course.edit.key.turnLeft', press: { code: 'KeyQ' } },
-    { caps: 'E', labelKey: 'course.edit.key.turnRight', press: { code: 'KeyE' } },
+    { caps: '[', labelKey: 'course.edit.key.turnLeft', press: { code: 'BracketLeft' } },
+    { caps: ']', labelKey: 'course.edit.key.turnRight', press: { code: 'BracketRight' } },
     { caps: '1', labelKey: 'course.edit.key.ring', press: { code: 'Digit1' } },
     { caps: '2', labelKey: 'course.edit.key.square', press: { code: 'Digit2' } },
     { caps: '3', labelKey: 'course.edit.key.dive', press: { code: 'Digit3' } },

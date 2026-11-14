@@ -33,6 +33,9 @@ import { CheckQueue } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
+import { EditView } from '../../course/editor/view-mouse';
+import { camFrom } from '../../course/editor/fly-cam';
+import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
@@ -99,6 +102,12 @@ export const course: Feature = {
         let camForward: readonly [number, number] | null = null;
         let camView: GateView | null = null;
         /** stage K2.6: the camera looks right of the gate by the share of the width the editor's window covers, so the gate is in the free part */
+        /** lane editor3 E2: the free edit camera, the click selection and the handles (course/editor/view-mouse.ts) */
+        let view: EditView | null = null;
+        /** the editor's state when a handle drag began (the drag is one undo step on it) */
+        let dragBase: EditorState | null = null;
+        let dragFrame = 0;
+        /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
         const aim = (): void => {
             if (!camView || !panel) return;
             const w = window.innerWidth;
@@ -108,11 +117,8 @@ export const course: Feature = {
             const fov = cc?.fov ?? 115;
             const h = cc && !cc.horizontalFov ? (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * (w / Math.max(1, window.innerHeight))) * 180) / Math.PI : fov;
             const look = aimAt(camView.eye, camView.at, free, h);
-            ctx.session.cameraOverride = true;
-            ctx.renderer.setCameraLookAt(camView.eye[0], camView.eye[1], camView.eye[2], look[0], look[1], look[2]);
-            edHook.view = { eye: [...camView.eye], at: [...camView.at], look: [...look], free };
+            if (view) view.setCam(camFrom(camView.eye, look, view.cam.speed));
         };
-        const onResize = (): void => aim();
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
@@ -557,7 +563,8 @@ export const course: Feature = {
             hud.update(null, 0);
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
-            aim();
+            const eg = ed.course.gates[ed.selected];
+            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null);
             edHook.open = true;
             edHook.selected = ed.selected;
             edHook.changed = edChanged;
@@ -598,7 +605,25 @@ export const course: Feature = {
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
-            window.addEventListener('resize', onResize);
+            // lane editor3 E2: the edit camera starts where the flight camera is, looking its way
+            const ce = ctx.renderer.camera;
+            const ep = ce.getPosition();
+            const ef = ce.forward;
+            ctx.session.cameraOverride = true;
+            view = new EditView({
+                app: ctx.renderer.app,
+                camera: ce,
+                gates: () => run?.gates ?? [],
+                onCamera: (eye, at) => {
+                    ctx.session.cameraOverride = true;
+                    ctx.renderer.setCameraLookAt(eye[0], eye[1], eye[2], at[0], at[1], at[2]);
+                    edHook.view = { eye: [...eye], at: [...at], look: [...at], free: 1 };
+                },
+                onPick: (i) => pickAt(i),
+                onDrag: (p, end) => dragTo(p, end),
+                onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
+                typing: (target) => panel?.typing(target) ?? false
+            }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;
@@ -624,7 +649,10 @@ export const course: Feature = {
             edHook.view = null;
             camForward = null;
             camView = null;
-            window.removeEventListener('resize', onResize);
+            view?.dispose();
+            view = null;
+            dragBase = null;
+            cancelAnimationFrame(dragFrame);
             ctx.session.cameraOverride = false;
             ctx.resume('panel');
             // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)
@@ -637,7 +665,46 @@ export const course: Feature = {
                 draw();
             }
         }
+        /** lane editor3 E2: a click took gate `i` (the camera stays: the pilot put it there) */
+        const pickAt = (i: number): void => {
+            if (!ed || dragBase || i === ed.selected) return;
+            const out = edit(ed, { kind: 'select', index: i }, keepProblems);
+            ed = out.state;
+            showEd();
+            if (out.ok) say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
+        };
+        /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
+        const dragTo = (p: FlownPose, end: boolean): void => {
+            if (!ed) return;
+            const base = dragBase ?? ed;
+            dragBase = base;
+            const old = base.course.gates[base.selected];
+            if (!old) return;
+            const g = placeGate(old, p, flownTransform());
+            if (!end) {
+                const gates = [...base.course.gates];
+                gates[base.selected] = g;
+                ed = { ...base, course: { ...base.course, gates } };
+                // one redraw per frame however fast the pointer moves
+                if (!dragFrame) dragFrame = requestAnimationFrame(() => { dragFrame = 0; if (ed && dragBase) showEd(); });
+                return;
+            }
+            cancelAnimationFrame(dragFrame);
+            dragFrame = 0;
+            dragBase = null;
+            const st = placeInState(base, base.selected, g, keepProblems);
+            ed = st ?? base;
+            askedFor = null;
+            if (st) {
+                edChanged = true;
+                checks?.ask(st.course, flownTransform(), edMargin);
+            }
+            showEd();
+            if (st) say(t('course.edit.did', { what: t(ACTION_KEYS.move), gate: gateLine(st, scale()) }));
+        };
         const viewForward = (): [number, number] => {
+            // lane editor3 E2: the arrows follow the free edit camera
+            if (view) return view.floorForward();
             // stage K2: the arrows follow the camera that shows the gate, not the drone's heading
             if (camForward) return [camForward[0], camForward[1]];
             const s = ctx.session.runner.sim.s;
@@ -658,6 +725,8 @@ export const course: Feature = {
                 }
                 edHook.refused = null;
                 showEd();
+                // lane editor3 E2: a key that selects a gate takes the view to it; the mouse and the other keys leave the view
+                if (k.edit.kind === 'select' || k.edit.kind === 'select-step') aim();
                 say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
             } else {
                 edHook.refused = out.reason.code;
