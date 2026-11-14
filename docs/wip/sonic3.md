@@ -13,8 +13,10 @@ Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820
 - [x] r11 Tunis 887f27aa (shipped walls): 7 of 7 PASS at 2 and 5 m/s (Facts Z5).
 - [x] r11 Wroclaw 70b50d42 (stand-in walls): 2 m/s PASS; 5 m/s FAIL: the probe's pilot held Shift with E (a chord, no
   turn) on a ledge 2 m above gate 10 for 270 s. Pilot fixed in ac9290c6 (turn first, then height; stall = no move and no turn).
-- [~] Rerun with the fixed pilot (U:/Temp/gsfpv-train3/sonic3/z5-rerun.sh): Wroclaw stand-in 5 and 2 m/s, Tunis 5 m/s;
-  results in z5-r11-wroclaw2.json, z5-r11-tunis2.json there (see the last line of this block).
+- [x] Rerun with the fixed pilot (ac9290c6, U:/Temp/gsfpv-train3/sonic3/z5-rerun.sh): Wroclaw stand-in 7 of 7 PASS, both
+  courses flown to their end, 5 m/s and 2 m/s (Facts Z5, z5-r11-wroclaw2.json).
+- [~] Tunis 5 m/s with the fixed pilot was still running when this stage handed over (started 00:16:37, writes
+  U:/Temp/gsfpv-train3/sonic3/z5-r11-tunis2.json and z5-rerun.log); Tunis already passed both speeds with the old pilot.
 - [ ] Wroclaw with walls BUILT: N said sonic.say.wallsStill and no course came in 420 s. Probe ran with render=off; the
   walls lane's bakes ran with rendering on. Next: Z5_RENDER=on (probe reads it since this commit), empty dist/walls/70b50d42,
   Z5_SCENE=70b50d42 Z5_SPEEDS=3 node node_modules/tsx/dist/cli.mjs tools/bench/src/sonic-int-review.ts r11 (PORT 5822); if
@@ -130,6 +132,8 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   | Tunis, shipped | 5 | 47.3 s | passed on attempt 3 (2 fails at g7) | 108 s | 4.19 / 5.00 | 0 |
   | Wroclaw, stand-in | 2 | 110.5 s | passed (attempt 1 failed at g15) | 172 s | 0.51 / 1.99 | 0 |
   | Wroclaw, stand-in | 5 | 59.3 s | NOT passed: stuck at g10 (pilot fault, see Status) | 363 s cap | 2.84 / 4.98 | 1 |
+  | Wroclaw, stand-in, fixed pilot | 5 | 61.9 s | passed on attempt 3 (6 gates) | 89 s | 3.73 / 5.00 | 0 |
+  | Wroclaw, stand-in, fixed pilot | 2 | 81.4 s | passed on attempt 3 (failed at g10, then g4) | 209 s | 0.57 / 2.00 | 0 |
   | Wroclaw, built | 3 | none in 420 s (sonic.say.wallsStill) | - | - | - | - |
   The median of W-held samples is low at 2 m/s because W is pulsed and each restart from a turn is sampled.
   /walls/70b50d42/v1/scene.voxel.json and .bin answered 200 in the stand-in runs. r10 Tunis: 14 of 14 in 936 s.
