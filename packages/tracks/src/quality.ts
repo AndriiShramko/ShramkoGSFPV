@@ -9,10 +9,12 @@
 //   band     the histogram of voxels by height above the ground (all tiles with a ground, the ground's own layers left
 //            out) in binM bins; the dense band is the bins from minM up whose density is at least bandShare of the densest
 //            such bin, joined to it. It is derived from the scan, not a constant.
-//   good     a tile is well scanned when its voxels inside the band reach goodShare of the median of tiles that have any.
+//   good     a tile with a ground is well scanned when the voxels inside the band of it and its neighbours within goodR
+//            tiles reach goodShare of the median of such sums.
 import { blockDims, forEachBlock } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
 import type { Vec3 } from '@shramko/sonic-fpv';
+import type { FreeSpace } from './freespace';
 
 export const QUALITY_DEFAULTS = {
     tileM: 4, // estimate: a street lane's width, about 7 000 tiles on Wroclaw's 295 x 375 m grid
@@ -23,7 +25,8 @@ export const QUALITY_DEFAULTS = {
     minBandM: 2, // estimate: the band is at least this thick, so a ring and a square gate both find room in it
     bandShare: 0.8, // estimate: a bin is dense at 80 % of the densest bin's voxels (Wroclaw: 1.4-7.0 m at 70 %, 1.4-5.8 m at 80 %)
     maxBandM: 12, // the histogram looks this high above the ground
-    goodShare: 0.5, // estimate: a tile is well scanned at half the median tile's voxels in the band
+    goodShare: 0.5, // estimate: a tile is well scanned at half the median of its neighbourhood's voxels in the band
+    goodR: 1, // estimate: the neighbourhood is the tiles within 1 tile (12 m square, a street's width)
     maxTiles: 250_000 // memory: tiles x layers x 4 bytes stays under about 100 MB on a 25 m high grid of 10 cm blocks
 } as const;
 
@@ -55,8 +58,42 @@ export interface QualityMap {
     readonly binM: number;
     /** the dense band, flown m above the ground */
     readonly band: readonly [number, number];
-    /** G2 trial (off on the page): the walk spreads over the whole box; the audit's --spread sets it */
-    readonly spread?: boolean;
+}
+
+/**
+ * Steps (6-neighbour cell moves through usable cells) from cell `from` to every cell, -1 where no way leads: the length of
+ * the way along a street, not across the blocks between streets. The spread walk's measure of "how far along" (G2).
+ */
+export function stepsFrom(f: FreeSpace, from: number): Int32Array {
+    const [nx, ny, nz] = f.dims;
+    const n = nx * ny * nz;
+    const d = new Int32Array(n).fill(-1);
+    if (from < 0 || from >= n || f.room[from]! < 0) return d;
+    const q = new Int32Array(n);
+    const sxy = nx * ny;
+    let h = 0, t = 0;
+    d[from] = 0;
+    q[t++] = from;
+    while (h < t) {
+        const i = q[h++]!;
+        const x = i % nx;
+        const y = ((i - x) / nx) % ny;
+        const z = (i - x - y * nx) / sxy;
+        const v = d[i]! + 1;
+        const go = (j: number): void => {
+            if (d[j] === -1 && f.room[j]! >= 0) {
+                d[j] = v;
+                q[t++] = j;
+            }
+        };
+        if (x > 0) go(i - 1);
+        if (x < nx - 1) go(i + 1);
+        if (y > 0) go(i - nx);
+        if (y < ny - 1) go(i + nx);
+        if (z > 0) go(i - sxy);
+        if (z < nz - 1) go(i + sxy);
+    }
+    return d;
 }
 
 function popcount(v: number): number {
@@ -67,7 +104,9 @@ function popcount(v: number): number {
 
 /** The dense band from a histogram: [lo, hi] m above the ground. Exported for the tests. */
 export function denseBand(hist: readonly number[], binM: number, skipM: number, minM: number, share: number): [number, number] {
-    const first = Math.max(0, Math.floor((minM - skipM) / binM + 1e-9));
+    // the first bin lies wholly above minM: the bin just over the ground holds the ground's own spill (a synthetic street:
+    // 680 voxels a tile against 396 in every bin above, so a band of that one bin)
+    const first = Math.max(0, Math.ceil((minM - skipM) / binM - 1e-9));
     let peak = -1;
     for (let b = first; b < hist.length; b++) if (peak < 0 || hist[b]! > hist[peak]!) peak = b;
     if (peak < 0 || !(hist[peak]! > 0)) return [minM, minM + 2 * binM];
@@ -143,7 +182,6 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const b0 = denseBand(hist, binM, skipM, minM, bandShare);
     const band: [number, number] = [Math.max(minM, b0[0]), Math.max(b0[1], Math.max(minM, b0[0]) + D.minBandM)];
     const dense = new Float32Array(nt);
-    const some: number[] = [];
     for (let t = 0; t < nt; t++) {
         if (groundL[t]! < 0) continue;
         let v = 0;
@@ -152,13 +190,29 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
             if (h >= band[0] && h < band[1]) v += counts[t * ny + L]!;
         }
         dense[t] = v;
+    }
+    // a tile is judged with its neighbours within goodR tiles: the middle of a street holds no voxels of its own but is
+    // seen as well as the facades on both sides (per tile alone, a 0230d903 street kept only the cells by the facades and
+    // the walk found 0-12 candidates within a leg)
+    const near = new Float32Array(nt);
+    const some: number[] = [];
+    const R = D.goodR;
+    for (let t = 0; t < nt; t++) {
+        if (groundL[t]! < 0) continue;
+        const tx = t % nx, tz = (t - tx) / nx;
+        let v = 0;
+        for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
+            const X = tx + dx, Z = tz + dz;
+            if (X >= 0 && Z >= 0 && X < nx && Z < nz) v += dense[Z * nx + X]!;
+        }
+        near[t] = v;
         if (v > 0) some.push(v);
     }
     some.sort((a, b) => a - b);
     const median = some.length ? some[some.length >> 1]! : 0;
     const good = new Uint8Array(nt);
     let goodTiles = 0;
-    for (let t = 0; t < nt; t++) if (median > 0 && dense[t]! >= goodShare * median) {
+    for (let t = 0; t < nt; t++) if (median > 0 && groundL[t]! >= 0 && near[t]! >= goodShare * median) {
         good[t] = 1;
         goodTiles++;
     }

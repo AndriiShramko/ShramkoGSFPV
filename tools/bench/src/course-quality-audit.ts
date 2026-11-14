@@ -4,7 +4,7 @@
 // well-scanned tiles the course visits (a tile within VISIT_M of a gate), the gate count. Node only, walls read only.
 //
 //   cd tools/bench && npx tsx src/course-quality-audit.ts --walls <dir> --scene <id> --spawn x,y,z [--seeds 20]
-//       [--from 1] [--hist] [--quality [--spread]] [--out file.json]
+//       [--from 1] [--hist] [--quality] [--out file.json]
 // --hist prints the map only (no courses). The courses are fitCourse's, as the page's worker asks them.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -54,14 +54,14 @@ function main(): void {
     const f0 = performance.now();
     // --quality: the page's way after G2 (box over the well-scanned extent, courses laid over the quality map)
     const withQ = process.argv.includes('--quality');
-    const free = freeSpace(walls, { spawn, bounds: process.argv.includes('--spread') ? qualityBounds(q, spawn) ?? undefined : undefined });
+    const free = freeSpace(walls, { spawn, bounds: withQ ? qualityBounds(q, spawn) ?? undefined : undefined });
     const freeMs = Math.round(performance.now() - f0);
     const seeds = Number(arg('--seeds') ?? 20), from = Number(arg('--from') ?? 1);
     const rows: unknown[] = [];
     const visitT = Math.ceil(VISIT_M / q.tileM);
     for (let seed = from; seed < from + seeds; seed++) {
         const g0 = performance.now();
-        const fit = fitCourse(free, walls, { seed, scene: { id: scene, version: 1 }, transform: T, quality: withQ ? { ...q, spread: process.argv.includes('--spread') } : undefined });
+        const fit = fitCourse(free, walls, { seed, scene: { id: scene, version: 1 }, transform: T, quality: withQ ? q : undefined });
         const ms = Math.round(performance.now() - g0);
         const gates = fit.track?.gates ?? [];
         const pos = gates.map((g) => g.pos as Vec3);
@@ -82,7 +82,7 @@ function main(): void {
         let reach = 0;
         for (const p of pos) reach = Math.max(reach, Math.hypot(p[0] - spawn[0], p[2] - spawn[2]));
         const P = (fit.track?.generator?.params ?? {}) as Record<string, unknown>;
-        const row = { seed, stop: P.stop, walked: P.walked, wanted: P.wanted, tries: P.tries, gates: gates.length, scale: fit.scale, inBand, visited: seen.size, reachM: Math.round(reach), heights, ms };
+        const row = { seed, stop: P.stop, farM: P.farM, outGates: P.outGates, walked: P.walked, wanted: P.wanted, tries: P.tries, gates: gates.length, scale: fit.scale, inBand, visited: seen.size, reachM: Math.round(reach), heights, ms };
         rows.push(row);
         console.log(JSON.stringify(row));
     }

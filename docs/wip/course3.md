@@ -48,22 +48,34 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   the generator is unchanged: generate, fit, fixtures tests 66 passed (digest pins hold).
 - [x] Audit tool tools/bench/src/course-quality-audit.ts (--hist, --quality, --spread; runner
   U:/Temp/gsfpv-train3/course3/g2/run-before.sh, env Q). tsc packages/tracks and tools/bench: 0 errors.
-- [~] 20-seed audits running detached since this commit: U:/Temp/gsfpv-train3/course3/g2/before/<id>.json (old walk) and
-  after-band/<id>.json (--quality), scans 70b50d42, 887f27aa, eb5f51dc, 0230d903; each dir gets DONE when all 4 end
-  (Wroclaw and Tunis about 20-40 min). Read the SUMMARY lines of the .log files into the table below.
-- [ ] The page worker does NOT use the quality map yet (apps/fly/src/course/worker.ts is as on main): band-only made
-  0230d903 smaller and tighter (see Facts G2), so it is not wired until the spread walk works.
-- [ ] Spread walk: the trial (--quality --spread, box from qualityBounds) ended every eb5f51dc walk at 8-9 of 24 gates
-  ("no candidate in reach") and 0230d903 fell to scales 0.3-0.5. Next idea to try: a seeded far target in the good
-  tiles (farthest usable band cell along the extent), out half scored by progress toward it plus spacing, more sweeps
-  when the walk is stuck, the course open (laps 1) when the last gates do not see the start.
-- [ ] Gate count steadiness: N = clamp(4 + V/40, 4, 24) by free volume; the spread of the count comes from the walk
-  stopping early (before: 0230d903 6-24 gates, sd 6.1; eb5f51dc 5-24, sd 8.4). Decide N by the well-scanned extent
-  and keep walking until N.
-- [ ] Unit tests for quality.ts (synthetic street: ground plane, dense facades up to 3 m, sparse above; band found
-  from the histogram; inDenseBand) and for generateCourse with `quality` (all gates in band), with negative controls.
-- [ ] Wire into worker.ts (qualityMap + qualityBounds + quality), audit after on all 4 scans, browser look on Wroclaw
-  and Tunis (a separate stage), gates.py --only vitest,architecture,i18n,b18.
+- [x] (pass 2) Spread walk in generate.ts, used whenever `quality` is given (the trial flag `spread` is gone): steps along
+  the free space (quality.ts stepsFrom, 6-neighbour BFS through usable cells) from the start and to a seeded far
+  target (a band candidate at 0.6-1.0 of N/2 x 0.7 x legMaxM along the way); the out half lays gate k where the steps
+  to the target are the rest shared evenly by the gates left, the back half the same toward the start; score adds the
+  free radius up to 4 m (middle of the street); 2048 sweeps a step; pool up to 250 000 cells; up to 8 step-backs from a
+  dead end. Params of such a course: version '2' (GENERATOR_VERSION_QUALITY), band, banded, farM, outGates, backtracks.
+- [x] (pass 2) Good tiles judged with their 3 x 3 neighbourhood (goodR 1): per tile alone a street's middle had no
+  voxels, the walk found 0-41 candidates within a leg (G2_DEBUG runs) and stopped at 4-16 gates.
+- [x] (pass 2) denseBand: the first bin lies wholly above minM (ceil): the bin just over the ground is inflated by the
+  ground (synthetic street 680 against 396 a bin; Wroclaw 10349 against 6909) and became a one-bin band.
+- [x] (pass 2) Wired: apps/fly/src/course/worker.ts runs qualityMap, freeSpace over qualityBounds and fitCourse with
+  `quality` (no good tile: box around the spawn as before). tsc apps/fly, packages/tracks, tools/bench: 0 errors.
+- [x] (pass 2) Unit tests packages/tracks/test/quality.test.ts (3): denseBand, synthetic street band (dense to 4 m:
+  band ends 3.4-4.8 m; control dense to 14 m: above 8 m), course over the map (seeds 1, 2: at least 8 gates, all in the
+  band, reach at least 40 m of the 80 m street, validateTrack ok; control without the map: reach under 40 m). 3/3
+  passed; neg_control.py against 9335a71a (quality.ts, generate.ts): NEG OK by assertion. generate, fit, fixtures:
+  66/66 passed (digest pins of courses without a map hold).
+- [~] 20-seed audits of the committed code running detached: U:/Temp/gsfpv-train3/course3/g2/before3/ (old walk) and
+  after3/ (--quality: box from qualityBounds, spread walk), scans 70b50d42, 887f27aa, eb5f51dc, 0230d903; each dir gets
+  DONE when all 4 end. before2/ and after2/ ran an earlier map (floor first bin): do not use. before/ and after-band/
+  are the first pass's (old map, band-only walk). Read the SUMMARY lines of before3 and after3 into the table below.
+- [ ] Gate count steadiness: N is still clamp(4 + V/40, 4, 24) (24 on every big scan); the count spread comes from
+  walks that stop early; the planned walk reaches N far more often (trial below). Check in the after3 table.
+- [ ] Saved courses: a saved course is a file (format unchanged, params free-form; the test validates a new course).
+  A g1.<seed> link now rebuilds a different course than before this change (links are rebuilt by the current code
+  on both sides; changing the link to g2 touches app/builtin/course.ts and rooms/race.ts, outside the lane): see For the lead.
+- [ ] gates.py --only vitest,architecture,i18n,b18 before handing over (not run in pass 2).
+- [ ] Browser look on Wroclaw and Tunis (a separate stage).
 - [ ] Gaussian count grid in the bake (the task's other source): not built. Proposal: bake.ts / tools/walls/bake-published.mjs
   keep a 4 m x 4 m x layer count of Gaussians and publish it beside the walls as scene.density.json (lane walls' files).
   The walls' own voxel counts are used meanwhile (data every page has).
@@ -86,6 +98,10 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   100 % in band, gates 9-17 (11.3, sd 2.6), reach 9 m, visited share 0.005: smaller and tighter, not wired.
 - Spread trial (--quality --spread, 4 seeds): eb5f51dc 8-9 gates, reach 63-67 m, stop "no candidate in reach";
   0230d903 5-9 gates, scales 0.3-0.5 on 3 of 4 seeds.
+- Spread walk trial (pass 2, course-quality-audit.ts --quality, 6 seeds, U:/Temp/gsfpv-train3/course3/g2/trial-walk/*-4.log,
+  before the step-backs and the ceil band fix): 0230d903 gates 24, 24, 23, 22, 23 and 17 (scale 1 on all 6; before: 6-24
+  over 20 seeds), farM 99-115 m, out half 12 gates on all 6; eb5f51dc 24 (scale 0.5), 9, 6, 5, 20 (0.5), 15: dead ends
+  with 0 free legs among 158 options (G2_DEBUG), the reason for the step-backs (not yet measured).
 - K1.1 summaries (lane tracks2's audit, 200 seeds per scan, U:/Temp/gsfpv-train2/tracks2/audit-old and audit-new):
   old code: courses failing (a gate not registered when the course's own path is flown at 3 or 12 m/s) 70b50d42
   200/200, 887f27aa 181/200, eb5f51dc 199/200, 0230d903 200/200, 9baef54b 200/200, ba7aa29d 199/200, 1994c65c 198/200,
@@ -138,6 +154,11 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   blocked) and a line said before the freeze ("the picture may stop for up to 15 s"). The 4.8 s freeze after the walls
   come in needs a profile (store write or collision set-up are the suspects, not measured).
 
+- G2: a g1.<seed> link built before this change rebuilds another course after it (the walk is new). Keep g1 (both sides of
+  a room run the same code) or move generated links to g2 (app/builtin/course.ts, course/link.ts, rooms/race.ts).
+- G2: four stale detached audits (before2/, after2/ and the first pass's before/, after-band/) may still run; stopping
+  them was refused to this worker. They write only under U:/Temp/gsfpv-train3/course3/g2.
+
 ## Not verified
 
 - The rates are Node rates; the worker in the browser may differ. The line re-estimates every later try from the real one.
@@ -156,5 +177,8 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   and "course worker messages" plus one rates table in docs would have saved about 8 turns.
 - G2: 27 replies; most went to the walk (band and spread trials) after the map was quick; running the fast scans
   (eb5f51dc, 0230d903) first was right, and a synthetic street world for the walk would have made each trial seconds.
+- G2 pass 2: about 28 replies; most went to three trial rounds of the walk before a one-line debug of "why stuck"
+  (candidates within a leg, turnable, free legs) showed the real cause (good tiles per tile alone); that debug first,
+  and a kill permission for stale detached audits, would have saved about 8 replies and two stale audit runs.
 - G1-progress pass 2: 18 replies; most went to choosing a probe (walls-chain-probe.mjs was 90 % of it) and to locating the
   freezes; a probe that logs the longest main-thread gap by itself (it does now) would have saved the analysis turns.
