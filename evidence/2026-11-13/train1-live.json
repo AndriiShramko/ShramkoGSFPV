@@ -3,12 +3,12 @@
   "context": {
     "browser": {
       "kind": "system-chrome",
-      "version": "156.0.8078.80",
+      "version": "157.0.8103.52",
       "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "why": "installed"
     },
-    "date": "2026-11-13T15:20:26.964Z",
-    "gitHead": "73beb77e",
+    "date": "2026-11-13T23:56:49.424Z",
+    "gitHead": "0bfec4f0",
     "gitDirty": true,
     "node": "v22.13.0",
     "platform": "win32 10.0.19045",
@@ -18,10 +18,10 @@
   "run": [
     "rooms"
   ],
-  "shots": "U:/Temp/gsfpv-train1c/live/train1-live",
+  "shots": "U:/Temp/gsfpv-train2/live/train1-live",
   "browser": {
     "kind": "system-chrome",
-    "version": "156.0.8078.80",
+    "version": "157.0.8103.52",
     "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     "why": "installed"
   },
@@ -32,16 +32,16 @@
       "who": "Digit0"
     },
     "fit": {
-      "delayMs": 215,
-      "rmsM": 0.0840876493484607,
-      "n": 430,
-      "p50M": 0.0203,
-      "p90M": 0.1148,
-      "maxM": 0.3654
+      "delayMs": 210,
+      "rmsM": 0.007883463577518497,
+      "n": 444,
+      "p50M": 0.0034,
+      "p90M": 0.0106,
+      "maxM": 0.0497
     },
-    "aPathM": 85.93,
-    "bFrames": 600,
-    "bWithRemote": 600,
+    "aPathM": 84,
+    "bFrames": 602,
+    "bWithRemote": 602,
     "console": {
       "a": [],
       "b": []
@@ -52,8 +52,8 @@
       "name": "rooms A: created a room and has a link",
       "pass": true,
       "detail": {
-        "link": "<site>/fly/?scene=39e63ce9&room=JvtMwKlIwxI",
-        "nick": "Pilot-5093"
+        "link": "<site>/fly/?scene=39e63ce9&room=DCV_5OPGHFs",
+        "nick": "Pilot-4554"
       }
     },
     {
@@ -64,17 +64,17 @@
     {
       "name": "rooms A moved",
       "pass": true,
-      "detail": 85.93
+      "detail": 84
     },
     {
       "name": "rooms B's remote follows A: RMS < 0.15 m over >= 100 samples",
       "pass": true,
       "detail": {
-        "rmsM": 0.0841,
-        "n": 430,
-        "delayMs": 215,
-        "p90M": 0.1148,
-        "maxM": 0.3654
+        "rmsM": 0.0079,
+        "n": 444,
+        "delayMs": 210,
+        "p90M": 0.0106,
+        "maxM": 0.0497
       }
     },
     {
@@ -83,11 +83,11 @@
       "detail": [
         {
           "slot": 0,
-          "nick": "Pilot-5093"
+          "nick": "Pilot-4554"
         },
         {
           "slot": 1,
-          "nick": "Pilot-3659"
+          "nick": "Pilot-7051"
         }
       ]
     },
@@ -112,13 +112,13 @@
       "detail": {
         "cRoomDiffers": true,
         "cFramesWithRemote": 0,
-        "cFrames": 600
+        "cFrames": 601
       }
     },
     {
       "name": "rooms control: swapped axes break the fit",
       "pass": true,
-      "detail": 6.312
+      "detail": 6.156
     },
     {
       "name": "rooms B: the who-is-around key says who is around, then A leaves and B hears it",

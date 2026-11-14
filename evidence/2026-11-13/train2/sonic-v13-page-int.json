@@ -1,0 +1,80 @@
+{
+  "name": "sonic-v13-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T23:15:34.442Z",
+    "gitHead": "0bfec4f0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5760",
+  "parts": "A",
+  "control": null,
+  "checks": [
+    {
+      "name": "A: the pause menu's item is a link to the mode's start screen for this scan /en/fly/?sonic=scan&scene=39e63ce9&sz=<size> (train 2; not the page about the mode), in a new tab, worded \"Fly by Sound: blind and low-vision pilots\", and a screen reader hears \"(opens in a new tab)\"",
+      "pass": true,
+      "value": {
+        "tag": "A",
+        "href": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+        "target": "_blank",
+        "rel": "noopener",
+        "label": "Fly by Sound: blind and low-vision pilots",
+        "newTab": "(opens in a new tab)"
+      }
+    },
+    {
+      "name": "A: followed, it opens the mode's start screen in a new tab (its 28 lessons, the course from the beginning), the page about the mode linked from its footer; the flight stays paused under the menu",
+      "pass": true,
+      "value": {
+        "url": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+        "shown": true,
+        "h1": "Fly by Sound",
+        "beginning": true,
+        "lessons": 28,
+        "about": "/en/sound/",
+        "stillPaused": true
+      }
+    }
+  ],
+  "passed": 2,
+  "total": 2,
+  "shots": [
+    {
+      "file": "U:\\Temp\\gsfpv-train2\\shots\\int\\v13\\a-start-screen-from-pause-item.png",
+      "sha256": "f3b8ffc5a355be99cba2114507af3d3875538e81cfe207c70904c9014e2a89c0",
+      "what": "the start screen the pause item opened"
+    }
+  ],
+  "result": {
+    "release": {
+      "sha": "9205b3c8",
+      "sonic": "598a98f",
+      "built": "2026-11-13T22:21:22.600Z"
+    },
+    "pauseItem": {
+      "tag": "A",
+      "href": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+      "target": "_blank",
+      "rel": "noopener",
+      "label": "Fly by Sound: blind and low-vision pilots",
+      "newTab": "(opens in a new tab)"
+    },
+    "pausePopup": {
+      "url": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+      "shown": true,
+      "h1": "Fly by Sound",
+      "beginning": true,
+      "lessons": 28,
+      "about": "/en/sound/",
+      "stillPaused": true
+    }
+  }
+}
