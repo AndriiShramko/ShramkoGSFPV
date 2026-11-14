@@ -12,6 +12,8 @@ import { IDENTITY } from './worlds';
 const SCENE = { id: '0000bbbb', version: 1 };
 const CREATED = '2026-11-14T00:00:00.000Z';
 const STREET_M = 80;
+/** G4: a long street (Wroclaw's streets are scanned for 200 m) */
+const LONG_M = 240;
 const SPAWN: Vec3 = [6, 2.5, 0];
 
 /**
@@ -19,10 +21,10 @@ const SPAWN: Vec3 = [6, 2.5, 0];
  * ground at y 0. The facades are scanned solid up to `denseTo` m; above it to 14 m only a thin post every 4 m stands
  * (what a scan filmed from the street keeps of the upper floors).
  */
-function street(denseTo: number) {
-    return analyticCollision([-0.4, -1, -8], [STREET_M + 0.4, 14, 8], 0.2, (x, y, z) => {
+function street(denseTo: number, lengthM: number = STREET_M) {
+    return analyticCollision([-0.4, -1, -8], [lengthM + 0.4, 14, 8], 0.2, (x, y, z) => {
         if (y < 0) return true;
-        if (x < 0 || x >= STREET_M) return true;
+        if (x < 0 || x >= lengthM) return true;
         if (z > -6 && z < 6) return false;
         return y < denseTo || x % 4 < 0.4;
     });
@@ -73,5 +75,22 @@ describe('a course over the quality map', () => {
         // control: without the map the walk keeps within two legs (30 m) of the start
         const old = generateCourse(free, walls, { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED });
         expect(reach(old.gates)).toBeLessThan(STREET_M / 2);
+    });
+
+    it('goes far along a long street (G4: "the street is long and scanned further, but there are no obstacles there")', () => {
+        const long = street(4, LONG_M);
+        const lq = qualityMap(long);
+        const lbox = qualityBounds(lq, SPAWN);
+        expect(lbox).not.toBeNull();
+        const lfree = freeSpace(long, { spawn: SPAWN, bounds: lbox ?? undefined, kind: 'outdoor' });
+        for (const seed of [1, 2]) {
+            const t = generateCourse(lfree, long, { seed, scene: SCENE, transform: IDENTITY, created: CREATED, quality: lq });
+            expect(t.gates.length).toBeGreaterThanOrEqual(8);
+            for (const g of t.gates) expect(inDenseBand(lq, g.pos as Vec3)).toBe(true);
+            // the box reaches 120 m from the spawn; the 15 m legs of plan 2.2 reached 75 m on seed 1 (tmp run of G4,
+            // farM 78.4), the 25 m legs 98 and 111 m
+            expect(reach(t.gates)).toBeGreaterThanOrEqual(90);
+            expect(validateTrack(JSON.parse(JSON.stringify(t))).ok).toBe(true);
+        }
     });
 });

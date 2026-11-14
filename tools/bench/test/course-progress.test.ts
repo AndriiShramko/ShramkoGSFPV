@@ -122,6 +122,23 @@ describe('the course line', () => {
         p.enter('lay', 46_000);
         expect(progressLine(p.view(), EN)).toContain('try 2');
     });
+    it('the percent never goes back when a try starts again (G4: "try 3 ... 75 %, then try 4 ... 63 %")', () => {
+        const c = fakeNow();
+        const p = new ProgressClock('course', courseSteps(null), c.now);
+        c.go(2400);
+        p.enter('lay', 400);
+        const seen: number[] = [];
+        for (let k = 0; k < 4; k++) {
+            c.go(300);
+            seen.push(p.view().pct);
+            // the next try is expected to take what this one took
+            p.enter('lay', 300);
+            seen.push(p.view().pct);
+        }
+        for (let i = 1; i < seen.length; i++) expect(seen[i]!).toBeGreaterThanOrEqual(seen[i - 1]!);
+        // and it still moves on: the later tries add to it
+        expect(seen[seen.length - 1]!).toBeGreaterThan(seen[0]!);
+    });
 });
 
 describe('spoken progress for Fly by Sound', () => {

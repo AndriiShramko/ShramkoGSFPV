@@ -103,7 +103,11 @@ const BAND_CANDS_PER_GATE = 8;
  *  street is a little longer than the way's cell steps say) */
 const SPREAD_LEG_SHARE = 0.7;
 /** G2: the far target is drawn from the candidates at least this share of the planned way out (estimate) */
-const SPREAD_FAR_MIN = 0.6;
+const SPREAD_FAR_MIN = 0.8;
+/** G4 (message 51, "the street is long and scanned further, but there are no obstacles there"): the longest leg of a
+ *  course laid over a quality map, flown m (estimate: a racing straight; the 15 m legs of plan 2.2 kept every Wroclaw
+ *  course within 76 m of its start on a street scanned for 200 m). Courses without a map keep p.legMaxM. */
+const SPREAD_LEG_MAX_M = 25;
 /** G2: leg sweeps a step of the spread walk may spend (estimate: the options sorted by the wanted way, not by distance,
  *  put more blocked legs first) */
 const SPREAD_SWEEPS_PER_STEP = 2048;
@@ -217,11 +221,13 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     let fromS: Int32Array | null = null;
     let toT: Int32Array | null = null;
     let farM = 0;
+    // G4: a course over a quality map may take longer legs (the way out and its gates reach along the street)
+    const legMaxM = Q ? Math.max(p.legMaxM, SPREAD_LEG_MAX_M * k) : p.legMaxM;
     if (Q && free.startCell >= 0) {
         fromS = stepsFrom(free, free.startCell);
         let maxS = 0;
         for (const c of cands) maxS = Math.max(maxS, fromS[c.cell]!);
-        const D = Math.min(maxS, Math.round((halfN * SPREAD_LEG_SHARE * p.legMaxM) / free.cellM));
+        const D = Math.min(maxS, Math.round((halfN * SPREAD_LEG_SHARE * legMaxM) / free.cellM));
         const far = D > 0 ? cands.filter((c) => fromS![c.cell]! >= SPREAD_FAR_MIN * D && fromS![c.cell]! <= D) : [];
         if (far.length > 0) {
             const t = far[rng.int(0, far.length - 1)]!;
@@ -263,7 +269,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const turnOk = (from: Vec3, prev: Vec3 | null, to: Vec3): Vec3 | null => {
         const leg = sub(to, from);
         const L = len(leg);
-        if (L < p.legMinM || L > p.legMaxM) return null;
+        if (L < p.legMinM || L > legMaxM) return null;
         const u: Vec3 = [leg[0] / L, leg[1] / L, leg[2] / L];
         if (prev && dot(u, prev) < p.turnCosMin) return null;
         if (dot(yawForward(nearestYaw(u)), u) < p.axisCosMin) return null;

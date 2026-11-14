@@ -102,6 +102,10 @@ export class ProgressClock {
     private readonly t0: number;
     private ti: number;
     private tries = 1;
+    /** G4: the share of the running step the earlier tries already showed (a new try goes on from it, never back) */
+    private stepBase = 0;
+    /** G4: the highest percent shown so far; the line never goes back (message 51: "try 3 ... 75 %, then try 4 ... 63 %") */
+    private shown = 0;
 
     constructor(public what: ProgressWhat, steps: readonly Step[], private readonly now: () => number) {
         this.steps = steps.slice();
@@ -114,8 +118,15 @@ export class ProgressClock {
     enter(key: string, estMs?: number): void {
         const j = this.steps.findIndex((s) => s.key === key);
         if (j < 0) return;
-        if (j === this.i && j > 0 && this.now() > this.ti) this.tries++;
-        else if (j !== this.i) this.tries = 1;
+        if (j === this.i && j > 0 && this.now() > this.ti) {
+            this.tries++;
+            const est = this.steps[j]!.estMs;
+            const f = est > 0 ? Math.min(1, (this.now() - this.ti) / est) : 1;
+            this.stepBase += (1 - this.stepBase) * f;
+        } else if (j !== this.i) {
+            this.tries = 1;
+            this.stepBase = 0;
+        }
         this.i = j;
         this.ti = this.now();
         if (estMs !== undefined && estMs > 0) this.steps[j] = { key, estMs };
@@ -127,6 +138,7 @@ export class ProgressClock {
         this.i = 0;
         this.ti = this.now();
         this.tries = 1;
+        this.stepBase = 0;
         if (what) this.what = what;
     }
 
@@ -138,7 +150,10 @@ export class ProgressClock {
         const before = this.steps.slice(0, this.i).reduce((a, s) => a + s.estMs, 0);
         const total = before + step.estMs + later;
         const over = inStep > step.estMs;
-        const done = before + Math.min(inStep, step.estMs);
+        const inShare = step.estMs > 0 ? Math.min(1, inStep / step.estMs) : 1;
+        const done = before + step.estMs * (this.stepBase + (1 - this.stepBase) * inShare);
+        const pct = total > 0 ? Math.min(99, Math.floor((100 * done) / total)) : 0;
+        this.shown = Math.max(this.shown, pct);
         return {
             what: this.what,
             key: step.key,
@@ -147,7 +162,7 @@ export class ProgressClock {
             attempt: this.tries,
             elapsedS: Math.floor((now - this.t0) / 1000),
             leftS: over ? null : Math.ceil((step.estMs - inStep + later) / 1000),
-            pct: total > 0 ? Math.min(99, Math.floor((100 * done) / total)) : 0
+            pct: this.shown
         };
     }
 }
