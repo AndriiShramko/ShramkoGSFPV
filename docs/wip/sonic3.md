@@ -65,7 +65,43 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
      more than one rung is not handed over. Then move the pin again.
   5. gates.py --only vitest,architecture,i18n,b18 on the worktree before handing over (pass 2 ran it on this commit: see Facts).
 
+Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits):
+- [x] 4b. Budget wired (package f8688dd): planner.ts plan() runs TierGate and applyBudget only when the lesson's
+  layers.speedBudget is true (new optional field, contract.ts LessonLayers, validate.ts); absent = off, so every shipped
+  lesson and every recording sounds and replays as before (package suite 65 files, 1321 tests pass, no theme bump needed).
+  On in lessons/scan-free.json, the free flight that "Fly by Sound here" opens on any scan. FramePlan.tier; cut keys go to
+  `dropped`; height and speed layers off at tier 2. Ladder FlyOptions.budget and tools/ear-pilot.ts --budget on|off.
+  test/budget-wired.test.ts 5 of 5, NEG OK on the old planner.ts and scan-free.json.
+- [x] 4d. After-speed ear pilot runs (package e133411), table "Z4 after speed" in Facts.
+- [x] Pin of packages/sonic-fpv moved to package train3 e133411 (this commit).
+- [ ] LEFT, in this order:
+  1. Z3 item 3 (simulator tools/bench/src/ear-pilot-scan.ts, Tunis and Wroclaw) and 4c (src/cues/reach.ts) are still open.
+  2. The one rung lost by the 2-loudest pilot on rings (seed 1: 3 to 2 m/s): see if it is the shape trace cut at tier 1
+     (tier 1 begins exactly at 3 m/s); ear-debug at 3 m/s seed 1 with --budget on vs off.
+  3. Racing line (plan 2.3): pure src/cues/line.ts (polyline of the runner's track points, Catmull-Rom, arc position never
+     back more than 2 m, look-ahead max(3 m, 1.0 s x v), off-line distance); wiring: runner.beaconTarget() returns the
+     look-ahead point when layers.racingLine (new optional field, as speedBudget) is on; target.hum then points there
+     (beacon fold and ILD exist in planner.targetVoice); side ILD up to 10 dB at 30 deg; beating by off-line distance;
+     test/line.test.ts with a negative control; ear pilot "after line" table (third table); offline render as audio proof.
+  4. Rear timbre, approach brightness by time to the gate, reverb floor (plan 3), test/rear-timbre.test.ts.
+  5. Lesson turn-listen (plan 3) and speed-1..6 lessons (plan 4) with locales en es pl ru and spoken lines; the ladder's
+     pass marks from the ear pilot (each cap at most median / 1.25).
+  6. Offline renders of each new cue as the package's audio proofs; pin move; gates before handing over.
+
 ## Facts (measured)
+
+- Z4 after speed (tools/ear-pilot.ts --budget on, package f8688dd, beacon on, soft theme, seeds 1 2 3, rungs 1..22;
+  evidence/ear-pilot/2026-11-14-after-speed-loudest.json and -after-speed-attend-hum.json), against the Z3 before table:
+
+  | Pilot | rings before | rings after speed | corridor before | corridor after speed |
+  |---|---|---|---|---|
+  | 2 loudest, turn 120 deg/s | 3 m/s (3 2 3) | 2 m/s (2 2 3) | 0 | 0 |
+  | hum attended, turn 120 deg/s | 6 m/s (6 6 4) | 6 m/s (4 6 6) | 0 | 0 |
+
+  Runtime 77 s and 68 s corridor, 8 s and 7 s rings. The third table (after line) does not exist yet: the line is not built.
+- Ladder flights with the budget (debug test, removed): corridor 6 and 10 m/s reach tier 1 only (the pilot brakes, top
+  measured speed 5.1 and 7.1 m/s, touch at 8.8 s and 5.3 s); rings-course 10 m/s reaches tier 2 (fail at 1.9 s).
+- Simulator after the pin move: vitest 327 files passed, 1 skipped (4733 tests); apps/fly tsc 0 errors. Package tsc 0 errors.
 
 - Live walk, sonic-walk-probe.mjs, 2026-11-14, results U:/Temp/gsfpv-train3/sonic3/walk-live-887f27aa.json and
   walk-live-70b50d42.json: pause item href /en/fly/?sonic=scan&scene=<id>&sz=1, target _blank, a new tab opened (newTab true)
@@ -125,7 +161,13 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   recorded beside it because the stream budget of Z4 makes the guide one of the 2 streams by rule, so it is the target the
   budget must reach without the pilot's help.
 
+- Z4: the budget is a lesson opt-in (layers.speedBudget), not a theme change: the shipped lessons, their recordings and
+  the theme versions stay as they were; new speed lessons and the free flight switch it on.
+
 ## For the lead
+
+- Z4: the pin points at package train3 e133411 (local only, not pushed). The stream budget is a lesson opt-in
+  (layers.speedBudget), on only in scan-free; courses and speed lessons get it when they are built.
 
 - Step 2 is built (98ef20d8); the browser proof is the next stage (release build first; Tunis 887f27aa and Wroclaw 70b50d42
   with the walls stand-in): fly, Backslash, intro and first cue heard, pose unchanged, walls build spoken on Wroclaw, N a course,
@@ -140,6 +182,8 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
 - Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
 
 ## Not verified
+- Z4 4b: nothing heard in a browser; the budget acts only in the free flight (scan-free), not in courses or lessons yet;
+  the 2-loudest pilot lost one rung on rings (allowed by the plan's rule, cause not yet found).
 - Z3/Z4 pass 2: the scan ear pilot (Tunis, Wroclaw) not built; the budget is not wired, so no 'after' run exists and the
   owner hears no change yet; the 85 % / 500 ms / 3-8-15 m/s values are estimates. tsconfig.node.json typecheck not run.
 - Z3: the corridor baseline of 0 may be a fault of the ladder or the pilot, not of the cues (LEFT item 1). The ear pilot's
@@ -172,3 +216,7 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
 - 2026-11-14 Z3 pass 2: most replies went to wiring the budget into the planner and finding which 8 old tests pin cue sets at
   speed; a list of the tests that fly above 3 m/s (and of the replay fixtures tied to theme versions) would have shown the
   cost before the edit, and the stage would have split wiring into its own stage from the start.
+- 2026-11-14 Z4-line-space-lessons: the stage held five builds (line, rear timbre, reverb, two lesson kinds) plus the
+  unfinished Z3 items; most replies went to the budget wiring and a debug of why the corridor never reached tier 2 (vitest
+  hides console output; a trace option in tools/ear-pilot.ts printing max tier and speed would have been one command).
+  A lesson-level opt-in flag (layers.speedBudget) avoided the 11 replay and theme-version failures of pass 2.
