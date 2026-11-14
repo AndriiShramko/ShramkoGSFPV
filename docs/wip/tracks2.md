@@ -24,7 +24,7 @@ Stage K1-passable-and-small.
   packages/tracks/src/check.ts (old versions; path.ts and fly.ts stay new, the old check.ts imports nothing new) on a
   subset (all seeds on the small scans, 20 seeds on 887f27aa), --out audit-olddigest/<id>.json, and compare per seed.
   Do not start other runs while the swap is in place. pathM (in the digest) sums legs only, so it does not change.
-- [x] K1.2 small scans (commit of worker 2, see git log): packages/tracks/src/fit.ts (fitCourse: scales 1, 0.5, 0.3 with
+- [x] K1.2 small scans (de318e7b): packages/tracks/src/fit.ts (fitCourse: scales 1, 0.5, 0.3 with
   3 derived seeds each, then the course with the most gates, short), generate.ts (param `scale`; a scaled walk skips a
   gate with no way on), course/worker.ts (fitCourse; the check job proves a scaled course at its own margin), drone size
   measured by tools/bench/src/drone-sizes.ts. Tests packages/tracks/test/fit.test.ts (tiny room 4 x 3 x 4 m, Forest
