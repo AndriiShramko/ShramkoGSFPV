@@ -97,7 +97,8 @@ async function main(): Promise<void> {
         await A.keyboard.press('Digit9');
         const propose = A.locator('[data-action=rooms-propose]');
         const panelUp = await propose.waitFor({ timeout: 10000 }).then(() => true, () => false);
-        await A.keyboard.press('Tab');
+        // with the race's entry off (rooms/race-page.ts RACE_ON) Propose has the first focus: Tab only past the race button
+        if (await A.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.action === 'rooms-race')) await A.keyboard.press('Tab');
         const focused = await A.evaluate(() => (document.activeElement as HTMLElement | null)?.dataset?.action ?? null);
         await A.keyboard.press('Enter');
         const bSeesVote = await until(B, 'return !!r.vote && r.vote.mine === false;', 15000);

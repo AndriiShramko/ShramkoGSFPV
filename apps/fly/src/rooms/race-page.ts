@@ -17,6 +17,9 @@ import type { RoomSocket } from './socket';
 
 /** Laps of a race (an estimate: two laps give each pilot a best lap and keep a race to a few minutes). */
 export const RACE_LAPS = 2;
+/** The race's entry in the room panel. Off: the two-browser probe rooms-race.ts has not yet seen a lap on a real scan's
+ *  course (train 2 wave 2, docs/wip/train2b-lead.md); turn it on only after that probe passes. */
+export const RACE_ON = false;
 /** A course a page generates for a race may take this long before the page gives up (course.ts: 15-31 s, an estimate). */
 const BUILD_LIMIT_MS = 150_000;
 

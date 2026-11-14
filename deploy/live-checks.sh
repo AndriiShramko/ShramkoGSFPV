@@ -64,6 +64,9 @@ run centre-throttle-probe locked node scripts/centre-throttle-probe.mjs "$SITE/e
 run fast-radio-probe locked env FAST_RADIO_SHOTS="$OUT/fast-radio" node scripts/fast-radio-probe.mjs "$SITE/en" "$OUT/fast-radio-probe.json"
 run mouse-free-probe locked node scripts/mouse-free-probe.mjs "$SITE/en" "$OUT/mouse-free-probe.json"
 run rc2-probe-usb-refused locked node scripts/rc2-probe.mjs "$SITE/en" "$OUT/rc2-probe.json" usb,refused
+# train 2 wave 2: published walls, only after deploy/release-walls.sh. Reads only (walls-published-probe.mjs header):
+# the walls files answer 200, each scan opens with source 'published' and builds nothing; nothing is sent or saved.
+run walls-published-probe locked node scripts/walls-published-probe.mjs "$SITE/en" "$OUT/walls-published-probe.json" 70b50d42,ab5efa0e,9baef54b
 # train 2: the sound page carries its five figures (a GET, nothing pressed)
 run sound-page-figures bash -c 'n=$(curl -s -m 30 "$SITE/en/sound/" | grep -o "class=\"sound-fig" | wc -l); echo "figures: $n"; [ "$n" -ge 5 ]'
 

@@ -38,7 +38,7 @@ import { RoomSocket } from '../../rooms/socket';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
-import { RacePage } from '../../rooms/race-page';
+import { RACE_ON, RacePage } from '../../rooms/race-page';
 import { tableRows } from '../../rooms/race';
 import { closeVisit, openVisit } from '../../rooms/open-visit';
 
@@ -395,7 +395,7 @@ export const rooms: Feature = {
             const s = live?.sock;
             const r = s && s.state !== 'off' ? s.room : null;
             const next = proposeNext();
-            const race = s && r && s.state === 'joined' ? live?.race ?? null : null;
+            const race = RACE_ON && s && r && s.state === 'joined' ? live?.race ?? null : null;
             // the table on demand: the service answers with the last race's table (the hook and key 0 have it next time)
             if (race) s?.table();
             ctx.pause('panel');
