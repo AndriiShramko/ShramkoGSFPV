@@ -189,3 +189,12 @@ part A. The script was not run.
   four replies; a lane that runs `gates.py --only vitest,architecture` before it hands over makes that free. A find over
   U:/Temp printed 400 folder names (use a narrower path). A process filter that named the run script also matched the
   shell that ran the filter.
+
+## Released by the lead (2026-11-13 23:20-23:55 UTC)
+
+- The seven probes the integration could not run passed on the local release of 9205b3c8 (run-all.sh ONLY=v13,rooms,mouse,centre,fast,wizard,hid: every exit 0).
+- main pushed at 0bfec4f0. `release-api.sh tracks.py tracks_admin.py server.py`: sha256 equal, health 200, 0 tracebacks. `ship.sh 0bfec4f0`: release 8f04b2da8e21, smoke 302 checks, neighbours equal.
+- `bash deploy/live-checks.sh U:/Temp/gsfpv-train2/live`: LIVE CHECKS: PASS, 8 of 8.
+- Lead decisions: packages/tracks/src/editor.ts stays exempt in scripts/check-architecture.mjs (it is the interactive editing model, not the generator). The pictures of the pause menu over a course, the Controls screen and the editor were looked at by the lead: accepted.
+- Open after this release: r10 (a course by sound to its end), the download-bytes probe of the helper files, the cookie banner at 320 px, the owner's short window with the real RC 2.
+- Next lanes started 2026-11-14 00:30 UTC: tracks2 (every generated gate passable, small scans, the editor's rest), wallsfin (walls of any size, published walls lighter, walls for the free flight by sound), menu (R29). Lanes walls and rooms2 ended unfinished: the race of rooms2 and the chain of walls wait for tracks2.

@@ -1,0 +1,78 @@
+{
+  "name": "b-fly-b15",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-14T00:02:07.283Z",
+    "gitHead": "0bfec4f0",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "render": "on",
+  "pass": true,
+  "flight": {
+    "phase": "rest",
+    "flip": {
+      "startTick": 5749,
+      "endTick": 6199,
+      "minUpY": -0.9999998748515548
+    },
+    "crash": {
+      "tick": 19266,
+      "speed": 8.565648919042033,
+      "px": -4.899018282169666,
+      "py": 2.1660896045074054,
+      "pz": 0.8999678014733062
+    },
+    "tick": 30214
+  },
+  "saved": {
+    "hash": "a851de350a28f8fc0634757524a1f1da714bc01d9a3f57a54f43c57dd3119cfc",
+    "endTick": 30214,
+    "records": 5631,
+    "lives": 2
+  },
+  "newTab": {
+    "saved": "a851de350a28f8fc0634757524a1f1da714bc01d9a3f57a54f43c57dd3119cfc",
+    "hash": "a851de350a28f8fc0634757524a1f1da714bc01d9a3f57a54f43c57dd3119cfc",
+    "endTick": 30214,
+    "lives": 2,
+    "refused": null
+  },
+  "cpuThrottle": {
+    "x1": {
+      "stepsPerWallSecond": 996.9306016527265,
+      "hitches": 0
+    },
+    "x4": {
+      "stepsPerWallSecond": 998.6518200433136,
+      "hitches": 0
+    }
+  },
+  "control": {
+    "atTick": 10000,
+    "channel": "throttle",
+    "lsb": {
+      "hash": "0054e1b9d6c024a8fc5877a2dfe70c9ce8c52c147b082585573c21ed1fd2c1eb",
+      "differs": true,
+      "maxDivergenceM": 0.008523705623858874,
+      "tamperedValue": -0.3695375323295593,
+      "fired": true
+    },
+    "twitch": {
+      "delta": 0.05,
+      "hash": "9e140547c15121c8ba801b586882ff016d9d6c51940298796eb33e1b9590a522",
+      "differs": true,
+      "maxDivergenceM": 0.37772667038692365,
+      "tamperedValue": -0.3695375323295593,
+      "fired": true
+    }
+  }
+}
