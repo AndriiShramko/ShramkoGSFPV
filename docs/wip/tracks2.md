@@ -32,7 +32,8 @@ Stage fixes (review T2-1 to T2-7 of 2026-11-14). Logs U:/Temp/gsfpv-train2/track
 - [x] T2-7 (stands) the status line naming two models removed; no model name is left in this file.
 - [x] Unit runs after all fixes: packages/tracks/test + tools/bench/test tracks2-fixes, tracks-k2, tracks-k26: 12 files,
   111 passed (U:/Temp/gsfpv-train2/tracks2/fixes/unit.log); tsc packages/tracks, apps/fly, tools/bench exit 0.
-- [ ] gates.py --only vitest,architecture,i18n,b18 before handing over.
+- [x] gates.py --only vitest,architecture,i18n,b18 at fa033f1c: all four PASS (vitest 98 s), logs
+  U:\Temp\gsfpv-gates-20261114-021929.
 
 Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/docs/wip/tracks-edit.md).
 
@@ -166,6 +167,12 @@ Stage K1-passable-and-small.
 
 ## For the lead
 
+- Fixes stage: apps/api/tracks.py changed again (PARAM_KEYS scale, legMinM, legMaxM; LAP_MIN_MS 1) and ships with the
+  page as K2.2 already requires. Open point found while fixing T2-1: a person's save of an edited smaller course sets
+  generator to null (course.ts save as my course), so its marginM is lost and the served copy is proven at 0.5 m by the
+  worker; in a small room it can then be refused on load. It needs a place for the margin in a person's track (a format
+  decision), not done here.
+
 - K2 release needs the API file apps/api/tracks.py (vote() lap rule, LAP_MIN_MS, LAP_MAX_MS) deployed together with the
   page: the new server refuses a vote of the old page (no `lap`) with 403 lap-first, and the new page's votes carry `lap`.
   No other API file changed (tracks_admin.py, server.py, nginx unchanged); apps/api/tests/test_tracks_edit.py updated.
@@ -195,6 +202,10 @@ Stage K1-passable-and-small.
 
 ## Not verified
 
+- Fixes stage: no browser run. The tracks-page probe was not re-run after T2-1 and T2-4 (page wiring covered by
+  tools/bench/test/tracks2-fixes.test.ts and tsc only); the deadline of fitCourse was tested with a fake clock, not timed
+  on 887f27aa; whether the scaled tries are as slow as scale 1 is not measured.
+
 - K2: Shift+B with no course shown (it now generates one and opens the editor) was not run in a browser; only the
   typecheck covers it. The camera in a scan where a wall stands between the drone and the gate was not run in a browser
   (the unit test covers the stop-short rule). The whole tracks-page probe (hint flights, A-C3) was not run, only E and E3.
@@ -204,6 +215,10 @@ Stage K1-passable-and-small.
   Node; whether the turned-back gate is its cause is a guess until the sound lane runs again on this branch.
 
 ## Cost notes
+
+- Fixes worker: most turns went to negative controls whose runner failed for another reason (unittest discover from the
+  repo root gave a false NEG OK by ImportError; a source test that matched too wide gave 1 of 2); a runner script that
+  chdirs into apps/api, and checking the failure count in every NEG log, would have saved about four turns.
 
 - K2 worker 2 (K2.6): most turns went to the negative control: neg_control.py with `bash -c` reached WSL bash (a false NEG
   OK) and a pipe to grep hid the exit code (a false NEG BAD); run it with the full Git bash path and the test's output sent
