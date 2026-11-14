@@ -10,11 +10,11 @@ Stage E1-freeze-and-design (finished, the fix moved to E2 by the reply budget):
 - [ ] 3. the freeze fixed at its cause: NOT done in E1 (the stage's 30 replies went to the live run); it is step 1 of E2, plan in Decisions D1
 
 Stage E2 (next worker), in this order:
-- [~] E2.1 the check off the main thread (Decisions D1)
+- [x] E2.1 the check off the main thread (Decisions D1), c1e5bf55 (code), probe facts in this commit
   - [x] code: apps/fly/src/course/editor/check-core.ts (CheckQueue, checkAnswerer), check-worker.ts, wiring in course.ts;
     test tools/bench/test/editor3-check.test.ts (3 tests) plus tracks2-fixes T2-1 moved to edMargin; 7 touched files 35/35
     pass, NEG OK on origin/main course.ts (fails at `not.toMatch(/wallsCheck\(/)`), apps/fly tsc 0
-  - [ ] the probe re-run on a local release (SITE=http://localhost:5800) on 70b50d42 and 887f27aa: every key's frame gap under 100 ms
+  - [x] the probe re-run on a local release of c1e5bf55 (Facts, E2.1): every key's frame gap 35 ms or less, no long task
 - [ ] E2.2 the edit camera: W A S D, E up, Q down, right mouse button held looks, wheel speed (The design, Camera)
 - [ ] E2.3 click to select, PlayCanvas TranslateGizmo + RotateGizmo + ScaleGizmo on the selected gate, one undo step per drag
 - [ ] E2.4 the small panel at the selected gate, Add gate by a click on the place, the top bar
@@ -50,6 +50,18 @@ U:/Temp/gsfpv-train3/editor3/e1-live.json, screenshots U:/Temp/gsfpv-train3/shot
   a Tab pressed during a 5 s freeze, or the focus inside the window after a click on it (then Tab walks the window's buttons,
   keys.ts keyRoute).
 - Small bug seen: Shift+Tab says "next gate" (ACTION_KEYS maps select-step to one word).
+- E2.1, after the fix: the same probe (tools/bench/src/editor3-live.ts, SITE=http://localhost:5800, local release of
+  c1e5bf55 with the Wroclaw walls stand-in U:/Temp/gsfpv-train2/walls/release/70b50d42/v1 copied into dist/walls, GPU lock,
+  2026-11-14; U:/Temp/gsfpv-train3/editor3/e21/e1-local.json):
+
+| | Wroclaw 70b50d42 | Tunis 887f27aa |
+|---|---|---|
+| Shift+B to the open editor (was 5 367 / 3 567 ms) | press 111 ms, open after 5 ms, one long task 83 ms | press 70 ms, open after 4 ms, no long task |
+| Tab, Tab, Shift+Tab, ArrowUp, ArrowRight, PageUp, Q, +, Ctrl+Z, W: longest frame gap | 34 ms, 0 long tasks | 35 ms, 0 long tasks |
+| idle 5 s | 150 frames, gap max 34 ms | 150 frames, gap max 34 ms |
+
+  Both courses were clean (problems 0 before and after), so the red paint from a worker answer was not seen in the browser;
+  the answer path is covered by the unit test only.
 - PlayCanvas in apps/fly and packages/render-pc is 2.23.2. It exports TranslateGizmo, RotateGizmo, ScaleGizmo, TransformGizmo
   (snap, snapIncrement, coordSpace, dragMode, enableShape(axis, on), ScaleGizmo.uniform, events transform:start, transform:move,
   transform:end), Gizmo.createLayer(app), and FlyController with KeyboardMouseSource, ViewCube (build/playcanvas.d.ts).
@@ -113,7 +125,12 @@ button shows the table.
 ## For the lead
 
 - Files outside apps/fly/src/course/editor/ this lane touches: tools/bench/src/editor3-live.ts (new probe, E1);
-  apps/fly/src/app/builtin/course.ts (the editor's wiring, E2.1 onwards).
+  apps/fly/src/app/builtin/course.ts (the editor's wiring, E2.1 onwards); tools/bench/test/editor3-check.test.ts (new);
+  tools/bench/test/tracks2-fixes.test.ts (T2-1 now reads `edMargin = marginOf(run.track)`: the margin goes to the worker).
+- E2.1 changes the editor's rule: a change is no longer refused by the walls (edit() runs with a check that keeps the problems
+  it had); the worker's answer paints a bad gate red and Save refuses while one is red, as before. check-worker.ts carries a
+  copy of course/worker.ts metadataOf (lane course3's file, not exported; importing it would run that worker's onmessage).
+  Hook wanted from course3: export metadataOf from a module without side effects.
 - Hook wanted from lane course3 (packages/tracks): an EditAction that sets a gate's pose and opening in one step
   (`{ kind: 'place', index, pos, quat, opening }`) for the gizmo drags; until then the editor builds that state itself in its
   own folder. A pillar as a gate kind does not exist (format.ts: pillar and box are obstacles outside the gate order); the
