@@ -12,7 +12,7 @@ const text = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
 const LANGS = ['en', 'es', 'pl', 'ru'] as const;
 
 /** A scan whose walls come from `from`; counts the builds. */
-function rig(from: 'shipped' | 'store' | 'build' | 'none') {
+function rig(from: 'shipped' | 'store' | 'build' | 'none' | 'build-queued') {
     const r = { walls: from === 'shipped', builds: 0, took: 0, readyDone: false, queued: false };
     let release: () => void = () => {};
     const gate = new Promise<void>((res) => { release = res; });
@@ -20,7 +20,8 @@ function rig(from: 'shipped' | 'store' | 'build' | 'none') {
         has: () => r.walls,
         ready: async () => { r.readyDone = true; if (from === 'store') r.queued = true; },
         takeQueued: () => { if (!r.queued) return false; r.took++; r.walls = true; r.queued = false; return true; },
-        build: async () => { r.builds++; await gate; if (from === 'build') r.walls = true; }
+        // 'build-queued': the pilot flew on during the build, so its walls wait for the next start
+        build: async () => { r.builds++; await gate; if (from === 'build') r.walls = true; if (from === 'build-queued') r.queued = true; }
     };
     return { r, steps, release: () => release() };
 }
@@ -57,6 +58,12 @@ describe('ensureWalls: walls first, one build at most', () => {
         expect(await build()).toBe(false);
         expect(await build()).toBe(false);
         expect(r.builds).toBe(2);
+    });
+    it('a build that finished while the pilot flew (walls queued for the next start): the waiting action takes them now', async () => {
+        const { r, steps, release } = rig('build-queued');
+        release();
+        expect(await ensureWalls(steps)()).toBe(true);
+        expect([r.builds, r.took]).toEqual([1, 1]);
     });
 });
 

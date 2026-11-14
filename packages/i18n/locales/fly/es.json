@@ -322,6 +322,7 @@
   "bake.stage.done": "listo",
   "bake.done": "Paredes construidas en este navegador en {s} s. Los choques están activados.",
   "bake.doneRough": "Paredes construidas en {s} s. Los choques están activados. En este escaneo las paredes son aproximadas.",
+  "bake.doneNext": "Paredes construidas en {s} s. Sigue volando: se activan en tu próximo inicio.",
   "bake.noRoom": "Este dispositivo se quedó sin memoria para las paredes. Cierra otras pestañas y pulsa el botón otra vez.",
   "bake.failed": "Las paredes no salieron esta vez. Pulsa el botón para construirlas de nuevo.",
   "bake.walls": "Paredes {cm} cm",

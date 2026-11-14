@@ -40,6 +40,14 @@ export const AUTO_MAX_S = 20;
 export const OFFER_MAX_S = 180;
 /** Longer than this: refused (a local 16 m tile around the drone is the answer, not built yet). */
 export const OFFER_LONG_MAX_S = 600;
+/** Browser base bake (read + crop + voxelise, 5 cm) per million Gaussians of the level: 9.5 s, measured
+ *  by tools/bench/scripts/walls-trials.ts on 2026-11-14 (RTX 4090, headless Chrome): Wroclaw level 1
+ *  203.5 s / 21.47 M = 9.48; Tunis 6.3 to 6.9, Wroclaw level 2 6.8. A device that measured slower
+ *  (loadBakeSpeed) uses its own number. */
+export const LADDER_S_PER_MILLION = 9.5;
+/** A ladder step whose estimate is longer than this is skipped before it starts (the library has no
+ *  abort, so a running step cannot be cut short). A setting, not measured. */
+export const STEP_MAX_S = 150;
 
 export interface SceneSize {
     kind: 'meta' | 'lod-meta';
@@ -196,13 +204,23 @@ export interface BaseStep {
  * is the bake's own business (it goes 2x and 4x coarser on the same data). A single-file scan has
  * one level: it is tried even past the estimate (the estimate is not the device's real limit).
  */
-export function planBase(size: SceneSize, o: { limits: GpuLimits | null; capGb: number }): BaseStep[] {
+export function planBase(size: SceneSize, o: { limits: GpuLimits | null; capGb: number; sPerMillion?: number; maxS?: number }): BaseStep[] {
     const levels = size.byLevel && size.byLevel.length ? size.byLevel : [size.gaussians];
     const max = maxGaussians(o.limits, o.capGb);
     const steps = levels.map((g, level) => ({ level, voxelM: BASE_VOXEL_M, gaussians: g })).filter((s) => s.gaussians > 0);
     const first = steps.findIndex((s) => s.gaussians <= max);
     if (first < 0) return steps.length ? [steps[steps.length - 1]] : [{ level: 0, voxelM: BASE_VOXEL_M, gaussians: size.gaussians }];
-    return steps.slice(first);
+    // time: a step that would run longer than maxS is skipped before it starts (never the last one)
+    const spm = Math.max(o.sPerMillion ?? 0, LADDER_S_PER_MILLION);
+    const maxS = o.maxS ?? STEP_MAX_S;
+    let i = first;
+    while (i < steps.length - 1 && stepSeconds(steps[i], spm) > maxS) i++;
+    return steps.slice(i);
+}
+
+/** Estimated seconds of one ladder step on a device that bakes `sPerMillion` s per million Gaussians. */
+export function stepSeconds(step: BaseStep, sPerMillion: number): number {
+    return (step.gaussians / 1e6) * sPerMillion;
 }
 
 /** Walls of a lower level or a coarser cell than the base: the pilot is told so in one line. */
@@ -473,12 +491,13 @@ export type BaseStage = 'size' | 'read' | 'voxelize' | 'lighter' | 'done';
  * until one fits this device. Only a failure that is not about room (no WebGPU, a network error,
  * empty walls) ends it early. `bake` is bakeCollision (a test passes its own).
  */
-export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & { bake?: typeof bakeCollision } = {}): Promise<BakeResult & { tried: number }> {
+export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & { bake?: typeof bakeCollision; sPerMillion?: number | null } = {}): Promise<BakeResult & { tried: number }> {
     const bake = o.bake ?? bakeCollision;
     onStage('size');
     const size = o.size ?? await sceneSize(contentUrl, kind);
     const limits = o.limits !== undefined ? o.limits : gpuLimitsOf(device);
-    const steps = planBase(size, { limits, capGb: o.capGb ?? memCapGb() });
+    // the seconds per million this device measured on its last bake (if slower than the trials)
+    const steps = planBase(size, { limits, capGb: o.capGb ?? memCapGb(), sPerMillion: o.sPerMillion ?? undefined });
     let last: unknown = null;
     for (let i = 0; i < steps.length; i++) {
         if (i > 0) onStage('lighter');

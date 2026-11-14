@@ -26,6 +26,8 @@ export function ensureWalls(steps: WallsSteps): () => Promise<boolean> {
         if (steps.has()) return true;
         if (steps.takeQueued() && steps.has()) return true;
         await steps.build();
+        // the build left its walls queued for the next start (the pilot flew meanwhile): the action takes them now
+        if (!steps.has()) steps.takeQueued();
         return steps.has();
     };
     return () => {

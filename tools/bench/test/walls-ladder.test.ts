@@ -3,6 +3,8 @@
 // bakeBase walks that ladder. Level counts are the ones walls-scan-sizes.ts read from the CDN on
 // 2026-11-13 (Wroclaw 70b50d42, Lublin 2f1ddf5f, Forest Floor ab5efa0e). No network, no GPU.
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { BASE_VOXEL_M, BakeGpuError, BakeRefusedError, bakeBase, gaussiansFromMeta, isRough, memCapGb, outOfRoom, planBase } from '../../../apps/fly/src/bake';
 import type { BakeResult, GpuLimits, SceneSize } from '../../../apps/fly/src/bake';
 import * as bakeModule from '../../../apps/fly/src/bake';
@@ -51,6 +53,19 @@ describe('planBase: the ladder of a base bake', () => {
     it('the level counts come from the tree', () => {
         const tree = { children: [{ lods: { 0: { count: 8 }, 1: { count: 4 }, 2: { count: 2 } } }, { lods: { 0: { count: 8 }, 1: { count: 4 }, 2: { count: 2 } } }] };
         expect(gaussiansFromMeta({ lodLevels: 3, tree }, 'lod-meta').byLevel).toEqual([16, 8, 4]);
+    });
+    it('a step that would run longer than STEP_MAX_S is skipped before it starts (V1 trials: Wroclaw level 1 took 203 s)', () => {
+        // a big tab lets level 1 (21.55 M) through the memory gate; its time (9.5 s per million) does not
+        expect(planBase(lod(WROCLAW), { limits: PC, capGb: 8 })[0].level).toBe(2);
+        // a device that measured itself slower goes one level lower still
+        expect(planBase(lod(WROCLAW), { limits: PC, capGb: 8, sPerMillion: 20 })[0].level).toBe(3);
+        // the last step is kept whatever its time: a build always happens
+        expect(planBase({ kind: 'meta', gaussians: 60_000_000, lodLevels: 1, from: 'count', etag: null }, { limits: PC, capGb: 64 }).length).toBe(1);
+    });
+    it('the flight is not held while walls are built (no bake pause in walls.ts)', () => {
+        const src = readFileSync(join(__dirname, '..', '..', '..', 'apps', 'fly', 'src', 'walls.ts'), 'utf8');
+        expect(src).not.toMatch(/pause\(true, 'bake'\)/);
+        expect(src).toMatch(/queue\(r\.json, r\.bin, sha, 'bake'\)/);
     });
     it('rough means a lower level or a coarser cell', () => {
         expect(isRough({ level: 0, voxelM: BASE_VOXEL_M })).toBe(false);

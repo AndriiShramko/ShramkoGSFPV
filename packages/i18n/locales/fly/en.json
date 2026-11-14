@@ -322,6 +322,7 @@
   "bake.stage.done": "done",
   "bake.done": "Walls built in this browser in {s} s. Crashes are on.",
   "bake.doneRough": "Walls built in {s} s. Crashes are on. The walls are rough in this scan.",
+  "bake.doneNext": "Walls built in {s} s. Fly on: they switch on at your next start.",
   "bake.noRoom": "This device ran out of memory for the walls. Close other tabs and press the button again.",
   "bake.failed": "The walls did not come out this time. Press the button to build them again.",
   "bake.walls": "Walls {cm} cm",

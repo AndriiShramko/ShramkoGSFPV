@@ -309,7 +309,10 @@ export function mountWalls(o: WallsOptions): WallsHook {
         return t(refine ? 'bake.refine.failed' : 'bake.failed', { was: cm(w.voxelM ?? BASE_VOXEL_M) });
     }
 
-    // ---- phase C: walls for a scan without any (the flight holds still meanwhile, as before)
+    // ---- phase C: walls for a scan without any. The flight is never held meanwhile (a running step
+    // cannot be stopped, splat-transform has no abort): the pilot flies on without walls, and they go
+    // in at once if the drone sits parked, else at its next start (queue); an action that waits for
+    // them (course, sound flight) takes them at once (ensureWalls takeQueued).
     async function runBase(): Promise<void> {
         if (busy) return;
         busy = true;
@@ -318,23 +321,22 @@ export function mountWalls(o: WallsOptions): WallsHook {
         action.hidden = true;
         w.state = 'baking';
         keep(true);
-        s.pause(true, 'bake');
         try {
-            // never a refusal: the ladder takes a lighter way by itself until one fits this device
-            const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { size: w.size ?? undefined, limits: fake });
+            // never a refusal: the ladder takes a lighter way by itself until one fits this device,
+            // and skips a step that would run too long before it starts (planBase, STEP_MAX_S)
+            const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { size: w.size ?? undefined, limits: fake, sPerMillion: loadBakeSpeed() });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
             // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
             o.switchOn();
-            s.installCollision(r.json, r.bin, sha);
-            onSwap('bake')(sha);
+            queue(r.json, r.bin, sha, 'bake');
             o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, level: r.level, tried: r.tried, rough: isRough(r), gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
             action.remove();
             // a large scan may have needed a lighter way: one plain line, no numbers of the technique
-            say(t(isRough(r) ? 'bake.doneRough' : 'bake.done', { s: (r.ms.total / 1000).toFixed(0) }));
+            say(t(s.wallsPending ? 'bake.doneNext' : isRough(r) ? 'bake.doneRough' : 'bake.done', { s: (r.ms.total / 1000).toFixed(0) }));
             o.beacon('bake_done');
             void remember(w.keyInput, r, sha);
         } catch (e) {
@@ -358,7 +360,6 @@ export function mountWalls(o: WallsOptions): WallsHook {
             keep(action.isConnected);
             w.lastBake = o.hook.bake;
         } finally {
-            s.pause(false, 'bake');
             busy = false;
         }
     }
