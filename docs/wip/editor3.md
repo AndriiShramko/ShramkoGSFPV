@@ -188,7 +188,7 @@ Stage fixes (review ED-1 to ED-7; NOT finished, stopped at the reply budget):
   4. a release of 3c972fee (ED-5/6/7) and one phone run: the 7-button top bar on 844x390 (wraps or not), Courses and Keys
      open the drawer.
   5. E4.7 the flight through the moved gate (a racing profile with an arm switch, or the moved gate ahead of the spawn).
-  6. gates.py --only vitest,architecture,i18n,b18 (result in the line below once run).
+- [x] gates.py --only vitest,architecture,i18n,b18 PASS on 9a426a3f (vitest 180 s; logs U:/Temp/gsfpv-gates-20261115-004525).
 
 ## Facts (measured)
 
