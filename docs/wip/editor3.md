@@ -26,8 +26,19 @@ Stage E2 (next worker), in this order:
   - test tools/bench/test/editor3-mouse.test.ts (10 tests) + tracks-editor-ui.test.ts updated: 22/22 pass with
     editor3-check; NEG OK (neg_control.py, origin/main keys.ts: the Q/E tests fail); apps/fly tsc 0
   - gates vitest, architecture, i18n, b18 PASS on bc341bb7 (gates.py, vitest 117 s)
-  - [ ] NOT yet run in a browser: the gizmos, the click, the camera keys (next: E2.6 or a smoke probe first)
-- [ ] E2.4 the small panel at the selected gate, Add gate by a click on the place, the top bar
+  - [x] smoke probe in a local release (pass 2, 7658ddfb probe, 529da832 fix): tools/bench/src/editor3-smoke.ts, Facts E2 smoke.
+    Fixed from it: the move handle's centre sphere is 'xyz' in PlayCanvas 2.23.2 (not 'face'), now switched off (529da832).
+  - [ ] the scale box drag still did not change the opening in run 2 on Wroclaw (the gate moved 0.3 m instead): find which
+    handle takes a press on the centre (all three gizmos get the pointerdown; try the scale gizmo alone, or a bigger drag
+    than 56 px against snap 0.1), fix, re-run the probe
+- [~] E2.4 the small panel at the selected gate, Add gate by a click on the place, the top bar
+  - [x] the gate bar (dbb1dd8c): apps/fly/src/course/editor/gate-bar.ts (DOM, follows the gate each frame, hidden while a
+    handle drags), bar-place.ts (pure: BAR_BUTTONS, barPlace), editor.css .ce-gatebar; buttons previous, ring, square,
+    dive, cube, insert, delete, next run the same key rows (no new locale keys: course.edit.key.*). Test
+    tools/bench/test/editor3-gatebar.test.ts 3 pass, NEG OK (the file is new: fails by the missing module), apps/fly tsc 0.
+    Seen in the browser on Wroclaw: visible right of the gate, Next took the next gate, focus back on BODY.
+  - [ ] Duplicate (today Insert adds a gate after; a copy of the selected gate is not an EditAction yet), Add gate by a
+    click on the scene (ghost gate), the top bar (Add, Undo, Redo, Save, Courses, Keys, Exit)
 - [ ] E2.5 arm flies, disarm edits (The design, Flying through)
 - [ ] E2.6 browser proof on a local release, the owner's path on 70b50d42 (local walls stand-in) and 887f27aa
 
@@ -72,6 +83,25 @@ U:/Temp/gsfpv-train3/editor3/e1-live.json, screenshots U:/Temp/gsfpv-train3/shot
 
   Both courses were clean (problems 0 before and after), so the red paint from a worker answer was not seen in the browser;
   the answer path is covered by the unit test only.
+- E2 smoke (pass 2): tools/bench/src/editor3-smoke.ts, SITE=http://localhost:5800, local release with the Wroclaw walls
+  stand-in in dist/walls/70b50d42/v1, GPU lock, headless 1280x800, 2026-11-14, runner U:/Temp/gsfpv-train3/editor3/e2s/run.sh.
+  Run 1 (release of 7658ddfb, e2s.json), both scenes; run 2 (release of 529da832, e2s2.json), Wroclaw complete:
+
+| | Tunis 887f27aa (run 1) | Wroclaw 70b50d42 (run 1 / run 2) |
+|---|---|---|
+| handles attached, gizmo layer on the camera, pointer lock | yes, yes, none | yes, yes, none |
+| W S D A E Q held 700 ms each (m moved, speed 4 m/s) | 2.93 2.8 2.93 2.93 2.8 2.8 | 2.94 2.8 2.8 2.8 2.93 2.8 / 2.4 2.8 2.8 2.8 2.93 2.8 |
+| right button drag 120 px: eye moved, look point moved | 0, 0.43 m | 0, 0.30 / 0, 0.43 |
+| wheel up 300: speed | 4 to 5.4 | 4 to 5.4 |
+| click on another gate | gate 0 to 6 | run 1 missed (gate 1 at 17 m stayed 0); run 2 gate 0 to 2, under the cursor CANVAS |
+| gate bar (run 2 only) | Next button: Playwright click timed out (not stable: the bar moves every frame) | visible at 598,385, Next 3 to 4, focus BODY |
+| drag on the centre box: opening | 1.2 to 1.2, gate moved 0.44 m | 1.5 to 1.5, moved 2.24 / 0.3 m |
+| drag on the x arrow at 70 px | moved 0.4 m | 2.3 / 0.4 m |
+| drag on a ring at 130 px (110 px missed) | turned (quat change 0.39) | 0.131 / 0.39 |
+| Ctrl+Z after the turn | turn undone (0.39) | undone |
+| Esc, Esc | editor closed | closed |
+| page errors | 0 | 0 (six 403 console lines on Wroclaw, not traced) |
+
 - PlayCanvas in apps/fly and packages/render-pc is 2.23.2. It exports TranslateGizmo, RotateGizmo, ScaleGizmo, TransformGizmo
   (snap, snapIncrement, coordSpace, dragMode, enableShape(axis, on), ScaleGizmo.uniform, events transform:start, transform:move,
   transform:end), Gizmo.createLayer(app), and FlyController with KeyboardMouseSource, ViewCube (build/playcanvas.d.ts).
@@ -152,8 +182,13 @@ button shows the table.
 
 - E2.2/E2.3 in a browser: whether PlayCanvas 2.23.2's gizmos draw and drag on our renderer camera (the gizmo layer is added to
   the camera's layers), whether the fly page's own canvas listeners (pointer lock request on click) disturb a click while the
-  editor is open, whether a live redraw per frame (stage.show of all gates) is smooth on Wroclaw's 24 gates. enableShape
-  names 'face' (TranslateGizmo) and 'face', 'xyz' (RotateGizmo) are wrapped in try: not checked which exist.
+  editor is open, whether a live redraw per frame (stage.show of all gates) is smooth on Wroclaw's 24 gates. Pass 2 smoke
+  (Facts, E2 smoke) answered: the gizmos draw and drag, a click selects, the keys and the right button move the view, no
+  pointer lock is taken. Still open: the scale box drag, the gate bar's Next on Tunis (probe click not stable), frame
+  smoothness during a drag (not measured), the six 403 lines on Wroclaw.
+- Pass 2 outside the editor folder: apps/fly/src/app/builtin/course.ts also creates the GateBar and sets a read-only
+  window.__gsfpvEditView (the probe's view of the handles); new tools/bench/src/editor3-smoke.ts and
+  tools/bench/test/editor3-gatebar.test.ts.
 - The new numbers are estimates, not measured: CAM_SPEED_M_S 4, CAM_WHEEL_STEP 1.35, CAM_FAST 3, CAM_DEG_PER_PX 0.2,
   PICK_PAD_M 0.15, CLICK_SLOP_PX 4, turn gizmo size 1.5.
 
@@ -171,3 +206,6 @@ button shows the table.
 - E2 mouse-and-camera: about 30 replies; most went to finding the gate frames (scan vs flown, w-first quaternions) and the
   PlayCanvas gizmo API in a 77k-line d.ts; a note in agent-map.md on the course frames and the quaternion order would save
   five replies. No browser run fitted.
+- E2 pass 2: about 30 replies; most went to two release builds plus probe runs (about 8 minutes each, waited in one blocking
+  call) and reading PlayCanvas shape names from build/playcanvas.mjs; a probe that takes a prebuilt dist and only one
+  scene per run would halve the wait.
