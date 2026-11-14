@@ -15,11 +15,13 @@ created: 2026-11-14
 - [x] Sound package: branch train2 has 0 commits over its main; pin 598a98f9 unchanged, nothing to merge.
 - [x] rooms-race.ts on the merged tree (SONIC_PORTS 5760-5779): FAIL (exit 1). Race entry switched off: 4cf7b013.
 - [x] Gates run 1 at 4cf7b013: exit 1 (vitest 1 failed of 4718, api-unittest 2 errors, catalog stale). Seams fixed: 65b7fcca.
-- [~] Gates run 2 at 65b7fcca: running detached, result in U:/Temp/gsfpv-train2/train2b/gates2.sum, log gates2.log.
+- [x] Gates run 2 at 65b7fcca: exit 1 only by a timing test under load (Gates); the rest PASS, 'B18 PASS'.
+- [ ] Forest Floor: Shift+G gives no course in 300 s (Probes). Decide before the push: find the cause (course worker on
+  the published 5 cm walls of ab5efa0e v2) or say in the release that small scans may get no course.
 - [~] All probes: one detached script U:/Temp/gsfpv-train2/train2b/run-all.sh on the release of 4cf7b013 (port 5760),
   one line per probe in U:/Temp/gsfpv-train2/train2b/logs/summary.txt, evidence evidence/2026-11-14/train2b/.
 - [x] deploy/live-checks.sh gains walls-published-probe (4cf7b013). Not run.
-- [ ] Left for the next worker: (1) read gates2.sum: exit 0 and the line 'B18 PASS' needed; (2) when summary.txt says
+- [ ] Left for the next worker: (1) gates.py --only vitest on an idle PC (exit 0 needed); (2) when summary.txt says
   'done', fill Probes from it, LOOK at U:/Temp/gsfpv-train2/shots/walls-chain-1920.png and walls-chain-844.png, commit
   the evidence JSON (never PNG); (3) git push origin main (plain) and verify with git fetch that origin/main = HEAD.
 
@@ -60,7 +62,10 @@ python -X utf8 C:/Users/andri/.claude/skills/gsfpv/scripts/gates.py --repo C:/de
 - Fixes 65b7fcca: race page loaded with import() only when RACE_ON (sonic-int-lazy NEG OK on the merge's files);
   tk8 bodies carry lap 5000 (test_tracks_fixes and test_tracks_edit OK); gen-catalog. tools/bench/test/
   rooms-race-off.test.ts new (NEG OK). tsc apps/fly and tools/bench exit 0.
-- Run 2 at 65b7fcca: see Status.
+- Run 2 at 65b7fcca: exit 1. typecheck, api-unittest, architecture, i18n, catalog PASS, line 'B18 PASS'. vitest 1
+  failed of 4720: tools/bench/test/app-dji-rc2.test.ts 'answers 60 ms late' (expected 1 to be 0), a timing test; it ran
+  while the probe script loaded the PC. No file of it or of controls changed in this wave (git diff 0bfec4f0..HEAD);
+  alone it passes 15 of 15. Counted as load, not a seam; the next worker reruns gates.py --only vitest when the PC is idle.
 
 ## Probes
 
@@ -68,6 +73,11 @@ Local release of 4cf7b013 on http://localhost:5760 (serve-csp). It differs from 
 import of the race page (same behaviour, race off in both) and generated catalog files. Stand-ins of the published
 walls in dist/walls: ab5efa0e, 70b50d42, 9baef54b (153,900,630 bytes); d10c5638 left out as the unpublished control.
 - rooms-race.ts: FAIL (Held back).
+- walls-chain-probe: exit 1 (evidence/2026-11-14/train2b/walls-chain-probe.json). 70b50d42 Wroclaw at 844x390: pass,
+  published walls, 24 gates, first gate drawn 39.6 s after Shift+G. ab5efa0e Forest Floor at 1920x1080: FAIL, published
+  walls in, no course within the probe's 300 s (gates 0, fail timeout). So the chain on a small scan is NOT proven: the
+  small-scan generator of tracks2 does not answer in the page within 300 s on Forest Floor. Not analysed (budget).
+- walls-published-probe 70b50d42,ab5efa0e,9baef54b with d10c5638 unpublished: exit 0.
 - Helper download bytes: the build has no start-dji-helper.cmd nor rc_bridge.py in dist (find found none), so the
   bytes check had nothing to compare; the page's links point at the public repository (wave 1 note).
 - The rest: running, see Status. Order: walls-chain (ab5efa0e 1920x1080, 70b50d42 844x390), walls-published,
