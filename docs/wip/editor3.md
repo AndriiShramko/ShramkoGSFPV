@@ -39,6 +39,7 @@ Stage E2 (next worker), in this order:
     Seen in the browser on Wroclaw: visible right of the gate, Next took the next gate, focus back on BODY.
   - [ ] Duplicate (today Insert adds a gate after; a copy of the selected gate is not an EditAction yet), Add gate by a
     click on the scene (ghost gate), the top bar (Add, Undo, Redo, Save, Courses, Keys, Exit)
+  - gates vitest, architecture, i18n, b18 PASS on f30a4c03 (gates.py, vitest 139 s)
 - [ ] E2.5 arm flies, disarm edits (The design, Flying through)
 - [ ] E2.6 browser proof on a local release, the owner's path on 70b50d42 (local walls stand-in) and 887f27aa
 
