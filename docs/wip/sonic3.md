@@ -73,7 +73,8 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   `dropped`; height and speed layers off at tier 2. Ladder FlyOptions.budget and tools/ear-pilot.ts --budget on|off.
   test/budget-wired.test.ts 5 of 5, NEG OK on the old planner.ts and scan-free.json.
 - [x] 4d. After-speed ear pilot runs (package e133411), table "Z4 after speed" in Facts.
-- [x] Pin of packages/sonic-fpv moved to package train3 e133411 (this commit).
+- [x] Pin of packages/sonic-fpv moved to package train3 e133411 (66267e6a).
+- [x] gates.py --only vitest,architecture,i18n,b18 on 66267e6a: all four PASS (vitest 175 s), logs U:/Temp/gsfpv-gates-20261114-225951.
 - [ ] LEFT, in this order:
   1. Z3 item 3 (simulator tools/bench/src/ear-pilot-scan.ts, Tunis and Wroclaw) and 4c (src/cues/reach.ts) are still open.
   2. The one rung lost by the 2-loudest pilot on rings (seed 1: 3 to 2 m/s): see if it is the shape trace cut at tier 1
