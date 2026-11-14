@@ -16,7 +16,7 @@ import { launch, waitReady } from './browser';
 import type { Launched } from './browser';
 import { today, writeEvidence } from './evidence';
 import { lock, unlock } from './gpu-lock';
-import { RMS_BOUND_M, align, jumps } from './rooms-two-page';
+import { RMS_BOUND_M, align, jumps, panelByMenu } from './rooms-two-page';
 import type { Sample } from './rooms-two-page';
 
 const SITE = (process.env.SITE ?? '').replace(/\/+$/, '');
@@ -113,8 +113,19 @@ async function createRoom(page: Page): Promise<{ created: boolean; link: string 
     const btn = page.locator('[data-action=rooms-create]');
     await page.keyboard.press('Digit9');
     const byNine = await btn.waitFor({ timeout: 8000 }).then(() => true, () => false);
+    // lane rooms2 (R27): on a release with open rooms, 9 lands in the open room (kind persistent) and opens no panel; the
+    // panel with create comes from the pause menu after leaving the open room (the panel in a room offers leave, not create)
+    const openRoom = !byNine && (await poll(() => rooms<string | null>(page, 'return r.kind ?? null;'), (v) => v === 'persistent', 8000)).ok;
     if (byNine) roomKeys = { panel: 'Digit9', who: 'Digit0' };
-    else {
+    else if (openRoom) {
+        roomKeys = { panel: 'Digit9', who: 'Digit0' };
+        await panelByMenu(page);
+        const leave = page.locator('[data-action=rooms-leave]');
+        if (await leave.waitFor({ timeout: 10000 }).then(() => true, () => false)) await leave.click();
+        await poll(() => rooms<string>(page, 'return r.state;'), (v) => v === 'off', 10000);
+        await panelByMenu(page);
+        await btn.waitFor({ timeout: 15000 });
+    } else {
         roomKeys = { panel: 'Shift+KeyL', who: 'Shift+KeyO' };
         await page.keyboard.press('Shift+KeyL');
         await btn.waitFor({ timeout: 15000 });
