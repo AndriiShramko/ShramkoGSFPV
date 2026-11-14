@@ -1,0 +1,269 @@
+{
+ "what": "rc2-probe.mjs: the DJI RC 2 on the simulator page",
+ "base": "http://localhost:5760/en",
+ "at": "2026-11-14T02:12:44.083Z",
+ "browser": "157.0.8103.52",
+ "fakeAnswer": "message",
+ "runs": {
+  "usb": {
+   "verdict": "rc2",
+   "path": [
+    null,
+    "stir/ready",
+    "stir/active",
+    "stir/done",
+    "centre/ready",
+    "centre/active",
+    "centre/done",
+    "throttle/ready",
+    "throttle/active",
+    "throttle/done",
+    "yaw/ready",
+    "yaw/active",
+    "yaw/done",
+    "pitch/ready",
+    "pitch/active",
+    "pitch/done",
+    "roll/ready",
+    "roll/active",
+    "roll/done",
+    "arm/ready",
+    "arm/active",
+    "arm/done",
+    "check"
+   ],
+   "checkAfterS": 21,
+   "axesRest": [
+    0,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "axesMoved": [
+    1,
+    0,
+    0,
+    0,
+    -1,
+    -1
+   ],
+   "profiling": false,
+   "climb": [
+    {
+     "alt": 0.036001320914775814,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 0.5860520233828437,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 1.2222624840253404,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.0112476723818657,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 2.8130338361828686,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 3.609151806145565,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.401933199792823,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.661447181957936,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.668507763765564,
+     "motors": "on",
+     "crashed": false
+    },
+    {
+     "alt": 4.669063334572151,
+     "motors": "on",
+     "crashed": false
+    }
+   ],
+   "profile": {
+    "msUnder": {
+     "ground": 3,
+     "sweep": 14,
+     "onFrame": 81,
+     "total": 2710
+    },
+    "top": [
+     "2137 (idle) :0",
+     "244 (program) :0",
+     "21 (garbage collector) :0",
+     "14 getInputDeclarations main-oCf4cKHE.js:845",
+     "13 setCorner main-oCf4cKHE.js:16642",
+     "11 (anon) main-oCf4cKHE.js:93",
+     "11 postMessage :0",
+     "9 frameStats main-oCf4cKHE.js:16640"
+    ]
+   },
+   "gateWatch": {
+    "maxAge": 109.89999999850988,
+    "ageOver100": 1,
+    "maxFrame": 49.20000000298023,
+    "frames": 80,
+    "blocks": {
+     "switch": 2
+    },
+    "replies0": 2358,
+    "t0": 28066.5,
+    "repliesPerS": 96,
+    "lastCrash": null
+   },
+   "start": {
+    "alt": 0,
+    "armed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "off",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2
+     },
+     "now": "centred"
+    },
+    "card": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick."
+   },
+   "up": {
+    "alt": 4.669063334572151,
+    "armed": true,
+    "crashed": false,
+    "throttle": {
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "setting": "auto",
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.669063334572151
+     },
+     "now": "centred"
+    },
+    "card": null
+   },
+   "topM": 4.669063334572151,
+   "probe": {
+    "sockets": 0,
+    "requests": 2609,
+    "replies": 2609,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "refused": {
+   "say": "Chrome could not open the controller's stick channel. On Windows this channel belongs to another driver (DJI Assistant 2 installs one), and Chrome can only open channels that use Windows' own USB driver. Nothing is broken: the controller and DJI's apps work as before, and nothing on them was changed. Fly with the keyboard, a gamepad or a radio for now, and press \"Send this list\" so we know your setup. On Linux, macOS or ChromeOS the same button may work, but that has not been tested yet. On Windows a small helper program for DJI controllers reads the sticks through DJI's own driver; the simulator tries it now.",
+   "probe": {
+    "sockets": 0,
+    "requests": 0,
+    "replies": 0,
+    "claims": 1
+   },
+   "errors": [],
+   "csp": []
+  },
+  "bridge": {
+   "grant": "not needed (http base)",
+   "socketsBeforePress": 0,
+   "autoConnected": false,
+   "sayState": "flying",
+   "say": "",
+   "check": {
+    "wizard": "check",
+    "key": "hid:2ca3:1021:DJI RC 2:12:d",
+    "reportsIn2s": 187,
+    "badReports": 0
+   },
+   "axes": [
+    0.42,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "errors": [],
+   "csp": []
+  },
+  "bridge-lna-prompt": {
+   "clicks": 1,
+   "first": {
+    "state": "asking",
+    "text": "Chrome is asking whether this site may reach apps on this device (a small window under the address bar). Press Allow: the simulator connects to the helper program as soon as you do."
+   },
+   "after3s": {
+    "state": "asking",
+    "text": "Chrome is asking whether this site may reach apps on this device (a small window under the address bar). Press Allow: the simulator connects to the helper program as soon as you do."
+   },
+   "socketsWhileAsking": 2,
+   "wizardAfterMs": 223,
+   "wizard": "stir/ready",
+   "socketsAfterAllow": 3,
+   "errors": [],
+   "csp": []
+  },
+  "bridge-lna-denied": {
+   "clicks": 1,
+   "first": {
+    "state": "denied",
+    "text": "The helper program does not answer. 1. Double-click start-dji-helper.cmd in the folder you downloaded. 2. Leave its window open. The simulator connects by itself as soon as it runs, or press \"Fly with the helper program\" again. If you blocked Chrome's question about apps on this device, allow it in the site settings (the icon left of the address)."
+   },
+   "sockets": 0,
+   "errors": [],
+   "csp": []
+  }
+ },
+ "pass": true,
+ "checks": {
+  "usb.verdictRc2": true,
+  "usb.checkScreen": true,
+  "usb.sticksMoveOnCheck": true,
+  "usb.climbs": true,
+  "usb.noPageErrors": true,
+  "refused.saysClaimFailed": true,
+  "refused.stillOnControls": true,
+  "refused.noPageErrors": true,
+  "bridge.connected": true,
+  "bridge.checkScreenAtOnce": true,
+  "bridge.framesFlow": true,
+  "bridge.cspQuiet": true,
+  "bridge.noPageErrors": true,
+  "bridgeLna.promptAsks": true,
+  "bridgeLna.allowConnectsWithOnePress": true,
+  "bridgeLna.prompt.noPageErrors": true,
+  "bridgeLna.deniedSaysSettings": true,
+  "bridgeLna.deniedNoSocket": true,
+  "bridgeLna.denied.noPageErrors": true
+ }
+}

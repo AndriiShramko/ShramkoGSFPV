@@ -1,0 +1,645 @@
+{
+ "what": "fast-radio-probe.mjs: a fake DJI FPV Remote Controller 3 at 500 and 1000 reports a second, centred style",
+ "base": "http://localhost:5760/en",
+ "scene": "887f27aa",
+ "seconds": 20,
+ "bounds": {
+  "FPS_MIN": 24,
+  "FRAME_GAP_MAX_MS": 150,
+  "TASK_GAP_MAX_MS": 100
+ },
+ "at": "2026-11-14T02:16:05.450Z",
+ "runs": {
+  "r500": {
+   "pass": true,
+   "rate": 500,
+   "burst": 1,
+   "seconds": 27,
+   "checks": {
+    "keepsUp": true,
+    "renders": true,
+    "mainThread": true,
+    "climbs": true,
+    "holds": true,
+    "motorsSteady": true,
+    "noPageErrors": true
+   },
+   "note": {
+    "lastStep": "read",
+    "checkStyle": "centred",
+    "style": "centred",
+    "up": {
+     "alt": 4.668397354016241,
+     "armed": true,
+     "crashed": false,
+     "atMs": 3002.7000000029802
+    },
+    "watch": {
+     "seconds": 20,
+     "frames": 600,
+     "fps": 29.95,
+     "fpsBySecond": [
+      29,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      1
+     ],
+     "frameGapMaxMs": 86.60000000149012,
+     "frameGapAtMs": 232.70000000298023,
+     "taskGapMaxMs": 24.599999994039536,
+     "taskGapAtMs": 4232.89999999851,
+     "reportsSent": 10008,
+     "reportsDue": 10008,
+     "reportsDropped": 0,
+     "armedDrops": 0,
+     "armStateChanges": 1,
+     "armedFrom": 1,
+     "armStates": [
+      "arming",
+      "on"
+     ],
+     "crashed": false,
+     "altStart": 0,
+     "altEnd": 4.669842882876563,
+     "lateSpanM": 0.004836212143776386,
+     "lateFrames": 301,
+     "lateArmed": true,
+     "trace": [
+      [
+       11,
+       0,
+       0,
+       "arming"
+      ],
+      [
+       1045,
+       2.15,
+       1,
+       "on"
+      ],
+      [
+       2044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       3044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       4045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       5044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       6044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       7045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       8045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       9044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       10044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       11045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       12044,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       13050,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       14045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       15045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       16045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       17045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       18045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       19045,
+       4.67,
+       1,
+       "on"
+      ]
+     ]
+    },
+    "reportsPerS": 500,
+    "climbM": 4.668397354016241
+   },
+   "errors": []
+  },
+  "r1000": {
+   "pass": true,
+   "rate": 1000,
+   "burst": 1,
+   "seconds": 26,
+   "checks": {
+    "keepsUp": true,
+    "renders": true,
+    "mainThread": true,
+    "climbs": true,
+    "holds": true,
+    "motorsSteady": true,
+    "noPageErrors": true
+   },
+   "note": {
+    "lastStep": "read",
+    "checkStyle": "centred",
+    "style": "centred",
+    "up": {
+     "alt": 4.6689714743379644,
+     "armed": true,
+     "crashed": false,
+     "atMs": 3001.7999999970198
+    },
+    "watch": {
+     "seconds": 19.99970000000298,
+     "frames": 600,
+     "fps": 29.950449256734387,
+     "fpsBySecond": [
+      29,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      1
+     ],
+     "frameGapMaxMs": 81.69999999552965,
+     "frameGapAtMs": 228.69999999552965,
+     "taskGapMaxMs": 23.899999998509884,
+     "taskGapAtMs": 4310.39999999851,
+     "reportsSent": 20014,
+     "reportsDue": 20015,
+     "reportsDropped": 0,
+     "armedDrops": 0,
+     "armStateChanges": 1,
+     "armedFrom": 1,
+     "armStates": [
+      "arming",
+      "on"
+     ],
+     "crashed": false,
+     "altStart": 0,
+     "altEnd": 4.66890804478986,
+     "lateSpanM": 0.0014317946174786655,
+     "lateFrames": 301,
+     "lateArmed": true,
+     "trace": [
+      [
+       13,
+       0,
+       0,
+       "arming"
+      ],
+      [
+       1046,
+       2.14,
+       1,
+       "on"
+      ],
+      [
+       2046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       3046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       4047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       5046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       6046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       7046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       8047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       9047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       10047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       11047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       12047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       13046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       14047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       15046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       16046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       17047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       18046,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       19046,
+       4.67,
+       1,
+       "on"
+      ]
+     ]
+    },
+    "reportsPerS": 1001,
+    "climbM": 4.6689714743379644
+   },
+   "errors": []
+  },
+  "r500b4": {
+   "pass": true,
+   "rate": 500,
+   "burst": 4,
+   "seconds": 26,
+   "checks": {
+    "keepsUp": true,
+    "renders": true,
+    "mainThread": true,
+    "climbs": true,
+    "holds": true,
+    "motorsSteady": true,
+    "noPageErrors": true
+   },
+   "note": {
+    "lastStep": "read",
+    "checkStyle": "centred",
+    "style": "centred",
+    "up": {
+     "alt": 4.668299199252613,
+     "armed": true,
+     "crashed": false,
+     "atMs": 3001.1999999955297
+    },
+    "watch": {
+     "seconds": 20,
+     "frames": 600,
+     "fps": 29.95,
+     "fpsBySecond": [
+      29,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      30,
+      1
+     ],
+     "frameGapMaxMs": 88.69999999552965,
+     "frameGapAtMs": 233.69999999552965,
+     "taskGapMaxMs": 28.600000001490116,
+     "taskGapAtMs": 3837.39999999851,
+     "reportsSent": 10010,
+     "reportsDue": 10010,
+     "reportsDropped": 0,
+     "armedDrops": 0,
+     "armStateChanges": 1,
+     "armedFrom": 1,
+     "armStates": [
+      "arming",
+      "on"
+     ],
+     "crashed": false,
+     "altStart": 0,
+     "altEnd": 4.670800477460444,
+     "lateSpanM": 0.004691541818035994,
+     "lateFrames": 301,
+     "lateArmed": true,
+     "trace": [
+      [
+       12,
+       0,
+       0,
+       "arming"
+      ],
+      [
+       1045,
+       2.18,
+       1,
+       "on"
+      ],
+      [
+       2047,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       3045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       4045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       5045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       6045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       7045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       8045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       9045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       10045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       11045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       12045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       13045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       14045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       15045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       16045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       17045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       18045,
+       4.67,
+       1,
+       "on"
+      ],
+      [
+       19045,
+       4.67,
+       1,
+       "on"
+      ]
+     ]
+    },
+    "reportsPerS": 501,
+    "climbM": 4.668299199252613
+   },
+   "errors": []
+  }
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "157.0.8103.52",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "pass": true,
+ "checks": {
+  "r500.keepsUp": true,
+  "r500.renders": true,
+  "r500.mainThread": true,
+  "r500.climbs": true,
+  "r500.holds": true,
+  "r500.motorsSteady": true,
+  "r500.noPageErrors": true,
+  "r1000.keepsUp": true,
+  "r1000.renders": true,
+  "r1000.mainThread": true,
+  "r1000.climbs": true,
+  "r1000.holds": true,
+  "r1000.motorsSteady": true,
+  "r1000.noPageErrors": true,
+  "r500b4.keepsUp": true,
+  "r500b4.renders": true,
+  "r500b4.mainThread": true,
+  "r500b4.climbs": true,
+  "r500b4.holds": true,
+  "r500b4.motorsSteady": true,
+  "r500b4.noPageErrors": true
+ }
+}

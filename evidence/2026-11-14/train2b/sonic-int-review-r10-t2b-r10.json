@@ -1,0 +1,8642 @@
+{
+  "name": "sonic-int-review-r10",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-14T02:08:30.308Z",
+    "gitHead": "008b1aa8",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5761",
+  "release": {
+    "sha": "4cf7b013",
+    "sonic": "598a98f",
+    "built": "2026-11-14T01:32:54.867Z"
+  },
+  "git": "008b1aa8",
+  "seconds": 362,
+  "passed": 13,
+  "total": 14,
+  "pass": false,
+  "checks": [
+    {
+      "name": "R10: the pause menu links this scan by sound (/en/fly/?sonic=scan&scene=887f27aa&sz=<size>)",
+      "pass": true,
+      "value": "/en/fly/?sonic=scan&scene=887f27aa&sz=1"
+    },
+    {
+      "name": "R10: a first-timer sees the lessons first, then \"I already fly by sound\" (sonic-start-beginning, sonic-start-scan-flier)",
+      "pass": true,
+      "value": [
+        "sonic-start-beginning",
+        "sonic-start-scan-flier"
+      ]
+    },
+    {
+      "name": "R10: a pilot who flies by sound sees \"Fly this scan by sound\" first (sonic-start-scan, sonic-start-beginning)",
+      "pass": true,
+      "value": [
+        "sonic-start-scan",
+        "sonic-start-beginning"
+      ]
+    },
+    {
+      "name": "R10: the free scan flight runs in scene 887f27aa (lesson scan-free, flying, no target)",
+      "pass": true,
+      "value": {
+        "lesson": "scan-free",
+        "phase": "flying",
+        "walls": {
+          "voxelM": 0.05,
+          "builtin": false,
+          "scene": "887f27aa",
+          "scale": 1
+        },
+        "motor": false,
+        "target": null
+      }
+    },
+    {
+      "name": "R10: the motor is silent by default (motorSound off)",
+      "pass": true,
+      "value": false
+    },
+    {
+      "name": "R10: flying at a wall a wall cue is planned (safety.wall:<side>)",
+      "pass": true,
+      "value": [
+        "height.tone",
+        "room.bed",
+        "safety.wall:front"
+      ]
+    },
+    {
+      "name": "R10 course: N makes a course; the hum's target is gate 1",
+      "pass": true,
+      "value": {
+        "target": {
+          "id": "g1",
+          "pos": [
+            11.2,
+            8.4,
+            7.8
+          ]
+        },
+        "lines": [
+          "sonic.say.courseMaking",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "sonic.say.lessonKeys"
+        ],
+        "spoken": [
+          "sonic.say.courseMaking",
+          "lesson.scan-free.title",
+          "sonic.say.lessonKeys",
+          "lesson.free-garden.intro.2",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1"
+        ]
+      }
+    },
+    {
+      "name": "R10 course: after flying through gate 1 the target is gate 2",
+      "pass": true,
+      "value": {
+        "from": "g1",
+        "now": "g2",
+        "phase": "flying",
+        "spokenTail": [
+          "lesson.free-garden.intro.2",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "fly.stage"
+        ],
+        "gateNote": true,
+        "trail": [
+          {
+            "s": 0,
+            "pos": [
+              0,
+              2,
+              0.2
+            ],
+            "target": "g1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.17,
+                0.43,
+                -0.89
+              ],
+              "d": 15
+            },
+            "keys": []
+          },
+          {
+            "s": 2,
+            "pos": [
+              5.4,
+              5.6,
+              3.8
+            ],
+            "target": "g1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.19,
+                0.37,
+                -0.91
+              ],
+              "d": 7.6
+            },
+            "keys": [
+              "KeyW",
+              "Space",
+              "KeyQ"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "R10 course: gate 1 is told by its note (target.note planned)",
+      "pass": true,
+      "value": {
+        "from": "g1",
+        "now": "g2",
+        "phase": "flying",
+        "spokenTail": [
+          "lesson.free-garden.intro.2",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "fly.stage"
+        ],
+        "gateNote": true,
+        "trail": [
+          {
+            "s": 0,
+            "pos": [
+              0,
+              2,
+              0.2
+            ],
+            "target": "g1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.17,
+                0.43,
+                -0.89
+              ],
+              "d": 15
+            },
+            "keys": []
+          },
+          {
+            "s": 2,
+            "pos": [
+              5.4,
+              5.6,
+              3.8
+            ],
+            "target": "g1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.19,
+                0.37,
+                -0.91
+              ],
+              "d": 7.6
+            },
+            "keys": [
+              "KeyW",
+              "Space",
+              "KeyQ"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "R10 course: backing up along a leg is not called the wrong way (no fly.wrong-way, no safety.wrong-way)",
+      "pass": true,
+      "value": {
+        "cues": [
+          "target.hum",
+          "height.tone",
+          "height.target",
+          "room.bed",
+          "safety.wall:back",
+          "safety.obstacle:right",
+          "safety.obstacle:front-right",
+          "safety.floor:right",
+          "safety.wall:right",
+          "safety.ceiling:left",
+          "safety.floor:left",
+          "safety.wall:left"
+        ],
+        "spoken": []
+      }
+    },
+    {
+      "name": "R10 course: I says where the pilot is (a status line)",
+      "pass": true,
+      "value": [
+        "status.progress",
+        "status.recording-off"
+      ]
+    },
+    {
+      "name": "R10 course: the course was flown to its end by the hum",
+      "pass": false,
+      "value": {
+        "phase": "flying",
+        "target": "g9",
+        "stages": 8,
+        "lastLesson": false,
+        "lines": [
+          "sonic.say.courseMaking",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "sonic.say.lessonKeys",
+          "fly.stage",
+          "status.recording-off"
+        ],
+        "spoken": [
+          "sonic.say.courseMaking",
+          "lesson.scan-free.title",
+          "sonic.say.lessonKeys",
+          "lesson.free-garden.intro.2",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "fly.stage",
+          "status.progress",
+          "status.recording-off",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage"
+        ],
+        "events": [
+          "gate:",
+          "gate:",
+          "gate:",
+          "gate:",
+          "gate:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:"
+        ],
+        "trail": [
+          {
+            "s": 0,
+            "pos": [
+              7.2,
+              9.2,
+              -3.9
+            ],
+            "target": "g2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.08,
+                0.14,
+                -0.99
+              ],
+              "d": 26.9
+            },
+            "keys": [
+              "KeyW",
+              "Space"
+            ]
+          },
+          {
+            "s": 2,
+            "pos": [
+              10.2,
+              11.8,
+              2.4
+            ],
+            "target": "g2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.1,
+                0.05,
+                -0.99
+              ],
+              "d": 19.7
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 4,
+            "pos": [
+              14.4,
+              12.3,
+              11.9
+            ],
+            "target": "g2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.12,
+                0.05,
+                -0.99
+              ],
+              "d": 9.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 6,
+            "pos": [
+              17,
+              12.9,
+              21.5
+            ],
+            "target": "g3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.98,
+                -0.06,
+                -0.2
+              ],
+              "d": 15.1
+            },
+            "keys": [
+              "KeyE"
+            ]
+          },
+          {
+            "s": 8,
+            "pos": [
+              15.2,
+              12.3,
+              23.4
+            ],
+            "target": "g3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.28,
+                -0.02,
+                -0.96
+              ],
+              "d": 12.9
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 10,
+            "pos": [
+              7.2,
+              12.4,
+              24.5
+            ],
+            "target": "g3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                -0.08,
+                -0.99
+              ],
+              "d": 4.8
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 12,
+            "pos": [
+              -0.5,
+              13.6,
+              25.3
+            ],
+            "target": "g4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.49,
+                0.12,
+                -0.86
+              ],
+              "d": 13.6
+            },
+            "keys": [
+              "Space",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 14,
+            "pos": [
+              -2.5,
+              15,
+              19.7
+            ],
+            "target": "g4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.11,
+                0.03,
+                -0.99
+              ],
+              "d": 7.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 16,
+            "pos": [
+              -7.3,
+              15.4,
+              10.8
+            ],
+            "target": "g5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.13,
+                -0.45,
+                -0.89
+              ],
+              "d": 14.8
+            },
+            "keys": [
+              "KeyQ",
+              "ShiftLeft",
+              "KeyW"
+            ]
+          },
+          {
+            "s": 18,
+            "pos": [
+              -14.1,
+              11.3,
+              14.7
+            ],
+            "target": "g5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                -0.42,
+                -0.9
+              ],
+              "d": 6
+            },
+            "keys": [
+              "ShiftLeft",
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 20,
+            "pos": [
+              -21.1,
+              9.2,
+              18.7
+            ],
+            "target": "g6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.07,
+                0.19,
+                -0.98
+              ],
+              "d": 16.5
+            },
+            "keys": [
+              "KeyE",
+              "Space",
+              "KeyW"
+            ]
+          },
+          {
+            "s": 22,
+            "pos": [
+              -19,
+              12.2,
+              12
+            ],
+            "target": "g6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.16,
+                0.02,
+                -0.99
+              ],
+              "d": 9.2
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 24,
+            "pos": [
+              -16.7,
+              12.8,
+              2.1
+            ],
+            "target": "g7",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.97,
+                0.24,
+                -0.01
+              ],
+              "d": 13.5
+            },
+            "keys": [
+              "KeyE",
+              "Space"
+            ]
+          },
+          {
+            "s": 26,
+            "pos": [
+              -15.1,
+              15.9,
+              0.5
+            ],
+            "target": "g7",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.34,
+                0.01,
+                -0.94
+              ],
+              "d": 11.2
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 28,
+            "pos": [
+              -5.4,
+              15.9,
+              -2.4
+            ],
+            "target": "g7",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.13,
+                -0.94
+              ],
+              "d": 1.1
+            },
+            "keys": [
+              "KeyW",
+              "KeyE",
+              "Space"
+            ]
+          },
+          {
+            "s": 31,
+            "pos": [
+              4,
+              14.2,
+              -4.8
+            ],
+            "target": "g8",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.04,
+                -0.36,
+                -0.93
+              ],
+              "d": 6.1
+            },
+            "keys": [
+              "KeyW",
+              "ShiftLeft"
+            ]
+          },
+          {
+            "s": 33,
+            "pos": [
+              12.7,
+              11.1,
+              -7.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.18,
+                0.06,
+                -0.98
+              ],
+              "d": 13.4
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 35,
+            "pos": [
+              12.4,
+              11.2,
+              -9.2
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.22,
+                0.07,
+                -0.97
+              ],
+              "d": 11.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 37,
+            "pos": [
+              12.9,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.15,
+                0.07,
+                -0.99
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 39,
+            "pos": [
+              13.5,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 41,
+            "pos": [
+              13.5,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 43,
+            "pos": [
+              13.5,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 45,
+            "pos": [
+              12.9,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.02,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 47,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.2,
+                0.07,
+                -0.98
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 49,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 51,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.15,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 53,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.05,
+                0.07,
+                -1
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 55,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.21,
+                0.07,
+                -0.97
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 57,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.29,
+                0.07,
+                -0.95
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 59,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.08,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 61,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.19,
+                0.07,
+                -0.98
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 63,
+            "pos": [
+              12.9,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.11,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 65,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.35,
+                0.07,
+                -0.94
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 67,
+            "pos": [
+              13,
+              11.3,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.15,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 69,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.21,
+                0.07,
+                -0.98
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 71,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 73,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.11,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 75,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.47,
+                0.07,
+                -0.88
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 77,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.05,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 80,
+            "pos": [
+              13.3,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.24,
+                0.07,
+                -0.97
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 82,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.28,
+                0.07,
+                -0.96
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 84,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.35,
+                0.07,
+                -0.93
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 86,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 88,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 90,
+            "pos": [
+              13.3,
+              11.2,
+              -9.9
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.7
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 92,
+            "pos": [
+              13.2,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 94,
+            "pos": [
+              13.3,
+              11.2,
+              -9.9
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.11,
+                0.07,
+                -0.99
+              ],
+              "d": 10.7
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 96,
+            "pos": [
+              13.2,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.18,
+                0.07,
+                -0.98
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 98,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 100,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 102,
+            "pos": [
+              13.2,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 104,
+            "pos": [
+              12.9,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.33,
+                0.07,
+                -0.94
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 106,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.22,
+                0.07,
+                -0.97
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 108,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.29,
+                0.07,
+                -0.95
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 110,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.25,
+                0.07,
+                -0.97
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 112,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.18,
+                0.07,
+                -0.98
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 114,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 116,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 118,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.17,
+                0.07,
+                -0.98
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 120,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 122,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.06,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 124,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 126,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 128,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 131,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 133,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 135,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 137,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 139,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 141,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 143,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 145,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 147,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 149,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 151,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 153,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 155,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 157,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 159,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 161,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 163,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 165,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 167,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 169,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 171,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 173,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 175,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 178,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 180,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 182,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 184,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 186,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 188,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 190,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 192,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 194,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 196,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 198,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 200,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 202,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 204,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 206,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 208,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 210,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 212,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 214,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 216,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 218,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 220,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 222,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 224,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 226,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 228,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 230,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 232,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 234,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 236,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 238,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "R10 course: its end does not say \"that was the last lesson\" (review SN-3)",
+      "pass": true,
+      "value": {
+        "phase": "flying",
+        "target": "g9",
+        "stages": 8,
+        "lastLesson": false,
+        "lines": [
+          "sonic.say.courseMaking",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "sonic.say.lessonKeys",
+          "fly.stage",
+          "status.recording-off"
+        ],
+        "spoken": [
+          "sonic.say.courseMaking",
+          "lesson.scan-free.title",
+          "sonic.say.lessonKeys",
+          "lesson.free-garden.intro.2",
+          "sonic.say.courseReady",
+          "lesson.free-garden.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "fly.stage",
+          "status.progress",
+          "status.recording-off",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage",
+          "fly.stage"
+        ],
+        "events": [
+          "gate:",
+          "gate:",
+          "gate:",
+          "gate:",
+          "gate:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:",
+          "touch:"
+        ],
+        "trail": [
+          {
+            "s": 0,
+            "pos": [
+              7.2,
+              9.2,
+              -3.9
+            ],
+            "target": "g2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.08,
+                0.14,
+                -0.99
+              ],
+              "d": 26.9
+            },
+            "keys": [
+              "KeyW",
+              "Space"
+            ]
+          },
+          {
+            "s": 2,
+            "pos": [
+              10.2,
+              11.8,
+              2.4
+            ],
+            "target": "g2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.1,
+                0.05,
+                -0.99
+              ],
+              "d": 19.7
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 4,
+            "pos": [
+              14.4,
+              12.3,
+              11.9
+            ],
+            "target": "g2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.12,
+                0.05,
+                -0.99
+              ],
+              "d": 9.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 6,
+            "pos": [
+              17,
+              12.9,
+              21.5
+            ],
+            "target": "g3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.98,
+                -0.06,
+                -0.2
+              ],
+              "d": 15.1
+            },
+            "keys": [
+              "KeyE"
+            ]
+          },
+          {
+            "s": 8,
+            "pos": [
+              15.2,
+              12.3,
+              23.4
+            ],
+            "target": "g3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.28,
+                -0.02,
+                -0.96
+              ],
+              "d": 12.9
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 10,
+            "pos": [
+              7.2,
+              12.4,
+              24.5
+            ],
+            "target": "g3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                -0.08,
+                -0.99
+              ],
+              "d": 4.8
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 12,
+            "pos": [
+              -0.5,
+              13.6,
+              25.3
+            ],
+            "target": "g4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.49,
+                0.12,
+                -0.86
+              ],
+              "d": 13.6
+            },
+            "keys": [
+              "Space",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 14,
+            "pos": [
+              -2.5,
+              15,
+              19.7
+            ],
+            "target": "g4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.11,
+                0.03,
+                -0.99
+              ],
+              "d": 7.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 16,
+            "pos": [
+              -7.3,
+              15.4,
+              10.8
+            ],
+            "target": "g5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.13,
+                -0.45,
+                -0.89
+              ],
+              "d": 14.8
+            },
+            "keys": [
+              "KeyQ",
+              "ShiftLeft",
+              "KeyW"
+            ]
+          },
+          {
+            "s": 18,
+            "pos": [
+              -14.1,
+              11.3,
+              14.7
+            ],
+            "target": "g5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                -0.42,
+                -0.9
+              ],
+              "d": 6
+            },
+            "keys": [
+              "ShiftLeft",
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 20,
+            "pos": [
+              -21.1,
+              9.2,
+              18.7
+            ],
+            "target": "g6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.07,
+                0.19,
+                -0.98
+              ],
+              "d": 16.5
+            },
+            "keys": [
+              "KeyE",
+              "Space",
+              "KeyW"
+            ]
+          },
+          {
+            "s": 22,
+            "pos": [
+              -19,
+              12.2,
+              12
+            ],
+            "target": "g6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.16,
+                0.02,
+                -0.99
+              ],
+              "d": 9.2
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 24,
+            "pos": [
+              -16.7,
+              12.8,
+              2.1
+            ],
+            "target": "g7",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.97,
+                0.24,
+                -0.01
+              ],
+              "d": 13.5
+            },
+            "keys": [
+              "KeyE",
+              "Space"
+            ]
+          },
+          {
+            "s": 26,
+            "pos": [
+              -15.1,
+              15.9,
+              0.5
+            ],
+            "target": "g7",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.34,
+                0.01,
+                -0.94
+              ],
+              "d": 11.2
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 28,
+            "pos": [
+              -5.4,
+              15.9,
+              -2.4
+            ],
+            "target": "g7",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.13,
+                -0.94
+              ],
+              "d": 1.1
+            },
+            "keys": [
+              "KeyW",
+              "KeyE",
+              "Space"
+            ]
+          },
+          {
+            "s": 31,
+            "pos": [
+              4,
+              14.2,
+              -4.8
+            ],
+            "target": "g8",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.04,
+                -0.36,
+                -0.93
+              ],
+              "d": 6.1
+            },
+            "keys": [
+              "KeyW",
+              "ShiftLeft"
+            ]
+          },
+          {
+            "s": 33,
+            "pos": [
+              12.7,
+              11.1,
+              -7.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.18,
+                0.06,
+                -0.98
+              ],
+              "d": 13.4
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 35,
+            "pos": [
+              12.4,
+              11.2,
+              -9.2
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.22,
+                0.07,
+                -0.97
+              ],
+              "d": 11.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 37,
+            "pos": [
+              12.9,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.15,
+                0.07,
+                -0.99
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 39,
+            "pos": [
+              13.5,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 41,
+            "pos": [
+              13.5,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 43,
+            "pos": [
+              13.5,
+              11.2,
+              -9.3
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 11.3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 45,
+            "pos": [
+              12.9,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.02,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 47,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.2,
+                0.07,
+                -0.98
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 49,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 51,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.15,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 53,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.05,
+                0.07,
+                -1
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 55,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.21,
+                0.07,
+                -0.97
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 57,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.29,
+                0.07,
+                -0.95
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 59,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.08,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 61,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.19,
+                0.07,
+                -0.98
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 63,
+            "pos": [
+              12.9,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.11,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 65,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.35,
+                0.07,
+                -0.94
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 67,
+            "pos": [
+              13,
+              11.3,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.15,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 69,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.21,
+                0.07,
+                -0.98
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 71,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 73,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.11,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 75,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.47,
+                0.07,
+                -0.88
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 77,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.05,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 80,
+            "pos": [
+              13.3,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.24,
+                0.07,
+                -0.97
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 82,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.28,
+                0.07,
+                -0.96
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 84,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.35,
+                0.07,
+                -0.93
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 86,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 88,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 90,
+            "pos": [
+              13.3,
+              11.2,
+              -9.9
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.7
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 92,
+            "pos": [
+              13.2,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 94,
+            "pos": [
+              13.3,
+              11.2,
+              -9.9
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.11,
+                0.07,
+                -0.99
+              ],
+              "d": 10.7
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 96,
+            "pos": [
+              13.2,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.18,
+                0.07,
+                -0.98
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 98,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 100,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.34,
+                0.07,
+                -0.94
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 102,
+            "pos": [
+              13.2,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 104,
+            "pos": [
+              12.9,
+              11.2,
+              -10
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.33,
+                0.07,
+                -0.94
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 106,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.22,
+                0.07,
+                -0.97
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 108,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.29,
+                0.07,
+                -0.95
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 110,
+            "pos": [
+              12.9,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.25,
+                0.07,
+                -0.97
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 112,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.18,
+                0.07,
+                -0.98
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 114,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.31,
+                0.07,
+                -0.95
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 116,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 118,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.17,
+                0.07,
+                -0.98
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 120,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.27,
+                0.07,
+                -0.96
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 122,
+            "pos": [
+              13.1,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.06,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 124,
+            "pos": [
+              13,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0,
+                0.07,
+                -1
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 126,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 128,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 131,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 133,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 135,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 137,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 139,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 141,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 143,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 145,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 147,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 149,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 151,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 153,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 155,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 157,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 159,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 161,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 163,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 165,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 167,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 169,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 171,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 173,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 175,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 178,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 180,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 182,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 184,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 186,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 188,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 190,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 192,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 194,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 196,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 198,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 200,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 202,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 204,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 206,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 208,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 210,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 212,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 214,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 216,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 218,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 220,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 222,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 224,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 226,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 228,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 230,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 232,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 234,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 236,
+            "pos": [
+              13.3,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.1,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 238,
+            "pos": [
+              13.2,
+              11.2,
+              -10.1
+            ],
+            "target": "g9",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.09,
+                0.07,
+                -0.99
+              ],
+              "d": 10.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r10link": "/en/fly/?sonic=scan&scene=887f27aa&sz=1",
+    "r10first": [
+      "sonic-start-beginning",
+      "sonic-start-scan-flier"
+    ],
+    "r10experienced": [
+      "sonic-start-scan",
+      "sonic-start-beginning"
+    ],
+    "r10free": {
+      "lesson": "scan-free",
+      "phase": "flying",
+      "walls": {
+        "voxelM": 0.05,
+        "builtin": false,
+        "scene": "887f27aa",
+        "scale": 1
+      },
+      "motor": false,
+      "target": null
+    },
+    "r10cues": [
+      "height.tone",
+      "room.bed",
+      "safety.wall:front"
+    ],
+    "r10course": {
+      "target": {
+        "id": "g1",
+        "pos": [
+          11.2,
+          8.4,
+          7.8
+        ]
+      },
+      "lines": [
+        "sonic.say.courseMaking",
+        "sonic.say.courseReady",
+        "lesson.free-garden.goal.1",
+        "sonic.say.lessonKeys"
+      ],
+      "spoken": [
+        "sonic.say.courseMaking",
+        "lesson.scan-free.title",
+        "sonic.say.lessonKeys",
+        "lesson.free-garden.intro.2",
+        "sonic.say.courseReady",
+        "lesson.free-garden.goal.1"
+      ]
+    },
+    "r10gate1": {
+      "from": "g1",
+      "now": "g2",
+      "phase": "flying",
+      "spokenTail": [
+        "lesson.free-garden.intro.2",
+        "sonic.say.courseReady",
+        "lesson.free-garden.goal.1",
+        "fly.go",
+        "sonic.say.lessonKeys",
+        "fly.stage"
+      ],
+      "gateNote": true,
+      "trail": [
+        {
+          "s": 0,
+          "pos": [
+            0,
+            2,
+            0.2
+          ],
+          "target": "g1",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.17,
+              0.43,
+              -0.89
+            ],
+            "d": 15
+          },
+          "keys": []
+        },
+        {
+          "s": 2,
+          "pos": [
+            5.4,
+            5.6,
+            3.8
+          ],
+          "target": "g1",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.19,
+              0.37,
+              -0.91
+            ],
+            "d": 7.6
+          },
+          "keys": [
+            "KeyW",
+            "Space",
+            "KeyQ"
+          ]
+        }
+      ]
+    },
+    "r10back": {
+      "cues": [
+        "target.hum",
+        "height.tone",
+        "height.target",
+        "room.bed",
+        "safety.wall:back",
+        "safety.obstacle:right",
+        "safety.obstacle:front-right",
+        "safety.floor:right",
+        "safety.wall:right",
+        "safety.ceiling:left",
+        "safety.floor:left",
+        "safety.wall:left"
+      ],
+      "spoken": []
+    },
+    "r10where": [
+      "status.progress",
+      "status.recording-off"
+    ],
+    "r10end": {
+      "phase": "flying",
+      "target": "g9",
+      "stages": 8,
+      "lastLesson": false,
+      "lines": [
+        "sonic.say.courseMaking",
+        "sonic.say.courseReady",
+        "lesson.free-garden.goal.1",
+        "sonic.say.lessonKeys",
+        "fly.stage",
+        "status.recording-off"
+      ],
+      "spoken": [
+        "sonic.say.courseMaking",
+        "lesson.scan-free.title",
+        "sonic.say.lessonKeys",
+        "lesson.free-garden.intro.2",
+        "sonic.say.courseReady",
+        "lesson.free-garden.goal.1",
+        "fly.go",
+        "sonic.say.lessonKeys",
+        "fly.stage",
+        "status.progress",
+        "status.recording-off",
+        "fly.stage",
+        "fly.stage",
+        "fly.stage",
+        "fly.stage",
+        "fly.stage",
+        "fly.stage",
+        "fly.stage"
+      ],
+      "events": [
+        "gate:",
+        "gate:",
+        "gate:",
+        "gate:",
+        "gate:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:",
+        "touch:"
+      ],
+      "trail": [
+        {
+          "s": 0,
+          "pos": [
+            7.2,
+            9.2,
+            -3.9
+          ],
+          "target": "g2",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.08,
+              0.14,
+              -0.99
+            ],
+            "d": 26.9
+          },
+          "keys": [
+            "KeyW",
+            "Space"
+          ]
+        },
+        {
+          "s": 2,
+          "pos": [
+            10.2,
+            11.8,
+            2.4
+          ],
+          "target": "g2",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.1,
+              0.05,
+              -0.99
+            ],
+            "d": 19.7
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 4,
+          "pos": [
+            14.4,
+            12.3,
+            11.9
+          ],
+          "target": "g2",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.12,
+              0.05,
+              -0.99
+            ],
+            "d": 9.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 6,
+          "pos": [
+            17,
+            12.9,
+            21.5
+          ],
+          "target": "g3",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.98,
+              -0.06,
+              -0.2
+            ],
+            "d": 15.1
+          },
+          "keys": [
+            "KeyE"
+          ]
+        },
+        {
+          "s": 8,
+          "pos": [
+            15.2,
+            12.3,
+            23.4
+          ],
+          "target": "g3",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.28,
+              -0.02,
+              -0.96
+            ],
+            "d": 12.9
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 10,
+          "pos": [
+            7.2,
+            12.4,
+            24.5
+          ],
+          "target": "g3",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              -0.08,
+              -0.99
+            ],
+            "d": 4.8
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 12,
+          "pos": [
+            -0.5,
+            13.6,
+            25.3
+          ],
+          "target": "g4",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.49,
+              0.12,
+              -0.86
+            ],
+            "d": 13.6
+          },
+          "keys": [
+            "Space",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 14,
+          "pos": [
+            -2.5,
+            15,
+            19.7
+          ],
+          "target": "g4",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.11,
+              0.03,
+              -0.99
+            ],
+            "d": 7.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 16,
+          "pos": [
+            -7.3,
+            15.4,
+            10.8
+          ],
+          "target": "g5",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.13,
+              -0.45,
+              -0.89
+            ],
+            "d": 14.8
+          },
+          "keys": [
+            "KeyQ",
+            "ShiftLeft",
+            "KeyW"
+          ]
+        },
+        {
+          "s": 18,
+          "pos": [
+            -14.1,
+            11.3,
+            14.7
+          ],
+          "target": "g5",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              -0.42,
+              -0.9
+            ],
+            "d": 6
+          },
+          "keys": [
+            "ShiftLeft",
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 20,
+          "pos": [
+            -21.1,
+            9.2,
+            18.7
+          ],
+          "target": "g6",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.07,
+              0.19,
+              -0.98
+            ],
+            "d": 16.5
+          },
+          "keys": [
+            "KeyE",
+            "Space",
+            "KeyW"
+          ]
+        },
+        {
+          "s": 22,
+          "pos": [
+            -19,
+            12.2,
+            12
+          ],
+          "target": "g6",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.16,
+              0.02,
+              -0.99
+            ],
+            "d": 9.2
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 24,
+          "pos": [
+            -16.7,
+            12.8,
+            2.1
+          ],
+          "target": "g7",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.97,
+              0.24,
+              -0.01
+            ],
+            "d": 13.5
+          },
+          "keys": [
+            "KeyE",
+            "Space"
+          ]
+        },
+        {
+          "s": 26,
+          "pos": [
+            -15.1,
+            15.9,
+            0.5
+          ],
+          "target": "g7",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.34,
+              0.01,
+              -0.94
+            ],
+            "d": 11.2
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 28,
+          "pos": [
+            -5.4,
+            15.9,
+            -2.4
+          ],
+          "target": "g7",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.31,
+              0.13,
+              -0.94
+            ],
+            "d": 1.1
+          },
+          "keys": [
+            "KeyW",
+            "KeyE",
+            "Space"
+          ]
+        },
+        {
+          "s": 31,
+          "pos": [
+            4,
+            14.2,
+            -4.8
+          ],
+          "target": "g8",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.04,
+              -0.36,
+              -0.93
+            ],
+            "d": 6.1
+          },
+          "keys": [
+            "KeyW",
+            "ShiftLeft"
+          ]
+        },
+        {
+          "s": 33,
+          "pos": [
+            12.7,
+            11.1,
+            -7.3
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.18,
+              0.06,
+              -0.98
+            ],
+            "d": 13.4
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 35,
+          "pos": [
+            12.4,
+            11.2,
+            -9.2
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.22,
+              0.07,
+              -0.97
+            ],
+            "d": 11.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 37,
+          "pos": [
+            12.9,
+            11.2,
+            -9.3
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.15,
+              0.07,
+              -0.99
+            ],
+            "d": 11.3
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 39,
+          "pos": [
+            13.5,
+            11.2,
+            -9.3
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.34,
+              0.07,
+              -0.94
+            ],
+            "d": 11.3
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 41,
+          "pos": [
+            13.5,
+            11.2,
+            -9.3
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.27,
+              0.07,
+              -0.96
+            ],
+            "d": 11.3
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 43,
+          "pos": [
+            13.5,
+            11.2,
+            -9.3
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.34,
+              0.07,
+              -0.94
+            ],
+            "d": 11.3
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 45,
+          "pos": [
+            12.9,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.02,
+              0.07,
+              -1
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 47,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.2,
+              0.07,
+              -0.98
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 49,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.31,
+              0.07,
+              -0.95
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 51,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.15,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 53,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.05,
+              0.07,
+              -1
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 55,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.21,
+              0.07,
+              -0.97
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 57,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.29,
+              0.07,
+              -0.95
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 59,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.08,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 61,
+          "pos": [
+            12.9,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.19,
+              0.07,
+              -0.98
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 63,
+          "pos": [
+            12.9,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.11,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 65,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.35,
+              0.07,
+              -0.94
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 67,
+          "pos": [
+            13,
+            11.3,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.15,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 69,
+          "pos": [
+            13,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.21,
+              0.07,
+              -0.98
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 71,
+          "pos": [
+            12.9,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.34,
+              0.07,
+              -0.94
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 73,
+          "pos": [
+            12.9,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.11,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 75,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.47,
+              0.07,
+              -0.88
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 77,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.05,
+              0.07,
+              -1
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 80,
+          "pos": [
+            13.3,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.24,
+              0.07,
+              -0.97
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 82,
+          "pos": [
+            13,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.28,
+              0.07,
+              -0.96
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 84,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.35,
+              0.07,
+              -0.93
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 86,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.34,
+              0.07,
+              -0.94
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 88,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.27,
+              0.07,
+              -0.96
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 90,
+          "pos": [
+            13.3,
+            11.2,
+            -9.9
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.31,
+              0.07,
+              -0.95
+            ],
+            "d": 10.7
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 92,
+          "pos": [
+            13.2,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.27,
+              0.07,
+              -0.96
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 94,
+          "pos": [
+            13.3,
+            11.2,
+            -9.9
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.11,
+              0.07,
+              -0.99
+            ],
+            "d": 10.7
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 96,
+          "pos": [
+            13.2,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.18,
+              0.07,
+              -0.98
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 98,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.27,
+              0.07,
+              -0.96
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 100,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.34,
+              0.07,
+              -0.94
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 102,
+          "pos": [
+            13.2,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.31,
+              0.07,
+              -0.95
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 104,
+          "pos": [
+            12.9,
+            11.2,
+            -10
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.33,
+              0.07,
+              -0.94
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 106,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.22,
+              0.07,
+              -0.97
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 108,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.29,
+              0.07,
+              -0.95
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 110,
+          "pos": [
+            12.9,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.25,
+              0.07,
+              -0.97
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 112,
+          "pos": [
+            13,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.18,
+              0.07,
+              -0.98
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 114,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.31,
+              0.07,
+              -0.95
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 116,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 118,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.17,
+              0.07,
+              -0.98
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 120,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.27,
+              0.07,
+              -0.96
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW",
+            "KeyQ"
+          ]
+        },
+        {
+          "s": 122,
+          "pos": [
+            13.1,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0.06,
+              0.07,
+              -1
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW",
+            "KeyE"
+          ]
+        },
+        {
+          "s": 124,
+          "pos": [
+            13,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              0,
+              0.07,
+              -1
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 126,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 128,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 131,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 133,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 135,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 137,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 139,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 141,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 143,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 145,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 147,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 149,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 151,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 153,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 155,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 157,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 159,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 161,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 163,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 165,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 167,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 169,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 171,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 173,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 175,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 178,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 180,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 182,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 184,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 186,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 188,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 190,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 192,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 194,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 196,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 198,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 200,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 202,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 204,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 206,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 208,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 210,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 212,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 214,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 216,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 218,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.6
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 220,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 222,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 224,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 226,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 228,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 230,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 232,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 234,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 236,
+          "pos": [
+            13.3,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.1,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        },
+        {
+          "s": 238,
+          "pos": [
+            13.2,
+            11.2,
+            -10.1
+          ],
+          "target": "g9",
+          "phase": "flying",
+          "attempt": 1,
+          "hum": {
+            "dir": [
+              -0.09,
+              0.07,
+              -0.99
+            ],
+            "d": 10.5
+          },
+          "keys": [
+            "KeyW"
+          ]
+        }
+      ]
+    }
+  },
+  "problems": []
+}
