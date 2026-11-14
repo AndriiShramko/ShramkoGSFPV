@@ -27,9 +27,13 @@ created: 2026-11-14
 - [~] All probes: one detached script U:/Temp/gsfpv-train2/train2b/run-all.sh on the release of 4cf7b013 (port 5760),
   one line per probe in U:/Temp/gsfpv-train2/train2b/logs/summary.txt, evidence evidence/2026-11-14/train2b/.
 - [x] deploy/live-checks.sh gains walls-published-probe (4cf7b013). Not run.
-- [ ] Left for the next worker: (1) gates.py --only vitest on an idle PC (exit 0 needed); (2) when summary.txt says
-  'done', fill Probes from it, LOOK at U:/Temp/gsfpv-train2/shots/walls-chain-1920.png and walls-chain-844.png, commit
-  the evidence JSON (never PNG); (3) git push origin main (plain) and verify with git fetch that origin/main = HEAD.
+- [x] Looked at walls-chain-1920.png and walls-chain-844.png (Probes).
+- [ ] Left for the next worker: (1) when summary.txt says 'done' (r9, rooms-two-page, rc2, connect, mouse-free, centre,
+  fast-radio, wizard, hid still running at 03:10), copy it to logs/summary-full.txt, fill Probes from it, commit the
+  evidence JSON under evidence/2026-11-14/train2b/ (never PNG); (2) then rebuild at HEAD and re-probe the walls chain:
+  'ONLY=walls bash U:/Temp/gsfpv-train2/train2b/run-all.sh' (overwrites summary.txt, so copy it first), expect
+  ab5efa0e pass after a8a686d0, LOOK at walls-chain-1920.png again; (3) gates.py --only vitest on an idle PC (exit 0);
+  (4) git push origin main (plain), confirm with git fetch that origin/main = HEAD.
 
 ## Merged
 
@@ -86,7 +90,17 @@ walls in dist/walls: ab5efa0e, 70b50d42, 9baef54b (153,900,630 bytes); d10c5638 
 - walls-published-probe 70b50d42,ab5efa0e,9baef54b with d10c5638 unpublished: exit 0.
 - Helper download bytes: the build has no start-dji-helper.cmd nor rc_bridge.py in dist (find found none), so the
   bytes check had nothing to compare; the page's links point at the public repository (wave 1 note).
-- The rest: running, see Status. Order: walls-chain (ab5efa0e 1920x1080, 70b50d42 844x390), walls-published,
+- Looked at walls-chain-844.png (Wroclaw: 24 gates drawn, "Gates: 24. Fly through gate 1", clock 0:00.00, walls 5 cm)
+  and walls-chain-1920.png (Forest Floor seen from outside, offer "Refine walls to 1.6 cm", no course): match the JSON.
+  The Forest Floor cause is fixed in a8a686d0 (Status); the page result after the fix is not yet probed.
+- accept-fly B6 B7 B9-B16: exit 0.
+- tracks-page: exit 1, 45 PASS, 1 FAIL: hintClearOfTimer row pl 1366x768 had gen false (no course within the probe's
+  90 s, the PC loaded by this run and by tracks2's detached tracks-audit runs), so no hint to measure; the other 11 rows
+  clear (noteH 31-50). Counted as load, not layout. Shots U:/Temp/gsfpv-train2/shots/train2b/tracks/look-course-*.png.
+- sonic-int-review r10 (a course by sound): exit 1, 13 of 14. Before this wave it stalled at gate 4; now the hum led
+  through 8 stages to target g9 but the course was not flown to its end within the probe's time (phase flying).
+  evidence/2026-11-14/sonic-int-review-r10-t2b-r10.json (moved to train2b/ when the script ends).
+- The rest: running at 03:10, see Status. Order: walls-chain (ab5efa0e 1920x1080, 70b50d42 844x390), walls-published,
   accept-fly B6-B16, tracks-page, sonic-int-review r10 then r9, rooms-two-page, rc2-probe usb,refused,bridge,bridge-lna
   with the replay helper on 5771 (the owner's helper holds 47310, pid 38364, not touched), connect-probe, mouse-free,
   centre-throttle all, fast-radio, wizard-auto-check, hid-source-probe.
@@ -171,3 +185,6 @@ nothing). The script was not run.
 - 2026-11-14 integration: the most turns went to two seams found only by the full gates (a static import that pulled
   the sound package into the main chunk, API tests without a lap); running sonic-int-lazy and the API tests in each lane
   after merging origin/main would have found them earlier. Running the race probe before the gates saved a rebuild.
+- 2026-11-14 integration pass 2: the most turns went to waiting for the long probe script in 10-minute blocks; the
+  Forest Floor cause took 6 turns and was cheap once the probe's own note ("nothing fits" at 0.27 s) was read. Giving
+  the audit the page's real spawn (the CDN camera of the scene's own version) would have found it in lane tracks2.
