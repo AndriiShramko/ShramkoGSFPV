@@ -822,7 +822,7 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
     let prev = { pos: p.pos, t: Date.now() };
     let speed = 0;
     // a stall: W held and the craft moved under 0.3 m in 3 s (estimates); the pilot climbs, then side-steps, as the ear pilot dodges
-    let stallFrom = { pos: p.pos, t: Date.now() };
+    let stallFrom: { pos: [number, number, number]; t: number; dir: [number, number, number] | undefined } = { pos: p.pos, t: Date.now(), dir: undefined };
     let side = 1;
     for (const t0 = Date.now(); !done(p) && Date.now() - t0 < ms; ) {
         const v = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir as [number, number, number] | undefined;
@@ -831,7 +831,10 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         await hold('KeyW', ahead && (speedMps === undefined || speed < speedMps));
         if (held.has('KeyW') && stats) stats.speeds.push(speed);
         if (stats && p.target && stats.targets[stats.targets.length - 1] !== p.target.id) stats.targets.push(p.target.id);
-        if (!ahead || Math.hypot(p.pos[0] - stallFrom.pos[0], p.pos[2] - stallFrom.pos[2]) > 0.3) stallFrom = { pos: p.pos, t: Date.now() };
+        // a stall is the craft not moving AND the hum not turning (Z5 Wroclaw 5 m/s: Shift held with E froze the turn for 270 s
+        // on a ledge 2 m above gate 10; the hum stayed at the same side the whole time)
+        const turned = v !== undefined && stallFrom.dir !== undefined && v[0] * stallFrom.dir[0] + v[2] * stallFrom.dir[2] < 0.995;
+        if (Math.hypot(p.pos[0] - stallFrom.pos[0], p.pos[2] - stallFrom.pos[2]) > 0.3 || turned) stallFrom = { pos: p.pos, t: Date.now(), dir: v };
         else if (Date.now() - stallFrom.t > 3000) {
             if (stats) stats.dodges++;
             for (const c of [...held]) await hold(c, false);
@@ -843,13 +846,15 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
             await hold(code, true);
             await sleep(900);
             await hold(code, false);
-            stallFrom = { pos: (await probe10(page)).pos, t: Date.now() };
+            stallFrom = { pos: (await probe10(page)).pos, t: Date.now(), dir: undefined };
         }
+        const turning = v !== undefined && Math.abs(v[0]) > 0.12;
         await hold('KeyE', v !== undefined && v[0] > 0.12);
         await hold('KeyQ', v !== undefined && v[0] < -0.12);
         // height by the hum's slope: 0.08 (an estimate) is about 0.5 m at 6 m; at 0.2 the pilot of run 4 flew 1 m under gate 2 into an obstacle for 230 s
-        await hold('Space', v !== undefined && v[1] > 0.08);
-        await hold('ShiftLeft', v !== undefined && v[1] < -0.08);
+        // turn first, then the height: the keyboard reads Shift held with a letter as a chord, so Shift+E did not turn (Z5 Wroclaw)
+        await hold('Space', !turning && v !== undefined && v[1] > 0.08);
+        await hold('ShiftLeft', !turning && v !== undefined && v[1] < -0.08);
         await sleep(60);
         p = await probe10(page);
         const now = Date.now();
