@@ -4,28 +4,32 @@ A pilot generates a course of gates in a scan (apps/fly/src/course, @gsfpv/track
 course goes here, and every pilot who opens that scene can load it. Pilots have no accounts, so a stored course is only
 "a valid file": the server cannot see the walls, every client re-checks a course on its own walls before it shows it.
 
-Routes (wired in server.py):
-  GET  /api/tracks?scene=<hex 6-32>  -> {v: 1, tracks: [{id, version, title, gates, lengthM, created}]} newest first, ETag/304,
-                                        max-age 30
-  GET  /api/tracks/<id>/v<n>          -> the file, immutable, ETag
-  POST /api/tracks                    -> 201 {id, version} (body at most 64 KB, a TrackFile of the contract below)
+Routes (wired in server.py; the admin's in tracks_admin.py; the contract table is docs/tracks-api.md):
+  GET  /api/tracks?scene=<hex>&sort=top|new&page=n -> {v: 1, sort, page, pages, tracks: [rows]}, ETag/304, max-age 30
+  GET  /api/tracks/<id>/v<n>          -> the file of a version, immutable, ETag
+  POST /api/tracks                    -> 201 {id, version: 1, editToken} a new course or a fork (body `parent` = the source)
+  POST /api/tracks/<id>/versions      -> 201 {id, version} a new version, header X-Track-Token
+  POST /api/tracks/<id>/vote          -> 200 {id, v, up, down, rating}
+  POST /api/tracks/<id>/broken        -> 200 {id, broken}
 
-Storage: DATA_DIR/tracks/<sceneId>/<trackId>/v1.json and DATA_DIR/tracks/<sceneId>/index.json (the list rows; rebuilt from the
-files when it is lost or unreadable). Every file is written whole or not at all (a temporary file, fsync, os.replace, fsync
-of the directory) before the 201. The id is the server's: <sceneId>-<8 hex>, so a file is found without a search; the body's
-id and created are replaced.
+Storage: see TrackStore. Every file is written whole or not at all (a temporary file, fsync, os.replace, fsync of the
+directory) before the answer. The id is the server's: <sceneId>-<8 hex>; the body's id, version, parent and created are
+replaced by the server's.
 
-The contract (plan section 7): format shramko-sonic-track/1, the validator of the sound package
-(packages/sonic-fpv/src/track/validate.ts) ported key for key, and on top: author.kind 'generator', generator.name
-'gsfpv-course', title ^Course [0-9a-z-]{1,24}$, scene.kind 'scan', scene.id hex 6-32, version 1 without a parent (train 1
-stores no versions), 1-200 gates, unknown keys refused. The TS twin is validateServerTrack (packages/tracks/src/server.ts);
-the two are held together by the shared fixtures apps/api/tests/fixtures/tracks/{valid,invalid}-*.json.
+The contract (plan section 7, tracks-plan 2.6 and 2.8): format shramko-sonic-track/1, the validator of the sound package
+(packages/sonic-fpv/src/track/validate.ts) ported key for key, and on top: scene.kind 'scan', scene.id hex 6-32, 1-60 gates
+at most 20 m across, unknown keys refused; author.kind 'generator' (generator.name 'gsfpv-course', title ^Course
+[0-9a-z-]{1,24}$, no parent) or 'person' (the name the pilot typed, 2-32 characters, and a title of 3-60, both plain text:
+_text). Authorship marks (created by, edited by, kind generator, pilot or admin) live in the track's meta, not in the /1 file.
+The TS twin is validateServerTrack (packages/tracks/src/server.ts); the two are held together by the shared fixtures
+apps/api/tests/fixtures/tracks/{valid,invalid}-*.json.
 
 Stdlib only, the style of sessions.py.
 """
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import math
 import os
@@ -34,6 +38,7 @@ import secrets
 import shutil
 import threading
 import time
+import unicodedata
 from pathlib import Path
 from typing import Callable
 
@@ -44,7 +49,13 @@ LIMITS = {
     "body_bytes": 64 * 1024,          # POST body, also nginx client_max_body_size 64k
     "creates_per_client_hour": 10,    # server.py _rate(_trhits, client, ...)
     "creates_all_hour": 300,          # server.py _rate(_all_hits, "tracks-create", ...): every client together (as report, share)
-    "tracks_per_scene": 20,           # the 21st replaces the oldest of the scene (lane review TR-6)
+    "tracks_per_scene": 300,          # visible ones; the oldest unrated is hidden first (tracks-plan 2.8, lane review TR-6)
+    "versions_per_track": 50,         # 409 after that; the admin may delete old versions
+    "versions_per_client_hour": 30,   # server.py _rate(_trvhits, ...) (tracks-plan 2.8)
+    "votes_per_client_hour": 60,      # server.py _rate(_trvhits, "vote:" + client, ...)
+    "reports_per_client_hour": 30,    # POST .../broken
+    "broken_hide_clients": 3,         # distinct clients with the same walls digest leave a course out of sort=top
+    "page_size": 20,                  # rows a list page holds
     "list_max_age_s": 30,             # Cache-Control of the list
     "min_free_bytes": 1 * 1000 ** 3,  # below this the store refuses writes with 507 (server.py passes MIN_FREE_GB)
 }
@@ -61,6 +72,21 @@ TITLE = re.compile(r"Course [0-9a-z-]{1,24}")
 ISO_8601 = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})")
 CONTROL = re.compile(r"[\u0000-\u001f]")
 
+AUTHOR_KINDS = ("generator", "person")   # 'agent' of the format is not taken from the public; the admin's mark lives in meta
+# tracks-plan 2.8, ESTIMATES (not measured): the generator makes at most 24 gates (generate.ts gatesMax), 60 leaves room for
+# hand-added ones; a gate wider than 20 m is no gate in any scan the site serves.
+SERVER_MAX_GATES = 60
+MAX_GATE_SIZE_M = 20.0
+# lane review TK-8, ESTIMATE (not measured): address -> voter bindings kept per course (the oldest dropped past it)
+VOTE_ADDR_CAP = 5000
+# stage K2, ESTIMATES (not measured): the shortest and the longest lap a vote may carry, ms. Review T2-5: any completed
+# lap counts (a 0.3-scale course of fitCourse, legs 0.9-4.5 m, can be lapped in under 1 s), so the floor is 1 ms
+LAP_MIN_MS = 1
+LAP_MAX_MS = 3_600_000
+NAME_LEN, NAME_EXTRA = (2, 32), " -_.'"
+TITLE_LEN, TITLE_EXTRA = (3, 60), " -_.',!?#()+:&"
+# a short blocklist (tracks-plan 2.8: "the admin hides the rest"); the same words in packages/tracks/src/server.ts
+BLOCKLIST = ("fuck", "cunt", "nigger", "faggot", "porn", "viagra", "casino", "kurwa", "pierdol", "huj", "pizd", "blyat")
 TOP_KEYS = ("format", "id", "version", "parent", "title", "scene", "transform", "gates", "laps", "start", "author", "generator", "created")
 GATE_KINDS = ("ring", "square", "cube-frame")
 
@@ -68,7 +94,7 @@ GATE_KINDS = ("ring", "square", "cube-frame")
 class TrackError(Exception):
     """A refusal with its HTTP status and a stable code."""
 
-    def __init__(self, status: int, code: str, **extra):
+    def __init__(self, status: int, code: str, **extra) -> None:
         super().__init__(f"{status} {code}")
         self.status, self.code, self.extra = status, code, extra
 
@@ -94,7 +120,8 @@ def _is_num(v) -> bool:
 MAX_COORD = 10000.0     # |x|, |y|, |z| of a gate or the start, in scan units
 MAX_LEG_M = 60.0        # one leg between two gates (and the leg back on a closed course), in flown m (times transform[0])
 # generator.params: the keys the generator writes (packages/tracks/src/generate.ts), flat values, and the one proof object
-PARAM_KEYS = ("marginM", "cellM", "freeDigest", "wanted", "rooms", "volumeM3", "tries", "walked", "stop", "closed", "proof")
+# scale, legMinM and legMaxM: a smaller course of fitCourse (lane tracks2 K1.2, review T2-2)
+PARAM_KEYS = ("marginM", "cellM", "freeDigest", "wanted", "rooms", "volumeM3", "tries", "walked", "stop", "closed", "proof", "scale", "legMinM", "legMaxM")
 PROOF_KEYS = ("ok", "marginM", "pathM")
 PARAM_TEXT_MAX = 40
 
@@ -222,10 +249,14 @@ def validate_track(obj) -> list[tuple[str, str]]:
     version = c.number(root.get("version"), "version", 1, 9999, integer=True) if "version" in root else None
 
     parent = root.get("parent", "missing")
+    p = None
     if parent is not None and parent != "missing":
         p = _ref(c, parent, "parent")
         if p is not None and version == 1 and tid is not None and p[0] == tid:
             c.add("parent", "version 1 cannot have a parent in the same track")
+    # the format's succession (validate.ts): a later version names the version before it in the same track
+    if _is_num(version) and float(version).is_integer() and version > 1 and tid is not None and parent != "missing" and p != (tid, version - 1):
+        c.add("parent", f"version {int(version)} must have the parent {tid} version {int(version) - 1}")
 
     title = c.string(root.get("title"), "title", 1, 120) if "title" in root else None
     if title is not None and CONTROL.search(title):
@@ -298,9 +329,6 @@ def validate_track(obj) -> list[tuple[str, str]]:
             name = c.string(a.get("name"), "author.name", 1, 80) if "name" in a else None
             if name is not None and CONTROL.search(name):
                 c.add("author.name", "must not contain control characters")
-            # lane review TR-14 f: no free text from one pilot is served to everyone
-            if isinstance(a.get("name"), str) and a.get("name") != GENERATOR_NAME:
-                c.add("author.name", f"must be '{GENERATOR_NAME}'")
 
     gen_name = None
     if "generator" in root and root["generator"] is not None:
@@ -322,26 +350,61 @@ def validate_track(obj) -> list[tuple[str, str]]:
         if created is not None and not _iso_ok(created):
             c.add("created", "must be an ISO 8601 date and time with a zone")
 
-    # the contract of server tracks (plan section 7), on top of the format
-    if version is not None and version != 1:
-        c.add("version", "must be 1: the server keeps no versions yet")
-    if "parent" in root and root["parent"] is not None:
-        c.add("parent", "must be null on the server")
-    if title is not None and not TITLE.fullmatch(title):
-        c.add("title", f"must match {TITLE.pattern}")
+    # the contract of server tracks (plan section 7, tracks-plan 2.6 and 2.8), on top of the format. The server replaces
+    # id, version, parent and created with its own (the route says which version a body becomes), so the body's version is
+    # only held to the format; a generated course never names a parent, a pilot's edit or fork may.
     if scene is not None:
         if scene[0] is not None and scene[0] != "scan":
             c.add("scene.kind", "must be 'scan'")
         if scene[1] is not None and not SCENE_ID.fullmatch(scene[1]):
             c.add("scene.id", "must be 6-32 lowercase hex digits")
-    if "author" in root and isinstance(root["author"], dict) and author is not None and author != "generator":
-        c.add("author.kind", "must be 'generator'")
-    if "generator" in root and root["generator"] is None:
-        c.add("generator", "must name the generator")
+    a = root.get("author") if isinstance(root.get("author"), dict) else None
+    if a is not None and author is not None and author not in AUTHOR_KINDS:
+        c.add("author.kind", "must be 'generator' or 'person'")
+    if author == "generator":
+        if version == 1 and "parent" in root and root["parent"] is not None:
+            c.add("parent", "must be null for a generated course (it is no fork)")
+        if title is not None and not TITLE.fullmatch(title):
+            c.add("title", f"must match {TITLE.pattern}")
+        # lane review TR-14 f: no free text from one pilot is served to everyone under the generator's name
+        if isinstance(a.get("name"), str) and a.get("name") != GENERATOR_NAME:
+            c.add("author.name", f"must be '{GENERATOR_NAME}'")
+        if "generator" in root and root["generator"] is None:
+            c.add("generator", "must name the generator")
+    elif author == "person":
+        # R6: the name the pilot typed, and the pilot's own title (tracks-plan 2.8); no other personal data exists here
+        if not isinstance(a.get("name"), str):
+            c.add("author.name", "a pilot's course must carry the name the pilot typed")
+        else:
+            _text(c, "author.name", a["name"], NAME_LEN, NAME_EXTRA)
+        if title is not None:
+            _text(c, "title", title, TITLE_LEN, TITLE_EXTRA)
     if gen_name is not None and gen_name != GENERATOR_NAME:
         c.add("generator.name", f"must be '{GENERATOR_NAME}'")
+    if isinstance(root.get("gates"), list) and len(root["gates"]) > SERVER_MAX_GATES:
+        c.add("gates", f"must hold at most {SERVER_MAX_GATES} gates on the server")
     _bounds(c, root)
     return c.issues
+
+
+def _text(c: _Collector, path: str, s: str, length: tuple[int, int], extra: str) -> None:
+    """A text one pilot types and every pilot reads (tracks-plan 2.8): NFC, letters, marks, digits and a few signs, no web
+    address, no double or edge spaces, not on the short blocklist. The TS twin is textIssues in packages/tracks/src/server.ts."""
+    if unicodedata.normalize("NFC", s) != s:
+        c.add(path, "must be in Unicode NFC")
+        return
+    n = _js_len(s)
+    if n < length[0] or n > length[1]:
+        c.add(path, f"must have {length[0]}-{length[1]} characters")
+    if s != s.strip(" ") or "  " in s:
+        c.add(path, "must not start or end with a space or hold two spaces together")
+    low = s.lower()
+    if "://" in low or "www." in low:
+        c.add(path, "must not hold a web address")
+    if any(not (unicodedata.category(ch)[0] in "LMN" or ch in extra) for ch in s):
+        c.add(path, f"may hold only letters, digits and the signs {extra!r}")
+    if any(w in low for w in BLOCKLIST):
+        c.add(path, "holds a word that is not allowed")
 
 
 def _flat(v) -> bool:
@@ -367,6 +430,11 @@ def _bounds(c: _Collector, root: dict) -> None:
     gates = root.get("gates") if isinstance(root.get("gates"), list) else []
     pts = []
     for i, g in enumerate(gates):
+        shape = g.get("shape") if isinstance(g, dict) else None
+        if isinstance(shape, dict):   # tracks-plan 2.8: a gate is 0.05-20 m across on the server (the format allows 100)
+            big = shape.get("diameter", shape.get("side"))
+            if _is_num(big) and big > MAX_GATE_SIZE_M:
+                c.add(f"gates[{i}].shape", f"must be at most {MAX_GATE_SIZE_M:g} m across on the server")
         pos = g.get("pos") if isinstance(g, dict) else None
         if isinstance(pos, list) and len(pos) == 3 and all(_is_num(x) for x in pos):
             if any(abs(x) > MAX_COORD for x in pos):
@@ -455,17 +523,48 @@ def _etag(data: bytes) -> str:
     return '"' + hashlib.sha256(data).hexdigest()[:32] + '"'
 
 
+def wilson(up: int, down: int, z: float = 1.96) -> float:
+    """Lower bound of the Wilson interval of up/(up+down) at 95 % (tracks-plan 2.9); 0 without votes."""
+    n = up + down
+    if n <= 0:
+        return 0.0
+    p = up / n
+    return (p + z * z / (2 * n) - z * math.sqrt((p * (1 - p) + z * z / (4 * n)) / n)) / (1 + z * z / n)
+
+
+def _now_iso(t: float) -> str:
+    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t))
+
+
+def _mark(author: dict | None, admin: bool = False) -> dict:
+    """The authorship mark of a version (tracks-plan 2.6): kind generator, pilot or admin, and only the name the pilot typed."""
+    if admin:
+        return {"kind": "admin", "name": None}
+    if isinstance(author, dict) and author.get("kind") == "person":
+        return {"kind": "pilot", "name": author.get("name")}
+    return {"kind": "generator", "name": None}
+
+
+VOTER = re.compile(r"[0-9a-f]{32}")      # the browser's random 128-bit voter id, as hex
+WALLS_DIGEST = re.compile(r"[0-9a-f]{16,64}")
+
+
 class TrackStore:
-    """The courses on disk. root() is DATA_DIR (read at each call, as the server's tests swap it)."""
+    """The courses on disk. root() is DATA_DIR (read at each call, as the server's tests swap it).
+
+    DATA_DIR/tracks/<scene>/<id>/v<n>.json  the versions (immutable once written)
+    DATA_DIR/tracks/<scene>/<id>/meta.json  authorship, token hash, hidden, votes, broken reports
+    DATA_DIR/tracks/<scene>/index.json      {v: 2, tracks: [rows]} incl. hidden ones; rebuilt from the meta files when lost
+    A train-1 course (v1.json without meta.json) is read as a generated course without an edit token."""
 
     def __init__(self, root: Callable[[], Path], free_bytes: Callable[[], int] | None = None, min_free_bytes: Callable[[], int] | None = None,
-                 now: Callable[[], float] = time.time, limits: dict | None = None):
+                 now: Callable[[], float] = time.time, limits: dict | None = None) -> None:
         self.root = root
         self.free_bytes = free_bytes or (lambda: self._disk_free())
         self.min_free_bytes = min_free_bytes or (lambda: LIMITS["min_free_bytes"])
         self.now = now
         self.limits = {**LIMITS, **(limits or {})}
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
 
     def _dir(self) -> Path:
         return Path(self.root()) / "tracks"
@@ -477,69 +576,156 @@ class TrackStore:
         except OSError:
             return 0
 
+    def _salt(self) -> bytes:
+        """The key of the voter and address hashes (made once, kept on the volume; no raw id or address is stored)."""
+        f = self._dir() / "salt.bin"
+        try:
+            k = f.read_bytes()
+            if len(k) == 32:
+                return k
+        except OSError:
+            pass
+        f.parent.mkdir(parents=True, exist_ok=True)
+        k = secrets.token_bytes(32)
+        _write_bytes(f, k)
+        return k
+
+    def _hash(self, kind: str, value: str) -> str:
+        return hmac.new(self._salt(), f"{kind}:{value}".encode(), hashlib.sha256).hexdigest()[:32]
+
+    # -- one track
+    def _tdir(self, tid: str) -> Path:
+        m = SERVER_ID.fullmatch(tid or "")
+        if not m:
+            raise TrackError(404, "not-found")
+        return self._dir() / m.group(1) / tid
+
+    def _meta(self, tid: str) -> dict:
+        """The track's meta; a train-1 dir with only v1.json is read as a generated course without a token."""
+        d = self._tdir(tid)
+        try:
+            meta = json.loads((d / "meta.json").read_bytes())
+            if isinstance(meta, dict) and meta.get("id") == tid and meta.get("versions"):
+                return meta
+        except (OSError, ValueError):
+            pass
+        try:
+            t = json.loads((d / "v1.json").read_bytes())
+        except (OSError, ValueError):
+            raise TrackError(404, "not-found") from None
+        mark = _mark(t.get("author"))
+        return {"id": tid, "scene": tid.rsplit("-", 1)[0], "created": t.get("created"), "tokenSha256": None, "hidden": False,
+                "creator": mark, "origin": None, "parent": None, "versions": [{"n": 1, "created": t.get("created"), "editor": mark, **_summary(t)}],
+                "voters": {}, "addr": {}, "day": "", "broken": {}}
+
+    def _put(self, meta: dict) -> dict:
+        """Write the meta and the track's row in the scene's index."""
+        d = self._tdir(meta["id"])
+        _write_bytes(d / "meta.json", _compact(meta))
+        row = _row(meta)
+        self._index(meta["scene"], [r for r in self.rows(meta["scene"], hidden=True) if r["id"] != meta["id"]] + [row])
+        return row
+
+    def _index(self, scene: str, rows: list[dict]) -> None:
+        rows.sort(key=lambda r: (r["created"], r["id"]), reverse=True)
+        _write_bytes(self._dir() / scene / "index.json", _compact({"v": 2, "tracks": rows}))
+
+    def _drop_row(self, scene: str, tid: str) -> None:
+        self._index(scene, [r for r in self.rows(scene, hidden=True) if r["id"] != tid])
+
+    def _visible(self, meta: dict) -> dict:
+        if meta.get("hidden"):
+            raise TrackError(404, "not-found")
+        return meta
+
     # -- rows
     def _rows_from_files(self, scene: str) -> list[dict]:
         rows = []
         sdir = self._dir() / scene
         if not sdir.is_dir():
             return rows
-        for f in sdir.glob("*/v1.json"):
-            try:
-                t = json.loads(f.read_bytes())
-                rows.append(self._row(t))
-            except (OSError, ValueError, KeyError, TypeError):
-                continue
-        rows.sort(key=lambda r: (r["created"], r["id"]), reverse=True)
+        for d in sdir.iterdir():
+            if d.is_dir() and SERVER_ID.fullmatch(d.name):
+                try:
+                    rows.append(_row(self._meta(d.name)))
+                except (TrackError, KeyError, TypeError, ValueError):
+                    continue
         return rows
 
-    @staticmethod
-    def _row(t: dict) -> dict:
-        return {"id": t["id"], "version": t["version"], "title": t["title"], "gates": len(t["gates"]), "lengthM": path_length_m(t), "created": t["created"]}
-
-    def rows(self, scene: str) -> list[dict]:
-        """The scene's rows, newest first; the index is rebuilt from the files when it is lost or unreadable."""
+    def rows(self, scene: str, hidden: bool = False) -> list[dict]:
+        """The scene's rows (newest first); the index is rebuilt from the files when it is lost, unreadable or of train 1."""
         idx = self._dir() / scene / "index.json"
+        rows = None
         try:
             data = json.loads(idx.read_bytes())
-            if isinstance(data, dict) and isinstance(data.get("tracks"), list):
-                return [r for r in data["tracks"] if _row_ok(r)]
+            if isinstance(data, dict) and data.get("v") == 2 and isinstance(data.get("tracks"), list):
+                rows = [r for r in data["tracks"] if _row_ok(r)]
         except (OSError, ValueError):
             pass
-        rows = [r for r in self._rows_from_files(scene) if _row_ok(r)]
-        if rows:
-            try:
-                _write_bytes(idx, _compact({"v": 1, "tracks": rows}))
-            except (OSError, ValueError):
-                pass
-        return rows
+        if rows is None:
+            rows = [r for r in self._rows_from_files(scene) if _row_ok(r)]
+            if rows:
+                try:
+                    _write_bytes(idx, _compact({"v": 2, "tracks": rows}))
+                except (OSError, ValueError):
+                    pass
+        rows.sort(key=lambda r: (r["created"], r["id"]), reverse=True)
+        return rows if hidden else [r for r in rows if not r.get("hidden")]
 
-    # -- routes
-    def list(self, scene: str, if_none_match: str | None) -> tuple[int, bytes, list]:
+    def scenes(self) -> list[dict]:
+        out = []
+        if self._dir().is_dir():
+            for d in sorted(self._dir().iterdir()):
+                if d.is_dir() and SCENE_ID.fullmatch(d.name):
+                    rows = self.rows(d.name, hidden=True)
+                    out.append({"scene": d.name, "tracks": len(rows), "hidden": sum(1 for r in rows if r.get("hidden"))})
+        return out
+
+    def ordered(self, scene: str, sort: str) -> list[dict]:
+        """sort=top: Wilson lower bound, ties by newer, courses with broken reports from enough clients left out; new: created."""
+        rows = self.rows(scene)
+        if sort == "new":
+            return rows
+        cut = self.limits["broken_hide_clients"]
+        rows = [r for r in rows if r.get("broken", 0) < cut]
+        return sorted(rows, key=lambda r: (-wilson(r.get("up", 0), r.get("down", 0)), _neg(r["created"]), _neg(r["id"])))
+
+    # -- public routes
+    def list(self, scene: str, if_none_match: str | None, sort: str = "top", page: int = 1) -> tuple[int, bytes, list]:
         if not SCENE_ID.fullmatch(scene or ""):
             raise TrackError(400, "bad-scene")
-        body = _compact({"v": 1, "tracks": self.rows(scene)})
+        if sort not in ("top", "new"):
+            raise TrackError(400, "bad-sort")
+        if not 1 <= page <= 1000:
+            raise TrackError(400, "bad-page")
+        rows = self.ordered(scene, sort)
+        size = self.limits["page_size"]
+        body = _compact({"v": 1, "sort": sort, "page": page, "pages": max(1, -(-len(rows) // size)),
+                         "tracks": [_public(r) for r in rows[(page - 1) * size: page * size]]})
         tag = _etag(body)
         headers = [("Content-Type", "application/json"), ("Cache-Control", f"public, max-age={self.limits['list_max_age_s']}"), ("ETag", tag)]
         if if_none_match and tag in [x.strip() for x in if_none_match.split(",")]:
             return 304, b"", headers
         return 200, body, headers
 
-    def file(self, track_id: str, n: int, if_none_match: str | None) -> tuple[int, bytes, list]:
-        m = SERVER_ID.fullmatch(track_id or "")
-        if not m or n != 1:
+    def file(self, track_id: str, n: int, if_none_match: str | None, admin: bool = False) -> tuple[int, bytes, list]:
+        meta = self._meta(track_id)
+        if not admin:
+            self._visible(meta)
+        if n not in [v["n"] for v in meta["versions"]]:
             raise TrackError(404, "not-found")
         try:
-            data = (self._dir() / m.group(1) / track_id / "v1.json").read_bytes()
+            data = (self._tdir(track_id) / f"v{n}.json").read_bytes()
         except OSError:
             raise TrackError(404, "not-found") from None
         tag = _etag(data)
-        headers = [("Content-Type", "application/json"), ("Cache-Control", "public, max-age=31536000, immutable"), ("ETag", tag)]
+        cache = "no-store" if admin else "public, max-age=31536000, immutable"
+        headers = [("Content-Type", "application/json"), ("Cache-Control", cache), ("ETag", tag)]
         if if_none_match and tag in [x.strip() for x in if_none_match.split(",")]:
             return 304, b"", headers
         return 200, data, headers
 
-    def create(self, raw: bytes) -> dict:
-        """Validate, give the course the server's id and time, store it and its row; 201 {id, version}."""
+    def _parse(self, raw: bytes) -> dict:
         if len(raw) > self.limits["body_bytes"]:
             raise TrackError(413, "too-large")
         obj, issues = parse_track(raw)
@@ -547,33 +733,215 @@ class TrackStore:
             raise TrackError(400, "invalid", issues=[f"{p}: {m}" if p else m for p, m in issues[:8]])
         if self.free_bytes() < self.min_free_bytes():
             raise TrackError(507, "disk-full")
+        return obj
+
+    def _write_version(self, obj: dict, tid: str, n: int, parent: dict | None) -> dict:
+        """Give the body the server's id, version, parent and time; write v<n>.json; the version's summary."""
+        obj["id"], obj["version"], obj["parent"], obj["created"] = tid, n, parent, _now_iso(self.now())
+        # compact, and never more than the body was allowed to be (lane review TR-1: indent multiplied a nested body)
+        data = _compact(obj, sort_keys=True)
+        if len(data) > self.limits["body_bytes"]:
+            raise TrackError(413, "too-large")
+        s = _summary(obj)
+        if not _is_num(s["lengthM"]):
+            raise TrackError(400, "invalid", issues=["gates: the length of the course is not a finite number"])
+        d = self._tdir(tid)
+        d.mkdir(parents=True, exist_ok=True)
+        _write_bytes(d / f"v{n}.json", data + b"\n")
+        return {"n": n, "created": obj["created"], **s}
+
+    def create(self, raw: bytes) -> dict:
+        """A new course (v1) or a fork of another one (v1 with `parent` = the source's id and version): 201 {id, version,
+        editToken}. The token is answered once; only its sha256 is kept. A fork keeps the source's origin (created by)."""
+        obj = self._parse(raw)
         scene = obj["scene"]["id"]
+        # lane review TK-11 a: a generated course never has a parent, at any version the body names
+        if obj.get("parent") is not None and isinstance(obj.get("author"), dict) and obj["author"].get("kind") == "generator":
+            raise TrackError(400, "bad-parent")
         with self.lock:
-            rows = self.rows(scene)
+            origin = parent = None
+            if obj.get("parent") is not None:
+                try:
+                    src = self._meta(obj["parent"]["id"])
+                except TrackError:
+                    src = None
+                if src is None or src.get("hidden") or src["scene"] != scene or obj["parent"]["version"] not in [v["n"] for v in src["versions"]]:
+                    raise TrackError(400, "bad-parent")
+                parent = {"id": src["id"], "version": obj["parent"]["version"]}
+                origin = src.get("origin") or {"id": src["id"], "version": src["versions"][0]["n"], "creator": src["creator"]}
             tid = f"{scene}-{secrets.token_hex(4)}"
-            obj["id"] = tid
-            obj["version"] = 1
-            obj["parent"] = None
-            obj["created"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.now()))
-            # compact, and never more than the body was allowed to be (lane review TR-1: indent multiplied a nested body)
-            data = _compact(obj, sort_keys=True)
-            if len(data) > self.limits["body_bytes"]:
-                raise TrackError(413, "too-large")
-            row = self._row(obj)
-            if not _row_ok(row):
-                raise TrackError(400, "invalid", issues=["gates: the length of the course is not a finite number"])
-            # a full scene drops its oldest course (lane review TR-6: a refusal for ever made "Save for everyone" dead there)
-            keep = self.limits["tracks_per_scene"] - 1
-            dropped, rows = rows[keep:], rows[:keep]
-            tdir = self._dir() / scene / tid
-            tdir.mkdir(parents=True, exist_ok=False)
-            _write_bytes(tdir / "v1.json", data + b"\n")
-            rows = [row] + rows
-            _write_bytes(self._dir() / scene / "index.json", _compact({"v": 1, "tracks": rows}))
-            for old in dropped:
-                if isinstance(old.get("id"), str) and SERVER_ID.fullmatch(old["id"]):
-                    shutil.rmtree(self._dir() / scene / old["id"], ignore_errors=True)
-        return {"id": tid, "version": 1}
+            while self._tdir(tid).exists():
+                tid = f"{scene}-{secrets.token_hex(4)}"
+            token = secrets.token_urlsafe(24)
+            mark = _mark(obj.get("author"))
+            ver = self._write_version(obj, tid, 1, parent)
+            meta = {"id": tid, "scene": scene, "created": ver["created"], "tokenSha256": hashlib.sha256(token.encode()).hexdigest(),
+                    "hidden": False, "creator": mark, "origin": origin, "parent": parent, "versions": [{**ver, "editor": mark}],
+                    "voters": {}, "addr": {}, "day": "", "broken": {}}
+            self._put(meta)
+            self._cap(scene)
+        return {"id": tid, "version": 1, "editToken": token}
+
+    def _cap(self, scene: str) -> None:
+        """At most tracks_per_scene visible courses a scene: the oldest unrated one is hidden first, then the lowest rated
+        (tracks-plan 2.8; lane review TR-6: a refusal for ever made "Save for everyone" dead in a full scene)."""
+        rows = self.rows(scene)
+        over = len(rows) - self.limits["tracks_per_scene"]
+        if over <= 0:
+            return
+        victims = sorted(rows, key=lambda r: (r.get("up", 0) + r.get("down", 0) > 0, wilson(r.get("up", 0), r.get("down", 0)), r["created"]))[:over]
+        for r in victims:
+            meta = self._meta(r["id"])
+            meta["hidden"] = "cap"
+            self._put(meta)
+
+    def add_version(self, tid: str, token: str | None, raw: bytes, admin: bool = False) -> dict:
+        """A new version of a course: the owner's token (X-Track-Token) or the admin. 201 {id, version}."""
+        with self.lock:
+            meta = self._meta(tid)
+            if not admin:
+                self._visible(meta)
+                want = meta.get("tokenSha256")
+                got = hashlib.sha256((token or "").encode()).hexdigest()
+                if not token or not isinstance(want, str) or not hmac.compare_digest(want, got):
+                    raise TrackError(403, "token")
+            obj = self._parse(raw)
+            if obj["scene"]["id"] != meta["scene"]:
+                raise TrackError(400, "scene-mismatch")
+            if len(meta["versions"]) >= self.limits["versions_per_track"]:
+                raise TrackError(409, "too-many-versions")
+            # a number is never given twice (a file once served is cached as immutable), and the parent is the number before
+            # it, as the format's succession wants, even when the admin deleted that version
+            n = max([meta.get("top", 0)] + [v["n"] for v in meta["versions"]]) + 1
+            ver = self._write_version(obj, tid, n, {"id": tid, "version": n - 1})
+            meta["top"] = n
+            meta["versions"].append({**ver, "editor": _mark(obj.get("author"), admin)})
+            self._put(meta)
+        return {"id": tid, "version": ver["n"]}
+
+    def vote(self, tid: str, raw: bytes, client: str) -> dict:
+        """{v: 1|-1|0, voter}: one vote per voter id per course (a new one replaces it, 0 takes it back) and at most one voter
+        per client address per course per day (tracks-plan 2.9). Only keyed hashes of both are kept."""
+        body = _small(raw)
+        v, voter = body.get("v"), body.get("voter")
+        if v not in (1, -1, 0) or isinstance(v, bool) or not isinstance(voter, str) or not VOTER.fullmatch(voter):
+            raise TrackError(400, "bad-vote")
+        # stage K2 (tracks-plan 2.9): an up or down vote carries the pilot's completed lap of the course, in ms; taking a vote
+        # back (0) does not. The page sends its best lap (course/editor/rules.ts lapOf); a vote without one is refused.
+        lap = body.get("lap")
+        if v != 0 and (not isinstance(lap, int) or isinstance(lap, bool) or not LAP_MIN_MS <= lap <= LAP_MAX_MS):
+            raise TrackError(403, "lap-first")
+        with self.lock:
+            meta = self._visible(self._meta(tid))
+            vh, ah = self._hash("voter", voter), self._hash("addr", f"{tid}:{client}")
+            # lane review TK-8: the address's voter is kept for the life of the course (it was cleared each UTC day, so one
+            # address added one vote a day with a fresh voter id); the newest VOTE_ADDR_CAP bindings are kept
+            addr = meta.setdefault("addr", {})
+            if addr.get(ah, vh) != vh:
+                raise TrackError(429, "address-voted")
+            addr.pop(ah, None)
+            addr[ah] = vh
+            while len(addr) > VOTE_ADDR_CAP:
+                addr.pop(next(iter(addr)))
+            if v == 0:
+                meta["voters"].pop(vh, None)
+            else:
+                meta["voters"][vh] = v
+            row = self._put(meta)
+        return {"id": tid, "v": v, "up": row["up"], "down": row["down"], "rating": round(wilson(row["up"], row["down"]), 4)}
+
+    def broken(self, tid: str, raw: bytes, client: str) -> dict:
+        """{gate, wallsDigest}: a client's own check of the course failed on these walls (tracks-plan 2.8; the server side of
+        lane review TR-13/TR-8). Distinct client addresses are counted per walls digest; enough of them leave the course out
+        of sort=top until the admin looks."""
+        body = _small(raw)
+        gate, digest = body.get("gate"), body.get("wallsDigest")
+        if not isinstance(gate, int) or isinstance(gate, bool) or not 0 <= gate < SERVER_MAX_GATES \
+                or not isinstance(digest, str) or not WALLS_DIGEST.fullmatch(digest):
+            raise TrackError(400, "bad-report")
+        with self.lock:
+            meta = self._visible(self._meta(tid))
+            seen = meta["broken"].setdefault(digest, [])
+            ah = self._hash("addr", f"{tid}:{client}")
+            if ah not in seen and len(seen) < 50:
+                seen.append(ah)
+            while len(meta["broken"]) > 20:   # the oldest digest goes (dicts keep their insertion order)
+                meta["broken"].pop(next(iter(meta["broken"])))
+            row = self._put(meta)
+        return {"id": tid, "broken": row["broken"]}
+
+    # -- the admin's actions (tracks_admin.py)
+    def set_hidden(self, tid: str, hidden: bool) -> dict:
+        with self.lock:
+            meta = self._meta(tid)
+            meta["hidden"] = bool(hidden)
+            return self._put(meta)
+
+    def reset(self, tid: str, what: str) -> dict:
+        with self.lock:
+            meta = self._meta(tid)
+            if what == "votes":
+                meta["voters"], meta["addr"] = {}, {}
+            else:
+                meta["broken"] = {}
+            return self._put(meta)
+
+    def delete(self, tid: str, n: int | None = None) -> dict:
+        """Delete one version (n) or the whole course; the last version going takes the course with it."""
+        with self.lock:
+            meta = self._meta(tid)
+            if n is not None:
+                if n not in [v["n"] for v in meta["versions"]]:
+                    raise TrackError(404, "not-found")
+                if len(meta["versions"]) > 1:
+                    meta["versions"] = [v for v in meta["versions"] if v["n"] != n]
+                    (self._tdir(tid) / f"v{n}.json").unlink(missing_ok=True)
+                    return {"deleted": "version", "row": self._put(meta)}
+            shutil.rmtree(self._tdir(tid), ignore_errors=True)
+            self._drop_row(meta["scene"], tid)
+            return {"deleted": "track"}
+
+
+def _neg(s: str) -> tuple:
+    return tuple(-ord(ch) for ch in s)
+
+
+def _small(raw: bytes) -> dict:
+    if len(raw) > 1024:
+        raise TrackError(413, "too-large")
+    try:
+        v = json.loads(raw.decode("utf-8"), parse_constant=_reject_constant)
+    except (UnicodeDecodeError, ValueError, RecursionError):
+        raise TrackError(400, "bad-json") from None
+    if not isinstance(v, dict):
+        raise TrackError(400, "bad-json")
+    return v
+
+
+def _summary(t: dict) -> dict:
+    return {"title": t["title"], "gates": len(t["gates"]), "lengthM": path_length_m(t)}
+
+
+def _row(meta: dict) -> dict:
+    """The index row of a course (all of it; _public cuts what every pilot sees). created by = the origin's creator for a
+    fork, else the first version's; edited by = the latest version's author when the course is a fork or a later version."""
+    first, last = meta["versions"][0], meta["versions"][-1]
+    origin = meta.get("origin")
+    edited = origin is not None or last["n"] > 1
+    up = sum(1 for x in meta.get("voters", {}).values() if x == 1)
+    down = sum(1 for x in meta.get("voters", {}).values() if x == -1)
+    return {"id": meta["id"], "version": last["n"], "versions": [v["n"] for v in meta["versions"]], "title": last["title"],
+            "gates": last["gates"], "lengthM": last["lengthM"], "created": first["created"], "edited": last["created"] if edited else None,
+            "creator": origin["creator"] if origin else meta["creator"], "editor": last["editor"] if edited else None,
+            "parent": meta.get("parent"), "origin": {"id": origin["id"], "version": origin["version"]} if origin else None,
+            "up": up, "down": down, "broken": max((len(x) for x in meta.get("broken", {}).values()), default=0),
+            "hidden": meta.get("hidden") or False, "editable": bool(meta.get("tokenSha256"))}
+
+
+def _public(r: dict) -> dict:
+    out = {k: r[k] for k in ("id", "version", "title", "gates", "lengthM", "created", "edited", "creator", "editor", "parent", "origin", "up", "down", "broken")}
+    out["rating"] = round(wilson(r["up"], r["down"]), 4)
+    return out
 
 
 def _compact(obj, sort_keys: bool = False) -> bytes:
@@ -583,4 +951,5 @@ def _compact(obj, sort_keys: bool = False) -> bytes:
 
 def _row_ok(r) -> bool:
     """A list row a client can read: its length is a finite number (lane review TR-2: one Infinity broke a scene's list)."""
-    return isinstance(r, dict) and isinstance(r.get("id"), str) and _is_num(r.get("lengthM")) and isinstance(r.get("gates"), int)
+    return isinstance(r, dict) and isinstance(r.get("id"), str) and _is_num(r.get("lengthM")) and isinstance(r.get("gates"), int) \
+        and isinstance(r.get("created"), str)

@@ -1,0 +1,351 @@
+{
+  "base": "http://localhost:5760/en",
+  "scene": "887f27aa",
+  "visual": true,
+  "sizes": {
+    "844": {
+      "flight": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 383,
+            "top": 142,
+            "right": 461,
+            "bottom": 239
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        },
+        "menu": null,
+        "note": "Gates: 10. Fly through gate 1 to start the clock. Shift+T hides the course"
+      },
+      "paused": {
+        "hud": {
+          "hidden": false,
+          "covered": true,
+          "display": "none",
+          "laidOut": false,
+          "box": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        },
+        "menu": {
+          "laidOut": true,
+          "box": {
+            "left": 16,
+            "top": 90,
+            "right": 828,
+            "bottom": 378
+          }
+        },
+        "note": "Gates: 10. Fly through gate 1 to start the clock. Shift+T hides the course"
+      },
+      "control": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 383,
+            "top": 142,
+            "right": 461,
+            "bottom": 239
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        },
+        "menu": {
+          "laidOut": true,
+          "box": {
+            "left": 16,
+            "top": 90,
+            "right": 828,
+            "bottom": 378
+          }
+        },
+        "note": ""
+      },
+      "after": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 383,
+            "top": 142,
+            "right": 461,
+            "bottom": 239
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        },
+        "menu": null,
+        "note": ""
+      }
+    },
+    "1920": {
+      "flight": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 921,
+            "top": 120,
+            "right": 999,
+            "bottom": 217
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        },
+        "menu": null,
+        "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course"
+      },
+      "paused": {
+        "hud": {
+          "hidden": false,
+          "covered": true,
+          "display": "none",
+          "laidOut": false,
+          "box": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        },
+        "menu": {
+          "laidOut": true,
+          "box": {
+            "left": 360,
+            "top": 90,
+            "right": 1560,
+            "bottom": 1068
+          }
+        },
+        "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course"
+      },
+      "control": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 921,
+            "top": 120,
+            "right": 999,
+            "bottom": 217
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        },
+        "menu": {
+          "laidOut": true,
+          "box": {
+            "left": 360,
+            "top": 90,
+            "right": 1560,
+            "bottom": 1068
+          }
+        },
+        "note": ""
+      },
+      "after": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 921,
+            "top": 120,
+            "right": 999,
+            "bottom": 217
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        },
+        "menu": null,
+        "note": ""
+      }
+    }
+  },
+  "plainG": {
+    "before": "This is for a radio or a gamepad. Touch and the keyboard already fly without arming (the motors start by themselves).",
+    "after": "This is for a radio or a gamepad. Touch and the keyboard already fly without arming (the motors start by themselves)."
+  },
+  "errors": [],
+  "checks": [
+    {
+      "name": "1920: shownInFlight",
+      "pass": true,
+      "value": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 921,
+            "top": 120,
+            "right": 999,
+            "bottom": 217
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        },
+        "menu": null
+      }
+    },
+    {
+      "name": "1920: hiddenUnderMenu",
+      "pass": true,
+      "value": {
+        "hud": {
+          "hidden": false,
+          "covered": true,
+          "display": "none",
+          "laidOut": false,
+          "box": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        },
+        "menu": {
+          "left": 360,
+          "top": 90,
+          "right": 1560,
+          "bottom": 1068
+        }
+      }
+    },
+    {
+      "name": "1920: control (class off: the block is drawn again and crosses the menu's box)",
+      "pass": true,
+      "value": {
+        "hud": {
+          "left": 921,
+          "top": 120,
+          "right": 999,
+          "bottom": 217
+        },
+        "menu": {
+          "left": 360,
+          "top": 90,
+          "right": 1560,
+          "bottom": 1068
+        }
+      }
+    },
+    {
+      "name": "1920: backAfterMenu",
+      "pass": true,
+      "value": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 921,
+            "top": 120,
+            "right": 999,
+            "bottom": 217
+          },
+          "text": "0:00.00Lap 1 of 3\nGate 1 of 24\nLast -\nBest -"
+        }
+      }
+    },
+    {
+      "name": "844: shownInFlight",
+      "pass": true,
+      "value": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 383,
+            "top": 142,
+            "right": 461,
+            "bottom": 239
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        },
+        "menu": null
+      }
+    },
+    {
+      "name": "844: hiddenUnderMenu",
+      "pass": true,
+      "value": {
+        "hud": {
+          "hidden": false,
+          "covered": true,
+          "display": "none",
+          "laidOut": false,
+          "box": {
+            "left": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        },
+        "menu": {
+          "left": 16,
+          "top": 90,
+          "right": 828,
+          "bottom": 378
+        }
+      }
+    },
+    {
+      "name": "844: control (class off: the block is drawn again and crosses the menu's box)",
+      "pass": true,
+      "value": {
+        "hud": {
+          "left": 383,
+          "top": 142,
+          "right": 461,
+          "bottom": 239
+        },
+        "menu": {
+          "left": 16,
+          "top": 90,
+          "right": 828,
+          "bottom": 378
+        }
+      }
+    },
+    {
+      "name": "844: backAfterMenu",
+      "pass": true,
+      "value": {
+        "hud": {
+          "hidden": false,
+          "covered": false,
+          "display": "block",
+          "laidOut": true,
+          "box": {
+            "left": 383,
+            "top": 142,
+            "right": 461,
+            "bottom": 239
+          },
+          "text": "0:00.00Lap 1 of 1\nGate 1 of 10\nLast -\nBest -"
+        }
+      }
+    }
+  ],
+  "pass": true
+}

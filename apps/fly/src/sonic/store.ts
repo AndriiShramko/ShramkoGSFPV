@@ -66,6 +66,7 @@ export function setCurrentLesson(host: SonicHost, lessonId: string | null): void
 /**
  * "Reset my progress" (v0.13, the owner's M41-2): every lesson's progress and the lesson the pilot is on are cleared, so every lesson is
  * new again and Continue goes; his sound settings (the document's `prefs`) stay as they are.
+ * The "I already fly by sound" mark (fliesBySound) is not progress and stays too.
  */
 export function resetProgress(host: SonicHost): void {
     const c = host.collection('sonic');
@@ -73,5 +74,18 @@ export function resetProgress(host: SonicHost): void {
     host.updateCollection('sonic', (d) => {
         d.progress = {};
         d.current = null;
+    });
+}
+
+/** The pilot once chose "I already fly by sound" (train 2): a scan link's start screen then puts the scan first. */
+export function fliesBySound(host: SonicHost): boolean {
+    return host.collection('sonic').fliesBySound === true;
+}
+
+/** Marks that the pilot flies by sound (saved once; nothing is written when it is already so). */
+export function setFliesBySound(host: SonicHost): void {
+    if (fliesBySound(host)) return;
+    host.updateCollection('sonic', (d) => {
+        d.fliesBySound = true;
     });
 }

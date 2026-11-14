@@ -17,6 +17,7 @@ import type { CeilingPanel } from '../../ui/ceiling';
 import { t } from '../../i18n';
 import { pilotReset, pilotSet } from '../prefs';
 import type { Feature, FlightContext } from '../context';
+import { wallsThen } from '../walls-then';
 
 // window.__gsfpv.ceiling (test-hook.ts is the shell's; this feature adds its part)
 declare module '../test-hook' {
@@ -54,7 +55,9 @@ export function openCeilingPanel(ctx: FlightContext): void {
     const ses = ctx.session;
     const base = ses.baseCollision;
     if (!base || !ses.collision) {
-        ctx.hud.flash(t('walls.none'), 3500);
+        // walls W3: the panel needs walls, so they are built first and the panel opens after
+        if (!ses.collision) void wallsThen(ctx, () => openCeilingPanel(ctx));
+        else ctx.hud.flash(t('walls.none'), 3500);
         return;
     }
     // one panel at the panels' place at a time

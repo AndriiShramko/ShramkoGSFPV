@@ -140,10 +140,14 @@ export function freeSpace(walls: VoxelCollision, opts: FreeSpaceOptions): FreeSp
     // the box, in blocks of the file's index space
     const blockM = 4 * walls.voxelResolution;
     const [nbx, nby, nbz] = blockDims(walls);
-    const sp = opts.spawn;
-    const sf: Vec3 = flip ? [-sp[0], -sp[1], sp[2]] : [sp[0], sp[1], sp[2]];
     const gmin = [walls.gridMinX, walls.gridMinY, walls.gridMinZ];
     const nb = [nbx, nby, nbz];
+    // a spawn outside the walls' grid (a small scan whose camera looks at it from outside, Forest Floor ab5efa0e) starts
+    // from the nearest point inside the grid: otherwise no start cell and no course; a spawn inside is unchanged
+    const o = opts.spawn;
+    const of: Vec3 = flip ? [-o[0], -o[1], o[2]] : [o[0], o[1], o[2]];
+    const sf = [0, 1, 2].map((a) => Math.min(Math.max(of[a]!, gmin[a]! + blockM / 2), gmin[a]! + (nb[a]! - 0.5) * blockM)) as unknown as Vec3;
+    const sp: Vec3 = flip ? [-sf[0], -sf[1], sf[2]] : [sf[0], sf[1], sf[2]];
     const halfB = Math.ceil(boxM / 2 / blockM);
     const b0 = [0, 1, 2].map((a) => Math.max(0, Math.floor((sf[a]! - gmin[a]!) / blockM) - halfB));
     const b1 = [0, 1, 2].map((a) => Math.min(nb[a]!, Math.floor((sf[a]! - gmin[a]!) / blockM) + halfB + 1));

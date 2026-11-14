@@ -1,0 +1,129 @@
+[
+ {
+  "id": "70b50d42",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/70b50d42/v1/scene.voxel.json 200",
+   "/walls/70b50d42/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 3.292,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.05,
+    "sha": "81f216aefbdb1f225ddd9d53da273ae374b3be1ac3e56ccbbb0ef1693a20341a",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 5 cm walls, ready for every pilot.",
+   "summary": "Walls 5 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "ab5efa0e",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/ab5efa0e/v2/scene.voxel.json 200",
+   "/walls/ab5efa0e/v2/scene.voxel.bin 200"
+  ],
+  "readyS": 4.496,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "offer",
+    "source": "published",
+    "voxelM": 0.05,
+    "sha": "74c7218a1092ce0a469d2ef1f57e5330ad5089ae1061f1c839c5eba98b1e9ee4",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "Refine walls to 1.6 cm (about 15 s)",
+   "inUse": "In use: 5 cm walls, ready for every pilot.",
+   "summary": "Walls 5 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "9baef54b",
+  "expect": "published",
+  "errors": [],
+  "walls404": 0,
+  "wallsFiles": [
+   "/walls/9baef54b/v1/scene.voxel.json 200",
+   "/walls/9baef54b/v1/scene.voxel.bin 200"
+  ],
+  "readyS": 3.554,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.05,
+    "sha": "3e73e5012c9653c462e4815f342757e53fcbf9430c8908dac7584f63d2ccf032",
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "",
+   "inUse": "In use: 5 cm walls, ready for every pilot.",
+   "summary": "Walls 5 cm ▾"
+  },
+  "tunnel": {
+   "passes": 20,
+   "speed": 25,
+   "contacts": 20,
+   "penetrations": 0
+  },
+  "pass": true
+ },
+ {
+  "id": "d10c5638",
+  "expect": "offer",
+  "errors": [],
+  "walls404": 1,
+  "wallsFiles": [],
+  "readyS": 2.426,
+  "page": {
+   "status": "ready",
+   "error": null,
+   "walls": {
+    "state": "offer",
+    "source": "none",
+    "voxelM": null,
+    "sha": null,
+    "lastBake": null
+   },
+   "bake": null,
+   "wallsOn": true,
+   "action": "Build walls in this browser",
+   "inUse": "No walls in use.",
+   "summary": "No walls ▾"
+  },
+  "pass": true
+ }
+]

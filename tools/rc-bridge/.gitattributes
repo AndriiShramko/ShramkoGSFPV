@@ -1,0 +1,2 @@
+# cmd.exe finds labels (goto) reliably only in a file with CRLF line ends
+*.cmd text eol=crlf

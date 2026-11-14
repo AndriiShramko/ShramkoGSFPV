@@ -4,6 +4,7 @@
 import { voxelLegend } from '../../ui/voxels';
 import { t } from '../../i18n';
 import type { Feature } from '../context';
+import { wallsThen } from '../walls-then';
 
 export const voxels: Feature = {
     id: 'voxels',
@@ -13,8 +14,8 @@ export const voxels: Feature = {
         ctx.events.on('walls', () => v.touch());
         ctx.keys.on('voxels.cycle', (e) => {
             if (e.repeat) return;
-            if (!ctx.session.collision) ctx.hud.flash(t('voxels.noWalls'), 3500);
-            else ctx.hud.flash(t('voxels.flash', { mode: t(`voxels.mode.${v.cycle()}`) }));
+            // a scan without walls: V builds them first, then shows the grid (walls W3)
+            void wallsThen(ctx, () => ctx.hud.flash(t('voxels.flash', { mode: t(`voxels.mode.${v.cycle()}`) })));
         });
         ctx.hook.voxels = {
             stats: () => v.stats(),

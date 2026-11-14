@@ -25,6 +25,8 @@ export const DJI_VENDOR = 0x2ca3;
 export const DJI_JOYSTICK = 0x1021;
 /** 2CA3:0020 "Avata360-...": the drone itself (RNDIS, mass storage, bulk; no HID). */
 export const DJI_AVATA360_DRONE = 0x0020;
+/** 2CA3:1021 is also the DJI RC 2 (its stick channel FF.43.01, no HID; measured in lane rc2 stage 1). */
+export const DJI_RC2 = 0x1021;
 
 /** One interface's class, subclass and protocol as a part. */
 export function partOf(cls: number, sub: number, proto: number): UsbPart {
@@ -50,6 +52,8 @@ export interface UsbLook {
     raw: string[];
     /** what to do: 'connect' (a joystick part: Connect controller can read it), 'rc2' (DJI's stick channel: the helper can try to fly with it), 'drone' (the drone, not its controller), 'none' (nothing readable as sticks), 'empty' (the browser saw no interfaces) */
     verdict: 'connect' | 'rc2' | 'drone' | 'none' | 'empty';
+    /** verdict 'rc2' under a product id other than the DJI RC 2's (2CA3:1021): tried the same way, named as untested */
+    untested: boolean;
 }
 
 const hex = (n: number, w: number): string => n.toString(16).toUpperCase().padStart(w, '0');
@@ -69,7 +73,9 @@ export function lookAt(d: UsbLike): UsbLook {
     }
     const verdict = d.vendorId === DJI_VENDOR && d.productId === DJI_AVATA360_DRONE ? 'drone'
         : parts.includes('joystick') ? 'connect' : d.vendorId === DJI_VENDOR && parts.includes('sticks') ? 'rc2' : parts.length === 0 ? 'empty' : 'none';
-    return { id: `${hex(d.vendorId, 4)}:${hex(d.productId, 4)}`, name: (d.productName ?? '').trim(), parts, raw, verdict };
+    // a DJI controller with the stick channel under another product id is tried as the RC 2 and named as untested
+    const untested = verdict === 'rc2' && d.productId !== DJI_RC2;
+    return { id: `${hex(d.vendorId, 4)}:${hex(d.productId, 4)}`, name: (d.productName ?? '').trim(), parts, raw, verdict, untested };
 }
 
 /** The lines for the report form: the pilot's words first (`say` is the locale's t), then the numbers the owner needs. */
@@ -103,29 +109,27 @@ export async function chooseDji<D extends UsbLike>(api: UsbApi<D>): Promise<{ lo
     }
 }
 
-/** this browser remembers the RC bridge switch under this key ('1' = on) */
+/**
+ * The old RC bridge switch (?rcbridge=1, lane rc2) was retired in lane connect stage C2: the helper program is offered
+ * by routeOf / helperOffered below. The key stays named so packages/prefs/src/migrate.ts can still list it; nothing reads it.
+ */
 export const RC_BRIDGE_KEY = 'gsfpv.rcBridge';
-interface FlagStore { getItem(k: string): string | null; setItem(k: string, v: string): void; removeItem(k: string): void }
+
+/** Where "Connect my controller" goes with what the USB chooser returned (lane connect C2, docs/wip/connect.md "The flow"). */
+export type UsbRoute = 'hid' | 'rc2usb' | 'report';
 
 /**
- * The RC bridge (tools/rc-bridge) is offered only behind a switch until pilots can download it (review RC2-R2: the
- * program lives only in the repo, so its texts would send every other pilot to something they cannot get). The page
- * address `?rcbridge=1` turns it on and this browser remembers it; `?rcbridge=0` turns it off.
+ * The routing rule of a DJI device picked in Chrome's USB chooser: a joystick part is read as a HID controller (it
+ * is in the first chooser), DJI's stick channel is opened over WebUSB, anything else is shown for the report.
  */
-export function rcBridgeOn(search?: string, store?: FlagStore | null): boolean {
-    let s: FlagStore | null = null;
-    try {
-        s = store === undefined ? (globalThis as { localStorage?: FlagStore }).localStorage ?? null : store;
-    } catch { /* storage blocked: the address alone decides */ }
-    let flag: string | null = null;
-    try {
-        flag = new URLSearchParams(search ?? (globalThis as { location?: { search?: string } }).location?.search ?? '').get('rcbridge');
-    } catch { /* no address */ }
-    try {
-        if (flag === '1') s?.setItem(RC_BRIDGE_KEY, '1');
-        else if (flag === '0') s?.removeItem(RC_BRIDGE_KEY);
-        return flag === '1' || (flag !== '0' && s?.getItem(RC_BRIDGE_KEY) === '1');
-    } catch {
-        return flag === '1';
-    }
+export function routeOf(l: UsbLook): UsbRoute {
+    return l.verdict === 'connect' ? 'hid' : l.verdict === 'rc2' ? 'rc2usb' : 'report';
+}
+
+/**
+ * The helper program for DJI controllers on Windows (tools/rc-bridge) is offered exactly when the look says a DJI
+ * controller with the stick channel and Chrome could not claim it, or when this browser has a saved DJI RC 2 setup.
+ */
+export function helperOffered(l: UsbLook | null, claimFailed: boolean, savedRc2: boolean): boolean {
+    return savedRc2 || (!!l && l.verdict === 'rc2' && claimFailed);
 }

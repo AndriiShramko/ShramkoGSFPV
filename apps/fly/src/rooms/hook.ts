@@ -1,6 +1,7 @@
 // Train 1 contract (docs/wip/train1-plan.md, "Contracts between lanes"): what flying together says about itself on the page
 // hook, window.__gsfpv.rooms. The page probes of the lane and of the integration stage read only this. Owner: lane rooms;
 // it may add fields, it does not rename or drop these.
+import type { RaceRow } from './race';
 
 export interface RoomsHook {
     /** off: no room; lost: the connection went and the page is trying again */
@@ -25,6 +26,41 @@ export interface RoomsHook {
     tags?: readonly number[];
     /** added by lane look: every remote drone of this frame, drawn or hidden by the near rule (remote-stage.ts) */
     drawn?: readonly DrawnRemote[];
+    /** added by lane rooms2: 'persistent' for an open room (key 9), null outside a room */
+    kind?: 'temp' | 'persistent' | null;
+    /** added by lane rooms2: the room's open vote for another scan, null without one */
+    vote?: { scene: string; by: number; yes: number; need: number; mine: boolean } | null;
+    /** added by lane rooms2: the scan the room flies once this page flies it too, else null */
+    roomScene?: string | null;
+    /** added by lane rooms2, stage Q2: the room's race as this page sees it; null outside a room */
+    race?: RaceHook | null;
+}
+
+/** The race of the room on this page (apps/fly/src/rooms/race-page.ts). */
+export interface RaceHook {
+    /** off: no race yet; prep: courses being built; count: the countdown; run: racing; results: over, the table stays */
+    state: 'off' | 'prep' | 'count' | 'run' | 'results';
+    /** the race's course ('g1.<seed>' or '<id>.v<n>') */
+    course: string | null;
+    laps: number;
+    /** the start on the server's clock, ms */
+    startAt: number | null;
+    /** this pilot races (he was in the room when it was proposed) */
+    racer: boolean;
+    /** the course is built and drawn on this page */
+    built: boolean;
+    gates: number;
+    /** the gate to fly next, -1 when none */
+    next: number;
+    /** the laps this page reported */
+    sent: number;
+    /** the last table of the service, place order */
+    table: readonly RaceRow[];
+    problem: string | null;
+    /** the course's line through its gates, flown world (the probes fly it) */
+    path: readonly (readonly number[])[];
+    /** the gates as the lap timer checks them, flown world: centre, rotation (w, x, y, z) and opening kind (probes) */
+    gatePoses: readonly { readonly pos: readonly number[]; readonly quat: readonly number[]; readonly kind: string }[];
 }
 
 /** One remote drone in this frame as the flight camera sees it (lane look). */

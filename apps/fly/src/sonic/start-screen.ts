@@ -27,14 +27,14 @@
 // own way to it, the lesson's speech queue while one runs: bind's `say`).
 // Texts: the sound package's own strings for lessons, modules, menu, settings and hearing (its dictionaries), the
 // simulator's `sonic.*` keys for the rest, in en, es, pl and ru.
-import { BUILTIN_THEME_IDS, DICTS, LAYER_IDS, PREFS_LIMITS, createTranslator } from '@shramko/sonic-fpv';
+import { BUILTIN_THEME_IDS, DICTS, LAYER_IDS, PREFS_LIMITS, SCAN_FREE_ID, createTranslator } from '@shramko/sonic-fpv';
 import type { FlightSample, LayerId, Locale, SonicPrefs, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 import { h } from '../ui/dom';
 import { t } from '../i18n';
 import type { SonicSetup, VisitPrefs } from './entry';
 import { SpokenList } from './spoken-list';
 import type { SpokenAnchor, SpokenItem } from './spoken-list';
-import { buildModel, lessonPlace } from './start-model';
+import { buildModel, lessonPlace, scanStartOrder } from './start-model';
 import type { LessonPlace, LessonRow, LessonState, SonicRequest, StartModel } from './start-model';
 import { KEY_HINTS_CHOICES, keyHintsChoice, setKeyHints } from './key-hints';
 import type { KeyHintsChoice } from './key-hints';
@@ -70,6 +70,10 @@ export interface StartScreenDeps {
     readonly onReset?: () => void;
     /** the voice over a flight (bind); absent: the engine's own say */
     readonly say?: ScreenVoice;
+    /** a scan link (train 2): the pilot is not a first-timer (start-model experiencedPilot), so the scan comes first */
+    readonly experienced?: () => boolean;
+    /** a scan link: the first-timer's "I already fly by sound: fly this scan" was pressed (store.ts setFliesBySound) */
+    readonly onFlies?: () => void;
 }
 
 /** Sections of the page the navigation jumps to. */
@@ -335,6 +339,25 @@ export class StartScreen {
         const titleOf = (id: string): string => this.S(this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id)?.title ?? { key: `lesson.${id}.title` });
         const rowOf = (id: string): LessonRow | undefined => this.model.modules.flatMap((x) => x.lessons).find((l) => l.id === id);
         let primaryTaken = false;
+        // a scan link (train 2, ?sonic=scan&scene=&sz=): a pilot who is no first-timer gets "Fly this scan by sound" first and the
+        // lessons after it; a first-timer gets the lessons first and, after them, "I already fly by sound: fly this scan", which
+        // also marks him so the next scan link puts the scan first
+        const scanReq = req.kind === 'scan' ? req : null;
+        const order = scanReq ? scanStartOrder(this.d.experienced?.() ?? false) : null;
+        const scanButton = (first: boolean): HTMLElement => {
+            const label = t(first ? 'sonic.start.scan' : 'sonic.start.scanFlier');
+            const sub = t('sonic.start.scanWhat', { scene: scanReq?.sceneId ?? '', size: String(scanReq?.size ?? 1) });
+            const b = h('button', { type: 'button', class: `btn${first ? ' primary' : ''}`, 'data-testid': first ? 'sonic-start-scan' : 'sonic-start-scan-flier', 'data-lesson': SCAN_FREE_ID, onclick: () => {
+                if (!first) this.d.onFlies?.();
+                this.start(SCAN_FREE_ID);
+            } }, label, h('span', { class: 'sonic-sub' }, sub));
+            this.stop(b, () => `${label}. ${sub.replace(/\.$/, '')}`);
+            return b;
+        };
+        if (order?.[0] === 'scan') {
+            buttons.push(scanButton(true));
+            primaryTaken = true;
+        }
         if (req.kind === 'lesson') {
             buttons.push(lessonButton(req.id, t('sonic.start.lesson', { title: titleOf(req.id) }), this.placeText(lessonPlace(req.id, prefs.path)), true, 'sonic-start-asked'));
             primaryTaken = true;
@@ -349,6 +372,7 @@ export class StartScreen {
         // the course from its first lesson; the saved progress is kept (Reset is a choice of its own, in the lessons)
         const first = `${t('sonic.start.courseWhat', { lesson: this.placeText(lessonPlace(m.beginningId, prefs.path)), title: titleOf(m.beginningId) })}${m.continueId ? ` ${t('sonic.start.courseKeeps')}` : ''}`;
         buttons.push(lessonButton(m.beginningId, t('sonic.start.course'), first, !primaryTaken, 'sonic-start-beginning'));
+        if (order?.[0] === 'lessons') buttons.push(scanButton(false));
         const back = this.d.onClose ? h('button', { type: 'button', class: 'btn', 'data-testid': 'sonic-back', onclick: () => this.d.onClose?.() }, t('sonic.close')) : null;
         if (back) this.stop(back, () => t('sonic.close'));
         const choice = visit?.choice ?? null;
@@ -566,7 +590,7 @@ export class StartScreen {
             check('sonic-captions', this.key('menu.setting.captions'), prefs.captions, (v, said) => this.change({ captions: v }, said)),
             // "my screen reader speaks" is the engine NOT speaking: the box is the opposite of selfVoice
             check('sonic-sr', this.key('menu.setting.screen-reader'), !prefs.selfVoice, (v, said) => this.change({ selfVoice: !v }, said)),
-            check('sonic-motor', this.key('menu.setting.motor'), prefs.motorSound, (v, said) => this.change({ motorSound: v }, said)),
+            check('sonic-motor', this.key('menu.setting.motor'), prefs.motorSound, (v, said) => this.change({ motorSound: v, motorChoice: true }, said)),
             // v0.13 (W13): the motor's own level in the mode (after the engine's leveller), 3 dB a step, and the target height's note
             range('sonic-motor-level', this.key('menu.setting.motor-level'), prefs.motorGainDb ?? 0, PREFS_LIMITS.motorGainDb.min, PREFS_LIMITS.motorGainDb.max, 3, ' dB', (v, said) => this.change({ motorGainDb: v }, said)),
             check('sonic-height-target', this.key('menu.setting.height-target'), prefs.heightTarget !== false, (v, said) => this.change({ heightTarget: v }, said)),

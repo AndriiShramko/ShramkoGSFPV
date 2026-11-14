@@ -47,7 +47,8 @@ import { gitSha, REPO, writeEvidence } from './evidence';
 import { serveDist } from './sonicrec-serve';
 import type { Served } from './sonicrec-serve';
 
-const PORT = 5420;
+// PORT=<n> moves the local server (lanes of a train run on their own ports); 5420 when unset
+const PORT = Number(process.env.PORT ?? '') > 0 ? Number(process.env.PORT) : 5420;
 const DIST = `${REPO}/dist`;
 const LOCK = 'C:/dev/.gpu-lock';
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -770,6 +771,200 @@ async function r9(browser: () => Promise<BrowserContext>, served: Served): Promi
     await rings.close();
 }
 
+// ------------------------------------------------------------------------------------------------ R10 (train 2, lane sound)
+
+const SCAN = '887f27aa';
+const SHOTS = 'U:/Temp/gsfpv-train2/shots';
+interface R10Probe extends Probe {
+    target: { id: string; pos: [number, number, number] } | null;
+    hum: Hum[] | null;
+    cues: string[];
+    motor: boolean;
+    walls: { voxelM: number | null; builtin: boolean; scene: string; scale: number };
+    lastLine: string | null;
+    pos: [number, number, number];
+}
+/** The hook's state; before the sound chunk has put its hook up, an empty one (no lesson). */
+const probe10 = (page: Page): Promise<R10Probe> => page.evaluate(() => {
+    const f = (window as unknown as { __gsfpv?: { sonic?: (e?: boolean) => unknown } }).__gsfpv?.sonic;
+    return typeof f === 'function' ? f(false) : { lesson: null, phase: null, attempt: 0, asking: false, question: null, engine: 'none', speechQueue: 0, target: null, hum: null, cues: [], motor: false, walls: { voxelM: null, builtin: false, scene: '', scale: 1 }, lastLine: null, pos: [0, 0, 0] };
+}) as Promise<R10Probe>;
+const scanOrder = (page: Page): Promise<string[]> => page.evaluate(() => {
+    const b = document.querySelector('[data-testid="sonic-start-beginning"]');
+    return b?.parentElement ? [...b.parentElement.children].map((c) => c.getAttribute('data-testid') ?? '').filter((x) => x.startsWith('sonic-start-')) : [];
+});
+
+/** The prefs document of a pilot who said "I already fly by sound" (prefsDoc's, with fliesBySound). */
+function experiencedDoc(): object {
+    const d = prefsDoc() as { collections: { sonic: Record<string, unknown> } };
+    d.collections.sonic.fliesBySound = true;
+    return d;
+}
+
+/** Steers by the target hum as a blind pilot would (W held, E or Q when the hum is to a side, Space or Shift for its height) until `done`. */
+async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number, seen: Set<string>, trail?: object[], cueSeen?: Set<string>): Promise<R10Probe> {
+    const held = new Set<string>();
+    let lastTrail = 0;
+    const hold = async (code: string, on: boolean): Promise<void> => {
+        if (on && !held.has(code)) { await page.keyboard.down(code); held.add(code); }
+        if (!on && held.has(code)) { await page.keyboard.up(code); held.delete(code); }
+    };
+    let p = await probe10(page);
+    for (const t0 = Date.now(); !done(p) && Date.now() - t0 < ms; ) {
+        const v = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir as [number, number, number] | undefined;
+        await hold('KeyW', v !== undefined && Math.abs(v[0]) < 0.5);
+        await hold('KeyE', v !== undefined && v[0] > 0.12);
+        await hold('KeyQ', v !== undefined && v[0] < -0.12);
+        // height by the hum's slope: 0.08 (an estimate) is about 0.5 m at 6 m; at 0.2 the pilot of run 4 flew 1 m under gate 2 into an obstacle for 230 s
+        await hold('Space', v !== undefined && v[1] > 0.08);
+        await hold('ShiftLeft', v !== undefined && v[1] < -0.08);
+        await sleep(60);
+        p = await probe10(page);
+        if (p.lastLine) seen.add(p.lastLine);
+        for (const c of cueSeen ? (p.cues ?? []) : []) cueSeen?.add(c);
+        if (trail && Date.now() - lastTrail >= 2000) {
+            lastTrail = Date.now();
+            const h = (p.hum ?? []).find((x) => x.distance !== null) ?? null;
+            trail.push({ s: Math.round((Date.now() - t0) / 1000), pos: p.pos.map((c) => Math.round(c * 10) / 10), target: p.target?.id ?? null, phase: p.phase, attempt: p.attempt, hum: h ? { dir: h.dir?.map((c) => Math.round(c * 100) / 100), d: h.distance === null ? null : Math.round(h.distance * 10) / 10 } : null, keys: [...held] });
+        }
+    }
+    for (const c of [...held]) await hold(c, false);
+    return p;
+}
+
+/**
+ * R10: fly THIS scan by sound (train 2). The pause menu's item of an ordinary flight in scene 887f27aa links the sound page of that
+ * scan; its start screen puts the lessons first for a first-timer and the scan first for a pilot who flies by sound (screenshots);
+ * the free scan flight runs there with the motor silent, a wall cue is planned flying at a wall; N makes a course of gates, the hum
+ * leads to gate 1 and then gate 2, the gate line is said, backing up along a leg is not called the wrong way, and the course's end
+ * does not say "that was the last lesson" (review SN-3).
+ */
+async function r10(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    log('R10: the scan link, its start screen, the free flight and a course by sound in 887f27aa');
+    const ctx = await newContext(browser, served, prefsDoc(), null);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => problems.push(`R10 sighted: pageerror ${e.message.slice(0, 300)}`));
+    await page.goto(`${served.origin}/en/fly/?scene=${SCAN}&nowarn=1&render=off`);
+    await until('the sighted flight', () => page.evaluate(() => (window as unknown as Hook).__gsfpv?.status ?? null), (v) => v === 'ready', 120000, 250);
+    // the Controls screen first (as sonic-optin-page.ts chooseKeyboard): the pause menu opens only over the flight
+    await page.waitForSelector('.screen.radio [data-action="radio-keyboard"]', { timeout: 20000 });
+    await page.focus('.screen.radio [data-action="radio-keyboard"]');
+    await page.keyboard.press('Enter');
+    await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
+    await sleep(800);
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.pause-menu', { timeout: 10000 });
+    const href = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySound"]')?.getAttribute('href') ?? null);
+    result.r10link = href;
+    check(`R10: the pause menu links this scan by sound (/en/fly/?sonic=scan&scene=${SCAN}&sz=<size>)`, new RegExp(`^/en/fly/\\?sonic=scan&scene=${SCAN}&sz=\\d+(\\.\\d+)?$`).test(href ?? ''), href);
+    const [first] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('[data-action="pause.flyBySound"]')]);
+    first.on('pageerror', (e) => problems.push(`R10 first: pageerror ${e.message.slice(0, 300)}`));
+    await until('the start screen (first-timer)', () => first.evaluate(() => !!document.querySelector('[data-testid="sonic-start-beginning"]')), (v) => v, 60000);
+    const firstOrder = await scanOrder(first);
+    await first.screenshot({ path: `${SHOTS}/sound-start-first.png`, fullPage: false });
+    result.r10first = firstOrder;
+    check('R10: a first-timer sees the lessons first, then "I already fly by sound" (sonic-start-beginning, sonic-start-scan-flier)', firstOrder.join() === 'sonic-start-beginning,sonic-start-scan-flier', firstOrder);
+    await ctx.close();
+
+    const exp = await newContext(browser, served, experiencedDoc(), null);
+    await exp.addInitScript({ content: HUM_WATCH });
+    const fly = await exp.newPage();
+    fly.on('pageerror', (e) => problems.push(`R10 flight: pageerror ${e.message.slice(0, 300)}`));
+    fly.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) problems.push(`R10 flight: console ${m.text().slice(0, 300)}`); });
+    await fly.goto(`${served.origin}${href ?? `/en/fly/?sonic=scan&scene=${SCAN}&sz=1`}&nowarn=1`);
+    await until('the start screen (experienced)', () => fly.evaluate(() => !!document.querySelector('[data-testid="sonic-start-scan"]')), (v) => v, 60000);
+    const expOrder = await scanOrder(fly);
+    await fly.screenshot({ path: `${SHOTS}/sound-start-experienced.png`, fullPage: false });
+    result.r10experienced = expOrder;
+    check('R10: a pilot who flies by sound sees "Fly this scan by sound" first (sonic-start-scan, sonic-start-beginning)', expOrder.join() === 'sonic-start-scan,sonic-start-beginning', expOrder);
+    await fly.focus('[data-testid="sonic-start-scan"]');
+    await fly.keyboard.press('Enter');
+    let skipped = false;
+    const inFlight = await until('the free scan flight', async () => {
+        const p = await probe10(fly);
+        if (!skipped && p.phase === 'intro') { skipped = true; await fly.keyboard.press('KeyN'); }
+        return p;
+    }, (p) => p.lesson === 'scan-free' && p.phase === 'flying', 150000, 100);
+    result.r10free = { lesson: inFlight.lesson, phase: inFlight.phase, walls: inFlight.walls, motor: inFlight.motor, target: inFlight.target };
+    check(`R10: the free scan flight runs in scene ${SCAN} (lesson scan-free, flying, no target)`, inFlight.walls.scene === SCAN && inFlight.target === null, result.r10free);
+    check('R10: the motor is silent by default (motorSound off)', inFlight.motor === false, inFlight.motor);
+
+    // at a wall: W held up to 20 s (an estimate), the plan's cue ids collected
+    const ids = new Set<string>();
+    await fly.keyboard.down('KeyW');
+    // the plan's ids carry the side: 'safety.wall:front' (measured in the first R10 run, 2026-11-13)
+    const wall = (): boolean => [...ids].some((c) => c.startsWith('safety.wall'));
+    for (const t0 = Date.now(); Date.now() - t0 < 20000 && !wall(); ) {
+        for (const c of (await probe10(fly)).cues ?? []) ids.add(c);
+        await sleep(80);
+    }
+    await fly.keyboard.up('KeyW');
+    result.r10cues = [...ids];
+    check('R10: flying at a wall a wall cue is planned (safety.wall:<side>)', wall(), [...ids]);
+
+    // N: a course of gates
+    const from = (await events(fly)).length;
+    const lines = new Set<string>();
+    await sleep(1500);
+    await fly.keyboard.press('KeyN');
+    const ready = await until('the course', async () => {
+        const p = await probe10(fly);
+        if (p.lastLine) lines.add(p.lastLine);
+        return p;
+    }, (p) => p.target !== null || lines.has('sonic.say.courseNone') || lines.has('sonic.say.scanNoWalls'), 180000, 150).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
+    const spoken0 = spokenAfter(await events(fly), from);
+    result.r10course = { target: ready?.target ?? null, lines: [...lines], spoken: spoken0.slice(0, 20) };
+    check('R10 course: N makes a course; the hum\'s target is gate 1', ready?.target !== null && ready?.target !== undefined && /1$/.test(ready.target.id), result.r10course);
+    if (!ready?.target) { await exp.close(); return; }
+    const gate1 = ready.target.id;
+    const trail1: object[] = [];
+    const gateCues = new Set<string>();
+    const after1 = await steerByHum(fly, (p) => p.target !== null && p.target.id !== gate1, 90000, lines, trail1, gateCues);
+    for (const t0 = Date.now(); Date.now() - t0 < 2500; ) {
+        for (const c of (await probe10(fly)).cues ?? []) gateCues.add(c);
+        await sleep(60);
+    }
+    const atGate1 = spokenAfter(await events(fly), from);
+    result.r10gate1 = { from: gate1, now: after1.target?.id ?? null, phase: after1.phase, spokenTail: atGate1.slice(-6), gateNote: gateCues.has('target.note'), trail: trail1.slice(-6) };
+    check('R10 course: after flying through gate 1 the target is gate 2', after1.target !== null && after1.target.id !== gate1 && /2$/.test(after1.target.id), result.r10gate1);
+    // a gate is told by its note (the gate melody, cue target.note) and the preview of the gate after it: the runner says no line
+    // at a gate (fly.gate is a catalogue key no code says, grep of packages/sonic-fpv/src; run 4 heard no fly.stage at gate 1 either)
+    check('R10 course: gate 1 is told by its note (target.note planned)', gateCues.has('target.note'), result.r10gate1);
+
+    // backing up along the leg (S held 3 s): never the wrong way
+    const backFrom = (await events(fly)).length;
+    const backIds = new Set<string>();
+    await fly.keyboard.down('KeyS');
+    for (const t0 = Date.now(); Date.now() - t0 < 3000; ) {
+        for (const c of (await probe10(fly)).cues ?? []) backIds.add(c);
+        await sleep(80);
+    }
+    await fly.keyboard.up('KeyS');
+    await sleep(1200);
+    const backSpoken = spokenAfter(await events(fly), backFrom);
+    result.r10back = { cues: [...backIds], spoken: backSpoken };
+    check('R10 course: backing up along a leg is not called the wrong way (no fly.wrong-way, no safety.wrong-way)', !backSpoken.includes('fly.wrong-way') && !backIds.has('safety.wrong-way'), result.r10back);
+
+    // I: where am I (the runner's status line)
+    const iFrom = (await events(fly)).length;
+    await fly.keyboard.press('KeyI');
+    await sleep(2500);
+    const iSpoken = spokenAfter(await events(fly), iFrom);
+    result.r10where = iSpoken;
+    check('R10 course: I says where the pilot is (a status line)', iSpoken.some((k) => k.startsWith('status.')), iSpoken);
+
+    const trail: object[] = [];
+    const end = await steerByHum(fly, (p) => p.phase === 'passed' || p.phase === 'idle', 240000, lines, trail);
+    await sleep(4000);
+    const evAll = await events(fly);
+    const all = spokenAfter(evAll, from);
+    const digest = evAll.slice(from).filter((e) => e.kind !== 'speech').map((e) => `${e.kind}:${e.what ?? e.key ?? e.item ?? ''}`);
+    result.r10end = { phase: end.phase, target: end.target?.id ?? null, stages: all.filter((k) => k === 'fly.stage').length, lastLesson: all.includes('fly.last-lesson'), lines: [...lines], spoken: all.slice(-60), events: digest.slice(-60), trail };
+    check('R10 course: the course was flown to its end by the hum', end.phase === 'passed' || end.phase === 'idle', result.r10end);
+    check('R10 course: its end does not say "that was the last lesson" (review SN-3)', !all.includes('fly.last-lesson') && !lines.has('fly.last-lesson'), result.r10end);
+    await exp.close();
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -811,6 +1006,7 @@ async function main(): Promise<void> {
         else if (which === 'r7') await r7(fresh, served);
         else if (which === 'r8') await r8(fresh, served);
         else if (which === 'r9') await r9(fresh, served);
+        else if (which === 'r10') await r10(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {

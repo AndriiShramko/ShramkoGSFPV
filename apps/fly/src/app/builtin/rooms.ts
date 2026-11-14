@@ -18,7 +18,10 @@ import { applyShared } from '../shared-visit';
 import { q } from '../env';
 import { t } from '../../i18n';
 import { sharedOf } from '../../share/shared';
-import { ROOM_ID_RE, createRoom, listRooms, socketUrl } from '../../rooms/api';
+import { ROOM_ID_RE, createRoom, listRooms, openRoom, socketUrl } from '../../rooms/api';
+import { loadCatalog } from '../../ui/scenes';
+import { nextScan, ninePress, voteLine, voteView } from '../../rooms/vote';
+import type { VoteMsg } from '../../rooms/vote';
 import type { RoomInfo } from '../../rooms/api';
 import { Announcer } from '../../rooms/announce';
 import { NearWatch, nearText, nearest, whoLine } from '../../rooms/around';
@@ -35,6 +38,9 @@ import { RoomSocket } from '../../rooms/socket';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
+import type { RacePage } from '../../rooms/race-page';
+import { RACE_ON, tableRows } from '../../rooms/race';
+import { closeVisit, openVisit } from '../../rooms/open-visit';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
@@ -91,7 +97,7 @@ function setRoomParam(id: string | null): void {
     history.replaceState(history.state, '', u.toString());
 }
 
-interface Live { sock: RoomSocket; stop(): void }
+interface Live { sock: RoomSocket; readonly race: RacePage | null; stop(): void }
 
 export const rooms: Feature = {
     id: 'rooms',
@@ -116,12 +122,43 @@ export const rooms: Feature = {
         const say = (key: string, vars?: Record<string, string | number>, interrupt = false): void => announcer.announce(key, t(key, vars), interrupt);
         /** the key of a rooms action as the key list shows it (9, 0), for the lines that name it */
         const keyOf = (action: string): string => ctx.keys.caps(action)[0]?.cap ?? '';
+        // lane rooms2: the catalogue's order and titles, for "the next scan" and the vote lines; read once, at the first join
+        let order: string[] = [];
+        const titles = new Map<string, string>();
+        let catalog: Promise<boolean> | null = null;
+        /** true once the catalogue is read (a failed read is asked again next time) */
+        const askCatalog = (): Promise<boolean> => (catalog ??= loadCatalog().then((c) => {
+            order = c.scenes.map((s) => s.id);
+            for (const s of c.scenes) titles.set(s.id, s.title ?? s.id);
+            return true;
+        }, () => {
+            catalog = null;
+            return false;
+        }));
+        /** the visit settings an open room set, to clear on leaving (review RM-4) */
+        let aligned: { scene: string; ids: string[] } | null = null;
+        const unalign = (): void => {
+            if (aligned) closeVisit(ctx.prefs, aligned.scene, aligned.ids);
+            aligned = null;
+        };
+        const title = (id: string): string => titles.get(id) ?? (id === ctx.scene.id ? ctx.scene.meta?.title : undefined) ?? id;
+        /** a race line: said (interrupting) and shown (lane rooms2, stage Q2) */
+        const tell = (key: string, vars: Record<string, string | number>, interrupt: boolean): void => {
+            const text = t(key, vars);
+            announcer.announce(key, text, interrupt);
+            ctx.hud.flash(text, 4000);
+        };
+        const roomName = (r: RoomInfo): string => (r.kind === 'persistent' ? t('rooms.open.name') : r.name);
 
         const join = (room: string, hostKey?: string): void => {
             live?.stop();
             h.room = room;
             h.problem = null;
             h.link = null;
+            h.vote = null;
+            h.kind = null;
+            h.roomScene = null;
+            void askCatalog();
             if (!ROOM_ID_RE.test(room)) {
                 h.problem = 'bad-id';
                 return;
@@ -139,17 +176,38 @@ export const rooms: Feature = {
             };
             const enter = async (r: RoomInfo): Promise<void> => {
                 roomScene = null;
+                h.roomScene = null;
+                h.kind = r.kind;
                 const id = r.scene.id;
-                applyShared(ctx.prefs, id, roomShared(r), new Map());
-                if (id !== ctx.scene.id || !sameRender(r.scene.render, ctx.scene.render)) {
+                // an open room has no shared settings and no drawing of its own: each pilot keeps his (lane rooms2)
+                const open = r.kind === 'persistent';
+                // review RM-5: an open room on a scan this page cannot fly (not in the catalogue, or its load fails):
+                // the pilot goes to the open room of his own scan instead of staying where he sees nobody
+                if (open && id !== ctx.scene.id && order.length > 0 && !order.includes(id)) return ownOpen();
+                unalign();
+                // review RM-4: an open room flies the catalogue's size and walls, so poses and seed courses match
+                if (open) aligned = { scene: id, ids: openVisit(ctx.prefs, id) };
+                else applyShared(ctx.prefs, id, roomShared(r), new Map());
+                if (id !== ctx.scene.id || (!open && !sameRender(r.scene.render, ctx.scene.render))) {
                     await ctx.scenes.load(id, 'room', r.scene.render);
                     if (ctx.scene.id !== id) {
                         h.problem = 'scene';
+                        if (open) return ownOpen();
                         return;
                     }
                 }
                 roomScene = id;
+                h.roomScene = id;
             };
+            const onVote = (m: VoteMsg): void => {
+                // review RM-10: 'busy', 'same' and 'wait' answer a proposal; the open vote (if any) stays
+                if (m.state === 'open' || m.state === 'passed' || m.state === 'failed') h.vote = voteView(m, sock.slot);
+                const line = voteLine(m, sock.slot, title, (s) => sock.members.get(s) ?? `#${s + 1}`, keyOf('rooms.panel'));
+                const text = t(line.key, line.params);
+                announcer.announce(line.key, text, true);
+                ctx.hud.flash(text, 6000);
+            };
+            let race: RacePage | null = null;
             const sock = new RoomSocket({ url: socketUrl(location), room, nick, hostKey: hk }, {
                 state: (s) => {
                     h.state = s;
@@ -168,11 +226,22 @@ export const rooms: Feature = {
                     lostSaid = false;
                     // with a sound lesson running the digits are the lesson's (sonic/digit-key.ts): 0 works after it (RP-1)
                     if (!welcomed) {
-                        const line = welcomeLine(!!ctx.sonic?.runner, w.room.name, sock.members.size, keyOf('rooms.who'));
+                        const line = welcomeLine(!!ctx.sonic?.runner, roomName(w.room), sock.members.size, keyOf('rooms.who'));
                         say(line.key, line.params);
                     }
                     welcomed = true;
                     void enter(w.room);
+                    if (w.vote) onVote(w.vote);
+                    if (w.race) race?.onMsg(w.race);
+                },
+                vote: onVote,
+                race: (m) => race?.onMsg(m),
+                scene: (r) => {
+                    // a vote passed: the room flies another scan; this page loads it and starts there (lane rooms2)
+                    h.vote = null;
+                    tracks.clear();
+                    h.link = roomLink(location.origin, r);
+                    void enter(r);
                 },
                 joined: (m) => {
                     members();
@@ -193,6 +262,14 @@ export const rooms: Feature = {
                     }
                 }
             });
+            // the race page reaches the course view and the sound package: loaded only when the race is on (RACE_ON)
+            if (RACE_ON) {
+                void import('../../rooms/race-page').then((m) => {
+                    if (sock.state === 'off') return;
+                    race = new m.RacePage(ctx, sock, tell);
+                    h.race = race.h;
+                });
+            }
             sock.connect();
 
             const offFrame = ctx.events.on('frame', ({ now }) => {
@@ -221,6 +298,7 @@ export const rooms: Feature = {
                         if (sh.frozen) frozen.add(slot);
                     }
                 }
+                if (inRoom) race?.frame(now);
                 stage.show(draw);
                 others = named;
                 h.remotes = seen;
@@ -238,8 +316,12 @@ export const rooms: Feature = {
             });
             live = {
                 sock,
+                get race() { return race; },
                 stop: () => {
                     offFrame();
+                    unalign();
+                    race?.dispose();
+                    h.race = null;
                     sock.leave();
                     stage.show([]);
                     tags.update([], false);
@@ -250,6 +332,9 @@ export const rooms: Feature = {
                     h.slot = null;
                     h.tags = [];
                     h.link = null;
+                    h.vote = null;
+                    h.kind = null;
+                    h.roomScene = null;
                 }
             };
         };
@@ -281,14 +366,55 @@ export const rooms: Feature = {
             return null;
         };
 
+        /** lane rooms2 (R27), key 9 outside a room: the open room the service picks, no form; when the service does not
+         *  answer, the panel opens instead (its list and create) with the reason in the hook */
+        const joinOpen = async (): Promise<void> => {
+            // review RM-7: a scan outside the catalogue (hidden, by link) is not put in the public list: the panel
+            // opens instead, where the pilot creates a room and chooses whether it is listed
+            if ((await askCatalog()) && !order.includes(ctx.scene.id)) {
+                openPanel();
+                return;
+            }
+            const a = await openRoom('', ctx.scene.id);
+            if (!a.ok) {
+                h.problem = a.error;
+                openPanel();
+                return;
+            }
+            setRoomParam(a.value.id);
+            join(a.value.id);
+        };
+        /** review RM-5: the open room of the pilot's own scan (the service skips busy rooms of other scans) */
+        const ownOpen = async (): Promise<void> => {
+            const a = await openRoom('', ctx.scene.id, fetch, true);
+            if (!a.ok) {
+                h.problem = a.error;
+                return;
+            }
+            setRoomParam(a.value.id);
+            join(a.value.id);
+        };
+        const proposeNext = (): string | null => nextScan(order, live?.sock.room?.scene.id ?? ctx.scene.id);
+
         const openPanel = (): void => {
             const s = live?.sock;
             const r = s && s.state !== 'off' ? s.room : null;
+            const next = proposeNext();
+            const race = RACE_ON && s && r && s.state === 'joined' ? live?.race ?? null : null;
+            // the table on demand: the service answers with the last race's table (the hook and key 0 have it next time)
+            if (race) s?.table();
             ctx.pause('panel');
             roomsPanel(ctx.ui, {
                 nick,
+                race: race ? { start: () => void race.propose(), rows: tableRows(race.h.table) } : null,
+                vote: s && r && s.state === 'joined' ? {
+                    open: h.vote ? { title: title(h.vote.scene), yes: h.vote.yes, need: h.vote.need, mine: h.vote.mine } : null,
+                    next: next === null ? null : title(next),
+                    propose: () => { if (next !== null) s.propose(next); },
+                    agree: () => s.agree()
+                } : null,
                 room: s && r ? {
-                    name: r.name, link: h.link ?? roomLink(location.origin, r), cap: r.cap,
+                    name: roomName(r), link: h.link ?? roomLink(location.origin, r), cap: r.cap,
                     members: h.members.map((m) => ({ ...m, you: m.slot === s.slot }))
                 } : null,
                 saveNick: (v) => {
@@ -320,13 +446,19 @@ export const rooms: Feature = {
                 dialogUp: () => dialogOpen() || !!document.querySelector('#ui .screen, #ui .panel'),
                 inRoom,
                 openPanel,
+                nine: () => ninePress(!!live && live.sock.state !== 'off', h.vote ?? null),
+                joinOpen: () => void joinOpen(),
+                agree: () => live?.sock.agree(),
                 sayNoRoom: () => say('rooms.say.noRoom', { panel: keyOf('rooms.panel') }, true),
                 sayWho: () => {
                     const sim = ctx.session.shownSim;
                     if (!sim) return;
                     const me = simPose(sim, 0, false);
                     const line = whoLine(nearest(me.pos, me.quat, others), t);
-                    announcer.announce(line.key, line.text, true);
+                    // lane rooms2, stage Q2: during or after a race his place comes first, then who is around
+                    const st = live?.race?.standing() ?? null;
+                    if (st) announcer.announce(st.key, t(st.key, st.params), true);
+                    announcer.announce(line.key, line.text, !st);
                 }
             });
             offs.push(ctx.keys.on('rooms.panel', rk.panel.run, rk.panel.opts));

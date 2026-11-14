@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { LEGACY_KEYS, LEGACY_PREFIXES, MACHINE_LOCAL_KEYS, MAIN_VOXEL_DEFAULTS, MIGRATIONS, MemoryBackend, PrefsStore, SCHEMA, canonicalJson, localStorageKeys, localStorageLegacy, migrateLegacy, parseLegacyLastLog, readLegacy, runMigrations } from '../src';
+import { LEGACY_KEYS, LEGACY_PREFIXES, MACHINE_LOCAL_KEYS, MAIN_VOXEL_DEFAULTS, MIGRATIONS, MemoryBackend, PrefsStore, SCHEMA, canonicalJson, localStorageKeys, localStorageLegacy, migrateLegacy, normalizeDoc, parseLegacyLastLog, readLegacy, runMigrations, validateCollection } from '../src';
 import { FakeStorage, REPO, T0, mkStore, resolver } from './helpers';
 
 // ------------------------------------------------------------------ v0.2 shapes, as v0.2 wrote them
@@ -310,5 +310,22 @@ describe('the v0.2 flight log key', () => {
         expect(parseLegacyLastLog(JSON.stringify({ ...LAST_LOG, b64: undefined }))).toBeNull();
         expect(parseLegacyLastLog('{"label":')).toBeNull();
         expect(parseLegacyLastLog(null)).toBeNull();
+    });
+});
+
+describe('a saved sound-mode document with fliesBySound (train 2)', () => {
+    const saved = (fliesBySound: unknown) => normalizeDoc({ v: 1, settings: {}, collections: { sonic: { v: 1, prefs: null, progress: {}, current: null, fliesBySound } } });
+
+    it('keeps the flag when it is true', () => {
+        expect(saved(true).collections.sonic.fliesBySound).toBe(true);
+        expect(validateCollection('sonic', { v: 1, fliesBySound: true })!.fliesBySound).toBe(true);
+    });
+
+    it('drops it otherwise (absent = a first-timer)', () => {
+        for (const v of [false, 'true', 1, null, undefined, {}]) {
+            const c = saved(v).collections.sonic;
+            expect('fliesBySound' in c, String(v)).toBe(false);
+            expect('fliesBySound' in validateCollection('sonic', { v: 1, fliesBySound: v })!, String(v)).toBe(false);
+        }
     });
 });

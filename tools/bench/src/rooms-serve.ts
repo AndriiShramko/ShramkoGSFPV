@@ -50,7 +50,8 @@ function head(req: IncomingMessage): string {
 }
 
 export async function startRoomsRig(dist: string, o: { relay?: boolean; python?: string } = {}): Promise<RoomsRig> {
-    const [roomsPort, frontPort] = await freePorts(2);
+    // all three ports at once: under SONIC_PORTS a second pick would return the front's port, not bound yet (lane rooms2)
+    const [roomsPort, frontPort, distPort] = await freePorts(3);
     const args = ['-X', 'utf8', '-u', ROOMS_PY, '--host', '127.0.0.1', '--port', String(roomsPort)];
     if (o.relay === false) args.push('--no-relay');
     const log: string[] = [];
@@ -64,7 +65,7 @@ export async function startRoomsRig(dist: string, o: { relay?: boolean; python?:
     let front: Server | null = null;
     try {
         await waitTcp(roomsPort, 10000);
-        site = await serveDist(dist, { API_PROXY: `http://127.0.0.1:${roomsPort}` });
+        site = await serveDist(dist, { API_PROXY: `http://127.0.0.1:${roomsPort}` }, distPort);
         const sitePort = site.port;
         const sockets = new Set<Socket>();
         front = createServer((req, res) => {

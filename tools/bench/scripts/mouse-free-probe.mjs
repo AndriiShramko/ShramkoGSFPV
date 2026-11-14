@@ -274,9 +274,12 @@ if (runs('rooms')) {
     await start('');
     await entry('rooms', {
         open: async () => {
-            const panelUp = () => page.waitForSelector('[data-testid=rooms-panel]', { timeout: 2500 }).then(() => true, () => false);
+            const panelUp = (ms = 2500) => page.waitForSelector('[data-testid=rooms-panel]', { timeout: ms }).then(() => true, () => false);
+            // train 2 rooms2: 9 outside a room joins the open room of the scan; when that is refused (no rooms service on a
+            // local release) the panel opens after the answer, and inside a room a second 9 opens the panel
             await page.keyboard.press('Digit9');
-            let up = await panelUp();
+            let up = await panelUp(10000);
+            if (!up) { await page.keyboard.press('Digit9'); up = await panelUp(5000); }
             out.entries.rooms.openedBy = up ? '9' : 'menu';
             if (!up) { await page.keyboard.press('Shift+KeyL'); up = await panelUp(); if (up) out.entries.rooms.openedBy = 'Shift+L'; }
             if (!up) await openMenuItem('pause.rooms');

@@ -56,6 +56,18 @@ function menuPage(): { ctx: FlightContext; items: MenuItem[] } {
 }
 
 describe('the pause menu\'s one way into the mode on an ordinary page (step 3)', () => {
+    it('on a scan page the item links the mode\'s start screen for that scan at its size (train 2), and reads no location in Node (review SN-1)', () => {
+        const { ctx, items } = menuPage();
+        (ctx as unknown as { session: unknown }).session = { builtin: null, scene: { id: '39e63ce9' }, transform: { s: 2.5 } };
+        const off = sonicFlight.install(ctx) as () => void;
+        vi.stubGlobal('document', { documentElement: { lang: 'pl' } });
+        expect(items[0]!.href?.()).toBe('/pl/fly/?sonic=scan&scene=39e63ce9&sz=2.5');
+        // control: a built-in world keeps the plain start screen
+        (ctx as unknown as { session: unknown }).session = { builtin: {}, scene: { id: 'garden' }, transform: { s: 1 } };
+        expect(items[0]!.href?.()).toBe('/pl/fly/?sonic=start');
+        off();
+    });
+
     afterEach(() => {
         setSonicEntry(null);
         setSonicInstaller(null);

@@ -2,7 +2,8 @@
 //  - 723068d7 (no collision on SuperSplat): bake in the tab, time + peak memory, voxel count vs the
 //    splat-transform 3.6.4 CLI on the same file (±1 %), the baked data saved for the Node
 //    tunnelling (A5) and clearance (A8) harnesses.
-//  - bd04e182 (16.8 M Gaussians): a clear refusal with numbers, in the page language.
+//  - bd04e182 (16.8 M Gaussians): with fake small GPU limits it still builds walls (a lighter way),
+//    and the line in the page language names no Gaussians and no limit.
 //   SITE=https://gsfpv.flyreelstudio.eu npx tsx src/accept-c.ts
 import { execSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, copyFileSync, existsSync } from 'node:fs';
@@ -15,6 +16,8 @@ const SITE = (process.env.SITE ?? 'https://gsfpv.flyreelstudio.eu').replace(/\/$
 const fly = (l: string, qs: string) => (process.env.LOCAL_FLY ? `${SITE}/fly/?${qs}` : `${SITE}/${l}/fly/?${qs}`) + `&cb=${Math.random().toString(36).slice(2)}`;
 const SHOTS = join(REPO, 'evidence', today(), 'c');
 const CYRILLIC = new RegExp('[' + String.fromCharCode(0x400) + '-' + String.fromCharCode(0x4ff) + ']'); // code points: no such letters in this file
+// the Russian words for "Gaussian" and "million" (a walls line must not name the technique's numbers), from code points too
+const TECH_WORDS = new RegExp(String.fromCharCode(0x433, 0x430, 0x443, 0x441, 0x441) + '|' + String.fromCharCode(0x43c, 0x43b, 0x43d), 'i');
 mkdirSync(SHOTS, { recursive: true });
 const CLI_DIR = join(REPO, '.cache', 'scenes', '723068d7');
 const BAKED_DIR = join(REPO, '.cache', 'scenes', '723068d7-baked');
@@ -68,8 +71,9 @@ const identical = !!bBin && Buffer.compare(bBin, cliBin) === 0;
 const tab = await page.evaluate(() => (window as any).__gsfpv.session.tunnelSelfTest(20, 25, 11));
 
 // ---- bd04e182 (8.7 M Gaussians at LOD 0, lod-meta.json served brotli-encoded): (a) the bake
-// reads the encoded files and builds walls (the v0.3 gates allow this size); (b) the refusal path
-// with numbers, in Russian, forced by fake GPU limits on the same scene.
+// reads the encoded files and builds walls (the v0.3 gates allow this size); (b) with fake GPU limits
+// that fit no level the build still ends with walls (walls stage W1: it never refuses a scan), and
+// the Russian line names no Gaussians and no limit.
 // GPU safety: this PC blue-screened with a heavy bake next to a DaVinci render; bake only if idle.
 const gpuBusy = (() => { try { return Number(execSync('nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits').toString().trim().split(/\r?\n/)[0]) > 40; } catch { return false; } })();
 // refusal first: once real walls are baked they are cached and the build button is gone
@@ -78,9 +82,11 @@ await waitReady(page, 180000);
 await page.evaluate(() => (window as any).__gsfpv.walls.fakeLimits({ maxBufferSize: 64e6, maxStorageBufferBindingSize: 64e6 }));
 await page.click('[data-action="bake"]');
 let refusal: Record<string, unknown> | null = null;
-for (let i = 0; i < 60 && !refusal; i++) { refusal = await page.evaluate(() => (window as any).__gsfpv.bake ?? null); if (!refusal) await page.waitForTimeout(500); }
+for (let i = 0; i < 360 && !refusal; i++) { refusal = await page.evaluate(() => (window as any).__gsfpv.bake ?? null); if (!refusal) await page.waitForTimeout(500); }
 const refusalText = await page.locator('[data-testid="bake-status"]').textContent();
 await page.screenshot({ path: join(SHOTS, 'c-bd04e182-refused.jpg') });
+// the walls of the lighter way are in the store now: clear it so the real build below runs
+await page.evaluate(() => (window as any).__gsfpv.walls.clear());
 let big: Record<string, unknown> | null = null;
 if (!gpuBusy) {
     await page.goto(fly('ru', 'scene=bd04e182&nowarn=1&input=touch'));
@@ -96,7 +102,7 @@ await browser.close();
 
 const pass = ready.status === 'ready' && before.hasCollision === false && !!bake && bake.ok === true && after.hasCollision && !after.badge && after.spawnFree
     && Math.abs(relDiff) <= 0.01 && tab.passes === 20 && tab.penetrations === 0
-    && !!refusal && refusal.refused === true && /\d/.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '')
+    && !!refusal && refusal.ok === true && !refusal.refused && !TECH_WORDS.test(refusalText ?? '') && CYRILLIC.test(refusalText ?? '')
     && (gpuBusy || (!!big && big.ok === true && big.hasCollisionAfter === true));
 const file = writeEvidence('c-bake', {
     site: SITE,

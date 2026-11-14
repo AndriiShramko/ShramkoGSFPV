@@ -234,6 +234,214 @@ body {
   }
 }
 
+/* The Fly by Sound figures (components/SoundFigure.tsx). Every element's own place is the still frame; motion only
+   when the reader allows it. Nothing blinks: opacity changes at most once a second (the 3 flashes rule). The wall
+   figure's 4 s approach is the 4 s of its time strip (the Soft theme's ttcFarS). */
+@media (prefers-reduced-motion: no-preference) {
+  .sound-fig .sf-rise {
+    animation: sf-rise 7s ease-in-out infinite;
+  }
+  .sound-fig .sf-pulse {
+    animation: sf-pulse 1.25s ease-in-out infinite;
+  }
+  .sound-fig .sf-approach {
+    animation: sf-approach 6s linear infinite;
+  }
+  .sound-fig .sf-cursor {
+    animation: sf-cursor 6s linear infinite;
+  }
+  .sound-fig .sf-turn {
+    transform-origin: 160px 160px;
+    animation: sf-turn 7s ease-in-out infinite;
+  }
+  .sound-fig .sf-low {
+    animation: sf-low 7s linear infinite;
+  }
+  .sound-fig .sf-high {
+    animation: sf-high 7s linear infinite;
+  }
+  .sound-fig .sf-course {
+    animation: sf-course 6s linear infinite;
+  }
+  .sound-fig .sf-note1 {
+    animation: sf-note1 6s linear infinite;
+  }
+  .sound-fig .sf-note2 {
+    animation: sf-note2 6s linear infinite;
+  }
+  .sound-fig .sf-note3 {
+    animation: sf-note3 6s linear infinite;
+  }
+  .sound-fig .sf-key {
+    animation: sf-key 9s linear infinite;
+  }
+  .sound-fig .sf-key2 {
+    animation-delay: 1s;
+  }
+  .sound-fig .sf-key3 {
+    animation-delay: 2s;
+  }
+  .sound-fig .sf-key4 {
+    animation-delay: 3s;
+  }
+  .sound-fig .sf-key5 {
+    animation-delay: 4s;
+  }
+  .sound-fig .sf-key6 {
+    animation-delay: 5s;
+  }
+  .sound-fig .sf-key7 {
+    animation-delay: 6s;
+  }
+  .sound-fig .sf-key8 {
+    animation-delay: 7s;
+  }
+  .sound-fig .sf-key9 {
+    animation-delay: 8s;
+  }
+}
+@keyframes sf-rise {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-60px);
+  }
+  70% {
+    transform: translateY(40px);
+  }
+}
+@keyframes sf-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+/* 0-66.7 %: the 4 s approach; then the drone waits at the wall for 2 s */
+@keyframes sf-approach {
+  0% {
+    transform: translate(-192px, 76px);
+  }
+  66.7%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes sf-cursor {
+  0% {
+    transform: translateX(-272px);
+  }
+  66.7%,
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes sf-turn {
+  0%,
+  8% {
+    transform: rotate(58deg);
+  }
+  42%,
+  78% {
+    transform: rotate(0deg);
+  }
+  96%,
+  100% {
+    transform: rotate(58deg);
+  }
+}
+@keyframes sf-low {
+  0%,
+  36% {
+    opacity: 1;
+  }
+  44%,
+  80% {
+    opacity: 0;
+  }
+  84%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes sf-high {
+  0%,
+  36% {
+    opacity: 0;
+  }
+  /* off by 84 %: the nose is 13.4 degrees off then (sf-turn's ease-in-out from 78 %), the package drops the octave at 11 */
+  44%,
+  80% {
+    opacity: 1;
+  }
+  84%,
+  100% {
+    opacity: 0;
+  }
+}
+/* the drone runs x 16..272; it crosses the gates at x 90, 160, 230: 22 %, 42 %, 63 % of the cycle (flight 0-75 %) */
+@keyframes sf-course {
+  0% {
+    transform: translateX(-256px);
+  }
+  75%,
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes sf-note1 {
+  0%,
+  21% {
+    opacity: 0;
+  }
+  24%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sf-note2 {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  45%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sf-note3 {
+  0%,
+  62% {
+    opacity: 0;
+  }
+  65%,
+  92% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes sf-key {
+  0%,
+  12% {
+    opacity: 1;
+  }
+  4% {
+    opacity: 0.55;
+  }
+}
+
 /* Real screenshots of the simulator (lib/shots.ts): the sliding band, the tour's framed pairs,
    section backdrops, the gallery strip and its lightbox. In the components layer, so a utility
    class on the same element still wins. Motion comes only from components/Parallax (a transform). */

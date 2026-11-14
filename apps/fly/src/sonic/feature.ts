@@ -22,7 +22,7 @@
 import { bindingOf } from '@gsfpv/prefs';
 import { S, attitude } from '@gsfpv/sim-core';
 import { sonicLinkPath } from '@gsfpv/scenes/sonic-link';
-import { DICTS, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
+import { DICTS, SCAN_FREE_ID, createSceneSampler, createTranslator } from '@shramko/sonic-fpv';
 import { estimateSpeechS } from '@shramko/sonic-fpv/audio';
 import type { AnalyticWorldInfo, FlightSample, LessonDef, LessonWorldRef, SessionEvent, SonicWorld, SpeechLine, TrackFile } from '@shramko/sonic-fpv';
 import { FlightSession } from '../session';
@@ -46,11 +46,14 @@ import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
 import type { LessonPage } from './lessons';
+import { wallsThen } from '../app/walls-then';
 import { PrimitiveStage, worldPrims } from './primitives';
 import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
+import { askCourse, randomSeed } from './course-ask';
+import { soundCourseSeed } from '../app/builtin/sonic-flight';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
@@ -134,15 +137,17 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
     const w: LessonWorldRef = lesson.world;
     if (w.kind !== 'scan') return null;
     const key = `${w.track?.id ?? ''}@${w.track?.version ?? 0}`;
-    let pending = tracks.get(key);
+    // the free flight over a scan (train 2, scan-free) names no track: nothing to fetch, no gates
+    let pending: Promise<TrackFile | null> | undefined = w.track ? tracks.get(key) : Promise.resolve(null);
     if (!pending) {
         // the release serves the track next to the page's own files, under its base (/fly/)
-        pending = loadLessonTrack(w, fetch, import.meta.env.BASE_URL);
-        tracks.set(key, pending);
-        pending.catch(() => tracks.delete(key));
+        const loading = loadLessonTrack(w, fetch, import.meta.env.BASE_URL);
+        tracks.set(key, loading);
+        loading.catch(() => tracks.delete(key));
+        pending = loading;
     }
     const say = (line: string): void => void entry.setup.audio.engine.say({ key: line }, { interrupt: false }).catch(() => undefined);
-    let track: TrackFile;
+    let track: TrackFile | null;
     try {
         track = await pending;
     } catch (e) {
@@ -173,12 +178,36 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
         spawn: { pos: [now.spawn[0], now.spawn[1], now.spawn[2]], yawDeg: now.spawn[3] },
         // asked each time: the session is replaced by a scene switch, the walls by a refine
         src: { collision: () => ctx.session.collision, transform: () => ctx.session.transform }
-    });
+    }, { course: lesson.id === SCAN_FREE_ID });
+}
+
+/**
+ * Train 2, S3: a course of gates in the scan flown now (course-ask.ts), for N in a free scan flight. The first ask takes the seed of
+ * the page's course= link (the course Shift+G made on the sighted page that opened this one), later ones a random seed. The course
+ * goes into the tracks cache under its id and version, so the lesson that names it (scanCourseLesson) finds it without a fetch.
+ */
+function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonNullable<LessonPage['course']> {
+    // the address as it is now, read the way the other features read it (app/env.ts is the one reader of the page's query at boot;
+    // packages/prefs/test/main-audit.test.ts)
+    let linkSeed = soundCourseSeed(new URL(location.href).search);
+    return {
+        key: () => names.of('scene.next'),
+        async ask() {
+            const seed = linkSeed ?? randomSeed();
+            linkSeed = null;
+            const a = await askCourse(ctx.session, seed);
+            if (a.ok) tracks.set(`${a.track.id}@${a.track.version}`, Promise.resolve(a.track));
+            return a;
+        }
+    };
 }
 
 /** The page as the lesson host sees it. */
 function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
+        course: courseOf(ctx, tracks, names),
+        // walls lane: a free flight over a scan without walls gets them built (progress in the walls box) and goes on with them
+        walls: { build: () => wallsThen(ctx, () => {}).then((r) => r === 'now' || r === 'built') },
         mode,
         store: ctx.prefs,
         locale,
@@ -308,7 +337,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     screen?.bind({
         onStart: (id) => {
             closeMenu();
-            void h.open(id).then((ok) => { if (ok) focusFlight(); else showMenu(); });
+            // the scan button makes the scan's free flight new from the page's link (review SN-2), whatever was flown before
+            void h.openFromScreen(id, entry.freeOf).then((ok) => { if (ok) focusFlight(); else showMenu(); });
         },
         // closed over a lesson whose progress was reset under it (v13-int step 5), or whose runner left for the screen (review F3: B at the
         // path's first lesson), that lesson starts again from its beginning; a lesson still running goes on where it was
@@ -541,7 +571,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // (a scan lesson before step 10) leaves the pilot at the start screen, not on a silent page
     if (entry.lessonId) {
         if (entry.world) h.seed(entry.lessonId, entry.world);
-        void h.open(entry.lessonId).then((ok) => { if (ok) focusFlight(); else showMenu(); });
+        void (entry.free ? h.openFree(entry.free) : h.open(entry.lessonId)).then((ok) => { if (ok) focusFlight(); else showMenu(); });
     } else showMenu();
     ctx.hook.sonic = (withEvents = true) => ({
         lesson: h.lesson ? h.lesson.id : null,
@@ -560,6 +590,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         // distance, a one-off note of it (the preview after a gate) has none; the direction is the heading frame's (-z ahead)
         hum: (audio.engine.plan?.cues ?? []).filter((c) => c.id === 'target.hum').map((c) => ({ dir: c.dir ? [c.dir[0], c.dir[1], c.dir[2]] as [number, number, number] : null, distance: c.distance, hz: c.pitchHz })),
         beacon: entry.setup.prefs.beacon !== false,
+        // train 2 (sonic-int-review.ts R10): the cue ids of the engine's last plan (a wall cue is 'safety.wall') and the motor switch
+        cues: [...new Set((audio.engine.plan?.cues ?? []).map((c) => c.id))],
+        motor: entry.setup.prefs.motorSound === true,
         cost: mode.hearCost(),
         walls: { voxelM: ctx.session.collision ? ctx.session.collision.voxelResolution : null, builtin: !!ctx.session.builtin, scene: ctx.session.scene.id, scale: ctx.session.transform.s },
         ...craftNow(ctx),

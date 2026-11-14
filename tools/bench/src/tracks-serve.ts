@@ -35,11 +35,11 @@ export interface TracksServed {
     stop(): Promise<void>;
 }
 
-async function startApi(data: string): Promise<{ port: number; proc: ChildProcess }> {
+async function startApi(data: string, extra: Record<string, string> = {}): Promise<{ port: number; proc: ChildProcess }> {
     const python = process.env.PYTHON ?? 'python';
     // MIN_FREE_GB 0.1: the disk guard stays on but a nearly full temp disk of this machine does not refuse the probe's two saves (an estimate)
     const proc = spawn(python, ['-X', 'utf8', '-c', LAUNCH, API_DIR], {
-        env: { ...process.env, DATA_DIR: data, MIN_FREE_GB: '0.1', PYTHONIOENCODING: 'utf-8' },
+        env: { ...process.env, DATA_DIR: data, MIN_FREE_GB: '0.1', PYTHONIOENCODING: 'utf-8', ...extra },
         stdio: ['pipe', 'pipe', 'pipe']
     });
     let err = '';
@@ -59,11 +59,11 @@ async function startApi(data: string): Promise<{ port: number; proc: ChildProces
     return { port, proc };
 }
 
-/** The release build of this tree and a local API on a fresh DATA_DIR. */
-export async function serveTracks(dist = join(REPO, 'dist')): Promise<TracksServed> {
+/** The release build of this tree and a local API on a fresh DATA_DIR. `apiEnv`: extra environment of the API (the admin probe's test ADMIN_PASSWORD_HASH). */
+export async function serveTracks(dist = join(REPO, 'dist'), apiEnv: Record<string, string> = {}): Promise<TracksServed> {
     if (!existsSync(join(dist, 'release.json'))) throw new Error(`no release build in ${dist}: node scripts/build-release.mjs first`);
     const data = mkdtempSync(join(tmpdir(), 'gsfpv-tracks-data-'));
-    const api = await startApi(data);
+    const api = await startApi(data, apiEnv);
     let site: Served;
     try {
         site = await serveDist(dist, { API_PROXY: `http://127.0.0.1:${api.port}` });

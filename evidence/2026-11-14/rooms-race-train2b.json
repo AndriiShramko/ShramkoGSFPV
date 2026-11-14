@@ -1,0 +1,114 @@
+{
+  "name": "rooms-race",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-14T01:29:51.152Z",
+    "gitHead": "db6a2875",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "scene": "887f27aa",
+  "stepM": 0.3,
+  "gpuLock": "C:/dev/.gpu-lock",
+  "browser": {
+    "kind": "system-chrome",
+    "version": "157.0.8103.52",
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "why": "installed"
+  },
+  "meet": {
+    "aIn": true,
+    "bIn": true,
+    "sameRoom": true
+  },
+  "courseA": {
+    "path": [],
+    "gates": []
+  },
+  "start": {
+    "panelUp": true,
+    "focused": "rooms-race",
+    "aPrep": true,
+    "bPrep": true,
+    "aBuilt": false,
+    "bBuilt": false,
+    "aGo": false,
+    "bGo": false,
+    "a": {
+      "state": "results",
+      "course": "g1.260537231",
+      "laps": 2,
+      "racer": true,
+      "built": false,
+      "gates": 0,
+      "sent": 0,
+      "problem": null,
+      "pathPoints": 0,
+      "table": [
+        {
+          "slot": 0,
+          "nick": "Pilot-9788",
+          "laps": 0,
+          "totalMs": 0,
+          "bestMs": null,
+          "place": 1
+        },
+        {
+          "slot": 1,
+          "nick": "Pilot-1390",
+          "laps": 0,
+          "totalMs": 0,
+          "bestMs": null,
+          "place": 2
+        }
+      ],
+      "slot": 0,
+      "said": [
+        "rooms.race.prep",
+        "rooms.race.noTimes"
+      ]
+    },
+    "b": {
+      "state": "results",
+      "course": "g1.260537231",
+      "laps": 2,
+      "racer": true,
+      "built": false,
+      "gates": 0,
+      "sent": 0,
+      "problem": null,
+      "pathPoints": 0,
+      "table": [
+        {
+          "slot": 0,
+          "nick": "Pilot-9788",
+          "laps": 0,
+          "totalMs": 0,
+          "bestMs": null,
+          "place": 1
+        },
+        {
+          "slot": 1,
+          "nick": "Pilot-1390",
+          "laps": 0,
+          "totalMs": 0,
+          "bestMs": null,
+          "place": 2
+        }
+      ],
+      "slot": 1,
+      "said": [
+        "rooms.race.prep",
+        "rooms.race.noTimes"
+      ]
+    }
+  },
+  "error": "page.evaluate: TypeError: Cannot read properties of undefined (reading '0')\n    at eval (eval at evaluate (:311:30), <anonymous>:9:51)\n    at new Promise (<anonymous>)\n    at eval (eval at evaluate (:311:30), <anonymous>:1:1)\n    at eval (<anonymous>)\n    at UtilityScript.evaluate (<anonymous>:311:30)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at fly (C:\\dev\\gsfpv-v03\\tools\\bench\\src\\rooms-race.ts:50:14)\n    at main (C:\\dev\\gsfpv-v03\\tools\\bench\\src\\rooms-race.ts:128:65)\n    at async <anonymous> (C:\\dev\\gsfpv-v03\\tools\\bench\\src\\rooms-race.ts:177:85)"
+}

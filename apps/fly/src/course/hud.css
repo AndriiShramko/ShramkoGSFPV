@@ -17,6 +17,7 @@
     z-index: 4;
 }
 .course-hud[hidden],
+.course-hud.course-covered,
 .hud-off .course-hud {
     display: none;
 }

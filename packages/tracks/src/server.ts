@@ -21,23 +21,59 @@ export function validateServerTrack(input: unknown): ServerCheck {
         const x = r[k];
         return typeof x === 'object' && x !== null && !Array.isArray(x) ? (x as Record<string, unknown>) : null;
     };
-    if (typeof r.version === 'number' && r.version !== 1) issues.push('version: must be 1: the server keeps no versions yet');
-    if ('parent' in r && r.parent !== null) issues.push('parent: must be null on the server');
-    if (typeof r.title === 'string' && !SERVER_TITLE.test(r.title)) issues.push(`title: must match ${String(SERVER_TITLE)}`);
+    // tracks-plan 2.6, 2.8: the server replaces id, version, parent and created; a generated course has no parent, a pilot's
+    // edit or fork may, and carries the name the pilot typed and the pilot's own title
     const scene = sub('scene');
     if (scene && typeof scene.kind === 'string' && scene.kind !== 'scan') issues.push("scene.kind: must be 'scan'");
     if (scene && typeof scene.id === 'string' && !SERVER_SCENE_ID.test(scene.id)) issues.push('scene.id: must be 6-32 lowercase hex digits');
     const author = sub('author');
-    if (author && typeof author.kind === 'string' && author.kind !== 'generator') issues.push("author.kind: must be 'generator'");
-    // lane review TR-14 f: no free text from one pilot is served to everyone
-    if (author && typeof author.name === 'string' && author.name !== GENERATOR_NAME) issues.push(`author.name: must be '${GENERATOR_NAME}'`);
-    if ('generator' in r && r.generator === null) issues.push('generator: must name the generator');
+    const kind = author && typeof author.kind === 'string' ? author.kind : null;
+    if (kind !== null && kind !== 'generator' && kind !== 'person') issues.push("author.kind: must be 'generator' or 'person'");
+    if (kind === 'generator') {
+        if (r.version === 1 && 'parent' in r && r.parent !== null) issues.push('parent: must be null for a generated course (it is no fork)');
+        if (typeof r.title === 'string' && !SERVER_TITLE.test(r.title)) issues.push(`title: must match ${String(SERVER_TITLE)}`);
+        // lane review TR-14 f: no free text from one pilot is served to everyone under the generator's name
+        if (typeof author?.name === 'string' && author.name !== GENERATOR_NAME) issues.push(`author.name: must be '${GENERATOR_NAME}'`);
+        if ('generator' in r && r.generator === null) issues.push('generator: must name the generator');
+    } else if (kind === 'person') {
+        if (typeof author?.name !== 'string') issues.push("author.name: a pilot's course must carry the name the pilot typed");
+        else textIssues('author.name', author.name, NAME_LEN, NAME_EXTRA, issues);
+        if (typeof r.title === 'string') textIssues('title', r.title, TITLE_LEN, TITLE_EXTRA, issues);
+    }
     const gen = sub('generator');
     if (gen && typeof gen.name === 'string' && gen.name !== GENERATOR_NAME) issues.push(`generator.name: must be '${GENERATOR_NAME}'`);
+    if (Array.isArray(r.gates) && r.gates.length > SERVER_MAX_GATES) issues.push(`gates: must hold at most ${SERVER_MAX_GATES} gates on the server`);
     const params = gen?.params;
     if (typeof params === 'object' && params !== null && !Array.isArray(params)) paramIssues(params as Record<string, unknown>, issues);
     boundIssues(r, issues);
     return issues.length === 0 && v.ok ? { ok: true, track: v.value } : { ok: false, issues };
+}
+
+// tracks-plan 2.8, ESTIMATES (not measured; tracks.py has the same values): the generator makes at most 24 gates, 60 leaves
+// room for hand-added ones; a gate wider than 20 m is no gate in any scan the site serves.
+export const SERVER_MAX_GATES = 60;
+export const MAX_GATE_SIZE_M = 20;
+const NAME_LEN: readonly [number, number] = [2, 32];
+const NAME_EXTRA = " -_.'";
+const TITLE_LEN: readonly [number, number] = [3, 60];
+const TITLE_EXTRA = " -_.',!?#()+:&";
+/** the short blocklist of tracks.py BLOCKLIST (the admin hides the rest) */
+const BLOCKLIST: readonly string[] = ['fuck', 'cunt', 'nigger', 'faggot', 'porn', 'viagra', 'casino', 'kurwa', 'pierdol', 'huj', 'pizd', 'blyat'];
+const WORD_CHAR = /^[\p{L}\p{M}\p{N}]$/u;
+
+/** A text one pilot types and every pilot reads (tracks.py _text): NFC, letters, marks, digits and a few signs, no web
+ * address, no double or edge spaces, not on the blocklist. */
+export function textIssues(path: string, s: string, len: readonly [number, number], extra: string, issues: string[]): void {
+    if (s.normalize('NFC') !== s) {
+        issues.push(`${path}: must be in Unicode NFC`);
+        return;
+    }
+    if (s.length < len[0] || s.length > len[1]) issues.push(`${path}: must have ${len[0]}-${len[1]} characters`);
+    if (s.startsWith(' ') || s.endsWith(' ') || s.includes('  ')) issues.push(`${path}: must not start or end with a space or hold two spaces together`);
+    const low = s.toLowerCase();
+    if (low.includes('://') || low.includes('www.')) issues.push(`${path}: must not hold a web address`);
+    if ([...s].some((ch) => !WORD_CHAR.test(ch) && !extra.includes(ch))) issues.push(`${path}: may hold only letters, digits and the signs '${extra}'`);
+    if (BLOCKLIST.some((w) => low.includes(w))) issues.push(`${path}: holds a word that is not allowed`);
 }
 
 // Bounds against hostile files (lane review TR-1, TR-2, TR-3; tracks.py has the same numbers), ESTIMATES not measured: no scan
@@ -46,8 +82,8 @@ export function validateServerTrack(input: unknown): ServerCheck {
 export const MAX_COORD = 10000;
 /** one leg between two gates (and the leg back on a closed course), flown m */
 export const MAX_LEG_M = 60;
-/** the keys generateCourse writes into generator.params */
-export const PARAM_KEYS: readonly string[] = ['marginM', 'cellM', 'freeDigest', 'wanted', 'rooms', 'volumeM3', 'tries', 'walked', 'stop', 'closed', 'proof'];
+/** the keys generateCourse writes into generator.params (scale, legMinM, legMaxM: a smaller course of fitCourse, review T2-2) */
+export const PARAM_KEYS: readonly string[] = ['marginM', 'cellM', 'freeDigest', 'wanted', 'rooms', 'volumeM3', 'tries', 'walked', 'stop', 'closed', 'proof', 'scale', 'legMinM', 'legMaxM'];
 const PROOF_KEYS: readonly string[] = ['ok', 'marginM', 'pathM'];
 const PARAM_TEXT_MAX = 40;
 
@@ -77,6 +113,12 @@ function boundIssues(r: Record<string, unknown>, issues: string[]): void {
     const gates = Array.isArray(r.gates) ? (r.gates as unknown[]) : [];
     const pts: [number, number, number][] = [];
     gates.forEach((g, i) => {
+        const shape = typeof g === 'object' && g !== null ? (g as Record<string, unknown>).shape : null;
+        if (typeof shape === 'object' && shape !== null) {
+            const sh = shape as Record<string, unknown>;
+            const big = 'diameter' in sh ? sh.diameter : sh.side;
+            if (isNum(big) && big > MAX_GATE_SIZE_M) issues.push(`gates[${i}].shape: must be at most ${MAX_GATE_SIZE_M} m across on the server`);
+        }
         const pos = vec(typeof g === 'object' && g !== null ? (g as Record<string, unknown>).pos : null);
         if (!pos) return;
         if (pos.some(far)) issues.push(`gates[${i}].pos: must be within ${MAX_COORD} of the origin`);

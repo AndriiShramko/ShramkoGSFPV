@@ -24,7 +24,8 @@ import { SimClock } from '../simclock';
 import { assertWalls } from '../bake';
 import { wallsState } from '../flightwalls';
 import type { WallsState } from '../flightwalls';
-import { SessionLoader } from './loader';
+import { SessionLoader, firstWalls, wallsPlaces } from './loader';
+import type { WallsFrom } from './loader';
 import type { LoadProgress } from './loader';
 import type { FlyNow, RevealReason } from './reveal';
 import { LivesPlayer, lifeProblem } from './replay';
@@ -181,6 +182,8 @@ export class FlightSession {
     /** the walls the craft flies in: the scan's, seen through `transform` (E.7) */
     collision: VoxelCollision | null = null;
     collisionSha256: string | null = null;
+    /** where the scan's own walls came from (null: none loaded; a built-in world counts as shipped) */
+    wallsFrom: WallsFrom | null = null;
     world: VoxelContactWorld | null = null;
     /** the scan's own walls, untransformed: what replays rebuild from (E.7) */
     baseCollision: VoxelCollision | null = null;
@@ -361,7 +364,7 @@ export class FlightSession {
         // (a built-in world's are in memory already)
         const walls = built
             ? Promise.resolve({ collision: built.collision, world: built.contact ?? new VoxelContactWorld(built.collision), sha256: built.sha256, ms: 0 })
-            : this.scene.collisionUrl ? loader.loadWalls(this.scene.collisionUrl) : Promise.resolve(null);
+            : firstWalls(wallsPlaces(this.scene), (u) => loader.loadWalls(u));
         walls.catch(() => { /* awaited below; this only keeps an early failure from counting as unhandled */ });
         await splatLoad;
         // the chunks stream once the engine runs; until the flight model exists, look from the scan's camera
@@ -389,6 +392,7 @@ export class FlightSession {
             this.baseWorld = w.world;
             this.scaleWalls();
             this.collisionSha256 = w.sha256;
+            this.wallsFrom = 'from' in w ? w.from : 'shipped';
             this.timings.collisionMs = w.ms;
         }
         // a built-in world's start is its lesson's: placed by the world's author, not searched for

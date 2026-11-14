@@ -1,0 +1,83 @@
+{
+ "what": "connect-probe.mjs: a controller reaches the page by itself (lane connect C2)",
+ "base": "http://localhost:5760/en",
+ "at": "2026-11-13T22:38:05.183Z",
+ "browser": "157.0.8103.52",
+ "runs": {
+  "pad": {
+   "controlsShown": true,
+   "wizard": "stir/ready",
+   "key": "",
+   "afterMs": 3129,
+   "errors": []
+  },
+  "returning": {
+   "reached": "flight",
+   "key": null,
+   "afterMs": 2659,
+   "answersIn2s": 185,
+   "sockets": 1,
+   "errors": []
+  },
+  "nohelper": {
+   "permissions": "granted",
+   "presses": 1,
+   "line": {
+    "state": "nobridge",
+    "text": "The helper program does not answer. 1. Double-click start-dji-helper.cmd in the folder you downloaded. 2. Leave its window open. The simulator connects by itself as soon as it runs, or press \"Fly with the helper program\" again. If you blocked Chrome's question about apps on this device, allow it in the site settings (the icon left of the address)."
+   },
+   "choosers": {
+    "hid": 1,
+    "usb": 1,
+    "claims": 1
+   },
+   "bridgeWord": false,
+   "connectSay": "Your controller is being opened. What the simulator found and what to do next is just below.",
+   "sayInView": true,
+   "sayBox": [
+    835.1,
+    900.3,
+    900
+   ],
+   "afterHelperMs": 1451,
+   "after": {
+    "wizard": "stir/active",
+    "say": null,
+    "answers": 60
+   },
+   "errors": []
+  }
+ },
+ "shot1920": {
+  "x": 410,
+  "y": 89,
+  "w": 560,
+  "h": 56,
+  "inView": true
+ },
+ "shot844": {
+  "x": 16,
+  "y": 89,
+  "w": 560,
+  "h": 56,
+  "inView": true
+ },
+ "pass": true,
+ "checks": {
+  "shots.connectButtonInView1920": true,
+  "shots.connectButtonInView844": true,
+  "pad.controlsFirst": true,
+  "pad.wizardWithNoPress": true,
+  "pad.noPageErrors": true,
+  "returning.checkOrFlightWithNoPress": true,
+  "returning.framesFlow": true,
+  "returning.noPageErrors": true,
+  "nohelper.plainLine": true,
+  "nohelper.noWordBridge": true,
+  "nohelper.onePress": true,
+  "nohelper.lineUnderButton": true,
+  "nohelper.helperLineInView": true,
+  "nohelper.connectsWhenHelperStarts": true,
+  "nohelper.noPageErrors": true
+ }
+}

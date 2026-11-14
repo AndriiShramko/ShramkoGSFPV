@@ -16,6 +16,10 @@ export interface RoomKeyDeps {
     openPanel(): void;
     sayWho(): void;
     sayNoRoom(): void;
+    /** lane rooms2 (R27): what 9 does (rooms/vote.ts ninePress); without it 9 opens the panel */
+    nine?(): 'join' | 'agree' | 'panel';
+    joinOpen?(): void;
+    agree?(): void;
 }
 
 export interface RoomKey { run: ActionHandler; opts: HandlerOptions }
@@ -31,7 +35,11 @@ export function roomKeys(d: RoomKeyDeps): { panel: RoomKey; who: RoomKey } {
         panel: {
             run: (e) => {
                 e.preventDefault();
-                if (!e.repeat) d.openPanel();
+                if (e.repeat) return;
+                const what = d.nine?.() ?? 'panel';
+                if (what === 'join' && d.joinOpen) d.joinOpen();
+                else if (what === 'agree' && d.agree) d.agree();
+                else d.openPanel();
             },
             opts: { when: () => !d.dialogUp() }
         },

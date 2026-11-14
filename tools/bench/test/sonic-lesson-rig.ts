@@ -8,7 +8,7 @@
 // page clock (performance.now) itself, so a lesson of minutes runs in seconds. Not a test file (the name has no .test).
 import { vi } from 'vitest';
 import { MODE_CHANNEL, S, attitude } from '../../../packages/sim-core/src';
-import { CuePlanner, createTranslator, defaultPrefs, getBuiltinTheme, nextLesson } from '../../../packages/sonic-fpv/src';
+import { CuePlanner, SCAN_FREE_ID, createTranslator, defaultPrefs, getBuiltinTheme, nextLesson } from '../../../packages/sonic-fpv/src';
 import type { ActiveCue, CueEvent, FlightSample, LessonDef, LessonLayers, Locale, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Translator, Vec3 } from '../../../packages/sonic-fpv/src';
 import { estimateSpeechS } from '../../../packages/sonic-fpv/src/audio/speech';
 import { FlightSession } from '../../../apps/fly/src/session';
@@ -252,7 +252,7 @@ export class Rig {
      * A page on the first lesson's world (or, with `scan`, on that scan). `store`: the pilot's saved state of an earlier page
      * (progress, best times) instead of an empty one.
      */
-    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore> } = {}): Promise<Rig> {
+    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course']; walls?: LessonPage['walls'] } = {}): Promise<Rig> {
         const rig = new Rig();
         if (o.store) rig.store = o.store;
         const scan = o.scan ?? null;
@@ -305,16 +305,30 @@ export class Rig {
                     rig.swapping = false;
                 }
             },
-            scanLesson: async () =>
+            // the lesson's own track (feature.ts scanLesson): none for the free flight over a scan, the course a page's course.ask gave
+            // for a course in it (S3), else the scan's track; the course world only for the free flight (feature.ts: scan-free)
+            scanLesson: async (lesson) =>
                 scan
-                    ? buildScanLesson(scan.track, {
+                    ? buildScanLesson(rig.trackOf(lesson, scan.track), {
                           sceneId: scan.sceneId,
                           sceneVersion: 1,
                           spawn: { pos: [scan.spawn[0], scan.spawn[1], scan.spawn[2]], yawDeg: scan.spawn[3] },
                           // the walls are flown already (a built-in session has the identity transform): the scene size is the scan's
                           src: { collision: () => rig.session.collision, transform: () => ({ s: scan.transform[0], t: [scan.transform[1], scan.transform[2], scan.transform[3]] }) }
-                      })
+                      }, { course: lesson.id === SCAN_FREE_ID })
                     : null,
+            course: o.course
+                ? {
+                      key: o.course.key,
+                      ask: async () => {
+                          const a = await o.course!.ask();
+                          // what feature.ts courseOf does with an answer: the course goes into the tracks cache under its id and version
+                          if (a.ok) rig.courses.set(`${a.track.id}@${a.track.version}`, a.track);
+                          return a;
+                      }
+                  }
+                : undefined,
+            walls: o.walls,
             showMenu: () => { rig.menus++; },
             clock: () => rig.clock.t,
             keyNames: () => rig.keyNames,
@@ -325,6 +339,16 @@ export class Rig {
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);
         return rig;
+    }
+
+    /** the courses the page's course.ask gave (S3), by id@version, as feature.ts keeps them in its tracks cache */
+    readonly courses = new Map<string, TrackFile>();
+
+    /** The track a scan lesson names: none (the free flight), a course asked for on this page, else the scan's own track. */
+    trackOf(lesson: LessonDef, own: TrackFile): TrackFile | null {
+        const w = lesson.world;
+        if (w.kind !== 'scan' || w.track === null) return w.kind === 'scan' ? null : own;
+        return this.courses.get(`${w.track.id}@${w.track.version}`) ?? own;
     }
 
     private async startScan(scan: RigScan): Promise<FlightSession> {

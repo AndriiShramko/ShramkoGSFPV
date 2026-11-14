@@ -114,6 +114,8 @@ export const KEYMAP: readonly KeyBinding[] = [
     // Shift+T puts the course (the obstacles, the arrows, the lap timer) on and off in flight, Shift+G makes a new random course
     { action: 'course.toggle', keys: [{ code: 'KeyT', shift: true, cap: 'Shift+T', aria: 'Shift+T' }], when: 'always', labelKey: 'keys.course.toggle', status: 'shipped' },
     { action: 'course.generate', keys: [{ code: 'KeyG', shift: true, cap: 'Shift+G', aria: 'Shift+G' }], when: 'always', labelKey: 'keys.course.generate', status: 'shipped' },
+    // train 2 (tracks-plan 2.11): Shift+B opens the course editor (B: build; no flying key, no Fly by Sound letter)
+    { action: 'course.edit', keys: [{ code: 'KeyB', shift: true, cap: 'Shift+B', aria: 'Shift+B' }], when: 'always', labelKey: 'keys.course.edit', status: 'shipped' },
     { action: 'sonic.record', keys: [letter('T')], when: 'sonic', labelKey: 'keys.sonic.record', status: 'shipped' },
     { action: 'sonic.send', keys: [letter('U')], when: 'sonic', labelKey: 'keys.sonic.send', status: 'shipped' },
     { action: 'sonic.status', keys: [letter('I')], when: 'sonic', labelKey: 'keys.sonic.status', status: 'shipped' },

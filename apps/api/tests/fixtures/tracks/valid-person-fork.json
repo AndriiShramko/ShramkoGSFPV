@@ -1,0 +1,98 @@
+{
+  "author": {
+    "kind": "person",
+    "name": "Ann"
+  },
+  "created": "2026-11-13T10:00:00.000Z",
+  "format": "shramko-sonic-track/1",
+  "gates": [
+    {
+      "direction": "forward",
+      "id": "g1",
+      "pos": [
+        1.5,
+        0.2,
+        2
+      ],
+      "quat": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g2",
+      "pos": [
+        6.5,
+        0.4,
+        2
+      ],
+      "quat": [
+        0.7071068,
+        0,
+        0.7071068,
+        0
+      ],
+      "shape": {
+        "bar": 0.08,
+        "kind": "square",
+        "side": 1.4
+      }
+    },
+    {
+      "direction": "forward",
+      "id": "g3",
+      "pos": [
+        6.5,
+        0.4,
+        8
+      ],
+      "quat": [
+        0,
+        0,
+        1,
+        0
+      ],
+      "shape": {
+        "diameter": 1.6,
+        "kind": "ring",
+        "tube": 0.08
+      }
+    }
+  ],
+  "generator": null,
+  "id": "g1.9ix",
+  "laps": 3,
+  "parent": {
+    "id": "39e63ce9-0000abcd",
+    "version": 1
+  },
+  "scene": {
+    "id": "39e63ce9",
+    "kind": "scan",
+    "version": 1
+  },
+  "start": {
+    "pos": [
+      0,
+      0.2,
+      0
+    ],
+    "yawDeg": 0
+  },
+  "title": "Ann's loop",
+  "transform": [
+    1,
+    0,
+    0,
+    0
+  ],
+  "version": 1
+}

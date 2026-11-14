@@ -5,7 +5,10 @@
 import type { Profile, ThrottleStyle } from '@gsfpv/input';
 import { KeyboardSource } from '../devices/keyboard';
 import { findSavedHid, findSavedGamepad } from '../devices/reconnect';
-import { findSavedRc2, namesRc2 } from '../devices/dji-rc2-source';
+import { findSavedRc2, namesRc2, tellWhenLost } from '../devices/dji-rc2-source';
+import { Rc2BridgeDevice, lnaStatus } from '../devices/dji-rc2-bridge';
+import type { BridgeOptions, PermissionsLike } from '../devices/dji-rc2-bridge';
+import { HidSource } from '../devices/hid';
 import { choiceOffer } from '../devices/known';
 import { TouchSticks } from '../devices/touch';
 import { EasyPilot } from '../play/easy';
@@ -53,12 +56,38 @@ export async function resumeInput(): Promise<RadioChoice | null> {
     const look = (k: string): Profile | null => trusted(k, last);
     // the RC 2 is opened and asked only when a saved setup names it (review GR-5): no other DJI device gets requests
     const rc2 = namesRc2(keys);
-    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null).then((c) => c ?? (rc2 ? findSavedRc2(look) : null)) : Promise.resolve(null));
+    // lane connect C2: then the helper program for DJI controllers, only when Chrome already allows the page to reach it
+    const hid = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('hid:')) ? findSavedHid(look, last?.kind === 'hid' ? last.key ?? null : null).then((c) => c ?? (rc2 ? findSavedRc2(look) : null)).then((c) => c ?? (rc2 ? findSavedRc2Helper(look) : null)) : Promise.resolve(null));
     const pad = (): Promise<RadioChoice | null> => (keys.some((k) => k.startsWith('gp:')) ? findSavedGamepad(look) : Promise.resolve(null));
     for (const find of last?.kind === 'gamepad' ? [pad, hid] : [hid, pad]) {
         const c = await find();
         if (c) return c;
     }
+    return null;
+}
+
+/**
+ * Lane connect C2 (a): a saved DJI RC 2 setup through the helper program (tools/rc-bridge) with no press. Only when
+ * Chrome's permission to reach 127.0.0.1 is already granted, or the browser has no such permission: the page never
+ * causes Chrome's question on load. The helper not running is a quiet null (the Controls screen offers it).
+ */
+export async function findSavedRc2Helper(look: (key: string) => Profile | null, o: BridgeOptions = {}): Promise<RadioChoice | null> {
+    const perms = o.permissions === undefined ? ((globalThis.navigator as unknown as { permissions?: PermissionsLike } | undefined)?.permissions ?? null) : o.permissions;
+    const st = await lnaStatus(perms).catch(() => null);
+    if (st && st.state !== 'granted') return null;
+    const d = new Rc2BridgeDevice(o);
+    const src = new HidSource();
+    try {
+        await src.open(d as unknown as HIDDevice);
+    } catch {
+        src.close();
+        return null;
+    }
+    // the fingerprint holds the report length: wait for the first report (as reconnect.ts findSavedHid)
+    await new Promise<void>((res) => { const k = setTimeout(res, 1500); src.onFrame = () => { clearTimeout(k); src.onFrame = null; res(); }; });
+    const profile = look(src.key);
+    if (profile) { tellWhenLost(d); return { kind: 'hid', profile, hid: src }; }
+    src.close();
     return null;
 }
 

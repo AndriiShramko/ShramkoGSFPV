@@ -19,6 +19,10 @@ export interface PanelModel {
     join(id: string): void;
     leave(): void;
     list(): Promise<RoomInfo[] | null>;
+    /** lane rooms2 (R27): the vote block in a room; the open vote, or what Propose would ask for */
+    vote?: { open: { title: string; yes: number; need: number; mine: boolean } | null; next: string | null; propose(): void; agree(): void } | null;
+    /** lane rooms2, stage Q2: "Race on a course" and the last race's table as text rows (race.ts tableRows) */
+    race?: { start(): void; rows: readonly string[][] } | null;
 }
 
 export function roomsPanel(parent: HTMLElement, m: PanelModel, onClose: () => void): { close: () => void } {
@@ -42,6 +46,39 @@ export function roomsPanel(parent: HTMLElement, m: PanelModel, onClose: () => vo
     } }, t('rooms.nick.save'));
     p.body.append(h('div', { class: 'rooms-nick' }, h('label', { for: 'rooms-nick' }, t('rooms.nick.label')), ' ', nickIn, ' ', nickSave), nickNote);
 
+    let first: HTMLElement = nickIn;
+    // lane rooms2, stage Q2: the race comes first in a room, so a race is 9 then Enter (the vote's Propose is one Tab further)
+    if (m.room && m.race) {
+        const rc = m.race;
+        const box = h('div', { class: 'rooms-race', 'data-testid': 'rooms-race' });
+        first = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-race', onclick: () => { close(); rc.start(); } }, t('rooms.race.button'));
+        box.append(first);
+        if (rc.rows.length > 0) {
+            const head = ['place', 'nick', 'laps', 'total', 'best', 'gap'].map((k) => h('th', { scope: 'col' }, t(`rooms.race.col.${k}`)));
+            const body = h('tbody', {});
+            for (const r of rc.rows) body.append(h('tr', {}, ...r.map((c) => h('td', {}, c))));
+            box.append(h('table', { class: 'rooms-race-table', 'data-testid': 'rooms-race-table' }, h('caption', {}, t('rooms.race.table')), h('thead', {}, h('tr', {}, ...head)), body));
+        }
+        p.body.append(box);
+    }
+    if (m.room && m.vote) {
+        const v = m.vote;
+        const box = h('div', { class: 'rooms-vote', 'data-testid': 'rooms-vote' }, h('h3', {}, t('rooms.vote.title')));
+        if (v.open) {
+            box.append(h('p', { role: 'status' }, t('rooms.vote.state', { scan: v.open.title, yes: v.open.yes, need: v.open.need })));
+            if (!v.open.mine) {
+                const agree = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-agree', onclick: () => { close(); v.agree(); } }, t('rooms.vote.agree', { scan: v.open.title }));
+                if (first === nickIn) first = agree;
+                box.append(agree);
+            }
+        } else if (v.next !== null) {
+            const propose = h('button', { type: 'button', class: 'btn primary', 'data-action': 'rooms-propose', onclick: () => { close(); v.propose(); } }, t('rooms.vote.propose', { scan: v.next }));
+            // the race button, when there is one, keeps the first focus
+            if (first === nickIn) first = propose;
+            box.append(propose, h('p', { class: 'muted small' }, t('rooms.vote.help')));
+        }
+        p.body.append(box);
+    }
     if (m.room) {
         const r = m.room;
         const link = h('input', { type: 'text', readonly: true, value: r.link, id: 'rooms-link', 'data-testid': 'rooms-link' });
@@ -112,6 +149,6 @@ export function roomsPanel(parent: HTMLElement, m: PanelModel, onClose: () => vo
     void fill();
     timer = setInterval(() => void fill(), LIST_REFRESH_MS);
     parent.append(p.root);
-    nickIn.focus();
+    first.focus();
     return { close };
 }

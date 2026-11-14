@@ -2,6 +2,7 @@
 // next gate, the last and the best lap. Its own block under #ui; H hides it with the rest of the HUD (#ui.hud-off, hud.css).
 import { t } from '../i18n';
 import type { LapView } from '@gsfpv/tracks';
+import { COVERED_CLASS } from './cover';
 import { pushUnderNote } from './note-slot';
 import './hud.css';
 
@@ -73,6 +74,16 @@ export class CourseHud {
         this.el.style.setProperty('--course-push', '0px');
         this.push = pushUnderNote(up, this.el.getBoundingClientRect(), this.push);
         this.el.style.setProperty('--course-push', `${this.push}px`);
+    }
+
+    /**
+     * A full window is up (the pause menu, a panel, the controls screen): the lap block is not drawn over it (owner, train 2:
+     * "the clock and all these statistics lie over the menu"). A class, not `hidden`: update() keeps its own state under it.
+     */
+    cover(on: boolean): void {
+        if (this.el.classList.contains(COVERED_CLASS) === on) return;
+        this.el.classList.toggle(COVERED_CLASS, on);
+        if (!on) this.again();
     }
 
     update(v: LapView | null, gates: number): void {

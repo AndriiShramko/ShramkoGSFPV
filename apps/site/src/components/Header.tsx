@@ -21,13 +21,15 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-8">
         <a href={onLanding ? "#top" : `/${locale}/`} className="flex min-h-11 items-center gap-2 text-[15px] font-semibold tracking-tight text-ink" aria-label={t("home")}>
           <Logo />
-          <span>ShramkoGSFPV</span>
+          {/* Under 360 px the four language buttons (44 px touch targets each) and the wordmark do not fit side by side
+              (320 px: 356 px wide, U:/Temp/gsfpv-train2/page/wide.mjs); the logo stays, the link keeps its label. */}
+          <span className="max-[359px]:hidden">ShramkoGSFPV</span>
         </a>
         <nav aria-label={t("sections")} className="hidden min-[1152px]:block">
           <ul className="flex items-center gap-1">
             {ANCHORS.map((a) => (
               <li key={a}>
-                <a href={`${base}#${a}`} className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-muted hover:text-ink">
+                <a href={`${base}#${a}`} className="inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-2 text-sm text-muted hover:text-ink">
                   {t(`anchors.${a}`)}
                 </a>
               </li>
@@ -36,7 +38,7 @@ export default function Header({ locale, page, onLanding }: { locale: Locale; pa
         </nav>
         <div className="flex items-center gap-2">
           <LangSwitcher locale={locale} page={page} label={t("language")} where="nav" />
-          <a href={flyPath(locale)} data-track="fly_click" className="btn-primary hidden min-h-11 px-4 text-sm md:inline-flex">
+          <a href={flyPath(locale)} data-track="fly_click" className="btn-primary hidden min-h-11 whitespace-nowrap px-4 text-sm md:inline-flex">
             {t("fly")}
           </a>
         </div>

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Put the rooms service on the hub and (re)start its container (release order step 3, deploy/README.md "Rooms").
-#   bash deploy/release-rooms.sh [--compose]       upload apps/rooms/{ws,protocol,rooms}.py, then restart gsfpv-rooms
+#   bash deploy/release-rooms.sh [--compose]       upload apps/rooms/{ws,protocol,votes,race,rooms}.py, then restart gsfpv-rooms
 #   bash deploy/release-rooms.sh --undo [--compose] the .prev copies go back, then the same restart
 # --compose   also deploy/compose.yml: the first release (the service is new) and every change of its limits.
 #             `docker compose up -d gsfpv-rooms` creates or recreates ONLY that container; web and api are not touched.
@@ -15,7 +15,7 @@ KEY="${GSFPV_KEY/#\~/$HOME}"
 SSH=(ssh -p "$GSFPV_PORT" -i "$KEY" -o BatchMode=yes "$GSFPV_HOST")
 SCP=(scp -q -P "$GSFPV_PORT" -i "$KEY" -o BatchMode=yes)
 B="$GSFPV_BASE"
-FILES=(ws.py protocol.py rooms.py)
+FILES=(ws.py protocol.py votes.py race.py rooms.py)  # lane rooms2: rooms.py imports votes.py (Q1) and race.py (Q2)
 COMPOSE=0 UNDO=0
 for a in "$@"; do
   case "$a" in

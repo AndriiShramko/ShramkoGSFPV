@@ -1,0 +1,142 @@
+[
+ {
+  "id": "ab5efa0e",
+  "viewport": "1920x1080",
+  "errors": [],
+  "lines": [],
+  "notes": [
+   {
+    "at": 0.012,
+    "text": "Building a course in the free space of this scan..."
+   },
+   {
+    "at": 1.33,
+    "text": "Gates: 10. Fly through gate 1 to start the clock. Shift+T hides the course"
+   }
+  ],
+  "wallsFiles": [
+   "/walls/ab5efa0e/v2/scene.voxel.json 200",
+   "/walls/ab5efa0e/v2/scene.voxel.bin 200"
+  ],
+  "before": {
+   "status": "ready",
+   "walls": {
+    "state": "offer",
+    "source": "published",
+    "voxelM": 0.05,
+    "lastBake": null
+   },
+   "course": {
+    "gates": 0,
+    "drawn": 0,
+    "source": "none",
+    "problem": null,
+    "on": false
+   },
+   "boxShown": true,
+   "boxKeep": false,
+   "flying": false,
+   "lead": null,
+   "line": "",
+   "action": "Refine walls to 1.6 cm (about 15 s)",
+   "note": null
+  },
+  "controlsOpenAfter": false,
+  "firstGateS": 1.33,
+  "after": {
+   "status": "ready",
+   "walls": {
+    "state": "offer",
+    "source": "published",
+    "voxelM": 0.05,
+    "lastBake": null
+   },
+   "course": {
+    "gates": 10,
+    "drawn": 32,
+    "source": "generated",
+    "problem": null,
+    "on": true
+   },
+   "boxShown": true,
+   "boxKeep": false,
+   "flying": false,
+   "lead": null,
+   "line": "",
+   "action": "Refine walls to 1.6 cm (about 15 s)",
+   "note": "Gates: 10. Fly through gate 1 to start the clock. Shift+T hides the course"
+  },
+  "saidMissing": false,
+  "pass": true
+ },
+ {
+  "id": "70b50d42",
+  "viewport": "844x390",
+  "errors": [],
+  "lines": [],
+  "notes": [
+   {
+    "at": 0.054,
+    "text": "Building a course in the free space of this scan..."
+   },
+   {
+    "at": 31.437,
+    "text": "Gates: 23. Fly through gate 1 to start the clock. Shift+T hides the course"
+   }
+  ],
+  "wallsFiles": [
+   "/walls/70b50d42/v1/scene.voxel.json 200",
+   "/walls/70b50d42/v1/scene.voxel.bin 200"
+  ],
+  "before": {
+   "status": "ready",
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.05,
+    "lastBake": null
+   },
+   "course": {
+    "gates": 0,
+    "drawn": 0,
+    "source": "none",
+    "problem": null,
+    "on": false
+   },
+   "boxShown": true,
+   "boxKeep": false,
+   "flying": false,
+   "lead": null,
+   "line": "",
+   "action": "",
+   "note": null
+  },
+  "controlsOpenAfter": false,
+  "firstGateS": 31.437,
+  "after": {
+   "status": "ready",
+   "walls": {
+    "state": "none",
+    "source": "published",
+    "voxelM": 0.05,
+    "lastBake": null
+   },
+   "course": {
+    "gates": 23,
+    "drawn": 74,
+    "source": "generated",
+    "problem": null,
+    "on": true
+   },
+   "boxShown": true,
+   "boxKeep": false,
+   "flying": false,
+   "lead": null,
+   "line": "",
+   "action": "",
+   "note": "Gates: 23. Fly through gate 1 to start the clock. Shift+T hides the course"
+  },
+  "saidMissing": false,
+  "pass": true
+ }
+]

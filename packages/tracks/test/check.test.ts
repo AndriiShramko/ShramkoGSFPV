@@ -34,6 +34,15 @@ describe('the proof stays inside the walls', () => {
         expect(validateServerTrack(JSON.parse(JSON.stringify(track(500)))).ok).toBe(false);
     });
 
+    it('review T2-2: a smaller course of fitCourse (scale, legMinM, legMaxM in its params) passes the server contract', () => {
+        const t = track(28);
+        const small = { ...t, generator: { ...t.generator!, params: { marginM: 0.15, scale: 0.3, legMinM: 0.9, legMaxM: 4.5 } } };
+        const r = validateServerTrack(JSON.parse(JSON.stringify(small)));
+        expect(r.ok, JSON.stringify(r)).toBe(true);
+        // control: an unknown key is still refused
+        expect(validateServerTrack(JSON.parse(JSON.stringify({ ...small, generator: { ...small.generator, params: { legMidM: 1 } } }))).ok).toBe(false);
+    });
+
     it('insideGrid: the yard is in, 130 m out is not', () => {
         expect(insideGrid(walls, [28, 3, 5])).toBe(true);
         expect(insideGrid(walls, [130, 3, 5])).toBe(false);

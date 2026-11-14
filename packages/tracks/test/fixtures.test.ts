@@ -24,15 +24,20 @@ describe('server track fixtures', () => {
             else expect(r.ok, `${f} must be refused`).toBe(false);
         });
     }
-    it('control: a generated course passes; with author.kind person the format accepts it and the contract does not', () => {
+    it('control: a generated course passes; with author.kind agent the format accepts it and the contract does not', () => {
         const walls = threeRooms();
         const free = freeSpace(walls, { spawn: SPAWN_A });
         const track = generateCourse(free, walls, { seed: 7, scene: { id: '39e63ce9', version: 1 }, transform: IDENTITY });
         expect(track.gates.length).toBeGreaterThan(0);
         const own = validateServerTrack(JSON.parse(JSON.stringify(track)));
         expect(own.ok ? [] : own.issues).toEqual([]);
-        const person = { ...JSON.parse(JSON.stringify(track)), author: { kind: 'person', name: 'Ann' } };
-        expect(validateTrack(person).ok).toBe(true);
-        expect(validateServerTrack(person).ok).toBe(false);
+        const agent = { ...JSON.parse(JSON.stringify(track)), author: { kind: 'agent', name: 'Ann' } };
+        expect(validateTrack(agent).ok).toBe(true);
+        expect(validateServerTrack(agent).ok).toBe(false);
+        // a pilot's edit (tracks-plan 2.6): the name the pilot typed and a title of its own pass; a web address does not
+        const person = { ...JSON.parse(JSON.stringify(track)), author: { kind: 'person', name: 'Ann' }, title: "Ann's loop", generator: null };
+        const mine = validateServerTrack(person);
+        expect(mine.ok ? [] : mine.issues).toEqual([]);
+        expect(validateServerTrack({ ...person, author: { kind: 'person', name: 'www.spam.pl' } }).ok).toBe(false);
     });
 });

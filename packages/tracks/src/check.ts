@@ -12,6 +12,7 @@ import { quatRotate, trackToObjects } from '@shramko/sonic-fpv';
 import type { SonicObject, TrackFile, Vec3 } from '@shramko/sonic-fpv';
 import { VoxelContactWorld, sphereOverlaps, transformCollision } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
+import { gateExit } from './path';
 
 /** The plan's margin: openings and legs are clear by this much, flown metres. */
 export const MARGIN_M = 0.5;
@@ -170,6 +171,15 @@ export interface TrackReport {
     readonly minGapM: number;
     readonly minFreeM: number;
     readonly issues: readonly string[];
+    /** ids ('start' or a gate's) that lie outside the walls' grid: the proof stopped before any sweep (empty otherwise) */
+    readonly outside: readonly string[];
+}
+
+/** The margin a track is proven at: a smaller course (K1.2, fitCourse) carries the margin it was laid with in
+ *  generator.params.marginM; anything else, or a value not under MARGIN_M, is proven at MARGIN_M (review T2-1). */
+export function marginOf(track: { readonly generator?: { readonly params?: Readonly<Record<string, unknown>> } | null }): number {
+    const mg = track.generator?.params?.marginM;
+    return typeof mg === 'number' && mg > 0 && mg < MARGIN_M ? mg : MARGIN_M;
 }
 
 /** The flown start of a track: its own start, else the first gate's neighbourhood is not guessed (a track needs one). */
@@ -183,9 +193,11 @@ export function flownStart(track: TrackFile, transform: readonly [number, number
 /**
  * The proof, for `track` laid in the scan frame, on `col` (the flown walls: flownCollision) through `transform`, at `marginM`.
  * Pure over the walls: Node tests give it analytic walls and walls the real scan makes. `measure` false skips the free radii
- * (reported as the cap), which only the proof's margin needs when it is searched for (provenMargin).
+ * (reported as the cap), which only the proof's margin needs when it is searched for (provenMargin). `exitTurns` adds the
+ * K1 sweep of the turn after a gate (path.ts gateExit to the next gate): a rule of the generator only (review T2-3), so a
+ * saved or served course keeps the acceptance it was saved under.
  */
-export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true): TrackReport {
+export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true, exitTurns = false): TrackReport {
     const gates = trackToObjects(track, { transform });
     const start = flownStart(track, transform);
     // lane review TR-3: outside the walls' grid counts as free to the sweeps, and a gate far out made them run for minutes;
@@ -193,7 +205,7 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
     const out = [...(start ? [{ id: 'start', p: start.pos }] : []), ...gates.map((g) => ({ id: g.id, p: g.pos }))].filter((x) => !insideGrid(col, x.p));
     if (out.length > 0) {
         const issues = out.slice(0, 4).map((x) => `${x.id}: outside the walls' grid`);
-        return { marginM, ok: false, startClear: false, startFreeM: 0, gates: [], legs: [], pathM: 0, minGapM: 0, minFreeM: 0, issues };
+        return { marginM, ok: false, startClear: false, startFreeM: 0, gates: [], legs: [], pathM: 0, minGapM: 0, minFreeM: 0, issues, outside: out.map((x) => x.id) };
     }
     const sw = sweeperOf(col);
     const issues: string[] = [];
@@ -274,6 +286,13 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
         if (!sw.free(from, to, marginM)) clear = false;
         probe(from);
         probe(to);
+        // K1: the turn after a gate the path flies through first (path.ts gateExit) is a leg of its own
+        const after = !exitTurns ? null : i + 1 < gates.length ? gates[i + 1]!.pos : track.laps > 1 ? startPos : null;
+        const exit = after ? gateExit(g.pos, axis, legIn, sub(after, g.pos)) : null;
+        if (exit && after && !sw.free(exit, after, marginM)) {
+            clear = false;
+            issues.push(`gate ${g.id}: the turn after it (from ${v3(exit).join(', ')}) is not clear by ${marginM} m`);
+        }
         const directionOk = inDeg <= AXIS_TOLERANCE_DEG;
         const turnDeg = angleDeg(legIn, legOut);
         if (!clear) issues.push(`gate ${g.id}: the opening, its frame or the run through it is not clear by ${marginM} m (free radius ${r3(free)} m)`);
@@ -284,7 +303,7 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
 
     const minFree = Math.min(startFreeM, ...legs.map((l) => l.freeM), ...reports.map((g) => g.freeM));
     const ok = issues.length === 0;
-    return { marginM, ok, startClear, startFreeM: r3(startFreeM), gates: reports, legs, pathM: r3(pathM), minGapM: r3(Number.isFinite(minGap) ? minGap : 0), minFreeM: r3(minFree), issues };
+    return { marginM, ok, startClear, startFreeM: r3(startFreeM), gates: reports, legs, pathM: r3(pathM), minGapM: r3(Number.isFinite(minGap) ? minGap : 0), minFreeM: r3(minFree), issues, outside: [] };
 }
 
 /** The largest margin at which the track still passes (bisection on checkTrack; 0 when it fails even at `lo`). */
