@@ -27,14 +27,16 @@ import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, wi
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
-import { canSave, edit, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { canSave, edit, flownCollision, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { gateCamera } from '../../course/editor/camera';
+import type { RayFn } from '../../course/editor/camera';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
 import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
-import { adminVersionBody, editPaints, lappedIds, mayVote } from '../../course/editor/rules';
+import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
 import { TracksAdminClient } from '../../admin/tracks/api';
@@ -83,6 +85,9 @@ export const course: Feature = {
         let ed: EditorState | null = null;
         let panel: EditorPanel | null = null;
         let checkFn: CourseCheck = () => [];
+        /** stage K2: the walls as a ray for the editor's camera, and that camera's forward on the floor */
+        let camRay: RayFn | null = null;
+        let camForward: readonly [number, number] | null = null;
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
@@ -455,6 +460,16 @@ export const course: Feature = {
             stage.paintEdit(paints);
             edHook.paints = paints;
             shownNext = ed.selected;
+            // stage K2: the selected gate in view (the paused drone may face away from it)
+            const sg = run.gates[ed.selected];
+            if (sg) {
+                const s = ctx.session.runner.sim.s;
+                const v = gateCamera(sg.pos, [s[S.px] ?? 0, s[S.py] ?? 0, s[S.pz] ?? 0], camRay);
+                ctx.session.cameraOverride = true;
+                ctx.renderer.setCameraLookAt(v.eye[0], v.eye[1], v.eye[2], v.at[0], v.at[1], v.at[2]);
+                camForward = v.forward;
+                edHook.view = { eye: [...v.eye], at: [...v.at] };
+            }
             hud.update(null, 0);
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
@@ -469,11 +484,18 @@ export const course: Feature = {
             const col = ctx.session.collision;
             if (!col) return fail('no walls', t('course.noWalls'));
             if (!run) {
-                hook.problem = 'no course';
-                ctx.hud.flash(t('course.edit.noCourse'), 4000);
-                return;
+                // stage K2 (the owner's rule: lead him on): no course yet, so one is made and the editor opens on it
+                if (busy) return;
+                hook.problem = null;
+                reopenAfter = true;
+                return generate(randomSeed());
             }
             checkFn = wallsCheck(col, flownTransform());
+            const fc = flownCollision(col, flownTransform());
+            camRay = (o, d, max) => {
+                const h = fc.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], max);
+                return h ? Math.hypot(h.x - o[0], h.y - o[1], h.z - o[2]) : null;
+            };
             edSource = run.track;
             ed = openEditor(upgradeTrack(run.track), checkFn, 0);
             edChanged = false;
@@ -506,6 +528,9 @@ export const course: Feature = {
             unblock?.();
             unblock = null;
             edHook.open = false;
+            edHook.view = null;
+            camForward = null;
+            ctx.session.cameraOverride = false;
             ctx.resume('panel');
             // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)
             if (!quiet && edSource) {
@@ -518,6 +543,8 @@ export const course: Feature = {
             }
         }
         const viewForward = (): [number, number] => {
+            // stage K2: the arrows follow the camera that shows the gate, not the drone's heading
+            if (camForward) return [camForward[0], camForward[1]];
             const s = ctx.session.runner.sim.s;
             return forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
         };
@@ -653,7 +680,7 @@ export const course: Feature = {
             if (!mayVote(id, lappedIds(readBests()))) return say(t('course.edit.voteAfterLap'), true);
             const had = myVotes()[id] ?? 0;
             const nv = had === v ? 0 : v;
-            const r = await store.vote(id, nv, voterId());
+            const r = await store.vote(id, nv, voterId(), lapOf(id, readBests()));
             if (!r.ok) {
                 hook.problem = `vote: ${r.problem}`;
                 return say(t('course.edit.voteFailed', { msg: r.problem.slice(0, 120) }), true);

@@ -79,6 +79,9 @@ SERVER_MAX_GATES = 60
 MAX_GATE_SIZE_M = 20.0
 # lane review TK-8, ESTIMATE (not measured): address -> voter bindings kept per course (the oldest dropped past it)
 VOTE_ADDR_CAP = 5000
+# stage K2, ESTIMATES (not measured): the shortest and the longest lap a vote may carry, ms
+LAP_MIN_MS = 1000
+LAP_MAX_MS = 3_600_000
 NAME_LEN, NAME_EXTRA = (2, 32), " -_.'"
 TITLE_LEN, TITLE_EXTRA = (3, 60), " -_.',!?#()+:&"
 # a short blocklist (tracks-plan 2.8: "the admin hides the rest"); the same words in packages/tracks/src/server.ts
@@ -821,6 +824,11 @@ class TrackStore:
         v, voter = body.get("v"), body.get("voter")
         if v not in (1, -1, 0) or isinstance(v, bool) or not isinstance(voter, str) or not VOTER.fullmatch(voter):
             raise TrackError(400, "bad-vote")
+        # stage K2 (tracks-plan 2.9): an up or down vote carries the pilot's completed lap of the course, in ms; taking a vote
+        # back (0) does not. The page sends its best lap (course/editor/rules.ts lapOf); a vote without one is refused.
+        lap = body.get("lap")
+        if v != 0 and (not isinstance(lap, int) or isinstance(lap, bool) or not LAP_MIN_MS <= lap <= LAP_MAX_MS):
+            raise TrackError(403, "lap-first")
         with self.lock:
             meta = self._visible(self._meta(tid))
             vh, ah = self._hash("voter", voter), self._hash("addr", f"{tid}:{client}")

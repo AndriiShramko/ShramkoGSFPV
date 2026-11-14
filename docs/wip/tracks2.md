@@ -5,6 +5,21 @@ U:/Temp/gsfpv-train2/tracks2/.
 
 ## Status
 
+Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/docs/wip/tracks-edit.md).
+
+- [x] K2.1 the selected gate in view: apps/fly/src/course/editor/camera.ts (gateCamera: the eye between the paused drone
+  and the gate, CAM_NEAR_M 3.5 from it, CAM_UP_M 0.6 up, stopped 0.3 short of the first wall by a ray of the flown walls;
+  inView). course.ts showEd sets session.cameraOverride and renderer.setCameraLookAt on every open, selection and change;
+  closeEdit gives the camera back; the arrows move the gate by the camera's forward. Hook: course.editor.view {eye, at}.
+  Shift+B with no course shown now makes one and opens the editor on it (it said "no course" before).
+- [x] K2.2 vote after a lap on the server: apps/api/tracks.py vote() refuses an up or down vote without `lap` (int ms,
+  LAP_MIN_MS 1000 to LAP_MAX_MS 3600000, estimates) with 403 lap-first; 0 (take back) needs none. The page sends its best
+  lap of that course (rules.ts lapOf over the best-lap keys, store.ts vote(..., lapMs)).
+  Tests: tools/bench/test/tracks-k2.test.ts (5), apps/api/tests/test_tracks_edit.py test_bad_votes (lap cases).
+- [ ] K2.3 release build, tracks-page probe section E with the camera check, shots tracks2-editor-1920.png and -844.png.
+- [ ] K2.4 Space "drop a gate here" while flying; K2.5 pillar pairs as /2 objects with a key (see For the lead).
+- [ ] gates.py --only vitest,architecture,i18n,b18.
+
 Stage K1-passable-and-small.
 
 - [x] K1.1 audit tool: packages/tracks/src/fly.ts (flyPath, gateMisses: the course's own path flown through its own

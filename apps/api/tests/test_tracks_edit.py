@@ -182,21 +182,21 @@ class ForkAndVersions(Base):
 class Votes(Base):
     def test_one_vote_per_voter_and_one_voter_per_address_a_day(self):
         tid = self.new()["id"]
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1)}).encode(), "a1")["up"], 1)
-        out = self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1)}).encode(), "a1")
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(1)}).encode(), "a1")["up"], 1)
+        out = self.store.vote(tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(1)}).encode(), "a1")
         self.assertEqual((out["up"], out["down"]), (1, 0))                      # a second vote of the same voter counts once
-        out = self.store.vote(tid, json.dumps({"v": -1, "voter": voter(1)}).encode(), "a1")
+        out = self.store.vote(tid, json.dumps({"v": -1, "lap": 30000, "voter": voter(1)}).encode(), "a1")
         self.assertEqual((out["up"], out["down"]), (0, 1))                      # re-voting replaces
-        self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "voter": voter(2)}).encode(), "a1")
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(2)}).encode(), "a2")["up"], 1)   # control: another address
+        self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(2)}).encode(), "a1")
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(2)}).encode(), "a2")["up"], 1)   # control: another address
         self.tick(86400)
         # lane review TK-8: the address keeps its voter on the next days too (it was cleared each UTC day)
         for day in range(3):
-            self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "voter": voter(10 + day)}).encode(), "a1")
+            self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(10 + day)}).encode(), "a1")
             self.tick(86400)
         self.assertEqual(self.row(tid)["up"], 1)
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(3)}).encode(), "a3")["up"], 2)   # control: another address
-        out = self.store.vote(tid, json.dumps({"v": 0, "voter": voter(3)}).encode(), "a3")
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(3)}).encode(), "a3")["up"], 2)   # control: another address
+        out = self.store.vote(tid, json.dumps({"v": 0, "lap": 30000, "voter": voter(3)}).encode(), "a3")
         self.assertEqual((out["up"], out["down"]), (1, 1))                      # 0 takes it back
         meta = (self.dir / "tracks" / SCENE / tid / "meta.json").read_text(encoding="utf-8")
         self.assertNotIn(voter(1), meta)
@@ -204,18 +204,25 @@ class Votes(Base):
 
     def test_bad_votes(self):
         tid = self.new()["id"]
-        for body in ({"v": 2, "voter": voter(1)}, {"v": True, "voter": voter(1)}, {"v": 1, "voter": "x"}, {"v": 1}, [1]):
+        for body in ({"v": 2, "lap": 30000, "voter": voter(1)}, {"v": True, "lap": 30000, "voter": voter(1)}, {"v": 1, "voter": "x"}, {"v": 1}, [1]):
             self.refused(400, "bad-vote" if isinstance(body, dict) else "bad-json", self.store.vote, tid, json.dumps(body).encode(), "a")
         self.refused(413, "too-large", self.store.vote, tid, b" " * 2000, "a")
+        # stage K2: an up or down vote needs a completed lap; taking a vote back does not
+        for lap in (None, 0, 999, 3_600_001, 1.5e4, "30000", True):
+            body = {"v": 1, "voter": voter(1)} if lap is None else {"v": 1, "voter": voter(1), "lap": lap}
+            self.refused(403, "lap-first", self.store.vote, tid, json.dumps(body).encode(), "a")
+        self.assertEqual(self.row(tid)["up"], 0)
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 0, "voter": voter(1)}).encode(), "a")["up"], 0)
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1), "lap": 1000}).encode(), "a")["up"], 1)
         self.store.set_hidden(tid, True)
-        self.refused(404, "not-found", self.store.vote, tid, json.dumps({"v": 1, "voter": voter(1)}).encode(), "a")
+        self.refused(404, "not-found", self.store.vote, tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(1)}).encode(), "a")
 
     def test_top_is_sorted_by_wilson_then_newer_and_new_by_created(self):
         a, b, c = self.new()["id"], self.new()["id"], self.new()["id"]
         for i in range(10):
-            self.store.vote(a, json.dumps({"v": 1, "voter": voter(i)}).encode(), f"x{i}")
-        self.store.vote(a, json.dumps({"v": -1, "voter": voter(99)}).encode(), "x99")
-        self.store.vote(b, json.dumps({"v": 1, "voter": voter(50)}).encode(), "y")
+            self.store.vote(a, json.dumps({"v": 1, "lap": 30000, "voter": voter(i)}).encode(), f"x{i}")
+        self.store.vote(a, json.dumps({"v": -1, "lap": 30000, "voter": voter(99)}).encode(), "x99")
+        self.store.vote(b, json.dumps({"v": 1, "lap": 30000, "voter": voter(50)}).encode(), "y")
         top = json.loads(self.store.list(SCENE, None, "top")[1])["tracks"]
         self.assertEqual([r["id"] for r in top], [a, b, c])
         self.assertEqual([r["id"] for r in json.loads(self.store.list(SCENE, None, "new")[1])["tracks"]], [c, b, a])
@@ -299,7 +306,7 @@ class AdminActions(Base):
         self.assertEqual((st, out["version"]), (201, 2))
         r = self.row(tid)
         self.assertEqual((r["creator"], r["editor"]), ({"kind": "pilot", "name": "Ann"}, {"kind": "admin", "name": None}))
-        self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1)}).encode(), "a")
+        self.store.vote(tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(1)}).encode(), "a")
         self.assertEqual(self.call("POST", f"tracks/{tid}/votes/reset", {"confirm": True})[0], 200)
         self.assertEqual(self.row(tid)["up"], 0)
         self.assertEqual(self.call("POST", f"tracks/{tid}/v1/delete", {})[0], 400)                 # confirm needed
@@ -362,7 +369,7 @@ class Http(unittest.TestCase):
         st, out = self.call("POST", f"/api/tracks/{tid}/versions", edit(), headers={"X-Track-Token": token})
         self.assertEqual((st, out["version"]), (201, 2))
         self.assertEqual(self.call("GET", f"/api/tracks/{tid}/v2")[0], 200)
-        st, out = self.call("POST", f"/api/tracks/{tid}/vote", json.dumps({"v": 1, "voter": voter(7)}).encode())
+        st, out = self.call("POST", f"/api/tracks/{tid}/vote", json.dumps({"v": 1, "lap": 30000, "voter": voter(7)}).encode())
         self.assertEqual((st, out["up"]), (200, 1))
         st, out = self.call("POST", f"/api/tracks/{tid}/broken", json.dumps({"gate": 0, "wallsDigest": "ab" * 8}).encode())
         self.assertEqual((st, out["broken"]), (200, 1))
@@ -378,9 +385,9 @@ class Http(unittest.TestCase):
         self.addCleanup(lambda: tracks.LIMITS.update(saved))
         tracks.LIMITS.update(votes_per_client_hour=2, versions_per_client_hour=1)
         tid = self.call("POST", "/api/tracks", course())[1]["id"]
-        codes = [self.call("POST", f"/api/tracks/{tid}/vote", json.dumps({"v": 1, "voter": voter(1)}).encode())[0] for _ in range(3)]
+        codes = [self.call("POST", f"/api/tracks/{tid}/vote", json.dumps({"v": 1, "lap": 30000, "voter": voter(1)}).encode())[0] for _ in range(3)]
         self.assertEqual(codes, [200, 200, 429])
-        self.assertEqual(self.call("POST", f"/api/tracks/{tid}/vote", json.dumps({"v": 1, "voter": voter(2)}).encode(), ip="198.51.100.4")[0], 200)
+        self.assertEqual(self.call("POST", f"/api/tracks/{tid}/vote", json.dumps({"v": 1, "lap": 30000, "voter": voter(2)}).encode(), ip="198.51.100.4")[0], 200)
         self.assertEqual([self.call("POST", f"/api/tracks/{tid}/versions", edit())[0] for _ in range(2)], [403, 429])
 
 
