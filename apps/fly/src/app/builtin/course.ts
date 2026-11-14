@@ -20,7 +20,7 @@ import { liveSearch } from '../env';
 import type { Feature, FlightContext } from '../context';
 import { withWalls } from '../../walls-first';
 import type { CourseHook } from '../../course/hook';
-import { CourseRun } from '../../course/run';
+import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
 import { coveredBy } from '../../course/cover';
@@ -499,10 +499,12 @@ export const course: Feature = {
             if (run && !busy && (run.stale(ctx.session.transform) || ctx.session.collision !== provenOn)) return proveAgain();
             frame();
         });
-        ctx.events.on('sim', (e) => {
-            if (e.type === 'respawn' || e.type === 'crash') run?.reset();
+        // stage G3-respawn (message 51): a crash no longer ends the attempt; the new life decides (course/run.ts courseLife)
+        ctx.events.on('life', (l) => {
+            if (!run) return;
+            const now = tick();
+            run.afterLife(courseLife(l.reason, ctx.session.director?.last ?? null, now), now);
         });
-        ctx.events.on('life', () => run?.reset());
         ctx.events.on('pause', ({ on, reasons }) => {
             // the pause menu and every other full window hide the lap clock and its lines (course/cover.ts coveredBy)
             hud.cover(coveredBy(reasons));

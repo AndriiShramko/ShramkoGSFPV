@@ -80,6 +80,25 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   keep a 4 m x 4 m x layer count of Gaussians and publish it beside the walls as scene.density.json (lane walls' files).
   The walls' own voxel counts are used meanwhile (data every page has).
 
+Stage G3-respawn (the owner: "If the settings say respawn at the last place, the course must go on from that place; only a
+respawn at the very start restarts the course. The course progress must be tied to the respawn.")
+
+- [x] Before: app/builtin/course.ts reset the lap timer on every sim 'crash' and 'respawn' event and on every 'life', so any
+  crash or respawn sent the pilot back to gate 1.
+- [x] course/run.ts courseLife(reason, director.last, tick): a fresh director decision of kind 'start' (R, a crash or stuck
+  craft with the target 'start', a rewind with no path left) restarts; 'manual-rewind' (Y) rewinds the course to the
+  decision's sampleTick; a crash or stuck craft put back where it was ('rewind' target) keeps lap, next gate and running
+  clock; reasons settings, scene, world, start restart as before. CourseRun.afterLife applies it (the jump is never a pass).
+- [x] LapTimer.snapshot() / restore(state, atMs, nowMs) (packages/tracks/src/laps.ts); CourseRun keeps a snapshot after
+  every pass, pause, resume and reset (up to 512) and a rewind picks the one that held at sampleTick; the lap clock is put
+  back to its value then and runs on from now (sim ticks never go back on a respawn: runner.respawnV2 keeps the tick).
+- [x] Wiring: builtin/course.ts no longer resets on a crash; its 'life' listener calls courseLife + afterLife.
+- [x] Unit tests tools/bench/test/course-respawn.test.ts (3: crash keeps, R restarts, Y rewinds): 3/3 passed with
+  laps.test.ts and tracks-a6.test.ts (11/11). neg_control.py against origin/main (run.ts, laps.ts, builtin/course.ts):
+  NEG OK, fails by assertion. tsc apps/fly, packages/tracks, tools/bench: 0 errors each. Log U:/Temp/gsfpv-train3/course3/g3/neg.log.
+- [ ] gates.py --only vitest,architecture,i18n,b18 on the G3 commit.
+- [ ] Browser walk on Wroclaw and Tunis (crash with auto respawn, R, Y on a generated course): a separate stage.
+
 ## Facts (measured)
 
 - G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m
@@ -144,6 +163,10 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
 
 ## Decisions
 
+- G3: a crash respawned where it was keeps the gates passed even when the rewind put the craft behind a gate it had passed in
+  the last seconds: that gate is not asked again (the task: keep the lap and the next gate; the lost seconds are the cost of
+  the crash). Only Y (the pilot's own rewind) undoes passes and time. The best lap is never undone (a lap flown stays flown).
+- G3: the decision reads session.director.last only when made at this tick (as builtin/respawn.ts does for its "-5 s").
 - The progress model lives in apps/fly/src/course/progress.ts (DOM-free, used by walls.ts and the course feature) so one
   line format serves both builds.
 - The estimate of the course is per try: fitCourse may make up to 9 tries, the big scans needed 1.0-1.4 on average, so the
@@ -166,8 +189,16 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   a room run the same code) or move generated links to g2 (app/builtin/course.ts, course/link.ts, rooms/race.ts).
 - G2: four stale detached audits (before2/, after2/ and the first pass's before/, after-band/) may still run; stopping
   them was refused to this worker. They write only under U:/Temp/gsfpv-train3/course3/g2.
+- G3: builtin/course.ts carries a third hunk of this lane (the 'sim' crash reset is gone, the 'life' listener calls
+  courseLife). rooms/race.ts was not changed: a race in a room now also keeps the attempt over a crash respawn (same CourseRun).
 
 ## Not verified
+
+- G3: the negative control fails each test on the missing courseLife (the old reset lived in builtin/course.ts, which a
+  Node test cannot drive); the old reset-on-every-life behaviour itself was not replayed in a test.
+- G3: not walked in a browser (crash with auto respawn, R, Y on a generated course on Wroclaw and Tunis); the 'life' event's
+  tick equal to director.last.tick is read from builtin/respawn.ts, not seen on the page.
+- G3: tools/bench/test/a6-reference.test.ts not run: no flight, input or collision code changed (the course only reads the sim).
 
 - The rates are Node rates; the worker in the browser may differ. The line re-estimates every later try from the real one.
 - The spoken lines were not heard (no browser run with Fly by Sound in this stage).
@@ -190,3 +221,6 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   and a kill permission for stale detached audits, would have saved about 8 replies and two stale audit runs.
 - G1-progress pass 2: 18 replies; most went to choosing a probe (walls-chain-probe.mjs was 90 % of it) and to locating the
   freezes; a probe that logs the longest main-thread gap by itself (it does now) would have saved the analysis turns.
+- G3-respawn: about 22 replies; most went to tracing the respawn path (respawn.ts, director.ts, runner.ts, session) to learn
+  whether the sim tick goes back on a rewind; an agent-map line "respawn: director decision, life event, tick monotonic"
+  would have saved about 4 replies.
