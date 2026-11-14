@@ -75,21 +75,49 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - [x] 4d. After-speed ear pilot runs (package e133411), table "Z4 after speed" in Facts.
 - [x] Pin of packages/sonic-fpv moved to package train3 e133411 (66267e6a).
 - [x] gates.py --only vitest,architecture,i18n,b18 on 66267e6a: all four PASS (vitest 175 s), logs U:/Temp/gsfpv-gates-20261114-225951.
+- [x] Pass 2, item 2: the rung lost by the 2-loudest pilot on rings was tier 1: a climb at 3 m/s cruise passes 3 m/s
+  of speed (climb adds up to 3 m/s). Tier 1 now begins at 4.5 m/s (package 6cbd596, budget.ts TIER_EDGES_MPS, measured
+  by tools/ear-pilot.ts, see Facts); test/budget-wired.test.ts holds rings-course at 3 m/s unchanged by the budget (NEG OK).
+- [x] Pass 2, item 3: racing line (package 992c9db): src/cues/line.ts, layers.racingLine opt-in, runner.beaconTarget()
+  returns the look-ahead point, planner hum takes the line's side level (10 dB at 30 deg) and beating (full 1.5 m off);
+  ladder FlyOptions.line, tools/ear-pilot.ts --line on|off; test/line.test.ts 8 of 8, NEG OK on old runner.ts and planner.ts.
+  The cue id stays target.hum (no new glossary text): the line is the hum aimed along the line.
+- [x] Pass 2: tables after speed (tier edge 4.5) and after line (Facts), evidence in the package (4e7cef6).
+- [x] Pass 2: audio proof line-side written (package 9b26882, test-audio/page/proofs.ts, PROOFS_OUT for a partial run).
+  NOT run: C:/dev/.gpu-lock was held by another job for the whole wait; the waiting command was stopped before it took the lock.
+- [x] Pin of packages/sonic-fpv moved to package train3 4e7cef6 (this commit).
 - [ ] LEFT, in this order:
-  1. Z3 item 3 (simulator tools/bench/src/ear-pilot-scan.ts, Tunis and Wroclaw) and 4c (src/cues/reach.ts) are still open.
-  2. The one rung lost by the 2-loudest pilot on rings (seed 1: 3 to 2 m/s): see if it is the shape trace cut at tier 1
-     (tier 1 begins exactly at 3 m/s); ear-debug at 3 m/s seed 1 with --budget on vs off.
-  3. Racing line (plan 2.3): pure src/cues/line.ts (polyline of the runner's track points, Catmull-Rom, arc position never
-     back more than 2 m, look-ahead max(3 m, 1.0 s x v), off-line distance); wiring: runner.beaconTarget() returns the
-     look-ahead point when layers.racingLine (new optional field, as speedBudget) is on; target.hum then points there
-     (beacon fold and ILD exist in planner.targetVoice); side ILD up to 10 dB at 30 deg; beating by off-line distance;
-     test/line.test.ts with a negative control; ear pilot "after line" table (third table); offline render as audio proof.
-  4. Rear timbre, approach brightness by time to the gate, reverb floor (plan 3), test/rear-timbre.test.ts.
-  5. Lesson turn-listen (plan 3) and speed-1..6 lessons (plan 4) with locales en es pl ru and spoken lines; the ladder's
-     pass marks from the ear pilot (each cap at most median / 1.25).
-  6. Offline renders of each new cue as the package's audio proofs; pin move; gates before handing over.
+  1. Run the line-side proof: in C:/dev/ShramkoSonicFPV, under the GPU lock,
+     PROOFS=line-side PROOFS_OUT=evidence/audio-proofs-line.json node node_modules/vitest/vitest.mjs run --config vitest.proof.config.ts;
+     commit evidence/audio-proofs-line.json; if the shipped side is under 8 dB, raise LINE_SIDE_DB or report the measure.
+  2. Switch the line on where a pilot flies a course: layers.racingLine true in the scan course lesson (scanCourseLesson in
+     the package library) and the new speed lessons; not in shipped lessons with recordings (replay stays).
+  3. Corridor stays 0 in every variant, with the line too: the pillar on the path (Facts Z3) is not solved by the line;
+     find whether the track points pass the pillar (lessonTrack of corridor) and whether the line should bend around it.
+  4. Z3 item 3 (simulator tools/bench/src/ear-pilot-scan.ts, Tunis and Wroclaw) and 4c (src/cues/reach.ts) still open.
+  5. Rear timbre, approach brightness by time to the gate, reverb floor (plan 3), test/rear-timbre.test.ts, a proof each.
+  6. Lesson turn-listen (plan 3) and speed-1..6 lessons (plan 4) with locales en es pl ru and spoken lines; pass marks from
+     the ear pilot (each cap at most median / 1.25: from the after-line table rings 4 m/s (2 loudest) gives 3.2 m/s).
+  7. Pin move and gates before handing over.
 
 ## Facts (measured)
+
+- Z4 pass 2, the three tables (tools/ear-pilot.ts, beacon on, soft theme, seeds 1 2 3, rungs 1 2 3 4 6 8 10 12 15 18 22,
+  budget on in both after-columns; package evidence/ear-pilot/2026-11-14-after-speed2-*.json and -after-line-*.json):
+
+  | Pilot | rings before | rings after speed (edge 4.5) | rings after line | corridor before / speed / line |
+  |---|---|---|---|---|
+  | 2 loudest, turn 120 deg/s | 3 m/s (3 2 3) | 3 m/s (3 2 3) | 4 m/s (4 4 2) | 0 / 0 / 0 |
+  | hum attended, turn 120 deg/s | 6 m/s (6 6 4) | 4 m/s (4 6 4) | 6 m/s (6 6 6) | 0 / 0 / 0 |
+
+  The hum-attended rings median fell 6 to 4 after speed (seed 3 at 6 m/s: fail; the before run had seed 3 at 4 too), and
+  the line gives it back with all three seeds at 6. Runtime corridor 46 to 73 s, rings 5 to 7 s per ladder.
+- Tier edge probe (tools/ear-pilot.ts --lessons rings-course --rungs 2,3,4 --budget on, seeds 1 2 3): edge 3 and 3.2 gave
+  2 m/s (2 2 2 with 3.2); edge 4.5 gave 3 m/s (3 2 3), the before value. Budget off at seed 1: 3 m/s.
+- line.test.ts on rings-course 2 m/s seed 1: with the line the 5th percentile of the hum's distance is above 2.5 m, without
+  it under 1.5 m (the gate passed); every frame with the hum 30 deg or more aside has 9.5 dB or more between the ears.
+- Package tests touched: budget 7, budget-wired 6, line 8, lessons + ear-pilot + beacon-target 36 more: all pass;
+  package tsc -p tsconfig.core.json: 0 errors. Simulator sonic-scan-free + sonic-in-place on the new pin: 12 of 12.
 
 - Z4 after speed (tools/ear-pilot.ts --budget on, package f8688dd, beacon on, soft theme, seeds 1 2 3, rungs 1..22;
   evidence/ear-pilot/2026-11-14-after-speed-loudest.json and -after-speed-attend-hum.json), against the Z3 before table:
@@ -221,3 +249,6 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   unfinished Z3 items; most replies went to the budget wiring and a debug of why the corridor never reached tier 2 (vitest
   hides console output; a trace option in tools/ear-pilot.ts printing max tier and speed would have been one command).
   A lesson-level opt-in flag (layers.speedBudget) avoided the 11 replay and theme-version failures of pass 2.
+- 2026-11-14 Z4 pass 2: most replies went to the audio proof setup (reading proofs.ts and the evidence writer) and then
+  waiting for the GPU lock another job held; a proof that needs no GPU (offline audio) should not take the GPU lock, or the
+  lock should name its holder so a worker knows whether to wait.
