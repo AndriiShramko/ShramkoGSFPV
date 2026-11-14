@@ -18,10 +18,13 @@
   "gpuhint.softFixDriver": "Puede que el controlador gráfico esté deshabilitado o no esté instalado, y por eso el navegador no tiene tarjeta gráfica con la que dibujar.",
   "gpuhint.softFixDriverWindows": "En Windows abre el Administrador de dispositivos, Adaptadores de pantalla: cada adaptador debe estar habilitado y tener su controlador instalado. En un portátil, un chip integrado (Intel) deshabilitado puede dejar al navegador sin ninguna tarjeta gráfica, aunque haya una tarjeta NVIDIA: vuelve a habilitar el adaptador Intel.",
   "gpuhint.softText": "El navegador está dibujando esta página por software ({name}): con el procesador, no con una tarjeta gráfica, por eso todo va muy lento. Suele deberse a una de dos causas:",
-  "gpuhint.text": "El navegador está dibujando esta página con el chip gráfico integrado ({name}). Si este equipo también tiene una tarjeta gráfica NVIDIA o AMD, el navegador no la usa: en Windows la tarjeta la elige el navegador, no la página, e ignora la petición de la página de usar la más rápida. Para cambiarlo:",
+  "gpuhint.text": "{why} El navegador dibuja con el chip gráfico integrado ({name}) y deja esa tarjeta sin usar. Con ella: más detalle, resolución completa y más fotogramas por segundo. Cambia el navegador a ella:",
   "gpuhint.textBack": "El navegador vuelve a dibujar esta página con el chip gráfico integrado ({name}). Antes este navegador dibujaba con una tarjeta gráfica más rápida. Para volver a cambiarlo:",
   "gpuhint.unnamed": "el navegador no indica el nombre",
   "gpuhint.warn.back": "Antes este navegador dibujaba con una tarjeta gráfica más rápida.",
   "gpuhint.warn.software": "El navegador dibuja con el procesador, no con una tarjeta gráfica.",
-  "gpuhint.warn.switch": "Puede que haya una tarjeta gráfica más rápida sin usar."
+  "gpuhint.warn.switch": "La tarjeta gráfica rápida no se está usando.",
+  "gpuhint.why.refresh": "Lo más probable es que este equipo tenga una tarjeta gráfica más rápida (NVIDIA o AMD), como los portátiles con pantalla de {hz} Hz.",
+  "gpuhint.why.chip": "Lo más probable es que este equipo tenga una tarjeta gráfica más rápida (NVIDIA o AMD), como los portátiles con el chip de este procesador.",
+  "gpuhint.why.none": "Si este equipo tiene una tarjeta gráfica más rápida (NVIDIA o AMD), el navegador no la usa."
 }

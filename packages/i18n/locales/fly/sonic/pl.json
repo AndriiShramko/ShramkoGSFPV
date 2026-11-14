@@ -45,7 +45,7 @@
   "sonic.reset.kept": "Postępy zostają.",
   "sonic.reset.no": "Nie, zachowaj postępy",
   "sonic.reset.yes": "Tak, wyzeruj postępy",
-  "sonic.say.gpuHint": "Przeglądarka rysuje tę stronę na zintegrowanym układzie graficznym. Jeśli komputer ma też kartę NVIDIA lub AMD, poproś pomocnika, by przełączył na nią przeglądarkę: w Ustawieniach Windows, System, Ekran, Grafika, wybierz przeglądarkę, potem Wysoka wydajność, i uruchom przeglądarkę ponownie.",
+  "sonic.say.gpuHint": "Przeglądarka rysuje tę stronę na zintegrowanym układzie graficznym, a ten komputer najpewniej ma szybszą kartę graficzną (NVIDIA lub AMD), której przeglądarka nie używa. Szybka karta daje więcej szczegółów i więcej klatek na sekundę. Poproś osobę, która pomaga, aby przełączyła na nią przeglądarkę: w Chrome otwórz adres chrome://flags, w Edge edge://flags, znajdź Force high performance GPU, wybierz Enabled i uruchom przeglądarkę ponownie.",
   "sonic.say.gpuHintAgain": "Przypomnienie: przeglądarka nadal rysuje tę stronę na zintegrowanym układzie graficznym. Notatka na ekranie mówi, jak przełączyć, a jej przycisk Nie pokazuj więcej wyłącza to przypomnienie.",
   "sonic.say.gpuSoftware": "Przeglądarka rysuje tę stronę na procesorze, a nie na karcie graficznej, dlatego wszystko działa bardzo wolno. Poproś pomocnika, by włączył akcelerację grafiki w ustawieniach przeglądarki i sprawdził, czy karta graficzna jest włączona i ma sterownik; w Windows służy do tego Menedżer urządzeń, Karty graficzne.",
   "sonic.say.gpuSoftwareAgain": "Przypomnienie: przeglądarka nadal rysuje tę stronę na procesorze, a nie na karcie graficznej. Notatka na ekranie mówi, co sprawdzić, a jej przycisk Nie pokazuj więcej wyłącza to przypomnienie.",

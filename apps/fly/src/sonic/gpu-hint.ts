@@ -101,6 +101,16 @@ export interface GpuHintPartsOptions {
     name?: string;
     /** the page is on Windows (default true: the switch hint is only ever due there) */
     windows?: boolean;
+    /** what says a faster card is there (the rule's `card`): the switch note opens with it; null or absent: the cautious words */
+    card?: 'refresh' | 'chip' | null;
+    /** the screen's refresh rate behind card 'refresh' (Hz) */
+    hz?: number | null;
+}
+
+/** The switch note's first sentence: why the page thinks a faster card is there, or (no sign: a note forced by a test) the cautious one. */
+function whyLine(t: (key: string) => string, card: GpuHintPartsOptions['card'], hz: number | null | undefined): string {
+    if (card === 'refresh') return t('gpuhint.why.refresh').split('{hz}').join(String(Math.round(hz ?? 0)));
+    return t(card === 'chip' ? 'gpuhint.why.chip' : 'gpuhint.why.none');
 }
 
 /** `{name}` in a dictionary line; with no name, the bracket that held it goes too (" ({name})"). */
@@ -118,7 +128,8 @@ export function gpuHintParts(userAgent: string, t: (key: string) => string, o: G
         return { note, text: withName(t('gpuhint.softText'), name), fixFlag: address ? t('gpuhint.softFixBrowser') : null, address, fixWindows: t('gpuhint.softFixDriver'), fixWindowsMore: windows ? t('gpuhint.softFixDriverWindows') : null, settingsUrl: null, cost: null };
     }
     const address = flagsAddress(userAgent);
-    return { note, text: withName(t(note === 'back' ? 'gpuhint.textBack' : 'gpuhint.text'), name), fixFlag: address ? t('gpuhint.fixFlag').split('{button}').join(relaunchWord(userAgent)) : null, address, fixWindows: t('gpuhint.fixWindows'), fixWindowsMore: null, settingsUrl: windows ? WINDOWS_GRAPHICS_SETTINGS : null, cost: t('gpuhint.cost') };
+    const text = note === 'back' ? t('gpuhint.textBack') : t('gpuhint.text').split('{why}').join(whyLine(t, o.card, o.hz));
+    return { note, text: withName(text, name), fixFlag: address ? t('gpuhint.fixFlag').split('{button}').join(relaunchWord(userAgent)) : null, address, fixWindows: t('gpuhint.fixWindows'), fixWindowsMore: null, settingsUrl: windows ? WINDOWS_GRAPHICS_SETTINGS : null, cost: t('gpuhint.cost') };
 }
 
 /**
@@ -262,9 +273,16 @@ export interface GpuHintPlan {
  *   - On a faster card (the rule's 'not-intel' or 'intel-discrete' on a graphics kind that is neither software nor
  *     integrated) nothing is shown and 'fast' is remembered. A reading nothing is known about ('unknown-adapter') is not
  *     a faster card: nothing is remembered.
+ *   - An integrated chip with nothing that says a faster card is there (the rule's 'no-second-card'): no note at all (the
+ *     owner, 2026-11-14: never send a pilot looking for a card he does not have), unless this browser drew on a faster card
+ *     before ('fast'): then the card is certainly there and the 'back' note comes as above.
  * `force`: the test hook's way to see the note whatever was shown or remembered.
  */
 export function planGpuHint(reading: GpuHintAsk, memory: GpuHintMemory, o: { shownThisVisit: boolean; paused: boolean; force?: boolean; softOff?: boolean }): GpuHintPlan {
+    if (reading.reason === 'no-second-card' && reading.kind === 'integrated') {
+        if (memory !== 'fast') return { note: null, show: false, rememberFast: false, hardware: true };
+        return { note: 'back', show: o.force === true || (!o.shownThisVisit && !o.paused), rememberFast: false, hardware: true };
+    }
     if (reading.hint === null) {
         const fast = reading.kind === 'other' && (reading.reason === 'not-intel' || reading.reason === 'intel-discrete');
         return { note: null, show: false, rememberFast: fast, hardware: fast };

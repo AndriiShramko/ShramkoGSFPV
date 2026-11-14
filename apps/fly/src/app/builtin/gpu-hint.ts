@@ -17,7 +17,7 @@
 // at the keyboard hears what the computer draws on and what to do, in full the first time this browser has it to say and as
 // a short reminder on later visits (the note stays for whoever can see it). It changes nothing in the flight: the page
 // cannot pick the GPU, only say how to.
-import { gpuSwitchHintDue, isWindows } from '@gsfpv/render-pc';
+import { gpuSwitchHintDue, isWindows, refreshFromIntervals } from '@gsfpv/render-pc';
 import type { GpuHintReading, GpuHintSignals, GpuInfo, SplatRenderer } from '@gsfpv/render-pc';
 import { h } from '../../ui/dom';
 import { t } from '../../i18n';
@@ -84,12 +84,46 @@ export function glRenderer(): string {
     return glName;
 }
 
-/** What this device says now, for the rule: the adapter given, the system as Client Hints name it, WebGL's name. */
+/**
+ * The display's refresh rate (Hz; 0 until measured, or where the page cannot): sixty intervals of requestAnimationFrame,
+ * taken when this module loads (the start screen, before a flight loads the graphics), while the page is visible. A fast
+ * screen is what says a gaming laptop's second card is there (render-pc SECOND_CARD_HZ).
+ */
+let refreshHz = 0;
+const refreshMeasured: Promise<number> = new Promise((resolve) => {
+    if (typeof requestAnimationFrame !== 'function' || typeof document === 'undefined') {
+        resolve(0);
+        return;
+    }
+    const times: number[] = [];
+    let last = -1;
+    const step = (now: number): void => {
+        // a hidden page's frames say nothing of the screen: start the count again
+        if (document.visibilityState !== 'visible') last = -1;
+        else if (last >= 0) times.push(now - last);
+        if (document.visibilityState === 'visible') last = now;
+        if (times.length < 60) {
+            requestAnimationFrame(step);
+            return;
+        }
+        refreshHz = refreshFromIntervals(times);
+        resolve(refreshHz);
+    };
+    requestAnimationFrame(step);
+});
+
+/** The refresh rate once measured, waiting at most `ms` for it (0: not known by then). */
+export function displayRefresh(ms: number): Promise<number> {
+    return Promise.race([refreshMeasured, new Promise<number>((r) => window.setTimeout(() => r(refreshHz), ms))]);
+}
+
+/** What this device says now, for the rule: the adapter given, the system as Client Hints name it, WebGL's name, the screen's rate. */
 export function graphicsSignals(webgpu: boolean, gpu: GpuInfo | null, over: Partial<GpuHintSignals> = {}): GpuHintSignals {
     return {
         ...deviceSignals(webgpu, gpu),
         platform: (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform,
         glRenderer: glRenderer(),
+        ...(refreshHz > 0 ? { refreshHz } : {}),
         ...over
     };
 }
@@ -120,7 +154,7 @@ export function graphicsLineText(r: Pick<GpuHintReading, 'kind' | 'name' | 'appr
 
 /** The words of a note for this reading (the pilot's own browser decides the addresses). */
 function partsFor(note: GpuNote, r: GpuHintReading, s: Pick<GpuHintSignals, 'userAgent' | 'platform'>): GpuHintParts {
-    return gpuHintParts(navigator.userAgent, (k) => t(k), { note, name: shownName(r), windows: isWindows(s.userAgent, s.platform) });
+    return gpuHintParts(navigator.userAgent, (k) => t(k), { note, name: shownName(r), windows: isWindows(s.userAgent, s.platform), card: r.card, hz: r.refreshHz });
 }
 
 /**
@@ -249,6 +283,8 @@ function readAtStart(): Promise<{ reading: GpuHintReading; signals: GpuHintSigna
         } catch {
             /* no adapter */
         }
+        // the screen's rate is one of the signs of a second card: the start screen waits for it a moment (the picker is idle)
+        await displayRefresh(1200);
         const signals = graphicsSignals(webgpu, gpu);
         return { reading: gpuSwitchHintDue(signals), signals };
     })();

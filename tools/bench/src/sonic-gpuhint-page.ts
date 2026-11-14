@@ -165,13 +165,18 @@ try {
     check('the bug report\'s graphics block names this computer\'s adapter, its kind, whether the hint is due and why, and WebGL\'s own words', !!report && report.name === real.name && report.kind === real.kind && report.due === real.due && report.reason === real.reason && report.hint === real.hint && typeof report.webgl === 'string' && (report.webgl as string).length > 0, report);
     await call<void>(page, 'reset');
 
-    // ---- asked as an Intel laptop on Windows would be
+    // ---- asked as an Intel laptop with nothing that says a second card is there (the owner, 2026-11-14: no note that sends a
+    // pilot looking for a card he does not have): an ultrabook's Iris Xe on a 60 Hz screen
+    const ultrabook = await ask(page, { ...LAPTOP, refreshHz: 60, glRenderer: 'ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)' });
+    check('asked as an Intel laptop with no sign of a second card (Iris Xe, 60 Hz): no note, and the reason says so', !ultrabook.due && ultrabook.reason === 'no-second-card' && ultrabook.note === null && !ultrabook.shown && !(await call<boolean>(page, 'open')), ultrabook);
+
+    // ---- asked as an Intel laptop on Windows would be (Tiger Lake-H's chip, which is only made for laptops with a card)
     const intel = await ask(page, LAPTOP);
     check('asked as an Intel laptop on Windows would be: the hint is due, the switch note comes, the adapter is named from WebGL', intel.due && intel.shown && intel.note === 'switch' && intel.kind === 'integrated' && intel.name === 'Intel(R) UHD Graphics' && (await call<boolean>(page, 'open')), intel);
     const note = await noteOf(page);
     check(
         'the note names the integrated chip and the other card, and gives both ways: the browser\'s address as text, Windows\' graphics page as a link with the path as words; what the switch costs and how to undo it; then "Got it" and "Do not show again"',
-        !!note && /integrated graphics chip \(Intel\(R\) UHD Graphics\)/.test(note.text) && /NVIDIA or AMD/.test(note.text) && note.address === 'chrome://flags/#force-high-performance-gpu' && note.link === 'ms-settings:display-advancedgraphics' && /Settings, System, Display, Graphics/.test(note.text) && /High performance/.test(note.text) && /more power/.test(note.cost ?? '') && /Disabled/.test(note.cost ?? '') && note.buttons.join(',') === 'gpu-hint-copy,gpu-hint-ok,gpu-hint-never',
+        !!note && /integrated graphics chip \(Intel\(R\) UHD Graphics\)/.test(note.text) && /NVIDIA or AMD/.test(note.text) && /most likely has a faster graphics card/.test(note.text) && /more frames per second/.test(note.text) && note.address === 'chrome://flags/#force-high-performance-gpu' && note.link === 'ms-settings:display-advancedgraphics' && /Settings, System, Display, Graphics/.test(note.text) && /High performance/.test(note.text) && /more power/.test(note.cost ?? '') && /Disabled/.test(note.cost ?? '') && note.buttons.join(',') === 'gpu-hint-copy,gpu-hint-ok,gpu-hint-never',
         note
     );
     writeFileSync(join(OUT, 'note.jpg'), await page.screenshot({ type: 'jpeg', quality: 78 }));
@@ -314,7 +319,7 @@ try {
     await sleep(900);
     const said = await spoken('sonic.say.gpuHint');
     const caps = await page.evaluate(() => [...document.querySelectorAll('[data-testid="sonic-captions"] .sonic-caption')].map((e) => e.textContent ?? ''));
-    check('in Fly by Sound the note comes and the engine says the short line (a speech event of the mode with the Windows way, and its caption)', mode.shown && said.length >= 1 && /Settings, System, Display, Graphics, choose the browser, then High performance, and restart the browser/.test(said[said.length - 1]!.text ?? '') && caps.some((c) => /integrated graphics chip/.test(c)), { said: said.map((s) => s.text), captions: caps.length });
+    check('in Fly by Sound the note comes and the engine says the line (a speech event of the mode with the browser\'s way, and its caption)', mode.shown && said.length >= 1 && /chrome:\/\/flags.*Force high performance GPU, choose Enabled and restart the browser/.test(said[said.length - 1]!.text ?? '') && caps.some((c) => /integrated graphics chip/.test(c)), { said: said.map((s) => s.text), captions: caps.length });
     writeFileSync(join(OUT, 'note-in-mode.jpg'), await page.screenshot({ type: 'jpeg', quality: 78 }));
     await call<void>(page, 'reset');
     const modeSoft = await ask(page, SOFTWARE, { force: true });

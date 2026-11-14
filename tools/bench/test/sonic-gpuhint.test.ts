@@ -83,12 +83,14 @@ describe('the note names both ways to switch, in every language', () => {
             const d = dict(l);
             const p = gpuHintParts(UA.chrome, lookup(l), { name: NAME });
             expect(p.note).toBe('switch');
-            expect(p.text).toBe((d['gpuhint.text'] as string).split('{name}').join(NAME));
+            // no sign of the card given (the note forced): the cautious first sentence (the signs: the block at the end)
+            expect(p.text).toBe((d['gpuhint.text'] as string).split('{why}').join(d['gpuhint.why.none'] as string).split('{name}').join(NAME));
             expect(p.text).toContain(NAME);
             expect(p.text).not.toContain('{name}');
             expect(p.text).toMatch(/NVIDIA/);
             expect(p.text).toMatch(/AMD/);
-            expect(p.text).toMatch(/Windows/);
+            // the lead says the browser leaves the card unused; Windows is named by its own way below
+            expect(p.fixWindows).toMatch(/Windows/);
             expect(p.address).toBe('chrome://flags/#force-high-performance-gpu');
             // the words on the flag's page are English in every language of the browser: Enabled, and the button that restarts it,
             // which Chrome calls Relaunch and Edge calls Restart (read from both pages)
@@ -158,7 +160,7 @@ describe('the note names both ways to switch, in every language', () => {
             'gpuhint.copied', 'gpuhint.copy', 'gpuhint.copyFailed', 'gpuhint.cost', 'gpuhint.fixFlag', 'gpuhint.fixWindows', 'gpuhint.how', 'gpuhint.howFix',
             'gpuhint.line', 'gpuhint.line.integrated', 'gpuhint.line.software', 'gpuhint.nameSimilar', 'gpuhint.never', 'gpuhint.ok', 'gpuhint.openSettings',
             'gpuhint.softFixBrowser', 'gpuhint.softFixDriver', 'gpuhint.softFixDriverWindows', 'gpuhint.softText', 'gpuhint.text', 'gpuhint.textBack',
-            'gpuhint.unnamed', 'gpuhint.warn.back', 'gpuhint.warn.software', 'gpuhint.warn.switch'
+            'gpuhint.unnamed', 'gpuhint.warn.back', 'gpuhint.warn.software', 'gpuhint.warn.switch', 'gpuhint.why.chip', 'gpuhint.why.none', 'gpuhint.why.refresh'
         ]);
         for (const l of LANGS) {
             expect(Object.keys(dict(l)).sort(), l).toEqual(keys);
@@ -184,7 +186,8 @@ describe('the note names both ways to switch, in every language', () => {
                 expect(again, `${l} ${short}`).toContain(dict(l)['gpuhint.never']);
             }
         }
-        expect(hostLines('en')['sonic.say.gpuHint']).toMatch(/integrated graphics chip.*Settings, System, Display, Graphics, choose the browser, then High performance, and restart the browser/);
+        // 2026-11-14 (the owner): the switch is made in the browser; the line says why it is worth it
+        expect(hostLines('en')['sonic.say.gpuHint']).toMatch(/integrated graphics chip.*most likely has a faster graphics card.*more frames per second.*chrome:\/\/flags.*edge:\/\/flags.*Force high performance GPU, choose Enabled and restart the browser/);
         expect(hostLines('en')['sonic.say.gpuSoftware']).toMatch(/on the processor, not on a graphics card.*in Windows that is Device Manager/);
     });
 });
@@ -352,4 +355,38 @@ describe('what is said aloud in Fly by Sound', () => {
         forgetGpuHint(m.store);
         expect([...m.data.keys()]).toEqual([]);
     });
+});
+
+// The owner, 2026-11-14: the note only where a faster card is likely (render-pc secondCardSign: a screen of 140 Hz or more,
+// a chip made only for laptops with a card), never to a pilot who has no card to switch to; and it says why it thinks so
+// and what the switch gives.
+describe('the note only where a faster card is likely, and it says why', () => {
+    const NOCARD: GpuHintAsk = { hint: null, reason: 'no-second-card', kind: 'integrated' };
+    const fresh = { shownThisVisit: false, paused: false };
+
+    it('an integrated chip with no sign of a card: no note and nothing remembered; control: a browser that drew on a faster card before says it fell back', () => {
+        expect(planGpuHint(NOCARD, null, fresh)).toEqual({ note: null, show: false, rememberFast: false, hardware: true });
+        expect(planGpuHint(NOCARD, 'off', fresh)).toEqual({ note: null, show: false, rememberFast: false, hardware: true });
+        expect(planGpuHint(NOCARD, 'fast', fresh)).toEqual({ note: 'back', show: true, rememberFast: false, hardware: true });
+        expect(planGpuHint(NOCARD, 'fast', { shownThisVisit: true, paused: false }).show).toBe(false);
+        expect(planGpuHint(NOCARD, 'fast', { shownThisVisit: false, paused: true }).show).toBe(false);
+    });
+
+    for (const l of LANGS) {
+        it(`${l}: the switch note opens with why a faster card is there (the screen's rate, the kind of chip); the fall back note keeps its words`, () => {
+            const d = dict(l);
+            const hz = gpuHintParts(UA.chrome, lookup(l), { name: NAME, card: 'refresh', hz: 164.6 });
+            expect(hz.text.startsWith((d['gpuhint.why.refresh'] as string).split('{hz}').join('165'))).toBe(true);
+            const chip = gpuHintParts(UA.chrome, lookup(l), { name: NAME, card: 'chip' });
+            expect(chip.text.startsWith((d['gpuhint.why.chip'] as string).split('{name}').join(NAME))).toBe(true);
+            for (const p of [hz, chip]) {
+                expect(p.text).not.toMatch(/\{(why|hz|name)\}/);
+                expect(p.text).toContain(NAME);
+                expect(p.text).toMatch(/NVIDIA/);
+            }
+            // the cautious words only where nothing says so (a note the test hook forces)
+            expect(gpuHintParts(UA.chrome, lookup(l), { name: NAME }).text.startsWith(d['gpuhint.why.none'] as string)).toBe(true);
+            expect(gpuHintParts(UA.chrome, lookup(l), { note: 'back', name: NAME, card: 'refresh', hz: 165 }).text).toBe((d['gpuhint.textBack'] as string).split('{name}').join(NAME));
+        });
+    }
 });

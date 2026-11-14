@@ -18,10 +18,13 @@
   "gpuhint.softFixDriver": "Sterownik karty graficznej może być wyłączony albo go brakuje, więc przeglądarka nie ma na czym rysować.",
   "gpuhint.softFixDriverWindows": "W Windows otwórz Menedżer urządzeń, Karty graficzne: każda karta musi być włączona i mieć zainstalowany sterownik. W laptopie wyłączony układ zintegrowany (Intel) może zostawić przeglądarkę bez żadnej karty graficznej, nawet gdy jest karta NVIDIA: włącz ponownie kartę Intel.",
   "gpuhint.softText": "Przeglądarka rysuje tę stronę programowo ({name}): na procesorze, a nie na karcie graficznej, dlatego wszystko działa bardzo wolno. Zwykle przyczyna jest jedna z dwóch:",
-  "gpuhint.text": "Przeglądarka rysuje tę stronę na zintegrowanym układzie graficznym ({name}). Jeśli komputer ma też kartę graficzną NVIDIA lub AMD, przeglądarka jej nie używa: w Windows kartę wybiera przeglądarka, a nie strona, i ignoruje prośbę strony o szybszą. Aby przełączyć:",
+  "gpuhint.text": "{why} Przeglądarka rysuje na zintegrowanym układzie graficznym ({name}) i nie używa tej karty. Na niej: więcej szczegółów, pełna rozdzielczość, więcej klatek na sekundę. Przełącz na nią przeglądarkę:",
   "gpuhint.textBack": "Przeglądarka znów rysuje tę stronę na zintegrowanym układzie graficznym ({name}). Wcześniej ta przeglądarka rysowała na szybszej karcie graficznej. Aby przełączyć z powrotem:",
   "gpuhint.unnamed": "przeglądarka nie podaje nazwy",
   "gpuhint.warn.back": "Wcześniej ta przeglądarka rysowała na szybszej karcie graficznej.",
   "gpuhint.warn.software": "Przeglądarka rysuje na procesorze, a nie na karcie graficznej.",
-  "gpuhint.warn.switch": "Szybsza karta graficzna może stać bezczynnie."
+  "gpuhint.warn.switch": "Szybka karta graficzna nie jest używana.",
+  "gpuhint.why.refresh": "Ten komputer najpewniej ma szybszą kartę graficzną (NVIDIA lub AMD), jak laptopy z ekranem {hz} Hz.",
+  "gpuhint.why.chip": "Ten komputer najpewniej ma szybszą kartę graficzną (NVIDIA lub AMD), jak laptopy z układem graficznym tego procesora.",
+  "gpuhint.why.none": "Jeśli ten komputer ma szybszą kartę graficzną (NVIDIA lub AMD), przeglądarka jej nie używa."
 }

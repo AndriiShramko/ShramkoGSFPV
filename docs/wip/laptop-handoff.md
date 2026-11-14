@@ -21,8 +21,10 @@ Labels: [measured] on the laptop (i7-11800H, Intel UHD + RTX 3070 Laptop); [refe
      multiplier 3). The probe reads them: `node tools/bench/scripts/lod-view-probe.mjs --site <site> --scene 70b50d42
      --budget 1 --product --no-turns --heights 0 --label check-on` (and `--query "&viewlod=0" --label check-off`);
      it writes `product.engine` into `evidence/<date>/lod-view/<label>.json`;
-   - on a laptop that draws on its integrated chip, the graphics note shows on the start screen with "How to switch" and
-     "Do not show again" (the page run `tools/bench/src/sonic-gpuhint-page.ts` checks it, 25 checks).
+   - on a gaming laptop (screen of 140 Hz or more) that draws on its integrated chip, the graphics note shows on the start
+     screen with "How to switch" and "Do not show again"; on a laptop with no sign of a card nothing shows (the page run
+     `tools/bench/src/sonic-gpuhint-page.ts` checks both, 26 checks: `LAB=<site> npx tsx src/sonic-gpuhint-page.ts` in
+     `tools/bench`).
 4. Two decisions for the lead: lane lod-view reaches engine internals (the octree instance's `evaluateNodeDistances`,
    `requestFile`, the world's `_lodUpdateRequested`): a second exception to "public engine API only" in render-pc, and
    `docs/decisions.md` has no entry for it yet. And whether the graphics note stays as it is (the owner: pilots will not
@@ -38,8 +40,11 @@ Labels: [measured] on the laptop (i7-11800H, Intel UHD + RTX 3070 Laptop); [refe
   resolution, on Intel against 129.3 frames/s at 3.95 M on NVIDIA. The NVIDIA card throttles after about 25 s: every GPU
   number names the card's heat.
 - Product: the device class knows Intel's integrated chips from its discrete ones (Arc), names the adapter the page got,
-  and on an integrated chip the start screen says so, what it costs (budget, resolution) and how to switch, until it is
-  silenced; a software renderer has its own words; the bug report carries a `gpu` block. Files:
+  and on an integrated chip WITH A SIGN OF A FASTER CARD (a screen of 140 Hz or more, or Tiger Lake-H's chip; the owner,
+  2026-11-14: never tell a pilot without a card to look for one) the start screen and the flight say that this computer
+  most likely has a faster card, that the browser leaves it unused, what it gives, and how to switch it on in the browser
+  (the flag address with a Copy button) or in Windows, every visit until it is switched or silenced; with no sign there
+  is no note. A software renderer has its own words; the bug report carries a `gpu` block. Files:
   `packages/render-pc/src/device-class.ts`, `apps/fly/src/sonic/gpu-hint.ts`, `apps/fly/src/app/builtin/gpu-hint.ts`
   (and `.css`), `apps/fly/src/app/graphics-report.ts`, `apps/fly/src/app/diagnostics.ts`, locales
   `packages/i18n/locales/fly/gpuhint/*` and four `sonic.say.gpu*` keys.
@@ -122,8 +127,9 @@ Labels: [measured] on the laptop (i7-11800H, Intel UHD + RTX 3070 Laptop); [refe
 ## Gates on this branch
 
 Ran on 2026-11-14 on this merged tree (gpu-select 2ed2f47e, lod-view 5bdbb007, main 197c2760, the submodule
-`packages/sonic-fpv` at main's 598a98f9), all with exit 0: `pnpm -r typecheck`; vitest, 325 files and 4808 tests (4792
-pass, 16 skipped, none fail); check-architecture; the site's i18n:check (1193 strings x 4 locales); gen-catalog --check;
+`packages/sonic-fpv` at main's 598a98f9), all with exit 0, last after the graphics note's change (the sign of a second
+card): `pnpm -r typecheck`; vitest, 325 files and 4818 tests (4802 pass, 16 skipped, none fail); the page run of the
+graphics note, 26/26; check-architecture; the site's i18n:check (1193 strings x 4 locales); gen-catalog --check;
 B18 PASS. The API's Python tests were not run here: the two lanes change no Python file (the gpu-select lane ran them,
 458 passed).
 

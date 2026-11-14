@@ -170,6 +170,20 @@ puts the finished picture on the panel. One fast card is the answer.
 
 The page cannot choose the GPU, so it notices, says so on every visit until it is fixed, and makes the way out short.
 
+Changed on 2026-11-14 at the owner's word ("if he has no choice of card, no such messages: do not mislead him"): the
+switch note comes only where something says a faster card is there, and it says so plainly. An integrated chip alone is
+no longer enough (`reason: 'no-second-card'`, no note, nothing said aloud; the line that stays still names the chip). The
+signs (`secondCardSign` in device-class.ts): the screen's refresh rate of 140 Hz or more (measured by the page from
+requestAnimationFrame when it loads, before a flight; gaming laptops have such screens and a card, ultrabooks go up to
+120 Hz), or Intel's Tiger Lake-H chip, which is only made for laptops with a card (PCI ids 0x9A60, 0x9A68, 0x9A70 in
+WebGL's name). A browser that drew on a faster card before ('fast' in its memory) still gets the fall back note. The note
+opens with the sign ("This computer most likely has a faster graphics card (NVIDIA or AMD), as laptops with 165 Hz
+screens do"), says the browser leaves that card unused, and what it gives (more detail, full resolution, more frames per
+second); the spoken line names the browser's switch. [measured] On this laptop the page measured 167 Hz (said as its
+panel's 165 Hz) and its chip is 0x9A60: both signs. The page run checks it, 26/26 (`evidence/2026-11-14/`), with a new
+control: asked as an ultrabook (Iris Xe, 60 Hz), no note. Missed on purpose: a laptop with a card and a screen under
+140 Hz (a budget gaming laptop) gets no note, rather than every laptop without a card getting a wrong one.
+
 - Rule, `packages/render-pc/src/device-class.ts` (the hint part): the reading gains `kind` (software, integrated, other),
   `name` (the model as WebGL names it, since Chrome hides the adapter's model), `approx` (a family name a browser rounded)
   and `hint` (`switch`, `software` or nothing). New: software graphics (a fallback adapter, or SwiftShader / Microsoft Basic

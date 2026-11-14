@@ -194,9 +194,65 @@ export interface GpuHintSignals extends DeviceSignals {
      * "ANGLE (Intel, Intel(R) UHD Graphics (0x00009A60) Direct3D11 vs_5_0 ps_5_0, D3D11)"), when the page read one
      */
     glRenderer?: string;
+    /** the display's refresh rate the page measured (Hz, from requestAnimationFrame: refreshFromIntervals), when it measured one */
+    refreshHz?: number;
 }
 
-export type GpuHintReason = 'due' | 'handheld' | 'not-windows' | 'no-webgpu' | 'unknown-adapter' | 'fallback-adapter' | 'not-intel' | 'intel-discrete';
+/**
+ * 'no-second-card' (the owner, 2026-11-14): an integrated chip draws the page, and nothing says this computer has a faster
+ * card next to it; telling such a pilot to switch would make him look for a card he does not have, so nothing is said.
+ */
+export type GpuHintReason = 'due' | 'no-second-card' | 'handheld' | 'not-windows' | 'no-webgpu' | 'unknown-adapter' | 'fallback-adapter' | 'not-intel' | 'intel-discrete';
+
+/** What says a faster card sits next to the integrated chip (a page is never told so: the browser hides it). */
+export type SecondCardSign = 'refresh' | 'chip';
+
+/**
+ * A screen at least this fast (Hz) on an integrated chip is a gaming laptop's, and gaming laptops are built with a second card.
+ * Ultrabooks without one go up to 120 Hz, so 120 does not count. [reference: what laptops sell with; not a measured rate]
+ */
+export const SECOND_CARD_HZ = 140;
+
+/**
+ * Intel's integrated chips that are only made for laptops with a second card: Tiger Lake-H's "UHD Graphics" (the 8-core H
+ * die has only this small chip; PCI ids 0x9A60, 0x9A68, 0x9A70, the i915 driver's TGL GT1). This laptop's is 0x9A60. Chips
+ * that also sit alone in a laptop or a desktop (Iris Xe, the U and P series, the desktop dies that the HX parts share) are not
+ * listed: a wrong "you have a faster card" misleads the pilot. [reference]
+ */
+const PAIRED_INTEL_IDS: ReadonlySet<number> = new Set([0x9a60, 0x9a68, 0x9a70]);
+
+/** The PCI device id in WebGL's name ("... UHD Graphics (0x00009A60) Direct3D11 ..."), or null. */
+export function glDeviceId(gl: string): number | null {
+    const m = /\(0x([0-9a-f]{4,8})\)/i.exec(gl);
+    return m ? parseInt(m[1] as string, 16) : null;
+}
+
+/**
+ * The display's refresh rate (Hz) from requestAnimationFrame's intervals (ms): the 20th percentile of them, so frames the
+ * page was slow to draw do not pull it down; 0 with fewer than 20 usable intervals.
+ */
+export function refreshFromIntervals(ms: readonly number[]): number {
+    const v = ms.filter((x) => x > 1 && x < 250).sort((a, b) => a - b);
+    if (v.length < 20) return 0;
+    return 1000 / (v[Math.floor(v.length * 0.2)] as number);
+}
+
+/** The rates screens are sold with (Hz): a measured rate within 4 % of one is said as that one (this laptop's 165 Hz measures 167). */
+const SCREEN_RATES = [60, 75, 90, 100, 120, 144, 165, 170, 180, 200, 240, 280, 300, 360, 480];
+
+/** A measured refresh rate as the pilot knows his screen's: the nearest rate screens are sold with, else the whole number. */
+export function screenRate(hz: number): number {
+    let best = Math.round(hz);
+    let gap = Infinity;
+    for (const r of SCREEN_RATES) {
+        const d = Math.abs(hz - r) / r;
+        if (d <= 0.04 && d < gap) {
+            best = r;
+            gap = d;
+        }
+    }
+    return best;
+}
 
 /** What the page draws on: the processor, a chip built into the processor, or anything else (a card, or nothing known). */
 export type GraphicsKind = 'software' | 'integrated' | 'other';
@@ -213,6 +269,10 @@ export interface GpuHintReading {
     name: string;
     /** the name is the chip's family as the browser rounds it, not its model (Firefox ends WebGL's words with ", or similar") */
     approx: boolean;
+    /** when due: what says a faster card is there (the note says it to the pilot); else null */
+    card: SecondCardSign | null;
+    /** the refresh rate behind card 'refresh' (Hz, whole); else null */
+    refreshHz: number | null;
 }
 
 /** Windows: Client Hints' platform when there is one, else the user agent (Chrome keeps "Windows NT 10.0; Win64; x64" for every Windows). */
@@ -361,7 +421,16 @@ export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
     const name = graphicsName(s);
     const approx = OR_SIMILAR.test(glOf(s));
     const handheld = looksHandheld(s);
-    const out = (due: boolean, reason: GpuHintReason): GpuHintReading => ({ due, reason, kind, hint: due ? 'switch' : kind === 'software' && !handheld ? 'software' : null, name, approx });
+    const out = (due: boolean, reason: GpuHintReason, card: SecondCardSign | null = null): GpuHintReading => ({
+        due, reason, kind, hint: due ? 'switch' : kind === 'software' && !handheld ? 'software' : null, name, approx, card,
+        refreshHz: card === 'refresh' ? screenRate(s.refreshHz ?? 0) : null
+    });
+    // an integrated chip: due only where something says a faster card is there (the owner: no note that sends a pilot
+    // looking for a card he does not have); the browser's memory of a faster card is the app's (sonic/gpu-hint.ts planGpuHint)
+    const integrated = (): GpuHintReading => {
+        const card = secondCardSign(s);
+        return card ? out(true, 'due', card) : out(false, 'no-second-card');
+    };
     if (handheld) return out(false, 'handheld');
     if (!isWindows(s.userAgent, s.platform)) return out(false, 'not-windows');
     if (!s.webgpu) return out(false, 'no-webgpu');
@@ -373,13 +442,24 @@ export function gpuSwitchHintDue(s: GpuHintSignals): GpuHintReading {
         const gl = glOf(s);
         if (!gl) return out(false, 'unknown-adapter');
         if (g?.isFallback || kind === 'software') return out(false, 'fallback-adapter');
-        if (kind === 'integrated') return out(true, 'due');
+        if (kind === 'integrated') return integrated();
         return out(false, NVIDIA_NAME.test(gl) ? 'not-intel' : 'unknown-adapter');
     }
     if (g.isFallback || kind === 'software') return out(false, 'fallback-adapter');
     const vendor = g.vendor.toLowerCase();
-    if (vendor === 'intel') return kind === 'integrated' ? out(true, 'due') : out(false, 'intel-discrete');
+    if (vendor === 'intel') return kind === 'integrated' ? integrated() : out(false, 'intel-discrete');
     // an AMD chip built into the processor, next to which a card may sit unused (the name is WebGL's: see the header)
-    if (vendor === 'amd' && kind === 'integrated') return out(true, 'due');
+    if (vendor === 'amd' && kind === 'integrated') return integrated();
     return out(false, 'not-intel');
+}
+
+/**
+ * What says a faster card sits next to the integrated chip that draws: a screen of SECOND_CARD_HZ or more, or an Intel chip
+ * that is only made for laptops with a card (PAIRED_INTEL_IDS, by WebGL's name when it is this adapter's); null: nothing.
+ */
+export function secondCardSign(s: Pick<GpuHintSignals, 'refreshHz' | 'gpu' | 'glRenderer'>): SecondCardSign | null {
+    if ((s.refreshHz ?? 0) >= SECOND_CARD_HZ) return 'refresh';
+    const gl = glOf(s);
+    const id = /\bintel\b/i.test(gl) ? glDeviceId(gl) : null;
+    return id !== null && PAIRED_INTEL_IDS.has(id) ? 'chip' : null;
 }

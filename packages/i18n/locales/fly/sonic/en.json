@@ -45,7 +45,7 @@
   "sonic.reset.kept": "Your progress is kept.",
   "sonic.reset.no": "No, keep my progress",
   "sonic.reset.yes": "Yes, reset my progress",
-  "sonic.say.gpuHint": "The browser is drawing this page on the integrated graphics chip. If this computer also has an NVIDIA or AMD graphics card, ask your helper to switch the browser to it: in Windows Settings, System, Display, Graphics, choose the browser, then High performance, and restart the browser.",
+  "sonic.say.gpuHint": "The browser is drawing this page on the integrated graphics chip, and this computer most likely has a faster graphics card (NVIDIA or AMD) that the browser leaves unused. The fast card gives more detail and more frames per second. Ask your helper to switch the browser to it: in Chrome open the address chrome://flags, in Edge edge://flags, find Force high performance GPU, choose Enabled and restart the browser.",
   "sonic.say.gpuHintAgain": "Reminder: the browser is still drawing this page on the integrated graphics chip. The note on the screen says how to switch, and its button Do not show again stops this reminder.",
   "sonic.say.gpuSoftware": "The browser is drawing this page on the processor, not on a graphics card, so everything runs very slowly. Ask your helper to switch graphics acceleration on in the browser's settings and to check that the graphics adapter is enabled and has a driver; in Windows that is Device Manager, Display adapters.",
   "sonic.say.gpuSoftwareAgain": "Reminder: the browser is still drawing this page on the processor, not on a graphics card. The note on the screen says what to check, and its button Do not show again stops this reminder.",

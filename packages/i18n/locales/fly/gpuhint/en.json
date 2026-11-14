@@ -18,10 +18,13 @@
   "gpuhint.softFixDriver": "The graphics driver may be disabled or missing, so the browser has no graphics card to draw on.",
   "gpuhint.softFixDriverWindows": "In Windows open Device Manager, Display adapters: every adapter must be enabled and have a driver installed. On a laptop a disabled integrated chip (Intel) can leave the browser with no graphics card at all, even when there is an NVIDIA card: enable the Intel adapter again.",
   "gpuhint.softText": "The browser is drawing this page in software ({name}): on the processor, not on a graphics card, so everything here runs very slowly. This usually has one of two causes:",
-  "gpuhint.text": "The browser is drawing this page on the integrated graphics chip ({name}). If this computer also has an NVIDIA or AMD graphics card, the browser is not using it: on Windows the browser, not the page, picks the card, and it ignores the page's request for the faster one. To switch:",
+  "gpuhint.text": "{why} The browser draws on the integrated graphics chip ({name}) and leaves that card unused. On it: more detail, full resolution, more frames per second. Switch the browser to it:",
   "gpuhint.textBack": "The browser is drawing this page on the integrated graphics chip ({name}) again. Earlier this browser drew on a faster graphics card. To switch back:",
   "gpuhint.unnamed": "not named by the browser",
   "gpuhint.warn.back": "This browser drew on a faster graphics card before.",
   "gpuhint.warn.software": "The browser draws on the processor, not on a graphics card.",
-  "gpuhint.warn.switch": "A faster graphics card may be sitting unused."
+  "gpuhint.warn.switch": "The fast graphics card is not in use.",
+  "gpuhint.why.refresh": "This computer most likely has a faster graphics card (NVIDIA or AMD), as laptops with {hz} Hz screens do.",
+  "gpuhint.why.chip": "This computer most likely has a faster graphics card (NVIDIA or AMD), as laptops with this processor's chip do.",
+  "gpuhint.why.none": "If this computer has a faster graphics card (NVIDIA or AMD), the browser is not using it."
 }
