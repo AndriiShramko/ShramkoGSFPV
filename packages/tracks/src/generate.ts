@@ -18,6 +18,7 @@ import type { Pose, Quat, SceneTransform, TrackFile, TrackGate, Vec3, VoxelColli
 import { MARGIN_M, checkTrack, sweeperOf } from './check';
 import { cellCentre, clearanceM } from './freespace';
 import { inDenseBand, stepsFrom } from './quality';
+import { gateExit } from './path';
 import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
 import { createRng } from './rng';
@@ -343,8 +344,18 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             return false;
         };
         const sweepsMax = spread ? SPREAD_SWEEPS_PER_STEP : SWEEPS_PER_STEP;
+        // CR-4: over a quality map the turn out of the last gate toward the candidate (path.ts gateExit, as check.ts proves
+        // it for the whole course) must be clear too: with 25 m legs on a street that turn hit a wall and the final proof
+        // dropped up to 10 of 24 walked gates (Wroclaw audit seed 4). Courses without a map keep their walk and digests.
+        const lastIn = Q && gates.length > 0 && prevDir ? sub(cur, trail[trail.length - 1]!.cur) : null;
+        const lastAxis = lastIn && prevDir ? yawForward(nearestYaw(prevDir)) : null;
+        const exitOk = (to: Vec3): boolean => {
+            if (!lastIn || !lastAxis) return true;
+            const e = gateExit(cur, lastAxis, lastIn, sub(to, cur));
+            return !e || sweeper.free(e, to, p.marginM);
+        };
         for (let j = 0, sweeps = 0; j < options.length && open.length < 4 && sweeps < sweepsMax; j++, sweeps++) {
-            if (sweeper.free(cur, options[j]!.c.pos, p.marginM) && wayOn(options[j]!)) open.push(options[j]!);
+            if (sweeper.free(cur, options[j]!.c.pos, p.marginM) && exitOk(options[j]!.c.pos) && wayOn(options[j]!)) open.push(options[j]!);
         }
         // G2: a spread walk that is stuck steps back one gate (left used: a dead end) and walks on from the gate before
         if (open.length === 0 && spread && gates.length > 0 && backtracks < SPREAD_BACKTRACKS) {

@@ -163,6 +163,12 @@ Stage fixes (review CR-1..CR-6). Stopped at the reply budget at a clean point.
   current gate toward it is free (gateExit from path.ts with the last gate's axis), for courses over a map only (digest pins
   of courses without a map must hold); then rerun run-audit.sh (about 20 min with 4 processes) and compare sd with before3
   (Wroclaw 5.2, Tunis 6.5) and after3 (3.1, 6.6).
+- [~] CR-4 (pass 2): fix in generate.ts: over a quality map a candidate is open only when the turn out of the last gate
+  toward it (gateExit with the last gate's axis yawForward(nearestYaw(prevDir)) and leg in from the trail) is clear by
+  marginM. Without a map exitOk is true at once: quality 4/4, generate/fit/fixtures 65/66; the one failure is the
+  60 s timeout of generate.test.ts "2 m hole" (71.5 s, alone 92.9 s), and it fails the same on the HEAD generator
+  (neg_control.py --ref HEAD: the old code fails too), so it is the machine's load (48 node processes), not the change.
+  tsc packages/tracks: 0 errors. Audit run-audit.sh audit-cr4 started.
 - [ ] CR-3: tools/bench/scripts/course-rate.mjs now reads course-quality-audit rows (fits as tried). Left: run it over
   fixes/audit/ when the audit is whole, set COURSE_TRY_MS_5CM from ms per fit try (Node, so far Wroclaw rows 35-108 s a
   course, 1 fit each) and FREE_SPACE_MS from the free step: Node qMs 1115-1140 + freeMs 3675 on Wroclaw (g4b), browser
