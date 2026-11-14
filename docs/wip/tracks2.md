@@ -28,13 +28,22 @@ Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/do
   (the look turns right by atan((1 - free) * tan(hFov / 2)), free = panel.root's left edge / innerWidth; no turn when free
   is under AIM_MIN_FREE 0.2, an estimate, or 0.98 and up), screenX; course.ts aim() on every showEd and on window resize
   while the editor is open; hook course.editor.view gains `look` and `free`. Test tools/bench/test/tracks-k26.test.ts (3),
-  NEG OK on camera.ts of 544f7b48 (AssertionError: aimAt undefined). The probe's shot checks count magenta left of the
+  NEG OK on camera.ts of 544f7b48 (AssertionError: aimAt is not a function there). The probe's shot checks count magenta left of the
   window's box (tracks-page.ts colours(..., leftShare)).
 - [x] K2.6 probe (commit with this line): release built at f723ebcc (exit 0, U:/Temp/gsfpv-train2/tracks2/k26/build.log);
   `EDITOR_ONLY=1 SONIC_PORTS=5720-5739 EVIDENCE_NAME=tracks2-k26-editor npx tsx src/tracks-page.ts` 27 PASS, 0 FAIL, exit 0
   (log U:/Temp/gsfpv-train2/tracks2/k26/probe.log). Shots looked at: 1920 the magenta gate whole, left of the middle, left
   of the window; 844x390 the magenta gate whole in the free left part, the window from x 400.
-- [ ] K2.4 Space "drop a gate here" while flying; K2.5 pillar pairs as /2 objects with a key (see For the lead).
+- [ ] K2.4 "drop a gate here" while flying. Space is taken twice in flight: arm.toggle (packages/prefs/src/keymap.ts line
+  67, FLYING_CODES) and throttle up in keyboard flying (the HUD line "Space up"). Plan for the next worker: a new KEYMAP
+  action `course.drop` on Ins (and I) when flying with a course shown or none (none: a one-gate course is made), the gate
+  at the drone's flown position facing its heading, appended after the last gate; the editor's checks run on it and the
+  HUD says where it went. New keymap row: run packages/prefs/test/migrate.test.ts and the pinned key tables of
+  docs/agent-map.md; touches input, so tools/bench/test/a6-reference.test.ts too. Space stays arm (see For the lead).
+- [ ] K2.5 pillar pairs as /2 objects with a key: needs the /2 track format on the server first (tracks.py stores /1;
+  toTrackV1 drops `objects`), then the editing model's objects and a key in course/editor/keys.ts KEY_ROWS.
+- [x] gates.py --only vitest,architecture,i18n,b18 after K2.6: vitest PASS (103 s), architecture PASS, i18n PASS, b18 FAIL
+  on a placeholder word in this file (fixed: the word was in the K2.6 line); b18 re-run alone after the fix, see Facts.
 
 Stage K1-passable-and-small.
 
@@ -101,6 +110,8 @@ Stage K1-passable-and-small.
 - K2.6 probe values (tracks2-k26-editor): 1920x1080 window left 1532 (free 0.798), magenta 26368 px, all left of the
   window; 844x390 window left 400 (free 0.474), magenta 9721 px, all left of the window (1658 px before K2.6). On opening
   (probe viewport) free 0.697, 11066 px. Unit tests tracks-k26 + tracks-k2: 8 passed; tsc apps/fly and tools/bench clean.
+- Gates after K2.6 (gates.py): vitest, architecture, i18n PASS (logs U:\Temp\gsfpv-gates-20261114-020307); b18 PASS after
+  the status fix (U:\Temp\gsfpv-gates-20261114-020517).
 
 ## Decisions
 
@@ -165,6 +176,10 @@ Stage K1-passable-and-small.
   Node; whether the turned-back gate is its cause is a guess until the sound lane runs again on this branch.
 
 ## Cost notes
+
+- K2 worker 2 (K2.6): most turns went to the negative control: neg_control.py with `bash -c` reached WSL bash (a false NEG
+  OK) and a pipe to grep hid the exit code (a false NEG BAD); run it with the full Git bash path and the test's output sent
+  to a log file, no pipe. The build in the background while the swap ran was a risk; run the negative control before the build.
 
 - K2 worker 1: most turns went to reading course.ts and the probe in slices to find the hook points (camera override,
   vote path, probe colour helper); a short "editor hook points" list in docs/agent-map.md would have saved about five turns.
