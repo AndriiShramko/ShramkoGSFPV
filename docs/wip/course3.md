@@ -74,7 +74,7 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
 - [ ] Saved courses: a saved course is a file (format unchanged, params free-form; the test validates a new course).
   A g1.<seed> link now rebuilds a different course than before this change (links are rebuilt by the current code
   on both sides; changing the link to g2 touches app/builtin/course.ts and rooms/race.ts, outside the lane): see For the lead.
-- [ ] gates.py --only vitest,architecture,i18n,b18 before handing over (not run in pass 2).
+- [x] gates.py --only vitest,architecture,i18n,b18 on 35bb6f15: all PASS (vitest 164 s; logs U:/Temp/gsfpv-gates-20261114-223819).
 - [ ] Browser look on Wroclaw and Tunis (a separate stage).
 - [ ] Gaussian count grid in the bake (the task's other source): not built. Proposal: bake.ts / tools/walls/bake-published.mjs
   keep a 4 m x 4 m x layer count of Gaussians and publish it beside the walls as scene.density.json (lane walls' files).
@@ -98,6 +98,14 @@ changes between regenerations). NOT finished; stopped at a clean point at the re
   100 % in band, gates 9-17 (11.3, sd 2.6), reach 9 m, visited share 0.005: smaller and tighter, not wired.
 - Spread trial (--quality --spread, 4 seeds): eb5f51dc 8-9 gates, reach 63-67 m, stop "no candidate in reach";
   0230d903 5-9 gates, scales 0.3-0.5 on 3 of 4 seeds.
+- G2 audit, 20 seeds, committed code 35bb6f15 (course-quality-audit.ts; before3 = no map, after3 = --quality), fast scans
+  (Wroclaw and Tunis still running at hand-over):
+  | scan | run | gates in band | well-scanned visited | gates | mean | sd | reach m | ms a course |
+  |---|---|---|---|---|---|---|---|---|
+  | eb5f51dc | before3 | 0.059 | 0.081 | 5-24 | 13.6 | 8.4 | 29 | 1066 |
+  | eb5f51dc | after3 | 1 | 0.112 | 5-24 | 17.8 | 6.3 | 33 | 3790 |
+  | 0230d903 | before3 | 0.022 | 0.036 | 6-24 | 20.7 | 6.1 | 27 | 7025 |
+  | 0230d903 | after3 | 1 | 0.039 | 14-24 | 23 | 2.3 | 56 | 8558 |
 - Spread walk trial (pass 2, course-quality-audit.ts --quality, 6 seeds, U:/Temp/gsfpv-train3/course3/g2/trial-walk/*-4.log,
   before the step-backs and the ceil band fix): 0230d903 gates 24, 24, 23, 22, 23 and 17 (scale 1 on all 6; before: 6-24
   over 20 seeds), farM 99-115 m, out half 12 gates on all 6; eb5f51dc 24 (scale 0.5), 9, 6, 5, 20 (0.5), 15: dead ends
