@@ -1,4 +1,8 @@
 {
   "sonic.menu.page": "Lot na słuch: niewidomi i słabowidzący",
-  "sonic.say.lessonFailed": "Lekcja się nie otworzyła. Wybierz ją jeszcze raz albo wybierz inną."
+  "sonic.say.lessonFailed": "Lekcja się nie otworzyła. Wybierz ją jeszcze raz albo wybierz inną.",
+  "sonic.menu.here": "Lot na słuch tutaj",
+  "sonic.menu.hereOff": "Wyłącz lot na słuch",
+  "sonic.menu.lessonsTab": "Lekcje lotu na słuch: niewidomi i słabowidzący",
+  "sonic.menu.hereFailed": "Lot na słuch się nie włączył. Naciśnij ukośnik wsteczny, aby spróbować jeszcze raz."
 }

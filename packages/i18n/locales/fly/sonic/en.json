@@ -104,5 +104,8 @@
   "sonic.say.courseNone": "No course of gates fits in this scan. You fly freely again.",
   "sonic.start.scan": "Fly this scan by sound",
   "sonic.start.scanFlier": "I already fly by sound: fly this scan",
-  "sonic.start.scanWhat": "Free flight over this scan at size x{size}: you hear its walls and your height. No rings, no clock."
+  "sonic.start.scanWhat": "Free flight over this scan at size x{size}: you hear its walls and your height. No rings, no clock.",
+  "sonic.key.Backslash": "Backslash",
+  "sonic.say.inPlaceOn": "Fly by Sound is on, right where you are.",
+  "sonic.say.inPlaceIntro": "You hear the walls as you come near them, and your height. {off} switches Fly by Sound off, {course} makes a course of gates here, {keys} says all the keys. To learn step by step, press {menu} and choose the lessons."
 }

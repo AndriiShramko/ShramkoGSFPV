@@ -10,17 +10,15 @@ Stage Z1-any-scene-in-place:
   sonic3-plan.md "What stops a pilot today"; probe tools/bench/scripts/sonic-walk-probe.mjs (this commit).
 - [x] Step 3: package README line "Spatial-audio consultant: Bartlomiej Mroz (Gdansk University of Technology)" (Polish
   letters in README.md), earlier sentence removed; test/docs.test.ts holds it. Package commit 2ec8653 on train3.
-- [ ] Step 2: the in-place switch. Left, in this order (details in sonic3-plan.md "The direct road"):
-  1. Package (train3): a free template for a built-in world too (scanFreeLesson only takes a scan), plus locale key
-     sonic.say.inPlaceIntro in pkg/locales en es pl ru if engine lines live there, else in packages/i18n/locales/fly/sonic.
-  2. KEYMAP action sonic.inPlace (Backslash, when 'always'; check its cap on Polish and Russian layouts); tables keymap.test.ts DESIGN_TABLE and app-keys.test.ts.
-  3. apps/fly/src/sonic/in-place.ts switchOn/switchOff (setup, setSonicEntry, installSonicFlight, off).
-  4. lessons.ts openFree(lesson, { here: true }): start = current pose, no mode.place.
-  5. sonic-flight.ts: pause item becomes an action (on/off label), second item to the lessons page, key handler.
-  6. First-timer intro line once (store.ts fliesBySound).
-  7. Unit test tools/bench/test/sonic-in-place.test.ts with negative controls; typecheck apps/fly, packages/prefs.
-  8. Move the pin of packages/sonic-fpv to the train3 commit.
-  9. gates.py --only vitest,architecture,i18n,b18.
+- [x] Step 2: the in-place switch (this commit). Backslash (KEYMAP action flyBySound.toggle, when 'always') and the pause item
+  "Fly by Sound here" switch the mode on over the running flight: sonic/in-place-model.ts InPlaceSwitch (pure) and
+  sonic/in-place.ts (wiring, loaded by import() at the first press); free flight = scan-free template on the scene flown now at
+  its size (a built-in world too: no package change was needed, scanFreeLesson takes any scene id); feature.ts scanLesson gives
+  the craft's pose as the start when `here`; lessons.ts openFree(lesson, { here }) keeps it for every reopen (walls in, failed
+  course). First-timer line sonic.say.inPlaceIntro once (store.ts fliesBySound). Lesson menu Leave and X switch off / open the
+  lessons tab when there is no start screen. Second pause item "Fly by Sound lessons" keeps the new-tab link.
+- [x] Pin of packages/sonic-fpv moved to package train3 2ec8653 (this commit).
+- [ ] gates.py --only vitest,architecture,i18n,b18.
 - [ ] Browser proof (own stage, release build first) on Tunis and Wroclaw with the walls stand-in.
 
 ## Facts (measured)
@@ -31,11 +29,22 @@ Stage Z1-any-scene-in-place:
   and no sound line for 271 s with nothing pressed (steps 6 to 7, 24 s to 295 s on Tunis).
 - Wroclaw 70b50d42 live: walls 0.0 MB downloaded, top bar "No walls yet: C builds them.", walls off.
 - Package docs test: 10 of 10 passed with the new README; on main's README it fails by an assertion (negative control).
+- Step 2 unit tests: sonic-in-place, sonic-optin, sonic-int-lazy, sonic-walls-free, sonic-scan-free, sonic-scan-course, keymap,
+  app-keys: 8 files, 100 of 100 passed. Typecheck apps/fly and packages/prefs: 0 errors each.
+- Negative controls (neg_control.py, ref origin/main) for sonic-in-place.test.ts: keymap.ts NEG OK (expected null to be
+  'flyBySound.toggle'); sonic-flight.ts NEG OK (expect(item.href).toBeUndefined fails); lessons.ts NEG OK (craft back at the
+  spawn: 0.0002 m, expected over 3 m). Logs U:/Temp/gsfpv-train3/sonic3/neg-*.log.
+- The runner itself places the craft at its start pose when a lesson begins (package runner.ts begin, 'place' action), so
+  keeping the position needs the start = the craft's pose (feature.ts scanLesson `here`), not only skipping mode.place.
 
 ## Decisions
 
 - In place = install sonic/feature.ts installSonicFlight on the running flight context after the press (the KeyRouter's sonic
   option is already a live function of sonicEntry()), not a new page.
+- Action name flyBySound.toggle, not sonic.inPlace: app-keys.test.ts holds that no 'sonic.*' action is listed on an ordinary
+  page, and this key must be listed on every page.
+- Switching on in place opens the free flight with its own assists (velocity control, 5 m/s top as scan-free.json sets): the
+  speed stages of this train change that, not this step.
 - Key Backslash: every plain letter is bound (keymap.ts) and no binding names Backslash (grep 'Slash' in keymap.ts: 0). Not
   Shift plus S: Shift is a flying key in the game scheme (app/keys.ts shiftIsFlying note), that chord would fire while descending.
 

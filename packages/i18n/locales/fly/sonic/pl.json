@@ -104,5 +104,8 @@
   "sonic.say.courseNone": "W tym skanie nie mieści się żaden tor z bramek. Znowu latasz swobodnie.",
   "sonic.start.scan": "Leć nad tym skanem na słuch",
   "sonic.start.scanFlier": "Już latam na słuch: leć nad tym skanem",
-  "sonic.start.scanWhat": "Wolny lot nad tym skanem w rozmiarze x{size}: słyszysz jego ściany i swoją wysokość. Bez obręczy, bez zegara."
+  "sonic.start.scanWhat": "Wolny lot nad tym skanem w rozmiarze x{size}: słyszysz jego ściany i swoją wysokość. Bez obręczy, bez zegara.",
+  "sonic.key.Backslash": "ukośnik wsteczny",
+  "sonic.say.inPlaceOn": "Lot na słuch jest włączony, dokładnie tam, gdzie jesteś.",
+  "sonic.say.inPlaceIntro": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. {off} wyłącza lot na słuch, {course} tworzy tutaj trasę z bramkami, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje."
 }

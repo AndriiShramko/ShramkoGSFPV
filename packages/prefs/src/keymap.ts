@@ -123,7 +123,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     { action: 'sonic.glossary', keys: [letter('G')], when: 'sonic', labelKey: 'keys.sonic.glossary', status: 'shipped' },
     // lane sonic-hints (the owner's complaint of 2026-11-10): X leaves a lesson for the mode's main menu (its start screen) in one
     // press, the lesson saved. X was free (no binding, not a flying key). A key of the mode only, like the five above
-    { action: 'sonic.home', keys: [letter('X')], when: 'sonic', labelKey: 'keys.sonic.home', status: 'shipped' }
+    { action: 'sonic.home', keys: [letter('X')], when: 'sonic', labelKey: 'keys.sonic.home', status: 'shipped' },
+    // train 3, lane sonic3 (the owner: "flying by sound must be switched on for any scene"): Backslash switches Fly by Sound on and
+    // off in place, in any scene, on every page. Every plain letter is bound; Shift plus a letter descends in the game scheme
+    { action: 'flyBySound.toggle', keys: [{ code: 'Backslash', cap: '\\', aria: 'Backslash' }], when: 'always', labelKey: 'keys.flyBySound.toggle', status: 'shipped' }
 ];
 
 /**

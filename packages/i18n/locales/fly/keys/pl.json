@@ -18,5 +18,6 @@
   "keys.settings.open": "Ustawienia",
   "keys.share.open": "Udostępnij tę scenę",
   "keys.voxels.cycle": "Siatka wokseli: ukryta / na skanie / same woksele",
-  "keys.walls.toggle": "Ściany wł. / wył. dla tego skanu"
+  "keys.walls.toggle": "Ściany wł. / wył. dla tego skanu",
+  "keys.flyBySound.toggle": "Lot na słuch tutaj: włącz / wyłącz"
 }

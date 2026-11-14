@@ -307,12 +307,13 @@ export class Rig {
             },
             // the lesson's own track (feature.ts scanLesson): none for the free flight over a scan, the course a page's course.ask gave
             // for a course in it (S3), else the scan's track; the course world only for the free flight (feature.ts: scan-free)
-            scanLesson: async (lesson) =>
+            // train 3 (sonic3): switched on in place (`here`), the start is the craft's pose now, as feature.ts scanLesson gives it
+            scanLesson: async (lesson, here) =>
                 scan
                     ? buildScanLesson(rig.trackOf(lesson, scan.track), {
                           sceneId: scan.sceneId,
                           sceneVersion: 1,
-                          spawn: { pos: [scan.spawn[0], scan.spawn[1], scan.spawn[2]], yawDeg: scan.spawn[3] },
+                          spawn: here ? { pos: [rig.pos[0], rig.pos[1], rig.pos[2]], yawDeg: rig.last?.yawDeg ?? scan.spawn[3] } : { pos: [scan.spawn[0], scan.spawn[1], scan.spawn[2]], yawDeg: scan.spawn[3] },
                           // the walls are flown already (a built-in session has the identity transform): the scene size is the scan's
                           src: { collision: () => rig.session.collision, transform: () => ({ s: scan.transform[0], t: [scan.transform[1], scan.transform[2], scan.transform[3]] }) }
                       }, { course: lesson.id === SCAN_FREE_ID })

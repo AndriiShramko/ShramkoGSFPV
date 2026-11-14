@@ -159,6 +159,14 @@ export interface SonicEntry {
     readonly free?: LessonDef | null;
     /** train 2 (review SN-2): the free flight of the page's scan link for a press of the start screen over a flight (start.ts freeLessonOf) */
     readonly freeOf?: (id: string) => LessonDef | null;
+    /** train 3 (sonic3): switched on in place (in-place.ts): the free flight starts where the craft is, nothing moves it */
+    readonly here?: boolean;
+    /** train 3: said once after the free flight opened in place, for a pilot who never flew by sound (the keys he needs) */
+    readonly intro?: boolean;
+    /** train 3: the lesson menu's Leave and X without a start screen: the mode switches off in place, the flight goes on */
+    readonly leave?: () => void;
+    /** train 3: the mode's lessons without a start screen in this page (a new tab of /{lang}/fly/?sonic=start) */
+    readonly lessons?: () => void;
 }
 
 // The page's entry itself lives in entry-state.ts (no runtime import: the main chunk asks it on every page).

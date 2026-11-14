@@ -1,4 +1,8 @@
 {
   "sonic.menu.page": "Fly by Sound: blind and low-vision pilots",
-  "sonic.say.lessonFailed": "The lesson did not open. Choose it again, or choose another one."
+  "sonic.say.lessonFailed": "The lesson did not open. Choose it again, or choose another one.",
+  "sonic.menu.here": "Fly by Sound here",
+  "sonic.menu.hereOff": "Switch off Fly by Sound",
+  "sonic.menu.lessonsTab": "Fly by Sound lessons: blind and low-vision pilots",
+  "sonic.menu.hereFailed": "Fly by Sound did not switch on. Press Backslash to try again."
 }

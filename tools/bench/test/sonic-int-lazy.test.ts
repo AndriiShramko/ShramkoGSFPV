@@ -131,9 +131,10 @@ describe('the main chunk holds nothing of Fly by Sound (static imports from apps
 
     it('v12-optin: every text of Fly by Sound the main chunk\'s own code asks for is in sonicentry, the one namespace of the mode every page keeps; none of the mode\'s own namespaces (sonic, sonickeys) is asked but where it is read on a ?sonic= page only', () => {
         const entry = JSON.parse(readFileSync(join(ROOT, 'packages/i18n/locales/fly/sonicentry/en.json'), 'utf8')) as Record<string, string>;
-        expect(Object.keys(entry).sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
+        // train 3 (sonic3): the in-place item's two labels and the lessons item; hereFailed is shown by in-place.ts after its chunk came
+        expect(Object.keys(entry).sort()).toEqual(['sonic.menu.here', 'sonic.menu.hereFailed', 'sonic.menu.hereOff', 'sonic.menu.lessonsTab', 'sonic.menu.page', 'sonic.say.lessonFailed']);
         const sources = [...closure].filter((f) => !f.startsWith('pkg:') && f.endsWith('.ts')).map((f) => readFileSync(f, 'utf8'));
-        expect([...askedSonic(sources)].filter((k) => k in entry).sort()).toEqual(['sonic.menu.page', 'sonic.say.lessonFailed']);
+        expect([...askedSonic(sources)].filter((k) => k in entry).sort()).toEqual(['sonic.menu.here', 'sonic.menu.hereOff', 'sonic.menu.lessonsTab', 'sonic.menu.page', 'sonic.say.lessonFailed']);
         // review R9 (c): the keys of the namespaces the start chunk adds (sonic/texts.ts) are raw keys on an ordinary page, so the main
         // chunk names none of them but those read only on a ?sonic= page: the keymap's labels of the mode's own keys (listed only
         // there) and the GPU hint's spoken line (said by the engine, which is in the start chunk)
@@ -181,7 +182,7 @@ describe('the feature shim', () => {
 
     it('a page without an entry installs no mode (no installer is called); only the pause menu\'s link to the mode\'s start screen (v12-optin; ?sonic=start since v0.13), which its teardown takes out', () => {
         const items: { id: string }[] = [];
-        const ctx = { menu: { add: (it: { id: string }) => (items.push(it), () => void items.splice(items.indexOf(it), 1)) } } as unknown as FlightContext;
+        const ctx = { menu: { add: (it: { id: string }) => (items.push(it), () => void items.splice(items.indexOf(it), 1)) }, keys: { on: () => () => undefined } } as unknown as FlightContext;
         let called = 0;
         setSonicInstaller(() => {
             called++;
@@ -189,7 +190,8 @@ describe('the feature shim', () => {
         });
         const teardown = sonicFlight.install(ctx);
         expect(called).toBe(0);
-        expect(items.map((i) => i.id)).toEqual(['pause.flyBySound']);
+        // train 3 (sonic3): the switch in place (its chunk loads at the first press) and the lessons link
+        expect(items.map((i) => i.id)).toEqual(['pause.flyBySound', 'pause.flyBySoundLessons']);
         (teardown as () => void)();
         expect(items).toEqual([]);
     });
