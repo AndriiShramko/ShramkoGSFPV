@@ -4,7 +4,7 @@ import { t } from '../../i18n';
 import type { Course, CourseProblem, EditRefusal, EditorState } from '@gsfpv/tracks';
 import type { CourseMark } from '../store';
 import { PROBLEM_KEYS, REFUSAL_KEYS, markParts } from './texts';
-export { ACTION_KEYS, PROBLEM_KEYS, REFUSAL_KEYS, editorLocaleKeys } from './texts';
+export { ACTION_KEYS, PROBLEM_KEYS, REFUSAL_KEYS, actionKey, editorLocaleKeys } from './texts';
 
 const gateNo = (c: Course, id: string): number => c.gates.findIndex((g) => g.id === id) + 1;
 

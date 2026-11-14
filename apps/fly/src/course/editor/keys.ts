@@ -115,6 +115,18 @@ export const KEY_ROWS: readonly { readonly caps: string; readonly labelKey: stri
     { caps: 'Esc', labelKey: 'course.edit.key.exit', press: { code: 'Escape' } }
 ];
 
+/** review ED-7: the edit camera's keys and the mouse, shown in the Keys table as lines (no button: they act while held).
+ *  An empty caps: the line's words name the mouse button. */
+export const CAM_ROWS: readonly { readonly caps: string; readonly labelKey: string }[] = [
+    { caps: 'W A S D', labelKey: 'course.edit.cam.move' },
+    { caps: 'E / Q', labelKey: 'course.edit.cam.upDown' },
+    { caps: 'Shift', labelKey: 'course.edit.cam.fast' },
+    { caps: '', labelKey: 'course.edit.cam.look' },
+    { caps: '', labelKey: 'course.edit.cam.wheel' },
+    { caps: '', labelKey: 'course.edit.cam.click' },
+    { caps: 'Space', labelKey: 'course.edit.cam.arm' }
+];
+
 /** Where the key press is: in a text field of the window, on another element of the window (a button), or elsewhere (the canvas). */
 export interface KeyAt {
     readonly typing: boolean;

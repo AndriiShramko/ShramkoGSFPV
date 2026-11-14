@@ -119,5 +119,16 @@
   "course.edit.bar.addHint": "Haz clic en el lugar de la nueva puerta (Esc: sin puerta nueva)",
   "course.edit.bar.duplicate": "duplicar la puerta",
   "course.edit.flyHint": "Haz clic en una puerta para cambiarla. Arma tu mando para volar el circuito al momento, desarma para editar de nuevo",
-  "course.edit.flying": "Vuelas tu circuito con los cambios. Desarma para editar de nuevo"
+  "course.edit.flying": "Vuelas tu circuito con los cambios. Desarma para editar de nuevo",
+  "course.edit.selected": "Seleccionada",
+  "course.edit.bar.save": "Guardar",
+  "course.edit.bar.courses": "Circuitos",
+  "course.edit.bar.keys": "Teclas",
+  "course.edit.cam.move": "mover la vista adelante, a la izquierda, atrás, a la derecha",
+  "course.edit.cam.upDown": "vista arriba, vista abajo",
+  "course.edit.cam.fast": "mantenida: más rápido",
+  "course.edit.cam.look": "Botón derecho del ratón pulsado, o arrastrar con el izquierdo sobre un sitio vacío: mirar alrededor",
+  "course.edit.cam.wheel": "Rueda del ratón: velocidad de la vista",
+  "course.edit.cam.click": "Haz clic en una puerta: las flechas la mueven, los anillos la giran, el cubo del centro cambia su tamaño",
+  "course.edit.cam.arm": "armar y volar el circuito ya (desarmar: volver a editar)"
 }

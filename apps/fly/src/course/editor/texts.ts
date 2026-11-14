@@ -2,7 +2,8 @@
 // packages/tracks/src/editor.ts and every action has its key in packages/i18n/locales/fly/course/*.json. No DOM, no i18n
 // import, so a Node test can hold the tables to the four languages.
 import type { CourseProblem, EditAction, EditRefusal } from '@gsfpv/tracks';
-import { KEY_ROWS } from './keys';
+import { CAM_ROWS, KEY_ROWS } from './keys';
+import { TOP_BUTTONS } from './bar-place';
 
 /** the locale key of every refusal code: the test holds this table to EditRefusal and to the four languages */
 export const REFUSAL_KEYS: Record<EditRefusal['code'], string> = {
@@ -61,6 +62,16 @@ export function editorLocaleKeys(): string[] {
         'course.edit.voteUp', 'course.edit.voteDown', 'course.edit.open', 'course.edit.voted', 'course.edit.voteFailed', 'course.edit.opened',
         'course.edit.mine', 'course.edit.keys', 'course.edit.gates',
         // lane editor3 E3: the top bar, Duplicate and flying inside the mode
-        'course.edit.bar.add', 'course.edit.bar.addHint', 'course.edit.bar.duplicate', 'course.edit.flyHint', 'course.edit.flying'];
-    return [...new Set([...fixed, ...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey)])];
+        'course.edit.bar.add', 'course.edit.bar.addHint', 'course.edit.bar.duplicate', 'course.edit.flyHint', 'course.edit.flying',
+        // review ED-6: a gate taken by a click
+        'course.edit.selected'];
+    return [...new Set([...fixed, ...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey),
+        ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey)])];
+}
+
+/** review ED-6: the word for what an accepted edit did: a step back says "previous gate", a click (select) says "selected" */
+export function actionKey(e: EditAction): string {
+    if (e.kind === 'select') return 'course.edit.selected';
+    if (e.kind === 'select-step' && e.step < 0) return 'course.edit.key.prev';
+    return ACTION_KEYS[e.kind];
 }

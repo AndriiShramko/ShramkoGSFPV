@@ -119,5 +119,16 @@
   "course.edit.bar.addHint": "Kliknij miejsce nowej bramki (Esc: bez nowej bramki)",
   "course.edit.bar.duplicate": "powiel bramkę",
   "course.edit.flyHint": "Kliknij bramkę, by ją zmienić. Uzbrój kontroler, by od razu przelecieć tor, rozbrój, by znowu edytować",
-  "course.edit.flying": "Lecisz swoim torem ze zmianami. Rozbrój, by znowu edytować"
+  "course.edit.flying": "Lecisz swoim torem ze zmianami. Rozbrój, by znowu edytować",
+  "course.edit.selected": "Wybrano",
+  "course.edit.bar.save": "Zapisz",
+  "course.edit.bar.courses": "Tory",
+  "course.edit.bar.keys": "Klawisze",
+  "course.edit.cam.move": "widok do przodu, w lewo, do tyłu, w prawo",
+  "course.edit.cam.upDown": "widok w górę, widok w dół",
+  "course.edit.cam.fast": "przytrzymany: szybciej",
+  "course.edit.cam.look": "Wciśnięty prawy przycisk myszy albo przeciągnięcie lewym po pustym miejscu: rozglądanie się",
+  "course.edit.cam.wheel": "Kółko myszy: prędkość widoku",
+  "course.edit.cam.click": "Kliknij bramkę: strzałki ją przesuwają, pierścienie obracają, kostka w środku zmienia rozmiar",
+  "course.edit.cam.arm": "uzbrój i od razu leć torem (rozbrojenie: znowu edycja)"
 }

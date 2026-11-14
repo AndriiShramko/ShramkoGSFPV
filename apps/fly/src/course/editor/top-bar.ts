@@ -10,6 +10,8 @@ export interface TopBarHost {
     key(press: KeyPress): void;
     /** Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
     add(): void;
+    /** review ED-7: Courses or Keys pressed: the window opens (a phone's drawer too) at that part */
+    show(part: 'courses' | 'keys'): void;
 }
 
 export class TopBar {
@@ -32,6 +34,7 @@ export class TopBar {
             btn.addEventListener('click', () => {
                 btn.blur();
                 if (press === 'add') host.add();
+                else if (press === 'courses' || press === 'keys') host.show(press);
                 else host.key(press);
             });
             if (press === 'add') this.addBtn = btn;

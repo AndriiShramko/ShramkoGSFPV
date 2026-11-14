@@ -119,5 +119,16 @@
   "course.edit.bar.addHint": "Click the place for the new gate (Esc: no new gate)",
   "course.edit.bar.duplicate": "duplicate the gate",
   "course.edit.flyHint": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
-  "course.edit.flying": "Flying your course with the changes. Disarm to edit again"
+  "course.edit.flying": "Flying your course with the changes. Disarm to edit again",
+  "course.edit.selected": "Selected",
+  "course.edit.bar.save": "Save",
+  "course.edit.bar.courses": "Courses",
+  "course.edit.bar.keys": "Keys",
+  "course.edit.cam.move": "fly the view forward, left, back, right",
+  "course.edit.cam.upDown": "view up, view down",
+  "course.edit.cam.fast": "held: faster",
+  "course.edit.cam.look": "Right mouse button held, or a left drag on empty space: look around",
+  "course.edit.cam.wheel": "Mouse wheel: the view's speed",
+  "course.edit.cam.click": "Click a gate: arrows move it, rings turn it, the centre box scales it",
+  "course.edit.cam.arm": "arm and fly the course now (disarm: back to editing)"
 }

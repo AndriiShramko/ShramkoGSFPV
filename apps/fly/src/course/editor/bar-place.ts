@@ -29,10 +29,16 @@ export function barPlace(at: readonly [number, number, number] | null, w: number
     return [Math.round(x), Math.round(y)];
 }
 
-/** One button of the top bar: a key row it runs, or 'add' (the next click on the scene puts a gate). */
-export const TOP_BUTTONS: readonly { readonly id: string; readonly labelKey: string; readonly press: KeyPress | 'add' }[] = [
+/** what a top bar button does that is not a key row: arm Add gate, or open the window at its courses or its keys */
+export type TopPress = 'add' | 'courses' | 'keys';
+
+/** One button of the top bar: a key row it runs, or a TopPress. Review ED-7: Save, Courses and Keys as in the design. */
+export const TOP_BUTTONS: readonly { readonly id: string; readonly labelKey: string; readonly press: KeyPress | TopPress }[] = [
     { id: 'add', labelKey: 'course.edit.bar.add', press: 'add' },
     { id: 'undo', labelKey: 'course.edit.key.undo', press: { code: 'KeyZ', ctrlKey: true } },
     { id: 'redo', labelKey: 'course.edit.key.redo', press: { code: 'KeyY', ctrlKey: true } },
+    { id: 'save', labelKey: 'course.edit.bar.save', press: { code: 'KeyS', ctrlKey: true } },
+    { id: 'courses', labelKey: 'course.edit.bar.courses', press: 'courses' },
+    { id: 'keys', labelKey: 'course.edit.bar.keys', press: 'keys' },
     { id: 'exit', labelKey: 'course.edit.key.exit', press: { code: 'Escape' } }
 ];

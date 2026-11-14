@@ -146,8 +146,16 @@ Stage fixes (review ED-1 to ED-7; NOT finished, stopped at the reply budget):
   probe.log for the walls/generate line before anything else.
   Reading of PlayCanvas 2.23.2 (build/playcanvas.mjs 121167-121215, 121405-121450): a gizmo's own pointerup returns while it
   is switched off (`!this.enabled`), so it then sends no transform:end; the onUp guard of 227ec760 covers that case.
-- [ ] ED-5 (save unchecked after a worker failure), ED-6 (prev / selected words), ED-7 (top bar Save, Courses, Keys; camera
-  keys in the Keys table): not started.
+- [x] ED-5 stands (an error answer or a dead worker left the problems at [] or stale): course.ts keeps `okCourse`, the course
+  of the newest ok answer; checked() (both save paths) runs check-core checkOnPage (wallsCheck on the page thread, once) when
+  the course now is not okCourse. ED-6 stands: texts.ts actionKey() says course.edit.key.prev for a step back and the new
+  course.edit.selected for a click. ED-7 stands: TOP_BUTTONS add Save (Ctrl+S), Courses and Keys (panel.reveal opens the
+  window or the phone's drawer at that part; askName and F6 open it too); keys.ts CAM_ROWS (W A S D, E / Q, Shift, right
+  button look, wheel, click a gate, Space) as lines of the Keys table. New texts in en, es, pl, ru: course.edit.selected,
+  course.edit.bar.save/.courses/.keys, course.edit.cam.* (7). Test tools/bench/test/editor3-fixes.test.ts 7 pass, NEG OK
+  (neg_control.py ref c0d4b218, the 8 changed sources); with editor3-flying (TOP_BUTTONS ids updated), -gatebar, -mouse,
+  -check, -press, tracks-editor-ui 7 files 47 tests, 46 pass before the flying update, 20/20 after it on the two changed
+  files; apps/fly tsc 0.
 - [ ] then a fresh release build, the full run.sh (both scenes, PHONE=1), LOOK at the screenshots, a keyboard-input probe step
   (W in the mode must not arm, Space must), gates.py --only vitest,architecture,i18n,b18.
 

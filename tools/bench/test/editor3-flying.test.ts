@@ -98,7 +98,8 @@ describe('editor3 E3: the panel and the top bar run editor keys', () => {
     });
 
     it('the top bar has Add gate, Undo, Redo and Exit; its keys undo, redo and leave', () => {
-        expect(TOP_BUTTONS.map((b) => b.id)).toEqual(['add', 'undo', 'redo', 'exit']);
+        // review ED-7 added Save, Courses and Keys (tools/bench/test/editor3-fixes.test.ts)
+        expect(TOP_BUTTONS.map((b) => b.id)).toEqual(['add', 'undo', 'redo', 'save', 'courses', 'keys', 'exit']);
         const keyOf = (id: string): unknown => {
             const p = TOP_BUTTONS.find((b) => b.id === id)!.press;
             return p === 'add' ? 'add' : editorKey(p, [0, -1]);

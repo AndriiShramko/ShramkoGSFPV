@@ -61,6 +61,12 @@ export function checkAnswerer(build: (m: WallsMsg) => Walls, now: () => number =
     };
 }
 
+/** review ED-5: the same check on the page's own thread, for a save whose course got no ok answer from the worker (it failed
+ *  or never answered). It freezes the page for the check's time (3.5-5.5 s on the big scans, E1 facts), so only then. */
+export function checkOnPage(walls: Walls, transform: FlownTransform, margin: number, course: Course): CourseProblem[] {
+    return wallsCheck(walls, transform, margin)(course);
+}
+
 export type CheckAnswer = { ok: true; problems: CourseProblem[] } | { ok: false; message: string };
 
 /**

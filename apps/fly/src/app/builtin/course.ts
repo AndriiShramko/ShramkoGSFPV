@@ -29,7 +29,7 @@ import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
 import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack } from '@gsfpv/tracks';
-import { CheckQueue } from '../../course/editor/check-core';
+import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
@@ -46,7 +46,7 @@ import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../c
 import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
-import { ACTION_KEYS, gateLine, problemsLine, refusalText } from '../../course/editor/words';
+import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
@@ -99,6 +99,8 @@ export const course: Feature = {
         // Wroclaw on this thread froze the page); an edit keeps the problems it had until the worker's answer repaints them
         const keepProblems: CourseCheck = () => (ed ? [...ed.problems] : []);
         let checks: CheckQueue | null = null;
+        /** review ED-5: the course that got an ok answer from the check (a save checks again when it is not the course now) */
+        let okCourse: unknown = null;
         let checkWorker: Worker | null = null;
         let checkWalls: unknown = null;
         let edMargin = 0;
@@ -319,6 +321,8 @@ export const course: Feature = {
                         return;
                     }
                     ed = { ...ed, problems: got.problems };
+                    // review ED-5: an ok answer counts only when no newer course is still asked
+                    okCourse = q.pending ? null : ed.course;
                     showEd();
                 };
                 wk.onerror = (e) => {
@@ -640,7 +644,7 @@ export const course: Feature = {
                 typing: (target) => panel?.typing(target) ?? false
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null });
-            top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd() });
+            top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode } : null);
             if (!adminLive && adminHinted()) {
@@ -694,7 +698,7 @@ export const course: Feature = {
             const out = edit(ed, { kind: 'select', index: i }, keepProblems);
             ed = out.state;
             showEd();
-            if (out.ok) say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
+            if (out.ok) say(t('course.edit.did', { what: t(actionKey({ kind: 'select', index: i })), gate: gateLine(ed, scale()) }));
         };
         /** lane editor3 E3: Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
         const toggleAdd = (): void => {
@@ -806,7 +810,7 @@ export const course: Feature = {
                 // lane editor3 E2: a key that selects a gate takes the view to it; the mouse and the other keys leave the view
                 // review ED-1: a delete or a duplicate selects another gate too, so the view goes to it
                 if (k.edit.kind === 'select' || k.edit.kind === 'select-step' || ed.course.gates.length !== count) aim();
-                say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
+                say(t('course.edit.did', { what: t(actionKey(k.edit)), gate: gateLine(ed, scale()) }));
             } else {
                 edHook.refused = out.reason.code;
                 showEd();
@@ -845,12 +849,20 @@ export const course: Feature = {
         };
         /** a save waits for the worker's answer on the course as it stands (no press is lost: the save goes on after it) */
         const checked = async (): Promise<void> => {
-            if (!checks?.pending) return;
-            saving = true;
-            try {
-                await checks.settled();
-            } finally {
-                saving = false;
+            if (checks?.pending) {
+                saving = true;
+                try {
+                    await checks.settled();
+                } finally {
+                    saving = false;
+                }
+            }
+            // review ED-5: the worker failed or never answered this course: it is checked here, once, before the save
+            const col = ctx.session.collision;
+            if (ed && ed.course !== okCourse && col) {
+                ed = { ...ed, problems: checkOnPage(col, flownTransform(), edMargin, ed.course) };
+                okCourse = ed.course;
+                showEd();
             }
         };
         const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
