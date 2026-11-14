@@ -15,8 +15,8 @@ Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820
   turn) on a ledge 2 m above gate 10 for 270 s. Pilot fixed in ac9290c6 (turn first, then height; stall = no move and no turn).
 - [x] Rerun with the fixed pilot (ac9290c6, U:/Temp/gsfpv-train3/sonic3/z5-rerun.sh): Wroclaw stand-in 7 of 7 PASS, both
   courses flown to their end, 5 m/s and 2 m/s (Facts Z5, z5-r11-wroclaw2.json).
-- [~] Tunis 5 m/s with the fixed pilot was still running when this stage handed over (started 00:16:37, writes
-  U:/Temp/gsfpv-train3/sonic3/z5-r11-tunis2.json and z5-rerun.log); Tunis already passed both speeds with the old pilot.
+- [x] Tunis 5 m/s with the fixed pilot: 4 of 4 PASS, course passed in 50 s (9 gate changes), W-held speed median 2.8,
+  max 4.86 m/s, 0 dodges, N to gate 1 33.9 s, Backslash to first cue 3.3 s (U:/Temp/gsfpv-train3/sonic3/z5-r11-tunis2.json).
 - [ ] Wroclaw with walls BUILT: N said sonic.say.wallsStill and no course came in 420 s. Probe ran with render=off; the
   walls lane's bakes ran with rendering on. Next: Z5_RENDER=on (probe reads it since this commit), empty dist/walls/70b50d42,
   Z5_SCENE=70b50d42 Z5_SPEEDS=3 node node_modules/tsx/dist/cli.mjs tools/bench/src/sonic-int-review.ts r11 (PORT 5822); if
