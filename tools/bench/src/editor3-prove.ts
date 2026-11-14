@@ -107,9 +107,14 @@ async function prepare(page: Page, id: string, out: Record<string, unknown>): Pr
     await page.locator('[data-action=wizard-done]').click({ timeout: 8000 }).catch(() => undefined);
     const src = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.source ?? null), (v) => v === 'gamepad', 15000);
     out.controller = { source: src.v, screenGone: await page.evaluate(() => !document.querySelector('.screen.radio')) };
+    if (src.v !== 'gamepad') {
+        // the controller was not taken: the keyboard, so the course and the editor can still be walked
+        await page.focus('.screen.radio [data-action="radio-keyboard"]').catch(() => undefined);
+        await page.keyboard.press('Enter');
+    }
     await sleep(1500);
     await page.keyboard.press('Shift+KeyG');
-    const gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 480000);
+    const gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 240000);
     out.course = { ok: gen.ok, ms: gen.ms, gates: gen.v?.gates };
     return gen.ok;
 }
@@ -311,7 +316,8 @@ async function main(): Promise<void> {
     out.browser = which;
     const run = async (name: string, vp: { width: number; height: number }, f: (p: Page) => Promise<Record<string, unknown>>): Promise<void> => {
         const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1 });
-        await ctx.addInitScript(install);
+        // as text: tsx wraps named functions in __name(), which the page does not have
+        await ctx.addInitScript({ content: `var __name = (f) => f; (${install.toString()})();` });
         const page = await ctx.newPage();
         page.on('pageerror', (e) => log.push(`${name} pageerror: ${e.message}`.slice(0, 300)));
         page.on('console', (m) => { if (m.type() === 'error') log.push(`${name} console: ${m.text()}`.slice(0, 200)); });
