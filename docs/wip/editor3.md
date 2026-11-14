@@ -7,7 +7,8 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 Stage E1-freeze-and-design (finished, the fix moved to E2 by the reply budget):
 - [x] 1. the owner's path measured on the live site, cause found in the code (probe 7ae6c1c1, facts below)
 - [x] 2. The design (below)
-- [ ] 3. the freeze fixed at its cause: NOT done in E1 (the stage's 30 replies went to the live run); it is step 1 of E2, plan in Decisions D1
+- [x] 3. the freeze fixed at its cause in pass 2 (E2.1 below, c1e5bf55, 5f149137); gates vitest, architecture, i18n, b18
+  PASS on 5f149137 (gates.py, vitest 136 s)
 
 Stage E2 (next worker), in this order:
 - [x] E2.1 the check off the main thread (Decisions D1), c1e5bf55 (code), probe facts in this commit
@@ -149,3 +150,5 @@ button shows the table.
 
 - E1: the live run took about 20 minutes of waiting (Wroclaw walls build plus two 5 s freezes per key); a wait loop of 9
   minutes cost one reply; reading the whole PlayCanvas export line cost context. The fix did not fit in the 30 replies.
+- E1 pass 2 (E2.1): about 25 replies; most went to finding the test layout (apps/fly tests live in tools/bench/test) and the
+  probe JSON shape; a line in docs/agent-map.md on both would have saved four replies.
