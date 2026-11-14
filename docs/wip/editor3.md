@@ -140,7 +140,12 @@ Stage fixes (review ED-1 to ED-7; NOT finished, stopped at the reply budget):
   tracks-editor-ui 6 files 40/40 pass; NEG OK (neg_control.py, ref 2b198f72, the five changed sources); apps/fly tsc 0;
   tools/bench/test/a6-reference.test.ts 1/1 pass (keyboard.ts touched).
 - [ ] ED-1 diagnosis: `OUT=U:/Temp/gsfpv-train3/editor3/e4diag SCENES=887f27aa PHONE=0 bash U:/Temp/gsfpv-train3/editor3/e4/run.sh`
-  on the dist of d726a3cb; read `delete` (handles, dragging, stand, bar) in e4diag/e4.json.
+  on the dist of d726a3cb; read `delete` (handles, dragging, stand, bar) in e4diag/e4.json. Run once in this stage (2026-11-15
+  00:25-00:40 local): the course never came on Tunis (course.ok false after 240148 ms, gates 0), so no `delete` record. Next:
+  rebuild the release from 227ec760 (it holds the ED-1 code fixes), run again; if the course again does not come, read
+  probe.log for the walls/generate line before anything else.
+  Reading of PlayCanvas 2.23.2 (build/playcanvas.mjs 121167-121215, 121405-121450): a gizmo's own pointerup returns while it
+  is switched off (`!this.enabled`), so it then sends no transform:end; the onUp guard of 227ec760 covers that case.
 - [ ] ED-5 (save unchecked after a worker failure), ED-6 (prev / selected words), ED-7 (top bar Save, Courses, Keys; camera
   keys in the Keys table): not started.
 - [ ] then a fresh release build, the full run.sh (both scenes, PHONE=1), LOOK at the screenshots, a keyboard-input probe step
@@ -363,6 +368,9 @@ button shows the table.
 
 ## Cost notes
 
+- fixes: about 30 replies; the most went to reading PlayCanvas gizmo internals again for ED-1 and a diagnosis run that got no
+  course on Tunis in 240 s (gates 0), so it recorded nothing; a probe that loads a saved course file instead of generating
+  one would make the diagnosis certain and cut 5 minutes per run.
 - E4-prove pass 2: about 30 replies; the most went to waiting 25 minutes on a GPU lock held by another lane (my run.sh had a
   15-minute timeout and died in the queue) and reading PlayCanvas gizmo internals to guess fault 1; a lock queue with
   the holder's name and expected end, and the diagnosis fields in the probe from the first run, would have saved both.
