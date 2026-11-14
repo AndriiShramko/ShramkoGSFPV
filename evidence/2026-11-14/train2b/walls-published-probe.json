@@ -8,7 +8,7 @@
    "/walls/70b50d42/v1/scene.voxel.json 200",
    "/walls/70b50d42/v1/scene.voxel.bin 200"
   ],
-  "readyS": 5.15,
+  "readyS": 3.292,
   "page": {
    "status": "ready",
    "error": null,
@@ -42,7 +42,7 @@
    "/walls/ab5efa0e/v2/scene.voxel.json 200",
    "/walls/ab5efa0e/v2/scene.voxel.bin 200"
   ],
-  "readyS": 5.493,
+  "readyS": 4.496,
   "page": {
    "status": "ready",
    "error": null,
@@ -76,7 +76,7 @@
    "/walls/9baef54b/v1/scene.voxel.json 200",
    "/walls/9baef54b/v1/scene.voxel.bin 200"
   ],
-  "readyS": 4.491,
+  "readyS": 3.554,
   "page": {
    "status": "ready",
    "error": null,
@@ -107,7 +107,7 @@
   "errors": [],
   "walls404": 1,
   "wallsFiles": [],
-  "readyS": 3.157,
+  "readyS": 2.426,
   "page": {
    "status": "ready",
    "error": null,

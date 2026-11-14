@@ -24,16 +24,17 @@ created: 2026-11-14
   spawn inside keeps its block, so its result is unchanged). Test packages/tracks/test/spawn-outside.test.ts, NEG OK;
   packages/tracks 103 of 103, tsc 0. Likely the same cause for 2f1ddf5f and d10c5638 (tracks2 K1.2), not checked.
   Not yet seen in a page: needs a rebuild and walls-chain-probe on ab5efa0e.
-- [~] All probes: one detached script U:/Temp/gsfpv-train2/train2b/run-all.sh on the release of 4cf7b013 (port 5760),
-  one line per probe in U:/Temp/gsfpv-train2/train2b/logs/summary.txt, evidence evidence/2026-11-14/train2b/.
+- [x] All probes: one detached script U:/Temp/gsfpv-train2/train2b/run-all.sh on the release of 4cf7b013 (port 5760),
+  done 03:20, summary logs/summary-full.txt, evidence evidence/2026-11-14/train2b/ (033b95f3). Fails: walls-chain
+  (Forest Floor, fixed below), tracks-page 1 row by load, r10, mouse-free rooms entry.
+- [x] Pass 3: rebuild at 033b95f3, walls-chain exit 0 (Forest Floor 10 gates), walls-published exit 0, mouse-free still
+  exit 1 in the rooms entry only (Probes). Looked at walls-chain-1920.png again.
 - [x] deploy/live-checks.sh gains walls-published-probe (4cf7b013). Not run.
 - [x] Looked at walls-chain-1920.png and walls-chain-844.png (Probes).
-- [ ] Left for the next worker: (1) when summary.txt says 'done' (r9, rooms-two-page, rc2, connect, mouse-free, centre,
-  fast-radio, wizard, hid still running at 03:10), copy it to logs/summary-full.txt, fill Probes from it, commit the
-  evidence JSON under evidence/2026-11-14/train2b/ (never PNG); (2) then rebuild at HEAD and re-probe the walls chain:
-  'ONLY=walls bash U:/Temp/gsfpv-train2/train2b/run-all.sh' (overwrites summary.txt, so copy it first), expect
-  ab5efa0e pass after a8a686d0, LOOK at walls-chain-1920.png again; (3) gates.py --only vitest on an idle PC (exit 0);
-  (4) git push origin main (plain), confirm with git fetch that origin/main = HEAD.
+- [x] gates.py --only vitest at 033b95f3 (pass 3, tracks2's detached audits still running): exit 0, 4708 passed, 14
+  skipped of 4722, logs U:/Temp/gsfpv-gates-20261114-032634. With run 2 (all other gates PASS, 'B18 PASS') the gates
+  are green; the files changed since run 2 are a probe script, evidence JSON and this note.
+- [ ] git push origin main (plain), confirm with git fetch that origin/main = HEAD.
 
 ## Merged
 
@@ -100,10 +101,29 @@ walls in dist/walls: ab5efa0e, 70b50d42, 9baef54b (153,900,630 bytes); d10c5638 
 - sonic-int-review r10 (a course by sound): exit 1, 13 of 14. Before this wave it stalled at gate 4; now the hum led
   through 8 stages to target g9 but the course was not flown to its end within the probe's time (phase flying).
   evidence/2026-11-14/sonic-int-review-r10-t2b-r10.json (moved to train2b/ when the script ends).
-- The rest: running at 03:10, see Status. Order: walls-chain (ab5efa0e 1920x1080, 70b50d42 844x390), walls-published,
-  accept-fly B6-B16, tracks-page, sonic-int-review r10 then r9, rooms-two-page, rc2-probe usb,refused,bridge,bridge-lna
-  with the replay helper on 5771 (the owner's helper holds 47310, pid 38364, not touched), connect-probe, mouse-free,
-  centre-throttle all, fast-radio, wizard-auto-check, hid-source-probe.
+- The full run ended 03:20:27; its summary is U:/Temp/gsfpv-train2/train2b/logs/summary-full.txt. Evidence JSON
+  committed under evidence/2026-11-14/train2b/ (033b95f3).
+- sonic-int-review r9 (free flight by sound): exit 0, 11 of 11 in 184 s.
+- rooms-two-page: exit 0, all 17 checks (follow rms 0.0645 m, best delay 170 ms; controls c1-c3 fired).
+- rc2-probe usb,refused,bridge,bridge-lna with the replay helper on port 5771 (the owner's helper holds 47310, pid
+  38364, not touched): exit 0, 19 of 19. connect-probe (helper on 5772): exit 0, 15 of 15.
+- centre-throttle-probe all: exit 0 (dji-centred, dji-flip, dji-bottom). fast-radio-probe: exit 0. wizard-auto-check:
+  exit 0. hid-source-probe: exit 0, errors 0.
+- mouse-free-probe: exit 1, 78 PASS, 0 FAIL, then a timeout in the rooms entry: since rooms2, 9 outside a room joins
+  the open room and opens the panel only after the refusal (no rooms service on a local release), later than the
+  probe's 2.5 s; its fallback then pressed P while the panel was arriving. Probe fix in 033b95f3 (wait 10 s for 9's
+  answer, then a second 9). Page behaviour unchanged; re-run result in the pass 3 bullet below.
+- Pass 3, release of 033b95f3 (includes a8a686d0), ONLY=walls,mouse, summary U:/Temp/gsfpv-train2/train2b/logs/
+  summary.txt: walls-chain-probe exit 0. ab5efa0e Forest Floor 1920x1080: pass, published walls, 10 gates, first gate
+  1.33 s after Shift+G. 70b50d42 Wroclaw 844x390: pass, published walls, 23 gates, first gate 31.4 s. The small-scan
+  chain is now proven in a page. walls-published-probe: exit 0.
+- Looked at walls-chain-1920.png of pass 3: Forest Floor with 10 gates drawn above the plants, clock 0:00.00, "Gate 1 of
+  10", walls 5 cm. Flaw seen: the course line "Gates: 10. Fly through gate 1 ..." sits on top of the fading offer
+  "Refine walls to 1.6 cm (about 15 s)" at the top centre, two texts overlapped for a moment. Not fixed (minor, layout
+  of two notes in one slot).
+- mouse-free-probe pass 3: exit 1 again, 78 PASS, then the same timeout in the rooms entry: neither 9 (twice), Shift+L
+  nor the pause menu item pause.rooms showed the rooms panel on the local release. Cause not found (budget). The rooms
+  panel itself is proven by rooms-two-page (exit 0, with a rooms service); the mouse-free check of that panel is not.
 
 ## Deploy order for the lead
 
@@ -136,7 +156,7 @@ nothing). The script was not run.
 
 ## Pictures for the lead
 
-- Walls chain (this run overwrites them): U:/Temp/gsfpv-train2/shots/walls-chain-1920.png,
+- Walls chain (pass 3, release 033b95f3, Forest Floor with 10 gates): U:/Temp/gsfpv-train2/shots/walls-chain-1920.png,
   U:/Temp/gsfpv-train2/shots/walls-chain-844.png, U:/Temp/gsfpv-train2/shots/walls-chain-1920-offer.png,
   U:/Temp/gsfpv-train2/shots/walls-chain-1920-build.png
 - Published walls: U:/Temp/gsfpv-train2/shots/walls-w2-70b50d42.png, U:/Temp/gsfpv-train2/shots/walls-w2-ab5efa0e.png,
@@ -171,9 +191,12 @@ nothing). The script was not run.
 
 ## Not verified
 
-- The probes on this release (running when this note was written), the walls-chain screenshots (not looked at yet),
-  gates run 2.
-- sonic-int-review r10 (a course by sound to its end): in the run, result not read yet.
+- sonic-int-review r10 (a course by sound to its end): exit 1, 13 of 14; the hum led to gate 9, the course was not
+  flown to its end within the probe's time. The course by sound is not proven to its end.
+- mouse-free rooms entry: the rooms panel did not open on a local release without a rooms service (Probes). Not
+  analysed.
+- tracks-page hintClearOfTimer pl 1366x768: no course within 90 s under load; not re-run on an idle PC.
+- The Forest Floor fix a8a686d0 for 2f1ddf5f and d10c5638 (tracks2 K1.2): same cause likely, not checked.
 - The race: rooms-race.ts failed; why neither page built the course is not analysed (the probe's TypeError may be the
   probe's own fault).
 - a6-reference not run here: the integration changed no flight, input or collision code (rooms.ts, race.ts, a test).
@@ -188,3 +211,5 @@ nothing). The script was not run.
 - 2026-11-14 integration pass 2: the most turns went to waiting for the long probe script in 10-minute blocks; the
   Forest Floor cause took 6 turns and was cheap once the probe's own note ("nothing fits" at 0.27 s) was read. Giving
   the audit the page's real spawn (the CDN camera of the scene's own version) would have found it in lane tracks2.
+- 2026-11-14 integration pass 3: the most turns went to the mouse-free rooms entry (a probe guess that did not fix it);
+  a probe that saves a screenshot when an entry times out would have shown the page state in one run.
