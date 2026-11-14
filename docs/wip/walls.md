@@ -4,6 +4,14 @@ Worktree C:/dev/gsfpv-voice, branch walls (from origin/main 2a5ac433). Ports 580
 
 ## Status
 
+Stage V1-finish (worker 1 stopped at its reply budget; a SECOND worker ran in this same worktree at the same time: it left tools/walls/wire-sizes.mjs, U:/Temp/gsfpv-train2/walls/v1f/trials.sh and build.log, not committed; check `git status` and that dir before going on, and do not run two workers here):
+- [x] Merge origin/main f0d8b146 into walls: commit 4c312522 (one evidence commit; sound, tracks, page and connect were already in 08cf230f). pnpm install: up to date. Release build of 4c312522 into dist: exit 0.
+- [x] 1. Trials run (the twin's run, saved as U:/Temp/gsfpv-train2/walls/v1f/trials-twin.json; local release of 4c312522, port 5801, GPU lock). Numbers in Facts V1. 'The way' not yet rewritten from them.
+- [ ] 2. Skip rule before a ladder step and no frozen flight during a build: not started. From the trials: a step's time grows with its Gaussians (Tunis L3 37 s, L2 63 s, L1 135 s; Wroclaw L2 73 s at 5 cm, L1 203 s at 10 cm on this RTX 4090), so a rule keyed on Gaussians per step (or s per million from the step before) can skip L1 before it starts.
+- [~] 3. Wire sizes measured with tools/walls/wire-size.mjs (this commit): gzip -9 halves the bins (Facts V1). Not done: the .bin.gz beside each bin in the release dir (nginx has gzip_static on, no brotli module; application/octet-stream is not in gzip_types, so today the bin goes raw), the scans' own first-load bytes, the re-bakes at a coarser cell, release-walls.sh copying the .gz, the page probe into published walls.
+- [x] 4. Free flight by sound on a scan without walls: apps/fly/src/sonic/lessons.ts wallsForFree / wallsTick (LessonPage.walls, said sonic.say.wallsBuilding, every WALLS_STILL_MS 20000 (a setting, not measured) sonic.say.wallsStill, then sonic.say.wallsIn and the free flight opens again with walls and its course offer; a failed build says sonic.say.wallsFailed and the flight goes on); feature.ts pageOf wires walls.build through wallsThen; 4 lines in packages/i18n/locales/fly/sonic/{en,es,pl,ru}.json. Test tools/bench/test/sonic-walls-free.test.ts with sonic-scan-course.test.ts: 7 passed; NEG OK (lessons.ts of 4c312522); apps/fly tsc exit 0, 0 errors. Not done: the case in tools/bench/src/sonic-int-review.ts on a local release.
+- [ ] 5. Owner's-rule check of the texts, accept-c.ts, a6-reference.test.ts, gates.py --only vitest,architecture,i18n,b18: not run.
+
 Stage fixes (review findings WL-1 to WL-8):
 - [x] WL-1 (blocker, stands): deploy/deploy.sh prune skips releases/walls (grep -Ev '^(current|walls$|\.)'), deploy/rollback.sh does not list it and refuses it as an id. Simulated on U:/Temp/gsfpv-train2/walls/prune-sim2 (walls dir oldest, 7 releases): the prune list is "r2 r1", walls kept; bash -n of both scripts ok. Commit 0edd22bb.
 - [x] WL-3 (major, stands): bake.ts tooManyBlocks (now exported) and outOfRoom know "Sparse octree node count"; walls-ladder.test.ts 11 passed, NEG OK (bake.ts of fdebd19a). Commit 0edd22bb.
@@ -46,6 +54,12 @@ Stage W1-any-size:
 - [ ] 3c. If the trials show a lower level gives walls too poor (agreement with Tunis shipped walls low), add blocks: split the level-0 Gaussians by space, bake each block, join the solid cells (needs an octree writer; packages/collision has only the reader as far as read).
 
 ## Facts (measured)
+
+Facts V1 (2026-11-14, walls-trials.ts trials on a local release of 4c312522, headless Chrome, RTX 4090; U:/Temp/gsfpv-train2/walls/v1f/trials-twin.json). Columns: level, cell, Gaussians, solid cells, wall s, peak JS heap MB, bin bytes, agreement with the Tunis shipped 5 cm walls (bakedInShipped = share of baked solid cells solid in shipped; shippedFound = share of shipped solid cells solid in the bake):
+- 887f27aa Tunis (shipped 5 cm, 55,495,823 solid): L3 5 cm 5.36 M, 217,926,859, 37.2 s, 906, 35,915,964, 0.151 / 0.593. L2 5 cm 10.73 M, 226,394,878, 63.0 s, 1713, 38,867,180, 0.145 / 0.593. L1 5 cm 21.47 M, 224,004,431, 134.6 s, 2443, 41,549,696, 0.152 / 0.612. L2 10 cm 10.73 M, 31,538,748, 39.3 s, 1461, 8,548,728, 0.163 / 0.742.
+- 70b50d42 Wroclaw (no shipped walls): L3 5 cm 5.36 M, 495,087,360, 61.2 s, 1297, 117,045,028. L2 5 cm 10.72 M, 452,738,550, 73.3 s, 1809, 113,168,076. L2 10 cm 10.72 M, 65,029,907, 44.0 s, 1597, 23,224,488. L1 10 cm 21.47 M, 61,796,688, 203.5 s, 2484, 22,757,600.
+- Reading: the level hardly changes the walls (Tunis shippedFound 0.59 to 0.61 from L3 to L1), the cell does (10 cm: bin 4.5 to 4.9 times smaller, shippedFound 0.74 because a coarse cell covers more). Our bakes mark about 4 times the solid cells of the shipped walls (bakedInShipped 0.15): the shipped file is not the same rule (filled insides or a different opacity cut, not checked).
+- Wire (tools/walls/wire-size.mjs on U:/Temp/gsfpv-train2/walls/release, U:/Temp/gsfpv-train2/walls/v1f/wire.jsonl): gzip -9 / brotli q9 share of raw: 70b50d42 0.518 / 0.391 (85,720,916 -> 44,438,683 / 33,473,107), 1994c65c 0.531 / 0.392 (132,800,044 -> 70,539,568 / 52,021,529), eb5f51dc 0.359 / 0.250, 2f1ddf5f 0.449 / 0.343, 0230d903 0.503 / 0.370, 9baef54b 0.499 / 0.372, ba7aa29d 0.518 / 0.389, d10c5638 0.660 / 0.535, ab5efa0e 0.660 / 0.535; total 490,719,272 -> 241,156,144 gzip / 178,769,912 brotli. deploy/nginx.conf: gzip_static on, gzip_types without application/octet-stream, no brotli module.
 
 walls-scan-sizes.ts, 2026-11-13, Gaussians by level of detail (millions), from the CDN metadata:
 
@@ -152,6 +166,8 @@ sha256 (json+bin) of each is in release/manifest.json. A new scan version (v<N+1
 - Stage fixes: no time cap per ladder step (WL-2 c): a scan heavier than Wroclaw (2f1ddf5f, 259 M Gaussians at level 0) was not built in a browser after the crop, so whether every catalogue scan ends in a few minutes is not known; the flight is still held during a build and the box has no stop button. WL-6 (the waiting course after a retry build) and WL-7 (H in flight, the box not kept by the offer) are unit tested only, not seen in a page: no probe armed the drone or failed a build on purpose. The prune change in deploy.sh was simulated on a scratch folder, not run on the hub. Published walls of 0230d903, 1994c65c, 2f1ddf5f, 9baef54b, ba7aa29d, eb5f51dc were not flown into. accept-c.ts was not run (a gate). WL-5 is outside the lane (packages/tracks) and not fixed: the course on Forest Floor still does not come.
 
 ## Cost notes
+
+- V1-finish worker 1: most turns went to a twin worker running the same stage in the same worktree (same scratch dir v1f, same port 5801): its trials and mine queued on the GPU lock, and its files appeared untracked; one worker per worktree, and a scratch dir named by the worker would have shown it at once. Two Edit refusals again (files read through bash); Read a slice before every Edit.
 
 - Fixes worker: most turns went to Edit refusals on files read only through bash (each needed a Read first) and to one probe rerun because the pass condition used walls.state 'in-use', which a published scan never has (it stays 'offer' or 'none'); read the state machine of walls.ts (grep "state = '") before writing a condition on it, and read slices with Read, not sed, for files to edit.
 
