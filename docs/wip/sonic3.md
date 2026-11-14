@@ -26,6 +26,7 @@ Stage Z2-design-speed-and-space:
   seconds, speed tiers with a stream budget and a priority table, the racing line, space codes that do not rest on the HRTF
   (rear timbre, approach, ILD at speed, reverb floor, turn-and-listen lesson), the ear pilot check and speed lesson ladder, later
   designs (web camera head tracking, HRTF pick test, phone app), build stages Z3 to Z8 with files and tests.
+- [x] gates.py --only vitest,architecture,i18n,b18 on eac597c8: all four PASS (vitest 133 s), logs U:/Temp/gsfpv-gates-20261114-222253.
 - [ ] Z3 ear pilot and baseline, Z4 reach and budget, Z5 racing line, Z6 space codes, Z7 speed lessons, Z8 browser proof
   (plan section 6).
 
