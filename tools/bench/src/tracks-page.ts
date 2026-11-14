@@ -100,9 +100,10 @@ async function until<T>(get: () => Promise<T>, ok: (v: T) => boolean, ms: number
 
 /** The page counting colours: about:blank of its own context (no CSP), a PNG decoded into a 2D canvas. */
 let counter: Page;
-async function colours(png: Buffer, table: Record<string, [number, number, number]> = PAINT): Promise<Record<string, number>> {
+/** `leftShare` (stage K2.6): count only the pixels left of this share of the width (1: all) */
+async function colours(png: Buffer, table: Record<string, [number, number, number]> = PAINT, leftShare = 1): Promise<Record<string, number>> {
     return counter.evaluate(
-        async ({ b64, paint, tol }) => {
+        async ({ b64, paint, tol, share }) => {
             const img = new Image();
             img.src = `data:image/png;base64,${b64}`;
             await img.decode();
@@ -114,7 +115,9 @@ async function colours(png: Buffer, table: Record<string, [number, number, numbe
             const d = g.getImageData(0, 0, c.width, c.height).data;
             const out: Record<string, number> = {};
             for (const k of Object.keys(paint)) out[k] = 0;
+            const maxX = share * c.width;
             for (let i = 0; i < d.length; i += 4) {
+                if ((i / 4) % c.width >= maxX) continue;
                 for (const [k, p] of Object.entries(paint)) {
                     if (Math.abs((d[i] as number) - p[0]) <= tol && Math.abs((d[i + 1] as number) - p[1]) <= tol && Math.abs((d[i + 2] as number) - p[2]) <= tol) {
                         out[k] = (out[k] as number) + 1;
@@ -124,7 +127,7 @@ async function colours(png: Buffer, table: Record<string, [number, number, numbe
             }
             return out;
         },
-        { b64: png.toString('base64'), paint: table, tol: TOL }
+        { b64: png.toString('base64'), paint: table, tol: TOL, share: leftShare }
     );
 }
 /** stage K2: view.ts PAINT selected (magenta) in 8-bit sRGB, counted only while the editor is open */
@@ -219,7 +222,7 @@ async function settle(page: Page, scene: string): Promise<void> {
 }
 
 // ---------------- E the editor (train 2, T3-editor-ui; tracks-plan 2.11)
-interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number>; paints?: string[]; admin?: boolean; view?: { eye: number[]; at: number[] } | null }
+interface EditorHook { open: boolean; selected: number; changed: boolean; problems: number; refused: string | null; said: string; votes: Record<string, number>; paints?: string[]; admin?: boolean; view?: { eye: number[]; at: number[]; look?: number[]; free?: number } | null }
 const editorHook = (page: Page): Promise<EditorHook | null> =>
     page.evaluate(() => (window as unknown as { __gsfpv?: { course?: { editor?: EditorHook } } }).__gsfpv?.course?.editor ?? null);
 const EDITOR_SHOTS = process.env.EDITOR_SHOTS ?? 'U:/Temp/gsfpv-train2/shots';
@@ -422,6 +425,11 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
             check(`E ${s.w}x${s.h}: the window inside the view (or scrolls), no two keys overlap`, inside && lay.keys > 0 && lay.keyOverlaps === 0, lay);
             const spx = (await colours(png, SELECTED_PAINT)).selected ?? 0;
             check(`E ${s.w}x${s.h}: the selected gate is on the screenshot (magenta pixels)`, spx >= MIN_SEL_PX, { px: spx, file: s.file });
+            // stage K2.6: the gate is in the part the window leaves free (left of its box), not under it
+            const freeShare = lay.box ? Math.max(0, Math.min(1, lay.box.left / s.w)) : 1;
+            const lpx = (await colours(png, SELECTED_PAINT, freeShare)).selected ?? 0;
+            const hv = (await editorHook(p))?.view ?? null;
+            check(`E ${s.w}x${s.h}: the selected gate is left of the window (magenta pixels there, at least half of them)`, lpx >= MIN_SEL_PX && lpx * 2 >= spx, { px: lpx, all: spx, windowLeft: lay.box?.left, free: hv?.free, look: hv?.look });
             // stage F1-finish: the HUD's top buttons are not under the window, the save buttons are in its visible part unscrolled
             const reach = await p.evaluate(() => {
                 const w = document.querySelector('.course-editor') as HTMLElement | null;

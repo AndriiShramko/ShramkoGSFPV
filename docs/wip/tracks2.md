@@ -24,10 +24,16 @@ Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/do
   tracks2-editor-844.png, looked at: 1920 the magenta gate 1 is in the middle of the view, whole, left of the window;
   844 only its left edge shows, the window covers the middle of the screen (see Left).
 - [x] gates.py --only vitest,architecture,i18n,b18: all four PASS (vitest 122 s), logs U:\Temp\gsfpv-gates-20261114-015316.
-- [ ] K2.6 on low and narrow screens (844x390) the editor window covers the screen's middle where the camera puts the gate:
-  aim the camera to the right of the gate by the window's share of the width (panel.root's left edge / innerWidth and the
-  camera's horizontal field), so the gate sits in the free left part; extend the 844 check to count magenta left of the
-  window's box.
+- [x] K2.6 (f723ebcc) the editor's camera looks right of the gate by the window's share of the width: camera.ts aimAt
+  (the look turns right by atan((1 - free) * tan(hFov / 2)), free = panel.root's left edge / innerWidth; no turn when free
+  is under AIM_MIN_FREE 0.2, an estimate, or 0.98 and up), screenX; course.ts aim() on every showEd and on window resize
+  while the editor is open; hook course.editor.view gains `look` and `free`. Test tools/bench/test/tracks-k26.test.ts (3),
+  NEG OK on camera.ts of 544f7b48 (AssertionError: aimAt undefined). The probe's shot checks count magenta left of the
+  window's box (tracks-page.ts colours(..., leftShare)).
+- [x] K2.6 probe (commit with this line): release built at f723ebcc (exit 0, U:/Temp/gsfpv-train2/tracks2/k26/build.log);
+  `EDITOR_ONLY=1 SONIC_PORTS=5720-5739 EVIDENCE_NAME=tracks2-k26-editor npx tsx src/tracks-page.ts` 27 PASS, 0 FAIL, exit 0
+  (log U:/Temp/gsfpv-train2/tracks2/k26/probe.log). Shots looked at: 1920 the magenta gate whole, left of the middle, left
+  of the window; 844x390 the magenta gate whole in the free left part, the window from x 400.
 - [ ] K2.4 Space "drop a gate here" while flying; K2.5 pillar pairs as /2 objects with a key (see For the lead).
 
 Stage K1-passable-and-small.
@@ -92,6 +98,9 @@ Stage K1-passable-and-small.
   test_bad_votes), rules.ts + camera.ts NEG OK (by import, camera.ts absent on origin/main).
 - K2 probe camera values: opening eye 3.3 m from gate 1 (at 2, 8.8, 13.4), 7969 magenta px; after Tab gate 2, 8866 px;
   shot 1920x1080 22634 px, shot 844x390 1658 px (the gate is mostly under the window there).
+- K2.6 probe values (tracks2-k26-editor): 1920x1080 window left 1532 (free 0.798), magenta 26368 px, all left of the
+  window; 844x390 window left 400 (free 0.474), magenta 9721 px, all left of the window (1658 px before K2.6). On opening
+  (probe viewport) free 0.697, 11066 px. Unit tests tracks-k26 + tracks-k2: 8 passed; tsc apps/fly and tools/bench clean.
 
 ## Decisions
 
