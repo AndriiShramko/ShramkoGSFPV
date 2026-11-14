@@ -17,12 +17,34 @@ Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820
   courses flown to their end, 5 m/s and 2 m/s (Facts Z5, z5-r11-wroclaw2.json).
 - [x] Tunis 5 m/s with the fixed pilot: 4 of 4 PASS, course passed in 50 s (9 gate changes), W-held speed median 2.8,
   max 4.86 m/s, 0 dodges, N to gate 1 33.9 s, Backslash to first cue 3.3 s (U:/Temp/gsfpv-train3/sonic3/z5-r11-tunis2.json).
-- [ ] Wroclaw with walls BUILT: N said sonic.say.wallsStill and no course came in 420 s. Probe ran with render=off; the
-  walls lane's bakes ran with rendering on. Next: Z5_RENDER=on (probe reads it since this commit), empty dist/walls/70b50d42,
-  Z5_SCENE=70b50d42 Z5_SPEEDS=3 node node_modules/tsx/dist/cli.mjs tools/bench/src/sonic-int-review.ts r11 (PORT 5822); if
-  still no course, read wallsThen's state in __gsfpv (walls hook) and stop: walls code is outside this lane.
-- [ ] Speed lessons: NOT BUILT (Z4 LEFT item 6), so "the speed lessons open and end" cannot be shown. Also left from Z4:
-  line-side proof run, racingLine on in scan courses, rear timbre, reach.ts, ear-pilot-scan.ts.
+- [x] Wroclaw with walls BUILT, pass 2 rerun with rendering ON (Z5_RENDER=on, dist/walls empty, PORT 5822): again no
+  course in 420 s. Lines: sonic.say.inPlaceOn, sonic.say.lessonKeys, sonic.say.wallsStill; /walls/70b50d42/v1/scene.voxel.json
+  404 (expected: no stand-in); the probe's walls state read "walls": null (no walls hook answer). BLOCKED for this lane: the
+  in-page build is apps/fly/src/walls (wallsThen), outside the lane; the lead or the walls lane must say why a headless page
+  with rendering on builds no walls for 70b50d42 in 420 s (evidence U:/Temp/gsfpv-train3/sonic3/z5-r11-wroclaw-built2.json/.log).
+- [~] Speed lessons, pass 2: built in the package, train3 9c40ed2 (NOT pinned yet): lessons/speed-1..4.json (the ring course
+  of rings-course, caps 1.5 2.5 3.5 4.5 m/s, layers.racingLine and speedBudget on, after rings-course on the full path, orders
+  of shapes-* and free-garden +4), locales en es pl ru, catalog.ts, library.ts, test/speed-ladder.test.ts 3 of 3 (NEG OK on
+  the old library.ts and paths.json), tools/canon-lessons.ts (rewrites lesson files canonically). Package suite after it:
+  8 FAIL of 1346 (log U:/Temp/gsfpv-train3/sonic3/pkg-vitest-z7.log), each a list pinned to the old 28 lessons; LEFT, in order:
+  a. test/docs.test.ts: "a curriculum of 32 lessons" in CITATION.cff, README, llms.txt, AGENTS.md and the test protocol.
+  b. test/pass-rule.test.ts v0.12 control and test/beacon-review.test.ts R1: restrict to lessons that existed in v0.12 /
+     to lessons without layers.racingLine (speed-1 has beaconTarget != target by design: 1813 frames).
+  c. test/world-scale.test.ts: "the room lessons are the eleven" and the 2-3 s leg rule fail for speed-1 and speed-2 (slow
+     caps on 7 m legs): exclude the speed lessons from the room-scale rule (they are speed drills on a known course).
+  d. test/lesson-schedule.test.ts (tts fixtures: every line measured) and test/words.test.ts (VL-4-words heard every line):
+     the 28 new lines per language are not measured. Either measure them (test/fixtures/measure-tts.ps1, Windows voices) and
+     rerun the words check, or list the speed lesson keys as added after those runs; first choice is to measure.
+  e. test-audio/page/proofs.ts line 530 (from 9b26882): a quote inside a single-quoted string breaks tsc -p tsconfig.json
+     (TS1005, TS1002); fix it, then run the line-side proof (Z4 left 1).
+  f. Then the full package suite, pin move to the new commit, and in the simulator: r10/r11-style probe step that opens
+     speed-1 from the lessons item and flies it to its end (release build first), gates.
+  Ear pilot on the speed lessons (tools/ear-pilot.ts, line and budget on, rungs 1 2 3 4 6 8): hum attended median 6 m/s on
+  each (6 6 6), 2 loudest median 4 (4 4 2); at the cap, hum attended, seeds 1 2 3: speed-1 27.8 to 28.3 s, speed-2 17.4 to
+  17.6 s, speed-3 12.6 to 12.9 s, speed-4 10.0 to 10.1 s, all pass; attemptLimitS = ceil(slowest x 1.5) = 43, 27, 20, 16 s
+  (package evidence/ear-pilot/2026-11-15-speed-lessons-*.json). With the 2-loudest pilot speed-3 and speed-4 exceed
+  median / 1.25 (3.2): the lessons teach following the hum (the hum-attended pilot is the measure).
+  Still left from Z4: racingLine on in scan courses, rear timbre, reach.ts, ear-pilot-scan.ts, the spoken tier change.
 - [x] gates.py --only vitest,architecture,i18n,b18 on 2f972a90: all four PASS (vitest 129 s).
 
 Stage Z1-any-scene-in-place:
@@ -135,6 +157,7 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   | Wroclaw, stand-in, fixed pilot | 5 | 61.9 s | passed on attempt 3 (6 gates) | 89 s | 3.73 / 5.00 | 0 |
   | Wroclaw, stand-in, fixed pilot | 2 | 81.4 s | passed on attempt 3 (failed at g10, then g4) | 209 s | 0.57 / 2.00 | 0 |
   | Wroclaw, built | 3 | none in 420 s (sonic.say.wallsStill) | - | - | - | - |
+  | Wroclaw, built, render on (pass 2) | 3 | none in 420 s (sonic.say.wallsStill, walls state null) | - | - | - | - |
   The median of W-held samples is low at 2 m/s because W is pulsed and each restart from a turn is sampled.
   /walls/70b50d42/v1/scene.voxel.json and .bin answered 200 in the stand-in runs. r10 Tunis: 14 of 14 in 936 s.
 
@@ -282,6 +305,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 Z5 pass 2: most replies went to the speed lessons' fallout: 8 package tests pin the count of 28 lessons and
+  every spoken line (tts fixtures, words run, docs counts, room scale); a list of "tests that pin the lesson set" in the
+  package docs would have shown the cost before adding lessons, and the lessons belong in their own stage.
 
 - 2026-11-14 Z1: most replies went to reading the sound mode's entry chain (boot, start, feature, lessons) before design; a
   short agent-map section "how the mode is installed and what it needs at install time" would have saved four reads.
