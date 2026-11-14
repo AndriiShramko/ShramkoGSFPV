@@ -168,7 +168,26 @@ Stage fixes (review CR-1..CR-6). Stopped at the reply budget at a clean point.
   marginM. Without a map exitOk is true at once: quality 4/4, generate/fit/fixtures 65/66; the one failure is the
   60 s timeout of generate.test.ts "2 m hole" (71.5 s, alone 92.9 s), and it fails the same on the HEAD generator
   (neg_control.py --ref HEAD: the old code fails too), so it is the machine's load (48 node processes), not the change.
-  tsc packages/tracks: 0 errors. Audit run-audit.sh audit-cr4 started.
+  tsc packages/tracks: 0 errors. Commit 89b4fe86.
+- [x] CR-4 audit of 89b4fe86 (run-audit.sh audit-cr4, U:/Temp/gsfpv-train3/course3/fixes/audit-cr4/, under heavy machine
+  load: about 48 node processes of other agents). Wroclaw 70b50d42, 20 seeds: walked 24 on all, gates 24 on 19 seeds and
+  23 on seed 17, no drops (SUMMARY gatesSd 0 and 0.3; before3 5.2, after3 3.1); reach mean 114 and 110 m; band share 1.
+  Tunis 887f27aa: only 5 seeds before the cut (seeds 1, 2, 11, 12, 13): gates 24, 14, 24, 24, 24 (sd about 4.5 by hand;
+  before3 6.5); seed 2 walked 14 itself (no proof drop). Tunis courses took 244-598 s each in Node under load (before3
+  mean 59.8 s), so its 20 seeds did not fit: the Tunis audit was stopped by hand (no 887f27aa JSON, no SUMMARY).
+  Accept: Wroclaw clearly met; Tunis better on 5 seeds, not shown on 20.
+- [x] CR-2 probe: progress-look-probe.mjs records the box's bar ('moving' while its animation runs) (e5fe3588), not run yet.
+- [x] gates.py --only vitest,architecture,i18n,b18 on e5fe3588: all PASS (vitest 316 s; logs U:/Temp/gsfpv-gates-20261115-003132).
+- [ ] CR-3 (left): course-rate.mjs over audit-cr4 (Wroclaw only): freeMs 4239 and 4228 (Node, without qMs; with the G4b
+  qMs 1115-1140 about 5.3 s), msPerTry 102221 and 134664 (one fit try a course; under load), msPerTryPerMLeaf 9824. Old
+  constants: COURSE_TRY_MS_5CM 38100, FREE_SPACE_MS 2400 (apps/fly/src/course/progress.ts). Not set yet: the numbers are
+  from a loaded machine and the Tunis rows (244-598 s a course) say the walk itself is now the slow part on Tunis; set
+  them from a quiet run or scale by these, then time one Wroclaw and one Tunis generation in the browser.
+- [ ] Browser proof (left): U:/Temp/gsfpv-train3/course3/g4c/run.sh (release build of HEAD, port 5723, GPU lock;
+  phase A Wroclaw build without walls: bar, mayStop line, course generation times; phase B stand-in walls: course-path-probe
+  on 70b50d42 and 887f27aa). It waits for fixes/audit-cr4/DONE: create that file (or drop the wait line) and start it
+  as the first command of the next stage. It was stopped before its build at the reply budget.
+- [ ] Tunis 20-seed audit of the CR-4 walk (left, about 1.5 h with 2 processes under load): run-audit.sh with Wroclaw lines removed.
 - [ ] CR-3: tools/bench/scripts/course-rate.mjs now reads course-quality-audit rows (fits as tried). Left: run it over
   fixes/audit/ when the audit is whole, set COURSE_TRY_MS_5CM from ms per fit try (Node, so far Wroclaw rows 35-108 s a
   course, 1 fit each) and FREE_SPACE_MS from the free step: Node qMs 1115-1140 + freeMs 3675 on Wroclaw (g4b), browser
@@ -338,3 +357,5 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - fixes: about 32 replies; most went to CR-2 (finding the box, the locale namespace, a name clash with walls.ts's own
   `busy`) and to the 20-seed audit that outlives a worker; a walk-info row in the audit from the start (it exists now) and
   starting the long audit as the first command of a stage would have saved about 6 replies.
+- fixes pass 2: about 30 replies; most went to waiting for the Tunis audit (4-10 min a course under other agents' load) in
+  10-minute blocks; auditing Wroclaw first and Tunis with fewer seeds, or a quiet machine, would have left room for CR-3.
