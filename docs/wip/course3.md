@@ -108,12 +108,20 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
   gates over the live walls (gate colour by height above the ground under it), pilot's view at gate 1, the craft led
   through gates 1..3, 6 s hover, sent at 12 m/s into the nearest wall, automatic respawn ('rewind' target), next gate and
   HUD clock before and after; then R.
-- [~] Runner U:/Temp/gsfpv-train3/course3/g4/run.sh (detached): rebuild with the hook, serve-csp 5721, GPU lock;
-  phase A dist/walls empty: progress-look-probe.mjs on ab5efa0e and 70b50d42 (browser build) -> g4/build-look.json;
-  phase B U:/Temp/gsfpv-train2/walls/release/70b50d42 copied into dist/walls: course-path-probe.mjs on 70b50d42 and
-  887f27aa -> g4/path.json; shots U:/Temp/gsfpv-train3/shots/course3-*.png; log g4/run.log ends with "end".
-- [ ] Read path.json and build-look.json into Facts G4, look at the pictures (one line each).
-- [ ] gates.py --only vitest,architecture,i18n,b18.
+- [x] Runner U:/Temp/gsfpv-train3/course3/g4/run.sh ran 22:58-23:07 on a release of 8c1dfd71 (serve-csp 5721, GPU lock):
+  phase A dist/walls empty: progress-look-probe.mjs on ab5efa0e and 70b50d42 -> g4/build-look.json; phase B stand-in
+  U:/Temp/gsfpv-train2/walls/release/70b50d42 in dist/walls: course-path-probe.mjs on 70b50d42 and 887f27aa -> g4/path.json.
+  0 page errors in all four. Results in Facts G4.
+- [x] Pictures looked at (U:/Temp/gsfpv-train3/shots/): course3-wroclaw-top.png: all 24 gates in one band about 76 m long
+  on one street of a 163 x 185 m area, green and yellow (2.2-5.7 m above the ground), none red. course3-wroclaw-pilot.png:
+  street at eye level, the next gate green ring ahead, HUD clock 0:00.00 Gate 1 of 24, a tree trunk close in front of the
+  camera (the eye point is 6 m before gate 1 on its axis). course3-wroclaw-pilot-b.png: the other yaw, looks away from the course.
+- [!] Wroclaw spread NOT met on the page: the stand-in walls course spans 75.9 m (largest gate-to-gate distance on the
+  ground plane); the owner's "obstacles practically in one place" stands. Next: run course-quality-audit.ts --quality on
+  70b50d42 with the same walls (U:/Temp/gsfpv-train2/walls/release/70b50d42) and compare farM, outGates, banded with the
+  page's track params (read the generated track's params through the hook or the worker), then fix the walk's reach.
+- [ ] gates.py --only vitest,architecture,i18n,b18 (not run in G4: the reply budget ran out after the browser run).
+- [ ] Progress percent goes backwards between tries (ab5efa0e: "try 3 ... 75 %", then "try 4 ... 63 %"): course/progress.ts layTries.
 
 ## Facts (measured)
 
@@ -177,6 +185,27 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
 - Settings, not measured: PROGRESS_TICK_MS 1000, SPEAK_EVERY_MS 20000, SPEAK_GAP_MS 4000, COURSE_WARN_MS 3000, SIZE_MS 1000,
   COURSE_FULL_M3 15000 (marked ESTIMATE in the code).
 
+G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv-train3/course3/g4/build-look.json, path.json):
+- Browser build, ab5efa0e: walls box lines from 0.0 s "Walls: reading the scan. Step 2 of 3, 2 %. 0:00 so far, about 0:40
+  left." through 22.2 s "building the walls on your graphics card. Step 3 of 3 ... longer than usual, still working." to
+  27.8 s "Walls built in this browser in 28 s. ... Now the course is being built; its progress follows here."; course lines
+  27.8 s "Course: finding the free space. Step 1 of 2" to 31.2 s "placing the gates again, try 4. Step 2 of 2, 63 %";
+  first gate drawn 32.2 s; 16 walls lines, 3 course lines; longest unchanged text while busy 9.9 s.
+- Browser build, 70b50d42 Wroclaw: box 0.1 s "reading the scan. Step 2 of 3, 0 %. about 2:00 left", 60.4 s "59 %. 1:00 so far,
+  about 0:45 left", 136.0 s "building the walls on your graphics card. Step 3 of 3. 2:16 so far; longer than usual, still
+  working.", 150.5 s "Walls built in 149 s. ... The walls are rough in this scan. Now the course is being built"; course
+  150.5 s "finding the free space. Step 1 of 2, 0 %", 170.9 s "placing the gates and obstacles. Step 2 of 2, 33 %", 186.7 s
+  "72 %. 0:36 so far, about 0:15 left"; first gate 187.2 s; 156 walls lines, 33 course lines; longest unchanged text 21.0 s
+  (the known main-thread freezes of the build, For the lead).
+- Owner's path, Wroclaw stand-in walls: course 40.5 s after Shift+G, 24 gates, height above the ground under each gate
+  2.2-5.65 m (all 24 at most 5.65 m), largest ground distance between gates 75.9 m, gate y 2.6-5.8. Gates 1-3 passed
+  (next 1, 2, 3; clock 0:00.46, 0:01.43, 0:02.39). Before the crash next 3, clock 8.39 s; crash into a wall at 12 m/s,
+  respawn 2.0 s later, decision kind 'rewind' (pathAgeTicks 5025), put back 2.0 m from the crash place; after: next 3,
+  clock 10.59 s, 2 s later 12.59 s (runs on). R: next 0, clock 0:00.00, "Gate 1 of 24".
+- Owner's path, Tunis 887f27aa (walls built in the browser): course 51.5 s, 14 gates, heights 2.0-4.1 m (one gate without
+  ground under it within 80 m), span 60.4 m; gates 1-3 passed; before crash next 3 clock 8.36 s; respawn 'rewind' 2.4 m
+  from the crash; after next 3, clock 10.66 then 12.70 s; R: next 0, clock 0:00.00.
+
 ## Decisions
 
 - G3: a crash respawned where it was keeps the gates passed even when the rewind put the craft behind a gate it had passed in
@@ -237,6 +266,9 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
   and a kill permission for stale detached audits, would have saved about 8 replies and two stale audit runs.
 - G1-progress pass 2: 18 replies; most went to choosing a probe (walls-chain-probe.mjs was 90 % of it) and to locating the
   freezes; a probe that logs the longest main-thread gap by itself (it does now) would have saved the analysis turns.
+- G4-prove: 30 replies; most went to finding how to move the live craft and where the gates are (test hook, selftest,
+  accept-v03-respawn, view.ts); an agent-map line "probe recipe: scripted craft via runner.onStep, gates via
+  course.gatePoses()" would have saved about 8 replies, enough for the gates run.
 - G3-respawn: about 22 replies; most went to tracing the respawn path (respawn.ts, director.ts, runner.ts, session) to learn
   whether the sim tick goes back on a rewind; an agent-map line "respawn: director decision, life event, tick monotonic"
   would have saved about 4 replies.
