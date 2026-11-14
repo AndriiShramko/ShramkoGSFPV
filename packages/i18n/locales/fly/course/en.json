@@ -130,5 +130,6 @@
   "progress.spokenMin": "{what}: {step}, step {n} of {m}. About {min} minutes left.",
   "progress.spokenOver": "{what}: {step}, step {n} of {m}. Still working.",
   "progress.walls.thenCourse": "Now the course is being built; its progress follows here.",
-  "progress.course.soon": "Course ready: {n} gates. They appear in {s} seconds, keep flying."
+  "progress.course.soon": "Course ready: {n} gates. They appear in {s} seconds, keep flying.",
+  "progress.mayStop": "The picture may stand still for up to {s} seconds now. The build goes on: wait, do not close the page."
 }

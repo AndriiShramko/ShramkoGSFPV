@@ -130,5 +130,6 @@
   "progress.spokenMin": "{what}: {step}, krok {n} z {m}. Zostało około {min} minut.",
   "progress.spokenOver": "{what}: {step}, krok {n} z {m}. Praca trwa.",
   "progress.walls.thenCourse": "Teraz budowany jest tor; jego postęp pojawi się tutaj.",
-  "progress.course.soon": "Tor gotowy: {n} bramek. Pojawią się za {s} sekundy, leć dalej."
+  "progress.course.soon": "Tor gotowy: {n} bramek. Pojawią się za {s} sekundy, leć dalej.",
+  "progress.mayStop": "Obraz może teraz stanąć nawet na {s} sekund. Budowa trwa dalej: poczekaj, nie zamykaj strony."
 }

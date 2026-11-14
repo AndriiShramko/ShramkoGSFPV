@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-    COURSE_TRY_MIN_MS, COURSE_TRY_MS_5CM, PROGRESS_TICK_MS, SPEAK_EVERY_MS, SPEAK_GAP_MS, ProgressClock, SpeechPacer, clock,
+    COURSE_TRY_MIN_MS, COURSE_TRY_MS_5CM, FREEZE_NOTE_S, PROGRESS_TICK_MS, mayFreeze, SPEAK_EVERY_MS, SPEAK_GAP_MS, ProgressClock, SpeechPacer, clock,
     courseSteps, courseTryMs, isParked, layTries, progressLine, roundLeft, spokenLine, wallsSteps
 } from '../../../apps/fly/src/course/progress';
 import { BASE_VOXEL_M, LADDER_S_PER_MILLION, bakeBase } from '../../../apps/fly/src/bake';
@@ -165,6 +165,12 @@ describe('spoken progress for Fly by Sound', () => {
 });
 
 describe('words', () => {
+    it('CR-2: before the steps that hold the main thread the box says the picture may stop, and for how long', () => {
+        expect(['size', 'read', 'voxelize', 'lighter', 'done'].filter(mayFreeze)).toEqual(['read', 'voxelize']);
+        // the longest unchanged text of the Wroclaw build was 21.0 s (G4 build-look)
+        expect(FREEZE_NOTE_S).toBeGreaterThanOrEqual(21);
+        expect(EN('progress.mayStop', { s: FREEZE_NOTE_S })).toContain(`${FREEZE_NOTE_S} seconds`);
+    });
     it('m:ss and the rounding of what is left', () => {
         expect(clock(75)).toBe('1:15');
         expect([roundLeft(1), roundLeft(36), roundLeft(61), roundLeft(91)]).toEqual([5, 40, 90, 120]);
@@ -172,7 +178,7 @@ describe('words', () => {
     it('every progress line exists in en, es, pl, ru with the same placeholders', () => {
         const en = lines('en');
         const keys = Object.keys(en).filter((k) => k.startsWith('progress.'));
-        expect(keys.length).toBe(17);
+        expect(keys.length).toBe(18);
         for (const lang of ['es', 'pl', 'ru']) {
             const d = lines(lang);
             for (const k of keys) {

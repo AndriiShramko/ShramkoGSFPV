@@ -130,5 +130,6 @@
   "progress.spokenMin": "{what}: {step}, paso {n} de {m}. Quedan unos {min} minutos.",
   "progress.spokenOver": "{what}: {step}, paso {n} de {m}. Sigue trabajando.",
   "progress.walls.thenCourse": "Ahora se construye el circuito; su progreso aparece aquí.",
-  "progress.course.soon": "Circuito listo: {n} puertas. Aparecen en {s} segundos, sigue volando."
+  "progress.course.soon": "Circuito listo: {n} puertas. Aparecen en {s} segundos, sigue volando.",
+  "progress.mayStop": "La imagen puede quedarse quieta hasta {s} segundos. La construcción sigue: espera, no cierres la página."
 }

@@ -14,7 +14,7 @@ import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
 import { ensureWalls } from './walls-first';
-import { PROGRESS_TICK_MS, ProgressClock, SpeechPacer, progressLine, spokenLine, wallsSteps } from './course/progress';
+import { FREEZE_NOTE_S, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, mayFreeze, progressLine, spokenLine, wallsSteps } from './course/progress';
 import type { ProgressWhat } from './course/progress';
 
 /** auto: the plan decides (a short refine starts by itself); offer: never by itself; off: test modes */
@@ -141,7 +141,12 @@ export function mountWalls(o: WallsOptions): WallsHook {
             file));
     // top middle: only what needs the pilot (a build or refine button, progress, the result); empty
     // otherwise, so it covers nothing (on a phone the pad hint sits there)
-    const box = h('div', { class: 'bake-box interactive', 'data-testid': 'walls-box' }, badge, action, status);
+    // CR-2: while a build runs, a bar that moves on the compositor (it keeps moving when the main thread is held by the
+    // bake) and a note before the steps that may stop the picture
+    const busyBar = h('div', { style: 'width: 40%; height: 100%; border-radius: 2px; background: #6cf' });
+    const busyBox = h('div', { 'aria-hidden': 'true', 'data-testid': 'walls-busy', hidden: true, style: 'width: 180px; height: 4px; border-radius: 2px; overflow: hidden; background: rgba(255,255,255,.15)' }, busyBar);
+    const note = h('div', { class: 'bake-status', 'data-testid': 'walls-note' });
+    const box = h('div', { class: 'bake-box interactive', 'data-testid': 'walls-box' }, badge, action, status, busyBox, note);
     o.ui.append(box);
     // "Walls 5 cm" rides on the credit line (bottom left; under the pad hint on a phone): always
     // visible, small, and it opens the store (export for another PC, import, clear)
@@ -265,12 +270,26 @@ export function mountWalls(o: WallsOptions): WallsHook {
         prog = new ProgressClock(what, wallsSteps(gaussians, sPerMillion), () => performance.now());
         pacer = new SpeechPacer(() => performance.now());
         progTimer = window.setInterval(tickProgress, PROGRESS_TICK_MS);
+        busyBox.hidden = false;
+        if (!busyAnim && typeof busyBar.animate === 'function') {
+            busyAnim = busyBar.animate([{ transform: 'translateX(-100%)' }, { transform: 'translateX(250%)' }], { duration: 1400, iterations: Infinity, easing: 'ease-in-out' });
+        }
+        noteSaid = false;
         tickProgress();
+    }
+    let busyAnim: Animation | null = null;
+    let noteSaid = false;
+    function stopBusy(): void {
+        busyBox.hidden = true;
+        busyAnim?.cancel();
+        busyAnim = null;
+        note.textContent = '';
     }
     /** the build ended: the last line (with what comes next) stays in the box and is spoken */
     function endProgress(text: string, hideAfterMs = 0, ok = true): void {
         clearInterval(progTimer);
         prog = null;
+        stopBusy();
         // a failed build keeps what comes next for the build that the button starts again
         const next = ok ? after : null;
         if (ok) after = null;
@@ -281,6 +300,13 @@ export function mountWalls(o: WallsOptions): WallsHook {
     function onStageOf(st: string): void {
         if (!prog) return;
         prog.enter(st);
+        const n = mayFreeze(st) ? t('progress.mayStop', { s: FREEZE_NOTE_S }) : '';
+        note.textContent = n;
+        // said once a build, before the first step that may stop the picture (Fly by Sound hears it before the silence)
+        if (n && !noteSaid) {
+            noteSaid = true;
+            o.speak?.(n);
+        }
         tickProgress();
     }
 

@@ -37,6 +37,15 @@ export function courseTryMs(cellM: number, volumeM3: number): number {
 // 7.4, 6.6, 6.4 s; Wroclaw level 2 10.7 M Gaussians 29.3 s; the most per million is 2.74 s.
 /** voxelising seconds per million Gaussians (the most measured, above) */
 export const VOXELIZE_S_PER_MILLION = 2.74;
+// CR-2: the walls build holds the page's main thread inside @playcanvas/splat-transform (bake.ts: materializeToDataTable and
+// cropToCore in the 'read' step, writeVoxel in 'voxelize'): freezes of 13.5 s and 10.0 s (G1-look, Wroclaw), the longest
+// unchanged text 21.0 s (G4 build-look). The box says so before, and its moving bar (a compositor animation) goes on.
+/** ESTIMATE rounded up from the freezes above: how long the line says the picture may stop */
+export const FREEZE_NOTE_S = 25;
+/** the steps of a walls build during which the picture may stop */
+export function mayFreeze(stepKey: string): boolean {
+    return stepKey === 'read' || stepKey === 'voxelize';
+}
 /** ESTIMATE: asking the scan its size (one small request) */
 export const SIZE_MS = 1_000;
 
