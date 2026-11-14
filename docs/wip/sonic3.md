@@ -39,9 +39,12 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   writes JSON), tools/ear-debug.ts (one flight's trace). Typecheck tsconfig.core.json: 0 errors.
 - [x] First 'before' run (package rules of train3 2ec8653, beacon on, soft theme), evidence/ear-pilot/2026-11-14-train3-2ec8653.json.
 - [ ] LEFT, in this order:
-  1. Corridor: every rung times out (also 1 m/s). Run `node tools/run-tool.mjs ear-debug corridor 1 500 40` and find
-     whether the pilot stalls (pilot fix) or the runner's goals (fly-distance 15, then track-end) never report
-     attempt-pass (ladder fix: count goal 'met' events); then rerun the baseline with the full ladder (rungs 1..22).
+  1. Corridor: the tool's summary printed 't' for both touch and timeout (fixed in package 5a55170: it now prints
+     the word). The trace (`node tools/run-tool.mjs ear-debug corridor 1 5000 8`) shows a TOUCH at 56 s at 1 m/s near the
+     first right turn (z -15 to -20): in the 2.5 m corridor the two side-wall pulses are the 2 loudest streams (-6 dB) and
+     mask the hum (-17 to -20 dB) for seconds, so the pilot loses the guide and turns round (yaw 166). That is today's
+     masking at its plainest, a 'before' fact; decide whether the pilot attends the hum as one of its 2 streams (plan
+     says loudest) and record both. Then the full ladder (rungs 1..22).
   2. test/ear-pilot.test.ts: left/right swapped (mapPlan mirrors dir x) fails at rung 1 on rings-course; deaf (voices [])
      fails; distances zeroed (VoicePlan.distance 0, ActiveCue.distance null) gives the same hash; the import lines of
      src/pilot/ear-pilot.ts and perceive.ts name no src/world, src/sense or SonicWorld. Negative control: the test file
@@ -68,8 +71,8 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   keeping the position needs the start = the craft's pose (feature.ts scanLesson `here`), not only skipping mode.place.
 
 - Z3 baseline (tools/ear-pilot.ts, package train3 6079170 on rules of 2ec8653, beacon on, theme soft, seeds 1 2 3, rungs
-  1 2 3 4 6 8 10 m/s): rings-course median top 3 m/s (by seed 3, 2, 3; above it: touches and fails); corridor 0 (every rung
-  timeout, cause not found). Runtime 31 s corridor, 4 s rings.
+  1 2 3 4 6 8 10 m/s): rings-course median top 3 m/s (by seed 3, 2, 3; above it: touches and fails); corridor 0 (at 1 m/s a touch at 56 s:
+  side-wall pulses mask the hum, see LEFT 1). Runtime 31 s corridor, 4 s rings.
 - Z2: the numbers of plan Part 2 section 1 are constants read from the package code (train3 2ec8653: sampler.ts, rules.ts,
   beacon.ts, freeway.ts, planner.ts, voices.ts, themes/*.json printed by a node one-liner), the seconds are those constants
   divided by the speed; nothing in Z2 was measured by a run. Lesson speed caps: lessons/*.json maxSpeedMps 0 to 5, 12 lessons at 3.
