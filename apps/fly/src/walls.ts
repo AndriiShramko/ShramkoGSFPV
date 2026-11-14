@@ -9,11 +9,13 @@
 import type { FlightSession } from './session';
 import { t } from './i18n';
 import { h } from './ui/dom';
-import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize } from './bake';
+import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, LADDER_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize } from './bake';
 import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
 import { ensureWalls } from './walls-first';
+import { PROGRESS_TICK_MS, ProgressClock, SpeechPacer, progressLine, spokenLine, wallsSteps } from './course/progress';
+import type { ProgressWhat } from './course/progress';
 
 /** auto: the plan decides (a short refine starts by itself); offer: never by itself; off: test modes */
 export type RefineMode = 'auto' | 'offer' | 'off';
@@ -43,7 +45,9 @@ export interface WallsHook {
      * progress line in the walls box. `lead`: one line in the box above the progress that says what comes
      * after the walls ("First the walls of this scan, then the course."). Resolves true when the session has walls.
      */
-    build(lead?: string): Promise<boolean>;
+    build(lead?: string, next?: string): Promise<boolean>;
+    /** stage G1-progress: the build's progress line while it runs (course/progress.ts), else null */
+    readonly progress: string | null;
     /**
      * The action that waited for a build that failed: it runs when walls come in later (the pilot pressed
      * the button again), so the lead line in the box stays true. One slot: the latest action wins.
@@ -89,6 +93,8 @@ export interface WallsOptions {
     controls?: HTMLElement;
     /** the pilot asked for walls (the build button): the switch goes on, for every scan (app/walls.ts) */
     switchOn(): void;
+    /** stage G1-progress: a line for Fly by Sound's speech (the spoken-line hook, app/say-via.ts); absent: nothing is spoken */
+    speak?: (text: string) => void;
 }
 
 const cm = (m: number): string => String(Math.round(m * 1000) / 10);
@@ -158,10 +164,12 @@ export function mountWalls(o: WallsOptions): WallsHook {
         lastImport: null,
         ready: Promise.resolve(),
         refine: () => (w.plan?.voxelM ? runRefine(w.plan.voxelM) : Promise.resolve()),
-        build: (lead) => {
+        build: (lead, next) => {
             if (lead && badge && !s.collision) badge.textContent = lead;
+            if (next && !s.collision) after = next;
             return ensureAll();
         },
+        get progress() { return prog ? progressLine(prog.view(), t) : null; },
         whenIn: (f) => { if (s.collision) f(); else afterIn = f; },
         get line() { return status.textContent ?? ''; },
         exportZip: async () => (await cacheP).exportZip(),
@@ -178,6 +186,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         },
         fakeLimits: (l) => { fake = l; },
         dispose: () => {
+            clearInterval(progTimer);
             clearInterval(pollTimer);
             clearTimeout(hideTimer);
             box.remove();
@@ -237,6 +246,42 @@ export function mountWalls(o: WallsOptions): WallsHook {
         status.textContent = text;
         clearTimeout(hideTimer);
         if (hideAfterMs > 0) hideTimer = window.setTimeout(() => { status.textContent = ''; }, hideAfterMs);
+    }
+
+    // ---- stage G1-progress: the build's line in the box every PROGRESS_TICK_MS (step, n of m, percent, time so far, what is
+    // left), spoken to Fly by Sound at the pacer's pace; `after` says what comes once the walls are in (the course)
+    let prog: ProgressClock | null = null;
+    let progTimer = 0;
+    let pacer = new SpeechPacer(() => performance.now());
+    let after: string | null = null;
+    function tickProgress(): void {
+        if (!prog) return;
+        const v = prog.view();
+        say(progressLine(v, t));
+        if (pacer.due(v)) o.speak?.(spokenLine(v, t));
+    }
+    function startProgress(what: ProgressWhat, gaussians: number, sPerMillion: number): void {
+        clearInterval(progTimer);
+        prog = new ProgressClock(what, wallsSteps(gaussians, sPerMillion), () => performance.now());
+        pacer = new SpeechPacer(() => performance.now());
+        progTimer = window.setInterval(tickProgress, PROGRESS_TICK_MS);
+        tickProgress();
+    }
+    /** the build ended: the last line (with what comes next) stays in the box and is spoken */
+    function endProgress(text: string, hideAfterMs = 0, ok = true): void {
+        clearInterval(progTimer);
+        prog = null;
+        // a failed build keeps what comes next for the build that the button starts again
+        const next = ok ? after : null;
+        if (ok) after = null;
+        const line = next ? `${text} ${next}` : text;
+        say(line, hideAfterMs);
+        o.speak?.(line);
+    }
+    function onStageOf(st: string): void {
+        if (!prog) return;
+        prog.enter(st);
+        tickProgress();
     }
 
     function showSummary(): void {
@@ -324,7 +369,13 @@ export function mountWalls(o: WallsOptions): WallsHook {
         try {
             // never a refusal: the ladder takes a lighter way by itself until one fits this device,
             // and skips a step that would run too long before it starts (planBase, STEP_MAX_S)
-            const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.working', { stage: t(`bake.stage.${st}`) })), { size: w.size ?? undefined, limits: fake, sPerMillion: loadBakeSpeed() });
+            // the line's estimate: this machine's own speed when it was slower than the trials (planBase's rule)
+            const spm = Math.max(loadBakeSpeed() ?? 0, LADDER_S_PER_MILLION);
+            startProgress('walls', w.size?.gaussians ?? 0, spm);
+            const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, {
+                size: w.size ?? undefined, limits: fake, sPerMillion: loadBakeSpeed(),
+                onStep: (step, i) => { prog?.replan(wallsSteps(step.gaussians, spm), i > 0 ? 'wallsLighter' : 'walls'); tickProgress(); }
+            });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
@@ -336,14 +387,15 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.lastBake = o.hook.bake;
             action.remove();
             // a large scan may have needed a lighter way: one plain line, no numbers of the technique
-            say(t(s.wallsPending ? 'bake.doneNext' : isRough(r) ? 'bake.doneRough' : 'bake.done', { s: (r.ms.total / 1000).toFixed(0) }));
+            // a course waiting for the walls takes them at once (ensureWalls takeQueued): its line says what comes, not the respawn
+            endProgress(t(s.wallsPending && !after ? 'bake.doneNext' : isRough(r) ? 'bake.doneRough' : 'bake.done', { s: (r.ms.total / 1000).toFixed(0) }));
             o.beacon('bake_done');
             void remember(w.keyInput, r, sha);
         } catch (e) {
             w.state = 'failed';
             if (e instanceof BakeRefusedError) {
                 o.hook.bake = { ok: false, refused: true, reason: e.reason, gaussians: e.size?.gaussians ?? 0, limit: e.maxGaussians };
-                say(refusedText(e, false));
+                endProgress(refusedText(e, false), 0, false);
                 // only a browser without WebGPU has no way on here; out of room and empty walls keep the button
                 if (e.reason === 'no-webgpu') action.remove();
                 else action.disabled = false;
@@ -352,7 +404,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
                 // every lighter way ran out of room too: a plain line and the same button again
                 // the library's own words stay in the hook and the console, the pilot gets the way on
                 console.warn('walls build', e);
-                say(outOfRoom(e) ? t('bake.noRoom') : t('bake.failed'));
+                endProgress(outOfRoom(e) ? t('bake.noRoom') : t('bake.failed'), 0, false);
                 action.disabled = false;
             }
             // the button comes back (enabled) with the line that says to press it, and stays in sight
@@ -372,7 +424,9 @@ export function mountWalls(o: WallsOptions): WallsHook {
         w.state = 'baking';
         const was = w.voxelM;
         try {
-            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, (st) => say(t('bake.refine.working', { cm: cm(voxelM), stage: t(`bake.stage.${st}`) })), { voxelM, size: w.size ?? undefined, shipped, limits: fake });
+            // the refine's estimate is planRefine's: this machine's speed, else the first guess
+            startProgress('refine', w.size?.gaussians ?? 0, loadBakeSpeed() ?? DEFAULT_S_PER_MILLION);
+            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, { voxelM, size: w.size ?? undefined, shipped, limits: fake });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
@@ -381,14 +435,14 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.lastBake = o.hook.bake;
             void remember(w.keyInput, r, sha);
             queue(r.json, r.bin, sha, 'bake');
-            if (s.wallsPending) say(t('bake.refine.done', { cm: cm(voxelM), was: cm(was ?? shipped.voxelM), s: (r.ms.total / 1000).toFixed(0) }));
-            else say(t('bake.refine.swapped', { cm: cm(voxelM), was: cm(was ?? shipped.voxelM) }), 15000);
+            if (s.wallsPending) endProgress(t('bake.refine.done', { cm: cm(voxelM), was: cm(was ?? shipped.voxelM), s: (r.ms.total / 1000).toFixed(0) }));
+            else endProgress(t('bake.refine.swapped', { cm: cm(voxelM), was: cm(was ?? shipped.voxelM) }), 15000);
             o.beacon('refine_done', { cm: cm(voxelM) });
         } catch (e) {
             w.state = 'failed';
             o.hook.bake = e instanceof BakeRefusedError ? { ok: false, kind: 'refine', refused: true, reason: e.reason } : { ok: false, kind: 'refine', error: String((e as Error)?.message ?? e) };
             w.lastBake = o.hook.bake;
-            say(e instanceof BakeRefusedError ? refusedText(e, true) : t('bake.refine.failed', { was: cm(was ?? shipped.voxelM) }));
+            endProgress(e instanceof BakeRefusedError ? refusedText(e, true) : t('bake.refine.failed', { was: cm(was ?? shipped.voxelM) }));
             // a failure that is not a refusal (a lost device, a network drop) may pass on a second try
             if (!(e instanceof BakeRefusedError) && w.plan?.voxelM) prompt({ ...w.plan, action: w.plan.action === 'offer-long' ? 'offer-long' : 'offer' });
         } finally {

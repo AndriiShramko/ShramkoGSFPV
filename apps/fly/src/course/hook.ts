@@ -25,6 +25,8 @@ export interface CourseHook {
     beaconPoints: number;
     /** why the last generate, load or save did not happen; null when it did */
     problem: string | null;
+    /** stage G1-progress: the course's progress line now (course/progress.ts), the arrival warning, or null */
+    progress?: string | null;
     /** T3: the courses the server keeps for this scene (fetched on scene load; -1 until the answer came) */
     serverTracks: number;
     /** T3: the server's id of the course this tab saved for everyone; null before a save */

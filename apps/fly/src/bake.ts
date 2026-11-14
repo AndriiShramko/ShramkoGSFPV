@@ -491,7 +491,7 @@ export type BaseStage = 'size' | 'read' | 'voxelize' | 'lighter' | 'done';
  * until one fits this device. Only a failure that is not about room (no WebGPU, a network error,
  * empty walls) ends it early. `bake` is bakeCollision (a test passes its own).
  */
-export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & { bake?: typeof bakeCollision; sPerMillion?: number | null } = {}): Promise<BakeResult & { tried: number }> {
+export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & { bake?: typeof bakeCollision; sPerMillion?: number | null; onStep?: (step: BaseStep, i: number, n: number) => void } = {}): Promise<BakeResult & { tried: number }> {
     const bake = o.bake ?? bakeCollision;
     onStage('size');
     const size = o.size ?? await sceneSize(contentUrl, kind);
@@ -501,6 +501,8 @@ export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', de
     let last: unknown = null;
     for (let i = 0; i < steps.length; i++) {
         if (i > 0) onStage('lighter');
+        // stage G1-progress: the progress line's estimate needs the Gaussians this step reads
+        o.onStep?.(steps[i], i, steps.length);
         try {
             // a step the plan let through past the estimate (the last level) is tried for real
             const r = await bake(contentUrl, kind, device, (s) => onStage(s), { ...o, size, level: steps[i].level, voxelM: steps[i].voxelM, coarsenOnOctree: true, capGb: i === steps.length - 1 ? Number.POSITIVE_INFINITY : o.capGb, limits: i === steps.length - 1 ? null : o.limits });

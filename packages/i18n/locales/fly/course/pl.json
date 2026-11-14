@@ -113,5 +113,22 @@
   "course.edit.saveAdmin": "Zapisz jako wersję administratora",
   "course.edit.savedAdmin": "Zapisano jako wersję administratora: {title}, wersja {v}",
   "course.edit.adminFirst": "Najpierw zapisz tor dla wszystkich, potem administrator może zapisać jego wersję",
-  "course.edit.voteAfterLap": "Przeleć okrążenie tego toru, aby zagłosować"
+  "course.edit.voteAfterLap": "Przeleć okrążenie tego toru, aby zagłosować",
+  "progress.what.walls": "Ściany",
+  "progress.what.wallsLighter": "Ściany (lżejszy sposób dla tego dużego skanu)",
+  "progress.what.refine": "Dokładniejsze ściany",
+  "progress.what.course": "Tor",
+  "progress.step.size": "sprawdzanie rozmiaru skanu",
+  "progress.step.read": "wczytywanie skanu",
+  "progress.step.voxelize": "budowanie ścian na karcie graficznej",
+  "progress.step.free": "szukanie wolnej przestrzeni",
+  "progress.step.lay": "rozmieszczanie bramek i przeszkód",
+  "progress.step.layAgain": "ponowne rozmieszczanie bramek, próba {k}",
+  "progress.line": "{what}: {step}. Krok {n} z {m}, {pct} %. Minęło {elapsed}, zostało około {left}.",
+  "progress.lineOver": "{what}: {step}. Krok {n} z {m}. Minęło {elapsed}; trwa dłużej niż zwykle, praca trwa.",
+  "progress.spokenSec": "{what}: {step}, krok {n} z {m}. Zostało około {s} sekund.",
+  "progress.spokenMin": "{what}: {step}, krok {n} z {m}. Zostało około {min} minut.",
+  "progress.spokenOver": "{what}: {step}, krok {n} z {m}. Praca trwa.",
+  "progress.walls.thenCourse": "Teraz budowany jest tor; jego postęp pojawi się tutaj.",
+  "progress.course.soon": "Tor gotowy: {n} bramek. Pojawią się za {s} sekundy, leć dalej."
 }

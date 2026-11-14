@@ -27,6 +27,8 @@ import { coveredBy } from '../../course/cover';
 import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
+import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, progressLine, spokenLine } from '../../course/progress';
+import { sayVia } from '../say-via';
 import { S } from '@gsfpv/sim-core';
 import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
@@ -188,7 +190,36 @@ export const course: Feature = {
             sync();
         };
 
+        // stage G1-progress: the generation's line on the HUD every PROGRESS_TICK_MS, spoken to Fly by Sound at the pacer's pace
+        let prog: ProgressClock | null = null;
+        let pacer = new SpeechPacer(() => performance.now());
+        let progTimer = 0;
+        const speak = sayVia(() => ctx.sonic ?? null);
+        const sayLine = (text: string): void => {
+            if (ctx.sonic) void speak({ key: 'sonic.say.text', params: { text } });
+        };
+        const showProgress = (): void => {
+            if (!prog) return;
+            const v = prog.view();
+            hook.progress = progressLine(v, t);
+            ctx.hud.flash(hook.progress, PROGRESS_TICK_MS * 2);
+            if (pacer.due(v)) sayLine(spokenLine(v, t));
+        };
+        const startProgress = (): void => {
+            clearInterval(progTimer);
+            prog = new ProgressClock('course', courseSteps(null), () => performance.now());
+            pacer = new SpeechPacer(() => performance.now());
+            progTimer = window.setInterval(showProgress, PROGRESS_TICK_MS);
+            showProgress();
+        };
+        const stopProgress = (): void => {
+            clearInterval(progTimer);
+            prog = null;
+            hook.progress = null;
+        };
+
         const fail = (problem: string, text: string): void => {
+            stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
             ctx.hud.flash(text, 4000);
@@ -219,6 +250,12 @@ export const course: Feature = {
         const onWorker = (e: MessageEvent<FromCourseWorker>): void => {
             const m = e.data;
             if (m.job !== job) return;
+            if (m.t === 'progress') {
+                prog?.enter(m.step, m.estMs);
+                showProgress();
+                return;
+            }
+            stopProgress();
             busy = false;
             disarm();
             if (m.t === 'error') {
@@ -248,9 +285,23 @@ export const course: Feature = {
                 return;
             }
             if (!m.track) return fail(m.short ? 'too few gates' : 'nothing fits', t('course.none'));
-            setTrack(m.track, 'generated', m.track.generator?.seed ?? pending);
-            history.replaceState(history.state, '', withCourse(location.href, m.track.id));
-            ctx.hud.flash(t('course.ready', { n: m.track.gates.length }), 4000);
+            const tr = m.track;
+            const mine = job;
+            const show = (): void => {
+                if (mine !== job) return;
+                hook.progress = null;
+                setTrack(tr, 'generated', tr.generator?.seed ?? pending);
+                history.replaceState(history.state, '', withCourse(location.href, tr.id));
+                ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
+                sayLine(t('course.ready', { n: tr.gates.length }));
+            };
+            // G1-progress: a course that arrives while the drone flies is announced before its gates appear
+            if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();
+            const soon = t('progress.course.soon', { n: tr.gates.length, s: Math.round(COURSE_WARN_MS / 1000) });
+            hook.progress = soon;
+            ctx.hud.flash(soon, COURSE_WARN_MS);
+            sayLine(soon);
+            window.setTimeout(show, COURSE_WARN_MS);
         };
 
         const ensureWorker = (): Worker => {
@@ -294,7 +345,7 @@ export const course: Feature = {
             void withWalls({
                 has: () => !!ctx.session.collision,
                 // the lead line goes into the walls box above the progress (a HUD note would cover the box)
-                build: wh ? () => wh.build(t('course.wallsFirst')) : null,
+                build: wh ? () => wh.build(t('course.wallsFirst'), t('progress.walls.thenCourse')) : null,
                 scene: () => ctx.session.scene.id,
                 // a failed build keeps the course waiting: the walls button brings the walls and then the course
                 later: wh ? (f) => wh.whenIn(f) : undefined
@@ -312,7 +363,7 @@ export const course: Feature = {
             if (busy) return;
             busy = true;
             hook.problem = null;
-            ctx.hud.flash(t('course.generating'), 2500);
+            startProgress();
             pending = seed;
             const msg: CourseJob = {
                 t: 'generate', job: ++job, ...w,
