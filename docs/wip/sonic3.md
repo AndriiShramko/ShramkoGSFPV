@@ -38,17 +38,11 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   attempt-pass with 0 touches within 3 x course length / speed; trace hook), tools/ear-pilot.ts (ladder over lessons,
   writes JSON), tools/ear-debug.ts (one flight's trace). Typecheck tsconfig.core.json: 0 errors.
 - [x] First 'before' run (package rules of train3 2ec8653, beacon on, soft theme), evidence/ear-pilot/2026-11-14-train3-2ec8653.json.
+- [x] 1. Corridor and full ladder (package afec518): Hearing.attendHum (the hum is always one of the 2 streams) as an option,
+  default off as the plan says; both run on rungs 1..22, table in Facts "Z3 before table". Corridor is 0 in every variant.
+- [x] 2. test/ear-pilot.test.ts (package afec518): 5 of 5 pass; the swapped and deaf cases are the controls (each fails the
+  lowest rung on rings-course by assertion while the true sound passes it with seeds 1 2 3).
 - [ ] LEFT, in this order:
-  1. Corridor: the tool's summary printed 't' for both touch and timeout (fixed in package 5a55170: it now prints
-     the word). The trace (`node tools/run-tool.mjs ear-debug corridor 1 5000 8`) shows a TOUCH at 56 s at 1 m/s near the
-     first right turn (z -15 to -20): in the 2.5 m corridor the two side-wall pulses are the 2 loudest streams (-6 dB) and
-     mask the hum (-17 to -20 dB) for seconds, so the pilot loses the guide and turns round (yaw 166). That is today's
-     masking at its plainest, a 'before' fact; decide whether the pilot attends the hum as one of its 2 streams (plan
-     says loudest) and record both. Then the full ladder (rungs 1..22).
-  2. test/ear-pilot.test.ts: left/right swapped (mapPlan mirrors dir x) fails at rung 1 on rings-course; deaf (voices [])
-     fails; distances zeroed (VoicePlan.distance 0, ActiveCue.distance null) gives the same hash; the import lines of
-     src/pilot/ear-pilot.ts and perceive.ts name no src/world, src/sense or SonicWorld. Negative control: the test file
-     must fail without src/pilot (new module: control = the swapped and deaf cases themselves fail by assertion).
   3. Simulator tools/bench/src/ear-pilot-scan.ts on Tunis 887f27aa and Wroclaw 70b50d42 (walls stand-in), plan section 4.
   4. Z4 speed part: src/cues/reach.ts, budget.ts, wiring in planner.ts, sampler.ts rangeS, freeway.ts depth; tests
      reach.test.ts, budget.test.ts with negative controls; replay version bumps; ear pilot after-run; pin move.
@@ -73,6 +67,20 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
 - Z3 baseline (tools/ear-pilot.ts, package train3 6079170 on rules of 2ec8653, beacon on, theme soft, seeds 1 2 3, rungs
   1 2 3 4 6 8 10 m/s): rings-course median top 3 m/s (by seed 3, 2, 3; above it: touches and fails); corridor 0 (at 1 m/s a touch at 56 s:
   side-wall pulses mask the hum, see LEFT 1). Runtime 31 s corridor, 4 s rings.
+- Z3 before table (tools/ear-pilot.ts, package afec518 with the cue rules of 2ec8653, beacon on, soft theme, seeds 1 2 3,
+  rungs 1 2 3 4 6 8 10 12 15 18 22 m/s; evidence/ear-pilot/2026-11-14-before-loudest.json and -before-attend-hum.json):
+
+  | Pilot | rings-course median top (by seed) | corridor median top |
+  |---|---|---|
+  | 2 loudest streams (plan), turn 120 deg/s | 3 m/s (3 2 3); 8 m/s and up: touch or fail every seed | 0 (touch every rung) |
+  | hum always attended, turn 120 deg/s | 6 m/s (6 6 4); 8 m/s touch, 10 m/s and up fail | 0 (touch every rung) |
+  | 2 loudest, turn 60 / 40 deg/s (rungs 1..6) | 2 / 3 m/s | 0 / 0 |
+  | hum attended, turn 60 / 40 deg/s (rungs 1..6) | 6 (6 6 6) / 3 m/s | 0 / 0 |
+
+  Corridor with the hum attended, 1 m/s seed 1 (ear-debug --attend-hum): the touch is at z -20, where a pillar sits on
+  the path: the obstacle pulse comes centred (side 0, no side to dodge to), not urgent until close, and the open-way chime
+  (right) is not among the 2 streams; so the corridor is 0 for want of a side code of the free way, not for the hum alone.
+  Ladder runtime: corridor 50 s, rings 7 s.
 - Z2: the numbers of plan Part 2 section 1 are constants read from the package code (train3 2ec8653: sampler.ts, rules.ts,
   beacon.ts, freeway.ts, planner.ts, voices.ts, themes/*.json printed by a node one-liner), the seconds are those constants
   divided by the speed; nothing in Z2 was measured by a run. Lesson speed caps: lessons/*.json maxSpeedMps 0 to 5, 12 lessons at 3.
@@ -92,6 +100,9 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   DOM-free) and its scan runs in the simulator (tools/bench/src/ear-pilot-scan.ts) because walls and courses live there.
 - Z2: at speed a cut stream stops (fades out), it is not only ducked: the owner asked for fewer sounds, not quieter ones.
 - Z2: every new threshold in the plan is marked an estimate; the ear pilot sets the final values.
+- Z3: the measure keeps the plan's pilot (2 loudest streams, turn 120 deg/s) as the reference; the hum-attended column is
+  recorded beside it because the stream budget of Z4 makes the guide one of the 2 streams by rule, so it is the target the
+  budget must reach without the pilot's help.
 
 ## For the lead
 
