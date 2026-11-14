@@ -16,8 +16,14 @@ created: 2026-11-14
 - [x] rooms-race.ts on the merged tree (SONIC_PORTS 5760-5779): FAIL (exit 1). Race entry switched off: 4cf7b013.
 - [x] Gates run 1 at 4cf7b013: exit 1 (vitest 1 failed of 4718, api-unittest 2 errors, catalog stale). Seams fixed: 65b7fcca.
 - [x] Gates run 2 at 65b7fcca: exit 1 only by a timing test under load (Gates); the rest PASS, 'B18 PASS'.
-- [ ] Forest Floor: Shift+G gives no course in 300 s (Probes). Decide before the push: find the cause (course worker on
-  the published 5 cm walls of ab5efa0e v2) or say in the release that small scans may get no course.
+- [x] Forest Floor (a8a686d0): Shift+G answered "nothing fits" in 0.27 s. Cause: the page spawns at the CDN camera of
+  ab5efa0e v2 (-6.446, 3.143, 0.123), outside the walls' grid (x -3..3), so freeSpace found no start cell
+  (tracks-audit.ts with that --spawn: 0 m3, startFound false; at the grid centre 29.3 m3 and 10 gates). tracks2's audit
+  and fit.test used the grid centre: the audit reads only v1/settings.json from the CDN, AccessDenied for this v2 scan.
+  Fix: freeSpace starts a spawn outside the grid from the nearest point inside it (packages/tracks/src/freespace.ts; a
+  spawn inside keeps its block, so its result is unchanged). Test packages/tracks/test/spawn-outside.test.ts, NEG OK;
+  packages/tracks 103 of 103, tsc 0. Likely the same cause for 2f1ddf5f and d10c5638 (tracks2 K1.2), not checked.
+  Not yet seen in a page: needs a rebuild and walls-chain-probe on ab5efa0e.
 - [~] All probes: one detached script U:/Temp/gsfpv-train2/train2b/run-all.sh on the release of 4cf7b013 (port 5760),
   one line per probe in U:/Temp/gsfpv-train2/train2b/logs/summary.txt, evidence evidence/2026-11-14/train2b/.
 - [x] deploy/live-checks.sh gains walls-published-probe (4cf7b013). Not run.
