@@ -18,8 +18,13 @@ Stage fixes (review T2-1 to T2-7 of 2026-11-14). Logs U:/Temp/gsfpv-train2/track
   (2 of 2 failed by assertion).
 - [x] T2-4 (stands) Shift+B while busy sets reopenAfter (the editor opens on the course when it arrives) and repeats the
   "making a course" flash when the busy job is a generation; test in tracks2-fixes.test.ts, same NEG OK.
-- [ ] T2-2 PARAM_KEYS scale, legMinM, legMaxM (tracks.py, server.ts) with a save case.
-- [ ] T2-5 LAP_MIN_MS. [ ] T2-6 fitCourse time budget. [ ] T2-7 line with model names.
+- [x] T2-2 (stands) PARAM_KEYS gain scale, legMinM, legMaxM in apps/api/tracks.py and packages/tracks/src/server.ts.
+  Tests apps/api/tests/test_tracks_edit.py test_a_smaller_generated_course_is_valid and _is_saved, packages/tracks/test/
+  check.test.ts "review T2-2"; NEG OK on tracks.py of 70eb0ac0 (1 failure, 1 error 'is not a known key') and on server.ts
+  (AssertionError). test_tracks_edit 23 OK.
+- [x] T2-5 (stands) LAP_MIN_MS 1 ms (estimate, any completed lap counts); test_bad_votes takes a 700 ms lap and still
+  refuses 0 and -5; NEG OK on tracks.py of 70eb0ac0 (403 lap-first).
+- [ ] T2-6 fitCourse time budget. [ ] T2-7 line with model names.
 - [ ] gates.py --only vitest,architecture,i18n,b18 before handing over.
 
 Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/docs/wip/tracks-edit.md).

@@ -95,6 +95,14 @@ class Validator(unittest.TestCase):
         self.assertNotEqual(tracks.validate_track(many), [])
         self.assertEqual(tracks.validate_track({**many, "gates": many["gates"][:60]}), [])  # control: 60 gates pass
 
+    def test_a_smaller_generated_course_is_valid(self):
+        # review T2-2: fitCourse (lane tracks2 K1.2) writes scale, legMinM and legMaxM into generator.params
+        gen = json.loads(course())
+        gen["generator"]["params"].update({"scale": 0.3, "legMinM": 0.9, "legMaxM": 4.5, "marginM": 0.15})
+        self.assertEqual(tracks.validate_track(gen), [])
+        gen["generator"]["params"]["legMidM"] = 1   # control: an unknown key is still refused
+        self.assertNotEqual(tracks.validate_track(gen), [])
+
     def test_wilson(self):
         self.assertEqual(tracks.wilson(0, 0), 0.0)
         self.assertAlmostEqual(tracks.wilson(1, 0), 0.2065, places=4)
@@ -110,6 +118,12 @@ class ForkAndVersions(Base):
         self.assertNotIn(out["editToken"], meta)
         r = self.row(out["id"])
         self.assertEqual((r["creator"], r["editor"], r["edited"]), ({"kind": "generator", "name": None}, None, None))
+
+    def test_a_smaller_generated_course_is_saved(self):
+        gen = json.loads(course("s03"))
+        gen["generator"]["params"].update({"scale": 0.3, "legMinM": 0.9, "legMaxM": 4.5, "marginM": 0.15})
+        out = self.new(json.dumps(gen).encode())
+        self.assertEqual(out["version"], 1)
 
     def test_new_version_needs_the_token(self):
         out = self.new()
@@ -208,12 +222,13 @@ class Votes(Base):
             self.refused(400, "bad-vote" if isinstance(body, dict) else "bad-json", self.store.vote, tid, json.dumps(body).encode(), "a")
         self.refused(413, "too-large", self.store.vote, tid, b" " * 2000, "a")
         # stage K2: an up or down vote needs a completed lap; taking a vote back does not
-        for lap in (None, 0, 999, 3_600_001, 1.5e4, "30000", True):
+        for lap in (None, 0, -5, 3_600_001, 1.5e4, "30000", True):
             body = {"v": 1, "voter": voter(1)} if lap is None else {"v": 1, "voter": voter(1), "lap": lap}
             self.refused(403, "lap-first", self.store.vote, tid, json.dumps(body).encode(), "a")
         self.assertEqual(self.row(tid)["up"], 0)
         self.assertEqual(self.store.vote(tid, json.dumps({"v": 0, "voter": voter(1)}).encode(), "a")["up"], 0)
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1), "lap": 1000}).encode(), "a")["up"], 1)
+        # review T2-5: a lap of a small course under 1 s counts
+        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1), "lap": 700}).encode(), "a")["up"], 1)
         self.store.set_hidden(tid, True)
         self.refused(404, "not-found", self.store.vote, tid, json.dumps({"v": 1, "lap": 30000, "voter": voter(1)}).encode(), "a")
 

@@ -79,8 +79,9 @@ SERVER_MAX_GATES = 60
 MAX_GATE_SIZE_M = 20.0
 # lane review TK-8, ESTIMATE (not measured): address -> voter bindings kept per course (the oldest dropped past it)
 VOTE_ADDR_CAP = 5000
-# stage K2, ESTIMATES (not measured): the shortest and the longest lap a vote may carry, ms
-LAP_MIN_MS = 1000
+# stage K2, ESTIMATES (not measured): the shortest and the longest lap a vote may carry, ms. Review T2-5: any completed
+# lap counts (a 0.3-scale course of fitCourse, legs 0.9-4.5 m, can be lapped in under 1 s), so the floor is 1 ms
+LAP_MIN_MS = 1
 LAP_MAX_MS = 3_600_000
 NAME_LEN, NAME_EXTRA = (2, 32), " -_.'"
 TITLE_LEN, TITLE_EXTRA = (3, 60), " -_.',!?#()+:&"
@@ -119,7 +120,8 @@ def _is_num(v) -> bool:
 MAX_COORD = 10000.0     # |x|, |y|, |z| of a gate or the start, in scan units
 MAX_LEG_M = 60.0        # one leg between two gates (and the leg back on a closed course), in flown m (times transform[0])
 # generator.params: the keys the generator writes (packages/tracks/src/generate.ts), flat values, and the one proof object
-PARAM_KEYS = ("marginM", "cellM", "freeDigest", "wanted", "rooms", "volumeM3", "tries", "walked", "stop", "closed", "proof")
+# scale, legMinM and legMaxM: a smaller course of fitCourse (lane tracks2 K1.2, review T2-2)
+PARAM_KEYS = ("marginM", "cellM", "freeDigest", "wanted", "rooms", "volumeM3", "tries", "walked", "stop", "closed", "proof", "scale", "legMinM", "legMaxM")
 PROOF_KEYS = ("ok", "marginM", "pathM")
 PARAM_TEXT_MAX = 40
 
