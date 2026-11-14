@@ -22,7 +22,11 @@ const READ = () => {
     const c = g.course;
     const q = (s) => { const e = document.querySelector(s); return e ? (e.textContent || '').trim().slice(0, 240) : null; };
     const note = document.querySelector('.hud-note');
+    // CR-2: the moving bar of the walls box (shown, and its compositor animation running)
+    const busy = document.querySelector('[data-testid=walls-busy]');
+    const anim = busy && busy.firstElementChild && busy.firstElementChild.getAnimations ? busy.firstElementChild.getAnimations() : [];
     return {
+        bar: busy && !busy.hidden ? (anim.length && anim[0].playState === 'running' ? 'moving' : 'shown') : null,
         status: g.status,
         wallsState: w ? w.state : null, wallsSource: w ? w.source : null, wallsProgress: w ? w.progress : null,
         courseProgress: c ? (c.progress ?? null) : null, gates: c ? c.gates : 0, drawn: c ? c.drawn : 0, problem: c ? c.problem : null,
@@ -35,7 +39,7 @@ const out = [];
 for (const id of idsArg.split(',')) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
-    const r = { id, errors: [], walls: [], course: [], box: [], notes: [] };
+    const r = { id, errors: [], walls: [], course: [], box: [], notes: [], bar: [] };
     page.on('pageerror', (e) => r.errors.push(String(e.message).slice(0, 160)));
     try {
         await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false`, { waitUntil: 'load', timeout: 120000 });
@@ -53,7 +57,7 @@ for (const id of idsArg.split(',')) {
             const s = await page.evaluate(READ);
             const at = (Date.now() - t0) / 1000;
             const add = (arr, text) => { if (text && arr.at(-1)?.text !== text) arr.push({ at, text }); };
-            add(r.walls, s.wallsProgress); add(r.course, s.courseProgress); add(r.box, s.box); add(r.notes, s.note);
+            add(r.walls, s.wallsProgress); add(r.course, s.courseProgress); add(r.box, s.box); add(r.notes, s.note); add(r.bar, s.bar);
             const busy = !!(s.wallsProgress || s.courseProgress);
             const shown = `${s.box ?? ''}|${s.note ?? ''}`;
             if (busy) {
