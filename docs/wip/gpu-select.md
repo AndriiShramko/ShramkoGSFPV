@@ -11,9 +11,11 @@ Raw files: `evidence/2026-11-13/gpu-select/` (user name masked; no serial number
 - [x] 1. Measured before any change: the owner's Chrome, a stock Chrome, Edge and Firefox all draw on the Intel chip.
 - [x] 2a. The browser's own switch (the flag `force-high-performance-gpu`) puts Chrome and Edge on the NVIDIA card: measured as
   a command-line switch and through the flags page itself, the way a pilot does it.
-- [ ] 2b. In the owner's own browser nothing is switched yet. The agent may not change a Windows setting or the owner's
-  browser; both ways take the owner two clicks (section "For the owner"). Windows' per-application preference and battery
-  power are therefore not measured.
+- [x] 2b. Closed without measuring, by the owner's decision of 2026-11-14: pilots will not change Windows or browser
+  settings, so the product has to cope with the card it is given, and it does (the device class picks the budget, the
+  governor lowers it, the note says it and can be silenced; a page cannot pick the card itself, step 1). The agent changes
+  no Windows setting itself. Windows' per-application preference and battery power stay unmeasured; the one automatic way
+  found is a desktop wrapper that starts Chromium with the switch of step 2a (`docs/wip/laptop-handoff.md`).
 - [x] 3. Product: rule, note on every visit, the line that stays, the software case, the bug report's block; reviewed by six
   readers and three verifiers, every confirmed finding acted on; unit tests, negative control, the page run and all gates pass.
 - [x] 4. Handback: this file.
