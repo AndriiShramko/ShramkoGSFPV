@@ -66,7 +66,60 @@ Stage E3-panel-and-flying:
   arm gate) and see the drone's camera, no lap clock, gates lit in order; disarm and see the edit camera where it was.
   Also left from E2: the scale box drag that moved the gate 0.3 m instead of changing its opening on Wroclaw.
 
+Stage E4-prove (NOT finished, stopped at the reply budget; the proof found three faults):
+- [x] E4.1 the centre-box fault from E2 fixed at its cause (d726a3cb): all three PlayCanvas gizmos took one press (a gizmo's
+  stopPropagation does not stop the others on the same canvas); press-owner.ts picks one owner in a window capture listener
+  (scale box, then move, then rings) and switches the others off until the button goes up. Test
+  tools/bench/test/editor3-press.test.ts 2 pass, NEG OK (neg_control.py, ref HEAD 73558d42 view-mouse.ts), apps/fly tsc 0.
+  NOT yet seen working in a browser: the E4 run's drags all missed (fault 1 below).
+- [x] E4.2 probe tools/bench/src/editor3-prove.ts (218719fb, 3b8748a0), runner U:/Temp/gsfpv-train3/editor3/e4/run.sh,
+  evidence U:/Temp/gsfpv-train3/editor3/e4/e4.json; run on a local release of d726a3cb (Facts, E4)
+- [x] E4.3 gates vitest, architecture, i18n, b18 PASS on 3b8748a0 (gates.py, vitest 121 s)
+- [ ] E4.4 fault 1: after the gate bar's Delete the selection is gate 1 but no handles and no gate bar are drawn on it and the
+  camera does not go to it (screenshots editor3-select-1920.png, editor3-wroclaw-1920.png); every drag after it hit empty
+  space (moveX, turn, scale all 0 on both scenes). Look at course.ts's delete path: the stand-in put() and the glide must run
+  for the new selection. Then re-run run.sh and read moveX (screenPx should follow the 80 px drag), turn, scale (opening
+  changes, movedM 0).
+- [ ] E4.5 fault 2: the bar's Square changed nothing it said on Tunis and said "next gate. Gate 22 of 22" on Wroclaw (the
+  click landed on a stale bar position or the bar was hidden: same root as fault 1, re-check after it).
+- [ ] E4.6 fault 3, 844x390 (editor3-844.png): the top bar wraps to three lines and the course window covers the right
+  half and the top bar's text; the gate bar is behind the window. Phone layout: the window as a drawer closed by default,
+  the top bar's hint line hidden under 900 px.
+- [ ] E4.7 flying with the controller: the fake DJI pad flies (controls.source gamepad) and the mode switched to 'fly' and back
+  to 'edit' with the edit eye back within 0 m, but the profile is the camera drone ("no arming needed", gate.armed stayed
+  false) and the 4 s of stick did not pass a gate (next stayed 0). To prove "fly through the moved gate": put the moved gate
+  ahead of the drone's spawn, or use a racing profile with an arm switch, then read course.next go 0 to 1.
+- [ ] E4.8 re-run, LOOK at the four screenshots again, the owner's mouse steps below checked against them.
+
 ## Facts (measured)
+
+- E4 (tools/bench/src/editor3-prove.ts, SITE http://localhost:5800, release of d726a3cb with the Wroclaw walls stand-in in
+  dist/walls/70b50d42/v1, GPU lock, headless 1920x1080, fake DJI pad; U:/Temp/gsfpv-train3/editor3/e4/e4.json):
+
+| | Tunis 887f27aa | Wroclaw 70b50d42 |
+|---|---|---|
+| controller taken (source) | gamepad | gamepad |
+| Shift+G course | 13 gates, 33.9 s | 22 gates, 49.9 s |
+| 5 s before the mode: fps, longest gap, longest long task | 29.8, 67 ms, 0 | 29.9, 34 ms, 0 |
+| 5 s idle in the mode | 29.9, 34 ms, 0 | 30.0, 34 ms, 0 |
+| during the drags | 30.0, 34 ms, 0 | 30.0, 34 ms, 0 |
+| whole path (open to exit): longest long task | 0 ms | 0 ms |
+| Add gate + click on the scene | 13 to 14, new gate selected (2) | 22 to 23, selected 2 |
+| click on another gate | 1 to 0 at once | 1 to 4 (second try; first target 5 missed) |
+| Tab | 0 to 1, focus BODY | 4 to 5, focus BODY |
+| bar Delete on gate 1 | 14 to 13 | 23 to 22 |
+| X arrow, ring, centre box drags | all 0 (fault 1) | all 0 (fault 1) |
+| W S D A E Q 600 ms each, m | 2.53 2.4 2.4 2.4 2.4 2.4 | 2.4 2.54 2.4 2.53 2.53 2.4 |
+| right button 140 px: eye, look point | 0, 0.48 m | 0, 0.49 m |
+| pad sticks: mode, back to edit, edit eye moved | fly, edit, 0 m | fly, edit, 0 m |
+| a gate passed while flying | no (next 0) | no (next 0) |
+| page errors | 0 | 0 (403 console lines as in E2) |
+
+  Screenshots (looked at): editor3-select-1920.png: Tunis, top bar and window right, the selected square far ahead and small,
+  no handles, no gate bar (fault 1). editor3-drag-1920.png: the same view, the gate red, "Problems: 3" (the added gate's
+  leg goes through a wall), nothing moved. editor3-wroclaw-1920.png: Wroclaw, the selected gate red at mid-left, no handles,
+  "Problems: 4". editor3-844.png: handles drawn large on the gate, but the top bar wraps and the window covers half the
+  screen (fault 3).
 
 Probe tools/bench/src/editor3-live.ts against the LIVE site (main f91273cf), headless Chrome, 1280x800, 2026-11-14; evidence
 U:/Temp/gsfpv-train3/editor3/e1-live.json, screenshots U:/Temp/gsfpv-train3/shots/editor3-e1-*.png. Nothing saved.
@@ -241,7 +294,23 @@ button shows the table.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
   tasks were measured.
 
+## What the owner does (mouse first; to be checked again after E4.4-E4.6)
+
+1. Shift+B (or the pause menu's Edit course): the same scene, the top bar appears: Add gate, Undo, Redo, Exit.
+2. Click a gate: the arrows, rings and the centre box appear on it, the small bar right of it.
+3. Pull an arrow to move, a ring to turn, the centre box to resize; Ctrl held for no snap; Ctrl+Z undoes a drag.
+4. The bar: ring, square, dive, cube change the kind; Duplicate; Delete; the arrows go to the previous and next gate (Tab too).
+5. Add gate, then click on the scene where the gate goes.
+6. W A S D move the view, E up, Q down, the right button held looks, the wheel sets the speed.
+7. Move the sticks of the controller (or arm it): the view is the drone's, fly the course; disarm or crash: the edit view
+   comes back where it was.
+8. Exit (or Esc twice) leaves; Save in the window keeps the course.
+
 ## Cost notes
+
+- E4-prove: about 30 replies; the most went to one wasted 25-minute probe run (tsx's __name in an init script and a
+  480 s course wait); writing the probe's init script as text from the start and a 60 s smoke on one scene before the full
+  run would have saved the run and three replies.
 
 - E3 panel-and-flying: about 25 replies; the most went to reading course.ts's wiring (924 lines) in slices to find where the
   pause, the key block and the frame event live; a short wiring map of builtin/course.ts in docs/agent-map.md would save
