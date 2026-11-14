@@ -54,5 +54,6 @@ export interface CourseEditorHook {
     /** stage F1-finish: the course ids with a completed lap in this browser (their rows may vote) */
     lapped: string[];
     /** stage K2: the editor's camera on the selected gate (course/editor/camera.ts), flown frame; null when closed */
-    view?: { eye: number[]; at: number[] } | null;
+    /** `look`: where the camera looks (K2.6: right of the gate when the window covers the right part), `free` the window's left edge over the width */
+    view?: { eye: number[]; at: number[]; look?: number[]; free?: number } | null;
 }

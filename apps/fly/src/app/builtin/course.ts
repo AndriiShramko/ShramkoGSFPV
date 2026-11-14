@@ -28,7 +28,7 @@ import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
 import { canSave, edit, flownCollision, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
-import { gateCamera } from '../../course/editor/camera';
+import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
 import { myTokens, myVotes, rememberToken, rememberVote, voterId } from '../../course/store';
@@ -88,6 +88,22 @@ export const course: Feature = {
         /** stage K2: the walls as a ray for the editor's camera, and that camera's forward on the floor */
         let camRay: RayFn | null = null;
         let camForward: readonly [number, number] | null = null;
+        let camView: GateView | null = null;
+        /** stage K2.6: the camera looks right of the gate by the share of the width the editor's window covers, so the gate is in the free part */
+        const aim = (): void => {
+            if (!camView || !panel) return;
+            const w = window.innerWidth;
+            const left = panel.root.getBoundingClientRect().left;
+            const free = w > 0 ? left / w : 1;
+            const cc = ctx.renderer.camera.camera;
+            const fov = cc?.fov ?? 115;
+            const h = cc && !cc.horizontalFov ? (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * (w / Math.max(1, window.innerHeight))) * 180) / Math.PI : fov;
+            const look = aimAt(camView.eye, camView.at, free, h);
+            ctx.session.cameraOverride = true;
+            ctx.renderer.setCameraLookAt(camView.eye[0], camView.eye[1], camView.eye[2], look[0], look[1], look[2]);
+            edHook.view = { eye: [...camView.eye], at: [...camView.at], look: [...look], free };
+        };
+        const onResize = (): void => aim();
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
         let edChanged = false;
@@ -464,15 +480,13 @@ export const course: Feature = {
             const sg = run.gates[ed.selected];
             if (sg) {
                 const s = ctx.session.runner.sim.s;
-                const v = gateCamera(sg.pos, [s[S.px] ?? 0, s[S.py] ?? 0, s[S.pz] ?? 0], camRay);
-                ctx.session.cameraOverride = true;
-                ctx.renderer.setCameraLookAt(v.eye[0], v.eye[1], v.eye[2], v.at[0], v.at[1], v.at[2]);
-                camForward = v.forward;
-                edHook.view = { eye: [...v.eye], at: [...v.at] };
+                camView = gateCamera(sg.pos, [s[S.px] ?? 0, s[S.py] ?? 0, s[S.pz] ?? 0], camRay);
+                camForward = camView.forward;
             }
             hud.update(null, 0);
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
+            aim();
             edHook.open = true;
             edHook.selected = ed.selected;
             edHook.changed = edChanged;
@@ -506,6 +520,7 @@ export const course: Feature = {
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
+            window.addEventListener('resize', onResize);
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;
@@ -530,6 +545,8 @@ export const course: Feature = {
             edHook.open = false;
             edHook.view = null;
             camForward = null;
+            camView = null;
+            window.removeEventListener('resize', onResize);
             ctx.session.cameraOverride = false;
             ctx.resume('panel');
             // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)

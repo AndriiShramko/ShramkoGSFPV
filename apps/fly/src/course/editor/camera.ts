@@ -54,6 +54,43 @@ export function gateCamera(gate: V3, drone: V3, ray: RayFn | null): GateView {
     return { eye, at: gate, forward: h > 1e-3 ? [look[0] / h, look[2] / h] : null };
 }
 
+/** below this share of the width left free by the editor's window the gate stays in the middle (an estimate) */
+export const AIM_MIN_FREE = 0.2;
+
+/**
+ * Stage K2.6: where the camera looks so that the gate sits in the middle of the part of the screen the editor's window leaves
+ * free on the left. `freeShare` is the window's left edge over the screen's width (1: no window), `hFovDeg` the camera's
+ * horizontal field. The look turns right by the angle at which the free part's middle is seen; the eye stays.
+ */
+export function aimAt(eye: V3, gate: V3, freeShare: number, hFovDeg: number): V3 {
+    if (!(freeShare < 0.98) || freeShare < AIM_MIN_FREE || !(hFovDeg > 1 && hFovDeg < 179)) return gate;
+    const look = sub(gate, eye);
+    const h = Math.hypot(look[0], look[2]);
+    if (h < 1e-6) return gate;
+    // the free part's middle at screen x (ndc) freeShare - 1, seen at this angle left of the view's axis
+    const th = Math.atan((1 - freeShare) * Math.tan((hFovDeg * Math.PI) / 360));
+    const fx = look[0] / h;
+    const fz = look[2] / h;
+    // right on screen = forward x up = (-fz, 0, fx); the axis turns right by th
+    const c = Math.cos(th);
+    const s = Math.sin(th);
+    return [eye[0] + (c * fx - s * fz) * h, gate[1], eye[2] + (c * fz + s * fx) * h];
+}
+
+/** The screen x of `p` seen from `eye` towards `at` with the horizontal field `hFovDeg` (pitch left out): 0 left edge, 1 right; null behind. */
+export function screenX(p: V3, eye: V3, at: V3, hFovDeg: number): number | null {
+    const f = sub(at, eye);
+    const fh = Math.hypot(f[0], f[2]);
+    if (fh < 1e-9) return null;
+    const fx = f[0] / fh;
+    const fz = f[2] / fh;
+    const v = sub(p, eye);
+    const z = v[0] * fx + v[2] * fz;
+    if (z <= 0) return null;
+    const x = (v[0] * -fz + v[2] * fx) / z;
+    return (x / Math.tan((hFovDeg * Math.PI) / 360) + 1) / 2;
+}
+
 /** Whether the point `p` is inside the view of a camera at `eye` looking at `at` with a vertical field of `fovDeg`, `aspect`. */
 export function inView(p: V3, eye: V3, at: V3, fovDeg: number, aspect: number): boolean {
     const f = sub(at, eye);
