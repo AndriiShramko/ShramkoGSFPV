@@ -3,6 +3,7 @@ export * from './types';
 export * from './rng';
 export * from './check';
 export * from './freespace';
+export * from './quality';
 export * from './generate';
 export * from './fit';
 export * from './path';

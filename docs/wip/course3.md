@@ -36,7 +36,64 @@ Stage G1-progress (the owner's message 51: "I do not understand whether it hung 
 - [!] Wroclaw breaks "never silent for more than 2 s": three main-thread freezes (Facts G1-look). Cause outside the
   lane (splat-transform's own CPU work on the page's main thread); not worked around, see For the lead.
 
+Stage G2-where-the-gates-go (the owner: gates high where the scan is thin, all in one place on a long street, the size
+changes between regenerations). NOT finished; stopped at a clean point at the reply budget.
+
+- [x] Quality map packages/tracks/src/quality.ts (qualityMap, denseBand, qualityBounds, tileOf, heightAbove, inDenseBand):
+  from the walls the page already has (published, shipped or built), per 4 m tile and per block layer the solid voxel
+  count; ground per tile; histogram of voxels by height above the ground; dense band derived from it; well-scanned tiles.
+- [x] freeSpace option `bounds` (a world box instead of boxM around the spawn; unused by the page so far).
+- [x] generateCourse option `quality`: candidates only in the dense band over good tiles (when at least 8 per wanted gate,
+  else all as before); `quality.spread` (trial, off on the page) lifts OUT_LEGS and the half-way turn. Without `quality`
+  the generator is unchanged: generate, fit, fixtures tests 66 passed (digest pins hold).
+- [x] Audit tool tools/bench/src/course-quality-audit.ts (--hist, --quality, --spread; runner
+  U:/Temp/gsfpv-train3/course3/g2/run-before.sh, env Q). tsc packages/tracks and tools/bench: 0 errors.
+- [~] 20-seed audits running detached since this commit: U:/Temp/gsfpv-train3/course3/g2/before/<id>.json (old walk) and
+  after-band/<id>.json (--quality), scans 70b50d42, 887f27aa, eb5f51dc, 0230d903; each dir gets DONE when all 4 end
+  (Wroclaw and Tunis about 20-40 min). Read the SUMMARY lines of the .log files into the table below.
+- [ ] The page worker does NOT use the quality map yet (apps/fly/src/course/worker.ts is as on main): band-only made
+  0230d903 smaller and tighter (see Facts G2), so it is not wired until the spread walk works.
+- [ ] Spread walk: the trial (--quality --spread, box from qualityBounds) ended every eb5f51dc walk at 8-9 of 24 gates
+  ("no candidate in reach") and 0230d903 fell to scales 0.3-0.5. Next idea to try: a seeded far target in the good
+  tiles (farthest usable band cell along the extent), out half scored by progress toward it plus spacing, more sweeps
+  when the walk is stuck, the course open (laps 1) when the last gates do not see the start.
+- [ ] Gate count steadiness: N = clamp(4 + V/40, 4, 24) by free volume; the spread of the count comes from the walk
+  stopping early (before: 0230d903 6-24 gates, sd 6.1; eb5f51dc 5-24, sd 8.4). Decide N by the well-scanned extent
+  and keep walking until N.
+- [ ] Unit tests for quality.ts (synthetic street: ground plane, dense facades up to 3 m, sparse above; band found
+  from the histogram; inDenseBand) and for generateCourse with `quality` (all gates in band), with negative controls.
+- [ ] Wire into worker.ts (qualityMap + qualityBounds + quality), audit after on all 4 scans, browser look on Wroclaw
+  and Tunis (a separate stage), gates.py --only vitest,architecture,i18n,b18.
+- [ ] Gaussian count grid in the bake (the task's other source): not built. Proposal: bake.ts / tools/walls/bake-published.mjs
+  keep a 4 m x 4 m x layer count of Gaussians and publish it beside the walls as scene.density.json (lane walls' files).
+  The walls' own voxel counts are used meanwhile (data every page has).
+
 ## Facts (measured)
+
+- G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m
+  bins): 6956 tiles of 4 m, 2279 with a ground, map in 1.0-1.8 s; mean voxels per tile from 0.4 m above the ground in
+  0.6 m bins: 10349, 6537, 6182, 6672, 6909 (peak, 2.8-3.4 m), 6764, 6576, 6384, 5951, 5390, 4879, 4490 ... 2895 at
+  11.8 m. Dense band at 80 % of the peak: 1.4-5.8 m; at 70 %: 1.4-7.0 m. Tunis 887f27aa: 441 tiles with a ground,
+  falls faster: band 0.9-4.9 m in the first run (50 %, aliased bins, minM 1); the final band is in the audit logs. 0230d903: steep fall, band 1.4-3.4 m. eb5f51dc (20 cm
+  walls, 0.8 m bins): nearly flat 358-541, band 2.4-10.4 m (not a street scan). 0.5 m bins over 0.2 m layers zig-zagged
+  by 40 %: bins are whole block layers now.
+- Wroclaw grid 295 x 375 m (x, z), y -4.2 to 20.6 m; the free space's box is 80 m around the spawn (FREE_DEFAULTS.boxM)
+  and the out half of the walk keeps within OUT_LEGS x 15 m = 30 m of the start: the two reasons for the cluster.
+- Before (old generator, 20 seeds, first runs with the 70 % map): 0230d903 gates in band 1.2 %, mean reach 27 m,
+  gates 6-24 (mean 20.7, sd 6.1); eb5f51dc in band 11.4 %, reach 29 m, gates 5-24 (13.6, sd 8.4); eb5f51dc gate heights
+  up to 15.6 m above the ground.
+- After, band only (--quality, 6 seeds): eb5f51dc 100 % in band, gates 4-21 (15.0, sd 7.1), reach 27 m; 0230d903
+  100 % in band, gates 9-17 (11.3, sd 2.6), reach 9 m, visited share 0.005: smaller and tighter, not wired.
+- Spread trial (--quality --spread, 4 seeds): eb5f51dc 8-9 gates, reach 63-67 m, stop "no candidate in reach";
+  0230d903 5-9 gates, scales 0.3-0.5 on 3 of 4 seeds.
+- K1.1 summaries (lane tracks2's audit, 200 seeds per scan, U:/Temp/gsfpv-train2/tracks2/audit-old and audit-new):
+  old code: courses failing (a gate not registered when the course's own path is flown at 3 or 12 m/s) 70b50d42
+  200/200, 887f27aa 181/200, eb5f51dc 199/200, 0230d903 200/200, 9baef54b 200/200, ba7aa29d 199/200, 1994c65c 198/200,
+  ab5efa0e 200/200; cause turns-back-at-gate in all but 13 misses-opening. New code (K1.1 fix plus fitCourse): 0 failing
+  and 0 missed on all eight, 200/200 with gates each; gates 3768, 2550, 3233, 4222, 3232, 3723, 4167, 1548; mean ms a
+  course 50267, 43026, 892, 5482, 45760, 36493, 6504, 1947. 2f1ddf5f and d10c5638: 0 m3, start not found in both runs.
+- K1.2 (why 2f1ddf5f and d10c5638 find no free space): spawns from the CDN camera are 62.0 m and 22.1 m high
+  (.sum spawn y); not analysed further here (left).
 
 - Course try time, tools/bench/scripts/course-rate.mjs over the K1.1 audit (U:/Temp/gsfpv-train2/tracks2/audit-new, Node 22,
   this PC): ms per generateCourse try at 5 cm walls 46116 (70b50d42), 30733 (887f27aa), 42767 (9baef54b), 32729 (ba7aa29d),
@@ -97,5 +154,7 @@ Stage G1-progress (the owner's message 51: "I do not understand whether it hung 
 - G1-progress: most turns went to finding the measured rates (audit .sum files, walls probe JSONs scattered under
   U:/Temp/gsfpv-train2) and to reading walls.ts and builtin/course.ts whole; an agent-map line for "walls build progress"
   and "course worker messages" plus one rates table in docs would have saved about 8 turns.
+- G2: 27 replies; most went to the walk (band and spread trials) after the map was quick; running the fast scans
+  (eb5f51dc, 0230d903) first was right, and a synthetic street world for the walk would have made each trial seconds.
 - G1-progress pass 2: 18 replies; most went to choosing a probe (walls-chain-probe.mjs was 90 % of it) and to locating the
   freezes; a probe that logs the longest main-thread gap by itself (it does now) would have saved the analysis turns.

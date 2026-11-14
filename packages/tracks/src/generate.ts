@@ -17,6 +17,8 @@
 import type { Pose, Quat, SceneTransform, TrackFile, TrackGate, Vec3, VoxelCollision } from './types';
 import { MARGIN_M, checkTrack, sweeperOf } from './check';
 import { cellCentre, clearanceM } from './freespace';
+import { inDenseBand } from './quality';
+import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
 import { createRng } from './rng';
 import type { Rng } from './rng';
@@ -88,7 +90,13 @@ export interface CourseOptions {
     readonly created?: string;
     /** test seam: the random source (the determinism test's control injects Math.random through it) */
     readonly rng?: (seed: number) => Rng;
+    /** G2: where the scan is good (quality.ts). Gates go into its dense band over well-scanned tiles and the walk spreads
+     *  over the whole box instead of keeping within OUT_LEGS legs of the start. Without it every course is as before. */
+    readonly quality?: QualityMap;
 }
+
+/** G2: the band candidates are used when there are at least this many per wanted gate (estimate), else every candidate */
+const BAND_CANDS_PER_GATE = 8;
 
 /** N for V flown m3. */
 export function courseCount(volumeM3: number, p: CourseParams = COURSE_DEFAULTS): number {
@@ -164,8 +172,18 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const k = p.scale;
 
     // candidates: usable cells roomy enough for a ring, then a farthest-point sample
-    const all: number[] = [];
+    let all: number[] = [];
     for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= RING_MIN_FREE_M * k) all.push(i);
+    // G2: only cells in the dense band over a well-scanned tile, when there are enough of them
+    const Q = opts.quality;
+    let banded = false;
+    if (Q) {
+        const inBand = all.filter((i) => inDenseBand(Q, cellCentre(free, i)));
+        if (inBand.length >= BAND_CANDS_PER_GATE * N) {
+            all = inBand;
+            banded = true;
+        }
+    }
     const stride = Math.max(1, Math.ceil(all.length / POOL_MAX));
     const offset = all.length > 0 ? rng.int(0, stride - 1) : 0;
     const pool: number[] = [];
@@ -212,8 +230,13 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     while (gates.length < N && tries < p.tries) {
         const options: { c: (typeof cands)[number]; u: Vec3; score: number }[] = [];
         // out (first half): within OUT_LEGS legs of the start; back: toward the start. A walk with nothing in reach turns back.
-        if (gates.length >= Math.ceil(N / 2)) back = true;
-        const reach2 = OUT_LEGS * OUT_LEGS * p.legMaxM * p.legMaxM;
+        // G2: over a quality map the walk keeps going out along the well-scanned extent and turns back only when nothing is
+        // ahead: a street has no room for a U-turn of at most 120 degrees, so the half-way turn ended eb5f51dc's walks at
+        // 9 of 24 gates (audit seeds 1-2); the course then stays open (laps 1) unless its last gates see the start
+        if ((!Q || !Q.spread) && gates.length >= Math.ceil(N / 2)) back = true;
+        // G2: over a quality map the out half spreads over the whole well-scanned box (Wroclaw: every course stayed within
+        // 30 m of the start on a street scanned for 300 m)
+        const reach2 = Q?.spread ? Infinity : OUT_LEGS * OUT_LEGS * p.legMaxM * p.legMaxM;
         for (const c of cands) {
             if (!back && dist2(startW, c.pos) > reach2) continue;
             if (c.used) continue;
@@ -313,7 +336,9 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
                 closed: course.length > 0 && laps > 1,
                 proof: proof ? { ok: proof.ok, marginM: p.marginM, pathM: proof.pathM } : null,
                 // only a scaled course says so: the plan's size keeps its params and trackDigest as before K1.2
-                ...(k !== 1 ? { scale: k, legMinM: r3(p.legMinM), legMaxM: r3(p.legMaxM) } : {})
+                ...(k !== 1 ? { scale: k, legMinM: r3(p.legMinM), legMaxM: r3(p.legMaxM) } : {}),
+                // G2: only a course laid over a quality map says so (courses without one keep their trackDigest)
+                ...(Q ? { band: [r3(Q.band[0]), r3(Q.band[1])], banded } : {})
             }
         }
     };
