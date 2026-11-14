@@ -1,0 +1,339 @@
+// Lane editor3, stage E4-prove: the owner's path through the edit mode on a LOCAL release, on his scans (Tunis 887f27aa,
+// Wroclaw 70b50d42 with the local stand-in of its walls), 1920x1080, with a fake DJI controller on the Gamepad API (the
+// init script of known-controller-probe.mjs). Steps: the controller chosen, a course made in this tab (Shift+G, never
+// saved), 5 s measured before the mode; Shift+B; the top bar's Add gate then a click on the scene; a click on another gate;
+// Tab; gate 1 selected and the bar's Delete (the added gate becomes the next gate); the X arrow dragged (the gate follows the
+// cursor); a ring dragged; the centre box dragged (the opening changes, the gate stays); the bar's Square; W A S D E Q and
+// the right button; then the controller arms: the drone's camera, the drone flown forward, the course's next gate read;
+// disarm: the edit camera back. Long tasks and frames are counted all the way. It never presses a save, send or create
+// control. Env: SITE (default http://localhost:5800), SCENES, OUT (U:/Temp/gsfpv-train3/editor3/e4), PHONE=1 adds an
+// 844x390 run on the first scene (open, select, one shot). Run under the GPU lock.
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import type { Page } from 'playwright';
+import { launchChrome } from './browser';
+
+const SITE = (process.env.SITE ?? 'http://localhost:5800').replace(/\/$/, '');
+const SCENES = (process.env.SCENES ?? '887f27aa,70b50d42').split(',').filter(Boolean);
+const OUT = process.env.OUT ?? 'U:/Temp/gsfpv-train3/editor3/e4';
+const SHOTS = 'U:/Temp/gsfpv-train3/shots';
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+type Dbg = {
+    handles: boolean;
+    stand: { pos: number[]; quat: number[]; scale: number; opening: number; screen: number[] };
+    axes: { x: number[]; y: number[]; z: number[] };
+    gates: number[][];
+    cam: { pos: number[]; speed: number };
+    dragging: boolean;
+    mode?: string;
+};
+type Ed = { open?: boolean; selected?: number; changed?: boolean; problems?: number; said?: string; view?: { eye: number[]; at: number[] } | null };
+type Hook = { gates?: number; on?: boolean; next?: number; laps?: number; problem?: string | null; editor?: Ed };
+type W = {
+    __gsfpv?: { status?: string; course?: Hook; controls?: { source?: string; gate?: { armed?: boolean } }; radio?: { wizard?: { state?: { id?: string } } } };
+    __gsfpvEditView?: () => unknown;
+    __pad?: { set: (a: number[] | null, b?: number | null) => void };
+    __perf?: { lt: number[][]; frames: number[] };
+};
+const hook = (p: Page): Promise<Hook | null> => p.evaluate(() => (window as unknown as W).__gsfpv?.course ?? null);
+const ed = async (p: Page): Promise<Ed> => (await hook(p))?.editor ?? {};
+const dbg = (p: Page): Promise<Dbg | null> => p.evaluate(() => {
+    const f = (window as unknown as W).__gsfpvEditView;
+    return (f ? f() : null) as Dbg | null;
+});
+const dist = (a: number[] | undefined, b: number[] | undefined): number => (a && b ? Math.hypot(...a.map((v, i) => v - (b[i] ?? 0))) : -1);
+const r2 = (x: number): number => Math.round(x * 100) / 100;
+const pad = (p: Page, axes: number[] | null, buttons?: number): Promise<void> => p.evaluate(([a, b]) => (window as unknown as W).__pad?.set(a as number[] | null, b as number | null), [axes, buttons ?? null] as const);
+
+/** In the page before load: the fake DJI pad (as known-controller-probe.mjs) and the long-task and frame recorders. */
+function install(): void {
+    const s = { axes: [0, 0, -1, 0, 0], buttons: 0x50, ts: performance.now(), present: false };
+    const w = window as unknown as W;
+    w.__pad = { set(a, b) { if (a) s.axes = a.slice(); if (b !== undefined && b !== null) s.buttons = b; s.ts = performance.now(); s.present = true; } };
+    const buttons = Array.from({ length: 24 }, (_, i) => ({ get pressed() { return ((s.buttons >> i) & 1) === 1; }, get value() { return (s.buttons >> i) & 1; }, touched: false }));
+    const padObj = { id: 'HID Interface (Vendor: 2ca3 Product: 1021)', index: 0, connected: true, mapping: '', vibrationActuator: null, get axes() { return s.axes.slice(0, 5); }, buttons, get timestamp() { return s.ts; } };
+    Object.defineProperty(Navigator.prototype, 'getGamepads', { value: () => [s.present ? padObj : null, null, null, null], configurable: true });
+    const perf = { lt: [] as number[][], frames: [] as number[] };
+    w.__perf = perf;
+    try {
+        new PerformanceObserver((l) => { for (const e of l.getEntries()) perf.lt.push([e.startTime, e.duration]); }).observe({ type: 'longtask', buffered: true });
+    } catch { /* no long-task timing */ }
+    const tick = (t: number): void => { perf.frames.push(t); if (perf.frames.length > 20000) perf.frames.splice(0, 10000); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+}
+
+const now = (p: Page): Promise<number> => p.evaluate(() => performance.now());
+/** frames per second, the longest frame gap and the longest long task between t0 and t1 (page ms) */
+const span = (p: Page, t0: number, t1: number): Promise<{ fps: number; gapMax: number; longMax: number; longs: number }> => p.evaluate(([a, b]) => {
+    const pf = (window as unknown as W).__perf!;
+    const f = pf.frames.filter((t) => t >= a! && t <= b!);
+    let gap = 0;
+    for (let i = 1; i < f.length; i++) gap = Math.max(gap, f[i]! - f[i - 1]!);
+    const lt = pf.lt.filter((e) => e[0]! >= a! && e[0]! <= b!);
+    return { fps: Math.round((f.length / ((b! - a!) / 1000)) * 10) / 10, gapMax: Math.round(gap), longMax: Math.round(Math.max(0, ...lt.map((e) => e[1]!))), longs: lt.length };
+}, [t0, t1]);
+
+async function until<T>(get: () => Promise<T>, ok: (v: T) => boolean, ms: number): Promise<{ ok: boolean; v: T; ms: number }> {
+    const t0 = Date.now();
+    let v = await get();
+    while (!ok(v) && Date.now() - t0 < ms) {
+        await sleep(300);
+        v = await get();
+    }
+    return { ok: ok(v), v, ms: Date.now() - t0 };
+}
+
+async function drag(p: Page, x: number, y: number, dx: number, dy: number): Promise<void> {
+    await p.mouse.move(x, y);
+    await sleep(150);
+    await p.mouse.down();
+    await p.mouse.move(x + dx, y + dy, { steps: 12 });
+    await sleep(100);
+    await p.mouse.up();
+    await sleep(700);
+}
+
+/** load, choose the controller, make a course */
+async function prepare(page: Page, id: string, out: Record<string, unknown>): Promise<boolean> {
+    await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1`);
+    const r = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 240000);
+    out.ready = { ms: r.ms, status: r.v };
+    if (r.v !== 'ready') return false;
+    await page.waitForSelector('.screen.radio .choice', { timeout: 20000 }).catch(() => undefined);
+    await pad(page, [0, 0, 0.3, 0, 0], 0x50);
+    await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.radio?.wizard?.state?.id ?? null), (v) => v === 'check', 8000);
+    await pad(page, [0, 0, -1, 0, 0], 0x50);
+    await page.locator('[data-action=wizard-done]').click({ timeout: 8000 }).catch(() => undefined);
+    const src = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.source ?? null), (v) => v === 'gamepad', 15000);
+    out.controller = { source: src.v, screenGone: await page.evaluate(() => !document.querySelector('.screen.radio')) };
+    await sleep(1500);
+    await page.keyboard.press('Shift+KeyG');
+    const gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 480000);
+    out.course = { ok: gen.ok, ms: gen.ms, gates: gen.v?.gates };
+    return gen.ok;
+}
+
+const onScreen = (g: number[], w: number, h: number): boolean => (g[2] ?? 0) > 0 && g[0]! > 30 && g[0]! < w - 30 && g[1]! > 80 && g[1]! < h - 30;
+
+async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = { scene: id };
+    const vp = page.viewportSize()!;
+    if (!(await prepare(page, id, out))) return out;
+    await sleep(2000);
+    // before the mode: 5 s as the pilot sees it
+    let t0 = await now(page);
+    await sleep(5000);
+    out.before = await span(page, t0, await now(page));
+    const tPath = await now(page);
+    await page.keyboard.press('Shift+KeyB');
+    const op = await until(() => ed(page), (e) => !!e.open, 30000);
+    await sleep(1500);
+    t0 = await now(page);
+    await sleep(5000);
+    out.idleInMode = await span(page, t0, await now(page));
+    const d0 = (await dbg(page))!;
+    out.open = { ok: op.ok, selected: op.v.selected, mode: d0?.mode, handles: d0?.handles, gates: (await hook(page))?.gates };
+
+    // Add gate: the top bar's button, then a click on the scene in the middle of the view
+    const nBefore = (await hook(page))?.gates ?? 0;
+    const selBefore = (await ed(page)).selected ?? 0;
+    await page.click('[data-top="add"]', { timeout: 5000 }).catch(() => undefined);
+    await sleep(300);
+    await page.mouse.click(vp.width / 2, vp.height * 0.45);
+    const add = await until(() => hook(page), (h) => (h?.gates ?? 0) === nBefore + 1, 3000);
+    out.add = { ok: add.ok, gates: [nBefore, add.v?.gates], selectedBefore: selBefore, selected: add.v?.editor?.selected, said: (add.v?.editor?.said ?? '').slice(0, 100) };
+    const added = add.v?.editor?.selected ?? -1;
+    await sleep(1200);
+
+    // a click on another gate on screen, then Tab
+    const d1 = (await dbg(page))!;
+    const sel1 = (await ed(page)).selected ?? -1;
+    const cand = d1.gates.map((g, i) => ({ g, i })).filter(({ g, i }) => i !== sel1 && onScreen(g, vp.width, vp.height) && Math.hypot(g[0]! - d1.stand.screen[0]!, g[1]! - d1.stand.screen[1]!) > 160).sort((a, b) => a.g[2]! - b.g[2]!);
+    const clicks: unknown[] = [];
+    for (const { g, i } of cand.slice(0, 3)) {
+        await page.mouse.click(g[0]!, g[1]!);
+        const c = await until(() => ed(page), (e) => e.selected === i, 2500);
+        clicks.push({ target: i, ok: c.ok, selected: c.v.selected });
+        if (c.ok) break;
+    }
+    out.click = { from: sel1, clicks };
+    const sel2 = (await ed(page)).selected ?? -1;
+    await page.keyboard.press('Tab');
+    const tab = await until(() => ed(page), (e) => e.selected !== sel2, 2000);
+    out.tab = { from: sel2, to: tab.v.selected, ok: tab.ok, focus: await page.evaluate(() => document.activeElement?.tagName ?? 'none') };
+
+    // the gate just before the added one, deleted with the bar: the added gate moves up one place
+    const del = added - 1;
+    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) await page.keyboard.press('Shift+Tab');
+    await sleep(1500);
+    const nDel = (await hook(page))?.gates ?? 0;
+    await page.click('.ce-gatebar [data-bar="delete"]', { timeout: 5000, force: true }).catch((e) => { out.deleteClickError = String(e).slice(0, 120); });
+    const dl = await until(() => hook(page), (h) => (h?.gates ?? 0) === nDel - 1, 3000);
+    out.delete = { index: del, ok: dl.ok, gates: [nDel, dl.v?.gates], selected: dl.v?.editor?.selected };
+    // select the added gate (now at `del`)
+    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) await page.keyboard.press('Shift+Tab');
+    await sleep(1600);
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-1920.png' : 'editor3-select-1920.png') });
+
+    const tDrag0 = await now(page);
+    // the X arrow: the gate follows the cursor
+    const moves: unknown[] = [];
+    for (const rr of [80, 60, 100, 45]) {
+        const a = (await dbg(page))!;
+        const dir = a.axes.x;
+        await drag(page, a.stand.screen[0]! + dir[0]! * rr, a.stand.screen[1]! + dir[1]! * rr, dir[0]! * 80, dir[1]! * 80);
+        const b = (await dbg(page))!;
+        const m = dist(a.stand.pos, b.stand.pos);
+        const px = dist(a.stand.screen.slice(0, 2), b.stand.screen.slice(0, 2));
+        moves.push({ r: rr, movedM: r2(m), screenPx: Math.round(px), dragPx: 80, opening: [a.stand.opening, b.stand.opening] });
+        if (m > 0.05) break;
+    }
+    out.moveX = moves;
+    // a ring
+    const turns: unknown[] = [];
+    for (const [ax, across] of [['x', 'y'], ['y', 'x'], ['z', 'x']] as const) {
+        let done = false;
+        for (const rr of [130, 110, 150]) {
+            const a = (await dbg(page))!;
+            const dir = a.axes[ax];
+            const c = a.axes[across];
+            await drag(page, a.stand.screen[0]! + dir[0]! * rr, a.stand.screen[1]! + dir[1]! * rr, c[0]! * 60, c[1]! * 60);
+            const b = (await dbg(page))!;
+            const q = dist(a.stand.quat, b.stand.quat);
+            turns.push({ along: ax, r: rr, quatChange: Math.round(q * 1000) / 1000, movedM: r2(dist(a.stand.pos, b.stand.pos)) });
+            if (q > 0.01) { done = true; break; }
+        }
+        if (done) break;
+    }
+    out.turn = turns;
+    // the centre box: the opening changes, the gate stays
+    const sc: unknown[] = [];
+    for (const [dx, dy] of [[60, -60], [-60, 60], [90, 0]]) {
+        const a = (await dbg(page))!;
+        await drag(page, a.stand.screen[0]!, a.stand.screen[1]!, dx!, dy!);
+        const b = (await dbg(page))!;
+        sc.push({ drag: [dx, dy], opening: [r2(a.stand.opening), r2(b.stand.opening)], movedM: r2(dist(a.stand.pos, b.stand.pos)) });
+        if (Math.abs(a.stand.opening - b.stand.opening) > 0.01) break;
+    }
+    out.scale = sc;
+    // its kind: the bar's square
+    const k0 = (await ed(page)).said;
+    await page.click('.ce-gatebar [data-bar="square"]', { timeout: 5000, force: true }).catch((e) => { out.kindClickError = String(e).slice(0, 120); });
+    await sleep(500);
+    out.kind = { saidBefore: (k0 ?? '').slice(0, 80), said: ((await ed(page)).said ?? '').slice(0, 80), changed: (await ed(page)).changed };
+    out.drags = await span(page, tDrag0, await now(page));
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-drag-1920.png' : 'editor3-drag-1920.png') });
+
+    // the camera: keys and the right button
+    const keys: unknown[] = [];
+    for (const k of ['KeyW', 'KeyS', 'KeyD', 'KeyA', 'KeyE', 'KeyQ']) {
+        const a = (await dbg(page))?.cam.pos;
+        await page.keyboard.down(k);
+        await sleep(600);
+        await page.keyboard.up(k);
+        await sleep(150);
+        keys.push({ key: k, movedM: r2(dist(a, (await dbg(page))?.cam.pos)) });
+    }
+    out.keys = keys;
+    const v0 = (await ed(page)).view;
+    await page.mouse.move(vp.width * 0.3, vp.height * 0.6);
+    await page.mouse.down({ button: 'right' });
+    await page.mouse.move(vp.width * 0.3 + 140, vp.height * 0.6 + 30, { steps: 10 });
+    await page.mouse.up({ button: 'right' });
+    await sleep(400);
+    const v1 = (await ed(page)).view;
+    out.look = { eyeMovedM: r2(dist(v0?.eye, v1?.eye)), atMovedM: r2(dist(v0?.at, v1?.at)) };
+
+    // fly with the controller: arm (throttle down, start/stop), forward, read the course; then disarm
+    const eyeBefore = (await ed(page)).view?.eye;
+    const tFly = await now(page);
+    const nextBefore = (await hook(page))?.next;
+    await pad(page, [0, 0, -1, 0, 0], 0x50);
+    await sleep(300);
+    await pad(page, null, 0x50 | (1 << 2));
+    await sleep(150);
+    await pad(page, null, 0x50);
+    const arm = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.gate?.armed ?? null), (v) => v === true, 3000);
+    await sleep(400);
+    const dArm = await dbg(page);
+    const flight: unknown[] = [];
+    for (let i = 0; i < 16; i++) {
+        await pad(page, [0, i < 12 ? -0.35 : 0, i < 3 ? 0.35 : 0.1, 0, 0], null);
+        await sleep(250);
+        const h = await hook(page);
+        flight.push([i, h?.next, (await dbg(page))?.mode]);
+    }
+    await page.screenshot({ path: join(SHOTS, `editor3-${id}-flying.png`) });
+    await pad(page, [0, 0, -1, 0, 0], 0x50);
+    await sleep(300);
+    await pad(page, null, 0x50 | (1 << 2));
+    await sleep(150);
+    await pad(page, null, 0x50);
+    const dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
+    await sleep(500);
+    out.fly = {
+        armed: arm.v, modeArmed: dArm?.mode, handlesArmed: dArm?.handles, nextBefore, flight,
+        nextAfter: (await hook(page))?.next, laps: (await hook(page))?.laps,
+        modeAfter: dis.v?.mode, editEyeBackM: r2(dist(eyeBefore, (await ed(page)).view?.eye)),
+        topBarButtonsHidden: await page.evaluate(() => getComputedStyle(document.querySelector('[data-top="add"]') ?? document.body).display)
+    };
+    out.flySpan = await span(page, tFly, await now(page));
+    out.path = await span(page, tPath, await now(page));
+    // leave without saving
+    await page.keyboard.press('Escape');
+    await sleep(500);
+    if ((await ed(page)).open) await page.keyboard.press('Escape');
+    out.exit = { closed: (await until(() => ed(page), (e) => !e.open, 3000)).ok };
+    return out;
+}
+
+async function phone(page: Page, id: string): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = { scene: id, viewport: page.viewportSize() };
+    if (!(await prepare(page, id, out))) return out;
+    await sleep(1500);
+    await page.keyboard.press('Shift+KeyB');
+    out.open = (await until(() => ed(page), (e) => !!e.open, 30000)).ok;
+    await page.keyboard.press('Tab');
+    await sleep(1600);
+    const bars = await page.evaluate(() => [...document.querySelectorAll('.ce-gatebar, .ce-topbar, [data-top="add"]')].map((e) => { const r = e.getBoundingClientRect(); return [e.className || e.getAttribute('data-top'), Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
+    out.bars = bars;
+    await page.screenshot({ path: join(SHOTS, 'editor3-844.png') });
+    return out;
+}
+
+async function main(): Promise<void> {
+    mkdirSync(OUT, { recursive: true });
+    mkdirSync(SHOTS, { recursive: true });
+    const log: string[] = [];
+    const out: Record<string, unknown> = { site: SITE, date: new Date().toISOString(), scenes: {} };
+    const { browser, which } = await launchChrome({ args: ['--window-size=1936,1200'] });
+    out.browser = which;
+    const run = async (name: string, vp: { width: number; height: number }, f: (p: Page) => Promise<Record<string, unknown>>): Promise<void> => {
+        const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1 });
+        await ctx.addInitScript(install);
+        const page = await ctx.newPage();
+        page.on('pageerror', (e) => log.push(`${name} pageerror: ${e.message}`.slice(0, 300)));
+        page.on('console', (m) => { if (m.type() === 'error') log.push(`${name} console: ${m.text()}`.slice(0, 200)); });
+        try {
+            (out.scenes as Record<string, unknown>)[name] = await f(page);
+        } catch (e) {
+            (out.scenes as Record<string, unknown>)[name] = { error: String(e).slice(0, 400) };
+        }
+        await ctx.close();
+        writeFileSync(join(OUT, 'e4.json'), JSON.stringify({ ...out, log }, null, 1));
+    };
+    try {
+        for (const id of SCENES) await run(id, { width: 1920, height: 1080 }, (p) => scene(p, id));
+        if (process.env.PHONE === '1') await run(`phone-${SCENES[0]}`, { width: 844, height: 390 }, (p) => phone(p, SCENES[0]!));
+    } finally {
+        await browser.close();
+    }
+    console.log(`wrote ${join(OUT, 'e4.json')}`);
+    for (const l of log.slice(0, 20)) console.log(l);
+}
+
+void main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});
