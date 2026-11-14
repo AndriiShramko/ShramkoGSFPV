@@ -96,7 +96,7 @@ respawn at the very start restarts the course. The course progress must be tied 
 - [x] Unit tests tools/bench/test/course-respawn.test.ts (3: crash keeps, R restarts, Y rewinds): 3/3 passed with
   laps.test.ts and tracks-a6.test.ts (11/11). neg_control.py against origin/main (run.ts, laps.ts, builtin/course.ts):
   NEG OK, fails by assertion. tsc apps/fly, packages/tracks, tools/bench: 0 errors each. Log U:/Temp/gsfpv-train3/course3/g3/neg.log.
-- [ ] gates.py --only vitest,architecture,i18n,b18 on the G3 commit.
+- [x] gates.py --only vitest,architecture,i18n,b18 on 65f621e3: all PASS (vitest 163 s; logs U:/Temp/gsfpv-gates-20261114-224937).
 - [ ] Browser walk on Wroclaw and Tunis (crash with auto respawn, R, Y on a generated course): a separate stage.
 
 ## Facts (measured)
