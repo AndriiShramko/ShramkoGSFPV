@@ -27,6 +27,10 @@ export interface CourseHook {
     problem: string | null;
     /** stage G1-progress: the course's progress line now (course/progress.ts), the arrival warning, or null */
     progress?: string | null;
+    /** stage G4-prove: every gate's centre and rotation (w, x, y, z), flown frame; [] without a course */
+    gatePoses?: () => { pos: number[]; quat: number[] }[];
+    /** stage G4-prove: the course HUD's text now (lap clock and lines), null when it is not on the page */
+    clockText?: () => string | null;
     /** T3: the courses the server keeps for this scene (fetched on scene load; -1 until the answer came) */
     serverTracks: number;
     /** T3: the server's id of the course this tab saved for everyone; null before a save */

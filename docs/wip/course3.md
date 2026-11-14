@@ -99,6 +99,22 @@ respawn at the very start restarts the course. The course progress must be tied 
 - [x] gates.py --only vitest,architecture,i18n,b18 on 65f621e3: all PASS (vitest 163 s; logs U:/Temp/gsfpv-gates-20261114-224937).
 - [ ] Browser walk on Wroclaw and Tunis (crash with auto respawn, R, Y on a generated course): a separate stage.
 
+Stage G4-prove (the owner's path in a browser on the scans he uses).
+
+- [x] Release build of ec91e064 (node scripts/build-release.mjs, 1928 files, log U:/Temp/gsfpv-train3/course3/g4/build.log).
+- [x] Hook for probes: CourseHook.gatePoses() (centre and rotation of every gate, flown frame) and clockText() (the course
+  HUD's text), set in app/builtin/course.ts. tsc apps/fly: 0 errors.
+- [x] Probe tools/bench/scripts/course-path-probe.mjs: Shift+G, every progress line with its time, top-down picture of the
+  gates over the live walls (gate colour by height above the ground under it), pilot's view at gate 1, the craft led
+  through gates 1..3, 6 s hover, sent at 12 m/s into the nearest wall, automatic respawn ('rewind' target), next gate and
+  HUD clock before and after; then R.
+- [~] Runner U:/Temp/gsfpv-train3/course3/g4/run.sh (detached): rebuild with the hook, serve-csp 5721, GPU lock;
+  phase A dist/walls empty: progress-look-probe.mjs on ab5efa0e and 70b50d42 (browser build) -> g4/build-look.json;
+  phase B U:/Temp/gsfpv-train2/walls/release/70b50d42 copied into dist/walls: course-path-probe.mjs on 70b50d42 and
+  887f27aa -> g4/path.json; shots U:/Temp/gsfpv-train3/shots/course3-*.png; log g4/run.log ends with "end".
+- [ ] Read path.json and build-look.json into Facts G4, look at the pictures (one line each).
+- [ ] gates.py --only vitest,architecture,i18n,b18.
+
 ## Facts (measured)
 
 - G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m
