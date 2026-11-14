@@ -213,3 +213,9 @@ nothing). The script was not run.
   the audit the page's real spawn (the CDN camera of the scene's own version) would have found it in lane tracks2.
 - 2026-11-14 integration pass 3: the most turns went to the mouse-free rooms entry (a probe guess that did not fix it);
   a probe that saves a screenshot when an entry times out would have shown the page state in one run.
+
+## Released by the lead (2026-11-14 02:10-03:25 UTC)
+
+- nginx, `release-api.sh tracks.py`, `release-rooms.sh`: each ended with health 200 and 0 tracebacks. `ship.sh eca1b5a1` stopped on a red CI (fit.test.ts read U:/Temp/... while vitest collected); fixed in f91273cf (the suite returns early where the file is absent; as CI 6 passed, locally 8 passed); `ship.sh f91273cf`: release 4e9148cd1005, CI green, smoke 302 checks, neighbours equal.
+- Live checks: 8 PASS; walls-published-probe FAIL because the lead did not run release-walls.sh: 469 MB without compression, the lighter re-bakes of lane wallsfin are not in the release folder yet, and release-walls.sh does not check the hub's free disk. The page offers the browser build on the 404 (state offer, 0 errors).
+- Parked until the weekly limit resets on 2026-11-19: lane menu (branch menu in C:/dev/gsfpv-tracks, unfinished), the walls upload, tracks2 K1.1 audits, K2.4 (the key for 'drop a gate here': Ins and I in flight is the lane's proposal), K2.5 pillar pairs, the race, r10.
