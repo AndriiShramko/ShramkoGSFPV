@@ -1,4 +1,4 @@
-"""Shramko RC bridge: the DJI RC 2's sticks for the simulator page, on Windows with no driver change.
+"""Shramko helper for DJI controllers: the DJI RC 2's sticks for the simulator page, on Windows with no driver change.
 
 On Windows the RC 2's stick channel (USB interface 0, class FF.43.01) belongs to DJI's own libusb0 driver once DJI
 Assistant 2 is installed, so Chrome cannot open it over WebUSB. This program reads the sticks through DJI's own
@@ -12,7 +12,11 @@ Assistant 2 is installed, so Chrome cannot open it over WebUSB. This program rea
   localhost:<port> (a page on another name that points at 127.0.0.1 is refused).
 * Read-only towards the controller: the only frame ever sent to it is the DUML stick request (set 06, id 01, empty
   payload), the frame the reference github.com/rusty407/dji-rc2-linux-joystick sends. Nothing is written to it.
-* The controller is opened only while a page is connected, and let go when the last page leaves.
+* The controller is opened once at start (one stick answer, so the window can say whether it is read), then only
+  while a page is connected, and let go when the last page leaves.
+* Only the DJI RC 2 (USB 2CA3:1021) is opened. Another DJI device on DJI's driver (most of them are drones, goggles and
+  air units) only with --other-dji, and never the drone 2CA3:0020.
+* A second copy started while one runs says so in one line and ends (the port is taken).
 
 Messages to the page (text, JSON):
     {"hello": "shramko-rc-bridge", "version": 1}       once, after the handshake
@@ -23,6 +27,7 @@ Messages to the page (text, JSON):
 Usage:
     python rc_bridge.py [--port 47310] [--dll <libusb0_dji.dll>]
     python rc_bridge.py --replay <frames.json> [--wiggle]   (recorded frames of evidence/2026-11-13/rc2, no device)
+    python rc_bridge.py --replay <record.jsonl> [--start S] [--end S]   (a --record file at its recorded pace)
 Standard library only (Python 3.8 or newer).
 """
 import argparse
@@ -46,6 +51,7 @@ SEND_TIMEOUT_S = 0.5  # a page that takes no data for this long is dropped (esti
 MAX_CLIENT_FRAME = 125  # the page sends only close and ping, whose bodies are at most 125 bytes (RFC 6455 5.5)
 RAW_MIN, RAW_MAX, RAW_MARGIN = 364, 1684, 40  # the reference's stick range; the margin is an estimate (dji-duml.ts)
 VID, PID = 0x2CA3, 0x1021
+NOT_CONTROLLERS = (0x0020,)  # DJI product ids that are drones, never opened as a controller (2CA3:0020 Avata 360)
 POLL_S = 0.01  # one request every 10 ms: the reference's default 100 Hz, not measured here
 REPLY_S = 0.1  # a request with no answer after this is given up (stage 1 saw every answer within 100 ms)
 RETRY_S = 2.0  # look for the controller again after this (estimate)
@@ -137,6 +143,22 @@ def stick_values(frame):
     return v if all(RAW_MIN - RAW_MARGIN <= x <= RAW_MAX + RAW_MARGIN for x in v) else None
 
 
+def pick_device(ids, other=False):
+    """Index of the device to open in a list of (vendor id, product id): the DJI RC 2 (2CA3:1021), else None. Only
+    with `other` (the --other-dji option, the pilot's own choice) the first other DJI device that is not a drone (an
+    untested DJI controller, sent only the stick request). DJI's driver also lists drones, goggles and air units, and
+    the helper cannot see which of them has a stick channel, so none of them is asked by default (review CN-3)."""
+    for i, (vid, pid) in enumerate(ids):
+        if (vid, pid) == (VID, PID):
+            return i
+    if not other:
+        return None
+    for i, (vid, pid) in enumerate(ids):
+        if vid == VID and pid not in NOT_CONTROLLERS:
+            return i
+    return None
+
+
 def descriptor_ok(desc):
     """The 18 bytes read at DEV_DESC_OFF are a USB device descriptor (length 0x12, type 0x01): the DLL has the measured
     layout. Another libusb0_dji.dll version could put other memory there."""
@@ -146,6 +168,44 @@ def descriptor_ok(desc):
 # ---- sources of stick values ----
 class Closed(Exception):
     pass
+
+
+READ_LINE = "Your DJI controller is read: the simulator gets its sticks. Leave this window open while you fly."
+
+
+def plain(why):
+    """The reason a source could not be read, in words for a pilot who is not a programmer."""
+    w = (why or "").lower()
+    if "not found" in w and "dll" in w:
+        return "DJI Assistant 2 is not installed on this computer; install it from dji.com (the helper uses its USB driver)"
+    if "layout" in w:
+        return "this DJI Assistant 2 version is not known to the helper yet; please send this window's text to the author"
+    if "busy" in w:
+        return "DJI Assistant 2 (or another program) holds the controller; close DJI Assistant 2"
+    if "no dji controller" in w:
+        return "no DJI controller found; connect it with a data cable and switch it on"
+    if "no answer" in w:
+        return "the controller does not answer; switch it on, or unplug it and plug it in again"
+    return "the controller cannot be opened; unplug it and plug it in again"
+
+
+def first_look(factory, tries=50):
+    """At start, before any page: open the source, ask until one stick answer comes (at most `tries` asks), let it go.
+    (True, None) when it answered, else (False, the reason). Only the stick request is sent."""
+    s = factory()
+    try:
+        s.open()
+    except Closed as e:
+        return False, str(e)
+    try:
+        for _ in range(tries):
+            if s.read():
+                return True, None
+        return False, "no answer"
+    except Closed as e:
+        return False, str(e)
+    finally:
+        s.close()
 
 
 def find_dll():
@@ -159,11 +219,14 @@ def find_dll():
 class DjiUsb:
     """The RC 2 through DJI's libusb0_dji.dll (64-bit). open() raises Closed with the reason when it cannot."""
 
-    def __init__(self, dll):
+    def __init__(self, dll, other=False):
         self.dll = dll
+        self.other = other
         self.L = None
         self.h = None
         self.seq = 1
+        self.pid = None
+        self.untested = False
         self.rx = bytearray()
         self.rbuf = C.create_string_buffer(16384)
 
@@ -193,8 +256,8 @@ class DjiUsb:
         L = self._lib()
         L.usb_find_busses()
         L.usb_find_devices()
-        bus, dev = L.usb_get_busses(), None
-        while bus and dev is None:
+        bus, found = L.usb_get_busses(), []
+        while bus:
             d = C.c_void_p.from_address(bus + BUS_DEVICES_OFF).value
             while d:
                 desc = C.string_at(d + DEV_DESC_OFF, 18)
@@ -202,13 +265,16 @@ class DjiUsb:
                     raise Closed("this libusb0_dji.dll (%s) does not have the layout the bridge was measured with "
                                  "(4.8.13 amd64): please send us its version" % self.dll)
                 vid, pid = struct.unpack_from("<HH", desc, 8)
-                if (vid, pid) == (VID, PID):
-                    dev = d
-                    break
+                found.append((d, vid, pid))
                 d = C.c_void_p.from_address(d).value  # usb_device.next
             bus = C.c_void_p.from_address(bus).value  # usb_bus.next
-        if dev is None:
-            raise Closed("no DJI RC 2 (USB 2CA3:1021) on DJI's driver: plug it in with a data cable and switch it on")
+        i = pick_device([(vid, pid) for _, vid, pid in found], self.other)
+        if i is None:
+            raise Closed("no DJI controller (USB 2CA3:1021" + (" or another DJI controller" if self.other else "") + ") on DJI's driver: "
+                         "plug it in with a data cable and switch it on")
+        dev, _, pid = found[i]
+        self.pid = pid
+        self.untested = pid != PID
         h = L.usb_open(dev)
         if not h:
             raise Closed("usb_open: " + L.usb_strerror().decode(errors="replace"))
@@ -278,6 +344,82 @@ class Replay:
         pass
 
 
+def is_record(path):
+    """The file is a --record file (JSON lines with "t" and "v"), not a frames JSON document."""
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                try:
+                    m = json.loads(line)
+                except ValueError:
+                    return False
+                return isinstance(m, dict) and "t" in m and "v" in m
+    return False
+
+
+def load_record(path, start_s=None, end_s=None):
+    """The lines of a --record file as (ms from the first kept line, six values), between start_s and end_s seconds
+    counted from the record's first line. A line that does not read (cut by a stop) is skipped."""
+    rows = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                m = json.loads(line)
+            except ValueError:
+                continue
+            v = m.get("v") if isinstance(m, dict) else None
+            if isinstance(m.get("t"), int) and isinstance(v, list) and len(v) == 6:
+                rows.append((m["t"], [int(x) for x in v]))
+    if not rows:
+        raise ValueError("no stick answers in " + path)
+    t0 = rows[0][0]
+    lo = t0 + (start_s or 0) * 1000
+    hi = t0 + end_s * 1000 if end_s is not None else None
+    kept = [(t, v) for t, v in rows if t >= lo and (hi is None or t < hi)]
+    if not kept:
+        raise ValueError("no stick answers between the given seconds in " + path)
+    k0 = kept[0][0]
+    return [(t - k0, v) for t, v in kept]
+
+
+class RecordReplay:
+    """A --record file played at its recorded pace from the moment a page connects (open): each read waits until the
+    next answer's recorded time and returns its values, so the page gets what the controller sent, when it sent it.
+    Once the record ends, nothing more comes (read returns None): the bridge then says the controller gave no answer,
+    as when a controller is switched off. `clock` and `sleep` are for the tests."""
+
+    paced = True  # the read loop must not add its own poll pause
+
+    def __init__(self, path, start_s=None, end_s=None, clock=time.monotonic, sleep=time.sleep):
+        self.rows = load_record(path, start_s, end_s)
+        self.clock = clock
+        self.sleep = sleep
+        self.i = 0
+        self.t0 = clock()
+
+    def open(self):
+        self.i = 0
+        self.t0 = self.clock()
+
+    def read(self):
+        if self.i >= len(self.rows):
+            self.sleep(POLL_S)
+            return None
+        t, v = self.rows[self.i]
+        wait = t / 1000.0 - (self.clock() - self.t0)
+        if wait > 0:
+            self.sleep(wait)
+        self.i += 1
+        return list(v)
+
+    def close(self):
+        pass
+
+
 # ---- WebSocket (RFC 6455, the subset a browser client needs) ----
 def accept_key(key):
     return base64.b64encode(hashlib.sha1((key + GUID).encode()).digest()).decode()
@@ -323,8 +465,31 @@ def read_request(conn):
     return lines[0], headers
 
 
+class Recorder:
+    """--record: one JSON line per stick answer passed on, {"t": ms since the bridge started, "v": the six raw values}.
+    Nothing else from the device is written (no serial number, no other frame). Appends, so a restart adds to it."""
+
+    def __init__(self, path):
+        self.f = open(path, "a", encoding="ascii", newline="\n")
+        self.t0 = time.monotonic()
+        self.lock = threading.Lock()
+
+    def write(self, v):
+        line = json.dumps({"t": int((time.monotonic() - self.t0) * 1000), "v": [int(x) for x in v]}, separators=(",", ":"))
+        with self.lock:
+            if self.f.closed:
+                return
+            self.f.write(line + "\n")
+            self.f.flush()
+
+    def close(self):
+        with self.lock:
+            self.f.close()
+
+
 class Bridge:
-    def __init__(self, source_factory, port=PORT, log=lambda s: print(s, flush=True), dev=False):
+    def __init__(self, source_factory, port=PORT, log=lambda s: print(s, flush=True), dev=False, record=None):
+        self.record = Recorder(record) if record else None
         self.source_factory = source_factory
         self.port = port
         self.dev = dev
@@ -335,6 +500,9 @@ class Bridge:
         self.stopped = threading.Event()
         self.sock = None
         self.state = None
+        # the page last said connected: said again only after the state changed, so a page that reconnects every 2 s
+        # while it waits for the controller does not push the one line that says what is missing out of the window
+        self.said_page = None
 
     # -- clients --
     def send_all(self, msg):
@@ -361,8 +529,13 @@ class Bridge:
 
     def set_state(self, state, why=None):
         if state != self.state:
+            if self.state is not None:
+                self.said_page = None  # the first state after a page came is that page's answer, not a change
             self.state = state
-            self.log("controller: %s%s" % (state, " (" + why + ")" if why else ""))
+            if state == "reading":
+                self.log(READ_LINE)
+            else:
+                self.log("Not reading the controller: %s (%s)" % (plain(why), why))
         msg = {"state": state}
         if why:
             msg["why"] = why
@@ -387,7 +560,9 @@ class Bridge:
             with self.lock:
                 self.clients.add(conn)
                 self.wlocks[conn] = threading.Lock()
-            self.log("page connected: %s" % origin)
+            if origin != self.said_page:
+                self.said_page = origin
+                self.log("page connected: %s" % origin)
             self.client_loop(conn)
         except OSError:
             pass
@@ -452,6 +627,8 @@ class Bridge:
                     s.open()
                     src = s
                     heard = time.monotonic()
+                    if getattr(s, "untested", False):
+                        self.log("an untested DJI controller (USB 2CA3:%04X): only the stick request is sent" % s.pid)
                     self.set_state("reading")
                 except Closed as e:
                     self.set_state("no-controller", str(e))
@@ -467,6 +644,8 @@ class Bridge:
                 continue
             if v:
                 heard = time.monotonic()
+                if self.record:
+                    self.record.write(v)
                 self.send_all({"v": v})
             elif time.monotonic() - heard >= SILENT_S:
                 # still on the bus but silent (asleep, another mode): say so, let it go, look again later
@@ -476,15 +655,27 @@ class Bridge:
                 self.stopped.wait(RETRY_S)
                 continue
             left = POLL_S - (time.monotonic() - t0)
-            if left > 0:
+            if left > 0 and not getattr(src, "paced", False):
                 time.sleep(left)
         if src:
             src.close()
 
+    def bind(self):
+        """Takes the port (no page can connect before start). OSError when another program, most often a copy of this
+        helper started earlier, holds it."""
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.bind(("127.0.0.1", self.port))
+        except OSError:
+            s.close()
+            raise
+        self.sock = s
+        self.port = s.getsockname()[1]
+        return self.port
+
     def start(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.bind(("127.0.0.1", self.port))
-        self.port = self.sock.getsockname()[1]
+        if self.sock is None:
+            self.bind()
         self.sock.listen(8)
         threading.Thread(target=self.read_loop, daemon=True).start()
         threading.Thread(target=self.accept_loop, daemon=True).start()
@@ -511,29 +702,60 @@ class Bridge:
                 except OSError:
                     pass
             self.clients.clear()
+        if self.record:
+            # the read loop may still write one line: give it its poll period before closing the file
+            time.sleep(POLL_S * 2)
+            self.record.close()
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Shramko RC bridge: DJI RC 2 sticks on ws://127.0.0.1 for the simulator page")
     ap.add_argument("--port", type=int, default=PORT)
     ap.add_argument("--dll", default=None, help="DJI's 64-bit libusb0_dji.dll (default: found under DJI Product)")
-    ap.add_argument("--replay", default=None, help="recorded frames JSON instead of the controller")
-    ap.add_argument("--wiggle", action="store_true", help="with --replay: move roll slowly")
+    ap.add_argument("--replay", default=None, help="instead of the controller: recorded frames JSON, or a --record "
+                    "file (played at its recorded pace from the moment a page connects)")
+    ap.add_argument("--wiggle", action="store_true", help="with --replay of frames JSON: move roll slowly")
+    ap.add_argument("--start", type=float, default=None, help="with --replay of a --record file: start at this second")
+    ap.add_argument("--end", type=float, default=None, help="with --replay of a --record file: stop at this second")
     ap.add_argument("--dev", action="store_true", help="also accept pages from http://localhost[:port] (a local build)")
+    ap.add_argument("--record", default=None, help="append every stick answer passed on to this file, one JSON line "
+                    "each: ms since start and the six raw values (tools/rc-bridge/analyze_record.py reads it)")
+    ap.add_argument("--other-dji", action="store_true", help="when no DJI RC 2 is plugged in, also try another DJI "
+                    "device on DJI's driver as a controller (untested; only the stick request is sent; never the drone 2CA3:0020)")
     a = ap.parse_args(argv)
-    if a.replay:
+    if a.replay and is_record(a.replay):
+        load_record(a.replay, a.start, a.end)  # a file or a range with no answers stops here, before listening
+        factory = lambda: RecordReplay(a.replay, a.start, a.end)  # noqa: E731
+        what = "record replay of %s from %ss to %ss" % (a.replay, a.start or 0, "end" if a.end is None else a.end)
+    elif a.replay:
         factory = lambda: Replay(a.replay, a.wiggle)  # noqa: E731
         what = "replay of " + a.replay
     else:
         if struct.calcsize("P") != 8:
             sys.exit("Use 64-bit Python: DJI's libusb0_dji.dll in the amd64 folder is 64-bit.")
         dll = a.dll or find_dll()
-        factory = lambda: DjiUsb(dll)  # noqa: E731
-        what = "DJI RC 2 through " + str(dll)
-    b = Bridge(factory, a.port, dev=a.dev)
+        factory = lambda: DjiUsb(dll, a.other_dji)  # noqa: E731
+        what = ("DJI RC 2 or another DJI controller" if a.other_dji else "DJI RC 2") + " through " + str(dll)
+    b = Bridge(factory, a.port, dev=a.dev, record=a.record)
+    # the port is taken before the first look, so a second copy ends here and never opens the controller (review CN-8)
+    try:
+        b.bind()
+    except OSError:
+        if b.record:
+            b.record.close()
+        print("The helper is already running in another window (port %d is taken). This window can be closed." % a.port)
+        sys.stdout.flush()
+        return 1
+    # the first look comes before listening, so a page cannot ask for the controller while it is open here
+    ok, why = first_look(factory)
     port = b.start()
-    print("Shramko RC bridge on ws://127.0.0.1:%d/ (%s)." % (port, what))
-    print("Open the simulator, Controls, 'My controller is not in the list', 'Fly through the RC bridge'. Ctrl+C stops.")
+    print("Shramko helper for DJI controllers on ws://127.0.0.1:%d/ (%s)." % (port, what))
+    if ok:
+        print("Your DJI controller answers. Now open the simulator and press 'Connect my controller'.")
+    else:
+        print("Not reading the controller yet: %s (%s)." % (plain(why), why))
+        print("This window keeps waiting; press 'Connect my controller' in the simulator when that is done.")
+    print("Leave this window open while you fly; close it to stop.")
     sys.stdout.flush()
     try:
         while True:
@@ -545,4 +767,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

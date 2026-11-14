@@ -93,7 +93,7 @@ for (const l of LOCALES) {
   // Fly by Sound page text (2026-11-11): one h1, the "On this page" list, the h2 in the order of the note for screen readers, h3 only inside their h2
   {
     const S = DICT[l].sound;
-    const ORDER = ["start", "how", "need", "keys", "now", "test", "record", "who", "open", "help"];
+    const ORDER = ["how", "hear", "need", "start", "now", "test", "who", "open", "help"];
     const AUD = ["blind", "pilots", "teachers", "press", "support", "developers"];
     const h2 = [...snd.matchAll(/<h2 id="sound-([a-z]+)"/g)].map((m) => m[1]);
     const navAt = snd.indexOf(`<nav aria-label="${S.toc.label}"`);
@@ -101,8 +101,37 @@ for (const l of LOCALES) {
     const navIds = [...nav.matchAll(/href="#sound-([a-z]+)"/g)].map((m) => m[1]);
     const ol = snd.match(/<ol[^>]*>([\s\S]*?)<\/ol>/)?.[1] ?? "";
     ok(`${l}/sound/: one h1; the h2 go ${ORDER.join(" > ")}; the "On this page" list links them in that order`, (snd.match(/<h1[ >]/g) ?? []).length === 1 && h2.join(",") === ORDER.join(",") && navIds.join(",") === ORDER.join(","), `${h2.join(",")} | ${navIds.join(",")}`);
-    ok(`${l}/sound/: the try-it steps are a numbered list of ${S.start.steps.length}, the new sections carry their lists (how ${S.how.items.length}, works ${S.now.works.length}, not yet ${S.now.notYet.length}, testing ${S.test.items.length}, lesson ${S.helpers.lesson.length}, help ${S.support.items.length}), three h3 and the six audience h3, two h4`, (ol.match(/<li[ >]/g) ?? []).length === S.start.steps.length && (snd.match(/<h3[ >]/g) ?? []).length === 9 && (snd.match(/<h4[ >]/g) ?? []).length === 2 && [S.how.title, S.now.title, S.now.tested, S.now.goal, S.test.title, S.who.title, S.helpers.lessonTitle, S.who.otherTitle, S.start.tryTitle].every((x) => snd.includes(`>${x}<`)));
+    ok(`${l}/sound/: the try-it steps are a numbered list of ${S.start.steps.length}, the new sections carry their lists (how ${S.how.items.length}, works ${S.now.works.length}, not yet ${S.now.notYet.length}, testing ${S.test.items.length}, lesson ${S.helpers.lesson.length}, help ${S.support.items.length}), ten h3 (four figures and "in short" under "What do I hear?", try it now, the keys, works, not yet, recording) and the six audience h3, two h4`, (ol.match(/<li[ >]/g) ?? []).length === S.start.steps.length && (snd.match(/<h3[ >]/g) ?? []).length === 16 && snd.includes('<h3 id="sound-keys"') && snd.includes('<h3 id="sound-record"') && (snd.match(/<h4[ >]/g) ?? []).length === 2 && [S.how.title, S.hear.title, S.keys.title, S.record.title, S.now.title, S.now.tested, S.now.goal, S.test.title, S.who.title, S.helpers.lessonTitle, S.who.otherTitle, S.start.tryTitle].every((x) => snd.includes(`>${x}<`)));
     ok(`${l}/sound/: the links say where they go: two to book a call, four to write to the author (teachers, press, support, questions), the supporters wall, the privacy section, the two repositories marked as opening a new tab`, (snd.match(/href="https:\/\/calendar\.app\.google\//g) ?? []).length === 2 && (snd.match(/href="mailto:zmei116@gmail\.com"/g) ?? []).length === 4 && snd.includes(`href="/${l}/supporters/"`) && snd.includes(`>${S.support.wall}<`) && snd.split(`<span class="sr-only"> <!-- -->${S.newTab}</span>`).length - 1 === 4);
+    // review PG-8: "Who it is for and why" opens with the landing's Modlinek Villa loop (slot scale), captioned as the simulator flown by sight
+    const who = snd.slice(snd.indexOf('id="sound-test"'), snd.indexOf('id="sound-open"'));
+    ok(`${l}/sound/: four background loops, each with its poster and a caption: Winter Garden behind the first screen, the real FPV flights (pond, acro) opening "how" and "start", the simulator's Modlinek Villa loop opening "who"; the first screen has the start button before the first h2`, who.includes('data-bg-video="/media/villa"') && ["garden", "pond", "acro", "villa"].every((c) => snd.includes(`data-bg-video="/media/${c}"`) && snd.includes(`/media/${c}-poster-800.webp`) && snd.includes(`>${S.media[c]}<`)) && snd.indexOf(`>${S.start.button}<`) < snd.indexOf('<h2 ') && snd.includes(`>${S.hero.lead}<`));
+    {
+      // the five figures (components/SoundFigure): decoration only, every one with its full text in the page
+      const FIG = ["height", "wall", "hum", "gates", "keys"];
+      const figs = [...snd.matchAll(/data-sound-figure="([a-z]+)"/g)].map((m) => m[1]);
+      const hear = snd.slice(snd.indexOf('id="sound-hear"'), snd.indexOf('id="sound-need"'));
+      const svgs = [...snd.matchAll(/<svg[^>]*class="sound-fig[^"]*"[^>]*>/g)].map((m) => m[0]);
+      ok(`${l}/sound/: five figures in order ${FIG.join(", ")}, each SVG aria-hidden and without a style attribute, each with its full text next to it; the first four with their h3 under "What do I hear?", the keys card under the keys h3`, figs.join(",") === FIG.join(",") && svgs.length === 5 && svgs.every((s) => s.includes('aria-hidden="true"')) && [...snd.matchAll(/<svg[^>]*class="sound-fig[\s\S]*?<\/svg>/g)].every((m) => !m[0].includes(" style=") && m[0].length < 30000) && FIG.every((f) => S.fig[f].text.every((x) => snd.includes(`>${x}<`))) && FIG.slice(0, 4).every((f) => hear.includes(`>${S.fig[f].title}<`)) && hear.includes(`>${S.fig.moreTitle}<`) && snd.indexOf('data-sound-figure="keys"') > snd.indexOf('id="sound-keys"'), figs.join(","));
+      // review PG-9: under "What else there is" only how.items 2, 4, 5, 6, 7; the wall, height and left-or-right items are told by the figures
+      const more = hear.slice(hear.indexOf(`>${S.fig.moreTitle}<`));
+      const li = [...more.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].length;
+      ok(`${l}/sound/: "What else there is" lists how.items 2, 4, 5, 6, 7 and not 0, 1, 3 (those are in the figures)`, li === 5 && [2, 4, 5, 6, 7].every((i) => more.includes(`>${S.how.items[i]}<`)) && [0, 1, 3].every((i) => !snd.includes(`>${S.how.items[i]}<`)), `${li} items`);
+      // review PG-1, train 2 integration: the recorded packages/sonic-fpv now judges wrong way nose-first (package 4c2ac75), so the
+      // gates figure draws two lower panels again (two speech bubbles: flying back nose-first is told, backing up is not)
+      const gates = snd.match(/<svg[^>]*class="sound-fig[^"]*"[^>]*>(?:(?!<\/svg>)[\s\S])*?<\/svg>/g)?.find((s, i) => figs[i] === "gates") ?? "";
+      ok(`${l}/sound/: the gates figure has two wrong-way panels (two speech bubbles: told nose-first, not told backing up)`, (gates.match(/h52 a5 5/g) ?? []).length === 2, `${(gates.match(/h52 a5 5/g) ?? []).length} bubbles`);
+    }
+    if (l === "en") {
+      // review PG-7: the hum figure's "octave higher" wave is off by 84 % of the cycle, while the nose (sf-turn, ease-in-out from 0 deg
+      // at 78 % to 58 deg at 96 %) is 13.4 deg off; it stayed on to 88 % (34.5 deg off) before. The page's text says "within 8 degrees".
+      const css = [...snd.matchAll(/href="(\/_next\/static\/[^"]+\.css)"/g)].map((m) => readFileSync(join(OUT, m[1]), "utf8")).join("\n");
+      const kf = css.match(/@keyframes sf-high\{([\s\S]*?\})\}/)?.[1] ?? "";
+      const stops = [...kf.matchAll(/([0-9%,to ]+)\{opacity:([01])\}/g)].map((m) => ({ at: m[1], on: m[2] === "1" }));
+      const lastOn = stops.filter((s) => s.on).flatMap((s) => s.at.split(",").map((x) => parseFloat(x))).reduce((a, b) => Math.max(a, b), -1);
+      const firstOffAfter = stops.filter((s) => !s.on).flatMap((s) => s.at.split(",").map((x) => (x.trim() === "to" ? 100 : parseFloat(x)))).filter((x) => x > lastOn).reduce((a, b) => Math.min(a, b), 101);
+      ok(`sound figure hum: the octave-higher wave is fully on until at most 80 % and off by 84 % of the cycle`, lastOn > 0 && lastOn <= 80 && firstOffAfter <= 84, `${lastOn} -> ${firstOffAfter}`);
+    }
     ok(`${l}/sound/: "Who it is for and why" carries the six audiences as h3 with the public anchors ${AUD.map((a) => "#" + a).join(" ")} in order, each linked from "On this page"`, [...snd.matchAll(/<h3 id="([a-z]+)"/g)].map((m) => m[1]).join(",") === AUD.join(",") && AUD.every((a) => nav.includes(`href="#${a}"`) && snd.includes(`>${S.who[a].title}<`)) && (snd.match(/id="(?:blind|pilots|teachers|press|support|developers)"/g) ?? []).length === 6);
     const home = readFileSync(join(OUT, l, "index.html"), "utf8");
     const band = home.indexOf('id="fly-by-sound"');

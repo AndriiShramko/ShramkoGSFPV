@@ -70,7 +70,9 @@ function checkQuat(c: Collector, q: unknown, path: string): CourseObject['quat']
         c.add(path, 'must be four finite numbers [w, x, y, z]');
         return undefined;
     }
-    if (Math.abs(Math.hypot(...(q as number[])) - 1) > 1e-3) {
+    // Math.sqrt of the sum, not Math.hypot: the package keeps to operations every engine rounds the same way (check-architecture.mjs)
+    const [qw, qx, qy, qz] = q as number[];
+    if (Math.abs(Math.sqrt(qw * qw + qx * qx + qy * qy + qz * qz) - 1) > 1e-3) {
         c.add(path, 'must be a unit quaternion');
         return undefined;
     }

@@ -104,6 +104,16 @@ class Duml(unittest.TestCase):
         self.assertIsNone(rb.stick_values(answer([1024, 1024, 1024, 1024, 1024, 65535])))
         self.assertIsNone(rb.stick_values(rb.build(7, sender=0x06, receiver=0x0A, typ=0x80, payload=bytes(19))))
 
+    def test_only_the_rc2_by_default_another_dji_device_only_when_asked_never_the_drone(self):
+        # review CN-3: DJI's driver lists drones, goggles and air units; none of them is asked unless the pilot says so
+        rc2, drone, other, mouse = (0x2CA3, 0x1021), (0x2CA3, 0x0020), (0x2CA3, 0x1020), (0x046D, 0xC077)
+        self.assertEqual(rb.pick_device([mouse, drone, other, rc2]), 3)
+        self.assertIsNone(rb.pick_device([mouse, drone, other]))
+        self.assertEqual(rb.pick_device([mouse, drone, other, rc2], other=True), 3)
+        self.assertEqual(rb.pick_device([mouse, drone, other], other=True), 2)
+        self.assertIsNone(rb.pick_device([mouse, drone], other=True))
+        self.assertIsNone(rb.pick_device([]))
+
     def test_descriptor_check(self):
         # review RC2-R8: the bytes at the measured offset must be a device descriptor before they are trusted
         self.assertTrue(rb.descriptor_ok(bytes([0x12, 0x01]) + bytes(16)))
@@ -127,6 +137,139 @@ class Rules(unittest.TestCase):
         self.assertTrue(rb.host_allowed("localhost:47310", 47310))
         self.assertFalse(rb.host_allowed("evil.example:47310", 47310))
         self.assertEqual(rb.accept_key("dGhlIHNhbXBsZSBub25jZQ=="), "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=")  # RFC 6455 sample
+
+
+class Recorded(unittest.TestCase):
+    """--record: every stick answer passed on, one JSON line {t, v}, nothing else (lane rc2-lna)."""
+
+    def test_record_has_one_line_per_answer_and_only_t_and_v(self):
+        import tempfile
+        path = os.path.join(tempfile.mkdtemp(), "rec.jsonl")
+        b = rb.Bridge(lambda: rb.Replay(REC, wiggle=True), port=0, log=lambda *_: None, dev=True, record=path)
+        port = b.start()
+        s, _, _ = handshake(port, "http://localhost:5390")
+        try:
+            recv_text(s)
+            msgs = [recv_text(s) for _ in range(30)]
+        finally:
+            s.close()
+            b.stop()
+        sent = [m["v"] for m in msgs if "v" in m]
+        with open(path, encoding="ascii") as f:
+            lines = [json.loads(x) for x in f if x.strip()]
+        self.assertGreaterEqual(len(lines), len(sent))
+        self.assertEqual([x["v"] for x in lines[:len(sent)]], sent)
+        self.assertTrue(all(set(x) == {"t", "v"} and len(x["v"]) == 6 for x in lines))
+        ts = [x["t"] for x in lines]
+        self.assertEqual(ts, sorted(ts))
+
+    def test_analysis_names_channels_in_the_order_they_moved(self):
+        import tempfile
+        import analyze_record as ar
+        path = os.path.join(tempfile.mkdtemp(), "syn.jsonl")
+        rows = []
+        for t in range(0, 6000, 10):
+            v = [1024] * 6
+            if t >= 2000: v[2] = 1600   # left stick up: channel 3 +
+            if t >= 3000: v[3] = 500    # left stick left: channel 4 -
+            if t >= 4000: v[1] = 1500   # right stick up: channel 2 +
+            if t >= 5000: v[0] = 600    # right stick left: channel 1 -
+            rows.append({"t": t, "v": v})
+        with open(path, "w", encoding="ascii") as f:
+            f.write("".join(json.dumps(r) + "\n" for r in rows) + '{"t": 1, "v": [1')  # a cut last line
+        r = ar.analyze(ar.load(path))
+        self.assertEqual(r["lines"], 600)
+        self.assertEqual([c["rest"] for c in r["channels"]], [1024] * 6)
+        self.assertEqual((r["channels"][2]["min"], r["channels"][2]["max"]), (1024, 1600))
+        self.assertEqual([(m["channel"], m["direction"], m["gesture"]) for m in r["moves"]],
+                         [(3, "+", "left stick up"), (4, "-", "left stick left"), (2, "+", "right stick up"), (1, "-", "right stick left")])
+        self.assertEqual([m["t"] for m in r["moves"]], [2000, 3000, 4000, 5000])
+
+
+OWNER = os.path.join(ROOT, "packages", "input", "test", "fixtures", "dji-rc2", "owner-session-2026-11-13.jsonl")
+
+
+class FakeClock:
+    """A clock that moves only by the replay's own sleeps (the tests read the pace without real time)."""
+
+    def __init__(self):
+        self.now = 100.0
+        self.slept = []
+
+    def clock(self):
+        return self.now
+
+    def sleep(self, s):
+        self.slept.append(s)
+        self.now += s
+
+
+class RecordReplayed(unittest.TestCase):
+    """--replay of a --record file: the answers at their recorded pace, an optional start and end second (lane connect)."""
+
+    def write(self, rows, tail=""):
+        import tempfile
+        path = os.path.join(tempfile.mkdtemp(), "rec.jsonl")
+        with open(path, "w", encoding="ascii") as f:
+            f.write("".join(json.dumps({"t": t, "v": v}) + "\n" for t, v in rows) + tail)
+        return path
+
+    def test_a_record_is_told_from_a_frames_file(self):
+        self.assertTrue(rb.is_record(OWNER))
+        self.assertFalse(rb.is_record(REC))
+
+    def test_answers_come_at_the_recorded_times(self):
+        rows = [(5000, [1024] * 6), (5016, [1100] + [1024] * 5), (5016, [1200] + [1024] * 5), (5047, [364] * 6)]
+        ck = FakeClock()
+        r = rb.RecordReplay(self.write(rows, '{"t": 9'), clock=ck.clock, sleep=ck.sleep)
+        r.open()
+        got = []
+        for _ in range(4):
+            v = r.read()
+            got.append((round((ck.now - 100.0) * 1000), v))
+        self.assertEqual(got, [(0, [1024] * 6), (16, [1100] + [1024] * 5), (16, [1200] + [1024] * 5), (47, [364] * 6)])
+        self.assertIsNone(r.read())  # the record has ended: nothing more, as a controller switched off
+        self.assertTrue(rb.RecordReplay.paced)
+
+    def test_start_and_end_seconds_cut_the_record(self):
+        rows = [(t, [1024 + t // 1000] * 6) for t in range(0, 10000, 250)]
+        ck = FakeClock()
+        r = rb.RecordReplay(self.write(rows), start_s=2, end_s=4, clock=ck.clock, sleep=ck.sleep)
+        r.open()
+        vals = []
+        while True:
+            v = r.read()
+            if v is None:
+                break
+            vals.append(v[0])
+        self.assertEqual(vals, [1026] * 4 + [1027] * 4)
+        self.assertAlmostEqual(ck.now - 100.0, 1.75 + rb.POLL_S, places=6)
+        with self.assertRaises(ValueError):
+            rb.load_record(self.write(rows), 20, 30)
+
+    def test_the_owner_session_replays_at_64_answers_a_second(self):
+        rows = rb.load_record(OWNER, 150, 160)
+        self.assertEqual(rows[0][0], 0)
+        self.assertTrue(600 <= len(rows) <= 660, len(rows))  # 64 a second measured (docs/wip/connect.md)
+        self.assertTrue(all(364 <= x <= 1684 for _, v in rows for x in v))
+
+    def test_served_record_reaches_the_page_in_order(self):
+        rows = [(i * 16, [1024 + i] + [1024] * 5) for i in range(40)]
+        path = self.write(rows)
+        b = rb.Bridge(lambda: rb.RecordReplay(path), port=0, log=lambda *_: None, dev=True)
+        port = b.start()
+        s, _, _ = handshake(port, "http://localhost:5390")
+        try:
+            recv_text(s)
+            t0 = time.monotonic()
+            msgs = [recv_text(s) for _ in range(41)]
+            took = time.monotonic() - t0
+        finally:
+            s.close()
+            b.stop()
+        sent = [m["v"][0] for m in msgs if "v" in m]
+        self.assertEqual(sent, [1024 + i for i in range(40)])
+        self.assertGreaterEqual(took, 0.6)  # 39 gaps of 16 ms: paced, not sent at once
 
 
 class Served(unittest.TestCase):
@@ -227,6 +370,30 @@ class Served(unittest.TestCase):
         finally:
             s.close()
 
+    def test_a_page_that_reconnects_while_waiting_is_said_once(self):
+        # review CN-9: the page reconnects every 2 s while the controller is missing; the window keeps its reason line
+        self.b.stop()
+        said = []
+
+        class Missing:
+            def open(self):
+                raise rb.Closed("no answer")
+
+            def close(self):
+                pass
+        self.b = rb.Bridge(Missing, port=0, log=said.append, dev=True)
+        port = self.b.start()
+        for _ in range(3):
+            s, _, _ = handshake(port, "http://localhost")
+            try:
+                recv_text(s)
+                self.assertEqual(recv_text(s)["state"], "no-controller")
+            finally:
+                s.close()
+            time.sleep(0.3)
+        self.assertEqual(sum(1 for x in said if x.startswith("page connected")), 1, said)
+        self.assertEqual(sum(1 for x in said if x.startswith("Not reading the controller")), 1, said)
+
     def test_a_controller_that_stops_answering_is_said_lost(self):
         self.b.stop()
         closed = []
@@ -256,6 +423,148 @@ class Served(unittest.TestCase):
             self.assertTrue(closed)
         finally:
             s.close()
+
+
+class Src:
+    """A source for first_look: `answers` reads with nothing, then a stick answer; `fail` raises on open."""
+
+    def __init__(self, answers=0, fail=None):
+        self.answers, self.fail, self.reads, self.closed = answers, fail, 0, False
+
+    def open(self):
+        if self.fail:
+            raise rb.Closed(self.fail)
+
+    def read(self):
+        self.reads += 1
+        return [1024] * 6 if self.reads > self.answers else None
+
+    def close(self):
+        self.closed = True
+
+
+class Start(unittest.TestCase):
+    """C3: what the pilot reads in the helper's window at start and when the page connects."""
+
+    def test_the_reasons_are_said_in_plain_words(self):
+        said = {
+            "libusb0_dji.dll of DJI Assistant 2 not found (use --dll)": "DJI Assistant 2 is not installed",
+            "the stick channel is busy (close DJI Assistant 2 and try again): x": "close DJI Assistant 2",
+            "no DJI controller (USB 2CA3:1021 or another DJI controller) on DJI's driver: x": "connect it with a data cable",
+            "no answer": "switch it on",
+            "this libusb0_dji.dll (x) does not have the layout the bridge was measured with": "not known to the helper",
+            "usb_open: x": "unplug it and plug it in again",
+        }
+        for why, words in said.items():
+            self.assertIn(words, rb.plain(why), why)
+            self.assertNotIn("usb_", rb.plain(why))
+
+    def test_first_look_reads_one_answer_and_lets_go(self):
+        s = Src(answers=3)
+        self.assertEqual(rb.first_look(lambda: s), (True, None))
+        self.assertEqual(s.reads, 4)
+        self.assertTrue(s.closed)
+
+    def test_first_look_says_why_not(self):
+        self.assertEqual(rb.first_look(lambda: Src(fail="no DJI controller (x)")), (False, "no DJI controller (x)"))
+        s = Src(answers=99)
+        self.assertEqual(rb.first_look(lambda: s, tries=5), (False, "no answer"))
+        self.assertEqual(s.reads, 5)
+        self.assertTrue(s.closed)
+
+    def test_the_window_says_one_clear_line_when_the_page_reads_the_controller(self):
+        said = []
+        b = rb.Bridge(lambda: Src(), port=0, log=said.append, dev=True)
+        b.set_state("reading")
+        b.set_state("reading")
+        b.set_state("no-controller", "the stick channel is busy (close DJI Assistant 2 and try again): x")
+        self.assertEqual(said[0], rb.READ_LINE)
+        self.assertEqual(len(said), 2)
+        self.assertIn("close DJI Assistant 2", said[1])
+
+    def test_the_program_says_at_start_that_the_controller_answers(self):
+        import subprocess
+        p = subprocess.Popen([sys.executable, "-X", "utf8", os.path.join(HERE, "rc_bridge.py"), "--replay", REC, "--port", "0"],
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        import threading
+        stop = threading.Timer(20, p.kill)  # a program that says less than three lines must fail, not hang
+        stop.start()
+        try:
+            lines = [p.stdout.readline().strip() for _ in range(3)]
+        finally:
+            stop.cancel()
+            p.kill()
+            p.wait()
+            p.stdout.close()
+        self.assertTrue(lines[0].startswith("Shramko helper for DJI controllers on ws://127.0.0.1:"), lines)
+        self.assertEqual(lines[1], "Your DJI controller answers. Now open the simulator and press 'Connect my controller'.")
+        self.assertNotIn("bridge", " ".join(lines[1:]).lower())
+
+    def test_a_second_copy_says_one_line_and_ends(self):
+        # review CN-8: a copy started while one already runs (start with Windows, then a double-click) gives no traceback
+        import subprocess
+        held = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        held.bind(("127.0.0.1", 0))
+        held.listen(1)
+        try:
+            p = subprocess.run([sys.executable, "-X", "utf8", os.path.join(HERE, "rc_bridge.py"), "--replay", REC,
+                                "--port", str(held.getsockname()[1])], capture_output=True, text=True, timeout=20)
+        finally:
+            held.close()
+        out = p.stdout + p.stderr
+        self.assertNotIn("Traceback", out)
+        self.assertIn("already running in another window", out)
+        self.assertNotIn("answers", out)  # it ended before its first look at the controller
+        self.assertEqual(p.returncode, 1)
+
+
+@unittest.skipUnless(os.name == "nt", "start-dji-helper.cmd is a Windows file")
+class StartCmd(unittest.TestCase):
+    """start-dji-helper.cmd in a folder of its own, with APPDATA and LOCALAPPDATA in that folder too, so the
+    "start with Windows" file never lands in the real Startup folder."""
+
+    def run_cmd(self, path_env, answer, files=("start-dji-helper.cmd", "rc_bridge.py"), args=()):
+        import shutil
+        import subprocess
+        import tempfile
+        d = tempfile.mkdtemp(prefix="dji-helper-")
+        self.addCleanup(shutil.rmtree, d, True)
+        for f in files:  # the program as the simulator page saves it (apps/fly/src/devices/helper-files.ts)
+            shutil.copyfile(os.path.join(HERE, f), os.path.join(d, "dji-helper.py" if f == "rc_bridge.py" else f))
+        env = dict(os.environ, PATH=path_env, APPDATA=os.path.join(d, "roaming"), LOCALAPPDATA=os.path.join(d, "local"))
+        os.makedirs(os.path.join(env["APPDATA"], "Microsoft", "Windows", "Start Menu", "Programs", "Startup"))
+        r = subprocess.run(["cmd", "/c", os.path.join(d, "start-dji-helper.cmd")] + list(args), input=answer, env=env,
+                           capture_output=True, text=True, timeout=60)
+        return r.stdout + r.stderr, d, env
+
+    def test_the_file_has_windows_line_ends(self):
+        with open(os.path.join(HERE, "start-dji-helper.cmd"), "rb") as f:
+            b = f.read()
+        self.assertEqual(b.count(b"\n"), b.count(b"\r\n"))
+        self.assertTrue(all(c < 128 for c in b))
+
+    def test_no_python_says_how_to_get_it(self):
+        sysdir = os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32")
+        stubs = os.path.join(os.environ.get("LOCALAPPDATA", ""), "Microsoft", "WindowsApps")  # the Store stubs, as on a clean Windows
+        out, _, _ = self.run_cmd(sysdir + ";" + stubs, "N\n")
+        self.assertIn("Python is not on this computer", out)
+        self.assertIn("no administrator rights needed", out)
+        self.assertIn("https://www.python.org/downloads/windows/", out)
+
+    def test_a_missing_program_file_is_said(self):
+        out, _, _ = self.run_cmd(os.environ["PATH"], "\n", files=("start-dji-helper.cmd",))
+        self.assertIn("dji-helper.py is not in this folder", out)
+
+    def test_start_with_windows_is_offered_once_and_written_only_on_yes(self):
+        startup = ("Microsoft", "Windows", "Start Menu", "Programs", "Startup", "Shramko DJI helper.cmd")
+        out, d, env = self.run_cmd(os.environ["PATH"], "N\n\n", args=("--replay", "missing.json"))
+        self.assertIn("Start this helper by itself whenever Windows starts?", out)
+        self.assertIn("The helper stopped", out)
+        self.assertFalse(os.path.exists(os.path.join(env["APPDATA"], *startup)))
+        out, d, env = self.run_cmd(os.environ["PATH"], "Y\n\n", args=("--replay", "missing.json"))
+        self.assertIn("it starts with Windows from now on", out)
+        with open(os.path.join(env["APPDATA"], *startup)) as f:
+            self.assertIn('start-dji-helper.cmd" autostart', f.read())
 
 
 if __name__ == "__main__":

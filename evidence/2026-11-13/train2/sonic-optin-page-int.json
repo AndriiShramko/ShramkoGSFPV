@@ -1,0 +1,575 @@
+{
+  "name": "sonic-optin-page",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-13T22:51:04.173Z",
+    "gitHead": "9205b3c8",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://localhost:5760",
+  "parts": "A",
+  "checks": [
+    {
+      "name": "A: an ordinary flight names Fly by Sound nowhere on the page before the pause menu is opened",
+      "pass": true,
+      "value": {
+        "occurrences": 0
+      }
+    },
+    {
+      "name": "A: T U I Z G change nothing on an ordinary page (no panel, start screen, caption, recorder, hook, speech, sound context or HUD note); control: H, pressed the same way, does",
+      "pass": true,
+      "value": {
+        "sound": [
+          {
+            "key": "KeyT",
+            "changed": []
+          },
+          {
+            "key": "KeyU",
+            "changed": []
+          },
+          {
+            "key": "KeyI",
+            "changed": []
+          },
+          {
+            "key": "KeyZ",
+            "changed": []
+          },
+          {
+            "key": "KeyG",
+            "changed": []
+          }
+        ],
+        "controlH": [
+          "note"
+        ]
+      }
+    },
+    {
+      "name": "A: the pause menu's key list names none of the mode's keys (no sonic.* row, no T U I Z G cap); it lists the 21 bindings of an ordinary page (20 shortcuts, and Space among the flying keys)",
+      "pass": true,
+      "value": {
+        "rows": 27,
+        "actions": [
+          "pause.toggle",
+          "respawn.start",
+          "respawn.rewind",
+          "crash.keep",
+          "scene.next",
+          "scene.random",
+          "scene.favourite",
+          "mode.cycle",
+          "voxels.cycle",
+          "walls.toggle",
+          "hud.toggle",
+          "scale.down",
+          "scale.up",
+          "record.toggle",
+          "frameStats.toggle",
+          "settings.open",
+          "feedback.open",
+          "share.open",
+          "rooms.panel",
+          "rooms.who",
+          "help.keys",
+          "fullscreen.toggle",
+          "throttle.style",
+          "course.toggle",
+          "course.generate",
+          "course.edit",
+          "arm.toggle"
+        ]
+      }
+    },
+    {
+      "name": "A: the pause menu has exactly one item for the mode, a link to the mode's start screen for this scan /en/fly/?sonic=scan&scene=39e63ce9&sz=<size> in a new tab (v0.13 M41-1, train 2), worded \"Fly by Sound: blind and low-vision pilots\", last of the menu's items, and a screen reader hears \"(opens in a new tab)\" (review R8)",
+      "pass": true,
+      "value": {
+        "sound": {
+          "href": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+          "target": "_blank",
+          "rel": "noopener",
+          "text": "Fly by Sound: blind and low-vision pilots (opens in a new tab)",
+          "label": "Fly by Sound: blind and low-vision pilots",
+          "newTab": " (opens in a new tab)",
+          "tag": "A"
+        },
+        "last": "pause.flyBySound"
+      }
+    },
+    {
+      "name": "A: with the menu open the page names Fly by Sound once: that item",
+      "pass": true,
+      "value": {
+        "menu": 1,
+        "body": 1
+      }
+    },
+    {
+      "name": "A: the item is one line in en, es, pl and ru at 1280x720 and at 375x812 (review R8); control: the item as it was takes two lines in the same menu",
+      "pass": true,
+      "value": {
+        "langs": [
+          "en",
+          "es",
+          "pl",
+          "ru"
+        ],
+        "at1280x720": [
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "at375x812": [
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "before": "Fly by Sound: audio-only training for blind pilots (beta)"
+      }
+    },
+    {
+      "name": "A: an ordinary page has no application region for screen readers (the mode's, review R5; its control is B)",
+      "pass": true,
+      "value": {
+        "regions": 0
+      }
+    },
+    {
+      "name": "A: the item opens the mode's start screen for this scan /en/fly/?sonic=scan&scene=39e63ce9&sz=<size> in a new tab (the page about the mode in its footer); the flight stays paused under its menu",
+      "pass": true,
+      "value": {
+        "url": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+        "beginning": true,
+        "about": "/en/sound/",
+        "stillPaused": true
+      }
+    },
+    {
+      "name": "A: K opens the \"How to fly\" card, which names neither the mode nor its keys",
+      "pass": true,
+      "value": [
+        "Space",
+        "Shift",
+        "Mouse",
+        "W",
+        "A",
+        "S",
+        "D",
+        "\u2190",
+        "\u2192",
+        "Q",
+        "E",
+        "F",
+        "Esc",
+        "R",
+        "N",
+        "K"
+      ]
+    },
+    {
+      "name": "A: L opens the picture share panel, not a link of the mode (control of B's L)",
+      "pass": true,
+      "value": {
+        "panel": true,
+        "link": null
+      }
+    },
+    {
+      "name": "A: no chunk of the mode was requested (lazy-start, feature, session) and no fetched script or style holds a text of the mode",
+      "pass": true,
+      "value": {
+        "chunks": [],
+        "holding": []
+      }
+    },
+    {
+      "name": "A: no page error, and no request to this site failed",
+      "pass": true,
+      "value": {
+        "errors": [],
+        "otherHosts": [
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v1/meta.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v5/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v2/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v4/settings.json",
+          "403 https://d28zzqy0iyovbz.cloudfront.net/39e63ce9/v3/settings.json"
+        ]
+      }
+    },
+    {
+      "name": "A: in Polish the item says the Polish line and leads to /pl/fly/?sonic=scan&scene=39e63ce9&sz=<size> (train 2)",
+      "pass": true,
+      "value": {
+        "href": "/pl/fly/?sonic=scan&scene=39e63ce9&sz=1",
+        "target": "_blank",
+        "rel": "noopener",
+        "text": "Lot na s\u0142uch: niewidomi i s\u0142abowidz\u0105cy (otwiera si\u0119 w nowej karcie)",
+        "label": "Lot na s\u0142uch: niewidomi i s\u0142abowidz\u0105cy",
+        "newTab": " (otwiera si\u0119 w nowej karcie)",
+        "tag": "A"
+      }
+    }
+  ],
+  "passed": 13,
+  "total": 13,
+  "result": {
+    "plainKeys": {
+      "sound": [
+        {
+          "key": "KeyT",
+          "changed": []
+        },
+        {
+          "key": "KeyU",
+          "changed": []
+        },
+        {
+          "key": "KeyI",
+          "changed": []
+        },
+        {
+          "key": "KeyZ",
+          "changed": []
+        },
+        {
+          "key": "KeyG",
+          "changed": []
+        }
+      ],
+      "controlH": [
+        "note"
+      ]
+    },
+    "plainMenu": {
+      "items": [
+        "pause.continue",
+        "pause.restart",
+        "pause.rewind",
+        "pause.scene",
+        "pause.scene.next",
+        "pause.scene.random",
+        "pause.scene.favourite",
+        "pause.share",
+        "pause.drone",
+        "pause.radio",
+        "pause.howtofly",
+        "pause.settings",
+        "pause.replays",
+        "pause.rooms",
+        "pause.course",
+        "pause.course.toggle",
+        "pause.course.load",
+        "pause.course.save",
+        "pause.course.edit",
+        "pause.measure",
+        "pause.import",
+        "pause.cinema",
+        "pause.record",
+        "pause.sound",
+        "pause.feedback",
+        "pause.flyBySound"
+      ],
+      "keys": [
+        {
+          "action": "pause.toggle",
+          "caps": [
+            "Esc",
+            "P"
+          ],
+          "label": "Pause / resume"
+        },
+        {
+          "action": "respawn.start",
+          "caps": [
+            "R"
+          ],
+          "label": "Back to the start"
+        },
+        {
+          "action": "respawn.rewind",
+          "caps": [
+            "Y"
+          ],
+          "label": "Rewind 5 s"
+        },
+        {
+          "action": "crash.keep",
+          "caps": [
+            "Enter"
+          ],
+          "label": "Keep the wreck (no automatic respawn)"
+        },
+        {
+          "action": "scene.next",
+          "caps": [
+            "N"
+          ],
+          "label": "Next scene"
+        },
+        {
+          "action": "scene.random",
+          "caps": [
+            "Shift+N"
+          ],
+          "label": "Random scene"
+        },
+        {
+          "action": "scene.favourite",
+          "caps": [
+            "Shift+F"
+          ],
+          "label": "Next favourite scene"
+        },
+        {
+          "action": "mode.cycle",
+          "caps": [
+            "M"
+          ],
+          "label": "Flight mode"
+        },
+        {
+          "action": "voxels.cycle",
+          "caps": [
+            "V"
+          ],
+          "label": "Voxel grid: off / over the scan / voxels only"
+        },
+        {
+          "action": "walls.toggle",
+          "caps": [
+            "C"
+          ],
+          "label": "Walls on / off for this scan"
+        },
+        {
+          "action": "hud.toggle",
+          "caps": [
+            "H"
+          ],
+          "label": "Show or hide the HUD"
+        },
+        {
+          "action": "scale.down",
+          "caps": [
+            "[",
+            "Shift+["
+          ],
+          "label": "Scene smaller"
+        },
+        {
+          "action": "scale.up",
+          "caps": [
+            "]",
+            "Shift+]"
+          ],
+          "label": "Scene larger"
+        },
+        {
+          "action": "record.toggle",
+          "caps": [
+            "F9"
+          ],
+          "label": "Start or stop recording"
+        },
+        {
+          "action": "frameStats.toggle",
+          "caps": [
+            "F3"
+          ],
+          "label": "Frame times and delay"
+        },
+        {
+          "action": "settings.open",
+          "caps": [
+            "O"
+          ],
+          "label": "Settings"
+        },
+        {
+          "action": "feedback.open",
+          "caps": [
+            "B"
+          ],
+          "label": "Report a bug or an idea"
+        },
+        {
+          "action": "share.open",
+          "caps": [
+            "L"
+          ],
+          "label": "Share this scene"
+        },
+        {
+          "action": "rooms.panel",
+          "caps": [
+            "9"
+          ],
+          "label": "Fly with others: the room and its link (not during a sound lesson)"
+        },
+        {
+          "action": "rooms.who",
+          "caps": [
+            "0"
+          ],
+          "label": "Fly with others: who is around (not during a sound lesson)"
+        },
+        {
+          "action": "help.keys",
+          "caps": [
+            "K"
+          ],
+          "label": "How to fly (the keys card)"
+        },
+        {
+          "action": "fullscreen.toggle",
+          "caps": [
+            "F"
+          ],
+          "label": "Full screen on / off"
+        },
+        {
+          "action": "throttle.style",
+          "caps": [
+            "J"
+          ],
+          "label": "Throttle stick: in the centre (camera drone) or from zero (FPV)"
+        },
+        {
+          "action": "course.toggle",
+          "caps": [
+            "Shift+T"
+          ],
+          "label": "Course: obstacles on / off"
+        },
+        {
+          "action": "course.generate",
+          "caps": [
+            "Shift+G"
+          ],
+          "label": "Course: a new random course"
+        },
+        {
+          "action": "course.edit",
+          "caps": [
+            "Shift+B"
+          ],
+          "label": "Course: edit the obstacles"
+        },
+        {
+          "action": "arm.toggle",
+          "caps": [
+            "Space"
+          ],
+          "label": "Arm / disarm (pilot keys)"
+        }
+      ],
+      "sound": {
+        "href": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+        "target": "_blank",
+        "rel": "noopener",
+        "text": "Fly by Sound: blind and low-vision pilots (opens in a new tab)",
+        "label": "Fly by Sound: blind and low-vision pilots",
+        "newTab": " (opens in a new tab)",
+        "tag": "A"
+      },
+      "namesInMenu": 1,
+      "namesInBody": 1
+    },
+    "itemLines": {
+      "langs": [
+        "en",
+        "es",
+        "pl",
+        "ru"
+      ],
+      "at1280x720": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "at375x812": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "before": "Fly by Sound: audio-only training for blind pilots (beta)"
+    },
+    "plainPopup": {
+      "url": "/en/fly/?sonic=scan&scene=39e63ce9&sz=1",
+      "beginning": true,
+      "about": "/en/sound/",
+      "stillPaused": true
+    },
+    "plainCard": {
+      "text": "How to fly\n\u00d7\n\nKeyboard and mouse\n\nSpace\n\u2191\nUP\nhold to climb\nShift\n\u2193\nDOWN\nhold to descend, and to land\nMouse\nlook and turn (up and down tilts the camera)\nW\nA\nS\nD\nmove (the Up and Down arrows too)\n\u2190\n\u2192\nQ\nE\nturn without a mouse\nF\nfull screen\nEsc\npause (frees the mouse)\nR\nback to the start\nN\nnext scene\nK\nshow this card again\n\nPress Start flying to capture the mouse, then press W or Space to take off. Esc lets it go.\n\nStart flying\nDo not show again\n\nPilot keys as on a radio (Mode 2, Space arms): Settings \u2192 Controls.",
+      "caps": [
+        "Space",
+        "Shift",
+        "Mouse",
+        "W",
+        "A",
+        "S",
+        "D",
+        "\u2190",
+        "\u2192",
+        "Q",
+        "E",
+        "F",
+        "Esc",
+        "R",
+        "N",
+        "K"
+      ]
+    },
+    "plainFetched": {
+      "scripts": [
+        "/fly/assets/main-Cf55lfQM.css",
+        "/fly/assets/storage-buffer-bdokWzy-.js",
+        "/fly/assets/api-CPuhKWhk.js",
+        "/fly/assets/constants-BcTcx50p.js",
+        "/fly/assets/src-S1y7RuoU.js",
+        "/fly/assets/i18n-JePoFGJW.js",
+        "/fly/assets/main-DUzu_dk3.js",
+        "/fly/assets/course-pTJ2jXdV.css",
+        "/fly/assets/model-DEXrjiPQ.js",
+        "/fly/assets/goals-DLiPkTd2.js",
+        "/fly/assets/course-Dh4EhDK-.js",
+        "/fly/assets/shape-2OjsiRih.js",
+        "/fly/assets/primitives-CnyZW84y.js",
+        "/fly/assets/rapier-B4hmj00C.js",
+        "/fly/assets/drones3d-BZ3jyy9a.css",
+        "/fly/assets/drones3d-B0BOUsGZ.js"
+      ],
+      "chunks": [],
+      "holding": []
+    },
+    "plainPolish": {
+      "href": "/pl/fly/?sonic=scan&scene=39e63ce9&sz=1",
+      "target": "_blank",
+      "rel": "noopener",
+      "text": "Lot na s\u0142uch: niewidomi i s\u0142abowidz\u0105cy (otwiera si\u0119 w nowej karcie)",
+      "label": "Lot na s\u0142uch: niewidomi i s\u0142abowidz\u0105cy",
+      "newTab": " (otwiera si\u0119 w nowej karcie)",
+      "tag": "A"
+    }
+  }
+}

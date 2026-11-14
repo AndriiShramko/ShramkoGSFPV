@@ -1,7 +1,7 @@
 // Prebuild: record which background videos exist in public/media/. A block shows its video only
 // when every file of it is really there (H.264 and AV1 at 1280 and 1920 px wide, two WebP posters);
 // otherwise it falls back to the poster alone, or to a dark gradient when there is no poster either.
-// The files are cut from the owner's own flights recorded in the simulator, never faked here
+// The files are cut from the owner's own flights (in the simulator, or real FPV flights), never faked here
 // (how they were cut and encoded: scripts/encode-videos.sh).
 import { existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -13,7 +13,8 @@ const MEDIA = join(SITE, "public", "media");
 const OUT = join(SITE, "src", "generated", "media.json");
 
 // the loops the landing knows (src/config/videos.ts names which block shows which)
-const CLIPS = ["tunis", "garden", "villa"];
+// tunis garden villa: the simulator (scripts/encode-videos.sh); pond acro: real FPV flights (scripts/encode-flight-videos.sh)
+const CLIPS = ["tunis", "garden", "villa", "pond", "acro"];
 const WIDTHS = [1280, 1920];
 const POSTERS = [800, 1600];
 

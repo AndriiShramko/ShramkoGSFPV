@@ -92,5 +92,13 @@
   "sonic.start.lesson": "Start: {title}",
   "sonic.start.noAudio": "Ta przeglądarka nie odtwarza dźwięku, więc tryb „Lot na słuch” tu nie działa. Spróbuj aktualnego Chrome lub Edge.",
   "sonic.start.starting": "Start: {title}.",
-  "sonic.start.unknown": "Nie ma lekcji o nazwie {id}. Wybierz jedną z listy."
+  "sonic.start.unknown": "Nie ma lekcji o nazwie {id}. Wybierz jedną z listy.",
+  "sonic.say.scanNoWalls": "Ten skan nie ma jeszcze ścian, więc żadna ściana cię nie ostrzeże: słyszysz tylko swoją wysokość. Aby mieć ściany, otwórz ten skan w symulatorze, zatrzymaj lot, zbuduj ściany w okienku ścian i wróć przez Lot na słuch w menu pauzy.",
+  "sonic.say.courseOffer": "Naciśnij {key}, aby dostać tor z bramek w tym skanie.",
+  "sonic.say.courseMaking": "Buduję tor z bramek w tym skanie. Może to potrwać pół minuty.",
+  "sonic.say.courseReady": "Tor gotowy. Bramki: {n}, okrążenia: {laps}. Buczenie prowadzi do bramki 1. {key} daje inny tor.",
+  "sonic.say.courseNone": "W tym skanie nie mieści się żaden tor z bramek. Znowu latasz swobodnie.",
+  "sonic.start.scan": "Leć nad tym skanem na słuch",
+  "sonic.start.scanFlier": "Już latam na słuch: leć nad tym skanem",
+  "sonic.start.scanWhat": "Wolny lot nad tym skanem w rozmiarze x{size}: słyszysz jego ściany i swoją wysokość. Bez obręczy, bez zegara."
 }

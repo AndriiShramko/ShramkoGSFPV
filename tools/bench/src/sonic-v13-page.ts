@@ -238,7 +238,7 @@ async function partA(browser: Browser, out: Record<string, unknown>): Promise<vo
             return a ? { tag: a.tagName, href: a.getAttribute('href'), target: a.getAttribute('target'), rel: a.getAttribute('rel'), label: a.querySelector('.pm-label')?.textContent ?? '', newTab: (a.querySelector('.visually-hidden')?.textContent ?? '').trim() } : null;
         });
         out.pauseItem = item;
-        check(`A: the pause menu's item is a link to the mode's start screen /en/fly/?sonic=start (not the page about the mode), in a new tab, worded "${SONIC['sonic.menu.page']}", and a screen reader hears "${MAIN['pause.newTab']}"`, !!item && item.tag === 'A' && item.href === '/en/fly/?sonic=start' && item.target === '_blank' && (item.rel ?? '').includes('noopener') && item.label === SONIC['sonic.menu.page'] && item.newTab === MAIN['pause.newTab'], item);
+        check(`A: the pause menu's item is a link to the mode's start screen for this scan /en/fly/?sonic=scan&scene=39e63ce9&sz=<size> (train 2; not the page about the mode), in a new tab, worded "${SONIC['sonic.menu.page']}", and a screen reader hears "${MAIN['pause.newTab']}"`, !!item && item.tag === 'A' && /^\/en\/fly\/\?sonic=scan&scene=39e63ce9&sz=\d+(\.\d+)?$/.test(item.href ?? '') && item.target === '_blank' && (item.rel ?? '').includes('noopener') && item.label === SONIC['sonic.menu.page'] && item.newTab === MAIN['pause.newTab'], item);
         if (item) {
             const [popup] = await Promise.all([ctx.waitForEvent('page', { timeout: 15000 }), page.click('.pause-menu [data-action="pause.flyBySound"]')]);
             await popup.waitForLoadState('domcontentloaded');
@@ -253,7 +253,7 @@ async function partA(browser: Browser, out: Record<string, unknown>): Promise<vo
             }));
             const stillPaused = await page.evaluate(() => !!document.querySelector('.pause-menu'));
             out.pausePopup = { ...landed, stillPaused };
-            check('A: followed, it opens the mode\'s start screen in a new tab (its 28 lessons, the course from the beginning), the page about the mode linked from its footer; the flight stays paused under the menu', landed.url === '/en/fly/?sonic=start' && landed.shown && landed.h1 === 'Fly by Sound' && landed.beginning && landed.lessons === TOTAL && landed.about === '/en/sound/' && stillPaused, out.pausePopup);
+            check('A: followed, it opens the mode\'s start screen in a new tab (its 28 lessons, the course from the beginning), the page about the mode linked from its footer; the flight stays paused under the menu', /^\/en\/fly\/\?sonic=scan&scene=39e63ce9&sz=\d+(\.\d+)?$/.test(landed.url) && landed.shown && landed.h1 === 'Fly by Sound' && landed.beginning && landed.lessons === TOTAL && landed.about === '/en/sound/' && stillPaused, out.pausePopup);
             await shot(popup, 'a-start-screen-from-pause-item', 'the start screen the pause item opened');
             await popup.close();
         }

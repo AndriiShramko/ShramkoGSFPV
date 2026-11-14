@@ -13,6 +13,9 @@
 //            on page load; "Fly through the RC bridge" connects, the check screen opens, stick frames arrive.
 //            With BRIDGE_EXPECT=blocked (the page served with a CSP that lacks the bridge) the pass is the reverse:
 //            the helper says the bridge does not answer and the browser logged a CSP refusal.
+//            On an https base (the live site) the probe first grants Chrome's Local Network Access permission for the
+//            site (grantLoopback: what a pilot's Allow does; lane rc2-lna) and records which call worked.
+//   bridge-nogrant  (only when named) a fresh profile without that grant: what the helper says, after how many ms.
 // Pass needs every check of every run. Against a build of origin/main (no RC 2 support) usb and refused must fail.
 // Usage: node rc2-probe.mjs <base with the locale, e.g. http://localhost:5393/en> <out.json> [usb,refused,bridge]
 // Prints ONE last line of JSON {pass, checks}; exit 0 only on pass.
@@ -29,6 +32,9 @@ const outFile = process.argv[3] ?? ROOT + '/.cache/rc2-probe.json';
 const only = process.argv[4] ? process.argv[4].split(',') : ['usb', 'refused', 'bridge'];
 const bridgeBlocked = process.env.BRIDGE_EXPECT === 'blocked';
 const fakeAnswer = process.env.RC2_FAKE_ANSWER === 'timer' ? 'timer' : 'message';
+const bridgePort = Number(process.env.RC2_BRIDGE_PORT) || 0;
+// a helper on its own port is outside the page's CSP (it allows 47310 only): the probe's contexts then bypass the CSP
+const ctxOpts = { viewport: { width: 1600, height: 900 }, ...(bridgePort ? { bypassCSP: true } : {}) };
 const RUN_LIMIT_MS = 120000; // a run takes 30-60 s (2026-11-13 runs); twice the longest is a hang
 const scene = '887f27aa'; // open sky above the spawn (centre-throttle-probe.mjs)
 mkdirSync(dirname(outFile), { recursive: true });
@@ -38,7 +44,9 @@ function installFakeRc2(cfg) {
     const counts = { sockets: 0, requests: 0, replies: 0, claims: 0 };
     window.__rc2Probe = counts;
     const RealWS = window.WebSocket;
-    window.WebSocket = class extends RealWS { constructor(...a) { super(...a); counts.sockets++; } };
+    // RC2_BRIDGE_PORT: the page's helper address (ws://127.0.0.1:47310/) goes to the probe's own helper port (the
+    // owner's real helper may hold 47310; lane connect)
+    window.WebSocket = class extends RealWS { constructor(u, ...a) { super(cfg.bridgePort ? String(u).replace(':47310/', `:${cfg.bridgePort}/`) : u, ...a); counts.sockets++; } };
     // DUML (packages/input/src/dji-duml.ts): CRC-8 seed 0x77 poly 0x8c, CRC-16 seed 0x3692 poly 0x8408, both reflected
     const table = (poly) => { const t = new Uint16Array(256); for (let i = 0; i < 256; i++) { let c = i; for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ poly : c >>> 1; t[i] = c; } return t; };
     const T8 = table(0x8c), T16 = table(0x8408);
@@ -156,7 +164,8 @@ const state = (page) => page.evaluate(() => {
 });
 /** the Controls screen's helper, opened (a <details>) */
 async function openHelper(page) {
-    await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && document.querySelector('.screen.radio .choice button'), null, { timeout: 120000 });
+    // lane connect C2: a page that connected by itself is already past the device choice (wizard or check screen)
+    await page.waitForFunction(() => window.__gsfpv?.status === 'ready' && (document.querySelector('.screen.radio .choice button') || window.__gsfpv?.radio?.wizard?.state), null, { timeout: 120000 });
     await page.evaluate(() => { const d = document.querySelector('[data-testid=usb-look]'); if (d) d.open = true; });
 }
 /** the frames the check screen gets: a tap on the HID source's frame callback */
@@ -285,12 +294,12 @@ async function stackOf(cdp) {
     return Promise.race([paused, new Promise((r) => setTimeout(() => r('no pause in 10 s (not in script?)'), 10000))]);
 }
 
-if (only.includes('usb') || only.includes('bridge')) usbCtx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+if (only.includes('usb') || only.includes('bridge')) usbCtx = await browser.newContext(ctxOpts);
 
 if (only.includes('usb')) {
-    await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
+    await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer, bridgePort });
     await run('usb', usbCtx, async (page, note) => {
-        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1&set.input.howToFly=false`, { waitUntil: 'load' });
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false`, { waitUntil: 'load' });
         step('usb: loaded');
         await openHelper(page);
         step('usb: helper open');
@@ -353,13 +362,15 @@ if (only.includes('usb')) {
         note.probe = s1.probe;
     });
     checks['usb.noPageErrors'] = (errorsOf.usb ?? ['not run']).length === 0;
+    // the saved setup of a returning RC 2 pilot, for connect-probe.mjs
+    await usbCtx.storageState({ path: outFile.replace(/\.json$/, '-state.json') });
 }
 
 if (only.includes('refused')) {
-    const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
-    await ctx.addInitScript(installFakeRc2, { refuse: true, answer: fakeAnswer });
+    const ctx = await browser.newContext(ctxOpts);
+    await ctx.addInitScript(installFakeRc2, { refuse: true, answer: fakeAnswer, bridgePort });
     await run('refused', ctx, async (page, note) => {
-        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
         await openHelper(page);
         await page.locator('[data-action=usb-look]').click();
         await page.locator('[data-action=usb-rc2-fly]').click({ timeout: 10000 });
@@ -367,24 +378,64 @@ if (only.includes('refused')) {
         note.say = await page.textContent('[data-testid=usb-rc2-say]');
         const s = await state(page);
         note.probe = s.probe;
-        checks['refused.saysClaimFailed'] = /could not open the controller's stick channel/.test(note.say) && /Fly through the RC bridge/.test(note.say);
+        // lane connect C2: the helper is named a small helper program, never a bridge
+        checks['refused.saysClaimFailed'] = /could not open the controller's stick channel/.test(note.say) && /helper program/.test(note.say) && !/bridge/i.test(note.say);
         checks['refused.stillOnControls'] = s.radio && s.wizard === null && s.probe.claims === 1;
     });
     checks['refused.noPageErrors'] = (errorsOf.refused ?? ['not run']).length === 0;
     await ctx.close();
 }
 
+/**
+ * On an https base Chrome's Local Network Access check stands between the page and ws://127.0.0.1 (lane rc2-lna,
+ * docs/wip/rc2-lna.md: Chrome 156 asks for 'loopback-network'). A pilot answers Chrome's prompt with Allow; headless
+ * nobody does, so the probe grants it for the site's origin before the press. The first call that does not throw is
+ * kept: CDP Browser.setPermission {name:'loopback-network'}, then Playwright's grantPermissions(['local-network-access'])
+ * (measured on 2026-11-13: both open the socket; CDP 'local-network-access' or 'local-network' alone do not).
+ * http://localhost bases need no grant (the check does not apply to a local page): nothing is called there.
+ */
+async function grantLoopback(page, note) {
+    const origin = new URL(base).origin;
+    if (!base.startsWith('https:')) { note.grant = 'not needed (http base)'; return; }
+    const tried = [];
+    const { targetInfo } = await curCdp.send('Target.getTargetInfo');
+    const bcdp = await browser.newBrowserCDPSession();
+    const calls = [
+        ['cdp Browser.setPermission loopback-network', () => bcdp.send('Browser.setPermission', { permission: { name: 'loopback-network' }, setting: 'granted', origin, browserContextId: targetInfo.browserContextId })],
+        ['playwright grantPermissions local-network-access', () => page.context().grantPermissions(['local-network-access'], { origin })]
+    ];
+    for (const [name, call] of calls) {
+        try { await call(); note.grant = name; break; } catch (e) { tried.push(`${name}: ${String(e?.message ?? e).split('\n')[0].slice(0, 160)}`); }
+    }
+    note.grantTried = tried;
+    if (!note.grant) note.grant = 'none worked';
+}
+/** in the page: what navigator.permissions says for the candidate names (an unknown name: its TypeError) */
+const permStates = (page) => page.evaluate(async () => {
+    const r = {};
+    for (const n of ['local-network-access', 'local-network', 'loopback-network']) {
+        try { r[n] = (await navigator.permissions.query({ name: n })).state; } catch (e) { r[n] = String(e?.name ?? e); }
+    }
+    return r;
+});
+
 if (only.includes('bridge')) {
-    if (!only.includes('usb')) await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer });
+    if (!only.includes('usb')) await usbCtx.addInitScript(installFakeRc2, { refuse: false, answer: fakeAnswer, bridgePort });
     await run('bridge', usbCtx, async (page, note, csp) => {
-        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&rcbridge=1`, { waitUntil: 'load' });
+        if (!bridgeBlocked) await grantLoopback(page, note);
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
+        if (base.startsWith('https:')) note.permissions = await permStates(page);
         await openHelper(page);
         await page.waitForTimeout(1500);
         note.socketsBeforePress = (await state(page)).probe.sockets;
-        checks['bridge.noSocketOnLoad'] = note.socketsBeforePress === 0;
-        await page.locator('[data-action=usb-rc2-bridge]').click();
+        // lane connect C2 (a): with the saved RC 2 setup and Chrome not asking, the page reaches the helper by itself
+        // (a socket at load is allowed then); with the CSP blocking it, the quiet try fails and the press shows the line
+        note.autoConnected = !!(await state(page)).wizard;
+        if (!note.autoConnected) await page.locator('[data-action=usb-rc2-bridge]').click();
         // connected: the Controls screen moves on to the check (the helper and its line leave the page)
-        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 });
+        // 'asking' (Chrome's loopback question is 'prompt' on http://localhost) is passed on the way: the socket still
+        // connects; the first poll saw it in the fixes run of 2026-11-13 although the check screen came (race, not a fault)
+        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening' && s !== 'asking') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 }).catch(() => undefined);
         const said = await page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : null; });
         note.sayState = said ? said.state : 'flying';
         note.say = said?.text ?? '';
@@ -408,6 +459,94 @@ if (only.includes('bridge')) {
         checks['bridge.cspQuiet'] = csp.length === 0;
     });
     checks['bridge.noPageErrors'] = (errorsOf.bridge ?? ['not run']).length === 0;
+}
+
+// bridge-nogrant (only when asked for): a fresh profile on an https base without the Local Network Access grant, the
+// path of a pilot who has not answered Chrome's prompt yet (headless: the prompt never gets an answer). Records what the
+// helper says and after how many ms; passes when the line says something other than 'opening' within 10 s and the page
+// threw nothing. No grant, no Allow: what the pilot sees after Allow is the 'bridge' run.
+if (only.includes('bridge-nogrant')) {
+    const ctx = await browser.newContext(ctxOpts);
+    await ctx.addInitScript(installFakeRc2, { refuse: true, answer: fakeAnswer, bridgePort });
+    await run('bridge-nogrant', ctx, async (page, note) => {
+        await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
+        if (base.startsWith('https:')) note.permissions = await permStates(page);
+        await openHelper(page);
+        await refuseFirst(page);
+        const t0 = Date.now();
+        await page.locator('[data-action=usb-rc2-bridge]').click();
+        await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return (s && s !== 'opening') || !!window.__gsfpv?.radio?.wizard?.state; }, null, { timeout: 10000 }).catch(() => undefined);
+        note.afterMs = Date.now() - t0;
+        const said = await page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : null; });
+        note.sayState = said ? said.state : 'flying';
+        note.say = said?.text ?? '';
+        // 3 s later: still the same line (a pending prompt is not given up), and how many sockets the page made
+        await page.waitForTimeout(3000);
+        note.sayStateAfter3s = await page.evaluate(() => document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state') ?? 'gone');
+        note.sockets = (await state(page)).probe.sockets;
+        checks['bridgeNoGrant.answered'] = !!note.sayState && note.sayState !== 'opening';
+    });
+    checks['bridgeNoGrant.noPageErrors'] = (errorsOf['bridge-nogrant'] ?? ['not run']).length === 0;
+    await ctx.close();
+}
+
+// bridge-lna (only when named; lane rc2-lna): Chrome's question simulated in the page, on any base, so the page's own
+// handling is seen in a browser: navigator.permissions.query('loopback-network') answers a fake status, and while it is
+// not 'granted' the page's sockets go to a closed port (as Chrome blocks them). 'prompt': the helper shows the asking
+// line and keeps it 3 s; after the fake Allow (state 'granted' and a change event) the wizard opens with no second
+// press. 'denied': the no-answer line (site settings), no socket. The bridge must be running, as for 'bridge'.
+/** lane connect C2: in a fresh profile the helper is offered after the stick channel was refused (helperOffered) */
+async function refuseFirst(page) {
+    await page.locator('[data-action=usb-look]').click();
+    await page.locator('[data-action=usb-rc2-fly]').click({ timeout: 10000 });
+    await page.waitForSelector('[data-action=usb-rc2-bridge]', { timeout: 10000 });
+}
+const installFakeLna = ({ mode }) => {
+    const st = new EventTarget();
+    st.state = mode;
+    const q = navigator.permissions.query.bind(navigator.permissions);
+    navigator.permissions.query = (d) => (d && d.name === 'loopback-network' ? Promise.resolve(st) : q(d));
+    window.__lnaAllow = () => { st.state = 'granted'; st.dispatchEvent(new Event('change')); };
+    const Inner = window.WebSocket;
+    window.WebSocket = class extends Inner { constructor(u, ...r) { super(st.state === 'granted' ? u : 'ws://127.0.0.1:9/', ...r); } };
+};
+if (only.includes('bridge-lna')) {
+    for (const mode of ['prompt', 'denied']) {
+        const ctx = await browser.newContext(ctxOpts);
+        await ctx.addInitScript(installFakeRc2, { refuse: true, answer: fakeAnswer, bridgePort });
+        await ctx.addInitScript(installFakeLna, { mode });
+        const name = `bridge-lna-${mode}`;
+        await run(name, ctx, async (page, note) => {
+            await page.goto(`${base}/fly/?scene=${scene}&nowarn=1`, { waitUntil: 'load' });
+            await openHelper(page);
+            await refuseFirst(page);
+            const sayOf = () => page.evaluate(() => { const e = document.querySelector('[data-testid=usb-bridge-say]'); return e ? { state: e.getAttribute('data-state'), text: e.textContent } : { state: 'gone', text: '' }; });
+            await page.locator('[data-action=usb-rc2-bridge]').click();
+            note.clicks = 1;
+            await page.waitForFunction(() => { const s = document.querySelector('[data-testid=usb-bridge-say]')?.getAttribute('data-state'); return !!s && s !== 'opening'; }, null, { timeout: 10000 }).catch(() => undefined);
+            note.first = await sayOf();
+            if (mode === 'denied') {
+                note.sockets = (await state(page)).probe.sockets;
+                checks['bridgeLna.deniedSaysSettings'] = note.first.state === 'denied' && /site settings/.test(note.first.text);
+                checks['bridgeLna.deniedNoSocket'] = note.sockets === 0;
+                return;
+            }
+            await page.waitForTimeout(3000);
+            note.after3s = await sayOf();
+            note.socketsWhileAsking = (await state(page)).probe.sockets;
+            checks['bridgeLna.promptAsks'] = note.first.state === 'asking' && /Allow/.test(note.first.text) && note.after3s.state === 'asking';
+            const t0 = Date.now();
+            await page.evaluate(() => window.__lnaAllow());
+            await page.waitForFunction(() => !!window.__gsfpv?.radio?.wizard?.state, null, { timeout: 15000 }).catch(() => undefined);
+            note.wizardAfterMs = Date.now() - t0;
+            const b = await state(page);
+            note.wizard = b.wizard;
+            note.socketsAfterAllow = b.probe.sockets;
+            checks['bridgeLna.allowConnectsWithOnePress'] = !!b.wizard;
+        });
+        checks[`bridgeLna.${mode}.noPageErrors`] = (errorsOf[name] ?? ['not run']).length === 0;
+        await ctx.close();
+    }
 }
 if (usbCtx) await usbCtx.close();
 await browser.close();

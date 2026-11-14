@@ -26,7 +26,7 @@
 //              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
 //              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
@@ -38,8 +38,9 @@ import type { LessonWorld } from './lesson-world';
 import type { SonicMode } from './mode';
 import { worldPrims } from './primitives';
 import type { Prim } from './primitives';
-import { voxelCm, wallsAreCoarse } from './scan-lesson';
+import { isScanCourse, scanCourseLesson, voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
+import type { CourseAnswer } from './course-ask';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
 import { DEFAULT_LESSON_START_KEYS } from './key-names';
@@ -81,6 +82,11 @@ export interface LessonPage {
      * when the page cannot fly a scan. A scan that does not load rejects, and the lesson does not open.
      */
     scanLesson(lesson: LessonDef): Promise<ScanLesson | null>;
+    /**
+     * A course of gates in the scan flown now, for the free flight over a scan (train 2, S3: N there asks for one; course-ask.ts),
+     * and the name of that key as the pilot's keyboard types it. Absent: N in a free flight goes to the menu, as before.
+     */
+    course?: { ask(): Promise<CourseAnswer>; key(): string };
     /** The start screen over the flight. */
     showMenu(): void;
     /** Milliseconds, for the pause between a pass and the next lesson (performance.now). */
@@ -115,7 +121,8 @@ export interface RunnerPlace {
 export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path' | 'keyNames' | 'speechRate'>, lessonId: string, place: RunnerPlace, sessionStartMs: number): RunnerOptions {
     return {
         locale: page.locale,
-        progress: savedProgress(page.store, lessonId),
+        // the free flight over a scan and its courses keep no progress (review SN-6: one best time for every course in every scan)
+        progress: lessonId === SCAN_FREE_ID ? null : savedProgress(page.store, lessonId),
         sessionStartMs,
         start: place.start,
         floorY: place.floorY,
@@ -189,6 +196,62 @@ export class LessonHost {
         page.onEvent((e) => this.observe(e));
     }
 
+    /** The free flight over a scan link's scan (train 2, start.ts freeLessonOf): opened by its id SCAN_FREE_ID, never on a path. */
+    private free: LessonDef | null = null;
+    /** The free flight as it was opened, without a course: what a course is made from and what a failed ask goes back to. */
+    private freeBase: LessonDef | null = null;
+    /** the course flown now (S3): its "Course ready" line, said again when the course is passed and flown once more (SN-3) */
+    private ready: SpeechLine | null = null;
+
+    /** Opens the free flight over a scan (scanFreeLesson): no track, no target, the scan's own spawn, the walls and height heard. */
+    openFree(lesson: LessonDef): Promise<boolean> {
+        if (lesson.id !== SCAN_FREE_ID) return Promise.resolve(false);
+        this.free = lesson;
+        this.freeBase = lesson;
+        this.ready = null;
+        return this.open(SCAN_FREE_ID);
+    }
+
+    /**
+     * The start screen's press over a running flight (feature.ts): the scan's free flight is made new from the page's scan link
+     * (freeOf: start.ts freeLessonOf), so the scan button flies the scan after a lesson was flown first, and after a course it flies
+     * freely again, not the course kept in memory (review SN-2); any other id is a shipped lesson.
+     */
+    openFromScreen(id: string, freeOf?: (id: string) => LessonDef | null): Promise<boolean> {
+        const free = id === SCAN_FREE_ID ? freeOf?.(id) ?? null : null;
+        return free ? this.openFree(free) : this.open(id);
+    }
+
+    /**
+     * N in a free scan flight (train 2, S3): a course of gates in this scan (the page's course.ask), flown by sound as a timed course
+     * (scanCourseLesson); N in it asks for another. No course (no walls, none fits, the worker failed): said, and the free flight again.
+     * False when the page asks for none (the caller goes to the menu).
+     */
+    private async flyCourse(): Promise<boolean> {
+        const course = this.p.course;
+        const base = this.freeBase;
+        if (!course || !base) return false;
+        const say = (line: SpeechLine): void => void this.p.mode.bridge.say(line, false, { lesson: true });
+        const asked = this.runner;
+        say({ key: 'sonic.say.courseMaking' });
+        const a = await course.ask();
+        // review SN-9: the pilot left this flight while the worker ran (the menu, a lesson, the scan button): the answer opens nothing
+        // over what he does now
+        if (this.runner !== asked || this.lesson?.id !== SCAN_FREE_ID) return true;
+        if (!a.ok) {
+            // one line for the failed ask; the free flight that opens again says neither the no-walls line nor the offer once more (SN-8)
+            say({ key: a.why === 'no walls' ? 'sonic.say.scanNoWalls' : 'sonic.say.courseNone' });
+            this.free = base;
+            this.ready = null;
+            return this.open(SCAN_FREE_ID, { keepSpeech: true, quiet: true });
+        }
+        this.free = scanCourseLesson(base, a.track);
+        const ok = await this.open(SCAN_FREE_ID);
+        this.ready = ok ? { key: 'sonic.say.courseReady', params: { n: a.track.gates.length, laps: a.track.laps, key: course.key() } } : null;
+        if (this.ready) say(this.ready);
+        return ok;
+    }
+
     /** A lesson world built before the page (the entry's first flight is made on it), so the first open does not build it again. */
     seed(lessonId: string, world: LessonWorld): void {
         this.worlds.set(lessonId, world);
@@ -227,11 +290,12 @@ export class LessonHost {
     // ------------------------------------------------------------------ opening a lesson
 
     /** Opens a lesson: its world flown, the helper's view drawn, the runner begun. Never throws for the pilot's sake: the reason goes to the console. */
-    async open(lessonId: string, o: { returnTo?: string | null; keepSpeech?: boolean } = {}): Promise<boolean> {
-        if (this.busy || !isShippedLesson(lessonId)) return false;
+    async open(lessonId: string, o: { returnTo?: string | null; keepSpeech?: boolean; quiet?: boolean } = {}): Promise<boolean> {
+        const free = lessonId === SCAN_FREE_ID ? this.free : null;
+        if (this.busy || !(free || isShippedLesson(lessonId))) return false;
         this.busy = true;
         try {
-            const lesson = getLesson(lessonId);
+            const lesson = free ?? getLesson(lessonId);
             this.finish();
             let world: SonicWorld;
             let floorY = 0;
@@ -271,8 +335,11 @@ export class LessonHost {
             this.demo = null;
             this.passedAt = null;
             this.returnTo = o.returnTo ?? null;
-            setCurrentLesson(this.p.store, lessonId);
-            this.url(lesson);
+            // the free flight is no lesson of the course: Continue keeps its lesson, and the address stays the scan link it came from
+            if (!free) {
+                setCurrentLesson(this.p.store, lessonId);
+                this.url(lesson);
+            }
             // G, or a lesson chosen on the start screen, while the lesson left is still talking: its queued lines (a lesson says
             // four to six at once when it opens) would be heard first, a minute of them, before this lesson's own. The new
             // lesson's first line cuts them, as N and an answer do inside a lesson; the bridge counts lines per run (review D2)
@@ -294,6 +361,12 @@ export class LessonHost {
                 this.p.mode.place(start);
                 // the walls are as fine as the scan's file: said plainly, after the intro
                 if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } }, false, { lesson: true });
+                // a free flight over a scan that has no walls (train 2): no wall can warn, said and shown (the captions), with the way to get them
+                if (o.quiet) {
+                    // a failed course ask said its one line already (flyCourse)
+                } else if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
+                // train 2, S3: the free flight with walls names the key that asks for a course of gates in this scan (flyCourse)
+                else if (free && !isScanCourse(lesson) && this.p.course) void this.p.mode.bridge.say({ key: 'sonic.say.courseOffer', params: { key: this.p.course.key() } }, false, { lesson: true });
             }
             return true;
         } catch (e) {
@@ -316,7 +389,7 @@ export class LessonHost {
 
     /** What the pilot did in the lesson being left is saved (not when he reset his progress over it: its counts are void). */
     private finish(): void {
-        if (this.runner && this.runner !== this.forgotten) saveProgress(this.p.store, this.runner.progress());
+        if (this.runner && this.runner !== this.forgotten && this.lesson?.id !== SCAN_FREE_ID) saveProgress(this.p.store, this.runner.progress());
     }
 
     /**
@@ -467,7 +540,7 @@ export class LessonHost {
         if (e.kind === 'answer') this.question = null;
         else if (e.kind === 'lesson' && (e.what === 'attempt-pass' || e.what === 'attempt-fail' || e.what === 'block-pass' || e.what === 'passed')) {
             // a runner whose counts the pilot reset saves nothing (v13-int step 5)
-            if (run !== this.forgotten) saveProgress(this.p.store, run.progress());
+            if (run !== this.forgotten && this.lesson?.id !== SCAN_FREE_ID) saveProgress(this.p.store, run.progress());
             if (e.what === 'passed') this.passedAt = null;
         }
     }
@@ -485,6 +558,17 @@ export class LessonHost {
         this.passedAt ??= now;
         if (now - this.passedAt < NEXT_AFTER_MS) return;
         this.passedAt = null;
+        // a course by sound (S3) passed: the same course again for a better time, said with its key for another; a new course
+        // only on N (review SN-3: no course was asked for without a key)
+        if (this.lesson?.id === SCAN_FREE_ID && isScanCourse(this.lesson) && this.ready) {
+            this.movedFrom = run;
+            const ready = this.ready;
+            void this.open(SCAN_FREE_ID, { keepSpeech: true }).then((ok) => {
+                if (ok) void this.p.mode.bridge.say(ready, false, { lesson: true });
+                else this.toMenu();
+            });
+            return;
+        }
         void this.advance();
     }
 
@@ -501,7 +585,9 @@ export class LessonHost {
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        const next = lessonAfter(id, this.p.path());
+        // the free flight over a scan has no lesson after it on any path: N asks for a course in it (S3), else the menu
+        if (id === SCAN_FREE_ID && (await this.flyCourse())) return;
+        const next = id === SCAN_FREE_ID ? null : lessonAfter(id, this.p.path());
         if (next && (await this.open(next.id))) return;
         this.toMenu();
     }
@@ -520,7 +606,7 @@ export class LessonHost {
             this.returnTo = null;
             if (await this.open(back)) return;
         }
-        const before = lessonBefore(id, this.p.path());
+        const before = id === SCAN_FREE_ID ? null : lessonBefore(id, this.p.path());
         if (before && (await this.open(before.id))) return;
         this.toMenu();
     }

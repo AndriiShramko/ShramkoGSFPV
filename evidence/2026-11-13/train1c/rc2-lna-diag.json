@@ -1,0 +1,402 @@
+{
+ "what": "rc2-lna-diag.mjs",
+ "base": "https://gsfpv.flyreelstudio.eu/en",
+ "origin": "https://gsfpv.flyreelstudio.eu",
+ "at": "2026-11-13T15:37:54.792Z",
+ "browser": "156.0.8078.80",
+ "browserKind": "system-chrome",
+ "args": [],
+ "runs": {
+  "none": {
+   "grant": "none",
+   "query": {
+    "local-network-access": "prompt",
+    "local-network": "prompt",
+    "loopback-network": "prompt"
+   },
+   "ws": {
+    "ev": [
+     [
+      "error",
+      3
+     ],
+     [
+      "close",
+      3,
+      1006,
+      false
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"20780.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketFrameError",
+     "p": "{\"requestId\":\"20780.18\",\"timestamp\":880041.530821,\"errorMessage\":\"Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS\"}"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"20780.18\",\"timestamp\":880041.531023}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": [
+    "error: WebSocket connection to 'ws://127.0.0.1:47310/' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS"
+   ]
+  },
+  "pw:local-network-access": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "granted",
+    "local-network": "granted",
+    "loopback-network": "granted"
+   },
+   "ws": {
+    "ev": [
+     [
+      "open",
+      3
+     ],
+     [
+      "message",
+      4,
+      "{\"hello\": \"shramko-rc-bridge\", \"version\": 1}"
+     ],
+     [
+      "message",
+      168,
+      "{\"state\":\"reading\"}"
+     ],
+     [
+      "still",
+      8002,
+      1
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"80444.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketWillSendHandshakeRequest",
+     "p": "{\"requestId\":\"80444.18\",\"timestamp\":880043.385119,\"wallTime\":1794584277.480939,\"request\":{\"headers\":{\"Upgrade\":\"websocket\",\"Origin\":\"https://gsfpv.flyreelstudio.eu\",\"Cache-Control\":\"no-cache\",\"Accept-Language\":\"en-US,en;q=0.9\",\"Pragma\":\"no-cache\",\"Connection\":\"Upgrade\",\"Sec-WebSocket-Key\":\"0lOPrvzpRVHM3qQ7LjGkHg==\",\"Accept-Encoding\":\"gzip, deflate, br, zstd\",\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36\",\"Sec-WebSocket-Version\":\"13\",\"Host\":\"127.0.0.1:47310\",\"Sec-WebSocket-Extensions\":\"permessage-deflate; cl"
+    },
+    {
+     "ev": "webSocketHandshakeResponseReceived",
+     "p": "{\"requestId\":\"80444.18\",\"timestamp\":880043.386038,\"response\":{\"status\":101,\"statusText\":\"Switching Protocols\",\"headers\":{\"Upgrade\":\"websocket\",\"Sec-WebSocket-Accept\":\"een7RAwyAlxPtl6X4W1TrxMFgcQ=\",\"Connection\":\"Upgrade\"},\"headersText\":\"HTTP/1.1 101 Switching Protocols\\r\\nUpgrade: websocket\\r\\nConnection: Upgrade\\r\\nSec-WebSocket-Accept: een7RAwyAlxPtl6X4W1TrxMFgcQ=\\r\\n\\r\\n\",\"requestHeaders\":{\"Upgrade\":\"websocket\",\"Origin\":\"https://gsfpv.flyreelstudio.eu\",\"Cache-Control\":\"no-cache\",\"Accept-Language\":\"en-US,en;q=0.9\",\"Pragma\":\"no-cache\",\"Connection\":\"Upgrade\",\"Sec-WebSocket-Key\":\"0lOPrvzpRVHM3qQ"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"80444.18\",\"timestamp\":880051.385793}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": []
+  },
+  "pw:local-network": {
+   "grant": "threw: browserContext.grantPermissions: Unknown permission: local-network"
+  },
+  "pw:loopback-network": {
+   "grant": "threw: browserContext.grantPermissions: Unknown permission: loopback-network"
+  },
+  "cdp-grant:localNetworkAccess": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "granted",
+    "local-network": "denied",
+    "loopback-network": "denied"
+   },
+   "ws": {
+    "ev": [
+     [
+      "error",
+      2
+     ],
+     [
+      "close",
+      2,
+      1006,
+      false
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"52972.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketFrameError",
+     "p": "{\"requestId\":\"52972.18\",\"timestamp\":880053.039269,\"errorMessage\":\"Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS\"}"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"52972.18\",\"timestamp\":880053.039464}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": [
+    "error: WebSocket connection to 'ws://127.0.0.1:47310/' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS"
+   ]
+  },
+  "cdp-grant:localNetwork": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "denied",
+    "local-network": "granted",
+    "loopback-network": "denied"
+   },
+   "ws": {
+    "ev": [
+     [
+      "error",
+      2
+     ],
+     [
+      "close",
+      2,
+      1006,
+      false
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"82328.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketFrameError",
+     "p": "{\"requestId\":\"82328.18\",\"timestamp\":880058.222843,\"errorMessage\":\"Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS\"}"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"82328.18\",\"timestamp\":880058.223031}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": [
+    "error: WebSocket connection to 'ws://127.0.0.1:47310/' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS"
+   ]
+  },
+  "cdp-grant:loopbackNetwork": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "denied",
+    "local-network": "denied",
+    "loopback-network": "granted"
+   },
+   "ws": {
+    "ev": [
+     [
+      "open",
+      3
+     ],
+     [
+      "message",
+      3,
+      "{\"hello\": \"shramko-rc-bridge\", \"version\": 1}"
+     ],
+     [
+      "message",
+      101,
+      "{\"state\":\"reading\"}"
+     ],
+     [
+      "still",
+      8002,
+      1
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"30016.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketWillSendHandshakeRequest",
+     "p": "{\"requestId\":\"30016.18\",\"timestamp\":880059.526507,\"wallTime\":1794584293.622327,\"request\":{\"headers\":{\"Upgrade\":\"websocket\",\"Origin\":\"https://gsfpv.flyreelstudio.eu\",\"Cache-Control\":\"no-cache\",\"Accept-Language\":\"en-US,en;q=0.9\",\"Pragma\":\"no-cache\",\"Connection\":\"Upgrade\",\"Sec-WebSocket-Key\":\"z4LT5Pc+2NHM8XTpyxV7PQ==\",\"Accept-Encoding\":\"gzip, deflate, br, zstd\",\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36\",\"Sec-WebSocket-Version\":\"13\",\"Host\":\"127.0.0.1:47310\",\"Sec-WebSocket-Extensions\":\"permessage-deflate; cl"
+    },
+    {
+     "ev": "webSocketHandshakeResponseReceived",
+     "p": "{\"requestId\":\"30016.18\",\"timestamp\":880059.527508,\"response\":{\"status\":101,\"statusText\":\"Switching Protocols\",\"headers\":{\"Upgrade\":\"websocket\",\"Sec-WebSocket-Accept\":\"rZQUH3rctgElEsSFOW9vGAegViQ=\",\"Connection\":\"Upgrade\"},\"headersText\":\"HTTP/1.1 101 Switching Protocols\\r\\nUpgrade: websocket\\r\\nConnection: Upgrade\\r\\nSec-WebSocket-Accept: rZQUH3rctgElEsSFOW9vGAegViQ=\\r\\n\\r\\n\",\"requestHeaders\":{\"Upgrade\":\"websocket\",\"Origin\":\"https://gsfpv.flyreelstudio.eu\",\"Cache-Control\":\"no-cache\",\"Accept-Language\":\"en-US,en;q=0.9\",\"Pragma\":\"no-cache\",\"Connection\":\"Upgrade\",\"Sec-WebSocket-Key\":\"z4LT5Pc+2NHM8XT"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"30016.18\",\"timestamp\":880067.527259}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": []
+  },
+  "cdp-set:local-network-access": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "granted",
+    "local-network": "prompt",
+    "loopback-network": "prompt"
+   },
+   "ws": {
+    "ev": [
+     [
+      "error",
+      2
+     ],
+     [
+      "close",
+      2,
+      1006,
+      false
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"65612.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketFrameError",
+     "p": "{\"requestId\":\"65612.18\",\"timestamp\":880069.082815,\"errorMessage\":\"Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS\"}"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"65612.18\",\"timestamp\":880069.08299}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": [
+    "error: WebSocket connection to 'ws://127.0.0.1:47310/' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS"
+   ]
+  },
+  "cdp-set:local-network": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "prompt",
+    "local-network": "granted",
+    "loopback-network": "prompt"
+   },
+   "ws": {
+    "ev": [
+     [
+      "error",
+      3
+     ],
+     [
+      "close",
+      3,
+      1006,
+      false
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"89164.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketFrameError",
+     "p": "{\"requestId\":\"89164.18\",\"timestamp\":880070.635419,\"errorMessage\":\"Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS\"}"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"89164.18\",\"timestamp\":880070.63567}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": [
+    "error: WebSocket connection to 'ws://127.0.0.1:47310/' failed: Error in connection establishment: net::ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS"
+   ]
+  },
+  "cdp-set:loopback-network": {
+   "grant": "ok",
+   "query": {
+    "local-network-access": "prompt",
+    "local-network": "prompt",
+    "loopback-network": "granted"
+   },
+   "ws": {
+    "ev": [
+     [
+      "open",
+      3
+     ],
+     [
+      "message",
+      3,
+      "{\"hello\": \"shramko-rc-bridge\", \"version\": 1}"
+     ],
+     [
+      "message",
+      177,
+      "{\"state\":\"reading\"}"
+     ],
+     [
+      "still",
+      8002,
+      1
+     ]
+    ]
+   },
+   "net": [
+    {
+     "ev": "webSocketCreated",
+     "p": "{\"requestId\":\"59896.18\",\"url\":\"ws://127.0.0.1:47310/\",\"initiator\":{\"type\":\"script\",\"stack\":{\"callFrames\":[{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":5,\"columnNumber\":19},{\"functionName\":\"eval\",\"scriptId\":\"19\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":6},{\"functionName\":\"evaluate\",\"scriptId\":\"10\",\"url\":\"\",\"lineNumber\":312,\"columnNumber\":15},{\"functionName\":\"\",\"scriptId\":\"15\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":43}]}}}"
+    },
+    {
+     "ev": "webSocketWillSendHandshakeRequest",
+     "p": "{\"requestId\":\"59896.18\",\"timestamp\":880072.180289,\"wallTime\":1794584306.276109,\"request\":{\"headers\":{\"Upgrade\":\"websocket\",\"Origin\":\"https://gsfpv.flyreelstudio.eu\",\"Cache-Control\":\"no-cache\",\"Accept-Language\":\"en-US,en;q=0.9\",\"Pragma\":\"no-cache\",\"Connection\":\"Upgrade\",\"Sec-WebSocket-Key\":\"xr7FhhUr5ZUUF4Wzt2NRpQ==\",\"Accept-Encoding\":\"gzip, deflate, br, zstd\",\"User-Agent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36\",\"Sec-WebSocket-Version\":\"13\",\"Host\":\"127.0.0.1:47310\",\"Sec-WebSocket-Extensions\":\"permessage-deflate; cl"
+    },
+    {
+     "ev": "webSocketHandshakeResponseReceived",
+     "p": "{\"requestId\":\"59896.18\",\"timestamp\":880072.181032,\"response\":{\"status\":101,\"statusText\":\"Switching Protocols\",\"headers\":{\"Upgrade\":\"websocket\",\"Sec-WebSocket-Accept\":\"u0C1Qc4WL2KzXOy/qa/bsEugOx4=\",\"Connection\":\"Upgrade\"},\"headersText\":\"HTTP/1.1 101 Switching Protocols\\r\\nUpgrade: websocket\\r\\nConnection: Upgrade\\r\\nSec-WebSocket-Accept: u0C1Qc4WL2KzXOy/qa/bsEugOx4=\\r\\n\\r\\n\",\"requestHeaders\":{\"Upgrade\":\"websocket\",\"Origin\":\"https://gsfpv.flyreelstudio.eu\",\"Cache-Control\":\"no-cache\",\"Accept-Language\":\"en-US,en;q=0.9\",\"Pragma\":\"no-cache\",\"Connection\":\"Upgrade\",\"Sec-WebSocket-Key\":\"xr7FhhUr5ZUUF4W"
+    },
+    {
+     "ev": "webSocketClosed",
+     "p": "{\"requestId\":\"59896.18\",\"timestamp\":880080.181192}"
+    }
+   ],
+   "issues": [
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":5,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":3,\"violatingNodeAttribute\":\"\"}}}",
+    "{\"code\":\"GenericIssue\",\"details\":{\"genericIssueDetails\":{\"errorType\":\"FormEmptyIdAndNameAttributesForInputError\",\"violatingNodeId\":4,\"violatingNodeAttribute\":\"\"}}}"
+   ],
+   "console": []
+  }
+ }
+}

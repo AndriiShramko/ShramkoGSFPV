@@ -184,7 +184,9 @@ for (const f of [...walk(join(ROOT, 'packages')), ...walk(join(ROOT, 'apps')), .
         }
         if (DOM.test(s)) problems.push(`tracks touches the DOM (${f})`);
         if (/Math\.random\s*\(|\bDate\b|performance\.now\s*\(/.test(s)) problems.push(`tracks reads a clock or Math.random (${f})`);
-        if (!f.endsWith('check.ts') && /Math\.(sin|cos|tan|atan2?|acos|asin|exp|log|pow|hypot)\s*\(/.test(s)) problems.push(`tracks generator uses non-deterministic Math (${f})`);
+        // editor.ts (train 2, lane tracks) is no generator: a pilot's edit is saved as numbers in the course file (rounded to
+        // 6 places there), nothing derives it again from a seed on another machine, so its yaw turn may use Math.sin/cos/atan2
+        if (!f.endsWith('check.ts') && !f.endsWith('editor.ts') && /Math\.(sin|cos|tan|atan2?|acos|asin|exp|log|pow|hypot)\s*\(/.test(s)) problems.push(`tracks generator uses non-deterministic Math (${f})`);
     }
 }
 

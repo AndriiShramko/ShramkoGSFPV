@@ -92,5 +92,13 @@
   "sonic.start.lesson": "Start: {title}",
   "sonic.start.noAudio": "This browser cannot play sound, so Fly by Sound cannot run here. Try a current Chrome or Edge.",
   "sonic.start.starting": "Starting: {title}.",
-  "sonic.start.unknown": "There is no lesson called {id}. Choose one from the list."
+  "sonic.start.unknown": "There is no lesson called {id}. Choose one from the list.",
+  "sonic.say.scanNoWalls": "This scan has no walls yet, so no wall can warn you: you hear only your height. To get walls, open this scan in the simulator, pause, build its walls in the walls box, then come back by Fly by Sound in the pause menu.",
+  "sonic.say.courseOffer": "Press {key} for a course of gates in this scan.",
+  "sonic.say.courseMaking": "Building a course of gates in this scan. It can take half a minute.",
+  "sonic.say.courseReady": "Course ready. Gates: {n}, laps: {laps}. The hum leads to gate 1. {key} gives another course.",
+  "sonic.say.courseNone": "No course of gates fits in this scan. You fly freely again.",
+  "sonic.start.scan": "Fly this scan by sound",
+  "sonic.start.scanFlier": "I already fly by sound: fly this scan",
+  "sonic.start.scanWhat": "Free flight over this scan at size x{size}: you hear its walls and your height. No rings, no clock."
 }

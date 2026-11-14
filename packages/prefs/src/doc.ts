@@ -65,6 +65,8 @@ export interface SonicState {
     attitude?: boolean;
     /** lane sonic-hints: the short line of keys at the start of every lesson step; absent means on, false is the pilot's "off" */
     keyHints?: boolean;
+    /** train 2: the pilot once chose "I already fly by sound" on a scan link's start screen; absent means not (a first-timer) */
+    fliesBySound?: boolean;
 }
 
 export interface Collections { radioProfiles: RadioProfiles; sceneLibrary: SceneLibraryData; stats: StatsTotals; ui: UiState; sonic: SonicState }
@@ -319,6 +321,8 @@ export function validateCollection<K extends CollectionId>(k: K, v: unknown, dro
             if (typeof o.attitude === 'boolean') sonic.attitude = o.attitude;
             // the keys line at every step (lane sonic-hints): kept when a boolean, else left out (on)
             if (typeof o.keyHints === 'boolean') sonic.keyHints = o.keyHints;
+            // train 2: the pilot said "I already fly by sound" (a scan link's start screen puts the scan first): kept only when true
+            if (o.fliesBySound === true) sonic.fliesBySound = true;
             return sonic as Collections[K];
         }
     }

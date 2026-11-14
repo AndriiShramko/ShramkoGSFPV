@@ -23,6 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
+import { coveredBy } from '../../course/cover';
 import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
@@ -429,7 +430,9 @@ export const course: Feature = {
             if (e.type === 'respawn' || e.type === 'crash') run?.reset();
         });
         ctx.events.on('life', () => run?.reset());
-        ctx.events.on('pause', ({ on }) => {
+        ctx.events.on('pause', ({ on, reasons }) => {
+            // the pause menu and every other full window hide the lap clock and its lines (course/cover.ts coveredBy)
+            hud.cover(coveredBy(reasons));
             if (!run) return;
             if (on) run.pause(tick());
             else run.resume(tick());

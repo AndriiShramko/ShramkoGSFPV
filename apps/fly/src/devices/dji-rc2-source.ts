@@ -93,9 +93,10 @@ export function hasStickChannel(d: Pick<UsbDeviceLike, 'vendorId' | 'configurati
 
 /**
  * Why the source could not start: the browser could not take the interface, or the controller did not answer; over
- * the RC bridge (dji-rc2-bridge.ts): nothing answers on its port, or the bridge runs but has no controller.
+ * the RC bridge (dji-rc2-bridge.ts): nothing answers on its port, the bridge runs but has no controller, or the pilot
+ * blocked Chrome's Local Network Access question for this site ('denied', no connection made).
  */
-export type Rc2Why = 'claim' | 'silent' | 'nobridge' | 'nocontroller';
+export type Rc2Why = 'claim' | 'silent' | 'nobridge' | 'nocontroller' | 'denied';
 export class Rc2Error extends Error {
     constructor(readonly why: Rc2Why, readonly cause?: unknown) {
         super(`DJI RC 2: ${why}`);
