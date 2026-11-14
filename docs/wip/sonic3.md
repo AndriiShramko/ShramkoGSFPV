@@ -16,6 +16,16 @@ Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into
   case, NEG OK on the old lesson file; package suite 1336 passed, 4 skipped; simulator tests that use scan-free (5 files): 44 of 44.
 - [x] SO-5 stands: Facts now give the measured range 0.23 to 3.3 s with the run names.
 - [x] SO-6 stands: Facts table has the Tunis 5 m/s fixed-pilot row.
+- [x] SO-7 stands: the failure line uses {key} (KeyNames, as the intro's capOf) in en es pl ru; with no Web Audio the line is
+  sonic.start.noAudio (another browser), else the next press makes a new AudioContext in that press (in-place-model.ts
+  failedLine, in-place.ts). Test "the line leads on", NEG OK on the old locale files (5942b4a4).
+- [x] SO-4 stands: r11 now ends each run with r11Off (pause item label hereOff, W held, Backslash in the same page task as the
+  pose reads, moved under 0.1 m beyond own travel, speed at least half, no lesson after, label here) (5942b4a4).
+- [~] SO-4 browser run: release build of 5942b4a4, r11 Tunis 887f27aa 5 m/s, port 5823 (U:/Temp/gsfpv-train3/sonic3/fixes-run.sh).
+- [x] SO-9 stands: Decisions say the hum-attended pilot is the measure; the ladder and the 1.5 factor are marked estimates.
+- [x] SO-10 stands: For the lead says only tier 1 is reachable today.
+- [x] SO-3 stands, outside the lane (walls lane): For the lead. SO-8 stands: push of train3 is the lead's (For the lead).
+- [ ] gates.py --only vitest,architecture,i18n,b18 after the browser run.
 
 Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820/5821, headless Chrome 157, GPU lock):
 - [x] Release build (dist sha cc103a49, 1930 files). Probe r11 in tools/bench/src/sonic-int-review.ts (2f972a90): ordinary
@@ -267,6 +277,13 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 - Z4: the budget is a lesson opt-in (layers.speedBudget), not a theme change: the shipped lessons, their recordings and
   the theme versions stay as they were; new speed lessons and the free flight switch it on.
+- Z7 (review SO-9): for the speed lessons the hum-attended ear pilot is the measure, not the 2-loudest reference of Z3: with
+  the budget on the hum is one of the streams by rule, and the lessons teach following it. Estimates, not measured: the cap
+  ladder 1.5 / 2.5 / 3.5 / 4.5 m/s (chosen steps under the measured 6 m/s median and the 4.8 ceiling) and the attempt factor
+  1.5 (attemptLimitS = ceil(slowest ear-pilot time x 1.5)). Caps 3.5 and 4.5 are above the 2-loudest pilot's median / 1.25 =
+  3.2 m/s. None of this ships until the speed lessons are pinned.
+- Fixes stage: the free flight is scan-free version 2 since the stream budget (SO-2); in place the mode applies no lesson
+  bump (SO-1), so a switch keeps the flight as it was.
 
 ## For the lead
 
@@ -281,8 +298,18 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - What a listener should notice: one press, sound within 0.23 to 3.3 s (Facts Z5; under half a second in 5 of 7 runs; height tone and room bed), then the spoken intro
   once; near walls their pulses on that side; on N "making a course", then the hum of gate 1: it is louder in the ear it is
   on, and in a course with the line on (not shipped yet) it beats when the craft is off the line; at a gate its note and a
-  short preview of the next; above 4.5 m/s fewer streams (tier 1: three), from 8 m/s two and the open-way chime instead of
-  the hazards, the height ticks off. Front and back can still be confused: turn a little and hear where the hum moves.
+  short preview of the next; above 4.5 m/s fewer streams (tier 1: three). Only tier 1 can sound in anything that ships today:
+  in place the pilot flies with scan-free's 5 m/s cap, so tier 2 (from 8 m/s: two streams and the open-way chime instead of the
+  hazards, the height ticks off) has been measured only in the package's ear-pilot ladder, never in a shipped flight; the
+  owner's "normal FPV speed" is not reached until a speed stage lifts that cap (review SO-10). Front and back can still be
+  confused: turn a little and hear where the hum moves.
+
+- Review fixes (stage fixes): SO-3 stands and is outside the lane: ctx.hook.walls.build for 70b50d42 in a headless page with
+  rendering on did not resolve in 420 s (apps/fly/src/app/walls-then.ts, walls lane); rerun r11 with Z5_WALLS=built after it is
+  found. SO-8 stands: the pin d341b4f and package branch train3 (2e1618f, which merges train3-fixes d341b4f) exist only in
+  C:/dev/ShramkoSonicFPV; push train3 to the package origin before merging sonic3 (this lane may not push).
+- SO-1 part left as it is: in place the mode still forces 'scene.walls' 'on' (mode.ts forceScanPrefs) because the sound reads
+  the walls; a pilot who had walls off gets a walls change on the switch on and off (with the default walls on nothing changes).
 
 - Z4: the pin points at package train3 e133411 (local only, not pushed). The stream budget is a lesson opt-in
   (layers.speedBudget), on only in scan-free; courses and speed lessons get it when they are built.
