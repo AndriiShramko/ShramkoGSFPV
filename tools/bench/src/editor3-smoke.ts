@@ -132,14 +132,36 @@ async function scene(page: Page, id: string, log: string[]): Promise<Record<stri
         .filter(({ g, i }) => i !== sel0 && (g[2] ?? 0) > 0 && g[0]! > 20 && g[0]! < vp.width - 20 && g[1]! > 20 && g[1]! < vp.height - 20 && Math.hypot(g[0]! - sc[0]!, g[1]! - sc[1]!) > 140)
         .sort((a, b) => (a.g[2] ?? 0) - (b.g[2] ?? 0));
     if (cand[0]) {
-        const { g, i } = cand[0];
-        await page.mouse.click(g[0]!, g[1]!);
-        const got = await until(() => ed(page), (e) => e.selected === i, 3000);
-        out.click = { target: i, at: g, selected: [sel0, got.v.selected], ok: got.ok, pointerLock: await locked(page), said: (got.v.said ?? '').slice(0, 120) };
+        const clicks: Record<string, unknown>[] = [];
+        let got = { ok: false, v: {} as Ed, ms: 0 };
+        for (const { g, i } of cand.slice(0, 3)) {
+            const under = await page.evaluate(([x, y]) => {
+                const e = document.elementFromPoint(x!, y!) as HTMLElement | null;
+                return e ? `${e.tagName}.${typeof e.className === 'string' ? e.className.split(' ').slice(0, 2).join('.') : ''}` : 'none';
+            }, [g[0]!, g[1]!]);
+            await page.mouse.click(g[0]!, g[1]!);
+            got = await until(() => ed(page), (e) => e.selected === i, 3000);
+            clicks.push({ target: i, at: g, under, selected: got.v.selected, ok: got.ok });
+            if (got.ok) break;
+        }
+        out.click = { clicks, from: sel0, ok: got.ok, pointerLock: await locked(page), said: (got.v.said ?? '').slice(0, 120) };
         await page.keyboard.press('Tab');
         await sleep(300);
         // back to the first selection by key, so the drags below see a gate the camera glided to
-        const back = got.ok ? sel0 : -1;
+        // the gate bar next to the selection: shown, and its Next button takes the next gate
+        const bar = await page.evaluate(() => {
+            const b = document.querySelector('.ce-gatebar') as HTMLElement | null;
+            const r = b?.getBoundingClientRect();
+            return b ? { visible: getComputedStyle(b).visibility, box: r ? [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)] : null } : null;
+        });
+        const sb = (await ed(page)).selected;
+        let nextOk: boolean | null = null;
+        if (bar?.visible === 'visible') {
+            await page.click('.ce-gatebar [data-bar="next"]');
+            nextOk = (await until(() => ed(page), (e) => e.selected !== sb, 2000)).ok;
+        }
+        out.bar = { ...bar, nextFrom: sb, nextOk, after: (await ed(page)).selected, focus: await page.evaluate(() => document.activeElement?.tagName ?? 'none') };
+        const back = sel0;
         if (back >= 0) {
             for (let n = 0; n < 40 && (await ed(page)).selected !== back; n++) await page.keyboard.press('Shift+Tab');
             await sleep(1500);

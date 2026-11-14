@@ -75,8 +75,11 @@ export class EditView {
         size.uniform = true;
         for (const a of ['x', 'y', 'z', 'yz', 'xz', 'xy'] as const) size.enableShape(a, false);
         // the centre belongs to the scale box: the move handle keeps its arrows and planes, the turn handle its three rings
-        try { move.enableShape('face', false); } catch { /* not a shape of this version */ }
-        try { turn.enableShape('face', false); turn.enableShape('xyz', false); } catch { /* not a shape of this version */ }
+        // PlayCanvas 2.23.2 shape names (build/playcanvas.mjs _shapes): the move handle's centre is the sphere 'xyz' (it took
+        // the centre drag from the scale box in the smoke probe of E2 pass 2), the turn handle's are 'face' (f) and 'xyz'
+        move.enableShape('xyz', false);
+        turn.enableShape('face', false);
+        turn.enableShape('xyz', false);
         turn.size = 1.5;
         this.handles = [move, turn, size];
         for (const h of this.handles) {
