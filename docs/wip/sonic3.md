@@ -21,6 +21,14 @@ Stage Z1-any-scene-in-place:
 - [x] gates.py --only vitest,architecture,i18n,b18 on 98ef20d8: all four PASS (vitest 197 s), logs U:/Temp/gsfpv-gates-20261114-221332.
 - [ ] Browser proof (own stage, release build first) on Tunis and Wroclaw with the walls stand-in.
 
+Stage Z2-design-speed-and-space:
+- [x] docs/wip/sonic3-plan.md Part 2 (this commit): what is a mess at speed (every cue's reach today, from the code), reach in
+  seconds, speed tiers with a stream budget and a priority table, the racing line, space codes that do not rest on the HRTF
+  (rear timbre, approach, ILD at speed, reverb floor, turn-and-listen lesson), the ear pilot check and speed lesson ladder, later
+  designs (web camera head tracking, HRTF pick test, phone app), build stages Z3 to Z8 with files and tests.
+- [ ] Z3 ear pilot and baseline, Z4 reach and budget, Z5 racing line, Z6 space codes, Z7 speed lessons, Z8 browser proof
+  (plan section 6).
+
 ## Facts (measured)
 
 - Live walk, sonic-walk-probe.mjs, 2026-11-14, results U:/Temp/gsfpv-train3/sonic3/walk-live-887f27aa.json and
@@ -37,6 +45,10 @@ Stage Z1-any-scene-in-place:
 - The runner itself places the craft at its start pose when a lesson begins (package runner.ts begin, 'place' action), so
   keeping the position needs the start = the craft's pose (feature.ts scanLesson `here`), not only skipping mode.place.
 
+- Z2: the numbers of plan Part 2 section 1 are constants read from the package code (train3 2ec8653: sampler.ts, rules.ts,
+  beacon.ts, freeway.ts, planner.ts, voices.ts, themes/*.json printed by a node one-liner), the seconds are those constants
+  divided by the speed; nothing in Z2 was measured by a run. Lesson speed caps: lessons/*.json maxSpeedMps 0 to 5, 12 lessons at 3.
+
 ## Decisions
 
 - In place = install sonic/feature.ts installSonicFlight on the running flight context after the press (the KeyRouter's sonic
@@ -48,6 +60,11 @@ Stage Z1-any-scene-in-place:
 - Key Backslash: every plain letter is bound (keymap.ts) and no binding names Backslash (grep 'Slash' in keymap.ts: 0). Not
   Shift plus S: Shift is a flying key in the game scheme (app/keys.ts shiftIsFlying note), that chord would fire while descending.
 
+- Z2: the ear pilot comes first (Z3) so every later change has a before and after; it lives in the package (src/pilot,
+  DOM-free) and its scan runs in the simulator (tools/bench/src/ear-pilot-scan.ts) because walls and courses live there.
+- Z2: at speed a cut stream stops (fades out), it is not only ducked: the owner asked for fewer sounds, not quieter ones.
+- Z2: every new threshold in the plan is marked an estimate; the ear pilot sets the final values.
+
 ## For the lead
 
 - Step 2 is built (98ef20d8); the browser proof is the next stage (release build first; Tunis 887f27aa and Wroclaw 70b50d42
@@ -58,7 +75,14 @@ Stage Z1-any-scene-in-place:
 - Old tests changed on purpose (the owner's message 51 overrides v12-optin's "one quiet link, no key"): sonic-optin.test.ts and
   sonic-int-lazy.test.ts now expect two items and the in-place key; sonic-lesson-rig.ts honours `here` as feature.ts does.
 
+- Z2 needs reading by the lead (no web access here): the Cat3DA repository (licence, face tracker and its licence, motion-to-sound
+  delay, rotation method; plan 5.1) and the licences of SADIE II and HUTUBS (plan 5.2).
+- Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
+
 ## Not verified
+- Z2: the plan's speed tiers, look-ahead, stream counts and pass marks are estimates; no ear pilot exists yet to measure them.
+- Z2: the onset counts at speed (about 44 per second, soft theme) are arithmetic from theme constants, not a recording of the
+  engine.
 
 - The live walk did not reach the first cue: the probe looked for '.screen button' and the start screen uses other markup, so it
   pressed nothing in the new tab. The screenshots show the screen; what the second press does was read in code (lessons.ts open,
@@ -77,3 +101,5 @@ Stage Z1-any-scene-in-place:
 - 2026-11-14 Z1 pass 2: the most replies went to old tests that pinned the replaced design (optin, int-lazy) and to the stale
   submodule checkout (scanFreeLesson missing until the pin moved); moving the pin first and grepping tests for the item id
   before editing would have saved four replies.
+- 2026-11-14 Z2: most replies went to finding each cue's reach constant across six package files and three theme JSONs; a
+  generated table of every cue's reach constant (name, file, unit) in the package's docs would have made it one read.
