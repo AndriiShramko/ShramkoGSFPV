@@ -114,5 +114,10 @@
   "course.edit.savedAdmin": "Guardado como versión del administrador: {title}, versión {v}",
   "course.edit.adminFirst": "Primero guarda el circuito para todos; después el administrador puede guardar una versión",
   "course.edit.voteAfterLap": "Vuela una vuelta de este circuito para votar",
-  "course.edit.camSpeed": "Velocidad de la vista {v} m/s"
+  "course.edit.camSpeed": "Velocidad de la vista {v} m/s",
+  "course.edit.bar.add": "Añadir puerta",
+  "course.edit.bar.addHint": "Haz clic en el lugar de la nueva puerta (Esc: sin puerta nueva)",
+  "course.edit.bar.duplicate": "duplicar la puerta",
+  "course.edit.flyHint": "Haz clic en una puerta para cambiarla. Arma tu mando para volar el circuito al momento, desarma para editar de nuevo",
+  "course.edit.flying": "Vuelas tu circuito con los cambios. Desarma para editar de nuevo"
 }

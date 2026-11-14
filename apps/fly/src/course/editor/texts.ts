@@ -59,6 +59,8 @@ export function editorLocaleKeys(): string[] {
         'course.edit.allEdited', 'course.edit.allDone', 'course.edit.unsaved', 'course.edit.noCourse', 'course.edit.list', 'course.edit.listEmpty',
         'course.edit.by', 'course.edit.editedBy', 'course.edit.kind.generator', 'course.edit.kind.person', 'course.edit.kind.admin', 'course.edit.votes',
         'course.edit.voteUp', 'course.edit.voteDown', 'course.edit.open', 'course.edit.voted', 'course.edit.voteFailed', 'course.edit.opened',
-        'course.edit.mine', 'course.edit.keys', 'course.edit.gates'];
+        'course.edit.mine', 'course.edit.keys', 'course.edit.gates',
+        // lane editor3 E3: the top bar, Duplicate and flying inside the mode
+        'course.edit.bar.add', 'course.edit.bar.addHint', 'course.edit.bar.duplicate', 'course.edit.flyHint', 'course.edit.flying'];
     return [...new Set([...fixed, ...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey)])];
 }

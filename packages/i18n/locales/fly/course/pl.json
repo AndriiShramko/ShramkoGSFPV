@@ -114,5 +114,10 @@
   "course.edit.savedAdmin": "Zapisano jako wersję administratora: {title}, wersja {v}",
   "course.edit.adminFirst": "Najpierw zapisz tor dla wszystkich, potem administrator może zapisać jego wersję",
   "course.edit.voteAfterLap": "Przeleć okrążenie tego toru, aby zagłosować",
-  "course.edit.camSpeed": "Prędkość widoku {v} m/s"
+  "course.edit.camSpeed": "Prędkość widoku {v} m/s",
+  "course.edit.bar.add": "Dodaj bramkę",
+  "course.edit.bar.addHint": "Kliknij miejsce nowej bramki (Esc: bez nowej bramki)",
+  "course.edit.bar.duplicate": "powiel bramkę",
+  "course.edit.flyHint": "Kliknij bramkę, by ją zmienić. Uzbrój kontroler, by od razu przelecieć tor, rozbrój, by znowu edytować",
+  "course.edit.flying": "Lecisz swoim torem ze zmianami. Rozbrój, by znowu edytować"
 }

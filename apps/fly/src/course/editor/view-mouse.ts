@@ -7,7 +7,7 @@ import { Entity, Gizmo, Quat as PcQuat, RotateGizmo, ScaleGizmo, TranslateGizmo,
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
 import { CAM_KEYS, camForward, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
 import { fromPcQuat, toPcQuat, type FlownPose } from './drag';
-import { pickGate, rayThrough, type Pickable } from './pick';
+import { pickGate, rayThrough, type Pickable, type Ray } from './pick';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
 export const CLICK_SLOP_PX = 4;
@@ -25,6 +25,8 @@ export interface EditViewHost {
     onCamera(eye: readonly [number, number, number], at: readonly [number, number, number]): void;
     /** a click took gate `index` */
     onPick(index: number): void;
+    /** lane editor3 E3: with Add gate armed, a click on the scene: the ray through it, flown frame */
+    onPlace?(ray: Ray): void;
     /** a handle is being dragged (`end` false) or was let go (`end` true): the stand-in's pose, flown frame */
     onDrag(pose: FlownPose, end: boolean): void;
     /** the wheel set the camera speed (m/s) */
@@ -52,6 +54,11 @@ export class EditView {
     private dragged = false;
     private press: { id: number; button: number; x: number; y: number; look: boolean } | null = null;
     private disposed = false;
+    /** lane editor3 E3: Add gate armed, the next click on the scene places a gate */
+    adding = false;
+    /** lane editor3 E3: the drone flies (armed): no handles, no camera keys, no clicks; the camera is the drone's */
+    private suspended = false;
+    private standPose: FlownPose | null = null;
 
     constructor(host: EditViewHost, start: FlyCam) {
         this.host = host;
@@ -111,7 +118,8 @@ export class EditView {
     /** The stand-in at the selected gate (null: no gate, the handles hidden). Not while a drag holds it. */
     put(p: FlownPose | null): void {
         if (this.dragging) return;
-        if (!p) {
+        this.standPose = p;
+        if (!p || this.suspended) {
             for (const h of this.handles) h.detach();
             return;
         }
@@ -121,6 +129,20 @@ export class EditView {
         this.stand.setLocalScale(1, 1, 1);
         this.opening = p.opening;
         for (const h of this.handles) h.attach([this.stand]);
+    }
+
+    /** The drone flies (true): the handles go and the keys and the mouse are left to the flight; false: back where it was. */
+    suspend(on: boolean): void {
+        if (on === this.suspended) return;
+        this.suspended = on;
+        this.held.clear();
+        this.press = null;
+        this.adding = false;
+        if (on) for (const h of this.handles) h.detach();
+        else {
+            this.put(this.standPose);
+            this.apply();
+        }
     }
 
     /** The camera put somewhere (a key selected a gate: the view goes to it). */
@@ -142,7 +164,7 @@ export class EditView {
     }
 
     private onUpdate = (dt: number): void => {
-        if (this.held.size === 0) return;
+        if (this.held.size === 0 || this.suspended) return;
         const next = stepCam(this.cam, this.held, this.fast, dt);
         if (next !== this.cam) {
             this.cam = next;
@@ -151,7 +173,7 @@ export class EditView {
     };
 
     private onDown = (e: PointerEvent): void => {
-        if (e.button !== 0 && e.button !== 2) return;
+        if (this.suspended || (e.button !== 0 && e.button !== 2)) return;
         // a press on a handle is the gizmo's (it fired transform:start in its own pointerdown, or will on the first move)
         this.press = { id: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, look: e.button === 2 };
         if (e.button === 2) e.preventDefault();
@@ -180,6 +202,10 @@ export class EditView {
         const eye = this.host.camera.getPosition();
         const ray = rayThrough([eye.x, eye.y, eye.z], [far.x, far.y, far.z]);
         if (!ray) return;
+        if (this.adding && this.host.onPlace) {
+            this.adding = false;
+            return this.host.onPlace(ray);
+        }
         const i = pickGate(ray, this.host.gates());
         if (i >= 0) this.host.onPick(i);
     };
@@ -187,6 +213,7 @@ export class EditView {
     private onMenu = (e: Event): void => e.preventDefault();
 
     private onWheel = (e: WheelEvent): void => {
+        if (this.suspended) return;
         e.preventDefault();
         const s = wheelSpeed(this.cam.speed, e.deltaY);
         if (s === this.cam.speed) return;
@@ -201,7 +228,7 @@ export class EditView {
     private onKey = (e: KeyboardEvent): void => {
         this.fast = e.shiftKey;
         if (e.key === 'Control' || e.key === 'Meta') this.setSnap(false);
-        if (!CAM_KEYS.has(e.code) || e.ctrlKey || e.metaKey || e.altKey || this.host.typing(e.target)) return;
+        if (this.suspended || !CAM_KEYS.has(e.code) || e.ctrlKey || e.metaKey || e.altKey || this.host.typing(e.target)) return;
         this.held.add(e.code);
         e.preventDefault();
     };

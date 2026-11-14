@@ -6,9 +6,9 @@ import { BAR_BUTTONS, BAR_OFFSET_PX, barPlace } from '../../../apps/fly/src/cour
 import { editorKey } from '../../../apps/fly/src/course/editor/keys';
 
 describe('editor3 gate bar', () => {
-    it('every button is an editor key: kind 1-4, insert, delete, previous and next gate', () => {
+    it('every button is an editor key: kind 1-4, duplicate, delete, previous and next gate', () => {
         const ids = BAR_BUTTONS.map((b) => b.id);
-        expect(ids).toEqual(['prev', 'ring', 'square', 'dive', 'cube', 'insert', 'delete', 'next']);
+        expect(ids).toEqual(['prev', 'ring', 'square', 'dive', 'cube', 'duplicate', 'delete', 'next']);
         for (const b of BAR_BUTTONS) expect(editorKey(b.press, [0, -1]), b.id).not.toBeNull();
         const sel = (id: string): unknown => editorKey(BAR_BUTTONS.find((b) => b.id === id)!.press, [0, -1]);
         expect(JSON.stringify(sel('next'))).not.toEqual(JSON.stringify(sel('prev')));

@@ -119,6 +119,38 @@
 .ce-gatebar .ce-gb:hover, .ce-gatebar .ce-gb:focus-visible { border-color: #a6ff1a; }
 .ce-gatebar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
 
+/* lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and the line of what to do now */
+.ce-topbar {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    max-width: calc(100vw - 16px);
+    background: rgb(12, 16, 22);
+    border: 1px solid #3a4656;
+    border-radius: 8px;
+    z-index: 5;
+}
+.ce-topbar .ce-tb {
+    min-height: 30px;
+    padding: 4px 10px;
+    background: #1b2330;
+    border: 1px solid #3a4656;
+    border-radius: 6px;
+    color: #f2f4f7;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.ce-topbar .ce-tb:hover, .ce-topbar .ce-tb:focus-visible, .ce-topbar .ce-tb[aria-pressed='true'] { border-color: #a6ff1a; }
+.ce-topbar .ce-tb[aria-pressed='true'] { background: #2a3a12; }
+.ce-topbar .ce-tb-line { color: #c9d1db; font-size: 0.85rem; padding: 0 4px; }
+.ce-topbar.flying .ce-tb { display: none; }
+.ce-topbar.flying { pointer-events: none; }
+
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }

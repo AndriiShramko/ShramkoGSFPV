@@ -40,8 +40,31 @@ Stage E2 (next worker), in this order:
   - [ ] Duplicate (today Insert adds a gate after; a copy of the selected gate is not an EditAction yet), Add gate by a
     click on the scene (ghost gate), the top bar (Add, Undo, Redo, Save, Courses, Keys, Exit)
   - gates vitest, architecture, i18n, b18 PASS on f30a4c03 (gates.py, vitest 139 s)
-- [ ] E2.5 arm flies, disarm edits (The design, Flying through)
-- [ ] E2.6 browser proof on a local release, the owner's path on 70b50d42 (local walls stand-in) and 887f27aa
+- [x] E2.5 arm flies, disarm edits: done in stage E3 below
+- [ ] E2.6 browser proof on a local release, the owner's path on 70b50d42 (local walls stand-in) and 887f27aa: its own
+  stage (E3-proof), see left below
+
+Stage E3-panel-and-flying:
+- [x] E3.1 code (commit this commit): the gate bar's insert button is now Duplicate (the editor's insert already copies the
+  selected gate, its kind and opening, 4 m ahead: packages/tracks editor.ts insert); a top bar (top-bar.ts, TOP_BUTTONS in
+  bar-place.ts): Add gate, Undo, Redo, Exit and a line saying what to do now; Add gate arms the next left click on the scene
+  (view-mouse.ts onPlace): add-place.ts puts a gate at the wall hit of that ray pulled back 1.5 m, or 6 m ahead on open sky,
+  facing the camera, after the selected gate, a copy of its kind and opening, one undo step; Esc drops the armed Add.
+  Flying (fly-mode.ts): no pause in the mode any more; each frame modeStep(armed, crashed): armed shows the drone's camera
+  (cameraOverride off), hides the handles, the gate bar, the window and the top bar's buttons, the course restarts from gate 1
+  with the edits; keys go to the flight (ctx.keys.block and the editor's keydown only in 'edit'); disarm or crash brings the
+  edit camera back where it was with the selection kept. The lap clock and the best lap stay off while the mode is open
+  (frame(true): next gate lights up, no hud.update, no writeBest). Tab and the bar's Next already went to the next gate.
+  - texts: course.edit.bar.add, .bar.addHint, .bar.duplicate, .flyHint, .flying in en, es, pl, ru (texts.ts list)
+  - test tools/bench/test/editor3-flying.test.ts (10 tests) + editor3-gatebar.test.ts (ids): with editor3-mouse,
+    editor3-check, tracks-editor-ui 5 files 34/34 pass; NEG OK twice (neg_control.py: ref origin/main, the new modules
+    missing; ref HEAD 3efc0f65 course.ts and bar-place.ts: the test fails, exit 1); apps/fly tsc 0
+- [ ] E3.2 gates vitest, architecture, i18n, b18 on the E3.1 commit
+- [ ] E3-proof (own stage, starts with the release build): the owner's path walked headless on 70b50d42 (walls stand-in) and
+  887f27aa: open the mode, click a gate, the bar's Duplicate, Next, Tab, top bar Add gate then a click on the scene, Undo,
+  Redo; arm (a gamepad cannot be plugged in headless: Space with the keyboard as the chosen input, or a probe that sets the
+  arm gate) and see the drone's camera, no lap clock, gates lit in order; disarm and see the edit camera where it was.
+  Also left from E2: the scale box drag that moved the gate 0.3 m instead of changing its opening on Wroclaw.
 
 ## Facts (measured)
 
@@ -165,6 +188,18 @@ button shows the table.
 
 ## For the lead
 
+- Stage E3 touches outside the editor folder: apps/fly/src/app/builtin/course.ts (top bar, Add, flying wiring, no
+  ctx.pause('panel')), packages/i18n/locales/fly/course/{en,es,pl,ru}.json (5 keys), tools/bench/test/editor3-flying.test.ts
+  (new), tools/bench/test/editor3-gatebar.test.ts (ids).
+- E3 changes a rule: the edit mode no longer pauses the flight. The 'pause' event no longer carries 'panel' for the editor,
+  so the lap HUD is hidden by hud.update(null, 0) in showEd, not by coveredBy. A drone flying when the mode opens keeps flying
+  with its own camera; the edit view comes when it disarms or crashes.
+- Hook wanted from lane course3 (packages/tracks): an EditAction that adds a gate at a pose after the selected one
+  (`{ kind: 'add', pos, quat }`); until then add-place.ts addInState builds that state (and its own copy of nextGateId,
+  freeGateId). A read-only `flying` field in course/hook.ts CourseEditorHook would let the probes read the mode; today the
+  probe reads `mode` from window.__gsfpvEditView().
+- A full course (MAX_GATES_EDIT) with Add gate falls back to the Insert key, which says the editor's own refusal text.
+
 - Files outside apps/fly/src/course/editor/ this lane touches: tools/bench/src/editor3-live.ts (new probe, E1);
   apps/fly/src/app/builtin/course.ts (the editor's wiring, E2.1 onwards); tools/bench/test/editor3-check.test.ts (new);
   tools/bench/test/tracks2-fixes.test.ts (T2-1 now reads `edMargin = marginOf(run.track)`: the margin goes to the worker).
@@ -180,6 +215,14 @@ button shows the table.
   course3: the walls build or the course hand-off runs on the main thread).
 
 ## Not verified
+
+- E3 in a browser: none of it walked yet (the browser proof is its own stage). In particular whether the keyboard pilot's
+  capture listener and the edit camera share W A S D without harm while disarmed (the keyboard source does not stop
+  propagation; disarmed, its throttle does nothing, by reading, not run), whether pointer lock is taken by a click while the
+  window is hidden in flight, and whether run.reset() on arming starts the course at gate 1 on the first pass.
+- tools/bench/test/a6-reference.test.ts not run: E3 does not touch flight, input or collision code (course.ts only reads
+  sim.armed and sim.crashed).
+- The new numbers are estimates, not measured: ADD_BACK_M 1.5, ADD_AHEAD_M 6, ADD_MIN_M 1, ADD_RAY_M 200.
 
 - E2.2/E2.3 in a browser: whether PlayCanvas 2.23.2's gizmos draw and drag on our renderer camera (the gizmo layer is added to
   the camera's layers), whether the fly page's own canvas listeners (pointer lock request on click) disturb a click while the
@@ -199,6 +242,10 @@ button shows the table.
   tasks were measured.
 
 ## Cost notes
+
+- E3 panel-and-flying: about 25 replies; the most went to reading course.ts's wiring (924 lines) in slices to find where the
+  pause, the key block and the frame event live; a short wiring map of builtin/course.ts in docs/agent-map.md would save
+  three replies.
 
 - E1: the live run took about 20 minutes of waiting (Wroclaw walls build plus two 5 s freezes per key); a wait loop of 9
   minutes cost one reply; reading the whole PlayCanvas export line cost context. The fix did not fit in the 30 replies.

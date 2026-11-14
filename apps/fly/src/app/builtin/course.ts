@@ -35,6 +35,10 @@ import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
+import { TopBar } from '../../course/editor/top-bar';
+import { ADD_RAY_M, addInState, addPoint, facingFrom } from '../../course/editor/add-place';
+import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
+import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
@@ -107,6 +111,9 @@ export const course: Feature = {
         let view: EditView | null = null;
         /** lane editor3 E2.4: the small bar next to the selected gate (kind, insert, delete, previous, next) */
         let bar: GateBar | null = null;
+        /** lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and whether the drone flies inside the mode */
+        let top: TopBar | null = null;
+        let mode: EditMode = 'edit';
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
         let dragFrame = 0;
@@ -185,10 +192,12 @@ export const course: Feature = {
             draw();
         };
 
-        const frame = (): void => {
-            if (!run || !hook.on || ed) return;
+        const frame = (editing = false): void => {
+            if (!run || !hook.on || (ed && !editing)) return;
+            // lane editor3 E3: flown inside the edit mode the next gate lights up; the lap clock and the best lap stay off
+            const shows = flyShows(editing);
             const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
-            if (ev === 'lap' || ev === 'done') {
+            if (shows.writeBest && (ev === 'lap' || ev === 'done')) {
                 const last = v.lastLapMs ?? 0;
                 const before = readBest(keyOf(run.track));
                 if (before === null || last < before) {
@@ -201,7 +210,7 @@ export const course: Feature = {
                 stage.setNext(next, run.path, run.track.laps > 1);
                 shownNext = next;
             }
-            hud.update(v, run.gates.length);
+            if (shows.lapClock) hud.update(v, run.gates.length);
             sync();
         };
 
@@ -497,7 +506,7 @@ export const course: Feature = {
         });
 
         ctx.events.on('frame', () => {
-            if (ed) return;
+            if (ed) return editFrame();
             // TR-5: the scale feature (session.setTransform) and the walls switch fire no 'session' event
             if (run && !busy && (run.stale(ctx.session.transform) || ctx.session.collision !== provenOn)) return proveAgain();
             frame();
@@ -540,7 +549,8 @@ export const course: Feature = {
             panel?.list(rows, edHook.votes, hook.saved ?? hook.track?.id ?? null, lapped);
         };
         const showEd = (): void => {
-            if (!ed || !panel) return;
+            // lane editor3 E3: while the drone flies the course stays as it was armed; the edit view comes back on disarm
+            if (!ed || !panel || mode === 'fly') return;
             // review TK-6: the edited gates on the source's identity (after a save: the saved id, version, author, title)
             const v1 = toTrackV1(ed.course);
             const track: TrackFile = edSource
@@ -603,8 +613,9 @@ export const course: Feature = {
             edChanged = false;
             askedFor = null;
             edHook.refused = null;
-            ctx.pause('panel');
-            unblock = ctx.keys.block(() => ed !== null);
+            // lane editor3 E3: no pause; the flight goes on in the mode (armed: the drone's view, disarmed: the edit view)
+            mode = 'edit';
+            unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
             panel.adminOn(adminLive);
@@ -623,13 +634,15 @@ export const course: Feature = {
                     edHook.view = { eye: [...eye], at: [...at], look: [...at], free: 1 };
                 },
                 onPick: (i) => pickAt(i),
+                onPlace: (ray) => placeAt(ray),
                 onDrag: (p, end) => dragTo(p, end),
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null });
+            top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd() });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => view?.debug() ?? null;
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode } : null);
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;
@@ -659,10 +672,12 @@ export const course: Feature = {
             view = null;
             bar?.destroy();
             bar = null;
+            top?.destroy();
+            top = null;
+            mode = 'edit';
             dragBase = null;
             cancelAnimationFrame(dragFrame);
             ctx.session.cameraOverride = false;
-            ctx.resume('panel');
             // review TK-1: unsaved changes are dropped, the course flown is the one editing started from (or was saved as)
             if (!quiet && edSource) {
                 run = new CourseRun(edSource, ctx.session.transform, readBest(keyOf(edSource)));
@@ -680,6 +695,56 @@ export const course: Feature = {
             ed = out.state;
             showEd();
             if (out.ok) say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
+        };
+        /** lane editor3 E3: Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
+        const toggleAdd = (): void => {
+            if (!view || mode === 'fly') return;
+            view.adding = !view.adding;
+            top?.adding(view.adding);
+            if (view.adding) say(t('course.edit.bar.addHint'));
+        };
+        /** lane editor3 E3: a click with Add gate armed: a gate at the wall that ray hits (or ahead), after the selected one */
+        const placeAt = (ray: Ray): void => {
+            top?.adding(false);
+            if (!ed) return;
+            const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
+            const at = addPoint(ray.o, ray.d, hit);
+            const st = addInState(ed, at, facingFrom(ray.o, at), flownTransform(), keepProblems);
+            if (!st) return applyKey({ code: 'Insert' });
+            ed = st;
+            edChanged = true;
+            askedFor = null;
+            edHook.refused = null;
+            checks?.ask(st.course, flownTransform(), edMargin);
+            showEd();
+            say(t('course.edit.did', { what: t('course.edit.bar.add'), gate: gateLine(st, scale()) }));
+        };
+        /** lane editor3 E3: armed flies (the drone's camera, the course from gate 1), disarmed or crashed edits again */
+        const editFrame = (): void => {
+            if (!ed) return;
+            const sim = ctx.session.sim;
+            const st = modeStep(mode, !!sim?.armed, !!sim?.crashed);
+            if (st.change === 'to-fly') {
+                mode = 'fly';
+                dragBase = null;
+                view?.suspend(true);
+                bar?.hide(true);
+                top?.flying(true);
+                if (panel) panel.root.style.display = 'none';
+                ctx.session.cameraOverride = false;
+                stage.paintEdit([]);
+                run?.reset();
+                shownNext = -2;
+            } else if (st.change === 'to-edit') {
+                mode = 'edit';
+                if (panel) panel.root.style.display = '';
+                bar?.hide(false);
+                top?.flying(false);
+                // the edit camera comes back where it was (its onCamera takes the renderer's camera again)
+                view?.suspend(false);
+                showEd();
+            }
+            if (mode === 'fly') frame(true);
         };
         /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
         const dragTo = (p: FlownPose, end: boolean): void => {
@@ -895,7 +960,15 @@ export const course: Feature = {
         // review TK-3: Tab walks the window's buttons when the focus is in it (gates when on the canvas), F6 enters the window,
         // Esc inside it gives the focus back first (course/editor/keys.ts keyRoute)
         addEventListener('keydown', (e: KeyboardEvent) => {
-            if (!ed || !panel) return;
+            // lane editor3 E3: while the drone flies the keys belong to the flight
+            if (!ed || !panel || mode === 'fly') return;
+            if (e.code === 'Escape' && view?.adding) {
+                e.preventDefault();
+                e.stopPropagation();
+                view.adding = false;
+                top?.adding(false);
+                return;
+            }
             const target = e.target;
             const inWindow = target instanceof Node && panel.root.contains(target);
             const route = keyRoute(e, { typing: panel.typing(target), inWindow, onButton: target instanceof HTMLButtonElement });
