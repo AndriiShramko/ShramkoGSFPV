@@ -156,8 +156,39 @@ Stage fixes (review ED-1 to ED-7; NOT finished, stopped at the reply budget):
   (neg_control.py ref c0d4b218, the 8 changed sources); with editor3-flying (TOP_BUTTONS ids updated), -gatebar, -mouse,
   -check, -press, tracks-editor-ui 7 files 47 tests, 46 pass before the flying update, 20/20 after it on the two changed
   files; apps/fly tsc 0.
-- [ ] then a fresh release build, the full run.sh (both scenes, PHONE=1), LOOK at the screenshots, a keyboard-input probe step
-  (W in the mode must not arm, Space must), gates.py --only vitest,architecture,i18n,b18.
+- [x] ED-1 browser run (pass 2): release of c0d4b218 (code of 227ec760 plus the probe), walls stand-in in dist/walls,
+  `OUT=U:/Temp/gsfpv-train3/editor3/e5 PHONE=1 bash U:/Temp/gsfpv-train3/editor3/fixes2.sh`, evidence
+  U:/Temp/gsfpv-train3/editor3/e5/e4.json. The course came on both scenes this time (Tunis 5 gates in 10.5 s, Wroclaw 18
+  gates in 50 s, no Shift+G retry; the 403s are cloudfront probes of 887f27aa v1-v5 meta/settings, the scene was ready in
+  2.6 s). Facts:
+  - delete (fault 1): on both scenes after the bar's Delete `handles` true, `dragging` false, the stand and the selected gate
+    at the same screen point [774, 532, 3.13 m], the gate bar shown (flex). Fault 1 (E4.4) is gone with 227ec760 (aim() on a
+    gate count change); `dragging` was not stuck in this run, so the onUp guard is kept as a guard, not as the proven cause.
+  - moveX: both scenes 80 px drag of the X arrow -> the gate's screen point followed 78 px, moved 0.4 m, opening unchanged.
+  - scale (the centre box, d726a3cb): Tunis opening 1.2 -> 1.53 m with movedM 0 (proven). Wroclaw: three drags, opening 1.5
+    stayed 1.5, movedM 0 (open, see left).
+  - turn: 0 on both scenes for every try. LOOKED at shots/editor3-drag-1920.png (Tunis, 3.1 m from the gate): the rotate rings
+    are about 230 px from the centre, the probe presses at 110-150 px (inside, on the gate's own torus). The probe's radii are
+    wrong, so this run does not prove or disprove the rings (left).
+  - kind: Tunis ring -> square, said "Shape changed. Gate 2 of 5: square, 1.5 m". Wroclaw: the bar's ring button not
+    clickable in 5 s (kindClickError: the bar hidden or off screen after the scale tries; left).
+  - keys W A S D E Q moved the edit eye 2.4-2.53 m each on both; right-button look: Wroclaw at moved 0.85 m, Tunis 0 (left).
+  - fly (E4.7): the camera-drone profile (no arming), mode went to 'fly' and back, course.next stayed 0 on both (as E4).
+  - frames: in the mode 29.8-30 fps, longest gap 34 ms idle and while dragging; the whole path on Wroclaw 3 long tasks up to
+    158 ms; 0 page errors in 35 log lines.
+  - phone 844x390 (Tunis, the 4-button top bar of c0d4b218): the top bar one line, 295 px wide at y 4; the gate bar at
+    360,156. The 7-button bar of 3c972fee is NOT yet seen on a phone.
+- [ ] left (next worker, in this order):
+  1. probe tools/bench/src/editor3-prove.ts turn step: press at the ring radius (try 230, 200, 260 px, or read it from the
+     gizmo), re-run on Tunis, read turn quatChange > 0 with movedM 0.
+  2. Wroclaw: why the centre box drag did not scale (the selected gate's distance; stand.screen vs the box) and why the
+     ring button of the gate bar was not clickable after it; screenshot shots/editor3-wroclaw-drag-1920.png not yet looked at.
+  3. ED-2 probe step with the keyboard as the chosen input: W in the mode must not arm, Space must (code 227ec760, not seen
+     in a browser).
+  4. a release of 3c972fee (ED-5/6/7) and one phone run: the 7-button top bar on 844x390 (wraps or not), Courses and Keys
+     open the drawer.
+  5. E4.7 the flight through the moved gate (a racing profile with an arm switch, or the moved gate ahead of the spawn).
+  6. gates.py --only vitest,architecture,i18n,b18 (result in the line below once run).
 
 ## Facts (measured)
 
@@ -375,6 +406,11 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- fixes pass 2: about 33 replies; the most went to the release build (about 6 minutes) and the probe run waited out, and to
+  reading the locale and panel layout for ED-7; starting the build and the probe as the first command and writing ED-5/6/7
+  while they ran saved most of the wait; a probe that reads the gizmo's ring radius instead of fixed radii would have
+  made the turn step prove something on the first run.
 
 - fixes: about 30 replies; the most went to reading PlayCanvas gizmo internals again for ED-1 and a diagnosis run that got no
   course on Tunis in 240 s (gates 0), so it recorded nothing; a probe that loads a saved course file instead of generating
