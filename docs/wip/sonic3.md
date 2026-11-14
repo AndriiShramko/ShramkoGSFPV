@@ -18,7 +18,7 @@ Stage Z1-any-scene-in-place:
   course). First-timer line sonic.say.inPlaceIntro once (store.ts fliesBySound). Lesson menu Leave and X switch off / open the
   lessons tab when there is no start screen. Second pause item "Fly by Sound lessons" keeps the new-tab link.
 - [x] Pin of packages/sonic-fpv moved to package train3 2ec8653 (this commit).
-- [ ] gates.py --only vitest,architecture,i18n,b18.
+- [x] gates.py --only vitest,architecture,i18n,b18 on 98ef20d8: all four PASS (vitest 197 s), logs U:/Temp/gsfpv-gates-20261114-221332.
 - [ ] Browser proof (own stage, release build first) on Tunis and Wroclaw with the walls stand-in.
 
 ## Facts (measured)
@@ -50,9 +50,13 @@ Stage Z1-any-scene-in-place:
 
 ## For the lead
 
-- Step 2 is not built yet: the stage stopped at the reply budget with step 1 and step 3 done. sonic3-plan.md names files and
-  functions for the next worker.
-- Package branch train3 has commit 2ec8653 (README); the pin is not moved yet.
+- Step 2 is built (98ef20d8); the browser proof is the next stage (release build first; Tunis 887f27aa and Wroclaw 70b50d42
+  with the walls stand-in): fly, Backslash, intro and first cue heard, pose unchanged, walls build spoken on Wroclaw, N a course,
+  Backslash off.
+- The pin points at package train3 2ec8653, which is only in C:/dev/ShramkoSonicFPV (not pushed): the package branch must reach
+  its origin before the merge.
+- Old tests changed on purpose (the owner's message 51 overrides v12-optin's "one quiet link, no key"): sonic-optin.test.ts and
+  sonic-int-lazy.test.ts now expect two items and the in-place key; sonic-lesson-rig.ts honours `here` as feature.ts does.
 
 ## Not verified
 
@@ -60,9 +64,16 @@ Stage Z1-any-scene-in-place:
   pressed nothing in the new tab. The screenshots show the screen; what the second press does was read in code (lessons.ts open,
   mode.place(start)), not seen in a browser.
 - Backslash on Polish and Russian keyboard layouts (code Backslash exists on both; its printed cap not checked).
-- gates.py was not run (no simulator source changed except a new probe script and docs).
+- Nothing of step 2 was seen in a browser yet: the sound starting from a key press after the import() (Chrome's autoplay rule
+  with sticky activation), the built-in world's walls heard through ScanSonicWorld, the menu label switching to "Switch off",
+  X and the lesson menu's Lessons item opening the new tab, the respawn at the craft's own pose when the runner begins (the
+  craft stops dead for a moment: velocity reset).
+- a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
 
 - 2026-11-14 Z1: most replies went to reading the sound mode's entry chain (boot, start, feature, lessons) before design; a
   short agent-map section "how the mode is installed and what it needs at install time" would have saved four reads.
+- 2026-11-14 Z1 pass 2: the most replies went to old tests that pinned the replaced design (optin, int-lazy) and to the stale
+  submodule checkout (scanFreeLesson missing until the pin moved); moving the pin first and grepping tests for the item id
+  before editing would have saved four replies.
