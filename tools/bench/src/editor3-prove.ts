@@ -114,8 +114,22 @@ async function prepare(page: Page, id: string, out: Record<string, unknown>): Pr
     }
     await sleep(1500);
     await page.keyboard.press('Shift+KeyG');
-    const gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 240000);
-    out.course = { ok: gen.ok, ms: gen.ms, gates: gen.v?.gates };
+    let gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 120000);
+    let retried = false;
+    if (!gen.ok) {
+        // one more Shift+G (a press lost to a screen that still had the focus), then the same wait
+        retried = true;
+        await page.mouse.click(5, 300);
+        await page.keyboard.press('Shift+KeyG');
+        gen = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 120000);
+    }
+    out.course = { ok: gen.ok, ms: gen.ms, gates: gen.v?.gates, retried };
+    if (!gen.ok) {
+        out.courseFail = await page.evaluate(() => ({
+            focus: document.activeElement?.tagName + '.' + String(document.activeElement?.className ?? ''),
+            text: document.body.innerText.replace(/\s+/g, ' ').slice(0, 700),
+        }));
+    }
     return gen.ok;
 }
 
@@ -368,6 +382,7 @@ async function main(): Promise<void> {
         const page = await ctx.newPage();
         page.on('pageerror', (e) => log.push(`${name} pageerror: ${e.message}`.slice(0, 300)));
         page.on('console', (m) => { if (m.type() === 'error') log.push(`${name} console: ${m.text()}`.slice(0, 200)); });
+        page.on('response', (r) => { if (r.status() >= 400) log.push(`${name} http ${r.status()} ${r.url()}`.slice(0, 200)); });
         try {
             (out.scenes as Record<string, unknown>)[name] = await f(page);
         } catch (e) {
