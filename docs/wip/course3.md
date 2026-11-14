@@ -128,9 +128,16 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
   passed). New test in quality.test.ts, 240 m street: reach 98 and 111 m (old: 74.8 and 99); neg_control.py NEG OK
   "expected 74.8 to be greater than or equal to 90". The box QUALITY_BOX_M 240 (120 m each way from the spawn) is the
   next limit. tsc packages/tracks, apps/fly, tools/bench: 0 errors.
-- [~] Runner U:/Temp/gsfpv-train3/course3/g4b/run.sh: Wroclaw audit 4 seeds of the new walk, release build of 555bf690,
-  serve-csp 5722, browser build on ab5efa0e, owner's path on 70b50d42 (stand-in walls) and 887f27aa -> g4b/*.json.
-- [ ] gates.py --only vitest,architecture,i18n,b18.
+- [x] (pass 2) Wroclaw audit of the new walk, 4 seeds (course-quality-audit.ts --quality, U:/Temp/gsfpv-train3/course3/g4b/
+  audit-70b50d42.log): farM 181.6, 207.2, 197.6, 176 m (after3: 79-125); reach mean 114 m (after3: 71); gates 21, 24, 22,
+  14 (mean 20.3, sd 3.8; after3 20 seeds: 22.3, sd 3.1); all gates in the band; 94 s a course (after3: 84 s). Seed 4
+  walked 24 gates but kept 14 (tries 38): the cut after the walk was not looked into.
+- [x] (pass 2) gates.py --only vitest,architecture,i18n,b18 on aecae33e: all PASS (vitest 147 s; logs U:/Temp/gsfpv-gates-20261114-232813).
+- [ ] (pass 2) Browser proof of the new walk NOT run: release of aecae33e built (g4b/build.log, 1928 files), but the GPU lock
+  C:/dev/.gpu-lock was held by other agents from 23:08 to past 23:41 (a render job, then lane editor3), and the reply budget
+  ended; the runner was stopped before it took the lock. Next: run U:/Temp/gsfpv-train3/course3/g4b/run.sh again (it
+  rebuilds; drop the audit line), then look at course3-wroclaw-top.png and course3-wroclaw-pilot.png and record the span
+  (pass 1: 75.9 m), the respawn and R results, and the ab5efa0e percent lines (they must not go back).
 
 ## Facts (measured)
 
@@ -288,3 +295,5 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - G3-respawn: about 22 replies; most went to tracing the respawn path (respawn.ts, director.ts, runner.ts, session) to learn
   whether the sim tick goes back on a rewind; an agent-map line "respawn: director decision, life event, tick monotonic"
   would have saved about 4 replies.
+- G4-prove pass 2: about 30 replies; most went to waiting on the GPU lock (held by other agents 23:08-23:41+) in 10-minute
+  blocking chunks; a lock owner file (who and since when) inside C:/dev/.gpu-lock would let a worker decide at once to hand over.
