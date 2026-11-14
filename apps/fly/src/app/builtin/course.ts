@@ -28,7 +28,9 @@ import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, wi
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
-import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack } from '@gsfpv/tracks';
+import { CheckQueue } from '../../course/editor/check-core';
+import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
@@ -85,7 +87,13 @@ export const course: Feature = {
         // the editor (T3-editor-ui)
         let ed: EditorState | null = null;
         let panel: EditorPanel | null = null;
-        let checkFn: CourseCheck = () => [];
+        // lane editor3 E2.1: the walls check of the editor runs in course/editor/check-worker.ts (5.1-5.5 s per change on
+        // Wroclaw on this thread froze the page); an edit keeps the problems it had until the worker's answer repaints them
+        const keepProblems: CourseCheck = () => (ed ? [...ed.problems] : []);
+        let checks: CheckQueue | null = null;
+        let checkWorker: Worker | null = null;
+        let checkWalls: unknown = null;
+        let edMargin = 0;
         /** stage K2: the walls as a ray for the editor's camera, and that camera's forward on the floor */
         let camRay: RayFn | null = null;
         let camForward: readonly [number, number] | null = null;
@@ -279,6 +287,43 @@ export const course: Feature = {
         const flownTransform = (): [number, number, number, number] => {
             const tr = ctx.session.transform;
             return [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0];
+        };
+        /** lane editor3 E2.1: the editor's check worker, given these walls once (again only when the walls change) */
+        const checksOn = (col: object): CheckQueue | null => {
+            if (!checkWorker || !checks) {
+                const wk = new Worker(new URL('../../course/editor/check-worker.ts', import.meta.url), { type: 'module' });
+                const q = new CheckQueue((m, transfer) => wk.postMessage(m, transfer));
+                wk.onmessage = (e: MessageEvent<FromCheckWorker>) => {
+                    const got = q.answer(e.data);
+                    if (!got || !ed) return;
+                    if (!got.ok) {
+                        hook.problem = `check: ${got.message}`.slice(0, 200);
+                        return;
+                    }
+                    ed = { ...ed, problems: got.problems };
+                    showEd();
+                };
+                wk.onerror = (e) => {
+                    hook.problem = `check: ${e.message || 'worker error'}`.slice(0, 200);
+                    wk.terminate();
+                    if (checkWorker === wk) {
+                        checkWorker = null;
+                        checks = null;
+                        checkWalls = null;
+                    }
+                    q.drop();
+                };
+                checkWorker = wk;
+                checks = q;
+                checkWalls = null;
+            }
+            if (checkWalls !== col) {
+                const w = walls();
+                if (!w) return null;
+                checks.walls(w.grid, w.nodes, w.leaf);
+                checkWalls = col;
+            }
+            return checks;
         };
 
         /**
@@ -535,14 +580,16 @@ export const course: Feature = {
                 return generate(randomSeed());
             }
             // review T2-1: a smaller course (K1.2) is edited at the margin it was laid with, as the worker proves it
-            checkFn = wallsCheck(col, flownTransform(), marginOf(run.track));
+            edMargin = marginOf(run.track);
+            const q = checksOn(col);
             const fc = flownCollision(col, flownTransform());
             camRay = (o, d, max) => {
                 const h = fc.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], max);
                 return h ? Math.hypot(h.x - o[0], h.y - o[1], h.z - o[2]) : null;
             };
             edSource = run.track;
-            ed = openEditor(upgradeTrack(run.track), checkFn, 0);
+            ed = openEditor(upgradeTrack(run.track), keepProblems, 0);
+            q?.ask(ed.course, flownTransform(), edMargin);
             edChanged = false;
             askedFor = null;
             edHook.refused = null;
@@ -602,10 +649,13 @@ export const course: Feature = {
             if (!k) return;
             if ('cmd' in k) return command(k.cmd);
             askedFor = null;
-            const out = edit(ed, k.edit, checkFn);
+            const out = edit(ed, k.edit, keepProblems);
             ed = out.state;
             if (out.ok) {
-                if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') edChanged = true;
+                if (k.edit.kind !== 'select' && k.edit.kind !== 'select-step') {
+                    edChanged = true;
+                    checks?.ask(ed.course, flownTransform(), edMargin);
+                }
                 edHook.refused = null;
                 showEd();
                 say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
@@ -645,8 +695,20 @@ export const course: Feature = {
             crypto.getRandomValues(a);
             return `${like.split('-')[0]}-${a[0]!.toString(16).padStart(8, '0')}`;
         };
+        /** a save waits for the worker's answer on the course as it stands (no press is lost: the save goes on after it) */
+        const checked = async (): Promise<void> => {
+            if (!checks?.pending) return;
+            saving = true;
+            try {
+                await checks.settled();
+            } finally {
+                saving = false;
+            }
+        };
         const saveMine = async (nameIn: string, titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving) return;
+            await checked();
+            if (!ed || !edSource) return;
             if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
             const name = nameIn.trim().normalize('NFC');
             const title = titleIn.trim().normalize('NFC');
@@ -694,6 +756,8 @@ export const course: Feature = {
         /** stage F1-finish (R6/R8): the admin's edit of the gates as a new version of the served course, marked edited by the admin */
         const saveAdmin = async (titleIn: string): Promise<void> => {
             if (!ed || !edSource || saving || !adminLive) return;
+            await checked();
+            if (!ed || !edSource) return;
             if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             if (serverId === null) return say(t('course.edit.adminFirst'), true);

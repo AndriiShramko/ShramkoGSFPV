@@ -10,7 +10,11 @@ Stage E1-freeze-and-design (finished, the fix moved to E2 by the reply budget):
 - [ ] 3. the freeze fixed at its cause: NOT done in E1 (the stage's 30 replies went to the live run); it is step 1 of E2, plan in Decisions D1
 
 Stage E2 (next worker), in this order:
-- [ ] E2.1 the check off the main thread (Decisions D1), unit test with a negative control, the live probe re-run on a local release (SITE=http://localhost:5800) on 70b50d42 and 887f27aa: every key's frame gap under 100 ms
+- [~] E2.1 the check off the main thread (Decisions D1)
+  - [x] code: apps/fly/src/course/editor/check-core.ts (CheckQueue, checkAnswerer), check-worker.ts, wiring in course.ts;
+    test tools/bench/test/editor3-check.test.ts (3 tests) plus tracks2-fixes T2-1 moved to edMargin; 7 touched files 35/35
+    pass, NEG OK on origin/main course.ts (fails at `not.toMatch(/wallsCheck\(/)`), apps/fly tsc 0
+  - [ ] the probe re-run on a local release (SITE=http://localhost:5800) on 70b50d42 and 887f27aa: every key's frame gap under 100 ms
 - [ ] E2.2 the edit camera: W A S D, E up, Q down, right mouse button held looks, wheel speed (The design, Camera)
 - [ ] E2.3 click to select, PlayCanvas TranslateGizmo + RotateGizmo + ScaleGizmo on the selected gate, one undo step per drag
 - [ ] E2.4 the small panel at the selected gate, Add gate by a click on the place, the top bar
