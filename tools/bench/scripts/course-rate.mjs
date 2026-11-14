@@ -27,9 +27,11 @@ for (const f of readdirSync(audit).filter((n) => n.endsWith('.json'))) {
     if (!wf || !existsSync(wf)) { console.log(`${id} no walls file`); continue; }
     const meta = JSON.parse(readFileSync(wf, 'utf8'));
     const leaf = meta.leafDataCount ?? 0;
-    const rows = j.rows.filter((r) => r.ms > 0 && r.tried > 0);
+    // CR-3: course-quality-audit.ts rows count fitCourse's tries as `fits` (the walk's own tries are `tries` there)
+    const triedOf = (r) => r.tried ?? r.fits ?? 0;
+    const rows = j.rows.filter((r) => r.ms > 0 && triedOf(r) > 0);
     const ms = rows.reduce((a, r) => a + r.ms, 0);
-    const tried = rows.reduce((a, r) => a + r.tried, 0);
+    const tried = rows.reduce((a, r) => a + triedOf(r), 0);
     const perTry = tried ? ms / tried : 0;
     const triesMean = rows.length ? tried / rows.length : 0;
     console.log(`${id} leafM=${(leaf / 1e6).toFixed(2)} nodesM=${((meta.nodeCount ?? 0) / 1e6).toFixed(2)} res=${meta.voxelResolution} freeMs=${j.summary.freeMs} msPerTry=${perTry.toFixed(0)} triesMean=${triesMean.toFixed(2)} msPerTryPerMLeaf=${leaf ? (perTry / (leaf / 1e6)).toFixed(0) : '-'}`);

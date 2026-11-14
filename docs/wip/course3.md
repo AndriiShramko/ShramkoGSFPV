@@ -139,6 +139,35 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
   rebuilds; drop the audit line), then look at course3-wroclaw-top.png and course3-wroclaw-pilot.png and record the span
   (pass 1: 75.9 m), the respawn and R results, and the ab5efa0e percent lines (they must not go back).
 
+Stage fixes (review CR-1..CR-6). Stopped at the reply budget at a clean point.
+
+- [x] CR-1 (blocker) d74ed4b6: the walk's diagnostics (band, banded, farM, outGates, backtracks, plus walked, cutClose,
+  drops, kept) no longer go into generator.params; they go to the new CourseOptions.onWalk (WalkInfo). No change to
+  server.ts or apps/api/tracks.py needed. quality.test.ts: validateServerTrack ok on courses over the map, onWalk adds up.
+  neg_control.py against HEAD (generate.ts): NEG OK by assertion ("generator.params.band: is not a known key" ...).
+  generate, fit, fixtures, quality: 70/70 passed (digest pins hold). tsc packages/tracks and tools/bench: 0 errors.
+- [x] CR-6 d74ed4b6: a step-back below outGates (only when a far target exists) sets back = false and outGates = -1.
+  No unit test (no cheap world builds that dead end); the audit below shows bt 0 on all rows so far, so its effect is not measured.
+- [x] CR-2 a956eb9d: walls box shows a bar animated by Element.animate (transform, compositor) while a build runs and,
+  in the read and voxelize steps, the line progress.mayStop ("may stand still for up to 25 s; the build goes on"), spoken once
+  a build. FREEZE_NOTE_S 25 is an ESTIMATE rounded up from the measured freezes 13.5 s, 10.0 s and 21.0 s unchanged text.
+  course-progress.test.ts 15/15; neg_control.py with the old locales: NEG OK ("expected 17 to be 18"). tsc apps/fly: 0 errors.
+- [x] CR-5: the For-the-lead line on room races corrected (race-page.ts:53 still resets on every life).
+- [x] gates.py --only vitest,architecture,i18n,b18 on a956eb9d: all PASS (vitest 119 s; logs U:/Temp/gsfpv-gates-20261114-235456).
+- [~] CR-4: cause found, fix left. 20-seed audit of d74ed4b6 (U:/Temp/gsfpv-train3/course3/fixes/run-audit.sh, output
+  fixes/audit/) was cut at hand-over after 9 Wroclaw and 2 Tunis seeds. Seed 4 (Wroclaw): walked 24, closeAt cut 0, the
+  whole-course proof dropped 10 (8 'gate', 2 'leg') -> 14. Seeds 1, 3, 13 lost 3, 2, 1 the same way. Cause: the walk's
+  one-gate proof (generate.ts, build([gate], yk, cur, 1)) has no leg out, but check.ts (about line 288) also needs the
+  turn after a gate (gateExit to the next gate) clear; with 25 m legs on a street that turn hits walls, and each drop
+  changes the neighbours' legs (cascade). Fix to do: in the spread walk, accept a candidate only when the exit turn of the
+  current gate toward it is free (gateExit from path.ts with the last gate's axis), for courses over a map only (digest pins
+  of courses without a map must hold); then rerun run-audit.sh (about 20 min with 4 processes) and compare sd with before3
+  (Wroclaw 5.2, Tunis 6.5) and after3 (3.1, 6.6).
+- [ ] CR-3: tools/bench/scripts/course-rate.mjs now reads course-quality-audit rows (fits as tried). Left: run it over
+  fixes/audit/ when the audit is whole, set COURSE_TRY_MS_5CM from ms per fit try (Node, so far Wroclaw rows 35-108 s a
+  course, 1 fit each) and FREE_SPACE_MS from the free step: Node qMs 1115-1140 + freeMs 3675 on Wroclaw (g4b), browser
+  20.4 s (G4 build-look, 8c1dfd71, includes qualityMap); then time one Wroclaw generation of the current walk in the browser.
+
 ## Facts (measured)
 
 - G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m
@@ -258,7 +287,10 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - G2: four stale detached audits (before2/, after2/ and the first pass's before/, after-band/) may still run; stopping
   them was refused to this worker. They write only under U:/Temp/gsfpv-train3/course3/g2.
 - G3: builtin/course.ts carries a third hunk of this lane (the 'sim' crash reset is gone, the 'life' listener calls
-  courseLife). rooms/race.ts was not changed: a race in a room now also keeps the attempt over a crash respawn (same CourseRun).
+  courseLife). Rooms were not changed (CR-5 corrects the earlier line here): apps/fly/src/rooms/race-page.ts:53 still runs
+  ctx.events.on('life', () => this.run?.reset()), so in a room every life, a crash respawn at the last place included,
+  restarts the race attempt. Decide: keep that (one rule for every racer) or give race-page.ts the solo courseLife plus
+  afterLife call (outside this lane).
 
 ## Not verified
 
@@ -297,3 +329,6 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
   would have saved about 4 replies.
 - G4-prove pass 2: about 30 replies; most went to waiting on the GPU lock (held by other agents 23:08-23:41+) in 10-minute
   blocking chunks; a lock owner file (who and since when) inside C:/dev/.gpu-lock would let a worker decide at once to hand over.
+- fixes: about 32 replies; most went to CR-2 (finding the box, the locale namespace, a name clash with walls.ts's own
+  `busy`) and to the 20-seed audit that outlives a worker; a walk-info row in the audit from the start (it exists now) and
+  starting the long audit as the first command of a stage would have saved about 6 replies.
