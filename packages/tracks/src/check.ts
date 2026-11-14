@@ -175,6 +175,13 @@ export interface TrackReport {
     readonly outside: readonly string[];
 }
 
+/** The margin a track is proven at: a smaller course (K1.2, fitCourse) carries the margin it was laid with in
+ *  generator.params.marginM; anything else, or a value not under MARGIN_M, is proven at MARGIN_M (review T2-1). */
+export function marginOf(track: { readonly generator?: { readonly params?: Readonly<Record<string, unknown>> } | null }): number {
+    const mg = track.generator?.params?.marginM;
+    return typeof mg === 'number' && mg > 0 && mg < MARGIN_M ? mg : MARGIN_M;
+}
+
 /** The flown start of a track: its own start, else the first gate's neighbourhood is not guessed (a track needs one). */
 export function flownStart(track: TrackFile, transform: readonly [number, number, number, number]): { pos: Vec3; yawDeg: number } | null {
     if (!track.start) return null;
@@ -186,9 +193,11 @@ export function flownStart(track: TrackFile, transform: readonly [number, number
 /**
  * The proof, for `track` laid in the scan frame, on `col` (the flown walls: flownCollision) through `transform`, at `marginM`.
  * Pure over the walls: Node tests give it analytic walls and walls the real scan makes. `measure` false skips the free radii
- * (reported as the cap), which only the proof's margin needs when it is searched for (provenMargin).
+ * (reported as the cap), which only the proof's margin needs when it is searched for (provenMargin). `exitTurns` adds the
+ * K1 sweep of the turn after a gate (path.ts gateExit to the next gate): a rule of the generator only (review T2-3), so a
+ * saved or served course keeps the acceptance it was saved under.
  */
-export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true): TrackReport {
+export function checkTrack(track: TrackFile, col: VoxelCollision, transform: readonly [number, number, number, number], marginM = MARGIN_M, measure = true, exitTurns = false): TrackReport {
     const gates = trackToObjects(track, { transform });
     const start = flownStart(track, transform);
     // lane review TR-3: outside the walls' grid counts as free to the sweeps, and a gate far out made them run for minutes;
@@ -278,8 +287,8 @@ export function checkTrack(track: TrackFile, col: VoxelCollision, transform: rea
         probe(from);
         probe(to);
         // K1: the turn after a gate the path flies through first (path.ts gateExit) is a leg of its own
-        const after = i + 1 < gates.length ? gates[i + 1]!.pos : track.laps > 1 ? startPos : null;
-        const exit = gateExit(g.pos, axis, legIn, after ? sub(after, g.pos) : null);
+        const after = !exitTurns ? null : i + 1 < gates.length ? gates[i + 1]!.pos : track.laps > 1 ? startPos : null;
+        const exit = after ? gateExit(g.pos, axis, legIn, sub(after, g.pos)) : null;
         if (exit && after && !sw.free(exit, after, marginM)) {
             clear = false;
             issues.push(`gate ${g.id}: the turn after it (from ${v3(exit).join(', ')}) is not clear by ${marginM} m`);

@@ -5,6 +5,23 @@ U:/Temp/gsfpv-train2/tracks2/.
 
 ## Status
 
+Stage fixes (review T2-1 to T2-7 of 2026-11-14). Logs U:/Temp/gsfpv-train2/tracks2/fixes/.
+
+- [x] T2-3 (stands) the turn-after-a-gate sweep is a generator rule: check.ts checkTrack gains `exitTurns` (default false),
+  generate.ts passes true to its trial, closing and final proofs; served, edited and saved courses keep the acceptance of
+  before K1. Test packages/tracks/test/fly.test.ts "review T2-3" (a post 0.35 m off the turn after g1: ok by default,
+  'turn after' with exitTurns); NEG OK on check.ts + generate.ts of ba575b6f (AssertionError, served.ok false).
+- [x] T2-1 (stands) marginOf(track) in check.ts (generator.params.marginM under MARGIN_M, else MARGIN_M); used by
+  course/worker.ts (check job) and course.ts openEdit (wallsCheck(col, flownTransform(), marginOf(run.track))). Tests
+  packages/tracks/test/fit.test.ts "review T2-1" (tiny room seed 1: no problems and canSave at marginOf; control: canSave
+  false at MARGIN_M) and tools/bench/test/tracks2-fixes.test.ts (page wiring); NEG OK on course.ts + worker.ts of ba575b6f
+  (2 of 2 failed by assertion).
+- [x] T2-4 (stands) Shift+B while busy sets reopenAfter (the editor opens on the course when it arrives) and repeats the
+  "making a course" flash when the busy job is a generation; test in tracks2-fixes.test.ts, same NEG OK.
+- [ ] T2-2 PARAM_KEYS scale, legMinM, legMaxM (tracks.py, server.ts) with a save case.
+- [ ] T2-5 LAP_MIN_MS. [ ] T2-6 fitCourse time budget. [ ] T2-7 line with model names.
+- [ ] gates.py --only vitest,architecture,i18n,b18 before handing over.
+
 Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/docs/wip/tracks-edit.md).
 
 - [x] K2.1 the selected gate in view: apps/fly/src/course/editor/camera.ts (gateCamera: the eye between the paused drone

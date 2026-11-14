@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import { analyticCollision, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
 import { trackDigest } from '@shramko/sonic-fpv';
-import { COURSE_DEFAULTS, COURSE_SCALES, RING_DIAMETER_M, RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, checkTrack, fitCourse, flyPath, freeSpace, generateCourse } from '../src';
+import { COURSE_DEFAULTS, COURSE_SCALES, MARGIN_M, RING_DIAMETER_M, RING_MIN_DRONE_DIAMETERS, SMALLEST_DRONE_RADIUS_M, canSave, checkTrack, fitCourse, flyPath, freeSpace, generateCourse, marginOf, openEditor, upgradeTrack, wallsCheck } from '../src';
 import type { SceneTransform, TrackFile, Vec3 } from '../src';
 import { IDENTITY, SPAWN_A, threeRooms } from './worlds';
 
@@ -61,6 +61,18 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
             expect(checkTrack(t, walls, IDENTITY, t.generator!.params.marginM as number, false).ok).toBe(true);
             expect(registersAll(t, IDENTITY)).toEqual([]);
         }
+    });
+
+    it('review T2-1: the editor checks a smaller course at the margin it was laid with, so it can be saved', () => {
+        const t = fitCourse(free, walls, { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED }).track!;
+        expect(marginOf(t)).toBe(t.generator!.params.marginM);
+        expect(marginOf(t)).toBeLessThan(MARGIN_M);
+        expect(marginOf({ ...t, generator: null })).toBe(MARGIN_M);
+        const ed = openEditor(upgradeTrack(t), wallsCheck(walls, IDENTITY, marginOf(t)), 0);
+        expect(ed.problems, JSON.stringify(ed.problems)).toEqual([]);
+        expect(canSave(ed)).toBe(true);
+        // control: the same course at the plan's margin has problems (the editor showed red gates and refused Enter)
+        expect(canSave(openEditor(upgradeTrack(t), wallsCheck(walls, IDENTITY), 0))).toBe(false);
     });
 
     it('the smallest scale keeps the ring at RING_MIN_DRONE_DIAMETERS drone diameters', () => {

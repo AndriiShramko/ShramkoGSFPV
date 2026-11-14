@@ -3,7 +3,7 @@
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, MARGIN_M, checkTrack, fitCourse, freeSpace } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, checkTrack, fitCourse, freeSpace, marginOf } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
 
 export interface CourseGrid {
@@ -76,8 +76,7 @@ scope.onmessage = (e) => {
             const meta = metadataOf(m.grid, m.nodes.length, m.leaf.length);
             const walls = m.grid.flip ? new FlippedVoxelCollision(meta, m.nodes, m.leaf) : new VoxelCollision(meta, m.nodes, m.leaf);
             // a smaller course (K1.2, fitCourse) is proven at the margin it was laid with
-            const mg = m.track.generator?.params.marginM;
-            const r = checkTrack(m.track, walls, m.transform, typeof mg === 'number' && mg > 0 && mg < MARGIN_M ? mg : MARGIN_M, false);
+            const r = checkTrack(m.track, walls, m.transform, marginOf(m.track), false);
             scope.postMessage({ t: 'checked', job: m.job, ok: r.ok, issues: r.issues.slice(0, 4), ms: Math.round(performance.now() - t0) });
         } catch (err) {
             scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });

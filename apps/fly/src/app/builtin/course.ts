@@ -27,7 +27,7 @@ import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, wi
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
-import { canSave, edit, flownCollision, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
@@ -499,12 +499,18 @@ export const course: Feature = {
             if (!col) return fail('no walls', t('course.noWalls'));
             if (!run) {
                 // stage K2 (the owner's rule: lead him on): no course yet, so one is made and the editor opens on it
-                if (busy) return;
+                // review T2-4: pressed while a course is being made, the editor opens on it when it arrives
+                if (busy) {
+                    reopenAfter = true;
+                    if (!checking) ctx.hud.flash(t('course.generating'), 2500);
+                    return;
+                }
                 hook.problem = null;
                 reopenAfter = true;
                 return generate(randomSeed());
             }
-            checkFn = wallsCheck(col, flownTransform());
+            // review T2-1: a smaller course (K1.2) is edited at the margin it was laid with, as the worker proves it
+            checkFn = wallsCheck(col, flownTransform(), marginOf(run.track));
             const fc = flownCollision(col, flownTransform());
             camRay = (o, d, max) => {
                 const h = fc.queryRay(o[0], o[1], o[2], d[0], d[1], d[2], max);

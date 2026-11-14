@@ -51,9 +51,21 @@ describe('the path pilot registers every gate', () => {
     it('a turn after a gate into a wall is no proof: the gate is not clear', () => {
         // the same hairpin with a wall between g1's way out and g2
         const walled = analyticCollision([0, 0, 0], [20, 6, 20], 0.1, (x, y, z) => x < 0.5 || x > 19.5 || y < 0.3 || y > 5.7 || z < 0.5 || z > 19.5 || (x > 9.2 && x < 11.6 && z > 4 && z < 4.6));
-        const r = checkTrack(hairpin(1), walled, IDENTITY, 0.5, false);
+        const r = checkTrack(hairpin(1), walled, IDENTITY, 0.5, false, true);
         expect(r.gates[0]!.clear).toBe(false);
         expect(r.issues.some((s) => s.includes('turn after'))).toBe(true);
+    });
+
+    it('review T2-3: the turn after a gate is a generator rule; a saved or served course keeps its old acceptance', () => {
+        // g1 passed toward -z, g2 at its side (the leg out turns 90 degrees); a post 0.35 m off the turn after g1 and
+        // 0.85 m off the leg g1 to g2: the proof before K1 passed this course, the generator's proof does not
+        const t = hairpin(1);
+        const turned = { ...t, start: { pos: [10, 2, 16], yawDeg: 0 }, gates: [{ ...t.gates[0]!, pos: [10, 2, 10] }, { ...t.gates[1]!, pos: [14, 2, 10], quat: yawQuatStep(4) }] } as TrackFile;
+        const post = analyticCollision([0, 0, 0], [20, 6, 20], 0.1, (x, y, z) => x < 0.5 || x > 19.5 || y < 0.3 || y > 5.7 || z < 0.5 || z > 19.5 || (x > 11.9 && x < 12.1 && z > 8.9 && z < 9.15));
+        const served = checkTrack(turned, post, IDENTITY, 0.5, false);
+        expect(served.ok, served.issues.join('; ')).toBe(true);
+        const generator = checkTrack(turned, post, IDENTITY, 0.5, false, true);
+        expect(generator.issues.some((s) => s.includes('turn after'))).toBe(true);
     });
 
     it('generated courses on the three-room world: 0 gates missed at 3 and 12 m/s over 6 seeds', { timeout: 300_000 }, () => {

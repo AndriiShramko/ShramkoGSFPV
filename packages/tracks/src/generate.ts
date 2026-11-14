@@ -257,7 +257,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         // one-gate proof: the leg from where the walk stands and this gate's opening, frame and run (the whole course is
         // proven once at the end); proving the whole course per candidate cost about 44 s a course on real walls
         const trial = build([gate], yk, cur, 1); // open: the one-gate proof has no leg out (laps did not matter to it before K1)
-        if (!checkTrack(trial, walls, T, p.marginM, false).ok) continue;
+        if (!checkTrack(trial, walls, T, p.marginM, false, true).ok) continue;
         gates.push(gate);
         flownGates.push(toFlown(gate.pos));
         cur = flownGates[flownGates.length - 1]!;
@@ -281,7 +281,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             laps = p.laps;
         } else laps = 1;
         const startYaw = nearestYaw(sub(toFlown(course[0]!.pos), startW));
-        const r = checkTrack(build(course, startYaw, startW, laps), walls, T, p.marginM, false);
+        const r = checkTrack(build(course, startYaw, startW, laps), walls, T, p.marginM, false, true);
         if (r.ok) break;
         const bad = r.gates.findIndex((g) => !g.clear || !g.directionOk);
         const badLeg = r.legs.findIndex((l) => !l.clear);
@@ -293,7 +293,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const shell = build(course, startYaw, startW, laps);
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
-    const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false) : null;
+    const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false, true) : null;
     return {
         ...shell,
         generator: {
