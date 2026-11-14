@@ -19,7 +19,8 @@ Raw files: `evidence/2026-11-13/gpu-select/` (user name masked; no serial number
 - [x] 4. Handback: this file.
 
 Commits: 29dd30e3 (steps 0 to 3a), 1d8f6cdb (step 2a, frames on both GPUs, Firefox), 7d4f693d (review fixes, probes,
-measurements), and the commit that carries this file (the owner's settings on both GPUs, gates, handback).
+measurements), 43958c56 (the owner's settings on both GPUs, gates, handback), and the commit that carries this file (the
+Windows link tested again from a closed Settings).
 
 ## Facts (measured)
 
@@ -91,9 +92,10 @@ a second and the page paused itself (`owner-chrome-before.json` holds its adapte
   "Restart" in Edge; after the restart the adapter is nvidia ampere with nothing on the command line.
 - Windows' graphics page as a link (`chrome-link.json`, `edge-link.json`): a click on
   `<a href="ms-settings:display-advancedgraphics">` makes Edge ask "This site is trying to open Settings." with Open, Cancel
-  and an "Always allow" box; with the origin allowed, Settings opens on System > Display > Graphics in both browsers.
-  Chrome's question is not exposed to the tool that read Edge's. Both runs were made while a Settings window was already
-  open, so they show the question and the page reached, not that the click itself opened the program (see "Not verified").
+  and an "Always allow" box; with the origin allowed, the click opens Settings on System > Display > Graphics in both
+  browsers. Without that consent nothing opens in either (no Settings window after the click). Chrome's question is not
+  exposed to the tool that read Edge's, so its words were not read. (The files are of the second run, made with no
+  Settings window open before it; the first run had one open and could not tell what the click had opened.)
 - Windows' per-application preference: stored per user as `GpuPreference=2;` for high performance [reference]. Not set and
   not measured here.
 
@@ -154,8 +156,9 @@ puts the finished picture on the panel. One fast card is the answer.
   live site and closed it; the window was brought to the front once for half a minute.
 - Firefox updated itself from 142.0.1 to 160.0 when the probe first started it (its own updater). This cannot be undone here.
 - Edge was started for the first time by this user, with throwaway profiles only; nothing of them is kept.
-- A Windows Settings window that was already open shows System > Display > Graphics now: the link test moved it there. It
-  was left open; closing it undoes it.
+- A Windows Settings window that was open during the first link test was moved to System > Display > Graphics by it and
+  left open. It was no longer there two hours later (the Settings program was not running); the second link test opened
+  Settings itself and closed what it had opened.
 - On disk: the clone `C:\dev\ShramkoGSFPV` with its `node_modules`, and throwaway browser profiles under its `.cache/gpu-select`
   (removed after each run). Deleting the folder removes all of it.
 - A preview entry for the local dev server in the Claude desktop app's own folder (`.claude/launch.json` of the session's
@@ -220,7 +223,7 @@ its page, the Windows link, WebGPU under load). All Windows only, visible browse
 Nothing is switched in your own browser yet. Either way takes two clicks and is undone in the same place:
 
 - In Chrome: open `chrome://flags/#force-high-performance-gpu`, choose Enabled, press Relaunch. Undo: choose Disabled.
-- In Windows: Settings > System > Display > Graphics (that window is open on this page already) > Add desktop app >
+- In Windows: Settings > System > Display > Graphics > Add desktop app >
   `C:\Program Files\Google\Chrome\Application\chrome.exe` > High performance; then close Chrome completely and start it
   again. Undo: the option that lets Windows decide, or remove the entry.
 
@@ -254,8 +257,8 @@ Expect the fans: the NVIDIA card reaches 80 C in half a minute and then slows it
 - Windows' per-application graphics preference for a browser (does it move Chrome, Edge and Firefox to the NVIDIA card),
   and anything on battery power: both wait for the owner's own clicks.
 - The frame rate in the owner's own Chrome profile, before or after: only its adapter readings were taken.
-- That the Windows link opens Settings from a closed state, and Chrome's own question before it: the two link runs were
-  made with a Settings window already open, and Chrome's question could not be read.
+- The words of Chrome's own question before it opens Settings (that it asks, and opens nothing without consent, is
+  measured; the dialog is not exposed to the tool that read Edge's).
 - Whether the link raises the browser's "Leave site?" question while a recording runs (the page asks before unload then).
 - Intel Arc cards, AMD integrated chips and the Arc chips of Core Ultra processors: read from names and from the strings of
   a Dawn build, no such hardware was at hand. What Firefox says after a switch to the NVIDIA card: not measured.
