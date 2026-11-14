@@ -44,7 +44,7 @@ const dbg = (p: Page): Promise<Dbg | null> => p.evaluate(() => {
 });
 const dist = (a: number[] | undefined, b: number[] | undefined): number => (a && b ? Math.hypot(...a.map((v, i) => v - (b[i] ?? 0))) : -1);
 const r2 = (x: number): number => Math.round(x * 100) / 100;
-const pad = (p: Page, axes: number[] | null, buttons?: number): Promise<void> => p.evaluate(([a, b]) => (window as unknown as W).__pad?.set(a as number[] | null, b as number | null), [axes, buttons ?? null] as const);
+const pad = (p: Page, axes: number[] | null, buttons?: number | null): Promise<void> => p.evaluate(([a, b]) => (window as unknown as W).__pad?.set(a as number[] | null, b as number | null), [axes, buttons ?? null] as const);
 
 /** In the page before load: the fake DJI pad (as known-controller-probe.mjs) and the long-task and frame recorders. */
 function install(): void {
@@ -175,26 +175,23 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const nDel = (await hook(page))?.gates ?? 0;
     await page.click('.ce-gatebar [data-bar="delete"]', { timeout: 5000, force: true }).catch((e) => { out.deleteClickError = String(e).slice(0, 120); });
     const dl = await until(() => hook(page), (h) => (h?.gates ?? 0) === nDel - 1, 3000);
-    out.delete = { index: del, ok: dl.ok, gates: [nDel, dl.v?.gates], selected: dl.v?.editor?.selected };
+    await sleep(600);
+    const dd = await dbg(page);
+    out.delete = {
+        index: del, ok: dl.ok, gates: [nDel, dl.v?.gates], selected: dl.v?.editor?.selected,
+        handles: dd?.handles, dragging: dd?.dragging, stand: dd?.stand.screen, gate: dd?.gates[dl.v?.editor?.selected ?? 0],
+        bar: await page.evaluate(() => { const b = document.querySelector('.ce-gatebar') as HTMLElement | null; return b ? `${getComputedStyle(b).display} ${b.style.left} ${b.style.top}` : 'none'; })
+    };
     // select the added gate (now at `del`)
     for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) await page.keyboard.press('Shift+Tab');
     await sleep(1600);
     await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-1920.png' : 'editor3-select-1920.png') });
 
     const tDrag0 = await now(page);
-    // the X arrow: the gate follows the cursor
-    const moves: unknown[] = [];
-    for (const rr of [80, 60, 100, 45]) {
-        const a = (await dbg(page))!;
-        const dir = a.axes.x;
-        await drag(page, a.stand.screen[0]! + dir[0]! * rr, a.stand.screen[1]! + dir[1]! * rr, dir[0]! * 80, dir[1]! * 80);
-        const b = (await dbg(page))!;
-        const m = dist(a.stand.pos, b.stand.pos);
-        const px = dist(a.stand.screen.slice(0, 2), b.stand.screen.slice(0, 2));
-        moves.push({ r: rr, movedM: r2(m), screenPx: Math.round(px), dragPx: 80, opening: [a.stand.opening, b.stand.opening] });
-        if (m > 0.05) break;
-    }
-    out.moveX = moves;
+    // the ring, the centre box and the kind on the next gate (Tab), so the gate flown through later is only moved
+    await page.keyboard.press('Tab');
+    await until(() => ed(page), (e) => e.selected === del + 1, 2000);
+    await sleep(800);
     // a ring
     const turns: unknown[] = [];
     for (const [ax, across] of [['x', 'y'], ['y', 'x'], ['z', 'x']] as const) {
@@ -224,9 +221,30 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     out.scale = sc;
     // its kind: the bar's square
     const k0 = (await ed(page)).said;
-    await page.click('.ce-gatebar [data-bar="square"]', { timeout: 5000, force: true }).catch((e) => { out.kindClickError = String(e).slice(0, 120); });
+    // a kind it does not have yet (the window's gate line names its kind)
+    const line0 = await page.evaluate(() => document.querySelector('.course-editor .ce-gate')?.textContent ?? '');
+    const kindTo = /square/.test(line0) ? 'ring' : 'square';
+    out.kindTo = kindTo;
+    await page.click(`.ce-gatebar [data-bar="${kindTo}"]`, { timeout: 5000 }).catch((e) => { out.kindClickError = String(e).slice(0, 120); });
     await sleep(500);
     out.kind = { saidBefore: (k0 ?? '').slice(0, 80), said: ((await ed(page)).said ?? '').slice(0, 80), changed: (await ed(page)).changed };
+    // back to gate 1 (Shift+Tab) and its X arrow
+    await page.keyboard.press('Shift+Tab');
+    await until(() => ed(page), (e) => e.selected === del, 2000);
+    await sleep(800);
+    // the X arrow: the gate follows the cursor
+    const moves: unknown[] = [];
+    for (const rr of [80, 60, 100, 45]) {
+        const a = (await dbg(page))!;
+        const dir = a.axes.x;
+        await drag(page, a.stand.screen[0]! + dir[0]! * rr, a.stand.screen[1]! + dir[1]! * rr, dir[0]! * 80, dir[1]! * 80);
+        const b = (await dbg(page))!;
+        const m = dist(a.stand.pos, b.stand.pos);
+        const px = dist(a.stand.screen.slice(0, 2), b.stand.screen.slice(0, 2));
+        moves.push({ r: rr, movedM: r2(m), screenPx: Math.round(px), dragPx: 80, opening: [a.stand.opening, b.stand.opening] });
+        if (m > 0.05) break;
+    }
+    out.moveX = moves;
     out.drags = await span(page, tDrag0, await now(page));
     await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-drag-1920.png' : 'editor3-drag-1920.png') });
 
@@ -263,12 +281,41 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(400);
     const dArm = await dbg(page);
     const flight: unknown[] = [];
-    for (let i = 0; i < 16; i++) {
-        await pad(page, [0, i < 12 ? -0.35 : 0, i < 3 ? 0.35 : 0.1, 0, 0], null);
-        await sleep(250);
+    // steer at the moved gate (gate `del`) by where it is on the drone's camera: yaw keeps it in the middle, throttle at
+    // its height, pitch forward; the yaw's and the pitch's signs are found by trying (the probe does not know the pad's)
+    const W = vp.width;
+    const H = vp.height;
+    const clamp = (x: number): number => Math.max(-0.8, Math.min(0.8, x));
+    const ga = (await dbg(page))?.gates[del];
+    await pad(page, [0, 0, 0.15, 0.4, 0], null);
+    await sleep(400);
+    const gb = (await dbg(page))?.gates[del];
+    const yawSign = ga && gb && ga[2]! > 0 && gb[2]! > 0 && gb[0] !== ga[0] ? (gb[0]! > ga[0]! ? 1 : -1) : 1;
+    let pitch = -0.35;
+    let z4 = -1;
+    for (let i = 0; i < 60; i++) {
+        const d = await dbg(page);
         const h = await hook(page);
-        flight.push([i, h?.next, (await dbg(page))?.mode]);
+        const g = d?.gates[del];
+        flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null]);
+        if (h?.next !== nextBefore || d?.mode !== 'fly') break;
+        let yaw = 0.5;
+        let thr = 0.1;
+        let pit = 0;
+        if (g && g[2]! > 0) {
+            const ex = (g[0]! - W / 2) / (W / 2);
+            const ey = (g[1]! - H / 2) / (H / 2);
+            yaw = clamp(-yawSign * 0.9 * ex);
+            thr = clamp(-0.7 * ey);
+            pit = Math.abs(ex) > 0.35 ? 0 : pitch;
+            if (i === 4) z4 = g[2]!;
+            if (i === 12 && z4 > 0 && g[2]! > z4 + 0.3) pitch = -pitch;
+        }
+        await pad(page, [0, pit, thr, yaw, 0], null);
+        await sleep(250);
     }
+    out.flyYawSign = yawSign;
+    out.flyPitch = pitch;
     await page.screenshot({ path: join(SHOTS, `editor3-${id}-flying.png`) });
     await pad(page, [0, 0, -1, 0, 0], 0x50);
     await sleep(300);

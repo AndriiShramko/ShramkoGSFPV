@@ -91,6 +91,38 @@ Stage E4-prove (NOT finished, stopped at the reply budget; the proof found three
   ahead of the drone's spawn, or use a racing profile with an arm switch, then read course.next go 0 to 1.
 - [ ] E4.8 re-run, LOOK at the four screenshots again, the owner's mouse steps below checked against them.
 
+E4-prove pass 2 (stopped at the reply budget: the GPU lock C:/dev/.gpu-lock was held from 23:48 to past 00:12 by another
+lane's course-quality-audit runs in C:/dev/gsfpv-rooms, so no browser run happened in this pass):
+- [x] probe changes (this commit, tools/bench/src/editor3-prove.ts, tsc of tools/bench clean for this file):
+  - after the bar's Delete it records `delete.handles`, `delete.dragging`, `delete.stand` (screen), `delete.gate` (the
+    selected gate's screen point) and `delete.bar` (the bar's display and place): this is the diagnosis of fault 1;
+  - the ring, the centre box and the kind now act on gate 2 (Tab), then Shift+Tab back to gate 1 and only its X arrow is
+    dragged, so the gate flown through is only moved (a ring turn could leave it facing sideways);
+  - the kind button is chosen from the window's gate line (ring when it is a square, else square) and clicked without
+    force (a hidden bar now shows as kindClickError instead of a click on whatever lies there): explains E4.5 on Tunis,
+    where Square was pressed on a gate that already was a square;
+  - E4.7: flying steers at the moved gate by where it is on the drone's camera (yaw keeps it centred, throttle at its
+    height, pitch forward; yaw and pitch signs found by trying), up to 15 s, stops when course.next changes; records
+    flyYawSign, flyPitch and per step [i, next, mode, gate screen point].
+- [x] E4.6 code (this commit, NOT yet seen in a browser): under 900 px wide or 500 px high the course window is a drawer,
+  closed by default (only its title and the gate line, top right); its title is now a button (panel.ts, .ce-drawer) that
+  opens and closes it and gives the focus back to the page; the top bar keeps one line and hides its hint line
+  (editor.css). No new texts. apps/fly tsc 0.
+- [ ] E4.4 fault 1, next step: get the GPU lock, run
+  `OUT=U:/Temp/gsfpv-train3/editor3/e4diag SCENES=887f27aa PHONE=0 bash U:/Temp/gsfpv-train3/editor3/e4/run.sh`
+  (dist is the release of d726a3cb; rebuild first if apps/fly changed: this pass changed panel.ts and editor.css) and read
+  `delete` in e4diag/e4.json. Reading of the code so far: course.ts applyKey runs showEd() after the delete, and showEd()
+  calls view.put() for the new selection; view-mouse.ts put() returns at once while `this.dragging` is true, and
+  standScreen() (the bar's place) is null when the move handle has no nodes. So either `dragging` stuck true (a
+  transform:start without a transform:end) or the handles were detached. If `delete.dragging` is true: end a drag in
+  view-mouse.ts onUp when the button goes up and the flag is still set (call host.onDrag(pose, true)). Also make
+  applyKey call aim() when the gate count changes (delete, duplicate), so the camera goes to the new selection. Each with
+  a test in tools/bench/test/editor3-mouse.test.ts and a negative control.
+- [ ] then the full run (`bash U:/Temp/gsfpv-train3/editor3/e4/run.sh`, both scenes, PHONE=1) on a fresh release build,
+  read moveX (screenPx follows the 80 px drag), turn, scale (opening changes, movedM 0), kind, fly (next goes 0 to 1),
+  LOOK at editor3-select-1920.png, editor3-drag-1920.png, editor3-wroclaw-1920.png, editor3-844.png (the drawer),
+  then gates.py --only vitest,architecture,i18n,b18.
+
 ## Facts (measured)
 
 - E4 (tools/bench/src/editor3-prove.ts, SITE http://localhost:5800, release of d726a3cb with the Wroclaw walls stand-in in
@@ -308,6 +340,9 @@ button shows the table.
 
 ## Cost notes
 
+- E4-prove pass 2: about 30 replies; the most went to waiting 25 minutes on a GPU lock held by another lane (my run.sh had a
+  15-minute timeout and died in the queue) and reading PlayCanvas gizmo internals to guess fault 1; a lock queue with
+  the holder's name and expected end, and the diagnosis fields in the probe from the first run, would have saved both.
 - E4-prove: about 30 replies; the most went to one wasted 25-minute probe run (tsx's __name in an init script and a
   480 s course wait); writing the probe's init script as text from the start and a 60 s smoke on one scene before the full
   run would have saved the run and three replies.

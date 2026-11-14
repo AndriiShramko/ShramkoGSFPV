@@ -42,7 +42,20 @@ export class EditorPanel {
     constructor(ui: HTMLElement, private readonly host: PanelHost) {
         const root = el('section', 'course-editor interactive');
         root.setAttribute('aria-label', t('course.edit.title'));
-        root.append(el('h2', 'ce-title', t('course.edit.title')));
+        // lane editor3 E4.6: on a phone the window is a drawer, closed by default (only its title and the gate line); its
+        // title opens and closes it (editor.css); on a desktop the press changes nothing. Focus goes back to the page so
+        // Tab still takes the next gate.
+        const title = el('h2', 'ce-title');
+        const drawer = el('button', 'ce-drawer', t('course.edit.title'));
+        drawer.setAttribute('type', 'button');
+        drawer.setAttribute('aria-expanded', 'false');
+        drawer.addEventListener('click', () => {
+            const open = root.classList.toggle('ce-open');
+            drawer.setAttribute('aria-expanded', String(open));
+            drawer.blur();
+        });
+        title.append(drawer);
+        root.append(title);
         this.gate = el('p', 'ce-gate');
         this.problems = el('p', 'ce-problems');
         this.live = el('p', 'ce-live');

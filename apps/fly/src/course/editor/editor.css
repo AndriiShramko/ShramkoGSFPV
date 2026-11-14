@@ -151,6 +151,31 @@
 .ce-topbar.flying .ce-tb { display: none; }
 .ce-topbar.flying { pointer-events: none; }
 
+/* lane editor3 E4.6: the window's title is a button that only does something on a phone (a drawer, below) */
+.course-editor .ce-drawer {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+}
+/* lane editor3 E4.6, a phone or a low window (844 x 390): the window is a drawer closed by default (its title and the gate
+   line, top right), so the scene, the handles and the gate bar stay free; the top bar keeps its buttons on one line and
+   drops its hint line (the window's gate line says what is selected) */
+@media (max-width: 900px), (max-height: 500px) {
+    .course-editor:not(.ce-open) { bottom: auto; overflow: hidden; }
+    .course-editor:not(.ce-open) > :not(.ce-title):not(.ce-gate) { display: none; }
+    .course-editor .ce-title { margin: 0; }
+    .course-editor .ce-drawer { cursor: pointer; }
+    .course-editor .ce-drawer::after { content: ' \25BE'; }
+    .course-editor.ce-open .ce-drawer::after { content: ' \25B4'; }
+    .ce-topbar { top: 4px; padding: 3px 4px; gap: 4px; flex-wrap: nowrap; }
+    .ce-topbar .ce-tb { min-height: 28px; padding: 3px 8px; }
+    .ce-topbar .ce-tb-line { display: none; }
+}
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
