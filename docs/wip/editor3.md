@@ -45,7 +45,7 @@ Stage E2 (next worker), in this order:
   stage (E3-proof), see left below
 
 Stage E3-panel-and-flying:
-- [x] E3.1 code (commit this commit): the gate bar's insert button is now Duplicate (the editor's insert already copies the
+- [x] E3.1 code (commit 50777ee8): the gate bar's insert button is now Duplicate (the editor's insert already copies the
   selected gate, its kind and opening, 4 m ahead: packages/tracks editor.ts insert); a top bar (top-bar.ts, TOP_BUTTONS in
   bar-place.ts): Add gate, Undo, Redo, Exit and a line saying what to do now; Add gate arms the next left click on the scene
   (view-mouse.ts onPlace): add-place.ts puts a gate at the wall hit of that ray pulled back 1.5 m, or 6 m ahead on open sky,
@@ -59,7 +59,7 @@ Stage E3-panel-and-flying:
   - test tools/bench/test/editor3-flying.test.ts (10 tests) + editor3-gatebar.test.ts (ids): with editor3-mouse,
     editor3-check, tracks-editor-ui 5 files 34/34 pass; NEG OK twice (neg_control.py: ref origin/main, the new modules
     missing; ref HEAD 3efc0f65 course.ts and bar-place.ts: the test fails, exit 1); apps/fly tsc 0
-- [ ] E3.2 gates vitest, architecture, i18n, b18 on the E3.1 commit
+- [x] E3.2 gates vitest, architecture, i18n, b18 PASS on 50777ee8 (gates.py, vitest 157 s)
 - [ ] E3-proof (own stage, starts with the release build): the owner's path walked headless on 70b50d42 (walls stand-in) and
   887f27aa: open the mode, click a gate, the bar's Duplicate, Next, Tab, top bar Add gate then a click on the scene, Undo,
   Redo; arm (a gamepad cannot be plugged in headless: Space with the keyboard as the chosen input, or a probe that sets the
