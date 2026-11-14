@@ -16,9 +16,19 @@ Stage K2-editor-rest (the editor's leftovers of lane tracks, C:/dev/gsfpv-v03/do
   LAP_MIN_MS 1000 to LAP_MAX_MS 3600000, estimates) with 403 lap-first; 0 (take back) needs none. The page sends its best
   lap of that course (rules.ts lapOf over the best-lap keys, store.ts vote(..., lapMs)).
   Tests: tools/bench/test/tracks-k2.test.ts (5), apps/api/tests/test_tracks_edit.py test_bad_votes (lap cases).
-- [ ] K2.3 release build, tracks-page probe section E with the camera check, shots tracks2-editor-1920.png and -844.png.
+  Commit 9938ab02.
+- [x] K2.3 (1f144501) local release built at 9938ab02 (exit 0); tracks-page probe section E gains the camera checks
+  (hook view and magenta pixels on opening and after Tab, magenta pixels on each shot). Run:
+  `EDITOR_ONLY=1 SONIC_PORTS=5720-5739 EVIDENCE_NAME=tracks2-k2-editor npx tsx src/tracks-page.ts` 25 PASS, 0 FAIL, exit 0
+  (log U:/Temp/gsfpv-train2/tracks2/k2/probe.log). Shots U:/Temp/gsfpv-train2/shots/tracks2-editor-1920.png and
+  tracks2-editor-844.png, looked at: 1920 the magenta gate 1 is in the middle of the view, whole, left of the window;
+  844 only its left edge shows, the window covers the middle of the screen (see Left).
+- [x] gates.py --only vitest,architecture,i18n,b18: all four PASS (vitest 122 s), logs U:\Temp\gsfpv-gates-20261114-015316.
+- [ ] K2.6 on low and narrow screens (844x390) the editor window covers the screen's middle where the camera puts the gate:
+  aim the camera to the right of the gate by the window's share of the width (panel.root's left edge / innerWidth and the
+  camera's horizontal field), so the gate sits in the free left part; extend the 844 check to count magenta left of the
+  window's box.
 - [ ] K2.4 Space "drop a gate here" while flying; K2.5 pillar pairs as /2 objects with a key (see For the lead).
-- [ ] gates.py --only vitest,architecture,i18n,b18.
 
 Stage K1-passable-and-small.
 
@@ -77,7 +87,18 @@ Stage K1-passable-and-small.
   378cc50.
 - Generation time on 887f27aa: 15.5-22.9 s a course in Node (the audit's ms per row).
 
+- K2 runs: tools/bench/test/tracks-k2.test.ts + tracks-finish + tracks-fixes 18 passed; apps/api test_tracks_edit 21 OK;
+  tsc apps/fly and tools/bench clean. Negative controls (neg_control.py --ref origin/main): tracks.py NEG OK (1 failure,
+  test_bad_votes), rules.ts + camera.ts NEG OK (by import, camera.ts absent on origin/main).
+- K2 probe camera values: opening eye 3.3 m from gate 1 (at 2, 8.8, 13.4), 7969 magenta px; after Tab gate 2, 8866 px;
+  shot 1920x1080 22634 px, shot 844x390 1658 px (the gate is mostly under the window there).
+
 ## Decisions
+
+- K2 camera: the simplest view that keeps the gate in sight and never in a wall: between the paused drone and the gate,
+  the way cast against the flown walls (an orbit camera needs a render-pc camera mode, outside the lane). CAM_NEAR_M,
+  CAM_UP_M, CAM_WALL_GAP_M and the vote's LAP_MIN_MS / LAP_MAX_MS are estimates.
+- K2 vote rule on the server is a lap time in the body, not a proof: a script can send one, as it could press the button.
 
 - The fix is in the path, not in the walk: gates and their order stay as the walk laid them, so a seed whose course had
   no turned-back gate keeps its gates and trackDigest. A course with such a gate keeps its gates too unless the new sweep
@@ -96,6 +117,21 @@ Stage K1-passable-and-small.
 
 ## For the lead
 
+- K2 release needs the API file apps/api/tracks.py (vote() lap rule, LAP_MIN_MS, LAP_MAX_MS) deployed together with the
+  page: the new server refuses a vote of the old page (no `lap`) with 403 lap-first, and the new page's votes carry `lap`.
+  No other API file changed (tracks_admin.py, server.py, nginx unchanged); apps/api/tests/test_tracks_edit.py updated.
+- K2 keys a pilot uses (in flight): Shift+T show or hide a course, Shift+G a new generated course, Shift+B the editor
+  (with no course shown it now makes one and opens the editor on it). In the editor: Tab / Shift+Tab select a gate (the
+  camera turns to it), arrows move it by the camera's view (Shift: 1 m), PgUp / PgDn up and down, Q / E turn 15 deg,
+  1 ring, 2 square, 3 dive, 4 cube frame, + / - size, Ins or I add a gate 4 m ahead, Del or Backspace remove, comma /
+  period change the order, Ctrl+Z / Ctrl+Y undo and redo, G a new course, Enter save as my course, F6 into the window, Esc
+  leave (twice with unsaved changes). The full table is apps/fly/src/course/editor/keys.ts KEY_ROWS.
+- K2 not done (left for the next worker): Space "drop a gate here" while flying: Space is arm.toggle in KEYMAP
+  (packages/prefs/src/keymap.ts line 67, also in FLYING_CODES), so it needs a decision the lane cannot take alone (a drop
+  mode entered from the editor in which Space drops while armed and arms while disarmed, or another key such as Ins in
+  flight); and pillar pairs as /2 `objects` with a key (the editing model and the /1 server files hold no objects;
+  toTrackV1 would drop them, so it needs the /2 format on the server first).
+
 - K1.2: the course worker (apps/fly/src/course/worker.ts) now answers a smaller course on a small scan instead of none:
   gates down to 0.3 of the plan's size (ring 0.36 m, legs 0.9-4.5 m, margin 0.15 m), and when no size reaches 4 gates
   the course with the most gates (short: true). `track: null` is left only when not one gate fits at 0.3. A scaled
@@ -111,10 +147,18 @@ Stage K1-passable-and-small.
 
 ## Not verified
 
+- K2: Shift+B with no course shown (it now generates one and opens the editor) was not run in a browser; only the
+  typecheck covers it. The camera in a scan where a wall stands between the drone and the gate was not run in a browser
+  (the unit test covers the stop-short rule). The whole tracks-page probe (hint flights, A-C3) was not run, only E and E3.
+  apps/api: only test_tracks_edit was run, not the whole apps/api suite.
+
 - The sound lane's stall at gate 4 (sonic-int-review-r10): its seed is not in the evidence, so it is not reproduced in
   Node; whether the turned-back gate is its cause is a guess until the sound lane runs again on this branch.
 
 ## Cost notes
+
+- K2 worker 1: most turns went to reading course.ts and the probe in slices to find the hook points (camera override,
+  vote path, probe colour helper); a short "editor hook points" list in docs/agent-map.md would have saved about five turns.
 
 - K1 worker 1: most turns went to waiting on tests slowed by ten parallel audits on the same CPU (one vitest run timed out at 60 s); start the long audits after the unit tests, or with fewer processes.
 - K1 worker 2: most turns went to finding why the tiny room got 1 gate (two diagnostic runs) and to the stale sonic-fpv
