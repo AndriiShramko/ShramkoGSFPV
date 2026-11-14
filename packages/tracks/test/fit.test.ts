@@ -116,9 +116,12 @@ describe('fitCourse where the plan-size course fits', () => {
 
 // Forest Floor ab5efa0e, the walls lane's published walls (not in git: a scan of another author). Runs where the file is.
 const FOREST = process.env.GSFPV_FOREST_FLOOR_WALLS ?? 'U:/Temp/gsfpv-train2/walls/release/ab5efa0e/v2';
-describe.runIf(existsSync(join(FOREST, 'scene.voxel.json')))('Forest Floor ab5efa0e (6.0 x 5.0 x 5.8 m of free space)', () => {
-    const meta = JSON.parse(readFileSync(join(FOREST, 'scene.voxel.json'), 'utf8')) as VoxelMetadata;
-    let bin: Uint8Array = readFileSync(join(FOREST, 'scene.voxel.bin'));
+// vitest runs a describe body while it collects, also when runIf is false: the reads below must not throw where the walls file is absent (CI)
+const HAVE_FOREST = existsSync(join(FOREST, 'scene.voxel.json'));
+describe.runIf(HAVE_FOREST)('Forest Floor ab5efa0e (6.0 x 5.0 x 5.8 m of free space)', () => {
+    if (!HAVE_FOREST) return;
+    const meta = (HAVE_FOREST ? JSON.parse(readFileSync(join(FOREST, 'scene.voxel.json'), 'utf8')) : {}) as VoxelMetadata;
+    let bin: Uint8Array = HAVE_FOREST ? readFileSync(join(FOREST, 'scene.voxel.bin')) : new Uint8Array(0);
     if (bin[0] === 0x1f && bin[1] === 0x8b) bin = gunzipSync(bin);
     const walls = openVoxelCollision(meta, bin);
     const spawn: Vec3 = [0, 0.7, -0.1]; // the centre of the walls' grid, where the audit spawned (tracks-audit.ts)
