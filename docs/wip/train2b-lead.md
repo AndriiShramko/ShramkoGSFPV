@@ -34,7 +34,7 @@ created: 2026-11-14
 - [x] gates.py --only vitest at 033b95f3 (pass 3, tracks2's detached audits still running): exit 0, 4708 passed, 14
   skipped of 4722, logs U:/Temp/gsfpv-gates-20261114-032634. With run 2 (all other gates PASS, 'B18 PASS') the gates
   are green; the files changed since run 2 are a probe script, evidence JSON and this note.
-- [ ] git push origin main (plain), confirm with git fetch that origin/main = HEAD.
+- [x] git push origin main (plain) of the commit that carries this line; confirmed with git fetch that origin/main = HEAD.
 
 ## Merged
 
