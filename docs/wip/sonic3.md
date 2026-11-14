@@ -85,7 +85,8 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - [x] Pass 2: tables after speed (tier edge 4.5) and after line (Facts), evidence in the package (4e7cef6).
 - [x] Pass 2: audio proof line-side written (package 9b26882, test-audio/page/proofs.ts, PROOFS_OUT for a partial run).
   NOT run: C:/dev/.gpu-lock was held by another job for the whole wait; the waiting command was stopped before it took the lock.
-- [x] Pin of packages/sonic-fpv moved to package train3 4e7cef6 (this commit).
+- [x] Pin of packages/sonic-fpv moved to package train3 4e7cef6 (f0319977).
+- [x] gates.py --only vitest,architecture,i18n,b18 on f0319977: all four PASS (vitest 185 s), logs U:/Temp/gsfpv-gates-20261114-231430.
 - [ ] LEFT, in this order:
   1. Run the line-side proof: in C:/dev/ShramkoSonicFPV, under the GPU lock,
      PROOFS=line-side PROOFS_OUT=evidence/audio-proofs-line.json node node_modules/vitest/vitest.mjs run --config vitest.proof.config.ts;
