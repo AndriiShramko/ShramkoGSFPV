@@ -42,6 +42,9 @@ export interface CourseParams {
     /** two gates are at least this far apart, flown m */
     readonly spacingM: number;
     readonly laps: number;
+    /** K1.2: the course's size against the plan's (1). Gate sizes and the free radius a gate needs are multiplied by it;
+     *  legs, spacing and margin are set by scaledParams. 1 leaves every course as it was (same trackDigest). */
+    readonly scale: number;
 }
 
 /** Estimates from tracks-plan.md 2.2 unless tools/bench/src/tracks-generate.ts reports them as measured. */
@@ -56,7 +59,8 @@ export const COURSE_DEFAULTS: CourseParams = {
     m3PerGate: 40, // estimate (plan 2.2)
     tries: 200, // plan 2.2
     spacingM: 3, // estimate: the shortest leg
-    laps: 3 // estimate
+    laps: 3, // estimate
+    scale: 1
 };
 
 /** Gate sizes, flown m (plan 2.2): the shape a cell's sure free radius allows. */
@@ -157,10 +161,11 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     const toFlown = (q: Vec3): Vec3 => [s * q[0] + T[1], s * q[1] + T[2], s * q[2] + T[3]];
     const sweeper = sweeperOf(walls);
     const N = courseCount(free.volumeM3, p);
+    const k = p.scale;
 
     // candidates: usable cells roomy enough for a ring, then a farthest-point sample
     const all: number[] = [];
-    for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= RING_MIN_FREE_M) all.push(i);
+    for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= RING_MIN_FREE_M * k) all.push(i);
     const stride = Math.max(1, Math.ceil(all.length / POOL_MAX));
     const offset = all.length > 0 ? rng.int(0, stride - 1) : 0;
     const pool: number[] = [];
@@ -171,7 +176,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
 
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
     const shapeFor = (freeM: number): TrackGate['shape'] =>
-        freeM >= SQUARE_MIN_FREE_M ? { kind: 'square', side: r3(SQUARE_SIDE_M / s), bar: r3(SQUARE_BAR_M / s) } : { kind: 'ring', diameter: r3(RING_DIAMETER_M / s), tube: r3(RING_TUBE_M / s) };
+        freeM >= SQUARE_MIN_FREE_M * k ? { kind: 'square', side: r3((SQUARE_SIDE_M * k) / s), bar: r3((SQUARE_BAR_M * k) / s) } : { kind: 'ring', diameter: r3((RING_DIAMETER_M * k) / s), tube: r3((RING_TUBE_M * k) / s) };
     const build = (gates: TrackGate[], startYaw: number, from: Vec3 = startW, laps: number = p.laps): TrackFile => ({
         format: 'shramko-sonic-track/1',
         id: courseId(seed),
@@ -225,8 +230,16 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         // the best 4 whose leg is free (at most SWEEPS_PER_STEP sweeps); a blocked leg does not use the candidate up,
         // it may be free from the next gate (marking it used left the walk back 20 m short of the start on Winter Garden)
         const open: typeof options = [];
+        // K1.2: a smaller course (scale < 1, a small scan) skips a gate with no way on from it: in a 4 x 3 x 4 m room the
+        // walk went to a corner first, where every next leg turned back more than turnCosMin allows (the walk stopped at
+        // 1 gate). The plan's size keeps its walk, so its courses and trackDigests stay as they were.
+        const wayOn = (o: (typeof options)[number]): boolean => {
+            if (k === 1) return true;
+            for (const c2 of cands) if (!c2.used && c2 !== o.c && turnOk(o.c.pos, o.u, c2.pos)) return true;
+            return false;
+        };
         for (let j = 0, sweeps = 0; j < options.length && open.length < 4 && sweeps < SWEEPS_PER_STEP; j++, sweeps++) {
-            if (sweeper.free(cur, options[j]!.c.pos, p.marginM)) open.push(options[j]!);
+            if (sweeper.free(cur, options[j]!.c.pos, p.marginM) && wayOn(options[j]!)) open.push(options[j]!);
         }
         if (open.length === 0) {
             if (!back) {
@@ -239,11 +252,11 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         const o = open[rng.int(0, open.length - 1)]!;
         o.c.used = true;
         tries++;
-        const k = nearestYaw(o.u);
-        const gate: TrackGate = { id: `g${gates.length + 1}`, shape: shapeFor(o.c.free), pos: toScan(o.c.pos), quat: yawQuatStep(k), direction: 'forward' };
+        const yk = nearestYaw(o.u);
+        const gate: TrackGate = { id: `g${gates.length + 1}`, shape: shapeFor(o.c.free), pos: toScan(o.c.pos), quat: yawQuatStep(yk), direction: 'forward' };
         // one-gate proof: the leg from where the walk stands and this gate's opening, frame and run (the whole course is
         // proven once at the end); proving the whole course per candidate cost about 44 s a course on real walls
-        const trial = build([gate], k, cur, 1); // open: the one-gate proof has no leg out (laps did not matter to it before K1)
+        const trial = build([gate], yk, cur, 1); // open: the one-gate proof has no leg out (laps did not matter to it before K1)
         if (!checkTrack(trial, walls, T, p.marginM, false).ok) continue;
         gates.push(gate);
         flownGates.push(toFlown(gate.pos));
@@ -298,7 +311,9 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
                 walked: gates.length,
                 stop: gates.length >= N ? 'count' : stop,
                 closed: course.length > 0 && laps > 1,
-                proof: proof ? { ok: proof.ok, marginM: p.marginM, pathM: proof.pathM } : null
+                proof: proof ? { ok: proof.ok, marginM: p.marginM, pathM: proof.pathM } : null,
+                // only a scaled course says so: the plan's size keeps its params and trackDigest as before K1.2
+                ...(k !== 1 ? { scale: k, legMinM: r3(p.legMinM), legMaxM: r3(p.legMaxM) } : {})
             }
         }
     };

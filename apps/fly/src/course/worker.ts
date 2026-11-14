@@ -3,9 +3,8 @@
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, MARGIN_M, checkTrack, freeSpace, generateCourse } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, MARGIN_M, checkTrack, fitCourse, freeSpace } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
-import { enoughGates } from './run';
 
 export interface CourseGrid {
     flip: boolean;
@@ -76,7 +75,9 @@ scope.onmessage = (e) => {
         try {
             const meta = metadataOf(m.grid, m.nodes.length, m.leaf.length);
             const walls = m.grid.flip ? new FlippedVoxelCollision(meta, m.nodes, m.leaf) : new VoxelCollision(meta, m.nodes, m.leaf);
-            const r = checkTrack(m.track, walls, m.transform, MARGIN_M, false);
+            // a smaller course (K1.2, fitCourse) is proven at the margin it was laid with
+            const mg = m.track.generator?.params.marginM;
+            const r = checkTrack(m.track, walls, m.transform, typeof mg === 'number' && mg > 0 && mg < MARGIN_M ? mg : MARGIN_M, false);
             scope.postMessage({ t: 'checked', job: m.job, ok: r.ok, issues: r.issues.slice(0, 4), ms: Math.round(performance.now() - t0) });
         } catch (err) {
             scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });
@@ -88,8 +89,9 @@ scope.onmessage = (e) => {
         const meta = metadataOf(m.grid, m.nodes.length, m.leaf.length);
         const walls = m.grid.flip ? new FlippedVoxelCollision(meta, m.nodes, m.leaf) : new VoxelCollision(meta, m.nodes, m.leaf);
         const free = freeSpace(walls, { spawn: m.spawn });
-        // lane review TR-8: a course under gatesMin (a 1-gate "course" in the page) is retried with derived seeds, else refused
-        const got = enoughGates((seed) => generateCourse(free, walls, { seed, scene: m.scene, transform: m.transform, created: m.created }), m.seed, COURSE_DEFAULTS.gatesMin);
+        // lane review TR-8: a course under gatesMin is retried with derived seeds; K1.2: then at smaller sizes, and when none
+        // reaches gatesMin the one with the most gates is flown (short), never nothing while one gate fits
+        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created }, COURSE_DEFAULTS.gatesMin);
         scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, ms: Math.round(performance.now() - t0) });
     } catch (err) {
         scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });
