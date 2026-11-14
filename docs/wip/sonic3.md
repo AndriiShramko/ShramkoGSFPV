@@ -37,7 +37,7 @@ Stage Z1-any-scene-in-place:
 - In place = install sonic/feature.ts installSonicFlight on the running flight context after the press (the KeyRouter's sonic
   option is already a live function of sonicEntry()), not a new page.
 - Key Backslash: every plain letter is bound (keymap.ts) and no binding names Backslash (grep 'Slash' in keymap.ts: 0). Not
-  Backslash: Shift is a flying key in the game scheme (app/keys.ts shiftIsFlying note), Backslash would fire while descending.
+  Shift plus S: Shift is a flying key in the game scheme (app/keys.ts shiftIsFlying note), that chord would fire while descending.
 
 ## For the lead
 

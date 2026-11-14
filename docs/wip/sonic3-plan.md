@@ -28,8 +28,8 @@ new position; (e) silence until (c). On Wroclaw additionally the walls are built
 ## The direct road (design)
 
 Entry points (main chunk, `apps/fly/src/app/builtin/sonic-flight.ts`, shim only):
-- Key: new KEYMAP action `sonic.inPlace`, `when: 'always'`, Backslash (every plain letter is bound; not Backslash: in the game scheme Shift
-  descends and keys.ts reads Shift+<letter> as a chord first, so Backslash would fire while descending and pitching back). Add to `packages/prefs/test/keymap.test.ts` DESIGN_TABLE and `tools/bench/test/app-keys.test.ts`.
+- Key: new KEYMAP action `sonic.inPlace`, `when: 'always'`, Backslash (every plain letter is bound; not Shift plus S: in the game scheme Shift
+  descends and keys.ts reads Shift+<letter> as a chord first, so that chord would fire while descending and pitching back). Add to `packages/prefs/test/keymap.test.ts` DESIGN_TABLE and `tools/bench/test/app-keys.test.ts`.
 - Pause item `pause.flyBySound` becomes an action item (no href, no new tab), label "Fly by Sound here (Backslash)"; when on,
   "Switch off Fly by Sound". A second item keeps "Lessons (opens in a new tab)" to `/{lang}/fly/?sonic=start`.
 - The press (a user gesture) calls `switchOn(ctx)`: `import('../../sonic/lazy-start')`, then `loadMode()`; both chunks exist.
