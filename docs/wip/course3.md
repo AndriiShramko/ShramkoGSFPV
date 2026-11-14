@@ -116,12 +116,21 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
   on one street of a 163 x 185 m area, green and yellow (2.2-5.7 m above the ground), none red. course3-wroclaw-pilot.png:
   street at eye level, the next gate green ring ahead, HUD clock 0:00.00 Gate 1 of 24, a tree trunk close in front of the
   camera (the eye point is 6 m before gate 1 on its axis). course3-wroclaw-pilot-b.png: the other yaw, looks away from the course.
-- [!] Wroclaw spread NOT met on the page: the stand-in walls course spans 75.9 m (largest gate-to-gate distance on the
-  ground plane); the owner's "obstacles practically in one place" stands. Next: run course-quality-audit.ts --quality on
-  70b50d42 with the same walls (U:/Temp/gsfpv-train2/walls/release/70b50d42) and compare farM, outGates, banded with the
-  page's track params (read the generated track's params through the hook or the worker), then fix the walk's reach.
-- [ ] gates.py --only vitest,architecture,i18n,b18 (not run in G4: the reply budget ran out after the browser run).
-- [ ] Progress percent goes backwards between tries (ab5efa0e: "try 3 ... 75 %", then "try 4 ... 63 %"): course/progress.ts layTries.
+- [!] Wroclaw spread NOT met on the page of 8c1dfd71: the stand-in walls course spans 75.9 m (largest gate-to-gate distance
+  on the ground plane). Pass 2 below.
+- [x] (pass 2, 555bf690) Progress percent no longer goes back between tries: ProgressClock keeps the share the earlier tries
+  showed (stepBase) and never shows less than it showed. Test in course-progress.test.ts; neg_control.py against 542e0250:
+  NEG OK ("expected 88 to be greater than or equal to 96").
+- [x] (pass 2, 555bf690) Spread reach: the audit after3 agrees with the page (Wroclaw reach mean 71 m, farM 79-125 m; page
+  75.9 m). Causes: the way out was capped at halfN x 0.7 x legMaxM 15 = 126 m of steps and the far target was drawn from
+  0.6 of it. Now a course over a quality map takes legs up to SPREAD_LEG_MAX_M 25 m (estimate) and the far target from 0.8
+  of the way (generate.ts). Courses without a map unchanged (generate, fit, fixtures, quality, course-progress: 84/84
+  passed). New test in quality.test.ts, 240 m street: reach 98 and 111 m (old: 74.8 and 99); neg_control.py NEG OK
+  "expected 74.8 to be greater than or equal to 90". The box QUALITY_BOX_M 240 (120 m each way from the spawn) is the
+  next limit. tsc packages/tracks, apps/fly, tools/bench: 0 errors.
+- [~] Runner U:/Temp/gsfpv-train3/course3/g4b/run.sh: Wroclaw audit 4 seeds of the new walk, release build of 555bf690,
+  serve-csp 5722, browser build on ab5efa0e, owner's path on 70b50d42 (stand-in walls) and 887f27aa -> g4b/*.json.
+- [ ] gates.py --only vitest,architecture,i18n,b18.
 
 ## Facts (measured)
 
@@ -149,6 +158,13 @@ Stage G4-prove (the owner's path in a browser on the scans he uses).
   | eb5f51dc | after3 | 1 | 0.112 | 5-24 | 17.8 | 6.3 | 33 | 3790 |
   | 0230d903 | before3 | 0.022 | 0.036 | 6-24 | 20.7 | 6.1 | 27 | 7025 |
   | 0230d903 | after3 | 1 | 0.039 | 14-24 | 23 | 2.3 | 56 | 8558 |
+  | 70b50d42 | before3 | 0.386 | 0.05 | 8-24 | 19.3 | 5.2 | 27 | 79153 |
+  | 70b50d42 | after3 | 1 | 0.066 | 10-24 | 22.3 | 3.1 | 71 | 84403 |
+  | 887f27aa | before3 | 0.237 | 0.229 | 4-23 | 13.5 | 6.5 | 29 | 59802 |
+  | 887f27aa | after3 | 1 | 0.188 | 6-24 | 16.6 | 6.6 | 45 | 87266 |
+  Gate count steadiness (after3 against before3): steadier on the street scans (sd 3.1 against 5.2 on Wroclaw, 2.3 against
+  6.1 on 0230d903, 6.3 against 8.4 on eb5f51dc), not on Tunis (6.6 against 6.5). Wroclaw after3 per seed: farM 79-125 m,
+  outGates 12 on all, stop "count".
 - Spread walk trial (pass 2, course-quality-audit.ts --quality, 6 seeds, U:/Temp/gsfpv-train3/course3/g2/trial-walk/*-4.log,
   before the step-backs and the ceil band fix): 0230d903 gates 24, 24, 23, 22, 23 and 17 (scale 1 on all 6; before: 6-24
   over 20 seeds), farM 99-115 m, out half 12 gates on all 6; eb5f51dc 24 (scale 0.5), 9, 6, 5, 20 (0.5), 15: dead ends
