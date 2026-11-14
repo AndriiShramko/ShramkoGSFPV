@@ -222,6 +222,15 @@ export class EditView {
         return h > 1e-6 ? [f[0] / h, f[2] / h] : [0, -1];
     }
 
+    /** The selected gate's centre on the page (CSS px) and its depth (above 0: in front); null when no gate is selected. */
+    standScreen(): [number, number, number] | null {
+        if (!this.handles[0]?.nodes.length) return null;
+        const cc = this.host.camera.camera as CameraComponent;
+        const r = this.canvas.getBoundingClientRect();
+        const s = cc.worldToScreen(this.stand.getPosition(), new PcVec3());
+        return [s.x + r.left, s.y + r.top, s.z];
+    }
+
     /** For the page probes (tools/bench/src/editor3-smoke.ts): the handles, the stand-in's pose, and where on the canvas
      * (CSS px) each gate's centre and the stand-in's local axes are. Read only. */
     debug(): Record<string, unknown> {

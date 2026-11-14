@@ -34,6 +34,7 @@ import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
+import { GateBar } from '../../course/editor/gate-bar';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
@@ -104,6 +105,8 @@ export const course: Feature = {
         /** stage K2.6: the camera looks right of the gate by the share of the width the editor's window covers, so the gate is in the free part */
         /** lane editor3 E2: the free edit camera, the click selection and the handles (course/editor/view-mouse.ts) */
         let view: EditView | null = null;
+        /** lane editor3 E2.4: the small bar next to the selected gate (kind, insert, delete, previous, next) */
+        let bar: GateBar | null = null;
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
         let dragFrame = 0;
@@ -624,6 +627,7 @@ export const course: Feature = {
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
+            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => view?.debug() ?? null;
             if (!adminLive && adminHinted()) {
@@ -653,6 +657,8 @@ export const course: Feature = {
             camView = null;
             view?.dispose();
             view = null;
+            bar?.destroy();
+            bar = null;
             dragBase = null;
             cancelAnimationFrame(dragFrame);
             ctx.session.cameraOverride = false;
@@ -680,6 +686,7 @@ export const course: Feature = {
             if (!ed) return;
             const base = dragBase ?? ed;
             dragBase = base;
+            bar?.hide(!end);
             const old = base.course.gates[base.selected];
             if (!old) return;
             const g = placeGate(old, p, flownTransform());

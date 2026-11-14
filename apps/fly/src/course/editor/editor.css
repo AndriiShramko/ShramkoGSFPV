@@ -92,6 +92,33 @@
 @media (max-width: 640px), (max-height: 500px) {
     .course-editor { right: calc(max(8px, env(safe-area-inset-right)) + 56px); }
 }
+/* lane editor3 E2.4: the small bar next to the selected gate (gate-bar.ts places it each frame) */
+.ce-gatebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: rgb(12, 16, 22);
+    border: 1px solid #3a4656;
+    border-radius: 8px;
+    visibility: hidden;
+    z-index: 5;
+}
+.ce-gatebar .ce-gb {
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+    background: #1b2330;
+    border: 1px solid #3a4656;
+    border-radius: 6px;
+    color: #f2f4f7;
+    cursor: pointer;
+}
+.ce-gatebar .ce-gb:hover, .ce-gatebar .ce-gb:focus-visible { border-color: #a6ff1a; }
+.ce-gatebar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
