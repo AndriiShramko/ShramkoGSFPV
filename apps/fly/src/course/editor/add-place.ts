@@ -20,10 +20,30 @@ export const ADD_MIN_M = 1;
 /** how far a click looks for a wall, flown m (an estimate) */
 export const ADD_RAY_M = 200;
 
-/** Where a click's ray (eye, unit dir) puts the new gate: `hit` is the distance to the wall along it, null for none. */
-export function addPoint(eye: V3, dir: V3, hit: number | null): V3 {
-    const d = hit !== null && Number.isFinite(hit) && hit > 0 ? Math.max(ADD_MIN_M, hit - ADD_BACK_M) : ADD_AHEAD_M;
+/** review ED-4: the new gate's lower edge stands this far above the floor the click hit, flown m (an estimate) */
+export const ADD_FLOOR_M = 0.5;
+
+/**
+ * Where a click's ray (eye, unit dir) puts the new gate: `hit` is the distance to the wall along it, null for none. `lift`
+ * (flown m, addLift): review ED-4, a click that goes down lands on the floor (the natural click), so the gate stands over that
+ * spot with its lower edge above the floor, pulled back along the floor (not along the ray, which only lifted it
+ * 1.5 * sin(angle) m and left it in the ground) so it does not stand in a wall either.
+ */
+export function addPoint(eye: V3, dir: V3, hit: number | null, lift = 0): V3 {
+    const got = hit !== null && Number.isFinite(hit) && hit > 0;
+    if (got && dir[1] < 0 && lift > 0) {
+        const h = Math.hypot(dir[0], dir[2]);
+        const back = h > 1e-6 ? Math.min(ADD_BACK_M, Math.max(0, hit * h - ADD_MIN_M)) / h : 0;
+        return [eye[0] + dir[0] * hit - dir[0] * back, eye[1] + dir[1] * hit + lift, eye[2] + dir[2] * hit - dir[2] * back];
+    }
+    const d = got ? Math.max(ADD_MIN_M, hit - ADD_BACK_M) : ADD_AHEAD_M;
     return [eye[0] + dir[0] * d, eye[1] + dir[1] * d, eye[2] + dir[2] * d];
+}
+
+/** review ED-4: how far above a floor hit the new gate's centre goes: half its flown opening (a copy of the selected gate's) plus ADD_FLOOR_M */
+export function addLift(state: EditorState, tr: Flown): number {
+    const like = state.course.gates[state.selected] ?? state.course.gates[0];
+    return like ? (openingOf(like.shape) * tr[0]) / 2 + ADD_FLOOR_M : 0;
 }
 
 /**

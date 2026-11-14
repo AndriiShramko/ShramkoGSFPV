@@ -36,7 +36,7 @@ import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addInState, addPoint, facingFrom } from '../../course/editor/add-place';
+import { ADD_RAY_M, addInState, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
 import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
@@ -708,7 +708,7 @@ export const course: Feature = {
             top?.adding(false);
             if (!ed) return;
             const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
-            const at = addPoint(ray.o, ray.d, hit);
+            const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform()));
             const st = addInState(ed, at, facingFrom(ray.o, at), flownTransform(), keepProblems);
             if (!st) return applyKey({ code: 'Insert' });
             ed = st;
@@ -726,6 +726,8 @@ export const course: Feature = {
             const st = modeStep(mode, !!sim?.armed, !!sim?.crashed);
             if (st.change === 'to-fly') {
                 mode = 'fly';
+                // review ED-2: devices/keyboard.ts gives the flying keys back to the flight (EDIT_MODE)
+                panel?.root.classList.add('ce-flying');
                 dragBase = null;
                 view?.suspend(true);
                 bar?.hide(true);
@@ -737,6 +739,7 @@ export const course: Feature = {
                 shownNext = -2;
             } else if (st.change === 'to-edit') {
                 mode = 'edit';
+                panel?.root.classList.remove('ce-flying');
                 if (panel) panel.root.style.display = '';
                 bar?.hide(false);
                 top?.flying(false);
@@ -790,6 +793,7 @@ export const course: Feature = {
             if (!k) return;
             if ('cmd' in k) return command(k.cmd);
             askedFor = null;
+            const count = ed.course.gates.length;
             const out = edit(ed, k.edit, keepProblems);
             ed = out.state;
             if (out.ok) {
@@ -800,7 +804,8 @@ export const course: Feature = {
                 edHook.refused = null;
                 showEd();
                 // lane editor3 E2: a key that selects a gate takes the view to it; the mouse and the other keys leave the view
-                if (k.edit.kind === 'select' || k.edit.kind === 'select-step') aim();
+                // review ED-1: a delete or a duplicate selects another gate too, so the view goes to it
+                if (k.edit.kind === 'select' || k.edit.kind === 'select-step' || ed.course.gates.length !== count) aim();
                 say(t('course.edit.did', { what: t(ACTION_KEYS[out.action]), gate: gateLine(ed, scale()) }));
             } else {
                 edHook.refused = out.reason.code;

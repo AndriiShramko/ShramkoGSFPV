@@ -218,6 +218,12 @@ export class EditView {
 
     private onUp = (e: PointerEvent): void => {
         this.unmute();
+        // review ED-1: a handle that took the press but sent no transform:end (its own pointerup returns while it is
+        // switched off) would leave `dragging` set, and put() then never places the handles on another gate
+        if (this.dragging) {
+            this.dragging = false;
+            this.host.onDrag(this.pose(this.openingAtStart), true);
+        }
         const p = this.press;
         if (!p || p.id !== e.pointerId) return;
         this.press = null;

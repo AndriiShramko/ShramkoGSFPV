@@ -123,6 +123,29 @@ lane's course-quality-audit runs in C:/dev/gsfpv-rooms, so no browser run happen
   LOOK at editor3-select-1920.png, editor3-drag-1920.png, editor3-wroclaw-1920.png, editor3-844.png (the drawer),
   then gates.py --only vitest,architecture,i18n,b18.
 
+Stage fixes (review ED-1 to ED-7; NOT finished, stopped at the reply budget):
+- [x] ED-2 stands (keyboard.ts dialogOpen looked for '.panel', the editor's root is '.course-editor'): dialogOpen() now also
+  matches EDIT_MODE '.course-editor:not(.ce-flying)'; Space in the mode (no other dialog, not on a control of the editor) still
+  reaches the keyboard source and arms (editModeArm); course.ts editFrame sets ce-flying on the window while the drone flies.
+  File outside the editor folder: apps/fly/src/devices/keyboard.ts (input of the fly page). flyHint text unchanged (it says
+  "arm your controller"; Space is not named in it yet).
+- [x] ED-3 stands (a crash sets armed 0, the keepArmed respawn arms again): decided "a crash keeps flying" (fly-mode.ts
+  editModeOf holds `prev` while crashed); disarm is the way back to editing. The design's line "disarm or crash brings the edit
+  camera back" now reads: disarm brings it back; a crash flies on after the respawn (or edits when respawn.keepArmed is off).
+- [x] ED-4 stands: add-place.ts addPoint(eye, dir, hit, lift) puts a downward click's gate over the floor spot, centre lifted by
+  addLift (half the flown opening of the copied gate + ADD_FLOOR_M 0.5 m, an estimate), pulled back ADD_BACK_M along the floor.
+- [x] ED-1 code part: view-mouse.ts onUp ends a drag still set when the button goes up (host.onDrag(pose, true)); course.ts
+  applyKey calls aim() when the gate count changes (delete, duplicate). The cause is NOT yet confirmed by the diagnosis probe.
+- tests: tools/bench/test/editor3-flying.test.ts (ED-2, ED-3, ED-4, ED-1 cases); with editor3-mouse, -press, -gatebar, -check,
+  tracks-editor-ui 6 files 40/40 pass; NEG OK (neg_control.py, ref 2b198f72, the five changed sources); apps/fly tsc 0;
+  tools/bench/test/a6-reference.test.ts 1/1 pass (keyboard.ts touched).
+- [ ] ED-1 diagnosis: `OUT=U:/Temp/gsfpv-train3/editor3/e4diag SCENES=887f27aa PHONE=0 bash U:/Temp/gsfpv-train3/editor3/e4/run.sh`
+  on the dist of d726a3cb; read `delete` (handles, dragging, stand, bar) in e4diag/e4.json.
+- [ ] ED-5 (save unchecked after a worker failure), ED-6 (prev / selected words), ED-7 (top bar Save, Courses, Keys; camera
+  keys in the Keys table): not started.
+- [ ] then a fresh release build, the full run.sh (both scenes, PHONE=1), LOOK at the screenshots, a keyboard-input probe step
+  (W in the mode must not arm, Space must), gates.py --only vitest,architecture,i18n,b18.
+
 ## Facts (measured)
 
 - E4 (tools/bench/src/editor3-prove.ts, SITE http://localhost:5800, release of d726a3cb with the Wroclaw walls stand-in in

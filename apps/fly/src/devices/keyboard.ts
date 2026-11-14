@@ -57,8 +57,25 @@ function inChipMenu(el: EventTarget | null): boolean {
  * its lesson menu, sonic/lesson-menu.ts): Space and arrows belong to its buttons, checkboxes, radios and sliders. (The start screen is
  * hidden, not removed, while the flight has the page, so only a shown one counts.)
  */
+const DIALOGS = '.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-start:not([hidden]), .sonic-menu';
+/**
+ * Review ED-2 (lane editor3): the course editor's edit mode (its window is there and the drone does not fly) keeps the flying
+ * keys: W A S D E Q move its camera, so they must not start the motors. app/builtin/course.ts sets ce-flying on the window
+ * while the drone flies in the mode.
+ */
+export const EDIT_MODE = '.course-editor:not(.ce-flying)';
+
 export function dialogOpen(): boolean {
-    return !!document.querySelector('.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-start:not([hidden]), .sonic-menu');
+    return !!document.querySelector(`${DIALOGS}, ${EDIT_MODE}`);
+}
+
+/**
+ * Review ED-2: Space in the edit mode is the keyboard pilot's way to fly the course at once (the controller's arm switch does
+ * the same for a pad): only with no other dialog open and not on a control of the editor (Space presses a focused button).
+ */
+export function editModeArm(code: string, target: EventTarget | null): boolean {
+    if (code !== 'Space' || document.querySelector(DIALOGS) || !document.querySelector(EDIT_MODE)) return false;
+    return !(target instanceof Element && target.closest('button, a, input, select, textarea, [contenteditable]'));
 }
 
 /** What the game scheme needs from the page besides the keys: the pilot and the mouse settings. */
@@ -140,7 +157,7 @@ export class KeyboardSource {
     }
 
     private onDown = (e: KeyboardEvent): void => {
-        if (typing(e.target) || dialogOpen() || inChipMenu(e.target)) return;
+        if (typing(e.target) || inChipMenu(e.target) || (dialogOpen() && !editModeArm(e.code, e.target))) return;
         if (/^F(1[3-9]|2[0-4])$/.test(e.code) || /^F(1[3-9]|2[0-4])$/.test(e.key)) {
             if (/^F2[04]$/.test(e.code) || /^F2[04]$/.test(e.key)) return; // reserved: harness control keys
             if (this.passive) return;

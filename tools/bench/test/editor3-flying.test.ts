@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { edit } from '@gsfpv/tracks';
 import type { Course, CourseCheck, EditorState } from '@gsfpv/tracks';
-import { ADD_AHEAD_M, ADD_BACK_M, ADD_MIN_M, addInState, addPoint, facingFrom, freeGateId } from '../../../apps/fly/src/course/editor/add-place';
+import { ADD_AHEAD_M, ADD_BACK_M, ADD_FLOOR_M, ADD_MIN_M, addInState, addLift, addPoint, facingFrom, freeGateId } from '../../../apps/fly/src/course/editor/add-place';
 import { editModeOf, flyShows, modeStep } from '../../../apps/fly/src/course/editor/fly-mode';
 import { BAR_BUTTONS, TOP_BUTTONS } from '../../../apps/fly/src/course/editor/bar-place';
 import { editorKey, forwardOf } from '../../../apps/fly/src/course/editor/keys';
@@ -31,6 +31,23 @@ describe('editor3 E3: a gate added by a click on the place', () => {
         expect(addPoint([0, 1, 0], [0, 0, -1], 10)).toEqual([0, 1, -(10 - ADD_BACK_M)]);
         expect(addPoint([0, 1, 0], [1, 0, 0], null)).toEqual([ADD_AHEAD_M, 1, 0]);
         expect(addPoint([0, 1, 0], [0, 0, -1], 1.2)).toEqual([0, 1, -ADD_MIN_M]);
+    });
+
+    it('review ED-4: a click down on the floor puts the gate above the spot, its lower edge ADD_FLOOR_M over the floor', () => {
+        // eye 2 m up, a click 20 degrees down hits the floor (y 0)
+        const a = (20 * Math.PI) / 180;
+        const dir: [number, number, number] = [0, -Math.sin(a), -Math.cos(a)];
+        const hit = 2 / Math.sin(a);
+        const opening = 1.2 * TR[0];
+        const p = addPoint([0, 2, 0], dir, hit, addLift(stateOf([gate('g1', [0, 0, 0])]), TR));
+        // the centre is half the opening plus the clearance above the floor: the gate's lower edge is in the air
+        expect(p[1]).toBeCloseTo(opening / 2 + ADD_FLOOR_M, 6);
+        expect(p[1] - opening / 2).toBeGreaterThan(0);
+        // pulled back along the floor by ADD_BACK_M towards the eye, not into it
+        expect(p[2]).toBeCloseTo(-(hit * Math.cos(a)) + ADD_BACK_M, 6);
+        expect(p[0]).toBeCloseTo(0, 9);
+        // a level click on a wall keeps the old rule
+        expect(addPoint([0, 1, 0], [0, 0, -1], 10, 2)).toEqual([0, 1, -(10 - ADD_BACK_M)]);
     });
 
     it('faces the camera: the way through the gate is the way from the eye to it', () => {
@@ -93,14 +110,44 @@ describe('editor3 E3: the panel and the top bar run editor keys', () => {
 });
 
 describe('editor3 E3: flying inside the edit mode', () => {
-    it('armed flies, disarmed or crashed edits', () => {
+    it('armed flies, disarmed edits', () => {
         expect(editModeOf(true, false)).toBe('fly');
         expect(editModeOf(false, false)).toBe('edit');
-        expect(editModeOf(true, true)).toBe('edit');
         expect(modeStep('edit', true, false)).toEqual({ mode: 'fly', change: 'to-fly' });
         expect(modeStep('fly', true, false)).toEqual({ mode: 'fly', change: null });
         expect(modeStep('fly', false, false)).toEqual({ mode: 'edit', change: 'to-edit' });
-        expect(modeStep('fly', true, true)).toEqual({ mode: 'edit', change: 'to-edit' });
+    });
+
+    it('review ED-3: a crash keeps flying through the respawn (no edit view for a moment, then the drone again)', () => {
+        // sim.ts: the crash sets armed 0 and crashed 1; the respawn with respawn.keepArmed sets armed 1 and crashed 0
+        let mode: 'edit' | 'fly' = 'fly';
+        const changes: unknown[] = [];
+        for (const [armed, crashed] of [[true, false], [false, true], [false, true], [true, false]] as const) {
+            const st = modeStep(mode, armed, crashed);
+            mode = st.mode;
+            if (st.change) changes.push(st.change);
+        }
+        expect(changes).toEqual([]);
+        expect(mode).toBe('fly');
+        // respawn.keepArmed off: the respawn leaves the drone disarmed and the edit view comes back
+        expect(modeStep('fly', false, false)).toEqual({ mode: 'edit', change: 'to-edit' });
+        expect(modeStep('edit', false, true)).toEqual({ mode: 'edit', change: null });
+    });
+
+    it('review ED-2: the edit mode keeps the flying keys from the keyboard source, Space arms, ce-flying gives them back', () => {
+        const KB = readFileSync(join(__dirname, '../../../apps/fly/src/devices/keyboard.ts'), 'utf8');
+        expect(KB).toMatch(/EDIT_MODE = '\.course-editor:not\(\.ce-flying\)'/);
+        expect(KB).toMatch(/querySelector\(`\$\{DIALOGS\}, \$\{EDIT_MODE\}`\)/);
+        expect(KB).toMatch(/dialogOpen\(\) && !editModeArm\(e\.code, e\.target\)/);
+        expect(COURSE_TS).toMatch(/panel\?\.root\.classList\.add\('ce-flying'\)/);
+        expect(COURSE_TS).toMatch(/panel\?\.root\.classList\.remove\('ce-flying'\)/);
+    });
+
+    it('review ED-1: a delete or a duplicate takes the view to the gate it selects', () => {
+        expect(COURSE_TS).toMatch(/ed\.course\.gates\.length !== count\) aim\(\)/);
+        const VM = readFileSync(join(__dirname, '../../../apps/fly/src/course/editor/view-mouse.ts'), 'utf8');
+        // a drag left set when the button goes up is ended there (one undo step), so put() places the handles again
+        expect(VM).toMatch(/if \(this\.dragging\) \{\s*this\.dragging = false;\s*this\.host\.onDrag\(this\.pose\(this\.openingAtStart\), true\);/);
     });
 
     it('the lap clock and the best lap stay off while editing, the next gate lights up', () => {
