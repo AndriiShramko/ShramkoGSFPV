@@ -624,6 +624,8 @@ export const course: Feature = {
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
+            // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => view?.debug() ?? null;
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;

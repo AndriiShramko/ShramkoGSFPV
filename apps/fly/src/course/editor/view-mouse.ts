@@ -222,6 +222,36 @@ export class EditView {
         return h > 1e-6 ? [f[0] / h, f[2] / h] : [0, -1];
     }
 
+    /** For the page probes (tools/bench/src/editor3-smoke.ts): the handles, the stand-in's pose, and where on the canvas
+     * (CSS px) each gate's centre and the stand-in's local axes are. Read only. */
+    debug(): Record<string, unknown> {
+        const cc = this.host.camera.camera as CameraComponent;
+        const r = this.canvas.getBoundingClientRect();
+        const scr = (x: number, y: number, z: number): number[] => {
+            const s = cc.worldToScreen(new PcVec3(x, y, z), new PcVec3());
+            return [Math.round(s.x + r.left), Math.round(s.y + r.top), Math.round(s.z * 100) / 100];
+        };
+        const p = this.stand.getPosition();
+        const axis = (v: PcVec3): number[] => {
+            const d = p.distance(this.host.camera.getPosition()) * 0.05;
+            const a = scr(p.x, p.y, p.z);
+            const b = scr(p.x + v.x * d, p.y + v.y * d, p.z + v.z * d);
+            const n = Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!) || 1;
+            return [(b[0]! - a[0]!) / n, (b[1]! - a[1]!) / n];
+        };
+        const on = this.handles.some((h) => (h as unknown as { nodes?: unknown[] }).nodes?.length);
+        return {
+            handles: on,
+            layer: (cc.layers ?? []).includes(this.layer.id),
+            stand: { pos: [p.x, p.y, p.z], quat: [...fromPcQuat(this.stand.getRotation().x, this.stand.getRotation().y, this.stand.getRotation().z, this.stand.getRotation().w)], scale: this.stand.getLocalScale().x, opening: this.opening, screen: scr(p.x, p.y, p.z) },
+            axes: { x: axis(this.stand.right), y: axis(this.stand.up), z: axis(this.stand.forward) },
+            gates: this.host.gates().map((g) => scr(g.pos[0], g.pos[1], g.pos[2])),
+            cam: { pos: [...this.cam.pos], speed: this.cam.speed },
+            held: [...this.held],
+            dragging: this.dragging
+        };
+    }
+
     dispose(): void {
         if (this.disposed) return;
         this.disposed = true;
