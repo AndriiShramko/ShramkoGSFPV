@@ -8,6 +8,7 @@ import type { AppBase, CameraComponent, Layer } from 'playcanvas';
 import { CAM_KEYS, camForward, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
 import { fromPcQuat, toPcQuat, type FlownPose } from './drag';
 import { pickGate, rayThrough, type Pickable, type Ray } from './pick';
+import { pressOwner } from './press-owner';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
 export const CLICK_SLOP_PX = 4;
@@ -59,6 +60,9 @@ export class EditView {
     /** lane editor3 E3: the drone flies (armed): no handles, no camera keys, no clicks; the camera is the drone's */
     private suspended = false;
     private standPose: FlownPose | null = null;
+    /** lane editor3 E4: the handles in press-owner.ts PRESS_ORDER (size, move, turn); the ones switched off for this press */
+    private readonly byPress: Handle[];
+    private muted: Handle[] = [];
 
     constructor(host: EditViewHost, start: FlyCam) {
         this.host = host;
@@ -89,6 +93,7 @@ export class EditView {
         turn.enableShape('xyz', false);
         turn.size = 1.5;
         this.handles = [move, turn, size];
+        this.byPress = [size, move, turn];
         for (const h of this.handles) {
             h.snap = true;
             h.on('transform:start', () => {
@@ -103,6 +108,8 @@ export class EditView {
                 host.onDrag(this.pose(this.openingAtStart), true);
             });
         }
+        // capture on the window runs before the gizmos' own pointerdown on the canvas: one handle owns the press
+        window.addEventListener('pointerdown', this.onOwnPress, true);
         this.canvas.addEventListener('pointerdown', this.onDown);
         this.canvas.addEventListener('contextmenu', this.onMenu);
         this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
@@ -172,6 +179,27 @@ export class EditView {
         }
     };
 
+    /** press-owner.ts: the first handle with a shape under the cursor keeps the press, the others sit it out */
+    private onOwnPress = (e: PointerEvent): void => {
+        this.unmute();
+        if (this.suspended || e.target !== this.canvas || e.button !== 0) return;
+        const hits = this.byPress.map((h) => {
+            // PlayCanvas 2.23.2 TransformGizmo._getSelection(x, y): the gizmo's own shapes under a canvas point, nearest first
+            const sel = (h as unknown as { _getSelection?: (x: number, y: number) => unknown[] })._getSelection?.(e.offsetX, e.offsetY);
+            return !!(h.enabled && sel && sel[0]);
+        });
+        const own = pressOwner(hits);
+        if (own < 0) return;
+        this.muted = this.byPress.filter((_, i) => i !== own);
+        for (const h of this.muted) h.enabled = false;
+    };
+
+    private unmute(): void {
+        if (this.muted.length === 0) return;
+        for (const h of this.muted) h.enabled = true;
+        this.muted = [];
+    }
+
     private onDown = (e: PointerEvent): void => {
         if (this.suspended || (e.button !== 0 && e.button !== 2)) return;
         // a press on a handle is the gizmo's (it fired transform:start in its own pointerdown, or will on the first move)
@@ -189,6 +217,7 @@ export class EditView {
     };
 
     private onUp = (e: PointerEvent): void => {
+        this.unmute();
         const p = this.press;
         if (!p || p.id !== e.pointerId) return;
         this.press = null;
@@ -294,6 +323,8 @@ export class EditView {
     dispose(): void {
         if (this.disposed) return;
         this.disposed = true;
+        window.removeEventListener('pointerdown', this.onOwnPress, true);
+        this.unmute();
         this.canvas.removeEventListener('pointerdown', this.onDown);
         this.canvas.removeEventListener('contextmenu', this.onMenu);
         this.canvas.removeEventListener('wheel', this.onWheel);
