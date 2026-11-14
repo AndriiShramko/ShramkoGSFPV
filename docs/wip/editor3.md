@@ -25,6 +25,7 @@ Stage E2 (next worker), in this order:
     the camera, [ and ] turn), course.ts wiring; locales course.edit.opened (new text), course.edit.camSpeed (new), 4 languages
   - test tools/bench/test/editor3-mouse.test.ts (10 tests) + tracks-editor-ui.test.ts updated: 22/22 pass with
     editor3-check; NEG OK (neg_control.py, origin/main keys.ts: the Q/E tests fail); apps/fly tsc 0
+  - gates vitest, architecture, i18n, b18 PASS on bc341bb7 (gates.py, vitest 117 s)
   - [ ] NOT yet run in a browser: the gizmos, the click, the camera keys (next: E2.6 or a smoke probe first)
 - [ ] E2.4 the small panel at the selected gate, Add gate by a click on the place, the top bar
 - [ ] E2.5 arm flies, disarm edits (The design, Flying through)
