@@ -3,6 +3,11 @@
 // app/builtin/rooms.ts wires it to the course (apps/fly/src/course, read through its public classes), Node tests run it
 // (tools/bench/test/rooms-race.test.ts).
 
+/** The race in a room. Off: the two-browser probe rooms-race.ts has not yet seen a lap on a real scan's course (train 2
+ *  wave 2, docs/wip/train2b-lead.md); turn it on only after that probe passes. Off, app/builtin/rooms.ts neither loads
+ *  rooms/race-page.ts (it reaches the course view and the sound package) nor offers the race in the panel. */
+export const RACE_ON = false;
+
 export interface RaceRow {
     slot: number; nick: string; laps: number; totalMs: number; bestMs: number | null; lastMs: number | null;
     done: boolean; place: number; gapMs: number | null;

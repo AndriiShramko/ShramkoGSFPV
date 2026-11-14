@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-13",
+ "generated": "2026-11-14",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -1664,7 +1664,7 @@
     },
     {
      "action": "rooms.panel",
-     "label": "Fly with others: the room and its link (not during a sound lesson)",
+     "label": "Fly with others: join the open room; in a room, agree to a vote or open the room panel (not during a sound lesson)",
      "keys": [
       "9"
      ]
@@ -3791,7 +3791,7 @@
     },
     {
      "action": "rooms.panel",
-     "label": "Volar con otros: la sala y su enlace (no durante una lecci\u00f3n de sonido)",
+     "label": "Volar con otros: entrar en la sala abierta; en una sala, aceptar una votaci\u00f3n o abrir el panel de la sala (no durante una lecci\u00f3n de sonido)",
      "keys": [
       "9"
      ]
@@ -5918,7 +5918,7 @@
     },
     {
      "action": "rooms.panel",
-     "label": "Lot z innymi: pok\u00f3j i link do niego (nie podczas lekcji d\u017awi\u0119kowej)",
+     "label": "Lot z innymi: wej\u015bcie do otwartego pokoju; w pokoju zgoda na g\u0142osowanie albo panel pokoju (nie podczas lekcji d\u017awi\u0119kowej)",
      "keys": [
       "9"
      ]
@@ -8045,7 +8045,7 @@
     },
     {
      "action": "rooms.panel",
-     "label": "\u041f\u043e\u043b\u0451\u0442 \u0441 \u0434\u0440\u0443\u0433\u0438\u043c\u0438: \u043a\u043e\u043c\u043d\u0430\u0442\u0430 \u0438 \u0441\u0441\u044b\u043b\u043a\u0430 \u043d\u0430 \u043d\u0435\u0451 (\u043d\u0435 \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u0437\u0432\u0443\u043a\u043e\u0432\u043e\u0433\u043e \u0443\u0440\u043e\u043a\u0430)",
+     "label": "\u041f\u043e\u043b\u0451\u0442 \u0441 \u0434\u0440\u0443\u0433\u0438\u043c\u0438: \u0432\u043e\u0439\u0442\u0438 \u0432 \u043e\u0442\u043a\u0440\u044b\u0442\u0443\u044e \u043a\u043e\u043c\u043d\u0430\u0442\u0443; \u0432 \u043a\u043e\u043c\u043d\u0430\u0442\u0435 \u0441\u043e\u0433\u043b\u0430\u0441\u0438\u0442\u044c\u0441\u044f \u0432 \u0433\u043e\u043b\u043e\u0441\u043e\u0432\u0430\u043d\u0438\u0438 \u0438\u043b\u0438 \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043f\u0430\u043d\u0435\u043b\u044c \u043a\u043e\u043c\u043d\u0430\u0442\u044b (\u043d\u0435 \u0432\u043e \u0432\u0440\u0435\u043c\u044f \u0437\u0432\u0443\u043a\u043e\u0432\u043e\u0433\u043e \u0443\u0440\u043e\u043a\u0430)",
      "keys": [
       "9"
      ]

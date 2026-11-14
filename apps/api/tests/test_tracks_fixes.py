@@ -19,23 +19,23 @@ from test_tracks_edit import SCENE, course, voter  # noqa: E402
 class Fixes(te.Base):
     def test_tk8_address_keeps_its_voter_for_days(self):
         tid = self.new()["id"]
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(1)}).encode(), "a1")["up"], 1)
+        self.assertEqual(self.store.vote(tid, json.dumps({"lap": 5000, "v":1, "voter": voter(1)}).encode(), "a1")["up"], 1)
         for day in range(5):
             self.tick(86400)
-            self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"v": 1, "voter": voter(20 + day)}).encode(), "a1")
+            self.refused(429, "address-voted", self.store.vote, tid, json.dumps({"lap": 5000, "v":1, "voter": voter(20 + day)}).encode(), "a1")
         self.assertEqual(self.row(tid)["up"], 1)
         # control: the address's own voter still changes its vote
-        self.assertEqual(self.store.vote(tid, json.dumps({"v": -1, "voter": voter(1)}).encode(), "a1")["down"], 1)
+        self.assertEqual(self.store.vote(tid, json.dumps({"lap": 5000, "v":-1, "voter": voter(1)}).encode(), "a1")["down"], 1)
 
     def test_tk8_bindings_are_capped_oldest_first(self):
         tid = self.new()["id"]
         with mock.patch.object(tracks, "VOTE_ADDR_CAP", 3):
             for i in range(4):
-                self.store.vote(tid, json.dumps({"v": 1, "voter": voter(i)}).encode(), f"b{i}")
+                self.store.vote(tid, json.dumps({"lap": 5000, "v":1, "voter": voter(i)}).encode(), f"b{i}")
             meta = json.loads((self.dir / "tracks" / SCENE / tid / "meta.json").read_text(encoding="utf-8"))
             self.assertEqual(len(meta["addr"]), 3)
             # the oldest address (b0) was dropped: a new voter from it is taken
-            self.assertEqual(self.store.vote(tid, json.dumps({"v": 1, "voter": voter(9)}).encode(), "b0")["up"], 5)
+            self.assertEqual(self.store.vote(tid, json.dumps({"lap": 5000, "v":1, "voter": voter(9)}).encode(), "b0")["up"], 5)
 
     def test_tk11a_generator_body_with_parent_refused_at_any_version(self):
         self.new()

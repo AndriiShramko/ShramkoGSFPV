@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import * as racePage from '../../../apps/fly/src/rooms/race-page';
+import * as racePage from '../../../apps/fly/src/rooms/race';
 
 const ROOMS = join(__dirname, '..', '..', '..', 'apps', 'fly', 'src', 'app', 'builtin', 'rooms.ts');
 

@@ -38,8 +38,8 @@ import { RoomSocket } from '../../rooms/socket';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
-import { RACE_ON, RacePage } from '../../rooms/race-page';
-import { tableRows } from '../../rooms/race';
+import type { RacePage } from '../../rooms/race-page';
+import { RACE_ON, tableRows } from '../../rooms/race';
 import { closeVisit, openVisit } from '../../rooms/open-visit';
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -97,7 +97,7 @@ function setRoomParam(id: string | null): void {
     history.replaceState(history.state, '', u.toString());
 }
 
-interface Live { sock: RoomSocket; race: RacePage; stop(): void }
+interface Live { sock: RoomSocket; readonly race: RacePage | null; stop(): void }
 
 export const rooms: Feature = {
     id: 'rooms',
@@ -262,9 +262,14 @@ export const rooms: Feature = {
                     }
                 }
             });
-            race = new RacePage(ctx, sock, tell);
-            const rp = race;
-            h.race = rp.h;
+            // the race page reaches the course view and the sound package: loaded only when the race is on (RACE_ON)
+            if (RACE_ON) {
+                void import('../../rooms/race-page').then((m) => {
+                    if (sock.state === 'off') return;
+                    race = new m.RacePage(ctx, sock, tell);
+                    h.race = race.h;
+                });
+            }
             sock.connect();
 
             const offFrame = ctx.events.on('frame', ({ now }) => {
@@ -293,7 +298,7 @@ export const rooms: Feature = {
                         if (sh.frozen) frozen.add(slot);
                     }
                 }
-                if (inRoom) rp.frame(now);
+                if (inRoom) race?.frame(now);
                 stage.show(draw);
                 others = named;
                 h.remotes = seen;
@@ -311,11 +316,11 @@ export const rooms: Feature = {
             });
             live = {
                 sock,
-                race: rp,
+                get race() { return race; },
                 stop: () => {
                     offFrame();
                     unalign();
-                    rp.dispose();
+                    race?.dispose();
                     h.race = null;
                     sock.leave();
                     stage.show([]);
@@ -451,7 +456,7 @@ export const rooms: Feature = {
                     const me = simPose(sim, 0, false);
                     const line = whoLine(nearest(me.pos, me.quat, others), t);
                     // lane rooms2, stage Q2: during or after a race his place comes first, then who is around
-                    const st = live?.race.standing() ?? null;
+                    const st = live?.race?.standing() ?? null;
                     if (st) announcer.announce(st.key, t(st.key, st.params), true);
                     announcer.announce(line.key, line.text, !st);
                 }
