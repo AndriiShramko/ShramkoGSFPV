@@ -98,6 +98,10 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   the path: the obstacle pulse comes centred (side 0, no side to dodge to), not urgent until close, and the open-way chime
   (right) is not among the 2 streams; so the corridor is 0 for want of a side code of the free way, not for the hum alone.
   Ladder runtime: corridor 50 s, rings 7 s.
+- Z4 part: package budget.test.ts 7 of 7; mutation controls (each mutant in budget.ts, then restored by git checkout):
+  TIER_DOWN_SHARE 1 fails the hysteresis case (99 tier changes, expected 0), TIER_STREAMS 9 fails 2 cases, the chime rule at
+  tier 9 fails 1 case, all by assertion. ear-pilot.test.ts 5 of 5. Package typecheck tsconfig.core.json and tsconfig.json: 0 errors.
+- gates.py --only vitest,architecture,i18n,b18 on 3a0f219f: all four PASS (vitest 157 s), logs U:/Temp/gsfpv-gates-20261114-224403.
 - Z2: the numbers of plan Part 2 section 1 are constants read from the package code (train3 2ec8653: sampler.ts, rules.ts,
   beacon.ts, freeway.ts, planner.ts, voices.ts, themes/*.json printed by a node one-liner), the seconds are those constants
   divided by the speed; nothing in Z2 was measured by a run. Lesson speed caps: lessons/*.json maxSpeedMps 0 to 5, 12 lessons at 3.
@@ -136,6 +140,8 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
 - Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
 
 ## Not verified
+- Z3/Z4 pass 2: the scan ear pilot (Tunis, Wroclaw) not built; the budget is not wired, so no 'after' run exists and the
+  owner hears no change yet; the 85 % / 500 ms / 3-8-15 m/s values are estimates. tsconfig.node.json typecheck not run.
 - Z3: the corridor baseline of 0 may be a fault of the ladder or the pilot, not of the cues (LEFT item 1). The ear pilot's
   gains (turn 120 deg/s, dodge 1 m/s, brake 0.3, memory 1.5 s, delay 250 ms) are estimates; rungs 12 to 22 not run.
 - Z2: the plan's speed tiers, look-ahead, stream counts and pass marks are estimates; no ear pilot exists yet to measure them.
@@ -163,3 +169,6 @@ Stage Z3-ear-pilot-and-speed (worker 1 stopped at its reply budget, clean commit
   generated table of every cue's reach constant (name, file, unit) in the package's docs would have made it one read.
 - 2026-11-14 Z3: most replies went to reading the planner's frame types and the runner's host loop to build the ear
   pilot; a short doc of the host loop contract (actions, events, pass) next to test/helpers/pilot.ts would have saved four.
+- 2026-11-14 Z3 pass 2: most replies went to wiring the budget into the planner and finding which 8 old tests pin cue sets at
+  speed; a list of the tests that fly above 3 m/s (and of the replay fixtures tied to theme versions) would have shown the
+  cost before the edit, and the stage would have split wiring into its own stage from the start.
