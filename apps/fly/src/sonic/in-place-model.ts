@@ -23,6 +23,15 @@ export function freeHere(now: FlownNow): LessonDef {
     return { ...lesson, intro: [{ key: 'sonic.say.inPlaceOn' }] };
 }
 
+/**
+ * What the page shows when the mode did not come up (review SO-7). A browser with no Web Audio at all: the way that works (another
+ * browser, sonic.start.noAudio). Otherwise (the engine did not start, a chunk did not load): the next press makes a new sound
+ * context in that press, so the line names the pilot's own key for it (`key`, as the intro names it), not a fixed word.
+ */
+export function failedLine(noWebAudio: boolean, key: string): { readonly key: string; readonly params?: Readonly<Record<string, string>> } {
+    return noWebAudio ? { key: 'sonic.start.noAudio' } : { key: 'sonic.menu.hereFailed', params: { key } };
+}
+
 /** A pilot who never flew by sound: no lesson progress saved and never chose "I already fly by sound". */
 export function firstTimer(progress: Readonly<Record<string, unknown>>, fliesBySound: boolean): boolean {
     return !fliesBySound && Object.keys(progress).length === 0;

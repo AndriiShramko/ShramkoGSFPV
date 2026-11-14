@@ -4,5 +4,5 @@
   "sonic.menu.here": "Fly by Sound aquí",
   "sonic.menu.hereOff": "Apagar Fly by Sound",
   "sonic.menu.lessonsTab": "Lecciones de Fly by Sound: ciegos o con baja visión",
-  "sonic.menu.hereFailed": "Fly by Sound no se encendió. Pulsa la barra invertida para intentarlo otra vez."
+  "sonic.menu.hereFailed": "Fly by Sound aún no ha empezado. Pulsa {key} una vez más: esa pulsación lo inicia."
 }

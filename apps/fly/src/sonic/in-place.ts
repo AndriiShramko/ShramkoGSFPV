@@ -7,7 +7,8 @@ import type { FlightSession } from '../session';
 import { Captions } from './captions';
 import { SonicSetup } from './entry';
 import { setSonicEntry } from './entry-state';
-import { InPlaceSwitch, firstTimer } from './in-place-model';
+import { InPlaceSwitch, failedLine, firstTimer } from './in-place-model';
+import { KeyNames } from './key-names';
 import { loadMode } from './lazy-start';
 import { allProgress, fliesBySound, setFliesBySound } from './store';
 import { locale, t } from '../i18n';
@@ -36,7 +37,15 @@ export function inPlaceSwitch(ctx: FlightContext, lessons: () => void): InPlaceS
         lessons,
         failed: (e) => {
             console.warn('fly by sound: did not switch on here', e);
-            ctx.hud.flash(t('sonic.menu.hereFailed'), 4000);
+            // the pilot's own key, named as the intro names it (feature.ts capOf); the key table's cap when no name is said for it
+            const names = new KeyNames((action) => ctx.keys.caps(action), (code) => {
+                const k = `sonic.key.${code}`;
+                const said = t(k);
+                return said === k ? null : said;
+            });
+            const g = globalThis as { AudioContext?: unknown; webkitAudioContext?: unknown };
+            const line = failedLine(g.AudioContext === undefined && g.webkitAudioContext === undefined, names.of('flyBySound.toggle', 'Backslash') || '\\');
+            ctx.hud.flash(t(line.key, line.params), 4000);
         }
     });
 }

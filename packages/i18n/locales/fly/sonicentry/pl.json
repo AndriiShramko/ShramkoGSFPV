@@ -4,5 +4,5 @@
   "sonic.menu.here": "Lot na słuch tutaj",
   "sonic.menu.hereOff": "Wyłącz lot na słuch",
   "sonic.menu.lessonsTab": "Lekcje lotu na słuch: niewidomi i słabowidzący",
-  "sonic.menu.hereFailed": "Lot na słuch się nie włączył. Naciśnij ukośnik wsteczny, aby spróbować jeszcze raz."
+  "sonic.menu.hereFailed": "Lot na słuch jeszcze nie ruszył. Naciśnij {key} jeszcze raz: to naciśnięcie go uruchamia."
 }

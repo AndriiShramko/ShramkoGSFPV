@@ -11,7 +11,7 @@ import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src/k
 import { hereItems, sonicFlight } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { HereSwitch } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { MenuItem } from '../../../apps/fly/src/app/context';
-import { InPlaceSwitch, firstTimer, freeHere } from '../../../apps/fly/src/sonic/in-place-model';
+import { InPlaceSwitch, failedLine, firstTimer, freeHere } from '../../../apps/fly/src/sonic/in-place-model';
 import type { InPlaceDeps } from '../../../apps/fly/src/sonic/in-place-model';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
 import { analyticCollision } from '../../../packages/collision/src';
@@ -149,6 +149,21 @@ describe('the switch: entry, introduction, off', () => {
         const l = freeHere({ scene: { id: 'builtin-gates' }, transform: { s: 1, t: [0, 0, 0] } });
         expect(l.id).toBe(SCAN_FREE_ID);
         expect(l.intro).toEqual([{ key: 'sonic.say.inPlaceOn' }]);
+    });
+});
+
+// review SO-7: the failure line named the key in fixed words and only said "try again"; it names the pilot's own key (as the intro
+// does) and, in a browser with no Web Audio, leads to the way that works (another browser) instead of a retry that cannot help
+describe('the switch did not come up: the line leads on', () => {
+    it('names the key by its cap in every language; no Web Audio: the other-browser line', () => {
+        expect(failedLine(false, '\\')).toEqual({ key: 'sonic.menu.hereFailed', params: { key: '\\' } });
+        expect(failedLine(true, '\\')).toEqual({ key: 'sonic.start.noAudio' });
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const d = JSON.parse(readFileSync(join(REPO, `packages/i18n/locales/fly/sonicentry/${lang}.json`), 'utf8')) as Record<string, string>;
+            const s = d['sonic.menu.hereFailed'] ?? '';
+            expect(s, lang).toContain('{key}');
+            expect(s.toLowerCase(), lang).not.toMatch(/backslash|barra invertida|ukośnik|косую/);
+        }
     });
 });
 

@@ -37,7 +37,9 @@
 // Run from tools/bench after `node scripts/build-release.mjs`:   npx tsx src/sonic-int-review.ts [r1|r2|r3|r4|r5|r6|r7|r8|r9]
 // SITE=https://gsfpv.flyreelstudio.eu runs a probe against that site instead (after a release; nothing is written to the site).
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
-import { mkdirSync, rmdirSync, statSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import { S } from '../../../packages/sim-core/src';
 import type { BrowserContext, Page } from 'playwright';
 import { SCHEMA_VERSION } from '../../../packages/prefs/src';
 import { DICTS, createTranslator, defaultPrefs } from '../../../packages/sonic-fpv/src';
@@ -1014,6 +1016,59 @@ async function r10(browser: () => Promise<BrowserContext>, served: Served): Prom
  * page per speed, default "2,5"; the scan's free flight caps at 5). Z5_WALLS names the walls of the run in the evidence only:
  * the shell puts or leaves out dist/walls/<scene>/ (the stand-in or none: then the page builds them on N).
  */
+/** The English labels of the pause item (packages/i18n/locales/fly/sonicentry/en.json): the probe pages run in English. */
+const ENTRY_EN = JSON.parse(readFileSync(join(REPO, 'packages/i18n/locales/fly/sonicentry/en.json'), 'utf8')) as Record<string, string>;
+/** Where the craft's position and velocity sit in the sim state (sim-core S), given to the page. */
+const POSE_IDX = [S.px, S.py, S.pz, S.vx, S.vy, S.vz];
+
+/** The pause item's text: Escape opens the menu, the item is read, Escape closes it again. */
+async function pauseItemText(page: Page): Promise<string | null> {
+    await page.keyboard.press('Escape');
+    await page.waitForSelector('.pause-menu [data-action="pause.flyBySound"]', { timeout: 10000 }).catch(() => null);
+    const txt = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySound"]')?.textContent?.trim() ?? null);
+    await page.keyboard.press('Escape');
+    await sleep(800);
+    return txt;
+}
+
+/**
+ * R11 off (review SO-4): with W held (the craft moving), Backslash switches the mode off. The pose and velocity are read in the
+ * same page task as the key (no frame between them by design, so a new life would show as a jump or a stop): the craft must not
+ * move more than 0.1 m beyond its own speed times the time between the reads, and keep at least half its speed (a new life is
+ * "level and still"). The pause item says "Switch off" while the mode is on and "Fly by Sound here" after; the hook's lesson is gone.
+ */
+async function r11Off(page: Page, tag: string, run: Record<string, unknown>): Promise<void> {
+    const labelOn = await pauseItemText(page);
+    await page.keyboard.down('KeyW');
+    await sleep(1500);
+    const st = await page.evaluate(async (i: number[]) => {
+        const h = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv;
+        const read = (): { p: number[]; v: number[]; t: number } => {
+            const s = h.session.sim.s;
+            return { p: [s[i[0]], s[i[1]], s[i[2]]], v: [s[i[3]], s[i[4]], s[i[5]]], t: performance.now() };
+        };
+        const before = read();
+        const ev = { code: 'Backslash', key: '\\', bubbles: true };
+        window.dispatchEvent(new KeyboardEvent('keydown', ev));
+        window.dispatchEvent(new KeyboardEvent('keyup', ev));
+        for (let k = 0; k < 8; k++) await Promise.resolve();
+        return { before, after: read() };
+    }, POSE_IDX);
+    await page.keyboard.up('KeyW');
+    await sleep(1000);
+    const after = await probe10(page);
+    const labelOff = await pauseItemText(page);
+    const sp = (v: number[]): number => Math.hypot(v[0] ?? 0, v[1] ?? 0, v[2] ?? 0);
+    const moved = Math.hypot((st.after.p[0] ?? 0) - (st.before.p[0] ?? 0), (st.after.p[1] ?? 0) - (st.before.p[1] ?? 0), (st.after.p[2] ?? 0) - (st.before.p[2] ?? 0));
+    const dt = (st.after.t - st.before.t) / 1000;
+    const off = { labelOn, labelOff, moved: Math.round(moved * 1000) / 1000, dtS: Math.round(dt * 1000) / 1000, speedBefore: Math.round(sp(st.before.v) * 100) / 100, speedAfter: Math.round(sp(st.after.v) * 100) / 100, lessonAfter: after.lesson };
+    run.off = off;
+    check(`${tag}: the pause item says "${ENTRY_EN['sonic.menu.hereOff']}" while the mode is on`, labelOn !== null && labelOn.includes(ENTRY_EN['sonic.menu.hereOff'] ?? '?'), off);
+    check(`${tag}: Backslash switches it off where the craft is (moved under 0.1 m beyond its own travel)`, moved < 0.1 + sp(st.before.v) * dt, off);
+    check(`${tag}: the speed is kept on the switch off (at least half; the craft was moving)`, sp(st.before.v) > 0.5 && sp(st.after.v) >= 0.5 * sp(st.before.v), off);
+    check(`${tag}: after the switch off no lesson runs and the item says "${ENTRY_EN['sonic.menu.here']}"`, after.lesson === null && labelOff !== null && labelOff.includes(ENTRY_EN['sonic.menu.here'] ?? '?') && !labelOff.includes(ENTRY_EN['sonic.menu.hereOff'] ?? '?'), off);
+}
+
 async function r11(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
     const scene = process.env.Z5_SCENE ?? SCAN;
     const speeds = (process.env.Z5_SPEEDS ?? '2,5').split(',').map(Number).filter((x) => x > 0);
@@ -1069,7 +1124,11 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         }, (p) => p.target !== null || lines.has('sonic.say.courseNone') || lines.has('sonic.say.scanNoWalls'), 420000, 250).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
         run.course = { s: (Date.now() - tN) / 1000, target: ready?.target?.id ?? null, lines: [...lines], wallsFiles: wallsFiles.slice(0, 6), walls: ready?.walls ?? null };
         check(`${tag}: N makes a course (gate 1 is the hum's target)`, ready?.target !== null && ready?.target !== undefined, run.course);
-        if (!ready?.target) { await ctx.close(); continue; }
+        if (!ready?.target) {
+            await r11Off(page, tag, run);
+            await ctx.close();
+            continue;
+        }
         const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
         const trail: object[] = [];
         const tF = Date.now();
@@ -1079,6 +1138,7 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
         run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-12), trail: trail.slice(-8) };
         check(`${tag}: the course was flown to its end by the hum`, end.phase === 'passed' || end.phase === 'idle', run.flight);
+        await r11Off(page, tag, run);
         await ctx.close();
     }
 }
