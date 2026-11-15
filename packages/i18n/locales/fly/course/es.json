@@ -74,7 +74,7 @@
   "course.edit.p.noStart": "el circuito no tiene salida",
   "course.edit.r.placement": "No se hizo: {why}",
   "course.edit.r.minGates": "No se borró: un circuito necesita al menos {n} puerta",
-  "course.edit.r.maxGates": "No se añadió: un circuito tiene como máximo {n} puertas",
+  "course.edit.r.maxGates": "El circuito está lleno. Primero borra una puerta que no necesites: haz clic en ella y pulsa la cruz de su barra. Luego añade la nueva.",
   "course.edit.r.sizeMin": "No más pequeña: {m} m es la apertura mínima",
   "course.edit.r.sizeMax": "No más grande: {m} m es la apertura máxima",
   "course.edit.r.orderEdge": "Esta puerta ya está en el extremo del orden",
@@ -130,5 +130,11 @@
   "course.edit.cam.look": "Botón derecho del ratón pulsado, o arrastrar con el izquierdo sobre un sitio vacío: mirar alrededor",
   "course.edit.cam.wheel": "Rueda del ratón: velocidad de la vista",
   "course.edit.cam.click": "Haz clic en una puerta: las flechas la mueven, los anillos la giran, el cubo del centro cambia su tamaño",
-  "course.edit.cam.arm": "armar y volar el circuito ya (desarmar: volver a editar)"
+  "course.edit.cam.arm": "armar y volar el circuito ya (desarmar: volver a editar)",
+  "course.edit.tool.move": "Mover",
+  "course.edit.tool.turn": "Girar",
+  "course.edit.tool.size": "Tamaño",
+  "course.edit.bar.undo": "Deshacer",
+  "course.edit.bar.redo": "Rehacer",
+  "course.edit.bar.exit": "Salir"
 }

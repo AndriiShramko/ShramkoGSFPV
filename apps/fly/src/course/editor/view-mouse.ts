@@ -9,6 +9,7 @@ import { CAM_KEYS, camForward, camTarget, stepCam, turnCam, wheelSpeed, type Fly
 import { fromPcQuat, toPcQuat, type FlownPose } from './drag';
 import { pickGate, rayThrough, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
+import { toolAfter, toolOfKey, type Tool } from './bar-place';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
 export const CLICK_SLOP_PX = 4;
@@ -34,6 +35,8 @@ export interface EditViewHost {
     onSpeed(speed: number): void;
     /** a key press goes to a text field (the camera keys are left to it) */
     typing(target: EventTarget | null): boolean;
+    /** lane editor3 H1: a key chose another set of handles (the gate bar shows it) */
+    onTool?(tool: Tool): void;
 }
 
 type Handle = TranslateGizmo | RotateGizmo | ScaleGizmo;
@@ -53,7 +56,7 @@ export class EditView {
     private dragging = false;
     /** a handle was dragged during this press (its release is not a click) */
     private dragged = false;
-    private press: { id: number; button: number; x: number; y: number; look: boolean } | null = null;
+    private press: { id: number; button: number; x: number; y: number; lx: number; ly: number; look: boolean } | null = null;
     private disposed = false;
     /** lane editor3 E3: Add gate armed, the next click on the scene places a gate */
     adding = false;
@@ -63,6 +66,9 @@ export class EditView {
     /** lane editor3 E4: the handles in press-owner.ts PRESS_ORDER (size, move, turn); the ones switched off for this press */
     private readonly byPress: Handle[];
     private muted: Handle[] = [];
+    /** lane editor3 H1: the one set of handles shown (Move when a gate gets selected) and the gate it belongs to */
+    tool: Tool = 'move';
+    private toolGate: string | number | null = null;
 
     constructor(host: EditViewHost, start: FlyCam) {
         this.host = host;
@@ -123,9 +129,11 @@ export class EditView {
     }
 
     /** The stand-in at the selected gate (null: no gate, the handles hidden). Not while a drag holds it. */
-    put(p: FlownPose | null): void {
+    put(p: FlownPose | null, gate: string | number | null = null): void {
         if (this.dragging) return;
         this.standPose = p;
+        this.tool = toolAfter(this.tool, this.toolGate, gate);
+        this.toolGate = gate;
         if (!p || this.suspended) {
             for (const h of this.handles) h.detach();
             return;
@@ -135,7 +143,30 @@ export class EditView {
         this.stand.setRotation(new PcQuat(q[0], q[1], q[2], q[3]));
         this.stand.setLocalScale(1, 1, 1);
         this.opening = p.opening;
-        for (const h of this.handles) h.attach([this.stand]);
+        this.showTool();
+    }
+
+    /** lane editor3 H1: the gate bar's Move, Turn or Size (or M, R, T): only that set of handles is on the gate */
+    setTool(tool: Tool): void {
+        if (this.dragging || tool === this.tool) return;
+        this.tool = tool;
+        if (this.standPose && !this.suspended) this.showTool();
+    }
+
+    private active(): Handle {
+        return this.handles[this.tool === 'move' ? 0 : this.tool === 'turn' ? 1 : 2]!;
+    }
+
+    private showTool(): void {
+        const on = this.active();
+        for (const h of this.handles) {
+            if (h !== on) {
+                h.detach();
+                h.enabled = false;
+            }
+        }
+        on.enabled = true;
+        on.attach([this.stand]);
     }
 
     /** The drone flies (true): the handles go and the keys and the mouse are left to the flight; false: back where it was. */
@@ -147,7 +178,7 @@ export class EditView {
         this.adding = false;
         if (on) for (const h of this.handles) h.detach();
         else {
-            this.put(this.standPose);
+            this.put(this.standPose, this.toolGate);
             this.apply();
         }
     }
@@ -196,14 +227,15 @@ export class EditView {
 
     private unmute(): void {
         if (this.muted.length === 0) return;
-        for (const h of this.muted) h.enabled = true;
         this.muted = [];
+        // lane editor3 H1: only the shown set takes presses
+        for (const h of this.handles) h.enabled = h === this.active();
     }
 
     private onDown = (e: PointerEvent): void => {
         if (this.suspended || (e.button !== 0 && e.button !== 2)) return;
         // a press on a handle is the gizmo's (it fired transform:start in its own pointerdown, or will on the first move)
-        this.press = { id: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, look: e.button === 2 };
+        this.press = { id: e.pointerId, button: e.button, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, look: e.button === 2 };
         if (e.button === 2) e.preventDefault();
     };
 
@@ -211,8 +243,13 @@ export class EditView {
         const p = this.press;
         if (!p || p.id !== e.pointerId || this.dragging) return;
         if (!p.look && Math.hypot(e.clientX - p.x, e.clientY - p.y) > CLICK_SLOP_PX) p.look = true;
+        // lane editor3 H1: the step from the last position, not movementX (0 for some synthetic and remote pointers)
+        const dx = e.clientX - p.lx;
+        const dy = e.clientY - p.ly;
+        p.lx = e.clientX;
+        p.ly = e.clientY;
         if (!p.look) return;
-        this.cam = turnCam(this.cam, e.movementX, e.movementY);
+        this.cam = turnCam(this.cam, dx, dy);
         this.apply();
     };
 
@@ -263,6 +300,13 @@ export class EditView {
     private onKey = (e: KeyboardEvent): void => {
         this.fast = e.shiftKey;
         if (e.key === 'Control' || e.key === 'Meta') this.setSnap(false);
+        const tool = this.suspended || e.repeat || this.host.typing(e.target) ? null : toolOfKey(e.code, e.ctrlKey || e.metaKey || e.altKey || e.shiftKey);
+        if (tool) {
+            e.preventDefault();
+            this.setTool(tool);
+            this.host.onTool?.(this.tool);
+            return;
+        }
         if (this.suspended || !CAM_KEYS.has(e.code) || e.ctrlKey || e.metaKey || e.altKey || this.host.typing(e.target)) return;
         this.held.add(e.code);
         e.preventDefault();
@@ -322,8 +366,19 @@ export class EditView {
             gates: this.host.gates().map((g) => scr(g.pos[0], g.pos[1], g.pos[2])),
             cam: { pos: [...this.cam.pos], speed: this.cam.speed },
             held: [...this.held],
-            dragging: this.dragging
+            dragging: this.dragging,
+            tool: this.tool
         };
+    }
+
+    /** For the page probes: which shape of the shown handles is under a page point (CSS px): [tool, axis] or null. Read only;
+     * the probe walks out from the gate's centre with it to find the ring, the arrow or the box it then presses. */
+    hitAt(x: number, y: number): [Tool, string] | null {
+        const r = this.canvas.getBoundingClientRect();
+        const h = this.active();
+        if (!h.nodes.length) return null;
+        const sel = (h as unknown as { _getSelection?: (x: number, y: number) => { axis?: string }[] })._getSelection?.(x - r.left, y - r.top);
+        return sel && sel[0] ? [this.tool, String(sel[0].axis ?? '')] : null;
     }
 
     dispose(): void {

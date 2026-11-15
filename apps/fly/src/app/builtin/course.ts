@@ -28,7 +28,7 @@ import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, wi
 import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { S } from '@gsfpv/sim-core';
-import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack } from '@gsfpv/tracks';
+import { MAX_GATES_EDIT, canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack } from '@gsfpv/tracks';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
@@ -545,6 +545,9 @@ export const course: Feature = {
         const say = (text: string, refused = false): void => {
             edHook.said = text;
             panel?.say(text, refused);
+            // lane editor3 H1: the window opens closed: the top bar's line says it, a refusal also on the HUD
+            top?.tell(text, refused);
+            if (refused) ctx.hud.flash(text, 5000);
         };
         const renderList = (): void => {
             edHook.votes = myVotes();
@@ -581,7 +584,7 @@ export const course: Feature = {
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
             const eg = ed.course.gates[ed.selected];
-            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null);
+            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null);
             edHook.open = true;
             edHook.selected = ed.selected;
             edHook.changed = edChanged;
@@ -643,7 +646,7 @@ export const course: Feature = {
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
-            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null });
+            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl) });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode } : null);
@@ -703,6 +706,8 @@ export const course: Feature = {
         /** lane editor3 E3: Add gate pressed: the next click on the scene puts a gate (pressed again: no more) */
         const toggleAdd = (): void => {
             if (!view || mode === 'fly') return;
+            // lane editor3 H1, the owner's rule: no refusal with a number; a full course says in words what to delete
+            if (!view.adding && ed && ed.course.gates.length >= MAX_GATES_EDIT) return say(t('course.edit.r.maxGates'), true);
             view.adding = !view.adding;
             top?.adding(view.adding);
             if (view.adding) say(t('course.edit.bar.addHint'));

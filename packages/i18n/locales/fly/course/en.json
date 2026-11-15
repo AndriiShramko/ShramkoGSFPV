@@ -74,7 +74,7 @@
   "course.edit.p.noStart": "the course has no start",
   "course.edit.r.placement": "Not done: {why}",
   "course.edit.r.minGates": "Not deleted: a course needs at least {n} gate",
-  "course.edit.r.maxGates": "Not added: a course has at most {n} gates",
+  "course.edit.r.maxGates": "The course is full. Delete a gate you do not need first: click it and press the cross on its bar. Then add the new one.",
   "course.edit.r.sizeMin": "Not smaller: {m} m is the smallest opening",
   "course.edit.r.sizeMax": "Not bigger: {m} m is the largest opening",
   "course.edit.r.orderEdge": "This gate is already at the end of the order",
@@ -130,5 +130,11 @@
   "course.edit.cam.look": "Right mouse button held, or a left drag on empty space: look around",
   "course.edit.cam.wheel": "Mouse wheel: the view's speed",
   "course.edit.cam.click": "Click a gate: arrows move it, rings turn it, the centre box scales it",
-  "course.edit.cam.arm": "arm and fly the course now (disarm: back to editing)"
+  "course.edit.cam.arm": "arm and fly the course now (disarm: back to editing)",
+  "course.edit.tool.move": "Move",
+  "course.edit.tool.turn": "Turn",
+  "course.edit.tool.size": "Size",
+  "course.edit.bar.undo": "Undo",
+  "course.edit.bar.redo": "Redo",
+  "course.edit.bar.exit": "Exit"
 }

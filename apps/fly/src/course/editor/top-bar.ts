@@ -18,6 +18,8 @@ export class TopBar {
     readonly root: HTMLElement;
     private readonly line: HTMLElement;
     private readonly addBtn: HTMLButtonElement | null = null;
+    private told = 0;
+    private isAdding = false;
 
     constructor(ui: HTMLElement, host: TopBarHost) {
         const root = document.createElement('div');
@@ -51,8 +53,20 @@ export class TopBar {
 
     /** Add gate is armed: the button stays pressed and the line says where to click */
     adding(on: boolean): void {
+        this.isAdding = on;
         this.addBtn?.setAttribute('aria-pressed', on ? 'true' : 'false');
         this.line.textContent = t(on ? 'course.edit.bar.addHint' : 'course.edit.flyHint');
+    }
+
+    /** lane editor3 H1: the window opens closed, so what an edit did (or why it did not) is said on the bar's line for a while */
+    tell(text: string, refused: boolean): void {
+        clearTimeout(this.told);
+        this.line.textContent = text;
+        this.line.classList.toggle('refused', refused);
+        this.told = window.setTimeout(() => {
+            this.line.classList.remove('refused');
+            this.line.textContent = t(this.isAdding ? 'course.edit.bar.addHint' : 'course.edit.flyHint');
+        }, refused ? 6000 : 3000);
     }
 
     /** the drone flies: the bar steps aside (the line stays, it says how to come back) */
@@ -62,6 +76,7 @@ export class TopBar {
     }
 
     destroy(): void {
+        clearTimeout(this.told);
         this.root.remove();
     }
 }

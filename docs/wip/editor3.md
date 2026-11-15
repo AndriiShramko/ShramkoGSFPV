@@ -190,6 +190,21 @@ Stage fixes (review ED-1 to ED-7; NOT finished, stopped at the reply budget):
   5. E4.7 the flight through the moved gate (a racing profile with an arm switch, or the moved gate ahead of the spawn).
 - [x] gates.py --only vitest,architecture,i18n,b18 PASS on 9a426a3f (vitest 180 s; logs U:/Temp/gsfpv-gates-20261115-004525).
 
+Stage H1-handles-first (train 3 wave 2, the finishing lane):
+- [~] H1.0 release of bb670ead built (build-release sha bb670ead, 1932 files); the 'before' run of the E4 probe
+  (runner U:/Temp/gsfpv-train3/editor3/h1/run.sh, OUT h1/before) queued on the GPU lock
+- [x] H1.1 code (this commit): one set of handles at a time. bar-place.ts TOOLS (Move M, Turn R, Size T; letters the edit
+  camera and editorKey leave free), toolOfKey, toolAfter (Move whenever another gate gets selected, by the gate's id);
+  view-mouse.ts put(pose, gateId) attaches only the shown set, setTool, the others disabled, the M/R/T keys, hitAt(x, y) for the
+  probes (the shown set's shape under a page point), the right-button look by clientX/Y steps (movementX was 0 on Tunis);
+  gate-bar.ts three tool buttons first (aria-pressed lit); editor.css: the window opens closed on every screen (title only,
+  Courses and Keys open it), refused line colour; top-bar.ts tell(): what an edit did shows on the top bar line (the window is
+  closed), a refusal also on the HUD flash (course.ts say()); the top bar's own words Undo, Redo, Exit (course.edit.bar.*);
+  a full course: Add gate says course.edit.r.maxGates before arming, and that text now names what to do with no number.
+  New texts in en, es, pl, ru: course.edit.tool.move/.turn/.size, course.edit.bar.undo/.redo/.exit; r.maxGates rewritten.
+  Test tools/bench/test/editor3-tools.test.ts 6 pass; with editor3-fixes, -flying, -gatebar, -mouse, -press,
+  tracks-editor-ui 7 files 50/50; NEG OK (neg_control.py ref bb670ead, 8 files); apps/fly tsc 0. NOT yet seen in a browser.
+
 ## Facts (measured)
 
 - E4 (tools/bench/src/editor3-prove.ts, SITE http://localhost:5800, release of d726a3cb with the Wroclaw walls stand-in in
