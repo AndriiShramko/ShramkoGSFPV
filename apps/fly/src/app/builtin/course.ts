@@ -199,8 +199,9 @@ export const course: Feature = {
                 const line = before === null || last < before ? t('course.best', { time: lapClock(last) }) : t('course.lapDone', { time: lapClock(last) });
                 if (before === null || last < before) writeBest(keyOf(run.track), last);
                 ctx.hud.flash(line, before === null || last < before ? 3000 : 2500);
-                // lane quiet2 (review QW-1): with the narrator off the lap's notes say it (the package's own 'lap' cue)
-                sayLine(line, { kind: 'lap' });
+                // lane quiet2 (review QW-1): with the narrator off the lap's notes say it (the package's own 'lap' cue);
+                // lane quiet3 (the lead's M3): the course's end plays the finish notes (the package's 'fanfare')
+                sayLine(line, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' });
             }
             const next = v.running || v.next >= 0 ? v.next : -1;
             if (next !== shownNext) {

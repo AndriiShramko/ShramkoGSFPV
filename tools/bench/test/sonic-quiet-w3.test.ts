@@ -31,8 +31,8 @@ describe('QW-1, QW-2, QW-6: the course and walls lines pass their own sound', ()
     const course = text('apps/fly/src/app/builtin/course.ts');
     const walls = text('apps/fly/src/walls.ts');
     const builtinWalls = text('apps/fly/src/app/builtin/walls.ts');
-    it('a lap or the course end plays the lap notes', () => {
-        expect(course).toContain("sayLine(line, { kind: 'lap' })");
+    it('a lap plays the lap notes, the course end the finish notes (the lead M3)', () => {
+        expect(course).toContain("sayLine(line, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' })");
     });
     it('Shift+G with no course plays the falling sound, a press while busy the wait sound', () => {
         expect(course).toContain("sayLine(text, { kind: 'wrong-side' })");
