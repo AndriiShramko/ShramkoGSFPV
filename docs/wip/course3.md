@@ -343,6 +343,7 @@ Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight chec
   goes on for about 150 m more and the SW street has none. Tunis: the whole main street west to its end (about 80 m) and
   about 20 m east, green; the north streets have none. 0230d903: a loop of about 70 m along the north street beside the
   spawn; the town's inner streets have none. eb5f51dc: not a street scan (small centre in sky splats).
+- [x] (pass 2) gates.py --only vitest,architecture,i18n,b18 on b0a09cb0: all PASS (vitest 94 s; logs U:/Temp/gsfpv-gates-20261115-041320).
 - [ ] Left: 24 gates of legs up to 25 m, out and back, cover about 180-210 m of street; the rest of a big scan's
   well-scanned streets (Wroclaw SE end and SW street, Tunis north streets) needs N above 24 on big scans
   (COURSE_DEFAULTS.gatesMax, product decision, see For the lead). No unit test of the one-arm fallback (the audit shows
