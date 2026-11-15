@@ -9,8 +9,8 @@ import { Rig, SharedCourse } from './sonic-lesson-rig';
 import { KEY_HELP } from '../../../apps/fly/src/sonic/mode-keys';
 import { spokenKey } from '../../../apps/fly/src/sonic/key-names';
 import type { Control, RigScan } from './sonic-lesson-rig';
-import { parseTrack, scanFreeLesson, validateLesson, SCAN_FREE_ID } from '../../../packages/sonic-fpv/src';
-import type { SonicObject, TrackFile } from '../../../packages/sonic-fpv/src';
+import { parseTrack, quatRotate, scanFreeLesson, validateLesson, SCAN_FREE_ID } from '../../../packages/sonic-fpv/src';
+import type { SonicObject, TrackFile, Vec3 } from '../../../packages/sonic-fpv/src';
 import { buildScanLesson, isScanCourse, scanCourseLesson } from '../../../apps/fly/src/sonic/scan-lesson';
 import { courseAnswer, courseJob } from '../../../apps/fly/src/sonic/course-ask';
 import { REPO } from '../src/evidence';
@@ -214,6 +214,75 @@ describe('one course in the scene, the course feature\'s, in Fly by Sound too (l
         expect(shared.made).toBe(0);
         expect(r.stage.target).toBeNull();
     }, 120000);
+
+    /** a point in the gate's own frame (+Z its front, the side a pass comes from), in the world */
+    const at = (g: SonicObject, l: readonly [number, number, number]): Vec3 => {
+        const w = quatRotate(g.quat, [l[0], l[1], l[2]]);
+        return [g.pos[0] + w[0], g.pos[1] + w[1], g.pos[2] + w[2]];
+    };
+    /** the follow pilot's way to a point; done within 1.5 m of it */
+    const toPoint = (p: Vec3): Control => (r) => {
+        const q = r.pos;
+        const dx = p[0] - q[0];
+        const dz = p[2] - q[2];
+        const err = wrap((Math.atan2(dx, -dz) * 180) / Math.PI - r.yaw);
+        return {
+            turn: clamp(err / 30, -1, 1),
+            forward: Math.abs(err) > 70 ? 0 : 0.6 * Math.cos((err * Math.PI) / 180) * Math.min(1, Math.hypot(dx, dz) / 4 + 0.3),
+            lift: clamp((p[1] - q[1]) * 0.9, -1, 1)
+        };
+    };
+    const reach = async (r: Rig, p: Vec3): Promise<void> => {
+        await r.run(60000, toPoint(p), () => Math.hypot(r.pos[0] - p[0], r.pos[1] - p[1], r.pos[2] - p[2]) < 1.5);
+        expect(Math.hypot(r.pos[0] - p[0], r.pos[1] - p[1], r.pos[2] - p[2]), `reached ${p.join(',')}`).toBeLessThan(1.5);
+    };
+    /** O2.4 (message 53, D7): past gate 2 by `off` (local), 10 m past it, back to its front, then through it */
+    async function missAndReturn(off: readonly [number, number]): Promise<void> {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        const g = shared.inUse()!.gates[1]!;
+        await reach(r, at(g, [off[0], off[1], 4]));
+        await reach(r, at(g, [off[0], off[1], -10]));
+        expect(shared.inUse()!.next, 'the miss does not count').toBe(1);
+        await reach(r, at(g, [0, 0, 4]));
+        await r.run(60000, toPoint(at(g, [0, 0, -4])), () => (shared.inUse()?.next ?? 0) >= 2);
+        expect(count('sonic.say.gateBehind')).toBe(1);
+        expect(count('fly.wrong-way')).toBe(0);
+        expect(shared.inUse()!.next, 'the gate counts after the return').toBe(2);
+    }
+
+    it('D7: gate 2 missed beside it (7 m off its centre) and flown back to: "The gate is behind you" once, no wrong way, the gate counts', async () => {
+        await missAndReturn([7, 0]);
+    }, 240000);
+
+    it('D7: gate 2 flown over (4.5 m above its centre) and flown back to: "The gate is behind you" once, no wrong way, the gate counts', async () => {
+        await missAndReturn([0, 4.5]);
+    }, 240000);
+
+    it('D7: backing up and sliding on a leg say nothing; turned round and flown nose-first back along the leg away from the next gate says the wrong way', async () => {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        const c = shared.inUse()!;
+        const g1 = c.gates[0]!;
+        const g2 = c.gates[1]!;
+        const flat = [g2.pos[0] - g1.pos[0], g2.pos[2] - g1.pos[2]];
+        const n = Math.hypot(flat[0]!, flat[1]!);
+        const along: Vec3 = [flat[0]! / n, 0, flat[1]! / n];
+        await reach(r, [g1.pos[0] + along[0] * 2, g1.pos[1], g1.pos[2] + along[2] * 2]);
+        // (d) backing up 2 s, sliding 2 s each way: silent
+        await r.run(2000, () => ({ forward: -0.6 }));
+        await r.run(2000, () => ({ strafe: 0.6 }));
+        await r.run(2000, () => ({ strafe: -0.6 }));
+        await r.run(1500);
+        expect(count('fly.wrong-way'), 'backing up and sliding').toBe(0);
+        // (c) turned round, nose-first back along the leg, away from gate 2
+        const away: Vec3 = [g1.pos[0] - along[0] * 8, g1.pos[1], g1.pos[2] - along[2] * 8];
+        await r.run(60000, toPoint(away), () => count('fly.wrong-way') > 0 || Math.hypot(r.pos[0] - away[0], r.pos[2] - away[2]) < 1.5);
+        expect(count('fly.wrong-way')).toBe(1);
+        expect(count('sonic.say.gateBehind')).toBe(0);
+    }, 240000);
 
     it('the key help names Shift+G for a course, said with the letter last ("Shift and key G"); no course line names N', () => {
         const help = KEY_HELP.find(([line]) => line === 'sonic.say.helpCourse');

@@ -26,7 +26,7 @@
 //              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
 //              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { SCAN_FREE_ID, createLessonRunner, gateCrossing, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, WRONG_WAY_EVERY_S, WRONG_WAY_MPS, WRONG_WAY_S, createLessonRunner, gateCrossing, getLesson, headingBasis, isShippedLesson, lessonAfter, lessonBefore, lineUpM, normalize, quatRotate, toLocal, worldToListener } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
@@ -287,6 +287,63 @@ export class LessonHost {
         if (!cross || cross.inside || cross.near) return;
         this.behindSaid = gate.id;
         void this.p.mode.bridge.say({ key: 'sonic.say.gateBehind' }, false, { lesson: true });
+    }
+
+    /** the leg judge over the course in the scene: its target, the gate before it, whether the leg was flown, the clocks */
+    private leg: { gate: string | null; from: SonicObject | null; flown: boolean; since: number | null; said: number } = { gate: null, from: null, flown: false, since: null, said: -Infinity };
+
+    /**
+     * Lane onecourse O2.4 (message 53, D7): over the course in the scene the wrong way is said only for the case it is made for, as the
+     * package's runner does (checkDirection): the leg runs from the gate passed last to the next gate; the craft is in front of the next
+     * gate and further than its line-up distance (lineUpM), has flown along the leg, is not closing on the gate or its line-up point,
+     * and flies nose-first against the leg (faster than WRONG_WAY_MPS) for WRONG_WAY_S; said at most once every WRONG_WAY_EVERY_S.
+     * Coming back to a missed gate, backing up and sliding say nothing.
+     */
+    private wrongWay(gate: SonicObject | null, s: FlightSample): void {
+        const c = this.p.course?.inUse() ?? null;
+        const L = this.leg;
+        if (!gate || !c) {
+            this.leg = { gate: null, from: null, flown: false, since: null, said: L.said };
+            return;
+        }
+        if (L.gate !== gate.id) {
+            // the gate before the new target: the one targeted last when it is a gate of the same course (a pass, a lap), else none
+            const before = L.gate !== null ? c.gates.find((g) => g.id === L.gate) ?? null : null;
+            const idx = c.gates.indexOf(gate);
+            const prev = idx > 0 ? c.gates[idx - 1] ?? null : before !== null && before === c.gates[c.gates.length - 1] ? before : null;
+            this.leg = { gate: gate.id, from: prev, flown: false, since: null, said: L.said };
+        }
+        const leg = this.leg;
+        const from = leg.from;
+        const quiet = (): void => void (leg.since = null);
+        if (!from) return quiet();
+        const flat: [number, number, number] = [gate.pos[0] - from.pos[0], 0, gate.pos[2] - from.pos[2]];
+        const flatLen = Math.hypot(flat[0], flat[2]);
+        if (flatLen < 0.5) return quiet();
+        const along: [number, number, number] = [flat[0] / flatLen, 0, flat[2] / flatLen];
+        const vAlong = s.vel[0] * along[0] + s.vel[2] * along[2];
+        if (vAlong > WRONG_WAY_MPS) leg.flown = true;
+        const legM = Math.hypot(gate.pos[0] - from.pos[0], gate.pos[1] - from.pos[1], gate.pos[2] - from.pos[2]);
+        const lineUp = lineUpM(legM);
+        const to = [gate.pos[0] - s.pos[0], gate.pos[1] - s.pos[1], gate.pos[2] - s.pos[2]] as const;
+        const ahead = toLocal(gate, s.pos)[2] > 0;
+        if (!leg.flown || !ahead || Math.hypot(to[0], to[1], to[2]) <= lineUp) return quiet();
+        const closing = (p: readonly [number, number, number]): boolean => {
+            const d = [p[0] - s.pos[0], p[1] - s.pos[1], p[2] - s.pos[2]] as const;
+            const n = Math.hypot(d[0], d[1], d[2]);
+            return n > 1e-6 && (s.vel[0] * d[0] + s.vel[1] * d[1] + s.vel[2] * d[2]) / n > WRONG_WAY_MPS;
+        };
+        const front = quatRotate(gate.quat, [0, 0, lineUp]);
+        if (closing([gate.pos[0], gate.pos[1], gate.pos[2]]) || closing([gate.pos[0] + front[0], gate.pos[1] + front[1], gate.pos[2] + front[2]])) return quiet();
+        const nose = headingBasis(s.yawDeg).back;
+        const noseFirst = -(s.vel[0] * nose[0] + s.vel[2] * nose[2]) > WRONG_WAY_MPS;
+        if (!noseFirst || vAlong >= -WRONG_WAY_MPS) return quiet();
+        leg.since ??= s.t;
+        if (s.t - leg.since < WRONG_WAY_S * 1000 || s.t - leg.said < WRONG_WAY_EVERY_S * 1000) return;
+        leg.said = s.t;
+        // the cue points where the gate is (the runner's way.dir), in the craft's heading frame
+        this.p.mode.bridge.engine?.cue({ kind: 'wrong-way', dir: normalize(worldToListener(headingBasis(s.yawDeg), [to[0], to[1], to[2]])) });
+        void this.p.mode.bridge.say({ key: 'fly.wrong-way' }, false, { lesson: true });
     }
 
     /** the page clock when the walls build of a free flight began or last said it goes on; null when no build runs */
@@ -551,7 +608,10 @@ export class LessonHost {
         // lane onecourse (D1): the free flight's target is the next gate of the course in the scene when it has none of its own
         const own = run.target();
         const target = own ?? this.courseTarget();
-        if (!own) this.gateBehind(target, sample.pos);
+        if (!own) {
+            this.gateBehind(target, sample.pos);
+            this.wrongWay(target, sample);
+        }
         // a module-0 scene is the engine's input in place of the craft; else the craft in its world, the next gate its target
         // lane sonic-beacon: and where the target hum points (the target, or the next track point where the goal has no gate or zone)
         const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: run.beaconTarget() } : {}), floorY: this.floorY };
