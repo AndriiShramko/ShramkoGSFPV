@@ -45,7 +45,18 @@ Stage H1-tunis (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
   up; the same kind on a level gate is refused 'same' as before), one undo step. Test tools/bench/test/editor3-h1b.test.ts
   6 tests; NEG OK twice (all six files; editor.ts alone, by AssertionError "expected false to be true"). editor3-h1b,
   editor3-h1, packages/tracks editor.test.ts 18/18; apps/fly and packages/tracks tsc 0.
+- [x] H1.4 gates.py --only vitest,architecture,i18n,b18 on 535fde74 plus the new probe: all PASS (vitest 202 s; logs
+  U:/Temp/gsfpv-gates-20261115-084330).
+- [~] H1.5 (a) in Node: new tools/bench/src/editor3-tunis-check.ts (CDN walls of 887f27aa, transform 1,0,0,0 assumed,
+  fitCourse as the page's worker without the quality box, checkTrack measure=true at marginOf). Seed 1: 19 gates, start
+  clear, 0 refused legs, 0 refused gates: an untouched generated Tunis course of seed 1 PASSES the check in this replica.
+  It took 804 s for one seed (fitCourse ran far past FIT_BUDGET_MS 120 s in Node), so seeds 2 and 3 were stopped
+  (log U:/Temp/gsfpv-train3/editor3/h1/tunis-check.log). Not the page's own seed or transform: the page's course is
+  still to be read through __gsfpvEditView().course (added in 535fde74) in the browser run.
 - [ ] left (next worker, in this order; b, c, d are coded in H1.3, their browser proof is in f):
+  a0. Run seeds 2 and 3 detached (about 14 min each): cd tools/bench; npx tsx src/editor3-tunis-check.ts --seeds 2,3
+     --out U:/Temp/gsfpv-train3/editor3/h1/tunis-check-23.json. In the browser run read __gsfpvEditView().course.problems
+     on the page's own course right after opening the editor (no edit) and write whether it is empty.
   a. Tunis measurement (a): load http://localhost:58xx/en/fly/?scene=887f27aa&nowarn=1&course=g1.<seed> for the page's
      own seed and two more (the probe's Shift+G uses randomSeed(), course.ts 942; a link seed is seedOfLink), open the
      editor, dump the full course (add the course's gates and start to __gsfpvEditView, course.ts 716) and the problems;
@@ -960,6 +971,10 @@ button shows the table.
     leaves (proven). Loading the saved course again: not proven.
 
 ## Cost notes
+
+- H1-tunis pass 2: about 30 replies; the code (b, c, d) took 10, the Node replica of (a) took the rest: one seed of
+  fitCourse ran 804 s in Node, so a measurement of three seeds does not fit a stage; reading the page's own course through
+  the new __gsfpvEditView().course in the browser run would have answered (a) for the real seed in the same run as (f).
 
 - H1-tunis: about 30 replies; the most went to finding where the page's generated course and its seed come from
   (worker.ts, course.ts, tracks-audit.ts) before any measurement; a debug accessor that returns the whole edited course
