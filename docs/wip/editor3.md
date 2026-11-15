@@ -26,8 +26,8 @@ Stage fixes (review EI-1 to EI-7, train 3, 2026-11-15; NOT finished: the code fi
 - [x] EI-7 (minor) stands: frameSel returns true when a glide started or no place is free (D1 keeps the view), false when
   skipped (flying, a drag, the view suspended); framedId is set only on true. Source test EI-7, NEG OK.
 - Checks: vitest tools/bench/test/editor3-* 17 files 98 tests pass; tsc --noEmit apps/fly exit 0, tools/bench exit 0.
-- [ ] left: a6-reference.test.ts (course.ts now calls respawnStart in the edit mode; flight code itself not changed);
-  release build; the editor chain on Wroclaw 70b50d42 and Tunis 887f27aa (editor3-prove.ts, editor3-clean.ts with
+- [x] code fixes committed 93fca2b2; a6-reference.test.ts exit 0 (1 passed) after them.
+- [ ] left: release build; the editor chain on Wroclaw 70b50d42 and Tunis 887f27aa (editor3-prove.ts, editor3-clean.ts with
   &probe=1) with the pictures again: check a click on gate 2 beside the framed gate 1 on Wroclaw (EI-1), Tab to a red gate
   frames it (EI-2), the turn rings stay shown and the taken one yellow in an edge-on drag (EI-3), the mode line after a
   crash in the test flight says DISARMED or ARMED (EI-5); then gates.py --only vitest,architecture,i18n,b18.
