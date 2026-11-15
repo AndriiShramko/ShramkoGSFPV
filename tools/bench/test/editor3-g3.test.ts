@@ -31,6 +31,7 @@ describe('editor3 G3', () => {
     });
 
     it('the probes read who held the camera from __gsfpvEditView', () => {
-        expect(course).toMatch(/camTaken, crashCleared, crashActive: ctx\.crash\.active, override: ctx\.session\.cameraOverride/);
+        // I2 put the drone's place (drone: [...]) between crashActive and override
+        expect(course).toMatch(/camTaken, crashCleared, crashActive: ctx\.crash\.active, (drone: [^\n]*?, )?override: ctx\.session\.cameraOverride/);
     });
 });

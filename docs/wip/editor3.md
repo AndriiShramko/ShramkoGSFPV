@@ -57,7 +57,39 @@ Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
     (credit readable on two lines; the top bar hides 'Walls 5 cm', left a).
   - kbd (D8): Space armed in 287 ms, Space tap disarmed in 14 ms and the edit view came back (mode edit). The gate did NOT
     come ahead: course.next stayed 0 (left c).
-- [ ] I2.3 left, in this order (pass 2 found a to c in the run above; the old a to c are done in I2.4):
+- [x] I2.6 (pass 3) a, b, c in 5457e113 and 5a9144e8; gates fix below. a: top-bar.ts place() writes the lowest bottom of
+  '.attribution' and [data-testid=walls-box] (+4 px) to --ce-below on show, resize, ResizeObserver and flying(); editor.css
+  (max-height 500px) .ce-topbar top = max(top row + 4, --ce-below). b: .next-hint (ui/next-hint.ts) in the D5 hide list.
+  c: probe kbd: height first (Space held gap / 4.2 s, 300 ms to 1 s, an estimate from runs 1 and 2: 3.8 m per about 900 ms
+  held), Shift down, W only within 0.6 m of the gate's height, E when the gate is behind. The guess of pass 2 was wrong:
+  arming did not move the drone (droneArmed [0,2,0] = the pose before); the probe never turned to the gate. Checks:
+  editor3-i2.test.ts 7 pass, NEG OK (neg_control.py ref HEAD, top-bar.ts editor.css); apps/fly and tools/bench tsc 0.
+  Release build of 5457e113's tree exit 0 (i2/build-p3.log). Runs (i2/after3, i2/after3-run1):
+  - Tunis 887f27aa (lock 12:30:47-12:32:46, after3-run1/clean.json): 1920 edit, refused 1 s and 10 s, after M, after the
+    pad flight, after a crash and 5 s later: no flight part shown (nextHint 0 too); top bar one line, covers nothing. After
+    Exit: hint, thr, keys, volt, lap, nextHint back. 844x390: top bar [8,123,381,52] under the credit [16,44,396,75] and
+    the Walls summary [16,79,396,40], covers nothing, buttons 44x44; flight parts 0 in edit, back after Exit.
+  - Tunis kbd (lock 12:33:29-12:34:04, after3-run1/clean-tunis-kbd-run2.json): Space armed 277 ms, climbed ALT 0 to 3.8 m,
+    course.next 0 to 1 at step 17, Space tap disarmed 283 ms, mode edit, no flight part after.
+  - Wroclaw 70b50d42 (lock 12:34:33-12:37:05 and 12:49:25-12:51:48, after3/clean-70b50d42.json, first run
+    after3-run1/clean-70b50d42-run2.json): edit, refused 1 s and 10 s, after M, after the pad flight: no flight part, top
+    bar one line. Phone: top bar [8,105,381,52] under credit [16,44,378,57] and Walls [16,61,378,40], covers nothing. kbd:
+    armed 293 ms, course.next 0 to 1 (second approach, step 49), disarm 46 ms, mode edit.
+  - Pictures looked at: editor3-844.png ('Walls 5 cm' and the credit readable, the bar under them),
+    editor3-after-crash-1920.png and editor3-after-flight-1920.png (Tunis: no crash card, no next-scene hint, no flight part).
+  - gates.py --only vitest,architecture,i18n,b18 on 5a9144e8: architecture, i18n, b18 PASS; vitest 5012 pass, 1 fail:
+    editor3-g3.test.ts (its regex did not allow the drone field a11f109d put into __gsfpvEditView); fixed in the test, that
+    file and editor3-i2 10 pass; the full vitest was not run again.
+- [ ] I2.7 left (pass 3):
+  a. Wroclaw crash in the test flight not produced: 15 s of full pitch and throttle, then 12 s throttle down and full pitch
+     met nothing (crashActive false, mode fly); so Wroclaw afterCrash and afterExit rows were taken while flying. Guess, not
+     measured: open sky over the stand-in walls and a soft ground. The crash proof stands on Tunis only.
+  b. The Wroclaw pictures (editor3-*-70b50d42.png of this run) not looked at.
+  c. Wroclaw kbd: in the first approach the drone passed beside the gate (screen x 3485 at depth 0), stopped for 15 steps
+     at 0 m/s still in mode fly (THR 37-56 %), then was at the start again; probe or sim, not looked into.
+  d. The full vitest once more after the editor3-g3 test fix; 'What the owner does' item 9 (Space held climbs, a tap goes
+     back to editing) not written yet.
+- [x] I2.3 (pass 2 left list; a, b, c done in I2.6, d done in I2.6 except I2.7 a to c, e: I2.7 d):
   a. Phone: the top bar [8,82,381,52] covers the Walls chip's summary [16,79,396,40] ('summary.' in covers) and touches the
      credit [16,44,396,75] (two lines, ends at 119). Put the top bar below the bottom of '.attribution' and
      [data-testid=walls-box] (measure in top-bar.ts on show and on resize into a CSS variable used by the
@@ -1430,3 +1462,6 @@ button shows the table.
 - H2 pass 2: about 27 replies; the most went to reading PlayCanvas gizmo internals to guess the Size fault and to 16 minutes
   in the GPU lock queue; a short REPRO run with each gizmo's own state in the debug hook answered it in one run, and should
   have been the first step.
+- I2 pass 3: about 31 replies; the most went to three keyboard-flight runs that tuned the probe's height control and a
+  10-minute GPU lock wait; logging the climb per held second in the first run (one short calibration flight) would have
+  saved a run, and the gates subset run before the browser runs would have caught the stale editor3-g3 regex earlier.
