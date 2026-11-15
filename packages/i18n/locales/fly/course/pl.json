@@ -7,6 +7,7 @@
   "course.hud.lap": "Okrążenie {n} z {of}",
   "course.hud.next": "Bramka {n} z {of}",
   "course.hud.guide": "Bramka {n} · {m} m",
+  "course.hud.guideRole": "{role} · {m} m",
   "course.hud.last": "Ostatnie {time}",
   "course.hud.best": "Najlepsze {time}",
   "course.generating": "Buduję trasę w wolnej przestrzeni tego skanu...",

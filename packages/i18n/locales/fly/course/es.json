@@ -7,6 +7,7 @@
   "course.hud.lap": "Vuelta {n} de {of}",
   "course.hud.next": "Puerta {n} de {of}",
   "course.hud.guide": "Puerta {n} · {m} m",
+  "course.hud.guideRole": "{role} · {m} m",
   "course.hud.last": "Última {time}",
   "course.hud.best": "Mejor {time}",
   "course.generating": "Creando un circuito en el espacio libre de este escaneo...",

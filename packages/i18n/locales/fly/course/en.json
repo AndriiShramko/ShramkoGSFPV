@@ -7,6 +7,7 @@
   "course.hud.lap": "Lap {n} of {of}",
   "course.hud.next": "Gate {n} of {of}",
   "course.hud.guide": "Gate {n} · {m} m",
+  "course.hud.guideRole": "{role} · {m} m",
   "course.hud.last": "Last {time}",
   "course.hud.best": "Best {time}",
   "course.generating": "Building a course in the free space of this scan...",

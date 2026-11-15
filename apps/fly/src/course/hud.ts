@@ -9,8 +9,8 @@ import type { Box, GuideAim } from './guide';
 import './hud.css';
 
 import { lapClock } from './hud-clock';
-import { CARD_HOLD_MS, SPLASH_FADE_MS, SPLASH_HOLD_MS, splashAlpha } from './finish';
-import type { LapSplash, LapSplashMode, ResultsCard } from './finish';
+import { CARD_HOLD_MS, SPLASH_FADE_MS, SPLASH_HOLD_MS, guideLabel, splashAlpha } from './finish';
+import type { GateRole, LapSplash, LapSplashMode, ResultsCard } from './finish';
 export { lapClock };
 
 /** what the lap's splash and the results card show now (the page hook course.splash; probes read it) */
@@ -142,7 +142,7 @@ export class CourseHud {
      * The guide to the next gate (`gate`, 0-based) for `a` (course/guide.ts aimOf), or none. Writes to the DOM only when the text
      * or the turn changes; moves by a transform, and only when the place moved by a whole pixel.
      */
-    guide(a: GuideAim | null, gate: number): void {
+    guide(a: GuideAim | null, gate: number, role: GateRole = null): void {
         const st = this.guideState;
         if (!a || a.hide || this.el.hidden) {
             if (!this.guideEl.hidden) this.guideEl.hidden = true;
@@ -164,7 +164,7 @@ export class CourseHud {
             this.guideTurn = turn;
             fresh = true;
         }
-        const text = t('course.hud.guide', { n: gate + 1, m: a.metres });
+        const text = guideLabel(gate, a.metres, role, t);
         if (text !== this.guideKey) {
             this.guideText.textContent = text;
             this.guideKey = text;

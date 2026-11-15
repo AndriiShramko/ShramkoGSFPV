@@ -20,6 +20,8 @@ const SIZES = (process.env.SIZES || '1920x1080').split(',').map((s) => { const [
 const LAPS = Number(process.env.LAPS || 3);
 const SCALE = process.env.SCALE ? Number(process.env.SCALE) : null;
 const OFF = process.env.OFF === '1';
+// course5 Z1: the number of lap ends to fly (each at the next size of SIZES), whatever the course's laps
+const ENDS = Number(process.env.ENDS || SIZES.length);
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 
@@ -89,7 +91,10 @@ const SPLASH = () => {
     const t = el ? el.querySelector('.course-splash-time') : null;
     const cs = el ? getComputedStyle(el) : null;
     const laps = el ? [...el.querySelectorAll('.course-card-lap')].map(box) : [];
-    return { sp: c.splash(), rect: box(el), time: box(t), fs: t ? parseFloat(getComputedStyle(t).fontSize) : null, color: t ? getComputedStyle(t).color : null, opacity: cs ? cs.opacity : null, display: cs ? cs.display : null, pe: cs ? cs.pointerEvents : null, lapRects: laps, text: el ? el.textContent : null, clock: c.clockText(), last: c.lastLapMs, best: c.bestLapMs, laps: c.laps, W: innerWidth, H: innerHeight };
+    const hudEl = document.querySelector('[data-testid=course-hud]');
+    const hcs = hudEl ? getComputedStyle(hudEl) : null;
+    const clockShown = !!(hcs && hcs.display !== 'none' && hcs.visibility !== 'hidden' && Number(hcs.opacity) > 0);
+    return { clockRect: box(hudEl), clockShown, sp: c.splash(), rect: box(el), time: box(t), fs: t ? parseFloat(getComputedStyle(t).fontSize) : null, color: t ? getComputedStyle(t).color : null, opacity: cs ? cs.opacity : null, display: cs ? cs.display : null, pe: cs ? cs.pointerEvents : null, lapRects: laps, text: el ? el.textContent : null, clock: c.clockText(), last: c.lastLapMs, best: c.bestLapMs, laps: c.laps, W: innerWidth, H: innerHeight };
 };
 
 const rot = (q, v) => { // q = [w, x, y, z]
@@ -139,8 +144,21 @@ try {
         r.secondS = r2((Date.now() - t0) / 1000);
         r.sizeAfter = await ev(() => (window.__gsfpv.scale ? window.__gsfpv.scale.size() : null));
     }
-    r.seed = c.seed;
     if (!(c.gates > 0)) throw new Error('no course: ' + c.problem);
+    // course5 Z1: CLOSED=1 presses Shift+G again (a new random seed) until the course is closed (laps > 1), at most 8 times:
+    // an open course ends every run with the card, so the lap splash is never seen
+    if (process.env.CLOSED === '1') {
+        r.tries = [];
+        for (let i = 0; i < 8; i++) {
+            const now = await ev(() => { const k = window.__gsfpv.course; return { seed: k.seed, laps: k.track ? k.track.laps : null, gates: k.gates }; });
+            r.tries.push(now);
+            if (now.laps > 1) break;
+            await page.keyboard.press('Shift+KeyG');
+            c = await until(page, want, (v) => (v.seed !== now.seed && v.gates > 0 && v.drawn > 0) || !!v.problem, 420000, 500);
+            if (!(c.gates > 0)) throw new Error('no course on try ' + i + ': ' + c.problem);
+        }
+    }
+    r.seed = c.seed;
     await page.waitForTimeout(3500);
     r.install = await ev(INSTALL);
     const UNIT = await ev(() => (window.__gsfpv.session.transform ? window.__gsfpv.session.transform.s : 1)) || 1;
@@ -176,12 +194,14 @@ try {
     const signs = await ev(SIGNS);
     const near = (s) => len(sub(s.pos, g0.pos));
     r.at60 = signs.signs ? { ...signs, signs: signs.signs.filter((s) => s.name === 'course-banner').sort((a, b) => near(a) - near(b)).slice(0, 1).map((s) => ({ w: r2(s.w), h: r2(s.h), x0: r2(s.x0), y0: r2(s.y0), behind: s.behind })) } : signs;
+    // course5 Z1: the guide's screen label from 60 m (it names START / FINISH, the banner is too small at that distance)
+    r.guide60 = await ev(() => { const e = document.querySelector('.course-guide-text'); const b = e && e.getBoundingClientRect(); return e ? { text: e.textContent, hidden: !!e.closest('[hidden]'), w: Math.round(b.width), h: Math.round(b.height), fs: parseFloat(getComputedStyle(e).fontSize) } : null; });
     await shot(`course4-start-60m-${name}`);
     r.afterPictures = await ev(() => ({ clock: window.__gsfpv.course.clockText(), next: window.__gsfpv.course.next, laps: window.__gsfpv.course.laps }));
     await go(side, side, yawTo([-z0[0], 0, -z0[2]]));
     // laps: gate 1, every gate, ... gate 1 again at each lap end
     const order = [];
-    for (let l = 0; l < LAPS; l++) for (let k = 0; k < poses.length; k++) order.push(k);
+    for (let l = 0; l <= Math.max(LAPS, ENDS); l++) for (let k = 0; k < poses.length; k++) order.push(k);
     order.push(0);
     r.ends = [];
     r.passes = 0;
@@ -203,7 +223,7 @@ try {
         const laps = await ev(() => window.__gsfpv.course.laps);
         if (laps > before) {
             const s = await ev(SPLASH);
-            const tag = `${name}-lap${laps}`;
+            const tag = `${name}-e${r.ends.length + 1}-${s.W}x${s.H}`;
             await shot(`course4-${s.sp.kind === 'card' ? 'finish-card' : 'lap-splash'}-${tag}`);
             const H = s.H;
             const rect = s.rect;
@@ -220,10 +240,17 @@ try {
                 clockHasIt: !!(s.clock && s.sp.text && s.clock.includes(s.sp.text)), clock: (s.clock || '').slice(0, 120), cardText: s.sp.kind === 'card' ? (s.text || '').slice(0, 200) : undefined,
             });
             lap = laps;
-            // fades: the splash is gone after its hold and fade
-            if (laps === 1) { await page.waitForTimeout(2200); r.ends[r.ends.length - 1].after2s = await ev(() => { const c = window.__gsfpv.course.splash(); return { kind: c.kind, alpha: Math.round(c.alpha * 100) / 100 }; }); }
-            if (lap < LAPS) await page.setViewportSize(SIZES[Math.min(lap, SIZES.length - 1)]);
-            if (lap >= LAPS) break;
+            const e = r.ends[r.ends.length - 1];
+            e.clockShownWithSplash = s.clockShown;
+            // course5 Z1: when the splash or card is gone, measured in page time from its opening (a screenshot of a big scan
+            // takes about a second, so a fixed wait after it measured the wrong span); then the clock's block where it stands
+            const gone = await until(page, () => { const k = window.__gsfpv.course.splash(); return { kind: k.kind, since: Math.round(performance.now() - k.at) }; }, (v) => v.kind === 'none', 8000, 50);
+            e.goneAfterMs = gone.kind === 'none' ? gone.since : null;
+            const ck = await ev(SPLASH);
+            const cr = ck.clockRect;
+            e.clockAfter = { shown: ck.clockShown, rect: cr && { x: r2(cr.x), y: r2(cr.y), w: r2(cr.w), h: r2(cr.h) }, middleThirdFree: cr ? cr.y + cr.h <= ck.H / 3 + 0.5 || cr.y >= (2 * ck.H) / 3 - 0.5 : null, insideWidth: cr ? cr.x >= -0.5 && cr.x + cr.w <= ck.W + 0.5 : null };
+            if (r.ends.length < ENDS) await page.setViewportSize(SIZES[Math.min(r.ends.length, SIZES.length - 1)]);
+            if (r.ends.length >= ENDS) break;
         }
         // S2: the next gate in lap 2, from the gate just passed
         if (lap === 1 && k === 3 && poses.length > 5 && !r.nextShot) {
@@ -241,5 +268,5 @@ try {
 writeFileSync(outFile, JSON.stringify(r, null, 1));
 await ctx.close();
 await browser.close();
-console.log(JSON.stringify({ id: r.id, scale: r.scale, firstProblem: r.firstProblem, sizeAfter: r.sizeAfter, seed: r.seed, unit: r.unit, gates: r.gates, laps: r.closed, look: r.look, before: r.before && r.before.clock, at60: r.at60 && r.at60.signs, ends: (r.ends || []).map((e) => [e.lap, e.size, e.kind, e.text, e.delta, e.tone, e.shown, e.centreShare, e.fontShare, e.middleThirdFree, e.insideWidth, e.lapsInside, e.clockHasIt]), crashes: r.crashes, errors: r.errors.length, fail: r.fail }));
+console.log(JSON.stringify({ id: r.id, scale: r.scale, firstProblem: r.firstProblem, sizeAfter: r.sizeAfter, seed: r.seed, unit: r.unit, gates: r.gates, laps: r.closed, look: r.look, before: r.before && r.before.clock, at60: r.at60 && r.at60.signs, tries: r.tries, guide60: r.guide60, ends: (r.ends || []).map((e) => [e.lap, e.size, e.kind, e.text, e.lastText, e.delta, e.tone, e.shown, e.centreShare, e.fontShare, e.middleThirdFree, e.insideWidth, e.lapsInside, e.clockShownWithSplash, e.goneAfterMs, e.clockAfter && e.clockAfter.middleThirdFree]), crashes: r.crashes, errors: r.errors.length, fail: r.fail }));
 process.exit(r.fail || !(r.ends && r.ends.length) ? 1 : 0);

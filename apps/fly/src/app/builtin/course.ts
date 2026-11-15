@@ -23,7 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { courseElements, gateRoles, lapEnd, lapSplashMode, noCourseSize } from '../../course/finish';
+import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -226,7 +226,7 @@ export const course: Feature = {
             const done = !v.running && v.laps >= v.lapsPerRun;
             const g = run.gates[target];
             const cam = done || !g ? null : guideCamera();
-            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target);
+            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target, gateRole(target, run.gates.length, run.track.laps > 1));
             sync();
         };
         /** the drawn camera in the flown world (the gates are drawn at their flown places, course/view.ts) */

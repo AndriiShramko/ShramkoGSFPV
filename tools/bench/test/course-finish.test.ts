@@ -121,3 +121,27 @@ describe('course4 review CU-1 and CU-2: the merge seams with lane onecourse', ()
         expect(src).toMatch(/sayLine\(end\.spoken\)/);
     });
 });
+
+describe('course5 Z1: the guide names START / FINISH on the screen (the 3D banner is 16 px wide from 60 m)', () => {
+    const en = JSON.parse(readFileSync(new URL('../../../packages/i18n/locales/fly/course/en.json', import.meta.url), 'utf8')) as Record<string, string>;
+    const tr = (k: string, vars?: Record<string, string | number>): string => (en[k] ?? k).replace(/\{(\w+)\}/g, (_, n: string) => String(vars?.[n] ?? ''));
+    const f = finish as unknown as Record<string, unknown>;
+    it('the label of a gate with a role says the role, the others their number', () => {
+        expect(typeof f['guideLabel']).toBe('function');
+        const label = f['guideLabel'] as (g: number, m: number, r: string | null, t: typeof tr) => string;
+        const role = f['gateRole'] as (i: number, n: number, closed: boolean) => string | null;
+        expect(label(0, 60, role(0, 30, true), tr)).toBe('START / FINISH · 60 m');
+        expect(label(0, 60, role(0, 30, false), tr)).toBe('START · 60 m');
+        expect(label(29, 12, role(29, 30, false), tr)).toBe('FINISH · 12 m');
+        expect(label(4, 20, role(4, 30, false), tr)).toBe('Gate 5 · 20 m');
+        for (const closed of [true, false]) for (const n of [1, 2, 7]) expect(Array.from({ length: n }, (_, i) => role(i, n, closed))).toEqual(gateRoles(n, closed));
+    });
+    it('the page passes the role of the guided gate', () => {
+        const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
+        expect(src).toMatch(/hud\.guide\([^\n]*gateRole\(target, run\.gates\.length, run\.track\.laps > 1\)\)/);
+        for (const l of ['en', 'es', 'pl', 'ru']) {
+            const j = JSON.parse(readFileSync(new URL(`../../../packages/i18n/locales/fly/course/${l}.json`, import.meta.url), 'utf8')) as Record<string, string>;
+            expect(j['course.hud.guideRole']).toMatch(/\{role\}.*\{m\}/);
+        }
+    });
+});

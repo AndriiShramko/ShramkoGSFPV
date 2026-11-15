@@ -25,14 +25,24 @@ export type GateRole = 'start' | 'finish' | 'startFinish' | null;
  */
 export function gateRoles(gates: number, closed: boolean): GateRole[] {
     const out: GateRole[] = new Array<GateRole>(Math.max(0, gates)).fill(null);
-    if (gates <= 0) return out;
-    if (closed || gates === 1) {
-        out[0] = 'startFinish';
-        return out;
-    }
-    out[0] = 'start';
-    out[gates - 1] = 'finish';
+    for (let i = 0; i < out.length; i++) out[i] = gateRole(i, gates, closed);
     return out;
+}
+
+/** the role of gate `i` alone (gateRoles without the array: the guide asks it every frame) */
+export function gateRole(i: number, gates: number, closed: boolean): GateRole {
+    if (gates <= 0 || i < 0 || i >= gates) return null;
+    if (closed || gates === 1) return i === 0 ? 'startFinish' : null;
+    return i === 0 ? 'start' : i === gates - 1 ? 'finish' : null;
+}
+
+/**
+ * Course5 Z1: the guide's screen label names the gate's role (START, FINISH, START / FINISH) instead of its number. The
+ * 3D banner over the gate measured 16.4 x 5.2 px from 60 m at 1920x1080 (course-finish-probe.mjs, Wroclaw 70b50d42): too
+ * small to read, so the label on the screen says it at any distance.
+ */
+export function guideLabel(gate: number, metres: number, role: GateRole, tr: (key: string, vars?: Record<string, string | number>) => string): string {
+    return role ? tr('course.hud.guideRole', { role: tr(`course.gate.${role}`), m: metres }) : tr('course.hud.guide', { n: gate + 1, m: metres });
 }
 
 /** 'Lap time on screen' (S4): large by default */
