@@ -214,8 +214,13 @@ for (const id of idsArg.split(',')) {
         const eye = [g0.pos[0] + zAx[0] * 6, g0.pos[1] + zAx[1] * 6, g0.pos[2] + zAx[2] * 6];
         const flip = (q) => [-q[2], q[3], q[0], -q[1]]; // q * (0, 1, 0, 0): yaw by 180 degrees about the gate's own Y
         for (const [tag, q] of [['pilot', g0.quat], ['pilot-b', flip(g0.quat)]]) {
-            await ev(([p, qq]) => { const cp = window.__cp; cp.p = p; cp.q = qq; cp.mode = 'hold'; }, [eye, q]);
+            // F4-prove: a 'hold' set on a craft resting at the spawn did not move it (both pictures showed the spawn);
+            // a short led line ending at the eye point lifts it first, then it holds there
+            const from = [eye[0] + zAx[0], eye[1] + zAx[1] + 0.5, eye[2] + zAx[2]];
+            await ev(([a, b, qq]) => { const cp = window.__cp, s = window.__gsfpv.session; cp.q = qq; cp.a = a; cp.b = b; cp.t0 = s.sim.tick; cp.v = 4; cp.mode = 'line'; }, [from, eye, q]);
+            await until(() => window.__cp.mode, (m) => m === 'hold', 5000, 100);
             await page.waitForTimeout(1500);
+            r[`${tag}At`] = await ev(() => { const s = window.__gsfpv.session.sim.s; return [s[0], s[1], s[2]].map((v) => +v.toFixed(2)); });
             await page.screenshot({ path: `${shots}/course3-${name}-${tag}.png` });
         }
         // through gates 1..3
@@ -282,7 +287,9 @@ for (const id of idsArg.split(',')) {
             const c = await until(() => { const c = window.__gsfpv.course; return { seed: c.seed, gates: c.gates, drawn: c.drawn }; }, (v) => v.seed !== seed0 && v.gates > 0 && v.drawn > 0, 180000, 250);
             const ps = await ev(() => window.__gsfpv.course.gatePoses());
             let span = 0; for (const a of ps) for (const b of ps) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));
-            r.regen.push({ seed: c.seed, gates: ps.length, spanM: +span.toFixed(1), s: +((Date.now() - tg) / 1000).toFixed(1), yRange: ps.length ? [Math.min(...ps.map((p) => p.pos[1])), Math.max(...ps.map((p) => p.pos[1]))].map((v) => +v.toFixed(1)) : null });
+            const hs = await ev((pp) => { const col = window.__gsfpv.session.collision; return pp.map((p) => { const h = col.queryRay(p.pos[0], p.pos[1], p.pos[2], 0, -1, 0, 80); return h ? +(p.pos[1] - h.y).toFixed(2) : null; }); }, ps);
+            const hv = hs.filter((v) => v !== null);
+            r.regen.push({ seed: c.seed, gates: ps.length, spanM: +span.toFixed(1), aboveGround: hv.length ? [Math.min(...hv), Math.max(...hv)] : null, noGround: hs.length - hv.length, s: +((Date.now() - tg) / 1000).toFixed(1), yRange: ps.length ? [Math.min(...ps.map((p) => p.pos[1])), Math.max(...ps.map((p) => p.pos[1]))].map((v) => +v.toFixed(1)) : null });
         }
     } catch (e) { r.fail = String(e).slice(0, 240); }
     out.push(r);
