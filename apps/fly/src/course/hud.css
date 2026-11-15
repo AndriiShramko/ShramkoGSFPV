@@ -121,6 +121,9 @@
 }
 .course-card-lap {
     font-weight: 600;
+    /* course4 review CU-8: the laps wrap inside a narrow (portrait) view instead of running off both sides */
+    max-width: 92vw;
+    white-space: normal;
 }
 .course-splash[hidden],
 .course-splash.course-covered,

@@ -1,7 +1,25 @@
 // Lane course4, stage C1-start-finish: the pure parts of apps/fly/src/course/finish.ts (lead decisions S1, S4, S5).
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import * as finish from '../../../apps/fly/src/course/finish';
 import { CARD_HOLD_MS, LAP_SPLASH_DEFAULT, LAP_SPLASH_MODES, SPLASH_FADE_MS, SPLASH_HOLD_MS, gateRoles, lapSplash, lapSplashMode, resultsCard, splashAlpha } from '../../../apps/fly/src/course/finish';
 import { SCHEMA } from '../../../packages/prefs/src';
+
+describe('course4 review CU-4: no course at a Scene size leads to one that gives a course', () => {
+    it('names a measured Scene size and the four locales say it with the press', () => {
+        const to = (finish as { noCourseSize?: (s: number) => number }).noCourseSize;
+        expect(typeof to).toBe('function');
+        // Forest Floor ab5efa0e: none at x15, x20, x100 (gate-place-audit); courses at x10 and x1
+        expect([15, 20, 100].map((s) => to!(s))).toEqual([10, 10, 10]);
+        expect([0.5, 3, 10].map((s) => to!(s))).toEqual([1, 1, 1]);
+        expect(to!(1)).toBe(2);
+        for (const lang of ['en', 'es', 'pl', 'ru']) {
+            const loc = JSON.parse(readFileSync(new URL(`../../../packages/i18n/locales/fly/course/${lang}.json`, import.meta.url), 'utf8')) as Record<string, string>;
+            expect(loc['course.noneResize']).toMatch(/Shift\+G[^]*x\{to\}/);
+            expect(loc['course.noneResize']).toContain('x{s}');
+        }
+    });
+});
 
 describe('course4 C1: the setting Lap time on screen in the settings schema (S4)', () => {
     it('is a Display setting with the three values of finish.ts, large by default, shown in Settings', () => {

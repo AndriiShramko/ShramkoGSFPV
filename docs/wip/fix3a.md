@@ -1070,7 +1070,8 @@ Pass 2 (logs U:/Temp/gsfpv-train3/course4/c4p2/):
 - At the end of a lap the lap time shows large in the upper middle for about 1.5 s: green when it is a new best.
 - After the last lap a results card shows for about 3 s.
 - In the course part of the settings: 'Lap time on screen: large, small, off'.
-- On a scan made bigger with Scene size (the microgreens scan) the gates grow with it.
+- On a scan made bigger with Scene size (the microgreens scan) the gates keep the craft's size; where no course fits at
+  that Scene size (Forest Floor x15, x20, x100), the line names a size that gives one and the next Shift+G sets it and builds.
 - A Shift+G course mixes rings, squares, cube frames, tunnels of 3-5 gates and a square lying flat to climb through,
   where the space allows; every one of them counts when flown through (seen in the page on Wroclaw and Winter Garden).
 - Fly by Sound makes its course of single upright gates only.
@@ -1083,3 +1084,55 @@ Cost (course4 C4 pass 2): about 33 replies; the most went to reading the sonic r
 Cost (course4 C4): about 29 replies; the most went to finding that the walk lays rings only (the first design converted
 only squares into cubes and flat squares and placed none). Reading the audit's per-gate kinds before designing would have
 saved 3.
+
+## Status course4 fixes (review CU-1 to CU-10)
+
+Logs U:/Temp/gsfpv-train3/course4/cu/. No browser run in this stage (budget went to the merge and the four majors).
+- [x] CU-1 and CU-2 stand: merged origin/main (42 commits) into fix3a, commit dd19ca7b. Conflicts in course.ts frame() and
+      the four course locales resolved keeping both: splash and card, plus sayLine of the lap line (at the end: the line,
+      the card's title and total). course.readySpoken names START in en/es/pl/ru. generate() sends elements: !ctx.sonic, so
+      Shift+G and hook.sound.generate in Fly by Sound get single upright gates. Typecheck fly exit 0. Not tested by a unit
+      test (course.ts is the page feature); the R11 ear pilot was NOT rerun on the merged head.
+- [x] CU-3 stands: GENERATOR_VERSION_QUALITY '4' (C0's courses are other gates than version 3 on main for the same seed;
+      bestKey's '.g<major>' splits them); '.e1' is set only when the elements changed the course; bestKey appends '.e<n>'.
+      Tests tools/bench/test/tracks-review.test.ts (keys, and '.e1' iff composed on threeRooms seeds 1-6) NEG OK against
+      link.ts + generate.ts of dd19ca7b. Commit 95be1c07.
+- [x] CU-5 stands: fitCourse below step 1 stops only at a course of its full share (fullOf); else the next step is tried
+      and the course with more gates kept; step 1 keeps FY-1 (street rows unchanged by construction). Test fit.test.ts
+      (fake counts 7, 10 -> 10 at step 0.4) NEG OK ('expected 7 to be 10'). packages/tracks + tracks-review + tracks-finish
+      153 tests passed; typecheck tracks exit 0. Commit 95be1c07. The catalogue table was NOT rerun.
+- [x] CU-4 stands, measured on HEAD sources of dd19ca7b (gate-place-audit --scenes ab5efa0e --scale s --seeds 5,
+      cu/s*.json; one run per scale, the comma list throws 'scene scale NaN'): x15 0 gates, x20 0, x30 24 gates at step 2/3
+      (proven, problems 0), x100 0, for every seed. (The x20 to x100 runs overlapped the CU-3/CU-5 edits and the negative
+      controls' file swaps: which code each loaded is not certain.) Built: a 'no course' line course.noneResize names the
+      Scene size, and the next Shift+G sets it (hook.scale.set), waits for scale.ts pending to settle (at most 10 s) and
+      builds; finish.ts noCourseSize: over x10 -> x10, other than x1 -> x1, x1 -> x2 (x2 an estimate). Test
+      course-finish.test.ts NEG OK. The owner text above now says gates keep the craft's size.
+- [x] CU-8: .course-card-lap max-width 92vw, white-space normal (not seen in a browser).
+- [ ] CU-6 (blocker) browser proof of S1 to S6 on Wroclaw and Tunis: NOT done; see Left.
+- [ ] CU-7, CU-9, CU-10: not fixed; see Left and For the lead.
+
+## Left (course4 fixes)
+
+1. CU-6: release build of the head; serve dist on 5780 with dist/walls = U:/Temp/gsfpv-train3/walls/release; on Wroclaw
+   70b50d42 and Tunis 887f27aa at 1920x1080, 1280x720, 844x390: checkered frame, banner, ground line, plate, splash (=
+   clock to 0.01 s), the 'off' setting, card (also 390x844 for CU-8), middle-third rectangles; pictures course4-start-gate,
+   -next-gate, -lap-splash, -finish-card, -844 in U:/Temp/gsfpv-train3/shots; measure the banner's pixels from 60 m.
+   Then the two-lap proof on Wroclaw and on Forest Floor ab5efa0e (x1 and x20: the line course.noneResize and the press).
+2. Rerun the R11 ear pilot (sonic-int-review.ts r11, Tunis) on the merged head (CU-1).
+3. Rerun the catalogue table (gate-place-audit --seeds 3) for CU-5: street rows at step 1 must equal c3p2/after2.json;
+   ab5efa0e at x1 should keep at least 10 gates.
+4. Forest Floor x15, x20, x100 still lay no course (walk empty, C2 Left item 1); the line now leads to x10.
+5. CU-10: editor show() without roles and the lime plate on the selected gate (course.ts showEd, view.ts setNext): pass
+   roles to the editor's show() and a flag that skips the plate.
+6. CU-9: fly the flat-square climb (FLAT_FWD_M 1.5, FLAT_RISE_M 2.5) by a stick pilot; not proven.
+
+## For the lead (course4 fixes)
+
+- CU-7: the ladder's last step is sized for the smallest craft (boundRadius 0.0425 m: ring 0.36 m, square 0.45 m);
+  taurusx8 (boundRadius 0.3175 m) cannot pass those in a small room. The job carries no drone; passing the drone's
+  boundRadius in CourseJob is the fix if the lead wants it per craft.
+- Merge of origin/main is in fix3a (dd19ca7b): the integration's merge should be clean for course.ts and the locales.
+
+Cost (course4 fixes): about 30 replies; the most went to the merge and the four majors with tests; the browser proof
+(CU-6) did not fit. A stage of its own for the browser proof, started with the release build, would fit it.

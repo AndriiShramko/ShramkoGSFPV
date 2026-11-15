@@ -23,7 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { gateRoles, lapSplash, lapSplashMode, resultsCard } from '../../course/finish';
+import { gateRoles, lapSplash, lapSplashMode, noCourseSize, resultsCard } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -271,6 +271,8 @@ export const course: Feature = {
             hook.progress = null;
         };
 
+        /** course4 review CU-4: the Scene size the next generate() sets first (after a 'no course fits') */
+        let resizeTo: number | null = null;
         const fail = (problem: string, text: string): void => {
             stopProgress();
             hook.problem = problem;
@@ -339,7 +341,15 @@ export const course: Feature = {
                 ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
                 return;
             }
-            if (!m.track) return fail(m.short ? 'too few gates' : 'nothing fits', t('course.none'));
+            if (!m.track) {
+                // course4 review CU-4: no dead end; the line names the Scene size the next Shift+G sets, and that press sets it
+                // and builds again (Forest Floor at x15, x20, x100 gave no course for any seed)
+                const sc = ctx.hook.scale;
+                const size = sc ? sc.size() : 1;
+                resizeTo = sc ? noCourseSize(size) : null;
+                const x = (v: number): string => String(Math.round(v * 100) / 100);
+                return fail(m.short ? 'too few gates' : 'nothing fits', resizeTo !== null ? t('course.noneResize', { s: x(size), to: x(resizeTo) }) : t('course.none'));
+            }
             const tr = m.track;
             const mine = job;
             const show = (): void => {
@@ -441,6 +451,19 @@ export const course: Feature = {
         };
 
         const generate = (seed: number): void => {
+            // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
+            // scene has it (scale.ts pending), then builds
+            const sc = ctx.hook.scale;
+            if (resizeTo !== null && sc && !busy) {
+                const to = resizeTo;
+                resizeTo = null;
+                sc.set(to);
+                const wait = (n: number): void => {
+                    if (sc.pending() !== 1 && n < 50) return void window.setTimeout(() => wait(n + 1), 200);
+                    generate(seed);
+                };
+                return wait(0);
+            }
             const s = ctx.session;
             const w = walls();
             if (!w) return wallsFirst(() => generate(seed));
