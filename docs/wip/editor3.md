@@ -29,20 +29,59 @@ Stage I1-gizmo (train 3, 2026-11-15):
   - Checks: tools/bench/test/editor3-i1.test.ts 10 tests pass; NEG OK (neg_control.py ref HEAD, view-mouse.ts course.ts
     view.ts keys.ts); editor3-*.test.ts 13 files 75 tests pass (editor3-h2look: the z cube is now always on); apps/fly and
     tools/bench tsc 0 errors.
-- [~] I1.2 release build of 9aabf0e2's tree started (U:/Temp/gsfpv-train3/editor3/i1/build-after.log, its last line
-  'exit N'; check it, rebuild if it is not 'exit 0'). Neither dist has walls/: copy the Wroclaw stand-in
-  U:/Temp/gsfpv-train2/walls/release/70b50d42 into dist/walls the way docs/wip/walls.md says before the Wroclaw run.
-  Then the probe (not written yet): tools/bench/src/editor3-gizmo.ts, built on editor3-look.ts open() (keyboard, Shift+G,
-  Shift+B, Tab) and sizeDrag(); it reads window.__gsfpvEditMeasure() (after) or, on dist-before (no measure hook), the eye
-  distance from __gsfpvEditView().cam.pos and .stand.pos. Before numbers: serve dist-before on 5806; after: dist on 5805.
-  How to get an edge-on ring in the after run: the y ring is edge-on when the eye is level with the gate's centre; after
-  the framing the eye is about d*sin(20 deg) above it, so tap Q until measure().rings[1] < 10, then __gsfpvEditHit finds
-  'edge:y' and a drag of 60 px across the line should give 30 deg (snap 15). Note for the numbers: at 1920x1080 with the
-  115 deg horizontal field the framing distance is about 1.7 gate sizes, so the wall fallback has only two distances
-  (that one and 1.5 sizes).
-- [ ] I1.3 browser proof (real mouse and keys, holds of at most 10 min): click select, Tab x3, F after flying away, X arrow
-  2 m, each ring 30 deg (rotation before and after), an edge-on ring, end cube and centre cube, undo each; six pictures.
-- [ ] I1.4 gates.py --only vitest,architecture,i18n,b18; status; commit.
+- [x] I1.2 release build of 9aabf0e2's tree: exit 0 (i1/build-after.log). Probe tools/bench/src/editor3-gizmo.ts (7958afe4;
+  MODE=before|after, SCENE, SITE; run by U:/Temp/gsfpv-train3/editor3/i1/gz.sh, which copies the Wroclaw stand-in walls
+  into DIST/walls and holds the GPU lock around one run). Records U:/Temp/gsfpv-train3/editor3/i1/gizmo/gizmo-*.json.
+  BEFORE (dist-before = 47f4d434's tree, 1920x1080, a gate selected by a click):
+  - Tunis 887f27aa: after Tab the eye 18.43 m from a 1.2 m gate (height on screen 40 px, an estimate from the eye distance
+    and the 115 deg field: 3.7 % of 1080); the clicked gate 0: eye 5.44 m, 135 px (12.5 %). Pick rectangles of the
+    handles (__gsfpvEditHit grid, 5 px): move y 60x195, z 100x105, x 175x55; turn x 310x500, z 430x420, y 455x145; size
+    y 70x170, centre 95x110, x 145x70.
+  - Wroclaw 70b50d42: after Tab 21.6 m, 42 px (3.9 %); the clicked gate 0: 17.94 m, 51 px (4.7 %). Picks: move x 265x70,
+    z 150x120, y 60x185; turn y 495x85, z 360x470, x 220x505; size y 205x225, centre 165x90, x 170x75.
+  AFTER (dist of 5c51b4f1's tree, build-after2.log exit 0; gizmo-after-*.json; gizmo-after1-887f27aa.json is the run on
+  9aabf0e2 before the two fixes below):
+  - Tunis: the click selected gate 15 (from 1): eye 2.55 m, the opening 342 px = 0.32 of 1080; frame side 35, skipped 0.
+    Tab x3 -> 16, 17, 18: each 2.04 m, 342 px (0.32), rings' minor axes 100, 63, 147 px. Flown away (S, D): 4.84 m,
+    152 px; F: back to 2.04 m, 342 px.
+  - Wroclaw: the click selected gate 2: 2.04 m, 342 px (0.32), side 35. Tab x3 -> 3, 4, 5: 2.55 m, 342 px, rings 67, 42,
+    98 px. Flown away 5.2 m, 176 px; F: 2.55 m, 342 px.
+  - Parts (the drawn extent from the mesh vertices, measure()): move head x 14x9, head y 10x18, head z 16x11, lines
+    58x16, 3x73, 49x25; size centre box 20x20, box x 16x16, box y 18x16, box z 19x20; turn rings (disk) 115x163,
+    77x170, 174x36. Same on both scenes (the framing puts the gate in the same place).
+  - Measure artefact: rings right after the click read [0,0,0] (Tunis) and [332,201,528] (Wroclaw): the Turn handle's
+    scale is set only once that handle has been shown; after R every reading is as above. Not a visible fault.
+- [x] I1.3 browser proof (real mouse and keys, rendering on; holds Tunis 11:47:37-11:48:44, Wroclaw 11:48:47-11:49:58):
+  - Click select ok on both; Tab x3 ok; F after flying away ok (numbers above).
+  - Move by the X arrow: 2.0 m (Tunis 316 px, Wroclaw 272 px of travel), turned 0, tag 'Moved 2.0 m'; undo back 0 m.
+  - Turn: x, y, z each 30 deg (24, 24, 36 px of travel), quaternions before/after in the records (Tunis [0.2,0,0.98,0] ->
+    x [0.19,-0.05,0.95,0.25], y [-0.07,0,1,0], z [0.19,-0.25,0.95,-0.05]); tag 'Turned 30 deg'; each undo back 0 deg.
+  - Edge-on: Q taps until the y ring's minor axis was 4 px (Tunis) / 6 px (Wroclaw); the pick 'edge:y'; 64 px across the
+    line: 30 deg on both; undo back. The first after run (9aabf0e2) gave 0 deg here: the gizmo's own pick took the press
+    on the same edge-on ring. Fixed in 5c51b4f1 (ring-pick.ts edgeTakesPress, used by onOwnPress and hitAt).
+  - Size: end cube x: Tunis 1.2 -> 1.92 m, Wroclaw 1.5 -> 2.58 m; centre cube 1.2 -> 1.56, 1.5 -> 2.22; moved 0; tags
+    'Opening 1.9 m' etc.; undo back.
+  - Also fixed in 5c51b4f1: the shapes switched off by enableShape were still drawn grey (a 143 px grey sphere and a face
+    ring inside the Turn rings, seen in the first editor3-turn-1920.png); now hidden, also after each drag (_drag wrap).
+    editor3-i1.test.ts 12 tests pass, NEG OK (neg_control.py ref HEAD, ring-pick.ts view-mouse.ts); apps/fly and
+    tools/bench tsc 0 errors.
+  - Pictures (U:/Temp/gsfpv-train3/shots; the named one is taken with the mouse on the handle, '-drag' while dragged):
+    editor3-move-1920.png, editor3-turn-1920.png (looked at: the yellow selected ring gate fills the middle third among
+    the palms, the three small rings red, blue and yellow inside it, no grey disc), editor3-size-1920.png,
+    editor3-wroclaw-move-1920.png (looked at: the yellow square gate in the square, small green and blue arrows with the
+    hovered x arrow yellow and its red guide line), editor3-wroclaw-turn-1920.png (looked at: the square gate with three
+    thin rings, the hovered y ring yellow), editor3-wroclaw-size-1920.png (looked at: white centre cube, green, blue and
+    yellow end cubes on thin lines inside the gate). Tunis move and size of this run, and the -drag pictures, were not
+    looked at (the first run's move and size, same handles before the grey-shape fix, were: gate seen, handle small).
+  - Acceptance: gate height 0.32 of the view on every framing (25-45 %: yes); every ring's minor axis after the framing
+    42-147 px (at least 25: yes); no part over 16 px except lines and rings: NO, the drawn extents are 18 px (move head y)
+    and 20 px (size centre box, box z): a 12 px cube seen at an angle spans up to 12*sqrt(3) px and the 115 deg field
+    stretches parts off the centre.
+- [x] I1.4 gates.py --only vitest,architecture,i18n,b18 on 5c51b4f1: all PASS (vitest 123 s, architecture, i18n, b18;
+  i1/gates.log, logs U:/Temp/gsfpv-gates-20261115-115016).
+- [ ] left: shrink the parts so their drawn extent is at most 16 px (handle-look.ts HANDLE_PX: measured ratios drawn/size
+  1.13 for the cone, up to 1.67 for a cube: cone 14 px long, end cubes 9 to 10 px, centre cube 10 to 11 px would fit;
+  an estimate until measured), rebuild, re-run gz.sh after on both scenes, read maxSmallPart and the T parts.
 
 Stage H3-prove (train 3, 2026-11-15):
 - [x] H3.0 code e8d3655b: the crash toast (.crash-toast, ui/crash-overlay.ts) hidden in the edit view (H2 c2); the top bar
@@ -1157,6 +1196,10 @@ button shows the table.
 12. Esc, Esc again leaves. Proven on both.
 
 ## Cost notes
+- I1-gizmo pass 2: about 45 replies (over budget); the most went to the two fixes the first after run showed (edge-on ring
+  0 deg, grey disabled shapes) and their rebuild and second run, plus one 9-minute lock wait that gave up. Cheaper: read
+  PlayCanvas's Shape.disabled and the gizmo's own pick before building D2/D4, and look at the first picture before the
+  status is written.
 - I1-gizmo pass 1: about 34 replies, stopped before the browser part; the most went to finding where the handles, the
   framing and the PlayCanvas gizmo sizes live (view-mouse.ts, course.ts showEd/aim, playcanvas.mjs 121246 _updateScale and
   setTheme) and to one heredoc that broke (edits now go through a Python file written with Write). Cheaper: a map entry in
