@@ -94,6 +94,33 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(FIT_BUDGET_MS).toBeLessThan(150_000);
     });
 
+    it('review FY-1: a course far short of the gates the generator wanted is not taken at once; nor is a smaller scale tried while one reached gatesMin', () => {
+        // a fake generator: try k gives counts[k] gates of the 24 it wanted (no proof record: counts as proven)
+        const fakeOf = (counts: number[]) => {
+            let k = 0;
+            const scales: number[] = [];
+            const make = ((_f: unknown, _w: unknown, o: Parameters<typeof generateCourse>[2]): TrackFile => {
+                scales.push(o.params?.scale ?? 1);
+                const n = counts[Math.min(k++, counts.length - 1)]!;
+                const gate = { id: 'g', shape: { kind: 'ring', diameter: 1.2, tube: 0.1 }, pos: [0, 1.6, 0], quat: [0, 0, 0, 1], direction: 'forward' };
+                return { id: `t${k}`, version: 1, scene: SCENE, laps: 1, gates: Array.from({ length: n }, (_, i) => ({ ...gate, id: `g${i + 1}` })), generator: { name: 'fake', version: '3', seed: k, params: { wanted: 24 } } } as unknown as TrackFile;
+            }) as unknown as typeof generateCourse;
+            return { make, scales };
+        };
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const a = fakeOf([4, 20]);
+        const ra = fitCourse(null as never, null as never, opts, 4, a.make);
+        expect(ra.track!.gates.length).toBe(20);
+        expect(ra.tried).toBe(2);
+        expect(ra.short).toBe(false);
+        // control: three short seeds at scale 1: the longest of them, not a course of smaller gates
+        const b = fakeOf([5, 4, 6, 24]);
+        const rb = fitCourse(null as never, null as never, opts, 4, b.make);
+        expect(rb.track!.gates.length).toBe(6);
+        expect(rb.scale).toBe(1);
+        expect(b.scales).toEqual([1, 1, 1]);
+    });
+
     it('lane fix3b: a course whose final proof failed is not given while the next seed gives a proven one', () => {
         // the real generator, with the proof of the first try marked failed (as generate.ts records it)
         let n = 0;

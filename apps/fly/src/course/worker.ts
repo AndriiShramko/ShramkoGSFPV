@@ -39,7 +39,7 @@ export interface CheckJob {
 export type FromCourseWorker =
     /** stage G1-progress: a step starts ('free': the free space; 'lay': one try of the obstacles), with its expected ms */
     | { t: 'progress'; job: number; step: 'free' | 'lay'; estMs: number }
-    | { t: 'track'; job: number; track: TrackFile | null; short?: boolean; ms: number }
+    | { t: 'track'; job: number; track: TrackFile | null; short?: boolean; proven?: boolean; ms: number }
     | { t: 'checked'; job: number; ok: boolean; issues: string[]; ms: number }
     | { t: 'error'; job: number; message: string };
 
@@ -80,7 +80,7 @@ scope.onmessage = (e) => {
         // lane review TR-8: a course under gatesMin is retried with derived seeds; K1.2: then at smaller sizes, and when none
         // reaches gatesMin the one with the most gates is flown (short), never nothing while one gate fits
         const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created, quality: box ? quality : undefined, spawn: m.spawn }, COURSE_DEFAULTS.gatesMin, make, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
-        scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, ms: Math.round(performance.now() - t0) });
+        scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, proven: got.proven, ms: Math.round(performance.now() - t0) });
     } catch (err) {
         scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });
     }

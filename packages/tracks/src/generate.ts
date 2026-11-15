@@ -633,7 +633,12 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     const homeFrom = ends.length > 2 ? (outGates >= 0 ? outGates : ends[last - 1]!) : 0;
     const closeAt = (gs: TrackGate[]): number => {
         const low = Math.max(1, Math.ceil(gs.length / 2), homeFrom - (gates.length - gs.length) + 1);
-        for (let n = gs.length; n >= low; n--) if (sweeper.free(toFlown(gs[n - 1]!.pos), startW, p.marginM)) return n;
+        // review FY-1: the ring ends only at a gate whose legs home (to the start and on to gate 1) run over a well-scanned
+        // scan; judging them after the cut dropped one last gate a time and thinned Wroclaw seed 1 from 24 walked to 18
+        for (let n = gs.length; n >= low; n--) {
+            const end = toFlown(gs[n - 1]!.pos);
+            if (sweeper.free(end, startW, p.marginM) && legWell(end, startW) && legWell(end, toFlown(gs[0]!.pos))) return n;
+        }
         return 0;
     };
     let course = renumber(gates);
@@ -666,7 +671,8 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // review FX-5: a course turned to start near the spawn is another course for its best laps: generatorVersion
     // records the turn (the server keeps a fixed list of params keys, the version is a free string)
     const walked = course;
-    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
+    // review FY-4: the turned ring's first leg (start to the gate nearest the spawn) is judged for a poor scan too
+    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
     const startShift = course.length ? Math.max(0, walked.findIndex((g) => g.pos === course[0]!.pos)) : 0;
     const startYaw = course.length ?nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
     const shell = build(course, startYaw, startW, laps);

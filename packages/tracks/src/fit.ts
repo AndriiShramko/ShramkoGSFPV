@@ -27,6 +27,18 @@ export const SEEDS_PER_SCALE = 3;
  *  freeSpace and the answer. 3 x 3 tries at the 15.5-22.9 s a course measured on 887f27aa could pass 150 s. */
 export const FIT_BUDGET_MS = 120_000;
 
+/** Review FY-1, ESTIMATE: a course is taken at once when it has at least this share of the gates the generator wanted
+ *  (generator.params.wanted); a shorter proven one is kept while the next seeds of the same scale are tried. Wroclaw seed 3
+ *  walked 4 of 24 (gate-place-audit, fix3b/fixes/fy1-before.json) and fitCourse took it, as gatesMin is 4. */
+export const FULL_SHARE = 0.5;
+/** The gates a course needs to be taken at once: gatesMin, or FULL_SHARE of the generator's wanted count if more. Only a
+ *  course over a quality map (generator version 3 and up) is judged so: a link to a course of versions 1 and 2 regenerates
+ *  the very course it had. */
+export function fullOf(t: TrackFile, gatesMin: number): number {
+    const major = Number(/^(\d+)/.exec(String(t.generator?.version ?? ''))?.[1] ?? 0);
+    const want = (t.generator?.params as { wanted?: unknown } | undefined)?.wanted;
+    return Math.max(gatesMin, major >= 3 && typeof want === 'number' ? Math.ceil(FULL_SHARE * want) : 0);
+}
 /** When fitCourse must stop: `at` on the clock `now` (ms). */
 export interface FitDeadline {
     readonly at: number;
@@ -108,7 +120,7 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;
-            if (ok && t.gates.length >= gatesMin) return { track: t, short: false, scale, tried, proven: true };
+            if (ok && t.gates.length >= fullOf(t, gatesMin)) return { track: t, short: false, scale, tried, proven: true };
             // a proven course beats an unproven one of any length; among the same kind the one with more gates
             if (t.gates.length > 0 && ((ok && !bestOk) || (ok === bestOk && t.gates.length > (best?.gates.length ?? 0)))) {
                 best = t;
@@ -117,6 +129,8 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             }
             s = nextSeed(s);
         }
+        // review FY-1: a proven course of at least gatesMin gates at this scale beats any course of a smaller one
+        if (best && bestOk && best.gates.length >= gatesMin) return end();
     }
     return end();
 }

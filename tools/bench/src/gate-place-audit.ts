@@ -137,7 +137,14 @@ async function main(): Promise<void> {
             const list = arg('--seed-list')?.split(',').map(Number) ?? Array.from({ length: seeds }, (_, k) => first + k);
             for (const seed of list) {
                 const t0 = performance.now();
-                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+                // review FY-1: each try's walk (gates walked, cut at the close, drops by kind, kept)
+                const walks: string[] = [];
+                const onWalk = (w: { walked: number; cutClose: number; drops: readonly string[]; kept: number }): void => {
+                    const by: Record<string, number> = {};
+                    for (const d of w.drops) by[d] = (by[d] ?? 0) + 1;
+                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}`);
+                };
+                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
                 const ms = Math.round(performance.now() - t0);
                 const tr = got.track;
                 if (!tr) {
@@ -182,7 +189,7 @@ async function main(): Promise<void> {
                 for (const a of pts) for (const b of pts) span = Math.max(span, Math.hypot(a[0]! - b[0]!, a[2]! - b[2]!));
                 const hs = gates.map((g) => g.h ?? NaN).filter((v) => Number.isFinite(v)).sort((x, y) => x - y);
                 const row = {
-                    scene: s.id, seed, gates: gates.length, laps: tr.laps, scale: got.scale, ms, problems, qMs, band: q.band, best: Math.round(q.best),
+                    scene: s.id, seed, gates: gates.length, laps: tr.laps, scale: got.scale, tried: got.tried, proven: got.proven, walks, ms, problems, qMs, band: q.band, best: Math.round(q.best),
                     span: Math.round(span), hMin: hs[0], hMed: hs[hs.length >> 1], hMax: hs[hs.length - 1],
                     eye: gates.filter((g) => g.h !== null && g.h >= 1.2 && g.h <= 2.0).length,
                     eyeRay: gates.filter((g) => g.hRay >= 1.2 && g.hRay <= 2.0).length,

@@ -549,3 +549,20 @@ Pass 1:
 - The guide's hidden case for a near gate in view did not occur in these starts.
 - Wroclaw walls-store after the last probe fix: not rerun. tracks-page E camera: see Measured. Y2's left items (Opole,
   quality top map, R3 leaves, Lublin) remain as written under 'Left for pass 3 (Y2)'.
+
+## Status fixes (review FY-1 to FY-6)
+
+Logs U:/Temp/gsfpv-train3/fix3b/fixes/. Merged origin/main (two lead notes, docs only): d41781f3.
+- [x] FY-1 measured before the fix (gate-place-audit now prints each try's walk: walked-cutc-drops=kept, tried, proven):
+      Wroclaw seeds 1-5 (fixes/fy1-before.json): seed 1 '24-1c-5poor=18', seed 3 '4-0c-=4' (the walk itself stopped at
+      4: no drop at all), seeds 2, 4, 5 24 gates. The finding's cause (closing-leg drops) is refuted for seed 3 and only a
+      guess for seed 1. Its effect stands: fitCourse took a 4 of 24 course. Fix: fit.ts FULL_SHARE 0.5 (estimate): a
+      version 3 course is taken at once only with half of generator.params.wanted, else the next seed of the same scale is
+      tried and the longest proven kept; a scale that gave a proven course of gatesMin does not fall to a smaller scale.
+      generate.ts closeAt ends the ring only at a gate whose legs home (to the start and to gate 1) are well scanned. Test
+      fit.test.ts 'review FY-1' NEG OK (neg_control.py, ref origin/main, fit.ts).
+- [x] FY-2 link.ts bestKey adds '.g<major>' for generator 3 and up; tracks-review TR-10 rows, NEG OK (ref origin/main).
+- [~] FY-3 smallest step: the worker's track message carries proven (worker.ts). Trimming an unproven best is left.
+- [x] FY-4 startNearSpawn's predicate also needs legWell(start, new gate 1).
+- [x] packages/tracks vitest 14 files 121 passed; tsc packages/tracks and apps/fly clean; tracks-review/finish 13 passed.
+- [ ] Wroclaw and Tunis table after the fix; FY-5 test; FY-6; page check on Tunis; gates.py subset.

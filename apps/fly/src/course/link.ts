@@ -55,7 +55,11 @@ export function bestKey(
     // is another course; an unturned course keeps the key it had
     const gv = tr.generator?.version;
     const turned = typeof gv === 'string' ? /\.(s\d+)$/.exec(gv)?.[1] : undefined;
-    return `${tr.id}.v${tr.version}.${tr.scene.id}.${tr.scene.version ?? 0}.${typeof digest === 'string' ? digest.slice(0, 16) : '-'}.${placed}${turned ? `.${turned}` : ''}.${drone}`;
+    // review FY-2: generator 3 lays another course for the same seed (gates at eye level, none over a poor scan): its best
+    // laps get '.g<major>'; the keys of versions 1 and 2 stay as they were
+    const major = typeof gv === 'string' ? Number(/^(\d+)/.exec(gv)?.[1] ?? 0) : 0;
+    const gen = major >= 3 ? `.g${major}` : '';
+    return `${tr.id}.v${tr.version}.${tr.scene.id}.${tr.scene.version ?? 0}.${typeof digest === 'string' ? digest.slice(0, 16) : '-'}.${placed}${turned ? `.${turned}` : ''}${gen}.${drone}`;
 }
 
 const OFFERED_KEY = 'gsfpv.course.offered';
