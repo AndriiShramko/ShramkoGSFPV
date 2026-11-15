@@ -102,6 +102,8 @@ Stage I1-gizmo (train 3, 2026-11-15):
     tag ('Moved 2.0 m', 'Turned 30 deg', 'Opening 1.9 m' / '2.6 m') beside the handle, the gate yellow and fully seen,
     the dragged axis' long guide line across the view. The six named pictures of this run (smaller parts) were not
     looked at again.
+- [x] I1.6 gates.py --only vitest,architecture,i18n,b18 on 7a769d40: all PASS (vitest 120 s; i1/gates3.log, logs
+  U:/Temp/gsfpv-gates-20261115-120124).
 - [ ] left: the Wroclaw click select (above). Measured: two runs, two points, no selection; suspect the click lands in
   the opening of gate 2 and pick.ts pickGate (used by view-mouse.ts 591) takes only the frame, or the probe aims at the
   centre; a guess, not measured. Not this stage's fix: D5 and D6 (THR, speed and ALT line, key hints, REC row, voltage
@@ -1224,6 +1226,9 @@ button shows the table.
   0 deg, grey disabled shapes) and their rebuild and second run, plus one 9-minute lock wait that gave up. Cheaper: read
   PlayCanvas's Shape.disabled and the gizmo's own pick before building D2/D4, and look at the first picture before the
   status is written.
+- I1-gizmo pass 3: about 30 replies; the most went to reading nine pictures and to a second Wroclaw run when the click did
+  not select. Cheaper: the probe should record the gate's on-screen size and the pick result at the click point, so one
+  run tells a probe aim fault from an app fault.
 - I1-gizmo pass 1: about 34 replies, stopped before the browser part; the most went to finding where the handles, the
   framing and the PlayCanvas gizmo sizes live (view-mouse.ts, course.ts showEd/aim, playcanvas.mjs 121246 _updateScale and
   setTheme) and to one heredoc that broke (edits now go through a Python file written with Write). Cheaper: a map entry in
