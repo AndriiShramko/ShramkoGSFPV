@@ -480,7 +480,7 @@ after them kept one script and no reruns, but the gates' vitest still met the bu
 
 ## Integration E (the edit mode; START / FINISH and the lap's time; scans and elements)
 
-Status (integration E worker 1 stopped at a clean point; a fresh worker continues from "Left"):
+Status (integration E, workers 1 and 2; finished):
 - [x] Merged fix3a 601a1151 with --no-ff: 44d76fce (no conflict).
 - [x] Merged editor3 8ea44111 with --no-ff: 8b4d7eb3. Conflicts in apps/fly/src/app/builtin/course.ts (frame(): the
       editing flag of editor3 and run.byEar of lane mix kept; the guide keeps fix3a's gate role) and
@@ -507,39 +507,122 @@ Status (integration E worker 1 stopped at a clean point; a fresh worker continue
       by its code: no click on data-top save, no /api call) and sonic-eye-course-wroclaw (r11 with Z5_COURSE_FIRST=1);
       gate-guide-probe.mjs now also checks 'gate 1 is START' (hook course.look().roles), so the existing gate-guide-wroclaw
       line covers the START role. bash -n passes; not run.
-- [~] Release build and probes: U:/Temp/gsfpv-train3/e/run.sh runs detached (summary U:/Temp/gsfpv-train3/e/summary.txt,
-      one line per probe with its exit code; logs beside it; evidence JSON in evidence/2026-11-15/train3e/; raw shots in
-      U:/Temp/gsfpv-train3/shots/train3e-raw). It builds, copies the nine published wall folders into dist/walls, serves
-      5760, runs the editor chain (editor3-prove.ts FULL=1, one lock hold per scene, Wroclaw then Tunis; its own pictures
-      go to U:/Temp/gsfpv-train3/shots/editor3-*-1920.png), course-path both scans, gate-guide (Shift+G Wroclaw),
-      course-finish (3 sizes), course-keys, pause-over-course, save-check with --push on both scans, mouse-free,
-      walls-store Tunis, walls-published, onecourse, d7, quiet-probe narrator off, tracks-page, accept-fly B6-B16, then
-      sonic-int-review r9, r11 (Z5_COURSE_FIRST on and with the narrator off, Shift+G Wroclaw and Tunis), r12 on ports
-      5761-5766. It writes ALLDONE as its last line. Do not start it again while it runs (check with ps for run.sh).
+- [x] Release build and probes (worker 2): four detached runners in U:/Temp/gsfpv-train3/e (run.sh on the dist of
+      8b4d7eb3, port 5760; run2.sh on the dist of e38ce9c9 with the catalog and the pose field, port 5770; run3.sh one rerun
+      each of two failures, port 5775; run4.sh and run5.sh the repaired editor chain and smoke on the e38ce9c9 dist, ports
+      5777 and 5778). The nine published wall folders were copied into dist/walls each time (dist-walls.txt). Summaries
+      summary.txt to summary5.txt, one line per probe with its exit code. Evidence JSON: evidence/2026-11-15/train3e/.
+- [x] Seam d measured: see Probes. All three turn rings turn the gate itself on both scans; the editor is released.
+- [x] Full gates with leaks on the staged tree (after the evidence was staged): exit 0; typecheck, vitest, api-unittest,
+      architecture, i18n, catalog, 'B18 PASS', leaks all PASS (U:/Temp/gsfpv-train3/e/gates-final.log).
 
-Deploy order for the lead (from git diff --stat 4e6ef171..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api
-apps/rooms packages/i18n/locales): only packages/i18n/locales/fly/course/{en,es,pl,ru}.json changed, and they ship in the
-static site bundle. nginx: no. API: no file for release-api.sh, no --locales (it carries only apps/api/locales and the
-bot and mail locales). rooms: no. Then ship the static release.
+### Merged
+- fix3a 601a1151 with --no-ff: 44d76fce (no conflict). START / FINISH gate with banner, number plates, lit next gate, lap
+  time large and the results card ('Lap time on screen'), run time at FINISH of an open course, generator ladder of gate
+  sizes, the Scene size line, elements by shares, Fly by Sound over every course of the scene.
+- editor3 8ea44111 with --no-ff: 8b4d7eb3. Conflicts in apps/fly/src/app/builtin/course.ts and apps/fly/src/course/view.ts
+  resolved keeping both sides (see Status); the fly/course locales merged by themselves in all four languages.
+- Integration commits after the merges: 2201dd8c (gen-catalog), 16d044b6 (seam d: hook field course.editor.pose and the
+  probe reading it), e9082ec8 (live checks; gate-guide-probe checks the START role), e38ce9c9 and 4e31e5b2 (editor3-prove:
+  ring pictures, the ring a first pass misses found again after Undo), a04f262a (editor3-smoke backs the view off), and
+  the commit of this section. apps/fly/src/session: no change since 4e6ef171 (seam b). docs/decisions.md: no new number.
+  The sound package and the pin of packages/sonic-fpv: not touched.
 
-Left (exact, in order):
-1. Read gates1.log tail (exit 0; 'B18 PASS'); fix a seam if a gate fails.
-2. Seam d of the brief (the three turn rings): editor3-prove.ts measures each ring by the view's stand-in quaternion
-   (src/editor3-prove.ts lines 337-354, drags of 60 and 140 px), which is what review EJ-1 called self-checking. Needed: the
-   gate's own rotation read before and after a 100 px drag along each ring, at least 20 degrees each, on both scans.
-   No hook gives the selected gate's flown rotation today (edHook fields in apps/fly/src/app/builtin/course.ts near line
-   865); the smallest change is one hook field there (the selected gate's flown pose from gateFlownPose) plus the probe
-   reading it. If a ring turns nothing after ONE seam-size repair: reset main to 44d76fce, release fix3a alone, say so first.
-3. When summary.txt has ALLDONE: read each line; pictures train3e-editor.png, train3e-editor-element.png,
-   train3e-start-gate.png, train3e-lap-splash.png, train3e-elements.png (copy from the raw shots after looking at them;
-   the flat square selected and the START gate beside an ordinary one may need one extra page shot).
-4. Probes not in run.sh yet: centre-throttle-probe all, rooms-two-page, wizard-auto-check, hid-source-probe,
-   governor-start-probe (in the lock), lod-view-probe on and off once. Skip the rc2 bridge (port 47310).
-5. deploy/live-checks.sh: the three read-only checks of the brief (edit mode on Wroclaw without Save; START role of gate 1
-   after Shift+G; Fly by Sound over an ordinary-flight course aims at its next gate), after reading each probe's source.
-6. The rest of this section (Gates, Probes, Live checks, Pictures, What the owner should try, Not verified with the brief's
-   known list), commit evidence JSON (not PNG), full gates with leaks as a separate command, plain push of main.
+### Held back
+- voxview, loadq, uiaudit, race, sonic4: held back by the brief, not merged and not read.
 
-Cost notes: worker 1 used most turns on finding the probe recipes in the lanes' long status files and temp folders
-(mix/chain3.sh, editor3/fx3c/chain.sh, int-d/run.sh were the useful ones); a per-lane 'how to rerun' block would save
-about 6 turns.
+### Gates
+- On the final tree: exit 0, all eight PASS including 'B18 PASS' and leaks.
+
+### Probes (local release, the published walls in dist/walls; first line of accept-fly: 'accept-fly target:
+### http://localhost:5760')
+- accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16: all PASS (346 s).
+- The editor chain (editor3-prove.ts FULL=1) on the e38ce9c9 dist with the ring repair, Wroclaw 254 s and Tunis 423 s,
+  exit 0 each (evidence editor3-prove-70b50d42.json, editor3-prove-887f27aa.json). Turn rings by the gate's own rotation
+  (hook course.editor.pose) for a 100 px drag: Wroclaw x 45, z 45, y 30 degrees; Tunis x 45, z 45, y 30 degrees (the y
+  ring found in the second pass after 6 Undo presses on both). The first pass alone (run2) reached x and z only.
+  Untouched generated course: Save went through on both. Gate pushed into a wall: Save refused, gate 2 selected and
+  framed (Wroclaw side 35 deg 2.04 m; Tunis side -60 deg 2.04 m). Click on another gate selects it (Wroclaw gate 4, Tunis
+  gate 22). Move by the X arrow 0.3 m. Kinds square, dive (flat square), cube, ring all taken. Test flight: next gate 0 to
+  1 (START counted). Crash goes back to the edit view. Esc closes.
+- editor3-smoke Wroclaw (the live check's probe): open with gate 1 selected, arrow move 2.1 m, Esc closed; no other gate
+  on screen to click after 4 back-offs (click not proven by this probe).
+- course-path-probe: Wroclaw 48 of 48 in the band (flat 3), Tunis 37 of 37 (flat 2), runs failing 0.
+- gate-guide-probe Wroclaw --shiftg: 7 of 7, including the new 'gate 1 is START'.
+- course-finish-probe Wroclaw, 1920x1080, 1280x720, 844x390: the card's time equals the clock's at each size (0:20.33,
+  0:22.62, 0:20.73), the middle third free during and after the splash; exit 0.
+- course-keys-probe Wroclaw seed 289710480: 37 of 37 gates counted (ring 10, flat 2, cube 6, tunnel 4, square 4).
+- save-check-probe with --push: Wroclaw and Tunis exit 0 (gate 1 pushed into the wall: problems 3).
+- pause-over-course-probe: 8 of 8.
+- onecourse-probe, d7-probe (gate 1 counted), quiet-probe narrator off: exit 0.
+- walls-published-probe, nine scans: exit 0.
+- sonic-int-review r9 11 of 11; r12 9 of 9; r11 Wroclaw Shift+G 10 of 10; r11 Tunis Shift+G 10 of 10; r11 Wroclaw
+  Z5_COURSE_FIRST narrator off 13 of 13 (40 gates, flown to the end); r11 Wroclaw Z5_COURSE_FIRST narrator on: first run
+  10 of 11 (37 of 42 gates counted in 363 s, g10 missing, not flown to the end), rerun 11 of 11 (15 gates, 50 s).
+- tracks-page: 24 of 26, exit 1; 'E camera after Tab' PASS. The two FAIL are the same as lane editor3's own run (24 of
+  26): '.gate-msg' holds the take-off text while editor.css hides it (the probe reads text, not display), and the old
+  window's 'Save for everyone' click times out.
+- mouse-free-probe: exit 1, the timeout at the rooms entry (pause.rooms not visible), as in integration A (no rooms service
+  on the local copy).
+- walls-store-probe Tunis: exit 1 twice (page not 'ready' within 300 s in its persistent profile); lane fix3a and
+  integration C had exit 0 (209 s, 153 s). Not chased.
+- centre-throttle-probe all, governor-start-probe (lock), hid-source-probe, wizard-auto-check, rooms-two-page (17 of 17):
+  exit 0. lod-view Lublin 2f1ddf5f on: active, failed none, missing 0, calls 101; off (viewlod=0): inactive, penalty 5,
+  angle 90, multiplier 3. a6-reference: PASS (dist of 8b4d7eb3; nothing in flight, input or collision changed after it).
+
+### Deploy order for the lead
+From git diff --stat 4e6ef171..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms packages/i18n/locales:
+only packages/i18n/locales/fly/course/{en,es,pl,ru}.json, which ship in the static site bundle.
+1. nginx: no.
+2. API: no file for release-api.sh, no --locales.
+3. rooms: no.
+4. Ship the static release of main (it includes the published walls step of deploy/release-walls.sh as before).
+
+### Live checks
+deploy/live-checks.sh, not run: edit-mode-wroclaw (editor3-smoke.ts: Shift+G, Shift+B, arrow drag, Esc; no Save), the
+existing gate-guide-wroclaw line now also checks 'gate 1 is START', sonic-eye-course-wroclaw (r11 with Z5_COURSE_FIRST=1:
+Fly by Sound takes the course made by eye and the hum has a target). bash -n passes.
+
+### Pictures for the lead (each looked at)
+- U:/Temp/gsfpv-train3/shots/train3e-editor.png: Wroclaw, a selected gate (yellow) with its three turn rings and the bar.
+- U:/Temp/gsfpv-train3/shots/train3e-editor-element.png: Tunis, a flat square (dive gate) selected with size handles.
+- U:/Temp/gsfpv-train3/shots/train3e-start-gate.png: Wroclaw, the checkered START gate with plate 1, the next gate beside.
+- U:/Temp/gsfpv-train3/shots/train3e-lap-splash.png: Wroclaw, 'Course done 0:20.33' large in the upper middle.
+- U:/Temp/gsfpv-train3/shots/train3e-elements.png: Wroclaw, a tunnel from the pilot's eye (the flat square shows in it
+  only as its marker; no picture with both).
+
+### What the owner should try
+- Shift+G: a course; the first gate is checkered with START over it, the next gate is lit.
+- Fly the course to FINISH: the time shows large at the top middle, then the results card.
+- Shift+B: the edit mode in the scene. Click a gate: yellow outline, arrows, rings and the bar under it.
+- Drag an arrow to move the gate, a ring to turn it, the centre box to size it.
+- On the bar: ring, square, dive gate, cube; copy; delete; next and previous.
+- Click Add gate, then a place on the floor.
+- W A S D fly the view, E and Q up and down, F shows the selected gate again.
+- Space or arm the controller: test flight that counts the gates; crash: back to editing.
+- Save: a gate in a wall is refused and shown.
+- Esc leaves the edit mode.
+- Backslash after Shift+G: Fly by Sound takes that course.
+
+### Not verified
+- Known from the brief: on Lublin 2f1ddf5f the course stays in the spawn's pocket; Housefly d10c5638 can take up to 113 s
+  to give a course; on b11e45d1 gates stand 14.5 to 15.1 m over the wall under them; a gate in leaves is not refused (one
+  ring in a conifer on Wroclaw); a large craft in a small room may get no course and has no one-press line yet; every
+  course on Wroclaw and Tunis is open, so the lap splash shows there only as the run's time at FINISH; the Size tool shows
+  one line for a ring; the arrows' tint is close to the selected yellow; with a fake pad the mode line reads ARMED after a
+  crash; no human flew or heard anything.
+- The keyboard pilot flew 37 of 37 gates on Wroclaw in this run (the brief had 21 of 37); one seed only.
+- The lap clock and the results card hidden in the edit view and back in the test flight: proved by the unit test
+  tools/bench/test/editor3-flying.test.ts (13 of 13, NEG OK), not measured in a browser in this integration.
+- r11 narrator on, course made by eye: one of two runs did not reach the end (37 of 42 gates in 363 s).
+- tracks-page 24 of 26, mouse-free exit 1, walls-store Tunis exit 1 twice: see Probes.
+- The click selection in the live check's probe (editor3-smoke) on Wroclaw: no other gate on screen.
+- Housefly d10c5638 ear-pilot run and Tunis course-made-by-eye run: not run. Live checks: not run (no live access here).
+- Pictures train3e-editor-move.png, train3e-editor-flying.png, train3e-gate1-guide.png, train3e-sound-lessons.png of the
+  general task: not made (the brief's five were made instead).
+
+### Cost notes
+Worker 1 used most turns on finding the probe recipes in the lanes' long status files and temp folders; a per-lane 'how
+to rerun' block would save about 6 turns. Worker 2: waiting for the shared GPU lock and the long runner took about 15
+replies of polling; the ring measurement needed a second runner because the first pass left the y ring edge-on. A probe
+that undoes each ring before the next would have saved one 11-minute run.
