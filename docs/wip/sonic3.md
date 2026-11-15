@@ -5,6 +5,29 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage S3-yaw-lesson-and-proofs (train 3 wave 3, last finishing stage; head before it 3e5fd0ce, course3 18e6a876 merged):
+- [ ] Item 1, the lesson "turn slightly and listen": NOT built. The tree is clean without it (no lesson file, no locale line,
+  pin unchanged at package 5afa093). Reason: the speed lessons' pattern touches about 20 files in the package (orders of 26
+  lessons, counts in four public files, four TTS fixtures measured by measure-tts.ps1, schedule counts, the words check) plus
+  four simulator tests after the pin move and a browser flight; that did not fit beside items 2 to 5 in the 30 replies. The
+  full design (placement before hover-turn, start yaw 180, the 7 English lines, the rule a pilot uses, every file to touch)
+  is in docs/wip/sonic3-plan.md section 7.
+- [x] Item 2, audio proofs of the package, offline, no GPU lock (s3/proofs.sh, 26 s): all 9 pass on package train3 5afa093,
+  evidence/audio-proofs-train3.json committed in the package as 38534c9 (local only). Train 3 cues, see Facts "S3 proofs".
+- [x] Item 3, mouse-free-probe --only rooms (render off, no lock): origin/main 78efaaaf (release built in a new worktree
+  C:/dev/gsfpv-sonic3-base, sonic 598a98f, port 5836) and this lane's dist (f2f6589e, port 5837) fail the SAME way: "PASS
+  rooms: the view captures the mouse before", then Timeout 5000 ms waiting for [data-action="pause.rooms"] (key 9 and
+  Shift+L opened no panel, the menu item is not visible). The timeout is not this lane's. Logs U:/Temp/gsfpv-train3/sonic3/s3/
+  rooms-base.log and rooms-mine.log. A guess, not measured: the local serve-csp server has no rooms service, so the menu hides
+  the item.
+- [x] Item 4, gates.py --only vitest,architecture,i18n,b18 on 3e5fd0ce plus this stage's docs: all four PASS (vitest 110 s;
+  logs U:/Temp/gsfpv-gates-20261115-074355). Package suite on 38534c9: 69 files passed, 1 skipped; 1347 tests passed, 4
+  skipped; package tsc 0.
+- [x] Item 5, "What the owner does" in For the lead (key by key, speeds per scan, what is not proven).
+- LEFT (in this order): the turn-listen lesson (plan section 7), then Tunis (S2 pass 3 LEFT 1: the sound course does not
+  follow a life the director put at the start, apps/fly/src/sonic/feature.ts 'life' handler), then Wroclaw render on (g24).
+  The package branch train3 (38534c9) must be pushed to the package origin before sonic3 merges (lanes do not push).
+
 Stage S2-switch-and-speed (train 3 wave 3):
 - [x] Release build of 37e1547f; walls 70b50d42 v1 (10 cm) and d10c5638 v1 (5 cm) copied into dist/walls.
 - [x] Probe r11 (e5969b28): turns to the open side before W (12 horizontal rays of session.collision, 40 m, estimate), records
@@ -581,6 +604,17 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## Facts (measured)
 
+S3 proofs (package train3 5afa093, test-audio/audio.proof.ts, offline renders in headless Chrome 157, sample rate of the
+page; evidence/audio-proofs-train3.json, package commit 38534c9). Cues of train 3:
+| Cue (train 3) | File | Proof | Measured (shipped / control) |
+|---|---|---|---|
+| racing line: the hum's side level (target.hum along the line) | src/cues/line.ts, planner.ts | line-side | R-L 11.51 dB at 30 deg right, -11.37 dB at 30 deg left (bar 8 dB); control without the line 3.66 / -3.44 dB fails as it should |
+| gate aim: the hum's point around and through a gate | src/lesson/gate-aim.ts | direction, target-note-pan (same hum, new point) | direction: L-R 3.06 dB broad, 17.91 dB above 2 kHz, left leads 0.833 ms; note pan onset 4.99 dB, held 4.54 dB |
+| stream budget at speed, open-way chime at tier 2 | src/cues/budget.ts, planner.ts | none (unit tests budget.test.ts, budget-wired.test.ts only) | no offline render exists |
+| moving voices cap | src/cues/voices.ts | voice-budget | moving peak 8 of 8, 33 panners made, hazards kept their voices |
+The older proofs pass on the same run: pulse-rate (relative error 0.0056 at 0.6 s), ceiling (peak -6.01 dBFS, bar -6),
+fade-in, target-note-gap (0 ms overlap on 8 notes), engine-reset.
+
 - Y1 browser (r11, release of 8432db0b code with pin 30836c1, headless Chrome 157, probe took the GPU lock; evidence
   U:/Temp/gsfpv-train3/sonic3/y1-tunis.json, y1-wroclaw.json, y1-housefly.json; package suite and no other job of this lane
   ran meanwhile, other lanes' load not known):
@@ -713,6 +747,29 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## For the lead
 
+### What the owner does (S3, 2026-11-15): fly any scan by sound
+1. Open any scan from the catalogue and fly it as always.
+2. Press Backslash (\), or Escape and the pause item "Fly by Sound here". Fly by Sound switches on in place: no new life, the
+   craft keeps its speed (5 of 5 switch-ons, 0 sim events in the 0.4 s after the press, S2 item 2). Within 0.23 to 3.3 s he
+   hears the height tone and the room bed, then the spoken intro once; walls near him pulse on their side (left, front-left,
+   front).
+3. Press N: "making a course" (Wroclaw and the other published-walls scans download their walls, nothing is built), then the
+   hum of gate 1 (N to gate 1 measured: Wroclaw 25 to 27 s, Tunis 26 to 32 s, Housefly 60 to 125 s). The hum is louder in
+   the ear it is on; he turns with Q and E until it sits in the middle and flies with W; near a gate the hum leads around
+   the frame and through the opening from the entry side; at a gate its note and a short preview of the next.
+4. Speeds measured by the ear pilot (steers by the cues only), counted courses to their end: Wroclaw 70b50d42 (published 10
+   cm walls) 5 m/s COUNTED on two builds (render off; render on missed g24 twice); Housefly d10c5638 (published 5 cm) 5 m/s
+   COUNTED (also render on); Tunis 887f27aa: no counted course at 3 or 5 m/s (best 19 gates at 5 m/s). 5 m/s is the cap of
+   the free flight over a scan, so it is the highest a pilot can ask today.
+5. To train speed: Escape, "Fly by Sound lessons" (new tab), lessons speed-1 to speed-4 (1.5, 2.5, 3.5, 4.5 m/s): all four
+   counted on attempt 1 in a browser (S2 item 3).
+6. Other keys: R back to the last checkpoint (held: the start), I where am I, Z repeat the last line, G the glossary of
+   sounds, K all keys, B the previous course. Backslash again switches Fly by Sound off in place, speed kept, no new life.
+7. Front and back: turn a little and listen where the hum moves (in front it moves away from the turn, behind it moves into
+   the ear on the side of the turn). The lesson that teaches this is designed, not built (plan section 7).
+Not proven: a counted course on Tunis at any speed; Wroclaw with rendering on; any speed above 5 m/s; the turn-listen lesson;
+anything heard by a human ear (all passes are the ear pilot).
+
 - Y1 (decision d): files changed outside apps/fly/src/sonic: apps/fly/src/play/lesson-pilot.ts (constructor keeps the motors
   when built over a running flight) and apps/fly/src/play/assist.ts (AutoArm.keepOn); a6-reference passed unchanged.
 - Y1: a 'life' setting change (crash.enabled through respawn.ts, the bump through session.setLessonFlight) always makes a new
@@ -759,6 +816,9 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
 
 ## Not verified
+- S3: the turn-listen lesson does not exist, so it was neither measured, word-checked nor flown. The budget's open-way chime
+  has no audio render proof. The rooms timeout cause (no rooms service locally) is a guess. No browser run in S3: the
+  speeds in "What the owner does" come from S2's runs on release f2f6589e (same code as 3e5fd0ce).
 - Y1: why Tunis lost the speed on the switch on with no new life (a contact is suspected, not measured); speed lessons
   speed-1..4 not flown in a browser yet; Backslash to first cue times may include other lanes' load (not measured).
 - Z4 4b: nothing heard in a browser; the budget acts only in the free flight (scan-free), not in courses or lessons yet;
@@ -782,6 +842,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 S3: the most turns went to mapping what one new lesson touches (about 20 package files, four simulator tests);
+  a stage for a new lesson alone, with that list given, would have finished it. The base build lost one run to the missing
+  submodule in a fresh worktree (git submodule update --init --reference C:/dev/ShramkoSonicFPV first).
 
 - 2026-11-15 S1 pass 2: the most replies went to reading the probe and the course progress code; one run batch was lost
   because my wrapper started a server on the port the probe starts itself (read runs.sh's probe for PORT first). Starting the

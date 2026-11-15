@@ -263,3 +263,35 @@ the same sounds learned at a desk then work on the street.
 | Z7 speed lessons | package: lessons/speed-1..6.json, library.ts; simulator: lesson list texts if any in packages/i18n/locales/fly/sonic | test/speed-ladder.test.ts (each cap at most ear pilot median / 1.25, read from the evidence file) |
 | Z8 browser proof | simulator: release build, tools/bench/scripts/sonic-walk-probe.mjs extended | Tunis 887f27aa and Wroclaw 70b50d42 (walls stand-in): Backslash, N for a course, fly at rising speed; the page's cue stream recorded and run through perceive.ts: tier changes heard, at most 2 streams at tier 2 |
 | Later | head tracking (5.1), HRTF pick (5.2), phone app (5.3) | design only until the lead has read Cat3DA and the licences |
+
+## 7. The lesson "turn slightly and listen" (S3 item 1: designed, not built)
+
+Why: the consultant and docs/wip/sonic-headtrack-plan.md "What to build first" step 1: front and back are told apart when the
+listener moves the source by a small turn. The rule a pilot can use from the cues alone: turn a little; a sound in front moves
+to the ear AWAY from the turn, a sound behind moves INTO the ear on the side of the turn (turn left: front goes right, behind
+goes left). The ear pilot needs no new knowledge for it: it turns until the hum is in the middle.
+
+Lesson (package): lessons/turn-listen.json, module 1, placed between hover-height and hover-turn in paths.json "full" (the first
+lesson that turns toward a sound). Copy of hover-turn.json (assists, goal turn-to ring-1 tolerance 12 deg, pass 3 of 3,
+attempt limit 30 s) with start.yawDeg 180 and world.params.offsetXM -2, so the ring is behind and a little to one side.
+Order 6; every lesson with order 6 or more moves up by one (hover-turn 7 ... free-garden 32, scan-free 29); the speed commit
+9c40ed2 did the same for the shapes lessons without a version bump. Lines (7 per language): title, intro.1, intro.2, goal.1,
+hint.1, pass, retry. English:
+- title: Turn a little and listen
+- intro.1: A sound is behind you. In headphones, a sound behind can seem to be in front.
+- intro.2: Move the yaw stick a little left, then a little right, and listen. A sound in front moves away from your turn. A sound behind moves into the ear on the side you turn to.
+- goal.1: Turn until the sound is straight ahead.
+- hint.1: Turn a little and listen. If the sound goes into the ear on the side you turn to, it is behind you: keep turning that way.
+- pass: Good. A small turn tells front from back.
+- retry: Let's try once more. Turn a little and listen.
+
+Files the build touches (found in S3, the pattern of the speed lessons 9c40ed2, f767aa9, a466888, 30836c1):
+package lessons/turn-listen.json, lessons/paths.json, the order of 26 lessons, src/lesson/library.ts (import and SOURCES),
+src/i18n/catalog.ts LESSONS ({ id: 'turn-listen', module: 1, intro: 2, goals: 1, hints: 1 }), locales en es pl ru,
+test/helpers/new-lessons.ts (a list beside SPEED_LESSONS for test/pass-rule.test.ts V012 and test/world-scale.test.ts),
+the lesson count 32 -> 33 in README.md, AGENTS.md, CITATION.cff, llms.txt, test/fixtures/tts-*.json by
+test/fixtures/measure-tts.ps1 (the four voices), the counts in test/lesson-schedule.test.ts (429/301 en, 515 es pl ru),
+evidence/listen/VL-4-words.json by pnpm listen:words with SHRAMKO_LISTEN_PY; tools/canon-lessons.ts for the canonical form.
+Simulator after the pin move: tools/bench/test/sonic-lessons.test.ts, sonic-start-screen.test.ts, sonic-start.test.ts and
+tools/bench/src/sonic-v13-page.ts name hover-turn or count lessons. Browser: Z5_LESSONS=turn-listen with r12 of
+tools/bench/src/sonic-int-review.ts on a release build (one GPU lock hold).
