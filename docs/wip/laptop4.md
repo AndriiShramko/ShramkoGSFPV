@@ -26,8 +26,11 @@ Stage Q2-near-field
   candidate (c) `?viewlodrim=` (view-lod.ts rimFactor, RIM_FROM 2, RIM_SPAN 4, both estimates; off by default), wired
   through flight.ts, session, renderer.ts, prefs url.ts; test view-lod-rim.test.ts 9 of 9, NEG OK; view-lod,
   switches, main-audit pass (57 of 57 with it); render-pc and fly typecheck exit 0 (this commit)
-- [ ] 2. Measure (a) multiplier 1.7 and 1.5, (c) rim 2, against l3-lub-ref16 by near and far half
-- [ ] 3. Pictures, Wroclaw street at 1 M and the turns for a kept candidate, accept-fly, a6, gates
+- [x] 2. Measured (a) multiplier 1.7 and 1.5, (c) rim 2 and 4, against l3-lub-ref16 by near and far half: NO candidate
+  wins (Facts Q2-near); (b) not built (Decisions). The rim switch stays off by default for the measurement (this commit)
+- [x] 3. Pictures in U:/Temp/gsfpv-train3/shots: laptop4-lublin-above-0p5M-before/-after.png and -1M-before/-after.png
+  (after = before: the default is unchanged), candidates -cand-rim2, -rim4, -m17, -m15; Wroclaw street, turns and bytes
+  not run (needed only for a kept candidate)
 
 ## Facts (measured)
 
@@ -85,7 +88,40 @@ the CDP profile (PROFILE=1), GPU load before the page (nvidia-smi):
   The same splats are drawn (within 41 of 0.46 M and 2 of 0.97 M); the frames are bimodal (most about 2 to 3 ms, every
   tenth or so about 17 to 19 ms). The card was shared with outside programs during these runs (11 to 46 % before).
 
+### Q2-near: the near half of Lublin from above (2026-11-15, 11:14 to 11:33, port 5740)
+
+Builds 4bd4fbf7 (base, multiplier runs) and 4d9200ee (rim runs; same default path). Runner run-q2.sh, probe
+lod-view-probe.mjs `--product --no-turns`, flags `drawing=sorted&set.display.deviceClass=desktop-strong`, 3840x1970,
+display-capped. Score: lod-view-score.mjs `--rows` against l3-lub-ref16 (16 M), PSNR luma over the scan's pixels, dB
+(U:/Temp/gsfpv-train3/laptop4/score-s1-*.txt, score-rim-*.txt). Near = rows 0.5:1, far = rows 0:0.5 (the start place
+has only sky in its top half). One run each.
+
+| Place, half | 0.5 M base | m1.7 | m1.5 | rim2 | rim4 | 1 M base | m1.7 | m1.5 | rim2 | rim4 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 140 m up, near | 18.04 | 18.04 | 18.00 | 18.10 | 18.10 | 19.52 | 19.53 | 19.50 | 19.59 | 19.59 |
+| 140 m up, far | 17.86 | 17.46 | 17.00 | 17.17 | 16.82 | 19.09 | 18.60 | 18.05 | 18.25 | 17.51 |
+| 40 m up, near | 18.90 | 19.01 | 19.05 | 19.10 | 19.09 | 20.40 | 20.47 | 20.50 | 20.58 | 20.52 |
+| 40 m up, far | 17.48 | 17.10 | 16.66 | 16.67 | 16.41 | 18.84 | 18.26 | 17.62 | 17.60 | 16.85 |
+| start (whole) | 18.22 | 18.15 | 17.98 | 18.01 | 18.00 | 19.65 | 19.51 | 19.31 | 19.36 | 19.16 |
+
+- Every candidate moves budget from the far half to the near half; the near half gains 0 to +0.2 dB, the far half loses
+  0.4 to 1.6 dB, the whole start picture loses 0.07 to 0.5 dB. For scale: doubling the budget (0.5 M to 1 M) gives the
+  near half at 140 m +1.48 dB.
+- Level over the picture at 140 m (probe log): base 9.17 / 8.16, rim2 9.27 / 8.28, m1.7 9.38 / 8.37 (0.5 M / 1 M); the
+  frame centre's level stays 9.02 / 8.02 in every run: the freed budget does not lift the near nodes by a whole level.
+  A guess, not measured: one level finer in the near half costs about 4 times its splats, more than the far half frees.
+- By eye (1 M, 140 m, base against rim2, Read tool): the near bottom third is the same smeared roofs and street in both;
+  the far park and the trees at the top are a touch softer in rim2. No candidate is better by eye.
+- Reveal at 140 m: 0.4 to 1.2 s in every run; the 0.5 M runs drew 0.46 to 0.47 M, the 1 M runs 0.95 to 0.97 M.
+
 ## Decisions
+
+- Q2: no candidate is kept; the default stays multiplier 2, far levels 3, rim 0. `?viewlodrim=` stays as a measurement
+  switch (off). (b) "coarse cover first, then the nearest and largest" was not built: it changes the order in which
+  files arrive, not the settled choice of the balancer (the same budget over the same nodes), and the settled picture is
+  what is smeared; the files already come nearest first (nearFirst). Reasoned, not measured.
+- The lever left for the near field at 0.5 to 1 M is not a different share of the same budget; it would have to be a
+  scan with a finer middle level (more levels between 8 and 9) or a larger budget; neither was tried.
 
 - Q1: no code change for the freeze: its cause is outside the page. laptop3's rejection of multipliers below 2 rested
   on the freeze; that ground is gone. Its 1.7 score at 1 M (worse by 0.08 to 0.14 dB from above) was also taken on the

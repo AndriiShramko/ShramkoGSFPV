@@ -64,14 +64,14 @@ const COMPARE = async ({ a, b, rows }) => {
 async function main() {
     const argv = process.argv.slice(2);
     let ref = '';
-    let rows = null;
+    let band = null;
     const labels = [];
     for (let i = 0; i < argv.length; i++) {
         if (argv[i] === '--ref') ref = argv[++i];
-        else if (argv[i] === '--rows') rows = argv[++i].split(':').map(Number);
+        else if (argv[i] === '--rows') band = argv[++i].split(':').map(Number);
         else labels.push(argv[i]);
     }
-    if (rows && !(rows.length === 2 && rows[0] >= 0 && rows[1] <= 1 && rows[0] < rows[1])) throw new Error('--rows a:b with 0 <= a < b <= 1');
+    if (band && !(band.length === 2 && band[0] >= 0 && band[1] <= 1 && band[0] < band[1])) throw new Error('--rows a:b with 0 <= a < b <= 1');
     if (!ref || !labels.length) throw new Error('usage: lod-view-score.mjs --ref <label> <label> [<label> ...]');
     if (!existsSync(DIR)) throw new Error(`no pictures: ${DIR}`);
     const names = readdirSync(DIR).filter((f) => f.startsWith(`${ref}-`) && f.endsWith('.png')).map((f) => f.slice(ref.length + 1, -4));
@@ -88,7 +88,7 @@ async function main() {
             for (const name of [...names, ...names.filter((x) => /-end$/.test(x)).flatMap((x) => [x.replace(/-end$/, '-0'), x.replace(/-end$/, '-1')])]) {
                 if (rows.some((r) => r.label === label && r.picture === name)) continue;
                 if (!existsSync(join(DIR, `${label}-${name}.png`)) || !existsSync(join(DIR, `${ref}-${refFor(name)}.png`))) continue;
-                const r = await page.evaluate(COMPARE, { a: b64(ref, refFor(name)), b: b64(label, name), rows });
+                const r = await page.evaluate(COMPARE, { a: b64(ref, refFor(name)), b: b64(label, name), rows: band });
                 rows.push({ label, picture: name, against: `${ref}-${refFor(name)}`, ...r });
             }
         }
@@ -102,8 +102,8 @@ async function main() {
     for (const p of pictures) console.log(pad(p, 22) + labels.map((l) => { const r = rows.find((x) => x.label === l && x.picture === p); return pad(r ? (r.error ? 'error' : `${r.psnrLit} / ${r.psnrQuarter}`) : '-', 26); }).join(''));
     const outDir = join(REPO, 'evidence', new Date().toISOString().slice(0, 10), 'lod-view');
     mkdirSync(outDir, { recursive: true });
-    const file = join(outDir, `score-${ref}-${labels[0]}${rows ? `-rows${rows.join('-')}` : ''}.json`);
-    writeFileSync(file, asciiJson(JSON.stringify({ name: `lod-view/score-${ref}`, date: new Date().toISOString(), reference: ref, labels, rows, measure: 'PSNR on luma in dB against the reference run\'s picture of the same place (a turn\'s pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference\'s lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged', rows }, null, 1)) + '\n');
+    const file = join(outDir, `score-${ref}-${labels[0]}${band ? `-rows${band.join('-')}` : ''}.json`);
+    writeFileSync(file, asciiJson(JSON.stringify({ name: `lod-view/score-${ref}`, date: new Date().toISOString(), reference: ref, labels, rows: band, measure: 'PSNR on luma in dB against the reference run\'s picture of the same place (a turn\'s pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference\'s lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged', rows }, null, 1)) + '\n');
     console.log(`written ${file.replace(REPO, '.').replace(/\\/g, '/')}`);
 }
 
