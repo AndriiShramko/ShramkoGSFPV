@@ -103,6 +103,18 @@ describe('TR-10: the best lap key names the scene, the walls and the scale', () 
         expect(bestKey(withDigest('bbbb'), 'pavo20')).not.toBe(a);
         expect(bestKey({ ...withDigest('aaaa'), transform: [0.6, 0, 0, 0] } as TrackFile, 'pavo20')).not.toBe(a);
         expect(bestKey(withDigest('aaaa'), 'meteor75')).not.toBe(a);
+        // review FX-5: a ring turned to start near the spawn ('<v>.s<n>') is another key; the plain version keeps its key
+        const withVersion = (v: string) => ({ ...withDigest('aaaa'), generator: { ...withDigest('aaaa').generator!, version: v } }) as TrackFile;
+        const plain = String(course.generator?.version ?? '2');
+        expect(bestKey(withVersion(plain), 'pavo20')).toBe(a);
+        expect(bestKey(withVersion(`${plain}.s3`), 'pavo20')).not.toBe(a);
+        expect(bestKey(withVersion(`${plain}.s3`), 'pavo20')).not.toBe(bestKey(withVersion(`${plain}.s4`), 'pavo20'));
+        expect(bestKey(withVersion(`${plain}.s3`), 'pavo20').startsWith(`${course.id}.v`)).toBe(true);
+        // review FY-2: generator 3 lays another course for the same seed: its keys differ; versions 1 and 2 keep theirs
+        expect(bestKey(withVersion('1'), 'pavo20')).toBe(bestKey(withVersion('2'), 'pavo20'));
+        expect(bestKey(withVersion('3'), 'pavo20')).not.toBe(bestKey(withVersion('2'), 'pavo20'));
+        expect(bestKey(withVersion('3.s2'), 'pavo20')).not.toBe(bestKey(withVersion('3'), 'pavo20'));
+        expect(bestKey(withVersion('3.s2'), 'pavo20')).not.toBe(bestKey(withVersion('2.s2'), 'pavo20'));
     });
 });
 

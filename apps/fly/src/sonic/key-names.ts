@@ -56,6 +56,15 @@ export function codeOfHint(h: KeyHint): string | null {
  */
 export function spokenKey(h: KeyHint, layout: LayoutMap | null, named: (code: string) => string | null): string {
     const code = codeOfHint(h);
+    // lane onecourse (D2): a chord is said with the key's letter at the end and the word for key before it ("Shift and key G"),
+    // the joining words in the page's language (sonic.key.ChordJoin); without them the cap
+    const chord = /^(Shift|Ctrl|Alt)\+([A-Z0-9])$/.exec(h.aria);
+    if (code === null && chord) {
+        const join = named('ChordJoin');
+        if (join === null) return h.cap;
+        const letter = spokenKey({ ...h, cap: chord[2] as string, aria: chord[2] as string }, layout, named);
+        return `${named(chord[1] as string) ?? chord[1]} ${join} ${letter}`;
+    }
     if (code === null) return h.cap;
     if (code.startsWith('Key') || code.startsWith('Digit')) {
         const typed = layout?.get(code);

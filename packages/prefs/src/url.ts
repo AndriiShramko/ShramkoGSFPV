@@ -33,6 +33,7 @@ export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     viewlod: 'test: ?viewlod=0 draws a streamed scan with the engine own choice of detail, without the frame\'s priority (lane lod-view: the benches control arm, and a way back); no pilot setting',
     lodmul: 'test: ?lodmul=1.2..4 the scan\'s level multiplier while the frame\'s priority works (lane laptop3 P3 measurement, docs/wip/laptop3.md); no pilot setting',
     viewlodfar: 'test: ?viewlodfar=0..12 the far field\'s levels of the frame\'s priority (lane laptop3 P3 measurement, docs/wip/laptop3.md); no pilot setting',
+    viewlodrim: 'test: ?viewlodrim=0..6 the far rim inside the frame so many levels coarser, so the near field gets the budget (lane laptop4 Q2 measurement, docs/wip/laptop4.md); no pilot setting',
     scale: 'test: a fixed render scale for benches and screenshots (the pilot\'s control is display.quality)',
     refine: 'test: finer walls by the plan, only on request, or never (bench modes of walls.ts)',
     bake: 'test: build walls at once for a scan without them (phase C bench)',

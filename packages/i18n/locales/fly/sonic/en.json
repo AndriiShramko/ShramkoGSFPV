@@ -54,9 +54,12 @@
   "sonic.say.helpMenu": "Press {key} for the lesson menu.",
   "sonic.say.helpPrevious": "Press {key} to go back one step.",
   "sonic.say.helpRepeat": "Press {key} to hear the task of this step again, with its sounds.",
+  "sonic.say.helpCourse": "Press {key} for a course of gates in this scene. A new course replaces the old one.",
+  "sonic.key.ChordJoin": "and key",
   "sonic.say.helpShare": "Press {key} to copy a link to this lesson, to share it.",
   "sonic.say.homeBack": "Main menu of Fly by Sound. The lesson {title} is saved: Continue takes you back to it.",
   "sonic.say.lessonKeys": "Next, key {next}. Back, key {previous}. Repeat, key {repeat}. Menu, key {menu}. Main menu, key {home}.",
+  "sonic.say.lessonKeysFree": "Back, key {previous}. Repeat, key {repeat}. Menu, key {menu}. Main menu, key {home}.",
   "sonic.say.linkCopied": "The link to this lesson is copied. Paste it into a message or an e-mail to share it.",
   "sonic.say.linkCopiedStart": "The link to Fly by Sound is copied. Paste it into a message or an e-mail to share it.",
   "sonic.say.linkSelected": "The link to the lesson {lesson} was not copied. It is selected: press {copy} to copy it, then Escape to go back.",
@@ -110,5 +113,7 @@
   "sonic.start.scanWhat": "Free flight over this scan at size x{size}: you hear its walls and your height. No rings, no clock.",
   "sonic.key.Backslash": "Backslash",
   "sonic.say.inPlaceOn": "Fly by Sound is on, right where you are.",
-  "sonic.say.inPlaceIntro": "You hear the walls as you come near them, and your height. {off} switches Fly by Sound off, {course} makes a course of gates here, {keys} says all the keys. To learn step by step, press {menu} and choose the lessons."
+  "sonic.say.inPlaceIntro": "You hear the walls as you come near them, and your height. {off} switches Fly by Sound off, {course} makes a course of gates here, {keys} says all the keys. To learn step by step, press {menu} and choose the lessons.",
+  "sonic.say.inPlaceIntroCourse": "You hear the walls as you come near them, and your height. The hum leads you to the next gate of the course. {off} switches Fly by Sound off, {keys} says all the keys. To learn step by step, press {menu} and choose the lessons.",
+  "sonic.say.gateBehind": "The gate is behind you."
 }

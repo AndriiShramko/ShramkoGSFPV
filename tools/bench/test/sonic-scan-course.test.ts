@@ -5,10 +5,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { analyticCollision } from '../../../packages/collision/src';
-import { Rig } from './sonic-lesson-rig';
+import { Rig, SharedCourse } from './sonic-lesson-rig';
+import { KEY_HELP } from '../../../apps/fly/src/sonic/mode-keys';
+import { spokenKey } from '../../../apps/fly/src/sonic/key-names';
 import type { Control, RigScan } from './sonic-lesson-rig';
-import { parseTrack, scanFreeLesson, validateLesson, SCAN_FREE_ID } from '../../../packages/sonic-fpv/src';
-import type { TrackFile } from '../../../packages/sonic-fpv/src';
+import { parseTrack, quatRotate, scanFreeLesson, validateLesson, SCAN_FREE_ID } from '../../../packages/sonic-fpv/src';
+import type { SonicObject, TrackFile, Vec3 } from '../../../packages/sonic-fpv/src';
 import { buildScanLesson, isScanCourse, scanCourseLesson } from '../../../apps/fly/src/sonic/scan-lesson';
 import { courseAnswer, courseJob } from '../../../apps/fly/src/sonic/course-ask';
 import { REPO } from '../src/evidence';
@@ -92,11 +94,17 @@ describe('a course of gates in a free scan flight (S3)', () => {
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 const wrap = (d: number): number => ((((d + 180) % 360) + 360) % 360) - 180;
 
-/** A pilot who flies to the runner's target (as sonic-garden.test.ts follow). */
+/** The next gate of the course in the scene (the course feature's count), what the hum leads to in the free flight. */
+function sharedNext(r: Rig): SonicObject | null {
+    const c = r.shared?.inUse() ?? null;
+    return c && c.next >= 0 ? (c.gates[c.next] ?? null) : null;
+}
+
+/** A pilot who flies to the target the stage shows (the runner's, else the course's next gate; as sonic-garden.test.ts follow). */
 const follow: Control = (r) => {
     const run = r.host.runner;
     if (!run || run.phase !== 'flying') return null;
-    const gate = run.target();
+    const gate = run.target() ?? sharedNext(r);
     if (!gate) return null;
     const p = r.pos;
     const dx = gate.pos[0] - p[0];
@@ -109,7 +117,7 @@ const follow: Control = (r) => {
     };
 };
 
-describe('N in a free scan flight, through the page host (S3 pass 2)', () => {
+describe('one course in the scene, the course feature\'s, in Fly by Sound too (lane onecourse, the owner\'s message 52)', () => {
     let rig: Rig | null = null;
     afterEach(() => {
         rig?.dispose();
@@ -117,7 +125,7 @@ describe('N in a free scan flight, through the page host (S3 pass 2)', () => {
         vi.restoreAllMocks();
     });
 
-    it('N asks the page for a course: the course lesson opens, the hum leads to gate 1, then to gate 2 once gate 1 is passed', async () => {
+    async function start(o: { before?: boolean; key?: string } = {}): Promise<{ r: Rig; shared: SharedCourse; count: (k: string) => number }> {
         const track = garden();
         const T = [5, 0, 0, 0] as const;
         // a flat floor at y 0 under the garden's rings at x5 (5 to 7 m up): walls the flight flies, without the scan's own file
@@ -131,104 +139,181 @@ describe('N in a free scan flight, through the page host (S3 pass 2)', () => {
             transform: T,
             spawn: [T[0] * t.pos[0] + T[1], T[0] * t.pos[1] + T[2], T[0] * t.pos[2] + T[3], t.yawDeg]
         };
+        const shared = new SharedCourse(() => track, { s: T[0], t: [T[1], T[2], T[3]] }, o.key);
+        // Shift+G in the ordinary flight before Fly by Sound is switched on
+        if (o.before) shared.generate();
         const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
-        let asked = 0;
-        rig = await Rig.make(free, { scan, course: { key: () => 'N', ask: async () => (asked++, { ok: true, track }) } });
-        const r = rig;
+        const r = await Rig.make(free, { scan, course: shared });
+        rig = r;
         expect(await r.host.openFree(free)).toBe(true);
-        const said = (key: string): boolean => r.engine.said.some((s) => s.line.key === key);
-        // N during the intro skips the intro (the runner's next); N in the flight asks for the course
-        await r.run(60000, null, () => said('sonic.say.courseOffer') && r.host.runner?.phase === 'flying');
-        expect(said('sonic.say.courseOffer')).toBe(true);
-        expect(r.host.runner?.phase).toBe('flying');
-        // the free flight has no target
+        const count = (k: string): number => r.engine.said.filter((s) => s.line.key === k).length;
+        return { r, shared, count };
+    }
+
+    const nextId = (r: Rig): string | null => sharedNext(r)?.id ?? null;
+
+    it('a course in the scene before the switch-on is the one flown: no offer, no course of its own, the hum leads to its next gate', async () => {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
         await r.run(200);
+        expect(count('sonic.say.courseOffer')).toBe(0);
+        expect(count('sonic.say.courseMaking')).toBe(0);
+        expect(shared.made).toBe(1);
+        expect(r.host.lesson && isScanCourse(r.host.lesson)).toBe(false);
+        // the old design: the runner held a course of its own; now the target is the scene's course's gate 1
         expect(r.host.runner?.target() ?? null).toBeNull();
-        expect(r.press('scene.next')).toBe(true);
-        await r.run(60000, null, () => said('sonic.say.courseReady') && r.host.runner?.phase === 'flying');
-        expect(asked).toBe(1);
-        expect(said('sonic.say.courseMaking')).toBe(true);
-        expect(r.engine.said.find((s) => s.line.key === 'sonic.say.courseReady')?.line.params).toMatchObject({ n: track.gates.length, laps: track.laps, key: 'N' });
-        expect(r.host.runner?.phase).toBe('flying');
-        const first = track.gates[0]!.id;
-        const second = track.gates[1]!.id;
-        await r.run(200);
-        expect(r.host.runner!.target()?.id).toBe(first);
-        expect(r.stage.target).toBe(first);
-        await r.run(120000, follow, () => r.of('gate').length > 0);
-        expect(r.of('gate').map((g) => g.gateId)).toEqual([first]);
+        expect(r.stage.target).toBe(shared.inUse()!.gates[0]!.id);
+        // O2.6: the hum sounds and leads to that gate (the runner's beacon was null over the scene's course: no target.hum)
+        expect(r.engine.activeCues().filter((c) => c.id === 'target.hum').length).toBe(1);
+        // the course feature counts gate 1; the hum goes on to gate 2
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        expect(shared.inUse()!.next).toBe(1);
         await r.run(100);
-        expect(r.host.runner!.target()?.id).toBe(second);
-        expect(r.stage.target).toBe(second);
+        expect(r.stage.target).toBe(nextId(r));
+        expect(r.stage.target).toBe(shared.inUse()!.gates[1]!.id);
     }, 120000);
 
-    it('review SN-2/3/6/9: the scan button opens the free flight on its own; a passed course is flown again with no ask and no "last lesson"; nothing is saved; a late answer opens nothing', async () => {
-        const track = garden();
-        const T = [5, 0, 0, 0] as const;
-        const collision = analyticCollision([-12, -1, -26], [12, 14, 26], 0.25, (_x, y) => y < 0);
-        const t = track.start!;
-        const scan: RigScan = {
-            sceneId: '7a475d38',
-            collision,
-            sha256: 'flat-floor',
-            track,
-            transform: T,
-            spawn: [T[0] * t.pos[0] + T[1], T[0] * t.pos[1] + T[2], T[0] * t.pos[2] + T[3], t.yawDeg]
-        };
-        const freeOf = (id: string) => (id === SCAN_FREE_ID ? scanFreeLesson('7a475d38', [5, 0, 0, 0]) : null);
-        let asked = 0;
-        let hold: Promise<void> | null = null;
-        rig = await Rig.make(freeOf(SCAN_FREE_ID)!, {
-            scan,
-            course: {
-                key: () => 'N',
-                ask: async () => {
-                    asked++;
-                    if (hold) await hold;
-                    return { ok: true, track };
-                }
-            }
-        });
-        const r = rig;
-        const count = (key: string): number => r.engine.said.filter((s) => s.line.key === key).length;
-        // the start screen's press over the flight (feature.ts onStart); before review SN-2 it was host.open(id)
-        const fromScreen = (): Promise<boolean> => ('openFromScreen' in r.host ? r.host.openFromScreen(SCAN_FREE_ID, freeOf) : (r.host as { open(id: string): Promise<boolean> }).open(SCAN_FREE_ID));
-        // SN-2: the start screen's scan button over a page whose host never opened the free flight
-        expect(await fromScreen()).toBe(true);
-        expect(r.host.lesson?.id).toBe(SCAN_FREE_ID);
+    it('the progress is kept over the switch off and on: gate 2 stays gate 2, no new course', async () => {
+        const { r, shared } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        const run = shared.run;
+        r.mode.leave();
+        await r.run(200);
+        expect(shared.run).toBe(run);
+        expect(shared.inUse()!.next).toBe(1);
+        expect(await r.host.openFree(scanFreeLesson('7a475d38', [5, 0, 0, 0]), { here: true })).toBe(true);
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(200);
+        expect(shared.made).toBe(1);
+        expect(shared.inUse()!.next).toBe(1);
+        expect(r.stage.target).toBe(shared.inUse()!.gates[1]!.id);
+    }, 120000);
+
+    it('N in the sound mode is Shift+G\'s action: the course in the scene is replaced, the hum leads to gate 1 of the new one', async () => {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        const old = shared.run;
+        expect(r.press('scene.next')).toBe(true);
+        await r.run(300);
+        expect(shared.made).toBe(2);
+        expect(shared.run).not.toBe(old);
+        expect(shared.inUse()!.next).toBe(0);
+        expect(r.stage.target).toBe(shared.inUse()!.gates[0]!.id);
+        // one course: the sound mode opened no course lesson of its own and said no making of one
+        expect(r.host.lesson && isScanCourse(r.host.lesson)).toBe(false);
+        expect(count('sonic.say.courseMaking')).toBe(0);
+        expect(count('sonic.say.courseReady')).toBe(0);
+    }, 120000);
+
+    it('no course in the scene: one line names Shift+G, the flight is free, nothing is made by itself', async () => {
+        const { r, shared, count } = await start();
         await r.run(60000, null, () => count('sonic.say.courseOffer') > 0 && r.host.runner?.phase === 'flying');
-        expect(r.press('scene.next')).toBe(true);
-        await r.run(60000, null, () => count('sonic.say.courseReady') > 0 && r.host.runner?.phase === 'flying');
-        expect(asked).toBe(1);
-        // SN-3: every gate flown, then no key: the same course again, said ready once more, no second ask, no "last lesson"
-        await r.run(900000, follow, () => r.host.runner?.phase === 'passed');
-        expect(r.host.runner?.phase).toBe('passed');
-        await r.run(60000, null, () => count('sonic.say.courseReady') > 1 || asked > 1);
         await r.run(5000);
-        expect(asked).toBe(1);
-        expect(count('sonic.say.courseMaking')).toBe(1);
-        expect(count('fly.last-lesson')).toBe(0);
-        expect(count('sonic.say.courseReady')).toBe(2);
-        expect(r.host.lesson && isScanCourse(r.host.lesson)).toBe(true);
-        expect(r.host.runner?.phase).not.toBe('passed');
-        // SN-6: the free flight and its courses keep no progress (one best time for every course in every scan before)
-        const saved = (r.store.collection('sonic') as { progress?: Record<string, unknown> }).progress ?? {};
-        expect(saved[SCAN_FREE_ID]).toBeUndefined();
-        // SN-2: after a course the scan button flies freely again, not the course kept in memory
-        expect(await fromScreen()).toBe(true);
-        expect(isScanCourse(r.host.lesson!)).toBe(false);
-        // SN-9: N, then the scan button while the worker runs: the late answer opens no course over the new flight
-        const offers = count('sonic.say.courseOffer');
-        await r.run(60000, null, () => count('sonic.say.courseOffer') > offers && r.host.runner?.phase === 'flying');
-        let release = (): void => undefined;
-        hold = new Promise<void>((res) => (release = res));
+        expect(count('sonic.say.courseOffer')).toBe(1);
+        expect(r.engine.said.find((s) => s.line.key === 'sonic.say.courseOffer')?.line.params).toMatchObject({ key: 'Shift+G' });
+        expect(shared.made).toBe(0);
+        expect(r.stage.target).toBeNull();
+    }, 120000);
+
+    /** a point in the gate's own frame (+Z its front, the side a pass comes from), in the world */
+    const at = (g: SonicObject, l: readonly [number, number, number]): Vec3 => {
+        const w = quatRotate(g.quat, [l[0], l[1], l[2]]);
+        return [g.pos[0] + w[0], g.pos[1] + w[1], g.pos[2] + w[2]];
+    };
+    /** the follow pilot's way to a point; done within 1.5 m of it */
+    const toPoint = (p: Vec3): Control => (r) => {
+        const q = r.pos;
+        const dx = p[0] - q[0];
+        const dz = p[2] - q[2];
+        const err = wrap((Math.atan2(dx, -dz) * 180) / Math.PI - r.yaw);
+        return {
+            turn: clamp(err / 30, -1, 1),
+            forward: Math.abs(err) > 70 ? 0 : 0.6 * Math.cos((err * Math.PI) / 180) * Math.min(1, Math.hypot(dx, dz) / 4 + 0.3),
+            lift: clamp((p[1] - q[1]) * 0.9, -1, 1)
+        };
+    };
+    const reach = async (r: Rig, p: Vec3): Promise<void> => {
+        await r.run(60000, toPoint(p), () => Math.hypot(r.pos[0] - p[0], r.pos[1] - p[1], r.pos[2] - p[2]) < 1.5);
+        expect(Math.hypot(r.pos[0] - p[0], r.pos[1] - p[1], r.pos[2] - p[2]), `reached ${p.join(',')}`).toBeLessThan(1.5);
+    };
+    /** O2.4 (message 53, D7): past gate 2 by `off` (local), 10 m past it, back to its front, then through it */
+    async function missAndReturn(off: readonly [number, number]): Promise<void> {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        const g = shared.inUse()!.gates[1]!;
+        await reach(r, at(g, [off[0], off[1], 4]));
+        await reach(r, at(g, [off[0], off[1], -10]));
+        expect(shared.inUse()!.next, 'the miss does not count').toBe(1);
+        await reach(r, at(g, [0, 0, 4]));
+        await r.run(60000, toPoint(at(g, [0, 0, -4])), () => (shared.inUse()?.next ?? 0) >= 2);
+        expect(count('sonic.say.gateBehind')).toBe(1);
+        expect(count('fly.wrong-way')).toBe(0);
+        expect(shared.inUse()!.next, 'the gate counts after the return').toBe(2);
+    }
+
+    it('D7: gate 2 missed beside it (7 m off its centre) and flown back to: "The gate is behind you" once, no wrong way, the gate counts', async () => {
+        await missAndReturn([7, 0]);
+    }, 240000);
+
+    it('D7: gate 2 flown over (4.5 m above its centre) and flown back to: "The gate is behind you" once, no wrong way, the gate counts', async () => {
+        await missAndReturn([0, 4.5]);
+    }, 240000);
+
+    it('review OC-5: gate 1 missed, then a new course (its gate 1 has the same id g1) and its gate 1 missed: "The gate is behind you" said for each', async () => {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        const g = shared.inUse()!.gates[0]!;
+        await reach(r, at(g, [7, 0, 4]));
+        await reach(r, at(g, [7, 0, -10]));
+        expect(count('sonic.say.gateBehind')).toBe(1);
         expect(r.press('scene.next')).toBe(true);
-        await r.run(500, null, () => asked > 1);
-        expect(asked).toBe(2);
-        expect(await fromScreen()).toBe(true);
-        release();
-        await r.run(2000);
-        expect(isScanCourse(r.host.lesson!)).toBe(false);
-        expect(count('sonic.say.courseReady')).toBe(2);
-    }, 300000);
+        await r.run(300);
+        const g2 = shared.inUse()!.gates[0]!;
+        expect(g2).not.toBe(g);
+        expect(g2.id).toBe(g.id);
+        await reach(r, at(g2, [7, 0, 4]));
+        await reach(r, at(g2, [7, 0, -10]));
+        expect(count('sonic.say.gateBehind')).toBe(2);
+        expect(count('fly.wrong-way')).toBe(0);
+    }, 240000);
+
+    it('D7: backing up and sliding on a leg say nothing; turned round and flown nose-first back along the leg away from the next gate says the wrong way', async () => {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
+        const c = shared.inUse()!;
+        const g1 = c.gates[0]!;
+        const g2 = c.gates[1]!;
+        const flat = [g2.pos[0] - g1.pos[0], g2.pos[2] - g1.pos[2]];
+        const n = Math.hypot(flat[0]!, flat[1]!);
+        const along: Vec3 = [flat[0]! / n, 0, flat[1]! / n];
+        await reach(r, [g1.pos[0] + along[0] * 2, g1.pos[1], g1.pos[2] + along[2] * 2]);
+        // (d) backing up 2 s, sliding 2 s each way: silent
+        await r.run(2000, () => ({ forward: -0.6 }));
+        await r.run(2000, () => ({ strafe: 0.6 }));
+        await r.run(2000, () => ({ strafe: -0.6 }));
+        await r.run(1500);
+        expect(count('fly.wrong-way'), 'backing up and sliding').toBe(0);
+        // (c) turned round, nose-first back along the leg, away from gate 2
+        const away: Vec3 = [g1.pos[0] - along[0] * 8, g1.pos[1], g1.pos[2] - along[2] * 8];
+        await r.run(60000, toPoint(away), () => count('fly.wrong-way') > 0 || Math.hypot(r.pos[0] - away[0], r.pos[2] - away[2]) < 1.5);
+        expect(count('fly.wrong-way')).toBe(1);
+        expect(count('sonic.say.gateBehind')).toBe(0);
+    }, 240000);
+
+    it('the key help names Shift+G for a course, said with the letter last ("Shift and key G"); no course line names N', () => {
+        const help = KEY_HELP.find(([line]) => line === 'sonic.say.helpCourse');
+        expect(help?.[1]).toBe('course.generate');
+        const named = (code: string): string | null => (code === 'ChordJoin' ? 'and key' : null);
+        expect(spokenKey({ cap: 'Shift+G', aria: 'Shift+G' } as never, null, named)).toBe('Shift and key G');
+        for (const loc of ['en', 'es', 'pl', 'ru']) {
+            const dict = JSON.parse(readFileSync(join(REPO, `packages/i18n/locales/fly/sonic/${loc}.json`), 'utf8')) as Record<string, string>;
+            for (const k of ['sonic.say.courseOffer', 'sonic.say.helpCourse', 'sonic.say.inPlaceIntro', 'sonic.say.inPlaceIntroCourse', 'sonic.say.lessonKeysFree']) expect(dict[k], `${loc} ${k}`).not.toMatch(/(^|[^\p{L}])N([^\p{L}]|$)/u);
+            expect(dict['sonic.key.ChordJoin'], loc).toBeTruthy();
+        }
+    });
 });
+

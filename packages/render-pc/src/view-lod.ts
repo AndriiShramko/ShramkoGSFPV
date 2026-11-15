@@ -49,23 +49,46 @@ export interface ViewLodParams {
     nearFirst: boolean;
     /** the scan's lodMultiplier while this is at work (lodRule): one level coarser per this many times the distance */
     lodMultiplier: number;
+    /**
+     * the far rim INSIDE the frame: a node in the frame further than RIM_FROM times the nearest one in the frame is up to
+     * this many levels coarser (all of them at RIM_FROM * RIM_SPAN times), so the budget goes to the near field; 0: off
+     */
+    rimLevels: number;
+}
+
+/** The far rim starts at this many times the distance of the nearest node in the frame (an estimate, lane laptop4 Q2). */
+export const RIM_FROM = 2;
+/** ...and reaches its full rimLevels this many times further on (an estimate, lane laptop4 Q2). */
+export const RIM_SPAN = 4;
+
+/** The factor on the distance of a node in the frame at distance d when the nearest node in the frame is at dNear. */
+export function rimFactor(d: number, dNear: number, rimLevels: number, multiplier: number): number {
+    if (!(rimLevels > 0) || !(dNear > 0) || !(d > dNear * RIM_FROM)) return 1;
+    const t = Math.min(1, Math.log(d / (dNear * RIM_FROM)) / Math.log(RIM_SPAN));
+    return Math.max(1, multiplier) ** (rimLevels * t * t * (3 - 2 * t));
 }
 
 /**
  * The values the Lublin stress test settled on (docs/wip/lod-view.md): between the two that were scored against a 16 M
  * reference, 0.43 and 2.5 levels (best right after a snap turn) and 0.68 and 4 levels (best once the view has settled).
  */
-export const VIEW_LOD_DEFAULTS: ViewLodParams = { ringDeg: 25, ringLevels: 0.5, farDeg: 80, farLevels: 3, predictS: 0.25, refreshDeg: 6, nearFirst: true, lodMultiplier: 2 };
+export const VIEW_LOD_DEFAULTS: ViewLodParams = { ringDeg: 25, ringLevels: 0.5, farDeg: 80, farLevels: 3, predictS: 0.25, refreshDeg: 6, nearFirst: true, lodMultiplier: 2, rimLevels: 0 };
 
 /**
- * The params of two test switches over the defaults (?lodmul= the multiplier, ?viewlodfar= the far field's levels, 0 to
- * 12); a value that is absent or out of range leaves the default.
+ * The params of three test switches over the defaults (?lodmul= the multiplier, ?viewlodfar= the far field's levels, 0 to
+ * 12, ?viewlodrim= the far rim's levels inside the frame, 0 to 6); a value that is absent or out of range leaves the default.
  */
-export function viewLodParamsOf(multiplier?: unknown, farLevels?: unknown): Partial<ViewLodParams> {
+export function viewLodParamsOf(multiplier?: unknown, farLevels?: unknown, rimLevels?: unknown): Partial<ViewLodParams> {
     const out: Partial<ViewLodParams> = {};
     if (multiplier !== undefined && multiplier !== null && multiplier !== '') out.lodMultiplier = lodMultiplierOf(multiplier);
-    const f = typeof farLevels === 'string' && farLevels.trim() !== '' ? Number(farLevels) : farLevels;
-    if (typeof f === 'number' && Number.isFinite(f) && f >= 0 && f <= 12) out.farLevels = f;
+    const num = (v: unknown): number | null => {
+        const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
+        return typeof n === 'number' && Number.isFinite(n) ? n : null;
+    };
+    const f = num(farLevels);
+    if (f !== null && f >= 0 && f <= 12) out.farLevels = f;
+    const rim = num(rimLevels);
+    if (rim !== null && rim >= 0 && rim <= 6) out.rimLevels = rim;
     return out;
 }
 
@@ -541,6 +564,18 @@ export class ViewLod {
         const px = _p.x, py = _p.y, pz = _p.z;
         let nIn = 0, nRing = 0, nOut = 0;
         const ring = p.ringDeg * D2R;
+        // the far rim inside the frame (rimLevels > 0): the nodes in the frame and their distances, and the nearest one
+        const rim = this.params.rimLevels > 0;
+        const inIdx: number[] = [];
+        const inD: number[] = [];
+        let dNear = Infinity;
+        const keep = (i: number, d: number): void => {
+            if (!rim) return;
+            inIdx.push(i);
+            inD.push(d);
+            // by the centre, as the engine's own distance: a big node's surface may touch the camera
+            if (d < dNear) dNear = d;
+        };
         for (let i = 0; i < nodes.length; i++) {
             const s = (nodes[i] as NodeLike).boundingSphere;
             const vx = s.x - px, vy = s.y - py, vz = s.z - pz;
@@ -556,6 +591,7 @@ export class ViewLod {
             // touches the frame (its sphere reaches over both side planes): no trigonometry for most nodes
             if (z > -r && x * cosH - z * sinH <= r && y * cosV - z * sinV <= r) {
                 nIn++;
+                keep(i, Math.sqrt(d2));
                 continue;
             }
             const d = Math.sqrt(d2);
@@ -569,12 +605,22 @@ export class ViewLod {
             }
             if (!(e > 0)) {
                 nIn++;
+                keep(i, d);
                 continue;
             }
             if (e < ring) nRing++;
             else nOut++;
             const k = viewFactor(e, p);
             (infos[i] as { worldDistanceSq: number }).worldDistanceSq *= k * k;
+        }
+        if (rim && inIdx.length) {
+            const m = inst.placement.lodMultiplier ?? ENGINE_LOD_MULTIPLIER;
+            // a node around the camera's own place is no measure of the near field: at least a metre
+            const near = Math.max(1, dNear);
+            for (let j = 0; j < inIdx.length; j++) {
+                const k = rimFactor(inD[j], near, this.params.rimLevels, m);
+                if (k > 1) (infos[inIdx[j]] as { worldDistanceSq: number }).worldDistanceSq *= k * k;
+            }
         }
         this.counts = { inFrame: nIn, ring: nRing, out: nOut };
     }

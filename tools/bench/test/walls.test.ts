@@ -12,8 +12,125 @@ import {
     memCapGb, planRefine, predictNodes, sceneSize
 } from '../../../apps/fly/src/bake';
 import type { GpuLimits, SceneSize } from '../../../apps/fly/src/bake';
+import * as wallcache from '../../../apps/fly/src/wallcache';
 import { MemKv, WallCache, crc32, gunzip, gzip, keyText, unzip, wallsKey, wallsSha, zipStore } from '../../../apps/fly/src/wallcache';
 import type { WallsKeyInput } from '../../../apps/fly/src/wallcache';
+const flyLocale = (l: string): Record<string, string> => JSON.parse(readFileSync(join(__dirname, '..', '..', '..', 'packages', 'i18n', 'locales', 'fly', `${l}.json`), 'utf8')) as Record<string, string>;
+const [en, es, pl, ru] = ['en', 'es', 'pl', 'ru'].map(flyLocale);
+
+// lane fix3a: walls built here are kept, also when the size request failed before the build, and the walls
+// line can say when they are not (keepBuilt). On origin/main the helper does not exist: the first check fails.
+describe('walls built here are kept, or the line says they are not (fix3a)', () => {
+    const keep = (wallcache as Record<string, unknown>).keepBuilt as typeof wallcache.keepBuilt;
+    const kv = () => new WallCache(new MemKv(), 'memory');
+    const json = new TextEncoder().encode('{"walls":1}');
+    const bin = new Uint8Array(4096).fill(7);
+    let clock = 0;
+    const now = () => (clock += 5);
+
+    it('the key made before the build is used; the row is in the store when the promise resolves', async () => {
+        expect(typeof keep).toBe('function');
+        const c = kv();
+        let made = 0;
+        const r = await keep({ input: input(), makeInput: async () => { made++; return null; }, put: (i) => c.put(i, json, bin), now });
+        expect(r.ok).toBe(true);
+        expect(made).toBe(0);
+        expect(r.key).toBe(await wallsKey(input()));
+        expect(r.bytes).toBeGreaterThan(0);
+        expect(r.ms).toBeGreaterThan(0);
+        expect(await c.get(r.key!)).not.toBeNull();
+    });
+
+    it('no key before the build (the size request failed): it is made again and the walls are kept', async () => {
+        expect(typeof keep).toBe('function');
+        const c = kv();
+        const r = await keep({ input: null, makeInput: async () => input({ etag: null }), put: (i) => c.put(i, json, bin), now });
+        expect(r.ok).toBe(true);
+        expect(await c.get(await wallsKey(input({ etag: null })))).not.toBeNull();
+    });
+
+    it('no key at all, or a store that throws: ok false with the reason, never a silent loss', async () => {
+        expect(typeof keep).toBe('function');
+        const c = kv();
+        const none = await keep({ input: null, makeInput: async () => { throw new Error('scene metadata 503'); }, put: (i) => c.put(i, json, bin), now });
+        expect(none).toMatchObject({ ok: false, key: null, error: 'no-key' });
+        expect(await c.rows()).toHaveLength(0);
+        const full = await keep({ input: input(), makeInput: async () => null, put: async () => { throw new Error('QuotaExceededError'); }, now });
+        expect(full.ok).toBe(false);
+        expect(full.error).toContain('QuotaExceededError');
+        expect(full.key).toBe(await wallsKey(input()));
+    });
+
+    it('the walls line has the kept and not-kept words in en, es, pl, ru', () => {
+        for (const l of [en, es, pl, ru] as Array<Record<string, string>>) {
+            expect(l['bake.notKept']?.length).toBeGreaterThan(20);
+            expect(l['bake.keeping']?.length).toBeGreaterThan(10);
+        }
+        expect(new Set([en, es, pl, ru].map((l) => (l as Record<string, string>)['bake.notKept'])).size).toBe(4);
+    });
+});
+
+// Review FX-1 to FX-3 of lane fix3a: built walls go in use only after their store write (FX-1), a page-memory store is
+// not "kept" (FX-2), and a failed write is never silent whatever line the box shows (FX-3). The helpers do not exist on
+// the code before the review: the type checks fail first.
+describe('walls are in use only once kept; a lost keep is always said (fix3a review)', () => {
+    const lib = wallcache as Record<string, unknown>;
+    const keep = lib.keepBuilt as typeof wallcache.keepBuilt;
+    const json = new TextEncoder().encode('{"walls":1}');
+    const bin = new Uint8Array(1024).fill(3);
+    const now = () => 1;
+    const ok = { ok: true, key: 'k', ms: 1, bytes: 1 };
+    const failed = { ok: false, key: 'k', ms: 1, bytes: 0, error: 'QuotaExceededError' };
+
+    it('FX-1: use() runs after the write ended, not before; a write that hangs lets the walls in after the wait', async () => {
+        const then = lib.keepThenUse as typeof wallcache.keepThenUse;
+        expect(typeof then).toBe('function');
+        const order: string[] = [];
+        let end: (r: typeof ok) => void = () => {};
+        const kept = new Promise<typeof ok>((r) => (end = r)).then((r) => (order.push('kept'), r));
+        let wake: () => void = () => {};
+        const p = then(kept, () => order.push('use'), 5000, () => new Promise<void>((r) => (wake = r)));
+        await Promise.resolve();
+        expect(order).toEqual([]);
+        end(ok);
+        expect(await p).toEqual(ok);
+        expect(order).toEqual(['kept', 'use']);
+        const hung = then(new Promise(() => {}), () => order.push('use-late'), 5000, () => new Promise<void>((r) => (wake = r)));
+        await Promise.resolve();
+        expect(order).not.toContain('use-late');
+        wake();
+        expect(await hung).toBeNull();
+        expect(order).toContain('use-late');
+    });
+
+    it('FX-1: in walls.ts every built walls queue() waits for keepThenUse (base and refine)', () => {
+        const src = readFileSync(join(__dirname, '../../../apps/fly/src/walls.ts'), 'utf8');
+        const at = [...src.matchAll(/queue\(r\.json/g)].map((m) => m.index!);
+        expect(at.length).toBe(2);
+        for (const i of at) expect(src.slice(Math.max(0, i - 400), i)).toContain('await keepThenUse(kept');
+    });
+
+    it('FX-2: walls that went only into the page memory store are not kept', async () => {
+        expect(typeof keep).toBe('function');
+        const c = new WallCache(new MemKv(), 'memory');
+        const r = await keep({ input: input(), makeInput: async () => null, put: async (i) => ({ ...(await c.put(i, json, bin)), memory: true }), now });
+        expect(r).toMatchObject({ ok: false, error: 'memory' });
+    });
+
+    it('FX-3: a failed keep is said on the done line, after another line, or alone; a kept one leaves the box', () => {
+        const line = lib.keptLine as typeof wallcache.keptLine;
+        expect(typeof line).toBe('function');
+        const done = 'Walls built.';
+        const keeping = `${done} Keeping`;
+        expect(line(done, done, keeping, failed, 'NOT')).toBe(`${done} NOT`);
+        expect(line(keeping, done, keeping, failed, 'NOT')).toBe(`${done} NOT`);
+        expect(line('Finer walls are in.', done, keeping, failed, 'NOT')).toBe('Finer walls are in. NOT');
+        expect(line('', done, keeping, failed, 'NOT')).toBe('NOT');
+        expect(line(keeping, done, keeping, ok, 'NOT')).toBe(done);
+        expect(line('Other', done, keeping, ok, 'NOT')).toBeNull();
+        expect(line(done, done, keeping, { ...failed, error: 'off' }, 'NOT')).toBeNull();
+    });
+});
 
 const FIX = join(__dirname, '..', '..', '..', 'fixtures', '39e63ce9');
 const lodMeta = JSON.parse(readFileSync(join(FIX, 'lod-meta.json'), 'utf8'));

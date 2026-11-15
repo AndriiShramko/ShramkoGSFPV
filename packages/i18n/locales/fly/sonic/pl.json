@@ -54,9 +54,12 @@
   "sonic.say.helpMenu": "Naciśnij klawisz {key}, aby otworzyć menu lekcji.",
   "sonic.say.helpPrevious": "Naciśnij klawisz {key}, aby cofnąć się o jeden krok.",
   "sonic.say.helpRepeat": "Naciśnij klawisz {key}, aby jeszcze raz usłyszeć zadanie tego kroku razem z dźwiękami.",
+  "sonic.say.helpCourse": "Naciśnij {key}, aby dostać tor z bramek w tej scenie. Nowy tor zastępuje poprzedni.",
+  "sonic.key.ChordJoin": "i klawisz",
   "sonic.say.helpShare": "Naciśnij klawisz {key}, aby skopiować link do tej lekcji i się nim podzielić.",
   "sonic.say.homeBack": "Menu główne trybu Lot na słuch. Lekcja {title} jest zapisana: Kontynuuj wraca do niej.",
   "sonic.say.lessonKeys": "Dalej, klawisz {next}. Wstecz, klawisz {previous}. Powtórz, klawisz {repeat}. Menu, klawisz {menu}. Menu główne, klawisz {home}.",
+  "sonic.say.lessonKeysFree": "Wstecz, klawisz {previous}. Powtórz, klawisz {repeat}. Menu, klawisz {menu}. Menu główne, klawisz {home}.",
   "sonic.say.linkCopied": "Link do tej lekcji jest skopiowany. Wklej go do wiadomości lub e-maila, aby się nim podzielić.",
   "sonic.say.linkCopiedStart": "Link do trybu „Lot na słuch” jest skopiowany. Wklej go do wiadomości lub e-maila, aby się nim podzielić.",
   "sonic.say.linkSelected": "Link do lekcji {lesson} nie został skopiowany. Jest zaznaczony: naciśnij klawisze {copy}, aby go skopiować, a potem klawisz Escape, aby wrócić.",
@@ -110,5 +113,7 @@
   "sonic.start.scanWhat": "Wolny lot nad tym skanem w rozmiarze x{size}: słyszysz jego ściany i swoją wysokość. Bez obręczy, bez zegara.",
   "sonic.key.Backslash": "ukośnik wsteczny",
   "sonic.say.inPlaceOn": "Lot na słuch jest włączony, dokładnie tam, gdzie jesteś.",
-  "sonic.say.inPlaceIntro": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. {off} wyłącza lot na słuch, {course} tworzy tutaj trasę z bramkami, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje."
+  "sonic.say.inPlaceIntro": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. {off} wyłącza lot na słuch, {course} tworzy tutaj trasę z bramkami, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje.",
+  "sonic.say.inPlaceIntroCourse": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. Buczenie prowadzi cię do następnej bramki trasy. {off} wyłącza lot na słuch, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje.",
+  "sonic.say.gateBehind": "Bramka jest za tobą."
 }

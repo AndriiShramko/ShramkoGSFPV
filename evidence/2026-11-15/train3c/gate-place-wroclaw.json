@@ -1,0 +1,100 @@
+[
+ {
+  "id": "70b50d42",
+  "errors": [],
+  "regen": [
+   {
+    "seed": 1023939442,
+    "s": 7.8,
+    "gates": 24,
+    "problem": null,
+    "walls": "none",
+    "spanM": 108.8,
+    "eye": 24,
+    "h": [
+     1.6,
+     2
+    ],
+    "noGround": 0,
+    "scale": null
+   },
+   {
+    "seed": 673364088,
+    "s": 8.7,
+    "gates": 13,
+    "problem": null,
+    "walls": "none",
+    "spanM": 75.2,
+    "eye": 13,
+    "h": [
+     1.6,
+     2
+    ],
+    "noGround": 0,
+    "scale": null
+   },
+   {
+    "seed": 947700243,
+    "s": 4.4,
+    "gates": 24,
+    "problem": null,
+    "walls": "none",
+    "spanM": 125.9,
+    "eye": 24,
+    "h": [
+     1.6,
+     2
+    ],
+    "noGround": 0,
+    "scale": null
+   }
+  ],
+  "top": {
+   "heights": [
+    1.6,
+    1.7,
+    1.8,
+    1.9,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.7,
+    1.7,
+    1.7,
+    1.9,
+    1.6,
+    2,
+    1.9,
+    1.6,
+    1.6,
+    1.6,
+    2,
+    1.7,
+    1.6,
+    1.6
+   ],
+   "spanM": 125.9
+  },
+  "views": [
+   {
+    "gate": 1,
+    "file": "fix3b-wroclaw-pilot.png",
+    "back": 8,
+    "eyeAboveGround": 1.6,
+    "gateAboveGround": 1.6,
+    "cam": [
+     -5.5,
+     2.7,
+     -26.86
+    ],
+    "bearing": 0.7,
+    "elev": 0,
+    "dist": 8,
+    "pitchDeg": 0
+   }
+  ]
+ }
+]

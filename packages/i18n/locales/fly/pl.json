@@ -323,6 +323,8 @@
   "bake.done": "Ściany zbudowane w tej przeglądarce w {s} s. Kraksy są włączone.",
   "bake.doneRough": "Ściany zbudowane w {s} s. Kraksy są włączone. W tym skanie ściany są przybliżone.",
   "bake.doneNext": "Ściany zbudowane w {s} s. Leć dalej: włączą się przy następnym starcie.",
+  "bake.keeping": "Zapisuję je w tej przeglądarce…",
+  "bake.notKept": "Te ściany są tylko na tę wizytę: następnym razem przeglądarka zbuduje je sama od nowa.",
   "bake.noRoom": "Temu urządzeniu zabrakło pamięci na ściany. Zamknij inne karty i naciśnij przycisk jeszcze raz.",
   "bake.failed": "Tym razem ściany się nie zbudowały. Naciśnij przycisk, żeby zbudować je jeszcze raz.",
   "bake.walls": "Ściany {cm} cm",

@@ -1,0 +1,527 @@
+{
+ "base": "http://localhost:5760/en",
+ "scene": "70b50d42",
+ "tag": "train3c-off",
+ "render": false,
+ "steps": [
+  {
+   "name": "shiftG-flight",
+   "before": {
+    "course": {
+     "on": false,
+     "source": "none",
+     "seed": null,
+     "gates": 0,
+     "next": -1,
+     "drawn": 0,
+     "laps": 0,
+     "track": null,
+     "clock": ""
+    },
+    "sonic": null,
+    "note": null,
+    "guide": {
+     "shown": false,
+     "gate": -1,
+     "metres": 0
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1476109984,
+     "gates": 19,
+     "next": 0,
+     "drawn": 39,
+     "laps": 0,
+     "track": {
+      "id": "g1.oeu5r4",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 19\nLast -\nBest -"
+    },
+    "sonic": null,
+    "note": "Gates: 19. Fly through gate 1 to start the clock. Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 15
+    },
+    "lines": [],
+    "s": 14.4
+   }
+  },
+  {
+   "name": "backslash-on",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1476109984,
+     "gates": 19,
+     "next": 0,
+     "drawn": 39,
+     "laps": 0,
+     "track": {
+      "id": "g1.oeu5r4",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 19\nLast -\nBest -"
+    },
+    "sonic": null,
+    "note": null,
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 13
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1476109984,
+     "gates": 19,
+     "next": 0,
+     "drawn": 39,
+     "laps": 0,
+     "track": {
+      "id": "g1.oeu5r4",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 19\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": null,
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 13
+    },
+    "lines": [
+     "sonic.say.inPlaceIntroCourse",
+     "sonic.say.lessonKeysFree"
+    ],
+    "s": 12.1
+   }
+  },
+  {
+   "name": "shiftG-sound",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 1476109984,
+     "gates": 19,
+     "next": 0,
+     "drawn": 39,
+     "laps": 0,
+     "track": {
+      "id": "g1.oeu5r4",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 19\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": null,
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 13
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 831759175,
+     "gates": 24,
+     "next": 0,
+     "drawn": 38,
+     "laps": 0,
+     "track": {
+      "id": "g1.dr7hhj",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 33
+    },
+    "lines": [
+     "sonic.say.lessonKeysFree"
+    ],
+    "s": 10.6
+   }
+  },
+  {
+   "name": "N-sound",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 831759175,
+     "gates": 24,
+     "next": 0,
+     "drawn": 38,
+     "laps": 0,
+     "track": {
+      "id": "g1.dr7hhj",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+    "guide": {
+     "shown": true,
+     "gate": 0,
+     "metres": 33
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 2115669752,
+     "gates": 24,
+     "next": 0,
+     "drawn": 48,
+     "laps": 0,
+     "track": {
+      "id": "g1.yzm588",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+    "guide": {
+     "shown": false,
+     "gate": 0,
+     "metres": 11
+    },
+    "lines": [
+     "sonic.say.lessonKeysFree"
+    ],
+    "s": 12.1
+   }
+  },
+  {
+   "name": "backslash-off",
+   "before": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 2115669752,
+     "gates": 24,
+     "next": 0,
+     "drawn": 48,
+     "laps": 0,
+     "track": {
+      "id": "g1.yzm588",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": "g1",
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+    "guide": {
+     "shown": false,
+     "gate": 0,
+     "metres": 11
+    }
+   },
+   "after": {
+    "course": {
+     "on": true,
+     "source": "generated",
+     "seed": 2115669752,
+     "gates": 24,
+     "next": 0,
+     "drawn": 48,
+     "laps": 0,
+     "track": {
+      "id": "g1.yzm588",
+      "version": 1
+     },
+     "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+    },
+    "sonic": null,
+    "note": null,
+    "guide": {
+     "shown": false,
+     "gate": 0,
+     "metres": 11
+    },
+    "lines": [],
+    "s": 8.2
+   }
+  },
+  {
+   "name": "nocourse-backslash",
+   "before": {
+    "course": {
+     "on": false,
+     "source": "none",
+     "seed": null,
+     "gates": 0,
+     "next": -1,
+     "drawn": 0,
+     "laps": 0,
+     "track": null,
+     "clock": ""
+    },
+    "sonic": null,
+    "note": null,
+    "guide": {
+     "shown": false,
+     "gate": -1,
+     "metres": 0
+    }
+   },
+   "after": {
+    "course": {
+     "on": false,
+     "source": "none",
+     "seed": null,
+     "gates": 0,
+     "next": -1,
+     "drawn": 0,
+     "laps": 0,
+     "track": null,
+     "clock": ""
+    },
+    "sonic": {
+     "lesson": "scan-free",
+     "phase": "flying",
+     "target": null,
+     "lastLine": "sonic.say.lessonKeysFree",
+     "prims": 0,
+     "passed": false
+    },
+    "note": null,
+    "guide": {
+     "shown": false,
+     "gate": -1,
+     "metres": 0
+    },
+    "lines": [
+     "sonic.say.inPlaceIntro",
+     "sonic.say.lessonKeysFree"
+    ],
+    "s": 20.1
+   }
+  }
+ ],
+ "errors": [],
+ "install": {
+  "hover": 0.27743940434601666,
+  "bot": true
+ },
+ "passes": [
+  {
+   "gate": 1,
+   "next": 0
+  },
+  {
+   "gate": 2,
+   "next": 0
+  }
+ ],
+ "saveCheckSound": {
+  "transform": [
+   1,
+   0,
+   0,
+   0
+  ],
+  "margin": 0.5,
+  "walls": {
+   "res": 0.1,
+   "flip": false,
+   "min": [
+    -151.2,
+    -4,
+    -211.20000000000002
+   ],
+   "n": [
+    2944,
+    236,
+    3756
+   ]
+  },
+  "spawn": [
+   -11.900656700134277,
+   3.1238160133361816,
+   -16.831905364990234,
+   93.15394252224232
+  ],
+  "start": {
+   "pos": [
+    -11.6,
+    2.8,
+    -16.8
+   ],
+   "yawDeg": 337.5
+  },
+  "startFlown": [
+   -11.6,
+   2.8,
+   -16.8
+  ],
+  "gate1": [
+   -16.4,
+   2.2,
+   -26.4
+  ],
+  "gates": 24,
+  "laps": 1,
+  "seed": 831759175,
+  "proof": {
+   "ok": true,
+   "marginM": 0.5,
+   "pathM": 178.214
+  },
+  "problems": [],
+  "startFreeM": 6,
+  "nearWallM": 1.9,
+  "legs": [],
+  "gatesBad": [],
+  "issues": []
+ },
+ "afterShiftGSound": {
+  "course": {
+   "on": true,
+   "source": "generated",
+   "seed": 831759175,
+   "gates": 24,
+   "next": 0,
+   "drawn": 38,
+   "laps": 0,
+   "track": {
+    "id": "g1.dr7hhj",
+    "version": 1
+   },
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+  },
+  "sonic": {
+   "lesson": "scan-free",
+   "phase": "flying",
+   "target": "g1",
+   "lastLine": "sonic.say.lessonKeysFree",
+   "prims": 0,
+   "passed": false
+  },
+  "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+  "guide": {
+   "shown": true,
+   "gate": 0,
+   "metres": 33
+  }
+ },
+ "afterN": {
+  "course": {
+   "on": true,
+   "source": "generated",
+   "seed": 2115669752,
+   "gates": 24,
+   "next": 0,
+   "drawn": 48,
+   "laps": 0,
+   "track": {
+    "id": "g1.yzm588",
+    "version": 1
+   },
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -"
+  },
+  "sonic": {
+   "lesson": "scan-free",
+   "phase": "flying",
+   "target": "g1",
+   "lastLine": "sonic.say.lessonKeysFree",
+   "prims": 0,
+   "passed": false
+  },
+  "note": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course",
+  "guide": {
+   "shown": false,
+   "gate": 0,
+   "metres": 11
+  }
+ },
+ "nocourseLater": {
+  "course": {
+   "on": false,
+   "source": "none",
+   "seed": null,
+   "gates": 0,
+   "next": -1,
+   "drawn": 0,
+   "laps": 0,
+   "track": null,
+   "clock": ""
+  },
+  "sonic": {
+   "lesson": "scan-free",
+   "phase": "flying",
+   "target": null,
+   "lastLine": "sonic.say.lessonKeysFree",
+   "prims": 0,
+   "passed": false
+  },
+  "note": null,
+  "guide": {
+   "shown": false,
+   "gate": -1,
+   "metres": 0
+  }
+ }
+}

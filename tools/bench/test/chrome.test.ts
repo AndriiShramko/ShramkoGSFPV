@@ -77,6 +77,16 @@ describe('which browser the harnesses launch', () => {
         expect({ headless: false, ...pickBrowser({ env: WIN_ENV, platform: 'win32', ...f }).launch }.headless).toBe(true);
     });
 
+    it('BENCH_UNCAPPED=1 adds the two flags that free the frames from the display pacing (laptop4 Q1); nothing otherwise', () => {
+        const f = fs([WIN_CHROME]);
+        const flags = ['--disable-gpu-vsync', '--disable-frame-rate-limit'];
+        expect(pickBrowser({ env: { ...WIN_ENV, BENCH_UNCAPPED: '1' }, platform: 'win32', ...f }).launch).toEqual({ channel: 'chrome', headless: true, args: flags });
+        expect(pickBrowser({ env: { ...CLOUD_ENV, BENCH_UNCAPPED: '1' }, platform: 'linux', ...fs([CLOUD_EXE], CLOUD_DIRS) }).launch.args).toEqual(flags);
+        // control: off, or any other value, leaves the launch as it was (no args key at all)
+        expect(pickBrowser({ env: WIN_ENV, platform: 'win32', ...f }).launch).toEqual({ channel: 'chrome', headless: true });
+        expect(pickBrowser({ env: { ...WIN_ENV, BENCH_UNCAPPED: 'yes' }, platform: 'win32', ...f }).launch.args).toBeUndefined();
+    });
+
     // One mechanism, no second switch (the v0.11 merge: a lane's BENCH_BACKGROUND=headless|offscreen and a pointer-lock stub
     // were reconciled into this one). Every launcher in the repo takes its headless from chrome.mjs (the spread of
     // pick.launch, benchHeadless(), or a literal true), never from a literal false that would open a window by itself.

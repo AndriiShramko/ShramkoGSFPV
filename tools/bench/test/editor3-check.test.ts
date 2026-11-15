@@ -72,7 +72,11 @@ describe('editor3: the course check off the page thread', () => {
     });
 
     it('the page edits with no walls check on its thread and asks the worker after each change', () => {
-        expect(COURSE_TS).not.toMatch(/wallsCheck\(/);
+        // lane fix3b's read-only probe hook (hook.saveCheck, called only by probes) runs the Save check on the page; the
+        // edit path must not: strip that one hook before the match
+        const page = COURSE_TS.replace(/hook\.saveCheck = \(move\) => \{[\s\S]*?\n {8}\};\r?\n/, '');
+        expect(page).not.toBe(COURSE_TS);
+        expect(page).not.toMatch(/wallsCheck\(/);
         expect(COURSE_TS).toMatch(/openEditor\(upgradeTrack\(run\.track\), keepProblems, 0\)/);
         expect(COURSE_TS).toMatch(/edit\(ed, k\.edit, keepProblems\)/);
         expect(COURSE_TS).toMatch(/checks\?\.ask\(ed\.course, flownTransform\(\), edMargin\)/);
