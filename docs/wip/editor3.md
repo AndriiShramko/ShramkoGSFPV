@@ -17,8 +17,11 @@ Stage G1-merge-hooks (train 3 wave 3):
 - [x] G1.3 apps/fly tsc 0, packages/tracks tsc 0; vitest editor3-* (8 files), tracks-editor-ui, course3-hooks,
   a6-reference: 10 files 57/57 pass; NEG OK (neg_control.py ref HEAD 493526f5, course.ts and check-worker.ts: the
   editor3-flying hook test fails by an assertion).
-- [ ] G1.4 release build, walls of 70b50d42 into dist/walls, REPRO=1 probe on Tunis with the pointerup record (bar hidden,
-  shown set, selected axis)
+- [~] G1.4 release of 05dbc189 built (g1/build2.log: sha 05dbc189, 1934 files); probe 05dbc189 records after every
+  pointerup (window listener in the init script: at the up, after the task, two frames later) GateBar.debug() (hidden flag,
+  drawn visibility), the shown tool and each set [enabled, nodes, selectedAxis, hoverAxis]; course.ts __gsfpvEditView adds
+  `bar`. Runner U:/Temp/gsfpv-train3/editor3/g1/run.sh (copies the wave-3 walls of 70b50d42 into dist/walls). REPRO run on
+  Tunis next.
 
 Stage E1-freeze-and-design (finished, the fix moved to E2 by the reply budget):
 - [x] 1. the owner's path measured on the live site, cause found in the code (probe 7ae6c1c1, facts below)
