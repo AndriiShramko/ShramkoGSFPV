@@ -6,8 +6,11 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 ## Status
 
 Stage Y1-switch-and-pins (train 3 wave 2):
-- [~] Before run: release build of 2065b16d (1932 files), fixes-run.sh (r11 Tunis 5 m/s) under way, log z5-r11-tunis4.log
-  (run-4 evidence kept as z5-r11-tunis4-run4.json). Backslash to first cue 0.263 s; N to gate 1 54.0 s.
+- [x] Before run: release build of 2065b16d (1932 files), fixes-run.sh (r11 Tunis 887f27aa 5 m/s, port 5823, old probe), log
+  z5-r11-tunis4.log / .json (run-4 evidence kept as z5-r11-tunis4-run4.json): 6 of 8. Backslash to first cue 0.263 s, first
+  line 0.265 s; N to gate 1 54.0 s; course NOT flown to its end (363 s cap, gates g1 g2, median 0.3 m/s, max 4.97, 0 dodges)
+  with the crash setting of the mode (crash off), so run 4's lost course was not the crash setting alone; both labels PASS,
+  moved 0 m in 18 ms, speed 5.11 -> 0 on the switch off (SO-1 stands), no lesson after. GPU lock released by the probe.
 - [x] Probe r11: life spy (session onLife reasons and every call that can make a new life) around both switches; the switch
   on is now made with W held and checked for no new life and kept speed; Z5_QUICK=1 runs the switches only (no course).
 - [x] Decision c: in place Escape opens the pause menu as P does (lesson-menu.ts pauseKey inPlace, lessons.ts inPlace,
@@ -19,8 +22,7 @@ Stage Y1-switch-and-pins (train 3 wave 2):
   test/lesson-schedule.test.ts counts en 429 lines / 301 longer, es pl ru 515 lines / 280, 376, 515 longer: 13 of 13.
   (measure-tts.ps1 writes a BOM and CRLF and all en lines: never commit its output, merge it.)
 - [ ] LEFT, in this order (stage stopped at its reply budget; nothing uncommitted in either repo but the two old evidence files):
-  1. Read the before run: U:/Temp/gsfpv-train3/sonic3/z5-r11-tunis4.log / .json (fixes-run.sh on 2065b16d, started 01:36, it
-     was flying the course at the stop; run-4 evidence kept as z5-r11-tunis4-run4.json). It ran the OLD probe (no spy).
+  1. Why the Tunis course stalls at g2 with a median 0.3 m/s (before run): read the trail in z5-r11-tunis4.json (pilot or sound).
   2. SO-1 cause: release build of HEAD, then PORT=5823 Z5_QUICK=1 Z5_SCENE=887f27aa Z5_SPEEDS=5 Z5_WALLS=shipped r11 (the
      probe takes the GPU lock itself): run.switchOn.spy and run.off.spy name the call and the life reason. Candidates read in
      code: crash.enabled cleared on leave (respawn.ts:67 setCrashOn -> applyLifeSettings, reason 'settings', "level and
