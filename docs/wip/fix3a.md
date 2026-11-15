@@ -687,6 +687,48 @@ Stage C0-places-left (fix3b's left items)
 Cost (course4 C0): about 27 replies; most went to finding a data source for R3 (no splat positions anywhere the generator
 runs) and to a page runner that only waited for the GPU lock; starting the runner as the first command of the stage and
 asking the lead whether R3 may read the scan files in Node would have saved both.
+## Status C1-start-finish
+
+Logs U:/Temp/gsfpv-train3/course4/c1/. origin/main had nothing new (git log HEAD..origin/main empty at ad5ceb37).
+- [x] release build of ad5ceb37 (the 'before' build): BUILD EXIT 0 (c1/build-before.log); dist holds it now
+- [x] pure parts: apps/fly/src/course/finish.ts (gateRoles, lapSplash, splashAlpha, resultsCard, lapSplashMode; hold 1500 ms,
+      fade 400 ms, card 3000 ms are the lead's design values) and course/hud-clock.ts (lapClock moved out of hud.ts, re-exported
+      there); test tools/bench/test/course-finish.test.ts 10 passed. Negative control: the module is new, so the test fails
+      on the old code by a missing import, not by an assertion.
+- [ ] 'before' pictures and measure on Wroclaw 70b50d42 (not taken)
+- [ ] S1 to S6 in the page, i18n, setting, browser proof, gates (see Left C1)
+
+## Left (C1-start-finish)
+
+1. 'Before' measure on the release of ad5ceb37 already in dist: copy the walls stand-in into dist/walls, serve on 5780, Shift+G
+   on Wroclaw; first and last gate are painted like the others (view.ts PAINT: next lime, later teal, passed grey); a lap
+   end only flashes the note course.lapDone / course.best (app/builtin/course.ts frame(), around line 183); course end the
+   same. Take two pictures. Pose the craft with the HOLD helper of tools/bench/scripts/gate-place-probe.mjs (line 54);
+   fly laps by writing sim.s along the path as tools/bench/src/rooms-race.ts fly() does (path: CourseRun.path).
+2. packages/tracks/src/laps.ts LapView: add lapTimes (the card needs each lap); view() returns [...this.lapTimes].
+3. S1 view.ts: for gateRoles(...) != null a checker band outside the frame (two rows of boxes, white 1,1,1 and black 0.02,
+   alternating) and a banner box above it with a canvas texture (emissiveMap; PlayCanvas Texture + setSource as
+   apps/fly/src/drones3d/studio.ts tex() does) saying START, FINISH or START / FINISH; ground line from
+   ctx.session.collision.queryRay(x, y, z, 0, -1, 0, 80) under the gate (same frame as gatePoses, see gate-place-probe.mjs
+   line 108). State the banner's pixels from 60 m (at fov 115 deg, 1920 px: about 612 px per radian, a 0.6 m word is 6 px).
+4. S2 view.ts: passed grey must be darker than later teal (now 0.45 grey vs teal, about the same brightness); a number plate
+   over the next gate (same banner code).
+5. S3 hud.ts update(): before the start (not running, laps 0) one line course.hud.toStart instead of the lap lines; course.ready
+   and course.server.loaded texts say START instead of gate 1.
+6. S4 and S5 hud.ts + hud.css: .course-splash (top 20vh, translate -50%, font 8vh, small 4vh, green #a6ff1a for best, white
+   otherwise, text-shadow, no box) and .course-card (same place, 3 s); alpha from splashAlpha per frame; course.ts frame()
+   replaces the two ctx.hud.flash calls with them, using readBest before writeBest as bestBeforeMs. The splash overlaps the
+   clock block at 1080 (block 120-224 px, splash 173-259 px): dim the block while the splash shows.
+7. Setting course.lapSplash: packages/prefs/src/defs/course.ts (COURSE_DEFS is empty; there is no 'course' group in
+   schema.ts GROUPS, so group 'display', enum LAP_SPLASH_MODES, default large, since 2); add it to a list in
+   packages/prefs/test/defs.test.ts; run packages/prefs/test/migrate.test.ts; labels set.course.lapSplash(.help, .opt.*) in
+   packages/i18n/locales/fly/course/{en,es,pl,ru}.json.
+8. Browser proof and pictures as the stage names them; accept-fly, tracks-page, typecheck, gates.py, a6-reference.
+
+Cost (course4 C1): about 30 replies, all reading: the course view, HUD, lap timer, settings schema and the probes to find
+how to pose and fly; nothing of S1 to S6 in the page yet. A stage this size needs the map of these files (view.ts, hud.ts,
+course.ts frame(), prefs defs, gate-place-probe HOLD, rooms-race fly) handed in the prompt, or a split into a code stage and
+a browser stage.
 Cost (course4 C0 pass 2): about 30 replies; most went to shaping a test world whose pocket is poor (four tries) and to
 finding that the old runner had already run; checking the pocket rule on Lublin's Node audit before writing the unit test
 would have shown at once that the reached cells are the wrong set.

@@ -8,14 +8,8 @@ import { placeGuide } from './guide';
 import type { Box, GuideAim } from './guide';
 import './hud.css';
 
-/** m:ss.cc */
-export function lapClock(ms: number | null): string {
-    if (ms === null) return '-';
-    const cs = Math.floor(Math.max(0, ms) / 10);
-    const m = Math.floor(cs / 6000);
-    const s = Math.floor((cs % 6000) / 100);
-    return `${m}:${String(s).padStart(2, '0')}.${String(cs % 100).padStart(2, '0')}`;
-}
+import { lapClock } from './hud-clock';
+export { lapClock };
 
 /** what the guide shows now (the page hook course.guide; probes read it) */
 export interface GuideState { shown: boolean; gate: number; metres: number; side: 'left' | 'right'; behind: boolean; inFrame: boolean; bearingDeg: number; x: number; y: number }
