@@ -78,7 +78,8 @@ Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
      ADD_FLOOR_M 0.5) and the check's margin before changing add-place.ts.
   3. Note for probes: view-mouse.ts standScreen() and the probe's stand.screen use the renderer entity, which between frames
      may hold the drone's pose; judge "in front" by place.at against floorBefore.viewBefore (as G2.11 did).
-  4. gates.py --only vitest,architecture,i18n,b18 on the final head (run on 8fbb67e3 below, see the result line).
+  4. gates.py --only vitest,architecture,i18n,b18: PASS on 239ae5bb (vitest 105 s, architecture, i18n, b18; logs
+     U:/Temp/gsfpv-gates-20261115-064831). Run again after the next code change.
 - [ ] old left list of pass 1 (1 and 2 done in G2.8-G2.11):
   1. `KBD=1 PHONE=0 OUT=U:/Temp/gsfpv-train3/editor3/g2/full2 SCENES=887f27aa,70b50d42 PORT=5804 bash
      U:/Temp/gsfpv-train3/editor3/g1/run.sh` (the 06:15 try waited 9 min on a lock held by others, no record). Read in
@@ -728,6 +729,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- G2 pass 2: about 30 replies; the most went to three release builds with a browser run each (about 7 minutes per pair);
+  recording the click's ray and the view in the debug hook from the first floor-add run would have named the cause one
+  build earlier, and a camera-override field in the hook would have explained the drone's view after the add in this pass.
 
 - G2-bar-space-floor: about 50 replies; the most went to waiting on the GPU lock held by others (three 9-minute give-ups) and
   to a first fix written from reading PlayCanvas (stopPropagation) before a measurement; the REPRO record of the first bar
