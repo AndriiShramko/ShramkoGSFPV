@@ -598,7 +598,13 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   1280x720 721,226-935,276, 844x390 359,226-485,254; clock 921,120-999,217 / 601,120-679,217 / 383,120-461,217: no overlap, the
   caption starts 9 px under the clock's bottom.
 - [x] X1.6 tsc --noEmit apps/fly 0 and tools/bench 0 (quiet3/tsc-*.log); a6-reference 1 passed (quiet3/a6.log).
-- [ ] X1.7 gates.py --only vitest,architecture,i18n,b18,leaks.
+- [x] X1.7 gates.py --only vitest,architecture,i18n,b18,leaks on f37169ab: all 5 PASS (vitest 99 s; logs
+  U:/Temp/gsfpv-gates-20261115-182324).
+- [ ] Left (not in this stage): a caption long enough to wrap past two rows was not shown in the browser (the I line is one row at
+  all three sizes), so the clamp itself is held by the stylesheet test only; the press from the pause menu item with the narrator
+  off (quiet at the press, then given back by the mode's sync because the flight is paused) was not walked in a browser; two quick
+  presses while the first switch-on is still loading give #ui back until the install re-quiets it (about 0.2 s, not measured).
+  QW-4 (the package pin 293ebae on train5 only) stays the integration's step.
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
