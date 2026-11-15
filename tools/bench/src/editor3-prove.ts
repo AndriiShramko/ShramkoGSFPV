@@ -603,7 +603,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         await sleep(800);
         if (await page.evaluate(() => document.activeElement instanceof HTMLInputElement)) { await page.keyboard.type('Probe I3'); await page.keyboard.press('Enter'); }
         const si = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 4000);
-        if (si.ok) { loopSaved = true; removed.push({ saved: true, gates: (await hook(page))?.gates, problems: e.problems }); break; }
+        if (si.ok) { loopSaved = true; await sleep(300); removed.push({ saved: true, gates: (await hook(page))?.gates, problems: e.problems, line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '') }); break; }
         const pick = (await ed(page)).selected ?? -1;
         const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
         if (pick === del) movedGone = true;
