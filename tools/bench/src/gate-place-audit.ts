@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { blockDims, findSphereSpawn, forEachBlock, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, FIT_BUDGET_MS, fitCourse, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { QualityMap, SceneTransform, Vec3 } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 
@@ -100,6 +100,39 @@ async function main(): Promise<void> {
             const box = qualityBounds(q, spawn);
             const free = freeSpace(walls, { spawn, bounds: box ?? undefined });
             const share = (t: number): number => (t < 0 || !(q.best > 0) ? 0 : r2(q.near[t]! / q.best));
+            if (arg('--diag')) {
+                // the generator's eye-band filter (generate.ts walkCourse) counted stage by stage, scale 1
+                const c = { cells: 0, roomy: 0, tile: 0, good: 0, share: 0, height: 0, ground: 0, eye: 0 };
+                const top = Math.max(EYE_HI_M, q.band[1]);
+                const sh: number[] = [];
+                for (let i = 0; i < free.room.length; i++) {
+                    if (free.room[i]! < 0) continue;
+                    c.cells++;
+                    const fr = clearanceM(free, i);
+                    if (fr < EYE_FREE_M) continue;
+                    c.roomy++;
+                    const p = cellCentre(free, i);
+                    const t = tileOf(q, p);
+                    if (t < 0) continue;
+                    c.tile++;
+                    if (!q.good[t]) continue;
+                    c.good++;
+                    sh.push(qualityShare(q, p));
+                    if (qualityShare(q, p) < POOR_SHARE) continue;
+                    c.share++;
+                    const ht = p[1] - q.ground[t]!;
+                    if (!(ht > -1 && ht < top + 1)) continue;
+                    c.height++;
+                    const g = groundBelow(walls, p, top + 1);
+                    if (!Number.isFinite(g)) continue;
+                    c.ground++;
+                    if (p[1] - g - Math.min(free.cellM / 2, fr - EYE_FREE_M) <= top) c.eye++;
+                }
+                sh.sort((a, b) => a - b);
+                const spawnShare = r2(qualityShare(q, spawn));
+                console.log(JSON.stringify({ scene: s.id, diag: c, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
+                continue;
+            }
             for (let seed = first; seed < first + seeds; seed++) {
                 const t0 = performance.now();
                 const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });

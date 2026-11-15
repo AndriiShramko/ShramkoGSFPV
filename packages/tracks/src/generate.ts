@@ -144,6 +144,9 @@ const EYE_STEP_M = 0.4;
  *  tile's quality (quality.ts near) is under this share of the scan's best quarter (estimate: before Y2 the gates of
  *  Wroclaw, Tunis and Opole stood at 0.18-0.28 of it, gate-place-audit.ts, place-before.json) */
 export const POOR_SHARE = 0.15;
+/** fix3b Y2: a leg's quality is read every this many m along it (gate-place-audit.ts reads every 1 m; 2 m let legs of
+ *  Wroclaw down to 0.04-0.11 of the best quarter through, place-after.json) */
+const LEG_STEP_M = 1;
 /** G2: the band candidates are used when there are at least this many per wanted gate (estimate), else every candidate */
 const BAND_CANDS_PER_GATE = 8;
 /** G2: the out half's way is about this share of a longest leg per gate (estimate: the legs are 3-15 m and a leg along a
@@ -370,6 +373,17 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     for (let k = offset; k < all.length; k += stride) pool.push(all[k]!);
     // the walk reads the whole (strided) pool: a farthest-point sample of 8 per gate spread 192 points over 47 000 m3 of
     // Winter Garden, so after 1-4 gates no sample lay 3-15 m from the last (evidence run of bf7dc3d9: tries 6-11)
+    // fix3b Y2: an eye-level course's leg stays in the well-scanned part: every LEG_STEP_M along it at least POOR_SHARE (the
+    // walk's legs and, at the end, every leg of the finished course: a dropped gate joins its neighbours, a closed course
+    // flies from its last gate back to the start)
+    // a start (the scan's spawn) in a poor tile is where the pilot begins anyway: its legs are not judged
+    let startPoor: Vec3 | null = null;
+    const legWell = (a: Vec3, b: Vec3): boolean => {
+        if (!Q || eyeHi === 0 || a === startPoor || b === startPoor) return true;
+        const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[2] - a[2]) / LEG_STEP_M));
+        for (let j = 0; j <= n; j++) if (qualityShare(Q, [a[0] + ((b[0] - a[0]) * j) / n, 0, a[2] + ((b[2] - a[2]) * j) / n]) < POOR_SHARE) return false;
+        return true;
+    };
     const cands = pool.map((i) => ({ cell: i, pos: eyeAt.get(i)?.pos ?? cellCentre(free, i), free: eyeAt.get(i)?.free ?? clearanceM(free, i), used: false }));
 
     // G2 spread walk (only over a quality map): the way along the free space from the start (fromS) and to a seeded far
@@ -446,6 +460,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     let curCell = free.startCell;
 
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
+    if (Q && qualityShare(Q, startW) < POOR_SHARE) startPoor = startW;
     const shapeFor = (freeM: number): TrackGate['shape'] =>
         freeM >= SQUARE_MIN_FREE_M * k ? { kind: 'square', side: r3((SQUARE_SIDE_M * k) / s), bar: r3((SQUARE_BAR_M * k) / s) } : { kind: 'ring', diameter: r3((RING_DIAMETER_M * k) / s), tube: r3((RING_TUBE_M * k) / s) };
     const build = (gates: TrackGate[], startYaw: number, from: Vec3 = startW, laps: number = p.laps): TrackFile => ({
@@ -547,13 +562,6 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
             legMemo.clear();
             legMemoAt = cur;
         }
-        // fix3b Y2: an eye-level course's leg stays in the well-scanned part (every tileM / 2 along it at least POOR_SHARE)
-        const legWell = (a: Vec3, b: Vec3): boolean => {
-            if (!Q || eyeHi === 0) return true;
-            const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[2] - a[2]) / (Q.tileM / 2)));
-            for (let j = 1; j < n; j++) if (qualityShare(Q, [a[0] + ((b[0] - a[0]) * j) / n, 0, a[2] + ((b[2] - a[2]) * j) / n]) < POOR_SHARE) return false;
-            return true;
-        };
         const legOk = (c: (typeof cands)[number]): boolean => {
             let v = legMemo.get(c.cell);
             if (v === undefined) {
@@ -640,11 +648,17 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         } else laps = 1;
         const startYaw = nearestYaw(sub(toFlown(course[0]!.pos), startW));
         const r = checkTrack(build(course, startYaw, startW, laps), walls, T, p.marginM, false, true);
-        if (r.ok) break;
+        // fix3b Y2: the first leg of the finished course that crosses a poor tile (point 0 is the start; a closed course
+        // also flies from its last gate to the start and to gate 1): its far gate is dropped (the last gate for the way home)
+        const pts = [startW, ...course.map((g) => toFlown(g.pos))];
+        let poor = -1;
+        for (let i = 0; i + 1 < pts.length && poor < 0; i++) if (!legWell(pts[i]!, pts[i + 1]!)) poor = i;
+        if (poor < 0 && laps > 1 && (!legWell(pts[pts.length - 1]!, startW) || !legWell(pts[pts.length - 1]!, pts[1]!))) poor = course.length - 1;
+        if (r.ok && poor < 0) break;
         const bad = r.gates.findIndex((g) => !g.clear || !g.directionOk);
         const badLeg = r.legs.findIndex((l) => !l.clear);
-        const drop = bad >= 0 ? bad : badLeg >= 0 ? Math.max(0, badLeg - 1) : course.length - 1;
-        drops.push(bad >= 0 ? 'gate' : badLeg >= 0 ? 'leg' : 'last');
+        const drop = bad >= 0 ? bad : badLeg >= 0 ? Math.max(0, badLeg - 1) : !r.ok ? course.length - 1 : Math.min(poor, course.length - 1);
+        drops.push(bad >= 0 ? 'gate' : badLeg >= 0 ? 'leg' : !r.ok ? 'last' : 'poor');
         course = renumber(course.filter((_, i) => i !== drop));
     }
     if (course.length === 0) laps = p.laps;
