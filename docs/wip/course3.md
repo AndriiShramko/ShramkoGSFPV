@@ -236,6 +236,7 @@ Stage F1-no-freeze (train 3 wave 2; the walls build is this lane's now).
   register (next 0, clock 0:00.00) and no crash came (crash reason null). Next: arm the craft in INSTALL (or load the
   scenario after the walls are in), then rerun STEPS=wroclaw and STEPS=forest.
 - [ ] Left: Forest Floor ab5efa0e course-path run (STEPS=forest; the run at 02:05 hit the postMessage bug).
+- [x] gates.py --only vitest,architecture,i18n,b18 on 44ba373c: all PASS (vitest 106 s; logs U:/Temp/gsfpv-gates-20261115-021355).
 - [ ] Item 3 (no resolve in 420 s): not reproduced. Here the same scan built in 120 s with rendering on, in the worker.
   The 420 s run (lane sonic3, 23:27) fell in the hour when this lane's audits ran with about 48 node processes on the
   PC (Status fixes pass 2): the read step is CPU work (86 s quiet), so CPU starvation is the likely cause, not
@@ -391,6 +392,10 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - Tunis walls build was not run (it ships walls); the walls line on Tunis was not seen.
 
 ## Cost notes
+
+- F1-no-freeze: about 40 replies (over budget); most went to two probe runs lost before Shift+G (the bot scenario needs
+  walls; the worker got functions in its message): a 30 s smoke run of a new probe path on the small scan before the
+  long Wroclaw run, and a unit test that posts the real ladder option bag, would have saved about 8 replies.
 
 - G1-progress: most turns went to finding the measured rates (audit .sum files, walls probe JSONs scattered under
   U:/Temp/gsfpv-train2) and to reading walls.ts and builtin/course.ts whole; an agent-map line for "walls build progress"
