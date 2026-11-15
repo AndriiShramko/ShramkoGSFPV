@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { reframeOnDragEnd } from '../../../apps/fly/src/course/editor/frame';
+import { overMiddle, reframeOnDragEnd } from '../../../apps/fly/src/course/editor/frame';
 import { ARROW_NEAR_M, nearShare, shareArrows, STAGE_NAME, type ScaleNode } from '../../../apps/fly/src/course/editor/arrow-share';
 
 const ROOT = join(__dirname, '..', '..', '..');
@@ -38,6 +38,14 @@ describe('EJ-2: the view frames the gate again only when the drag took it out of
         expect(reframeOnDragEnd(outside, [400, 50, 1500, 1030], 1920, 1080)).toBe(false);
         expect(reframeOnDragEnd(inside, inside, 1920, 1080)).toBe(false);
         expect(reframeOnDragEnd(inside, null, 1920, 1080)).toBe(true);
+    });
+    it('pass 3: a drag that pushed a gate already a little past the middle far out frames it (Tunis size 1.2 -> 2.4 m)', () => {
+        // the boxes measured by editor3-prove.ts on Tunis 887f27aa (fx3b/tunis e4.json scale.0.reframe)
+        expect(reframeOnDragEnd([735, 18.7, 1193, 511], [182, -742, 1461, 676], 1920, 1080)).toBe(true);
+        // a gate flown close (past the middle on all sides) and nudged: kept
+        expect(reframeOnDragEnd([100, 50, 1800, 1030], [150, 40, 1850, 1020], 1920, 1080)).toBe(false);
+        expect(overMiddle([700, 300, 1220, 780], 1920, 1080)).toBe(0);
+        expect(overMiddle(null, 1920, 1080)).toBe(Infinity);
     });
     it('course.ts takes the box when the drag begins and frames only a drag that changed the gate', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');

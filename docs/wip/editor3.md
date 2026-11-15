@@ -34,7 +34,14 @@ Stage fixes3 (train 3, 2026-11-15, review EJ-1 to EJ-5 of the J stages):
   - Prove Wroclaw ran (fx3/wroclaw, probe exit 0, 19:01), its record and pictures NOT read (reply budget). gates.py
     --only vitest,architecture,i18n,b18: all PASS (exit 0, 19:03, fx3/gates.log). Lock free after the chain.
 - [ ] left (next worker, in this order):
-  a. [~] pass 2 a7c0d7ac: gateBox() and debug() now apply the edit view's camera before they project (hitAt and measure
+  a. [x] pass 3 (commit below): the cause MEASURED by chain fx3b (release of a7c0d7ac, fx3b/tunis/e4.json scale.0.reframe):
+     before [735,18.7,1193,511], after [182,-742,1461,676] in 1920x1080, changed true, framed false: the box before the size
+     drag was already past the middle 80 % at its top (18.7 < 108 px; earlier steps had left the gate high), not null.
+     frame.ts reframeOnDragEnd now also frames when the drag pushed the box more than REFRAME_GROW = 0.25 (estimate) of the
+     view's side further out (overMiddle; the Tunis size drag measured 0.70); a nudge of a gate flown close stays kept. Test
+     editor3-fixes3 9 pass, NEG OK on frame.ts; editor3-j1's source regex updated to the `re` form of pass 2 (it failed on
+     a7c0d7ac); editor3- tests 19 files 116 pass; tsc apps/fly 0. Browser proof of the new rule: not yet (see left c).
+     Pass 2 a7c0d7ac: gateBox() and debug() now apply the edit view's camera before they project (hitAt and measure
      got it in F3.1; a drag's first transform:move and its end come between frames); debug() gives cam.gap (camera entity
      to edit eye before the read, m); course.ts writes edHook.reframe {before, after, w, h, changed, framed}, recorded by
      editor3-prove.ts after each Size drag with the eye's glide (eyeMovedM) and the gap at the click step. Test

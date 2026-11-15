@@ -26,7 +26,8 @@ describe('E1: the view frames the gate again when a drag ends with the gate outs
     it('course.ts asks it at the drag end only, with the view own box of the gate', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');
         // review EJ-2: the box before the drag decides too (frame.ts reframeOnDragEnd, test editor3-fixes3)
-        expect(c).toMatch(/const gb = view\?\.gateBox\(\);[\s\S]{0,80}if \(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\) frameSel\(\);/);
+        // fixes3 pass 2: the decision is kept in `re` for the probes' edit hook, then framed
+        expect(c).toMatch(/const gb = view\?\.gateBox\(\);[\s\S]{0,80}const re = !!\(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\);[\s\S]{0,300}if \(re\) frameSel\(\);/);
         // after the drag's last redraw, not in the live branch (that one returns before)
         const at = c.indexOf('reframeOnDragEnd(before, gb.box');
         expect(c.lastIndexOf('dragBase = null;', at)).toBeGreaterThan(c.lastIndexOf('if (!dragFrame) dragFrame', at));

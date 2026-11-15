@@ -44,10 +44,24 @@ export function reframeAfterDrag(box: readonly [number, number, number, number] 
     return box[0] < mx || box[1] < my || box[2] > w - mx || box[3] > h - my;
 }
 
+/** fixes3 pass 3: a drag that pushed the box this share of the view's side further past the middle frames it again even when
+ *  it was already a little past before (an estimate: a size change 1.2 -> 2.4 m measured 0.70 on Tunis, fx3b/tunis e4.json;
+ *  an arrow nudge of a gate flown close stays far under it) */
+export const REFRAME_GROW = 0.25;
+
+/** how far the box reaches past the middle `share` of the view, as a share of the view's side (0 inside; null: Infinity) */
+export function overMiddle(box: readonly [number, number, number, number] | null, w: number, h: number, share = REFRAME_SHARE): number {
+    if (!box) return Infinity;
+    const mx = (w * (1 - share)) / 2;
+    const my = (h * (1 - share)) / 2;
+    return Math.max(0, (mx - box[0]) / w, (my - box[1]) / h, (box[2] - (w - mx)) / w, (box[3] - (h - my)) / h);
+}
+
 /**
- * Review EJ-2: E1 says 'no longer inside': the view frames the gate at a drag's end only when its box was inside the middle
- * before the drag (`before`, taken when the drag began) and is outside after it. A pilot who flew the view close (the gate
- * already past the middle) keeps his view after every nudge. Pure.
+ * Review EJ-2: E1 says 'no longer inside': the view frames the gate at a drag's end when its box is outside the middle after
+ * the drag and either was inside it before (`before`, taken when the drag began) or the drag pushed it more than
+ * REFRAME_GROW of the view further out (fixes3 pass 3: on Tunis the gate's top was 18 px from the edge before the size drag
+ * to 2.4 m and was not framed). A pilot who flew the view close keeps his view after every nudge. Pure.
  */
 export function reframeOnDragEnd(
     before: readonly [number, number, number, number] | null,
@@ -56,7 +70,9 @@ export function reframeOnDragEnd(
     h: number,
     share = REFRAME_SHARE
 ): boolean {
-    return !reframeAfterDrag(before, w, h, share) && reframeAfterDrag(after, w, h, share);
+    if (!reframeAfterDrag(after, w, h, share)) return false;
+    if (!reframeAfterDrag(before, w, h, share)) return true;
+    return overMiddle(after, w, h, share) - overMiddle(before, w, h, share) > REFRAME_GROW;
 }
 
 export interface FrameIn {
