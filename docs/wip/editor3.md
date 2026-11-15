@@ -4,6 +4,22 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage G1-merge-hooks (train 3 wave 3):
+- [x] G1.1 `git merge --no-ff course3` (493526f5, course3 head 18e6a876). Conflicts only in
+  packages/i18n/locales/fly/course/{en,es,pl,ru}.json: both sides kept (editor keys and course3's progress.* keys), 156
+  keys each, JSON parses.
+- [x] G1.2 the three hooks joined (this commit): check-worker.ts imports metadataOf from course/grid.ts (its own copy gone),
+  check-core.ts takes CourseGrid from course/grid.ts; add-place.ts addAction(at, quat, tr) gives course3's
+  EditAction { kind: 'add', pos, quat } in the course frame (addInState and freeGateId removed); course.ts placeAt runs
+  edit(ed, addAction(...)) and says a refusal (max-gates, placement) with refusalText; the top bar's Add gate arms the
+  same click; course.ts sets edHook.flying (false on open, true on to-fly, false on to-edit and on close; the field is
+  readonly in hook.ts, written through a cast); texts.ts ACTION_KEYS.add points at course.edit.bar.add.
+- [x] G1.3 apps/fly tsc 0, packages/tracks tsc 0; vitest editor3-* (8 files), tracks-editor-ui, course3-hooks,
+  a6-reference: 10 files 57/57 pass; NEG OK (neg_control.py ref HEAD 493526f5, course.ts and check-worker.ts: the
+  editor3-flying hook test fails by an assertion).
+- [ ] G1.4 release build, walls of 70b50d42 into dist/walls, REPRO=1 probe on Tunis with the pointerup record (bar hidden,
+  shown set, selected axis)
+
 Stage E1-freeze-and-design (finished, the fix moved to E2 by the reply budget):
 - [x] 1. the owner's path measured on the live site, cause found in the code (probe 7ae6c1c1, facts below)
 - [x] 2. The design (below)

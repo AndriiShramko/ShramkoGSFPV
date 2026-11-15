@@ -4,7 +4,7 @@
 // problems when the answer comes. This file is the pure part (both sides), check-worker.ts the worker's entry.
 import { wallsCheck } from '@gsfpv/tracks';
 import type { CourseProblem, openEditor } from '@gsfpv/tracks';
-import type { CourseGrid } from '../worker';
+import type { CourseGrid } from '../grid';
 
 type Course = Parameters<typeof openEditor>[0];
 type Walls = Parameters<typeof wallsCheck>[0];

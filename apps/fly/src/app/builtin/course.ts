@@ -38,7 +38,7 @@ import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addInState, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
+import { ADD_RAY_M, addAction, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
 import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
@@ -644,6 +644,7 @@ export const course: Feature = {
             const eg = ed.course.gates[ed.selected];
             view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null);
             edHook.open = true;
+            (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
             edHook.changed = edChanged;
             edHook.problems = ed.problems.length;
@@ -743,6 +744,7 @@ export const course: Feature = {
             top?.destroy();
             top = null;
             mode = 'edit';
+            (edHook as { flying?: boolean }).flying = false;
             dragBase = null;
             cancelAnimationFrame(dragFrame);
             ctx.session.cameraOverride = false;
@@ -779,8 +781,15 @@ export const course: Feature = {
             if (!ed) return;
             const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
             const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform()));
-            const st = addInState(ed, at, facingFrom(ray.o, at), flownTransform(), keepProblems);
-            if (!st) return applyKey({ code: 'Insert' });
+            // G1: lane course3's EditAction add (after the selected gate, its kind and opening, one undo step)
+            const out = edit(ed, addAction(at, facingFrom(ray.o, at), flownTransform()), keepProblems);
+            if (!out.ok) {
+                ed = out.state;
+                edHook.refused = out.reason.code;
+                showEd();
+                return say(refusalText(ed.course, out.reason), true);
+            }
+            const st = out.state;
             ed = st;
             edChanged = true;
             askedFor = null;
@@ -799,6 +808,7 @@ export const course: Feature = {
             crashHold = st.hold;
             if (st.change === 'to-fly') {
                 mode = 'fly';
+                (edHook as { flying?: boolean }).flying = true;
                 // review ED-2: devices/keyboard.ts gives the flying keys back to the flight (EDIT_MODE)
                 panel?.root.classList.add('ce-flying');
                 dragBase = null;
@@ -812,6 +822,7 @@ export const course: Feature = {
                 shownNext = -2;
             } else if (st.change === 'to-edit') {
                 mode = 'edit';
+                (edHook as { flying?: boolean }).flying = false;
                 panel?.root.classList.remove('ce-flying');
                 if (panel) panel.root.style.display = '';
                 bar?.hide(false);

@@ -3,13 +3,10 @@
 // the wall hit of that ray, pulled back towards the camera, or a few metres ahead when the ray hits nothing; it faces the
 // camera (the pilot flies through it the way he looks) and goes after the selected gate in the order. Pure.
 //
-// Lane course3 owns packages/tracks: an EditAction that adds a gate at a pose is asked for there (For the lead); until it
-// exists the state is built here the way edit() builds an insert (undo pushed, redo cleared, the course re-checked).
-import { MAX_GATES_EDIT, UNDO_MAX } from '@gsfpv/tracks';
-import type { Course, CourseCheck, EditorState } from '@gsfpv/tracks';
-import { openingOf, placeGate, type Flown, type Q4, type V3 } from './drag';
-
-type Gate = Course['gates'][number];
+// The change itself is lane course3's EditAction { kind: 'add', pos, quat } (packages/tracks editor.ts): after the selected
+// gate, a copy of its kind and opening, selected afterwards, one undo step, refused on a full course (max-gates).
+import type { EditAction, EditorState } from '@gsfpv/tracks';
+import { openingOf, type Flown, type Q4, type V3 } from './drag';
 
 /** the new gate stands this far in front of the wall the click hit, flown m (an estimate: room for the drone before the wall) */
 export const ADD_BACK_M = 1.5;
@@ -59,34 +56,8 @@ export function facingFrom(eye: V3, at: V3): Q4 {
     return [Math.cos(a / 2), 0, Math.sin(a / 2), 0];
 }
 
-/** A gate id not used in the course (g<n+1> after the highest g<n>, as the editor's insert names them). */
-export function freeGateId(gates: readonly Gate[]): string {
-    const used = new Set(gates.map((g) => g.id));
-    let n = 0;
-    for (const g of gates) {
-        const m = /^g(\d+)$/.exec(g.id);
-        if (m) n = Math.max(n, Number(m[1]));
-    }
-    let id = `g${n + 1}`;
-    while (used.has(id)) id = `g${++n + 1}`;
-    return id;
-}
-
-/**
- * The editor's state with a new gate at flown point `at`, turned by `quat`, after the selected gate: a copy of the selected
- * gate's kind and opening, one undo step, redo cleared, the new gate selected. Null when the course is full.
- */
-export function addInState(state: EditorState, at: V3, quat: Q4, tr: Flown, check: CourseCheck): EditorState | null {
-    const gates = state.course.gates;
-    if (gates.length >= MAX_GATES_EDIT) return null;
-    const like = gates[state.selected] ?? gates[0];
-    if (!like) return null;
-    const copy: Gate = { ...like, id: freeGateId(gates) };
-    const gate = placeGate(copy, { pos: at, quat, opening: openingOf(like.shape) * tr[0] }, tr);
-    const at1 = Math.min(state.selected + 1, gates.length);
-    const next = [...gates];
-    next.splice(at1, 0, gate);
-    const course: Course = { ...state.course, gates: next };
-    const undo = [...state.undo, { course: state.course, selected: state.selected }].slice(-UNDO_MAX);
-    return { course, selected: at1, undo, redo: [], problems: check(course) };
+/** The Add gate change for flown point `at` turned by `quat`: the course frame of TrackGate.pos and .quat (flown = s * scan + offset). */
+export function addAction(at: V3, quat: Q4, tr: Flown): Extract<EditAction, { kind: 'add' }> {
+    const s = tr[0];
+    return { kind: 'add', pos: [(at[0] - tr[1]) / s, (at[1] - tr[2]) / s, (at[2] - tr[3]) / s], quat: [quat[0], quat[1], quat[2], quat[3]] };
 }

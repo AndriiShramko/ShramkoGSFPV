@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { edit } from '@gsfpv/tracks';
 import type { Course, CourseCheck, EditorState } from '@gsfpv/tracks';
-import { ADD_AHEAD_M, ADD_BACK_M, ADD_FLOOR_M, ADD_MIN_M, addInState, addLift, addPoint, facingFrom, freeGateId } from '../../../apps/fly/src/course/editor/add-place';
+import { ADD_AHEAD_M, ADD_BACK_M, ADD_FLOOR_M, ADD_MIN_M, addAction, addLift, addPoint, facingFrom } from '../../../apps/fly/src/course/editor/add-place';
 import { editModeOf, flyShows, modeStep } from '../../../apps/fly/src/course/editor/fly-mode';
 import { BAR_BUTTONS, TOP_BUTTONS } from '../../../apps/fly/src/course/editor/bar-place';
 import { editorKey, forwardOf } from '../../../apps/fly/src/course/editor/keys';
@@ -61,26 +61,36 @@ describe('editor3 E3: a gate added by a click on the place', () => {
         }
     });
 
-    it('goes after the selected gate as a copy of its kind and opening, selected, one undo step', () => {
-        const st = stateOf([gate('g1', [0, 0, 0], square(1.5)), gate('g2', [5, 0, 0]), gate('g3', [9, 0, 0])], 0);
+    it('goes through the EditAction add of lane course3: after the selected gate, its kind and opening, selected, one undo step', () => {
+        const st = stateOf([gate('g1', [0, 0, 0], square(1.5)), gate('g2', [5, 0, 0]), gate('g7', [9, 0, 0])], 0);
         const q = facingFrom([10, 2, -5], [14, 2, -5]);
-        const out = addInState(st, [14, 2, -5], q, TR, keep)!;
-        expect(out.course.gates.map((g) => g.id)).toEqual(['g1', 'g4', 'g2', 'g3']);
-        expect(out.selected).toBe(1);
-        const g = out.course.gates[1]!;
-        // flown (14, 2, -5) is scan ((14 - 10) / 2, 2 / 2, 0)
+        const act = addAction([14, 2, -5], q, TR);
+        // flown (14, 2, -5) is scan ((14 - 10) / 2, 2 / 2, (-5 + 5) / 2)
+        expect(act).toEqual({ kind: 'add', pos: [2, 1, 0], quat: q });
+        const out = edit(st, act, keep);
+        expect(out.ok).toBe(true);
+        const ids = out.state.course.gates.map((g) => g.id);
+        expect(ids.length).toBe(4);
+        expect(new Set(ids).size).toBe(4);
+        expect(out.state.selected).toBe(1);
+        const g = out.state.course.gates[1]!;
         expect(g.pos).toEqual([2, 1, 0]);
         expect(g.shape).toEqual(square(1.5));
-        expect(out.undo.length).toBe(1);
-        expect(out.redo.length).toBe(0);
-        const back = edit(out, { kind: 'undo' }, keep);
-        expect(back.state.course.gates.map((x) => x.id)).toEqual(['g1', 'g2', 'g3']);
+        expect(out.state.undo.length).toBe(1);
+        const back = edit(out.state, { kind: 'undo' }, keep);
+        expect(back.state.course.gates.map((x) => x.id)).toEqual(['g1', 'g2', 'g7']);
         const again = edit(back.state, { kind: 'redo' }, keep);
         expect(again.state.course.gates.length).toBe(4);
     });
 
-    it('a new id never repeats one in the course', () => {
-        expect(freeGateId([gate('g1', [0, 0, 0]), gate('g7', [0, 0, 0]), gate('x', [0, 0, 0])])).toBe('g8');
+    it('the page adds through the EditAction and says a refusal; the check worker takes the header from grid.ts; flying is set', () => {
+        expect(COURSE_TS).toMatch(/edit\(ed, addAction\(/);
+        expect(COURSE_TS).not.toMatch(/addInState/);
+        expect(COURSE_TS).toMatch(/flying = true/);
+        expect(COURSE_TS).toMatch(/flying = false/);
+        const CW = readFileSync(join(__dirname, '../../../apps/fly/src/course/editor/check-worker.ts'), 'utf8');
+        expect(CW).toMatch(/from '\.\.\/grid'/);
+        expect(CW).not.toMatch(/function metadataOf/);
     });
 });
 
