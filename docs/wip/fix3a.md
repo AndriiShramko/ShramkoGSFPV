@@ -288,6 +288,8 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
 - fix3b Y1 pass 1: about 30 replies; most went to the page probe of the Tunis course links (three runs that hung to the
   timeout) and to an audit whose measured report (free radii every 0.25 m) ran 20 min for one course. A first run with a
   30 s per-step watchdog and measure only on failure would have shown both in two replies.
+- fix3b Y1 pass 3: about 20 replies; most went to rebuilding the picture of what pass 2 had done (three commits and two
+  runs not in the Status list); a Status line written with each commit would have saved five replies.
 
 # Lane fix3b (train 3): a generated course passes the Save check untouched
 
@@ -308,11 +310,17 @@ Stage Y1-save-check
       after each way; no GPU lock of its own)
 - [x] Node audit tools/bench/src/save-check-audit.ts (course as the worker makes it, then the Save check; measured
       report only when the check finds a problem)
-- [~] (a) page on Tunis: Shift+G done (below); link seeds 1 and 2 NOT measured: the page hangs (see Measured)
-- [ ] (b) cause of the editor lane's refusal: see Measured; not reproduced on an untouched course so far
-- [ ] (c) Node table for the nine catalogue scans, seeds 1-5: only Tunis seeds 1-3 measured
-- [ ] repair (only if (a)-(c) find problems on an untouched course), unit tests with negative controls
-- [ ] table (c) again, page on Tunis three seeds, tsc, gates.py --only vitest,architecture,i18n,b18, a6-reference
+- [x] (a) page on Tunis, Shift+G and links g1.1, g1.2: 0 problems each (page-before-tunis-3.json, release 2d0fac0c; the
+      hang was the hook's measured report, removed in 2d0fac0c)
+- [x] (b) cause of the editor lane's refusal: an edited course (gates deleted, so the start leg runs to a gate the generator
+      never joined to the start), not the untouched one; numbers in Measured
+- [x] (c) Node table, ten scenes (nine catalogue scans and Tunis), seeds 1-5: 50 rows, 0 problems (audit-before.json)
+- [x] repair (the rule, although no row failed): fitCourse refuses a course whose final proof failed (4f8f8db5) and ends with
+      the Save check itself, wallsCheck on upgradeTrack of the course as given (ec147226); tests in fit.test.ts, both NEG OK
+      (neg_control.py, ref origin/main and ref 6584e5cf, fit.ts)
+- [x] after ec147226: table (c) 50 rows 0 problems (audit-final.json); page on Tunis three seeds 0 problems
+      (page-after-tunis.json, release ec147226); tsc packages/tracks and apps/fly clean; packages/tracks 13 files 118 passed;
+      gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 139 s); a6-reference 1 passed
 
 ## Measured (Y1)
 
@@ -334,17 +342,25 @@ Stage Y1-save-check
 - fitCourse time: 2.7-4.9 s per Tunis seed here, not the 804 s the editor lane saw; the measured checkTrack (free radii,
   measure true) of one 300 m course took about 20 min on these 5 cm walls (seed 3 row), a likely source of that number.
 
+- (a) after, release ec147226 (port 5783, lock 12:16:33-12:17:11, page-after-tunis.json): Shift+G seed 1328990362 24 gates,
+  gate 1 [-0.5, 2.1, 19.5]; g1.1 24 gates, gate 1 [-0.5, 3.3, 17.1]; g1.2 14 gates, gate 1 [-0.5, 2.1, 14.7]; each start
+  [0.1, 2.1, 0.3] yaw 180, transform [1, 0, 0, 0], walls res 0.05 m shipped, nearest wall to the start 1.55 m, problems 0.
+- (b) cause, with numbers: the start is 1.55 m from the nearest wall cell against the check's 0.5 m margin; the transform is
+  [1, 0, 0, 0] in the page and in Node; the page's walls are the shipped 5 cm walls, the same set as the Node audit; so
+  neither the spawn rule nor the transform nor the walls set refuses the untouched course. The editor lane's refusal came
+  after its probe deleted the red gates (editor3.md, H3.3 c): the start leg then runs to a gate the generator never joined
+  to the start, and that leg crosses the wooden wall. Its 6 to 8 problems before Save were after moves, a duplicate and a
+  floor add. The spawn rule was not changed: no row of 50 has a start-wall or start-leg problem (nearest wall to the start
+  1.2 to 4.8 m over the ten scenes, audit-final.json).
+- (c) after ec147226 (audit-final.json): every scene 5 of 5 seeds with 0 problems; gates 24 on 0230d903, 1994c65c,
+  70b50d42, 9baef54b, eb5f51dc; 887f27aa 14-24; 2f1ddf5f 14-16; ab5efa0e 10 (4 tries, smaller scale); ba7aa29d 5-24;
+  d10c5638 3-5 (30-97 s a seed, below FIT_BUDGET_MS 120 s). Node fit time on Tunis 3-7 s a seed, not 804 s.
+
 ## Left (Y1)
 
-1. Page, Tunis, links g1.1 and g1.2: find why the page's thread blocks (one run with a CPU profile over CDP, or poll
-   with a timeout and read window.__gsfpv.course.progress), then the saveCheck row for both.
-2. Node: cd tools/bench && npx tsx src/save-check-audit.ts --seeds 5 --out U:/Temp/gsfpv-train3/fix3b/audit-before.json
-   (detached, log; all published walls in U:/Temp/gsfpv-train3/walls/release plus Tunis): the table of (c).
-3. If every untouched course has 0 problems: the generator already ends with the Save check (generate.ts final
-   checkTrack with exitTurns, stricter than the Save's) except that it returns the course even when proof.ok is false
-   (generate.ts line 595, fitCourse does not look at it): make fitCourse take the next seed or scale on proof false, with a
-   unit test and a negative control. The spawn rule change only if a row shows a start-wall or a start leg problem.
-4. Then the editor lane's refusal belongs to the editor's own changes (floor add, moves): one line to the lead.
+- d10c5638 gives 3 to 5 gates in 30 to 97 s a seed (fit time near the 120 s budget); not part of this stage.
+- The editor lane's Save refusal after deleting gate 1 is the editor's case (the start leg to a new first gate): one line to
+  the lead; the generator's start is not moved by the editor (lane editor3 owns that).
 - X3 pass 2: 20 replies, most of them blocking waits (38 minutes for the GPU lock, then 16 minutes of probes); one
   runner script with all four probes and one wait per milestone was the cheap part; a lock queue with fairness would save the wait.
 - Stage fixes pass 2: 28 replies; three Wroclaw guide runs (walls built each time, 2.5-5.5 min) because the 'above' look first
