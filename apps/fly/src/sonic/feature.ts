@@ -73,7 +73,9 @@ declare module '../app/test-hook' {
             question: { id: string; options: number } | null;
             engine: string;
             /** the next gate or zone the runner asks for (the target layer's), flown metres, or null */
-            target: { id: string; pos: [number, number, number] } | null;
+            target: { id: string; pos: [number, number, number]; quat?: number[]; shape?: unknown } | null;
+            /** where the target hum points now (the gate, or the racing line's look-ahead point), flown metres */
+            aim?: { id: string; pos: [number, number, number] } | null;
             /** what the engine's frame costs in this page, ms (SonicMode.hearCost) */
             cost: { n: number; p50: number; p95: number; p99: number; max: number };
             /** the walls flown: cell size (m) and whether the session flies a built-in world */
@@ -595,7 +597,12 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         engine: audio.engine.state,
         target: (() => {
             const o = h.runner?.target();
-            return o ? { id: o.id, pos: [o.pos[0], o.pos[1], o.pos[2]] as [number, number, number] } : null;
+            return o ? { id: o.id, pos: [o.pos[0], o.pos[1], o.pos[2]] as [number, number, number], quat: [...o.quat] as number[], shape: o.shape } : null;
+        })(),
+        // sonic3 S1 (the miss record of sonic-int-review.ts r11): where the hum points now (the gate, or the racing line's look-ahead)
+        aim: (() => {
+            const b = h.runner?.beaconTarget?.() ?? null;
+            return b ? { id: b.id, pos: [b.pos[0], b.pos[1], b.pos[2]] as [number, number, number] } : null;
         })(),
         // lane sonic-beacon: the target hum of the engine's last plan, for the acceptance (sonic-int-review.ts R9): its voice has a
         // distance, a one-off note of it (the preview after a gate) has none; the direction is the heading frame's (-z ahead)

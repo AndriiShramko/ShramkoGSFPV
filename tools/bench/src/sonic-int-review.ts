@@ -778,13 +778,64 @@ async function r9(browser: () => Promise<BrowserContext>, served: Served): Promi
 const SCAN = '887f27aa';
 const SHOTS = 'U:/Temp/gsfpv-train2/shots';
 interface R10Probe extends Probe {
-    target: { id: string; pos: [number, number, number] } | null;
+    target: { id: string; pos: [number, number, number]; quat?: number[]; shape?: unknown } | null;
+    aim?: { id: string; pos: [number, number, number] } | null;
     hum: Hum[] | null;
     cues: string[];
     motor: boolean;
     walls: { voxelM: number | null; builtin: boolean; scene: string; scale: number };
     lastLine: string | null;
     pos: [number, number, number];
+    yaw?: number;
+}
+
+/** One sample of the miss record (sonic3 S1): the craft, the gate, where the hum points and what the pilot held. */
+interface MissSample { t: number; pos: number[]; yaw: number; target: string | null; gate: number[] | null; aim: number[] | null; hum: number[] | null; keys: string[]; speed: number }
+
+/** A point in a gate's frame (inverse of its quat [x, y, z, w] about its centre): the runner's toLocal (z > 0 before the plane). */
+function gateLocal(q: readonly number[], c: readonly number[], p: readonly number[]): number[] {
+    const [x, y, z, w] = [-(q[0] ?? 0), -(q[1] ?? 0), -(q[2] ?? 0), q[3] ?? 1];
+    const v = [p[0]! - c[0]!, p[1]! - c[1]!, p[2]! - c[2]!];
+    // v' = v + 2w(u x v) + 2 u x (u x v), u = (x, y, z) of the conjugate
+    const t = [2 * (y * v[2]! - z * v[1]!), 2 * (z * v[0]! - x * v[2]!), 2 * (x * v[1]! - y * v[0]!)];
+    return [v[0]! + w * t[0]! + (y * t[2]! - z * t[1]!), v[1]! + w * t[1]! + (z * t[0]! - x * t[2]!), v[2]! + w * t[2]! + (x * t[1]! - y * t[0]!)];
+}
+
+/** Bearing in degrees (right positive) of a world vector seen from a nose at `yawDeg` (0 = -Z, right positive). */
+function bearingOf(d: readonly number[], yawDeg: number): number {
+    const world = (Math.atan2(d[0]!, -d[2]!) * 180) / Math.PI;
+    return ((((world - yawDeg) % 360) + 540) % 360) - 180;
+}
+
+/**
+ * The record of one missed gate or failed attempt from the samples of its last 3 s: the trail in the gate's frame (closest
+ * distance to the ring centre, the crossing of its plane and on which side), the hum's bearing against the true bearing of the
+ * gate centre, how far the hum's aim point lay from the gate centre (the line's look-ahead), and the keys the pilot held.
+ */
+function missRecord(buf: readonly MissSample[], gate: { id: string; pos: number[]; quat?: number[]; shape?: unknown } | null, reason: string | null): object {
+    const tEnd = buf.length ? buf[buf.length - 1]!.t : 0;
+    const last = buf.filter((s) => s.t >= tEnd - 3000);
+    const r1 = (x: number): number => Math.round(x * 10) / 10;
+    const rows = last.map((s) => {
+        const g = s.gate;
+        const local = g && gate?.quat && s.target === gate.id ? gateLocal(gate.quat, g, s.pos) : null;
+        const humB = s.hum ? (Math.atan2(s.hum[0]!, -s.hum[2]!) * 180) / Math.PI : null;
+        const trueB = g ? bearingOf([g[0]! - s.pos[0]!, g[1]! - s.pos[1]!, g[2]! - s.pos[2]!], s.yaw) : null;
+        return { dt: r1((s.t - tEnd) / 1000), target: s.target, local: local ? local.map(r1) : null, dist: g ? r1(Math.hypot(g[0]! - s.pos[0]!, g[1]! - s.pos[1]!, g[2]! - s.pos[2]!)) : null, humDeg: humB === null ? null : Math.round(humB), trueDeg: trueB === null ? null : Math.round(trueB), aimOffM: g && s.aim ? r1(Math.hypot(s.aim[0]! - g[0]!, s.aim[1]! - g[1]!, s.aim[2]! - g[2]!)) : null, speed: r1(s.speed), keys: s.keys.join('+') };
+    });
+    const withLocal = rows.filter((r) => r.local !== null);
+    const closest = withLocal.reduce<(typeof rows)[number] | null>((b, r) => (b === null || Math.hypot(...r.local!) < Math.hypot(...b.local!) ? r : b), null);
+    let crossing: number[] | null = null;
+    for (let i = 1; i < withLocal.length; i++) {
+        const a = withLocal[i - 1]!.local!;
+        const b = withLocal[i]!.local!;
+        if (a[2]! > 0 && b[2]! <= 0) {
+            const u = a[2]! / (a[2]! - b[2]!);
+            crossing = [r1(a[0]! + u * (b[0]! - a[0]!)), r1(a[1]! + u * (b[1]! - a[1]!))];
+        }
+    }
+    const errs = rows.filter((r) => r.humDeg !== null && r.trueDeg !== null).map((r) => Math.abs((((r.humDeg! - r.trueDeg! + 540) % 360) - 180)));
+    return { gate: gate?.id ?? null, shape: gate?.shape ?? null, reason, closestM: closest ? r1(Math.hypot(...closest.local!)) : null, closestLocal: closest?.local ?? null, crossing, side: crossing ? `${crossing[0]! >= 0 ? 'right' : 'left'} ${Math.abs(crossing[0]!)} m, ${crossing[1]! >= 0 ? 'above' : 'below'} ${Math.abs(crossing[1]!)} m` : 'did not cross the plane in the last 3 s', humErrDegMedian: errs.length ? median(errs) : null, humErrDegMax: errs.length ? Math.max(...errs) : null, rows: rows.filter((_, i) => i % 3 === 0 || i === rows.length - 1) };
 }
 /** The hook's state; before the sound chunk has put its hook up, an empty one (no lesson). */
 const probe10 = (page: Page): Promise<R10Probe> => page.evaluate(() => {
@@ -805,7 +856,7 @@ function experiencedDoc(): object {
 
 /** Steers by the target hum as a blind pilot would (W held, E or Q when the hum is to a side, Space or Shift for its height) until `done`. */
 /** What a steered flight did: horizontal speed samples (m/s, while W was held), dodges out of a stall, gates passed. */
-interface SteerStats { speeds: number[]; dodges: number; targets: string[] }
+interface SteerStats { speeds: number[]; dodges: number; targets: string[]; misses?: object[] }
 
 /** The median of a list (0 for none). */
 const median = (xs: readonly number[]): number => {
@@ -826,6 +877,9 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
     // a stall: W held and the craft moved under 0.3 m in 3 s (estimates); the pilot climbs, then side-steps, as the ear pilot dodges
     let stallFrom: { pos: [number, number, number]; t: number; dir: [number, number, number] | undefined } = { pos: p.pos, t: Date.now(), dir: undefined };
     let side = 1;
+    const buf: MissSample[] = [];
+    let lastGate: R10Probe['target'] = null;
+    let prevPhase: string | null = p.phase;
     for (const t0 = Date.now(); !done(p) && Date.now() - t0 < ms; ) {
         const v = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir as [number, number, number] | undefined;
         const ahead = v !== undefined && Math.abs(v[0]) < 0.5;
@@ -869,6 +923,15 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
             prev = { pos: p.pos, t: now };
         }
         if (p.lastLine) seen.add(p.lastLine);
+        // sonic3 S1: the last 4 s of samples; when an attempt leaves its flying phase without a pass, its miss record
+        const hv = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir ?? null;
+        buf.push({ t: now, pos: p.pos, yaw: p.yaw ?? 0, target: p.target?.id ?? null, gate: p.target?.pos ?? null, aim: p.aim?.pos ?? null, hum: hv ? [...hv] : null, keys: [...held], speed });
+        while (buf.length > 0 && buf[0]!.t < now - 4000) buf.shift();
+        if (p.target) lastGate = p.target;
+        if (stats && prevPhase === 'flying' && p.phase !== 'flying' && p.phase !== 'passed') {
+            (stats.misses ??= []).push({ s: Math.round((now - t0) / 1000), attempt: p.attempt, phase: p.phase, line: p.lastLine, ...missRecord(buf, lastGate, p.lastLine) });
+        }
+        prevPhase = p.phase;
         for (const c of cueSeen ? (p.cues ?? []) : []) cueSeen?.add(c);
         if (trail && Date.now() - lastTrail >= 2000) {
             lastTrail = Date.now();
@@ -1203,7 +1266,7 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await sleep(3000);
         const spoken = spokenAfter(await events(page), from);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
-        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-8) };
+        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-8), missRecords: stats.misses ?? [] };
         // Y2 pass 2 (shots z5-*-end.png): every Y1/Y2 'passed' course ended with "Gate n was missed. Let's go on to the next lesson"
         // (reason.gate-missed, fly.moving-on): the runner moves on after the last attempt; only a course counted without it passes
         (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle') && !spoken.includes('fly.moving-on');
@@ -1269,8 +1332,11 @@ async function main(): Promise<void> {
         }
         if ((release as { sha?: string }).sha !== gitSha()) console.log(`NOTE: dist was built at ${(release as { sha?: string }).sha}, the tree is at ${gitSha()}`);
     }
-    await lock();
-    locked = true;
+    // sonic3 S1: a run that draws no scan (r11 with rendering off) takes no GPU lock (train 3 wave 3 rule)
+    if (!(which === 'r11' && process.env.Z5_RENDER !== 'on')) {
+        await lock();
+        locked = true;
+    }
     let served: Served | null = null;
     let browserHandle: Awaited<ReturnType<typeof launchChrome>>['browser'] | null = null;
     let failure: string | null = null;
