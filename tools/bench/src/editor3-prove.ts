@@ -29,7 +29,7 @@ type Dbg = {
     mode?: string;
     tool?: string;
 };
-type Ed = { open?: boolean; selected?: number; changed?: boolean; problems?: number; said?: string; view?: { eye: number[]; at: number[] } | null; reframe?: unknown };
+type Ed = { open?: boolean; selected?: number; changed?: boolean; problems?: number; said?: string; view?: { eye: number[]; at: number[] } | null; reframe?: unknown; pose?: { pos: number[]; quat: number[] } | null };
 type Hook = { gates?: number; on?: boolean; next?: number; laps?: number; problem?: string | null; editor?: Ed };
 type W = {
     __gsfpv?: { status?: string; course?: Hook; controls?: { source?: string; gate?: { armed?: boolean } }; radio?: { wizard?: { state?: { id?: string } } } };
@@ -342,15 +342,21 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (seenAxis.has(axis)) continue;
         seenAxis.add(axis);
         const per: unknown[] = [];
-        for (const len of [60, 140]) {
+        // integration E (brief seam d, review EJ-1): the 100 px drag is measured by the gate's own rotation from the course
+        // state (hook editor.pose), read before and after; gateDeg null when the page has no such field
+        const qdeg = (q0: number[] | undefined, q1: number[] | undefined): number | null => (q0 && q1 ? Math.round((2 * Math.acos(Math.min(1, Math.abs(q0.reduce((s, v, i) => s + v * (q1[i] ?? 0), 0)))) * 180) / Math.PI) : null);
+        for (const len of [60, 100, 140]) {
             const a = (await dbg(page))!;
+            const g0 = (await ed(page)).pose?.quat;
             const w2 = (await walk(page, a.stand.screen, dir, 40, axis)) ?? w;
             await drag(page, w2.x, w2.y, -dir[1]! * len, dir[0]! * len);
+            const g1 = (await until(() => ed(page), (e) => (qdeg(g0, e.pose?.quat) ?? 0) > 0, 1500)).v.pose?.quat;
             const b = (await dbg(page))!;
             const dot = Math.min(1, Math.abs(a.stand.quat.reduce((s, v, i) => s + v * (b.stand.quat[i] ?? 0), 0)));
-            per.push({ len, deg: Math.round((2 * Math.acos(dot) * 180) / Math.PI), movedM: r2(dist(a.stand.pos, b.stand.pos)), dragging: b.dragging });
+            per.push({ len, deg: Math.round((2 * Math.acos(dot) * 180) / Math.PI), gateDeg: qdeg(g0, g1), movedM: r2(dist(a.stand.pos, b.stand.pos)), dragging: b.dragging });
         }
-        turns.push({ dir, axis, r: w.r, per, turned: per.some((p) => (p as { deg: number }).deg > 0) });
+        const g100 = (per.find((p) => (p as { len: number }).len === 100) as { gateDeg: number | null } | undefined)?.gateDeg ?? null;
+        turns.push({ dir, axis, r: w.r, per, turned: per.some((p) => (p as { deg: number }).deg > 0), gate100: g100, gate100ok: g100 !== null && g100 >= 20 });
     }
     out.turn = turns;
     if (id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-turn-1920.png') });

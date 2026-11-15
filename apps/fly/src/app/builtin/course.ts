@@ -859,7 +859,10 @@ export const course: Feature = {
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
             const eg = ed.course.gates[ed.selected];
-            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null, eg ? eg.shape.kind : null);
+            const egPose = eg ? gateFlownPose(eg, flownTransform()) : null;
+            view?.put(egPose, eg ? eg.id : null, eg ? eg.shape.kind : null);
+            // integration E (brief seam d): the selected gate's own pose from the course state, read by the editor's probe
+            edHook.pose = egPose ? { pos: [...egPose.pos], quat: [...egPose.quat] } : null;
             // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
             if (eg && eg.id !== framedId && frameSel()) framedId = eg.id;
             edHook.open = true;
