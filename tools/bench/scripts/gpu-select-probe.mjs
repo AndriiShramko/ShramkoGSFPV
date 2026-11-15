@@ -29,7 +29,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 import { chromium } from 'playwright';
-import { systemChromePaths } from '../src/chrome.mjs';
+import { benchUncappedArgs, systemChromePaths } from '../src/chrome.mjs';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -475,6 +475,16 @@ async function firefoxRun(o, exe, outDir, result) {
 }
 
 /**
+ * The command line of startStockBrowser (below): the profile and the window, the variant's flags, the caller's `extra`
+ * and the BENCH_UNCAPPED flags (chrome.mjs) when that switch is on. `added` is what the evidence records as added.
+ */
+export function stockLaunchArgs({ profile, maximized = false, variantArgs = [], extra = [], env = process.env }) {
+    const size = maximized ? ['--start-maximized'] : ['--window-position=40,40', '--window-size=1296,920'];
+    const added = [...size, ...variantArgs, ...extra, ...benchUncappedArgs(env)];
+    return { args: [`--user-data-dir=${profile}`, '--remote-debugging-port=0', '--no-first-run', '--no-default-browser-check', ...added, 'about:blank'], added };
+}
+
+/**
  * A browser started the way a person starts it: its own executable, a throwaway profile under .cache/, a real
  * window, no Playwright launch flags; then attached over its DevTools port. `variant` and `extra` are the only
  * things added. close() ends OUR process tree by pid (never a browser the person is using) and drops the profile.
@@ -490,10 +500,9 @@ export async function startStockBrowser({ exe, label, variant = 'default', extra
         mkdirSync(join(profile, 'Default'), { recursive: true });
         writeFileSync(join(profile, 'Default', 'Preferences'), JSON.stringify(prefs));
     }
-    const size = maximized ? ['--start-maximized'] : ['--window-position=40,40', '--window-size=1296,920'];
-    const args = [`--user-data-dir=${profile}`, '--remote-debugging-port=0', '--no-first-run', '--no-default-browser-check', ...size, ...v.args, ...extra, 'about:blank'];
+    const { args, added } = stockLaunchArgs({ profile, maximized, variantArgs: v.args, extra });
     const child = spawn(exe, args, { env: { ...process.env, ...v.env }, stdio: 'ignore', windowsHide: false });
-    const launch = { executable: mask(exe), added: [...size, ...v.args, ...extra], env: v.env, profile: 'throwaway (.cache/gpu-select)', visible: !v.args.concat(extra).some((x) => x.startsWith('--headless')) };
+    const launch = { executable: mask(exe), added, env: v.env, profile: 'throwaway (.cache/gpu-select)', visible: !v.args.concat(extra).some((x) => x.startsWith('--headless')) };
     let browser = null;
     // close(true): leave the browser running; close({ keepProfile: true }): end it but keep its profile for a second start
     const close = async (o = false) => {

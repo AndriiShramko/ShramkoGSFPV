@@ -77,6 +77,8 @@ export interface SessionOptions {
     /** ?lodmul= and ?viewlodfar=: test switches of the frame's priority (render-pc viewLodParamsOf checks them) */
     viewLodMultiplier?: number;
     viewLodFarLevels?: number;
+    /** ?viewlodrim=: the far rim inside the frame so many levels coarser (render-pc viewLodParamsOf checks it) */
+    viewLodRimLevels?: number;
     lagFrames?: number;
     renderScale?: number;
     /** fly with the scan's walls (default) or through everything (flightwalls.ts) */
@@ -350,7 +352,7 @@ export class FlightSession {
         this.renderer = o.renderer ?? await SplatRenderer.create(canvas, {
             renderScale: o.renderScale ?? 1, hFovDeg: this.params.cameraFovDeg, latencyMarker: !!o.latencyMarker,
             ...(o.stochasticImpl ? { stochasticImpl: o.stochasticImpl } : {}), accumVariant: o.accumVariant ?? '', viewLod: o.viewLod !== false,
-            viewLodMultiplier: o.viewLodMultiplier, viewLodFarLevels: o.viewLodFarLevels
+            viewLodMultiplier: o.viewLodMultiplier, viewLodFarLevels: o.viewLodFarLevels, viewLodRimLevels: o.viewLodRimLevels
         });
         if (o.renderer) this.renderer.setFov(this.params.cameraFovDeg);
         // this scene's drawing, decided now that the device is known, before its splats load

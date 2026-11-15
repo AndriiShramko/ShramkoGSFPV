@@ -2,7 +2,19 @@
 // hook, window.__gsfpv.course. The page probes of the lane and of the integration stage read only this. Owner: lane tracks;
 // it may add fields, it does not rename or drop these.
 
+import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
+
+/** Lane onecourse (message 52, D1/D6): the course in the scene as Fly by Sound takes it. One course; the course feature owns it. */
+export interface CourseForSound {
+    /** the course shown now, its next gate (0-based, -1 after the last lap) and its gates in the flown world; null without one */
+    inUse(): { track: TrackFile; next: number; gates: readonly SonicObject[] } | null;
+    /** Shift+G's own action: a new course replaces the one in the scene */
+    generate(): void;
+}
+
 export interface CourseHook {
+    /** lane onecourse: the course for Fly by Sound; absent until the feature installs it */
+    sound?: CourseForSound;
     /** the course is shown and timed now (Shift+T, the pause menu) */
     on: boolean;
     /** where the course came from; 'none': this scene has no course in this tab */

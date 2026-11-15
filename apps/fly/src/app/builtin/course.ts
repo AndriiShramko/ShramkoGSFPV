@@ -32,6 +32,7 @@ import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, progressLine, spokenLine } from '../../course/progress';
 import { sayVia } from '../say-via';
+import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
 import { canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
@@ -85,6 +86,14 @@ export const course: Feature = {
         let busy = false;
         let saving = false;
         let linkSeed = seedOfLink(liveSearch());
+        // lane onecourse fixes (review OC-4): the course a pilot made on the ordinary page goes along to the mode's page as sg=
+        // (sonic-flight.ts modeScanPage); the first Shift+G (or N) there makes that course, the next ones a new one
+        let soundSeed = soundCourseSeed(liveSearch());
+        const pressSeed = (): number => {
+            const s = soundSeed;
+            soundSeed = null;
+            return s ?? randomSeed();
+        };
         /** a served course the link names (the admin's "Open in the editor", T4-admin) and whether its editor opens */
         let linkServer = servedOfLink(liveSearch());
         const linkEdit = editOfLink(liveSearch());
@@ -203,6 +212,9 @@ export const course: Feature = {
                         laps: c.laps.length > 1 ? c.laps.map((time, i) => t('course.card.lap', { n: i + 1, time })) : []
                     }, now);
                 } else hud.splash(s, mode, said, now);
+                // lane onecourse fixes (review OC-2), kept by course4 review CU-2: the lap and the course end are said to
+                // Fly by Sound too, not only shown; at the end the card's title and total follow the lap's line
+                sayLine(ev === 'done' ? `${said}. ${t('course.card.title')}. ${t('course.card.total', { time: resultsCard(v.lapTimes).total })}` : said);
             }
             hud.tick(performance.now());
             const next = v.running || v.next >= 0 ? v.next : -1;
@@ -264,6 +276,8 @@ export const course: Feature = {
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
             ctx.hud.flash(text, 4000);
+            // lane onecourse fixes (review OC-1): a pilot by sound hears why no course came and what to press (the text names Shift+G)
+            sayLine(text);
         };
 
         // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
@@ -334,7 +348,8 @@ export const course: Feature = {
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
                 history.replaceState(history.state, '', withCourse(location.href, tr.id));
                 ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
-                sayLine(t('course.ready', { n: tr.gates.length }));
+                // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
+                sayLine(t('course.readySpoken', { n: tr.gates.length }));
             };
             // G1-progress: a course that arrives while the drone flies is announced before its gates appear
             if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();
@@ -429,7 +444,11 @@ export const course: Feature = {
             const s = ctx.session;
             const w = walls();
             if (!w) return wallsFirst(() => generate(seed));
-            if (busy) return;
+            // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
+            if (busy) {
+                if (hook.progress) sayLine(hook.progress);
+                return;
+            }
             busy = true;
             hook.problem = null;
             startProgress();
@@ -440,7 +459,9 @@ export const course: Feature = {
                 seed, scene: { id: s.scene.id, version: s.scene.version },
                 transform: flownTransform(),
                 created: new Date().toISOString(),
-                elements: true
+                // course4 review CU-1: Fly by Sound asks its course through this generate() too (lane onecourse); the ear
+                // pilot was measured on single upright gates only, so the competition elements are for the eyes' mode
+                elements: !ctx.sonic
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);
@@ -545,9 +566,17 @@ export const course: Feature = {
             if (e.repeat || ctx.sonic) return;
             toggle();
         });
+        // lane onecourse (message 52): the course in the scene for Fly by Sound: the course shown, its next gate (the same objects
+        // the lap timer passes) and Shift+G's own action (D1, D2). No change event: the sound mode reads inUse() every frame (lead's
+        // decision P3, review OC-6: nothing listened to it)
+        hook.sound = {
+            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: run.gates } : null),
+            generate: () => generate(pressSeed())
+        };
+        // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene
         ctx.keys.on('course.generate', (e) => {
-            if (e.repeat || ctx.sonic) return;
-            generate(randomSeed());
+            if (e.repeat) return;
+            generate(pressSeed());
         });
         ctx.menu.add({ id: 'pause.course', action: 'course.generate', labelKey: 'course.menu.generate', order: 72, section: 'tools', run: () => generate(randomSeed()) });
         ctx.menu.add({

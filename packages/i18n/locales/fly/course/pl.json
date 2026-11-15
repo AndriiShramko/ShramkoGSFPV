@@ -11,6 +11,7 @@
   "course.hud.best": "Najlepsze {time}",
   "course.generating": "Buduję trasę w wolnej przestrzeni tego skanu...",
   "course.ready": "Bramki: {n}. Przeleć przez START, aby włączyć zegar. Shift+T ukrywa trasę",
+  "course.readySpoken": "Bramki: {n}. Przeleć przez START, aby włączyć zegar. Shift i klawisz T ukrywają trasę",
   "course.none": "Tym razem żadna trasa nie zmieściła się w wolnej przestrzeni. Shift+G spróbuje innego układu",
   "course.wallsFirst": "Najpierw ściany tego skanu, potem trasa.",
   "course.failed": "Ta trasa się nie zbudowała. Shift+G zbuduje inną",

@@ -34,6 +34,7 @@ import { ProgressPanel, followProgress, progressNow } from './progress-panel';
 import { DomLessonMenuView, LessonMenu, goHome, homeKey, pauseKey, runItem } from './lesson-menu';
 import type { HomePage, LessonMenuItem } from './lesson-menu';
 import { SoundGap } from './sound-gap';
+import { introKey } from './in-place-model';
 import { engineDicts } from './host-lines';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
@@ -52,9 +53,6 @@ import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
-import { askCourse, randomSeed } from './course-ask';
-import { courseSpeech } from './course-speech';
-import { soundCourseSeed } from '../app/builtin/sonic-flight';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
@@ -188,35 +186,23 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
 }
 
 /**
- * Train 2, S3: a course of gates in the scan flown now (course-ask.ts), for N in a free scan flight. The first ask takes the seed of
- * the page's course= link (the course Shift+G made on the sighted page that opened this one), later ones a random seed. The course
- * goes into the tracks cache under its id and version, so the lesson that names it (scanCourseLesson) finds it without a fetch.
+ * Lane onecourse (the owner's message 52, D1 to D6): the scene holds one course, the course feature's (app/builtin/course.ts,
+ * its hook.sound). Fly by Sound takes that course and its progress; Shift+G makes it in every mode, and N in a free scan flight
+ * is the same action (a silent second key). The sound mode makes no course of its own and draws no gates.
  */
-function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames, mode: SonicMode): NonNullable<LessonPage['course']> {
-    // the address as it is now, read the way the other features read it (app/env.ts is the one reader of the page's query at boot;
-    // packages/prefs/test/main-audit.test.ts)
-    let linkSeed = soundCourseSeed(new URL(location.href).search);
+function courseOf(ctx: FlightContext, names: KeyNames): NonNullable<LessonPage['course']> {
+    const shared = (): ReturnType<NonNullable<NonNullable<typeof ctx.hook.course>['sound']>['inUse']> => ctx.hook.course?.sound?.inUse() ?? null;
     return {
-        key: () => names.of('scene.next'),
-        async ask() {
-            const seed = linkSeed ?? randomSeed();
-            linkSeed = null;
-            // sonic3 S1 pass 3: the making is said with its step and the time left (course-speech.ts), as the line of N was
-            const speech = courseSpeech((text) => void mode.bridge.say({ key: 'sonic.say.text', params: { text } }, false, { lesson: true }), t, () => performance.now(), (fn, ms) => {
-                const id = window.setInterval(fn, ms);
-                return () => window.clearInterval(id);
-            });
-            const a = await askCourse(ctx.session, seed, (step, estMs) => speech.progress(step, estMs)).finally(() => speech.stop());
-            if (a.ok) tracks.set(`${a.track.id}@${a.track.version}`, Promise.resolve(a.track));
-            return a;
-        }
+        key: () => names.of('course.generate'),
+        inUse: () => shared(),
+        generate: () => ctx.hook.course?.sound?.generate()
     };
 }
 
 /** The page as the lesson host sees it. */
 function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
-        course: courseOf(ctx, tracks, names, mode),
+        course: courseOf(ctx, names),
         // walls lane: a free flight over a scan without walls gets them built (progress in the walls box) and goes on with them
         walls: { build: () => wallsThen(ctx, () => {}).then((r) => r === 'now' || r === 'built') },
         mode,
@@ -486,7 +472,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // before, so the "How to fly" card opened from the pause menu closes on its own K; a panel or the start screen keep the key). The
     // pause menu's key list names L and K as the mode's (KeyRouter.relabel).
     const help = new KeyHelp({
-        lines: () => keyHelpLines(capOf),
+        lines: () => keyHelpLines(capOf, { free: host?.lesson?.id === SCAN_FREE_ID }),
         say: sayLine,
         hold: (on) => (on ? ctx.pause('help') : ctx.resume('help')),
         listen: (cut) => {
@@ -589,7 +575,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             if (!ok) return void showMenu();
             focusFlight();
             // train 3: a first-timer switched on in place hears the three keys he needs and the offer of the lessons, once
-            if (entry.intro) void sayLine({ key: 'sonic.say.inPlaceIntro', params: { off: capOf('flyBySound.toggle', 'Backslash'), course: capOf('scene.next'), keys: capOf('help.keys'), menu: capOf('pause.toggle', 'Escape') } }, false).catch(() => undefined);
+            // lane onecourse (D1): with a course in the scene the hum leads to it, so the intro names no key that makes one
+            const intro = introKey(!!ctx.hook.course?.sound?.inUse());
+            if (entry.intro) void sayLine({ key: intro, params: { off: capOf('flyBySound.toggle', 'Backslash'), course: capOf('course.generate', 'Shift+G'), keys: capOf('help.keys'), menu: capOf('pause.toggle', 'Escape') } }, false).catch(() => undefined);
         });
     } else showMenu();
     ctx.hook.sonic = (withEvents = true) => ({
@@ -602,7 +590,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         question: h.pending ? { id: h.pending.id, options: h.pending.options } : null,
         engine: audio.engine.state,
         target: (() => {
-            const o = h.runner?.target();
+            // lane onecourse O2.6: the target the hum leads to, the course in the scene's next gate too (was the runner's only)
+            const o = h.target();
             return o ? { id: o.id, pos: [o.pos[0], o.pos[1], o.pos[2]] as [number, number, number], quat: [...o.quat] as number[], shape: o.shape } : null;
         })(),
         // sonic3 S1 (the miss record of sonic-int-review.ts r11): where the hum points now (the gate, or the racing line's look-ahead)

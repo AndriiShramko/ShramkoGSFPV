@@ -1,0 +1,159 @@
+{
+ "base": "http://localhost:5760/en",
+ "id": "70b50d42",
+ "shiftg": true,
+ "checks": [
+  {
+   "what": "aria-hidden on the guide",
+   "pass": true,
+   "detail": "true"
+  },
+  {
+   "what": "start: guide shown for gate 1 (hook next 0)",
+   "pass": true,
+   "detail": {
+    "shown": true,
+    "box": {
+     "left": 10,
+     "top": 385,
+     "right": 146.453125,
+     "bottom": 415
+    },
+    "text": "Gate 1 · 11 m"
+   }
+  },
+  {
+   "what": "start: side left matches the bearing from the camera pose (-116.6 deg), behind",
+   "pass": true,
+   "detail": {
+    "side": "left",
+    "cx": 78.2265625,
+    "vw": 1280,
+    "behind": true,
+    "inFrame": false
+   }
+  },
+  {
+   "what": "start: metres within 1 m (11 shown, 11.33 measured)",
+   "pass": true,
+   "detail": "Gate 1 · 11 m"
+  },
+  {
+   "what": "start: clear of the note, the lap block and the walls box",
+   "pass": true,
+   "detail": {
+    "guide": {
+     "left": 10,
+     "top": 385,
+     "right": 146.453125,
+     "bottom": 415
+    },
+    "note": {
+     "left": 430,
+     "top": 86,
+     "right": 850,
+     "bottom": 135.6875
+    },
+    "block": {
+     "left": 600.8984375,
+     "top": 142,
+     "right": 679.1015625,
+     "bottom": 239.4375
+    },
+    "walls": null
+   }
+  },
+  {
+   "what": "start: inside the screen",
+   "pass": true,
+   "detail": {
+    "box": {
+     "left": 10,
+     "top": 385,
+     "right": 146.453125,
+     "bottom": 415
+    },
+    "vw": 1280,
+    "vh": 800
+   }
+  }
+ ],
+ "reads": {
+  "start": {
+   "guide": {
+    "shown": true,
+    "gate": 0,
+    "metres": 11,
+    "side": "left",
+    "behind": true,
+    "inFrame": false,
+    "bearingDeg": -117,
+    "x": 78,
+    "y": 400
+   },
+   "text": "Gate 1 · 11 m",
+   "guideBox": {
+    "left": 10,
+    "top": 385,
+    "right": 146.453125,
+    "bottom": 415
+   },
+   "ariaHidden": "true",
+   "cam": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ],
+   "right": [
+    -0.055018886217147456,
+    0,
+    0.9984853139427863
+   ],
+   "fwd": [
+    0.9984853139427863,
+    0,
+    0.055018886217147456
+   ],
+   "gate": [
+    -16.4,
+    2.4,
+    -27.2
+   ],
+   "gates": 24,
+   "next": 0,
+   "note": {
+    "left": 430,
+    "top": 86,
+    "right": 850,
+    "bottom": 135.6875
+   },
+   "block": {
+    "left": 600.8984375,
+    "top": 142,
+    "right": 679.1015625,
+    "bottom": 239.4375
+   },
+   "menu": null,
+   "walls": null,
+   "wallsLine": "",
+   "vw": 1280,
+   "vh": 800,
+   "probeBearing": -116.6,
+   "probeDist": 11.33
+  }
+ },
+ "turns": [],
+ "genS": 18,
+ "camMode": {
+  "override": false,
+  "aim": {
+   "yawDeg": 93.15394252224232,
+   "pitchDeg": 0
+  },
+  "editorOpen": false
+ },
+ "gates": 24,
+ "shotStart": "U:\\Temp\\gsfpv-train3\\shots\\train3c-raw\\fix3a-gate1-wroclaw.png",
+ "seconds": 21,
+ "pass": true
+}

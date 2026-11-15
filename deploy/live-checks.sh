@@ -99,7 +99,45 @@ done
 # train 3: a course generated in the page on Wroclaw (course-path-probe.mjs header: presses only Shift+G and R, nothing
 # is sent or saved; the course lives in the page, "Save for everyone" is never pressed): Shift+G with the published
 # walls, the gates along the street, regenerations, a crash with respawn keeps the next gate.
-run course-path-wroclaw locked node scripts/course-path-probe.mjs "$SITE/en" "$OUT/course-path-70b50d42.json" "$OUT" 70b50d42
+# Train 3 integration C (lane fix3b): the probe also measures each gate centre's height over the first wall below it; the
+# check names the band of the first course and wants every centre in 1.2 to 2.0 m (+-0.1 m, one 10 cm voxel).
+cpband() {
+  node scripts/course-path-probe.mjs "$SITE/en" "$OUT/course-path-$1.json" "$OUT" "$1"
+  local rc=$?
+  node -e '
+const rows = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+let ok = true;
+for (const r of [].concat(rows)) {
+  const h = ((r.top && r.top.heights) || []).filter((v) => v !== null);
+  const off = h.filter((v) => v < 1.1 || v > 2.1).length;
+  console.log(r.id, "first course gates", h.length, "band", h.length ? [Math.min(...h).toFixed(2), Math.max(...h).toFixed(2)] : null, "out of 1.2-2.0 (+-0.1)", off);
+  ok = ok && h.length > 0 && off === 0;
+}
+process.exit(ok ? 0 : 1);' "$OUT/course-path-$1.json" && [ $rc -eq 0 ]
+}
+run course-path-wroclaw locked cpband 70b50d42
+# Train 3 integration C (lane fix3a): the guide to gate 1 after Shift+G on Wroclaw (gate-guide-probe.mjs header: presses
+# Shift+G and Escape only, the course lives in the page, nothing is saved).
+run gate-guide-wroclaw locked node scripts/gate-guide-probe.mjs "$SITE/en" 70b50d42 "$OUT/gate-guide-wroclaw.json" "$OUT" wroclaw --shiftg --wait-s=500
+# Train 3 integration C (lane onecourse): one course in the scene. onecourse-probe.mjs presses only flight keys (Shift+G,
+# Backslash, N; its scripted pilot passes two gates); the course lives in the page and nothing is sent or saved
+# (its Save check read is the page's own check of a copy). Render off, no GPU lock. The check: after Backslash and after
+# Shift+G in Fly by Sound there is one set of gates (the course feature's, with gates, and none drawn by the sound mode).
+onecourse() {
+  NOCOURSE=0 node scripts/onecourse-probe.mjs "$SITE/en" "$OUT/onecourse.json" "$OUT" 70b50d42 live || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const sets = (s) => (s && s.course && s.course.gates > 0 ? 1 : 0) + (s && s.sonic && s.sonic.prims > 0 ? 1 : 0);
+let ok = !j.fail;
+for (const n of ["backslash-on", "shiftG-sound"]) {
+  const st = (j.steps || []).find((x) => x.name === n);
+  const k = st ? sets(st.after) : -1;
+  console.log(n, "gate sets", k);
+  ok = ok && k === 1;
+}
+process.exit(ok ? 0 : 1);' "$OUT/onecourse.json"
+}
+run one-course onecourse
 # train 3 (integration B, lane sonic3): Fly by Sound switched on in place with Backslash, rendering off (no GPU lock).
 # sonic-int-review.ts r11 presses only the keyboard of a flight (Enter on the Controls screen's keyboard choice, W, Q or E,
 # Backslash, N, Space, the arrows of the ear pilot); the sound mode fetches only static track and walls files; the course
@@ -108,9 +146,11 @@ run course-path-wroclaw locked node scripts/course-path-probe.mjs "$SITE/en" "$O
 # scan has no 12 m free way near its spawn, so the probe does not judge the speed there and says so in its record).
 # Wroclaw: the switch keeps the speed and starts no life (a street: the speed is judged), N makes a course and gate 1
 # is the hum's target (a short flight, then off).
+# Train 3 integration C (lane onecourse): Shift+G makes the course in every mode and N is a silent second key in Fly by
+# Sound, so the checks press Shift+G (Z5_COURSE_KEY) and one Wroclaw check keeps N.
 soniccheck() {
-  local tag=$1 scene=$2 quick=$3 flight=$4; shift 4
-  env Z5_TAG="$tag" Z5_SCENE="$scene" Z5_SPEEDS=5 Z5_QUICK="$quick" Z5_FLIGHT_S="$flight" Z5_SHOTS="$OUT/sonic-live" \
+  local tag=$1 scene=$2 quick=$3 flight=$4 key=$5; shift 5
+  env Z5_TAG="$tag" Z5_SCENE="$scene" Z5_SPEEDS=5 Z5_QUICK="$quick" Z5_FLIGHT_S="$flight" Z5_COURSE_KEY="$key" Z5_SHOTS="$OUT/sonic-live" \
     npx tsx src/sonic-int-review.ts r11
   local f
   f=$(ls -t "$REPO"/evidence/*/sonic-int-review-r11-live-"$tag".json 2>/dev/null | head -1)
@@ -125,8 +165,9 @@ for (const re of process.argv.slice(2)) {
 }
 process.exit(ok ? 0 : 1);' "$f" "$@"
 }
-run sonic-in-place-tunis soniccheck tunis 887f27aa 1 60 'gives the free flight by sound' 'starts no new life and keeps the speed'
-run sonic-course-wroclaw soniccheck wroclaw 70b50d42 0 60 'gives the free flight by sound' 'starts no new life and keeps the speed' 'N makes a course'
+run sonic-in-place-tunis soniccheck tunis 887f27aa 1 60 Shift+KeyG 'gives the free flight by sound' 'starts no new life and keeps the speed'
+run sonic-course-wroclaw soniccheck wroclaw 70b50d42 0 60 Shift+KeyG 'gives the free flight by sound' 'starts no new life and keeps the speed' 'makes a course'
+run sonic-course-wroclaw-n soniccheck wroclaw-n 70b50d42 0 60 KeyN 'gives the free flight by sound' 'makes a course'
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

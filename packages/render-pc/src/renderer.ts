@@ -90,6 +90,8 @@ export interface RendererOptions {
     /** test switches of the frame's priority (?lodmul=, ?viewlodfar=): the scan's multiplier while it works and how many levels coarser the far field is; absent: the defaults */
     viewLodMultiplier?: number;
     viewLodFarLevels?: number;
+    /** test switch ?viewlodrim=: the far rim inside the frame so many levels coarser; absent: the default */
+    viewLodRimLevels?: number;
 }
 
 export const TONEMAPS: Record<string, number> = {
@@ -314,7 +316,7 @@ export class SplatRenderer {
         g.lodUpdateAngle = ENGINE_RULE.updateAngle;
         g.lodBehindPenalty = ENGINE_RULE.behindPenalty;
         g.lodUnderfillLimit = LOD_UNDERFILL;
-        this.viewLod = new ViewLod(app, cam, viewLodParamsOf(opts.viewLodMultiplier, opts.viewLodFarLevels));
+        this.viewLod = new ViewLod(app, cam, viewLodParamsOf(opts.viewLodMultiplier, opts.viewLodFarLevels, opts.viewLodRimLevels));
         // after the flight has placed the camera for this frame and before the engine prepares the scan
         app.on('framerender', this.onViewLod);
         // engine 2.23: LOD is always chosen by distance (lodMode is deprecated); the budget is a target
