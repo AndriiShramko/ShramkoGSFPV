@@ -111,7 +111,7 @@ Stage X3-start-near-spawn (closed ring starts at the gate nearest the spawn)
 - [x] tsc packages/tracks, apps/fly, tools/bench: 0 errors; tracks tests 112 + 4 passed; a6-reference 1 passed (the
       generator is not flight code; run anyway). apps/api: no fixture regenerated, no test asked for it (packages/tracks
       fixtures.test passed with the new generator).
-- [ ] gates.py --only vitest,architecture,i18n,b18 (see the next line of the commit after this one)
+- [x] gates.py --only vitest,architecture,i18n,b18 on 274f7139: all PASS (vitest 110 s)
 - [ ] browser proof (left, budget): release build; course-path-probe on Wroclaw 70b50d42 and Tunis 887f27aa (exit 0);
       sonic-int-review r9 (11 of 11); tracks-page probe (no check that passed before fails). Expected no change on Tunis
       (all five seeds are open courses, the code path is not taken) and on Wroclaw seeds 1-5 (no ring turned there).
@@ -215,3 +215,6 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
   cameraAim and the camera's forward after a yaw write would have shown the cause in one run.
 - X2 pass 2: about 20 replies; reading the session's camera branch (cameraOverride, cameraAim) and grepping their setters
   found the cause without a browser run; the two GPU runs passed first time. Reading code before the next run was cheaper.
+- X3: about 30 replies; most went to the unit test (two runs found no provable turn on seeds 1-6 of the test world).
+  A first Node pass that tries every turn with checkTrack over the test worlds would have shown at once that the gate
+  axes refuse almost every turn, and which seeds to use.
