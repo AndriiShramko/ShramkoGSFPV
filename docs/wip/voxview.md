@@ -99,6 +99,41 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   origin/main overlay.ts and mesh.ts, 6 of 6 fail (5 by assertion, e.g. "expected 7186 to be 656", "expected +0 to
   be 144"; one TypeError reading lod). The keeper is a new file (no old version to put back). Typecheck apps/fly and packages/collision: 0
   errors each.
+- [x] X2.5 Release builds (this run): dist of 6d2da583 (sha256 d21624ca2d74...) kept as
+  U:/Temp/gsfpv-train2/voxview/dist-x2; "before" = the same tree with the X2 sources of f7064fd6 put back (sha256
+  9532f0faab64..., U:/Temp/gsfpv-train2/voxview/dist-before), both with the stand-in walls in walls/, served by
+  serve-csp on 5740 (after) and 5741 (before). Probe tools/bench/scripts/voxview-depth-probe.mjs --far (commit
+  9aa094ed and this commit: the 60 m eye looks down with pitch -40, game.ts GIMBAL_MIN_DEG -60 says negative is down).
+- [x] X2.6 Measured on Wroclaw 70b50d42 in the browser, voxels alone, BENCH_UNCAPPED=1, 1280x800 (Facts X2 browser).
+  Pictures looked at (U:/Temp/gsfpv-train3/shots): voxview-far-before.png, voxview-far.png, voxview-street.png,
+  voxview-far-weak.png.
+
+## Facts X2 (browser, Wroclaw 70b50d42, stand-in 5 cm walls, BENCH_UNCAPPED=1, 1280x800)
+
+Results U:/Temp/gsfpv-train2/voxview/far-before.json, far-before2.json, far-x2a.json, far-x2b.json (logs beside them).
+Frame time = mean and p95 of requestAnimationFrame gaps over 3 s.
+- The scan alone at the spawn: 6.0 to 7.2 ms mean, p95 18 ms (all runs).
+- Before (X1 code), street eye: 934 chunks, 775827 faces, to 20.0 m, settled 42.5 s, frame 4.1 ms (p95 17.5).
+  60 m up looking down 40 deg: 1116 chunks, 849567 faces, to 59.5 m, settled 49.6 s, frame 7.4 ms (p95 18.1).
+- After (X2 code), street eye: every one of the 27236 wall chunks drawn (wallChunks = plannedChunks = drawnChunks
+  = meshes 27236), farthest wall chunk 231 m and drawn to 231 m, per level (0 per voxel, 1 blocks of 4, 2 cubes of
+  8, 3 cubes of 16) 158 / 1125 / 4314 / 21639, 1486364 faces; meshes on screen over time 3313 at 20 s, 11281 at 61 s,
+  19495 at 123 s, 26575 at 205 s, all at 214.6 s. Frame 28.5 ms mean, p95 56.1.
+  60 m up: 27236 chunks, to 235.7 m, per level 174 / 943 / 4349 / 21770, 1489480 faces, frame 33.3 ms (p95 57.6).
+- Weak device forced (voxels.setDetail(0.125), 60 m up): the far part stays: 27236 chunks, to 235.7 m, per level
+  48 / 123 / 470 / 26595, 612267 faces; frame 30.1 ms (p95 59.2), the same as at full detail (29.5 ms).
+- So the frame cost is the number of meshes (27236 draw calls), not the faces: 1.49 M -> 0.61 M faces changed nothing.
+  The keeper saw 27 to 31 ms and did not act (its rule acts over 40 ms).
+- The share in the walls line is wrong: it read 100 % at 25 s while 4325 of 27236 meshes were on screen. It counts
+  the worker's results (apps/fly/src/voxels.ts stats(): loaded is set when a result arrives, line 530), not the
+  uploads; the uploads wait in the overlay's queue at most 2 per frame (packages/render-pc/src/voxel-overlay.ts:117
+  maxUploadsPerFrame = 2; level 3 chunks hold about 23 faces each, so the count cap, not the 20000-face cap, rules).
+- Pictures: voxview-far-before.png (60 m up, before): only a patch of voxels right below the craft, black everywhere
+  else. voxview-far.png (same eye, after): the whole city in voxels to the horizon, near streets fine, far blocks as
+  larger cubes, floaters in red. voxview-street.png (street eye, after): the near walls per voxel, the street's far
+  end now filled with walls and two more gates in it, where the before picture (voxview-before-street.png) had
+  black holes past 20 m. voxview-far-weak.png (detail 0.125): the same coverage as voxview-far.png, the near
+  ground in coarser cubes.
 
 ## Facts X2 (measured, Node)
 
@@ -140,22 +175,23 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-Stage X2-whole-scene, in this order (the code of X2.3 is committed, nothing of it was seen in a browser yet):
-1. Rebuild the release (dist holds f7064fd6, without X2.3), copy U:/Temp/gsfpv-train2/walls/release into dist/walls,
-   serve on 5740. Measure with BENCH_UNCAPPED=1 on Wroclaw 70b50d42 in the voxels-alone view (key V twice): cells
-   and chunks drawn (stats wallChunks, plannedChunks, drawnChunks, perLevel, farthestM, drawnFarM), frame time at the
-   spawn and 60 m up, time from the switch to share 100. The "before" numbers come from origin/main's release (a
-   second build or the X1 facts: 934 chunks to 20 m). A new probe is needed (voxview-depth-probe.mjs has the open,
-   the hold and the stats; add a --far mode with the 60 m eye, the street eye and setDetail(0.125)).
-2. If the frame time with 27236 chunk meshes is too long (draw calls), merge far chunks into group meshes (a level
-   3 chunk of 4x4x4 chunks is a chunk of 192 voxels: overlayChunk works on it with merge 4), keyed apart from the
-   chunks; only then.
-3. Tunis 887f27aa (no published walls: the walls build themselves, 5 cm): the same numbers.
-4. Pictures voxview-far-before.png, voxview-far.png, voxview-street.png, voxview-tunis.png, each looked at.
-5. The weak device: setDetail(0.125) and show the far part stays (drawnFarM, perLevel).
+Stage X2-whole-scene, in this order (the X2 code draws the whole scene; seen in a browser on Wroclaw, Facts X2 browser):
+1. Group meshes for the far levels (the measured cost is 27236 meshes, Facts X2 browser): one mesh per group of
+   4x4x4 chunks at level 3 (and 2x2x2 at level 2), keyed apart from the chunks, built by the worker in one message;
+   a group replaces its chunks only after it lands (no hole). Target: frame time near the scan alone (7 ms here).
+2. The share counts uploads, not worker results: drawn = in the overlay (overlay has(key) at the planned level);
+   and raise maxUploadsPerFrame for small meshes (the face cap of 20000 per frame stays): measure the fill time again
+   (now 214.6 s at the street; the prompt wants seconds).
+3. The keeper (apps/fly/src/voxel-keeper.ts): its 40 ms threshold is an estimate; after 1 and 2, measure again and
+   state the rule with the numbers.
+4. Unit tests for 1 and 2 with negative controls (a group covers every cell of its chunks; the share is below 100
+   while uploads wait).
+5. Rebuild the release, rerun voxview-depth-probe.mjs --far on 70b50d42 (before numbers stand, Facts X2 browser),
+   pictures voxview-far.png, voxview-street.png again; Tunis 887f27aa (no stand-in walls: the walls build themselves;
+   the probe waits up to 500 s for them): voxview-tunis.png and its numbers.
 6. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5740/en), walls-published-probe on the
-   local copy, typecheck apps/fly and packages/collision, gates.py --only vitest,architecture,i18n,b18,leaks,
-   a6-reference. Status: What the owner does, Not verified, For the lead.
+   local copy, typecheck apps/fly, packages/collision, packages/render-pc, gates.py --only
+   vitest,architecture,i18n,b18,leaks, a6-reference. Status: What the owner does, Not verified, For the lead.
 - Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; X1 put
   it back on the pin with git submodule update (clean working tree, nothing lost).
 

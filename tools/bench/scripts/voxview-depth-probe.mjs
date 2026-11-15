@@ -230,7 +230,7 @@ async function depth() {
 // --far (stage X2-whole-scene): the voxels alone on the whole scene. Phases (env FAR_PHASES, default spawn,up,weak):
 // spawn: the switch at the street eye, share and far distance each second until settled, frame time, picture
 // <tag>-street; up: the spawn 60 m higher looking down 40 deg, picture <tag>-far; weak: setDetail(0.125) at the 60 m
-// eye, picture <tag>-weak. Frame time: mean and p95 of requestAnimationFrame gaps over 3 s (BENCH_UNCAPPED=1 unpaces).
+// eye, picture <tag>-weak (pitch: negative looks down, game.ts GIMBAL_MIN_DEG -60). Frame time: mean and p95 of requestAnimationFrame gaps over 3 s (BENCH_UNCAPPED=1 unpaces).
 async function far() {
     const phases = (process.env.FAR_PHASES ?? 'spawn,up,weak').split(',');
     const { page } = await open(1280, 800, '');
@@ -290,7 +290,7 @@ async function far() {
         r.far.phases.push(ph);
     }
     if (phases.includes('up')) {
-        await page.evaluate(([pos, yaw]) => { window.__hold = { pos: [pos[0], pos[1] + 60, pos[2]], yaw, pitch: 40 }; }, [spawn, yaw0]);
+        await page.evaluate(([pos, yaw]) => { window.__hold = { pos: [pos[0], pos[1] + 60, pos[2]], yaw, pitch: -40 }; }, [spawn, yaw0]);
         const ph = await fill('60 m up', 240000);
         ph.frame = await frame();
         ph.picture = await shot(`${tag}-far`);
