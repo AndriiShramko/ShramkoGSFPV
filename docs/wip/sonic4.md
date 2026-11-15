@@ -443,8 +443,11 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   Test tools/bench/test/sonic-quiet-n6.test.ts 5 passed, with migrate.test 30 passed (quiet2/n6-v1.log); NEG OK on lessons.ts
   against HEAD (n6-neg.log); tsc apps/fly, packages/prefs, tools/bench 0 errors. No new localStorage key (a field in the sonic
   collection), so no pinned table changes.
-- [ ] N6 Q7 (CAPTION_LINES 3 to 2 in captions.ts; '.course-hud' into PANELS or the captions
-  moved under the course box, apps/fly/src/course/hud.css '.course-hud' is the clock block; measure in a browser).
+- [x] N6 Q7 (stage W2, built first because the stage's picture needs it): captions.ts CAPTION_LINES 3 to 2; CLOCK '.course-hud':
+  fit() sets the region's inline top CAPTION_GAP_PX under the clock block's bottom while it is shown and meets the region's columns
+  (cleared otherwise); feature.ts's 250 ms timer also calls captions.refit(). sonic-captions-fit.test.ts follows the two lines and
+  gains 3 clock cases; with sonic-review and sonic-quiet2: 28 passed (quiet2/q7-v2.log); NEG OK on captions.ts (q7-neg.log); tsc
+  apps/fly 0 errors. The rectangles in a browser: W2.
 - [x] Checks of N1, N2, N4: sonic-quiet2 (6), catalog.test: 16 passed (U:/Temp/gsfpv-train3/quiet2/v2.log); with sonic-narrator-key,
   app-keys, keymap.test, sonic-quiet-cues, sonic-quiet: 82 passed in v1.log (its 3 fails fixed in v2); tsc apps/fly 0 errors
   (tsc1.log); neg_control.py against 7dde5e2c on bridge.ts and runtime.ts: NEG OK (neg1.log). live-quiet.ts is new (no old

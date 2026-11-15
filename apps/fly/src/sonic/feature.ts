@@ -292,7 +292,11 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // lane quiet2 (N4): the page's live region #ui (the HUD's text, the course box, the walls box) is not announced in a quiet flight
     // either (live-quiet.ts); looked at every 250 ms (an estimate, not measured: the setting, the lesson and the pause change it)
     const liveQuiet = quietLiveRegion(document.getElementById('ui'), () => mode.bridge.quiet?.() === true);
-    const liveTimer = setInterval(() => liveQuiet.sync(), 250);
+    // N6: the captions are placed again with it (the course's clock block appears and goes without a caption)
+    const liveTimer = setInterval(() => {
+        liveQuiet.sync();
+        (entry.setup.captions as { refit?: () => void }).refit?.();
+    }, 250);
     offs.push(() => {
         clearInterval(liveTimer);
         liveQuiet.restore();

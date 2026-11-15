@@ -21,6 +21,12 @@ class LayoutEl {
     /** a line's height when shown, px */
     h = 0;
     ownerDocument: unknown = null;
+    /** the inline top captions.ts sets (lane quiet2 N6: under the course's clock block); empty: the stylesheet's top, box.top */
+    style = { top: '' };
+    /** the region's top as laid out: its inline top when set, else box.top */
+    get topNow(): number {
+        return this.style.top ? parseFloat(this.style.top) : this.box.top;
+    }
     readonly classList = {
         add: (c: string): void => void this.classes.add(c),
         remove: (c: string): void => void this.classes.delete(c),
@@ -70,13 +76,13 @@ class LayoutEl {
         if (this.classes.has('sonic-captions')) {
             const shown = this.children.filter((c) => !c.classes.has('sonic-sr-only'));
             const height = shown.reduce((a, c) => a + c.h, 0) + Math.max(0, shown.length - 1) * 6;
-            return { left: this.box.left, right: this.box.right, top: this.box.top, bottom: this.box.top + height, width: this.box.right - this.box.left, height };
+            return { left: this.box.left, right: this.box.right, top: this.topNow, bottom: this.topNow + height, width: this.box.right - this.box.left, height };
         }
         // a line: under the shown lines before it, 6 px apart, as wide as the region (a hidden one is a 1 px box)
         const p = this.parent;
         if (p && p.classes.has('sonic-captions')) {
-            if (this.classes.has('sonic-sr-only')) return { left: p.box.left, right: p.box.left + 1, top: p.box.top, bottom: p.box.top + 1, width: 1, height: 1 };
-            let top = p.box.top;
+            if (this.classes.has('sonic-sr-only')) return { left: p.box.left, right: p.box.left + 1, top: p.topNow, bottom: p.topNow + 1, width: 1, height: 1 };
+            let top = p.topNow;
             for (const c of p.children) {
                 if (c === this) break;
                 if (!c.classes.has('sonic-sr-only')) top += c.h + 6;
@@ -97,14 +103,16 @@ afterEach(() => {
  * The page's Captions on the stand-in: the region 92 px down, from x 388 to 1268 (1280 x 720 since K2), and the panels given. `innerHeight`:
  * the window's height (the view's centre at half of it); none, as in K2's own tests: a page whose view has no height.
  */
-async function page(panels: { left: number; right: number; top: number; h: number }[], innerHeight?: number): Promise<{ c: InstanceType<typeof import('../../../apps/fly/src/sonic/captions').Captions>; root: LayoutEl; panels: LayoutEl[]; add: (text: string, h: number) => void }> {
+async function page(panels: { left: number; right: number; top: number; h: number }[], innerHeight?: number, clocks: { left: number; right: number; top: number; h: number }[] = []): Promise<{ c: InstanceType<typeof import('../../../apps/fly/src/sonic/captions').Captions>; root: LayoutEl; panels: LayoutEl[]; clocks: LayoutEl[]; add: (text: string, h: number) => void }> {
     const body = new LayoutEl('body');
-    const els = panels.map((p) => {
+    const boxOf = (p: { left: number; right: number; top: number; h: number }): LayoutEl => {
         const e = new LayoutEl('section');
         e.box = { left: p.left, right: p.right, top: p.top };
         e.h = p.h;
         return e;
-    });
+    };
+    const els = panels.map(boxOf);
+    const clockEls = clocks.map(boxOf);
     let nextH = 0;
     const doc = {
         cookie: '',
@@ -118,7 +126,7 @@ async function page(panels: { left: number; right: number; top: number; h: numbe
             return e;
         },
         createTextNode: (text: string) => ({ text }),
-        querySelectorAll: (sel: string) => (sel.includes('.sonic-attitude') ? els : []),
+        querySelectorAll: (sel: string) => (sel === '.course-hud' ? clockEls : sel.includes('.sonic-attitude') ? els : []),
         defaultView: innerHeight === undefined ? null : { innerHeight }
     };
     vi.stubGlobal('location', { search: '', pathname: '/en/fly/', href: 'http://127.0.0.1/en/fly/', origin: 'http://127.0.0.1' });
@@ -134,6 +142,7 @@ async function page(panels: { left: number; right: number; top: number; h: numbe
         c,
         root,
         panels: els,
+        clocks: clockEls,
         add: (text, h) => {
             nextH = h;
             c.add(text);
@@ -145,19 +154,19 @@ const seen = (root: LayoutEl): string[] => root.children.filter((l) => !l.classe
 const bottomOf = (root: LayoutEl): number => root.getBoundingClientRect().bottom;
 
 describe('v13-int review K2: the captions stay clear of the panels under them', () => {
-    it('three Russian lines of three rows (110 px each) over the attitude display at 1280 x 720 (top 394): the oldest is hidden from the eye, the two newest end over the display, 8 px clear', async () => {
+    it('Russian lines of four rows (160 px each) over the attitude display at 1280 x 720 (top 394): only the newest is shown, ending over the display, 8 px clear', async () => {
         const { root, add } = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
-        for (const t of ['one', 'two', 'three']) add(t, 110);
-        expect(seen(root)).toEqual(['two', 'three']);
+        for (const t of ['one', 'two', 'three']) add(t, 160);
+        expect(seen(root)).toEqual(['three']);
         expect(bottomOf(root)).toBeLessThanOrEqual(394 - 8);
         // still in the region (a screen reader reads it): only hidden from the eye
-        expect(root.children.map((l) => l.textContent)).toEqual(['one', 'two', 'three']);
+        expect(root.children.map((l) => l.textContent)).toEqual(['two', 'three']);
     });
 
-    it('English lines (two rows, 84 px) fit over it: all three shown', async () => {
+    it('English lines (two rows, 84 px) fit over it: the two newest shown (CAPTION_LINES, lane quiet2 N6)', async () => {
         const { root, add } = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
         for (const t of ['one', 'two', 'three']) add(t, 84);
-        expect(seen(root)).toEqual(['one', 'two', 'three']);
+        expect(seen(root)).toEqual(['two', 'three']);
     });
 
     it('the newest line is never hidden, even when it alone reaches the panel', async () => {
@@ -166,23 +175,55 @@ describe('v13-int review K2: the captions stay clear of the panels under them', 
         expect(seen(root)).toEqual(['three']);
     });
 
-    it('control: a panel beside the region (the progress panel at the left edge, x 12 to 261) or a hidden one limits nothing: all three shown', async () => {
+    it('control: a panel beside the region (the progress panel at the left edge, x 12 to 261) or a hidden one limits nothing: the two newest shown', async () => {
         const beside = await page([{ left: 12, right: 261, top: 273, h: 198 }]);
-        for (const t of ['one', 'two', 'three']) beside.add(t, 110);
-        expect(seen(beside.root)).toEqual(['one', 'two', 'three']);
+        for (const t of ['one', 'two', 'three']) beside.add(t, 160);
+        expect(seen(beside.root)).toEqual(['two', 'three']);
         const hidden = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
         (hidden.panels[0] as LayoutEl).hidden = true;
-        for (const t of ['one', 'two', 'three']) hidden.add(t, 110);
-        expect(seen(hidden.root)).toEqual(['one', 'two', 'three']);
+        for (const t of ['one', 'two', 'three']) hidden.add(t, 160);
+        expect(seen(hidden.root)).toEqual(['two', 'three']);
     });
 
     it('the page grows (refit on resize): a line hidden in a short window comes back when there is room', async () => {
         const { c, root, panels, add } = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
-        for (const t of ['one', 'two', 'three']) add(t, 110);
-        expect(seen(root)).toEqual(['two', 'three']);
+        for (const t of ['one', 'two', 'three']) add(t, 160);
+        expect(seen(root)).toEqual(['three']);
         (panels[0] as LayoutEl).box = { left: 900, right: 1268, top: 700 };
         c.refit();
-        expect(seen(root)).toEqual(['one', 'two', 'three']);
+        expect(seen(root)).toEqual(['two', 'three']);
+    });
+});
+
+// Lane quiet2 (the lead's N6): the lead saw three caption lines over the course's clock block (U:/Temp/gsfpv-train3/shots/onecourse-after.png).
+// At most two lines are shown, and while the clock block (.course-hud, top centre) is shown and meets the region's columns, the region starts
+// CAPTION_GAP_PX under its bottom. The clock here: 1280 x 720, x 560 to 720, from 120 px, 70 px tall (bottom 190).
+describe('lane quiet2 N6: at most two lines, never over the course\'s clock block', () => {
+    const CLOCK = { left: 560, right: 720, top: 120, h: 70 };
+    it('three lines of one row: two shown, the region starts 8 px under the clock, no shown line meets it', async () => {
+        const { root, add } = await page([], 720, [CLOCK]);
+        for (const t of ['one', 'two', 'three']) add(t, 50);
+        expect(seen(root)).toEqual(['two', 'three']);
+        expect(root.getBoundingClientRect().top).toBe(190 + 8);
+        for (const l of root.children.filter((x) => !x.classes.has('sonic-sr-only'))) expect(l.getBoundingClientRect().top).toBeGreaterThanOrEqual(190 + 8);
+    });
+
+    it('the clock goes (hidden: no box) or stands beside the region: the region keeps its own top (92 px)', async () => {
+        const gone = await page([], 720, [CLOCK]);
+        gone.add('one', 50);
+        expect(gone.root.getBoundingClientRect().top).toBe(198);
+        (gone.clocks[0] as LayoutEl).hidden = true;
+        gone.c.refit();
+        expect(gone.root.getBoundingClientRect().top).toBe(92);
+        const beside = await page([], 720, [{ left: 12, right: 300, top: 120, h: 70 }]);
+        beside.add('one', 50);
+        expect(beside.root.getBoundingClientRect().top).toBe(92);
+    });
+
+    it('under the clock the view\'s centre still bounds the lines: two of 84 px from 198 px pass 340, only the newest is shown', async () => {
+        const { root, add } = await page([], 720, [CLOCK]);
+        for (const t of ['one', 'two']) add(t, 84);
+        expect(seen(root)).toEqual(['two']);
     });
 });
 
@@ -196,14 +237,15 @@ describe('v13-int review K2, part 2: the captions end 20 px over the view\'s cen
         expect(seen(root)).toEqual(['keys', 'intro']);
         expect(bottomOf(root)).toBe(92 + 84 + 6 + 84);
         expect(bottomOf(root)).toBeLessThanOrEqual(360 - 20);
-        // still in the region for a screen reader
-        expect(root.children.map((l) => l.textContent)).toEqual(['title', 'keys', 'intro']);
+        // not read by a screen reader here (not live): only the lines shown are kept (CAPTION_LINES)
+        expect(root.children.map((l) => l.textContent)).toEqual(['keys', 'intro']);
     });
 
-    it('lines of one row (50 px) end at 254 px: all three shown', async () => {
+    it('lines of one row (50 px) end at 198 px: the two newest shown', async () => {
         const { root, add } = await page([], 720);
         for (const t of ['one', 'two', 'three']) add(t, 50);
-        expect(seen(root)).toEqual(['one', 'two', 'three']);
+        expect(seen(root)).toEqual(['two', 'three']);
+        expect(bottomOf(root)).toBe(92 + 50 + 6 + 50);
     });
 
     it('the newest line is never hidden, even when it alone ends under the centre', async () => {
@@ -212,19 +254,19 @@ describe('v13-int review K2, part 2: the captions end 20 px over the view\'s cen
         expect(seen(root)).toEqual(['three']);
     });
 
-    it('a taller window (1280 x 800, the centre at 400) has room for all three again on a resize', async () => {
+    it('a taller window (1280 x 1000, the centre at 500) has room for two tall lines again on a resize', async () => {
         const { c, root, add } = await page([], 720);
-        for (const t of ['title', 'keys', 'intro']) add(t, 84);
-        expect(seen(root)).toEqual(['keys', 'intro']);
-        (root.ownerDocument as { defaultView: { innerHeight: number } }).defaultView.innerHeight = 800;
+        for (const t of ['title', 'keys', 'intro']) add(t, 160);
+        expect(seen(root)).toEqual(['intro']);
+        (root.ownerDocument as { defaultView: { innerHeight: number } }).defaultView.innerHeight = 1000;
         c.refit();
-        expect(seen(root)).toEqual(['title', 'keys', 'intro']);
+        expect(seen(root)).toEqual(['keys', 'intro']);
     });
 
-    it('control: the same three lines on a page whose view has no height (no centre to keep): all three shown, ending at 356 px', async () => {
+    it('control: the same three lines on a page whose view has no height (no centre to keep): the two newest shown, ending at 266 px', async () => {
         const { root, add } = await page([{ left: 12, right: 261, top: 273, h: 198 }]);
         for (const t of ['title', 'keys', 'intro']) add(t, 84);
-        expect(seen(root)).toEqual(['title', 'keys', 'intro']);
-        expect(bottomOf(root)).toBe(356);
+        expect(seen(root)).toEqual(['keys', 'intro']);
+        expect(bottomOf(root)).toBe(266);
     });
 });
