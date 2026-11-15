@@ -366,3 +366,40 @@ Stage Y1-save-check
 - Stage fixes pass 2: 28 replies; three Wroclaw guide runs (walls built each time, 2.5-5.5 min) because the 'above' look first
   stood at the left edge, then fell behind the camera; computing the pose from the gate's height before the first run would
   have saved two runs.
+- fix3b Y2 pass 1: about 30 replies; most went to reading the generator's walk (generate.ts 290-560) and to a second edit
+  after the new test failed (cells of 1.4 m free radius never sit under 2.2 m); reading freespace clearanceM before the
+  first edit would have saved two replies.
+
+## Status Y2-gate-places
+
+- [x] merge origin/main (b5b62d47, lead note) into fix3a: a1c0446e
+- [x] Node table tools/bench/src/gate-place-audit.ts ((a) gate centre and lower edge above the tile ground and above the
+      first wall voxel below, (b) wall voxels per block layer above the tile ground along the course, (c) quality share of
+      each gate and the lowest along each leg against the best quarter). Before: place-before.json/.log (25 rows).
+- [x] R1 and R2 in packages/tracks/src/generate.ts (GENERATOR_VERSION_QUALITY 3) and quality.ts (near, best,
+      groundBelow, qualityShare): over a quality map the gate centre stands 1.2 to 2.0 m above the first wall voxel below
+      it (moved to 1.6 m inside its cell as far as the free radius allows), lower edge at least 0.3 m, tile quality at
+      least POOR_SHARE 0.15 (estimate) of the best quarter, legs sampled every 2 m at the same share; the band's top rises
+      0.4 m at a time only when too few cells (WalkInfo.eyeHi); eye cells need 1.0 m free radius (EYE_FREE_M, estimate)
+- [x] test packages/tracks/test/eye-level.test.ts, NEG OK against HEAD (neg_control.py, generate.ts and quality.ts);
+      tsc packages/tracks clean; packages/tracks vitest 14 files 119 passed (tracks-y2.log)
+- [ ] the after table with EYE_FREE_M 1.0 (place-after1.json was run with 1.4 m and POOR_SHARE 0.25; see Measured)
+- [ ] Lublin 2f1ddf5f stays above the eye (2.8-10 m, quality 0.06): the eye band finds too few cells there; cause not measured
+- [ ] R3 (no gate in leaves): the walls hold no leaves; needs the splat positions; nothing built yet
+- [ ] page time on Wroclaw and Tunis; pictures fix3b-wroclaw-pilot(-2), -wroclaw-top, -tunis-gate1, -tunis-top, -opole-pilot
+- [ ] tsc apps/fly; gates.py --only vitest,architecture,i18n,b18; a6-reference (generator only, flight code untouched)
+
+## Measured (Y2)
+
+- Before (place-before.json, release walls of U:/Temp/gsfpv-train3/walls/release, Tunis shipped): gate centres above the
+  first voxel below in 1.2-2.0 m: Wroclaw 0-2 of 24 (tile ground: median 3.2-4.8 m, max 6.0), Tunis 0-5 of 14-24 (median
+  2.9-4.1), Opole 0-3 of 24 (median 3.0), Lublin 0-1 of 14-16 (median 6.8-7.6, max 10), Forest Floor 0-5 of 10 (scale 0.5).
+  Dense band (quality.ts): Wroclaw 1.6-6.0 m, Tunis 1.6-4.6, Opole 1.6-3.6, Lublin 1.6-8.0. The voxel profile along the
+  course peaks in the lowest layer above the tile ground on every scene (0-0.4 m at 10 cm walls, 0-0.2 m at 5 cm).
+  Gate quality share of the best quarter: Wroclaw 0.20, Tunis 0.27-0.28, Opole 0.18-0.19, Lublin 0, Forest 1.
+  Course span: Wroclaw 180-215 m, Tunis 97-114 m.
+- After pass 1 with free radius 1.4 m, POOR_SHARE 0.25 (place-after1.json): Wroclaw 15-24 gates, all at 1.2-2.0 m above
+  the voxel below, span 110-119 m, fit 2.4-12.3 s; Tunis 24 of 24 at eye level, span 121-134 m, 2.3-4.5 s; Opole 0 gates
+  (all its tiles under 0.25), so the share went to 0.15: Opole 17-18 gates at scale 0.5, all at eye level, 2.8-2.9 s;
+  Wroclaw seeds 1-2 24 gates at eye level, span 138-141 m, 7.5 s. Save check problems 0 in every row with gates.
+  The audit's leg samples every 1 m still find 0.12-0.13 on Wroclaw legs (the generator samples every 2 m): open.

@@ -50,6 +50,10 @@ export interface QualityMap {
     readonly ground: Float32Array;
     /** voxels inside the band per tile */
     readonly dense: Float32Array;
+    /** voxels inside the band of the tile and its neighbours within goodR tiles (the quality the tile is judged by) */
+    readonly near: Float32Array;
+    /** fix3b Y2: the quality of the scan's best quarter: the median of near over the top quarter of tiles with some */
+    readonly best: number;
     /** 1 where the tile is well scanned */
     readonly good: Uint8Array;
     readonly goodTiles: number;
@@ -198,7 +202,8 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const some: number[] = [];
     const R = D.goodR;
     for (let t = 0; t < nt; t++) {
-        if (groundL[t]! < 0) continue;
+        // fix3b Y2: also over a tile with no ground of its own (a street's middle at 10 cm walls), so a leg across it is
+        // judged by the facades beside it; such a tile is still never good
         const tx = t % nx, tz = (t - tx) / nx;
         let v = 0;
         for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
@@ -206,17 +211,18 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
             if (X >= 0 && Z >= 0 && X < nx && Z < nz) v += dense[Z * nx + X]!;
         }
         near[t] = v;
-        if (v > 0) some.push(v);
+        if (v > 0 && groundL[t]! >= 0) some.push(v);
     }
     some.sort((a, b) => a - b);
     const median = some.length ? some[some.length >> 1]! : 0;
+    const best = some.length ? some[Math.min(some.length - 1, Math.floor(some.length * 0.875))]! : 0;
     const good = new Uint8Array(nt);
     let goodTiles = 0;
     for (let t = 0; t < nt; t++) if (median > 0 && groundL[t]! >= 0 && near[t]! >= goodShare * median) {
         good[t] = 1;
         goodTiles++;
     }
-    return { tileM, x0: wx0, z0: wz0, nx, nz, ground, dense, good, goodTiles, hist, binM, band };
+    return { tileM, x0: wx0, z0: wz0, nx, nz, ground, dense, near, best, good, goodTiles, hist, binM, band };
 }
 
 /** a box side of the well-scanned extent the course may use, flown m (estimate: Wroclaw's grid is 295 x 375 m; 240 m keeps
@@ -267,6 +273,23 @@ export function tileOf(q: QualityMap, p: Vec3): number {
 export function heightAbove(q: QualityMap, p: Vec3): number {
     const t = tileOf(q, p);
     return t < 0 ? NaN : p[1] - q.ground[t]!;
+}
+
+/**
+ * fix3b Y2: world y of the first wall voxel straight below p within maxM (what a person under the gate stands on: the
+ * tile's ground is a 4 m tile's lowest dense layer, off by a step or a slope), NaN when none.
+ */
+export function groundBelow(walls: VoxelCollision, p: Vec3, maxM: number): number {
+    const r = walls.voxelResolution;
+    const o = { x: 0, y: 0, z: 0 };
+    for (let y = p[1]; y > p[1] - maxM; y -= r) if (walls.querySphere(p[0], y, p[2], r * 0.6, o)) return y;
+    return NaN;
+}
+
+/** fix3b Y2: the tile's quality (near) as a share of the scan's best quarter, 0 outside the map */
+export function qualityShare(q: QualityMap, p: Vec3): number {
+    const t = tileOf(q, p);
+    return t < 0 || !(q.best > 0) ? 0 : q.near[t]! / q.best;
 }
 
 /** True when a world point is in a well-scanned tile and inside the dense band. */

@@ -17,7 +17,7 @@
 import type { Pose, Quat, SceneTransform, TrackFile, TrackGate, Vec3, VoxelCollision } from './types';
 import { MARGIN_M, checkTrack, sweeperOf } from './check';
 import { cellCentre, clearanceM } from './freespace';
-import { inDenseBand, stepsFrom } from './quality';
+import { groundBelow, inDenseBand, qualityShare, stepsFrom, tileOf } from './quality';
 import { gateExit } from './path';
 import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
@@ -27,7 +27,7 @@ import type { Rng } from './rng';
 export const GENERATOR_NAME = 'gsfpv-course';
 export const GENERATOR_VERSION = '1';
 /** G2: a course laid over a quality map (band and spread walk); the same seed lays another course than version 1 */
-export const GENERATOR_VERSION_QUALITY = '2';
+export const GENERATOR_VERSION_QUALITY = '3';
 
 export interface CourseParams {
     /** the proof's margin, flown m */
@@ -109,6 +109,9 @@ export interface WalkInfo {
     /** the dense band used, m above the ground (null without a quality map) */
     readonly band: readonly [number, number] | null;
     readonly banded: boolean;
+    /** fix3b Y2: the top of the eye band the gates were laid in, m above the ground under them (2 when nothing forced
+     *  more; 0 when the band was not used: no quality map, or too few cells in any band up to the dense band's top) */
+    readonly eyeHi: number;
     /** the seeded far target's steps from the start, m (0 without one) */
     readonly farM: number;
     /** gates laid when the walk turned home (-1: it never did) */
@@ -124,6 +127,23 @@ export interface WalkInfo {
     readonly kept: number;
 }
 
+/** fix3b Y2 (owner's message 52, 2026-11-15): "the detail, the highest density of the point cloud, is at the level of
+ *  human eyes, near the ground ... they are all somewhere over a person's head". The centre of a gate stands 1.2 to 2.0 m
+ *  above the ground under it (the first wall voxel below it), 1.6 m when nothing forces another height; the lead's rule. */
+export const EYE_M = 1.6;
+export const EYE_LO_M = 1.2;
+export const EYE_HI_M = 2.0;
+/** the lower edge of a gate's frame stays this far above the ground (the lead's rule) */
+export const LOW_EDGE_M = 0.3;
+/** an eye-level cell's least free radius, flown m (estimate: a 1.2 m ring's radius, its tube and LOW_EDGE_M under it;
+ *  RING_MIN_FREE_M of 1.4 m measured to the ground kept every cell centre under 2.2 m out of a 0.6-0.8 m grid) */
+export const EYE_FREE_M = 1.0;
+/** when too few cells lie in the eye band, its top is raised by this much at a time up to the dense band's top (estimate) */
+const EYE_STEP_M = 0.4;
+/** fix3b Y2 (message 52: "at the ends of streets, where the quality is already quite bad"): no gate and no leg where the
+ *  tile's quality (quality.ts near) is under this share of the scan's best quarter (estimate: before Y2 the gates of
+ *  Wroclaw, Tunis and Opole stood at 0.18-0.28 of it, gate-place-audit.ts, place-before.json) */
+export const POOR_SHARE = 0.15;
 /** G2: the band candidates are used when there are at least this many per wanted gate (estimate), else every candidate */
 const BAND_CANDS_PER_GATE = 8;
 /** G2: the out half's way is about this share of a longest leg per gate (estimate: the legs are 3-15 m and a leg along a
@@ -293,11 +313,49 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
 
     // candidates: usable cells roomy enough for a ring, then a farthest-point sample
     let all: number[] = [];
-    for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= RING_MIN_FREE_M * k) all.push(i);
+    for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= (opts.quality ? EYE_FREE_M : RING_MIN_FREE_M) * k) all.push(i);
     // G2: only cells in the dense band over a well-scanned tile, when there are enough of them
     const Q = opts.quality;
     let banded = false;
+    // fix3b Y2: over a quality map the gates stand at the eye level of a person (EYE_LO_M to EYE_HI_M above the ground under
+    // them, moved toward EYE_M inside their cell as far as the cell's free radius allows) in tiles of at least POOR_SHARE
+    // of the best quarter's quality; the band's top is raised by the least amount when too few cells lie in it
+    let eyeHi = 0;
+    const eyeAt = new Map<number, { pos: Vec3; free: number }>();
     if (Q) {
+        const rMin = EYE_FREE_M * k;
+        const slack = 1; // estimate: the tile's ground against the ground under the cell (a step, a slope)
+        const near: { i: number; c: Vec3; h: number; d: number; free: number }[] = [];
+        for (const i of all) {
+            const c = cellCentre(free, i);
+            const t = tileOf(Q, c);
+            if (t < 0 || !Q.good[t] || qualityShare(Q, c) < POOR_SHARE) continue;
+            const ht = c[1] - Q.ground[t]!;
+            if (!(ht > -slack && ht < Math.max(EYE_HI_M, Q.band[1]) + slack)) continue;
+            const g = groundBelow(walls, c, Math.max(EYE_HI_M, Q.band[1]) + slack);
+            if (!Number.isFinite(g)) continue;
+            const fr = clearanceM(free, i);
+            near.push({ i, c, h: c[1] - g, d: Math.max(0, Math.min(free.cellM / 2, fr - rMin)), free: fr });
+        }
+        const top = Math.max(EYE_HI_M, Q.band[1]);
+        for (let hi = EYE_HI_M; hi <= top + 1e-9 && !banded; hi += EYE_STEP_M) {
+            const got: { i: number; pos: Vec3; free: number }[] = [];
+            for (const e of near) {
+                const y = Math.min(e.h + e.d, Math.max(e.h - e.d, EYE_M));
+                const fr = e.free - Math.abs(y - e.h);
+                const half = fr >= SQUARE_MIN_FREE_M * k ? (SQUARE_SIDE_M / 2 + SQUARE_BAR_M) * k : (RING_DIAMETER_M / 2 + RING_TUBE_M / 2) * k;
+                if (y >= EYE_LO_M && y <= hi + 1e-9 && y - half >= LOW_EDGE_M) got.push({ i: e.i, pos: [e.c[0], e.c[1] + (y - e.h), e.c[2]], free: fr });
+            }
+            if (got.length >= BAND_CANDS_PER_GATE * N) {
+                all = got.map((e) => e.i);
+                for (const e of got) eyeAt.set(e.i, { pos: e.pos, free: e.free });
+                eyeHi = r3(hi);
+                banded = true;
+            }
+        }
+    }
+    if (Q && !banded) {
+        all = all.filter((i) => clearanceM(free, i) >= RING_MIN_FREE_M * k);
         const inBand = all.filter((i) => inDenseBand(Q, cellCentre(free, i)));
         if (inBand.length >= BAND_CANDS_PER_GATE * N) {
             all = inBand;
@@ -312,7 +370,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     for (let k = offset; k < all.length; k += stride) pool.push(all[k]!);
     // the walk reads the whole (strided) pool: a farthest-point sample of 8 per gate spread 192 points over 47 000 m3 of
     // Winter Garden, so after 1-4 gates no sample lay 3-15 m from the last (evidence run of bf7dc3d9: tries 6-11)
-    const cands = pool.map((i) => ({ cell: i, pos: cellCentre(free, i), free: clearanceM(free, i), used: false }));
+    const cands = pool.map((i) => ({ cell: i, pos: eyeAt.get(i)?.pos ?? cellCentre(free, i), free: eyeAt.get(i)?.free ?? clearanceM(free, i), used: false }));
 
     // G2 spread walk (only over a quality map): the way along the free space from the start (fromS) and to a seeded far
     // target (toT), both in cell steps. The out half lays its gates evenly along the way to the target, the back half
@@ -489,10 +547,17 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
             legMemo.clear();
             legMemoAt = cur;
         }
+        // fix3b Y2: an eye-level course's leg stays in the well-scanned part (every tileM / 2 along it at least POOR_SHARE)
+        const legWell = (a: Vec3, b: Vec3): boolean => {
+            if (!Q || eyeHi === 0) return true;
+            const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[2] - a[2]) / (Q.tileM / 2)));
+            for (let j = 1; j < n; j++) if (qualityShare(Q, [a[0] + ((b[0] - a[0]) * j) / n, 0, a[2] + ((b[2] - a[2]) * j) / n]) < POOR_SHARE) return false;
+            return true;
+        };
         const legOk = (c: (typeof cands)[number]): boolean => {
             let v = legMemo.get(c.cell);
             if (v === undefined) {
-                v = sweeper.free(cur, c.pos, p.marginM) && exitOk(c.pos);
+                v = sweeper.free(cur, c.pos, p.marginM) && exitOk(c.pos) && legWell(cur, c.pos);
                 legMemo.set(c.cell, v);
             }
             return v;
@@ -593,7 +658,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
     const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false, true) : null;
-    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length });
+    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, eyeHi, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length });
     return {
         ...shell,
         generator: {
