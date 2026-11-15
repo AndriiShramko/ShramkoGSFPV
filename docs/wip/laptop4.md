@@ -19,6 +19,16 @@ Stage Q1-why
 - [x] 3. gates.py --only vitest,architecture,i18n,b18 on 2c90d1ea: all PASS (vitest 155 s; logs
   U:/Temp/gsfpv-gates-20261115-110810); server on 5740 stopped (this commit)
 
+Stage Q2-near-field
+- [x] 0. Release build of 4bd4fbf7 (dist sha256 31dab660...), serve-csp port 5740; runner U:/Temp/gsfpv-train3/laptop4/
+  run-q2.sh (sets base, mul, rim, wro; TURNS=1 for the full run), short runs without turns first
+- [x] 1. lod-view-score.mjs `--rows a:b` (a region of the picture: 0.5:1 the near half from above, 0:0.5 the far half);
+  candidate (c) `?viewlodrim=` (view-lod.ts rimFactor, RIM_FROM 2, RIM_SPAN 4, both estimates; off by default), wired
+  through flight.ts, session, renderer.ts, prefs url.ts; test view-lod-rim.test.ts 9 of 9, NEG OK; view-lod,
+  switches, main-audit pass (57 of 57 with it); render-pc and fly typecheck exit 0 (this commit)
+- [ ] 2. Measure (a) multiplier 1.7 and 1.5, (c) rim 2, against l3-lub-ref16 by near and far half
+- [ ] 3. Pictures, Wroclaw street at 1 M and the turns for a kept candidate, accept-fly, a6, gates
+
 ## Facts (measured)
 
 ### Q1: the "freeze" below multiplier 2 (2026-11-15, 10:30 to 11:10 local, build a7f39528, port 5740)

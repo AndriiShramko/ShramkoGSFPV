@@ -211,6 +211,8 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             // ?lodmul=1.5, ?viewlodfar=8: the measurement's switches of that rule (laptop3 P3)
             ...(q.get('lodmul') ? { viewLodMultiplier: Number(q.get('lodmul')) } : {}),
             ...(q.get('viewlodfar') ? { viewLodFarLevels: Number(q.get('viewlodfar')) } : {}),
+            // ?viewlodrim=2: the far rim inside the frame so many levels coarser (laptop4 Q2)
+            ...(q.get('viewlodrim') ? { viewLodRimLevels: Number(q.get('viewlodrim')) } : {}),
             lagFrames: Number(q.get('lagFrames') ?? 0),
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
             // asked once the renderer's device exists (a WebGL fallback gets the default budget)
