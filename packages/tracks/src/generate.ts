@@ -239,6 +239,16 @@ export function startNearSpawn(
     return proven(turned, yawOf(turned)) ? turned : [...course];
 }
 
+/**
+ * Review FX-5: generator.version of a course; a closed ring turned to start near the spawn adds `.s<shift>` (its gate 1
+ * was gate shift + 1 of the walk), so course/link.ts bestKey keeps its best laps apart from the unturned order. A course
+ * that was not turned keeps the plain version, and its best laps keep their keys.
+ */
+export function generatorVersion(quality: boolean, startShift: number): string {
+    const v = quality ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION;
+    return startShift > 0 ? `${v}.s${startShift}` : v;
+}
+
 /** The course's title for a seed: 'Course ' and the seed in base 36 (plan section 7). */
 export function courseTitle(seed: number): string {
     return `Course ${(seed >>> 0).toString(36)}`;
@@ -573,7 +583,11 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         course = renumber(course.filter((_, i) => i !== drop));
     }
     if (course.length === 0) laps = p.laps;
+    // review FX-5: a course turned to start near the spawn is another course for its best laps: generatorVersion
+    // records the turn (the server keeps a fixed list of params keys, the version is a free string)
+    const walked = course;
     if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
+    const startShift = course.length ? Math.max(0, walked.findIndex((g) => g.pos === course[0]!.pos)) : 0;
     const startYaw = course.length ?nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
     const shell = build(course, startYaw, startW, laps);
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
@@ -584,7 +598,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         ...shell,
         generator: {
             name: GENERATOR_NAME,
-            version: Q ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION,
+            version: generatorVersion(!!Q, startShift),
             seed,
             params: {
                 marginM: p.marginM,

@@ -57,8 +57,15 @@ describe('generateCourse on the three-room world: a closed course starts nearest
                 const b = generateCourse(free, walls, opts(seed, [at[0], at[1], at[2] + 0.01]));
                 expect(new Set(b.gates.map(key))).toEqual(new Set(a.gates.map(key)));
                 expect(successors(b.gates)).toEqual(successors(a.gates));
-                if (key(b.gates[0]!) === key(a.gates[k]!)) turned++;
-                else expect(key(b.gates[0]!)).toBe(key(a.gates[0]!));
+                // review FX-5: another gate 1 is another generator.version (best laps apart), the same gate 1 the same version
+                if (key(b.gates[0]!) === key(a.gates[k]!)) {
+                    turned++;
+                    expect(b.generator?.version).not.toBe(a.generator?.version);
+                    expect(String(b.generator?.version)).toMatch(/^\d+(\.s\d+)?$/);
+                } else {
+                    expect(key(b.gates[0]!)).toBe(key(a.gates[0]!));
+                    expect(b.generator?.version).toBe(a.generator?.version);
+                }
             }
         }
         // the old generator kept gate 1 wherever the spawn was

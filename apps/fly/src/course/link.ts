@@ -46,12 +46,16 @@ const BEST_KEY = 'gsfpv.course.best';
 /** The best lap's key: the track, the scene and the walls it was laid on (lane review TR-10: a link's seed on another
  *  scene, scale or walls is another course, so the walls' digest and the transform go into the key), and the drone. */
 export function bestKey(
-    tr: { readonly id: string; readonly version: number; readonly scene: { readonly id: string; readonly version?: number }; readonly transform?: readonly number[] | null; readonly generator?: { readonly params?: Record<string, unknown> } | null },
+    tr: { readonly id: string; readonly version: number; readonly scene: { readonly id: string; readonly version?: number }; readonly transform?: readonly number[] | null; readonly generator?: { readonly version?: string; readonly params?: Record<string, unknown> } | null },
     drone: string
 ): string {
     const digest = tr.generator?.params?.['freeDigest'];
     const placed = Array.isArray(tr.transform) ? tr.transform.join(',') : '-';
-    return `${tr.id}.v${tr.version}.${tr.scene.id}.${tr.scene.version ?? 0}.${typeof digest === 'string' ? digest.slice(0, 16) : '-'}.${placed}.${drone}`;
+    // review FX-5: a ring turned to start near the spawn (generator.version '<v>.s<n>', packages/tracks generatorVersion)
+    // is another course; an unturned course keeps the key it had
+    const gv = tr.generator?.version;
+    const turned = typeof gv === 'string' ? /\.(s\d+)$/.exec(gv)?.[1] : undefined;
+    return `${tr.id}.v${tr.version}.${tr.scene.id}.${tr.scene.version ?? 0}.${typeof digest === 'string' ? digest.slice(0, 16) : '-'}.${placed}${turned ? `.${turned}` : ''}.${drone}`;
 }
 
 const OFFERED_KEY = 'gsfpv.course.offered';

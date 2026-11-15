@@ -29,6 +29,7 @@ export class CourseHud {
     private push = 0;
     private queued = false;
     private watched: HTMLElement | null = null;
+    private wallsWatched: HTMLElement | null = null;
     private readonly watch: MutationObserver;
     private readonly onResize: () => void;
     /** the guide to the next gate (stage X2-gate-one): its own element under #ui, hidden from assistive technology */
@@ -85,6 +86,12 @@ export class CourseHud {
             this.watched = note;
             this.watch.observe(note, { attributes: true, childList: true, characterData: true, subtree: true });
         }
+        // review FX-4: the walls box changes its lines and its size; the guide's boxes are measured again then
+        const walls = this.parent.querySelector<HTMLElement>(':scope > .bake-box');
+        if (walls && walls !== this.wallsWatched) {
+            this.wallsWatched = walls;
+            this.watch.observe(walls, { attributes: true, childList: true, characterData: true, subtree: true });
+        }
         if (this.queued) return;
         this.queued = true;
         requestAnimationFrame(() => {
@@ -116,6 +123,8 @@ export class CourseHud {
         };
         add(this.parent.querySelector(':scope > .hud-note'));
         add(this.parent.querySelector(':scope > .top-actions'));
+        // review FX-4: the walls box (top centre) holds the walls line while a course waits for its walls
+        add(this.parent.querySelector(':scope > .bake-box'));
         if (!this.el.hidden) add(this.el);
         this.avoid = out;
     }
