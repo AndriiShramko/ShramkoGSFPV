@@ -4,6 +4,18 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage H3-prove (train 3, 2026-11-15):
+- [x] H3.0 code e8d3655b: the crash toast (.crash-toast, ui/crash-overlay.ts) hidden in the edit view (H2 c2); the top bar
+  line max-width 360 px (an estimate, H2 g); editor3-h2look test NEG OK (neg_control.py ref HEAD, editor.css);
+  editor3-*.test.ts 12 files 65 tests pass. Merge origin/main a7f39528 (sonic3, Integration B): db0a064d, no conflicts,
+  packages/sonic-fpv checked out at the pin b05aeda; apps/fly and tools/bench tsc 0 errors.
+- [x] H3.1 code 176374af: after Save the top bar line says the course is in Courses on the top bar (course.edit.savedMine
+  en es pl ru); probe editor3-prove.ts opens the saved course on a fresh page from Courses (top bar) and its row's Open,
+  flies gate 1 with the keyboard (keyboardFly), records the top line after Save; the /api/tracks stand-in lists by scene.
+  Release build of 176374af's tree: exit 0 (U:/Temp/gsfpv-train3/editor3/h3/build2.log), Wroclaw stand-in walls in dist/walls.
+- [~] H3.2 chain U:/Temp/gsfpv-train3/editor3/h3/chain.sh: Tunis hold (full path, keyboard flight, 844), Wroclaw hold,
+  accept-fly, mouse-free, a6-reference, gates.
+
 Stage H2-look (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
 - Pass 2 (2026-11-15, NOT finished, stopped at the reply budget):
   - [x] H2.3 (a) code 600e08a4: editor.css hides .hud-note (course.ts flashes 'Gates: 24. Fly through gate 1') and .gate-msg
