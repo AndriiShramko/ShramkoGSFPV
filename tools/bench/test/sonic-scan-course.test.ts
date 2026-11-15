@@ -262,6 +262,24 @@ describe('one course in the scene, the course feature\'s, in Fly by Sound too (l
         await missAndReturn([0, 4.5]);
     }, 240000);
 
+    it('review OC-5: gate 1 missed, then a new course (its gate 1 has the same id g1) and its gate 1 missed: "The gate is behind you" said for each', async () => {
+        const { r, shared, count } = await start({ before: true });
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        const g = shared.inUse()!.gates[0]!;
+        await reach(r, at(g, [7, 0, 4]));
+        await reach(r, at(g, [7, 0, -10]));
+        expect(count('sonic.say.gateBehind')).toBe(1);
+        expect(r.press('scene.next')).toBe(true);
+        await r.run(300);
+        const g2 = shared.inUse()!.gates[0]!;
+        expect(g2).not.toBe(g);
+        expect(g2.id).toBe(g.id);
+        await reach(r, at(g2, [7, 0, 4]));
+        await reach(r, at(g2, [7, 0, -10]));
+        expect(count('sonic.say.gateBehind')).toBe(2);
+        expect(count('fly.wrong-way')).toBe(0);
+    }, 240000);
+
     it('D7: backing up and sliding on a leg say nothing; turned round and flown nose-first back along the leg away from the next gate says the wrong way', async () => {
         const { r, shared, count } = await start({ before: true });
         await r.run(60000, null, () => r.host.runner?.phase === 'flying');

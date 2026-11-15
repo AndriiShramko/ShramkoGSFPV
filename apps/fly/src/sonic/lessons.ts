@@ -276,7 +276,8 @@ export class LessonHost {
 
     /** the craft's position at the last frame over the course in the scene, and the gate whose "behind you" was said */
     private behindFrom: FlightSample['pos'] | null = null;
-    private behindSaid: string | null = null;
+    // review OC-5: the gate objects, not their ids: every course numbers its gates g1..gN, so a new course's g1 is another gate
+    private behindSaid: SonicObject | null = null;
 
     /**
      * Lane onecourse (message 53, D7): the course in the scene's next gate passed beside or over it (its plane crossed forward
@@ -286,16 +287,16 @@ export class LessonHost {
     private gateBehind(gate: SonicObject | null, pos: FlightSample['pos']): void {
         const from = this.behindFrom;
         this.behindFrom = gate ? pos : null;
-        if (gate && this.behindSaid !== null && this.behindSaid !== gate.id) this.behindSaid = null;
-        if (!gate || !from || this.behindSaid === gate.id) return;
+        if (gate && this.behindSaid !== null && this.behindSaid !== gate) this.behindSaid = null;
+        if (!gate || !from || this.behindSaid === gate) return;
         const cross = gateCrossing(gate, from, pos);
         if (!cross || cross.inside || cross.near) return;
-        this.behindSaid = gate.id;
+        this.behindSaid = gate;
         void this.p.mode.bridge.say({ key: 'sonic.say.gateBehind' }, false, { lesson: true });
     }
 
     /** the leg judge over the course in the scene: its target, the gate before it, whether the leg was flown, the clocks */
-    private leg: { gate: string | null; from: SonicObject | null; flown: boolean; since: number | null; said: number } = { gate: null, from: null, flown: false, since: null, said: -Infinity };
+    private leg: { gate: SonicObject | null; from: SonicObject | null; flown: boolean; since: number | null; said: number } = { gate: null, from: null, flown: false, since: null, said: -Infinity };
 
     /**
      * Lane onecourse O2.4 (message 53, D7): over the course in the scene the wrong way is said only for the case it is made for, as the
@@ -311,12 +312,13 @@ export class LessonHost {
             this.leg = { gate: null, from: null, flown: false, since: null, said: L.said };
             return;
         }
-        if (L.gate !== gate.id) {
+        if (L.gate !== gate) {
             // the gate before the new target: the one targeted last when it is a gate of the same course (a pass, a lap), else none
-            const before = L.gate !== null ? c.gates.find((g) => g.id === L.gate) ?? null : null;
+            // (review OC-5: by object, so a new course's g1 does not take the old course's last gate as its leg)
+            const before = L.gate !== null && c.gates.includes(L.gate) ? L.gate : null;
             const idx = c.gates.indexOf(gate);
             const prev = idx > 0 ? c.gates[idx - 1] ?? null : before !== null && before === c.gates[c.gates.length - 1] ? before : null;
-            this.leg = { gate: gate.id, from: prev, flown: false, since: null, said: L.said };
+            this.leg = { gate, from: prev, flown: false, since: null, said: L.said };
         }
         const leg = this.leg;
         const from = leg.from;

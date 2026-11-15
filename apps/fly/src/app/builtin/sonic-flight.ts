@@ -58,7 +58,7 @@ export function modeScanPage(ses: FlownScan | null | undefined, search = ''): st
     const s = ses?.transform?.s;
     if (id === '' || typeof s !== 'number' || !Number.isFinite(s) || s <= 0) return modeStartPage();
     // S3: the course the page's address names (Shift+G writes course=g1.<seed>) goes along, so N on the sound page flies that course
-    // first (sonic/feature.ts courseOf reads it with soundCourseSeed); under the mode's own name, never course= (review SN-4: that
+    // first (lane onecourse: app/builtin/course.ts reads it with soundCourseSeed for the first Shift+G or N); under the mode's own name, never course= (review SN-4: that
     // name starts the sighted course feature, its gates, lap clock and best laps, on the sound page); anything else stays behind
     const seed = seedOfLink(search);
     const course = seed === null ? '' : `&${SOUND_COURSE_PARAM}=${seed.toString(36)}`;
