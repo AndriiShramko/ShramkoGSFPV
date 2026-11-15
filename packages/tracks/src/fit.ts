@@ -4,7 +4,11 @@
 // the proof's margin and the free space a gate takes all shrink by the same factor, down to what the smallest drone of
 // the simulator flies. When no course reaches gatesMin it answers the one with the most gates (the smallest sensible
 // course), never nothing while one gate fits.
+import type { SceneTransform } from '@shramko/sonic-fpv';
 import type { TrackFile, VoxelCollision } from './types';
+import { marginOf } from './check';
+import { wallsCheck } from './editor';
+import { upgradeTrack } from './format';
 import { COURSE_DEFAULTS, generateCourse } from './generate';
 import type { CourseOptions, CourseParams } from './generate';
 import type { FreeSpace } from './freespace';
@@ -23,6 +27,18 @@ export const SEEDS_PER_SCALE = 3;
  *  freeSpace and the answer. 3 x 3 tries at the 15.5-22.9 s a course measured on 887f27aa could pass 150 s. */
 export const FIT_BUDGET_MS = 120_000;
 
+/** Review FY-1, ESTIMATE: a course is taken at once when it has at least this share of the gates the generator wanted
+ *  (generator.params.wanted); a shorter proven one is kept while the next seeds of the same scale are tried. Wroclaw seed 3
+ *  walked 4 of 24 (gate-place-audit, fix3b/fixes/fy1-before.json) and fitCourse took it, as gatesMin is 4. */
+export const FULL_SHARE = 0.5;
+/** The gates a course needs to be taken at once: gatesMin, or FULL_SHARE of the generator's wanted count if more. Only a
+ *  course over a quality map (generator version 3 and up) is judged so: a link to a course of versions 1 and 2 regenerates
+ *  the very course it had. */
+export function fullOf(t: TrackFile, gatesMin: number): number {
+    const major = Number(/^(\d+)/.exec(String(t.generator?.version ?? ''))?.[1] ?? 0);
+    const want = (t.generator?.params as { wanted?: unknown } | undefined)?.wanted;
+    return Math.max(gatesMin, major >= 3 && typeof want === 'number' ? Math.ceil(FULL_SHARE * want) : 0);
+}
 /** When fitCourse must stop: `at` on the clock `now` (ms). */
 export interface FitDeadline {
     readonly at: number;
@@ -56,6 +72,56 @@ export interface FitResult {
     readonly scale: number;
     /** courses generated */
     readonly tried: number;
+    /** the course passed the generator's own final proof (checkTrack with the turns after the gates, stricter than the Save) */
+    readonly proven: boolean;
+}
+
+/**
+ * Lane fix3b: the generator's final proof (generate.ts, generator.params.proof) is the Save check plus the turn after
+ * each gate. A course whose proof failed is not given while a proven one can be had: the next seed or scale is tried.
+ * A course without a proof record (no gates, or a fake generator in tests) counts as proven.
+ */
+export function provenCourse(t: TrackFile): boolean {
+    const p = t.generator?.params?.proof as { ok?: boolean } | null | undefined;
+    return p?.ok !== false;
+}
+
+/**
+ * Lane fix3b: the generator ends with the very check the edit mode's Save runs on the course as the pilot gets it
+ * (wallsCheck on upgradeTrack of the file, at marginOf(file), in the flown transform): a course it refuses is not given
+ * while another seed or scale gives one it passes. Only a course with a proof record is checked (a fake generator in
+ * tests gives none).
+ */
+export function savesUntouched(t: TrackFile, walls: VoxelCollision, transform: SceneTransform): boolean {
+    if (!t.generator?.params?.proof || t.gates.length === 0) return true;
+    return wallsCheck(walls, transform, marginOf(t))(upgradeTrack(t)).length === 0;
+}
+
+/**
+ * Review FY-3: a course the Save check refuses untouched loses the gates the check names (a gate in a wall or facing the
+ * wrong way: that gate; a leg through a wall: its far gate, or its near one when the far end is the start or the finish),
+ * one round at a time, until the check passes it. Null when no gate is named (the start itself is in a wall) or none is
+ * left. The proof record keeps the generator's verdict; only its gates change.
+ */
+export function trimToSave(t: TrackFile, walls: VoxelCollision, transform: SceneTransform): TrackFile | null {
+    let cur = t;
+    for (let round = 0; round < t.gates.length; round++) {
+        const problems = wallsCheck(walls, transform, marginOf(cur))(upgradeTrack(cur));
+        if (problems.length === 0) return cur;
+        const ids = new Set(cur.gates.map((g) => g.id));
+        const named = new Set<string>();
+        for (const p of problems) {
+            if (p.code === 'outside' || p.code === 'gate-wall' || p.code === 'gate-direction') named.add(p.gate);
+            else if (p.code === 'leg-wall') named.add(ids.has(p.to) ? p.to : p.from);
+        }
+        // one gate a round, the earliest named: a gate moved into a wall also turns its next gate's way in, and that
+        // gate is mended by the first one's drop (the next round checks again)
+        const drop = cur.gates.findIndex((g) => named.has(g.id));
+        const gates = cur.gates.filter((_, i) => i !== drop);
+        if (gates.length === cur.gates.length || gates.length === 0) return null;
+        cur = { ...cur, gates: gates.map((g, i) => ({ ...g, id: `g${i + 1}` })) };
+    }
+    return null;
 }
 
 /**
@@ -65,26 +131,41 @@ export interface FitResult {
 export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, gatesMin: number = COURSE_DEFAULTS.gatesMin, make: typeof generateCourse = generateCourse, deadline: FitDeadline | null = null): FitResult {
     let best: TrackFile | null = null;
     let bestScale = 1;
+    let bestOk = false;
     let tried = 0;
     let longest = 0;
+    const end = (): FitResult => {
+        // review FY-3: no try passed the Save check: the best one loses the gates the check names (a proof that failed
+        // stays failed: trimming cannot mend it)
+        if (best && !bestOk && provenCourse(best)) {
+            const cut = trimToSave(best, walls, opts.transform);
+            if (cut) return { track: cut, short: cut.gates.length < gatesMin, scale: bestScale, tried, proven: true };
+        }
+        return { track: best, short: best !== null && (best.gates.length < gatesMin || !bestOk), scale: bestScale, tried, proven: best !== null && bestOk };
+    };
     for (const scale of COURSE_SCALES) {
         const params = { ...scaledParams(scale), ...(opts.params ?? {}) };
         let s = opts.seed >>> 0;
         for (let i = 0; i < SEEDS_PER_SCALE; i++) {
             // review T2-6: with a course in hand, a try that would end past the deadline is not started (the page's
             // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate
-            if (deadline && best && deadline.now() + longest > deadline.at) return { track: best, short: true, scale: bestScale, tried };
+            if (deadline && best && deadline.now() + longest > deadline.at) return end();
             const t0 = deadline ? deadline.now() : 0;
             const t = make(free, walls, { ...opts, seed: s & 0x7fffffff, params });
+            const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;
-            if (t.gates.length >= gatesMin) return { track: t, short: false, scale, tried };
-            if (t.gates.length > (best?.gates.length ?? 0)) {
+            if (ok && t.gates.length >= fullOf(t, gatesMin)) return { track: t, short: false, scale, tried, proven: true };
+            // a proven course beats an unproven one of any length; among the same kind the one with more gates
+            if (t.gates.length > 0 && ((ok && !bestOk) || (ok === bestOk && t.gates.length > (best?.gates.length ?? 0)))) {
                 best = t;
                 bestScale = scale;
+                bestOk = ok;
             }
             s = nextSeed(s);
         }
+        // review FY-1: a proven course of at least gatesMin gates at this scale beats any course of a smaller one
+        if (best && bestOk && best.gates.length >= gatesMin) return end();
     }
-    return { track: best, short: best !== null, scale: bestScale, tried };
+    return end();
 }

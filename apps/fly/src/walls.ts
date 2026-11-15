@@ -12,8 +12,8 @@ import { h } from './ui/dom';
 import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, LADDER_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize, stepTimeoutMs } from './bake';
 import { bakeOffThread, lastBakeWhere, offThreadStoppable } from './bake-off-thread';
 import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
-import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
-import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
+import { WallCache, keepBuilt, keepThenUse, keptLine, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
+import type { ImportReport, KeepResult, WallsKeyInput, WallsRow } from './wallcache';
 import { ensureWalls } from './walls-first';
 import { FREEZE_NOTE_S, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, mayFreeze, progressLine, spokenLine, wallsSteps } from './course/progress';
 import type { ProgressWhat } from './course/progress';
@@ -36,6 +36,10 @@ export interface WallsHook {
     /** bakes run in this tab (a cache hit leaves it at 0) */
     bakes: number;
     lastBake: Record<string, unknown> | null;
+    /** test: the store write of walls built here runs now */
+    storing: boolean;
+    /** test: what the last store write of walls built here did (key, ms, bytes, error) */
+    lastStore: KeepResult | null;
     lastImport: ImportReport | null;
     /** resolves when the store was asked and the plan made */
     ready: Promise<void>;
@@ -99,6 +103,13 @@ export interface WallsOptions {
     speak?: (text: string) => void;
 }
 
+/** the owner's rule: anything longer than 2 s shows what runs (a rule, not a measurement) */
+const KEEP_NOTE_MS = 2000;
+/**
+ * Review FX-1: how long built walls wait for their store write before they go in use anyway. A design choice, not a
+ * measurement: the measured writes of Wroclaw's 58 MB walls took 0.34 and 0.65 s (walls-store-probe, docs/wip/fix3a.md).
+ */
+const KEEP_WAIT_MS = 5000;
 const cm = (m: number): string => String(Math.round(m * 1000) / 10);
 const aboutS = (s: number): number => Math.max(5, Math.round(s / 5) * 5);
 const aboutMin = (s: number): number => Math.max(1, Math.round(s / 60));
@@ -168,6 +179,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
         cacheMiss: null,
         bakes: 0,
         lastBake: null,
+        storing: false,
+        lastStore: null,
         lastImport: null,
         ready: Promise.resolve(),
         refine: () => (w.plan?.voxelM ? runRefine(w.plan.voxelM) : Promise.resolve()),
@@ -196,6 +209,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             clearInterval(progTimer);
             clearInterval(pollTimer);
             clearTimeout(hideTimer);
+            clearTimeout(keepTimer);
             box.remove();
             more.remove();
         },
@@ -363,16 +377,57 @@ export function mountWalls(o: WallsOptions): WallsHook {
         }, 250);
     }
 
-    async function remember(input: WallsKeyInput | null, r: BakeResult, sha: string): Promise<void> {
-        if (!input) return;
-        try {
-            const c = await cacheP;
-            await c.put(input, r.json, r.bin, { gaussians: r.gaussians, bakeMs: r.ms.total, sha256: sha, binGz: r.binGz });
+    /** the key input of walls built here: the one made before the build, else made now (the size request failed then) */
+    async function keyInputNow(voxelM: number): Promise<WallsKeyInput | null> {
+        if (w.keyInput) return w.keyInput;
+        const size = w.size ?? await sceneSize(s.scene.contentUrl, s.scene.contentKind);
+        w.size = size;
+        const input: WallsKeyInput = { sceneId: o.sceneId, version: s.scene.version, etag: size.etag, base: shipped?.sha ?? 'none', voxelM };
+        w.key = await wallsKey(input);
+        w.keyInput = input;
+        return input;
+    }
+
+    /**
+     * Lane fix3a: the store write starts the moment the walls exist, before they go in use, so a reload
+     * right after "built" finds them. The test modes (mode off) never made a key and keep nothing, as before.
+     */
+    let keepTimer = 0;
+    function startKeep(r: BakeResult, sha: string, voxelM: number): Promise<KeepResult> {
+        if (o.mode === 'off' && !w.keyInput) return Promise.resolve({ ok: false, key: null, ms: 0, bytes: 0, error: 'off' });
+        w.storing = true;
+        return keepBuilt({
+            input: w.keyInput,
+            makeInput: () => keyInputNow(voxelM),
+            put: async (input) => {
+                const c = await cacheP;
+                const row = await c.put(input, r.json, r.bin, { gaussians: r.gaussians, bakeMs: r.ms.total, sha256: sha, binGz: r.binGz });
+                return { ...row, memory: c.kind === 'memory' };
+            },
+            now: () => performance.now()
+        }).then(async (res) => {
+            w.storing = false;
+            w.lastStore = res;
             // ask once for storage that the browser does not clear under pressure; refused is fine
-            await navigator.storage?.persist?.().catch(() => false);
-        } catch (e) {
-            console.warn('walls not stored', e);
-        }
+            if (res.ok) await navigator.storage?.persist?.().catch(() => false);
+            else console.warn('walls not stored', res.error);
+            return res;
+        });
+    }
+    /** the done line stays; a write past KEEP_NOTE_MS adds that the walls are being kept, a failed one that they are not */
+    function showKeep(p: Promise<KeepResult>): void {
+        const done = status.textContent ?? '';
+        const keeping = `${done} ${t('bake.keeping')}`;
+        clearTimeout(keepTimer);
+        keepTimer = window.setTimeout(() => { if (w.storing && status.textContent === done) say(keeping); }, KEEP_NOTE_MS);
+        void p.then((res) => {
+            clearTimeout(keepTimer);
+            // review FX-3: kept, another line keeps the box; not kept, the pilot hears it whatever the box shows
+            const line = keptLine(status.textContent ?? '', done, keeping, res, t('bake.notKept'));
+            if (line === null) return;
+            say(line);
+            if (!res.ok) o.speak?.(t('bake.notKept'));
+        });
     }
 
     function refusedText(e: BakeRefusedError, refine: boolean): string {
@@ -411,9 +466,14 @@ export function mountWalls(o: WallsOptions): WallsHook {
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = r.sha256 ?? await wallsSha(r.json, r.bin);
-            // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
-            o.switchOn();
-            queue(r.json, r.bin, sha, 'bake');
+            const kept = startKeep(r, sha, BASE_VOXEL_M);
+            // review FX-1: in use only once kept (0.3 to 0.65 s measured on Wroclaw), so "built" also means "kept"
+            note.textContent = t('bake.keeping');
+            await keepThenUse(kept, () => {
+                // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
+                o.switchOn();
+                queue(r.json, r.bin, sha, 'bake');
+            }, KEEP_WAIT_MS);
             o.hook.bake = { ok: true, kind: 'base', where: lastBakeWhere, voxelM: r.voxelM, level: r.level, tried: r.tried, rough: isRough(r), gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
@@ -422,7 +482,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             // a course waiting for the walls takes them at once (ensureWalls takeQueued): its line says what comes, not the respawn
             endProgress(t(s.wallsPending && !after ? 'bake.doneNext' : isRough(r) ? 'bake.doneRough' : 'bake.done', { s: (r.ms.total / 1000).toFixed(0) }));
             o.beacon('bake_done');
-            void remember(w.keyInput, r, sha);
+            showKeep(kept);
         } catch (e) {
             w.state = 'failed';
             if (e instanceof BakeRefusedError) {
@@ -465,11 +525,14 @@ export function mountWalls(o: WallsOptions): WallsHook {
             o.hook.bake = { ok: true, kind: 'refine', where: lastBakeWhere, voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
-            void remember(w.keyInput, r, sha);
-            queue(r.json, r.bin, sha, 'bake');
+            const kept = startKeep(r, sha, voxelM);
+            // review FX-1: in use only once kept (or after KEEP_WAIT_MS), as in runBase
+            note.textContent = t('bake.keeping');
+            await keepThenUse(kept, () => queue(r.json, r.bin, sha, 'bake'), KEEP_WAIT_MS);
             if (s.wallsPending) endProgress(t('bake.refine.done', { cm: cm(voxelM), was: cm(was ?? shipped.voxelM), s: (r.ms.total / 1000).toFixed(0) }));
             else endProgress(t('bake.refine.swapped', { cm: cm(voxelM), was: cm(was ?? shipped.voxelM) }), 15000);
             o.beacon('refine_done', { cm: cm(voxelM) });
+            showKeep(kept);
         } catch (e) {
             w.state = 'failed';
             o.hook.bake = e instanceof BakeRefusedError ? { ok: false, kind: 'refine', refused: true, reason: e.reason } : { ok: false, kind: 'refine', error: String((e as Error)?.message ?? e) };

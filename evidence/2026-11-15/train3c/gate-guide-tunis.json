@@ -1,0 +1,159 @@
+{
+ "base": "http://localhost:5760/en",
+ "id": "887f27aa",
+ "shiftg": true,
+ "checks": [
+  {
+   "what": "aria-hidden on the guide",
+   "pass": true,
+   "detail": "true"
+  },
+  {
+   "what": "start: guide shown for gate 1 (hook next 0)",
+   "pass": true,
+   "detail": {
+    "shown": true,
+    "box": {
+     "left": 1130,
+     "top": 385,
+     "right": 1270.4375,
+     "bottom": 415
+    },
+    "text": "Gate 1 · 20 m"
+   }
+  },
+  {
+   "what": "start: side right matches the bearing from the camera pose (93.2 deg), behind",
+   "pass": true,
+   "detail": {
+    "side": "right",
+    "cx": 1200.21875,
+    "vw": 1280,
+    "behind": true,
+    "inFrame": false
+   }
+  },
+  {
+   "what": "start: metres within 1 m (20 shown, 19.55 measured)",
+   "pass": true,
+   "detail": "Gate 1 · 20 m"
+  },
+  {
+   "what": "start: clear of the note, the lap block and the walls box",
+   "pass": true,
+   "detail": {
+    "guide": {
+     "left": 1130,
+     "top": 385,
+     "right": 1270.4375,
+     "bottom": 415
+    },
+    "note": {
+     "left": 430,
+     "top": 86,
+     "right": 850,
+     "bottom": 135.6875
+    },
+    "block": {
+     "left": 600.8984375,
+     "top": 142,
+     "right": 679.1015625,
+     "bottom": 239.4375
+    },
+    "walls": null
+   }
+  },
+  {
+   "what": "start: inside the screen",
+   "pass": true,
+   "detail": {
+    "box": {
+     "left": 1130,
+     "top": 385,
+     "right": 1270.4375,
+     "bottom": 415
+    },
+    "vw": 1280,
+    "vh": 800
+   }
+  }
+ ],
+ "reads": {
+  "start": {
+   "guide": {
+    "shown": true,
+    "gate": 0,
+    "metres": 20,
+    "side": "right",
+    "behind": true,
+    "inFrame": false,
+    "bearingDeg": 93,
+    "x": 1200,
+    "y": 400
+   },
+   "text": "Gate 1 · 20 m",
+   "guideBox": {
+    "left": 1130,
+    "top": 385,
+    "right": 1270.4375,
+    "bottom": 415
+   },
+   "ariaHidden": "true",
+   "cam": [
+    0,
+    2,
+    0
+   ],
+   "right": [
+    2.220446049250313e-16,
+    0,
+    1
+   ],
+   "fwd": [
+    1,
+    0,
+    -2.220446049250313e-16
+   ],
+   "gate": [
+    -1.1,
+    1.2,
+    19.5
+   ],
+   "gates": 24,
+   "next": 0,
+   "note": {
+    "left": 430,
+    "top": 86,
+    "right": 850,
+    "bottom": 135.6875
+   },
+   "block": {
+    "left": 600.8984375,
+    "top": 142,
+    "right": 679.1015625,
+    "bottom": 239.4375
+   },
+   "menu": null,
+   "walls": null,
+   "wallsLine": "",
+   "vw": 1280,
+   "vh": 800,
+   "probeBearing": 93.2,
+   "probeDist": 19.55
+  }
+ },
+ "turns": [],
+ "genS": 10,
+ "camMode": {
+  "override": false,
+  "aim": {
+   "yawDeg": 89.99999999999999,
+   "pitchDeg": 0
+  },
+  "editorOpen": false
+ },
+ "gates": 24,
+ "shotStart": "U:\\Temp\\gsfpv-train3\\shots\\train3c-raw\\fix3a-gate1-tunis.png",
+ "seconds": 13,
+ "pass": true
+}

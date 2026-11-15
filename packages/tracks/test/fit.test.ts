@@ -94,6 +94,111 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(FIT_BUDGET_MS).toBeLessThan(150_000);
     });
 
+    it('review FY-1: a course far short of the gates the generator wanted is not taken at once; nor is a smaller scale tried while one reached gatesMin', () => {
+        // a fake generator: try k gives counts[k] gates of the 24 it wanted (no proof record: counts as proven)
+        const fakeOf = (counts: number[]) => {
+            let k = 0;
+            const scales: number[] = [];
+            const make = ((_f: unknown, _w: unknown, o: Parameters<typeof generateCourse>[2]): TrackFile => {
+                scales.push(o.params?.scale ?? 1);
+                const n = counts[Math.min(k++, counts.length - 1)]!;
+                const gate = { id: 'g', shape: { kind: 'ring', diameter: 1.2, tube: 0.1 }, pos: [0, 1.6, 0], quat: [0, 0, 0, 1], direction: 'forward' };
+                return { id: `t${k}`, version: 1, scene: SCENE, laps: 1, gates: Array.from({ length: n }, (_, i) => ({ ...gate, id: `g${i + 1}` })), generator: { name: 'fake', version: '3', seed: k, params: { wanted: 24 } } } as unknown as TrackFile;
+            }) as unknown as typeof generateCourse;
+            return { make, scales };
+        };
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const a = fakeOf([4, 20]);
+        const ra = fitCourse(null as never, null as never, opts, 4, a.make);
+        expect(ra.track!.gates.length).toBe(20);
+        expect(ra.tried).toBe(2);
+        expect(ra.short).toBe(false);
+        // control: three short seeds at scale 1: the longest of them, not a course of smaller gates
+        const b = fakeOf([5, 4, 6, 24]);
+        const rb = fitCourse(null as never, null as never, opts, 4, b.make);
+        expect(rb.track!.gates.length).toBe(6);
+        expect(rb.scale).toBe(1);
+        expect(b.scales).toEqual([1, 1, 1]);
+    });
+
+    it('lane fix3b: a course whose final proof failed is not given while the next seed gives a proven one', () => {
+        // the real generator, with the proof of the first try marked failed (as generate.ts records it)
+        let n = 0;
+        const firstFails = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            if (n++ > 0 || !t.generator) return t;
+            return { ...t, generator: { ...t.generator, params: { ...t.generator.params, proof: { ok: false, marginM: 0.5, pathM: 1 } } } };
+        }) as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, 1, firstFails);
+        // the tiny room gives no gate on some plan-size seeds, so more than one try can follow the refused one
+        expect(r.tried).toBeGreaterThanOrEqual(2);
+        expect(r.proven).toBe(true);
+        expect(r.track!.gates.length).toBeGreaterThanOrEqual(1);
+        expect((r.track!.generator!.params.proof as { ok: boolean }).ok).toBe(true);
+        // what the pilot gets passes the edit mode's Save check untouched
+        expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
+        // when no try is proven the course with the most gates still comes (the pilot is led on), marked not proven
+        const allFail = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            return t.generator ? { ...t, generator: { ...t.generator, params: { ...t.generator.params, proof: { ok: false, marginM: 0.5, pathM: 1 } } } } : t;
+        }) as typeof generateCourse;
+        const none = fitCourse(free, walls, opts, 1, allFail);
+        expect(none.track).not.toBeNull();
+        expect(none.proven).toBe(false);
+        expect(none.short).toBe(true);
+    });
+
+    it('lane fix3b: the generator ends with the Save check itself: a course it refuses is not given even with its proof marked ok', () => {
+        // the real generator; the first course's gate 1 is put against the wall at x = 0 after its proof passed (proof
+        // record unchanged, ok true), so only the Save check of the course as given can see it
+        let bad: TrackFile | null = null;
+        const intoWall = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            if (bad || t.gates.length === 0) return t;
+            const g0 = t.gates[0]!;
+            bad = { ...t, gates: [{ ...g0, pos: [0.05, g0.pos[1], g0.pos[2]] as Vec3 }, ...t.gates.slice(1)] };
+            return bad;
+        }) as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, 1, intoWall);
+        // control: the moved course is refused by the Save check while its proof still reads ok
+        const b = bad as TrackFile | null;
+        expect(b).not.toBeNull();
+        expect((b!.generator!.params.proof as { ok: boolean }).ok).toBe(true);
+        expect(wallsCheck(walls, IDENTITY, marginOf(b!))(upgradeTrack(b!)).length).toBeGreaterThan(0);
+        // what the pilot gets is another try, and the Save check passes it untouched
+        expect(r.track).not.toBeNull();
+        expect(r.track).not.toBe(b);
+        expect(r.proven).toBe(true);
+        expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
+    });
+
+    it('review FY-3: when every try is refused by the Save check, the best one comes without the gates the check names', () => {
+        // the real generator; on every try gate 2 is put against the wall at x = 0 after its proof passed
+        const moved: TrackFile[] = [];
+        const allIntoWall = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            if (t.gates.length < 3) return t;
+            const g1 = t.gates[1]!;
+            const b = { ...t, gates: [t.gates[0]!, { ...g1, pos: [0.05, g1.pos[1], g1.pos[2]] as Vec3 }, ...t.gates.slice(2)] };
+            moved.push(b);
+            return b;
+        }) as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, 1, allIntoWall);
+        // control: every try was refused by the Save check untouched
+        expect(moved.length).toBeGreaterThan(0);
+        for (const b of moved) expect(wallsCheck(walls, IDENTITY, marginOf(b))(upgradeTrack(b)).length).toBeGreaterThan(0);
+        expect(r.track).not.toBeNull();
+        expect(r.proven).toBe(true);
+        expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
+        // the moved gate is gone, the others stay
+        const src = moved.find((b) => b.generator!.seed === r.track!.generator!.seed && b.gates.length === r.track!.gates.length + 1);
+        expect(src).toBeDefined();
+        expect(r.track!.gates.some((g) => g.pos[0] === 0.05)).toBe(false);
+    });
+
     it('the smallest scale keeps the ring at RING_MIN_DRONE_DIAMETERS drone diameters', () => {
         const last = COURSE_SCALES[COURSE_SCALES.length - 1]!;
         expect(RING_DIAMETER_M * last).toBeGreaterThanOrEqual(RING_MIN_DRONE_DIAMETERS * 2 * SMALLEST_DRONE_RADIUS_M);

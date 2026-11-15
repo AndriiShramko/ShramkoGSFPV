@@ -29,3 +29,48 @@
     white-space: pre-line;
     font-variant-numeric: tabular-nums;
 }
+/* The guide to the next gate (course/hud.ts guide, course/guide.ts placeGuide): placed by a transform from the top left corner,
+   with the backdrop of .hud-note (fly.css) so it reads on a light sky. The arrow is a triangle pointing right, turned by
+   hud.ts; behind the craft a turn mark (clockwise to the right, anticlockwise to the left) goes before it. */
+.course-guide {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+    white-space: nowrap;
+    background: rgba(0, 0, 0, .6);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font: 600 13px/1.2 system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    z-index: 4;
+    will-change: transform;
+}
+.course-guide[hidden],
+.course-guide.course-covered,
+.hud-off .course-guide {
+    display: none;
+}
+.course-guide-arrow {
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 14px solid #a6ff1a;
+}
+.course-guide.behind-right::before,
+.course-guide.behind-left::before {
+    font-size: 18px;
+    line-height: 1;
+    color: #ffb81a;
+}
+.course-guide.behind-right::before {
+    content: '\21BB';
+}
+.course-guide.behind-left::before {
+    content: '\21BA';
+}

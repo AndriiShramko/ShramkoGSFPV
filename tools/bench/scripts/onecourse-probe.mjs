@@ -58,7 +58,9 @@ const READ = () => {
     return {
         course: c ? { on: c.on, source: c.source, seed: c.seed, gates: c.gates, next: c.next, drawn: c.drawn, laps: c.laps, track: c.track, clock: c.clockText ? c.clockText() : null } : null,
         sonic: so ? { lesson: so.lesson ?? null, phase: so.phase ?? null, target: so.target ? (so.target.id ?? JSON.stringify(so.target).slice(0, 80)) : null, lastLine: so.lastLine ?? null, prims, passed: so.passed ?? null } : null,
-        note: (() => { const n = document.querySelector('.hud-note'); return n && !n.hidden ? (n.textContent || '').trim().slice(0, 200) : null; })()
+        note: (() => { const n = document.querySelector('.hud-note'); return n && !n.hidden ? (n.textContent || '').trim().slice(0, 200) : null; })(),
+        // integration C seam (d): the guide chip's gate (0-based, course/hud.ts GuideState) beside the hum's target id ('g' + (gate + 1))
+        guide: (() => { try { const q = c && c.guide ? c.guide() : null; return q ? { shown: q.shown, gate: q.gate, metres: Math.round(q.metres) } : null; } catch { return null; } })()
     };
 };
 
@@ -132,6 +134,10 @@ try {
     // 4. Shift+G in the sound mode
     await step('shiftG-sound', page, () => page.keyboard.press('Shift+KeyG'), Number(process.env.SG_MS ?? 240000), (s, b) => s.course?.seed !== b.course?.seed && (s.course?.gates ?? 0) > 0 && (s.course?.drawn ?? 0) > 0 && s.sonic?.target != null);
     await page.waitForTimeout(3000);
+    // integration C seam (e): the course made by Shift+G in the sound mode passes the Save check untouched (read only, nothing saved)
+    out.saveCheckSound = await page.evaluate(() => { try { return window.__gsfpv.course.saveCheck?.() ?? 'no hook'; } catch (e) { return 'error ' + String(e).slice(0, 120); } });
+    out.afterShiftGSound = await page.evaluate(READ);
+    if (RENDER) await page.screenshot({ path: `${shots}/onecourse-${tag}-shiftg-again.png` });
     // 5. N in the sound mode
     await step('N-sound', page, () => page.keyboard.press('KeyN'), 240000, (s, b) => (s.course?.seed !== b.course?.seed && (s.course?.gates ?? 0) > 0 && s.sonic?.target != null) || (s.sonic?.target != null && s.sonic?.target !== b.sonic?.target && (s.sonic?.prims ?? 0) > 0));
     await page.waitForTimeout(3000);
