@@ -438,7 +438,8 @@ export const course: Feature = {
                 spawn: [s.spawn[0], s.spawn[1], s.spawn[2]],
                 seed, scene: { id: s.scene.id, version: s.scene.version },
                 transform: flownTransform(),
-                created: new Date().toISOString()
+                created: new Date().toISOString(),
+                elements: true
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);

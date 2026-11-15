@@ -22,6 +22,9 @@ import { gateExit } from './path';
 import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
 import { createRng } from './rng';
+import { composeElements } from './elements';
+import type { Composed } from './elements';
+import { SERVER_MAX_GATES } from './server';
 import type { Rng } from './rng';
 
 export const GENERATOR_NAME = 'gsfpv-course';
@@ -102,6 +105,11 @@ export interface CourseOptions {
     /** CR-1: what the walk did (audits and probes). Not written into the file: the server keeps a fixed list of params keys
      *  (server.ts PARAM_KEYS, apps/api/tracks.py), and these are diagnostics, not the course. */
     readonly onWalk?: (w: WalkInfo) => void;
+    /** course4 C4: compose the walk's course into competition elements (elements.ts). Off: the course is as before
+     *  (the sound mode's course-ask job does not ask for them: its pilot passes single upright gates). */
+    readonly elements?: boolean;
+    /** course4 C4: what the composition drew and placed (audits and tests) */
+    readonly onElements?: (c: Composed) => void;
 }
 
 /** CR-1, CR-4: the walk of one generateCourse call, handed to CourseOptions.onWalk */
@@ -281,8 +289,8 @@ export function startNearSpawn(
  * was gate shift + 1 of the walk), so course/link.ts bestKey keeps its best laps apart from the unturned order. A course
  * that was not turned keeps the plain version, and its best laps keep their keys.
  */
-export function generatorVersion(quality: boolean, startShift: number): string {
-    const v = quality ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION;
+export function generatorVersion(quality: boolean, startShift: number, elements = false): string {
+    const v = (quality ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION) + (elements ? '.e1' : '');
     return startShift > 0 ? `${v}.s${startShift}` : v;
 }
 
@@ -723,7 +731,26 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // review FY-4: the turned ring's first leg (start to the gate nearest the spawn) is judged for a poor scan too
     if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
     const startShift = course.length ? Math.max(0, walked.findIndex((g) => g.pos === course[0]!.pos)) : 0;
-    const startYaw = course.length ?nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
+    let startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
+    // course4 C4: the proven course composed into elements; each element is proven with its neighbours, and the whole
+    // course once more (a course that fails it keeps its single gates)
+    if (opts.elements && course.length > 0) {
+        const single = course;
+        const comp = composeElements({
+            gates: course, closed: laps > 1, start: startW, toFlown: (q) => toFlown(q), toScan, s, k, marginM: p.marginM, sweeper,
+            axisOf: (g) => { const q = g.quat; const w = q[0], y = q[2]; return [r6(-2 * w * y), 0, r6(-(1 - 2 * y * y))]; },
+            legWell, rng: (opts.rng ?? createRng)((seed ^ 0x5eed1) >>> 0), maxGates: SERVER_MAX_GATES,
+            proven: (gs, from) => checkTrack(build(gs, nearestYaw(sub(toFlown(gs[0]!.pos), from)), from, 1), walls, T, p.marginM, false, true).ok
+        });
+        opts.onElements?.(comp);
+        if (comp.gates.length !== single.length || comp.gates.some((g, i) => g.shape.kind !== single[i]!.shape.kind)) {
+            const yaw = nearestYaw(sub(toFlown(comp.gates[0]!.pos), startW));
+            if (checkTrack(build(comp.gates, yaw, startW, laps), walls, T, p.marginM, false, true).ok) {
+                course = comp.gates;
+                startYaw = yaw;
+            }
+        }
+    }
     const shell = build(course, startYaw, startW, laps);
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
@@ -733,7 +760,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         ...shell,
         generator: {
             name: GENERATOR_NAME,
-            version: generatorVersion(!!Q, startShift),
+            version: generatorVersion(!!Q, startShift, !!opts.elements),
             seed,
             params: {
                 marginM: p.marginM,

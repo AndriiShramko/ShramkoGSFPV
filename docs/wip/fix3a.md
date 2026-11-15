@@ -949,3 +949,82 @@ candidate counts in one debug run first would have saved 3.
 Cost (course4 C3): about 30 replies; the most went to the two whole-catalogue Node runs (13 scans x 3 seeds, 6-9 min
 each) and to a test room that the free space's erosion step emptied (a room one cell high has no core cell: 0.8 and 1.0 m
 rooms gave nothing at any margin, 1.2 m works). A catalogue table runner that prints the summary would have saved 3.
+
+## Status C4-elements
+
+Logs U:/Temp/gsfpv-train3/course4/c4/. Release build of 05e983f8: BUILD EXIT 0 (c4/build.log; not served, no page run yet).
+- [x] measured, kinds today (gate-place-audit.ts --scenes 70b50d42,39e63ce9 --seeds 10, c4/before.json, code of 05e983f8):
+      Wroclaw 70b50d42 225 gates in 10 courses, 225 rings (100 %), 0 squares, Save problems 0; Modlinek room 39e63ce9 49
+      gates, 49 rings at step 0.4, problems 0. The walk lays a square only where the cell's free radius is at least
+      2.2 m x step, and the eye-level cells never have it. The other room was not run (budget).
+- [x] read in the code, per kind of the course format (ring, square, cube-frame; 'dive' is not a shape but the editor's
+      turn of a gate to lie flat, editor.ts PITCH_DOWN): the view draws all three and a flat gate (course/view.ts
+      halfOuter, banner on the side of a flat gate); a pass is counted by gateCrossing (sonic-fpv lesson/goals.ts: the step
+      crosses the gate's local z plane forward inside the opening), so a flat or turned gate counts the same way; the Save
+      check is checkTrack (editor.ts wallsCheck): opening, frame and run through the gate clear, leg in within 35 deg of
+      the gate's pass axis. Fly by Sound: the sound mode asks its course through course-ask.ts (sonic lane), which does not
+      set the new job flag, so its courses stay single upright gates (by construction, not flown yet).
+- [x] built (packages/tracks/src/elements.ts, generate.ts CourseOptions.elements, onElements; worker job flag
+      'elements', set by the page's Shift+G only): the walk's proven course is composed into elements, each with its own
+      space test and a proof with its neighbours (checkTrack), then the whole course is proven once more (a failure keeps
+      the single gates). Elements and design shares (estimates of the lead's S9): single 0.25 (the walk's ring), upright
+      square 0.2 (the ring's opening), tunnel 0.2 (3-5 gates of the gate's shape, 1.0 m x step apart along its axis; the way
+      along the row free at frame width plus margin), flat 0.15 (the gate, then a square lying flat 1.5 m ahead and 2.5 m
+      above it, passed upward: a climb; the column up past it free), cube 0.2 (cube-frame of the ring's opening; its length
+      along the axis free). Gate 1 (START) and the last gate of an open course (FINISH) stay single. Same seed, same course:
+      the element draw has its own seeded source. Generator version gets '.e1' (another best-lap key). Total gates at most
+      SERVER_MAX_GATES 60. Not built: two gates one over the other (see For the lead).
+- [x] test packages/tracks/test/elements.test.ts 4 passed (shares of 1600 draws over 200 seeds within 0.04 of the design;
+      no element where its space test or its proof fails; tunnel a row along the axis, flat passed upward, upright gates
+      keep the walk's height; generator on threeRooms seeds 1-6: same trackDigest twice, checkTrack ok, at least 3 shape
+      kinds). NEG OK against generate.ts of HEAD (AssertionError). packages/tracks 139 tests passed; typecheck tracks, fly,
+      bench exit 0. Debug run on threeRooms seeds 1-3 (5 m high rooms): tunnels refused 2 by space, 1 by proof; the flat
+      square refused by space (it needs about 6 m over a gate at 1.8 m).
+- [ ] left, see 'Left (C4-elements)'
+
+## Left (C4-elements)
+
+1. Node table with elements on Wroclaw 70b50d42 and rooms 39e63ce9, 7a475d38, seeds 1-10: gate-place-audit has no
+   --elements flag yet (add it: pass elements: true and print onElements drawn, placed, noSpace, noProof). The placed
+   shares on real scans are not measured; the flat square may never fit in a room (2.5 m x step rise).
+2. Shares of the placed elements against the design: state them from item 1; tune FLAT_RISE_M or TUNNEL_GAP_M only
+   from that table.
+3. Page proof (release build of the head; serve-csp dist 5780; GPU lock per browser command): keyboard pilot passes one of
+   each element on Wroclaw and on a room, each counted (dive through the flat square, cube, every tunnel ring); course line
+   and laps; Fly by Sound course by its own ask: only single upright gates, ear pilot flies it to the end at 5 m/s
+   (rendering off). No pure keyboard pilot probe exists (course-path-probe sets the craft's state).
+4. Pictures to U:/Temp/gsfpv-train3/shots/: course4-elements-tunnel.png, -flat.png, -top.png (gate-place-map on Wroclaw),
+   -room.png, each looked at.
+5. tracks-page, course-path-probe on Wroclaw and Tunis, accept-fly B6 B7 B9-B16, gates.py --only
+   vitest,architecture,i18n,b18, a6-reference (no flight code touched).
+6. Check the editor's bar and the editor's shape action on a cube-frame and on a flat square made by the generator
+   (lane editor3 owns apps/fly/src/course/editor; only look).
+
+## For the lead (C4)
+
+- Two gates one over the other: the proof (check.ts) flies straight legs from centre to centre and asks the leg in within
+  35 deg of a gate's axis; a gate straight above another is passed by a loop it cannot express. It needs a leg kind 'loop'
+  in path.ts and check.ts, and the laps would count it as now.
+- A flag passed on one side needs a new kind in the course format (sonic-fpv validate.ts), the view, gateCrossing (a half
+  plane), the Save check and the editor's bar.
+- The flat square is passed upward (a climb). A dive (downward) needs the leg before it to come from above, that is a gate
+  higher than eye level before it; with the eye-level rule of fix3b it is not built.
+
+## What the owner does (course4, whole lane)
+
+- Shift+G in any scan of the catalogue: a course comes; in small rooms its gates are smaller (down to 0.45 m squares).
+- The start gate is checkered with START (START / FINISH on a closed course); fly through it and the clock starts.
+- The next gate is bright with its number; passed gates go darker.
+- At the end of a lap the lap time shows large in the upper middle for about 1.5 s: green when it is a new best.
+- After the last lap a results card shows for about 3 s.
+- In the course part of the settings: 'Lap time on screen: large, small, off'.
+- On a scan made bigger with Scene size (the microgreens scan) the gates grow with it.
+- New in C4, not yet seen in a page: a Shift+G course mixes rings, squares, cubes, tunnels of 3-5 gates and a flat
+  square to climb through, where the space allows.
+
+Not proven (C4): every page item of 'Left (C4-elements)'; the shares on real scans; that a pilot can fly the 2.5 m climb
+through a flat square 1.5 m after a gate.
+
+Cost (course4 C4): about 29 replies; the most went to finding that the walk lays rings only (the first design converted
+only squares into cubes and flat squares and placed none). Reading the audit's per-gate kinds before designing would have
+saved 3.
