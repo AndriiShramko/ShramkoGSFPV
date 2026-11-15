@@ -40,6 +40,17 @@ export const PART_MAX_DRAWN_PX = PART_MAX_PX * DRAWN_PER_SET;
 /** the gizmo's own unit in CSS px: the shapes are set in these units and the gizmo's size makes one unit this many px */
 export const UNIT_PX = 100;
 
+/**
+ * J1 (E2 of train 3): the Size handle's axes for a gate: a ring has one size, so one handle along its width (x) and the
+ * centre cube; a square its width and height (x, y); a cube frame all three. Pure.
+ */
+export function sizeAxes(kind: string | null | undefined): readonly ('x' | 'y' | 'z')[] {
+    return kind === 'ring' ? ['x'] : kind === 'cube-frame' ? ['x', 'y', 'z'] : ['x', 'y'];
+}
+
+/** J1 (E5 of train 3): in the edit view the course's arrows are drawn at this share of their flight width (an estimate) */
+export const EDIT_ARROW_SHARE = 1 / 3;
+
 /** sRGB, 0..1: x red, y green, z blue, the centre light grey; under the mouse and dragged: yellow */
 export const AXIS_RGB = {
     x: [0.96, 0.16, 0.16],

@@ -29,6 +29,20 @@ export const FRAME_WALL_GAP_M = 0.3;
 export const FRAME_GLIDE_MS = 400;
 /** an axis steeper than this (its up share) is a dive gate lying flat: the eye looks down on it from 90 - 35 degrees */
 export const FRAME_FLAT_UP = 0.7;
+/** J1 (E1 of train 3): the share of the view, centred, the gate's drawn box must stay inside after a drag */
+export const REFRAME_SHARE = 0.8;
+
+/**
+ * J1 (E1): after a drag ends (a size change, a long move) the view frames the gate again when its drawn box (CSS px from
+ * the canvas corner: x0, y0, x1, y1; null when a part of the gate lies behind the eye) is not inside the middle `share` of
+ * a `w` x `h` view. Never during a drag: the caller asks only at the drag's end. Pure.
+ */
+export function reframeAfterDrag(box: readonly [number, number, number, number] | null, w: number, h: number, share = REFRAME_SHARE): boolean {
+    if (!box) return true;
+    const mx = (w * (1 - share)) / 2;
+    const my = (h * (1 - share)) / 2;
+    return box[0] < mx || box[1] < my || box[2] > w - mx || box[3] > h - my;
+}
 
 export interface FrameIn {
     /** the gate's centre, flown frame */

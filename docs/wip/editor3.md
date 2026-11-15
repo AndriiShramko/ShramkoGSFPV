@@ -4,6 +4,49 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage J1-fix (train 3, 2026-11-15; NOT finished, pass 1 stopped at the reply budget):
+- [x] J1.0 merge origin/main d245d9ec (integration C) 26eb2e35: one conflict in apps/fly/src/app/builtin/course.ts
+  (imports joined; main's guide chip to the next gate is hidden in the edit view, the same rule as the lap clock:
+  shows.lapClock); editor3-check.test.ts strips lane fix3b's read-only probe hook hook.saveCheck (the only wallsCheck( on the
+  page) before its no-wallsCheck match. tsc --noEmit apps/fly 0, tools/bench 0; vitest tools/bench/test/editor3- 17 files
+  98 tests pass after the test fix; release build of 26eb2e35 exit 0 (U:/Temp/gsfpv-train3/editor3/j1/build-merge.log).
+- [~] J1.1 pure parts, uncommitted parts none; committed in this commit, NOT yet wired or tested:
+  frame.ts reframeAfterDrag(box, w, h, share = REFRAME_SHARE 0.8) (E1); handle-look.ts sizeAxes(kind) (ring x, square
+  x y, cube-frame x y z) and EDIT_ARROW_SHARE 1/3 (estimate) (E2, E5).
+- [ ] left (next worker, in this order):
+  a. E3 cause, read from PlayCanvas 2.23.2 build/playcanvas/src/extras/gizmo/rotate-gizmo.js 358-381 (a reading, to be
+     measured in the browser): rotationMode 'absolute' (line 78) turns a ring by the drag projected on ONE fixed page
+     direction, the image of cross(ring normal, toward the eye) through the gizmo's centre, whatever point of the ring was
+     pressed; for the y ring that direction is about the page's horizontal, so a drag along the ellipse's tangent at its
+     side (near vertical) projects to a few degrees and the snap (SNAP_TURN_DEG) rounds it to 0. Fix planned: ring-pick.ts
+     pickRing takes EVERY ring within RING_PICK_PX (not only minor < RING_EDGE_PX) and returns {edge, dir}: edge-on dir =
+     across the line (-t.y, t.x) of the oriented tangent (EI-3 unchanged), open ring dir = the drawn segment's own direction
+     (drawnRings builds the points as u cos t + v sin t with u x v = the axis, so the points' order is the way a positive
+     turn moves them); new ringDeg(dir, dx, dy) = RING_DEG_PER_PX (0.5) * dot (100 px = 50 deg). view-mouse.ts onOwnPress
+     (line 495): take the press when pickRing finds a ring (drop the edgeTakesPress condition), ringMove uses ringDeg(dir).
+     Test: a facing ring (circle r 85 px) picked by default parameters, 100 px along its tangent >= 20 deg; NEG on old
+     ring-pick.ts fails at expect(pick).not.toBeNull().
+  b. E2 view-mouse.ts: put(p, gate, kind) instead of deep (course.ts 767 passes eg.shape.kind); size.enableShape per
+     sizeAxes(kind) and the hidden shapes' visible flag set again (as hideOff in look()); wrap the size gizmo's _hover so
+     the centre cube under the mouse turns only itself yellow (PlayCanvas transform-gizmo.js _hover: 'xyz' hovers x, y, z
+     and xyz: the cause of the three yellow lines in editor3-size-1920.png, the pointer rests on the centre after the drag).
+     The 'beside the centre' in that picture is a guess of perspective (the gizmo sits at the gate's 3D centre, the drawn
+     ring's middle differs at 115 deg horizontal field close up): measure handle rects against worldToScreen(centre).
+     Check tools/bench/test/editor3-h2look.test.ts line 18 (matches on put's deep).
+  c. E1 wiring: view-mouse.ts gateBox() (the gate's corners centre +- right, up (and forward for a cube) * opening/2
+     through worldToScreen, null when one lies behind the eye) and course.ts dragTo end (line 1032 after showEd()):
+     if (view && reframeAfterDrag(view.gateBox(), w, h)) frameSel(). FRAME_GLIDE_MS 400 < 0.5 s. Test with NEG.
+  d. E4 rules.ts editPaints: the selected gate always 'selected' (yellow), 'bad' red only for the others; cause of the
+     orange: 'selected-bad' [1, 0.5, 0] in course/view.ts PAINT (lane course4's file: not changed). Update
+     tools/bench/test/tracks-finish.test.ts line 24 expectation; NEG.
+  e. E5 a walker in the editor folder: scale every 'course-chevron' entity's x and y to EDIT_ARROW_SHARE of the size the
+     stage gave it (remembered per entity in a WeakMap) while the edit view shows (not in its test flight), from the
+     per-frame step in course.ts (line 243, shows.lapClock false); course/view.ts ARM_T 0.05 m is lane course4's.
+  f. Unit tests with NEG for a to e, typecheck, a6-reference not needed (no flight code), then the browser stage: release
+     build, measures of E1 to E5 on Tunis 887f27aa and Wroclaw 70b50d42 (walls stand-in U:/Temp/gsfpv-train2/walls/release/
+     70b50d42), EI-3, EI-5 (arm first), the Wroclaw click within 200 px, the five pictures, gates.py --only
+     vitest,architecture,i18n,b18.
+
 Stage fixes (review EI-1 to EI-7, train 3, 2026-11-15; NOT finished: the code fixes are in, the browser runs are left):
 - [x] EI-1 (major) stands: pickGate took the sphere the ray entered first. Now among the spheres entered ahead the gate whose
   centre lies nearest the ray in angle (miss / along) wins, a tie goes to the nearer one (pick.ts). Test editor3-ei.test.ts
@@ -1529,6 +1572,10 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
     after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- J1-fix pass 1: about 30 replies, stopped after the merge and the causes; the most went to finding where PlayCanvas's
+  gizmo source lives (build/playcanvas/src/extras/gizmo/*.js, not the bundled playcanvas.mjs) and to reading the three
+  pictures. Cheaper: the agent map naming that folder, and the stage split into code (E1 to E5 with tests) and a browser
+  stage, as the left list above now is.
 - fixes (EI-1 to EI-7): about 30 replies; the most went to reading PlayCanvas's gizmo input path for EI-3 and the crash
   state path for EI-5 before a fix. Cheaper: the review naming the file:line of the gizmo's pointer handlers and of the
   OSD's crash source, and one stage per finding group (code fixes, then a separate browser stage).
