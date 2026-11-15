@@ -52,10 +52,20 @@ Stage Y1-switch-and-pins (train 3 wave 2):
   tools/bench/test/sonic-* 38 files, 504 passed, 10 skipped; apps/fly tsc 0 errors.
 - [x] SO-10: For the lead now says only what ships (every shipped flight capped at or under 5 m/s, so only the 4.5 m/s
   reduction can be heard); the tier-2 sentence is gone. SO-9: Decisions name the hum-attended pilot (unchanged).
-- [ ] LEFT, in this order:
-  1. Browser (U:/Temp/gsfpv-train3/sonic3/y1-browser.sh: release build, then r11 Tunis 887f27aa shipped 5 m/s, Wroclaw
-     70b50d42 stand-in 5 m/s, Housefly d10c5638 walls built 3 m/s Z5_RENDER=on; port 5824): results into Facts.
-  2. gates.py --only vitest,architecture,i18n,b18 on the final commit.
+- [x] Pass 2, browser (y1-browser.sh, release 8432db0b code, r11, port 5824; Facts "Y1 browser"): every course flown to its
+  end (Tunis, Wroclaw stand-in, Housefly walls built in the page); 7 of 10 on each scan.
+- [ ] LEFT, in this order (stage stopped past its reply budget at a clean commit):
+  1. Switch off after a course made with N: 2 new lives (setCrashOn(true), then setLessonFlight(null): the course lesson is
+     entered with here false, so it sets crash.enabled false and the bump LESSON_FLIGHT, and leave() takes both back). Either
+     the course started from an in-place free flight keeps the in-place rules (lessons.ts: pass `inPlace: this.freeHere` to
+     mode.enter for the rules, keep `here` for the placement), or the lead gives a session call that changes the crash rule
+     and the bump without a new life (apps/fly/src/session, outside the lane; For the lead). Note before choosing: with the
+     pilot's crash on, Wroclaw and Housefly crashed 3.6 s and 9 s after the switch on (W held at 5 m/s).
+  2. Tunis switch on: 6.63 -> 0.18 m/s at the first cue with no new life (Wroclaw kept 5.14 of 6.63 with the same build, so
+     the motors fix works there); first cues safety.floor:down and safety.wall:front-up: probably a contact, not measured.
+     Add the craft's contact events to the r11 spy (sim.events 'contact' in the 0.4 s after the press) to name it.
+  3. gates.py after any further code change (on 08a427d3 with this status text: vitest 130 s, architecture, i18n, b18 all
+     PASS, logs U:/Temp/gsfpv-gates-20261115-024026).
 
 Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into train3 2e1618f):
 - [x] SO-1 stands: in place the mode applied LESSON_FLIGHT (bump 'slide') as a 'life' setting on enter and took it back on
@@ -237,6 +247,18 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## Facts (measured)
 
+- Y1 browser (r11, release of 8432db0b code with pin 30836c1, headless Chrome 157, probe took the GPU lock; evidence
+  U:/Temp/gsfpv-train3/sonic3/y1-tunis.json, y1-wroclaw.json, y1-housefly.json; package suite and no other job of this lane
+  ran meanwhile, other lanes' load not known):
+  | Scene, walls | m/s | Backslash to first cue | switch on: speed before / at first cue, lives | N to gate 1 | course | median / max | switch off: speed before / after, lives |
+  |---|---|---|---|---|---|---|---|
+  | Tunis 887f27aa, shipped | 5 | 0.396 s | 6.63 / 0.18, none | 86.7 s | passed in 59 s (8 gate changes) | 2.79 / 4.98 | 0.35 / 0, 2 'settings' |
+  | Wroclaw 70b50d42, stand-in | 5 | 0.248 s | 6.63 / 5.14, then a crash at +3.6 s | 117.3 s | passed in 49 s (11 gate changes) | 1.95 / 4.99 | 0.26 / 0, 2 'settings' |
+  | Housefly d10c5638, built in the page | 3 | 0.280 s | 6.67 / 2.66, a 'start' life at +3.5 s, a crash at +9 s | 35.6 s | passed in 38 s (6 gate changes) | 1.08 / 2.97 | 5.12 / 0, 2 'settings' |
+  Both menu labels ("Switch off Fly by Sound", "Fly by Sound here"), moved 0 m on the switch off, no lesson after, no page
+  error: PASS on all three. Housefly: /walls/d10c5638/v1/scene.voxel.json 404 (no shipped walls), walls built in the page.
+- Y1 quick runs (Z5_QUICK, Tunis 5 m/s): y1-spy.json (release e452bed4) and y1-spy2.json (release 0e78a878), see Status.
+
 - Z5 browser runs (tools/bench/src/sonic-int-review.ts r10 and r11, evidence copies in U:/Temp/gsfpv-train3/sonic3/z5-*.json,
   shots U:/Temp/gsfpv-train3/shots/z5-*.png). Backslash to first planned cue (height.tone, room.bed): 0.23 to 0.35 s in
   z5-r11-tunis.json (0.268, 0.251), z5-r11-wroclaw.json (0.283, 0.233) and the second run of z5-r11-wroclaw2.json (0.350);
@@ -357,6 +379,13 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## For the lead
 
+- Y1 (decision d): files changed outside apps/fly/src/sonic: apps/fly/src/play/lesson-pilot.ts (constructor keeps the motors
+  when built over a running flight) and apps/fly/src/play/assist.ts (AutoArm.keepOn); a6-reference passed unchanged.
+- Y1: a 'life' setting change (crash.enabled through respawn.ts, the bump through session.setLessonFlight) always makes a new
+  life, and a new life stops the craft. A course made with N in place still switches both (Status LEFT 1). The clean fix is a
+  session call that changes the crash rule and the bump in the running flight model (apps/fly/src/session, not this lane).
+- Y1: the package's branch train3 is at 30836c1 (local only, not pushed), the pin points at it.
+
 - Pilot's guide (Z5). Keys a pilot uses: Backslash switches Fly by Sound on and off over any flight (also the pause item
   "Fly by Sound here"); W S forward and back, Q E turn, A D side, Space and Shift up and down (turn first: Shift with a letter
   is a chord); N makes a course of gates here (walls first when the scan has none); B the previous; R back to the last
@@ -396,6 +425,8 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
 
 ## Not verified
+- Y1: why Tunis lost the speed on the switch on with no new life (a contact is suspected, not measured); speed lessons
+  speed-1..4 not flown in a browser yet; Backslash to first cue times may include other lanes' load (not measured).
 - Z4 4b: nothing heard in a browser; the budget acts only in the free flight (scan-free), not in courses or lessons yet;
   the 2-loudest pilot lost one rung on rings (allowed by the plan's rule, cause not yet found).
 - Z3/Z4 pass 2: the scan ear pilot (Tunis, Wroclaw) not built; the budget is not wired, so no 'after' run exists and the
@@ -417,6 +448,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 Y1 pass 2: most replies went to the three stops of the switch (crash pref, runner place, lesson pilot's arming),
+  each found only by a browser run; a unit rig built from the page's real InputHost and respawn feature would have shown all
+  three in one Node run. The words check lost a reply to the system Python (the venv is U:/venvs/shramko-listen).
 
 - 2026-11-15 Y1: most replies went to the package's pinned tests of the lesson set (counts, tts fixtures in a format the
   measuring script does not write) while the 9-minute browser run held the lock; starting the spy run (not the old probe) as
