@@ -1546,8 +1546,17 @@ Logs U:/Temp/gsfpv-train3/mix/.
 - [x] Pass 3: merged origin/main 38c22358 (only docs/wip/train3-lead.md: dist of b937b66c stays valid). course-keys-probe.mjs
       MISS_FLAT=1: the first flat square is first climbed past beside its frame (plane crossed half + 1.2 m off its centre,
       inside the ear's ball, outside the square), next gate must not step (r.miss.refused), then flown through.
-- [~] Pass 3 chain (U:/Temp/gsfpv-train3/mix/chain3.sh, logs mix/c3/, summary mix/c3/summary.txt): keys-miss, onecourse
-      twice, tracks-page, course-path Wroclaw and Tunis, pause-over-course, accept-fly B6 B7 B9-B16, r9, r12, a6, gates.
+- [x] Proof (5), ordinary flight, keyboard pilot (mix/c3/keys-miss.log, ev/keys-miss.json, GPU lock 61 s, exit 0):
+      Wroclaw seed 289710480, 37 gates, gates 1-4 flown. Gate 3 (flat square, half 0.6): the climb beside it crossed its plane
+      at [1.72, 0.16] (1.8 m off its centre, inside the ear's ball) and was refused (next 2 -> 2); then the climb through
+      crossed at [0.21, 0] and counted (next 2 -> 3). 4 of 4 counted. The strict rule holds with Fly by Sound off.
+- [x] Left item 3 (progress lost after Backslash), onecourse-probe twice more (mix/c3/onecourse-a, -b, render off, exit 0
+      both): not reproduced. a: next 4 before Backslash, 4 for the whole 12 s after (target g5, inPlaceIntroCourse, no
+      courseOffer); b: next 2 -> 2 (target g3). In both traces the only drop to next 0 is the step 'shiftG-sound' (a new
+      seed: Shift+G in the sound mode makes a new course, X3), and no life decision (rewind) happened after Backslash.
+      Pass 2's run 1 had no trace; its 'next 0 at 12 s' is most likely the same new course (a guess, not measured).
+- [~] Pass 3 chain (U:/Temp/gsfpv-train3/mix/chain3.sh, logs mix/c3/, summary mix/c3/summary.txt): tracks-page,
+      course-path Wroclaw and Tunis, pause-over-course, accept-fly B6 B7 B9-B16, r9, r12, a6, gates.
 
 ## What the owner does (mix)
 He presses Shift+G and flies a few gates by eye. He presses Backslash. The voice says Fly by Sound is on over his course;
