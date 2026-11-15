@@ -528,7 +528,7 @@ export class SonicBridge {
      * F1). A host line that interrupts cuts the lesson's lines that were not said to their end: they are said again once the host is done
      * (cutLines). A line of the lesson that comes later drops those (the lesson moved on), and one that interrupts ends the lesson's own.
      */
-    async say(line: SpeechLine, interrupt = false, o: { readonly lesson?: boolean } = {}): Promise<void> {
+    async say(line: SpeechLine, interrupt = false, o: { readonly lesson?: boolean; readonly asked?: boolean } = {}): Promise<void> {
         if (!this.on) return;
         const lesson = o.lesson === true;
         if (lesson) {
@@ -549,7 +549,9 @@ export class SonicBridge {
         this.lastLine = line;
         this.speaking++;
         const run = this.epoch;
-        const quiet = this.quiet?.() === true;
+        // lane quiet2 (the lead's N1): a line the pilot asked for with a key (`asked`: K's key help, I's status) is said whatever the
+        // narrator is set to; the narrator silences only what the mode says by itself
+        const quiet = o.asked !== true && this.quiet?.() === true;
         // lane quiet (Q3, review QV-2): a quiet line's event keeps a sound (quiet-cues.ts, the one table of them)
         const sound = quiet ? quietCue(line.key) : null;
         if (sound) this.engine?.cue(sound);

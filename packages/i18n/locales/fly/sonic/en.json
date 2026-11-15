@@ -114,7 +114,6 @@
   "sonic.start.scanFlier": "I already fly by sound: fly this scan",
   "sonic.start.scanWhat": "Free flight over this scan at size x{size}: you hear its walls and your height. No rings, no clock.",
   "sonic.key.Backslash": "Backslash",
-  "sonic.key.Quote": "Apostrophe",
   "sonic.say.helpNarrator": "Press {key} to switch the narrator off or on. Off, you fly by sound alone.",
   "sonic.say.narratorOn": "Narrator on.",
   "sonic.say.narratorTip": "You finished a course by sound. When you know the keys, press {key} to switch the narrator off and fly by sound alone.",

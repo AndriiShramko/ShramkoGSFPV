@@ -94,11 +94,11 @@ describe('buildCatalogue (I.6)', () => {
         expect(sonic.map((b) => b.action)).toEqual(['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary', 'sonic.home', 'sonic.narrator']);
         for (const l of ['en', 'es', 'pl', 'ru']) expect(c.locales[l].keys.filter((k) => k.action.startsWith('sonic.'))).toEqual([]);
         const caps = new Set(c.locales.en.keys.flatMap((k) => k.keys));
-        for (const cap of ['T', 'U', 'I', 'Z', 'G', 'X', '\'']) expect(caps.has(cap), cap).toBe(false);
+        for (const cap of ['T', 'U', 'I', 'Z', 'G', 'X', 'Shift+V']) expect(caps.has(cap), cap).toBe(false);
         // control: the keymap of v0.12 as released, the five keys `always`, lists and counts all five
         const old = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
         const c0 = build(dicts(), old);
-        expect(c0.locales.en.keys.filter((k) => k.action.startsWith('sonic.')).map((k) => k.keys[0])).toEqual(['T', 'U', 'I', 'Z', 'G', 'X', '\'']);
+        expect(c0.locales.en.keys.filter((k) => k.action.startsWith('sonic.')).map((k) => k.keys[0])).toEqual(['T', 'U', 'I', 'Z', 'G', 'X', 'Shift+V']);
         expect(c0.counts.keys - c.counts.keys).toBe(7);
     });
 

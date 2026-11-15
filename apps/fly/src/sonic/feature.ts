@@ -44,6 +44,7 @@ import { t, locale } from '../i18n';
 import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
 import { quietFlight } from './entry';
+import { quietLiveRegion } from './live-quiet';
 import { narratorKey } from './narrator-key';
 import { NARRATOR_OFF_CUE } from './quiet-cues';
 import { PageRuntime } from './runtime';
@@ -284,6 +285,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // sound page, and its course): no line voiced, none to a screen reader, none waited for. Read at each line, so a change applies at
     // once. The paused menus keep their words, and so do the lessons of the lesson list.
     mode.bridge.quiet = () => quietFlight(entry.setup.prefs, host?.lesson?.id ?? null, mode.bridge.paused);
+    // lane quiet2 (N4): the page's live region #ui (the HUD's text, the course box, the walls box) is not announced in a quiet flight
+    // either (live-quiet.ts); looked at every 250 ms (an estimate, not measured: the setting, the lesson and the pause change it)
+    const liveQuiet = quietLiveRegion(document.getElementById('ui'), () => mode.bridge.quiet?.() === true);
+    const liveTimer = setInterval(() => liveQuiet.sync(), 250);
+    offs.push(() => {
+        clearInterval(liveTimer);
+        liveQuiet.restore();
+    });
     // a replay taking the engine or giving it back: the progress panel follows at once (review F5: it hides while a replay plays)
     const onPlayback = new Set<() => void>();
     ctx.sonic = new PageRuntime(entry.setup, mode, () => { for (const f of [...onPlayback]) f(); });
@@ -441,11 +450,13 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     offs.push(
         ctx.keys.on('sonic.status', (e) => {
             if (e.repeat) return;
-            void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt })));
+            void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt, { asked: true }) : audio.engine.say(line, { interrupt })));
         })
     );
     // a line of the mode's own keys: through the lesson's speech queue while one runs (its speech events), else the engine itself
     const sayLine = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt }));
+    // lane quiet2 (the lead's N1): what the pilot asks for with a key (K's key help, I's status) is said with the narrator off too
+    const sayAsked = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt, { asked: true }) : audio.engine.say(line, { interrupt }));
     // the names K says for the keys: the pilot's keyboard layout's letters, Escape by its name (key-names.ts)
     const capOf = (action: string, aria?: string): string => names.of(action, aria);
     // The mode's Share (v12-optin, review R1 R3; mode-keys.ts shareLesson): L and the top bar's and the pause menu's Share (share.ts
@@ -482,7 +493,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // pause menu's key list names L and K as the mode's (KeyRouter.relabel).
     const help = new KeyHelp({
         lines: () => keyHelpLines(capOf, { free: host?.lesson?.id === SCAN_FREE_ID }),
-        say: sayLine,
+        say: sayAsked,
         hold: (on) => (on ? ctx.pause('help') : ctx.resume('help')),
         listen: (cut) => {
             const onKey = (e: KeyboardEvent): void => {
@@ -556,7 +567,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open(), () => h.inPlace), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         () => lessonMenu.dispose(),
         ctx.keys.on('sonic.home', homeKey(home), { when: () => home.active() }),
-        // lane quiet (Q4): the apostrophe switches the narrator off and on in a flight, saved and applied at once like the start
+        // lane quiet (Q4), quiet2 (N2): Shift+V switches the narrator off and on in a flight, saved and applied at once like the start
         // screen's check; on: two words, off: a sound alone, two notes down (review QV-4: not a gate's or a course's chime)
         ctx.keys.on('sonic.narrator', narratorKey({
             on: () => entry.setup.prefs.narrator !== false,

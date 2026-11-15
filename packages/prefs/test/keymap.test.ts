@@ -90,8 +90,8 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'sonic.glossary': ['G'],
     // lane sonic-hints: X, the mode's main menu from a lesson
     'sonic.home': ['X'],
-    // train 3, lane quiet: the apostrophe, the narrator off and on in a flight of the sound mode
-    'sonic.narrator': ['\''],
+    // train 3, lane quiet2 (N2): Shift+V, the narrator off and on in a flight of the sound mode
+    'sonic.narrator': ['Shift+V'],
     // train 3, lane sonic3: Backslash, Fly by Sound on and off in place
     'flyBySound.toggle': ['\\']
 };

@@ -124,9 +124,10 @@ export const KEYMAP: readonly KeyBinding[] = [
     // lane sonic-hints (the owner's complaint of 2026-11-10): X leaves a lesson for the mode's main menu (its start screen) in one
     // press, the lesson saved. X was free (no binding, not a flying key). A key of the mode only, like the five above
     { action: 'sonic.home', keys: [letter('X')], when: 'sonic', labelKey: 'keys.sonic.home', status: 'shipped' },
-    // train 3, lane quiet (the owner's message 54): the apostrophe key switches the narrator off and on in a flight (sonic/narrator-key.ts).
-    // Every plain letter is bound, digits answer a lesson's questions, Slash is Firefox's quick find; Quote was bound nowhere
-    { action: 'sonic.narrator', keys: [{ code: 'Quote', cap: '\'', aria: 'Quote' }], when: 'sonic', labelKey: 'keys.sonic.narrator', status: 'shipped' },
+    // train 3, lane quiet (the owner's message 54, the lead's N2): Shift+V (V for voice) switches the narrator off and on in a flight
+    // (sonic/narrator-key.ts). Every plain letter is bound in the ordinary flight or the sound mode; Shift+V is bound nowhere, and V
+    // stands in the same place on QWERTY, QWERTZ, AZERTY and the Polish and Spanish layouts (review QV-5: not the apostrophe)
+    { action: 'sonic.narrator', keys: [{ code: 'KeyV', shift: true, cap: 'Shift+V', aria: 'Shift+V' }], when: 'sonic', labelKey: 'keys.sonic.narrator', status: 'shipped' },
     // train 3, lane sonic3 (the owner: "flying by sound must be switched on for any scene"): Backslash switches Fly by Sound on and
     // off in place, in any scene, on every page. Every plain letter is bound; Shift plus a letter descends in the game scheme
     { action: 'flyBySound.toggle', keys: [{ code: 'Backslash', cap: '\\', aria: 'Backslash' }], when: 'always', labelKey: 'keys.flyBySound.toggle', status: 'shipped' }

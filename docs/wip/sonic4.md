@@ -408,6 +408,44 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   setting; with the reader box on and the narrator off a screen reader would still read the course box. Suspect file: the #ui
   aria-live attribute in the page shell; a guess, not measured with a real screen reader.
 
+### Status (lane quiet2, stage W1-finish, the lead's N1 to N6)
+- [x] W1.0 merge of origin/main into sonic4 (7dde5e2c, no conflict); tsc apps/fly 0 errors; release build exit 0 (sha 7dde5e2c,
+  sha256 2d058ef6...; U:/Temp/gsfpv-train3/quiet2/tsc-merge.log, build-merge.log).
+- [x] N1 (this commit): BridgeLike say(line, interrupt, { asked: true }) is never quiet; feature.ts sayAsked for K's KeyHelp and I's
+  status. Test tools/bench/test/sonic-quiet2.test.ts (N1 block).
+- [x] N2 (this commit): the narrator key is Shift+V (code KeyV with Shift; V for voice). Why: every plain letter is bound in the
+  ordinary flight (always) or in the sound mode; the bound Shift chords are N F T G B; V is in the same place on QWERTY, QWERTZ,
+  AZERTY, Polish and Spanish (from knowledge of the layouts, not measured). Spoken by its letter through key-names.ts spokenKey's
+  chord path ("Shift and key V", the layout's letter). sonic.key.Quote removed from the four locales; es, pl, ru helpNarrator say
+  "{key}" without the word for key (the chord brings it). keymap.test, app-keys.test, sonic-narrator-key.test follow.
+- [ ] N3: decision so far, not built: the off sound stays NARRATOR_OFF_CUE = 'answer' no (two notes down, QV-4), which is not a
+  gate's chime; a free flight asks no question, so no other line of a flight plays it. A sound of its own in the package (train5,
+  offline proof, pin) was not made: the lead decides whether 'answer' no is enough.
+- [x] N4 (this commit): PageRuntime.engine is quietEngine(engine): a line with no `quiet` of its own (the GPU hint's,
+  app/builtin/gpu-hint.ts line about 353, not changed) is sent quiet with its table sound while the flight is quiet. #ui:
+  new apps/fly/src/sonic/live-quiet.ts sets aria-live off on #ui and every live region inside it (walls.ts bake-status) while
+  quiet, and gives the own values back; feature.ts syncs it every 250 ms (estimate, not measured). No file outside apps/fly/src/sonic
+  changed for N4. Test sonic-quiet2.test.ts (N4 blocks).
+- [x] N5 the table (apps/fly/src/sonic/quiet-cues.ts QUIET_SOUNDS is the code's copy), narrator off in a flight:
+  gate behind (sonic.say.gateBehind, fly.gate-behind): 'wrong-side' cue; put back (fly.reset-start, fly.reset-checkpoint): 'reset'
+  sweep; mode on (sonic.say.inPlaceOn): 'answer' yes; walls ready (sonic.say.wallsIn) and course ready (course.readySpoken): 'checkpoint'
+  chime; wrong way, wrong side, stage: their own cue is sent with the line (runner.ts, lessons.ts), nothing added; gate passed and
+  finish: the runner's gate and lap notes, no line needed; crash: the touch cue; scanLoading: not said, nothing (the page shows the
+  load, and the scan's sound starts when it is in); scanFailed: still spoken (else the pilot has no sign at all); GPU hint: nothing
+  (it reports the graphics, not the flight); intro, keys, course offer, fly.go, walls building, course and walls progress: nothing
+  (they teach or report a flight that goes on); K and I: spoken (asked, N1); narrator off: 'answer' no; narrator on: spoken.
+- [ ] N6 not started: Q6 (the hint sonic.say.narratorTip once after the first course finished with the narrator on: hook the
+  'attempt-pass' event of scan-free in lessons.ts observe(), line about 717, a flag in the sonic collection: packages/prefs schema,
+  then migrate.test and the pinned tables) and Q7 (CAPTION_LINES 3 to 2 in captions.ts; '.course-hud' into PANELS or the captions
+  moved under the course box, apps/fly/src/course/hud.css '.course-hud' is the clock block; measure in a browser).
+- [x] Checks of N1, N2, N4: sonic-quiet2 (6), catalog.test: 16 passed (U:/Temp/gsfpv-train3/quiet2/v2.log); with sonic-narrator-key,
+  app-keys, keymap.test, sonic-quiet-cues, sonic-quiet: 82 passed in v1.log (its 3 fails fixed in v2); tsc apps/fly 0 errors
+  (tsc1.log); neg_control.py against 7dde5e2c on bridge.ts and runtime.ts: NEG OK (neg1.log). live-quiet.ts is new (no old
+  version) and the 250 ms wiring in feature.ts is not in the rig: browser proof needed.
+- [ ] Left: N3 decision by the lead (or a package sound); N6 (Q6, Q7); gates.py --only vitest,architecture,i18n,b18;
+  a6-reference (keymap.ts changed, an input file); browser proof stage (Shift+V both ways, K and I voiced with the narrator off,
+  #ui aria-live off in a quiet flight, the GPU hint quiet) on the release build, Wroclaw and Tunis.
+
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
 - The craft answers the stick at once: KeyW held from the Backslash press, speed over 0.5 m/s at 0.56 s; the runner's phase is
@@ -466,4 +504,7 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   before the first edit would have found all four and saved about 4 replies. Only K2.1 fitted; K2.2 to K2.6 need a fresh worker each.
 - 2026-11-15 fixes pass 3 (continuation): most replies went to measuring the r11 Shift+G failure (a new tool for the walls, then reading laps.ts and run.ts); r11's trail logging course.next with each life would have shown the restart in one read. Running the busy probe, the d7 re-run and r11 in one detached script cost one wait.
 - 2026-11-15 lane quiet stage fixes: most replies went to finding every speaker and cue kind (runner, lessons, course, walls, planner) and to the move of the table after sonic-int-lazy failed; a list of the engine's speakers and the planner's one-off cue kinds in docs/agent-map.md, and knowing that the main chunk must not name mode texts, would have saved about 6 replies. The browser proof did not fit and needs a fresh worker started with the release build.
+- 2026-11-15 quiet2 W1-finish: most replies went to finding the speakers (K help, I status, the GPU hint's ctx.sonic.engine, #ui)
+  and every test that pins the narrator key; one patch script with asserts for locales and pinned tests saved the read-before-edit
+  replies. N1 to N6 with a package sound does not fit 30 replies: split into N1-N5 and N6 plus gates.
 - 2026-11-15 lane quiet fixes pass 2: most replies went to the browser proof (one probe extension for voice and live-region hooks, four runs, two summaries) and to finding the rig's hooks for Q5; three probes run in parallel without the lock saved two replies. Cheaper: a probe that already recorded speak calls and cues from K1, and a note in agent-map of where a course of Shift+G finishes in the sound mode.

@@ -1,5 +1,5 @@
 // Train 3, lane quiet, Q4 (the owner's message 54): one key switches the narrator off and on during a flight in the sound mode. The
-// apostrophe (code Quote), a key of the sound mode only; on: two words, off: a sound alone; the change saved and applied at once.
+// Shift+V (lane quiet2, N2: a letter, the same on every layout), a key of the sound mode only; on: two words, off: a sound alone; the change saved and applied at once.
 import { describe, expect, it } from 'vitest';
 import { KEYMAP } from '../../../packages/prefs/src/keymap';
 import { narratorKey } from '../../../apps/fly/src/sonic/narrator-key';
@@ -24,12 +24,12 @@ function page(start: boolean | undefined, refuse = false) {
 }
 
 describe('Q4: the narrator key', () => {
-    it('is the apostrophe (Quote), in the sound mode only, and K says it', () => {
+    it('is Shift+V, in the sound mode only, bound nowhere else, and K says it', () => {
         const b = KEYMAP.find((x) => x.action === 'sonic.narrator');
-        expect(b?.keys.map((k) => k.code)).toEqual(['Quote']);
+        expect(b?.keys.map((k) => `${k.shift === true ? 'Shift+' : ''}${k.code}`)).toEqual(['Shift+KeyV']);
         expect(b?.when).toBe('sonic');
         expect(b?.status).toBe('shipped');
-        expect(KEYMAP.filter((x) => x.keys.some((k) => k.code === 'Quote')).map((x) => x.action)).toEqual(['sonic.narrator']);
+        expect(KEYMAP.filter((x) => x.keys.some((k) => k.code === 'KeyV' && k.shift === true)).map((x) => x.action)).toEqual(['sonic.narrator']);
         expect(KEY_HELP.find(([, action]) => action === 'sonic.narrator')?.[0]).toBe('sonic.say.helpNarrator');
     });
 
