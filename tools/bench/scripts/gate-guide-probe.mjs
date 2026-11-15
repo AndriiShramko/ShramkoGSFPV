@@ -148,14 +148,19 @@ try {
     judge('start', v0);
     r.shotStart = await shot(name);
     if (above) {
-        // review FX-4: the camera pitched down 80 deg at the start yaw puts gate 1 above the view, so the guide goes to the top
+        // review FX-4: the camera turned to gate 1, then pitched down 45 deg puts gate 1 above the view, so the guide goes to the top
         // edge centre, where the walls box (top centre) still holds its line after a walls-first course start. Read at once.
-        const yaw0 = r.camMode.aim ? r.camMode.aim.yawDeg : 0;
-        await pose(null, (yaw0 * Math.PI) / 180, -80);
+        // turned first so gate 1 is straight ahead (bearing 0), then pitched: the guide goes to the top edge CENTRE
+        await turnTo(null, 0);
+        const yaw0 = r.turns[r.turns.length - 1].yawDeg;
+        // -45, not -80: measured on Wroclaw, at -80 the gate (4 m above the camera, 17 m away) fell behind the camera plane
+        // (forward y -0.985) and the guide took the behind side; at -45 it is about 58 deg above the view's centre
+        await pose(null, (yaw0 * Math.PI) / 180, -45);
         const va = await read();
         r.reads.above = va;
         check('above: the walls box is up (walls-first start)', !!va.walls, { walls: va.walls, line: va.wallsLine });
-        check('above: guide shown at the top', va.guide.shown && !!va.guideBox && va.guideBox.top < va.vh / 3, { box: va.guideBox, guide: va.guide });
+        const gcx = va.guideBox ? (va.guideBox.left + va.guideBox.right) / 2 : null;
+        check('above: guide shown at the top, in the middle third (where the walls box is)', va.guide.shown && !!va.guideBox && va.guideBox.top < va.vh / 3 && gcx > va.vw / 3 && gcx < (2 * va.vw) / 3, { box: va.guideBox, guide: va.guide });
         check('above: the guide does not meet the walls box', !!va.guideBox && !meets(va.guideBox, va.walls), { guide: va.guideBox, walls: va.walls });
         r.shotAbove = await shot(`${name}-above`);
         await pose(null, (yaw0 * Math.PI) / 180, r.camMode.aim ? r.camMode.aim.pitchDeg : null);

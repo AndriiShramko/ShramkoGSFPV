@@ -179,8 +179,17 @@ Stage fixes (review FX-1 to FX-5)
 - [~] FX-4 in a browser: gate-guide-probe --above (camera pitched down 80 deg at the start yaw, gate 1 above the view, guide
       at the top edge) on Wroclaw without dist/walls, Shift+G (walls-first start); the rects check now includes the walls
       box (#ui > .bake-box). Run 1 (fx2/guide-wroclaw.log): no course within 400 s (the vitest gate ran beside it; the
-      probe logged nothing while it waited). The probe now says the walls and course state every 30 s (--wait-s); run 2
-      by fx2/run-guide.sh, server 5786.
+      probe logged nothing while it waited). The probe now says the walls and course state every 30 s (--wait-s); runs 2-4
+      by fx2/run-guide.sh, server 5786, release of 92b4394f, one GPU hold each. Run 2 (156 s held): 9 of 9, but gate 1 was
+      at -87 deg so the guide stood at the left edge (guide-wroclaw2-left.log): top centre not exercised. Run 3 (330 s,
+      walls built in 298 s): turned to the gate, pitched -80: the gate (4 m above the camera) fell behind the camera plane,
+      guide on the behind side, 9 of 10 (guide-wroclaw2-p80.log). Run 4 (201 s, walls 164 s; probe now turns to gate 1, then
+      pitches -45): 'above' checks pass: walls box up with its done line "Walls built in 164 s ... Now the course is being
+      built" (box 320-960 x 86-144 px), guide at the top centre (584-697 x 10-38), they do not meet. Its 3 failures are the
+      start look: gate 1 of that seed was 6.4 m away and in view, so the guide hid by design (GUIDE_NEAR_M 12); the probe's
+      start check assumes a far gate 1. Evidence U:/Temp/gsfpv-train3/fix3a/fx2/ev/gate-guide-wroclaw-walls-first.json.
+      Not proven: at 1280x800 the top-edge guide (bottom 38 px) is above the walls box (top 86 px) without any avoiding, so
+      this layout does not exercise the FX-4 code; a negative control (old hud.ts) was not run.
 - [x] tracks-page after FX-4 and FX-5 (release of 92b4394f, its own servers and lock): exit 0, 46 of 46 passed in 493 s;
       'A look (link seed 1)': painted false, guide shown for gate 1, side right, behind, bearing 91.7 deg
       (evidence/2026-11-15/fix3a-fx/tracks-page.json).
@@ -278,3 +287,6 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
   axes refuse almost every turn, and which seeds to use.
 - X3 pass 2: 20 replies, most of them blocking waits (38 minutes for the GPU lock, then 16 minutes of probes); one
   runner script with all four probes and one wait per milestone was the cheap part; a lock queue with fairness would save the wait.
+- Stage fixes pass 2: 28 replies; three Wroclaw guide runs (walls built each time, 2.5-5.5 min) because the 'above' look first
+  stood at the left edge, then fell behind the camera; computing the pose from the gate's height before the first run would
+  have saved two runs.
