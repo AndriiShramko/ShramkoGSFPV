@@ -167,8 +167,38 @@ export class Quality {
             pinned: this.pinned, userMaxScale: this.userMaxScale, presetScale: this.presetScale,
             settingBudgetM: this.settingBudgetMillions, stepScale: st.renderScale, stepBudgetM: st.splatBudgetMillions
         });
+        this.planM = p.budgetM;
+        // G6: a still picture draws the risen budget at the top render scale (builtin/still.ts sets it)
+        if (this.stillM > p.budgetM) {
+            r.setRenderScale(Math.min(this.userMaxScale, this.presetScale));
+            r.setSplatBudgetMillions(this.stillM);
+            return;
+        }
         r.setRenderScale(p.scale);
         r.setSplatBudgetMillions(p.budgetM);
+    }
+
+    /** the budget apply() draws without the still rise, millions */
+    private planM = 0;
+    /** G6: the budget of a still picture, millions; 0 = none */
+    private stillM = 0;
+
+    /** The budget drawn without the still rise (the base G6 rises from), millions. */
+    get baseBudgetMillions(): number {
+        return this.planM;
+    }
+
+    /** G6 (builtin/still.ts): the still picture's budget, millions, 0 to go back to the base; applied at once. */
+    setStillBudget(m: number): void {
+        const next = this.cinemaOn ? 0 : m;
+        if (next === this.stillM) return;
+        this.stillM = next;
+        this.apply();
+    }
+
+    /** The still picture's budget in force, millions (0: none). */
+    get stillBudgetMillions(): number {
+        return this.stillM;
     }
 
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */
@@ -185,12 +215,14 @@ export class Quality {
         // this code runs: late work shows as whole skipped periods, and the short catch-up interval
         // after a late callback (5.5 ms after a 120 ms one, measured on ba7aa29d) never teaches it a
         // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
-        if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
+        // G6: the slower frames of a still picture are chosen, not missed: the keeper does not count them
+        const still = this.stillM > 0;
+        if (!this.cinemaOn && !still && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
         this.lastNow = now;
         if (this.governor.step === 0) this.lowSince = 0;
         else if (this.lowSince === 0) this.lowSince = now;
         // remember the step this device settled at for the next load (startFrom)
-        if (this.deviceId !== null && !this.cinemaOn) {
+        if (this.deviceId !== null && !this.cinemaOn && !still) {
             const s = this.governor.settledStep(this.renderer.frameTime, GOVERNOR_SETTLE_MS);
             if (s !== null && s !== this.savedStep) {
                 this.savedStep = s;

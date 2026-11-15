@@ -8,5 +8,8 @@
   "detail.lowered": "Detalle: {drawn} de {top} M, rebajado para que el vuelo sea fluido",
   "detail.network": "Detalle: archivos que no llegaron: {files}. Reintentando",
   "detail.givenup": "Detalle: archivos que no llegaron: {files}. Revisa la conexión y vuelve a intentarlo",
-  "detail.retry": "Reintentar"
+  "detail.retry": "Reintentar",
+  "detail.still": "Detalle: más nítido mientras estás quieto ({drawn} M)",
+  "set.display.stillDetail": "Más detalle en reposo",
+  "set.display.stillDetail.help": "Mientras el dron flota quieto o el vuelo está en pausa, el escaneo carga más detalle paso a paso, mientras la imagen siga lo bastante fluida para mirarla. El primer movimiento de los sticks devuelve al instante el detalle de vuelo."
 }

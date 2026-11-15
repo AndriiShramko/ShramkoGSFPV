@@ -1,8 +1,8 @@
 // Lane loadq G1 and G2 (apps/fly/src/app/detail-rule.ts): a budget the pilot set by hand is not lowered by the frame
 // rate keeper (the governor), and the detail line's text for each state.
 import { describe, expect, it } from 'vitest';
-import { detailLine, detailState, detailVisible, drawPlan, FULL_SHOW_MS } from '../../../apps/fly/src/app/detail-rule';
-import type { DetailInput } from '../../../apps/fly/src/app/detail-rule';
+import { detailLine, detailState, detailVisible, drawPlan, FULL_SHOW_MS, StillRise, stillCapM, STILL_FRAME_MS } from '../../../apps/fly/src/app/detail-rule';
+import type { DetailInput, StillSample } from '../../../apps/fly/src/app/detail-rule';
 
 const say = (k: string, v?: Record<string, string | number>): string => (v ? `${k} ${JSON.stringify(v)}` : k);
 
@@ -58,5 +58,71 @@ describe('G2: the detail line', () => {
     it('G4: a pilot who never set the budget sees nothing while detail streams', () => {
         expect(detailState({ ...base, handSet: false })).toBe('hidden');
         expect(detailVisible('hidden', 0, 0)).toBe(false);
+    });
+});
+
+describe('G6: more detail while the craft is still', () => {
+    const rest: StillSample = { now: 0, paused: false, speed: 0.05, turnDegS: 2, roll: 0, pitch: 0, yaw: 0, throttle: -0.1, frameMs: 10 };
+    /** frames of `ms` each for `secs` seconds at 100 frames a second; the budgets after each frame */
+    function run(r: StillRise, from: number, secs: number, s: Partial<StillSample> = {}, baseM = 0.5, capM = 16): { t: number; boostM: number; changed: boolean }[] {
+        const out = [];
+        for (let k = 1; k <= secs * 100; k++) {
+            const now = from + k * 10;
+            const changed = r.frame({ ...rest, ...s, now }, baseM, capM, true);
+            out.push({ t: now, boostM: r.boostM, changed });
+        }
+        return out;
+    }
+    it('at rest the budget rises x1.5 a second after 1 s still, up to the memory cap', () => {
+        const r = new StillRise();
+        const o = run(r, 0, 12);
+        expect(o.find((x) => x.t === 1000)?.boostM).toBe(0);
+        expect(o.find((x) => x.t === 1010)?.boostM).toBeCloseTo(0.75, 6);
+        expect(o.find((x) => x.t === 2010)?.boostM).toBeCloseTo(1.125, 6);
+        expect(r.boostM).toBeGreaterThanOrEqual(8);
+        const capped = new StillRise();
+        run(capped, 0, 20, {}, 0.5, 4);
+        expect(capped.boostM).toBe(4);
+    });
+    it('a stick move sets the base back in the same frame', () => {
+        const r = new StillRise();
+        run(r, 0, 5);
+        expect(r.boostM).toBeGreaterThan(0.5);
+        expect(r.frame({ ...rest, now: 5010, roll: 0.2 }, 0.5, 16, true)).toBe(true);
+        expect(r.boostM).toBe(0);
+        const t = new StillRise();
+        run(t, 0, 5);
+        expect(t.frame({ ...rest, now: 5010, throttle: 0.0 }, 0.5, 16, true)).toBe(true);
+        expect(t.boostM).toBe(0);
+    });
+    it('speed or a turn over the bounds is a move; a paused flight rises, its end falls back', () => {
+        const r = new StillRise();
+        run(r, 0, 5, { speed: 0.5 });
+        expect(r.boostM).toBe(0);
+        run(r, 5000, 5, { turnDegS: 30 });
+        expect(r.boostM).toBe(0);
+        const p = new StillRise();
+        run(p, 0, 5, { paused: true, speed: 3, roll: 0.5 });
+        expect(p.boostM).toBeGreaterThan(0.5);
+        expect(p.frame({ ...rest, now: 5010 }, 0.5, 16, true)).toBe(true);
+        expect(p.boostM).toBe(0);
+    });
+    it('frames at the still bound stop the rise and step it back; the switch off keeps the base', () => {
+        const r = new StillRise();
+        run(r, 0, 4);
+        const top = r.boostM;
+        run(r, 4000, 3, { frameMs: STILL_FRAME_MS + 4 });
+        expect(r.boostM).toBeLessThan(top);
+        const off = new StillRise();
+        for (let k = 1; k <= 500; k++) off.frame({ ...rest, now: k * 10 }, 0.5, 16, false);
+        expect(off.boostM).toBe(0);
+    });
+    it('the memory cap: 4 M at 4 GB or less, 8 M under 8 GB or unknown, 16 M at 8 GB', () => {
+        expect([stillCapM(2), stillCapM(4), stillCapM(6), stillCapM(undefined), stillCapM(8)]).toEqual([4, 4, 8, 8, 16]);
+    });
+    it('the line says the detail is sharpening at rest, for every pilot', () => {
+        const i = { ...base, handSet: false, pending: 0, still: true, drawnM: 2.53 };
+        expect(detailState(i)).toBe('still');
+        expect(detailLine('still', i, say).text).toBe('detail.still {"drawn":"2.5"}');
     });
 });

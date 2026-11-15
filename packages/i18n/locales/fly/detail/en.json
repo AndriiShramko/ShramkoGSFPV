@@ -8,5 +8,8 @@
   "detail.lowered": "Detail: {drawn} of {top} M, lowered to keep the flight smooth",
   "detail.network": "Detail: files that did not arrive: {files}. Trying again",
   "detail.givenup": "Detail: files that did not arrive: {files}. Check the connection and try again",
-  "detail.retry": "Try again"
+  "detail.retry": "Try again",
+  "detail.still": "Detail: sharper while you hold still ({drawn} M)",
+  "set.display.stillDetail": "More detail at rest",
+  "set.display.stillDetail.help": "While the drone hovers still or the flight is paused, the scan loads more detail step by step, as long as the picture stays smooth enough to look at. The first stick move brings the flight's detail back at once."
 }

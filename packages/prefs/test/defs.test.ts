@@ -24,6 +24,8 @@ const V03_SHIPPED = [
     'display.budget',
     // v0.10 lane R (owner's message 23, item 3): the class of device the drawing presets use, Settings -> Display
     'display.deviceClass',
+    // train 3 lane loadq G6 (owner's message 59): more detail at rest, Settings -> Display
+    'display.stillDetail',
     // v0.7 lane E (owner's message 18 item 10): the wind of the place and the collision ceiling
     'wind.mode', 'wind.fromDeg', 'wind.speed', 'wind.gust', 'scene.ceiling', 'scene.ceilingM',
     // v0.7 D1 (docs/wip/v07-d1.md): the crosshair (Display), the motor sound (Sound), the scan author notice (Recording)
@@ -74,6 +76,7 @@ const A8: [string, string, string, string, unknown, string][] = [
     ['display.drawing', 'display', 'global', 'enum', 'auto', 'live'],
     ['display.budget', 'display', 'global', 'enum', 'auto', 'live'],
     ['display.deviceClass', 'display', 'global', 'enum', 'auto', 'live'],
+    ['display.stillDetail', 'display', 'global', 'bool', true, 'live'],
     ['display.reducedMotion', 'display', 'global', 'enum', 'system', 'live'],
     ['display.frameStats', 'display', 'global', 'bool', false, 'live'],
     ['stats.onDisarm', 'display', 'global', 'bool', true, 'live'],
@@ -175,8 +178,8 @@ const WAVE2_SETTINGS = [
 ];
 
 describe('SCHEMA is the A.8 table', () => {
-    it('has the 82 settings (with the throttle style of lane center-throttle;the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load, the v0.10 lane R device class and lane K How to fly card), each with its group, scope, type, default and apply', () => {
-        expect(SCHEMA.defs).toHaveLength(82);
+    it('has the 83 settings (with the throttle style of lane center-throttle, train 3 lane loadq more detail at rest;the A.8 table of 53, the voxel opacity with the scan hidden, the walls switch, the latency guard, the v0.7 drawing, wind and ceiling, the v0.7 D1 seven, the v0.8 prop wash and lane A three, the v0.9 lane R splat budget, lane B three and lane D camera load, the v0.10 lane R device class and lane K How to fly card), each with its group, scope, type, default and apply', () => {
+        expect(SCHEMA.defs).toHaveLength(83);
         const got = SCHEMA.defs.map((d) => [d.id, d.group, d.scope, d.type, isPresetRef(d.default) ? `preset:${d.default.preset}` : isCuratedRef(d.default) ? `curated:${d.default.curated}|${String(d.default.fallback)}` : d.default, d.apply]);
         // order inside a group follows the def files, not the table's rows
         const byId = (a: unknown[], b: unknown[]) => String(a[0]).localeCompare(String(b[0]));

@@ -40,7 +40,7 @@ Stage L2-build
     and no stall cut: "expected 500 to be greater than or equal to 1000", "expected true to be false"; G4 guard
     removed: "expected 'coming' to be 'hidden'". tsc of render-pc and apps/fly exit 0; check-architecture ok;
     a1-api-check 71 checked, no problems.
-- [ ] 2. G6 (bar passed in L1): still detection (speed under 0.3 m/s, turn under 15 deg/s for 1 s, or paused), the
+- [~] 2. G6 (bar passed in L1), code and unit tests in the G6 commit; browser pictures left.: still detection (speed under 0.3 m/s, turn under 15 deg/s for 1 s, or paused), the
   x1.5 a second rise under a 66 ms median frame and the memory cap, back in the same frame on a stick move, a
   setting to switch it off (new pref: defs + set.* label in four locales + defs.test list + catalogue tables), its unit
   tests with negative controls, pictures loadq-still-before.png and loadq-still-after.png (Lublin from above, 0.5 M).

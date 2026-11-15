@@ -44,7 +44,7 @@ export const FULL_SHOW_MS = 4000;
 /** Drawn at least this share of the budget counts as full for the setting; less with nothing to come: no finer level. */
 export const FULL_SHARE = 0.9;
 
-export type DetailState = 'hidden' | 'coming' | 'full' | 'nofiner' | 'kept' | 'lowered' | 'network' | 'givenup';
+export type DetailState = 'hidden' | 'still' | 'coming' | 'full' | 'nofiner' | 'kept' | 'lowered' | 'network' | 'givenup';
 
 export interface DetailInput {
     /** the budget comes from the pilot's setting */
@@ -65,12 +65,15 @@ export interface DetailInput {
     retrying: number;
     givenUp: number;
     filesPerSec: number;
+    /** G6: the craft is still and the detail has risen above the base (StillRise.boostM > 0), for every pilot */
+    still?: boolean;
 }
 
 /** The state of the line. Network trouble shows for every pilot; the rest only for a budget set by hand (G4). */
 export function detailState(i: DetailInput): DetailState {
     if (i.givenUp > 0) return 'givenup';
     if (i.retrying > 0) return 'network';
+    if (i.still === true) return 'still';
     if (!i.handSet) return 'hidden';
     if (!i.released && i.keeperSlow) return 'kept';
     if (i.released && i.step > 0 && i.budgetM < i.topM) return 'lowered';
@@ -102,6 +105,7 @@ export function detailLine(s: DetailState, i: DetailInput, say: Say): DetailLine
     const top = millionsText(i.topM);
     switch (s) {
         case 'hidden': return none;
+        case 'still': return { text: say('detail.still', { drawn }), action: null, actionText: '' };
         case 'coming': {
             const secs = i.filesPerSec > 0 ? Math.max(1, Math.round(i.pending / i.filesPerSec)) : 0;
             const text = secs > 0
@@ -126,4 +130,104 @@ export function detailVisible(s: DetailState, since: number, now: number): boole
     if (s === 'hidden') return false;
     if (s === 'full' || s === 'nofiner') return now - since < FULL_SHOW_MS;
     return true;
+}
+
+// G6 (docs/wip/loadq.md, L1 (d)): more detail while the craft is still. While the craft's speed, turn rate and sticks
+// are near rest (or the page is paused), the budget rises step by step as long as the last second's median frame stays
+// under STILL_FRAME_MS and under a cap by the device's memory; any move (or the end of a pause) sets the base back in
+// the same frame. Measured in L1 on Lublin from above at a base of 0.5 M: +4.9 dB after 5 s, +8.2 dB after 10 s.
+
+/** Speed under which the craft counts as still, m/s (an estimate: a hover drifts by a few cm/s). */
+export const STILL_SPEED_MS = 0.3;
+/** Turn rate under which the craft counts as still, deg/s on every axis (an estimate). */
+export const STILL_TURN_DEG_S = 15;
+/** A stick (roll, pitch, yaw) off centre by this, or the throttle moved by this since rest began, is a move (an estimate, stick range -1..1). */
+export const STILL_STICK = 0.05;
+/** How long the craft must be still before the detail rises, ms (an estimate). */
+export const STILL_AFTER_MS = 1000;
+/** One rise each this long, ms (as measured in L1 with the probe's STILL switch). */
+export const STILL_STEP_MS = 1000;
+/** Each rise multiplies the budget by this (as measured in L1). */
+export const STILL_RISE = 1.5;
+/** The median frame time a still picture may take, ms (the lead's estimate, 15 frames a second). */
+export const STILL_FRAME_MS = 66;
+
+/** The top a still picture may rise to by the device's memory, millions (navigator.deviceMemory, GB; an estimate). */
+export function stillCapM(deviceMemoryGB: number | undefined): number {
+    if (deviceMemoryGB === undefined || !(deviceMemoryGB > 0)) return 8;
+    if (deviceMemoryGB <= 4) return 4;
+    // Chrome reports at most 8 (8 GB or more)
+    if (deviceMemoryGB < 8) return 8;
+    return 16;
+}
+
+export interface StillSample {
+    now: number;
+    paused: boolean;
+    /** the craft's speed, m/s, and its largest turn rate on any axis, deg/s */
+    speed: number;
+    turnDegS: number;
+    /** the sticks: roll, pitch, yaw (-1..1, 0 = centre) and throttle (-1..1) */
+    roll: number;
+    pitch: number;
+    yaw: number;
+    throttle: number;
+    /** the time since the last frame, ms */
+    frameMs: number;
+}
+
+/** The rule of G6: frame() once per frame; boostM is the budget a still picture draws (0: none, the base applies). */
+export class StillRise {
+    boostM = 0;
+    private since = 0;
+    private lastStep = 0;
+    private throttle0 = 0;
+    private wasPaused = false;
+    private frames: number[] = [];
+
+    /** True when boostM changed (the caller applies it at once). */
+    frame(s: StillSample, baseM: number, capM: number, enabled: boolean): boolean {
+        const unpaused = this.wasPaused && !s.paused;
+        this.wasPaused = s.paused;
+        const off = (v: number): number => (v < 0 ? -v : v);
+        const moving = unpaused || (!s.paused && (s.speed >= STILL_SPEED_MS || s.turnDegS >= STILL_TURN_DEG_S
+            || off(s.roll) >= STILL_STICK || off(s.pitch) >= STILL_STICK || off(s.yaw) >= STILL_STICK
+            || (this.since > 0 && off(s.throttle - this.throttle0) >= STILL_STICK)));
+        if (!enabled || moving) return this.reset(s);
+        if (this.since === 0) {
+            this.since = s.now;
+            this.lastStep = s.now;
+            this.throttle0 = s.throttle;
+            this.frames = [];
+            return false;
+        }
+        if (s.frameMs > 0) this.frames.push(s.frameMs);
+        if (s.now - this.since < STILL_AFTER_MS || s.now - this.lastStep < STILL_STEP_MS) return false;
+        const med = median(this.frames);
+        this.frames = [];
+        this.lastStep = s.now;
+        const cur = this.boostM > 0 ? this.boostM : baseM;
+        let next = cur;
+        if (med < STILL_FRAME_MS) next = Math.min(Math.max(capM, baseM), cur * STILL_RISE);
+        else if (this.boostM > 0) next = cur / STILL_RISE;
+        if (next <= baseM) next = 0;
+        const changed = next !== this.boostM;
+        this.boostM = next;
+        return changed;
+    }
+
+    private reset(s: StillSample): boolean {
+        this.since = 0;
+        this.frames = [];
+        this.throttle0 = s.throttle;
+        const changed = this.boostM !== 0;
+        this.boostM = 0;
+        return changed;
+    }
+}
+
+function median(a: number[]): number {
+    if (a.length === 0) return 0;
+    const b = [...a].sort((x, y) => x - y);
+    return b[b.length >> 1];
 }
