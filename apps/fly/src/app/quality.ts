@@ -8,6 +8,7 @@
 import { FrameGovernor, GOVERNOR_SETTLE_MS, GOVERNOR_START_KEY, governorStartRecord, savedStartStep } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { q } from './env';
+import { drawPlan, KEEPER_SLOW_MS } from './detail-rule';
 
 /** Cinema mode's splat budget, millions: full detail, or the scene's own top when that is higher. */
 const CINEMA_BUDGET_M = 16;
@@ -27,6 +28,17 @@ export class Quality {
     private heldSeen = 0;
     /** renderer.streamTicks at the last frame: the scan's streamer at work since (governor `streamed`, report only) */
     private streamSeen = 0;
+    /**
+     * Lane loadq G1: the top budget is the pilot's own setting (drawing.ts from.budget 'setting'): the governor's step does
+     * not lower it (app/detail-rule.ts drawPlan) until the pilot lets it choose again (release).
+     */
+    private handSetM: number | null = null;
+    /** the pilot pressed "Let the page choose" for this setting */
+    private releasedPin = false;
+    /** since when the governor has wanted a lower step (0: it is at the top), the frame's time */
+    private lowSince = 0;
+    /** the last frame's time */
+    private lastNow = 0;
 
     constructor(renderer: SplatRenderer) {
         this.renderer = renderer;
@@ -87,8 +99,40 @@ export class Quality {
      * The scene's top splat budget, millions (drawing.ts: the link's ?budget=, else 4). Missed frames
      * lower the budget from here; nothing changes on screen when the top is the same as before.
      */
-    setTopBudget(m: number): void {
-        if (this.governor.setTopBudget(m)) this.apply();
+    setTopBudget(m: number, handSet = false): void {
+        const was = this.pinned;
+        const next = handSet ? m : null;
+        // a new value set by hand is kept again, even after the pilot let the page choose for the last one
+        if (next !== this.handSetM) this.releasedPin = false;
+        this.handSetM = next;
+        if (this.governor.setTopBudget(m) || was !== this.pinned) this.apply();
+    }
+
+    /** The budget is the pilot's own and is drawn as set (G1). */
+    get pinned(): boolean {
+        return this.handSetM !== null && !this.releasedPin && !this.cinemaOn;
+    }
+
+    /** The budget comes from the pilot's setting (pinned or let go). */
+    get handSet(): boolean {
+        return this.handSetM !== null;
+    }
+
+    /** The pilot let the page choose for the setting now in force. */
+    get released(): boolean {
+        return this.releasedPin;
+    }
+
+    /** The keeper has wanted a lower step for KEEPER_SLOW_MS while the setting is kept (the line says so). */
+    get keeperSlow(): boolean {
+        return this.governor.step > 0 && this.lowSince > 0 && this.lastNow - this.lowSince >= KEEPER_SLOW_MS;
+    }
+
+    /** The line's press: the governor works under the pilot's top again, for this setting. */
+    release(): void {
+        if (this.handSetM === null || this.releasedPin) return;
+        this.releasedPin = true;
+        this.apply();
     }
 
     /**
@@ -119,8 +163,12 @@ export class Quality {
             return;
         }
         const st = this.governor.current;
-        r.setRenderScale(Math.min(this.userMaxScale, this.presetScale, st.renderScale));
-        r.setSplatBudgetMillions(Math.min(this.settingBudgetMillions, st.splatBudgetMillions));
+        const p = drawPlan({
+            pinned: this.pinned, userMaxScale: this.userMaxScale, presetScale: this.presetScale,
+            settingBudgetM: this.settingBudgetMillions, stepScale: st.renderScale, stepBudgetM: st.splatBudgetMillions
+        });
+        r.setRenderScale(p.scale);
+        r.setSplatBudgetMillions(p.budgetM);
     }
 
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */
@@ -138,6 +186,9 @@ export class Quality {
         // after a late callback (5.5 ms after a 120 ms one, measured on ba7aa29d) never teaches it a
         // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
         if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
+        this.lastNow = now;
+        if (this.governor.step === 0) this.lowSince = 0;
+        else if (this.lowSince === 0) this.lowSince = now;
         // remember the step this device settled at for the next load (startFrom)
         if (this.deviceId !== null && !this.cinemaOn) {
             const s = this.governor.settledStep(this.renderer.frameTime, GOVERNOR_SETTLE_MS);

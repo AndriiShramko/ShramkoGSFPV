@@ -1,0 +1,12 @@
+{
+  "detail.comingStart": "Szczegóły: {drawn} z {top} M, plików do pobrania: {files}",
+  "detail.coming": "Szczegóły: {drawn} z {top} M, plików do pobrania: {files}, około {secs} s",
+  "detail.full": "Szczegóły: pełne dla twojego ustawienia",
+  "detail.nofiner": "Szczegóły: pełne. Ten skan nie ma tu dokładniejszego poziomu",
+  "detail.kept": "Szczegóły: zostają według twojego ustawienia. Obraz jest wolniejszy niż twój ekran",
+  "detail.release": "Niech strona wybierze",
+  "detail.lowered": "Szczegóły: {drawn} z {top} M, obniżone, by lot był płynny",
+  "detail.network": "Szczegóły: plików, które nie dotarły: {files}. Próbuję ponownie",
+  "detail.givenup": "Szczegóły: plików, które nie dotarły: {files}. Sprawdź połączenie i spróbuj ponownie",
+  "detail.retry": "Spróbuj ponownie"
+}

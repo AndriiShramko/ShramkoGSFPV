@@ -1,0 +1,12 @@
+{
+  "detail.comingStart": "Detalle: {drawn} de {top} M, archivos por llegar: {files}",
+  "detail.coming": "Detalle: {drawn} de {top} M, archivos por llegar: {files}, unos {secs} s",
+  "detail.full": "Detalle: completo para tu ajuste",
+  "detail.nofiner": "Detalle: completo. Este escaneo no tiene un nivel más fino aquí",
+  "detail.kept": "Detalle: se mantiene tu ajuste. La imagen va más lenta que tu pantalla",
+  "detail.release": "Que elija la página",
+  "detail.lowered": "Detalle: {drawn} de {top} M, rebajado para que el vuelo sea fluido",
+  "detail.network": "Detalle: archivos que no llegaron: {files}. Reintentando",
+  "detail.givenup": "Detalle: archivos que no llegaron: {files}. Revisa la conexión y vuelve a intentarlo",
+  "detail.retry": "Reintentar"
+}

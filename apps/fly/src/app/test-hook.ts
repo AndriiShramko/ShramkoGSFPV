@@ -81,6 +81,8 @@ export interface TestHook {
      * stochastic, budgetM, note) and as the engine has it now (engineStochastic, engineBudgetM).
      */
     drawing?: Record<string, unknown>;
+    /** lane loadq: the detail line's state, text and the streamed files' numbers (builtin/detail.ts) */
+    detail?: () => Record<string, unknown>;
     /** phase D: import rates and PID from a Betaflight CLI diff (the same path as the import panel) */
     importDiff?: (text: string) => { ok: boolean; firmware?: string | null; ratesType?: string; warnings?: string[]; errors?: string[] };
     /** phase D: cinema mode and the recorder */

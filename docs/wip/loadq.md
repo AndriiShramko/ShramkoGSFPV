@@ -19,7 +19,39 @@ Hand-over gates (gates.py --only vitest,architecture,i18n,b18) on 0d08dad1: all 
 PATH for tools/bench/test/rooms-socket.test.ts, it spawns `python`).
 
 Stage L2-build
-- [ ] (after L1)
+- [x] 0. Release build at the start (bebb7646, dist sha256 a2d8e503..., U:/Temp/gsfpv-train3/loadq/build-l2a.log). The
+  pilot's view before the change is L1 (a) (same product code); not walked again.
+- [x] 1. G1 to G4 built, unit tests and negative controls (this commit):
+  - G1 apps/fly/src/app/detail-rule.ts drawPlan, used by apps/fly/src/app/quality.ts apply: a budget from the setting
+    (builtin/drawing.ts passes from.budget === 'setting') is drawn at its splats and full render scale whatever the
+    governor's step; the governor keeps counting; Quality.keeperSlow after 3 s at a lower step (estimate);
+    Quality.release() is the line's press "Let the page choose" (holds until the setting changes).
+  - G2 apps/fly/src/app/builtin/detail.ts: one line on the credit (where "Walls 5 cm" lives), every 0.5 s; states and
+    texts in detail-rule.ts detailState/detailLine, i18n packages/i18n/locales/fly/detail/{en,es,pl,ru}.json; full and
+    no-finer show 4 s (estimate) then hide; hook window.__gsfpv.detail().
+  - G3 packages/render-pc/src/stream-keeper.ts, ticked 4 times a second by renderer.ts onFrameUpdate: the engine's
+    immediate retries off (loader.maxRetries 0), a failed file asked again after 0.5, 1, 2, 4, 8 s (estimate), a file
+    with no answer for 20 s (estimate) taken out of its slot and counted, given up after the last pause until the
+    line's "Try again" (renderer.retryFailedFiles). Counts in renderer.streamStats().
+  - G4: not hand-set: drawPlan as before; the line shows only files that did not arrive.
+  - Tests: packages/render-pc/test/stream-keeper.test.ts (4), tools/bench/test/loadq-detail.test.ts (7); all pass with
+    fly-parity, render-pc, app-lod, drawing-ask (419 tests). Negative controls (the files are new, so by mutation):
+    pin line removed: "expected { scale: 0.5, budgetM: 6 } to deeply equal { scale: 1, budgetM: 16 }"; constant pause
+    and no stall cut: "expected 500 to be greater than or equal to 1000", "expected true to be false"; G4 guard
+    removed: "expected 'coming' to be 'hidden'". tsc of render-pc and apps/fly exit 0; check-architecture ok;
+    a1-api-check 71 checked, no problems.
+- [ ] 2. G6 (bar passed in L1): still detection (speed under 0.3 m/s, turn under 15 deg/s for 1 s, or paused), the
+  x1.5 a second rise under a 66 ms median frame and the memory cap, back in the same frame on a stick move, a
+  setting to switch it off (new pref: defs + set.* label in four locales + defs.test list + catalogue tables), its unit
+  tests with negative controls, pictures loadq-still-before.png and loadq-still-after.png (Lublin from above, 0.5 M).
+- [ ] 3. Release build of the change, then the browser proof on Wroclaw 70b50d42 (holds of at most 10 min, probe
+  tools/bench/scripts/loadq-probe.mjs, port 5820): 16 M by hand reaches 15.59 M and the line says full; DROP=10 (3
+  tries) and STALL=10 end full with the line showing the retries; the +30 ms frame run: the line says kept, the press
+  works; an untouched pilot as L1 (a) (3.89 M, 30.65 dB). Record slowestMs of a fault-free run against STREAM_STALL_MS.
+- [ ] 4. Pictures in U:/Temp/gsfpv-train3/shots: loadq-loading.png, loadq-full.png, loadq-held.png, each looked at.
+- [ ] 5. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16; lod-view on and off on Wroclaw and Lublin 2f1ddf5f;
+  governor-start; a6-reference; gates.py --only vitest,architecture,i18n,b18,leaks.
+- [ ] 6. 'What the owner does', 'not verified', every changed file under 'For the lead'. Commit.
 
 ## Facts (measured)
 

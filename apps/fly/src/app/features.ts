@@ -6,6 +6,7 @@
 import type { Feature } from './context';
 import { scene } from './builtin/scene';
 import { walls } from './builtin/walls';
+import { detail } from './builtin/detail';
 import { gravityNote } from './builtin/gravity';
 import { hud } from './builtin/hud';
 import { voxels } from './builtin/voxels';
@@ -51,6 +52,7 @@ import { rooms } from './builtin/rooms';
 export const FEATURES: readonly Feature[] = [
     scene,
     walls,
+    detail,
     gravityNote,
     hud,
     voxels,

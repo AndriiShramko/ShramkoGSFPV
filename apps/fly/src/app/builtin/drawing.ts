@@ -29,7 +29,8 @@ function apply(ctx: FlightContext, announce: boolean): void {
     // a recording draws the clean sorted picture while it runs (the pilot's drawing, d, is what comes back)
     const clean = cleanDraw.held;
     const engine = r.setStochastic(d.stochastic && !clean);
-    ctx.quality.setTopBudget(d.budgetM);
+    // lane loadq G1: a budget the pilot set by hand is drawn as set (app/detail-rule.ts drawPlan)
+    ctx.quality.setTopBudget(d.budgetM, d.from.budget === 'setting');
     ctx.quality.setPresetScale(d.renderScale);
     // R32: the governor starts at the step this device settled at on its last flight (render-pc governor.ts)
     // (not on a strong desktop: there the top step stays the start, review LP-1)

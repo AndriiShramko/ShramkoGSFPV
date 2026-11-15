@@ -1,0 +1,12 @@
+{
+  "detail.comingStart": "Detail: {drawn} of {top} M, files to go: {files}",
+  "detail.coming": "Detail: {drawn} of {top} M, files to go: {files}, about {secs} s",
+  "detail.full": "Detail: full for your setting",
+  "detail.nofiner": "Detail: full. This scan has no finer level here",
+  "detail.kept": "Detail: kept at your setting. The picture is slower than your screen",
+  "detail.release": "Let the page choose",
+  "detail.lowered": "Detail: {drawn} of {top} M, lowered to keep the flight smooth",
+  "detail.network": "Detail: files that did not arrive: {files}. Trying again",
+  "detail.givenup": "Detail: files that did not arrive: {files}. Check the connection and try again",
+  "detail.retry": "Try again"
+}
