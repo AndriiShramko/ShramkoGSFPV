@@ -20,8 +20,19 @@ Stage G1-merge-hooks (train 3 wave 3):
 - [~] G1.4 release of 05dbc189 built (g1/build2.log: sha 05dbc189, 1934 files); probe 05dbc189 records after every
   pointerup (window listener in the init script: at the up, after the task, two frames later) GateBar.debug() (hidden flag,
   drawn visibility), the shown tool and each set [enabled, nodes, selectedAxis, hoverAxis]; course.ts __gsfpvEditView adds
-  `bar`. Runner U:/Temp/gsfpv-train3/editor3/g1/run.sh (copies the wave-3 walls of 70b50d42 into dist/walls). REPRO run on
-  Tunis next.
+  `bar`. Runner U:/Temp/gsfpv-train3/editor3/g1/run.sh (copies the wave-3 walls of 70b50d42 into dist/walls).
+  REPRO run once (05:25-05:34): the GPU lock C:/dev/.gpu-lock was held by others the whole 9 min (made 05:25:01; node jobs
+  seen: integA walls-cache-probe.mjs on 5760, sonic-int-review.ts r11), so the runner gave up ("lock wait over 9 min"),
+  no browser record exists yet. Nothing about the hidden bar is measured in G1.
+- [ ] left (next worker, in this order):
+  1. dist is the release of 05dbc189 (no apps/fly change since; do not rebuild). Run
+     `REPRO=1 OUT=U:/Temp/gsfpv-train3/editor3/g1/repro SCENES=887f27aa PORT=5802 bash U:/Temp/gsfpv-train3/editor3/g1/run.sh`
+     as the first command (it waits up to 9 min for the lock, holds it at most 590 s, stops its server).
+  2. Read `scenes["repro-887f27aa"].ups` in g1/repro/e4.json: for each pointerup n after a centre-box drag, `bar.hidden` and
+     `bar.vis` at up / task / frame2, `tool`, `dragging`, and the shown set's selectedAxis (sets[i][2] of the enabled set).
+     Write under Facts what it shows (hidden true with dragging false = the dragTo hide flag left set; selectedAxis still
+     'xyz' after the up = the gizmo still believes it drags). Then H2 pass 2 left 1 (the fix) with a test and a negative
+     control, and the lead's items (2) Space disarms a keyboard pilot in the mode, (3) the floor-added gate in view and not red.
 
 Stage E1-freeze-and-design (finished, the fix moved to E2 by the reply budget):
 - [x] 1. the owner's path measured on the live site, cause found in the code (probe 7ae6c1c1, facts below)
@@ -632,6 +643,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- G1-merge-hooks: about 34 replies; the most went to a release build started before the last source change (killed and
+  rebuilt, 2 extra replies) and a 9-minute GPU lock wait that ended with no run; adding every page hook before the first
+  build, and starting the lock wait right after the build in one command, would have saved both.
 
 - H2-prove: about 32 replies; the most went to extending the probe with every step at once and then finding that one fault
   (the Size drag turned the view) voided all later steps; a probe that re-centres the selected gate after each step, and one
