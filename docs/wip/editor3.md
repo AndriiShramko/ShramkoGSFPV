@@ -206,6 +206,29 @@ Stage H1-handles-first (train 3 wave 2, the finishing lane):
   tracks-editor-ui 7 files 50/50; NEG OK (neg_control.py ref bb670ead, 8 files); apps/fly tsc 0. NOT yet seen in a browser.
 
 - [x] H1.1b course.ts exposes window.__gsfpvEditHit(x, y) (view.hitAt, read only) for the probe; apps/fly tsc 0 (this commit)
+H1 pass 2:
+- [x] left 1: no 'before' run exists (h1/before has only serve.log); skipped as the list said. The release of f6e5042a was
+  built (build2.log) but the lock was held by another lane from 01:37, so the new runs use a fresh build of 2692c7c2.
+- [x] left 2 (2692c7c2): the probe clicks the gate bar's Turn button before the ring step, presses T before the centre box,
+  reads tool 'move' before the X arrow; each press point is found by walk(): out from stand.screen in 6 px steps with
+  window.__gsfpvEditHit (the gizmo's own picking, so the radius drawn), recorded as r and hit in turn/scale/moveX.
+- [x] left 3 ED-3 (2692c7c2): fly-mode.ts modeStep(prev, armed, crashed, hold) returns hold; a crash in 'fly' goes to
+  'edit' at once and holds it while the keepArmed respawn is armed; flying again needs armed seen false, then true.
+  course.ts keeps crashHold (reset when the mode opens). No session disarm API exists (grep of session/index.ts and
+  controls.ts: only toggleArm); with keepArmed the respawned drone sits armed on the start platform at idle, the keyboard's
+  flying keys are blocked in 'edit' (ctx.keys.block), so it does not drift by keys. editor3-flying.test.ts ED-3 test flipped
+  (now: crash -> edit:to-edit, the re-armed respawn stays edit, off-then-on flies). Tests editor3-flying + editor3-tools 19/19,
+  NEG OK (neg_control.py ref HEAD f6e5042a, fly-mode.ts and course.ts), apps/fly tsc 0, tools/bench tsc 0,
+  a6-reference 1/1 pass.
+- [x] left 4 (2692c7c2): probe run kbd-<scene> (KBD, keyboard chosen): W held 600 ms -> armed, mode; Space -> 'fly'; Space ->
+  'edit'; Insert until the course stops growing, then Add gate: the top bar line, digitInLine, a click after it adds
+  nothing; shot editor3-full-1920.png. ED-4 step after the flight in scene(): Add gate, click at 0.85 of the height, 4 s,
+  problems before/after, shot editor3-floor-add-1920.png (Wroclaw: editor3-wroclaw-floor-add-1920.png).
+- [~] left 5: U:/Temp/gsfpv-train3/editor3/h1/after.sh (detached, started 01:47): release of 2692c7c2, then run.sh twice:
+  after1 (both scenes, KBD=0) and after2 (Tunis, KBD=1, PHONE=1), each with the lock only around its probe.
+- [ ] left 6: gates.py --only vitest,architecture,i18n,b18.
+
+Old list of pass 1 (items 1-4 done above):
 - [ ] left (next worker, in this order; stopped at the reply budget of 30):
   1. the 'before' run: if U:/Temp/gsfpv-train3/editor3/h1/before/e4.json exists, read it (release of bb670ead, both scenes);
      else skip it: the lock was held by another lane from 01:37 and the run was stopped at the budget.
