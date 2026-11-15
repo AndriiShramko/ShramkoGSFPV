@@ -12,17 +12,23 @@ export const PROGRESS_TICK_MS = 1000;
 // Node 22, this PC, 2026-11-14). One generateCourse try at 5 cm walls: 46.1 s (70b50d42), 30.7 s (887f27aa), 42.8 s
 // (9baef54b), 32.7 s (ba7aa29d), mean 38.1 s; at 10 cm 5.5 and 6.3 s; at 20 cm 0.9 s: a factor 6.5 per halving of the cell,
 // so the cell's exponent is 2.7. Forest Floor (ab5efa0e, 29 m3 free) 0.48 s a try. The free-space pass: 62 to 2376 ms.
+// F2-fast-course (2026-11-15, CR-3): after the sweep fix (check.ts sweepFree, occupancy.ts) one fitCourse try of 24 gates
+// over the quality map took 3336 ms on Wroclaw 70b50d42 and 2905 ms on Tunis 887f27aa (node --cpu-prof of
+// course-quality-audit.ts --quality seed 1, GPU lock held, U:/Temp/gsfpv-train3/course3/f2/after2/*.top.txt): mean 3.1 s.
+// The free step on the page is qualityMap + freeSpace: 1547 + 3547 ms on Wroclaw, 182 + 1082 ms on Tunis.
 
-/** ms of one course try on 5 cm walls with a large free space (mean of four scans, course-rate.mjs) */
-export const COURSE_TRY_MS_5CM = 38_100;
-/** time of a try grows as cell^-2.7 (course-rate.mjs: 38.1 s at 5 cm, 5.9 s at 10 cm, 0.9 s at 20 cm) */
-export const COURSE_CELL_EXPONENT = 2.7;
+/** ms of one course try on 5 cm walls with a large free space (F2: mean of Wroclaw and Tunis, Node, see above) */
+export const COURSE_TRY_MS_5CM = 3_100;
+/** time of a try grows as cell^-0.9 (F2, course-quality-audit.ts --quality, 3 seeds, measured under load without the GPU
+ *  lock: 10 cm 0230d903 2.4-4.9 s, 20 cm eb5f51dc 0.54-1.38 s; 5 cm 3.1 s and 20 cm 0.87 s give 0.92. Before F2 the
+ *  sweeps made it 2.7) */
+export const COURSE_CELL_EXPONENT = 0.9;
 /** ESTIMATE: under this much free space a try is shorter in proportion (the four 5 cm scans had 15-25 thousand m3) */
 export const COURSE_FULL_M3 = 15_000;
 /** the shortest try measured (ab5efa0e, 0.48 s), rounded up */
 export const COURSE_TRY_MIN_MS = 500;
-/** the longest free-space pass measured (0230d903, course-rate.mjs freeMs) */
-export const FREE_SPACE_MS = 2_400;
+/** the free step of the page (qualityMap and freeSpace over its box), the longest measured: Wroclaw 1547 + 3547 ms (F2) */
+export const FREE_SPACE_MS = 5_100;
 
 /** Expected ms of one course try on walls of cell `cellM` with `volumeM3` of free space (rates above). */
 export function courseTryMs(cellM: number, volumeM3: number): number {

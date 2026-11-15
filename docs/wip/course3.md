@@ -275,9 +275,39 @@ Stage F2-fast-course (train 3 wave 2: a course in under 15 s in Node and 30 s in
   Test tools/bench/test/course3-hooks.test.ts 3/3; neg_control.py --ref origin/main (editor.ts) on the two 'add' tests:
   NEG OK by assertion ("expected true to be false"). tsc packages/tracks, apps/fly, tools/bench: 0 errors.
   One line in apps/fly/src/course/editor/texts.ts (ACTION_KEYS.add, needed by its Record over EditAction kinds).
-- [~] Profile of one course on Wroclaw and Tunis (tools/bench/scripts/cpuprof-top.mjs; runner U:/Temp/gsfpv-train3/course3/f2/prof.sh).
+- [x] Profile of one course on Wroclaw and Tunis (node --cpu-prof of course-quality-audit.ts --quality, seed 1, GPU lock held
+  per run; runner U:/Temp/gsfpv-train3/course3/f2/prof.sh <dir>; summaries tools/bench/scripts/cpuprof-top.mjs ->
+  f2/<dir>/<scan>.top.txt). Table in Facts F2. Cause: 99 % of the time in sphereOverlaps under VoxelContactWorld.sweepOne;
+  most of it the first test of every sweep, a cover sphere of r + L/2 around the whole leg (12.75 m on a 25 m leg, read
+  voxel by voxel on 5 cm walls); the rest the bisection's own covers read through the octree voxel by voxel.
+- [x] 4296447d: check.ts sweepFree (sweeperOf uses it): sweepOne's bisection without the whole-leg cover (same answer: every
+  cover contains the leaf spheres under it); generate.ts keeps leg answers while the walk stands at the same gate (a gate
+  refused by its one-gate proof swept the same legs again). Wroclaw 93.8 -> 33.2 s, Tunis 298.9 -> 65.0 s a course.
+- [x] 39c6b0da: occupancy.ts (occupancyOf: one bit per 8 x 8 x 8 voxel super block from forEachBlock, cached per walls
+  object; overlapsFast: sphereOverlaps' own per-voxel arithmetic, only in occupied super blocks the sphere reaches).
+  Wroclaw 3.4 s, Tunis 2.95 s a course (same tries and gates as before the change: 33 and 47 tries, 24 gates each).
+  Tests packages/tracks/test/sweep-fast.test.ts (3): sweepFree equals sweepOne on 600 random segments of two worlds;
+  overlapsFast equals sphereOverlaps on 6000 random spheres (radii 0 to 3 m, in and around the grid); a free 25 m leg of
+  a 5 cm street reads under 20 000 voxels. neg_control.py --ref HEAD (check.ts): NEG OK twice by assertion ("expected
+  3776405 to be less than 2000000" against origin sweeps; "expected 966800 to be less than 20000" against 4296447d).
+  All packages/tracks tests 111/111 (digest pins of generate, fit, fixtures hold: the answers are the same, so no seed's
+  course changed). tsc packages/tracks: 0 errors.
 
 ## Facts (measured)
+
+- F2 profile (Node 22, this PC, GPU lock held, one fitCourse of seed 1 over the quality map, cpu profile inclusive ms;
+  U:/Temp/gsfpv-train3/course3/f2/{prof,after,after2}/<scan>.top.txt). Calls: 1 fit, 1 walk, 33 one-gate proofs on
+  Wroclaw and 47 on Tunis, 1 whole-course proof each.
+  | scan | code | process | qualityMap | freeSpace | occupancyOf | fitCourse | of it checkTrack | sphere tests | course ms |
+  |---|---|---|---|---|---|---|---|---|---|
+  | 70b50d42 | ec64aa44 (before) | 97552 | 865 | 2099 | - | 92853 | 29662 | 92171 | 93774 |
+  | 70b50d42 | 4296447d | 37275 | 902 | 2222 | - | 32946 | 16632 | 32253 | 33236 |
+  | 70b50d42 | 39c6b0da | 12797 | 1547 | 3547 | 1693 | 3336 | 122 | 654 | 3395 |
+  | 887f27aa | ec64aa44 (before) | 302934 | 293 | 1666 | - | 295432 | 23340 | 294669 | 298943 |
+  | 887f27aa | 4296447d | 67091 | 213 | 1086 | - | 64463 | 18711 | 63885 | 64996 |
+  | 887f27aa | 39c6b0da | 4987 | 182 | 1082 | 148 | 2905 | 142 | 2244 | 2950 |
+  'process' includes reading and opening the walls and the module load; occupancyOf runs inside fitCourse (first sweep).
+  A course in Node now (qualityMap + freeSpace + fitCourse): Wroclaw 8.4 s, Tunis 4.2 s (pass mark 15 s).
 
 - G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m
   bins): 6956 tiles of 4 m, 2279 with a ground, map in 1.0-1.8 s; mean voxels per tile from 0.4 m above the ground in

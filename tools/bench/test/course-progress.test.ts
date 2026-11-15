@@ -93,11 +93,13 @@ describe('the ladder tells the Gaussians of every step (bakeBase onStep)', () =>
 describe('the course line', () => {
     it('the expected try comes from the cell and the free space (course-rate.mjs)', () => {
         expect(courseTryMs(0.05, 24_757)).toBe(COURSE_TRY_MS_5CM);
-        // 10 cm: measured 5.5 and 6.3 s; 20 cm: 0.9 s; Forest Floor 0.48 s
-        expect(courseTryMs(0.1, 33_234)).toBeGreaterThan(5000);
-        expect(courseTryMs(0.1, 33_234)).toBeLessThan(6600);
-        expect(courseTryMs(0.2, 24_071)).toBeGreaterThan(700);
-        expect(courseTryMs(0.2, 24_071)).toBeLessThan(1100);
+        // F2 (after the sweep fix): 10 cm measured 2.4-4.9 s; 20 cm 0.54-1.38 s; Forest Floor 0.48 s (before F2)
+        expect(courseTryMs(0.1, 33_234)).toBeGreaterThan(1000);
+        expect(courseTryMs(0.1, 33_234)).toBeLessThan(5000);
+        expect(courseTryMs(0.2, 24_071)).toBeGreaterThan(500);
+        expect(courseTryMs(0.2, 24_071)).toBeLessThan(1400);
+        // a 5 cm try is no longer the 38 s of before F2
+        expect(COURSE_TRY_MS_5CM).toBeLessThan(10_000);
         expect(courseTryMs(0.05, 29)).toBe(COURSE_TRY_MIN_MS);
     });
     it('every try is announced: the first by the estimate, the next by what the last took', () => {
