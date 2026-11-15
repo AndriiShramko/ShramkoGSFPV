@@ -661,7 +661,28 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   ready"), none after. Shift+G course and hum in the same sample in all six. 0 page errors. The streams ran two probes at once, so
   the course times (Wroclaw 18 to 49 s) are under load.
 - [x] Row 10 r11 narrator on (release of e9dc3d84): Wroclaw 10 of 10 (above), Tunis 10 of 10 (199 s).
-- [ ] Left (in this order): row 10 r9 and r12 narrator on (they take the GPU lock themselves; r12 one lesson per run, Z5_LESSONS);
+- [x] Pass 3 (script quiet3x/run-d.sh, release of e9dc3d84 in dist, stand-in walls, serve-csp 5761, r9/r12 PORT 5762; the tree
+  at 28b12ae2 differs from the build only in probes, docs and a comment in quiet-cues.ts):
+  row 10 r9 narrator on 11 of 11 (187 s, evidence/2026-11-15/sonic-int-review-r9-on-x2.json); r12 narrator on one lesson per run:
+  speed-1 3 of 3 (passed at attempt 1, 52 s of flight), speed-2 3 of 3, speed-3 3 of 3, speed-4 3 of 3 (sonic-int-review-r12-on-
+  speed-*.json). accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against http://localhost:5761: all 10 true (it held the lock
+  itself; quiet3x/accept-fly.log). pause-over-course-probe (does not take the lock: wrapped) 8 of 8 at 1920 and 844 (the clock
+  block shown in flight, hidden under the menu, back after it; pause-70b50d42.json). a6-reference 1 passed (a6-x2.log). tsc
+  --noEmit tools/bench 0, apps/fly 0.
+- [x] Pictures (render on, inside the lock wrap, Wroclaw 70b50d42): quiet-probe RENDER=on RECTS=1 (pic-cap.log): Shift+G course and
+  the hum of g1 in the same sample +16.81 s; one caption shown at 1920x1080, 1280x720 and 844x390, no overlap with the clock block.
+  U:/Temp/gsfpv-train3/shots/quiet-captions.png (copy of quiet3x-cap-1920x1080.png): a person sees the course clock "0:00.00, Lap 1
+  of 3, Gate 1 of 18" at the top centre and, under it, one caption row "Recording is off." on a dark box, both readable over the
+  scan. U:/Temp/gsfpv-train3/shots/quiet-settings.png (ENTRY=scan, the sound start page): a person sees "Narrator" ticked in the
+  Settings list between "My screen reader speaks" and "Motor sound", with its help text "Off: sounds only. In a flight nothing is
+  spoken and nothing waits for a line; the lessons keep their words." (the help text sits right after the label, not in the
+  column the other help texts use: looks, not a fault of the setting).
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks on 28b12ae2 (plus this doc): first run in run-d.sh failed to start its
+  processes (exit 3221225794, 0xC0000142, a Windows process start failure, every gate at 0 s; quiet3x/gates.log); re-run alone:
+  all 5 PASS (vitest 138 s; logs U:/Temp/gsfpv-gates-20261115-192340; quiet3x/gates2.log).
+- [x] Done of the pass-2 list below: row 10, accept-fly, pause-over-course-probe, a6, tsc, gates, the pictures, the tables below.
+- [ ] Left: row 8 "never on the second course" (r11 flies one course); the two probe observations below; QW-4 (integration).
+- [ ] (pass 2, superseded by the line above) Left (in this order): row 10 r9 and r12 narrator on (they take the GPU lock themselves; r12 one lesson per run, Z5_LESSONS);
   accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 on a local server of dist (it takes the lock); pause-over-course-probe (check
   whether it takes the lock); a6-reference; tsc apps/fly (done 0 in this commit, see below) and tools/bench (0 at 1fae4e1f);
   gates.py --only vitest,architecture,i18n,b18,leaks; the pictures (quiet-probe RENDER=on RECTS=1 SHOTS=<prefix> for captions,
@@ -684,6 +705,55 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   Wroclaw and Tunis, r12: they take the lock); accept-fly B6 B7 B9 to B16; pause-over-course-probe; a6-reference; gates.py with
   leaks; the two pictures; the off table (QW-6), 'What the owner does', 'For the lead' (add apps/fly/src/sonic/feature.ts oneShots,
   tools/bench/scripts/d7-probe.mjs, tools/bench/src/sonic-int-review.ts to the QW-8 list; package pin 293ebae unchanged).
+
+### Narrator off: every line a flight can say and its sound (QW-6; quiet-cues.ts QUIET_SOUNDS plus the speakers' own sounds)
+| Line (key or speaker) | Narrator off: what is heard |
+|---|---|
+| fly.gate-behind, sonic.say.gateBehind (a gate missed) | 'wrong-side', one short falling sound; the hum leads back |
+| fly.wrong-way, fly.wrong-side, fly.stage | the runner's own cue ('wrong-way', 'wrong-side', 'stage'); no extra sound |
+| fly.reset-start, fly.reset-checkpoint (put back after a crash) | 'reset', the falling sweep (the touch sounds at the contact) |
+| sonic.say.inPlaceOn (Backslash, the mode on) | 'answer' yes, two notes up |
+| fly.go, fly.go-on, lesson.scan-free.title, sonic.say.lessonKeys, lessonKeysFree, inPlaceIntro, inPlaceIntroCourse, courseOffer | nothing (the flight is on; the keys are in K) |
+| sonic.say.wallsIn (walls ready) | 'checkpoint', the short chime |
+| sonic.say.wallsBuilding, wallsStill | nothing (the flight goes on) |
+| sonic.say.wallsFailed | nothing in the table; the walls speaker passes 'wrong-side' for a failed build (app/builtin/walls.ts) |
+| sonic.say.wallsCoarse, scanNoWalls | nothing (a fact of the scan; the caption shows it) |
+| progress.mayStop, "the picture may stop" (walls.ts) | 'answer' wait |
+| sonic.say.text, progress of the course or walls being made | nothing |
+| Shift+G course ready (app/builtin/course.ts) | 'checkpoint' chime, the hum of gate 1 in the same sample (row 1) |
+| Shift+G pressed while the course is being made | 'answer' wait |
+| Shift+G with no course (course.none, course.failed) | 'wrong-side' (row 3) |
+| a lap done (course.lapDone, course.best) | 'lap' notes |
+| the course's end | 'fanfare', the finish notes (M3; row 1) |
+| Shift+V, narrator off | 'answer' no, two notes down (M1) |
+| Shift+V, narrator on | spoken "Narrator on." |
+| K (keys) and I (status) | spoken, also with the narrator off (row 5) |
+| a lesson of the lesson list | spoken (the lessons keep their words), lessonNarrator once (row 7) |
+Every other key not in the table has no sound and is not spoken with the narrator off (quietCue gives null).
+
+### What the owner does (narrator off)
+1. Open the Wroclaw scan. On the sound start page, Settings, untick "Narrator" (or in a flight press Shift+V: two notes down).
+2. In the scan press Backslash: two notes up, the flight goes at once; nothing is spoken.
+3. Press Shift+G: a short chime when the course is ready, and the hum of gate 1 starts with it. Fly to the hum.
+4. A missed gate: one short falling sound. A lap: the lap notes. The end of the course: the finish notes.
+5. K tells the keys and I the status in words even with the narrator off. Shift+V turns the narrator on again ("Narrator on.").
+6. A lesson from the lesson list speaks; the narrator setting is off again after it.
+
+### For the lead (lanes quiet, quiet2, quiet3, branch sonic4 against origin/main)
+- Package pin packages/sonic-fpv at 293ebae (unchanged by quiet3; only on the package's local branch train5: QW-4, the
+  integration's step).
+- Changed outside apps/fly/src/sonic: apps/fly/src/app/builtin/course.ts, apps/fly/src/app/builtin/sonic-flight.ts,
+  apps/fly/src/app/builtin/walls.ts, apps/fly/src/app/say-via.ts, apps/fly/src/walls.ts; packages/prefs/src/doc.ts,
+  packages/prefs/src/keymap.ts, packages/prefs/test/catalog.test.ts, packages/prefs/test/keymap.test.ts;
+  packages/i18n/locales/fly/sonic/{en,es,pl,ru}.json, packages/i18n/locales/fly/sonickeys/{en,es,pl,ru}.json;
+  tools/bench/scripts/d7-probe.mjs, quiet-probe.mjs, quiet-summary.mjs; tools/bench/src/sonic-int-review.ts;
+  tools/bench/test/app-keys, sonic-captions-fit, sonic-lesson-narrator, sonic-lesson-rig, sonic-narrator-key, sonic-optin,
+  sonic-quiet-cues, sonic-quiet-n6, sonic-quiet-w3, sonic-quiet, sonic-quiet2, sonic-quiet3, sonic-start-screen (.test.ts / .ts);
+  docs/wip/sonic4.md. (git diff --name-only against the merge base, outside apps/fly/src/sonic.)
+- Not verified: nothing was heard by a human ear (headless Chrome, sounds read from the page's hooks); no native check of the es,
+  pl, ru words; no real screen reader (row 6 counts writes to live regions only); row 8 "never on the second course" was not run
+  (r11 flies one course); a caption long enough to wrap past two rows was not shown in a browser (the clamp is held by the
+  stylesheet test).
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
@@ -716,6 +786,9 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   tools/bench: 0 errors in the two tools).
 
 ## Cost notes
+- 2026-11-15 X2 pass 3 (quiet3): the predecessor had already run the whole left list in one detached script (run-d.sh) before it
+  stopped; reading its logs took 3 replies. The only cost was the gates run dying at process start inside that long script; running
+  gates as its own command would have saved the re-run.
 - 2026-11-15 fixes (quiet2): most replies went to reading where each line is said (course.ts, walls.ts, start.ts, entry.ts, panel.ts)
   and to digging the probe's JSON by hand (events in ms, live in s); a quiet-summary line with the live and voiced counts after the
   switch on would have saved three replies.
