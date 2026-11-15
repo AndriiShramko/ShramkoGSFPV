@@ -628,8 +628,10 @@ export class LessonHost {
         // a module-0 scene is the engine's input in place of the craft; else the craft in its world, the next gate its target
         // lane sonic-beacon: and where the target hum points (the target, or the next track point where the goal has no gate or zone)
         // lane onecourse O2.6 (measured: r11 on Wroclaw flew 360 s with no target.hum): the runner's beacon is its own target, null
-        // over the scene's course, and the planner hums the beacon when the field is there; over that course the beacon is its gate
-        const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: own ? run.beaconTarget() : target } : {}), floorY: this.floorY };
+        // over the scene's course, and the planner hums the beacon when the field is there; over that course the beacon is its gate.
+        // Only then: a lesson with no gate and no course in the scene (the corridor) keeps the runner's track point (gate sonic-lessons)
+        const fromCourse = !own && target !== null;
+        const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: fromCourse ? target : run.beaconTarget() } : {}), floorY: this.floorY };
         this.p.mode.hear(sample, input);
         this.p.stage.setTarget(target ? target.id : null);
         this.checkPassed();
