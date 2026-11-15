@@ -12,7 +12,7 @@ import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
 import { blendCam, FRAME_GLIDE_MS } from './frame';
 import { AXIS_RGB, gizmoSize, HANDLE_PX, units } from './handle-look';
-import { minorAxis, pickRing, ringTurnDeg, type DrawnRing, type P2 } from './ring-pick';
+import { edgeTakesPress, minorAxis, pickRing, ringTurnDeg, type DrawnRing, type P2 } from './ring-pick';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
 export const CLICK_SLOP_PX = 4;
@@ -294,6 +294,20 @@ export class EditView {
         size.axisCenterSize = units(P.centreBox);
         size.axisLineTolerance = units(P.pickTolerance);
         size.axisGap = 0;
+        // I1 (D2): a shape switched off by enableShape is still drawn in grey (PlayCanvas 2.23.2 Shape.disabled only recolours
+        // it), and _drag(false) shows every shape again at a drag's end (build/playcanvas.mjs 122376, 122877, 123402): the
+        // turn handle's 143 px grey centre sphere and its face ring, measured on Tunis by editor3-gizmo.ts. Hide them, also
+        // after each drag.
+        type Sh = { _disabled?: boolean; visible: boolean };
+        for (const h of [move, turn, size]) {
+            const g = h as unknown as { _shapes?: Record<string, Sh>; _drag?: (state: boolean) => void };
+            const hideOff = (): void => {
+                for (const s of Object.values(g._shapes ?? {})) if (s._disabled) s.visible = false;
+            };
+            const drag = g._drag?.bind(h);
+            if (drag) g._drag = (state: boolean): void => { drag(state); hideOff(); };
+            hideOff();
+        }
     }
 
     /** the stand-in's pose at a drag's start (the tags beside the handles count from it) */
@@ -359,19 +373,30 @@ export class EditView {
         const a = cc.worldToScreen(new PcVec3().add2(c, up), new PcVec3());
         const b = cc.worldToScreen(new PcVec3().sub2(c, up), new PcVec3());
         const parts: { name: string; rect: number[] }[] = [];
-        type Sh = { _visible?: boolean; meshInstances?: { node: { name: string }; aabb: { getMin(): PcVec3; getMax(): PcVec3 } }[] };
+        type Mi = { visible?: boolean; node: { name: string; getWorldTransform(): { transformPoint(a: PcVec3, b: PcVec3): PcVec3 } }; mesh?: { getPositions?(a: number[]): number }; aabb: { getMin(): PcVec3; getMax(): PcVec3 } };
+        type Sh = { _visible?: boolean; _disabled?: boolean; meshInstances?: Mi[] };
         const shapes = (this.active() as unknown as { _shapes?: Record<string, Sh> })._shapes ?? {};
         for (const sh of Object.values(shapes)) {
-            if (sh._visible === false) continue;
+            if (sh._visible === false || sh._disabled) continue;
             for (const mi of sh.meshInstances ?? []) {
-                const lo = mi.aabb.getMin();
-                const hi = mi.aabb.getMax();
+                if (mi.visible === false) continue;
                 let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-                for (let k = 0; k < 8; k++) {
-                    const s = cc.worldToScreen(new PcVec3(k & 1 ? hi.x : lo.x, k & 2 ? hi.y : lo.y, k & 4 ? hi.z : lo.z), new PcVec3());
+                const add = (w: PcVec3): void => {
+                    const s = cc.worldToScreen(w, new PcVec3());
                     x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y);
+                };
+                // the drawn extent: the mesh's own vertices through its node (the world box of a turned cone or cube is larger)
+                const pos: number[] = [];
+                const n = mi.mesh?.getPositions?.(pos) ?? 0;
+                if (n > 0) {
+                    const m = mi.node.getWorldTransform();
+                    for (let k = 0; k < n; k++) add(m.transformPoint(new PcVec3(pos[3 * k], pos[3 * k + 1], pos[3 * k + 2]), new PcVec3()));
+                } else {
+                    const lo = mi.aabb.getMin();
+                    const hi = mi.aabb.getMax();
+                    for (let k = 0; k < 8; k++) add(new PcVec3(k & 1 ? hi.x : lo.x, k & 2 ? hi.y : lo.y, k & 4 ? hi.z : lo.z));
                 }
-                parts.push({ name: mi.node.name, rect: [Math.round(x0 + rc.left), Math.round(y0 + rc.top), Math.round(x1 - x0), Math.round(y1 - y0)] });
+                parts.push({ name: n > 0 ? mi.node.name : `${mi.node.name} (box)`, rect: [Math.round(x0 + rc.left), Math.round(y0 + rc.top), Math.round(x1 - x0), Math.round(y1 - y0)] });
             }
         }
         return {
@@ -440,16 +465,17 @@ export class EditView {
         if (this.suspended || e.target !== this.canvas || e.button !== 0) return;
         // G2: the gizmos pick with the renderer's camera entity: give it the edit view's pose first (g2/floor3)
         this.apply();
-        const hits = this.byPress.map((h) => {
+        const sels = this.byPress.map((h) => {
             // PlayCanvas 2.23.2 TransformGizmo._getSelection(x, y): the gizmo's own shapes under a canvas point, nearest first
-            const sel = (h as unknown as { _getSelection?: (x: number, y: number) => unknown[] })._getSelection?.(e.offsetX, e.offsetY);
-            return !!(h.enabled && sel && sel[0]);
+            const sel = (h as unknown as { _getSelection?: (x: number, y: number) => { node?: { name?: string } }[] })._getSelection?.(e.offsetX, e.offsetY);
+            return h.enabled && sel && sel[0] ? sel[0] : null;
         });
-        const own = pressOwner(hits);
-        if (own < 0) {
-            // I1 (D4): no shape of the gizmo under the pointer: a turn ring seen edge-on within RING_PICK_PX is taken here
-            const rp = this.tool === 'turn' && this.turn.enabled && this.standPose ? pickRing([e.offsetX, e.offsetY], this.drawnRings()) : null;
-            if (!rp) return;
+        const own = pressOwner(sels.map((s) => !!s));
+        // I1 (D4): a turn ring seen edge-on within RING_PICK_PX is taken here when the gizmo has nothing under the pointer or
+        // has that same ring (it would turn it by 0 deg): ring-pick.ts edgeTakesPress
+        const rp = this.tool === 'turn' && this.turn.enabled && this.standPose ? pickRing([e.offsetX, e.offsetY], this.drawnRings()) : null;
+        const ownAxis = own < 0 ? null : ((sels[own]?.node?.name ?? '').split(':')[1] ?? '');
+        if (rp && edgeTakesPress(ownAxis, rp.index)) {
             this.ring = { axis: rp.index, tangent: rp.tangent, x: e.clientX, y: e.clientY };
             this.dragging = true;
             this.dragged = true;
@@ -459,6 +485,7 @@ export class EditView {
             this.turn.enabled = false;
             return;
         }
+        if (own < 0) return;
         this.muted = this.byPress.filter((_, i) => i !== own);
         for (const h of this.muted) h.enabled = false;
     };
@@ -686,10 +713,11 @@ export class EditView {
         type Hit = { node?: { name?: string } };
         const sel = (h as unknown as { _getSelection?: (x: number, y: number) => Hit[] })._getSelection?.(x - r.left, y - r.top);
         const name = sel?.[0]?.node?.name ?? '';
-        if (sel && sel[0]) return [this.tool, name.split(':')[1] ?? ''];
-        // I1 (D4): an edge-on ring the edit view takes itself
+        // I1 (D4): an edge-on ring the edit view takes itself (the same rule as onOwnPress)
         const rp = this.tool === 'turn' ? pickRing([x - r.left, y - r.top], this.drawnRings()) : null;
-        return rp ? [this.tool, `edge:${'xyz'[rp.index]}`] : null;
+        const axis = sel && sel[0] ? (name.split(':')[1] ?? '') : null;
+        if (rp && edgeTakesPress(axis, rp.index)) return [this.tool, `edge:${'xyz'[rp.index]}`];
+        return axis !== null ? [this.tool, axis] : null;
     }
 
     dispose(): void {

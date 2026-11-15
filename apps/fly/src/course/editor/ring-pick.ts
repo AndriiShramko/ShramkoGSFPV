@@ -52,6 +52,18 @@ export function pickRing(m: P2, rings: readonly DrawnRing[], tolPx = RING_PICK_P
     return best;
 }
 
+/**
+ * Who keeps a press when an edge-on ring is near the pointer. `gizmoAxis`: the axis of the gizmo's own nearest shape under
+ * the pointer ('x', 'y', 'z', 'xyz', ...), null when it has none. The edit view takes the press when the gizmo has nothing
+ * there or when the gizmo's shape is that same edge-on ring: PlayCanvas 2.23.2 picks a ring seen edge-on but turns it by 0
+ * deg (measured: editor3-gizmo.ts on Tunis, 64 px across the y ring with its minor axis at 4 px gave 0 deg). Another ring
+ * the gizmo picked (a facing one crossing the line) stays the gizmo's.
+ */
+export function edgeTakesPress(gizmoAxis: string | null, edgeIndex: number | null): boolean {
+    if (edgeIndex === null) return false;
+    return !gizmoAxis || gizmoAxis === 'xyz'[edgeIndex];
+}
+
 /** The turn in degrees for the pointer's travel (dx, dy) from the press: the share across the ring's line times `degPerPx`. */
 export function ringTurnDeg(tangent: P2, dx: number, dy: number, degPerPx = RING_DEG_PER_PX): number {
     // across the line: the tangent turned a quarter (page y points down)

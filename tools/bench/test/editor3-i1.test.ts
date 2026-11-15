@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { blendCam, frameDistance, frameDistances, frameGate, FRAME_MIN_SIZES, type RayFn, type V3 } from '../../../apps/fly/src/course/editor/frame';
 import { AXIS_RGB, gizmoSize, HANDLE_PX, PART_MAX_PX, UNIT_PX } from '../../../apps/fly/src/course/editor/handle-look';
 import { minorAxis, pickRing, ringTurnDeg, RING_DEG_PER_PX, type P2 } from '../../../apps/fly/src/course/editor/ring-pick';
+import * as rp from '../../../apps/fly/src/course/editor/ring-pick';
 import { CAM_ROWS } from '../../../apps/fly/src/course/editor/keys';
 
 const ROOT = join(__dirname, '..', '..', '..');
@@ -102,6 +103,26 @@ describe('I1 D4: the pick of an edge-on ring and its angle from the mouse travel
         expect(Math.abs(ringTurnDeg([1, 0], 0, 60))).toBeCloseTo(30, 9);
         expect(ringTurnDeg([1, 0], 80, 0)).toBeCloseTo(0, 9);
         expect(ringTurnDeg([1, 0], 0, 60)).toBeCloseTo(-ringTurnDeg([1, 0], 0, -60), 9);
+    });
+    it('takes the press of an edge-on ring even when the gizmo picks that same ring, not another ring', () => {
+        const ns = rp as unknown as { edgeTakesPress?: (a: string | null, i: number | null) => boolean };
+        expect(typeof ns.edgeTakesPress).toBe('function');
+        const take = ns.edgeTakesPress!;
+        // the browser run on Tunis: the gizmo picked 'y' on the y ring seen edge-on (minor 4 px) and turned it 0 deg
+        expect(take('y', 1)).toBe(true);
+        expect(take(null, 1)).toBe(true);
+        expect(take('', 2)).toBe(true);
+        expect(take('x', 1)).toBe(false);
+        expect(take('z', 0)).toBe(false);
+        expect(take('y', null)).toBe(false);
+        expect(take(null, null)).toBe(false);
+        const vm = src('apps/fly/src/course/editor/view-mouse.ts');
+        expect(vm.split('edgeTakesPress(').length - 1).toBeGreaterThanOrEqual(2);
+    });
+    it('hides the shapes switched off (grey centre sphere and face ring) also after each drag', () => {
+        const vm = src('apps/fly/src/course/editor/view-mouse.ts');
+        expect(vm).toContain('g._drag = (state: boolean)');
+        expect(vm).toMatch(/if \(s\._disabled\) s\.visible = false/);
     });
 });
 

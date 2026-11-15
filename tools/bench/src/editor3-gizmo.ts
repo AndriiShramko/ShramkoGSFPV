@@ -54,7 +54,7 @@ async function numbers(page: Page, tools: boolean): Promise<Record<string, unkno
         out.rings = m.rings;
         out.frame = m.frame;
         out.parts = m.parts.map((x) => `${x.name} ${x.rect.join(',')}`);
-        const small = m.parts.filter((x) => !/line|ring|circle|torus|arc/i.test(x.name));
+        const small = m.parts.filter((x) => !/line|ring|circle|torus|arc|disk/i.test(x.name));
         out.maxSmallPart = small.length ? Math.max(...small.map((x) => Math.max(x.rect[2]!, x.rect[3]!))) : null;
     }
     if (tools) {
@@ -149,7 +149,9 @@ async function clickSelect(page: Page): Promise<Record<string, unknown>> {
 async function dragUntil(page: Page, p: number[], dir: number[], maxPx: number, done: (d: Dbg) => boolean, shot: string | null): Promise<{ px: number; mid: Dbg | null }> {
     const n = Math.hypot(dir[0]!, dir[1]!) || 1;
     await page.mouse.move(p[0]!, p[1]!);
-    await sleep(150);
+    await sleep(250);
+    // the named picture: all handles, the one under the mouse yellow; '-drag' beside it: while dragged, with its value
+    if (shot) await page.screenshot({ path: join(SHOTS, shot) });
     await page.mouse.down();
     let px = 0;
     let mid: Dbg | null = null;
@@ -160,7 +162,7 @@ async function dragUntil(page: Page, p: number[], dir: number[], maxPx: number, 
         if (mid && done(mid)) break;
     }
     await sleep(200);
-    if (shot) await page.screenshot({ path: join(SHOTS, shot) });
+    if (shot) await page.screenshot({ path: join(SHOTS, shot.replace('-1920', '-drag-1920')) });
     await page.mouse.up();
     await sleep(700);
     return { px, mid };
@@ -275,8 +277,13 @@ async function proof(page: Page): Promise<Record<string, unknown>> {
     const s = a.stand.screen;
     const found = await page.evaluate(([c]) => {
         const h = (window as unknown as W).__gsfpvEditHit;
-        for (const dx of [70, -70, 60, -60, 80, -80, 50, -50]) for (let dy = -14; dy <= 14; dy += 2) { const hit = h?.(c[0]! + dx, c[1]! + dy); if (hit && (hit[1] === 'edge:y' || hit[1] === 'y')) return { x: c[0]! + dx, y: c[1]! + dy, hit }; }
-        return null;
+        let any: { x: number; y: number; hit: string[] } | null = null;
+        for (const dx of [70, -70, 60, -60, 80, -80, 50, -50]) for (let dy = -14; dy <= 14; dy += 2) {
+            const hit = h?.(c[0]! + dx, c[1]! + dy);
+            if (hit && hit[1] === 'edge:y') return { x: c[0]! + dx, y: c[1]! + dy, hit };
+            if (hit && hit[1] === 'y' && !any) any = { x: c[0]! + dx, y: c[1]! + dy, hit };
+        }
+        return any;
     }, [s] as const);
     edge.hit = found;
     if (found) {
