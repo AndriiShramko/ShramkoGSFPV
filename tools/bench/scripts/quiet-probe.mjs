@@ -71,6 +71,7 @@ const HOOKS = () => {
     if (document.documentElement) watch(); else document.addEventListener('DOMContentLoaded', watch);
 };
 const QUOTE = process.env.QUOTE === '1';
+const KI = process.env.KI === '1';
 const SET_PREFS = ([reader, narrator]) => {
     for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -143,12 +144,21 @@ try {
     }
     console.log('course', out.courseReady, 'hum', out.firstHum, out.humTarget);
     save();
+    if (KI) {
+        // lane quiet2 N1: K (the key help) and I (the status) asked by the pilot are spoken in every setting
+        out.ki = [];
+        for (const k of ['KeyK', 'KeyI']) {
+            out.ki.push({ key: k, t: +((Date.now() - t0) / 1000).toFixed(2) });
+            await page.keyboard.press(k);
+            await sample(page, t0, 6000, k);
+        }
+    }
     if (QUOTE) {
-        // Q4: the narrator key twice in the flight (off then on when it starts on; on then off when it starts off)
+        // Q4, lane quiet2 N2: the narrator key (Shift+V) twice in the flight (off then on when it starts on; on then off when it starts off)
         out.quote = [];
         for (let i = 0; i < 2; i++) {
             out.quote.push(+((Date.now() - t0) / 1000).toFixed(2));
-            await page.keyboard.press('Quote');
+            await page.keyboard.press('Shift+KeyV');
             await sample(page, t0, 4000, 'quote' + (i + 1));
         }
     }

@@ -464,6 +464,37 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   a6-reference (keymap.ts changed, an input file); browser proof stage (Shift+V both ways, K and I voiced with the narrator off,
   #ui aria-live off in a quiet flight, the GPU hint quiet) on the release build, Wroclaw and Tunis.
 
+### Status (lane quiet2, stage W2-prove)
+- [x] W2.0 Q7 built first (c719a4ab, see N6 Q7 above). Release build of c719a4ab exit 0 (quiet2/w2-build.log); walls stand-in
+  (U:/Temp/gsfpv-train2/walls/release, 9 scans and manifest) copied into dist/walls after the exit; serve-csp 5760 (stopped).
+- [x] W2.1 quiet-probe.mjs: the narrator key is Shift+KeyV (QUOTE=1), new KI=1 presses K then I. Render off, no lock.
+  Wroclaw 70b50d42 narrator off (quiet2/w2-wro-off.json): the craft answers KeyW at 0.57 s after Backslash (speed over 0.5 m/s);
+  course ready 16.05 s after Shift+G, the hum of gate 1 and the cue target.checkpoint in the same sample (0 s apart); 0 lines voiced
+  from the switch on until K (only the engine's empty warm-up at 0.04 s). K at 39.44 s: the 14 lines of the key help voiced (N1).
+  Shift+V at 51.67 s: "Narrator on." voiced at 51.68 s. Tunis 887f27aa off (w2-tun-off.json): KeyW at 0.66 s, course 6.68 s, hum
+  and checkpoint in the same sample, 0 voiced until K, K voiced. 0 page errors in both.
+- [ ] Found in W2.1, not fixed (measured, cause a guess): (a) I pressed 6 s after K said "Back to the flight." (Wroclaw 45.55 s,
+  Tunis 36.15 s), not the status: K's key help seems to stay open as a menu and I closes it; I alone after the help is gone was
+  not run. Suspect apps/fly/src/sonic/feature.ts (KeyHelp and the I handler). (b) #ui got text announced while quiet: 8 lines at
+  0.13 s (the HUD's DISARMED, ANGLE, volts before the first 250 ms sync of live-quiet.ts; a guess: sync once at the switch on) and
+  244 (Tunis) / 222 (Wroclaw) during the K help (bridge.paused makes quietFlight false while the help is open, by design the menus
+  keep their words; the HUD text in #ui is then read too). Suspect apps/fly/src/sonic/feature.ts liveTimer and entry.ts quietFlight.
+- [ ] gates.py --only vitest,architecture,i18n,b18 on the W2 tree: architecture, i18n, b18 PASS; vitest FAIL 1 of 5035:
+  tools/bench/test/sonic-optin.test.ts "K in the mode ... Escape N B Z I G R T U L" pins the K list of caps and does not follow N2's
+  Shift+V (from W1 cb5e9272, gates were not run in W1). Fix: update that pinned list to the received one (Shift+V in place of the
+  old cap), then re-run the gates (logs U:/Temp/gsfpv-gates-20261115-173456).
+- [ ] Left of W2 (in this order): sonic-optin fix and gates; findings (a) and (b) above; (1) the ear pilot flies the course to its end
+  at 5 m/s with the narrator off and lists the cues of a passed gate and of the finish: sonic-int-review.ts r11 has no narrator
+  switch yet (add Z5_NARRATOR=off to prefsDoc, pass a cue set to steerByHum, count window.__utt after the switch on); (2) missed
+  gate and wrong way with the narrator off; (5) READER=1 with the narrator on (lane quiet measured no wait before: 0.56 s);
+  (6) a lesson of the list with the narrator off (r12 with Z5_NARRATOR=off; and left half way with X); (7) the hint once
+  (r11 narrator on: sonic.say.narratorTip once; a second course not in the browser); (8) r9, r11 Wroclaw Shift+G and Tunis, r12;
+  (9) ?sonic=scan in three settings; accept-fly B6 B7 B9 to B16; pause-over-course-probe; a6-reference (keymap.ts changed in W1);
+  the two pictures quiet-settings.png and quiet-captions.png with the caption rectangles at 1920x1080, 1280x720, 844x390;
+  'What the owner does'; For the lead (package pin 293ebae on train5, unchanged in W2; files outside apps/fly/src/sonic changed
+  in W1 and W2: tools/bench tests and scripts, packages/prefs keymap.ts, doc.ts, store.ts, the four fly locales, this file).
+- Not verified: nothing was heard by a human ear; no real screen reader; es, pl, ru texts not checked by a native speaker.
+
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
 - The craft answers the stick at once: KeyW held from the Backslash press, speed over 0.5 m/s at 0.56 s; the runner's phase is
@@ -495,6 +526,9 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   tools/bench: 0 errors in the two tools).
 
 ## Cost notes
+- 2026-11-15 W2 (quiet2): Q7 had to be built before the proof (6 replies, mostly Edit's read-before-edit); the stage's proof list
+  (9 items, 2 pictures, 5 probes) does not fit 30 replies with one worker: one stage per 2 or 3 items, and r11 with a narrator switch
+  ready before the stage, would have made it fit.
 - 2026-11-15 V1: most replies went to finding the pieces for a Node scan flight (spawn, course worker steps, the runner options,
   the submodule standing at an old commit); a short agent-map line on "fly a scan course in Node" (sonic-speed-measure.ts) would
   have saved about 8 replies. The flights themselves are cheap (2 to 21 s each).
