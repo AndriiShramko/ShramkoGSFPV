@@ -399,6 +399,38 @@ describe('the wrapper on the engine\'s choice of detail', () => {
         v.dispose();
     });
 
+    // review 2026-11-15: the wrapper stays on the engine's class when the streamed scan is gone (a scan in one file next, or
+    // the gap of a scan change); nothing chooses through it then, so nothing may be asked and it is not at work
+    it('with the streamed scan gone it asks nothing and is not at work; a streamed scan back, it works again', () => {
+        const inst = new FakeInstance(NODES);
+        const { app, world } = fakeApp(inst);
+        const cam = fakeCamera();
+        const v = new ViewLod(app, cam, params);
+        v.tick(0);
+        inst.evaluateNodeDistances(cam, {});
+        expect(v.active).toBe(true);
+        world._octreeInstances.clear();
+        // the view turns far past the refresh angle, for a second of frames
+        for (let i = 1; i <= 20; i++) {
+            cam.yaw(i * 9);
+            v.tick(i * 60);
+        }
+        expect(world.marked).toBe(0);
+        expect(world._lodUpdateRequested).toBe(false);
+        expect(v.active).toBe(false);
+        expect(v.stats()).toMatchObject({ active: false, missing: [], failed: null, asked: 0 });
+        // the next streamed scan: at work again, and a turn past the refresh angle asks once more
+        const next = new FakeInstance(NODES);
+        world._octreeInstances.set(2, next);
+        v.tick(2000);
+        expect(v.active).toBe(true);
+        next.evaluateNodeDistances(cam, {});
+        cam.yaw(180 + params.refreshDeg + 1);
+        v.tick(2100);
+        expect(world.marked).toBe(1);
+        v.dispose();
+    });
+
     it('the factor comes from the scan\'s own multiplier: at 2 a node behind is 2 to the 3rd further, at the engine\'s 3 it is 27 times', () => {
         for (const [m, factor] of [[2, 8], [undefined, 27]] as const) {
             const inst = new FakeInstance(NODES);

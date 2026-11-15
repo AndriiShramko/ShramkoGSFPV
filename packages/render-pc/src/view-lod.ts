@@ -405,6 +405,14 @@ export class ViewLod {
     tick(nowMs: number): void {
         if (!this.enabled || this.failed) return;
         if (!this.install()) return;
+        // the wrapper stays on the engine's class after a streamed scan is gone (a scan in one file flown next, or the gap of
+        // a scan change): with no octree instance the engine never chooses through it, so the axis of the last choice would
+        // never move and a turned view would ask the engine for a full update every MIN_ASK_MS for nothing (review 2026-11-15)
+        if (!firstInstance(this.app)) {
+            this.evalAxis = this.evalRight = this.tickAxis = null;
+            this.evalLead = this.lead = this.turnDegS = 0;
+            return;
+        }
         const f = this.camera.forward;
         const axis: V3 = { x: f.x, y: f.y, z: f.z };
         if (this.tickAxis && nowMs > this.tickAt) {
@@ -545,9 +553,9 @@ export class ViewLod {
         this.counts = { inFrame: nIn, ring: nRing, out: nOut };
     }
 
-    /** The wrapper is on the engine's method, has not failed and is wanted. */
+    /** The wrapper is on the engine's method, has not failed, is wanted, and there is a streamed scan for it to work on. */
     get active(): boolean {
-        return !!this.hook && this.hook.owner === this && !this.failed && this.enabled;
+        return !!this.hook && this.hook.owner === this && !this.failed && this.enabled && firstInstance(this.app) !== null;
     }
 
     stats(): ViewLodStats {
