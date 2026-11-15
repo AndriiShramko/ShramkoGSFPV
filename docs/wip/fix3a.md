@@ -1521,6 +1521,18 @@ Logs U:/Temp/gsfpv-train3/mix/.
 - [x] Release build of b937b66c (mix/build.log): BUILD EXIT 0, 1934 files, sha256 16677500...; dist/walls copied from
       U:/Temp/gsfpv-train3/walls/release (10 scans). The probe commit after it changes only tools/bench (dist stays valid).
 
+- [x] Proof (1), pass 2 (release of b937b66c on 5784, render off, no lock; onecourse-probe now records a trace of the
+      course's next gate and the last life decision): run mix/onecourse-wro2 (exit 0): Shift+G by eye 32 gates, gates 1-2
+      flown (next 2), Backslash: course next 2, clock 'Gate 3 of 32', the hum's target g3, lines inPlaceIntroCourse and
+      lessonKeysFree, courseOffer said 0 times, stagePrims 0 (one gate set). Shift+G in the sound mode then a new course of
+      21 gates (X3), N a new one of 24, Backslash off keeps it; a fresh page without course: courseOffer 0, target null.
+      The first run (mix/onecourse-wro, exit 0, no trace yet) showed next 2 after the passes and next 0 with 'Fly through
+      START' 12 s after Backslash: not reproduced in run 2; cause not measured (a guess: the probe's held craft crashed
+      and the auto-respawn rewound to before gate 1; run 2's trace shows such crash rewinds while the course was built).
+- [x] Proof (4): d7-probe on Wroclaw at 5 m/s (mix/d7.log, exit 0): pass gate 1 counted; (a) gate behind said at 3.05 s,
+      then through; (b) gate behind at 2.76 s, then through; (d) no line; (c) 'You are flying back' at 3.08 s; lap ends
+      with 'Best lap! 1:52.03'.
+
 ## Left (M1, exact, in order; ports 5780-5799, logs U:/Temp/gsfpv-train3/mix/)
 1. Serve dist on 5784 (node tools/bench/scripts/serve-csp.mjs dist 5784). Proof (1): onecourse-probe.mjs
    http://localhost:5784/en mix/onecourse-wro.json U:/Temp/gsfpv-train3/shots 70b50d42 mix (render off, no lock): after
