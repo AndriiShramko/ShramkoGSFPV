@@ -1,0 +1,779 @@
+{
+  "name": "sonic-int-review-r11-live-tunis",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-15T09:58:21.854Z",
+    "gitHead": "a7f39528",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "https://gsfpv.flyreelstudio.eu",
+  "release": {
+    "sha": "a7f39528",
+    "sonic": "b05aeda",
+    "built": "2026-11-15T08:38:14.427Z"
+  },
+  "git": "a7f39528",
+  "seconds": 24,
+  "passed": 8,
+  "total": 8,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R11 887f27aa 5: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue",
+      "pass": true,
+      "value": {
+        "speed": 5,
+        "firstCue": {
+          "s": 0.838,
+          "cues": [
+            "safety.wall:front",
+            "safety.wall:front-right",
+            "safety.wall:front-left",
+            "safety.free:up",
+            "height.tone",
+            "room.bed"
+          ]
+        },
+        "firstLine": {
+          "s": 0.855,
+          "key": "lesson.scan-free.title"
+        },
+        "phases": [
+          "intro",
+          "flying"
+        ],
+        "lesson": "scan-free",
+        "walls": {
+          "voxelM": 0.05,
+          "builtin": false,
+          "scene": "887f27aa",
+          "scale": 1
+        },
+        "switchOn": {
+          "speedBefore": 6.92,
+          "speedAtFirstCue": 1.55,
+          "lives": [],
+          "livesAfterCue": [
+            {
+              "t": 10291,
+              "life": "crash"
+            }
+          ],
+          "atPress": {
+            "pos": [
+              1.93,
+              2.04,
+              3.51
+            ],
+            "vel": [
+              3.27,
+              0.08,
+              6.1
+            ],
+            "crashed": 0,
+            "armed": 1,
+            "tick": 3780
+          },
+          "atCue": {
+            "pos": [
+              4.69,
+              2.25,
+              7.26
+            ],
+            "vel": [
+              1.23,
+              -0.9,
+              0.31
+            ],
+            "crashed": 1,
+            "armed": 0,
+            "tick": 4648,
+            "ticksOverPageMs": 18
+          },
+          "openSide": {
+            "raysBefore": [
+              25.7,
+              11.1,
+              8.3,
+              26.8,
+              3,
+              1.5,
+              5.9,
+              7.6,
+              1.5,
+              1.3,
+              1.6,
+              9.5
+            ],
+            "raysAfter": [
+              8.2,
+              9.5,
+              7.6,
+              3.8,
+              5.7,
+              10.6,
+              1.8,
+              1.3,
+              1.3,
+              1.9,
+              17,
+              2.3
+            ],
+            "tubesBefore": [
+              2.3,
+              2.3,
+              7.9,
+              2.6,
+              2.5,
+              1.5,
+              2.9,
+              1.4,
+              1.1,
+              1.2,
+              1.2,
+              1.6
+            ],
+            "tubesAfter": [
+              7.6,
+              9,
+              2.7,
+              1.6,
+              1.5,
+              10.6,
+              1.2,
+              1.2,
+              1.1,
+              1.2,
+              15.5,
+              2.3
+            ],
+            "need": 6.9,
+            "ahead": 7.6,
+            "turnedS": 0.552
+          },
+          "freeAtPress": 3.7,
+          "speedJudged": false,
+          "noseRaysAtPress": [
+            "-0.5/0:4.4",
+            "-0.5/1:5",
+            "-0.5/2:5",
+            "0/1:5.4",
+            "0/2:5.8",
+            "0.5/0:3.7",
+            "0.5/1:5",
+            "0.5/2:6"
+          ],
+          "simEvents04": [],
+          "simEventsToCue": [
+            "disarm",
+            "crash"
+          ],
+          "spy": [
+            {
+              "t": 8518,
+              "call": "setLessonFlight",
+              "args": "[null]",
+              "result": "false"
+            },
+            {
+              "t": 10291,
+              "life": "crash"
+            }
+          ]
+        },
+        "offTakeoff": {
+          "v": 3.9694600524648984e-10,
+          "armed": 1,
+          "crashed": 0,
+          "paused": false,
+          "menu": false
+        },
+        "offOpenSide": {
+          "raysBefore": [
+            25.7,
+            11.1,
+            8.3,
+            26.7,
+            2.9,
+            1.6,
+            5.9,
+            7.6,
+            1.5,
+            1.3,
+            1.6,
+            9.5
+          ],
+          "raysAfter": [
+            8.3,
+            9.4,
+            23.8,
+            3.2,
+            6.1,
+            15.1,
+            3.6,
+            1.4,
+            1.3,
+            1.7,
+            10.6,
+            4.9
+          ],
+          "tubesBefore": [
+            2.3,
+            2.4,
+            7.9,
+            2.5,
+            2.5,
+            1.6,
+            2.7,
+            1.4,
+            1.1,
+            1.2,
+            1.2,
+            1.6
+          ],
+          "tubesAfter": [
+            7.5,
+            7.9,
+            2.7,
+            1.5,
+            1.7,
+            5.9,
+            1.3,
+            1.1,
+            1.1,
+            1.2,
+            2.1,
+            2.4
+          ],
+          "need": 6.9,
+          "ahead": 7.5,
+          "turnedS": 0.534
+        },
+        "off": {
+          "labelOn": "Switch off Fly by Sound\\",
+          "labelOff": "Fly by Sound here\\",
+          "moved": 0,
+          "dtS": 0.003,
+          "speedBefore": 2.28,
+          "speedAfter": 2.28,
+          "lessonAfter": null,
+          "lives": [],
+          "spy": [
+            {
+              "t": 20909,
+              "call": "setLessonFlight",
+              "args": "[null]",
+              "result": "false"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "R11 887f27aa 5: the switch on in the air starts no new life and keeps the speed (at least half where 12 m are free ahead at the press; W held)",
+      "pass": true,
+      "value": {
+        "speedBefore": 6.92,
+        "speedAtFirstCue": 1.55,
+        "lives": [],
+        "livesAfterCue": [
+          {
+            "t": 10291,
+            "life": "crash"
+          }
+        ],
+        "atPress": {
+          "pos": [
+            1.93,
+            2.04,
+            3.51
+          ],
+          "vel": [
+            3.27,
+            0.08,
+            6.1
+          ],
+          "crashed": 0,
+          "armed": 1,
+          "tick": 3780
+        },
+        "atCue": {
+          "pos": [
+            4.69,
+            2.25,
+            7.26
+          ],
+          "vel": [
+            1.23,
+            -0.9,
+            0.31
+          ],
+          "crashed": 1,
+          "armed": 0,
+          "tick": 4648,
+          "ticksOverPageMs": 18
+        },
+        "openSide": {
+          "raysBefore": [
+            25.7,
+            11.1,
+            8.3,
+            26.8,
+            3,
+            1.5,
+            5.9,
+            7.6,
+            1.5,
+            1.3,
+            1.6,
+            9.5
+          ],
+          "raysAfter": [
+            8.2,
+            9.5,
+            7.6,
+            3.8,
+            5.7,
+            10.6,
+            1.8,
+            1.3,
+            1.3,
+            1.9,
+            17,
+            2.3
+          ],
+          "tubesBefore": [
+            2.3,
+            2.3,
+            7.9,
+            2.6,
+            2.5,
+            1.5,
+            2.9,
+            1.4,
+            1.1,
+            1.2,
+            1.2,
+            1.6
+          ],
+          "tubesAfter": [
+            7.6,
+            9,
+            2.7,
+            1.6,
+            1.5,
+            10.6,
+            1.2,
+            1.2,
+            1.1,
+            1.2,
+            15.5,
+            2.3
+          ],
+          "need": 6.9,
+          "ahead": 7.6,
+          "turnedS": 0.552
+        },
+        "freeAtPress": 3.7,
+        "speedJudged": false,
+        "noseRaysAtPress": [
+          "-0.5/0:4.4",
+          "-0.5/1:5",
+          "-0.5/2:5",
+          "0/1:5.4",
+          "0/2:5.8",
+          "0.5/0:3.7",
+          "0.5/1:5",
+          "0.5/2:6"
+        ],
+        "simEvents04": [],
+        "simEventsToCue": [
+          "disarm",
+          "crash"
+        ],
+        "spy": [
+          {
+            "t": 8518,
+            "call": "setLessonFlight",
+            "args": "[null]",
+            "result": "false"
+          },
+          {
+            "t": 10291,
+            "life": "crash"
+          }
+        ],
+        "ownCrash": true
+      }
+    },
+    {
+      "name": "R11 887f27aa 5: the pause item says \"Switch off Fly by Sound\" while the mode is on",
+      "pass": true,
+      "value": {
+        "labelOn": "Switch off Fly by Sound\\",
+        "labelOff": "Fly by Sound here\\",
+        "moved": 0,
+        "dtS": 0.003,
+        "speedBefore": 2.28,
+        "speedAfter": 2.28,
+        "lessonAfter": null,
+        "lives": [],
+        "spy": [
+          {
+            "t": 20909,
+            "call": "setLessonFlight",
+            "args": "[null]",
+            "result": "false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "R11 887f27aa 5: Backslash switches it off where the craft is (moved under 0.1 m beyond its own travel)",
+      "pass": true,
+      "value": {
+        "labelOn": "Switch off Fly by Sound\\",
+        "labelOff": "Fly by Sound here\\",
+        "moved": 0,
+        "dtS": 0.003,
+        "speedBefore": 2.28,
+        "speedAfter": 2.28,
+        "lessonAfter": null,
+        "lives": [],
+        "spy": [
+          {
+            "t": 20909,
+            "call": "setLessonFlight",
+            "args": "[null]",
+            "result": "false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "R11 887f27aa 5: the speed is kept on the switch off (at least half; the craft was moving)",
+      "pass": true,
+      "value": {
+        "labelOn": "Switch off Fly by Sound\\",
+        "labelOff": "Fly by Sound here\\",
+        "moved": 0,
+        "dtS": 0.003,
+        "speedBefore": 2.28,
+        "speedAfter": 2.28,
+        "lessonAfter": null,
+        "lives": [],
+        "spy": [
+          {
+            "t": 20909,
+            "call": "setLessonFlight",
+            "args": "[null]",
+            "result": "false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "R11 887f27aa 5: the switch off starts no new life",
+      "pass": true,
+      "value": [
+        {
+          "t": 20909,
+          "call": "setLessonFlight",
+          "args": "[null]",
+          "result": "false"
+        }
+      ]
+    },
+    {
+      "name": "R11 887f27aa 5: after the switch off no lesson runs and the item says \"Fly by Sound here\"",
+      "pass": true,
+      "value": {
+        "labelOn": "Switch off Fly by Sound\\",
+        "labelOff": "Fly by Sound here\\",
+        "moved": 0,
+        "dtS": 0.003,
+        "speedBefore": 2.28,
+        "speedAfter": 2.28,
+        "lessonAfter": null,
+        "lives": [],
+        "spy": [
+          {
+            "t": 20909,
+            "call": "setLessonFlight",
+            "args": "[null]",
+            "result": "false"
+          }
+        ]
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r11": {
+      "scene": "887f27aa",
+      "walls": "as served",
+      "runs": [
+        {
+          "speed": 5,
+          "firstCue": {
+            "s": 0.838,
+            "cues": [
+              "safety.wall:front",
+              "safety.wall:front-right",
+              "safety.wall:front-left",
+              "safety.free:up",
+              "height.tone",
+              "room.bed"
+            ]
+          },
+          "firstLine": {
+            "s": 0.855,
+            "key": "lesson.scan-free.title"
+          },
+          "phases": [
+            "intro",
+            "flying"
+          ],
+          "lesson": "scan-free",
+          "walls": {
+            "voxelM": 0.05,
+            "builtin": false,
+            "scene": "887f27aa",
+            "scale": 1
+          },
+          "switchOn": {
+            "speedBefore": 6.92,
+            "speedAtFirstCue": 1.55,
+            "lives": [],
+            "livesAfterCue": [
+              {
+                "t": 10291,
+                "life": "crash"
+              }
+            ],
+            "atPress": {
+              "pos": [
+                1.93,
+                2.04,
+                3.51
+              ],
+              "vel": [
+                3.27,
+                0.08,
+                6.1
+              ],
+              "crashed": 0,
+              "armed": 1,
+              "tick": 3780
+            },
+            "atCue": {
+              "pos": [
+                4.69,
+                2.25,
+                7.26
+              ],
+              "vel": [
+                1.23,
+                -0.9,
+                0.31
+              ],
+              "crashed": 1,
+              "armed": 0,
+              "tick": 4648,
+              "ticksOverPageMs": 18
+            },
+            "openSide": {
+              "raysBefore": [
+                25.7,
+                11.1,
+                8.3,
+                26.8,
+                3,
+                1.5,
+                5.9,
+                7.6,
+                1.5,
+                1.3,
+                1.6,
+                9.5
+              ],
+              "raysAfter": [
+                8.2,
+                9.5,
+                7.6,
+                3.8,
+                5.7,
+                10.6,
+                1.8,
+                1.3,
+                1.3,
+                1.9,
+                17,
+                2.3
+              ],
+              "tubesBefore": [
+                2.3,
+                2.3,
+                7.9,
+                2.6,
+                2.5,
+                1.5,
+                2.9,
+                1.4,
+                1.1,
+                1.2,
+                1.2,
+                1.6
+              ],
+              "tubesAfter": [
+                7.6,
+                9,
+                2.7,
+                1.6,
+                1.5,
+                10.6,
+                1.2,
+                1.2,
+                1.1,
+                1.2,
+                15.5,
+                2.3
+              ],
+              "need": 6.9,
+              "ahead": 7.6,
+              "turnedS": 0.552
+            },
+            "freeAtPress": 3.7,
+            "speedJudged": false,
+            "noseRaysAtPress": [
+              "-0.5/0:4.4",
+              "-0.5/1:5",
+              "-0.5/2:5",
+              "0/1:5.4",
+              "0/2:5.8",
+              "0.5/0:3.7",
+              "0.5/1:5",
+              "0.5/2:6"
+            ],
+            "simEvents04": [],
+            "simEventsToCue": [
+              "disarm",
+              "crash"
+            ],
+            "spy": [
+              {
+                "t": 8518,
+                "call": "setLessonFlight",
+                "args": "[null]",
+                "result": "false"
+              },
+              {
+                "t": 10291,
+                "life": "crash"
+              }
+            ]
+          },
+          "offTakeoff": {
+            "v": 3.9694600524648984e-10,
+            "armed": 1,
+            "crashed": 0,
+            "paused": false,
+            "menu": false
+          },
+          "offOpenSide": {
+            "raysBefore": [
+              25.7,
+              11.1,
+              8.3,
+              26.7,
+              2.9,
+              1.6,
+              5.9,
+              7.6,
+              1.5,
+              1.3,
+              1.6,
+              9.5
+            ],
+            "raysAfter": [
+              8.3,
+              9.4,
+              23.8,
+              3.2,
+              6.1,
+              15.1,
+              3.6,
+              1.4,
+              1.3,
+              1.7,
+              10.6,
+              4.9
+            ],
+            "tubesBefore": [
+              2.3,
+              2.4,
+              7.9,
+              2.5,
+              2.5,
+              1.6,
+              2.7,
+              1.4,
+              1.1,
+              1.2,
+              1.2,
+              1.6
+            ],
+            "tubesAfter": [
+              7.5,
+              7.9,
+              2.7,
+              1.5,
+              1.7,
+              5.9,
+              1.3,
+              1.1,
+              1.1,
+              1.2,
+              2.1,
+              2.4
+            ],
+            "need": 6.9,
+            "ahead": 7.5,
+            "turnedS": 0.534
+          },
+          "off": {
+            "labelOn": "Switch off Fly by Sound\\",
+            "labelOff": "Fly by Sound here\\",
+            "moved": 0,
+            "dtS": 0.003,
+            "speedBefore": 2.28,
+            "speedAfter": 2.28,
+            "lessonAfter": null,
+            "lives": [],
+            "spy": [
+              {
+                "t": 20909,
+                "call": "setLessonFlight",
+                "args": "[null]",
+                "result": "false"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "problems": []
+}
