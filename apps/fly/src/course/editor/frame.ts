@@ -44,6 +44,21 @@ export function reframeAfterDrag(box: readonly [number, number, number, number] 
     return box[0] < mx || box[1] < my || box[2] > w - mx || box[3] > h - my;
 }
 
+/**
+ * Review EJ-2: E1 says 'no longer inside': the view frames the gate at a drag's end only when its box was inside the middle
+ * before the drag (`before`, taken when the drag began) and is outside after it. A pilot who flew the view close (the gate
+ * already past the middle) keeps his view after every nudge. Pure.
+ */
+export function reframeOnDragEnd(
+    before: readonly [number, number, number, number] | null,
+    after: readonly [number, number, number, number] | null,
+    w: number,
+    h: number,
+    share = REFRAME_SHARE
+): boolean {
+    return !reframeAfterDrag(before, w, h, share) && reframeAfterDrag(after, w, h, share);
+}
+
 export interface FrameIn {
     /** the gate's centre, flown frame */
     readonly centre: V3;

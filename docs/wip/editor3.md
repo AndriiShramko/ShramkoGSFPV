@@ -4,6 +4,26 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage fixes3 (train 3, 2026-11-15, review EJ-1 to EJ-5 of the J stages):
+- [x] F3.0 merge origin/main c9cbeedb (lead notes, docs only) 6fd7d272.
+- [x] F3.1 review fixes, one commit (the line below this list), test tools/bench/test/editor3-fixes3.test.ts 7 tests, NEG OK
+  (7 of 7 fail on HEAD's four source files); editor3- tests 19 files 114 pass; tsc apps/fly 0, tools/bench 0.
+  - EJ-1 stands (read): hitAt() and measure() projected with whatever pose the camera entity held, onOwnPress applied the
+    edit view's first. Both now call apply() first (not while the drone flies). Browser proof: F3.2.
+  - EJ-2 stands (read): the end branch reframed with no 'before' and also for a drag that changed nothing. frame.ts
+    reframeOnDragEnd(before, after): framed only when the box was inside the middle 80 % at the drag's start and is outside
+    at its end, and only when the drag changed the gate (st). course.ts takes the box when dragBase is first set.
+  - EJ-3 stands (picture): the Size tool on a ring draws ONE line from the centre to +x (PlayCanvas ScaleGizmo draws each
+    axis from the centre to + only), not a pair; the line stayed hover-yellow after the drag. transform:end now clears the
+    gizmo hover (_hover()). A mirrored -x line is not built (see left).
+  - EJ-4 stands in part: the tint lives in course/view.ts (lane course4), not changed. arrow-share.ts nearShare: an arrow
+    nearer the edit eye than ARROW_NEAR_M = 6 m (design estimate) is drawn thinner in proportion to its distance, never under
+    ARROW_NEAR_MIN = 0.15 (estimate) of the third: at 2 m it is a ninth of its flight width.
+  - EJ-5 stands (read): shareArrows walked app.root every frame. It now walks only the children of app.root named
+    'course-stage' (STAGE_NAME, CourseStage's own root).
+- [ ] F3.2 release build, gizmo probe (presses at the gizmo's own _getSelection points) and the editor chain on Tunis
+  887f27aa and Wroclaw 70b50d42, pictures again; accept E3 only at >= 20 deg per 100 px for x, y and z.
+
 Stage J2-prove (train 3, 2026-11-15):
 - [x] J2.3 (pass 2) tracks-page reads the edit mode c8619281: SELECTED_PAINT is the yellow outline [255,235,64] (E4), 'E camera
   after Tab' waits 900 ms (0.4 s glide) and checks the new selection in view, a camera move only recorded. tsc tools/bench 0.

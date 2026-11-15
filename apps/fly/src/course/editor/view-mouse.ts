@@ -160,6 +160,9 @@ export class EditView {
             });
             h.on('transform:end', () => {
                 this.tag.hidden = true;
+                // review EJ-3: the dragged line back to its axis colour (PlayCanvas 2.23.2 TransformGizmo._hover() with no
+                // mesh clears the hover; the pointer resting on it after the drag kept it hover-yellow)
+                (h as unknown as { _hover?: (m?: unknown) => void })._hover?.();
                 if (this.quietEnd) return;
                 // the drag is over before the course takes it, so put() of the new gate places the stand-in again
                 this.dragging = false;
@@ -418,6 +421,8 @@ export class EditView {
      *  along its up, CSS px), the three rings' minor axes and each shown handle part's rectangle on the page. Read only. */
     measure(): Record<string, unknown> | null {
         if (!this.standPose) return null;
+        // review EJ-1: project with the edit view's camera, as onOwnPress does before it picks
+        if (!this.suspended) this.apply();
         const cc = this.host.camera.camera as CameraComponent;
         const rc = this.canvas.getBoundingClientRect();
         const c = this.stand.getPosition().clone();
@@ -791,6 +796,8 @@ export class EditView {
     /** For the page probes: which shape of the shown handles is under a page point (CSS px): [tool, axis] or null. Read only;
      * the probe walks out from the gate's centre with it to find the ring, the arrow or the box it then presses. */
     hitAt(x: number, y: number): [Tool, string] | null {
+        // review EJ-1: the same camera as onOwnPress (the entity may hold the drone's pose between frames)
+        if (!this.suspended) this.apply();
         const r = this.canvas.getBoundingClientRect();
         const h = this.active();
         if (!h.nodes.length) return null;

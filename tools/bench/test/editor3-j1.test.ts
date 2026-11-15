@@ -25,9 +25,10 @@ describe('E1: the view frames the gate again when a drag ends with the gate outs
     });
     it('course.ts asks it at the drag end only, with the view own box of the gate', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');
-        expect(c).toMatch(/const gb = view\?\.gateBox\(\);\s*if \(gb && reframeAfterDrag\(gb\.box, gb\.w, gb\.h\)\) frameSel\(\);/);
+        // review EJ-2: the box before the drag decides too (frame.ts reframeOnDragEnd, test editor3-fixes3)
+        expect(c).toMatch(/const gb = view\?\.gateBox\(\);[\s\S]{0,80}if \(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\) frameSel\(\);/);
         // after the drag's last redraw, not in the live branch (that one returns before)
-        const at = c.indexOf('reframeAfterDrag(gb.box');
+        const at = c.indexOf('reframeOnDragEnd(before, gb.box');
         expect(c.lastIndexOf('dragBase = null;', at)).toBeGreaterThan(c.lastIndexOf('if (!dragFrame) dragFrame', at));
     });
 });
@@ -105,6 +106,7 @@ describe('E5: the course arrows at a third of their width in the edit view', () 
     it('course.ts thins them in the edit view, not in its test flight, and puts them back after', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');
         expect(c).toMatch(/const thin = mode !== 'fly';/);
-        expect(c).toMatch(/shareArrows\(root, thin \? EDIT_ARROW_SHARE : 1\)/);
+        // review EJ-4, EJ-5: per course stage root, with the edit eye (test editor3-fixes3)
+        expect(c).toMatch(/shareArrows\(r, thin \? EDIT_ARROW_SHARE : 1, thin \?/);
     });
 });

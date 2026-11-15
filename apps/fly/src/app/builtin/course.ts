@@ -37,7 +37,7 @@ import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, 
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
-import { frameGate, reframeAfterDrag } from '../../course/editor/frame';
+import { frameGate, reframeOnDragEnd } from '../../course/editor/frame';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
@@ -55,7 +55,7 @@ import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 import { ADD_FIX_KEY, SAVE_FIX_KEY, firstWrong } from '../../course/editor/texts';
 import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
-import { shareArrows, type ScaleNode } from '../../course/editor/arrow-share';
+import { shareArrows, STAGE_NAME, type ScaleNode } from '../../course/editor/arrow-share';
 import { EDIT_ARROW_SHARE } from '../../course/editor/handle-look';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
@@ -141,6 +141,7 @@ export const course: Feature = {
         let crashHold = false;
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
+        let dragBox: readonly [number, number, number, number] | null = null;
         let dragFrame = 0;
         /** G2 measurement: the last Add gate click (ray, wall hit, the point, the selected gate, the flown transform) */
         let lastPlace: Record<string, unknown> | null = null;
@@ -669,15 +670,17 @@ export const course: Feature = {
         // J1 (E5): the course's arrows at a third of their width in the edit view (not in its test flight), full again after
         let arrowsThin = false;
         ctx.events.on('frame', () => {
-            const root = ctx.renderer.app.root as unknown as ScaleNode;
+            // review EJ-5: only the course stage's own roots (course/view.ts 'course-stage', children of the app's root), not
+            // the whole scene graph every frame; EJ-4: an arrow near the edit eye thinner still (arrow-share.ts nearShare)
+            const stages = (ctx.renderer.app.root as unknown as ScaleNode).children.filter((c) => c.name === STAGE_NAME);
             if (ed) {
                 const thin = mode !== 'fly';
-                if (thin || arrowsThin) shareArrows(root, thin ? EDIT_ARROW_SHARE : 1);
+                if (thin || arrowsThin) for (const r of stages) shareArrows(r, thin ? EDIT_ARROW_SHARE : 1, thin ? (edHook.view?.eye ?? null) : null);
                 arrowsThin = thin;
                 return editFrame();
             }
             if (arrowsThin) {
-                shareArrows(root, 1);
+                for (const r of stages) shareArrows(r, 1);
                 arrowsThin = false;
             }
             // TR-5: the scale feature (session.setTransform) and the walls switch fire no 'session' event
@@ -1020,6 +1023,8 @@ export const course: Feature = {
         /** lane editor3 E2: a handle drag; the gate follows live, the release is one undo step and asks the walls check */
         const dragTo = (p: FlownPose, end: boolean): void => {
             if (!ed) return;
+            // review EJ-2: the gate's drawn box when the drag began (E1 frames again only a gate that left the middle)
+            if (!dragBase) dragBox = view?.gateBox()?.box ?? null;
             const base = dragBase ?? ed;
             dragBase = base;
             const old = base.course.gates[base.selected];
@@ -1045,9 +1050,12 @@ export const course: Feature = {
             }
             showEd();
             // J1 (E1): a drag that left the gate outside the middle 80 % of the view (a size change, a long move) frames it
-            // again; never during the drag (this is its end)
+            // again; never during the drag (this is its end). Review EJ-2: only a drag that changed the gate and took its box
+            // out of the middle (a gate the pilot flew close to stays as he set the view)
             const gb = view?.gateBox();
-            if (gb && reframeAfterDrag(gb.box, gb.w, gb.h)) frameSel();
+            const before = dragBox;
+            dragBox = null;
+            if (st && gb && reframeOnDragEnd(before, gb.box, gb.w, gb.h)) frameSel();
             // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
             const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
             if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));
