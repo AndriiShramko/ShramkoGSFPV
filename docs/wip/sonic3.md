@@ -6,12 +6,20 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 ## Status
 
 Stage S3-yaw-lesson-and-proofs (train 3 wave 3, last finishing stage; head before it 3e5fd0ce, course3 18e6a876 merged):
-- [ ] Item 1, the lesson "turn slightly and listen": NOT built. The tree is clean without it (no lesson file, no locale line,
-  pin unchanged at package 5afa093). Reason: the speed lessons' pattern touches about 20 files in the package (orders of 26
-  lessons, counts in four public files, four TTS fixtures measured by measure-tts.ps1, schedule counts, the words check) plus
-  four simulator tests after the pin move and a browser flight; that did not fit beside items 2 to 5 in the 30 replies. The
-  full design (placement before hover-turn, start yaw 180, the 7 English lines, the rule a pilot uses, every file to touch)
-  is in docs/wip/sonic3-plan.md section 7.
+- [x] Item 1 (pass 2), the lesson "turn slightly and listen" (turn-listen), built as plan section 7 says: package train3
+  0af508a (local only): lessons/turn-listen.json (copy of hover-turn, start yaw 180, offsetXM -2, intro cue from the back),
+  order 6 in module 1 before hover-turn (26 later lessons up by one), paths.json full, library, catalog, 7 lines in en es pl
+  ru, lesson count 33 in README, AGENTS, CITATION, llms.txt. Spoken lengths measured with measure-tts.ps1 (2026-11-15, four
+  voices, 522 lines each; old values reproduced es pl ru 515 of 515, en 425 of 429, the 4 others kept as measured before):
+  new lines longer than the estimate en 5, es 2, pl 5, ru 7, none over the runner's wait; schedule counts 436/306 en, 522
+  es pl ru (longer 282, 381, 522). Words check (pnpm listen:words, SHRAMKO_LISTEN_PY): PASS, 580 lines each, 0 over the bound,
+  17 of 17 key lines. test/words.test.ts now compares with the writer's own rounding (pl turn-listen intro.2 scored 1/32, a
+  half of the fourth decimal, which toBeCloseTo 4 refused). Package suite 1348 passed plus words.test 18 of 18 after the
+  fix, tsc 0. Pin moved in f81bdb35; sonic-start and sonic-lesson-keys tests count 33 (51 of 51). Release f81bdb35, r12
+  Z5_LESSONS=turn-listen (lock taken by the probe, port 5833): opened with one Enter in 2.2 s, flown to its end and COUNTED
+  (Counted 3 of 3, attempt 3, 42 s, no fly.moving-on, no page error); end shot U:/Temp/gsfpv-train3/shots/
+  z5-turn-listen-end.png shows "Lesson 7 of 33", "Good. A small turn tells front from back." Log U:/Temp/gsfpv-train3/
+  sonic3/s3b/r12-turn-listen.log. Gates vitest, architecture, i18n, b18 PASS on f81bdb35 (U:/Temp/gsfpv-gates-20261115-080616).
 - [x] Item 2, audio proofs of the package, offline, no GPU lock (s3/proofs.sh, 26 s): all 9 pass on package train3 5afa093,
   evidence/audio-proofs-train3.json committed in the package as 38534c9 (local only). Train 3 cues, see Facts "S3 proofs".
 - [x] Item 3, mouse-free-probe --only rooms (render off, no lock): origin/main 78efaaaf (release built in a new worktree
@@ -24,9 +32,10 @@ Stage S3-yaw-lesson-and-proofs (train 3 wave 3, last finishing stage; head befor
   logs U:/Temp/gsfpv-gates-20261115-074355). Package suite on 38534c9: 69 files passed, 1 skipped; 1347 tests passed, 4
   skipped; package tsc 0.
 - [x] Item 5, "What the owner does" in For the lead (key by key, speeds per scan, what is not proven).
-- LEFT (in this order): the turn-listen lesson (plan section 7), then Tunis (S2 pass 3 LEFT 1: the sound course does not
-  follow a life the director put at the start, apps/fly/src/sonic/feature.ts 'life' handler), then Wroclaw render on (g24).
-  The package branch train3 (38534c9) must be pushed to the package origin before sonic3 merges (lanes do not push).
+- LEFT (in this order): Tunis (S2 pass 3 LEFT 1: no counted course; the sound course does not follow a life the director
+  put at the start, apps/fly/src/sonic/feature.ts 'life' handler), then Wroclaw render on (g24 missed twice; render off
+  counts), then an audio proof of the stream budget's open-way chime (package src/cues/budget.ts). The package branch train3
+  (0af508a) must be pushed to the package origin before sonic3 merges (lanes do not push).
 
 Stage S2-switch-and-speed (train 3 wave 3):
 - [x] Release build of 37e1547f; walls 70b50d42 v1 (10 cm) and d10c5638 v1 (5 cm) copied into dist/walls.
@@ -816,9 +825,13 @@ anything heard by a human ear (all passes are the ear pilot).
 - Z2 plan 4 quotes the consultant's 29 % quadrant error for a generic HRTF from the vault note as the ear pilot's confusion rate.
 
 ## Not verified
-- S3: the turn-listen lesson does not exist, so it was neither measured, word-checked nor flown. The budget's open-way chime
-  has no audio render proof. The rooms timeout cause (no rooms service locally) is a guess. No browser run in S3: the
-  speeds in "What the owner does" come from S2's runs on release f2f6589e (same code as 3e5fd0ce).
+- S3 pass 2: turn-listen was flown once by the probe pilot (steerByHum reads the hum's bearing from the page, so it does not
+  suffer the front/back confusion a human has; the run proves the lesson opens, passes and counts, not that the small-turn
+  rule teaches a human). Spanish, Polish and Russian lines were not heard by a native speaker, only by the words check. The
+  turn-listen lesson was not flown in es, pl or ru pages. The fast path is unchanged (turn-listen is on the full path only).
+- S3: the budget's open-way chime has no audio render proof. The rooms timeout cause (no rooms service locally) is a guess.
+  The speeds in "What the owner does" come from S2's runs on release f2f6589e (same code as 3e5fd0ce); no course run on
+  f81bdb35 (only the lesson changed).
 - Y1: why Tunis lost the speed on the switch on with no new life (a contact is suspected, not measured); speed lessons
   speed-1..4 not flown in a browser yet; Backslash to first cue times may include other lanes' load (not measured).
 - Z4 4b: nothing heard in a browser; the budget acts only in the free flight (scan-free), not in courses or lessons yet;
@@ -842,6 +855,11 @@ anything heard by a human ear (all passes are the ear pilot).
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 S3 pass 2: the lesson took about 30 replies even with the full file list of plan section 7; most went to the
+  pinned counts found one test run at a time (navigation, schedule, words rounding, two simulator tests) and to quoting
+  in inline Python edits. One Python script per repository for all count edits, written after one grep of every pinned
+  number, would have saved about eight replies.
 
 - 2026-11-15 S3: the most turns went to mapping what one new lesson touches (about 20 package files, four simulator tests);
   a stage for a new lesson alone, with that list given, would have finished it. The base build lost one run to the missing
