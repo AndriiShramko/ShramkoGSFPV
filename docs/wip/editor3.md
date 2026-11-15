@@ -29,8 +29,17 @@ Stage I1-gizmo (train 3, 2026-11-15):
   - Checks: tools/bench/test/editor3-i1.test.ts 10 tests pass; NEG OK (neg_control.py ref HEAD, view-mouse.ts course.ts
     view.ts keys.ts); editor3-*.test.ts 13 files 75 tests pass (editor3-h2look: the z cube is now always on); apps/fly and
     tools/bench tsc 0 errors.
-- [ ] I1.2 release build of the I1 tree, then before numbers (dist-before) and after numbers on Tunis 887f27aa and Wroclaw
-  70b50d42 (published-walls stand-in): eye distance, gate px, handle rects, ring minors.
+- [~] I1.2 release build of 9aabf0e2's tree started (U:/Temp/gsfpv-train3/editor3/i1/build-after.log, its last line
+  'exit N'; check it, rebuild if it is not 'exit 0'). Neither dist has walls/: copy the Wroclaw stand-in
+  U:/Temp/gsfpv-train2/walls/release/70b50d42 into dist/walls the way docs/wip/walls.md says before the Wroclaw run.
+  Then the probe (not written yet): tools/bench/src/editor3-gizmo.ts, built on editor3-look.ts open() (keyboard, Shift+G,
+  Shift+B, Tab) and sizeDrag(); it reads window.__gsfpvEditMeasure() (after) or, on dist-before (no measure hook), the eye
+  distance from __gsfpvEditView().cam.pos and .stand.pos. Before numbers: serve dist-before on 5806; after: dist on 5805.
+  How to get an edge-on ring in the after run: the y ring is edge-on when the eye is level with the gate's centre; after
+  the framing the eye is about d*sin(20 deg) above it, so tap Q until measure().rings[1] < 10, then __gsfpvEditHit finds
+  'edge:y' and a drag of 60 px across the line should give 30 deg (snap 15). Note for the numbers: at 1920x1080 with the
+  115 deg horizontal field the framing distance is about 1.7 gate sizes, so the wall fallback has only two distances
+  (that one and 1.5 sizes).
 - [ ] I1.3 browser proof (real mouse and keys, holds of at most 10 min): click select, Tab x3, F after flying away, X arrow
   2 m, each ring 30 deg (rotation before and after), an edge-on ring, end cube and centre cube, undo each; six pictures.
 - [ ] I1.4 gates.py --only vitest,architecture,i18n,b18; status; commit.
@@ -1148,6 +1157,11 @@ button shows the table.
 12. Esc, Esc again leaves. Proven on both.
 
 ## Cost notes
+- I1-gizmo pass 1: about 34 replies, stopped before the browser part; the most went to finding where the handles, the
+  framing and the PlayCanvas gizmo sizes live (view-mouse.ts, course.ts showEd/aim, playcanvas.mjs 121246 _updateScale and
+  setTheme) and to one heredoc that broke (edits now go through a Python file written with Write). Cheaper: a map entry in
+  docs/agent-map.md for the edit view (view-mouse.ts = handles, course.ts showEd = selection and camera), and the next
+  worker writes the probe first thing while the build runs.
 - H3-prove pass 2: about 31 replies; the most went to reading the 900-line probe in slices before the edits; the one
   background chain (two scene holds plus gates) cost only two waits. A step list of the probe in the status file would have
   saved three reads.
