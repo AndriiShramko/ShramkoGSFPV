@@ -929,10 +929,12 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         const hv = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir ?? null;
         buf.push({ t: now, pos: p.pos, yaw: p.yaw ?? 0, target: p.target?.id ?? null, gate: p.target?.pos ?? null, aim: p.aim?.pos ?? null, hum: hv ? [...hv] : null, keys: [...held], speed });
         while (buf.length > 0 && buf[0]!.t < now - 4000) buf.shift();
-        if (p.target) lastGate = p.target;
+        // sonic3 S1 pass 3: the record names the gate flown at before the attempt ended (the target of the sample before; the
+        // new attempt's target is already gate 1 at the phase change, so pass 2's records named g1 for a miss at g10)
         if (stats && prevPhase === 'flying' && p.phase !== 'flying' && p.phase !== 'passed') {
-            (stats.misses ??= []).push({ s: Math.round((now - t0) / 1000), attempt: p.attempt, phase: p.phase, line: p.lastLine, ...missRecord(buf, lastGate, p.lastLine) });
+            (stats.misses ??= []).push({ s: Math.round((now - t0) / 1000), attempt: p.attempt, phase: p.phase, line: p.lastLine, ...missRecord(buf.slice(0, -1), lastGate, p.lastLine) });
         }
+        if (p.target) lastGate = p.target;
         prevPhase = p.phase;
         for (const c of cueSeen ? (p.cues ?? []) : []) cueSeen?.add(c);
         if (trail && Date.now() - lastTrail >= 2000) {
