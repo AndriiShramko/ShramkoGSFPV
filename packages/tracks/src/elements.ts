@@ -130,7 +130,7 @@ export interface Composed {
     /** elements drawn and placed per kind (the walk's gates 2 to n-1, or n for a closed course) */
     readonly drawn: Record<ElementKind, number>;
     readonly placed: Record<ElementKind, number>;
-    /** drawn elements refused by their space test and by their proof */
+    /** tries refused by their space test and by their proof (an owed element is tried again at later gates) */
     readonly noSpace: Record<ElementKind, number>;
     readonly noProof: Record<ElementKind, number>;
 }
@@ -145,58 +145,89 @@ export function composeElements(c: ComposeInput): Composed {
     const n = c.gates.length;
     let total = n;
     let prev = c.start;
+    // course5 Z3: a refused element is drawn again at a later gate. `owed` holds the drawn elements not yet placed, oldest
+    // first; a gate tries them in that order (each kind once). A gate where none fits stays single: a single over the
+    // design, so the next drawn single gives its gate to an owed element instead. Where nothing is refused the course is
+    // the one of C4 (same seed, same course). Wroclaw 70b50d42 seeds 1-10 before: tunnel 0.09, flat 0.04 of the drawn
+    // elements against 0.2 and 0.15 (gate-place-audit --elements, docs/wip/fix3a.md C4 pass 2).
+    const owed: ElementKind[] = [];
+    let spare = 0;
     for (let i = 0; i < n; i++) {
         const g = c.gates[i]!;
         const u = c.rng.next();
         const len = TUNNEL_MIN + c.rng.int(0, TUNNEL_MAX - TUNNEL_MIN);
         const fixed = i === 0 || (!c.closed && i === n - 1);
-        const kind: ElementKind = fixed ? 'single' : elementOf(u);
-        if (!fixed) drawn[kind]++;
         const P = c.toFlown(g.pos as unknown as Vec3);
         const next = i + 1 < n ? c.toFlown(c.gates[i + 1]!.pos as unknown as Vec3) : c.closed ? c.toFlown(c.gates[0]!.pos as unknown as Vec3) : null;
         const axis = c.axisOf(g);
         const half = halfOuter(g.shape) * c.s;
-        let el: TrackGate[] | null = null;
-        if (kind === 'tunnel' && total + len - 1 <= c.maxGates) {
-            const gap = TUNNEL_GAP_M * c.k;
-            if (tunnelFits(c.sweeper, P, axis, len, gap, half, c.marginM)) {
-                el = [];
-                for (let j = 0; j < len; j++) el.push({ ...g, pos: c.toScan(add(P, mul(axis, (j - (len - 1) / 2) * gap))) as TrackGate['pos'] });
+        /** the element `kind` at this gate, or null where its space test fails */
+        const build = (kind: ElementKind): TrackGate[] | null => {
+            if (kind === 'tunnel' && total + len - 1 <= c.maxGates) {
+                const gap = TUNNEL_GAP_M * c.k;
+                if (!tunnelFits(c.sweeper, P, axis, len, gap, half, c.marginM)) return null;
+                const row: TrackGate[] = [];
+                for (let j = 0; j < len; j++) row.push({ ...g, pos: c.toScan(add(P, mul(axis, (j - (len - 1) / 2) * gap))) as TrackGate['pos'] });
+                return row;
             }
-        } else if (kind === 'square') {
-            const sq = squareOf(g.shape);
-            if (squareFits(c.sweeper, P, axis, halfOuter(sq) * c.s, c.marginM)) el = [{ ...g, shape: sq as TrackGate['shape'] }];
-        } else if (kind === 'flat' && total + 1 <= c.maxGates) {
-            const sq = squareOf(g.shape);
-            const hs = halfOuter(sq) * c.s;
-            const F = add(add(P, mul(axis, FLAT_FWD_M * c.k)), [0, FLAT_RISE_M * c.k, 0]);
-            const legUp = Math.sqrt(FLAT_FWD_M * FLAT_FWD_M + FLAT_RISE_M * FLAT_RISE_M) * c.k;
-            if (flatFits(c.sweeper, P, F, axis, hs, 0.4 * legUp + c.marginM, c.marginM)) el = [g, { ...g, shape: sq as TrackGate['shape'], pos: c.toScan(F) as TrackGate['pos'], quat: qmul(g.quat as unknown as Quat, PITCH_UP) as TrackGate['quat'] }];
-        } else if (kind === 'cube') {
-            const sq = squareOf(g.shape);
-            if (cubeFits(c.sweeper, P, axis, halfOuter(sq) * c.s, c.marginM)) {
-                el = [{ ...g, shape: { kind: 'cube-frame', side: sq.side, bar: sq.bar } as TrackGate['shape'] }];
+            if (kind === 'square') {
+                const sq = squareOf(g.shape);
+                return squareFits(c.sweeper, P, axis, halfOuter(sq) * c.s, c.marginM) ? [{ ...g, shape: sq as TrackGate['shape'] }] : null;
             }
-        }
-        if (!el && kind !== 'single' && !fixed) noSpace[kind]++;
-        if (el && el.length > 0) {
+            if (kind === 'flat' && total + 1 <= c.maxGates) {
+                const sq = squareOf(g.shape);
+                const hs = halfOuter(sq) * c.s;
+                const F = add(add(P, mul(axis, FLAT_FWD_M * c.k)), [0, FLAT_RISE_M * c.k, 0]);
+                const legUp = Math.sqrt(FLAT_FWD_M * FLAT_FWD_M + FLAT_RISE_M * FLAT_RISE_M) * c.k;
+                if (!flatFits(c.sweeper, P, F, axis, hs, 0.4 * legUp + c.marginM, c.marginM)) return null;
+                return [g, { ...g, shape: sq as TrackGate['shape'], pos: c.toScan(F) as TrackGate['pos'], quat: qmul(g.quat as unknown as Quat, PITCH_UP) as TrackGate['quat'] }];
+            }
+            if (kind === 'cube') {
+                const sq = squareOf(g.shape);
+                return cubeFits(c.sweeper, P, axis, halfOuter(sq) * c.s, c.marginM) ? [{ ...g, shape: { kind: 'cube-frame', side: sq.side, bar: sq.bar } as TrackGate['shape'] }] : null;
+            }
+            return null;
+        };
+        /** the element proven with its neighbours */
+        const proven = (el: TrackGate[]): boolean => {
             const first = c.toFlown(el[0]!.pos as unknown as Vec3);
             const last = c.toFlown(el[el.length - 1]!.pos as unknown as Vec3);
             const tail = next && i + 1 < n ? [c.gates[i + 1]!] : [];
-            const ok = c.legWell(prev, first) && (!next || c.legWell(last, next)) && c.proven([...el, ...tail], prev);
-            if (!ok) {
-                noProof[kind]++;
-                el = null;
+            return c.legWell(prev, first) && (!next || c.legWell(last, next)) && c.proven([...el, ...tail], prev);
+        };
+        let put: TrackGate[] | null = null;
+        if (!fixed) {
+            const d = elementOf(u);
+            drawn[d]++;
+            if (d === 'single' && spare === 0) placed.single++;
+            else {
+                if (d === 'single') spare--;
+                else owed.push(d);
+                const tried = new Set<ElementKind>();
+                for (const kind of owed) {
+                    if (tried.has(kind)) continue;
+                    tried.add(kind);
+                    const el = build(kind);
+                    if (!el) {
+                        noSpace[kind]++;
+                        continue;
+                    }
+                    if (!proven(el)) {
+                        noProof[kind]++;
+                        continue;
+                    }
+                    put = el;
+                    placed[kind]++;
+                    owed.splice(owed.indexOf(kind), 1);
+                    break;
+                }
+                if (!put) spare++;
             }
         }
-        if (el && kind !== 'single') {
-            placed[kind]++;
-            total += el.length - 1;
-            out.push(...el);
-        } else {
-            if (!fixed) placed.single += kind === 'single' ? 1 : 0;
-            out.push(g);
-        }
+        if (put) {
+            total += put.length - 1;
+            out.push(...put);
+        } else out.push(g);
         prev = c.toFlown(out[out.length - 1]!.pos as unknown as Vec3);
     }
     return { gates: out.map((g, i) => ({ ...g, id: `g${i + 1}` })), drawn, placed, noSpace, noProof };

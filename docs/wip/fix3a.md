@@ -1319,3 +1319,18 @@ nearest candidate from the start (added now: nearM, nearUp) would have cut it to
 Cost (course5 Z2-scans pass 2): about 30 replies; most went to the A1 unit world (three tries of a synthetic conifer street,
 none made the old generator put a gate with a blocked tube). Measuring the blocked tubes on the real Wroclaw seed first
 and building the unit world from that gate would have saved them.
+
+## Status Z3-elements (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z3/.
+- [x] Release build of 0ffe12fa: BUILD EXIT 0, 1933 files (z3/build.log). It does not hold the redraw below: rebuild.
+- [~] (1) A refused element is drawn again at a later gate (packages/tracks/src/elements.ts composeElements: the drawn
+      elements not yet placed are owed, oldest first, and every gate tries them; a gate where none fits stays single and
+      the next drawn single gives its gate to an owed element; where nothing is refused the course is the one of C4).
+      Generator version '.e2' (A4: another course for a seed, another best-lap key). Test elements.test.ts 'drawn again'
+      (30 gates, no room above the first 15: placed shares within 0.03 of the design over 200 seeds) NEG OK against
+      elements.ts of 0ffe12fa (single 0.32 against 0.25). elements + tracks-review: 16 passed. Table on Wroclaw seeds
+      1-20 and rooms 39e63ce9, 7a475d38 seeds 1-10 running (z3/elem-wro.log, z3/elem-rooms.log).
+- [~] (2) Keyboard pilot: tools/bench/scripts/course-keys-probe.mjs (real key events of the game scheme, reads the craft's
+      place only; every gate in order; counted per element; the climb speed over the flat square). Not run yet.
+- [ ] (3) tunnel picture along the row's axis; (4) the chain; pictures; 'What the owner does'.

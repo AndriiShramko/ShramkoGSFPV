@@ -297,7 +297,8 @@ export function startNearSpawn(
  * that was not turned keeps the plain version, and its best laps keep their keys.
  */
 export function generatorVersion(quality: boolean, startShift: number, elements = false): string {
-    const v = (quality ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION) + (elements ? '.e1' : '');
+    // course5 Z3: '.e2' since a refused element is drawn again at a later gate (another course than '.e1' for a seed)
+    const v = (quality ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION) + (elements ? '.e2' : '');
     return startShift > 0 ? `${v}.s${startShift}` : v;
 }
 

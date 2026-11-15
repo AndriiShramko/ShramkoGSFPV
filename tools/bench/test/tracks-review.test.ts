@@ -154,8 +154,8 @@ describe('TR-10: the best lap key names the scene, the walls and the scale', () 
             const plain = generateCourse(free, walls, base);
             const asked = generateCourse(free, walls, { ...base, elements: true });
             const changed = asked.gates.length !== plain.gates.length || asked.gates.some((g, i) => g.shape.kind !== plain.gates[i]?.shape.kind);
-            expect(/\.e1/.test(String(asked.generator?.version))).toBe(changed);
-            expect(String(plain.generator?.version)).not.toContain('.e1');
+            expect(/\.e\d/.test(String(asked.generator?.version))).toBe(changed);
+            expect(String(plain.generator?.version)).not.toMatch(/\.e\d/);
         }
     });
 });

@@ -12,9 +12,9 @@ const SCENE = { id: '0000aaaa', version: 1 };
 const CREATED = '2026-11-15T00:00:00.000Z';
 const passAxis = (g: TrackGate): Vec3 => quatRotate(g.quat as never, [0, 0, -1]) as Vec3;
 
-/** ten rings in a line along -z, 4 m apart, at 1.6 m: the walk's kind of course */
-function line(): TrackGate[] {
-    return Array.from({ length: 10 }, (_, i) => ({ id: `g${i + 1}`, shape: { kind: 'ring', diameter: 1.2, tube: 0.08 }, pos: [0, 1.6, -4 * (i + 1)], quat: yawQuatStep(0), direction: 'forward' }) as unknown as TrackGate);
+/** ten (or n) rings in a line along -z, 4 m apart, at 1.6 m: the walk's kind of course */
+function line(n = 10): TrackGate[] {
+    return Array.from({ length: n }, (_, i) =>({ id: `g${i + 1}`, shape: { kind: 'ring', diameter: 1.2, tube: 0.08 }, pos: [0, 1.6, -4 * (i + 1)], quat: yawQuatStep(0), direction: 'forward' }) as unknown as TrackGate);
 }
 
 function input(seed: number, free: boolean, proven = true): ComposeInput {
@@ -39,6 +39,25 @@ describe('course4 C4: competition elements', () => {
         }
         expect(n).toBe(200 * 8); // gate 1 (START) and the last gate of an open course (FINISH) are not drawn
         for (const [k, share] of ELEMENT_SHARES) expect(Math.abs(drawn[k] / n - share), k).toBeLessThan(0.04);
+    });
+
+    it('course5 Z3: a refused element is drawn again at a later gate, so the placed shares keep the design', () => {
+        // 30 gates; the first 15 have no room above them (a vertical sweep there is refused): no flat square fits there.
+        // Before Z3 such a flat square stayed a ring, and the placed flat share fell to about half of the design.
+        const placed: Record<ElementKind, number> = { single: 0, square: 0, tunnel: 0, flat: 0, cube: 0 };
+        let n = 0;
+        for (let seed = 1; seed <= 200; seed++) {
+            const base = input(seed, true);
+            const c = composeElements({
+                ...base, gates: line(30),
+                sweeper: { free: (a: Vec3, b: Vec3) => !(Math.abs(a[1] - b[1]) > 2 && a[2] > -60) }
+            });
+            n += 28;
+            for (const k of ['square', 'tunnel', 'flat', 'cube'] as const) placed[k] += c.placed[k];
+            for (const g of c.gates) if (Math.abs(passAxis(g)[1]) > 0.9) expect(g.pos[2]).toBeLessThan(-60);
+        }
+        placed.single = n - placed.square - placed.tunnel - placed.flat - placed.cube;
+        for (const [k, share] of ELEMENT_SHARES) expect(Math.abs(placed[k] / n - share), `${k} ${placed[k] / n}`).toBeLessThan(0.03);
     });
 
     it('no element stands where its space test fails, nor where its proof fails', () => {
