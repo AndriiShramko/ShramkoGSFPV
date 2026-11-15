@@ -3,7 +3,10 @@
 // live region of its own (walls.ts bake-status): while the flight is quiet each of them is set to aria-live "off", and given back its
 // own value when it is not. The captions are outside #ui (captions.ts keeps their own setting), so K's and I's lines still reach them.
 
-const SAVED = 'data-sonic-live';
+import { LIVE_SAVED } from './entry-state';
+
+// lane quiet3 (M4): the same name as the shim's quietAtPress, so a region quieted at the Backslash press is taken over here
+const SAVED = LIVE_SAVED;
 
 /** What the sync needs of an element (a test passes a small fake). */
 export interface LiveElement {

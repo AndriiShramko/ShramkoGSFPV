@@ -159,14 +159,15 @@ describe('v13-int review K2: the captions stay clear of the panels under them', 
         for (const t of ['one', 'two', 'three']) add(t, 160);
         expect(seen(root)).toEqual(['three']);
         expect(bottomOf(root)).toBeLessThanOrEqual(394 - 8);
-        // still in the region (a screen reader reads it): only hidden from the eye
-        expect(root.children.map((l) => l.textContent)).toEqual(['two', 'three']);
+        // not read by a screen reader here (not live): only the line shown is kept (CAPTION_LINES 1, lane quiet3 M2)
+        expect(root.children.map((l) => l.textContent)).toEqual(['three']);
     });
 
-    it('English lines (two rows, 84 px) fit over it: the two newest shown (CAPTION_LINES, lane quiet2 N6)', async () => {
+    it('English lines (two rows, 84 px) fit over it: the newest shown alone (CAPTION_LINES 1, lane quiet3 M2)', async () => {
         const { root, add } = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
         for (const t of ['one', 'two', 'three']) add(t, 84);
-        expect(seen(root)).toEqual(['two', 'three']);
+        expect(seen(root)).toEqual(['three']);
+        expect(bottomOf(root)).toBe(92 + 84);
     });
 
     it('the newest line is never hidden, even when it alone reaches the panel', async () => {
@@ -175,23 +176,24 @@ describe('v13-int review K2: the captions stay clear of the panels under them', 
         expect(seen(root)).toEqual(['three']);
     });
 
-    it('control: a panel beside the region (the progress panel at the left edge, x 12 to 261) or a hidden one limits nothing: the two newest shown', async () => {
+    it('control: a panel beside the region (the progress panel at the left edge, x 12 to 261) or a hidden one limits nothing: the newest shown, in its own place', async () => {
         const beside = await page([{ left: 12, right: 261, top: 273, h: 198 }]);
         for (const t of ['one', 'two', 'three']) beside.add(t, 160);
-        expect(seen(beside.root)).toEqual(['two', 'three']);
+        expect(seen(beside.root)).toEqual(['three']);
+        expect(bottomOf(beside.root)).toBe(92 + 160);
         const hidden = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
         (hidden.panels[0] as LayoutEl).hidden = true;
         for (const t of ['one', 'two', 'three']) hidden.add(t, 160);
-        expect(seen(hidden.root)).toEqual(['two', 'three']);
+        expect(seen(hidden.root)).toEqual(['three']);
     });
 
-    it('the page grows (refit on resize): a line hidden in a short window comes back when there is room', async () => {
+    it('the page grows (refit on resize): the newest line stays shown, and alone (lane quiet3 M2: one line of two rows at most)', async () => {
         const { c, root, panels, add } = await page([{ left: 900, right: 1268, top: 394, h: 234 }]);
         for (const t of ['one', 'two', 'three']) add(t, 160);
         expect(seen(root)).toEqual(['three']);
         (panels[0] as LayoutEl).box = { left: 900, right: 1268, top: 700 };
         c.refit();
-        expect(seen(root)).toEqual(['two', 'three']);
+        expect(seen(root)).toEqual(['three']);
     });
 });
 
@@ -200,10 +202,10 @@ describe('v13-int review K2: the captions stay clear of the panels under them', 
 // CAPTION_GAP_PX under its bottom. The clock here: 1280 x 720, x 560 to 720, from 120 px, 70 px tall (bottom 190).
 describe('lane quiet2 N6: at most two lines, never over the course\'s clock block', () => {
     const CLOCK = { left: 560, right: 720, top: 120, h: 70 };
-    it('three lines of one row: two shown, the region starts 8 px under the clock, no shown line meets it', async () => {
+    it('three lines of one row: the newest shown (lane quiet3 M2), the region starts 8 px under the clock, no shown line meets it', async () => {
         const { root, add } = await page([], 720, [CLOCK]);
         for (const t of ['one', 'two', 'three']) add(t, 50);
-        expect(seen(root)).toEqual(['two', 'three']);
+        expect(seen(root)).toEqual(['three']);
         expect(root.getBoundingClientRect().top).toBe(190 + 8);
         for (const l of root.children.filter((x) => !x.classes.has('sonic-sr-only'))) expect(l.getBoundingClientRect().top).toBeGreaterThanOrEqual(190 + 8);
     });
@@ -234,18 +236,18 @@ describe('v13-int review K2, part 2: the captions end 20 px over the view\'s cen
     it('hover-height\'s start at 1280 x 720 (three lines of two rows, 84 px each, from 92 px: 356 px): the oldest is hidden from the eye, the two newest end at 266 px, 20 px or more over the centre (360)', async () => {
         const { root, add } = await page([{ left: 12, right: 261, top: 273, h: 198 }], 720);
         for (const t of ['title', 'keys', 'intro']) add(t, 84);
-        expect(seen(root)).toEqual(['keys', 'intro']);
-        expect(bottomOf(root)).toBe(92 + 84 + 6 + 84);
+        expect(seen(root)).toEqual(['intro']);
+        expect(bottomOf(root)).toBe(92 + 84);
         expect(bottomOf(root)).toBeLessThanOrEqual(360 - 20);
         // not read by a screen reader here (not live): only the lines shown are kept (CAPTION_LINES)
-        expect(root.children.map((l) => l.textContent)).toEqual(['keys', 'intro']);
+        expect(root.children.map((l) => l.textContent)).toEqual(['intro']);
     });
 
     it('lines of one row (50 px) end at 198 px: the two newest shown', async () => {
         const { root, add } = await page([], 720);
         for (const t of ['one', 'two', 'three']) add(t, 50);
-        expect(seen(root)).toEqual(['two', 'three']);
-        expect(bottomOf(root)).toBe(92 + 50 + 6 + 50);
+        expect(seen(root)).toEqual(['three']);
+        expect(bottomOf(root)).toBe(92 + 50);
     });
 
     it('the newest line is never hidden, even when it alone ends under the centre', async () => {
@@ -260,13 +262,14 @@ describe('v13-int review K2, part 2: the captions end 20 px over the view\'s cen
         expect(seen(root)).toEqual(['intro']);
         (root.ownerDocument as { defaultView: { innerHeight: number } }).defaultView.innerHeight = 1000;
         c.refit();
-        expect(seen(root)).toEqual(['keys', 'intro']);
+        // lane quiet3 (M2): one line shown at most (CAPTION_LINES 1, two rows), so a taller window still shows the newest alone
+        expect(seen(root)).toEqual(['intro']);
     });
 
-    it('control: the same three lines on a page whose view has no height (no centre to keep): the two newest shown, ending at 266 px', async () => {
+    it('control: the same three lines on a page whose view has no height (no centre to keep): the newest shown, ending at 176 px', async () => {
         const { root, add } = await page([{ left: 12, right: 261, top: 273, h: 198 }]);
         for (const t of ['title', 'keys', 'intro']) add(t, 84);
-        expect(seen(root)).toEqual(['keys', 'intro']);
-        expect(bottomOf(root)).toBe(266);
+        expect(seen(root)).toEqual(['intro']);
+        expect(bottomOf(root)).toBe(92 + 84);
     });
 });

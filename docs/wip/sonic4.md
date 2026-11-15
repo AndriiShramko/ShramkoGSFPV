@@ -570,6 +570,28 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   into the package's main first.
 - Open decisions: N3 (the off sound is 'answer' no; a sound of its own needs a package change) and QW-7 (rows or entries).
 
+### Status (lane quiet3, stage X1-two-points, the lead's M1 to M4)
+- [x] X1.0 quiet-probe.mjs logs the Backslash press, the mode's install (the page hook __gsfpv.sonic appears) and quietFlight's three
+  inputs at both (m4 in its JSON), the aria-live changes of #ui, and with RECTS=1 the shown captions and .course-hud at 1920x1080,
+  1280x720, 844x390 after I. Script U:/Temp/gsfpv-train3/quiet3/run.sh (serve-csp 5761, render off, no lock, FLY_S=10).
+- [x] X1.1 M4 "before" measured on the release of db88e97c (same app code as 0b8a2414; quiet3/before-*.json): narrator off,
+  Wroclaw install +0.206 s, Tunis +0.273 s after the press. At the press: narrator false, host lesson null, paused false, mode not
+  installed, #ui polite; at the install: lesson scan-free, paused false, #ui off. Lines to #ui from the press to 10 s: Wroclaw 4
+  (all at +0.147 s), Tunis 8 (+0.018 and +0.176 s), every one written while the mode was not installed. Cause (measured): the press
+  loads the mode's chunk and starts its sound first, and nothing quiets #ui until feature.ts installs, 0.16 to 0.27 s later.
+  Narrator on: 380 (Wroclaw) and 382 (Tunis) lines in 10 s (the HUD as always).
+- [x] X1.2 M4 fix: entry-state.ts quietAtPress (main chunk, no import), called by app/builtin/sonic-flight.ts hereItems in the press
+  itself when the saved narrator is false; live-quiet.ts takes the same marker (LIVE_SAVED) over; a switch-on that did not come up
+  gives the values back. feature.ts: the recorder's panel (#sonicrec-panel, when it exists) follows the same quiet rule.
+- [x] X1.3 M2: captions.ts CAPTION_LINES 1 and CAPTION_ROWS 2; sonic.css clamps the line shown to two rows (-webkit-line-clamp 2);
+  the region already sits under .course-hud (N6). M2 "before" (quiet3/before-*.json, same in all four runs): no overlap at the three
+  sizes; at 1920x1080 two captions were shown (226-276 and 282-332, clock 120-217).
+- [x] X1.4 tests: new tools/bench/test/sonic-quiet3.test.ts; sonic-captions-fit.test.ts expectations moved to one line shown;
+  with sonic-review, sonic-in-place, sonic-int-lazy, sonic-quiet2, sonic-quiet-w3: 65 passed (quiet3/v4.log). NEG OK for the M4
+  block on origin/main's sonic-flight.ts (quiet3/neg-m4.log) and for M2 on its captions.ts and sonic.css (quiet3/neg-m2.log).
+- [~] X1.5 "after": release build, the same probe on Wroclaw and Tunis, narrator off and on.
+- [ ] X1.6 typecheck apps/fly and tools/bench, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
+
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
 - The craft answers the stick at once: KeyW held from the Backslash press, speed over 0.5 m/s at 0.56 s; the runner's phase is

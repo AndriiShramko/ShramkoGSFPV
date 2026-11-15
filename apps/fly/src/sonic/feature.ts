@@ -296,17 +296,32 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // the answer is looked at every frame (tick, after the HUD wrote) as well as every 250 ms (sync: live regions added inside later)
     let pauseReasons: readonly string[] = [];
     offs.push(ctx.events.on('pause', ({ reasons }) => { pauseReasons = reasons; }));
-    const liveQuiet = quietLiveRegion(document.getElementById('ui'), () => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), liveRegionPaused(mode.bridge.paused, pauseReasons)));
+    const quietLive = (): boolean => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), liveRegionPaused(mode.bridge.paused, pauseReasons));
+    const liveQuiet = quietLiveRegion(document.getElementById('ui'), quietLive);
     liveQuiet.sync();
-    offs.push(ctx.events.on('frame', () => liveQuiet.tick()));
+    // lane quiet3 (M4): the recorder's panel (sonic-session/panel.ts, outside #ui, made when the recorder first runs) follows the same
+    // rule: its status lines are live regions of their own
+    let recQuiet: ReturnType<typeof quietLiveRegion> | null = null;
+    const recSync = (): void => {
+        const panel = recQuiet ? null : document.getElementById('sonicrec-panel');
+        if (panel) recQuiet = quietLiveRegion(panel, quietLive);
+        recQuiet?.sync();
+    };
+    recSync();
+    offs.push(ctx.events.on('frame', () => {
+        liveQuiet.tick();
+        recQuiet?.tick();
+    }));
     // N6: the captions are placed again with it (the course's clock block appears and goes without a caption)
     const liveTimer = setInterval(() => {
         liveQuiet.sync();
+        recSync();
         (entry.setup.captions as { refit?: () => void }).refit?.();
     }, 250);
     offs.push(() => {
         clearInterval(liveTimer);
         liveQuiet.restore();
+        recQuiet?.restore();
     });
     // a replay taking the engine or giving it back: the progress panel follows at once (review F5: it hides while a replay plays)
     const onPlayback = new Set<() => void>();

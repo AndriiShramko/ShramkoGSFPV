@@ -8,8 +8,14 @@ import { h } from '../ui/dom';
 import { t } from '../i18n';
 import './sonic.css';
 
-/** How many lines show at once (lane quiet2, N6: two, the lead's bound), and how long a line stays, ms. */
-export const CAPTION_LINES = 2;
+/**
+ * How many lines show at once, and how long a line stays, ms. Lane quiet3 (the lead's M2): "at most two lines" is two rows of text on
+ * the screen: the newest line alone, clamped to CAPTION_ROWS rows by sonic.css (the whole text stays in the page for a screen
+ * reader); an older line leaves the eye when a new one comes.
+ */
+export const CAPTION_LINES = 1;
+/** The rows the line shown takes at most (sonic.css .sonic-caption -webkit-line-clamp). */
+export const CAPTION_ROWS = 2;
 export const CAPTION_MS = 12000;
 /**
  * Lines the region holds at most while a screen reader reads it. A lesson says four to six lines in one go when it opens; a line

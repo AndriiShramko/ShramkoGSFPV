@@ -45,8 +45,30 @@ const READ = () => {
 // Stage fixes pass 2: what the page hands to the voice (speechSynthesis.speak) and to a screen reader (text added inside a live
 // region that is not aria-hidden), each with its time on the page clock
 const HOOKS = () => {
-    const q = { speak: [], live: [] };
+    const q = { speak: [], live: [], attr: [], press: null, atPress: null, install: null, atInstall: null };
     window.__qp = q;
+    // lane quiet3 (M4): quietFlight's three inputs (the saved narrator, the host's lesson, the flight paused) and whether the mode is
+    // installed (the page hook __gsfpv.sonic exists from feature.ts installSonicFlight on), at the Backslash press and at the install
+    const inputs = () => {
+        const g = window.__gsfpv || {};
+        let narrator = null;
+        for (let i = 0; i < localStorage.length; i++) {
+            try { const d = JSON.parse(localStorage.getItem(localStorage.key(i))); if (d && d.collections && d.collections.sonic) narrator = (d.collections.sonic.prefs || {}).narrator ?? null; } catch { /* not ours */ }
+        }
+        let lesson = null;
+        try { lesson = typeof g.sonic === 'function' ? g.sonic(false).lesson ?? null : null; } catch { lesson = 'err'; }
+        const ui = document.getElementById('ui');
+        return { narrator, lesson, paused: !!(g.session && g.session.paused), installed: typeof g.sonic === 'function', uiLive: ui ? ui.getAttribute('aria-live') : null };
+    };
+    addEventListener('keydown', (e) => {
+        if (e.code !== 'Backslash' || q.press !== null) return;
+        q.press = performance.now();
+        q.atPress = inputs();
+        const iv = setInterval(() => {
+            if (typeof (window.__gsfpv || {}).sonic === 'function') { q.install = performance.now(); q.atInstall = inputs(); clearInterval(iv); }
+            else if (performance.now() - q.press > 30000) clearInterval(iv);
+        }, 5);
+    }, true);
     try {
         const sp = SpeechSynthesis.prototype.speak;
         SpeechSynthesis.prototype.speak = function (u) { q.speak.push({ t: performance.now(), text: String(u && u.text || '').slice(0, 90) }); return sp.call(this, u); };
@@ -63,14 +85,19 @@ const HOOKS = () => {
     };
     const watch = () => new MutationObserver((ms) => {
         for (const m of ms) {
+            if (m.type === 'attributes') {
+                const el = m.target;
+                q.attr.push({ t: performance.now(), where: (el.id || el.className || el.tagName).toString().slice(0, 40), name: m.attributeName, value: el.getAttribute(m.attributeName), installed: typeof (window.__gsfpv || {}).sonic === 'function' });
+                continue;
+            }
             const nodes = m.type === 'characterData' ? [m.target] : [...m.addedNodes];
             for (const n of nodes) {
                 const r = liveOf(n);
                 const text = (n.textContent || '').trim();
-                if (r && text) q.live.push({ t: performance.now(), where: (r.id || r.className || r.tagName).toString().slice(0, 40), text: text.slice(0, 90) });
+                if (r && text) q.live.push({ t: performance.now(), where: (r.id || r.className || r.tagName).toString().slice(0, 40), text: text.slice(0, 90), installed: typeof (window.__gsfpv || {}).sonic === 'function' });
             }
         }
-    }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    }).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['aria-live', 'hidden'] });
     if (document.documentElement) watch(); else document.addEventListener('DOMContentLoaded', watch);
 };
 const QUOTE = process.env.QUOTE === '1';
@@ -147,6 +174,32 @@ try {
     }
     console.log('course', out.courseReady, 'hum', out.firstHum, out.humTarget);
     save();
+    if (process.env.RECTS === '1') {
+        // lane quiet3 (M2): the captions shown and the course's clock block (.course-hud) at three page sizes; I (the status, said in
+        // every setting) gives a caption. Overlap: any shown caption's box meets the clock's.
+        out.rects = [];
+        for (const [w, h] of [[1920, 1080], [1280, 720], [844, 390]]) {
+            await page.setViewportSize({ width: w, height: h });
+            await page.waitForTimeout(600);
+            await page.keyboard.press('KeyI');
+            await page.waitForTimeout(1500);
+            const r = await page.evaluate(() => {
+                const box = (el) => { const b = el.getBoundingClientRect(); return { l: Math.round(b.left), t: Math.round(b.top), r: Math.round(b.right), b: Math.round(b.bottom) }; };
+                const caps = [...document.querySelectorAll('.sonic-caption')].filter((el) => !el.classList.contains('sonic-sr-only') && el.getBoundingClientRect().height > 2);
+                const clocks = [...document.querySelectorAll('.course-hud')].filter((el) => el.getBoundingClientRect().height > 0);
+                const lh = (el) => parseFloat(getComputedStyle(el).lineHeight) || 0;
+                const capBoxes = caps.map((el) => ({ ...box(el), rows: lh(el) > 0 ? +((el.getBoundingClientRect().height - parseFloat(getComputedStyle(el).paddingTop) - parseFloat(getComputedStyle(el).paddingBottom)) / lh(el)).toFixed(2) : null, text: el.textContent.slice(0, 60) }));
+                const clockBoxes = clocks.map(box);
+                const overlap = capBoxes.some((c) => clockBoxes.some((k) => c.l < k.r && c.r > k.l && c.t < k.b && c.b > k.t));
+                return { captions: capBoxes, clock: clockBoxes, overlap };
+            });
+            out.rects.push({ w, h, ...r });
+            if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}-${w}x${h}.png` });
+            console.log('rects', w, h, 'captions', r.captions.length, 'clock', r.clock.length, 'overlap', r.overlap);
+        }
+        await page.setViewportSize({ width: 1600, height: 900 });
+        save();
+    }
     if (KI) {
         // lane quiet2 N1: K (the key help) and I (the status) asked by the pilot are spoken in every setting
         out.ki = [];
@@ -184,6 +237,13 @@ try {
     const rel = (a) => (a || []).map((x) => ({ ...x, t: +((x.t - p0) / 1000).toFixed(2) }));
     out.voiced = qp && qp.speak ? rel(qp.speak) : null;
     out.live = qp ? rel(qp.live) : null;
+    if (qp && qp.press !== null) {
+        // lane quiet3 (M4): times from the Backslash press, s; the lines a live region got from the press to 10 s later
+        const fromPress = (t) => +((t - qp.press) / 1000).toFixed(3);
+        const lines = qp.live.filter((x) => x.t >= qp.press && x.t <= qp.press + 10000).map((x) => ({ ...x, t: fromPress(x.t) }));
+        out.m4 = { press: +((qp.press - p0) / 1000).toFixed(3), atPress: qp.atPress, install: qp.install === null ? null : fromPress(qp.install), atInstall: qp.atInstall, uiAttr: qp.attr.filter((a) => a.where === 'ui').slice(0, 6).map((a) => ({ ...a, t: fromPress(a.t) })), lines10: lines.length, lines: lines.slice(0, 30) };
+        console.log('m4 install', out.m4.install, 'lines 0..10 s', out.m4.lines10, 'atPress', JSON.stringify(qp.atPress));
+    }
     out.prefsNow = await page.evaluate(() => { for (let i = 0; i < localStorage.length; i++) { try { const d = JSON.parse(localStorage.getItem(localStorage.key(i))); if (d && d.collections && d.collections.sonic) return d.collections.sonic.prefs || null; } catch { /* not ours */ } } return null; });
     console.log('spoken', out.spoken, 'voiced', out.voiced ? out.voiced.filter((v) => v.t >= 0).length : 'n/a', 'live', out.live ? out.live.filter((v) => v.t >= 0).length : 'n/a', 'errors', out.errors.length);
 } catch (e) { out.fail = String(e).slice(0, 300); console.log('FAIL', out.fail); }
