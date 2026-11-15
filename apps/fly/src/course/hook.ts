@@ -33,6 +33,9 @@ export interface CourseHook {
     clockText?: () => string | null;
     /** stage X2-gate-one: what the guide to the next gate shows now (course/hud.ts GuideState) */
     guide?: () => { shown: boolean; gate: number; metres: number; side: 'left' | 'right'; behind: boolean; inFrame: boolean; bearingDeg: number; x: number; y: number };
+    /** lane fix3b, Y1: the edit mode's Save check of the course in use, untouched, with the measured report; null without
+     *  a course or walls (test data, read only) */
+    saveCheck?: () => Record<string, unknown> | null;
     /** T3: the courses the server keeps for this scene (fetched on scene load; -1 until the answer came) */
     serverTracks: number;
     /** T3: the server's id of the course this tab saved for everyone; null before a save */
