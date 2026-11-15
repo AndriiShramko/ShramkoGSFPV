@@ -5,8 +5,8 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 ## Status
 
 Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
-- [~] G2.0 the G1 REPRO run (dist of 05dbc189, Tunis) started first: `REPRO=1 OUT=U:/Temp/gsfpv-train3/editor3/g2/repro
-  SCENES=887f27aa PORT=5802 bash U:/Temp/gsfpv-train3/editor3/g1/run.sh`, queued on the GPU lock from 05:36
+- [x] G2.0 the G1 REPRO run on the old dist never got the lock (held by others 05:25-05:45 and 05:37-06:02); the
+  measurement came from the new release instead (G2.5).
 - [x] G2.1-G2.4 code (this commit), test tools/bench/test/editor3-g2.test.ts (4 tests), NEG OK (neg_control.py ref HEAD
   8364c885, the 10 changed files: fails by the missing exports and assertions); with editor3-*, tracks-editor-ui, a6-reference
   10 files 58/58 pass (a6 hash unchanged); apps/fly tsc 0.
@@ -25,7 +25,29 @@ Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
     course.ts placeAt uses it. In front of the camera: aim() after the add (H2). Why Tunis went red (3 -> 6): not measured yet.
   - 4 course.edit.opened in en, es, pl, ru: one set of handles at a time, Move, Turn, Size on the bar under the gate (or M,
     R, T), Space or the arm switch flies, again edits.
-- [ ] G2.5 release build of this commit, the browser runs (REPRO on Tunis, full run on Tunis and Wroclaw), pictures looked at
+- [x] G2.5 release of 95a91a95 (code bfe1003f), REPRO run (g2/repro2, lock 06:02:18-06:02:54, Tunis): the bar was STILL
+  hidden: right after the bar's Size click, before any drag, `bar.hidden` false, `dragging` false, vis 'hidden' (57 pointerup
+  records). Measured cause: view-mouse.ts standScreen() returned null unless the MOVE set had nodes, so Turn or Size (one set
+  at a time, H1) hid the bar. The capture-phase up and endStale of bfe1003f are kept as guards (not the proven cause).
+- [x] G2.6 fix 58bb57c2: standScreen() reads whichever set is attached; editor3-g2.test.ts extended, NEG OK (neg_control.py ref
+  HEAD 26ac534e, view-mouse.ts), editor3-g2/-tools/-gatebar 13/13, apps/fly tsc 0.
+- [x] G2.7 release of 58bb57c2, REPRO run (g2/repro3/e4.json, lock 06:13:50-06:14:58, Tunis, 1920x1080). PROVEN item 1:
+  all 8 bar presses after drags found the bar visible and the button under the press (size, turn, size, turn, move, turn,
+  turn, size); 0 of 60 pointerup records with the bar hidden two frames after the up; 0 with a gizmo axis left set. Size
+  drags 1.2 -> 1.58 -> 2.08 -> 2.73 -> 3.59 -> 4.72 m, moved 0; X arrow moved 0.4 m; rings: quat change 0.52 and 1.93, ring3
+  60 deg, ring-out (the drag ended on the top bar, outside the canvas) 150 deg, moved 0.
+- [x] gates.py --only vitest,architecture,i18n,b18 on 95a91a95: architecture, i18n PASS; b18 FAIL (editor3-g2.test.ts had
+  non-ASCII, fixed in 26ac534e, b18 PASS after); vitest 4793 pass, 1 fail: tools/bench/test/app-dji-rc2.test.ts "answers 60
+  ms late" (timing, the release build ran beside it; passes alone 19/19 with editor3-g2). Not re-run in full after 58bb57c2.
+- [ ] left (next worker, in this order; dist is the release of 58bb57c2, do not rebuild unless apps/fly changes):
+  1. `KBD=1 PHONE=0 OUT=U:/Temp/gsfpv-train3/editor3/g2/full2 SCENES=887f27aa,70b50d42 PORT=5804 bash
+     U:/Temp/gsfpv-train3/editor3/g1/run.sh` (the 06:15 try waited 9 min on a lock held by others, no record). Read in
+     full2/e4.json: kbd-887f27aa space1 (mode 'fly') and space2 (mode 'edit', armed false: item 2, code bfe1003f, NOT yet seen
+     in a browser); floorAdd on both scenes (stand.screen z > 0 = in front, problems before/after = not red, standPosY);
+     full.digitInLine false. LOOK at shots/editor3-floor-add-1920.png and editor3-wroclaw-floor-add-1920.png.
+  2. If the floor-added gate is still red on Tunis: record the problem's reason (ed(page) said / the window's problem line)
+     before changing add-place.ts; the facing along the course (addFacing) is code only so far.
+  3. gates.py --only vitest,architecture,i18n,b18 on the final head.
 
 Stage G1-merge-hooks (train 3 wave 3):
 - [x] G1.1 `git merge --no-ff course3` (493526f5, course3 head 18e6a876). Conflicts only in
@@ -666,6 +688,11 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- G2-bar-space-floor: about 50 replies; the most went to waiting on the GPU lock held by others (three 9-minute give-ups) and
+  to a first fix written from reading PlayCanvas (stopPropagation) before a measurement; the REPRO record of the first bar
+  click (bar hidden with no drag at all) named the real cause in one run, so a 60 s REPRO before any code would have saved
+  a build and two replies.
 
 - G1-merge-hooks: about 34 replies; the most went to a release build started before the last source change (killed and
   rebuilt, 2 extra replies) and a 9-minute GPU lock wait that ended with no run; adding every page hook before the first
