@@ -323,7 +323,10 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   until K2.2 gives its own. Tests: new tools/bench/test/sonic-narrator-key.test.ts (4), keymap.test, app-keys.test, sonic-optin
   (the K list gains "'"), sonic-quiet: 84 passed (U:/Temp/gsfpv-train3/quiet/k2p2-v2.log); tsc apps/fly 0 errors; neg_control.py
   on keymap.ts and mode-keys.ts against HEAD: NEG OK by assertion (k2p2-neg1.log). The feature.ts wiring itself is not covered by
-  a unit test (the rig runs SonicMode and LessonHost, not feature.ts): K2.6's browser proof (2) covers it.
+  a unit test (the rig runs SonicMode and LessonHost, not feature.ts): K2.6's browser proof (2) covers it. Commit 8cfea748; then
+  packages/prefs/test/catalog.test.ts follows the seventh mode key (list, caps, count 7); gates.py --only
+  vitest,architecture,i18n,b18 all PASS (vitest 84 s; U:/Temp/gsfpv-gates-20261115-164350).
+  Left from Q4: the off sound is the checkpoint chime (K2.2 gives the narrator its own); not run in a browser.
   Choice of the key, kept: `Quote` (cap "'", aria "Quote"), when 'sonic'. Why: packages/prefs/src/keymap.ts says every
   plain letter is bound (the free ones W A S D Q E are FLYING_CODES); Quote is bound nowhere in KEYMAP; Slash opens quick find in
   Firefox; digits belong to a running lesson's question (sonic/digit-key.ts), and the free flight is a running lesson. Work:
@@ -403,4 +406,7 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
 - 2026-11-15 K2 pass 1 (quiet): most replies went to making K1's red tests green (three pinned item numbers found one run at a
   time, a jump bound that measured the rig craft's speed) before K2 could start; K1 left red cost this stage its build budget.
   Splitting K2 into build (Q3 to Q7) and proof (K2.6) and printing every pinned "Item n of N" failure in one run would save about 5.
+- 2026-11-15 K2 pass 2 (quiet): most replies went to finding the files that pin the mode's key list (keymap.test, app-keys,
+  sonic-optin, then catalog.test found only by the gate run, two gate runs more); a grep for "'sonic.home'" across all tests
+  before the first edit would have found all four and saved about 4 replies. Only K2.1 fitted; K2.2 to K2.6 need a fresh worker each.
 - 2026-11-15 fixes pass 3 (continuation): most replies went to measuring the r11 Shift+G failure (a new tool for the walls, then reading laps.ts and run.ts); r11's trail logging course.next with each life would have shown the restart in one read. Running the busy probe, the d7 re-run and r11 in one detached script cost one wait.
