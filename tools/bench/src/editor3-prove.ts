@@ -39,6 +39,22 @@ type W = {
 };
 const hook = (p: Page): Promise<Hook | null> => p.evaluate(() => (window as unknown as W).__gsfpv?.course ?? null);
 const ed = async (p: Page): Promise<Ed> => (await hook(p))?.editor ?? {};
+/** J2: the saved course's version (0 = not saved): a later Save is seen by the version going up, hook.saved stays set */
+const savedVer = (p: Page): Promise<number> => p.evaluate(() => { const h = (window as unknown as { __gsfpv?: { course?: { saved?: string | null; track?: { version?: number } | null } } }).__gsfpv?.course; return h?.saved ? (h.track?.version ?? 1) : 0; });
+const topLine = (p: Page): Promise<string> => p.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
+/** J2: one Save press as the pilot does it (the top bar's Save, a name if a field takes the focus); a refusal records the
+ * check's own report (lane fix3b's read-only hook saveCheck: problems, the failing legs with their ends, gates with freeM) */
+async function saveNow(p: Page, name: string): Promise<Record<string, unknown>> {
+    const v0 = await savedVer(p);
+    const p0 = (await ed(p)).problems ?? null;
+    await p.click('[data-top="save"]', { timeout: 3000 }).catch(() => undefined);
+    await sleep(800);
+    if (await p.evaluate(() => document.activeElement instanceof HTMLInputElement)) { await p.keyboard.type(name); await p.keyboard.press('Enter'); }
+    const s = await until(() => savedVer(p), (v) => v > v0, 6000);
+    await sleep(700);
+    const check = s.ok ? null : await p.evaluate(() => { const h = (window as unknown as { __gsfpv?: { course?: { saveCheck?: () => unknown } } }).__gsfpv?.course; try { return JSON.stringify(h?.saveCheck?.() ?? null).slice(0, 1500); } catch (e) { return String(e).slice(0, 200); } });
+    return { saved: s.ok, version: [v0, s.v], problemsBefore: p0, selected: (await ed(p)).selected ?? null, line: (await topLine(p)).slice(0, 160), check };
+}
 const dbg = (p: Page): Promise<Dbg | null> => p.evaluate(() => {
     const f = (window as unknown as W).__gsfpvEditView;
     return (f ? f() : null) as Dbg | null;
@@ -189,6 +205,9 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     out.idleInMode = await span(page, t0, await now(page));
     const d0 = (await dbg(page))!;
     out.open = { ok: op.ok, selected: op.v.selected, mode: d0?.mode, handles: d0?.handles, gates: (await hook(page))?.gates };
+    // J2: the first press after Shift+B is Save of the untouched generated course (integration C: the generator ends with
+    // the Save's own check); a refusal is recorded with the check's report
+    out.untouched = await saveNow(page, 'Probe J2');
 
     // Add gate: the top bar's button, then a click on the scene in the middle of the view
     const nBefore = (await hook(page))?.gates ?? 0;
@@ -534,11 +553,35 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     out.flyPitch = pitch;
     if (!shot && id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-flying-1920.png') });
     const nextAfter = (await hook(page))?.next;
-    await pad(page, [0, 0, -1, 0, 0], 0x50);
-    await sleep(300);
-    await pad(page, null, 0x50 | (1 << 2));
-    await sleep(150);
-    await pad(page, null, 0x50);
+    // J2 (EI-5): a crash in the test flight right after the gate: full pitch the way that flew forward with the throttle down
+    // (into the ground), then with full throttle; the edit view comes back by itself, the mode line is not CRASH
+    type CrashD = { mode?: string; crashActive?: boolean } | null;
+    let crash: Record<string, unknown> | null = null;
+    if (nextAfter !== nextBefore && (await dbg(page))?.mode === 'fly') {
+        const sg = pitch >= 0 ? 1 : -1;
+        const hit = (d: CrashD): boolean => !!d?.crashActive || d?.mode === 'edit';
+        await pad(page, [0, sg, -1, 0, 0], null);
+        let cr = await until(async () => (await dbg(page)) as unknown as CrashD, hit, 8000);
+        if (!cr.ok) { await pad(page, [0, sg, 1, 0, 0], null); cr = await until(async () => (await dbg(page)) as unknown as CrashD, hit, 10000); }
+        await pad(page, [0, 0, -1, 0, 0], null);
+        const back = await until(() => dbg(page), (d) => d?.mode === 'edit', 8000);
+        await sleep(1500);
+        crash = {
+            seen: cr.ok, crashActive: cr.v?.crashActive ?? null, modeAtHit: cr.v?.mode ?? null, msToHit: cr.ms, modeAfter: back.v?.mode, msBack: back.ms,
+            modeText: await page.evaluate(() => (document.querySelector('.hud .osd.tl')?.textContent ?? '').replace(/\s+/g, ' ').slice(0, 80)),
+            crashToast: await page.evaluate(() => { const e = document.querySelector('.crash-toast'); return e ? getComputedStyle(e).display : 'absent'; }),
+            modeAfter3s: await sleep(3000).then(async () => (await dbg(page))?.mode)
+        };
+        await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-crash-back-1920.png' : 'editor3-crash-back-1920.png') });
+    }
+    out.crash = crash;
+    if ((await dbg(page))?.mode !== 'edit') {
+        await pad(page, [0, 0, -1, 0, 0], 0x50);
+        await sleep(300);
+        await pad(page, null, 0x50 | (1 << 2));
+        await sleep(150);
+        await pad(page, null, 0x50);
+    }
     let dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
     if (dis.v?.mode !== 'edit') { await page.keyboard.press('Space'); dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 4000); }
     await sleep(500);
@@ -592,12 +635,49 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // H3 pass 2 (left c, f): with problems left, Save first as the pilot would; the refusal selects the wrong gate and says
     // what to do; the probe does what it says (pulls the selected gate's X and Z arrows, keeps a pull that leaves fewer
     // problems, takes back one that does not) before any delete. Records the line at 1 s and 7 s, the start and the problems.
+    // J2: a gate pushed into a wall (down into the floor by its Y arrow, 150 px a pull until the check counts one more
+    // problem) and Save: the refusal selects it, frames it and names it from 1; the pulls taken back by Ctrl+Z
+    {
+        for (let n = 0; n < 40 && (await ed(page)).selected !== 1; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < 1 ? 'Tab' : 'Shift+Tab'); await sleep(100); }
+        await sleep(600);
+        const k = (await ed(page)).selected ?? -1;
+        await page.click('.ce-gatebar [data-bar="move"]', { timeout: 2000, force: true }).catch(() => undefined);
+        await sleep(400);
+        const pw0 = (await ed(page)).problems ?? 0;
+        const y0 = (await dbg(page))?.stand.pos[1];
+        let pulls = 0;
+        for (let n = 0; n < 8 && ((await ed(page)).problems ?? 0) <= pw0; n++) {
+            const a = (await dbg(page))!;
+            const dir = a.axes.y;
+            const w = await walk(page, a.stand.screen, dir, 12, 'y');
+            if (!w) break;
+            await drag(page, w.x, w.y, -dir[0]! * 150, -dir[1]! * 150);
+            pulls++;
+            await sleep(1200);
+        }
+        const pushed = { selected: k, pulls, problems: [pw0, (await ed(page)).problems ?? 0], y: [y0, (await dbg(page))?.stand.pos[1]].map((v) => (typeof v === 'number' ? r2(v) : null)) };
+        const sv = await saveNow(page, 'Probe J2 wall');
+        await sleep(700);
+        const fr = (await ed(page)) as Ed & { frame?: unknown };
+        const fv = await dbg(page);
+        const line = String(sv.line ?? '');
+        out.refusalFrame = { selected: sv.selected, frame: fr.frame ?? null, gateScreen: fv?.stand.screen.map((v) => Math.round(v)) ?? null, line };
+        await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-refused-1920.png' : 'editor3-refused-1920.png') });
+        for (let n = 0; n < pulls; n++) { await page.keyboard.press('Control+KeyZ'); await sleep(400); }
+        await sleep(1200);
+        out.wallPush = {
+            pushed, save: sv, refusedSelectsIt: !sv.saved && sv.selected === k, namesFrom1: new RegExp(`\\b${k + 1}\\b`).test(line),
+            outAgain: { problems: (await ed(page)).problems ?? 0, y: (await dbg(page))?.stand.pos[1] }
+        };
+    }
+    // J2: the untouched Save may have saved version 1 already; a later Save shows as a higher version
+    const vBase = await savedVer(page);
     let earlySaved = false;
     if (((await ed(page)).problems ?? 0) > 0) {
         await page.click('[data-top="save"]', { timeout: 3000 }).catch(() => undefined);
         await sleep(800);
         if (await page.evaluate(() => document.activeElement instanceof HTMLInputElement)) { await page.keyboard.type('Probe H3'); await page.keyboard.press('Enter'); }
-        const s1 = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 3000);
+        const s1 = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved && ((h as { track?: { version?: number } | null }).track?.version ?? 1) > vBase, 3000);
         earlySaved = s1.ok;
         const topLine = (): Promise<string> => page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
         const cv = (await dbg(page)) as unknown as { wrong?: unknown; course?: { start?: unknown; problems?: unknown; gates?: { pos?: number[] }[] } } | null;
@@ -657,7 +737,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         await page.click('[data-top="save"]', { timeout: 3000 }).catch(() => undefined);
         await sleep(800);
         if (await page.evaluate(() => document.activeElement instanceof HTMLInputElement)) { await page.keyboard.type('Probe I3'); await page.keyboard.press('Enter'); }
-        const si = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 4000);
+        const si = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved && ((h as { track?: { version?: number } | null }).track?.version ?? 1) > vBase, 4000);
         if (si.ok) { loopSaved = true; await sleep(300); removed.push({ saved: true, gates: (await hook(page))?.gates, problems: e.problems, line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '') }); break; }
         const pick = (await ed(page)).selected ?? -1;
         const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
@@ -701,7 +781,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
         if (nameField) { await page.keyboard.type('Probe G3'); await page.keyboard.press('Enter'); }
     }
-    const sv = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 20000);
+    const sv = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved && ((h as { track?: { version?: number } | null }).track?.version ?? 1) > vBase, 20000);
     out.save = { nameField, ok: sv.ok, ms: sv.ms, saved: (sv.v as { saved?: string | null } | null)?.saved ?? null, said: ((await ed(page)).said ?? '').slice(0, 100), problem: sv.v?.problem ?? null, topLine: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? ''), posts: await page.evaluate(() => (window as unknown as { __posts?: number }).__posts ?? null) };
     out.savedGatePos = movedPos?.map(r2);
     await sleep(500);
