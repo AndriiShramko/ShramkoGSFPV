@@ -72,11 +72,6 @@ export const course: Feature = {
         const store = new CourseStore();
         let rows: CourseRow[] = [];
         let run: CourseRun | null = null;
-        // lane onecourse (message 52): Fly by Sound takes the course in the scene (hook.sound); told when it changes
-        const soundListeners = new Set<() => void>();
-        const changed = (): void => {
-            for (const cb of soundListeners) cb();
-        };
         let shownNext = -2;
         let worker: Worker | null = null;
         let job = 0;
@@ -185,7 +180,6 @@ export const course: Feature = {
             hook.on = !!track;
             hook.saved = null;
             draw();
-            changed();
         };
 
         const frame = (): void => {
@@ -314,7 +308,8 @@ export const course: Feature = {
                 setTrack(tr, 'generated', tr.generator?.seed ?? pending);
                 history.replaceState(history.state, '', withCourse(location.href, tr.id));
                 ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
-                sayLine(t('course.ready', { n: tr.gates.length }));
+                // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
+                sayLine(t('course.readySpoken', { n: tr.gates.length }));
             };
             // G1-progress: a course that arrives while the drone flies is announced before its gates appear
             if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();
@@ -492,7 +487,6 @@ export const course: Feature = {
             run.reset();
             if (!hook.on) ctx.hud.flash(t('course.off'), 2500);
             draw();
-            changed();
         };
 
         // lane review TR-7: the sound mode cannot fly a visual course yet (train 2), and Shift is its keyboard's 'down', so the
@@ -502,13 +496,10 @@ export const course: Feature = {
             toggle();
         });
         // lane onecourse (message 52): the course in the scene for Fly by Sound: the course shown, its next gate (the same objects
-        // the lap timer passes), a change event and Shift+G's own action (D1, D2, D6)
+        // the lap timer passes) and Shift+G's own action (D1, D2). No change event: the sound mode reads inUse() every frame (lead's
+        // decision P3, review OC-6: nothing listened to it)
         hook.sound = {
             inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: run.gates } : null),
-            onChange: (cb) => {
-                soundListeners.add(cb);
-                return () => void soundListeners.delete(cb);
-            },
             generate: () => generate(pressSeed())
         };
         // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene

@@ -639,7 +639,10 @@ export class LessonHost {
 
     /** The line of keys with the pilot's names of them now (a layout may change between steps). */
     keysLine(): SpeechLine {
-        return { key: 'sonic.say.lessonKeys', params: { ...(this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS) } };
+        const keys = this.p.lessonKeys?.() ?? DEFAULT_LESSON_START_KEYS;
+        // lead's decision P2: in the free flight N goes to no next step (it makes a course, advance() flyCourse), so no "Next, key N"
+        if (this.lesson?.id === SCAN_FREE_ID) return { key: 'sonic.say.lessonKeysFree', params: { menu: keys.menu, repeat: keys.repeat, previous: keys.previous, home: keys.home } };
+        return { key: 'sonic.say.lessonKeys', params: { ...keys } };
     }
 
     /** What the runner asked of the host, carried out in order. */

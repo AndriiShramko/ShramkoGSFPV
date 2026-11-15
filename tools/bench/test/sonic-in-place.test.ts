@@ -11,7 +11,9 @@ import { KEYMAP, actionFor, keymapProblems } from '../../../packages/prefs/src/k
 import { hereItems, sonicFlight } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { HereSwitch } from '../../../apps/fly/src/app/builtin/sonic-flight';
 import type { MenuItem } from '../../../apps/fly/src/app/context';
+import * as inPlaceModel from '../../../apps/fly/src/sonic/in-place-model';
 import { InPlaceSwitch, failedLine, firstTimer, freeHere } from '../../../apps/fly/src/sonic/in-place-model';
+import { keyHelpLines } from '../../../apps/fly/src/sonic/mode-keys';
 import type { InPlaceDeps } from '../../../apps/fly/src/sonic/in-place-model';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
 import { analyticCollision } from '../../../packages/collision/src';
@@ -347,4 +349,72 @@ describe('the free flight opened in place keeps the craft where it is', () => {
         expect(lives).toBe(0);
         expect(r.speed).toBeGreaterThan(v / 2);
     });
+});
+
+// Lane onecourse2 (the lead's decisions P2 and P3 of 2026-11-14, and the two tests lane onecourse left): one course in the scene.
+describe('one course: the intro, Shift+G in Fly by Sound, no key N in the free flight', () => {
+    const FEATURE = readFileSync(join(REPO, 'apps/fly/src/sonic/feature.ts'), 'utf8');
+    const COURSE = readFileSync(join(REPO, 'apps/fly/src/app/builtin/course.ts'), 'utf8');
+    let rig: Rig | null = null;
+    afterEach(() => {
+        rig?.dispose();
+        rig = null;
+    });
+
+    it('the switch-on says the course intro with a course in the scene and the Shift+G intro without one', () => {
+        const pick = (inPlaceModel as Record<string, unknown>)['introKey'];
+        expect(typeof pick, 'in-place-model.ts introKey').toBe('function');
+        const introKey = pick as (course: boolean) => string;
+        expect(introKey(true)).toBe('sonic.say.inPlaceIntroCourse');
+        expect(introKey(false)).toBe('sonic.say.inPlaceIntro');
+        // the feature asks the course feature's hook whether a course is in the scene, at the switch-on
+        expect(FEATURE).toMatch(/introKey\(!!ctx\.hook\.course\?\.sound\?\.inUse\(\)\)/);
+    });
+
+    it('Shift+G pressed inside Fly by Sound makes the course: the course feature does not skip it while ctx.sonic is set', () => {
+        const at = COURSE.indexOf("ctx.keys.on('course.generate'");
+        expect(at).toBeGreaterThan(0);
+        const handler = COURSE.slice(at, COURSE.indexOf('});', at));
+        expect(handler).toMatch(/generate\(pressSeed\(\)\)/);
+        expect(handler).not.toMatch(/ctx\.sonic/);
+        // the sound mode's N and its course lines reach the same action (hook.sound.generate)
+        expect(COURSE).toMatch(/generate: \(\) => generate\(pressSeed\(\)\)/);
+        // P3: no change event left (nothing listened to it; the mode reads inUse() every frame)
+        expect(COURSE).not.toMatch(/soundListeners|onChange: \(cb\)/);
+    });
+
+    it('the spoken "course ready" line names Shift and key T in words, in all four languages', () => {
+        expect(COURSE).toMatch(/sayLine\(t\('course\.readySpoken'/);
+        for (const loc of ['en', 'es', 'pl', 'ru']) {
+            const dict = JSON.parse(readFileSync(join(REPO, `packages/i18n/locales/fly/course/${loc}.json`), 'utf8')) as Record<string, string>;
+            const line = dict['course.readySpoken'] ?? '';
+            expect(line, loc).toMatch(/\{n\}/);
+            expect(line, loc).toMatch(/Shift( \S+){1,3} T /);
+            expect(line, loc).not.toMatch(/Shift\+/);
+        }
+    });
+
+    it('K in the free flight names no key N; in a lesson it does', () => {
+        const cap = (a: string): string => (a === 'scene.next' ? 'N' : a === 'course.generate' ? 'Shift and key G' : 'X');
+        const keys = (free: boolean): string[] => keyHelpLines(cap as never, { free } as never).map((l) => l.key);
+        expect(keys(false)).toContain('help.next');
+        expect(keys(true)).not.toContain('help.next');
+        expect(keys(true)).toContain('sonic.say.helpCourse');
+        expect(FEATURE).toMatch(/keyHelpLines\(capOf, \{ free: host\?\.lesson\?\.id === SCAN_FREE_ID \}\)/);
+    });
+
+    it('the keys line in the free flight over a course leaves out "Next, key N"', async () => {
+        const track = garden();
+        const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
+        const shared = new SharedCourse(() => track, { s: 5, t: [0, 0, 0] });
+        const r = await Rig.make(free, { scan: scanOf(track), course: shared });
+        rig = r;
+        expect(await r.host.openFree(free, { here: true })).toBe(true);
+        expect(r.host.lesson?.id).toBe(SCAN_FREE_ID);
+        const line = r.host.keysLine();
+        expect(line.key).toBe('sonic.say.lessonKeysFree');
+        expect(Object.values(line.params ?? {})).not.toContain('N');
+        await r.run(20000);
+        expect(r.engine.said.some((s) => s.line.key === 'sonic.say.lessonKeys')).toBe(false);
+    }, 120000);
 });

@@ -311,7 +311,7 @@ describe('one course in the scene, the course feature\'s, in Fly by Sound too (l
         expect(spokenKey({ cap: 'Shift+G', aria: 'Shift+G' } as never, null, named)).toBe('Shift and key G');
         for (const loc of ['en', 'es', 'pl', 'ru']) {
             const dict = JSON.parse(readFileSync(join(REPO, `packages/i18n/locales/fly/sonic/${loc}.json`), 'utf8')) as Record<string, string>;
-            for (const k of ['sonic.say.courseOffer', 'sonic.say.helpCourse', 'sonic.say.inPlaceIntro']) expect(dict[k], `${loc} ${k}`).not.toMatch(/(^|[^\p{L}])N([^\p{L}]|$)/u);
+            for (const k of ['sonic.say.courseOffer', 'sonic.say.helpCourse', 'sonic.say.inPlaceIntro', 'sonic.say.inPlaceIntroCourse', 'sonic.say.lessonKeysFree']) expect(dict[k], `${loc} ${k}`).not.toMatch(/(^|[^\p{L}])N([^\p{L}]|$)/u);
             expect(dict['sonic.key.ChordJoin'], loc).toBeTruthy();
         }
     });

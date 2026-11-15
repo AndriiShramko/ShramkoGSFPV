@@ -8,8 +8,6 @@ import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 export interface CourseForSound {
     /** the course shown now, its next gate (0-based, -1 after the last lap) and its gates in the flown world; null without one */
     inUse(): { track: TrackFile; next: number; gates: readonly SonicObject[] } | null;
-    /** `cb` runs after the course in the scene changed (a new one, a load, switched off or on); returns the unsubscribe */
-    onChange(cb: () => void): () => void;
     /** Shift+G's own action: a new course replaces the one in the scene */
     generate(): void;
 }

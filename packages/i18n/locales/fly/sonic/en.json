@@ -59,6 +59,7 @@
   "sonic.say.helpShare": "Press {key} to copy a link to this lesson, to share it.",
   "sonic.say.homeBack": "Main menu of Fly by Sound. The lesson {title} is saved: Continue takes you back to it.",
   "sonic.say.lessonKeys": "Next, key {next}. Back, key {previous}. Repeat, key {repeat}. Menu, key {menu}. Main menu, key {home}.",
+  "sonic.say.lessonKeysFree": "Back, key {previous}. Repeat, key {repeat}. Menu, key {menu}. Main menu, key {home}.",
   "sonic.say.linkCopied": "The link to this lesson is copied. Paste it into a message or an e-mail to share it.",
   "sonic.say.linkCopiedStart": "The link to Fly by Sound is copied. Paste it into a message or an e-mail to share it.",
   "sonic.say.linkSelected": "The link to the lesson {lesson} was not copied. It is selected: press {copy} to copy it, then Escape to go back.",

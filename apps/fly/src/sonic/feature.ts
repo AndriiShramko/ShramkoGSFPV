@@ -34,6 +34,7 @@ import { ProgressPanel, followProgress, progressNow } from './progress-panel';
 import { DomLessonMenuView, LessonMenu, goHome, homeKey, pauseKey, runItem } from './lesson-menu';
 import type { HomePage, LessonMenuItem } from './lesson-menu';
 import { SoundGap } from './sound-gap';
+import { introKey } from './in-place-model';
 import { engineDicts } from './host-lines';
 import { openLinkPanel } from './link-panel';
 import type { SessionOptions } from '../session';
@@ -471,7 +472,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // before, so the "How to fly" card opened from the pause menu closes on its own K; a panel or the start screen keep the key). The
     // pause menu's key list names L and K as the mode's (KeyRouter.relabel).
     const help = new KeyHelp({
-        lines: () => keyHelpLines(capOf),
+        lines: () => keyHelpLines(capOf, { free: host?.lesson?.id === SCAN_FREE_ID }),
         say: sayLine,
         hold: (on) => (on ? ctx.pause('help') : ctx.resume('help')),
         listen: (cut) => {
@@ -575,7 +576,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             focusFlight();
             // train 3: a first-timer switched on in place hears the three keys he needs and the offer of the lessons, once
             // lane onecourse (D1): with a course in the scene the hum leads to it, so the intro names no key that makes one
-            const intro = ctx.hook.course?.sound?.inUse() ? 'sonic.say.inPlaceIntroCourse' : 'sonic.say.inPlaceIntro';
+            const intro = introKey(!!ctx.hook.course?.sound?.inUse());
             if (entry.intro) void sayLine({ key: intro, params: { off: capOf('flyBySound.toggle', 'Backslash'), course: capOf('course.generate', 'Shift+G'), keys: capOf('help.keys'), menu: capOf('pause.toggle', 'Escape') } }, false).catch(() => undefined);
         });
     } else showMenu();

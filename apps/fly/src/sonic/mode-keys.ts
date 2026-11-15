@@ -101,9 +101,11 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
  * The lines K says: the intro, one per key with the page's name for it (`cap`: an action with no key on the page is left out), the
  * digits.
  */
-export function keyHelpLines(cap: (action: ActionId, aria?: string) => string): SpeechLine[] {
+export function keyHelpLines(cap: (action: ActionId, aria?: string) => string, o: { free?: boolean } = {}): SpeechLine[] {
     const lines: SpeechLine[] = [{ key: 'help.intro' }];
     for (const [key, action, aria] of KEY_HELP) {
+        // lead's decision P2: in the free flight N goes to no next step (it makes a course there), so K does not name it
+        if (o.free === true && key === 'help.next') continue;
         const c = cap(action, aria);
         if (c !== '') lines.push({ key, params: { key: c } });
     }

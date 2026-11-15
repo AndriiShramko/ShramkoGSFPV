@@ -59,6 +59,7 @@
   "sonic.say.helpShare": "Naciśnij klawisz {key}, aby skopiować link do tej lekcji i się nim podzielić.",
   "sonic.say.homeBack": "Menu główne trybu Lot na słuch. Lekcja {title} jest zapisana: Kontynuuj wraca do niej.",
   "sonic.say.lessonKeys": "Dalej, klawisz {next}. Wstecz, klawisz {previous}. Powtórz, klawisz {repeat}. Menu, klawisz {menu}. Menu główne, klawisz {home}.",
+  "sonic.say.lessonKeysFree": "Wstecz, klawisz {previous}. Powtórz, klawisz {repeat}. Menu, klawisz {menu}. Menu główne, klawisz {home}.",
   "sonic.say.linkCopied": "Link do tej lekcji jest skopiowany. Wklej go do wiadomości lub e-maila, aby się nim podzielić.",
   "sonic.say.linkCopiedStart": "Link do trybu „Lot na słuch” jest skopiowany. Wklej go do wiadomości lub e-maila, aby się nim podzielić.",
   "sonic.say.linkSelected": "Link do lekcji {lesson} nie został skopiowany. Jest zaznaczony: naciśnij klawisze {copy}, aby go skopiować, a potem klawisz Escape, aby wrócić.",
