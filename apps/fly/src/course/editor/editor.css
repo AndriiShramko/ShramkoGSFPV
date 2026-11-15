@@ -150,7 +150,18 @@
 }
 .ce-topbar .ce-tb:hover, .ce-topbar .ce-tb:focus-visible, .ce-topbar .ce-tb[aria-pressed='true'] { border-color: #a6ff1a; }
 .ce-topbar .ce-tb[aria-pressed='true'] { background: #2a3a12; }
-.ce-topbar .ce-tb-line { color: #c9d1db; font-size: 0.85rem; padding: 0 4px; max-width: 360px; } /* 360 px: an estimate, keeps the bar off the speaker button at 1920 (H2 g) */
+.ce-topbar .ce-tb-line {
+    color: #c9d1db;
+    font-size: 0.85rem;
+    padding: 0 4px;
+    /* train 3 I2 (D6): never two lines; at most 420 px with an ellipsis, the full text in its title (top-bar.ts) */
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 420px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
 .ce-topbar.flying .ce-tb { display: none; }
 .ce-topbar.flying { pointer-events: none; }
@@ -205,6 +216,11 @@
    course's note and the take-off prompt (ui/hud.ts hud-note, gate-msg), the crash toast (ui/crash-overlay.ts). The mode
    flag is the one the page reads (devices/keyboard.ts EDIT_MODE): back in the test flight (ce-flying) and after Exit. */
 body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud, .hud-note, .gate-msg, .crash-toast) { display: none !important; }
+/* train 3 I2 (D5, the lead's decision): the rest of the flight goes too: the throttle style hint under the mode line
+   (ui/mode-chip.ts), the THR, speed and ALT line, the key hints line and the voltage and time (ui/hud.ts .osd bl, br, tr),
+   F3's lines (.osd-col), the REC row with Auto and the folder button and its dot and notice (app/builtin/cinema.ts), the
+   crash card (ui/crash-overlay.ts). The mode line (.osd.tl: DISARMED and the flight mode) stays. */
+body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd.br, .hud .osd.tr, .osd-col, .rec-bar, .rec-dot, .rec-notice, .crash-overlay) { display: none !important; }
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }

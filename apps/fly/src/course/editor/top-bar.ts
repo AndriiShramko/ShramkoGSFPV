@@ -5,6 +5,7 @@
 import { t } from '../../i18n';
 import type { KeyPress } from './keys';
 import { TOP_BUTTONS } from './bar-place';
+import { LineHold } from './line-hold';
 
 export interface TopBarHost {
     key(press: KeyPress): void;
@@ -18,8 +19,13 @@ export class TopBar {
     readonly root: HTMLElement;
     private readonly line: HTMLElement;
     private readonly addBtn: HTMLButtonElement | null = null;
-    private told = 0;
+    private readonly hold: LineHold;
     private isAdding = false;
+    /** train 3 I2 (D6): the pilot's next key or press after a refusal clears it (a modifier alone or a held key's repeat is no action) */
+    private readonly onAct = (e: Event): void => {
+        if (e instanceof KeyboardEvent && (e.repeat || /^(Shift|Control|Alt|Meta)/.test(e.code))) return;
+        this.hold.acted(e.timeStamp);
+    };
 
     constructor(ui: HTMLElement, host: TopBarHost) {
         const root = document.createElement('div');
@@ -48,35 +54,48 @@ export class TopBar {
         ui.append(root);
         this.root = root;
         this.line = line;
+        this.hold = new LineHold((text, refused) => {
+            this.setLine(text ?? t(this.isAdding ? 'course.edit.bar.addHint' : 'course.edit.flyHint'));
+            this.line.classList.toggle('refused', refused);
+        });
+        window.addEventListener('keydown', this.onAct, true);
+        window.addEventListener('pointerdown', this.onAct, true);
         this.adding(false);
+    }
+
+    /** D6: one line, at most 420 px with an ellipsis (editor.css); the full text in its title */
+    private setLine(text: string): void {
+        this.line.textContent = text;
+        this.line.title = text;
     }
 
     /** Add gate is armed: the button stays pressed and the line says where to click */
     adding(on: boolean): void {
         this.isAdding = on;
         this.addBtn?.setAttribute('aria-pressed', on ? 'true' : 'false');
-        this.line.textContent = t(on ? 'course.edit.bar.addHint' : 'course.edit.flyHint');
+        this.hold.reset();
+        this.line.classList.remove('refused');
+        this.setLine(t(on ? 'course.edit.bar.addHint' : 'course.edit.flyHint'));
     }
 
     /** lane editor3 H1: the window opens closed, so what an edit did (or why it did not) is said on the bar's line for a while */
     tell(text: string, refused: boolean): void {
-        clearTimeout(this.told);
-        this.line.textContent = text;
-        this.line.classList.toggle('refused', refused);
-        this.told = window.setTimeout(() => {
-            this.line.classList.remove('refused');
-            this.line.textContent = t(this.isAdding ? 'course.edit.bar.addHint' : 'course.edit.flyHint');
-        }, refused ? 6000 : 3000);
+        // I2 (D6): a refusal stays until the pilot's next action (line-hold.ts), what an edit did for DONE_MS
+        this.hold.tell(text, refused, performance.now());
     }
 
     /** the drone flies: the bar steps aside (the line stays, it says how to come back) */
     flying(on: boolean): void {
         this.root.classList.toggle('flying', on);
-        this.line.textContent = t(on ? 'course.edit.flying' : 'course.edit.flyHint');
+        this.hold.reset();
+        this.line.classList.remove('refused');
+        this.setLine(t(on ? 'course.edit.flying' : 'course.edit.flyHint'));
     }
 
     destroy(): void {
-        clearTimeout(this.told);
+        this.hold.stop();
+        window.removeEventListener('keydown', this.onAct, true);
+        window.removeEventListener('pointerdown', this.onAct, true);
         this.root.remove();
     }
 }
