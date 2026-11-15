@@ -4,7 +4,11 @@
 // the proof's margin and the free space a gate takes all shrink by the same factor, down to what the smallest drone of
 // the simulator flies. When no course reaches gatesMin it answers the one with the most gates (the smallest sensible
 // course), never nothing while one gate fits.
+import type { SceneTransform } from '@shramko/sonic-fpv';
 import type { TrackFile, VoxelCollision } from './types';
+import { marginOf } from './check';
+import { wallsCheck } from './editor';
+import { upgradeTrack } from './format';
 import { COURSE_DEFAULTS, generateCourse } from './generate';
 import type { CourseOptions, CourseParams } from './generate';
 import type { FreeSpace } from './freespace';
@@ -71,6 +75,17 @@ export function provenCourse(t: TrackFile): boolean {
 }
 
 /**
+ * Lane fix3b: the generator ends with the very check the edit mode's Save runs on the course as the pilot gets it
+ * (wallsCheck on upgradeTrack of the file, at marginOf(file), in the flown transform): a course it refuses is not given
+ * while another seed or scale gives one it passes. Only a course with a proof record is checked (a fake generator in
+ * tests gives none).
+ */
+export function savesUntouched(t: TrackFile, walls: VoxelCollision, transform: SceneTransform): boolean {
+    if (!t.generator?.params?.proof || t.gates.length === 0) return true;
+    return wallsCheck(walls, transform, marginOf(t))(upgradeTrack(t)).length === 0;
+}
+
+/**
  * The first course of at least `gatesMin` gates over COURSE_SCALES (each with SEEDS_PER_SCALE derived seeds); at scale 1
  * the seeds and courses are exactly those of the page's enoughGates before K1.2. Else the course with the most gates.
  */
@@ -90,9 +105,9 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             if (deadline && best && deadline.now() + longest > deadline.at) return end();
             const t0 = deadline ? deadline.now() : 0;
             const t = make(free, walls, { ...opts, seed: s & 0x7fffffff, params });
+            const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;
-            const ok = provenCourse(t);
             if (ok && t.gates.length >= gatesMin) return { track: t, short: false, scale, tried, proven: true };
             // a proven course beats an unproven one of any length; among the same kind the one with more gates
             if (t.gates.length > 0 && ((ok && !bestOk) || (ok === bestOk && t.gates.length > (best?.gates.length ?? 0)))) {

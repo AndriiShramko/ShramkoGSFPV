@@ -122,6 +122,31 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(none.short).toBe(true);
     });
 
+    it('lane fix3b: the generator ends with the Save check itself: a course it refuses is not given even with its proof marked ok', () => {
+        // the real generator; the first course's gate 1 is put against the wall at x = 0 after its proof passed (proof
+        // record unchanged, ok true), so only the Save check of the course as given can see it
+        let bad: TrackFile | null = null;
+        const intoWall = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            if (bad || t.gates.length === 0) return t;
+            const g0 = t.gates[0]!;
+            bad = { ...t, gates: [{ ...g0, pos: [0.05, g0.pos[1], g0.pos[2]] as Vec3 }, ...t.gates.slice(1)] };
+            return bad;
+        }) as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, 1, intoWall);
+        // control: the moved course is refused by the Save check while its proof still reads ok
+        const b = bad as TrackFile | null;
+        expect(b).not.toBeNull();
+        expect((b!.generator!.params.proof as { ok: boolean }).ok).toBe(true);
+        expect(wallsCheck(walls, IDENTITY, marginOf(b!))(upgradeTrack(b!)).length).toBeGreaterThan(0);
+        // what the pilot gets is another try, and the Save check passes it untouched
+        expect(r.track).not.toBeNull();
+        expect(r.track).not.toBe(b);
+        expect(r.proven).toBe(true);
+        expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
+    });
+
     it('the smallest scale keeps the ring at RING_MIN_DRONE_DIAMETERS drone diameters', () => {
         const last = COURSE_SCALES[COURSE_SCALES.length - 1]!;
         expect(RING_DIAMETER_M * last).toBeGreaterThanOrEqual(RING_MIN_DRONE_DIAMETERS * 2 * SMALLEST_DRONE_RADIUS_M);
