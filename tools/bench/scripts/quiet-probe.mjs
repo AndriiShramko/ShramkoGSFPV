@@ -38,9 +38,39 @@ const READ = () => {
         vy: s ? s[4] : null,
         pos: s ? [s[0], s[1], s[2]] : null,
         gates: c ? c.gates : 0,
-        next: c ? c.next : null
+        next: c ? c.next : null,
+        cues: so && so.cues ? so.cues : null
     };
 };
+// Stage fixes pass 2: what the page hands to the voice (speechSynthesis.speak) and to a screen reader (text added inside a live
+// region that is not aria-hidden), each with its time on the page clock
+const HOOKS = () => {
+    const q = { speak: [], live: [] };
+    window.__qp = q;
+    try {
+        const sp = SpeechSynthesis.prototype.speak;
+        SpeechSynthesis.prototype.speak = function (u) { q.speak.push({ t: performance.now(), text: String(u && u.text || '').slice(0, 90) }); return sp.call(this, u); };
+    } catch { q.speak = null; }
+    const liveOf = (n) => {
+        const el = n.nodeType === 1 ? n : n.parentElement;
+        if (!el) return null;
+        if (el.closest('[aria-hidden="true"]')) return null;
+        const r = el.closest('[aria-live]');
+        return r && r.getAttribute('aria-live') !== 'off' ? r : null;
+    };
+    const watch = () => new MutationObserver((ms) => {
+        for (const m of ms) {
+            const nodes = m.type === 'characterData' ? [m.target] : [...m.addedNodes];
+            for (const n of nodes) {
+                const r = liveOf(n);
+                const text = (n.textContent || '').trim();
+                if (r && text) q.live.push({ t: performance.now(), where: (r.id || r.className || r.tagName).toString().slice(0, 40), text: text.slice(0, 90) });
+            }
+        }
+    }).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    if (document.documentElement) watch(); else document.addEventListener('DOMContentLoaded', watch);
+};
+const QUOTE = process.env.QUOTE === '1';
 const SET_PREFS = ([reader, narrator]) => {
     for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -59,6 +89,7 @@ const SET_PREFS = ([reader, narrator]) => {
 
 async function openPage() {
     const ctx = await browser.newContext({ viewport: { width: 1600, height: 900 } });
+    await ctx.addInitScript(HOOKS);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => out.errors.push(String(e.message).slice(0, 160)));
     const url = `${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false&render=off`;
@@ -86,6 +117,7 @@ async function sample(page, t0, ms, tag) {
 try {
     const { page } = await openPage();
     const t0 = Date.now();
+    const p0 = await page.evaluate(() => performance.now());
     // the mode on and the stick at once: KeyW held for 2 s from the press
     await page.keyboard.press('Backslash');
     await page.keyboard.down('KeyW');
@@ -111,6 +143,15 @@ try {
     }
     console.log('course', out.courseReady, 'hum', out.firstHum, out.humTarget);
     save();
+    if (QUOTE) {
+        // Q4: the narrator key twice in the flight (off then on when it starts on; on then off when it starts off)
+        out.quote = [];
+        for (let i = 0; i < 2; i++) {
+            out.quote.push(+((Date.now() - t0) / 1000).toFixed(2));
+            await page.keyboard.press('Quote');
+            await sample(page, t0, 4000, 'quote' + (i + 1));
+        }
+    }
     // the rest of the flight: hovering with the course, FLY_S s from the press, sampled each second
     const endF = t0 + FLY_S * 1000;
     while (Date.now() < endF) {
@@ -120,7 +161,12 @@ try {
     const ev = await page.evaluate(() => { const so = window.__gsfpv.sonic(true); return (so.events || []).filter((e) => e.kind === 'speech' || e.kind === 'lesson').map((e) => ({ t: e.t, kind: e.kind, key: e.key ?? e.what, text: (e.text || '').slice(0, 90) })); });
     out.events = ev;
     out.spoken = ev.filter((e) => e.kind === 'speech' && e.key !== 'speech.end').length;
-    console.log('spoken', out.spoken, 'errors', out.errors.length);
+    const qp = await page.evaluate(() => window.__qp || null);
+    const rel = (a) => (a || []).map((x) => ({ ...x, t: +((x.t - p0) / 1000).toFixed(2) }));
+    out.voiced = qp && qp.speak ? rel(qp.speak) : null;
+    out.live = qp ? rel(qp.live) : null;
+    out.prefsNow = await page.evaluate(() => { for (let i = 0; i < localStorage.length; i++) { try { const d = JSON.parse(localStorage.getItem(localStorage.key(i))); if (d && d.collections && d.collections.sonic) return d.collections.sonic.prefs || null; } catch { /* not ours */ } } return null; });
+    console.log('spoken', out.spoken, 'voiced', out.voiced ? out.voiced.filter((v) => v.t >= 0).length : 'n/a', 'live', out.live ? out.live.filter((v) => v.t >= 0).length : 'n/a', 'errors', out.errors.length);
 } catch (e) { out.fail = String(e).slice(0, 300); console.log('FAIL', out.fail); }
 save();
 await browser.close();
