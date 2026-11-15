@@ -168,6 +168,23 @@ process.exit(ok ? 0 : 1);' "$f" "$@"
 run sonic-in-place-tunis soniccheck tunis 887f27aa 1 60 Shift+KeyG 'gives the free flight by sound' 'starts no new life and keeps the speed'
 run sonic-course-wroclaw soniccheck wroclaw 70b50d42 0 60 Shift+KeyG 'gives the free flight by sound' 'starts no new life and keeps the speed' 'makes a course'
 run sonic-course-wroclaw-n soniccheck wroclaw-n 70b50d42 0 60 KeyN 'gives the free flight by sound' 'makes a course'
+# Train 3 integration D (lanes quiet, quiet2, quiet3): the narrator off. quiet-probe.mjs sets the Narrator setting off in the
+# prefs document of the probe's own browser (localStorage, nothing on the server), presses only flight keys (Backslash, W,
+# Shift+G; the course lives in the page) and sends or saves nothing. Render off, no GPU lock. The check: from the Backslash
+# press to 10 s later no line with words to the voice and none to a live region, and the craft moves (over 0.5 m/s) within
+# the 2 s that W is held from the press (the probe's own window).
+narratoroff() {
+  NARRATOR=off FLY_S=15 node scripts/quiet-probe.mjs "$SITE/en" "$OUT/narrator-off.json" 70b50d42 || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const m4 = j.m4 || null;
+const voiced = m4 ? (j.voiced || []).filter((v) => v.t >= m4.press && v.t <= m4.press + 10 && String(v.text || "").trim() !== "").length : -1;
+const live = m4 ? m4.lines10 : -1;
+const moved = (j.samples || []).some((s) => s.tag === "w" && (s.speed > 0.5 || Math.abs(s.vy || 0) > 0.5));
+console.log("fail", j.fail || "-", "narrator", j.narrator, "voiced 0..10 s", voiced, "live 0..10 s", live, "moved with W", moved);
+process.exit(!j.fail && voiced === 0 && live === 0 && moved ? 0 : 1);' "$OUT/narrator-off.json"
+}
+run narrator-off narratoroff
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"
