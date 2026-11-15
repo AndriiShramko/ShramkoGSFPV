@@ -28,7 +28,7 @@ import type { DrawPlan, StochasticImpl } from './accum-policy';
 import type { GpuInfo } from './device-class';
 import { BrokenFileError, lodMetaProblem, lodMode } from './lod';
 import type { LodState } from './lod';
-import { ENGINE_RULE, ViewLod, lodRule } from './view-lod';
+import { ENGINE_RULE, ViewLod, lodRule, viewLodParamsOf } from './view-lod';
 import type { ViewLodStats } from './view-lod';
 
 /**
@@ -87,6 +87,9 @@ export interface RendererOptions {
     accumVariant?: string;
     /** false: the engine's own choice of detail for a streamed scan, without the frame's priority (view-lod.ts); default on */
     viewLod?: boolean;
+    /** test switches of the frame's priority (?lodmul=, ?viewlodfar=): the scan's multiplier while it works and how many levels coarser the far field is; absent: the defaults */
+    viewLodMultiplier?: number;
+    viewLodFarLevels?: number;
 }
 
 export const TONEMAPS: Record<string, number> = {
@@ -311,7 +314,7 @@ export class SplatRenderer {
         g.lodUpdateAngle = ENGINE_RULE.updateAngle;
         g.lodBehindPenalty = ENGINE_RULE.behindPenalty;
         g.lodUnderfillLimit = LOD_UNDERFILL;
-        this.viewLod = new ViewLod(app, cam);
+        this.viewLod = new ViewLod(app, cam, viewLodParamsOf(opts.viewLodMultiplier, opts.viewLodFarLevels));
         // after the flight has placed the camera for this frame and before the engine prepares the scan
         app.on('framerender', this.onViewLod);
         // engine 2.23: LOD is always chosen by distance (lodMode is deprecated); the budget is a target
@@ -664,7 +667,7 @@ export class SplatRenderer {
         const active = v.active;
         if (active === this.viewLodActive) return;
         this.viewLodActive = active;
-        const rule = lodRule(active, v.params.refreshDeg);
+        const rule = lodRule(active, v.params.refreshDeg, v.params.lodMultiplier);
         const g = this.app.scene.gsplat;
         g.lodBehindPenalty = rule.behindPenalty;
         g.lodUpdateAngle = rule.updateAngle;
@@ -679,7 +682,7 @@ export class SplatRenderer {
     /** The scan's distance falloff by the rule at work (lodRule): 2 while the frame's priority works, else the engine's 3 (a scan in one file has no such number). */
     private applyLodMultiplier(): void {
         const comp = this.splat?.gsplat as (GSplatComponent & { lodMultiplier?: number }) | undefined;
-        if (comp && typeof comp.lodMultiplier === 'number') comp.lodMultiplier = lodRule(this.viewLodActive).lodMultiplier;
+        if (comp && typeof comp.lodMultiplier === 'number') comp.lodMultiplier = lodRule(this.viewLodActive, this.viewLod.params.refreshDeg, this.viewLod.params.lodMultiplier).lodMultiplier;
     }
 
     /** What the frame's priority is doing (the test hook, F3, the bug report). */

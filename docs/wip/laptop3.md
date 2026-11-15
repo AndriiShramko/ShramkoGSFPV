@@ -17,6 +17,15 @@ Stage P2-measure-here
 - [x] 3. Table next to the laptop's numbers, pictures in U:/Temp/gsfpv-train3/shots, what a person sees in each pair
   (this commit; evidence/2026-11-15/lod-view/l3-*.json and score-l3-*.json)
 
+Stage P3-weak-budget
+- [x] 1. URL switches `?lodmul=` (the scan's multiplier while the frame's priority works, 1.2 to 4) and `?viewlodfar=`
+  (the far field's levels, 0 to 12): view-lod.ts lodRule/viewLodParamsOf, renderer, session, flight.ts; test
+  view-lod-switches.test.ts (NEG OK), render-pc and fly typecheck exit 0 (this commit)
+- [~] 2. Measure the multiplier 1.5 and 1.7 on Lublin at 0.5 M and 1 M (runner U:/Temp/gsfpv-train3/laptop3/run-p3.sh,
+  server 5741), against the P2 16 M reference
+- [ ] 3. Keep what wins, the street case (Wroclaw) and the snap turn not worse; pictures -after
+- [ ] 4. accept-fly B6 B7 B9 to B16, a6-reference, gates vitest, architecture, i18n, b18; status table
+
 ## Facts (measured)
 
 - The squashed tree has no other program's name: `git grep --cached -i "DJI|otherRows"` finds only this project's own

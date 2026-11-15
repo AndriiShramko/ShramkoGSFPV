@@ -47,13 +47,27 @@ export interface ViewLodParams {
     refreshDeg: number;
     /** files are fetched nearest first (by the frame's distance) instead of the engine's coarser-level-of-the-whole-scan first */
     nearFirst: boolean;
+    /** the scan's lodMultiplier while this is at work (lodRule): one level coarser per this many times the distance */
+    lodMultiplier: number;
 }
 
 /**
  * The values the Lublin stress test settled on (docs/wip/lod-view.md): between the two that were scored against a 16 M
  * reference, 0.43 and 2.5 levels (best right after a snap turn) and 0.68 and 4 levels (best once the view has settled).
  */
-export const VIEW_LOD_DEFAULTS: ViewLodParams = { ringDeg: 25, ringLevels: 0.5, farDeg: 80, farLevels: 3, predictS: 0.25, refreshDeg: 6, nearFirst: true };
+export const VIEW_LOD_DEFAULTS: ViewLodParams = { ringDeg: 25, ringLevels: 0.5, farDeg: 80, farLevels: 3, predictS: 0.25, refreshDeg: 6, nearFirst: true, lodMultiplier: 2 };
+
+/**
+ * The params of two test switches over the defaults (?lodmul= the multiplier, ?viewlodfar= the far field's levels, 0 to
+ * 12); a value that is absent or out of range leaves the default.
+ */
+export function viewLodParamsOf(multiplier?: unknown, farLevels?: unknown): Partial<ViewLodParams> {
+    const out: Partial<ViewLodParams> = {};
+    if (multiplier !== undefined && multiplier !== null && multiplier !== '') out.lodMultiplier = lodMultiplierOf(multiplier);
+    const f = typeof farLevels === 'string' && farLevels.trim() !== '' ? Number(farLevels) : farLevels;
+    if (typeof f === 'number' && Number.isFinite(f) && f >= 0 && f <= 12) out.farLevels = f;
+    return out;
+}
 
 /** The engine's lodMultiplier where a scan does not say its own. */
 export const ENGINE_LOD_MULTIPLIER = 3;
@@ -79,8 +93,20 @@ export const ENGINE_RULE: Readonly<LodRule> = { behindPenalty: 5, updateAngle: 9
  * near part). Scored on Lublin against a 16 M reference at 1 M and 4 M, the two together came up to 3 dB nearer to it than
  * the engine's rule, and 0.1 dB further at the highest place (docs/wip/lod-view.md).
  */
-export function lodRule(active: boolean, refreshDeg: number = VIEW_LOD_DEFAULTS.refreshDeg): LodRule {
-    return active ? { behindPenalty: 1.001, updateAngle: refreshDeg, lodMultiplier: 2 } : { ...ENGINE_RULE };
+export function lodRule(active: boolean, refreshDeg: number = VIEW_LOD_DEFAULTS.refreshDeg, multiplier: number = VIEW_LOD_MULTIPLIER): LodRule {
+    return active ? { behindPenalty: 1.001, updateAngle: refreshDeg, lodMultiplier: lodMultiplierOf(multiplier) } : { ...ENGINE_RULE };
+}
+
+/** The scan's lodMultiplier while the frame's priority is at work (lodRule). */
+export const VIEW_LOD_MULTIPLIER = 2;
+/** The multipliers a test switch may set (?lodmul=): below 1.2 the balancer's levels crowd into a few bins, above 4 the far field is drawn at its coarsest. */
+export const LOD_MULTIPLIER_MIN = 1.2;
+export const LOD_MULTIPLIER_MAX = 4;
+
+/** A multiplier asked for (a URL switch, a test): kept when finite and within LOD_MULTIPLIER_MIN..MAX, else VIEW_LOD_MULTIPLIER. */
+export function lodMultiplierOf(v: unknown): number {
+    const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
+    return typeof n === 'number' && Number.isFinite(n) && n >= LOD_MULTIPLIER_MIN && n <= LOD_MULTIPLIER_MAX ? n : VIEW_LOD_MULTIPLIER;
 }
 
 /** The ramp of the distance factor: 1 in the frame, ringFactor at ringDeg beyond its edge, farFactor from farDeg on. */
