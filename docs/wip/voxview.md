@@ -239,7 +239,11 @@ Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
    (apps/fly/src/voxel-keeper.ts), apps/fly/src/voxels.ts feeds it to fillLeftS; the walls line's percent stays the
    chunk share. Test +1 (10 passed); control with the HEAD voxel-keeper.ts: "expected undefined to be 50".
    Typecheck apps/fly 0 errors.
-1d. [ ] Rebuild, rerun FAR_PHASES=spawn on 70b50d42, read the time left against the real end.
+1d. [x] Rerun on release 8febc1b2 (sha256 88f50793dd63..., port 5742, FAR_PHASES=spawn, BENCH_UNCAPPED=1,
+   U:/Temp/gsfpv-train2/voxview/far-x2f.json): full at 12.2 s after the switch (27236 of 27236 chunks to 231 m,
+   1854 meshes), frame 9.5 ms mean (p95 34). Time left by the mesh pace: none shown at 1 % (7.1 s, first reading),
+   3 s at 12 % (8.2 s, real 4.0), 1 s at 24 % (real 3.0), 1 s at 61 % (real 2.0), 1 s at 97 %. So it now runs
+   slightly short instead of 27 times too long.
 2. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5742/en; it takes the GPU lock itself),
    walls-published-probe on the local copy (wrap in the lock), gates.py --only vitest (alone, no probe beside it).
 3. Status: What the owner does, Not verified (no weak device), For the lead (list below is current).
