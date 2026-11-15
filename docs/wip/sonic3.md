@@ -14,8 +14,29 @@ Stage Y1-switch-and-pins (train 3 wave 2):
   feature.ts); tools/bench/test/sonic-escape-in-place.test.ts 2 of 2, NEG OK on origin/main lesson-menu.ts; sonic-lesson-keys 37 pass.
 - [x] Package train3 f767aa9: lesson counts 32 in CITATION, README, llms.txt, AGENTS.md; pass-rule control, room scale and
   beacon R1 leave the speed lessons out (test/helpers/new-lessons.ts SPEED_LESSONS); proofs.ts quote; those 4 files 69 of 69.
-- [ ] Left: tts fixtures for the 28 new lines (measure-tts.ps1 started), the words check (tools/listen-words.ts, Whisper, GPU
-  lock), package suite, pin move; SO-1 cause from the spy run; SO-9, SO-10; status lines SO-5..7; gates.
+- [x] Package train3 a466888: the 28 speed-lesson lines measured with the four Windows voices (test/fixtures/measure-tts.ps1,
+  merged by U:/Temp/gsfpv-train3/sonic3/merge_tts.py; every old value reproduced exactly: en 397, es pl ru 487 each);
+  test/lesson-schedule.test.ts counts en 429 lines / 301 longer, es pl ru 515 lines / 280, 376, 515 longer: 13 of 13.
+  (measure-tts.ps1 writes a BOM and CRLF and all en lines: never commit its output, merge it.)
+- [ ] LEFT, in this order (stage stopped at its reply budget; nothing uncommitted in either repo but the two old evidence files):
+  1. Read the before run: U:/Temp/gsfpv-train3/sonic3/z5-r11-tunis4.log / .json (fixes-run.sh on 2065b16d, started 01:36, it
+     was flying the course at the stop; run-4 evidence kept as z5-r11-tunis4-run4.json). It ran the OLD probe (no spy).
+  2. SO-1 cause: release build of HEAD, then PORT=5823 Z5_QUICK=1 Z5_SCENE=887f27aa Z5_SPEEDS=5 Z5_WALLS=shipped r11 (the
+     probe takes the GPU lock itself): run.switchOn.spy and run.off.spy name the call and the life reason. Candidates read in
+     code: crash.enabled cleared on leave (respawn.ts:67 setCrashOn -> applyLifeSettings, reason 'settings', "level and
+     still"); scene.walls / scene.transform session prefs cleared (clearScanPrefs) -> walls.ts follow -> setWallsOn newLife.
+     Fix in mode.ts (in place: set and clear no 'life' pref, MODE_PREFS without crash.enabled when here, no scan prefs when
+     here) with a unit test in sonic-in-place.test.ts that wires respawn's pref reaction; crash at switch-on: keep the pilot's
+     setting (run 4 showed the course lost with crash on? the spy run tells whether that was the crash or the stop).
+  3. Package: words check, node tools/run-tool.mjs listen-words (Whisper, takes the GPU lock itself; SHRAMKO_LISTEN_PY must
+     name a Python with faster-whisper, check first), commit evidence/listen/VL-4-words.json; then the full package suite
+     (detached, log), expect 0 failures; then pin packages/sonic-fpv to that commit (docs/agent-map.md pin recipe), simulator
+     tests that read lessons (sonic-*.test.ts) and apps/fly tsc.
+  4. SO-9: Decisions already name the hum-attended pilot; SO-10: with the speed lessons pinned speed-4 caps 4.5 m/s, so tier 2
+     (8 m/s) is still reached by no shipped flight: drop the tier-2 sentence from For the lead or add a lesson at 8 m/s.
+  5. SO-5..7 status lines: check that Facts say only measured values (done in fixes stage; reread after the runs).
+  6. Browser: r11 on Tunis (course) and Wroclaw stand-in (rm dist/walls/70b50d42 only for the built case; Housefly d10c5638
+     for walls built), expect the two new switch checks to pass; gates.py --only vitest,architecture,i18n,b18.
 
 Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into train3 2e1618f):
 - [x] SO-1 stands: in place the mode applied LESSON_FLIGHT (bump 'slide') as a 'life' setting on enter and took it back on
@@ -379,6 +400,9 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 
 ## Cost notes
 
+- 2026-11-15 Y1: most replies went to the package's pinned tests of the lesson set (counts, tts fixtures in a format the
+  measuring script does not write) while the 9-minute browser run held the lock; starting the spy run (not the old probe) as
+  the first browser job would have named the SO-1 cause in this stage.
 - 2026-11-15 fixes: most replies went to SO-1 and SO-4: the unit rig has no prefs wiring, so a 'life' pref change passed
   in Node and showed only in the 7-minute browser run (twice). A rig option that wires the page's pref reactions
   (respawn.ts crash, play.ts) would have found it in seconds.
