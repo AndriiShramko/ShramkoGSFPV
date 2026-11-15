@@ -265,7 +265,7 @@ async function far() {
         while (Date.now() - s0 < ms) {
             const s = await page.evaluate(() => ({ st: window.__gsfpv.voxels.stats(), ok: window.__gsfpv.voxels.settled() }));
             series.push([Math.round((Date.now() - s0) / 100) / 10, s.st.share ?? null, s.st.drawnFarM ?? null, s.st.chunks, s.st.fillLeftS ?? null]);
-            if (!r.far.midLine && s.st.share > 0 && s.st.share < 100) r.far.midLine = await page.evaluate(() => [...document.querySelectorAll('.walls-menu *, [class*=voxel] *')].map((e) => e.textContent?.trim() ?? '').find((x) => x.includes('%') && x.length < 260) ?? null);
+            if (!r.far.midLine && s.st.share > 0 && s.st.share < 100) r.far.midLine = await page.evaluate(() => [...document.querySelectorAll('.walls-menu *, [class*=voxel] *')].map((e) => e.textContent?.trim() ?? '').find((x) => x.includes('drawn,') && x.includes('%') && x.length < 260) ?? null);
             if (full < 0 && s.st.share === 100) full = Date.now() - s0;
             if (s.ok && Date.now() - s0 > 1500) { ok = true; break; }
             await sleep(1000);

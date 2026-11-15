@@ -1,7 +1,7 @@
 // The voxel view's frame rate keeper (lane voxview, V3): slow frames halve the near budgets' share
 // down to a floor, fast frames give it back only after several looks in a row. Pure numbers.
 import { describe, expect, it } from 'vitest';
-import { drawnShare, fillLeftS, keeperStep, KEEPER_MIN, KEEPER_FAST_TURNS, KEEPER_SLOW_MS, KEEPER_FAST_MS } from '../../../apps/fly/src/voxel-keeper';
+import { drawnShare, fillLeftS, trimFillSamples, keeperStep, KEEPER_MIN, KEEPER_FAST_TURNS, KEEPER_SLOW_MS, KEEPER_FAST_MS } from '../../../apps/fly/src/voxel-keeper';
 
 describe('voxel frame rate keeper', () => {
     it('halves the share on slow frames, never under the floor', () => {
@@ -57,12 +57,24 @@ describe('voxel view: the share in the walls line', () => {
 });
 
 describe('voxel view: time left while the whole scene fills', () => {
-    it('follows the pace so far, and says nothing with no pace or when full', () => {
-        expect(fillLeftS(4000, 40)).toBe(6);
-        expect(fillLeftS(9000, 90)).toBe(1);
-        expect(fillLeftS(100, 99)).toBe(1);
-        expect(fillLeftS(5000, 0)).toBeNull();
-        expect(fillLeftS(5000, 100)).toBeNull();
-        expect(fillLeftS(0, 50)).toBeNull();
+    it('follows the pace of the last 2 s, not the slow start', () => {
+        // slow near chunks: 2 % in 8 s, then 5 % in the last 2 s -> 93 % left at 5 % per 2 s
+        expect(fillLeftS([{ t: 0, share: 0 }, { t: 8000, share: 2 }, { t: 9000, share: 4 }], 10000, 7)).toBe(37);
+        // a fill younger than 2 s reads from its start
+        expect(fillLeftS([{ t: 0, share: 0 }, { t: 1000, share: 20 }], 1500, 40)).toBe(2);
+    });
+    it('falls back to the pace since the start when the last 2 s brought nothing', () => {
+        expect(fillLeftS([{ t: 0, share: 0 }, { t: 5000, share: 50 }, { t: 7000, share: 50 }], 9000, 50)).toBe(9);
+    });
+    it('says nothing with no pace or when full', () => {
+        expect(fillLeftS([{ t: 0, share: 0 }], 5000, 0)).toBeNull();
+        expect(fillLeftS([{ t: 0, share: 0 }], 5000, 100)).toBeNull();
+        expect(fillLeftS([{ t: 0, share: 0 }], 0, 50)).toBeNull();
+        expect(fillLeftS([], 5000, 50)).toBeNull();
+    });
+    it('keeps the first reading and the last 2 s', () => {
+        const s = [0, 1000, 3000, 6000, 7000, 8000, 9000].map((t) => ({ t, share: t / 100 }));
+        trimFillSamples(s, 9000);
+        expect(s.map((x) => x.t)).toEqual([0, 7000, 8000, 9000]);
     });
 });

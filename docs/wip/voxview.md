@@ -224,11 +224,12 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 ## Left
 
 Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
-1. Time left reads too high early (Wroclaw street, 3be318ba: 452 s at 2 %, 136 s at 7 %, done 7 s later): the
-   average from the fill's start is dragged by the slow near chunks. Use the pace of the last 2 s (samples kept in
-   apps/fly/src/voxels.ts stats(), pure rule in voxel-keeper.ts fillLeftS), test with control, rebuild, rerun
-   FAR_PHASES=spawn on 70b50d42 and read the series' 5th column. The probe's midLine picked "Opacity100 %": select
-   the text with "drawn," instead (tools/bench/scripts/voxview-depth-probe.mjs, fill()).
+1. [x] Time left from the pace of the last 2 s (this commit): apps/fly/src/voxel-keeper.ts fillLeftS(samples, now,
+   share) and trimFillSamples, FILL_PACE_MS 2000 (estimate); apps/fly/src/voxels.ts keeps the readings; falls back to
+   the pace since the start when the last 2 s brought nothing. tools/bench/test/voxview-keeper.test.ts 9 passed;
+   control with the voxel-keeper.ts of HEAD: "expected null to be 37", "expected null to be 9". Probe midLine picks
+   the text with "drawn,". Typecheck apps/fly 0 errors. Browser rerun on 70b50d42: item 1b.
+1b. [ ] Rebuild the release, rerun FAR_PHASES=spawn on 70b50d42 and read the series' 5th column (time left).
 2. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5742/en; it takes the GPU lock itself),
    walls-published-probe on the local copy (wrap in the lock), gates.py --only vitest (alone, no probe beside it).
 3. Status: What the owner does, Not verified (no weak device), For the lead (list below is current).

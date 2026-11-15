@@ -9,7 +9,7 @@ import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
 import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
-import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep } from './voxel-keeper';
+import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep, trimFillSamples, type FillSample } from './voxel-keeper';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
@@ -138,6 +138,8 @@ export class VoxelController {
     private planFar = 0;
     /** when the whole view's fill began (performance.now), 0 when full */
     private fillFrom = 0;
+    /** readings of the share since the fill began (first one kept), for the pace of the last 2 s */
+    private fillSamples: FillSample[] = [];
     private session: FlightSession;
     private overlay: VoxelOverlay | null = null;
     private worker: Worker | null = null;
@@ -609,8 +611,12 @@ export class VoxelController {
         const share = this.planned ? sh.share : 0;
         // the fill's pace: from the first plan of the whole view that was not all on screen
         const now = performance.now();
-        if (!this.whole || share >= 100) this.fillFrom = 0;
-        else if (this.fillFrom === 0) this.fillFrom = now;
+        if (!this.whole || share >= 100) { this.fillFrom = 0; this.fillSamples = []; }
+        else {
+            if (this.fillFrom === 0) this.fillFrom = now;
+            this.fillSamples.push({ t: now, share });
+            trimFillSamples(this.fillSamples, now);
+        }
         return {
             state: this.state,
             mode: this.mode,
@@ -629,7 +635,7 @@ export class VoxelController {
             plannedChunks: sh.total,
             drawnChunks: sh.drawn,
             share,
-            fillLeftS: this.fillFrom ? fillLeftS(now - this.fillFrom, share) : null,
+            fillLeftS: this.fillFrom ? fillLeftS(this.fillSamples, now, share) : null,
             perLevel: sh.perLevel,
             meshesPerLevel: sh.meshesPerLevel,
             farthestM: this.planFar,

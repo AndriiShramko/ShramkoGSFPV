@@ -51,11 +51,32 @@ export function drawnShare(plan: readonly ShareItem[], drawnAt: (key: number) =>
     return { total, drawn, share: total ? Math.floor((drawn / total) * 100) : 100, farM, drawnFarM, perLevel, meshesPerLevel };
 }
 
+/** How far back the fill's pace is read (ms): the last 2 s, so the slow first near chunks do not drag it. Estimate. */
+export const FILL_PACE_MS = 2000;
+
+/** One reading of the share on screen (percent) at time `t` (ms). */
+export interface FillSample { t: number; share: number }
+
 /**
- * Seconds left until the whole scene is on screen, from the pace so far: `elapsedMs` since the fill
- * began and the share drawn now (percent). null when nothing is drawn yet or all is (no pace to tell).
+ * Seconds left until the whole scene is on screen, from the pace of the last FILL_PACE_MS: `samples` are the
+ * readings since the fill began, oldest first (the first one is the fill's start), `share` the share now.
+ * When nothing came in the last FILL_PACE_MS the pace since the start is used. null when nothing is drawn yet
+ * or all is, or no pace can be told.
  */
-export function fillLeftS(elapsedMs: number, share: number): number | null {
-    if (!(share > 0) || share >= 100 || !(elapsedMs > 0)) return null;
-    return Math.max(1, Math.round((elapsedMs * (100 - share)) / share / 1000));
+export function fillLeftS(samples: readonly FillSample[], now: number, share: number): number | null {
+    if (!(share > 0) || share >= 100 || samples.length === 0) return null;
+    let ref = samples[0];
+    for (const s of samples) if (s.t <= now - FILL_PACE_MS) ref = s;
+    const left = (from: FillSample): number | null => {
+        const dt = now - from.t, ds = share - from.share;
+        return dt > 0 && ds > 0 ? Math.max(1, Math.round((dt * (100 - share)) / ds / 1000)) : null;
+    };
+    return left(ref) ?? left(samples[0]);
+}
+
+/** Keep the readings fillLeftS needs: the first one and those from FILL_PACE_MS before `now` (one older kept). */
+export function trimFillSamples(samples: FillSample[], now: number): void {
+    let cut = 1;
+    while (cut + 1 < samples.length && samples[cut + 1].t <= now - FILL_PACE_MS) cut++;
+    if (cut > 1) samples.splice(1, cut - 1);
 }
