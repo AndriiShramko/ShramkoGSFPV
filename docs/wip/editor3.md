@@ -4,6 +4,16 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage J2-prove (train 3, 2026-11-15):
+- [x] J2.0 merge origin/main f286dd49 (CI secret scan list, no conflict) 7f48dd05; release build of 7f48dd05 exit 0 (sha256
+  607a4319..., U:/Temp/gsfpv-train3/editor3/j2/build.log).
+- [x] J2.1 probe editor3-prove.ts 560afc0c: Save of the untouched generated course as the first press after Shift+B (a
+  refusal records hook.saveCheck(): legs with their ends, gates with freeM); gate 2 pushed into the floor by its Y arrow and
+  Save (refusal selects it, frames it, names it from 1), Ctrl+Z out; a crash after the pad flight's gate (EI-5); later
+  Saves seen by the version going up. tools/bench tsc exit 0.
+- [~] J2.2 chain U:/Temp/gsfpv-train3/editor3/j2/chain.sh (log chain.txt): prove Tunis and Wroclaw, clean Tunis, gizmo
+  both, accept-fly, mouse-free, tracks-page, a6, gates.
+
 Stage J1-fix (train 3, 2026-11-15; NOT finished, pass 1 stopped at the reply budget):
 - [x] J1.0 merge origin/main d245d9ec (integration C) 26eb2e35: one conflict in apps/fly/src/app/builtin/course.ts
   (imports joined; main's guide chip to the next gate is hidden in the edit view, the same rule as the lap clock:
