@@ -202,10 +202,19 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(1200);
 
     // a click on another gate on screen, then Tab
-    const d1 = (await dbg(page))!;
+    let d1 = (await dbg(page))!;
     const sel1 = (await ed(page)).selected ?? -1;
-    const cand = d1.gates.map((g, i) => ({ g, i })).filter(({ g, i }) => i !== sel1 && onScreen(g, vp.width, vp.height) && Math.hypot(g[0]! - d1.stand.screen[0]!, g[1]! - d1.stand.screen[1]!) > 160).sort((a, b) => a.g[2]! - b.g[2]!);
-    const clicks: unknown[] = [];
+    const pick2 = (d: Dbg): { g: number[]; i: number }[] => d.gates.map((g, i) => ({ g, i })).filter(({ g, i }) => i !== sel1 && onScreen(g, vp.width, vp.height) && Math.hypot(g[0]! - d.stand.screen[0]!, g[1]! - d.stand.screen[1]!) > 160).sort((a, b) => a.g[2]! - b.g[2]!);
+    let cand = pick2(d1);
+    // H3 pass 2 (left e): no second gate on screen: the view backs off (S held) and climbs (E) until one shows, at most 4 times
+    let backs = 0;
+    for (; backs < 4 && !cand.length; backs++) {
+        await page.keyboard.down('KeyS'); await page.keyboard.down('KeyE'); await sleep(700);
+        await page.keyboard.up('KeyS'); await page.keyboard.up('KeyE'); await sleep(400);
+        d1 = (await dbg(page))!;
+        cand = pick2(d1);
+    }
+    const clicks: unknown[] = [{ backs, cand: cand.length }];
     for (const { g, i } of cand.slice(0, 3)) {
         await page.mouse.click(g[0]!, g[1]!);
         const c = await until(() => ed(page), (e) => e.selected === i, 2500);
@@ -248,15 +257,26 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(500);
     out.turnTool = (await dbg(page))?.tool;
     const turns: unknown[] = [];
-    for (const dir of [[1, 0], [0, -1], [0.71, -0.71], [-1, 0], [0, 1]]) {
-        const a = (await dbg(page))!;
-        const w = await walk(page, a.stand.screen, dir, 40, '');
+    // H3 pass 2 (left d): every ring is tried (no stop at the first that turns), each with a 60 px and then a 140 px drag
+    // along its tangent, and the angle each drag gave is recorded (degrees from the quaternion change)
+    const seenAxis = new Set<string>();
+    for (const dir of [[1, 0], [0, -1], [0.71, -0.71], [-1, 0], [0, 1], [-0.71, 0.71]]) {
+        const a0 = (await dbg(page))!;
+        const w = await walk(page, a0.stand.screen, dir, 40, '');
         if (!w) { turns.push({ dir, hit: null }); continue; }
-        await drag(page, w.x, w.y, -dir[1]! * 60, dir[0]! * 60);
-        const b = (await dbg(page))!;
-        const q = dist(a.stand.quat, b.stand.quat);
-        turns.push({ dir, r: w.r, hit: w.hit, quatChange: Math.round(q * 1000) / 1000, movedM: r2(dist(a.stand.pos, b.stand.pos)), opening: [r2(a.stand.opening), r2(b.stand.opening)] });
-        if (q > 0.01) break;
+        const axis = String(w.hit[1]);
+        if (seenAxis.has(axis)) continue;
+        seenAxis.add(axis);
+        const per: unknown[] = [];
+        for (const len of [60, 140]) {
+            const a = (await dbg(page))!;
+            const w2 = (await walk(page, a.stand.screen, dir, 40, axis)) ?? w;
+            await drag(page, w2.x, w2.y, -dir[1]! * len, dir[0]! * len);
+            const b = (await dbg(page))!;
+            const dot = Math.min(1, Math.abs(a.stand.quat.reduce((s, v, i) => s + v * (b.stand.quat[i] ?? 0), 0)));
+            per.push({ len, deg: Math.round((2 * Math.acos(dot) * 180) / Math.PI), movedM: r2(dist(a.stand.pos, b.stand.pos)), dragging: b.dragging });
+        }
+        turns.push({ dir, axis, r: w.r, per, turned: per.some((p) => (p as { deg: number }).deg > 0) });
     }
     out.turn = turns;
     if (id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-turn-1920.png') });
@@ -494,6 +514,44 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     out.path = await span(page, tPath, await now(page));
     // G3 pass 2: the red gates go first (the highest number first, the moved gate last) until the check finds none, then
     // Save on the LOCAL stand-in of /api/tracks (main() routes it; nothing leaves this PC), then the saved course again
+    // H3 pass 2 (left c, f): with problems left, Save first as the pilot would; the refusal selects the wrong gate and says
+    // what to do; the probe does what it says (pulls the selected gate's X and Z arrows, keeps a pull that leaves fewer
+    // problems, takes back one that does not) before any delete. Records the line at 1 s and 7 s, the start and the problems.
+    let earlySaved = false;
+    if (((await ed(page)).problems ?? 0) > 0) {
+        await page.click('[data-top="save"]', { timeout: 3000 }).catch(() => undefined);
+        await sleep(800);
+        if (await page.evaluate(() => document.activeElement instanceof HTMLInputElement)) { await page.keyboard.type('Probe H3'); await page.keyboard.press('Enter'); }
+        const s1 = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 3000);
+        earlySaved = s1.ok;
+        const topLine = (): Promise<string> => page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
+        const cv = (await dbg(page)) as unknown as { wrong?: unknown; course?: { start?: unknown; problems?: unknown; gates?: { pos?: number[] }[] } } | null;
+        const line1 = await topLine();
+        const pulls: unknown[] = [];
+        if (!earlySaved) {
+            const fixSel = (await ed(page)).selected;
+            await page.click('.ce-gatebar [data-bar="move"]', { timeout: 2000, force: true }).catch(() => undefined);
+            await sleep(400);
+            for (const [ax, sgn] of [['x', 1], ['x', -1], ['z', 1], ['z', -1], ['x', 1], ['z', 1], ['x', -1], ['z', -1]] as const) {
+                const p0 = (await ed(page)).problems ?? 0;
+                if (p0 === 0) break;
+                const a = (await dbg(page))!;
+                const dir = a.axes[ax];
+                const w = await walk(page, a.stand.screen, dir, 12, ax);
+                if (!w) { pulls.push({ ax, sgn, hit: null }); continue; }
+                await drag(page, w.x, w.y, sgn * dir[0]! * 100, sgn * dir[1]! * 100);
+                await sleep(1200);
+                const p1 = (await ed(page)).problems ?? 0;
+                const b = (await dbg(page))!;
+                const kept = p1 < p0;
+                if (!kept && dist(a.stand.pos, b.stand.pos) > 0.01) { await page.keyboard.press('Control+KeyZ'); await sleep(900); }
+                pulls.push({ ax, sgn, movedM: r2(dist(a.stand.pos, b.stand.pos)), problems: [p0, p1], kept });
+            }
+            out.lineFollow = { selected: fixSel, pulls, problems: (await ed(page)).problems };
+        }
+        await sleep(Math.max(0, 7000 - 800));
+        out.refusal = { saved: earlySaved, said: ((await ed(page)).said ?? '').slice(0, 160), line1s: line1.slice(0, 160), line7s: (await topLine()).slice(0, 160), wrong: cv?.wrong ?? null, start: cv?.course?.start ?? null, gate1: cv?.course?.gates?.[0]?.pos ?? null, problems: JSON.stringify(cv?.course?.problems ?? null).slice(0, 600) };
+    }
     const removed: unknown[] = [];
     let movedGone = false;
     for (let i = 0; i < 14; i++) {
@@ -526,10 +584,13 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(400);
     const cmpPos = (await dbg(page))?.stand.pos;
     out.compare = { index: cmp, pos: cmpPos?.map(r2), isMoved: dist(cmpPos, movedPos) < 0.02, movedGone, lowerGone };
-    await page.click('[data-top="save"]', { timeout: 3000 }).catch((e) => { out.saveClickError = String(e).slice(0, 120); });
-    await sleep(800);
-    const nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
-    if (nameField) { await page.keyboard.type('Probe G3'); await page.keyboard.press('Enter'); }
+    let nameField: string | null = 'early';
+    if (!earlySaved) {
+        await page.click('[data-top="save"]', { timeout: 3000 }).catch((e) => { out.saveClickError = String(e).slice(0, 120); });
+        await sleep(800);
+        nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
+        if (nameField) { await page.keyboard.type('Probe G3'); await page.keyboard.press('Enter'); }
+    }
     const sv = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 20000);
     out.save = { nameField, ok: sv.ok, ms: sv.ms, saved: (sv.v as { saved?: string | null } | null)?.saved ?? null, said: ((await ed(page)).said ?? '').slice(0, 100), problem: sv.v?.problem ?? null, topLine: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? ''), posts: await page.evaluate(() => (window as unknown as { __posts?: number }).__posts ?? null) };
     out.savedGatePos = movedPos?.map(r2);
@@ -634,9 +695,9 @@ async function fakeTracks(ctx: import('playwright').BrowserContext): Promise<voi
             const t = tracks.get(decodeURIComponent(m[1]!));
             return t ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(t.body) }) : route.fulfill({ status: 404, body: '{}' });
         }
-        // one scene per run reads this list, so every kept file is listed
-        const sc = url.searchParams.get('scene');
-        const rows = [...tracks.values()].filter((t) => !sc || String(t.body.scene ?? sc) === sc).map((t) => ({
+        // one scene per run reads this list, so every kept file is listed (H3 pass 2: the scene filter of H3 dropped the saved
+        // course, its body.scene is not the page's scene id, so the list is not filtered)
+        const rows = [...tracks.values()].map((t) => ({
             id: String(t.body.id), version: t.version, title: String(t.body.title ?? ''), gates: Array.isArray(t.body.gates) ? t.body.gates.length : 0,
             lengthM: 0, created: new Date().toISOString(), up: 0, down: 0, rating: 0
         }));
@@ -731,22 +792,36 @@ async function keyboardFly(page: Page): Promise<Record<string, unknown>> {
     const flight: unknown[] = [];
     const EY_AIM = 0.15;
     let crashed = false;
+    // H3 pass 2 (left b): the keyboard's throttle stays where W/S leave it (devices/keyboard.ts: W 0 -> 100 % in 500 ms, S
+    // 100 -> 0 in 333 ms). Pass 1 only pressed D while the gate was behind, so the drone stayed on the ground with the
+    // throttle at 0 and never turned. Now the probe keeps its own estimate of the throttle: it takes off to TH_BASE, holds
+    // it within +-0.12 by the gate's height on screen, and turns with D (yaw) while the gate is not in front.
+    const TH_BASE = 0.5; // an estimate of the hover throttle; the record's alt column shows what it did
+    let th = 0;
+    const tap = async (k: string, ms: number): Promise<void> => { if (ms < 8) return; await page.keyboard.down(k); await sleep(ms); await page.keyboard.up(k); th = k === 'KeyW' ? Math.min(1, th + ms / 500) : k === 'KeyS' ? Math.max(0, th - ms / 333) : th; };
+    const toward = async (target: number): Promise<void> => { const t = Math.max(0, Math.min(1, target)); if (t > th) await tap('KeyW', (t - th) * 500); else await tap('KeyS', (th - t) * 333); };
+    const alt = (): Promise<string | null> => page.evaluate(() => /ALT\s*(-?[\d.]+)/i.exec(document.body.innerText)?.[1] ?? null);
+    await toward(TH_BASE + 0.15);
+    await sleep(400);
     for (let i = 0; i < 150; i++) {
         const d = await dbg(page);
         const h = await hook(page);
         const g = d?.gates[idx];
-        flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null]);
+        flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null, Math.round(th * 100), await alt()]);
         if (h?.next !== nextBefore || (i > 0 && d?.mode !== 'fly')) break;
         if ((d as unknown as { crashActive?: boolean } | null)?.crashActive) crashed = true;
         const keys: string[] = [];
-        if (g && g[2]! > 0) {
+        if (g && g[2]! > 0 && Math.abs(g[0]! - vp.width / 2) < vp.width) {
             const ex = (g[0]! - vp.width / 2) / (vp.width / 2);
             const ey = (g[1]! - vp.height / 2) / (vp.height / 2);
             if (ex > 0.1) keys.push('KeyD');
             else if (ex < -0.1) keys.push('KeyA');
-            keys.push(ey < EY_AIM ? 'KeyW' : 'KeyS');
+            await toward(TH_BASE + Math.max(-0.12, Math.min(0.12, -0.25 * (ey - EY_AIM))));
             if (Math.abs(ex) < 0.3) keys.push('ArrowUp');
-        } else keys.push('KeyD');
+        } else {
+            await toward(TH_BASE + 0.03);
+            keys.push('KeyD');
+        }
         for (const k of keys) await page.keyboard.down(k);
         await sleep(120);
         for (const k of keys) await page.keyboard.up(k);
@@ -759,7 +834,7 @@ async function keyboardFly(page: Page): Promise<Record<string, unknown>> {
     for (let n = 0; n < grow; n++) { await page.keyboard.press('Control+KeyZ'); await sleep(60); }
     return {
         grow, gateAtArm: g0?.map((v) => Math.round(v * 10) / 10), nextBefore, nextAfter, passed: nextAfter !== nextBefore, modeArmed: fm.v?.mode, crashed,
-        steps: flight.length, last: flight.slice(-6), modeAfter: dis.v?.mode, ms: dis.ms,
+        steps: flight.length, first: flight.slice(0, 8), last: flight.slice(-6), modeAfter: dis.v?.mode, ms: dis.ms,
         statsShown: await page.evaluate(() => { const e = document.querySelector('.osd-stats'); return e ? getComputedStyle(e).display : 'absent'; }),
         crashToast: await page.evaluate(() => { const e = document.querySelector('.crash-toast'); return e ? getComputedStyle(e).display : 'absent'; })
     };
