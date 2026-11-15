@@ -332,8 +332,9 @@ export class CourseStage {
     }
 
     /** Colours the gates for `next` (0-based; -1: all later), puts its number plate over it, and the chevrons from the gate
-     *  before it to two ahead. */
-    setNext(next: number, path: readonly WorldCheckpoint[], closed: boolean): void {
+     *  before it to two ahead. `plate` false (the editor's selected gate, review CU-10): no number plate, the editor means
+     *  no race order by its selection. */
+    setNext(next: number, path: readonly WorldCheckpoint[], closed: boolean, plate = true): void {
         if (!this.root) return;
         this.gates.forEach((g, i) => {
             const state = i === next ? 'next' : next >= 0 && i < next ? 'passed' : 'later';
@@ -345,7 +346,7 @@ export class CourseStage {
         this.plate?.destroy();
         this.plate = null;
         this.look.plate = -1;
-        const g = next >= 0 ? this.gates[next] : undefined;
+        const g = next >= 0 && plate ? this.gates[next] : undefined;
         // a page without a document (the Node tests of the stage) draws no number plate
         if (g && typeof document === 'undefined') this.look.plate = next;
         else if (g) {
@@ -378,12 +379,13 @@ export class CourseStage {
         }
     }
 
-    /** The editor's paint (course/editor/rules.ts editPaints), one per gate, over whatever setNext painted. */
+    /** The editor's paint (course/editor/rules.ts editPaints), one per gate, over whatever setNext painted; the dark cells
+     *  of a START / FINISH frame stay dark (review CU-10: the editor shows where the course starts and ends). */
     paintEdit(paints: readonly EditPaint[]): void {
         if (!this.root) return;
         this.gates.forEach((g, i) => {
             const m = this.material(paints[i] ?? 'later');
-            for (const mi of g.instances) mi.material = m;
+            g.instances.forEach((mi, k) => { mi.material = g.dark[k] ? this.material('checkDark') : m; });
         });
     }
 

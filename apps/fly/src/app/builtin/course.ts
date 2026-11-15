@@ -670,8 +670,10 @@ export const course: Feature = {
             run = new CourseRun(track, ctx.session.transform, null);
             provenOn = ctx.session.collision;
             hook.on = true;
-            stage.show(run.gates);
-            stage.setNext(ed.selected, run.path, track.laps > 1);
+            // review CU-10: the editor shows START / FINISH as the flight does, and no number plate on the selected gate
+            const col = ctx.session.collision;
+            stage.show(run.gates, gateRoles(run.gates.length, track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
+            stage.setNext(ed.selected, run.path, track.laps > 1, false);
             // stage F1-finish: the selected gate magenta, a failing gate red (tracks-plan 2.11)
             const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems);
             stage.paintEdit(paints);

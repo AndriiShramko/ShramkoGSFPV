@@ -52,6 +52,19 @@ describe('TR-4: the stage after a hide', () => {
     });
 });
 
+describe('CU-10: the editor\'s selected gate', () => {
+    it('carries no number plate, while the flight\'s next gate does', () => {
+        const stage = stageOf();
+        const run = new CourseRun(course, { s: 1, t: [0, 0, 0] });
+        stage.show(run.gates);
+        stage.setNext(2, run.path, true);
+        expect(stage.look.plate).toBe(2); // control: the flight
+        stage.setNext(2, run.path, true, false);
+        expect(stage.look.plate).toBe(-1);
+        stage.dispose();
+    });
+});
+
 describe('TR-5: a rescale in flight', () => {
     it('the run knows it was laid at another transform', () => {
         const run = new CourseRun(course, { s: 1, t: [0, 0, 0] });

@@ -1134,5 +1134,14 @@ Logs U:/Temp/gsfpv-train3/course4/cu/. No browser run in this stage (budget went
   boundRadius in CourseJob is the fix if the lead wants it per craft.
 - Merge of origin/main is in fix3a (dd19ca7b): the integration's merge should be clean for course.ts and the locales.
 
+## Status course4 fixes pass 2
+
+Logs U:/Temp/gsfpv-train3/course4/cu2/. Release build of b887433b: BUILD EXIT 0 (cu2/build.log), served on 5780 with
+dist/walls = U:/Temp/gsfpv-train3/walls/release.
+- [x] CU-10 fixed: the editor's show() draws the START / FINISH roles (banner, checker; paintEdit keeps the dark cells
+      dark) and setNext(..., plate = false) puts no number plate on the selected gate. Test tracks-review.test.ts 'CU-10'
+      (10 passed) NEG OK against view.ts of b887433b ('expected 2 to be -1'); typecheck fly exit 0. Not seen in a browser.
+- [~] CU-6 browser proof: probe tools/bench/scripts/course-finish-probe.mjs (new) on the release of b887433b.
+
 Cost (course4 fixes): about 30 replies; the most went to the merge and the four majors with tests; the browser proof
 (CU-6) did not fit. A stage of its own for the browser proof, started with the release build, would fit it.
