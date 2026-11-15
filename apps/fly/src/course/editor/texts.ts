@@ -44,6 +44,53 @@ export function problemParts(c: Course, p: CourseProblem): { key: string; args: 
     }
 }
 
+/** train 3 H1: the sentence that says what is wrong with one gate and what to do, by problem (a leg from the start apart) */
+export const FIX_KEYS: Record<CourseProblem['code'] | 'legStart', string> = {
+    outside: 'course.edit.fix.outside',
+    'start-wall': 'course.edit.fix.startWall',
+    'gate-wall': 'course.edit.fix.gateWall',
+    'leg-wall': 'course.edit.fix.legWall',
+    legStart: 'course.edit.fix.legStart',
+    'gate-direction': 'course.edit.fix.direction',
+    'no-start': 'course.edit.fix.noStart'
+};
+/** the lead's sentence around it: a refused Save, a floor-added gate the check refuses */
+export const SAVE_FIX_KEY = 'course.edit.saveFix';
+export const ADD_FIX_KEY = 'course.edit.addFix';
+
+const involves = (p: CourseProblem, id: string): boolean => (p.code === 'leg-wall' ? p.from === id || p.to === id : 'gate' in p && p.gate === id);
+
+/**
+ * train 3 H1 (the lead's decision for a refused Save): the gate to select (index from 0), and the sentence that names it from 1
+ * and says what to do. The first wrong gate is the lowest gate a problem points at (a leg points at its far gate; the start's own
+ * problems at gate 1). With `focus` (a gate just added) only its problems count and that gate is the one selected.
+ */
+export function firstWrong(c: Course, problems: readonly CourseProblem[], focus: string | null = null): { index: number; key: string; args: Record<string, number> } | null {
+    let best: { index: number; key: string; args: Record<string, number> } | null = null;
+    const focusAt = focus === null ? -1 : c.gates.findIndex((g) => g.id === focus);
+    for (const p of problems) {
+        if (focus !== null && !involves(p, focus)) continue;
+        let index = 0;
+        let key = FIX_KEYS[p.code];
+        let args: Record<string, number> = {};
+        if (p.code === 'leg-wall') {
+            const b = gateNumber(c, p.to);
+            const a = gateNumber(c, p.from);
+            index = focusAt >= 0 ? focusAt : b - 1;
+            if (a === 0) {
+                key = FIX_KEYS.legStart;
+                args = { b };
+            } else args = { a, b, m: index + 1 };
+        } else if (p.code === 'outside' || p.code === 'gate-wall' || p.code === 'gate-direction') {
+            index = gateNumber(c, p.gate) - 1;
+            args = { g: index + 1 };
+        }
+        if (index < 0) continue;
+        if (!best || index < best.index) best = { index, key, args };
+    }
+    return best;
+}
+
 /** what an accepted action did, by the key row that names it */
 export const ACTION_KEYS: Record<EditAction['kind'], string> = {
     select: 'course.edit.key.next',
@@ -82,8 +129,8 @@ export function editorLocaleKeys(): string[] {
         // lane editor3 E3: the top bar, Duplicate and flying inside the mode
         'course.edit.bar.add', 'course.edit.bar.addHint', 'course.edit.bar.duplicate', 'course.edit.flyHint', 'course.edit.flying',
         // review ED-6: a gate taken by a click
-        'course.edit.selected', LEG_START_KEY];
-    return [...new Set([...fixed, ...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey),
+        'course.edit.selected', LEG_START_KEY, SAVE_FIX_KEY, ADD_FIX_KEY];
+    return [...new Set([...fixed, ...Object.values(FIX_KEYS),...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey),
         ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey), ...TOOLS.map((b) => b.labelKey)])];
 }
 

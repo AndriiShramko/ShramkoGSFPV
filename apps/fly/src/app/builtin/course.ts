@@ -49,6 +49,7 @@ import { EditorPanel } from '../../course/editor/panel';
 import { editorKey, forwardOf, keyRoute } from '../../course/editor/keys';
 import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
+import { ADD_FIX_KEY, SAVE_FIX_KEY, firstWrong } from '../../course/editor/texts';
 import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
@@ -384,6 +385,12 @@ export const course: Feature = {
                     // review ED-5: an ok answer counts only when no newer course is still asked
                     okCourse = q.pending ? null : ed.course;
                     showEd();
+                    // train 3 H1: a floor-added gate the check refuses says why and what to do, and stays selected
+                    if (addedId !== null && !q.pending) {
+                        const id = addedId;
+                        addedId = null;
+                        showWrong(ADD_FIX_KEY, id);
+                    }
                 };
                 wk.onerror = (e) => {
                     hook.problem = `check: ${e.message || 'worker error'}`.slice(0, 200);
@@ -611,6 +618,29 @@ export const course: Feature = {
             top?.tell(text, refused);
             if (refused) ctx.hud.flash(text, 5000);
         };
+        /** train 3 H1: the gate a floor add put in, until the check's answer on it came */
+        let addedId: string | null = null;
+        /** train 3 H1, the probe's record of the last "this gate is wrong" (index from 0, the sentence's key) */
+        let lastWrong: { index: number; key: string; lead: string } | null = null;
+        /**
+         * train 3 H1 (the lead's decision): the first wrong gate (or the focused one) is selected, the edit view turns to it with its
+         * handles, and one sentence names it from 1 and says what to do. False when no problem points at a gate.
+         */
+        const showWrong = (lead: string, focus: string | null = null): boolean => {
+            if (!ed) return false;
+            const w = firstWrong(ed.course, ed.problems, focus);
+            if (!w) return false;
+            ed = { ...ed, selected: w.index };
+            lastWrong = { index: w.index, key: w.key, lead };
+            showEd();
+            aim();
+            say(t(lead, { fix: t(w.key, w.args) }), true);
+            return true;
+        };
+        const refusedSave = (): void => {
+            if (!ed || showWrong(SAVE_FIX_KEY)) return;
+            say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+        };
         const renderList = (): void => {
             edHook.votes = myVotes();
             const lapped = lappedIds(readBests());
@@ -713,7 +743,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, camTaken, crashCleared, crashActive: ctx.crash.active, override: ctx.session.cameraOverride } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, override: ctx.session.cameraOverride } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => unknown }).__gsfpvEditHit = (x, y) => view?.hitAt(x, y) ?? null;
             if (!adminLive && adminHinted()) {
@@ -804,6 +834,7 @@ export const course: Feature = {
             edChanged = true;
             askedFor = null;
             edHook.refused = null;
+            addedId = st.course.gates[st.selected]?.id ?? null;
             checks?.ask(st.course, flownTransform(), edMargin);
             showEd();
             // G2: the camera stays where the pilot clicked from (the gate stands where he clicked, in his view). The H2 aim()
@@ -973,7 +1004,7 @@ export const course: Feature = {
             if (!ed || !edSource || saving) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+            if (!canSave(ed)) return refusedSave();
             const name = nameIn.trim().normalize('NFC');
             const title = titleIn.trim().normalize('NFC');
             const edited = toTrackV1(ed.course);
@@ -1022,7 +1053,7 @@ export const course: Feature = {
             if (!ed || !edSource || saving || !adminLive) return;
             await checked();
             if (!ed || !edSource) return;
-            if (!canSave(ed)) return say(t('course.edit.saveRefused', { why: problemsLine(ed) }), true);
+            if (!canSave(ed)) return refusedSave();
             const serverId = hook.saved ?? (hook.source === 'server' ? edSource.id : null);
             if (serverId === null) return say(t('course.edit.adminFirst'), true);
             const title = titleIn.trim().normalize('NFC') || edSource.title;
