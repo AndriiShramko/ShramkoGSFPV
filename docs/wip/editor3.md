@@ -69,8 +69,23 @@ Stage I3-prove (train 3, 2026-11-15):
   Left e by reading: on a pad page the keyboard is passive and Space calls controls.toggleArm (devices/keyboard.ts 181-186,
   app/input.ts 143), the pad's own arm switch stays off, so no arm; a pad pilot arms with the pad (step 13). Not a fault of
   the edit mode; not changed.
-- [~] I3.7 (pass 3) chain U:/Temp/gsfpv-train3/editor3/i3p3/chain.sh (log chain.txt): release of aa9a189f, Tunis and
-  Wroclaw editor3-prove.ts, editor3-clean.ts Tunis, accept-fly, mouse-free, a6, gates subset.
+- [x] I3.7 (pass 3) chain U:/Temp/gsfpv-train3/editor3/i3p3/chain.sh (log chain.txt): release build exit 0 (release.json
+  sha 92f1e323: the app tree of aa9a189f, 92f1e323 changes only the probe). editor3-prove.ts Tunis 887f27aa lock
+  14:43:03-14:48:06, Wroclaw 70b50d42 then (14:57:36 end); summaries i3p3/<scene>/sum.txt by i3p3/sum.py; editor3-clean.ts
+  Tunis 14:59:08. Numbers in 'What the owner does'. Left c proven gone: editor3-move-1920.png (Tunis) and
+  editor3-wroclaw-1920.png after the X drag: the X arrow yellow under the mouse, no line across the view (looked at).
+  Left d measured: the hook gives the vertical field 82.9 deg (115 deg horizontal at 16:9), frameF viewShare 0.33 on both
+  scenes (D1 wants about a third). Left a: Wroclaw saved (12 gates) and reopened; Tunis still refused, see For the lead.
+  mouse-free-probe exit 1: 78 PASS, 0 FAIL, then TimeoutError at the rooms entry (known on a local release).
+  a6-reference.test.ts exit 0. gates.py --only vitest,architecture,i18n,b18 on 92f1e323: all PASS (vitest 96 s).
+  accept-fly: the chain's run held the GPU lock while accept-fly waits for that lock itself, so it timed out (exit 124,
+  i3p3/accept.log); run again alone (i3p3/accept2.log, ended 15:25:44): B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 10/10 PASS,
+  first line 'accept-fly target: http://localhost:5815'. Servers stopped.
+- [ ] I3.8 left (pass 3):
+  a. Tunis Save: refused by the check's start leg even with gate 1 6 m ahead of the drone (For the lead); lane fix3a.
+  b. Wroclaw crash in the test flight still not produced (editor3-clean.ts); the crash proof is Tunis only.
+  c. Pictures editor3-turn-1920.png, editor3-size-1920.png, editor3-flying-1920.png, editor3-edit-clean-1920.png were
+     taken again this pass (14:43-14:58) and not looked at in pass 3 (pass 2 looked at the same app's pictures).
 - [ ] I3.5 left of pass 2 (a, c, d, e handled in I3.6; b stays):
   a. Tunis Save: every course was refused down to 2 gates ('the way from the start to gate 1 goes through a wall' for each
      gate that became gate 1; start [0.1, 2.1, 0.3] yaw 180, gate 1 [-0.857, 1.03, 19.229]; the early refusal's problems
@@ -1335,6 +1350,15 @@ button shows the table.
 
 ## For the lead
 
+- I3 pass 3, the Save check's start leg (lane fix3a): with gate 1 put 6 m straight ahead of the drone (the pad flight flew
+  that place free), Save still says 'the way from the start to gate 1 goes through a wall', on both scenes. Tunis: start
+  [0.1, 2.1, 0.3] yaw 180, drone [3.99, 2.04, 0.03], gate 1 put at [9.99, 3.04, 0.09]; refused 3 times there, then every
+  next gate 1 down to 5 gates (record i3p3/tunis/e4.json putGate1, redRemoved). Wroclaw: start [-12.2, 3.4, -16.6] yaw 0,
+  drone [-7.89, 3.2, -16.52], gate 1 at [-1.91, 4.2, -16.08] refused 3 times; Wroclaw saved after deletions at 12 gates.
+  Guess, not measured: the leg is checked from a start point that stands in a wall voxel of the published walls (the
+  drone sat 3.9 m / 4.3 m from the start when the gate was put). The check's freeM along that leg would decide it.
+- I3 pass 3 outside the editor folder: tools/bench/src/editor3-prove.ts, tools/bench/test/editor3-i3.test.ts (new).
+
 - I2 pass 2 outside apps/fly/src/course/editor and course.ts: apps/fly/src/devices/keyboard.ts (D8: while flying in the edit
   mode a held Space climbs and a tap shorter than EDIT_TAP_MS 200 ms, an estimate, disarms on keyup; was: every Space press
   disarmed, so the game scheme had no climb key there), packages/i18n/locales/fly/course/{en,es,pl,ru}.json
@@ -1408,7 +1432,23 @@ button shows the table.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
   tasks were measured.
 
-## What the owner does (as of I3-prove pass 2, release of 76ffff2c, Tunis 887f27aa and Wroclaw 70b50d42, records in i3/ and i3p2/)
+## What the owner does (as of I3-prove pass 3, release of 92f1e323, Tunis 887f27aa and Wroclaw 70b50d42, records in i3p3/)
+
+Pass 3 re-walked every step below on both scenes with the same probe; the numbers that changed or are new:
+- 3. Shift+Tab back to gate 1: true on both. 4. X arrow 80 px drag: 0.3 m on both, the arrow 82 px on screen; after the drag
+  no axis line across the view (the guide shows only while dragging).
+- 9. F: eye 2.04 m from a 1.2 m ring on both, the gate in the middle (960, 540), 0.33 of the view height (vertical field
+  82.9 deg from the hook).
+- 10. Add gate, click the floor: 24 -> 25 on both, the new gate red with the reason on the line.
+- 13. Pad test flight through gate 1 put 6 m ahead: course.next 0 -> 1 on both, edit view back, opening back to 1.2 m.
+- 16. Save: Wroclaw saved at 12 gates, top bar 'Saved as your course: Course 74qcsu, version 1. It is in Courses on the
+  top bar'; Tunis NOT: refused down to 5 gates even with gate 1 put 6 m ahead of the drone (For the lead, the start leg).
+- 17. Fresh page, Courses: Wroclaw list 1 row 'Course 74qcsu gates: 12', opened 12 gates. Tunis not (nothing saved).
+- 18. Esc: Tunis 2 presses with 'The changes are not saved. Esc again leaves without saving'; Wroclaw 1 press after Save.
+Not proven, with numbers: Tunis Save (above); a crash in the Wroclaw test flight (not produced); Space on a page whose
+source is the pad does not arm (mode edit 3.2 s on both: the keyboard is passive there, the pad arms with its switch).
+
+Pass 2 list (the steps, unchanged by pass 3 unless named above):
 
 1. Shift+B: the same scene, gate 1 selected with the Move arrows, the top bar and the gate bar. Proven on both (24 gates).
 2. Click a gate: selected with its handles. Proven on both (pass 1; Wroclaw at the second try).
@@ -1440,6 +1480,9 @@ button shows the table.
     after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- I3-prove pass 3: about 30 replies; the most went to waiting for the chain and to one lost accept-fly run (the chain held
+  the GPU lock while accept-fly takes that lock itself: a 10-minute deadlock). Cheaper: read whether a probe takes the lock
+  itself before wrapping it (accept-fly does, mouse-free-probe does not).
 - I3-prove pass 2: about 30 replies; the most went to waiting for four scene holds (two chains) and to the first run's
   probe faults (a force click that deleted nothing). Cheaper: the probe's bar presses all through clickBar (a real mouse
   press with what lies under it) from the start, and sum.py written before the first run.
