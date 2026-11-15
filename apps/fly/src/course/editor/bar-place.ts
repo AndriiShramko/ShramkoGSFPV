@@ -2,8 +2,10 @@
 // page. No DOM and no i18n here, so the unit test loads it (tools/bench/test/editor3-gatebar.test.ts).
 import type { KeyPress } from './keys';
 
-/** the bar sits this far right of the gate's centre, CSS px (an estimate: clear of the handles' arrows) */
-export const BAR_OFFSET_PX = 150;
+/** H1 pass 2: the bar sits this far below (or above) the gate's centre, CSS px, clear of the shown handles. Measured by
+ * tools/bench/src/editor3-prove.ts (walk with __gsfpvEditHit, 1920x1080, U:/Temp/gsfpv-train3/editor3/h1/after1): the ring
+ * of the Turn set reached 148-190 px from the centre on Tunis; the bar placed 150 px right covered the X arrow's head. */
+export const BAR_CLEAR_PX = 210;
 
 /** One button of the bar: the key row it runs and its drawing (a 20 px SVG path). */
 export const BAR_BUTTONS: readonly { readonly id: string; readonly labelKey: string; readonly press: KeyPress; readonly path: string }[] = [
@@ -18,15 +20,18 @@ export const BAR_BUTTONS: readonly { readonly id: string; readonly labelKey: str
     { id: 'next', labelKey: 'course.edit.key.next', press: { code: 'Tab' }, path: 'M7 4 L14 10 L7 16' }
 ];
 
-/** Where the bar goes for a gate at (x, y) on a page w by h: right of it, kept inside the page; null hides it. */
+/** Where the bar goes for a gate at (x, y) on a page w by h: centred under the handles, above them when there is no room
+ * below, at the page's bottom edge when neither fits (a phone); kept inside the page; null hides it. */
 export function barPlace(at: readonly [number, number, number] | null, w: number, h: number, barW: number, barH: number): [number, number] | null {
     if (!at || !(at[2] > 0) || !Number.isFinite(at[0]) || !Number.isFinite(at[1])) return null;
     if (at[0] < 0 || at[0] > w || at[1] < 0 || at[1] > h) return null;
-    let x = at[0] + BAR_OFFSET_PX;
-    if (x + barW > w - 8) x = at[0] - BAR_OFFSET_PX - barW;
-    x = Math.max(8, Math.min(w - barW - 8, x));
-    const y = Math.max(8, Math.min(h - barH - 8, at[1] - barH / 2));
-    return [Math.round(x), Math.round(y)];
+    const x = Math.max(8, Math.min(w - barW - 8, at[0] - barW / 2));
+    let y = at[1] + BAR_CLEAR_PX;
+    if (y + barH > h - 8) {
+        const up = at[1] - BAR_CLEAR_PX - barH;
+        y = up >= 8 ? up : h - barH - 8;
+    }
+    return [Math.round(x), Math.round(Math.max(8, y))];
 }
 
 /** Lane editor3 H1 (the lead's decision of 2026-11-15): one set of handles at a time, as in ordinary 3D editors. All three

@@ -262,7 +262,21 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const line0 = await page.evaluate(() => document.querySelector('.course-editor .ce-gate')?.textContent ?? '');
     const kindTo = /square/.test(line0) ? 'ring' : 'square';
     out.kindTo = kindTo;
-    await page.click(`.ce-gatebar [data-bar="${kindTo}"]`, { timeout: 5000 }).catch((e) => { out.kindClickError = String(e).slice(0, 120); });
+    const kb = `.ce-gatebar [data-bar="${kindTo}"]`;
+    out.kindButton = await page.evaluate((s) => {
+        const e = document.querySelector(s) as HTMLElement | null;
+        if (!e) return 'none';
+        const r = e.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width)], bar: getComputedStyle(e.parentElement!).display, onTop: top === e || e.contains(top), top: top ? top.tagName + '.' + String(top.className) : null };
+    }, kb);
+    await page.click(kb, { timeout: 2000 }).catch(async (e) => {
+        out.kindClickError = String(e).replace(/\u001b\[[0-9;]*m/g, '').slice(0, 600);
+        // as a person does: the mouse on the button's middle, whatever Playwright's stability check says
+        const box = await page.locator(kb).boundingBox().catch(() => null);
+        if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+        out.kindMouseClick = !!box;
+    });
     await sleep(500);
     out.kind = { saidBefore: (k0 ?? '').slice(0, 80), said: ((await ed(page)).said ?? '').slice(0, 80), changed: (await ed(page)).changed };
     // back to gate 1 (Shift+Tab) and its X arrow

@@ -377,8 +377,12 @@ export class EditView {
         const r = this.canvas.getBoundingClientRect();
         const h = this.active();
         if (!h.nodes.length) return null;
-        const sel = (h as unknown as { _getSelection?: (x: number, y: number) => { axis?: string }[] })._getSelection?.(x - r.left, y - r.top);
-        return sel && sel[0] ? [this.tool, String(sel[0].axis ?? '')] : null;
+        // PlayCanvas 2.23.2 (build/playcanvas.mjs 121283, 121530): a hit carries its meshInstances; the axis is the part of the
+        // first one's node name after ':' (as the gizmo's own _getAxis)
+        type Hit = { meshInstances?: { node?: { name?: string } }[] };
+        const sel = (h as unknown as { _getSelection?: (x: number, y: number) => Hit[] })._getSelection?.(x - r.left, y - r.top);
+        const name = sel?.[0]?.meshInstances?.[0]?.node?.name ?? '';
+        return sel && sel[0] ? [this.tool, name.split(':')[1] ?? ''] : null;
     }
 
     dispose(): void {

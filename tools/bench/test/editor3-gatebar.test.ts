@@ -2,7 +2,7 @@
 // editor key (the same thing a key press does), and the bar sits right of the gate, inside the page, hidden when the gate is
 // behind the camera or off the page.
 import { describe, expect, it } from 'vitest';
-import { BAR_BUTTONS, BAR_OFFSET_PX, barPlace } from '../../../apps/fly/src/course/editor/bar-place';
+import { BAR_BUTTONS, BAR_CLEAR_PX, barPlace } from '../../../apps/fly/src/course/editor/bar-place';
 import { editorKey } from '../../../apps/fly/src/course/editor/keys';
 
 describe('editor3 gate bar', () => {
@@ -14,12 +14,18 @@ describe('editor3 gate bar', () => {
         expect(JSON.stringify(sel('next'))).not.toEqual(JSON.stringify(sel('prev')));
     });
 
-    it('sits right of the gate, flips left at the page edge, stays inside the page', () => {
-        expect(barPlace([400, 300, 5], 1280, 800, 300, 40)).toEqual([400 + BAR_OFFSET_PX, 280]);
+    it('H1 pass 2: sits under the handles (not on the X arrow), above them near the bottom, inside the page', () => {
+        // centred under the gate, clear of the handles' reach
+        expect(barPlace([400, 300, 5], 1280, 800, 300, 40)).toEqual([250, 300 + BAR_CLEAR_PX]);
+        // never on the gate's own row to the right (where the X arrow points)
+        const p = barPlace([960, 540, 3], 1920, 1080, 410, 40)!;
+        expect(p[1]).toBeGreaterThanOrEqual(540 + BAR_CLEAR_PX);
+        // no room below: above the handles
+        expect(barPlace([400, 700, 5], 1280, 800, 300, 40)).toEqual([250, 700 - BAR_CLEAR_PX - 40]);
+        // a phone (844x390): neither fits, the bottom edge, inside the page
+        expect(barPlace([422, 195, 3], 844, 390, 410, 40)).toEqual([217, 342]);
         const right = barPlace([1200, 300, 5], 1280, 800, 300, 40)!;
         expect(right[0] + 300).toBeLessThanOrEqual(1272);
-        expect(right[0]).toBeLessThan(1200);
-        expect(barPlace([400, 2, 5], 1280, 800, 300, 40)![1]).toBe(8);
     });
 
     it('is hidden for no gate, a gate behind the camera or off the page', () => {
