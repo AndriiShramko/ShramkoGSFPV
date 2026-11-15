@@ -103,22 +103,4 @@ describe('a course over the quality map', () => {
             expect(validateTrack(JSON.parse(JSON.stringify(t))).ok).toBe(true);
         }
     });
-
-    it('goes both ways along a street when the spawn stands in its middle (F3: Wroclaw courses took one arm only)', () => {
-        const long = street(4, LONG_M);
-        const mid: Vec3 = [LONG_M / 2, 2.5, 0];
-        const lq = qualityMap(long);
-        const lbox = qualityBounds(lq, mid);
-        const lfree = freeSpace(long, { spawn: mid, bounds: lbox ?? undefined, kind: 'outdoor' });
-        for (const seed of [1, 2]) {
-            const t = generateCourse(lfree, long, { seed, scene: SCENE, transform: IDENTITY, created: CREATED, quality: lq });
-            expect(t.gates.length).toBeGreaterThanOrEqual(16);
-            const xs = t.gates.map((g) => g.pos[0]! - mid[0]);
-            // gates at least 30 m out on each side of the spawn (the one-arm walk put all but its first gates on one side)
-            expect(Math.min(...xs)).toBeLessThanOrEqual(-30);
-            expect(Math.max(...xs)).toBeGreaterThanOrEqual(30);
-            for (const g of t.gates) expect(inDenseBand(lq, g.pos as Vec3)).toBe(true);
-            expect(validateTrack(JSON.parse(JSON.stringify(t))).ok).toBe(true);
-        }
-    });
 });

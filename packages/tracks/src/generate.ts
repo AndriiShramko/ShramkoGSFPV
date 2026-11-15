@@ -141,14 +141,6 @@ const SPREAD_ROOM_M = 4;
 const SPREAD_POOL_MAX = 250_000;
 /** G2: how many times a spread walk may step back from a dead end (estimate) */
 const SPREAD_BACKTRACKS = 8;
-/** F3 (message 51: "the street is long and scanned further with the same density, but there are no obstacles there"):
- *  the second arm's target B lies on the other side of the start when the way from A to it is at least its own steps
- *  plus this share of A's (estimate: the way A to B passes near the start). Wroclaw courses went out one arm of the
- *  crossing only (audit F3, course3-70b50d42-top.png). */
-const SPREAD_ARM_APART = 0.8;
-/** F3: a second arm is taken only when it is at least this share of the first (estimate: a stub of a few metres behind
- *  the spawn, as at a street's closed end, keeps the one-arm walk) */
-const SPREAD_ARM_MIN = 0.5;
 
 /** N for V flown m3. */
 export function courseCount(volumeM3: number, p: CourseParams = COURSE_DEFAULTS): number {
@@ -255,58 +247,18 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     let farM = 0;
     // G4: a course over a quality map may take longer legs (the way out and its gates reach along the street)
     const legMaxM = Q ? Math.max(p.legMaxM, SPREAD_LEG_MAX_M * k) : p.legMaxM;
-    // F3: the walk's phases: gates up to ends[i] head for pots[i] (null: the plain walk). One arm: out to the far
-    // target, then home. Two arms (over a map, when the start has way on both sides): out to A, across the start to B,
-    // then home, the gates shared by the phases' lengths.
-    let ends: number[] = [halfN, N];
-    let pots: (Int32Array | null)[] = [null, null];
     if (Q && free.startCell >= 0) {
-        const S = stepsFrom(free, free.startCell);
-        fromS = S;
+        fromS = stepsFrom(free, free.startCell);
         let maxS = 0;
-        for (const c of cands) maxS = Math.max(maxS, S[c.cell]!);
-        const W = Math.round((N * SPREAD_LEG_SHARE * legMaxM) / free.cellM);
-        const pick = (D: number, ok: (c: (typeof cands)[number]) => boolean = () => true): (typeof cands)[number] | null => {
-            const far = D > 0 ? cands.filter((c) => S[c.cell]! >= SPREAD_FAR_MIN * D && S[c.cell]! <= D && ok(c)) : [];
-            return far.length > 0 ? far[rng.int(0, far.length - 1)]! : null;
-        };
-        // two arms: A within a quarter of the whole way, B on the other side of the start within what is left
-        const A = pick(Math.min(maxS, Math.round(W / 4)));
-        const toA = A ? stepsFrom(free, A.cell) : null;
-        let B: (typeof cands)[number] | null = null;
-        if (A && toA) {
-            const sA = S[A.cell]!;
-            const apart = (c: (typeof cands)[number]): boolean => toA[c.cell]! >= 0 && toA[c.cell]! >= S[c.cell]! + SPREAD_ARM_APART * sA;
-            let maxB = 0;
-            for (const c of cands) if (S[c.cell]! > 0 && apart(c)) maxB = Math.max(maxB, S[c.cell]!);
-            const DB = Math.min(maxB, Math.round(W / 2) - sA);
-            if (DB >= SPREAD_ARM_MIN * sA) B = pick(DB, apart);
-        }
-        if (A && toA && B) {
-            const toB = stepsFrom(free, B.cell);
-            const la = S[A.cell]!, lab = Math.max(1, toB[A.cell]!), lb = S[B.cell]!;
-            const sum = la + lab + lb;
-            const nA = Math.max(1, Math.round((N * la) / sum)), nAB = Math.max(1, Math.round((N * lab) / sum));
-            ends = [nA, Math.min(N - 1, nA + nAB), N];
-            pots = [toA, toB, S];
-            toT = toA;
-            farM = Math.max(la, lb) * free.cellM;
-        } else {
-            // one arm (the walk before F3): the far target within the planned way out
-            const t = pick(Math.min(maxS, Math.round((halfN * SPREAD_LEG_SHARE * legMaxM) / free.cellM)));
-            if (t) {
-                toT = stepsFrom(free, t.cell);
-                farM = S[t.cell]! * free.cellM;
-            }
-            pots = [toT, S];
+        for (const c of cands) maxS = Math.max(maxS, fromS[c.cell]!);
+        const D = Math.min(maxS, Math.round((halfN * SPREAD_LEG_SHARE * legMaxM) / free.cellM));
+        const far = D > 0 ? cands.filter((c) => fromS![c.cell]! >= SPREAD_FAR_MIN * D && fromS![c.cell]! <= D) : [];
+        if (far.length > 0) {
+            const t = far[rng.int(0, far.length - 1)]!;
+            toT = stepsFrom(free, t.cell);
+            farM = fromS[t.cell]! * free.cellM;
         }
     }
-    const last = ends.length - 1;
-    const phaseOf = (n: number): number => {
-        for (let i = 0; i < last; i++) if (n < ends[i]!) return i;
-        return last;
-    };
-    let forced = 0;
     let curCell = free.startCell;
 
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
@@ -355,16 +307,15 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         // G2: over a quality map the walk keeps going out along the well-scanned extent and turns back only when nothing is
         // ahead: a street has no room for a U-turn of at most 120 degrees, so the half-way turn ended eb5f51dc's walks at
         // 9 of 24 gates (audit seeds 1-2); the course then stays open (laps 1) unless its last gates see the start
-        const phase = Math.max(forced, phaseOf(gates.length));
-        back = phase === last;
+        if (gates.length >= halfN) back = true;
         if (back && outGates < 0) outGates = gates.length;
         // G2: over a quality map the out half spreads over the whole well-scanned box (Wroclaw: every course stayed within
         // 30 m of the start on a street scanned for 300 m)
-        const spread = fromS !== null && pots[phase] !== null;
+        const spread = fromS !== null && (back || toT !== null);
         const reach2 = spread ? Infinity : OUT_LEGS * OUT_LEGS * p.legMaxM * p.legMaxM;
         // G2: the step count the next gate should have: the rest of the way shared evenly by the gates still to lay
-        const pot = pots[phase] ?? null;
-        const left = Math.max(1, ends[phase]! - gates.length);
+        const pot = back ? fromS : toT;
+        const left = back ? Math.max(1, N - gates.length) : Math.max(1, halfN - gates.length);
         const want = spread && pot && curCell >= 0 && pot[curCell]! >= 0 ? (pot[curCell]! * (left - 1)) / left : 0;
         for (const c of cands) {
             if (!back && dist2(startW, c.pos) > reach2) continue;
@@ -433,11 +384,6 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             prevDir = prev.dir;
             // CR-6: a step-back below the gate where the walk turned home puts it back on the way out (else the out half
             // ends short of the far target and the walk heads home from a gate of the out half)
-            // F3: the same for a step-back below the start of the phase the walk was forced into
-            // (a phase without a target is not walked back into: the walk before F3 stayed on its way home there)
-            const was = phaseOf(gates.length);
-            if (pots[was] === null) forced = Math.max(forced, phase);
-            else if (forced > was) forced = was;
             if (toT !== null && outGates > gates.length) {
                 back = false;
                 outGates = -1;
@@ -446,9 +392,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         }
         if (open.length === 0) {
             if (!back) {
-                // a dead end of a phase: the walk heads for the next phase's target
-                forced = phase + 1;
-                if (forced === last) outGates = gates.length;
+                back = true;
+                outGates = gates.length;
                 continue;
             }
             stop = options.length === 0 ? 'no candidate in reach' : 'no free leg';
