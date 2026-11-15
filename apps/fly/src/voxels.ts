@@ -64,6 +64,8 @@ export interface VoxelStats {
     chunks: number;
     quads: number;
     triangles: number;
+    /** V1: depth-only copies of the gates and other World items drawn before the voxels */
+    depthItems: number;
     /** the plan's reach: per voxel up to fineRadiusM, per block up to radiusM (m) */
     fineRadiusM: number;
     radiusM: number;
@@ -313,7 +315,7 @@ export class VoxelController {
         const on = mode !== 'off' && walls;
         if (on && !this.overlay) this.overlay = new VoxelOverlay(this.session.renderer);
         this.overlay?.setVisible(on);
-        this.overlay?.setLook(this.look, mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay);
+        this.overlay?.setLook(this.look, mode === 'only' ? this.prefs.opacityOnly : this.prefs.opacityOverlay, mode === 'only' && walls);
         // without walls there is nothing to fly on: the scan stays
         this.session.renderer.setSplatVisible(!(mode === 'only' && walls));
         if (on) this.ensureWorker();
@@ -513,6 +515,7 @@ export class VoxelController {
             chunks: o?.chunks ?? 0,
             quads: o?.quads ?? 0,
             triangles: o?.triangles ?? 0,
+            depthItems: o?.depthItems ?? 0,
             fineRadiusM: this.plan.fineRadius,
             radiusM: this.plan.radius,
             inFlight: this.inFlight.size,

@@ -11,26 +11,24 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   found with rays through the walls, pixels of three pictures per eye) and --panel mode (panel rectangle and close control
   at 1366x768, 1280x720, 844x390, 390x844, rendering off, no GPU lock).
 - [x] X1.3 Measured before (old code, Wroclaw 70b50d42, see Facts X1). Picture voxview-depth-2-before(-marked).png looked at.
-- [ ] X1.4 Probe fixes needed before the after-run: (a) look() picked a yaw that faced away for eye 1 (0 points; the guide
-  said the gate was behind at 162 deg): choose the yaw by projecting the gate centre (z > 0, x nearest the middle), not
-  by camera.forward after 250 ms; (b) only 4 sample points per gate: sample the ring at 12 angles and boxes at 5 places
-  along their long axis.
-- [ ] X1.5 V4 build: a header in .walls-menu (apps/fly/src/walls.ts lines 144-167, the details "walls-more") with the name,
-  a collapse button (data-action voxpanel-fold) and a close cross (data-action voxpanel-close), each at least 44 px; the
-  panel fixed and placed from the chip's rectangle (a pure function in a new apps/fly/src/ui/voxel-panel.ts: above the
-  chip when the chip is in the lower half, else under it; max-height the room left, overflow-y auto; covers the view with
-  8 px margins when the room is under 200 px); Esc closes it (already true, keep); the chip closes it. Texts in
-  packages/i18n/locales/fly en, es, pl, ru. Unit test of the placement with a negative control. Pictures
-  voxview-panel-1366.png and voxview-panel-844.png after.
-- [ ] X1.6 V1 build in packages/render-pc/src/voxel-overlay.ts: keep the layer's depth clear (the x-ray over a scan drawn
-  stochastic, which writes depth), and add to the voxel layer every render component that draws in the World layer
-  (Entity.findComponents('render'), RenderComponent.layers; both public; add findComponents to the USED list of
-  tools/bench/src/a1-api-check.ts), checked each update while the layer is shown, removed again in dispose. The gates,
-  the arrows, other pilots' drones (rooms/remote-stage.ts) and the sound mode's prims are then drawn again after the
-  clear and depth-test against the voxels. No change in apps/fly/src/course/view.ts is needed (its materials already
-  have depthTest and depthWrite true). The wire style in the voxels-only view at opacity 1 gets dark opaque faces
-  (emissive edge mask, BLEND_NONE) so a gate behind a wire wall is hidden by it; over the scan the wire stays see-through.
-  A pure helper (which components join the layer) with a unit test and a negative control.
+- [x] X1.4 Probe fixes (commit of X1.5/X1.6): the yaw is chosen by projecting the gate centre (in front, nearest the
+  middle); rings sampled at 12 angles, boxes at 5 places along the long axis; the stats line carries depthItems.
+- [x] X1.5 V4 build (commit "voxview X1: V4 panel header ..."): apps/fly/src/walls.ts (the walls-more details: a header
+  .walls-head with the name, a fold button data-action voxpanel-fold and a close cross data-action voxpanel-close, 44 px
+  each; the body .walls-body folds), apps/fly/src/fly.css (.walls-menu fixed, overflow-y auto, sticky header), the
+  placement apps/fly/src/ui/voxel-panel.ts (pure) with tools/bench/test/voxview-panel.test.ts (7 tests; negative control:
+  the placement without the room limit fails 5 tests, "expected -192 to be greater than or equal to 8"). Texts
+  voxels.panel.title/fold/unfold/close in packages/i18n/locales/fly/voxels en, es, pl, ru.
+- [x] X1.6 V1 build (same commit): packages/render-pc/src/voxel-overlay.ts gets a second layer "GSFPV Voxel depth"
+  right before "GSFPV Voxels"; it does the depth clear (the voxel layer no longer clears) and draws a depth-only copy
+  (colour writes off) of every render item in the World layer, synced when shown and every 10th update; pure rule in
+  packages/render-pc/src/voxel-depth.ts with packages/render-pc/test/voxel-depth.test.ts (negative control: nothing
+  joins -> "expected false to be true"). The wire style in the voxels-only view at opacity 1 uses a material with dim
+  lit opaque faces and bright edges (wireBack), so a gate behind a wall is hidden by it; over the scan the wire stays
+  see-through. apps/fly/src/voxels.ts passes the voxels-only flag to setLook and shows depthItems in the stats.
+  tools/bench/src/a1-api-check.ts: Entity.findComponents and Material red/green/blue/alphaWrite in USED (check passes, 76).
+  Typecheck apps/fly and packages/render-pc: 0 errors (after git submodule update put packages/sonic-fpv back on its
+  pin 293ebae; it was checked out at b05aeda, which gave 6 type errors in apps/fly/src/sonic and say-via.ts).
 - [ ] X1.7 After-run of the depth probe on a new release build (GPU lock, at most 10 minutes): voxview-depth-1.png,
   voxview-depth-2.png, voxview-depth-scan.png, each looked at, three marked points per picture read as numbers; the
   guide chip shown. Panel probe after.
@@ -75,8 +73,16 @@ X1.4 to X1.8 above, then stage X2.
 
 ## For the lead
 
-- No file outside the voxel view is changed yet. Planned: apps/fly/src/walls.ts lines 144-167 (the panel's header, V4),
-  tools/bench/src/a1-api-check.ts (one public member in USED).
+- Changed outside the voxel view: apps/fly/src/walls.ts (the panel's header, fold, close, placement: the block that
+  builds 'walls-more'), apps/fly/src/fly.css (.walls-menu and the new .walls-head rules), tools/bench/src/a1-api-check.ts
+  (five public members in USED). apps/fly/src/course/view.ts is NOT changed: its materials already have depthTest and
+  depthWrite true; the depth comes from the copies in the voxel overlay.
+- What each thing drawn in the scene does (V1): the gates and the arrows between them (course/view.ts, World layer) and
+  other pilots' drones (rooms/remote-stage.ts, World layer) and the sound mode's shapes give their depth to the voxels
+  (depth-only copies), so they hide voxels behind them and are covered by voxels in front of them. The guide chip is a
+  DOM element on the screen, not in the scene: always on top. The editor's handles are DOM on the screen too (no render
+  component in apps/fly/src/course/editor): they stay on top by design. The collision ceiling's plane is in the voxel
+  layer itself (unchanged).
 
 ## Not verified
 

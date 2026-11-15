@@ -55,7 +55,7 @@ async function panel() {
             const cb = box(close);
             const inView = (b) => !!b && b.l >= 0 && b.t >= 0 && b.r <= innerWidth && b.b <= innerHeight;
             const hit = cb ? document.elementFromPoint((cb.l + cb.r) / 2, (cb.t + cb.b) / 2) : null;
-            return { vw: innerWidth, vh: innerHeight, open: !!document.querySelector('[data-testid=walls-more]')?.open, menu: box(menu), menuInView: inView(box(menu)), scrollH: menu?.scrollHeight ?? 0, clientH: menu?.clientHeight ?? 0, overflowY: menu ? getComputedStyle(menu).overflowY : null, close: cb, closeInView: inView(cb), closeOnTop: !!hit && (hit === close || close.contains(hit)), fold: box(fold), title: document.querySelector('.voxpanel-title')?.textContent ?? null, chip: box(document.querySelector('[data-testid=walls-summary]')) };
+            return { vw: innerWidth, vh: innerHeight, open: !!document.querySelector('[data-testid=walls-more]')?.open, menu: box(menu), menuInView: inView(box(menu)), scrollH: menu?.scrollHeight ?? 0, clientH: menu?.clientHeight ?? 0, overflowY: menu ? getComputedStyle(menu).overflowY : null, close: cb, closeInView: inView(cb), closeOnTop: !!hit && (hit === close || close.contains(hit)), fold: box(fold), title: document.querySelector('.walls-title')?.textContent ?? null, chip: box(document.querySelector('[data-testid=walls-summary]')) };
         });
         const v = await read();
         const f = join(shots, `voxview-panel-${w}${tag === 'before' ? '-before' : ''}.png`);
@@ -101,7 +101,7 @@ async function depth() {
     step('voxels: only (the key V twice does the same: off -> over the scan -> voxels only)');
     const settle = async (ms = 45000) => { const s = Date.now(); while (Date.now() - s < ms) { if (await page.evaluate(() => window.__gsfpv.voxels.settled())) return Date.now() - s; await sleep(300); } return -1; };
     r.settleOnlyMs = await settle();
-    r.statsSpawn = await page.evaluate(() => { const s = window.__gsfpv.voxels.stats(); return { style: s.style, opacity: s.opacity, chunks: s.chunks, quads: s.quads, fineRadiusM: s.fineRadiusM, radiusM: s.radiusM, voxelCm: s.voxelCm }; });
+    r.statsSpawn = await page.evaluate(() => { const s = window.__gsfpv.voxels.stats(); return { style: s.style, opacity: s.opacity, depthItems: s.depthItems, chunks: s.chunks, quads: s.quads, fineRadiusM: s.fineRadiusM, radiusM: s.radiusM, voxelCm: s.voxelCm }; });
     step(`voxels at spawn ${JSON.stringify(r.statsSpawn)} settled in ${r.settleOnlyMs} ms`);
     // the hold: the craft kept at a pose every frame (yaw about +y), pitch through the camera aim
     await page.evaluate(() => {
@@ -125,9 +125,9 @@ async function depth() {
             const ce = [a.center.x, a.center.y, a.center.z], he = [a.halfExtents.x, a.halfExtents.y, a.halfExtents.z];
             if (Math.hypot(ce[0] - gp[0], ce[1] - gp[1], ce[2] - gp[2]) > 3) continue;
             const ax = [0, 1, 2].sort((i, j) => he[j] - he[i]);
-            const big = he[ax[0]] > 0.6 && he[ax[1]] > 0.6; // a ring: its centre is empty, the edge middles lie on it
-            if (!big) pts.push(ce);
-            for (const k of [0, 1]) for (const sgn of [-1, 1]) { const p = [...ce]; p[ax[k]] += sgn * he[ax[k]] * (big ? 0.92 : 0.6); pts.push(p); }
+            const big = he[ax[0]] > 0.6 && he[ax[1]] > 0.6; // a ring: its centre is empty, points on the ring at 12 angles
+            if (big) for (let k = 0; k < 12; k++) { const a = (k * Math.PI) / 6, p = [...ce]; p[ax[0]] += Math.cos(a) * he[ax[0]] * 0.92; p[ax[1]] += Math.sin(a) * he[ax[1]] * 0.92; pts.push(p); }
+            else for (const f of [-0.8, -0.4, 0, 0.4, 0.8]) { const p = [...ce]; p[ax[0]] += f * he[ax[0]]; pts.push(p); } // a box: 5 places along its long axis
         }
         return { gate: next, pos: gp, pts };
     });
@@ -157,15 +157,15 @@ async function depth() {
     r.candidates = cands.length;
     const wait = async () => { await sleep(400); await settle(30000); await sleep(800); };
     const look = async (e) => {
-        // yaw that points the camera at the gate: two signs tried, the one whose forward points at it kept
+        // X1.4a: the yaw whose picture has the gate centre in front of the camera and nearest the middle (projected)
         const dx = samples.pos[0] - e[0], dz = samples.pos[2] - e[2], dy = samples.pos[1] - e[1];
         let best = null;
         for (const yaw of [Math.atan2(-dx, -dz), Math.atan2(dx, dz), Math.atan2(-dx, dz), Math.atan2(dx, -dz)]) {
             await page.evaluate(({ e, yaw }) => { window.__hold = { pos: e, yaw, pitch: 0 }; }, { e, yaw });
-            await sleep(250);
-            const f = await page.evaluate(() => { const F = window.__gsfpv.session.renderer.camera.forward; return [F.x, F.y, F.z]; });
-            const L = Math.hypot(dx, dz); const dot = (f[0] * dx + f[2] * dz) / (L * Math.hypot(f[0], f[2]));
-            if (!best || dot > best.dot) best = { yaw, dot };
+            await sleep(400);
+            const sc = await page.evaluate((g) => { const cam = window.__gsfpv.session.renderer.camera; const V = cam.getPosition().constructor; const s = cam.camera.worldToScreen(new V(g[0], g[1], g[2]), new V()); return [s.x, s.y, s.z]; }, samples.pos);
+            const off = sc[2] > 0 ? Math.abs(sc[0] - 640) : 1e9;
+            if (!best || off < best.off) best = { yaw, off: Math.round(off) };
         }
         const pitch = (Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;
         await page.evaluate(({ e, yaw, pitch }) => { window.__hold = { pos: e, yaw, pitch }; }, { e, yaw: best.yaw, pitch });
