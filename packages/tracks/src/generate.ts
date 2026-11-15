@@ -203,6 +203,8 @@ const SPREAD_ARM_APART = 0.8;
  *  two legs; a stub of a few metres behind the spawn, as at a street's closed end, keeps the one-arm walk). A share of
  *  the first arm (0.5) left Tunis one-armed once the arms were planned in straight metres (audit4). */
 const SPREAD_ARM_MIN_M = 30;
+/** course5 Z2: the nearest candidates a start with no first leg may move to (estimate: each is a scan of the candidates) */
+const START_MOVE_TRIES = 64;
 
 /** N for V flown m3. */
 export function courseCount(volumeM3: number, p: CourseParams = COURSE_DEFAULTS): number {
@@ -433,6 +435,32 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     let farM = 0;
     // G4: a course over a quality map may take longer legs (the way out and its gates reach along the street)
     const legMaxM = Q ? Math.max(p.legMaxM, SPREAD_LEG_MAX_M * k) : p.legMaxM;
+    // course5 Z2: a start from which no candidate is a first leg moves to the candidate nearest to it that has one. Forest
+    // Floor ab5efa0e at Scene size x15 and x20: the spawn stood 21 m and 28 m straight over the nearest candidate, so every
+    // first leg failed the leg rules (gate-place-audit walks: turn 5922 of 2961 candidates, course4/z2/ff-x15.json). A
+    // start that has a first leg keeps its place, so every course laid before stays as it was.
+    if (startCell >= 0 && cands.length > 0) {
+        const firstLeg = (a: Vec3, b: Vec3): boolean => {
+            const leg = sub(b, a);
+            const L = len(leg);
+            if (L < p.legMinM || L > legMaxM) return false;
+            const u: Vec3 = [leg[0] / L, leg[1] / L, leg[2] / L];
+            return dot(yawForward(nearestYaw(u)), u) >= p.axisCosMin;
+        };
+        const hasLeg = (a: Vec3): boolean => cands.some((c) => firstLeg(a, c.pos));
+        const s0 = cellCentre(free, startCell);
+        if (!hasLeg(s0)) {
+            const byNear = cands.map((c) => ({ c, d: dist2(s0, c.pos) })).sort((x, y) => x.d - y.d);
+            for (let j = 0; j < Math.min(byNear.length, START_MOVE_TRIES); j++) {
+                const c = byNear[j]!.c;
+                // where a ring could stand (course4 C3's rule for the start), so a start in a nook does not stay in it
+                if (clearanceM(free, c.cell) >= RING_MIN_FREE_M * k && hasLeg(cellCentre(free, c.cell))) {
+                    startCell = c.cell;
+                    break;
+                }
+            }
+        }
+    }
     // F3: the walk's phases: gates up to ends[i] head for pots[i] (null: the plain walk). One arm: out to the far
     // target, then home. Two arms (over a map, when the start has way on both sides): out to A, across the start to B,
     // then home, the gates shared by the phases' lengths.
@@ -529,7 +557,18 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     const trail: { cur: Vec3; cell: number; dir: Vec3 | null }[] = [];
     const legMemo = new Map<number, boolean>();
     let legMemoAt: Vec3 | null = null;
-    const refused = { cands: cands.length, startFree: startCell >= 0 ? r3(clearanceM(free, startCell)) : -1, reach: 0, pot: 0, turn: 0, space: 0, sweep: 0, wall: 0, exit: 0, well: 0, proof: 0 };
+    let nearM = Infinity;
+    let nearUp = 0;
+    for (const c of cands) {
+        const d = dist2(startW, c.pos);
+        if (d < nearM) {
+            nearM = d;
+            nearUp = c.pos[1] - startW[1];
+        }
+    }
+    // course5 Z2: how far the nearest candidate lies from the start (m) and how much higher: a scan flown at a large Scene
+    // size had every first leg refused by the leg bounds
+    const refused = { cands: cands.length, nearM: r3(Math.sqrt(nearM)), nearUp: r3(nearUp), legMaxM: r3(legMaxM), startFree: startCell >= 0 ? r3(clearanceM(free, startCell)) : -1, reach: 0, pot: 0, turn: 0, space: 0, sweep: 0, wall: 0, exit: 0, well: 0, proof: 0 };
     const turnOk = (from: Vec3, prev: Vec3 | null, to: Vec3): Vec3 | null => {
         const leg = sub(to, from);
         const L = len(leg);

@@ -1272,10 +1272,24 @@ Logs U:/Temp/gsfpv-train3/course4/z2/.
       whole wanted count and at least GOOD_GATES_BELOW_PLAN = 10 (estimate: the owner's 10 before C3); else the next step
       is tried and the course with more gates kept. After (z2/ff-x1-after.log): 20/20/20 gates at step 0.4, proven,
       problems 0, 1.5 to 1.8 s. fit.test.ts 12 passed, NEG OK against fit.ts of a92e37e3. Audit walks now show n<wanted>.
-- [ ] (1b) Forest Floor x15, x20, x100: which rule refuses gate 1
+- [x] (1b) Forest Floor x15, x20, x100 measured (walks now carry nearM, nearUp, legMaxM of the first leg; z2/ff-x*.json):
+      x15: the nearest candidate 21 m from the start, 21 m straight below it (nearUp -21); x20: 28 m, -28; every first
+      leg refused by turnOk (the leg's axis rule: a leg straight down): turn 5922 of 2961 candidates, gates 0. x100: the
+      free space's cells are 20 m (cellM 0.2 x 100) against legMaxM 15: no leg between two cells; reach refuses 7830.
+      Fix generate.ts: a start with no first leg moves to the candidate nearest to it that has one and where a ring of
+      the step can stand (START_MOVE_TRIES 64, estimate); a start that has a first leg keeps its place. After (seeds 1-3,
+      z2/ff2-x*.json): x10 24 gates step 1; x15 24/24/24 step 1; x20 24/24/24 step 1; x30 24 at step 2/3; all proven,
+      problems 0, 57 to 209 ms. x100 still none: the line course.noneResize leads to x10 (noCourseSize, CU-4), where 24
+      gates come. No unit test for the start move (a world with the spawn far over the eye band was not built: budget).
+- [x] packages/tracks + tracks-review + tracks-finish: 155 passed after one change: every-scan.test.ts 'bent nook'
+      failed after the 1a commit (the ladder now goes on to step 0.3, where the 1 m nook holds a ring and the course with
+      more gates starts there; proven by swapping generate.ts back: still failed). The test now asks a start in the room
+      only above the last step, and at the last step that the smallest ring fits around the start. typecheck tracks 0.
+- [x] Release build of a92e37e3: BUILD EXIT 0, 1933 files (z2/build.log). It holds neither 1a nor 1b: rebuild first.
 - [ ] (2) A1 no wall cell in the gate tube, test, conifer gate gone
 - [ ] (3) A3 ladder by the flown craft
 - [ ] (4) Lublin 2f1ddf5f leaves the spawn's pocket
 - [ ] (5) Housefly d10c5638 within 30 s
 - [ ] (6) b11e45d1 gates 15 m over the wall
-- [ ] table seeds 1-3; page proofs on 39e63ce9, 7a475d38, ab5efa0e; pictures; gates.py; a6-reference
+- [ ] table seeds 1-3; page proofs on 39e63ce9, 7a475d38, ab5efa0e (x1 and x15, x20, x100 with the line's press);
+      pictures course4-room-pilot, -room-top, -microgreens-pilot, -microgreens-top, fix3b-lublin-top; a6-reference

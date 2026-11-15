@@ -66,7 +66,14 @@ describe('course4 C3: the ladder of gate sizes', () => {
             const t = r.track!;
             expect(t.gates.length).toBeGreaterThanOrEqual(2);
             // the course starts in the room (where a ring could stand), not in the nook
-            expect(t.start?.pos[0], `seed ${seed} start`).toBeLessThan(5);
+            // course5 Z2: the ladder now goes on below 10 gates; at its last step (rings for a 0.3 scale) the nook is wide
+            // enough for a ring and the course with more gates may start there, where a ring can stand
+            if (r.scale > COURSE_SCALES[COURSE_SCALES.length - 1]!) expect(t.start?.pos[0], `seed ${seed} start`).toBeLessThan(5);
+            else {
+                const [x, y, z] = t.start!.pos;
+                // the smallest ring (4 drone diameters) fits around the start
+                expect(walls.querySphere(x, y, z, (RING_MIN_DRONE_DIAMETERS * SMALLEST_DRONE_RADIUS_M), { x: 0, y: 0, z: 0 }), `seed ${seed} start room`).toBe(false);
+            }
             const margin = t.generator!.params.marginM as number;
             expect(checkTrack(t, walls, IDENTITY, margin, false).ok).toBe(true);
         }
