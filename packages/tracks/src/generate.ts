@@ -141,14 +141,18 @@ const SPREAD_ROOM_M = 4;
 const SPREAD_POOL_MAX = 250_000;
 /** G2: how many times a spread walk may step back from a dead end (estimate) */
 const SPREAD_BACKTRACKS = 8;
+/** F3: the straight distance from the start from which a cell counts for the steps-per-metre ratio (estimate: nearer
+ *  cells are a few steps around the spawn's own corner) */
+const SPREAD_RATIO_MIN_M = 20;
 /** F3 (message 51: "the street is long and scanned further with the same density, but there are no obstacles there"):
  *  the second arm's target B lies on the other side of the start when the way from A to it is at least its own steps
  *  plus this share of A's (estimate: the way A to B passes near the start). Wroclaw courses went out one arm of the
  *  crossing only (audit F3, course3-70b50d42-top.png). */
 const SPREAD_ARM_APART = 0.8;
-/** F3: a second arm is taken only when it is at least this share of the first (estimate: a stub of a few metres behind
- *  the spawn, as at a street's closed end, keeps the one-arm walk) */
-const SPREAD_ARM_MIN = 0.5;
+/** F3: a second arm is taken only when its way is at least this long, in metres times the plan's scale (estimate: about
+ *  two legs; a stub of a few metres behind the spawn, as at a street's closed end, keeps the one-arm walk). A share of
+ *  the first arm (0.5) left Tunis one-armed once the arms were planned in straight metres (audit4). */
+const SPREAD_ARM_MIN_M = 30;
 
 /** N for V flown m3. */
 export function courseCount(volumeM3: number, p: CourseParams = COURSE_DEFAULTS): number {
@@ -212,6 +216,26 @@ export function courseId(seed: number): string {
 }
 
 export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions): TrackFile {
+    // F3: over a quality map the two-arm walk comes first; when it ends short of N gates (it stopped in a narrow place
+    // between its arms: eb5f51dc seed 1 kept 6, Tunis seeds 2, 19, 20 kept 9-10 in audit5) the one-arm walk of the same
+    // seed is tried too and the course with more gates kept (a tie keeps the two-arm course). onWalk hears the kept walk.
+    if (!opts.quality) return walkCourse(free, walls, opts, false);
+    let infoA: WalkInfo | null = null;
+    const a = walkCourse(free, walls, { ...opts, onWalk: (w) => (infoA = w) }, false);
+    const want = (a.generator?.params as { wanted?: number } | undefined)?.wanted ?? 0;
+    if (a.gates.length >= want) {
+        if (infoA) opts.onWalk?.(infoA);
+        return a;
+    }
+    let infoB: WalkInfo | null = null;
+    const b = walkCourse(free, walls, { ...opts, onWalk: (w) => (infoB = w) }, true);
+    const keep = b.gates.length > a.gates.length ? b : a;
+    const info = keep === b ? infoB : infoA;
+    if (info) opts.onWalk?.(info);
+    return keep;
+}
+
+function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, oneArm: boolean): TrackFile {
     const p: CourseParams = { ...COURSE_DEFAULTS, ...(opts.params ?? {}) };
     const seed = opts.seed >>> 0;
     const rng = (opts.rng ?? createRng)(seed);
@@ -265,13 +289,23 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
         fromS = S;
         let maxS = 0;
         for (const c of cands) maxS = Math.max(maxS, S[c.cell]!);
-        const W = Math.round((N * SPREAD_LEG_SHARE * legMaxM) / free.cellM);
+        // F3: steps run along the grid's axes, legs straight: on Wroclaw's diagonal streets a metre flown took about 1.4
+        // steps, so the way planned in steps reached about 80 m an arm (audit3). The planned way is scaled by the scan's
+        // median steps per metre of straight distance (cells at least SPREAD_RATIO_MIN_M away; clamp 1-1.8, estimate).
+        const ratios: number[] = [];
+        for (const c of cands) {
+            const d = Math.sqrt(dist2(c.pos, cellCentre(free, free.startCell)));
+            if (S[c.cell]! > 0 && d >= SPREAD_RATIO_MIN_M) ratios.push((S[c.cell]! * free.cellM) / d);
+        }
+        ratios.sort((a, b) => a - b);
+        const perM = ratios.length ? Math.min(1.8, Math.max(1, ratios[ratios.length >> 1]!)) : 1;
+        const W = Math.round((N * SPREAD_LEG_SHARE * legMaxM * perM) / free.cellM);
         const pick = (D: number, ok: (c: (typeof cands)[number]) => boolean = () => true): (typeof cands)[number] | null => {
             const far = D > 0 ? cands.filter((c) => S[c.cell]! >= SPREAD_FAR_MIN * D && S[c.cell]! <= D && ok(c)) : [];
             return far.length > 0 ? far[rng.int(0, far.length - 1)]! : null;
         };
         // two arms: A within a quarter of the whole way, B on the other side of the start within what is left
-        const A = pick(Math.min(maxS, Math.round(W / 4)));
+        const A = oneArm ? null : pick(Math.min(maxS, Math.round(W / 4)));
         const toA = A ? stepsFrom(free, A.cell) : null;
         let B: (typeof cands)[number] | null = null;
         if (A && toA) {
@@ -280,7 +314,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             let maxB = 0;
             for (const c of cands) if (S[c.cell]! > 0 && apart(c)) maxB = Math.max(maxB, S[c.cell]!);
             const DB = Math.min(maxB, Math.round(W / 2) - sA);
-            if (DB >= SPREAD_ARM_MIN * sA) B = pick(DB, apart);
+            if (DB * free.cellM >= SPREAD_ARM_MIN_M * k * perM) B = pick(DB, apart);
         }
         if (A && toA && B) {
             const toB = stepsFrom(free, B.cell);
@@ -423,7 +457,7 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             if (legOk(options[j]!.c) && wayOn(options[j]!)) open.push(options[j]!);
         }
         // G2: a spread walk that is stuck steps back one gate (left used: a dead end) and walks on from the gate before
-        if (open.length === 0 && spread && gates.length > 0 && backtracks < SPREAD_BACKTRACKS) {
+        if (open.length === 0 && spread && gates.length > 0 && backtracks < SPREAD_BACKTRACKS * (ends.length - 1)) {
             backtracks++;
             gates.pop();
             flownGates.pop();
