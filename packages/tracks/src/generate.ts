@@ -290,6 +290,8 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
     let outGates = -1;
     let backtracks = 0;
     const trail: { cur: Vec3; cell: number; dir: Vec3 | null }[] = [];
+    const legMemo = new Map<number, boolean>();
+    let legMemoAt: Vec3 | null = null;
     const turnOk = (from: Vec3, prev: Vec3 | null, to: Vec3): Vec3 | null => {
         const leg = sub(to, from);
         const L = len(leg);
@@ -354,8 +356,22 @@ export function generateCourse(free: FreeSpace, walls: VoxelCollision, opts: Cou
             const e = gateExit(cur, lastAxis, lastIn, sub(to, cur));
             return !e || sweeper.free(e, to, p.marginM);
         };
+        // F2: a gate refused by its one-gate proof leaves the walk where it stands, and the next round swept the same legs
+        // again; while `cur` stays the same object (a laid gate or a step-back replaces it) the answers are kept
+        if (legMemoAt !== cur) {
+            legMemo.clear();
+            legMemoAt = cur;
+        }
+        const legOk = (c: (typeof cands)[number]): boolean => {
+            let v = legMemo.get(c.cell);
+            if (v === undefined) {
+                v = sweeper.free(cur, c.pos, p.marginM) && exitOk(c.pos);
+                legMemo.set(c.cell, v);
+            }
+            return v;
+        };
         for (let j = 0, sweeps = 0; j < options.length && open.length < 4 && sweeps < sweepsMax; j++, sweeps++) {
-            if (sweeper.free(cur, options[j]!.c.pos, p.marginM) && exitOk(options[j]!.c.pos) && wayOn(options[j]!)) open.push(options[j]!);
+            if (legOk(options[j]!.c) && wayOn(options[j]!)) open.push(options[j]!);
         }
         // G2: a spread walk that is stuck steps back one gate (left used: a dead end) and walks on from the gate before
         if (open.length === 0 && spread && gates.length > 0 && backtracks < SPREAD_BACKTRACKS) {

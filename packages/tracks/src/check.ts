@@ -10,7 +10,7 @@
 // This module is a proof, not a generator: it may use trigonometry (the ring outline); the generator's own files do not.
 import { quatRotate, trackToObjects } from '@shramko/sonic-fpv';
 import type { SonicObject, TrackFile, Vec3 } from '@shramko/sonic-fpv';
-import { VoxelContactWorld, sphereOverlaps, transformCollision } from '@gsfpv/collision';
+import { LEAF, sphereOverlaps, transformCollision } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
 import { gateExit } from './path';
 
@@ -85,9 +85,33 @@ export interface Sweeper {
     free(a: Vec3, b: Vec3, r: number): boolean;
 }
 
+/**
+ * F2-fast-course: the same answer as VoxelContactWorld.sweepOne(a, b, r) < 0 without its first test, the cover of the whole
+ * segment (a sphere of r + L / 2 at the middle). A sweep is free exactly when none of the leaf spheres of the bisection
+ * overlaps a wall, and every cover contains the leaf spheres below it, so leaving one cover out cannot change the answer
+ * (arithmetic below is sweepOne's own, term by term). The cost of an overlap test that finds no wall grows with the cube
+ * of its radius: on 5 cm walls a 25 m leg's cover reads about 6.5e7 voxels (12.75 m radius), and these covers took most
+ * of 92 s of a Wroclaw course (cpu profile, docs/wip/course3.md F2).
+ */
+export function sweepFree(col: VoxelCollision, a: Vec3, b: Vec3, r: number): boolean {
+    const ax = a[0], ay = a[1], az = a[2];
+    const dx = b[0] - ax, dy = b[1] - ay, dz = b[2] - az;
+    const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
+    if (L < 1e-12) return !sphereOverlaps(col, ax, ay, az, r + LEAF);
+    const hit = (t0: number, t1: number): boolean => {
+        const tm = (t0 + t1) * 0.5;
+        const half = L * (t1 - t0) * 0.5;
+        if (!sphereOverlaps(col, ax + dx * tm, ay + dy * tm, az + dz * tm, r + half)) return false;
+        if (L * (t1 - t0) <= LEAF) return true;
+        return hit(t0, tm) || hit(tm, t1);
+    };
+    const seg = Math.max(1, Math.ceil(L / (r * 0.5)));
+    for (let j = 0; j < seg; j++) if (hit(j / seg, (j + 1) / seg)) return false;
+    return true;
+}
+
 export function sweeperOf(col: VoxelCollision): Sweeper {
-    const w = new VoxelContactWorld(col);
-    return { free: (a, b, r) => w.sweepOne(a[0], a[1], a[2], b[0], b[1], b[2], r) < 0 };
+    return { free: (a, b, r) => sweepFree(col, a, b, r) };
 }
 
 /** The axes of a gate in the flown world: x and y across the opening, z behind it (the craft crosses toward -z). */
