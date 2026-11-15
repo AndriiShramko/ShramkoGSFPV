@@ -105,12 +105,13 @@ async function depth() {
     r.settleOnlyMs = await settle();
     r.statsSpawn = await page.evaluate(() => { const s = window.__gsfpv.voxels.stats(); return { style: s.style, opacity: s.opacity, depthItems: s.depthItems, chunks: s.chunks, quads: s.quads, fineRadiusM: s.fineRadiusM, radiusM: s.radiusM, voxelCm: s.voxelCm }; });
     step(`voxels at spawn ${JSON.stringify(r.statsSpawn)} settled in ${r.settleOnlyMs} ms`);
-    // the hold: the craft kept at a pose every frame (yaw about +y), pitch through the camera aim
+    // the hold: the craft kept at a pose every frame (yaw about +y); with a course on, the camera follows the game aim
+    // (play.ts: aimYawDeg, heading = -yaw), so the aim carries the held yaw and pitch
     await page.evaluate(() => {
         const ss = window.__gsfpv.session;
         const orig = ss.cameraAim;
         window.__hold = null;
-        if (orig) ss.cameraAim = () => { const a = orig.call(ss); return a && window.__hold ? { ...a, pitchDeg: window.__hold.pitch } : a; };
+        if (orig) ss.cameraAim = () => { const a = orig.call(ss); return a && window.__hold ? { ...a, yawDeg: (-window.__hold.yaw * 180) / Math.PI, pitchDeg: window.__hold.pitch } : a; };
         const tick = () => { const h = window.__hold; if (h) { const s = ss.sim.s; s[0] = h.pos[0]; s[1] = h.pos[1]; s[2] = h.pos[2]; for (let i = 3; i < 6; i++) s[i] = 0; s[6] = Math.cos(h.yaw / 2); s[7] = 0; s[8] = Math.sin(h.yaw / 2); s[9] = 0; for (let i = 10; i < 13; i++) s[i] = 0; } requestAnimationFrame(tick); };
         tick();
     });
@@ -220,6 +221,8 @@ async function depth() {
     r.pictures.push(await measure(`voxview-depth-1${sfx}`, 'only', eyes[0]));
     if (eyes[1]) r.pictures.push(await measure(`voxview-depth-2${sfx}`, 'only', eyes[1]));
     r.pictures.push(await measure(`voxview-depth-scan${sfx}`, 'overlay', eyes[0]));
+    // the baseline: the scan alone (voxels off) at the same eye: does the scan itself hide the gate behind the wall?
+    r.pictures.push(await measure(`voxview-depth-scanonly${sfx}`, 'off', eyes[0]));
     r.guide = await page.evaluate(() => { const gd = window.__gsfpv.course.guide?.(); const el = document.querySelector('[data-testid=course-guide]'); return { hook: gd, text: el?.textContent ?? null, visible: !!el && el.offsetParent !== null }; });
     step(`guide chip ${JSON.stringify(r.guide)}`);
 }

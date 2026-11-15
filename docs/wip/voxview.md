@@ -49,8 +49,28 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   their rings. Eye 1 (5 m, used also for the over-the-scan picture) faced away again (guide: gate behind at 147 deg),
   so voxview-depth-1.png and voxview-depth-scan.png have 0 points: probe fault, fixed in this commit (the yaw is chosen
   by the guide's bearing after 1.2 s; the camera follows the held yaw with a lag), not yet run.
-- [ ] X1.8 Typecheck (apps/fly, packages/render-pc), gates.py --only vitest,architecture,i18n,b18,leaks,
-  tools/bench/test/a6-reference.test.ts, commit with Facts and For the lead.
+- [x] X1.7d Probe aim found by measure (U:/Temp/gsfpv-train2/voxview/aimdbg.mjs, aimdbg.log): with a course on, the
+  camera follows the game aim (apps/fly/src/app/builtin/play.ts: yawDeg = g.aimYawDeg), not the held quaternion; the
+  camera forward stayed 1,0,0.06 at held yaws 0/90/180/270. The probe's aim now carries yawDeg = -yaw (this commit).
+- [x] X1.7e Depth probe after (release 6988977b, Wroclaw 70b50d42, U:/Temp/gsfpv-train2/voxview/depth-after3.json and
+  depth-after4.json, the probe now also takes the scan alone at the same eye). Voxels alone: run 3 eye 1 (8 m) 8 of 8
+  right (8 behind a wall, none shown), eye 2 (12 m) 10 of 10 right (8 in front shown, 2 behind hidden); run 4 eye 1
+  (16 m) 12 of 12 (6 in front shown, 6 behind hidden), eye 2 12 of 12 (12 in front shown). Marked pixels run 4 eye 1:
+  (631,384) in front A 66,102,10 = C, B 0,0,0; (623,400) behind A 78,132,136 = B (wall), C gate. Run 3 eye 2: (640,376)
+  in front A 166,255,25 = C, B 59,101,104; (622,412) behind A 25,43,48 = B; (640,424) in front A 166,255,25 = C.
+  Over the scan (run 4 eye 1): 6 of 6 in front shown, 6 of 6 behind ALSO shown, e.g. (623,400) A 162,253,75 (gate);
+  the scan alone (voxels off, same eye, voxview-depth-scanonly.png) shows the same 6 behind points: A 166,255,25.
+  So over the scan the gate behind a wall shows because the scan's splats do not hide it, with or without voxels.
+  Pictures looked at: voxview-depth-1-marked.png (run 3: the gate edge-on behind a tree trunk, the trunk hides it, only
+  a sliver past the trunk's edge shows); voxview-depth-2-marked.png (run 3: the lime gate in front of the far wall in
+  full, its lower left hidden by a nearer low wall; the teal gate on the left hides the voxels behind it);
+  voxview-depth-scan-marked.png (run 3: over the scan the lime gate is drawn over the tree trunk in front of it: wrong,
+  see Left 1). Run 4 overwrote the same file names. The guide chip: "Gate 1 (dot) 8 m" (hook shown false: in frame, near).
+- [~] X1.8 Typecheck apps/fly and packages/render-pc: 0 errors. a6-reference, voxview-panel, voxel-depth tests: 10
+  passed. gates.py --only vitest,architecture,i18n,b18,leaks (U:/Temp/gsfpv-gates-20261115-215628): architecture,
+  i18n, b18, leaks PASS; vitest FAIL in tools/bench/test/app-dji-rc2.test.ts only ("answers 60 ms late ... 1097ms",
+  a real-timer test of the input lane, run beside a browser probe; not touched here). Python: the gates need
+  C:/Users/andri/AppData/Local/Programs/Python/Python311 on PATH (no "python" on PATH in this shell).
 - [ ] X2-whole-scene: not started.
 
 ## Facts X1 (before, origin/main 4e6ef171, release on port 5740, headless Chrome, 1280x800)
@@ -84,14 +104,17 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-Exact list for the next run of stage X1-depth (the release build of 6988977b plus this probe fix is needed: build,
-copy U:/Temp/gsfpv-train2/walls/release/. to dist/walls, serve on 5740):
-1. Depth probe again (GPU lock, under 10 minutes): voxview-depth-1.png, voxview-depth-2.png and voxview-depth-scan.png
-   each with points in front and behind, three marked points per picture read as numbers, each picture looked at with
-   one sentence; the guide chip shown.
-2. X1.8: typecheck apps/fly and packages/render-pc; python -X utf8 "C:/Users/andri/.claude/skills/gsfpv/scripts/gates.py"
-   --repo C:/dev/gsfpv-site-sound --only vitest,architecture,i18n,b18,leaks; tools/bench/test/a6-reference.test.ts;
-   commit; then stage X2.
+Exact list for the next run of stage X1-depth (dist holds the release of 6988977b with the walls; the app has not
+changed since; serve on 5740):
+1. Over the scan, a gate behind a wall shows through (it does so with the voxels off too: the cause is outside the
+   voxel layer, in how the gates (World opaque, apps/fly/src/course/view.ts) and the splats (packages/render-pc/src/
+   renderer.ts) share depth). Guess, not measured: the splats do not hide an opaque item behind them where they are
+   thin, or are drawn without the depth test. For the lead to decide: either accept the scan's own behaviour over the
+   scan, or let the voxel overlay hide gate pixels behind voxel faces in the over-the-scan view (draw the voxel faces
+   depth-only and full-colour copies of the gates after them, hiding the World gates in that mode). Not built here.
+2. vitest: re-run gates.py --only vitest alone (no probe beside it) to see whether app-dji-rc2.test.ts fails without
+   load; it is not this lane's file.
+3. Then stage X2-whole-scene.
 - Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; this run
   put it back on the pin with git submodule update (clean working tree, nothing lost).
 
@@ -110,4 +133,4 @@ copy U:/Temp/gsfpv-train2/walls/release/. to dist/walls, serve on 5740):
 
 ## Not verified
 
-- Nothing was built yet for V1 or V4; the measures above are of the old code only.
+- No weak device and no touch device were used. The depth was proven on Wroclaw only (Tunis 887f27aa not run in X1).
