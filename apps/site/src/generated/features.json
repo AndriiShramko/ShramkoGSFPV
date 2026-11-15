@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-14",
+ "generated": "2026-11-15",
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
@@ -7,10 +7,10 @@
   "groups": 11,
   "drones": 9,
   "modes": 3,
-  "keys": 30,
+  "keys": 31,
   "rateTypes": 5,
   "flyingKeys": 12,
-  "allKeys": 40
+  "allKeys": 41
  },
  "locales": {
   "en": {
@@ -1716,6 +1716,13 @@
      "label": "Course: edit the obstacles",
      "keys": [
       "Shift+B"
+     ]
+    },
+    {
+     "action": "flyBySound.toggle",
+     "label": "Fly by Sound here: on / off",
+     "keys": [
+      "\\"
      ]
     }
    ],
@@ -3844,6 +3851,13 @@
      "keys": [
       "Shift+B"
      ]
+    },
+    {
+     "action": "flyBySound.toggle",
+     "label": "Fly by Sound aqu\u00ed: encender / apagar",
+     "keys": [
+      "\\"
+     ]
     }
    ],
    "flying": [
@@ -5971,6 +5985,13 @@
      "keys": [
       "Shift+B"
      ]
+    },
+    {
+     "action": "flyBySound.toggle",
+     "label": "Lot na s\u0142uch tutaj: w\u0142\u0105cz / wy\u0142\u0105cz",
+     "keys": [
+      "\\"
+     ]
     }
    ],
    "flying": [
@@ -8097,6 +8118,13 @@
      "label": "\u0422\u0440\u0430\u0441\u0441\u0430: \u0440\u0435\u0434\u0430\u043a\u0442\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u0440\u0435\u043f\u044f\u0442\u0441\u0442\u0432\u0438\u044f",
      "keys": [
       "Shift+B"
+     ]
+    },
+    {
+     "action": "flyBySound.toggle",
+     "label": "\u041f\u043e\u043b\u0451\u0442 \u043f\u043e \u0437\u0432\u0443\u043a\u0443 \u0437\u0434\u0435\u0441\u044c: \u0432\u043a\u043b\u044e\u0447\u0438\u0442\u044c / \u0432\u044b\u043a\u043b\u044e\u0447\u0438\u0442\u044c",
+     "keys": [
+      "\\"
      ]
     }
    ],

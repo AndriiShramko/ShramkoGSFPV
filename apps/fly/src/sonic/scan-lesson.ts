@@ -49,7 +49,9 @@ export function scanCourseLesson(free: LessonDef, track: TrackFile): LessonDef {
         ...free,
         goals: [{ kind: 'timed-course', laps: track.laps }],
         intro: [{ key: 'lesson.free-garden.intro.2', cues: ['target.hum'] }, { key: 'lesson.free-garden.goal.1' }],
-        layers: { ...free.layers, on },
+        // sonic3 S1: the gate's hum leads through the opening from its entry side (package lesson/gate-aim.ts): the miss records
+        // of S1 showed the craft led into gate 1 from behind and hovering at a gate centre where the hum turned steep
+        layers: { ...free.layers, on, gateAim: true },
         speech: { ...free.speech, hints: [{ key: 'lesson.free-garden.hint.1' }], retry: { key: 'lesson.free-garden.retry' } },
         world: { ...w, track: { id: track.id, version: track.version } }
     };

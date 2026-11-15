@@ -134,6 +134,13 @@ export class LessonPilot {
     constructor(env: LessonEnv, assists: LessonAssists) {
         this.env = env;
         this.assists = assists;
+        // installed over a flight whose motors run (Fly by Sound switched on in place, review SO-1): the motors stay on. A new
+        // AutoArm starts 'off' and sends arm low, so the model disarmed in the air and the craft stopped (r11 y1-spy2.json)
+        const sim = env.sim();
+        if (assists.autoArm && sim && sim.armed && !sim.crashed) {
+            this.arm.keepOn();
+            this.wasOn = true;
+        }
     }
 
     /** The lesson's assists now (a new lesson, the next step of one): caps and arming apply from the next frame. */

@@ -34,6 +34,8 @@ describe('a course of gates in a free scan flight (S3)', () => {
         expect(course.id).toBe(SCAN_FREE_ID);
         expect(course.goals).toEqual([{ kind: 'timed-course', laps: track.laps }]);
         expect(course.layers.on).toContain('target');
+        // sonic3 S1: the hum of a gate leads through it from the entry side (package layers.gateAim)
+        expect(course.layers.gateAim).toBe(true);
         expect(course.world).toMatchObject({ kind: 'scan', sceneId: '7a475d38', track: { id: track.id, version: track.version } });
         expect(isScanCourse(course)).toBe(true);
         expect(isScanCourse(free)).toBe(false);
@@ -69,6 +71,21 @@ describe('a course of gates in a free scan flight (S3)', () => {
         expect(courseAnswer({ t: 'track', job: 4, track, ms: 1 }, 4)).toEqual({ ok: true, track });
         expect(courseAnswer({ t: 'track', job: 4, track: null, ms: 1 }, 4)).toEqual({ ok: false, why: 'none fits' });
         expect(courseAnswer({ t: 'error', job: 4, message: 'x' }, 4)).toEqual({ ok: false, why: 'failed' });
+    });
+
+    it('waits through the worker\'s progress messages for the course (sonic3 S1: they ended the ask as failed)', () => {
+        expect(courseAnswer({ t: 'progress', job: 4, step: 'free', estMs: 900 }, 4)).toBeNull();
+        expect(courseAnswer({ t: 'progress', job: 4, step: 'lay', estMs: 1500 }, 4)).toBeNull();
+    });
+
+    it('a course by sound is one lap of the generated course (sonic3 S1 pass 3: 24 gates x 3 laps did not fit in 300 s)', () => {
+        const track = { ...garden(), laps: 3 };
+        const a = courseAnswer({ t: 'track', job: 5, track } as unknown as Parameters<typeof courseAnswer>[0], 5);
+        expect(a?.ok).toBe(true);
+        expect(a?.ok ? a.track.laps : -1).toBe(1);
+        expect(a?.ok ? a.track.gates.length : -1).toBe(track.gates.length);
+        // the generator's own track is not changed
+        expect(track.laps).toBe(3);
     });
 });
 

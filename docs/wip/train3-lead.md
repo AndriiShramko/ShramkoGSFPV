@@ -142,3 +142,102 @@ Cost notes: worker 1 spent its turns on finding each probe's arguments (one prob
 10 minutes that hit the tool's limit; a table of probe command lines in docs/agent-map.md would have saved about 8 turns.
 Worker 2 spent most turns waiting on run2 and run3 in 10-minute blocks and on reading the two failed probes; one waiter
 script that prints a short result table at its end would have saved about 5 turns.
+
+## Integration B (sonic3)
+
+### Merged
+- sonic3 head 2cea7293 as eccb1f34 (--no-ff, no conflicts; git merged fly/sonic locales and sonic-int-lazy.test.ts by
+  itself). It can not make the live site worse: Fly by Sound is opt-in (Backslash or the pause item); the parts that
+  did not pass below are runs of the ear pilot, not faults of the ordinary flight.
+- Sound package: branch train3 0af508a merged into the package main as 7c27300 (--no-ff), package suite 69 files passed
+  (1 skipped), 1349 tests passed (4 skipped); pushed. The typecheck gate then found 3 errors in package tests under
+  tsconfig.node.json (test/gate-aim.test.ts material 'gate', test/speed-ladder.test.ts maxSpeedMps possibly null; the
+  lane had not run that config): fixed on train3 as 57a108d (types only, the two files 11 of 11, package tsc 0), merged
+  into the package main as b05aeda, pushed. The negative control is the first gate run (typecheck FAIL on 7c27300).
+  Pin: ada88fe0 (7c27300), then cf61115b (b05aeda, on the pushed package main). The two evidence files of the package
+  worktree are left uncommitted.
+- c40cb85d: gen-catalog after the merge (31 shortcut keys; README.md, llms.txt, docs/settings.md, features.json, site ru).
+- e7f71d92: two read-only sound checks in deploy/live-checks.sh (below).
+- Seams: the course seams (a) belong to the held lanes; apps/fly/src/session and packages/sim-core unchanged by sonic3,
+  a6-reference 1 of 1 PASS (hash held); locales: i18n gate PASS; docs/decisions.md not touched by sonic3.
+
+### Held back
+- fix3a, editor3, laptop4 (the brief): not merged, not read. Left out with them: the editor chain, walls-store-probe,
+  the guide to gate 1, lod-view-probe and lod-view-score, and their pictures.
+
+### Gates
+- Full run on ada88fe0 (U:/Temp/gsfpv-gates-20261115-083241): vitest PASS 140 s, api-unittest PASS 245 s, architecture,
+  i18n PASS, B18 PASS; typecheck FAIL (package tests, fixed above), catalog FAIL (stale, regenerated above).
+- After the fixes, gates.py --only typecheck,catalog,b18 on cf61115b: all PASS (U:/Temp/gsfpv-train3/train3b/gates2.log).
+
+### Probes
+Release ada88fe0 (sonic 7c27300, built 07:32 UTC) with the nine published walls in dist/walls, http://localhost:5760/en.
+The head after it differs by the catalog files, the package test types and docs only (not rebuilt). Summary
+U:/Temp/gsfpv-train3/train3b/summary.txt; evidence evidence/2026-11-15/train3b/.
+
+| Probe | Result |
+|---|---|
+| accept-fly B6 B7 B9..B16 (first line: target http://localhost:5760) | 10 of 10 PASS |
+| sonic r11 Wroclaw 70b50d42, 5 m/s, render ON | 10 of 10: on 7.02 -> 7.84 m/s, 0 lives; N to gate 1 25.4 s; 24 gates COUNTED, 0 misses, 120 s, median 3.77 m/s; off 5.13 -> 5.13 |
+| sonic r11 Tunis 887f27aa, 5 m/s, render off | 10 of 10: on 1.64 -> 2.76, 0 lives; N 29.4 s; COUNTED, 1 miss, 193 s, median 3.9 m/s; off 5.13 -> 5.13 |
+| sonic r11 Tunis 887f27aa, 5 m/s, render ON | 9 of 10: on 3.58 -> 5.1, 0 lives; N 25.4 s; not counted: 13 gates in the 300 s cap, 1 miss, still flying, median 2.2 m/s |
+| sonic r11 Housefly d10c5638, 5 m/s, render off | 9 of 10: on 7.0 -> 7.75, 0 lives; N 47.5 s; not counted: 3 misses, moved on after 4 gates (79 s); off 5.25 -> 5.25 |
+| sonic r12 speed-1..4, turn-listen | 11 of 11: speed-1..4 counted on attempt 1 (median 1.49, 2.5, 3.52, 4.48 m/s); turn-listen counted on attempt 3 |
+| sonic-int-review r9 | 11 of 11 |
+| lesson list (lessons-shot.mjs, U:/Temp/gsfpv-train3/train3b) | 34 lesson buttons, speed-1..4 and turn-listen present, 0 page errors |
+| course-path-probe Wroclaw / Tunis | PASS / PASS (course at 5.5 s / 9.6 s, 24 gates each, no bake) |
+| walls-published-probe | 9 of 9 |
+| governor-start-probe | PASS |
+| centre-throttle-probe all | PASS |
+| hid-source-probe | exit 0 |
+| wizard-auto-check | exit 0 |
+| rooms-two-page | PASS |
+| mouse-free-probe | FAIL: timeout on [data-action="pause.rooms"] (no rooms service locally; the same failure sonic3 S3 item 3 had on origin/main and on its dist) |
+| tracks-page | 44 of 46 (A look, E camera; integration A had the same 44 of 46) |
+| a6-reference | 1 of 1 PASS |
+
+The two new live checks, their own function text, run against this release (port 5775, render off):
+sonic-in-place-tunis PASS (r11 quick 8 of 8, 28 s), sonic-course-wroclaw PASS (both named checks; 8 of 10 overall, the
+flight is cut at 60 s by design; 120 s). U:/Temp/gsfpv-train3/train3b/livecheck-local/.
+
+### Deploy order for the lead
+- git diff --stat ca5760fd..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms packages/i18n/locales:
+  13 files, all locales (fly/keys, fly/sonic, fly/sonicentry in four languages, site/ru.json). They ship in the static
+  release.
+- nginx: no. API: no files, release-api.sh not needed, --locales not needed. Rooms: no. Walls: nothing new.
+- Ship the static release of main as for integration A, then bash deploy/live-checks.sh <outdir> (two checks more:
+  sonic-in-place-tunis, sonic-course-wroclaw; rendering off, no GPU lock, about 3 minutes together).
+
+### Live checks
+- sonic-in-place-tunis: r11 with Z5_QUICK=1 on Tunis: Backslash gives the free flight by sound, no new life, speed kept.
+- sonic-course-wroclaw: r11 on Wroclaw with a 60 s flight: N makes a course and gate 1 is the hum's target.
+- Read for both: r11 presses only flight keys (Enter on the Controls screen's keyboard choice, W, Q or E, Backslash, N,
+  Space, arrows); the sound mode fetches only static track and walls files; nothing is sent or saved.
+
+### Pictures for the lead
+- U:/Temp/gsfpv-train3/shots/train3b-sound-lessons.png: the lesson list, Hover with "Turn a little and listen" (7 of 33),
+  Rings with Speed 1 to Speed 4 (26 to 29 of 33).
+- U:/Temp/gsfpv-train3/shots/train3b-sound-wroclaw.png: Wroclaw street drawn, "Stage 24 passed", "New best time: 1
+  minute 56 seconds", Counted 1 of 1.
+
+### What the owner should try
+- Wroclaw from the catalogue: fly as always, press Backslash: Fly by Sound switches on, the craft keeps its speed.
+- Press N: in about 25 s the hum of gate 1; turn with Q and E until the hum is in the middle, fly with W; 24 gates.
+- Backslash again: Fly by Sound switches off, speed kept.
+- Tunis: the same keys; with the picture switched off (render off) a course counted at up to 5 m/s.
+- Escape, "Fly by Sound lessons": "Turn a little and listen" (lesson 7) and Speed 1 to Speed 4 (lessons 26 to 29).
+
+### Not verified
+- Housefly d10c5638 on this build: not counted (3 misses, moved on after 4 gates); the lane counted it at 5 m/s on an
+  earlier build (S2). N to gate 1 took 47.5 s (lane: 60 to 125 s).
+- Tunis with rendering on: 13 gates in the 300 s cap, not counted (the lane did not run it).
+- The budget's open-way chime has no offline audio proof (lane LEFT 1).
+- HUD altitude below zero after landing at the course end: -0.1 m in train3b-sound-wroclaw.png (lane: -0.3 Wroclaw,
+  -0.9 Tunis); cause not measured.
+- Nothing was heard by a human ear; es, pl, ru lesson lines only by the package's words check.
+- mouse-free rooms entry and tracks-page A look and E camera, as above. The probes ran on the dist of ada88fe0, not of
+  the final head (see Probes). deploy/live-checks.sh was not run against the live site.
+
+Cost notes: the package typecheck under tsconfig.node.json was found only by the full gates after the build; running
+the package's own typecheck beside its test suite before the merge would have saved a gate rerun and a second package
+push.

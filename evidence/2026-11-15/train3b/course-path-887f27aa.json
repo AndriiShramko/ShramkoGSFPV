@@ -1,0 +1,299 @@
+[
+ {
+  "id": "887f27aa",
+  "errors": [],
+  "lines": [
+   {
+    "at": 0,
+    "k": "courseProgress",
+    "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+   },
+   {
+    "at": 0,
+    "k": "note",
+    "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+   },
+   {
+    "at": 1,
+    "k": "courseProgress",
+    "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
+   },
+   {
+    "at": 1,
+    "k": "note",
+    "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
+   },
+   {
+    "at": 1.6,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 62 %. 0:01 so far, about 0:05 left."
+   },
+   {
+    "at": 1.6,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 62 %. 0:01 so far, about 0:05 left."
+   },
+   {
+    "at": 3,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 70 %. 0:02 so far, about 0:05 left."
+   },
+   {
+    "at": 3,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 70 %. 0:02 so far, about 0:05 left."
+   },
+   {
+    "at": 3.5,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 82 %. 0:03 so far, about 0:05 left."
+   },
+   {
+    "at": 3.5,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 82 %. 0:03 so far, about 0:05 left."
+   },
+   {
+    "at": 4.5,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 94 %. 0:04 so far, about 0:05 left."
+   },
+   {
+    "at": 4.5,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 94 %. 0:04 so far, about 0:05 left."
+   },
+   {
+    "at": 5,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:05 so far; longer than usual, still working."
+   },
+   {
+    "at": 5,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:05 so far; longer than usual, still working."
+   },
+   {
+    "at": 6.1,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:06 so far; longer than usual, still working."
+   },
+   {
+    "at": 6.1,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2. 0:06 so far; longer than usual, still working."
+   },
+   {
+    "at": 6.6,
+    "k": "courseProgress",
+    "text": "Course ready: 24 gates. They appear in 3 seconds, keep flying."
+   },
+   {
+    "at": 6.6,
+    "k": "note",
+    "text": "Course ready: 24 gates. They appear in 3 seconds, keep flying."
+   },
+   {
+    "at": 9.6,
+    "k": "note",
+    "text": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course"
+   }
+  ],
+  "pressAtMs": 5707.700000017881,
+  "maxSilentS": 2.5,
+  "maxReadGapS": 1.4,
+  "courseFirstS": 0,
+  "shotCourseS": 1.6,
+  "courseAtS": 9.6,
+  "bake": null,
+  "longtasks": {
+   "n": 0,
+   "sumMs": 0,
+   "maxMs": 0,
+   "top": []
+  },
+  "install": {
+   "hover": 0.27743940434601666,
+   "bot": true
+  },
+  "gates": 24,
+  "top": {
+   "W": 440,
+   "H": 308,
+   "step": 0.5,
+   "heights": [
+    3.2,
+    3.15,
+    3.8,
+    3.15,
+    2.15,
+    2.35,
+    2.8,
+    2.5,
+    1.8,
+    2.55,
+    null,
+    1.8,
+    4.05,
+    3.55,
+    2.45,
+    2.6,
+    4.05,
+    3.9,
+    2.85,
+    4.05,
+    3.5,
+    3.75,
+    3.6,
+    3.1
+   ],
+   "spanM": 99.7,
+   "yRange": [
+    1.5,
+    8.7
+   ]
+  },
+  "pilotAt": [
+   -0.5,
+   2.7,
+   9.9
+  ],
+  "pilot-bAt": [
+   -0.5,
+   2.7,
+   9.9
+  ],
+  "passes": [
+   {
+    "gate": 1,
+    "next": 1,
+    "clock": "0:00.50Lap 1 of 1\nGate 2 of 24\nLast -\nBest -"
+   },
+   {
+    "gate": 2,
+    "next": 2,
+    "clock": "0:01.46Lap 1 of 1\nGate 3 of 24\nLast -\nBest -"
+   },
+   {
+    "gate": 3,
+    "next": 3,
+    "clock": "0:02.40Lap 1 of 1\nGate 4 of 24\nLast -\nBest -"
+   }
+  ],
+  "beforeCrash": {
+   "next": 3,
+   "clock": "0:08.40Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+   "clockMs": 8400
+  },
+  "aim": {
+   "wallM": 2.5
+  },
+  "crash": {
+   "crashTick": 31352,
+   "lifeTick": 33352,
+   "reason": "crash",
+   "decision": {
+    "tick": 33352,
+    "reason": "crash",
+    "kind": "rewind",
+    "incidentTick": 31352,
+    "sampleTick": 26350,
+    "backoff": 1,
+    "pathAgeTicks": 5002
+   },
+   "crashAt": [
+    4.943441127614941,
+    3.164831944660532,
+    17.43481799660821
+   ],
+   "lifeAt": [
+    3.7000019550323486,
+    3.299194092855799,
+    19.500001907348633
+   ],
+   "crashes": 1,
+   "backM": 2.4
+  },
+  "afterRespawn": [
+   {
+    "next": 3,
+    "clock": "0:10.70Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+    "clockMs": 10700
+   },
+   {
+    "next": 3,
+    "clock": "0:12.70Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+    "clockMs": 12700
+   }
+  ],
+  "rewind": {
+   "gate": 4,
+   "passNext": 4,
+   "passClock": "0:14.60Lap 1 of 1\nGate 5 of 24\nLast -\nBest -",
+   "before": {
+    "next": 4,
+    "clock": "0:16.60Lap 1 of 1\nGate 5 of 24\nLast -\nBest -",
+    "clockMs": 16600
+   },
+   "after": {
+    "next": 3,
+    "clock": "0:11.95Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+    "clockMs": 11950
+   },
+   "kind": "rewind",
+   "backTicks": 5048
+  },
+  "afterR": {
+   "next": 0,
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -",
+   "clockMs": 0
+  },
+  "regen": [
+   {
+    "seed": 1391409756,
+    "gates": 24,
+    "spanM": 91.4,
+    "aboveGround": [
+     1.8,
+     4.25
+    ],
+    "noGround": 2,
+    "s": 8.5,
+    "yRange": [
+     1.5,
+     8.7
+    ]
+   },
+   {
+    "seed": 454902096,
+    "gates": 18,
+    "spanM": 87.1,
+    "aboveGround": [
+     1.75,
+     4.25
+    ],
+    "noGround": 3,
+    "s": 12.4,
+    "yRange": [
+     1.5,
+     10.5
+    ]
+   },
+   {
+    "seed": 392746228,
+    "gates": 24,
+    "spanM": 109.7,
+    "aboveGround": [
+     1.65,
+     4.45
+    ],
+    "noGround": 2,
+    "s": 7.5,
+    "yRange": [
+     2.1,
+     11.1
+    ]
+   }
+  ]
+ }
+]

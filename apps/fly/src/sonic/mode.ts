@@ -33,7 +33,7 @@ import type { ActionHandler } from '../app/keys';
 import type { AppEvents, Bus } from '../app/context';
 import { SonicBridge, touchMaterial } from './bridge';
 import type { BridgeEngine } from './bridge';
-import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
+import { clearScanPrefs, forceScanPrefs, isScanCourse } from './scan-lesson';
 import { LESSON_FLIGHT } from './lesson-world';
 
 /** R held this long is the long press (back to the lesson's start), ms. */
@@ -45,6 +45,28 @@ export const COST_KEEP = 3000;
 // (input.howToFly off: the card that shows the keys by itself on a first visit is a sight-first dialog in the page's live
 // region; a lesson speaks its own keys, and K still opens the card by hand)
 export const MODE_PREFS: Readonly<Record<string, unknown>> = Object.freeze({ 'crash.enabled': false, 'input.play': 'easy', 'input.howToFly': false });
+
+/** The lives the respawn director makes by itself (sim-core RespawnReason); R and the mode's own place are 'manual-start'. */
+const AUTO_LIVES: readonly string[] = ['crash', 'stuck-flipped', 'stuck-wedged'];
+
+/** The director's decision as the session keeps it (sim-core RespawnDecision, the fields read here). */
+export interface DirectorLast {
+    readonly tick: number;
+    readonly kind: 'rewind' | 'start';
+    readonly sampleTick: number | null;
+}
+
+/**
+ * sonic3 S3 pass 3 (Tunis, a course by sound never counted): a crash or a stuck craft that the respawn director sent back to
+ * the start (target 'start', or a rewind with no path left) at this tick `nowTick`. The craft is then at the session's spawn,
+ * which is the course's start (lessons.ts places a scan course there), while the runner kept its gate: the hum led 86 m
+ * through walls to the gate it was at. Such a life starts the runner's attempt again from its first gate, as the drawn
+ * course does (course/run.ts courseLife 'restart'). A life put back where it was ('rewind' with a path) keeps the gate.
+ */
+export function lifeRestartsCourse(reason: string, last: DirectorLast | null, nowTick: number): boolean {
+    if (!AUTO_LIVES.includes(reason) || last === null || last.tick !== nowTick) return false;
+    return last.kind === 'start' || last.sampleTick === null;
+}
 
 /** What the mode needs of the page (FlightContext's parts; fakes in tests). */
 export interface ModeHost {
@@ -66,6 +88,18 @@ export interface ModeStart {
     readonly world?: SonicWorld | null;
     /** world y of the floor: the height layer's zero (default 0) */
     readonly floorY?: number;
+    /**
+     * switched on in place (train 3, in-place.ts): the flight goes on as it was, so the lesson's bump (LESSON_FLIGHT) is not applied.
+     * A new rule is a new life (session applyLifeSettings): in the air the craft would stop dead, crashed or held it would go to the
+     * scene's spawn, on the switch on and again on the switch off (review SO-1).
+     */
+    readonly here?: boolean;
+    /**
+     * the flight's own rules are kept without the placement of `here` (train 3, Y2): a course made with N over a flight that was
+     * switched on in place starts at its own start, but its crash rule and bump stay the pilot's, so switching off after it starts
+     * no new life (two before: crash.enabled cleared, then the bump taken back).
+     */
+    readonly keepRules?: boolean;
 }
 
 export class SonicMode {
@@ -89,6 +123,10 @@ export class SonicMode {
     private longDone = false;
     /** placed by the mode itself since the last sample (a re-centre): the next touch is not this one's echo */
     private placedAt = -Infinity;
+    /** switched on in place (ModeStart.here) */
+    private here = false;
+    /** the MODE_PREFS ids enter() set (leave() clears these) */
+    private prefIds: string[] = [];
 
     constructor(host: ModeHost) {
         this.host = host;
@@ -97,6 +135,11 @@ export class SonicMode {
 
     get active(): boolean {
         return this.on;
+    }
+
+    /** Switched on in place: the craft flies on where it is (a runner's place to the start is not taken, lessons.ts). */
+    get inPlace(): boolean {
+        return this.on && this.here;
     }
 
     /** The engine the mode sounds through (step 7), or null. */
@@ -113,7 +156,13 @@ export class SonicMode {
         if (this.on) this.leave();
         this.on = true;
         const h = this.host;
-        for (const [id, v] of Object.entries(MODE_PREFS)) h.prefs.setSession(id, v);
+        this.here = o.here === true;
+        // in place the pilot's crash setting stays: crash.enabled is a 'life' setting (respawn.ts: setCrashOn, then
+        // applyLifeSettings), so setting it here and clearing it in leave() each made a new life, the craft stopped dead
+        // (review SO-1, the r11 life spy)
+        const keep = this.here || o.keepRules === true;
+        this.prefIds = Object.keys(MODE_PREFS).filter((id) => !(keep && id === 'crash.enabled'));
+        for (const id of this.prefIds) h.prefs.setSession(id, MODE_PREFS[id]);
         // a scan lesson flies its scan at the lesson's size, walls on (the session was made with them: the entry and the
         // lesson host set them before the scan loaded; this keeps them while the mode runs)
         if (o.lesson) forceScanPrefs(h.prefs, o.lesson.world);
@@ -125,7 +174,8 @@ export class SonicMode {
         this.floorY = o.floorY ?? 0;
         h.setLesson(this.lesson ? this.lesson.assists : null);
         // a lesson on a scan flies with the lesson's bump too (v13-int step 4): a lesson world brings it itself (lesson-world.ts)
-        this.lessonFlight(this.lesson?.world.kind === 'scan' ? LESSON_FLIGHT : null);
+        // in place (o.here) the flight keeps its own rules: no new life on the switch on, none on the switch off
+        this.lessonFlight(this.lesson?.world.kind === 'scan' && !keep ? LESSON_FLIGHT : null);
         const b = this.bridge;
         b.world = o.world ?? null;
         b.layers = this.lesson ? this.lesson.layers : null;
@@ -168,7 +218,9 @@ export class SonicMode {
         for (const off of this.offs) off();
         this.offs = [];
         const h = this.host;
-        for (const id of Object.keys(MODE_PREFS)) h.prefs.clearSession(id);
+        for (const id of this.prefIds) h.prefs.clearSession(id);
+        this.prefIds = [];
+        this.here = false;
         clearScanPrefs(h.prefs);
         h.setLesson(null);
         this.lessonFlight(null);
@@ -273,6 +325,16 @@ export class SonicMode {
         const r = this.bridge.resetTo(to, code);
         const pose = r ? r.pose : this.ownPose(to);
         if (pose) this.place(pose);
+    }
+
+    /**
+     * A new life the director sent to the start (lifeRestartsCourse) in a course by sound over a scan: the runner's attempt again
+     * from its first gate. The craft is already at the start, so it is not placed again (a place would be one more life). The
+     * shipped lessons keep their own rule (their recordings replay as flown).
+     */
+    restartAfterLife(): void {
+        if (!this.on || !this.bridge.runner || !this.lesson || !isScanCourse(this.lesson)) return;
+        this.bridge.resetTo('start', 'Respawn');
     }
 
     /** Where a reset goes when no runner says: the last checkpoint reached, else the lesson's start, else the spawn as it is. */

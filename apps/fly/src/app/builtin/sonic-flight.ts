@@ -65,17 +65,69 @@ export function modeScanPage(ses: FlownScan | null | undefined, search = ''): st
     return `/${pageLang()}/fly/?sonic=scan&scene=${encodeURIComponent(id)}&sz=${sharedNumber(s, 3)}${course}`;
 }
 
+/** The switch in place as the shim sees it (sonic/in-place-model.ts InPlaceSwitch, loaded at the first press). */
+export interface HereSwitch {
+    readonly on: boolean;
+    toggle(): Promise<boolean>;
+}
+
+/** What of the flight the in-place items need (FlightContext; a fake in tests). */
+export interface HereHost {
+    readonly menu: { add(item: MenuItem): () => void };
+    readonly keys: { on(action: string, run: (e: { repeat: boolean }) => void): () => void };
+}
+
+/**
+ * Train 3, lane sonic3 (the owner, message 51: "this flying by sound must be switched on for any scene"): Backslash and the pause
+ * item "Fly by Sound here" switch the mode on over the flight that runs, in this tab, at this place (sonic/in-place.ts); the same
+ * key and item switch it off. A second item keeps the lessons, in a new tab (the mode's start screen for this scan). `load`
+ * fetches the switch once, at the first press (a page that never presses it downloads nothing of the mode).
+ */
+export function hereItems(host: HereHost, load: () => Promise<HereSwitch>, lessonsHref: () => string, opened: (url: string) => void): () => void {
+    let sw: Promise<HereSwitch> | null = null;
+    let now: HereSwitch | null = null;
+    const toggle = (): void => {
+        const p = (sw ??= load());
+        p.then((s) => {
+            now = s;
+            return s.toggle();
+        }).catch(() => {
+            sw = null;
+        });
+    };
+    const offs = [
+        // the label says the state: read each time the menu opens (t(labelKey) in the menu), "Switch off" while the mode is on
+        host.menu.add({
+            id: 'pause.flyBySound',
+            action: 'flyBySound.toggle',
+            get labelKey() {
+                return now?.on ? 'sonic.menu.hereOff' : 'sonic.menu.here';
+            },
+            order: 118,
+            section: 'tools',
+            run: () => toggle()
+        }),
+        host.menu.add({ ...SOUND_PAGE_ITEM, id: 'pause.flyBySoundLessons', labelKey: 'sonic.menu.lessonsTab', href: lessonsHref, run: () => opened(lessonsHref()) }),
+        host.keys.on('flyBySound.toggle', (e) => {
+            if (!e.repeat) toggle();
+        })
+    ];
+    return () => {
+        for (const off of offs) off();
+    };
+}
+
 export const sonicFlight: Feature = {
     id: 'sonic-flight',
     install(ctx) {
         const entry = sonicEntry();
         const install = sonicInstaller();
         if (entry) return install ? install(ctx, entry) : undefined;
-        // the menu shows it as a link (MenuItem.href) to the mode's start screen for the scan flown now, read when the menu opens; it
-        // stays a new tab (as before): the flight is left paused under the menu, and the pilot comes back to it where he was. run()
-        // is the same page for a caller that runs items
+        // the lessons stay a link (MenuItem.href) to the mode's start screen for the scan flown now, read when the menu opens, in a
+        // new tab: the flight is left paused under the menu
         // location: a page always has it; Node (unit tests) does not (review SN-1)
         const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session, typeof location === 'undefined' ? '' : new URL(location.href).search);
-        return ctx.menu.add({ ...SOUND_PAGE_ITEM, href, run: () => void open(href(), '_blank', 'noopener') });
+        const opened = (url: string): void => void open(url, '_blank', 'noopener');
+        return hereItems(ctx, () => import('../../sonic/in-place').then((m) => m.inPlaceSwitch(ctx, () => opened(href()))), href, opened);
     }
 };
