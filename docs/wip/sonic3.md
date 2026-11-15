@@ -27,8 +27,39 @@ Stage Y2-prove (train 3 wave 2, finishing):
   cap ended it; spoken before the retries: fly.stage, fly.wrong-way (twice), fly.progress, lesson.free-garden.retry,
   hint.1, fly.go. The W-pulsing pilot held a median of 0.16 m/s, so the course at "2 m/s" ran out of the probe's time; the
   reason line of each failed attempt is cut off the 12-line tail (not read).
-- [ ] LEFT, in this order (stage stopped at its reply budget; the detached run was stopped during Wroclaw 2 m/s, the lock it
-  held was removed):
+- [x] Pass 2 (c7d3d0d3, d2146fa6): r11 records pose, crashed, armed at the press and the first cue; slow runs cap the
+  flight at 480 s (Z5_FLIGHT_S); 40 spoken lines kept. LOOKED at z5-887f27aa-5-inplace/-end and z5-70b50d42-5-inplace/-end:
+  Tunis in place shows "CRASH", "Crash 4.1 m/s, back 5 s in 0.2 s", ALT -0.3 m: the Tunis speed loss on the switch on is a
+  crash of the probe's 1.5 s of W at the spawn (pilot's crash setting on), not a brake. Both -end shots read "Attempt 3.
+  Counted 0 of 1. Gate 3 (Wroclaw: 2) was missed. Let's go on to the next lesson.": EVERY Y1/Y2 course "passed" was a
+  moved-on fail (spoken tails end reason.gate-missed, fly.moving-on in y1-tunis, y1-wroclaw, y1-housefly, y2-tunis5,
+  y2-wroclaw5). r11/r12 now pass a course only when counted (no fly.moving-on); the probe pilot holds W only with the hum
+  under slope 0.3 (estimate) and climbs while turning.
+- [x] Pass 2 runs (release a3b79db2 = code of 9f93a023, port 5825/5826, logs U:/Temp/gsfpv-train3/sonic3/y3-*.log/json):
+  r12 speed-1 to speed-4 each "3 of 3", counted (lesson.speed-N.pass, fly.lesson-passed) : speed-1 flight 52 s (median 1.51 m/s) and
+  speed-2 37 s (median 2.51), both counted on attempt 1 by their tails; speed-3 and speed-4 passed their checks in whole runs
+  of 80 s and 62 s (their JSON not read). accept-fly B6 B7 B9..B16 on http://localhost:5826 (first line "accept-fly target:
+  http://localhost:5826"): 10 of 10 PASS. gates.py vitest, architecture, i18n, b18 on d2146fa6: all PASS
+  (U:/Temp/gsfpv-gates-20261115-030654). mouse-free-probe: 78 PASS then a timeout at entry 'rooms' ([data-action="pause.rooms"]
+  not visible: no rooms service on the local server; rooms.ts is outside the lane, not compared with origin/main).
+  Wroclaw stand-in 2 m/s (new pilot, counted check): 8 of 10; Backslash to first cue 0.25 s (cues safety.wall:front-left,
+  front, front-up, height.tone, room.bed); switch on 6.63 -> 5.14 m/s, crashed 0, armed 1 at the cue, then a 'crash' life
+  (pilot's crash on, W held); N to gate 1 107.8 s; course of 16 gates NOT counted: attempt 1 reached g16 and was retried
+  (spoken fly.progress, lesson.free-garden.retry: no reason.gate-missed, so probably the attempt time at median 0.33 m/s),
+  attempt 2 at g9 at the 480 s cap. The run took 707 s (over the 10-minute lock rule: Z5_FLIGHT_S 480 is too long, use 360).
+  Housefly, Tunis 2, Tunis 5 and Wroclaw 5 reruns with the new pilot were stopped before they ran (reply budget).
+  The line-side proof waited 30 minutes for the lock and never ran (y3-proof.sh, stopped).
+- [ ] LEFT, in this order (pass 2 stopped at its reply budget; all its jobs stopped; C:/dev/.gpu-lock of 03:34:41 is NOT this
+  lane's, left in place):
+  A. Rerun with the counted check (release build first: dist is a3b79db2, the probe runs from source, so no rebuild needed for
+     the probe): U:/Temp/gsfpv-train3/sonic3/y4-browser.sh (Tunis 5, Wroclaw 5), then Housefly 3 built, Tunis 2 with
+     Z5_FLIGHT_S=360. Expected today: courses NOT counted; for each, the gate and the cues there (trail, spokenTail).
+  B. The defect: a by-sound course in place is not counted at 2 to 5 m/s by the probe's pilot (gate missed at 5 m/s,
+     attempt time at 2 m/s). Find whether the hum leads past the gate (look-ahead of the racing line or beacon off the gate
+     centre: compare trail pos with the gate ring at the miss) or the pilot is too coarse (60 ms bang-bang); fix in the package
+     or the pilot, then rerun A. Also the attempt limit of the scan course (scanCourseLesson) at slow speed.
+  C. Tunis switch on: give the probe a clear spawn (turn to the open side before W) or W for 0.5 s only.
+  Old items still open:
   1. Rerun the rest of y2-browser.sh (drop the two Tunis runs and Wroclaw 5 from it; the release build of 9f93a023 is in
      dist): Wroclaw stand-in 2 m/s, Housefly d10c5638 built 3 m/s (Z5_RENDER=on), r12 speed-1..4 (one page each),
      accept-fly B6 B7 B9..B16 on SITE=http://localhost:5826 (first line must name it), mouse-free-probe under the lock.
@@ -490,6 +521,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 Y2 pass 2: most replies went to waiting on the browser queue and reading why a run failed; looking at the -end
+  shots first (one Read each) showed in one reply that every earlier "passed" course was a moved-on fail. A probe check
+  that reads the counted state, not the phase, from the start would have saved two stages of false passes.
 
 - 2026-11-15 Y2: most replies went to reading the probe and the mode again to place the fix and r12; the browser queue then
   needed 9 to 10 minutes of waiting per two runs, so the stage ran out before half the queue. Starting the queue in the first
