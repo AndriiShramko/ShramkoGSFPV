@@ -9,6 +9,7 @@ import { t } from '../../i18n';
 import { beacon, q } from '../env';
 import type { Feature } from '../context';
 import { wallsThen } from '../walls-then';
+import { sayVia } from '../say-via';
 
 /** ?refine= wins; the automated modes (bot radio, latency probe) fly the shipped walls, the pilot gets the plan's choice. */
 function refineMode(): RefineMode {
@@ -20,7 +21,11 @@ function refineMode(): RefineMode {
 export const walls: Feature = {
     id: 'walls',
     install(ctx) {
+        // stage G1-progress: the build's progress is spoken in Fly by Sound (the spoken-line hook; nothing without the mode)
+        const speech = sayVia(() => ctx.sonic ?? null);
+        const speak = (text: string): void => { if (ctx.sonic) void speech({ key: 'sonic.say.text', params: { text } }); };
         const mount = () => mountWalls({
+            speak,
             ui: ctx.ui, session: ctx.session, sceneId: ctx.scene.id, beacon, hook: ctx.hook,
             mode: refineMode(),
             bakeNow: q.get('bake') === '1',
