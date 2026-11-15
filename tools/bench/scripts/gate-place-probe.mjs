@@ -51,9 +51,9 @@ const TOPDOWN = () => {
 };
 
 // the craft held at pos facing yaw (re-written every physics step), the camera's gimbal aim (when it draws) turned too
-const HOLD = ([pos, yawRad]) => {
+const HOLD = ([pos, yawRad, pitchRad = 0]) => {
     const ss = window.__gsfpv.session;
-    window.__hold = { pos, yawRad };
+    window.__hold = { pos, yawRad, pitchRad };
     if (!window.__holdOn) {
         window.__holdOn = true;
         const prev = ss.runner.onStep;
@@ -62,7 +62,9 @@ const HOLD = ([pos, yawRad]) => {
             const hd = window.__hold, s = sim.s;
             if (!hd) return;
             for (let i = 0; i < 3; i++) { s[i] = hd.pos[i]; s[3 + i] = 0; }
-            s[6] = Math.cos(hd.yawRad / 2); s[7] = 0; s[8] = Math.sin(hd.yawRad / 2); s[9] = 0;
+            // yaw about y, then pitch about the craft's own x (pass 2: a gate above or below the view is looked at)
+            const cy = Math.cos(hd.yawRad / 2), sy = Math.sin(hd.yawRad / 2), cp = Math.cos(hd.pitchRad / 2), sp = Math.sin(hd.pitchRad / 2);
+            s[6] = cy * cp; s[7] = cy * sp; s[8] = sy * cp; s[9] = -sy * sp;
             for (let i = 10; i < 13; i++) s[i] = 0;
         };
         const orig = ss.cameraAim;
@@ -137,7 +139,21 @@ for (const item of spec.split(';')) {
             let best = null;
             for (let a = 0; a < 24; a++) { const t = await at(a * 15); if (!best || t.err < best.err) best = t; }
             for (const st of [7.5, 3.75, 1.875]) for (const d of [best.deg - st, best.deg + st]) { const t = await at(d); if (t.err < best.err) best = t; }
-            const v = (await at(best.deg)).v;
+            // pass 2: the yaw alone left a gate 34 deg above the view (Wroclaw gate 6, the picture showed a shop window): when the
+            // gate is more than 10 deg off the centre up or down, search the pitch too (sign not assumed)
+            let pitch = 0;
+            if (Math.abs(best.v.elev) > 10) {
+                let pe = Math.abs(best.v.elev);
+                for (let a = -60; a <= 60; a += 5) {
+                    await ev(HOLD, [eye.p, (best.deg * Math.PI) / 180, (a * Math.PI) / 180]);
+                    await page.waitForTimeout(120);
+                    const w = await ev(VIEW, g);
+                    if (Math.abs(w.elev) < pe && Math.abs(wrap(w.bearing)) < 10) { pe = Math.abs(w.elev); pitch = a; }
+                }
+            }
+            await ev(HOLD, [eye.p, (best.deg * Math.PI) / 180, (pitch * Math.PI) / 180]);
+            await page.waitForTimeout(120);
+            const v = { ...(await ev(VIEW, g)), pitchDeg: pitch };
             await page.waitForTimeout(1500);
             const file = `fix3b-${name}-pilot${n ? `-${n + 1}` : ''}.png`;
             await page.screenshot({ path: `${shots}/${file}` });
