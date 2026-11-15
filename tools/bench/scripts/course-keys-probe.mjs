@@ -113,6 +113,27 @@ async function flyTo(t, tol, pass, ms) {
     return { ok: true, s, vyMax, cross };
 }
 
+/** turn on the spot (Q / E) until the craft's heading is within 3 deg of the horizontal direction `d` (at most 8 s) */
+async function faceTo(d) {
+    const h = Math.hypot(d[0], d[2]) || 1;
+    const w = [d[0] / h, 0, d[2] / h];
+    const t0 = Date.now();
+    while (Date.now() - t0 < 8000) {
+        const s = await state();
+        const f0 = rot(s.q, [0, 0, -1]);
+        const fh = Math.hypot(f0[0], f0[2]) || 1;
+        const f = [f0[0] / fh, 0, f0[2] / fh], rt = [-f[2], 0, f[0]];
+        const a = Math.atan2(dot(w, rt), dot(w, f));
+        if (Math.abs(a) < 0.05) break;
+        await setKey('KeyE', a > 0 && Math.abs(a) > 0.05);
+        await setKey('KeyQ', a < 0 && Math.abs(a) > 0.05);
+        await page.waitForTimeout(Math.abs(a) > 0.3 ? 60 : 25);
+        await setKey('KeyE', false); await setKey('KeyQ', false);
+    }
+    await releaseAll();
+    await page.waitForTimeout(900);
+}
+
 try {
     await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false&set.crash.enabled=0${seedArg ? `&course=g1.${Number(seedArg).toString(36)}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
@@ -159,8 +180,9 @@ try {
             toA = await flyTo(a, 0.25, null, 40000);
             // pictures from the pilot's eye at the point before the gate: the first tunnel ring and the first flat square
             const el0 = r.elements.find((e) => e.from === k);
-            if (shots && tries === 1 && el0 && (el0.kind === 'tunnel' || el0.kind === 'flat') && !(r.shots ?? []).includes(el0.kind)) {
-                await page.waitForTimeout(700);
+            if (shots && tries === 1 && el0 && el0.kind === 'tunnel' && !(r.shots ?? []).includes(el0.kind)) {
+                // along the row's axis: the craft turned to the pass direction at the point before the first ring
+                await faceTo([-z[0], 0, -z[2]]);
                 await page.screenshot({ path: `${shots}/course4-elements-${el0.kind}.png` });
                 r.shots = [...(r.shots ?? []), el0.kind];
             }
@@ -169,6 +191,13 @@ try {
             after = (await state()).next;
             // a person who missed the gate turns round and flies it again (once)
         } while (after === before && tries < 2);
+        // the flat square before the climb: from where the craft left the gate before it, turned toward the square
+        const elN = r.elements.find((e) => e.from === k + 1);
+        if (shots && elN && elN.kind === 'flat' && !(r.shots ?? []).includes('flat')) {
+            await faceTo(sub(poses[k + 1].pos, (await state()).p));
+            await page.screenshot({ path: `${shots}/course4-elements-flat.png` });
+            r.shots = [...(r.shots ?? []), 'flat'];
+        }
         const half = g.shape.kind === 'ring' ? g.shape.diameter / 2 : g.shape.side / 2;
         const el = r.elements.find((e) => k >= e.from && k <= e.to);
         r.passes.push({ gate: k + 1, kind: el ? el.kind : g.shape.kind, shape: g.shape.kind, flat: Math.abs(z[1]) > 0.9, reachedA: toA.ok, through: thru.ok, before, after, counted: after !== before, tries, cross: thru.cross, half: r2(half), s: r2((Date.now() - tg) / 1000), vyMax: r2(Math.max(toA.vyMax, thru.vyMax)), riseM: r2(-z[1] > 0.9 ? 2 * dA : 0) });
