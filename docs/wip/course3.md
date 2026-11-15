@@ -336,6 +336,7 @@ Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight chec
   closed course of 24 gates covers is about 210 m either way. To reach more, the back half needs fewer gates (longer
   legs home) or N above 24 on big scans (packages/tracks COURSE_DEFAULTS.gatesMax; product decision). Then run
   f3/run.sh again and look at the four pictures.
+- [x] gates.py --only vitest,architecture,i18n,b18 on f25cdaaa: all PASS (vitest 97 s; logs U:/Temp/gsfpv-gates-20261115-035931).
 - [ ] Not done in this stage: browser look at the pictures' course on the page (the Node picture is the walls' super
   blocks, not the rendered scan); K1.2 (2f1ddf5f, d10c5638 spawn 62 m and 22 m high).
 
