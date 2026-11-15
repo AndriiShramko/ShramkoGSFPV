@@ -138,6 +138,25 @@ export class FrameGovernor {
     }
 
     /**
+     * Start from step `s` instead of the top (weak-devices-plan 2.1, R32): the step this browser settled at on its last
+     * flight (savedStartStep). Clamped to the steps; the governor still moves up after a calm upWindowMs, so a start
+     * that is too low costs a few seconds of a lower budget, not a frozen page.
+     */
+    startAt(s: number): void {
+        if (!Number.isFinite(s)) return;
+        this.step = Math.max(0, Math.min(this.steps.length - 1, Math.round(s)));
+    }
+
+    /**
+     * The step when it has held for `holdMs` of judged frames at time `t` (no step change since), else null: the
+     * step this device settles at, worth remembering for the next load.
+     */
+    settledStep(t: number, holdMs: number): number | null {
+        if (!this.judging || !this.enabled) return null;
+        return t - this.lastChange >= holdMs ? this.step : null;
+    }
+
+    /**
      * Feed one frame timestamp (ms). Returns the new step when the quality changes, else null.
      * `excused`: the interval ending here was made on purpose (the latency guard skipped a frame),
      * so it says nothing about the GPU keeping up and is not counted as a missed frame.
@@ -447,4 +466,41 @@ export function inputToScreenMs(periodMs: number, rafToPresentMs: number, submit
     const queue = Number.isFinite(submitToDoneMs) ? Math.max(0, submitToDoneMs - P) : 0;
     const r2p = Math.max(Number.isFinite(rafToPresentMs) ? rafToPresentMs : 0, P + queue);
     return RADIO_MS + 0.5 * P + r2p + P;
+}
+
+// ------------------------------------------------------------------ the step a device starts at
+//
+// weak-devices-plan.md 2.1 (R32): a weak device that starts every load at the top step misses frames for its first
+// seconds on the way down. The step it settled at is remembered per browser (localStorage), keyed by the device class
+// and the GPU's name, and the next load starts there (FrameGovernor.startAt). Another class or GPU starts at the top.
+
+/** localStorage key of the remembered step (the record's `v` is its version). */
+export const GOVERNOR_START_KEY = 'gsfpv.governor.start';
+
+/**
+ * How long a step must hold before it is remembered, ms: two of the governor's calm windows (DEFAULT_GOVERNOR
+ * upWindowMs 5000), so a step taken while the scan loads and left again 5 s later is not kept. An estimate, not measured.
+ */
+export const GOVERNOR_SETTLE_MS = 10000;
+
+/** The device's id in the record: its class and the GPU's name (gpuName). */
+export function governorDeviceId(deviceClass: string, gpu: string): string {
+    return `${deviceClass}|${gpu}`;
+}
+
+/** The stored record for `id` at `step`. */
+export function governorStartRecord(id: string, step: number): string {
+    return JSON.stringify({ v: 1, id, step });
+}
+
+/** The step to start at from the stored record `raw`: its step when the record is for `id`, else 0 (the top). */
+export function savedStartStep(raw: string | null | undefined, id: string, steps: number): number {
+    if (!raw) return 0;
+    try {
+        const r = JSON.parse(raw) as { v?: unknown; id?: unknown; step?: unknown };
+        if (r?.v !== 1 || r.id !== id || typeof r.step !== 'number' || !Number.isInteger(r.step)) return 0;
+        return r.step >= 0 && r.step < steps ? r.step : 0;
+    } catch {
+        return 0;
+    }
 }

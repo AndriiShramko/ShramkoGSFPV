@@ -17,6 +17,7 @@ import { t } from '../../i18n';
 import type { Feature, FlightContext } from '../context';
 import { deviceFor, drawingBudget, drawingDefaults, drawingFor, drawingMode, handheld, linkOf, mobile, setLive } from '../drawing';
 import { cleanDraw } from '../clean-draw';
+import { gpuName, governorDeviceId } from '@gsfpv/render-pc';
 
 /** How long the HUD line stays, ms: a refused request is read once, the "on" line is a reminder. */
 const NOTE_MS = 7000;
@@ -30,6 +31,8 @@ function apply(ctx: FlightContext, announce: boolean): void {
     const engine = r.setStochastic(d.stochastic && !clean);
     ctx.quality.setTopBudget(d.budgetM);
     ctx.quality.setPresetScale(d.renderScale);
+    // R32: the governor starts at the step this device settled at on its last flight (render-pc governor.ts)
+    ctx.quality.startFrom(governorDeviceId(d.deviceClass, gpuName(r.gpuInfo)));
     // a scene switch set the shared renderer's budget to the top while it loaded: back to the governor's step
     ctx.quality.apply();
     const request = linkOf(ctx.scene);

@@ -25,6 +25,10 @@ Stage P3-weak-budget
   build 66aa1609 on port 5741, against the P2 16 M reference): REJECTED, see Facts P3 (this commit)
 - [ ] 3. Next candidate, not started: why a lower multiplier freezes the page (find the cause first, see "Left"), then the
   coarse cover of the frame and the budget inside it; the far field (`?viewlodfar=8`, runner set `far8`) not measured yet
+- [x] 5. Governor start step (R32, weak-devices-plan 2.1): FrameGovernor.startAt / settledStep, the step held 10 s is
+  remembered in localStorage `gsfpv.governor.start` keyed by device class and GPU name, the next load starts there
+  (quality.ts startFrom, builtin/drawing.ts); test governor-start.test.ts 4 of 4 (NEG OK), governor.test.ts pass,
+  prefs migrate and defs 43 of 43, render-pc and fly typecheck exit 0 (this commit)
 - [ ] 4. Pictures laptop3-lublin-above-0p5M-after.png and -1M-after.png (runner set `after`), Wroclaw street check (set `wro`
   with MUL and TAG), accept-fly B6 B7 B9 to B16, a6-reference, gates vitest, architecture, i18n, b18; status table
 
