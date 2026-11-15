@@ -58,6 +58,9 @@ const READ = () => {
     return {
         course: c ? { on: c.on, seed: c.seed, gates: c.gates, next: c.next, laps: c.laps } : null,
         sonic: so ? { lesson: so.lesson, phase: so.phase, target: so.target ? so.target.id : null, yaw: so.yaw, pos: so.pos, prims: so.stagePrims } : null,
+        // lane quiet3 (D7_NARRATOR=off): what reached the voice and the one-shot sounds played (feature.ts hook oneShots)
+        voiced: (window.__voiced || []).slice(),
+        oneShots: so && so.oneShots ? so.oneShots : [],
         speech
     };
 };
@@ -81,6 +84,24 @@ try {
     page.on('pageerror', (e) => out.errors.push(String(e.message).slice(0, 160)));
     await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false&simradio=scenario&set.respawn.auto=1&set.respawn.target=rewind&render=off${process.env.D7_SG ? `&sg=${process.env.D7_SG}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
+    if (process.env.D7_NARRATOR === 'off') {
+        // lane quiet3: the narrator setting off in the prefs document, a spy on the voice, then the page again
+        await ctx.addInitScript(() => { window.__voiced = []; try { const s = window.speechSynthesis; const sp = s.speak.bind(s); s.speak = (u) => { window.__voiced.push(String(u.text).slice(0, 80)); return sp(u); }; } catch { /* no voice */ } });
+        out.prefsKey = await page.evaluate(() => {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                let d;
+                try { d = JSON.parse(localStorage.getItem(k)); } catch { continue; }
+                if (!d || !d.collections || !d.collections.sonic) continue;
+                d.collections.sonic.prefs = { ...(d.collections.sonic.prefs || {}), narrator: false };
+                localStorage.setItem(k, JSON.stringify(d));
+                return k;
+            }
+            return null;
+        });
+        await page.reload({ waitUntil: 'load', timeout: 120000 });
+        await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
+    }
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     await page.waitForTimeout(2000);
     const x = page.locator('.screen.radio [data-action=radio-close]');
@@ -136,7 +157,7 @@ try {
         stop = true;
         await poll;
         const after = await page.evaluate(READ);
-        const c = { name, nextBefore: before.course?.next, nextAfter: after.course?.next, lapsBefore: before.course?.laps, lapsAfter: after.course?.laps, lines: seen, wrongWay: seen.filter((l) => l.key === 'fly.wrong-way').length, gateBehind: seen.filter((l) => /gate-?[bB]ehind/.test(l.key)).length, s: +((Date.now() - tc) / 1000).toFixed(1) };
+        const c = { name, nextBefore: before.course?.next, nextAfter: after.course?.next, lapsBefore: before.course?.laps, lapsAfter: after.course?.laps, lines: seen, wrongWay: seen.filter((l) => l.key === 'fly.wrong-way').length, gateBehind: seen.filter((l) => /gate-?[bB]ehind/.test(l.key)).length, voiced: after.voiced.slice(before.voiced.length), sounds: after.oneShots.slice(before.oneShots.length).map((o) => o.cue), s: +((Date.now() - tc) / 1000).toFixed(1) };
         out.cases.push(c);
         console.log(name, JSON.stringify(c).slice(0, 500));
         save();

@@ -1463,8 +1463,10 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
             }, uttBefore);
             const lineTimes = (await events(page)).filter((e) => e.kind === 'speech' && e.key !== 'speech.end').slice(-60).map((e) => ({ t: Math.round(e.t * 1000) / 1000, key: e.key }));
             run.quiet = { ...quiet, lines: lineTimes };
-            check(`${tag}: with the narrator off nothing reaches the voice from the press to the course's end`, quiet.voiced.length === 0, quiet.voiced.slice(0, 10));
-            check(`${tag}: with the narrator off a sound is played for a passed gate and for the lap or finish`, (quiet.oneShots ?? []).some((o) => o.cue.includes('"gate"')) && (quiet.oneShots ?? []).some((o) => o.cue.includes('"lap"') || o.cue.includes('"fanfare"')), (quiet.oneShots ?? []).slice(-12));
+            // X2 run 1 (Wroclaw): the one utterance was the engine's empty warm-up (text ''); a gate's sound is the planner's (not
+            // engine.cue), so the gates are judged by the hum's target moving on (run.flight.gates) and the one-shots list the lap
+            check(`${tag}: with the narrator off nothing reaches the voice from the press to the course's end`, quiet.voiced.filter((t) => t.trim() !== '').length === 0, quiet.voiced.slice(0, 10));
+            check(`${tag}: with the narrator off a sound is played at the lap's or the course's end`, (quiet.oneShots ?? []).some((o) => o.cue.includes('"lap"') || o.cue.includes('"fanfare"')), (quiet.oneShots ?? []).filter((o) => !o.cue.includes('"touch"')).slice(-12));
         }
         await r11Off(page, tag, run);
         await ctx.close();

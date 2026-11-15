@@ -610,7 +610,27 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - [x] X2.0 r11 can fly with the narrator off (Z5_NARRATOR=off: prefs narrator false; lists the voice from the press to the course's
   end and the one-shot sounds); feature.ts hook.sonic gives oneShots (every engine.cue of the flight, at most 400, the engine's own
   cue given back at the uninstall). tsc apps/fly 0, tools/bench 0 (quiet3x/tsc-*.log). Logs U:/Temp/gsfpv-train3/quiet3x/.
-- [~] X2.1 release build of this commit with the stand-in walls in dist/walls; rows 1 to 10.
+- [x] X2.1 release build of 25e7bdb4's tree exit 0 (quiet3x/build2.log; release.json sha256 ebab9082...), stand-in walls in
+  dist/walls. d7-probe.mjs: D7_NARRATOR=off (prefs narrator false, a spy on the voice, per case the voiced lines and the one-shots).
+  Script U:/Temp/gsfpv-train3/quiet3x/run-x2.sh (serve-csp 5761, r11 PORT 5762, render off, no lock).
+- [x] Row 1, Wroclaw, the ear pilot (r11 Z5_NARRATOR=off, 5 m/s; evidence/2026-11-15/sonic-int-review-r11-off-70b50d42.json):
+  first cue 0.24 s after Backslash, speed 7.05 m/s at the press and 7.8 at the cue (no new life); Shift+G course of 22 gates, the
+  hum on g1 21.9 s after the press; flown to its end in 114 s, laps 1, all 22 gates, counted, no fly.moving-on. Voice: 1 call,
+  text '' (the engine's empty warm-up), 0 lines. One-shots (engine.cue) in the flight: answer yes 1 (the switch on), checkpoint 1
+  (the course ready), lap 1 (the lap's end, QW-1), touch wall 3. A gate's sound is not an engine.cue (the planner's own), so the
+  hook does not list it; gates judged by the hum's target moving g1 to g22. 10 of 12 checks: the 2 fails were the probe's own
+  checks (warm-up '' counted, gate looked for in engine.cue); both corrected after the run (not re-run).
+- [~] Run stopped at the reply limit while r11 Tunis was flying: quiet-probe narrator off Wroclaw and Tunis exit 0
+  (quiet3x/q-*-off.json, not yet read); r11 Tunis, d7 narrator off, READER=1 not finished (jobs killed).
+- [ ] Left (in this order): re-run run-x2.sh from r11 Tunis on (the build in dist is current for 25e7bdb4 plus this commit's
+  probe-only changes; rebuild only if app code changes); read q-*-off.json for rows 1, 4, 5 (quiet-summary.mjs); row 1 course end:
+  the one-lap course gave 'lap' and no 'fanfare' (M3 says finish notes at the course's end: check in app/builtin/course.ts whether
+  a one-lap course ever ends, guess: the course loops and 'lap' is its end); row 3 (Shift+G that fails: idea, an init script that
+  makes the course worker throw); row 7 (r12 Z5_NARRATOR=off: the r12 newContext still uses prefsDoc() at line ~1486, add the
+  switch); row 8 (narratorTip once in r11 narrator on); row 9 (?sonic=scan, three settings: no probe yet); row 10 (r9, r11
+  Wroclaw and Tunis, r12: they take the lock); accept-fly B6 B7 B9 to B16; pause-over-course-probe; a6-reference; gates.py with
+  leaks; the two pictures; the off table (QW-6), 'What the owner does', 'For the lead' (add apps/fly/src/sonic/feature.ts oneShots,
+  tools/bench/scripts/d7-probe.mjs, tools/bench/src/sonic-int-review.ts to the QW-8 list; package pin 293ebae unchanged).
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
@@ -690,3 +710,6 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
 - Lane quiet3 X1: most replies went to the test fixtures (a captions import that needs a page, the Edit tool's read-first rule on
   four files, one async slip); running the "before" probe detached against the existing dist while editing saved a build and
   about 6 minutes. A fake-page helper shared by the sonic tests (document, location) would have saved 3 replies.
+- 2026-11-15 X2 (quiet3): most replies went to making the probes see the narrator-off flight (r11 and d7 had no narrator switch,
+  the page had no record of one-shot sounds); probes with Z5_NARRATOR / D7_NARRATOR and a oneShots hook ready before a proof stage,
+  and the ten rows split over three stages, would have made it fit.
