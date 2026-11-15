@@ -42,7 +42,9 @@ describe('editor3 G2', () => {
         const j = kb.indexOf('if (this.isGame) { this.onDownGame(e); return; }');
         expect(i).toBeGreaterThan(0);
         expect(j).toBeGreaterThan(i);
-        expect(kb.slice(i, j)).toMatch(/this\.game!\.pilot\.arm\.stop\(\)/);
+        // train 3 I2 (D8): the press only marks the time and climbs; the short tap's keyup stops the motors
+        expect(kb.slice(i, j)).toMatch(/this\.editSpaceAt = e\.timeStamp/);
+        expect(kb).toMatch(/if \(tap\) this\.game!\.pilot\.arm\.stop\(\)/);
     });
 
     it('a floor-added gate faces along the course (from the selected gate), not at the camera', () => {

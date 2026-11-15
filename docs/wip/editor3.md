@@ -31,7 +31,17 @@ Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
     (GAME_KEYS lift +1) and in the edit test flight Space is taken as disarm (devices/keyboard.ts onDown, isGame &&
     Space && editModeFlying); the take-off hop (play/game.ts liftoff, TAKEOFF_HOP_M 1) did not show in ALT (0.1 m), not
     measured why. The gate was not ahead (no hook in that build).
-- [ ] I2.3 left, in this order:
+- [x] I2.4 (pass 2) a, b, c done in the commit "editor3 I2 pass 2: ...": probe editor3-clean.ts: refusal by Ctrl+S (name
+  field), a name filled and the window's Save clicked, the input blurred, then the line read at 1 s, 10.5 s and after M;
+  crash: wait for mode fly, then only crashActive (15 s), then mode edit; credit '.attribution', the walls summary box and
+  whether the walls menu shows; covers also lists summary and .attribution. D7 editor.css (max-height 500px): the Walls
+  chip's open menu ([data-testid=walls-more] > :not(summary)) hidden in the edit view, the summary stays. D8
+  devices/keyboard.ts: while flying in the edit mode a held Space climbs (the game scheme's lift) and a tap shorter than
+  EDIT_TAP_MS 200 ms (an estimate) disarms on keyup; the arming press is never taken as that tap (editSpaceAt is set only
+  by a press made while flying). course.edit.opened says so in en es pl ru. Checks: editor3-i2-space.test.ts 3 pass, NEG
+  OK (neg_control.py ref HEAD, keyboard.ts); editor3-g2 (assertion moved to the tap) and editor3-i2 6 pass;
+  a6-reference.test.ts pass; apps/fly and tools/bench tsc 0 errors.
+- [ ] I2.3 left (a, b, c done in I2.4), in this order:
   a. Probe fixes in editor3-clean.ts: the refusal: Ctrl+S opened the name field ('Your name' on the line), not a refusal;
      use Add gate + a floor click that gives a red gate on Tunis (H3: 'add -> red, the line names gate 2'), or the
      window's Save with a name typed; the crash: wait for mode 'fly' before the full-throttle push and then wait only

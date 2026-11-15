@@ -28,7 +28,7 @@
   "keys.course.edit": "Course: edit the obstacles",
   "course.edit.menu": "Course: edit the obstacles",
   "course.edit.title": "Course editor",
-  "course.edit.opened": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under it (or M, R, T); pull them with the mouse. Space or your controller's arm switch flies the course, again to edit. Esc leaves",
+  "course.edit.opened": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under it (or M, R, T); pull them with the mouse. Space or your controller's arm switch flies the course (hold Space to climb); a short Space or the switch again goes back to editing. Esc leaves",
   "course.edit.gate": "Gate {n} of {of}: {shape}, {size} m",
   "course.edit.shape.ring": "ring",
   "course.edit.shape.square": "square",

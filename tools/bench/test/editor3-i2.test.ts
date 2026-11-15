@@ -76,4 +76,11 @@ describe('editor3 I2 the flight is not in the edit view (D5, D7)', () => {
         // the mode line stays
         expect(hidden).not.toMatch(/\.osd\.tl/);
     });
+
+    it('below 500 px the Walls chip keeps its summary and its open menu is hidden in the edit view (D7)', () => {
+        const i = CSS.indexOf("[data-testid='walls-more'] > :not(summary)");
+        expect(i).toBeGreaterThan(0);
+        expect(CSS.slice(i - 120, i)).toContain('@media (max-height: 500px) {');
+        expect(CSS.slice(i - 60, i)).toContain('body:has(.course-editor:not(.ce-flying))');
+    });
 });

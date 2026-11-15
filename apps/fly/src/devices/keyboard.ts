@@ -37,6 +37,8 @@ const THR_DOWN_MS = 333;
 const RAMP_MAX_STEP_MS = 200;
 /** The game scheme sends a frame at least this often while the keyboard flies (the loops need a steady stream). */
 const GAME_FRAME_MS = 10;
+/** train 3 I2 (D8): a Space shorter than this while flying in the edit mode is a tap (back to editing), longer is a climb (estimate) */
+export const EDIT_TAP_MS = 200;
 
 /** Inputs that take no text: a focused slider or checkbox must not swallow R, P or Esc. */
 const NOT_TEXT = new Set(['range', 'checkbox', 'radio', 'button', 'submit', 'reset']);
@@ -112,6 +114,8 @@ export class KeyboardSource {
     /** page time the throttle ramp has been integrated up to */
     private rampT = 0;
     private lastGameEmit = -1e9;
+    /** train 3 I2 (D8): the time of a Space pressed while flying in the edit mode (null: none, or it was the arming press) */
+    private editSpaceAt: number | null = null;
 
     constructor(controls: Controls) {
         this.controls = controls;
@@ -181,11 +185,13 @@ export class KeyboardSource {
             }
             return;
         }
-        // editor3 G2 (the lead's decision): in the edit mode Space arms and Space again disarms a keyboard pilot; while the
-        // course is flown in the mode Space is not the climb key but the way back to editing (the motors stop)
+        // editor3 G2 (the lead's decision): in the edit mode Space arms and Space again disarms a keyboard pilot. Train 3 I2
+        // (D8): Space is also the game scheme's only climb key, so while the course is flown in the mode a held Space climbs
+        // and a short tap (let go within EDIT_TAP_MS, onUp) is the way back to editing (the motors stop)
         if (this.isGame && e.code === 'Space' && editModeFlying()) {
             if (!e.repeat) {
-                this.game!.pilot.arm.stop();
+                this.editSpaceAt = e.timeStamp;
+                this.down.add('Space');
                 this.emitGame(e.timeStamp);
             }
             e.preventDefault();
@@ -219,7 +225,12 @@ export class KeyboardSource {
 
     private onUp = (e: KeyboardEvent): void => {
         if (this.isGame) {
-            if (this.down.delete(e.code) && !this.passive) this.emitGame(e.timeStamp);
+            // train 3 I2 (D8): a Space pressed while flying in the edit mode and let go within EDIT_TAP_MS is a tap: disarm
+            const at = e.code === 'Space' ? this.editSpaceAt : null;
+            if (e.code === 'Space') this.editSpaceAt = null;
+            const tap = at !== null && !this.passive && editModeFlying() && e.timeStamp - at < EDIT_TAP_MS;
+            if (tap) this.game!.pilot.arm.stop();
+            if ((this.down.delete(e.code) || tap) && !this.passive) this.emitGame(e.timeStamp);
             return;
         }
         this.ramp(e.timeStamp); // the time since the last tick was held too

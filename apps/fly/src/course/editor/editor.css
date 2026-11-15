@@ -221,6 +221,12 @@ body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud,
    F3's lines (.osd-col), the REC row with Auto and the folder button and its dot and notice (app/builtin/cinema.ts), the
    crash card (ui/crash-overlay.ts). The mode line (.osd.tl: DISARMED and the flight mode) stays. */
 body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd.br, .hud .osd.tr, .osd-col, .rec-bar, .rec-dot, .rec-notice, .crash-overlay) { display: none !important; }
+/* train 3 I2 (D7, the lead's decision): on a view lower than 500 px the edit mode is a mouse and keyboard tool: the Walls chip's
+   open menu (walls switch, voxel grid, style, opacity, export, import: walls.ts walls-more) is hidden in the edit view, the
+   chip's summary line ('Walls 5 cm') stays; back in the test flight and after Exit */
+@media (max-height: 500px) {
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-more'] > :not(summary) { display: none !important; }
+}
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }

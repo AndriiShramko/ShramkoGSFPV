@@ -64,8 +64,10 @@ const table = (p: Page): Promise<Record<string, unknown>> => p.evaluate(() => {
     const lh = line ? parseFloat(getComputedStyle(line).lineHeight) || parseFloat(getComputedStyle(line).fontSize) * 1.2 : 0;
     const tr = top?.getBoundingClientRect();
     const over = (a: DOMRect, b: DOMRect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-    const covers = tr && shown(top) ? [...document.querySelectorAll('button, a, [role=button]')].filter((e) => !e.closest('.ce-topbar') && shown(e) && over(tr, e.getBoundingClientRect())).map((e) => `${e.tagName.toLowerCase()}.${String((e as HTMLElement).className).slice(0, 30)}`) : [];
-    const credit = document.querySelector('.scene-credit, .credit, [data-testid=scene-credit]');
+    const covers = tr && shown(top) ? [...document.querySelectorAll('button, a, [role=button], summary, .attribution')].filter((e) => !e.closest('.ce-topbar') && shown(e) && over(tr, e.getBoundingClientRect())).map((e) => `${e.tagName.toLowerCase()}.${String((e as HTMLElement).className).slice(0, 30)}`) : [];
+    const credit = document.querySelector('.attribution');
+    const wallsSum = document.querySelector('[data-testid=walls-summary]');
+    const wallsMenu = document.querySelector('[data-testid=walls-more] .walls-menu');
     // the visible text leaves outside the editor's own parts (anything of the flight not in the list above shows here)
     const leaves = [...document.querySelectorAll('#ui *')].filter((e) => {
         if (e.closest('.ce-topbar, .ce-gatebar, .course-editor, .ce-size-tag')) return false;
@@ -75,7 +77,8 @@ const table = (p: Page): Promise<Record<string, unknown>> => p.evaluate(() => {
     return {
         t, top: box(top), lineRect: line ? box(line) : null, lineCount: line && lh ? Math.round(line.getBoundingClientRect().height / lh) : null,
         lineText: line?.textContent ?? null, lineTitle: line?.title ?? null, refused: !!line?.classList.contains('refused'),
-        ellipsis: line ? line.scrollWidth > line.clientWidth : null, covers, credit: credit ? box(credit) : null, leaves
+        ellipsis: line ? line.scrollWidth > line.clientWidth : null, covers, credit: credit ? box(credit) : null, creditShown: shown(credit),
+        wallsSum: shown(wallsSum) ? box(wallsSum) : null, wallsMenu: shown(wallsMenu) ? 1 : 0, leaves
     };
 });
 
@@ -142,8 +145,15 @@ async function desk(page: Page): Promise<Record<string, unknown>> {
     if (!(await open(page, out, true))) return out;
     out.edit = await table(page);
     await shot(page, `editor3-edit-clean-1920${TAG}.png`);
-    // D6: a refused Save stays on the line until the pilot's next action
+    // D6: a refused Save stays on the line until the pilot's next action. Ctrl+S without a name opens the name field; a name
+    // typed and the window's Save then saves or refuses (Tunis: the start leg; the local server keeps nothing)
     await page.keyboard.press('Control+KeyS');
+    await sleep(500);
+    out.askLine = (await table(page)).lineText;
+    await page.locator('.course-editor .ce-name').fill('Probe').catch(() => undefined);
+    await page.locator('.course-editor .ce-save-mine').click({ timeout: 5000 }).catch((e) => { out.saveClick = String(e).slice(0, 120); });
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await until(() => table(page), (v) => !!v.refused, 8000);
     await sleep(1000);
     out.refused1s = await table(page);
     await sleep(9500);
@@ -156,11 +166,12 @@ async function desk(page: Page): Promise<Record<string, unknown>> {
     // a crash in the test flight: arm, full throttle and full pitch forward until the crash (or 12 s)
     await armPad(page);
     await pad(page, [0, 0, 0.1, 0, 0], null);
-    await until(() => dbg(page), (d) => d?.mode === 'fly', 3000);
+    const flyNow = await until(() => dbg(page), (d) => d?.mode === 'fly', 4000);
     await pad(page, [0, 0.9, 1, 0, 0], null);
-    const cr = await until(() => dbg(page), (d) => !!d?.crashActive || d?.mode === 'edit', 12000);
+    const cr = await until(() => dbg(page), (d) => !!d?.crashActive, 15000);
     await pad(page, [0, 0, -1, 0, 0], null);
-    out.crashSeen = { crashActive: cr?.crashActive, mode: cr?.mode };
+    out.crashSeen = { modeBefore: flyNow?.mode, crashActive: cr?.crashActive, mode: cr?.mode };
+    await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
     await sleep(1500);
     out.afterCrash = { mode: (await dbg(page))?.mode, ...(await table(page)) };
     await shot(page, `editor3-after-crash-1920${TAG}.png`);
