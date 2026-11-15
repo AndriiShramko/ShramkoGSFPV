@@ -100,7 +100,7 @@ export interface WallsOptions {
     /** the pilot asked for walls (the build button): the switch goes on, for every scan (app/walls.ts) */
     switchOn(): void;
     /** stage G1-progress: a line for Fly by Sound's speech (the spoken-line hook, app/say-via.ts); absent: nothing is spoken */
-    speak?: (text: string) => void;
+    speak?: (text: string, kind?: 'failed' | 'wait') => void;
 }
 
 /** the owner's rule: anything longer than 2 s shows what runs (a rule, not a measurement) */
@@ -311,7 +311,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
         if (ok) after = null;
         const line = next ? `${text} ${next}` : text;
         say(line, hideAfterMs);
-        o.speak?.(line);
+        // lane quiet2 (review QW-2): a failed build is told to the speaker, so with the narrator off it has a sound
+        o.speak?.(line, ok ? undefined : 'failed');
     }
     function onStageOf(st: string): void {
         if (!prog) return;
@@ -322,7 +323,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         // said once a build, before the first step that may stop the picture (Fly by Sound hears it before the silence)
         if (n && !noteSaid) {
             noteSaid = true;
-            o.speak?.(n);
+            o.speak?.(n, 'wait'); // review QW-6: with the narrator off the "wait" sound comes before the picture may stop
         }
         tickProgress();
     }

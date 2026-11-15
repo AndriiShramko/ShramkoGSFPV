@@ -43,6 +43,10 @@ import type { FlightContext } from '../app/context';
 import { t, locale } from '../i18n';
 import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
+import { flightLessonOf, quietFlight } from './entry';
+import { liveRegionPaused, quietLiveRegion } from './live-quiet';
+import { narratorKey } from './narrator-key';
+import { NARRATOR_OFF_CUE } from './quiet-cues';
 import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
@@ -54,7 +58,7 @@ import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
-import { allProgress } from './store';
+import { allProgress, narratorTipSaid, setNarratorTipSaid } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
 import { setLessonView } from '../app/sonic-view';
 
@@ -161,7 +165,8 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
     if ((ses.builtin && !here) || ses.scene.id !== w.sceneId) {
         forceScanPrefs(ctx.prefs, w);
         mode.bridge.silence();
-        say('sonic.say.scanLoading');
+        // lane quiet (review QV-3): with the narrator off the loading is not said (the page shows it); a failed load is still said
+        if (entry.setup.prefs.narrator !== false) say('sonic.say.scanLoading');
         const ok = await ctx.scenes.load(w.sceneId, 'pick');
         if (!ok || ctx.session.builtin || ctx.session.scene.id !== w.sceneId) {
             // the lesson does not open: the scan's size and walls are not kept in the prefs for a flight that is not the lesson's
@@ -195,7 +200,9 @@ function courseOf(ctx: FlightContext, names: KeyNames): NonNullable<LessonPage['
     return {
         key: () => names.of('course.generate'),
         inUse: () => shared(),
-        generate: () => ctx.hook.course?.sound?.generate()
+        generate: () => ctx.hook.course?.sound?.generate(),
+        // lane quiet2 (N6): the course feature's finished laps of this attempt (the hook it fills every frame)
+        laps: () => ctx.hook.course?.laps ?? 0
     };
 }
 
@@ -215,6 +222,9 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         keyNames: () => names.runner(),
         lessonKeys: () => names.lessonStart(),
         keyHints: () => keyHintsOn(entry.setup.host),
+        narratorOff: () => entry.setup.prefs.narrator === false,
+        // lane quiet2 (N6): the one hint after the first course by sound, its key by the pilot's layout, its mark in the prefs
+        narratorTip: { key: () => names.of('sonic.narrator'), said: () => narratorTipSaid(ctx.prefs), mark: () => setNarratorTipSaid(ctx.prefs) },
         speechRate: () => entry.setup.prefs.speechRate,
         session: () => ctx.session,
         // a lesson with other walls: the flown session is replaced, the way the scene host replaces a scan (app/scene-host.ts),
@@ -270,11 +280,57 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // the page was entered through ?sonic=: the engine, its captions and speech, the lessons and their keys are the mode's
     const audio = entry.setup.audio;
     mode.engine = audio.engine;
+    // lane quiet3 (QW-1 proof): the one-shot sounds played (a gate, a lap, an answer), for the acceptance runs (sonic-int-review.ts
+    // r11 lists them); at most 400, given back to the engine at the uninstall
+    const oneShots: { t: number; cue: string }[] = [];
+    const engineCue = audio.engine.cue;
+    audio.engine.cue = (e) => {
+        if (oneShots.length < 400) oneShots.push({ t: Math.round(performance.now()), cue: JSON.stringify(e).slice(0, 90) });
+        engineCue.call(audio.engine, e);
+    };
     // every line the engine says is a 'speech' event (the replay's and the report's) once the mode runs
     audio.engine.onSpeech = (line, text) => mode.bridge.speech(line.key, text);
     // "my screen reader speaks": the lesson waits for its lines read one after the other, as the reader reads them (v12-int step 6)
     mode.bridge.sequential = () => !entry.setup.prefs.selfVoice;
     mode.bridge.readTimeMs = (text) => estimateSpeechS(text, entry.setup.prefs.speechRate) * 1000;
+    // train 3 (the owner's message 54): the narrator off is "sounds only" in a flight (the free flight over a scan, in place or on the
+    // sound page, and its course): no line voiced, none to a screen reader, none waited for. Read at each line, so a change applies at
+    // once. The paused menus keep their words, and so do the lessons of the lesson list.
+    // QW-5: the free flight the entry opens counts from the switch on, before the host has set its lesson
+    const flightLesson = flightLessonOf(entry);
+    mode.bridge.quiet = () => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), mode.bridge.paused);
+    // lane quiet2 (N4): the page's live region #ui (the HUD's text, the course box, the walls box) is not announced in a quiet flight
+    // either (live-quiet.ts). W2 finding (b): K's key help alone does not give #ui its words back (its lines go to the captions), and
+    // the answer is looked at every frame (tick, after the HUD wrote) as well as every 250 ms (sync: live regions added inside later)
+    let pauseReasons: readonly string[] = [];
+    offs.push(ctx.events.on('pause', ({ reasons }) => { pauseReasons = reasons; }));
+    const quietLive = (): boolean => quietFlight(entry.setup.prefs, flightLesson(host?.lesson?.id ?? null), liveRegionPaused(mode.bridge.paused, pauseReasons));
+    const liveQuiet = quietLiveRegion(document.getElementById('ui'), quietLive);
+    liveQuiet.sync();
+    // lane quiet3 (M4): the recorder's panel (sonic-session/panel.ts, outside #ui, made when the recorder first runs) follows the same
+    // rule: its status lines are live regions of their own
+    let recQuiet: ReturnType<typeof quietLiveRegion> | null = null;
+    const recSync = (): void => {
+        const panel = recQuiet ? null : document.getElementById('sonicrec-panel');
+        if (panel) recQuiet = quietLiveRegion(panel, quietLive);
+        recQuiet?.sync();
+    };
+    recSync();
+    offs.push(ctx.events.on('frame', () => {
+        liveQuiet.tick();
+        recQuiet?.tick();
+    }));
+    // N6: the captions are placed again with it (the course's clock block appears and goes without a caption)
+    const liveTimer = setInterval(() => {
+        liveQuiet.sync();
+        recSync();
+        (entry.setup.captions as { refit?: () => void }).refit?.();
+    }, 250);
+    offs.push(() => {
+        clearInterval(liveTimer);
+        liveQuiet.restore();
+        recQuiet?.restore();
+    });
     // a replay taking the engine or giving it back: the progress panel follows at once (review F5: it hides while a replay plays)
     const onPlayback = new Set<() => void>();
     ctx.sonic = new PageRuntime(entry.setup, mode, () => { for (const f of [...onPlayback]) f(); });
@@ -432,11 +488,13 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     offs.push(
         ctx.keys.on('sonic.status', (e) => {
             if (e.repeat) return;
-            void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt })));
+            void sayStatus(board, (line, interrupt) => (mode.active ? mode.bridge.say(line, interrupt, { asked: true }) : audio.engine.say(line, { interrupt })));
         })
     );
     // a line of the mode's own keys: through the lesson's speech queue while one runs (its speech events), else the engine itself
     const sayLine = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt) : audio.engine.say(line, { interrupt }));
+    // lane quiet2 (the lead's N1): what the pilot asks for with a key (K's key help, I's status) is said with the narrator off too
+    const sayAsked = (line: SpeechLine, interrupt: boolean): Promise<void> => (mode.active ? mode.bridge.say(line, interrupt, { asked: true }) : audio.engine.say(line, { interrupt }));
     // the names K says for the keys: the pilot's keyboard layout's letters, Escape by its name (key-names.ts)
     const capOf = (action: string, aria?: string): string => names.of(action, aria);
     // The mode's Share (v12-optin, review R1 R3; mode-keys.ts shareLesson): L and the top bar's and the pause menu's Share (share.ts
@@ -473,7 +531,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // pause menu's key list names L and K as the mode's (KeyRouter.relabel).
     const help = new KeyHelp({
         lines: () => keyHelpLines(capOf, { free: host?.lesson?.id === SCAN_FREE_ID }),
-        say: sayLine,
+        say: sayAsked,
         hold: (on) => (on ? ctx.pause('help') : ctx.resume('help')),
         listen: (cut) => {
             const onKey = (e: KeyboardEvent): void => {
@@ -547,6 +605,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open(), () => h.inPlace), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         () => lessonMenu.dispose(),
         ctx.keys.on('sonic.home', homeKey(home), { when: () => home.active() }),
+        // lane quiet (Q4), quiet2 (N2): Shift+V switches the narrator off and on in a flight, saved and applied at once like the start
+        // screen's check; on: two words, off: a sound alone, two notes down (review QV-4: not a gate's or a course's chime)
+        ctx.keys.on('sonic.narrator', narratorKey({
+            on: () => entry.setup.prefs.narrator !== false,
+            set: (on) => entry.setup.update({ narrator: on }).ok,
+            sayOn: () => void sayLine({ key: 'sonic.say.narratorOn' }, true).catch(() => undefined),
+            cueOff: () => audio.engine.cue(NARRATOR_OFF_CUE)
+        }), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         watchSoundGap(new SoundGap({
             lessonActive: () => mode.active && h.active,
             visible: () => document.visibilityState === 'visible',
@@ -605,6 +671,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         beacon: entry.setup.prefs.beacon !== false,
         // train 2 (sonic-int-review.ts R10): the cue ids of the engine's last plan (a wall cue is 'safety.wall') and the motor switch
         cues: [...new Set((audio.engine.plan?.cues ?? []).map((c) => c.id))],
+        oneShots: oneShots.slice(),
         motor: entry.setup.prefs.motorSound === true,
         cost: mode.hearCost(),
         walls: { voxelM: ctx.session.collision ? ctx.session.collision.voxelResolution : null, builtin: !!ctx.session.builtin, scene: ctx.session.scene.id, scale: ctx.session.transform.s },
@@ -670,6 +737,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         document.removeEventListener('visibilitychange', onVisibility);
         stage?.dispose();
         entry.setup.audio.engine.onSpeech = null;
+        audio.engine.cue = engineCue;
         document.body.classList.remove('sonic-mode');
         delete ctx.sonic;
         delete ctx.hook.sonic;

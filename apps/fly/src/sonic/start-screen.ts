@@ -590,6 +590,9 @@ export class StartScreen {
             check('sonic-captions', this.key('menu.setting.captions'), prefs.captions, (v, said) => this.change({ captions: v }, said)),
             // "my screen reader speaks" is the engine NOT speaking: the box is the opposite of selfVoice
             check('sonic-sr', this.key('menu.setting.screen-reader'), !prefs.selfVoice, (v, said) => this.change({ selfVoice: !v }, said)),
+            // train 3 (the owner's message 54): the narrator, on unless the pilot turns it off; off is "sounds only" in a flight (no line
+            // spoken, none sent to a screen reader, nothing waits); the lessons of the lesson list keep their words
+            check('sonic-narrator', t('sonic.settings.narrator'), prefs.narrator !== false, (v, said) => this.change({ narrator: v }, said), t('sonic.settings.narratorWhat')),
             check('sonic-motor', this.key('menu.setting.motor'), prefs.motorSound, (v, said) => this.change({ motorSound: v, motorChoice: true }, said)),
             // v0.13 (W13): the motor's own level in the mode (after the engine's leveller), 3 dB a step, and the target height's note
             range('sonic-motor-level', this.key('menu.setting.motor-level'), prefs.motorGainDb ?? 0, PREFS_LIMITS.motorGainDb.min, PREFS_LIMITS.motorGainDb.max, 3, ' dB', (v, said) => this.change({ motorGainDb: v }, said)),
