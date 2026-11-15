@@ -164,9 +164,10 @@ async function depth() {
         let best = null;
         for (const yaw of [Math.atan2(-dx, -dz), Math.atan2(dx, dz), Math.atan2(-dx, dz), Math.atan2(dx, -dz)]) {
             await page.evaluate(({ e, yaw }) => { window.__hold = { pos: e, yaw, pitch: 0 }; }, { e, yaw });
-            await sleep(400);
-            const sc = await page.evaluate((g) => { const cam = window.__gsfpv.session.renderer.camera; const V = cam.getPosition().constructor; const s = cam.camera.worldToScreen(new V(g[0], g[1], g[2]), new V()); return [s.x, s.y, s.z]; }, samples.pos);
-            const off = sc[2] > 0 ? Math.abs(sc[0] - 640) : 1e9;
+            // the camera follows the held yaw with a lag: wait, then ask the guide where the next gate is (bearing 0 = ahead)
+            await sleep(1200);
+            const gd = await page.evaluate(() => window.__gsfpv.course.guide?.() ?? null);
+            const off = gd && Number.isFinite(gd.bearingDeg) ? Math.abs(gd.bearingDeg) : 1e9;
             if (!best || off < best.off) best = { yaw, off: Math.round(off) };
         }
         const pitch = (Math.atan2(dy, Math.hypot(dx, dz)) * 180) / Math.PI;

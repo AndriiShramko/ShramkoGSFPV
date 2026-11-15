@@ -29,9 +29,26 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   tools/bench/src/a1-api-check.ts: Entity.findComponents and Material red/green/blue/alphaWrite in USED (check passes, 76).
   Typecheck apps/fly and packages/render-pc: 0 errors (after git submodule update put packages/sonic-fpv back on its
   pin 293ebae; it was checked out at b05aeda, which gave 6 type errors in apps/fly/src/sonic and say-via.ts).
-- [ ] X1.7 After-run of the depth probe on a new release build (GPU lock, at most 10 minutes): voxview-depth-1.png,
-  voxview-depth-2.png, voxview-depth-scan.png, each looked at, three marked points per picture read as numbers; the
-  guide chip shown. Panel probe after.
+- [x] X1.7a Esc and chip (commit 6988977b): Esc closes the open panel and only the panel (keydown in capture,
+  apps/fly/src/walls.ts); the chip closes it (a real click: open true -> false at 1366x768 and 844x390, script
+  U:/Temp/gsfpv-train2/voxview/chipdbg.mjs; the "before" chip failure was the probe's forced open, not the page).
+- [x] X1.7b Panel probe after (release 6988977b, port 5740, rendering off, U:/Temp/gsfpv-train2/voxview/panel-after.json):
+  menu rectangle l,t,r,b and close button at 1366x768 16,168,296,684 close 245,175 44x44; 1280x720 16,120,296,636;
+  844x390 16,105,296,382 (content 514 px in 275 px, scrolls); 390x844 16,217,296,733. At every size: menu in view,
+  close in view and on top (elementFromPoint), close button, Esc and chip each close it. Pictures voxview-panel-1366.png
+  (the panel above the chip, name, minus and cross at its top right; its lower edge covers part of the credit line, the
+  chip stays free) and voxview-panel-844.png (under the chip at the top, header and cross visible, the rest scrolls)
+  in U:/Temp/gsfpv-train3/shots, looked at.
+- [~] X1.7c Depth probe after (release 6988977b, Wroclaw 70b50d42, 18 gates after Shift+G in 19 s, 4 min under the lock,
+  U:/Temp/gsfpv-train2/voxview/depth-after.json): depthItems 36 (the gates' and arrows' copies). Eye 2 (12 m from gate
+  1, yaw 285, voxels alone): 7 sample points that the rays put behind a wall, 7 right, none shows the gate; marked points
+  1 (506,375) A 69,117,121 B 69,117,121 C 166,255,25 and 2 (519,378) A 63,107,111 = B (wall shown, gate hidden; before
+  the fix the same kind of point showed the gate through the wall). voxview-depth-2-marked.png looked at: the wall is
+  solid wire (dim faces, bright edges), the next gate (lime) stands behind the building corner and only its outer edge
+  shows past it; the teal gates and orange arrows in the street stand in front of the floor voxels, which show through
+  their rings. Eye 1 (5 m, used also for the over-the-scan picture) faced away again (guide: gate behind at 147 deg),
+  so voxview-depth-1.png and voxview-depth-scan.png have 0 points: probe fault, fixed in this commit (the yaw is chosen
+  by the guide's bearing after 1.2 s; the camera follows the held yaw with a lag), not yet run.
 - [ ] X1.8 Typecheck (apps/fly, packages/render-pc), gates.py --only vitest,architecture,i18n,b18,leaks,
   tools/bench/test/a6-reference.test.ts, commit with Facts and For the lead.
 - [ ] X2-whole-scene: not started.
@@ -67,9 +84,16 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-X1.4 to X1.8 above, then stage X2.
-- Seen, not in this list: packages/sonic-fpv shows as modified in git status (the submodule's checkout differs from the
-  pin); not touched and not committed by this lane.
+Exact list for the next run of stage X1-depth (the release build of 6988977b plus this probe fix is needed: build,
+copy U:/Temp/gsfpv-train2/walls/release/. to dist/walls, serve on 5740):
+1. Depth probe again (GPU lock, under 10 minutes): voxview-depth-1.png, voxview-depth-2.png and voxview-depth-scan.png
+   each with points in front and behind, three marked points per picture read as numbers, each picture looked at with
+   one sentence; the guide chip shown.
+2. X1.8: typecheck apps/fly and packages/render-pc; python -X utf8 "C:/Users/andri/.claude/skills/gsfpv/scripts/gates.py"
+   --repo C:/dev/gsfpv-site-sound --only vitest,architecture,i18n,b18,leaks; tools/bench/test/a6-reference.test.ts;
+   commit; then stage X2.
+- Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; this run
+  put it back on the pin with git submodule update (clean working tree, nothing lost).
 
 ## For the lead
 
