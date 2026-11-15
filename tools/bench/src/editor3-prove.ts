@@ -421,6 +421,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // ED-4: Add gate, then a click low on the view (the floor); the new gate stands over the floor and is not red
     const fp0 = (await ed(page)).problems ?? 0;
     const nf = (await hook(page))?.gates ?? 0;
+    const viewBefore = (await ed(page)).view ?? null;
+    const dbgBefore = await dbg(page);
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-floor-before-1920.png' : 'editor3-floor-before-1920.png') });
+    out.floorBefore = { viewBefore, mode: (dbgBefore as unknown as { mode?: string } | null)?.mode, eye: (dbgBefore as unknown as { eye?: unknown } | null)?.eye ?? null };
     await page.click('[data-top="add"]', { timeout: 5000 }).catch((e) => { out.floorAddClickError = String(e).slice(0, 120); });
     await sleep(300);
     await page.mouse.click(vp.width / 2, vp.height * 0.85);
@@ -431,7 +435,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         ok: fa.ok, gates: [nf, (await hook(page))?.gates], problems: [fp0, (await ed(page)).problems],
         stand: fd?.stand.screen.map((v) => Math.round(v)), standPosY: fd ? r2(fd.stand.pos[1]!) : null, opening: fd ? r2(fd.stand.opening) : null,
         said: ((await ed(page)).said ?? '').slice(0, 120),
-        line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '')
+        line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? ''),
+        place: (fd as unknown as { place?: unknown } | null)?.place ?? null,
+        viewAfter: (await ed(page)).view ?? null,
+        problemLine: await page.evaluate(() => document.querySelector('.ce-problems, .ce-problem, [data-problems]')?.textContent?.slice(0, 160) ?? '')
     };
     await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-floor-add-1920.png' : 'editor3-floor-add-1920.png') });
     out.floorAddUndo = await undoRedo(page);

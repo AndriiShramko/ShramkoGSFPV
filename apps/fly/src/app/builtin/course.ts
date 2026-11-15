@@ -126,6 +126,8 @@ export const course: Feature = {
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
         let dragFrame = 0;
+        /** G2 measurement: the last Add gate click (ray, wall hit, the point, the selected gate, the flown transform) */
+        let lastPlace: Record<string, unknown> | null = null;
         /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
         const aim = (): void => {
             if (!camView || !panel) return;
@@ -709,7 +711,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => unknown }).__gsfpvEditHit = (x, y) => view?.hitAt(x, y) ?? null;
             if (!adminLive && adminHinted()) {
@@ -787,6 +789,8 @@ export const course: Feature = {
             const sel = ed.course.gates[ed.selected];
             const prev: [number, number, number] | null = sel ? [sel.pos[0] * tr[0] + tr[1], sel.pos[1] * tr[0] + tr[2], sel.pos[2] * tr[0] + tr[3]] : null;
             const out = edit(ed, addAction(at, addFacing(ray.o, at, prev), tr), keepProblems);
+            // G2 measurement: what the floor click gave (read by the probe through __gsfpvEditView().place)
+            lastPlace = { o: ray.o, d: ray.d, hit, at, prev, tr: [tr[0], tr[1], tr[2], tr[3]], camEye: camView ? [...camView.eye] : null };
             if (!out.ok) {
                 ed = out.state;
                 edHook.refused = out.reason.code;
