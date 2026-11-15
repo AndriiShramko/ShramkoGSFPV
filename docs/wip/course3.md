@@ -193,6 +193,32 @@ Stage fixes (review CR-1..CR-6). Stopped at the reply budget at a clean point.
   course, 1 fit each) and FREE_SPACE_MS from the free step: Node qMs 1115-1140 + freeMs 3675 on Wroclaw (g4b), browser
   20.4 s (G4 build-look, 8c1dfd71, includes qualityMap); then time one Wroclaw generation of the current walk in the browser.
 
+Stage F1-no-freeze (train 3 wave 2; the walls build is this lane's now).
+
+- [x] Release build of ec64aa44 first (U:/Temp/gsfpv-train3/course3/f1/build.log, 1928 files).
+- [x] 9fb683a4: the walls build runs in a worker (apps/fly/src/bake-worker.ts, its own WebGPU device on an OffscreenCanvas;
+  apps/fly/src/bake-off-thread.ts bakeOffThread has bakeCollision's signature; one worker per ladder step, terminated at
+  its end). walls.ts uses it for the base build, the refine and the hook's bakeTrial ({ page: true } keeps the old path for
+  comparisons); hook.bake.where says 'worker' or 'page'. A worker without WebGPU builds on the page as before; only then
+  the box shows the mayStop note.
+- [x] 9fb683a4: a ladder step past its limit (bake.ts stepTimeoutMs: 3 x its estimate, at least 180 s, ESTIMATE) is stopped
+  (its AbortSignal terminates the worker) and the next lighter step taken; the last step's timeout ends the build with the
+  failed line and the button. Applied only while the build runs in a worker (a page build cannot be stopped).
+- [x] Unit tests tools/bench/test/walls-offthread.test.ts (4: hung step gives way, a step in time is not stopped, the limit
+  rule, errors cross the worker as their classes): 36/36 with walls-ladder and walls. neg_control.py against origin/main
+  (bake.ts): NEG OK, all 4 fail by assertion (log U:/Temp/gsfpv-train3/course3/f1/neg.log). tsc apps/fly, tools/bench: 0 errors.
+- [x] 0b5a02cd: course-path-probe.mjs records long tasks (PerformanceObserver longtask) from Shift+G, maxSilentS,
+  maxReadGapS and hook walls.lastBake; new walls-offthread-same-probe.mjs (worker walls against page walls, SHA-256).
+- [~] Browser proof: runner U:/Temp/gsfpv-train3/course3/f1/run.sh (release of 9fb683a4, 1930 files, serve-csp 5724,
+  dist/walls empty, GPU lock only around each probe).
+- [x] Same walls (walls-offthread-same-probe.mjs, f1/same-ab5efa0e.json, 01:56-01:57, GPU lock held): Forest Floor
+  ab5efa0e level 0, 5 cm: page path solid 124612, SHA-256 74c7218a1092...; worker solid 124612, SHA-256 74c7218a1092...
+  (equal). Build 10.8 s on the page against 11.8 s in the worker; longest main-thread long task during the build
+  6275 ms on the page, none (0 long tasks) with the worker.
+- [x] First course-path-probe run failed on both scans before Shift+G: the probe's simradio=scenario needs walls
+  ("the bot scenario needs a scene with collision", app/test-modes.ts:57), the page never became ready. NOBOT=1 now
+  leaves the bot out (the scripted pilot sets the craft alone).
+
 ## Facts (measured)
 
 - G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m
@@ -295,6 +321,13 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
   line counts the try ("placing the gates again, try 2") instead of promising a total for 9.
 - Outside the lane's file list, minimal: app/builtin/course.ts (the worker's progress, the arrival warning, the next line
   passed to WallsHook.build) and app/builtin/walls.ts (WallsOptions.speak). No change in apps/fly/src/sonic/**.
+
+- F1: the whole bake moves to a Web Worker, not slices: the long calls are inside @playcanvas/splat-transform
+  (materializeToDataTable, writeVoxel's CPU part), which cannot be cut from outside. The library takes its GPU device
+  through createDevice, and PlayCanvas's WebgpuGraphicsDevice works in a worker once the global scope stands in for
+  window (it reads window.navigator.gpu) and an OffscreenCanvas stands in for the canvas. Only bytes cross back (json
+  and bin transferred). The limits and the memory budget are read on the page from the renderer's device (same adapter).
+- F1: one worker per ladder step: terminate() is the only stop the library allows, and it frees that step's memory.
 
 ## For the lead
 

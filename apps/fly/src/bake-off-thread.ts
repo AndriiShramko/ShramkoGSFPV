@@ -15,16 +15,24 @@ export function offThreadStoppable(): boolean {
     return noWorkerGpu === null && typeof Worker !== 'undefined';
 }
 
+/**
+ * The worker's request: only data (bakeBase passes its whole option bag, with `bake`, `onStep` and `stepTimeout`
+ * functions, which a worker message cannot carry: "could not be cloned", seen on Wroclaw in the F1 proof).
+ */
+export function workerRequest(contentUrl: string, kind: 'meta' | 'lod-meta', o: BakeOptions, pageHref: string, limits: BakeOptions['limits'], capGb: number): BakeRequest {
+    return {
+        contentUrl: new URL(contentUrl, pageHref).href,
+        kind,
+        o: { voxelM: o.voxelM, coarsenOnOctree: o.coarsenOnOctree, size: o.size, shipped: o.shipped, level: o.level, limits, capGb }
+    };
+}
+
 export function bakeOffThread(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions & { signal?: AbortSignal } = {}): Promise<BakeResult> {
     const page = (): Promise<BakeResult> => { lastBakeWhere = 'page'; return bakeCollision(contentUrl, kind, device, onStage, o); };
     if (noWorkerGpu !== null || typeof Worker === 'undefined') return page();
     // the worker's device has the same adapter: the limits and the memory budget are read here, once
-    const { signal, ...rest } = o;
-    const req: BakeRequest = {
-        contentUrl: new URL(contentUrl, location.href).href,
-        kind,
-        o: { ...rest, limits: o.limits !== undefined ? o.limits : gpuLimitsOf(device), capGb: o.capGb ?? memCapGb() }
-    };
+    const signal = o.signal;
+    const req = workerRequest(contentUrl, kind, o, location.href, o.limits !== undefined ? o.limits : gpuLimitsOf(device), o.capGb ?? memCapGb());
     return new Promise<BakeResult>((resolve, reject) => {
         let worker: Worker;
         try {
@@ -53,6 +61,13 @@ export function bakeOffThread(contentUrl: string, kind: 'meta' | 'lod-meta', dev
             console.warn('walls build on the page:', noWorkerGpu);
             page().then(resolve, reject);
         };
-        worker.postMessage(req);
+        try {
+            worker.postMessage(req);
+        } catch (e) {
+            // a request the worker cannot take: the build still runs (on the page), and the console says why
+            end();
+            console.warn('walls build on the page:', e);
+            page().then(resolve, reject);
+        }
     });
 }

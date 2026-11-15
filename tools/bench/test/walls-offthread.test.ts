@@ -59,6 +59,21 @@ describe('a build step past its limit gives way to the next, lighter step', () =
     });
 });
 
+describe('the request to the worker carries data only', () => {
+    it('bakeBase\'s option bag (with its functions) becomes a request a worker message can carry', async () => {
+        const off = await import('../../../apps/fly/src/bake-off-thread') as unknown as Record<string, unknown>;
+        // the first browser run failed here: "Failed to execute 'postMessage' on 'Worker': function ... could not be cloned"
+        expect(typeof off.workerRequest).toBe('function');
+        const make = off.workerRequest as (u: string, k: string, o: unknown, href: string, l: unknown, c: number) => { contentUrl: string; o: Record<string, unknown> };
+        const bag = { size: WROCLAW, limits: undefined, capGb: 2, level: 2, voxelM: 0.05, coarsenOnOctree: true, sPerMillion: 9.5, bake: () => 0, onStep: () => 0, stepTimeout: () => 1, signal: new AbortController().signal };
+        const req = make('/scenes/70b50d42/lod-meta.json', 'lod-meta', bag, 'http://localhost:5724/en/fly/', PC, 2);
+        expect(() => structuredClone(req)).not.toThrow();
+        expect(req.contentUrl).toBe('http://localhost:5724/scenes/70b50d42/lod-meta.json');
+        expect(req.o.level).toBe(2);
+        expect(req.o.limits).toEqual(PC);
+    });
+});
+
 describe('errors from the worker come back as their classes', () => {
     it('a refusal keeps its reason, a timeout its class, out of room its words', () => {
         expect(typeof m.bakeErrorToWire).toBe('function');

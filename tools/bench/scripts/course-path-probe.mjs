@@ -20,6 +20,9 @@ const [base, outFile, shots, idsArg] = process.argv.slice(2);
 if (!base || !outFile || !shots || !idsArg) { console.error('usage: course-path-probe.mjs <base with /en> <out.json> <shots dir> <id>[,...]'); process.exit(2); }
 const NAMES = { '70b50d42': 'wroclaw', '887f27aa': 'tunis', ab5efa0e: 'forest' };
 const LIMIT_MS = 900_000;
+// F1-no-freeze: a scan without walls cannot load the bot scenario (test-modes.ts needs collision): NOBOT=1 leaves it out
+// (the scripted pilot then sets the craft alone; the bot only held it in a hover)
+const BOT = process.env.NOBOT ? '' : '&simradio=scenario';
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 
@@ -130,7 +133,7 @@ for (const id of idsArg.split(',')) {
     const ev = (f, a) => page.evaluate(f, a);
     const until = async (f, ok, ms, every = 500) => { const t = Date.now(); for (;;) { const v = await ev(f); if (ok(v) || Date.now() - t > ms) return v; await page.waitForTimeout(every); } };
     try {
-        await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false&simradio=scenario&set.respawn.auto=1&set.respawn.target=rewind&set.crash.enabled=1`, { waitUntil: 'load', timeout: 120000 });
+        await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false${BOT}&set.respawn.auto=1&set.respawn.target=rewind&set.crash.enabled=1`, { waitUntil: 'load', timeout: 120000 });
         await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
         await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
         await page.waitForTimeout(2000);
