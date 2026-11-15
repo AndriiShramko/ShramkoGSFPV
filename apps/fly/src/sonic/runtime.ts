@@ -2,7 +2,8 @@
 // the recorder (lane v12-feedback) reads the engine, the pilot's settings, the world, the lesson and its runner, and
 // the replay takes the engine over through playback(). Only this lane writes it. The values are read live: a lesson
 // opened after the runtime was made shows in `lesson` and `runner` at once.
-import type { LessonDef, LessonRunner, SonicEngine, SonicPrefs, SonicRuntime, SonicWorld, ThemeDef } from '@shramko/sonic-fpv';
+import { quietCue } from './quiet-cues';
+import type { CueEvent, LessonDef, LessonRunner, SonicEngine, SonicPrefs, SonicRuntime, SonicWorld, ThemeDef } from '@shramko/sonic-fpv';
 import type { SonicMode } from './mode';
 import type { SonicSetup } from './entry';
 
@@ -15,6 +16,19 @@ export class PageRuntime implements SonicRuntime {
         this.setup = setup;
         this.mode = mode;
         this.onPlayback = onPlayback;
+    }
+
+    /**
+     * Lane quiet (review QV-1): a line said now is quiet (the narrator off in a flight), the same predicate as the bridge's
+     * (feature.ts sets mode.bridge.quiet), so the page's other speakers (app/say-via.ts) keep the setting too.
+     */
+    quiet(): boolean {
+        return this.mode.bridge.quiet?.() === true;
+    }
+
+    /** The sound a quiet line plays in its place (quiet-cues.ts, the one table), null for none. */
+    quietSound(key: string): CueEvent | null {
+        return quietCue(key);
     }
 
     get engine(): SonicEngine {

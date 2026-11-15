@@ -31,6 +31,7 @@
 import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
+import { quietCue } from './quiet-cues';
 import type { CueEvent, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
@@ -549,6 +550,9 @@ export class SonicBridge {
         this.speaking++;
         const run = this.epoch;
         const quiet = this.quiet?.() === true;
+        // lane quiet (Q3, review QV-2): a quiet line's event keeps a sound (quiet-cues.ts, the one table of them)
+        const sound = quiet ? quietCue(line.key) : null;
+        if (sound) this.engine?.cue(sound);
         const readTime = !quiet && this.sequential?.() === true ? this.readTimeMs : null;
         // a line that interrupts: what was being read and what waited for its turn are over now
         if (readTime !== null && interrupt) this.cutReading();

@@ -336,7 +336,7 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   screen's check uses (start-screen.ts line about 595, `this.change({ narrator: v }, said)`), so it is saved and applied at once;
   on: say a two-word line (new `sonic.say.narratorOn`, four locales) after the flip (bridge.quiet then answers false); off: a cue
   only. Test in tools/bench/test/sonic-quiet.test.ts with the rig; negative control on feature.ts.
-- [ ] K2.2 Q3 the table of every line a flight can say and its sound with the narrator off (course ready chime, gate passed and
+- [x] K2.2 built in stage fixes (QV-2, below: quiet-cues.ts, package cues only; browser proof still K2.6). Q3 the table of every line a flight can say and its sound with the narrator off (course ready chime, gate passed and
   finish notes exist, gate behind: hum from behind plus one short sound, wrong way, crash, mode on and off). Lines to list: the
   runner's free-flight lines (packages/sonic-fpv/src/lesson/runner.ts), apps/fly/src/sonic/course-speech.ts, host-lines.ts,
   in-place.ts, feature.ts intro (line about 585). New sounds go in the package (C:/dev/ShramkoSonicFPV branch train5, pin in
@@ -352,6 +352,30 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   their code: place the captions, do not move the clock).
 - [ ] K2.6 browser proof on the release build, render off, Wroclaw 70b50d42 and once Tunis 887f27aa, items (1) to (7) of the
   stage text; accept-fly B6 B7 B9 to B16; two pictures quiet-settings.png and quiet-captions.png under the lock.
+
+### Fixes (stage fixes, review QV-1 to QV-5)
+- [x] QV-1 stands (read: sayVia called rt.engine.say with no quiet). PageRuntime.quiet() returns mode.bridge.quiet (the predicate
+  feature.ts sets) and PageRuntime.quietSound(key); app/say-via.ts sends a quiet line with { quiet: true } and plays its sound.
+  Covers course.ts (Shift+G progress and ready), walls.ts, rooms/announce.ts, sonic-session/session.ts. Not changed (another
+  agent's file): apps/fly/src/sonic/gpu-hint.ts about line 353 still says its line straight to the engine.
+- [x] QV-2 stands (K2.2 was not built). One table apps/fly/src/sonic/quiet-cues.ts (QUIET_SOUNDS: every line a flight says, its
+  cue or 'nothing' with the reason), read by bridge.ts say and by sayVia. Only the package's existing cues, no new sound, so no new
+  offline proof and the planner's limit of sounds at once is unchanged: gate behind (sonic.say.gateBehind, fly.gate-behind):
+  'wrong-side' (centred; the hum leads back); put back (fly.reset-start, fly.reset-checkpoint): 'reset' sweep; mode on
+  (sonic.say.inPlaceOn): 'answer' yes (two notes up); walls ready (sonic.say.wallsIn) and course ready (course.ts
+  course.readySpoken, passed as quietCue): 'checkpoint' chime; wrong way, wrong side, stage: nothing added (their cue is sent with
+  the line, runner.ts 1158, 959, 1256, lessons.ts 354); intro, keys, course offer, fly.go, walls building, progress: nothing (they
+  teach or report a flight that goes on). Crash: the touch cue (mode.ts 409) as before.
+- [x] QV-3 stands: feature.ts says sonic.say.scanLoading only with the narrator on; scanFailed stays spoken. No unit test (feature.ts
+  is not in the rig).
+- [x] QV-4 stands: the narrator-off sound is NARRATOR_OFF_CUE = 'answer' no (two notes down), not the checkpoint chime.
+- [x] QV-5 stands (from knowledge of the layouts, not measured): spokenKey names only Key*/Digit* codes from getLayoutMap, Quote by
+  the locale. es sonic.key.Quote = "a la derecha de la \u00d1" (the key right of N-tilde, Spain and Latin America), ru = "\u042d"
+  (the key E-reversed on JCUKEN). en and pl keep the apostrophe (their layouts print it there).
+- Tests: new tools/bench/test/sonic-quiet-cues.test.ts (sayVia off and on, PageRuntime.quiet, the bridge's sounds off and on,
+  the table); with sonic-quiet, sonic-narrator-key, sonic-int-lazy: 25 passed (U:/Temp/gsfpv-train3/quiet/fx-v2.log); tsc apps/fly
+  0 errors; neg_control.py against HEAD on say-via.ts, bridge.ts, runtime.ts: NEG OK, 3 failed (fx-neg1.log, bridge case by
+  assertion). First try put the table in app/: sonic-int-lazy failed (the main chunk named 13 mode texts), so it lives in sonic/.
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:

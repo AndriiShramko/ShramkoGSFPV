@@ -29,6 +29,7 @@ import { CourseStore, type CourseRow } from '../../course/store';
 import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../course/worker';
 import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, progressLine, spokenLine } from '../../course/progress';
 import { sayVia } from '../say-via';
+import type { CueEvent } from '@shramko/sonic-fpv';
 import { soundCourseSeed } from './sonic-flight';
 import { S } from '@gsfpv/sim-core';
 import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
@@ -44,6 +45,9 @@ import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../c
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
 import { TracksAdminClient } from '../../admin/tracks/api';
+
+/** Lane quiet (Q3): the course is ready, said with the narrator off by the short chime (sonic/quiet-cues.ts, the walls ready alike). */
+const COURSE_READY_CUE: CueEvent = Object.freeze({ kind: 'checkpoint' });
 
 function randomSeed(): number {
     const a = new Uint32Array(1);
@@ -208,8 +212,9 @@ export const course: Feature = {
         let pacer = new SpeechPacer(() => performance.now());
         let progTimer = 0;
         const speak = sayVia(() => ctx.sonic ?? null);
-        const sayLine = (text: string): void => {
-            if (ctx.sonic) void speak({ key: 'sonic.say.text', params: { text } });
+        // lane quiet (Q3): with the narrator off a line is not said; `quietCue` is the sound played in its place (the course ready: the chime)
+        const sayLine = (text: string, quietCue?: CueEvent): void => {
+            if (ctx.sonic) void speak({ key: 'sonic.say.text', params: { text } }, quietCue ? { quietCue } : undefined);
         };
         const showProgress = (): void => {
             if (!prog) return;
@@ -309,7 +314,7 @@ export const course: Feature = {
                 history.replaceState(history.state, '', withCourse(location.href, tr.id));
                 ctx.hud.flash(t('course.ready', { n: tr.gates.length }), 4000);
                 // lead's decision P2: the spoken line names the chord in words ("Shift and key T"), the written one keeps Shift+T
-                sayLine(t('course.readySpoken', { n: tr.gates.length }));
+                sayLine(t('course.readySpoken', { n: tr.gates.length }), COURSE_READY_CUE);
             };
             // G1-progress: a course that arrives while the drone flies is announced before its gates appear
             if (isParked(ctx.session.runner.sim.s, ctx.session.spawn)) return show();

@@ -45,6 +45,7 @@ import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
 import { quietFlight } from './entry';
 import { narratorKey } from './narrator-key';
+import { NARRATOR_OFF_CUE } from './quiet-cues';
 import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
@@ -163,7 +164,8 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
     if ((ses.builtin && !here) || ses.scene.id !== w.sceneId) {
         forceScanPrefs(ctx.prefs, w);
         mode.bridge.silence();
-        say('sonic.say.scanLoading');
+        // lane quiet (review QV-3): with the narrator off the loading is not said (the page shows it); a failed load is still said
+        if (entry.setup.prefs.narrator !== false) say('sonic.say.scanLoading');
         const ok = await ctx.scenes.load(w.sceneId, 'pick');
         if (!ok || ctx.session.builtin || ctx.session.scene.id !== w.sceneId) {
             // the lesson does not open: the scan's size and walls are not kept in the prefs for a flight that is not the lesson's
@@ -554,12 +556,12 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         () => lessonMenu.dispose(),
         ctx.keys.on('sonic.home', homeKey(home), { when: () => home.active() }),
         // lane quiet (Q4): the apostrophe switches the narrator off and on in a flight, saved and applied at once like the start
-        // screen's check; on: two words, off: a sound alone (the checkpoint's chime until the package's own sound, K2.2)
+        // screen's check; on: two words, off: a sound alone, two notes down (review QV-4: not a gate's or a course's chime)
         ctx.keys.on('sonic.narrator', narratorKey({
             on: () => entry.setup.prefs.narrator !== false,
             set: (on) => entry.setup.update({ narrator: on }).ok,
             sayOn: () => void sayLine({ key: 'sonic.say.narratorOn' }, true).catch(() => undefined),
-            cueOff: () => audio.engine.cue({ kind: 'checkpoint' })
+            cueOff: () => audio.engine.cue(NARRATOR_OFF_CUE)
         }), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         watchSoundGap(new SoundGap({
             lessonActive: () => mode.active && h.active,
