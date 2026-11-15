@@ -856,7 +856,7 @@ export const course: Feature = {
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, drone: [S.px, S.py, S.pz].map((i) => Math.round((ctx.session.runner.sim.s[i] ?? 0) * 100) / 100), override: ctx.session.cameraOverride } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
-            (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => unknown }).__gsfpvEditHit = (x, y) => view?.hitAt(x, y) ?? null;
+            (window as unknown as { __gsfpvEditHit?: (x: number, y: number, own?: boolean) => unknown }).__gsfpvEditHit = (x, y, own) => view?.hitAt(x, y, own === true) ?? null;
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
             (window as unknown as { __gsfpvEditMeasure?: () => unknown }).__gsfpvEditMeasure = () => (view ? { ...view.measure(), frame: (edHook as { frame?: unknown }).frame ?? null } : null);
             // I2 (probe only, local runs): the selected gate `m` m ahead of the drone, its centre `up` m above it, facing it, with

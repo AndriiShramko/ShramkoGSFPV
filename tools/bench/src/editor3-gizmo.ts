@@ -15,6 +15,8 @@ const SITE = (process.env.SITE ?? 'http://localhost:5805').replace(/\/$/, '');
 const SCENE = process.env.SCENE ?? '887f27aa';
 const OUT = process.env.OUT ?? 'U:/Temp/gsfpv-train3/editor3/i1/gizmo';
 const MODE = process.env.MODE === 'before' ? 'before' : 'after';
+/** review EJ-1: OWN=1 finds the ring points by the gizmo's own hit test (where PlayCanvas draws the ring), not the edit view's */
+const OWN = process.env.OWN === '1';
 const SHOTS = 'U:/Temp/gsfpv-train3/shots';
 const PIC = (what: string): string => `editor3${SCENE === '70b50d42' ? '-wroclaw' : SCENE === '887f27aa' ? '' : `-${SCENE}`}-${what}-1920.png`;
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
@@ -22,7 +24,7 @@ const r2 = (x: number): number => Math.round(x * 100) / 100;
 
 type Dbg = { stand: { pos: number[]; quat: number[]; opening: number; screen: number[] }; axes: { x: number[]; y: number[]; z: number[] }; gates: number[][]; cam: { pos: number[] }; tool?: string; tag?: string | null; dragging?: boolean; mode?: string };
 type Measure = { eyeDist: number; gatePx: number; viewH: number; rings: number[]; glide: boolean; parts: { name: string; rect: number[] }[]; frame: unknown };
-type W = { __gsfpv?: { status?: string; course?: { gates?: number; on?: boolean; editor?: { open?: boolean; selected?: number; said?: string } } }; __gsfpvEditView?: () => unknown; __gsfpvEditHit?: (x: number, y: number) => string[] | null; __gsfpvEditMeasure?: () => unknown };
+type W = { __gsfpv?: { status?: string; course?: { gates?: number; on?: boolean; editor?: { open?: boolean; selected?: number; said?: string } } }; __gsfpvEditView?: () => unknown; __gsfpvEditHit?: (x: number, y: number, own?: boolean) => string[] | null; __gsfpvEditMeasure?: () => unknown };
 const dbg = (p: Page): Promise<Dbg | null> => p.evaluate(() => ((window as unknown as W).__gsfpvEditView?.() ?? null) as Dbg | null);
 const meas = (p: Page): Promise<Measure | null> => p.evaluate(() => ((window as unknown as W).__gsfpvEditMeasure?.() ?? null) as Measure | null);
 const sel = (p: Page): Promise<number | null> => p.evaluate(() => (window as unknown as W).__gsfpv?.course?.editor?.selected ?? null);
@@ -189,7 +191,7 @@ async function walk(page: Page, dir: number[], min: number, want: string[]): Pro
 /** points of ring `axis` (or its edge pick) round the centre: for each 5 deg the nearest radius that hits it */
 async function ringPoints(page: Page, axis: string): Promise<number[][]> {
     const s = (await dbg(page))!.stand.screen;
-    return page.evaluate(([c, ax]) => {
+    return page.evaluate(([c, ax, own]) => {
         const h = (window as unknown as W).__gsfpvEditHit;
         const pts: number[][] = [];
         for (let a = 0; a < 360; a += 5) {
@@ -197,13 +199,13 @@ async function ringPoints(page: Page, axis: string): Promise<number[][]> {
             for (let r = 20; r <= 200; r += 2) {
                 const x = c[0]! + Math.cos(t) * r;
                 const y = c[1]! + Math.sin(t) * r;
-                const hit = h?.(x, y);
+                const hit = h?.(x, y, own);
                 if (hit && (hit[1] === ax || hit[1] === `edge:${ax}` || hit[1] === `ring:${ax}`)) { pts.push([a, x, y, r]); break; }
                 if (hit) break;
             }
         }
         return pts;
-    }, [s, axis] as const);
+    }, [s, axis, OWN] as const);
 }
 
 /** turn by ring `axis`: press on its point farthest from the centre, travel along its tangent until 30 deg (or 400 px) */
@@ -221,7 +223,7 @@ async function ringTurn(page: Page, axis: string, shot: string | null): Promise<
     const tan = [pb[1]! - pa[1]!, pb[2]! - pa[2]!];
     const r = await dragUntil(page, [pts[k]![1]!, pts[k]![2]!], tan, 400, (d) => turnDeg(a.stand.quat, d.stand.quat) >= 29.5, shot);
     const b = (await dbg(page))!;
-    const out = { axis, points: pts.length, at: pts[k]!.slice(1).map(Math.round), hit: await page.evaluate(([x, y]) => (window as unknown as W).__gsfpvEditHit?.(x!, y!) ?? null, [pts[k]![1]!, pts[k]![2]!] as const), px: r.px, quatBefore: a.stand.quat.map((v) => r2(v)), quatAfter: b.stand.quat.map((v) => r2(v)), deg: turnDeg(a.stand.quat, b.stand.quat), tagMid: r.mid?.tag ?? null, movedM: dist(a.stand.pos, b.stand.pos) };
+    const out = { axis, points: pts.length, at: pts[k]!.slice(1).map(Math.round), hit: await page.evaluate(([x, y]) => (window as unknown as W).__gsfpvEditHit?.(x!, y!) ?? null, [pts[k]![1]!, pts[k]![2]!] as const), ownHit: await page.evaluate(([x, y]) => (window as unknown as W).__gsfpvEditHit?.(x!, y!, true) ?? null, [pts[k]![1]!, pts[k]![2]!] as const), own: OWN, px: r.px, degPer100: r.px > 0 ? r2((turnDeg(a.stand.quat, b.stand.quat) * 100) / r.px) : null, quatBefore: a.stand.quat.map((v) => r2(v)), quatAfter: b.stand.quat.map((v) => r2(v)), deg: turnDeg(a.stand.quat, b.stand.quat), tagMid: r.mid?.tag ?? null, movedM: dist(a.stand.pos, b.stand.pos) };
     return { ...out, undo: await undo(page, a) };
 }
 

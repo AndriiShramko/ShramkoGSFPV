@@ -19,7 +19,7 @@ const body = (s: string, head: string): string => {
 describe('EJ-1: hitAt and measure project with the edit view camera before they pick', () => {
     it('both call apply() first, as onOwnPress does', () => {
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
-        const hit = body(vm, '    hitAt(x: number, y: number)');
+        const hit = body(vm, '    hitAt(x: number, y: number');
         expect(hit.indexOf('this.apply()')).toBeGreaterThan(-1);
         expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('pickRing('));
         expect(hit.indexOf('this.apply()')).toBeLessThan(hit.indexOf('_getSelection'));

@@ -795,7 +795,7 @@ export class EditView {
 
     /** For the page probes: which shape of the shown handles is under a page point (CSS px): [tool, axis] or null. Read only;
      * the probe walks out from the gate's centre with it to find the ring, the arrow or the box it then presses. */
-    hitAt(x: number, y: number): [Tool, string] | null {
+    hitAt(x: number, y: number, own = false): [Tool, string] | null {
         // review EJ-1: the same camera as onOwnPress (the entity may hold the drone's pose between frames)
         if (!this.suspended) this.apply();
         const r = this.canvas.getBoundingClientRect();
@@ -810,6 +810,8 @@ export class EditView {
         // I1 (D4), J1 (E3): a ring the edit view takes itself (the same rule as onOwnPress): 'edge:y' edge-on, 'ring:y' open
         const rp = this.tool === 'turn' ? pickRing([x - r.left, y - r.top], this.drawnRings()) : null;
         const axis = sel && sel[0] ? (name.split(':')[1] ?? '') : null;
+        // review EJ-1: `own` reports the gizmo's own hit test only (the probe presses where PlayCanvas draws the ring)
+        if (own) return axis !== null ? [this.tool, axis] : null;
         if (rp) return [this.tool, `${rp.edge ? 'edge' : 'ring'}:${'xyz'[rp.index]}`];
         return axis !== null ? [this.tool, axis] : null;
     }
