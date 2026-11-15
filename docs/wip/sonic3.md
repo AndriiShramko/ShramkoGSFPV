@@ -21,7 +21,22 @@ Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into
   failedLine, in-place.ts). Test "the line leads on", NEG OK on the old locale files (5942b4a4).
 - [x] SO-4 stands: r11 now ends each run with r11Off (pause item label hereOff, W held, Backslash in the same page task as the
   pose reads, moved under 0.1 m beyond own travel, speed at least half, no lesson after, label here) (5942b4a4).
-- [~] SO-4 browser run: release build of 5942b4a4, r11 Tunis 887f27aa 5 m/s, port 5823 (U:/Temp/gsfpv-train3/sonic3/fixes-run.sh).
+- [x] SO-4 browser runs (release build, r11 Tunis 887f27aa 5 m/s, port 5823, U:/Temp/gsfpv-train3/sonic3/fixes-run.sh):
+  run 3 on f049b52e (z5-r11-tunis3.json): 6 of 8; course passed in 225 s, Backslash to first cue 0.317 s; labelOn null (Escape
+  opens the lesson menu in the mode, lesson-menu.ts pauseKey; the probe now uses P); switch off: moved 0 m in 8 ms, speed
+  5.11 m/s before, 0 after. Run 4 on 7c98e804 (crash setting kept in place, z5-r11-tunis4.json): 6 of 8; both labels PASS
+  ("Switch off Fly by Sound", "Fly by Sound here"), no lesson after; speed again 5.11 to 0; course NOT flown to its end
+  (phase flying at the 360 s cap, gate g1, median 0.59 m/s; probably wall crashes with crash on, not checked). The crash
+  change of 7c98e804 is reverted in the next commit (mode.ts and the test back to 5942b4a4).
+- [ ] SO-1/SO-4 LEFT, in order: (a) find what zeroes the velocity on the switch off in the page (synchronous, 8 ms, pose kept:
+  a new life "level and still" or a hold). Unit rig (no prefs wiring) keeps it, so it is a page reaction. Candidates read in
+  code: MODE_PREFS 'crash.enabled' false -> cleared on leave, a 'life' setting (packages/prefs/src/defs/crash.ts apply
+  'life'; apps/fly/src/app/builtin/respawn.ts:67 setCrashOn then applyLifeSettings) - removing it alone did not keep the
+  speed; 'input.play' cleared (app/builtin/play.ts:156 setPlay); h.setLesson(null) (ctx.input.setLesson); the feature's
+  uninstall (feature.ts offs) and the lesson host's close. A one-off page probe that logs the 'life' event reason
+  (ctx.events 'life') and S.hold around the switch names it. (b) fix in mode.ts / feature.ts (lane) or report blocked if it
+  is respawn.ts / play.ts. (c) decide crash in place with the course result in mind (run 4 lost the course with crash on).
+  (d) rerun fixes-run.sh (release build first) and expect 8 of 8.
 - [x] SO-9 stands: Decisions say the hum-attended pilot is the measure; the ladder and the 1.5 factor are marked estimates.
 - [x] SO-10 stands: For the lead says only tier 1 is reachable today.
 - [x] SO-3 stands, outside the lane (walls lane): For the lead. SO-8 stands: push of train3 is the lead's (For the lead).
@@ -348,6 +363,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 fixes: most replies went to SO-1 and SO-4: the unit rig has no prefs wiring, so a 'life' pref change passed
+  in Node and showed only in the 7-minute browser run (twice). A rig option that wires the page's pref reactions
+  (respawn.ts crash, play.ts) would have found it in seconds.
 
 - 2026-11-15 Z5 pass 2: most replies went to the speed lessons' fallout: 8 package tests pin the count of 28 lessons and
   every spoken line (tts fixtures, words run, docs counts, room scale); a list of "tests that pin the lesson set" in the
