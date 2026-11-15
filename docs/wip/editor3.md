@@ -79,7 +79,33 @@ Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
   explained by the lift alone; to be seen in the next run. Test editor3-g2.test.ts 6 tests (new: floor clearance, placeAt
   without aim), editor3-flying, a6-reference: 3 files 20/20; NEG OK (neg_control.py ref HEAD 535b09c4, add-place.ts and
   course.ts: AssertionError -0.1 >= 0.5); apps/fly tsc 0.
-- [ ] left (next worker, in this order; dist is the release of 8fbb67e3; items 1 and 2 of the stage and the full line are
+- [x] G2.13 release of 18aff22e (g2/build5.log), full run g2/full5/e4.json (lock 07:00:22-07:04:39, Tunis and Wroclaw,
+  KBD=0). Measured: the edit view's own eye now stays where the click came from (viewAfter = click eye: Tunis
+  [9.49, 7.03, 0.00], Wroclaw [-5.88, 6.52, -16.46]). Wroclaw: problems 2 -> 1, the new gate is no longer "in a wall"
+  (the one problem left: "gate 1 is turned 44 degrees away from the way in"; which gate, not checked). Tunis: problems
+  5 -> 7, still "the way from gate 0 to gate 1 goes through a wall". BUT both pictures after the add
+  (shots/editor3-floor-add-1920.png, editor3-wroclaw-floor-add-1920.png, 07:02 and 07:04) STILL show the drone's view
+  (Tunis inside a palm looking up, ALT 4.1 m; Wroclaw in a tree, ALT 3.9 m; "crashes 1" on the HUD), no gate, no
+  handles, no bar, while edHook.view holds the edit eye. So the renderer is posed by someone else after the add: the
+  aim() removal was right but not the cause of the picture.
+- gates.py --only vitest,architecture,i18n,b18 on 18aff22e: PASS (vitest 114 s, architecture, i18n, b18; logs
+  U:/Temp/gsfpv-gates-20261115-070527).
+- [ ] left (next worker, in this order; dist is the release of 18aff22e, do not rebuild before a code change):
+  1. MEASURE who poses the camera after Add gate + floor click. Add to course.ts __gsfpvEditView: ctx.session.cameraOverride,
+     mode, the view's suspended flag, ctx.crash.active, and a counter of onCamera calls; read them in the probe
+     (tools/bench/src/editor3-prove.ts floorAdd) right after the click and 2 s later. Lead to check first (a guess, not
+     measured): app/builtin/respawn.ts line 94 calls ctx.clearCrash() when s.cameraOverride is true, and the HUD shows
+     "crashes 1"; if clearCrash sets cameraOverride false (crash.ts), the session poses the drone again and the edit view's
+     onCamera writes only on its next move. If the respawn is triggered by course3's course-respawn link
+     (apps/fly/src/course/run.ts or packages/tracks), return blocked with that file; if the trigger is in course.ts or
+     the editor folder, set the override back (e.g. view.setCam(view.cam) after showEd) and prove it in a browser run.
+  2. Tunis "the way from gate 0 to gate 1 goes through a wall" after the lift fix: record the check's leg report (freeM and
+     at of the leg into the new gate, packages/tracks check.ts 257-270) before changing anything; gate 0 stands 7.7 m up
+     and the new gate 4.4 m, the click eye saw the floor point by a thin ray, the check sweeps a 0.5 m sphere.
+  3. New fault, not in this list (seen in G2.9 and again): after the test flight's disarm the flight STATS window stands
+     over the edit view (shots/editor3-floor-before-1920.png); suspect the flight-end stats panel of the fly page.
+  4. gates.py --only vitest,architecture,i18n,b18 after the next code change.
+- [ ] superseded left list of pass 2 (dist was the release of 8fbb67e3; items 1 and 2 of the stage and the full line are
   proven in G2.7/G2.8, the old list below is done except its point 3):
   1. MEASURE why the page draws the drone's view after Add gate + floor click (full3 pictures). Add to course.ts
      __gsfpvEditView: ctx.session.cameraOverride, mode, view's suspended flag, and a frame counter of the last onCamera; read
@@ -742,6 +768,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- G2 pass 3: the most turns went to the build plus browser run (about 9 min) that showed the camera fix was not the cause
+  of the picture; reading the pictures of full3 against viewAfter BEFORE fixing (the eye was right in the record, the
+  picture was not) would have pointed at the renderer's other writer at once and saved one build and run.
 
 - G2 pass 2: about 30 replies; the most went to three release builds with a browser run each (about 7 minutes per pair);
   recording the click's ray and the view in the debug hook from the first floor-add run would have named the cause one
