@@ -112,9 +112,17 @@ Stage X3-start-near-spawn (closed ring starts at the gate nearest the spawn)
       generator is not flight code; run anyway). apps/api: no fixture regenerated, no test asked for it (packages/tracks
       fixtures.test passed with the new generator).
 - [x] gates.py --only vitest,architecture,i18n,b18 on 274f7139: all PASS (vitest 110 s)
-- [ ] browser proof (left, budget): release build; course-path-probe on Wroclaw 70b50d42 and Tunis 887f27aa (exit 0);
-      sonic-int-review r9 (11 of 11); tracks-page probe (no check that passed before fails). Expected no change on Tunis
-      (all five seeds are open courses, the code path is not taken) and on Wroclaw seeds 1-5 (no ring turned there).
+- [x] browser proof (pass 2): release build of 43068c50 (1930 files, sha256 43ebbe94...), dist/walls = the nine published
+      walls of U:/Temp/gsfpv-train3/walls/release (as integration A ran it), server 5782, runner
+      U:/Temp/gsfpv-train3/fix3a/x3/run.sh (one GPU hold per course-path run; sonic-int-review and tracks-page take the lock
+      themselves), summary U:/Temp/gsfpv-train3/fix3a/x3/summary.txt:
+      course-path-probe Wroclaw 70b50d42 (Shift+G): exit 0, course in 5.6 s, 24 gates, 'Lap 1 of 3' (a ring), maxSilentS 2.1,
+      no long task; Tunis 887f27aa: exit 0, course in 8.0 s, 24 gates, 'Lap 1 of 1' (open), maxSilentS 2.6, no long task
+      (evidence/2026-11-15/fix3a/x3-course-path-70b50d42.json, -887f27aa.json; the seeds are random per run).
+      sonic-int-review r9: exit 0, 11 of 11 in 188 s (evidence/2026-11-15/fix3a/x3-sonic-int-review-r9.json).
+      tracks-page: exit 0, 46 of 46 (evidence/2026-11-15/fix3a/x3-tracks-page.json); integration A had 44 of 46 (A look and
+      E camera failed), X2 made A look pass; E camera passed in this run too. No check that passed before fails.
+      The runner waited about 38 minutes for the GPU lock (other lanes). Server stopped, lock released.
 
 Table (b), straight distance spawn -> gate 1 in m, before / after, seeds 1-5 (gate-one-audit x3 and x3-after): the same
 on every row except 0230d903 seed 2: 18.2 / 5.6. All other rows are as in '## Gate 1 from the spawn' below.
@@ -123,7 +131,10 @@ What the owner does: nothing new to press. On a generated course that is a close
 gate next to where he appears and still be flown through every gate the right way, gate 1 is that gate; otherwise gate 1
 stays where it was and the arrow at the screen's edge (stage X2) shows him the way to it with its distance.
 
-Not verified: no browser run of this change (left above); the turned ring of 0230d903 seed 2 was not flown in a page.
+Not verified: the turned ring of 0230d903 seed 2 was not flown in a page (the browser runs above took random seeds on
+Wroclaw and Tunis; Tunis gave an open course, and whether the Wroclaw run's random-seed ring was turned is not recorded). Gates were run on
+274f7139; after it only docs/wip/fix3a.md changed, so they were not run again.
+Stage X3 is done.
 Decision for the lead: with the gates' places AND their facing kept, the turn is provable on 1 of 33 rings of the 10
 scans (cause above). Turning more rings needs the new gate 1 and the old gate 1 re-aimed along their new legs in (yaw
 only, places kept): that changes the gates, which the stage forbids, so it is not done.
@@ -218,3 +229,5 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
 - X3: about 30 replies; most went to the unit test (two runs found no provable turn on seeds 1-6 of the test world).
   A first Node pass that tries every turn with checkTrack over the test worlds would have shown at once that the gate
   axes refuse almost every turn, and which seeds to use.
+- X3 pass 2: 20 replies, most of them blocking waits (38 minutes for the GPU lock, then 16 minutes of probes); one
+  runner script with all four probes and one wait per milestone was the cheap part; a lock queue with fairness would save the wait.
