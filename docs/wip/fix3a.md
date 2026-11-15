@@ -601,3 +601,54 @@ Left (fixes, after pass 2 at 929f2e23; FY-1 to FY-5 done):
    yet (search apps/fly/src for the caller of new CourseRun). Housefly is d10c5638 (walls in the release stand-in); the
    microgreens scene id is not found in the walls stand-in (U:/Temp/gsfpv-train3/walls/release has 9 scans). Add
    --scale <s> to the audit, run Housefly at its page scale, compare eyeHi (onWalk) and gate heights with scale 1.
+
+# Lane course4 (train 3): a course the pilot can read, a course in a scaled scan
+
+Same worktree and branch, built on c83340a2. Logs U:/Temp/gsfpv-train3/course4/, pictures U:/Temp/gsfpv-train3/shots/course4-c0.
+
+## Status
+
+Stage C0-places-left (fix3b's left items)
+- [x] merge origin/main (lead note) into fix3a: 464456c3
+- [x] Node picture tool tools/bench/src/gate-place-map.ts (no GPU): top map at 0.15 m/px over the course (tile share of the
+      best quarter: red < 0.10, orange < POOR_SHARE, yellow < 0.30, green above; wall voxels 0.4-4 m over the tile ground
+      darken it; legs, gate numbers, start) and a vertical section through each gate (walls, tile ground, straight ray, opening)
+- [x] (2) ground measure, from pictures: Wroclaw seed 925664764 (the page's third course seed) gates 5 and 7 stood 3.4 and
+      4.6 m over the tile ground while the ray ground was 1.7 m below; the sections (wroclaw-925664764-g5.png, -g7.png) show
+      a solid object about 1.5-2 m tall and about 5 m wide standing on the street (car, hedge or kiosk), the street at the
+      tile ground beside it: the ray ground was the object's top, not a terrace. Fix quality.ts standGround (OBJECT_M 1.0,
+      STAND_R_M 2.5, both estimates): over an object the ground is the street the side rays meet; generate.ts eye band uses
+      it. Test eye-level.test.ts 'course4 C0' (a 1.8 m object on the street): NEG OK against HEAD (neg_control.py, quality.ts
+      and generate.ts; old code put a gate 3.4 m over the street). packages/tracks vitest 15 files 126 passed; tsc
+      packages/tracks clean.
+- [x] after (map/after-*.log, Node, release walls stand-in, T = 1,0,0,0): Wroclaw seeds 925664764, 1, 2, 3: gates 24, 24,
+      14, 24; no gate over 3 m above the tile ground (before: 2 of 24 on 925664764); ray height max 2.0 m. Tunis seeds 1, 2:
+      24 gates each, ray height max 2.0-2.05 m, but 1 and 2 gates 3.4-4.2 m over the tile ground (no street beside them
+      within 2.5 m: terraces or steps of the medina, not looked at in a section)
+- [~] (3) thresholds from pictures: wroclaw-925664764-top.png looked at: gates stand in green or yellow tiles; legs 16-18
+      run along the edge of a large red area (an open square whose middle has no voxels in the band); no gate in a red end
+      of a street on this course. Tunis top map not drawn. POOR_SHARE 0.15 and EYE_FREE_M 1.0 kept (no picture shows a gate
+      in a smeared end); still estimates.
+- [ ] (1) R3 no gate in leaves: not built (see Left)
+- [ ] (4) Lublin start in the well-scanned part: not built
+- [ ] (5) Opole page run alone and fix3b-opole-pilot.png: not run (see Left)
+- [ ] (6) page check on the release of the head: not run (see Left)
+- [ ] gates.py --only vitest,architecture,i18n,b18 and a6-reference after the commit of standGround
+
+## Left (C0)
+
+1. (6) and (5): the runner U:/Temp/gsfpv-train3/course4/c0/run.sh (copies the walls stand-in into dist, serves on 5780,
+   save-check --push Wroclaw and Tunis, gate-place Wroclaw (pilot views 1, 6) and Tunis, gate-guide Tunis, then Opole alone
+   with REGEN=0) waited for the GPU lock (held by another lane) and was stopped before any probe ran. dist holds the release
+   of c83340a2 (code of 929f2e23, BUILD EXIT 0); after this stage's standGround the release must be built again first
+   (node scripts/build-release.mjs, then the runner).
+2. (1) R3: measured that the walls DO hold tree crowns (round dark blobs 0.4-4 m over the ground in wroclaw-925664764-top.png),
+   and the free space keeps gates out of them; the conifer the lead saw is thin foliage under the walls' opacity cut, so only
+   splat positions can find it. Not built: the worker has no splat positions (apps/fly/src/course/worker.ts gets only the
+   walls octree); cost in ms and bytes not measured. Also: the page's course for seed 925664764 had 19 gates, Node's 24 on
+   the same walls stand-in (the page's spawn or fit budget differs: not measured), so the conifer gate of fix3b-wroclaw-pilot-2
+   could not be matched to a Node gate.
+3. (4) Lublin 2f1ddf5f: not started (cause measured in Y2: the spawn's free space has no good tile).
+4. (3) Tunis top map: run gate-place-map --scene 887f27aa --seed-list 1 and look; also draw a section of Tunis seed 1's gate
+   at 4.2 m over the tile ground to tell a terrace from a too low tile ground.
+5. Wroclaw seed 2 now gives 14 gates (24 before standGround): a fit retry with more seeds may be needed; not measured why.

@@ -17,7 +17,7 @@
 import type { Pose, Quat, SceneTransform, TrackFile, TrackGate, Vec3, VoxelCollision } from './types';
 import { MARGIN_M, checkTrack, sweeperOf } from './check';
 import { cellCentre, clearanceM } from './freespace';
-import { groundBelow, inDenseBand, qualityShare, stepsFrom, tileOf } from './quality';
+import { inDenseBand, qualityShare, standGround, stepsFrom, tileOf } from './quality';
 import { gateExit } from './path';
 import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
@@ -339,7 +339,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
             if (t < 0 || !Q.good[t] || qualityShare(Q, c) < POOR_SHARE) continue;
             const ht = c[1] - Q.ground[t]!;
             if (!(ht > -slack && ht < Math.max(EYE_HI_M, Q.band[1]) + slack)) continue;
-            const g = groundBelow(walls, c, Math.max(EYE_HI_M, Q.band[1]) + slack);
+            const g = standGround(walls, Q, c, Math.max(EYE_HI_M, Q.band[1]) + slack);
             if (!Number.isFinite(g)) continue;
             const fr = clearanceM(free, i);
             near.push({ i, c, h: c[1] - g, d: Math.max(0, Math.min(free.cellM / 2, fr - rMin)), free: fr });
