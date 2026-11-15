@@ -9,7 +9,8 @@
 import type { FlightSession } from './session';
 import { t } from './i18n';
 import { h } from './ui/dom';
-import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, LADDER_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize } from './bake';
+import { BASE_VOXEL_M, BakeRefusedError, DEFAULT_S_PER_MILLION, LADDER_S_PER_MILLION, bakeBase, bakeCollision, gpuLimitsOf, isRough, outOfRoom, memCapGb, planRefine, sceneSize, stepTimeoutMs } from './bake';
+import { bakeOffThread, lastBakeWhere, offThreadStoppable } from './bake-off-thread';
 import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, WallsKeyInput, WallsRow } from './wallcache';
@@ -74,7 +75,8 @@ interface PhaseCHook {
     bakedBytes?: { json: Uint8Array; bin: Uint8Array };
     runBake?: () => Promise<void>;
     /** probes only: one bake at a given level and cell, nothing installed; the bytes go to bakedBytes */
-    bakeTrial?: (o: { level: number; voxelM: number }) => Promise<Record<string, unknown>>;
+    /** F1-no-freeze: `page` builds on the page's main thread (the old way), else in the worker */
+    bakeTrial?: (o: { level: number; voxelM: number; page?: boolean }) => Promise<Record<string, unknown>>;
     downloadBaked?: () => boolean;
     walls?: WallsHook;
     info?: Record<string, unknown>;
@@ -300,7 +302,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
     function onStageOf(st: string): void {
         if (!prog) return;
         prog.enter(st);
-        const n = mayFreeze(st) ? t('progress.mayStop', { s: FREEZE_NOTE_S }) : '';
+        // F1-no-freeze: only a build on the page itself (a worker without WebGPU) may stop the picture
+        const n = mayFreeze(st) && lastBakeWhere === 'page' ? t('progress.mayStop', { s: FREEZE_NOTE_S }) : '';
         note.textContent = n;
         // said once a build, before the first step that may stop the picture (Fly by Sound hears it before the silence)
         if (n && !noteSaid) {
@@ -400,6 +403,9 @@ export function mountWalls(o: WallsOptions): WallsHook {
             startProgress('walls', w.size?.gaussians ?? 0, spm);
             const r = await bakeBase(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, {
                 size: w.size ?? undefined, limits: fake, sPerMillion: loadBakeSpeed(),
+                // F1-no-freeze: in a worker (the page stays free), and a step past its limit gives way to the next, lighter one
+                bake: bakeOffThread,
+                stepTimeout: (step) => (offThreadStoppable() ? stepTimeoutMs(step, spm) : undefined),
                 onStep: (step, i) => { prog?.replan(wallsSteps(step.gaussians, spm), i > 0 ? 'wallsLighter' : 'walls'); tickProgress(); }
             });
             w.bakes++;
@@ -408,7 +414,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
             o.switchOn();
             queue(r.json, r.bin, sha, 'bake');
-            o.hook.bake = { ok: true, kind: 'base', voxelM: r.voxelM, level: r.level, tried: r.tried, rough: isRough(r), gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
+            o.hook.bake = { ok: true, kind: 'base', where: lastBakeWhere, voxelM: r.voxelM, level: r.level, tried: r.tried, rough: isRough(r), gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
             action.remove();
@@ -452,11 +458,11 @@ export function mountWalls(o: WallsOptions): WallsHook {
         try {
             // the refine's estimate is planRefine's: this machine's speed, else the first guess
             startProgress('refine', w.size?.gaussians ?? 0, loadBakeSpeed() ?? DEFAULT_S_PER_MILLION);
-            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, { voxelM, size: w.size ?? undefined, shipped, limits: fake });
+            const r = await bakeOffThread(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, { voxelM, size: w.size ?? undefined, shipped, limits: fake });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
             const sha = await wallsSha(r.json, r.bin);
-            o.hook.bake = { ok: true, kind: 'refine', voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
+            o.hook.bake = { ok: true, kind: 'refine', where: lastBakeWhere, voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
             void remember(w.keyInput, r, sha);
@@ -546,11 +552,11 @@ export function mountWalls(o: WallsOptions): WallsHook {
     }
 
     // probes compare ways of building (walls stage W1): the device's real limit, not the estimate
-    o.hook.bakeTrial = async ({ level, voxelM }) => {
+    o.hook.bakeTrial = async ({ level, voxelM, page }) => {
         try {
-            const r = await bakeCollision(s.scene.contentUrl, s.scene.contentKind, device, () => {}, { level, voxelM, coarsenOnOctree: true, size: w.size ?? undefined, capGb: Number.POSITIVE_INFINITY, limits: null });
+            const r = await (page ? bakeCollision : bakeOffThread)(s.scene.contentUrl, s.scene.contentKind, device, () => {}, { level, voxelM, coarsenOnOctree: true, size: w.size ?? undefined, capGb: Number.POSITIVE_INFINITY, limits: null });
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
-            return { ok: true, level: r.level, voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length };
+            return { ok: true, where: page ? 'page' : lastBakeWhere, level: r.level, voxelM: r.voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length };
         } catch (e) {
             return { ok: false, level, voxelM, error: String((e as Error)?.message ?? e).slice(0, 200), noRoom: outOfRoom(e) };
         }

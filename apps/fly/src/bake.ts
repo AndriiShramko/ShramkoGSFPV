@@ -157,6 +157,44 @@ export class BakeGpuError extends Error {
     }
 }
 
+/** A ladder step ran past its time limit (stepTimeoutMs): the ladder goes on with the next, lighter step. */
+export class BakeTimeoutError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        this.name = 'BakeTimeoutError';
+    }
+}
+
+/**
+ * Stage F1-no-freeze: the most one ladder step may run before the ladder gives it up and takes the next,
+ * lighter step (a build never hangs). ESTIMATE: three times the step's estimate (stepSeconds at the
+ * machine's speed), at least STEP_TIMEOUT_MIN_S. Measured for scale: Wroclaw level 2 (10.72 M) took
+ * 121 s and 149 s in a quiet headless page (course3 Facts G1-look, G4) against an estimate of 102 s.
+ */
+export const STEP_TIMEOUT_FACTOR = 3;
+export const STEP_TIMEOUT_MIN_S = 180;
+export function stepTimeoutMs(step: BaseStep, sPerMillion: number): number {
+    return Math.max(STEP_TIMEOUT_MIN_S, STEP_TIMEOUT_FACTOR * stepSeconds(step, sPerMillion)) * 1000;
+}
+
+/** An error of a bake as a worker posts it (structured clone drops the class). */
+export interface BakeWireError { name: string; message: string; reason?: RefuseReason; size?: SceneSize | null; maxGaussians?: number }
+export function bakeErrorToWire(e: unknown): BakeWireError {
+    if (e instanceof BakeRefusedError) return { name: e.name, message: e.message, reason: e.reason, size: e.size, maxGaussians: e.maxGaussians };
+    const x = e as { name?: unknown; message?: unknown } | null;
+    return { name: typeof x?.name === 'string' ? x.name : 'Error', message: String(x?.message ?? e) };
+}
+export function bakeErrorFromWire(w: BakeWireError): Error {
+    let e: Error;
+    if (w.name === 'BakeRefusedError' && w.reason) {
+        e = new BakeRefusedError(w.reason, w.size ?? null, w.maxGaussians ?? 0);
+        e.message = w.message;
+    } else if (w.name === 'BakeGpuError') e = new BakeGpuError(w.message);
+    else if (w.name === 'BakeTimeoutError') e = new BakeTimeoutError(w.message);
+    else { e = new Error(w.message); e.name = w.name; }
+    return e;
+}
+
 /** The most Gaussians one whole-scene bake may take on this device and memory budget. */
 export function maxGaussians(limits: GpuLimits | null, capGb: number): number {
     const byMem = Math.floor((capGb / GB_PER_MILLION) * 1e6);
@@ -417,7 +455,8 @@ export async function bakeCollision(contentUrl: string, kind: 'meta' | 'lod-meta
     const t0 = performance.now();
     let peak = heapMb();
     const sample = () => { const h = heapMb(); if (h !== null && (peak === null || h > peak)) peak = h; };
-    const timer = window.setInterval(sample, 200);
+    // globalThis: the bake also runs in a worker (bake-worker.ts), which has no window
+    const timer = globalThis.setInterval(sample, 200);
     try {
         onStage('size');
         const full = o.size ?? await sceneSize(contentUrl, kind);
@@ -491,7 +530,13 @@ export type BaseStage = 'size' | 'read' | 'voxelize' | 'lighter' | 'done';
  * until one fits this device. Only a failure that is not about room (no WebGPU, a network error,
  * empty walls) ends it early. `bake` is bakeCollision (a test passes its own).
  */
-export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & { bake?: typeof bakeCollision; sPerMillion?: number | null; onStep?: (step: BaseStep, i: number, n: number) => void } = {}): Promise<BakeResult & { tried: number }> {
+export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: BaseStage) => void, o: BakeOptions & {
+    bake?: (contentUrl: string, kind: 'meta' | 'lod-meta', device: GraphicsDevice, onStage: (stage: 'size' | 'read' | 'voxelize' | 'done') => void, o: BakeOptions & { signal?: AbortSignal }) => Promise<BakeResult>;
+    sPerMillion?: number | null;
+    onStep?: (step: BaseStep, i: number, n: number) => void;
+    /** F1-no-freeze: the time limit of a step (only for a bake that stops on its signal: the worker's) */
+    stepTimeout?: (step: BaseStep) => number | undefined;
+} = {}): Promise<BakeResult & { tried: number }> {
     const bake = o.bake ?? bakeCollision;
     onStage('size');
     const size = o.size ?? await sceneSize(contentUrl, kind);
@@ -503,13 +548,22 @@ export async function bakeBase(contentUrl: string, kind: 'meta' | 'lod-meta', de
         if (i > 0) onStage('lighter');
         // stage G1-progress: the progress line's estimate needs the Gaussians this step reads
         o.onStep?.(steps[i], i, steps.length);
+        const stop = o.stepTimeout ? new AbortController() : null;
+        let timer: ReturnType<typeof setTimeout> | undefined;
         try {
             // a step the plan let through past the estimate (the last level) is tried for real
-            const r = await bake(contentUrl, kind, device, (s) => onStage(s), { ...o, size, level: steps[i].level, voxelM: steps[i].voxelM, coarsenOnOctree: true, capGb: i === steps.length - 1 ? Number.POSITIVE_INFINITY : o.capGb, limits: i === steps.length - 1 ? null : o.limits });
+            const run = bake(contentUrl, kind, device, (s) => onStage(s), { ...o, size, level: steps[i].level, voxelM: steps[i].voxelM, coarsenOnOctree: true, capGb: i === steps.length - 1 ? Number.POSITIVE_INFINITY : o.capGb, limits: i === steps.length - 1 ? null : o.limits, signal: stop?.signal });
+            // F1-no-freeze: a step that runs past its limit is stopped and the next, lighter step taken (never a hang)
+            const limit = o.stepTimeout?.(steps[i]);
+            const r = limit === undefined ? await run : await Promise.race([run, new Promise<never>((_, reject) => {
+                timer = setTimeout(() => { stop?.abort(); reject(new BakeTimeoutError(`step ${i + 1} of ${steps.length} ran past ${Math.round(limit / 1000)} s`)); }, limit);
+            })]);
             return { ...r, tried: i + 1 };
         } catch (e) {
             last = e;
-            if (!outOfRoom(e)) throw e;
+            if (!outOfRoom(e) && !(e instanceof BakeTimeoutError)) throw e;
+        } finally {
+            clearTimeout(timer);
         }
     }
     throw last;
