@@ -2,9 +2,9 @@
 // not read the voxels of a cover around the whole leg (on 5 cm walls a 25 m leg's cover is about 6.5e7 voxels). The cost is
 // counted in voxel reads, not timed.
 import { describe, expect, it } from 'vitest';
-import { VoxelContactWorld, analyticCollision } from '@gsfpv/collision';
+import { VoxelContactWorld, analyticCollision, sphereOverlaps } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
-import { createRng, sweeperOf } from '../src';
+import { createRng, occupancyOf, overlapsFast, sweeperOf } from '../src';
 import type { Vec3 } from '../src';
 import { threeRooms } from './worlds';
 
@@ -53,12 +53,31 @@ describe('the generator sweep', () => {
         }
     });
 
-    it('a free 25 m leg along a 5 cm street reads under 2 million voxels', () => {
+    it('overlapsFast gives the answer of sphereOverlaps (random spheres, radii 0 to 3 m, in and around the grid)', () => {
+        for (const col of [threeRooms(), street5cm()]) {
+            const occ = occupancyOf(col);
+            const rng = createRng(5);
+            const lo = [col.gridMinX, col.gridMinY, col.gridMinZ];
+            const span = [col.numVoxelsX, col.numVoxelsY, col.numVoxelsZ].map((n) => n * col.voxelResolution);
+            let hits = 0;
+            for (let i = 0; i < 3000; i++) {
+                const p = [0, 1, 2].map((k) => lo[k]! - 1 + (rng.int(0, 10000) / 10000) * (span[k]! + 2));
+                const r = [0, 0.00005, 0.05, 0.3, 0.625, 1.2, 3][i % 7]!;
+                const want = sphereOverlaps(col, p[0]!, p[1]!, p[2]!, r);
+                expect(overlapsFast(col, occ, p[0]!, p[1]!, p[2]!, r)).toBe(want);
+                if (want) hits++;
+            }
+            expect(hits).toBeGreaterThan(100);
+        }
+    });
+
+    it('a free 25 m leg along a 5 cm street reads under 20 000 voxels', () => {
         const { col, reads } = counting(street5cm());
         const s = sweeperOf(col);
         const a: Vec3 = [2, 2.5, 3], b: Vec3 = [27, 2.5, 3];
+        const r0 = reads();
         expect(s.free(a, b, 0.5)).toBe(true);
-        expect(reads()).toBeLessThan(2_000_000);
+        expect(reads() - r0).toBeLessThan(20_000);
         // a blocked leg (through the post) is still found
         expect(s.free([20, 2.5, 0], [40, 2.5, 0], 0.5)).toBe(false);
     });

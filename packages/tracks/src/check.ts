@@ -13,6 +13,8 @@ import type { SonicObject, TrackFile, Vec3 } from '@shramko/sonic-fpv';
 import { LEAF, sphereOverlaps, transformCollision } from '@gsfpv/collision';
 import type { VoxelCollision } from '@gsfpv/collision';
 import { gateExit } from './path';
+import { occupancyOf, overlapsFast } from './occupancy';
+import type { Occupancy } from './occupancy';
 
 /** The plan's margin: openings and legs are clear by this much, flown metres. */
 export const MARGIN_M = 0.5;
@@ -91,17 +93,19 @@ export interface Sweeper {
  * overlaps a wall, and every cover contains the leaf spheres below it, so leaving one cover out cannot change the answer
  * (arithmetic below is sweepOne's own, term by term). The cost of an overlap test that finds no wall grows with the cube
  * of its radius: on 5 cm walls a 25 m leg's cover reads about 6.5e7 voxels (12.75 m radius), and these covers took most
- * of 92 s of a Wroclaw course (cpu profile, docs/wip/course3.md F2).
+ * of 92 s of a Wroclaw course (cpu profile, docs/wip/course3.md F2). The overlap tests read the walls through the super
+ * block bits (occupancy.ts overlapsFast: the same answer as sphereOverlaps).
  */
-export function sweepFree(col: VoxelCollision, a: Vec3, b: Vec3, r: number): boolean {
+export function sweepFree(col: VoxelCollision, a: Vec3, b: Vec3, r: number, occ: Occupancy = occupancyOf(col)): boolean {
+    const over = (x: number, y: number, z: number, rr: number): boolean => overlapsFast(col, occ, x, y, z, rr);
     const ax = a[0], ay = a[1], az = a[2];
     const dx = b[0] - ax, dy = b[1] - ay, dz = b[2] - az;
     const L = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    if (L < 1e-12) return !sphereOverlaps(col, ax, ay, az, r + LEAF);
+    if (L < 1e-12) return !over(ax, ay, az, r + LEAF);
     const hit = (t0: number, t1: number): boolean => {
         const tm = (t0 + t1) * 0.5;
         const half = L * (t1 - t0) * 0.5;
-        if (!sphereOverlaps(col, ax + dx * tm, ay + dy * tm, az + dz * tm, r + half)) return false;
+        if (!over(ax + dx * tm, ay + dy * tm, az + dz * tm, r + half)) return false;
         if (L * (t1 - t0) <= LEAF) return true;
         return hit(t0, tm) || hit(tm, t1);
     };
@@ -111,7 +115,8 @@ export function sweepFree(col: VoxelCollision, a: Vec3, b: Vec3, r: number): boo
 }
 
 export function sweeperOf(col: VoxelCollision): Sweeper {
-    return { free: (a, b, r) => sweepFree(col, a, b, r) };
+    const occ = occupancyOf(col);
+    return { free: (a, b, r) => sweepFree(col, a, b, r, occ) };
 }
 
 /** The axes of a gate in the flown world: x and y across the opening, z behind it (the craft crosses toward -z). */
