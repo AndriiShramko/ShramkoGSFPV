@@ -150,7 +150,13 @@ try {
         for (const k of ['KeyK', 'KeyI']) {
             out.ki.push({ key: k, t: +((Date.now() - t0) / 1000).toFixed(2) });
             await page.keyboard.press(k);
-            await sample(page, t0, 6000, k);
+            await sample(page, t0, 2000, k);
+            // W2 finding (a): K's help holds the flight while it speaks and any key cuts it (mode-keys.ts KeyHelp), so I is pressed
+            // after the hold ends (at most 90 s), else I only cuts the help ("Back to the flight.")
+            const endK = Date.now() + 90000;
+            while (Date.now() < endK && (await page.evaluate(() => !!(window.__gsfpv?.session?.paused)))) await sample(page, t0, 500, k);
+            out.ki[out.ki.length - 1].heldUntil = +((Date.now() - t0) / 1000).toFixed(2);
+            await sample(page, t0, 2000, k);
         }
     }
     if (QUOTE) {

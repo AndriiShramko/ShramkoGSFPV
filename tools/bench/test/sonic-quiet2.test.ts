@@ -6,7 +6,7 @@ import { analyticCollision } from '../../../packages/collision/src';
 import { scanFreeLesson } from '../../../packages/sonic-fpv/src';
 import type { CueEvent, SpeechLine } from '../../../packages/sonic-fpv/src';
 import { PageRuntime } from '../../../apps/fly/src/sonic/runtime';
-import { quietLiveRegion } from '../../../apps/fly/src/sonic/live-quiet';
+import { liveRegionPaused, quietLiveRegion } from '../../../apps/fly/src/sonic/live-quiet';
 import type { LiveElement } from '../../../apps/fly/src/sonic/live-quiet';
 import { Rig } from './sonic-lesson-rig';
 import type { RigScan } from './sonic-lesson-rig';
@@ -141,5 +141,20 @@ describe('N4: the live region #ui is not announced in a quiet flight', () => {
         q.restore();
         expect(ui.getAttribute('aria-live')).toBe('polite');
         expect(quietLiveRegion(null, () => true).sync()).toBeUndefined();
+    });
+
+    it('W2 (b): tick acts on a change only, the first frame of a quiet flight goes off; the K help hold alone keeps #ui quiet', () => {
+        const ui = new El('polite');
+        let quiet = false;
+        const s = quietLiveRegion(ui, () => quiet);
+        s.tick();
+        expect(ui.getAttribute('aria-live')).toBe('polite');
+        quiet = true;
+        s.tick();
+        expect(ui.getAttribute('aria-live')).toBe('off');
+        expect(liveRegionPaused(true, ['help'])).toBe(false);
+        expect(liveRegionPaused(true, ['help', 'menu'])).toBe(true);
+        expect(liveRegionPaused(true, [])).toBe(true);
+        expect(liveRegionPaused(false, [])).toBe(false);
     });
 });

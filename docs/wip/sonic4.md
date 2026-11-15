@@ -479,6 +479,13 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   0.13 s (the HUD's DISARMED, ANGLE, volts before the first 250 ms sync of live-quiet.ts; a guess: sync once at the switch on) and
   244 (Tunis) / 222 (Wroclaw) during the K help (bridge.paused makes quietFlight false while the help is open, by design the menus
   keep their words; the HUD text in #ui is then read too). Suspect apps/fly/src/sonic/feature.ts liveTimer and entry.ts quietFlight.
+- [x] W2 pass 2 (this commit): (a) is by design, not a fault: K's help holds the flight while its 14 lines play and any key cuts
+  it, that press doing only that (mode-keys.ts KeyHelp); I was pressed 6 s after K. quiet-probe.mjs KI now presses I after the
+  hold ends (session.paused false, at most 90 s), recorded as ki[0].heldUntil. (b) fixed in live-quiet.ts and feature.ts: tick()
+  every frame (after the HUD wrote, acts only on a change) plus a sync at install, and liveRegionPaused(): K's 'help' hold alone
+  keeps #ui quiet (its lines go to the captions, outside #ui). sonic-optin's pinned K list follows Shift+V. sonic-quiet2 and
+  sonic-optin 28 passed (quiet2/w2p2-v1.log); NEG OK on live-quiet.ts against HEAD (w2p2-neg.log, the old file has no tick:
+  TypeError); tsc apps/fly 0 errors (w2p2-tsc.log). Browser recheck of (a) and (b): see below.
 - [ ] gates.py --only vitest,architecture,i18n,b18 on the W2 tree: architecture, i18n, b18 PASS; vitest FAIL 1 of 5035:
   tools/bench/test/sonic-optin.test.ts "K in the mode ... Escape N B Z I G R T U L" pins the K list of caps and does not follow N2's
   Shift+V (from W1 cb5e9272, gates were not run in W1). Fix: update that pinned list to the received one (Shift+V in place of the

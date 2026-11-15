@@ -44,7 +44,7 @@ import { t, locale } from '../i18n';
 import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
 import { quietFlight } from './entry';
-import { quietLiveRegion } from './live-quiet';
+import { liveRegionPaused, quietLiveRegion } from './live-quiet';
 import { narratorKey } from './narrator-key';
 import { NARRATOR_OFF_CUE } from './quiet-cues';
 import { PageRuntime } from './runtime';
@@ -290,8 +290,13 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // once. The paused menus keep their words, and so do the lessons of the lesson list.
     mode.bridge.quiet = () => quietFlight(entry.setup.prefs, host?.lesson?.id ?? null, mode.bridge.paused);
     // lane quiet2 (N4): the page's live region #ui (the HUD's text, the course box, the walls box) is not announced in a quiet flight
-    // either (live-quiet.ts); looked at every 250 ms (an estimate, not measured: the setting, the lesson and the pause change it)
-    const liveQuiet = quietLiveRegion(document.getElementById('ui'), () => mode.bridge.quiet?.() === true);
+    // either (live-quiet.ts). W2 finding (b): K's key help alone does not give #ui its words back (its lines go to the captions), and
+    // the answer is looked at every frame (tick, after the HUD wrote) as well as every 250 ms (sync: live regions added inside later)
+    let pauseReasons: readonly string[] = [];
+    offs.push(ctx.events.on('pause', ({ reasons }) => { pauseReasons = reasons; }));
+    const liveQuiet = quietLiveRegion(document.getElementById('ui'), () => quietFlight(entry.setup.prefs, host?.lesson?.id ?? null, liveRegionPaused(mode.bridge.paused, pauseReasons)));
+    liveQuiet.sync();
+    offs.push(ctx.events.on('frame', () => liveQuiet.tick()));
     // N6: the captions are placed again with it (the course's clock block appears and goes without a caption)
     const liveTimer = setInterval(() => {
         liveQuiet.sync();
