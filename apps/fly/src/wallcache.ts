@@ -71,6 +71,72 @@ export async function wallsKey(k: WallsKeyInput): Promise<string> {
     return sha256Hex(new TextEncoder().encode(keyText(k)));
 }
 
+/** What became of walls built here (lane fix3a): kept in the store, or why not. */
+export interface KeepResult {
+    ok: boolean;
+    key: string | null;
+    /** the store write, from its start to its end */
+    ms: number;
+    bytes: number;
+    /** 'no-key': the scene's size request failed before and after the build; else the store's own error */
+    error?: string;
+}
+
+/**
+ * Keep walls built in this browser. The key input made before the build is used; when there is none
+ * (the size request failed then) it is made once more now. The write starts at once and the result says
+ * whether the walls are kept, so the walls line can tell the pilot when they are not.
+ */
+export async function keepBuilt(o: {
+    input: WallsKeyInput | null;
+    makeInput: () => Promise<WallsKeyInput | null>;
+    /** `memory`: the row went into the page's memory store (no IndexedDB here), so the next visit will not find it */
+    put: (input: WallsKeyInput) => Promise<{ key: string; bytesStored: number; memory?: boolean }>;
+    now: () => number;
+}): Promise<KeepResult> {
+    const t0 = o.now();
+    let input = o.input;
+    if (!input) input = await o.makeInput().catch(() => null);
+    if (!input) return { ok: false, key: null, ms: o.now() - t0, bytes: 0, error: 'no-key' };
+    try {
+        const row = await o.put(input);
+        // review FX-2: kept for this page only is not kept: the line says so instead of staying silent
+        if (row.memory) return { ok: false, key: row.key, ms: o.now() - t0, bytes: row.bytesStored, error: 'memory' };
+        return { ok: true, key: row.key, ms: o.now() - t0, bytes: row.bytesStored };
+    } catch (e) {
+        return { ok: false, key: await wallsKey(input).catch(() => null), ms: o.now() - t0, bytes: 0, error: String((e as Error)?.message ?? e).slice(0, 200) };
+    }
+}
+
+/**
+ * Review FX-1: walls built here go in use (`use`) only after their store write ended, so the line that says they are
+ * built also means they are kept, and a reload right after it finds them. A write that hangs never holds the walls:
+ * after `waitMs` they go in anyway (the write goes on and the line says when it ends). Returns the write's result, or
+ * null when the wait ran out first.
+ */
+export async function keepThenUse(
+    kept: Promise<KeepResult>,
+    use: () => void,
+    waitMs: number,
+    sleep: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms))
+): Promise<KeepResult | null> {
+    const res = await Promise.race([kept, sleep(waitMs).then(() => null)]);
+    use();
+    return res;
+}
+
+/**
+ * Review FX-3: the walls line once the store write ended. `now` is the box's line, `done` the line the build left,
+ * `keeping` the done line with the keeping note. Kept: the done line comes back if the keeping note shows, else null
+ * (the box stays as it is). Not kept: never silent: on the done line, after any other line, or alone in an empty box.
+ */
+export function keptLine(now: string, done: string, keeping: string, res: KeepResult, notKept: string): string | null {
+    if (res.ok) return now === keeping ? done : null;
+    if (res.error === 'off') return null;
+    if (now === done || now === keeping) return `${done} ${notKept}`;
+    return now ? `${now} ${notKept}` : notKept;
+}
+
 async function streamBytes(s: ReadableStream<Uint8Array>): Promise<Uint8Array> {
     return new Uint8Array(await new Response(s).arrayBuffer());
 }

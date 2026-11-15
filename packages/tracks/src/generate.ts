@@ -17,7 +17,7 @@
 import type { Pose, Quat, SceneTransform, TrackFile, TrackGate, Vec3, VoxelCollision } from './types';
 import { MARGIN_M, checkTrack, sweeperOf } from './check';
 import { cellCentre, clearanceM } from './freespace';
-import { inDenseBand, stepsFrom } from './quality';
+import { groundBelow, inDenseBand, qualityShare, stepsFrom, tileOf } from './quality';
 import { gateExit } from './path';
 import type { QualityMap } from './quality';
 import type { FreeSpace } from './freespace';
@@ -27,7 +27,7 @@ import type { Rng } from './rng';
 export const GENERATOR_NAME = 'gsfpv-course';
 export const GENERATOR_VERSION = '1';
 /** G2: a course laid over a quality map (band and spread walk); the same seed lays another course than version 1 */
-export const GENERATOR_VERSION_QUALITY = '2';
+export const GENERATOR_VERSION_QUALITY = '3';
 
 export interface CourseParams {
     /** the proof's margin, flown m */
@@ -96,6 +96,9 @@ export interface CourseOptions {
     /** G2: where the scan is good (quality.ts). Gates go into its dense band over well-scanned tiles and the walk spreads
      *  over the whole box instead of keeping within OUT_LEGS legs of the start. Without it every course is as before. */
     readonly quality?: QualityMap;
+    /** X3: the scene's own spawn, flown world (the session's spawn, not the craft: one seed gives every pilot the same
+     *  course). A closed course starts at the gate nearest it (startNearSpawn); without it the start cell's centre is used. */
+    readonly spawn?: Vec3;
     /** CR-1: what the walk did (audits and probes). Not written into the file: the server keeps a fixed list of params keys
      *  (server.ts PARAM_KEYS, apps/api/tracks.py), and these are diagnostics, not the course. */
     readonly onWalk?: (w: WalkInfo) => void;
@@ -106,6 +109,9 @@ export interface WalkInfo {
     /** the dense band used, m above the ground (null without a quality map) */
     readonly band: readonly [number, number] | null;
     readonly banded: boolean;
+    /** fix3b Y2: the top of the eye band the gates were laid in, m above the ground under them (2 when nothing forced
+     *  more; 0 when the band was not used: no quality map, or too few cells in any band up to the dense band's top) */
+    readonly eyeHi: number;
     /** the seeded far target's steps from the start, m (0 without one) */
     readonly farM: number;
     /** gates laid when the walk turned home (-1: it never did) */
@@ -121,6 +127,28 @@ export interface WalkInfo {
     readonly kept: number;
 }
 
+/** fix3b Y2 (owner's message 52, 2026-11-15): "the detail, the highest density of the point cloud, is at the level of
+ *  human eyes, near the ground ... they are all somewhere over a person's head". The centre of a gate stands 1.2 to 2.0 m
+ *  above the ground under it (the first wall voxel below it), 1.6 m when nothing forces another height; the lead's rule. */
+export const EYE_M = 1.6;
+export const EYE_LO_M = 1.2;
+export const EYE_HI_M = 2.0;
+/** the lower edge of a gate's frame stays this far above the ground (the lead's rule) */
+export const LOW_EDGE_M = 0.3;
+/** an eye-level cell's least free radius, flown m (estimate: a 1.2 m ring's radius, its tube and LOW_EDGE_M under it;
+ *  RING_MIN_FREE_M of 1.4 m measured to the ground kept every cell centre under 2.2 m out of a 0.6-0.8 m grid) */
+export const EYE_FREE_M = 1.0;
+/** when too few cells lie in the eye band, its top is raised by this much at a time up to the dense band's top (estimate) */
+const EYE_STEP_M = 0.4;
+/** review FY-6, ESTIMATE: the scan's flown scale (transform[0]) within this of 1 counts as its true size for the eye band */
+export const EYE_SCALE_TOL = 0.2;
+/** fix3b Y2 (message 52: "at the ends of streets, where the quality is already quite bad"): no gate and no leg where the
+ *  tile's quality (quality.ts near) is under this share of the scan's best quarter (estimate: before Y2 the gates of
+ *  Wroclaw, Tunis and Opole stood at 0.18-0.28 of it, gate-place-audit.ts, place-before.json) */
+export const POOR_SHARE = 0.15;
+/** fix3b Y2: a leg's quality is read every this many m along it (gate-place-audit.ts reads every 1 m; 2 m let legs of
+ *  Wroclaw down to 0.04-0.11 of the best quarter through, place-after.json) */
+const LEG_STEP_M = 1;
 /** G2: the band candidates are used when there are at least this many per wanted gate (estimate), else every candidate */
 const BAND_CANDS_PER_GATE = 8;
 /** G2: the out half's way is about this share of a longest leg per gate (estimate: the legs are 3-15 m and a leg along a
@@ -205,6 +233,47 @@ const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2
 const len = (a: Vec3): number => Math.sqrt(dot(a, a));
 const dist2 = (a: Vec3, b: Vec3): number => dot(sub(a, b), sub(a, b));
 
+/**
+ * Stage X3 (train 3, lane fix3a): a closed course starts at the gate nearest the scene's spawn (straight distance, flown
+ * world; ties keep the lower number). The ring is turned, not changed: the same gates in the same places, the same direction
+ * of travel, renumbered g1.. from that gate. Turning it changes two legs (the leg back to the start now closes before the
+ * new gate 1, and the old last and first gates are joined directly), so the turned ring is kept only when `proven` holds
+ * for it (the whole-course proof); otherwise, and for an open course, the generator's order stays. `yawOf` gives the start
+ * yaw toward a course's gate 1. Measured on 50 courses (tools/bench/src/gate-one-audit.ts, docs/wip/fix3a.md): on 32 of
+ * 33 closed rings the nearest gate was not gate 1.
+ */
+export function startNearSpawn(
+    course: readonly TrackGate[],
+    spawn: Vec3,
+    toFlown: (q: Vec3) => Vec3,
+    proven: (gates: TrackGate[], startYaw: number) => boolean,
+    yawOf: (gates: readonly TrackGate[]) => number
+): TrackGate[] {
+    if (course.length < 2) return [...course];
+    let k = 0;
+    let best = Infinity;
+    course.forEach((g, i) => {
+        const d = dist2(toFlown(g.pos as Vec3), spawn);
+        if (d < best) {
+            best = d;
+            k = i;
+        }
+    });
+    if (k === 0) return [...course];
+    const turned = [...course.slice(k), ...course.slice(0, k)].map((g, i) => ({ ...g, id: `g${i + 1}` }));
+    return proven(turned, yawOf(turned)) ? turned : [...course];
+}
+
+/**
+ * Review FX-5: generator.version of a course; a closed ring turned to start near the spawn adds `.s<shift>` (its gate 1
+ * was gate shift + 1 of the walk), so course/link.ts bestKey keeps its best laps apart from the unturned order. A course
+ * that was not turned keeps the plain version, and its best laps keep their keys.
+ */
+export function generatorVersion(quality: boolean, startShift: number): string {
+    const v = quality ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION;
+    return startShift > 0 ? `${v}.s${startShift}` : v;
+}
+
 /** The course's title for a seed: 'Course ' and the seed in base 36 (plan section 7). */
 export function courseTitle(seed: number): string {
     return `Course ${(seed >>> 0).toString(36)}`;
@@ -249,11 +318,51 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
 
     // candidates: usable cells roomy enough for a ring, then a farthest-point sample
     let all: number[] = [];
-    for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= RING_MIN_FREE_M * k) all.push(i);
+    for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0 && clearanceM(free, i) >= (opts.quality ? EYE_FREE_M : RING_MIN_FREE_M) * k) all.push(i);
     // G2: only cells in the dense band over a well-scanned tile, when there are enough of them
     const Q = opts.quality;
     let banded = false;
-    if (Q) {
+    // fix3b Y2: over a quality map the gates stand at the eye level of a person (EYE_LO_M to EYE_HI_M above the ground under
+    // them, moved toward EYE_M inside their cell as far as the cell's free radius allows) in tiles of at least POOR_SHARE
+    // of the best quarter's quality; the band's top is raised by the least amount when too few cells lie in it
+    let eyeHi = 0;
+    const eyeAt = new Map<number, { pos: Vec3; free: number }>();
+    // review FY-6: a person's eye level means something only on a scan flown at its true size and at the plan's course size;
+    // a scaled course or a scan flown bigger or smaller (a macro scan) goes straight to the dense band
+    if (Q && k === 1 && Math.abs(s - 1) <= EYE_SCALE_TOL) {
+        const rMin = EYE_FREE_M * k;
+        const slack = 1; // estimate: the tile's ground against the ground under the cell (a step, a slope)
+        const near: { i: number; c: Vec3; h: number; d: number; free: number }[] = [];
+        for (const i of all) {
+            const c = cellCentre(free, i);
+            const t = tileOf(Q, c);
+            if (t < 0 || !Q.good[t] || qualityShare(Q, c) < POOR_SHARE) continue;
+            const ht = c[1] - Q.ground[t]!;
+            if (!(ht > -slack && ht < Math.max(EYE_HI_M, Q.band[1]) + slack)) continue;
+            const g = groundBelow(walls, c, Math.max(EYE_HI_M, Q.band[1]) + slack);
+            if (!Number.isFinite(g)) continue;
+            const fr = clearanceM(free, i);
+            near.push({ i, c, h: c[1] - g, d: Math.max(0, Math.min(free.cellM / 2, fr - rMin)), free: fr });
+        }
+        const top = Math.max(EYE_HI_M, Q.band[1]);
+        for (let hi = EYE_HI_M; hi <= top + 1e-9 && !banded; hi += EYE_STEP_M) {
+            const got: { i: number; pos: Vec3; free: number }[] = [];
+            for (const e of near) {
+                const y = Math.min(e.h + e.d, Math.max(e.h - e.d, EYE_M));
+                const fr = e.free - Math.abs(y - e.h);
+                const half = fr >= SQUARE_MIN_FREE_M * k ? (SQUARE_SIDE_M / 2 + SQUARE_BAR_M) * k : (RING_DIAMETER_M / 2 + RING_TUBE_M / 2) * k;
+                if (y >= EYE_LO_M && y <= hi + 1e-9 && y - half >= LOW_EDGE_M) got.push({ i: e.i, pos: [e.c[0], e.c[1] + (y - e.h), e.c[2]], free: fr });
+            }
+            if (got.length >= BAND_CANDS_PER_GATE * N) {
+                all = got.map((e) => e.i);
+                for (const e of got) eyeAt.set(e.i, { pos: e.pos, free: e.free });
+                eyeHi = r3(hi);
+                banded = true;
+            }
+        }
+    }
+    if (Q && !banded) {
+        all = all.filter((i) => clearanceM(free, i) >= RING_MIN_FREE_M * k);
         const inBand = all.filter((i) => inDenseBand(Q, cellCentre(free, i)));
         if (inBand.length >= BAND_CANDS_PER_GATE * N) {
             all = inBand;
@@ -268,7 +377,19 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     for (let k = offset; k < all.length; k += stride) pool.push(all[k]!);
     // the walk reads the whole (strided) pool: a farthest-point sample of 8 per gate spread 192 points over 47 000 m3 of
     // Winter Garden, so after 1-4 gates no sample lay 3-15 m from the last (evidence run of bf7dc3d9: tries 6-11)
-    const cands = pool.map((i) => ({ cell: i, pos: cellCentre(free, i), free: clearanceM(free, i), used: false }));
+    // fix3b Y2: an eye-level course's leg stays in the well-scanned part: every LEG_STEP_M along it at least POOR_SHARE (the
+    // walk's legs and, at the end, every leg of the finished course: a dropped gate joins its neighbours, a closed course
+    // flies from its last gate back to the start)
+    // a start (the scan's spawn) in a poor tile is where the pilot begins anyway: its legs are not judged
+    let startPoor: Vec3 | null = null;
+    const legWell = (a: Vec3, b: Vec3): boolean => {
+        if (!Q || eyeHi === 0 || a === startPoor || b === startPoor) return true;
+        const dx = b[0] - a[0], dz = b[2] - a[2];
+        const n = Math.max(1, Math.ceil(Math.sqrt(dx * dx + dz * dz) / LEG_STEP_M)); // sqrt, not hypot: check-architecture's rule
+        for (let j = 0; j <= n; j++) if (qualityShare(Q, [a[0] + ((b[0] - a[0]) * j) / n, 0, a[2] + ((b[2] - a[2]) * j) / n]) < POOR_SHARE) return false;
+        return true;
+    };
+    const cands = pool.map((i) => ({ cell: i, pos: eyeAt.get(i)?.pos ?? cellCentre(free, i), free: eyeAt.get(i)?.free ?? clearanceM(free, i), used: false }));
 
     // G2 spread walk (only over a quality map): the way along the free space from the start (fromS) and to a seeded far
     // target (toT), both in cell steps. The out half lays its gates evenly along the way to the target, the back half
@@ -344,6 +465,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     let curCell = free.startCell;
 
     const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
+    if (Q && qualityShare(Q, startW) < POOR_SHARE) startPoor = startW;
     const shapeFor = (freeM: number): TrackGate['shape'] =>
         freeM >= SQUARE_MIN_FREE_M * k ? { kind: 'square', side: r3((SQUARE_SIDE_M * k) / s), bar: r3((SQUARE_BAR_M * k) / s) } : { kind: 'ring', diameter: r3((RING_DIAMETER_M * k) / s), tube: r3((RING_TUBE_M * k) / s) };
     const build = (gates: TrackGate[], startYaw: number, from: Vec3 = startW, laps: number = p.laps): TrackFile => ({
@@ -448,7 +570,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         const legOk = (c: (typeof cands)[number]): boolean => {
             let v = legMemo.get(c.cell);
             if (v === undefined) {
-                v = sweeper.free(cur, c.pos, p.marginM) && exitOk(c.pos);
+                v = sweeper.free(cur, c.pos, p.marginM) && exitOk(c.pos) && legWell(cur, c.pos);
                 legMemo.set(c.cell, v);
             }
             return v;
@@ -515,7 +637,12 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     const homeFrom = ends.length > 2 ? (outGates >= 0 ? outGates : ends[last - 1]!) : 0;
     const closeAt = (gs: TrackGate[]): number => {
         const low = Math.max(1, Math.ceil(gs.length / 2), homeFrom - (gates.length - gs.length) + 1);
-        for (let n = gs.length; n >= low; n--) if (sweeper.free(toFlown(gs[n - 1]!.pos), startW, p.marginM)) return n;
+        // review FY-1: the ring ends only at a gate whose legs home (to the start and on to gate 1) run over a well-scanned
+        // scan; judging them after the cut dropped one last gate a time and thinned Wroclaw seed 1 from 24 walked to 18
+        for (let n = gs.length; n >= low; n--) {
+            const end = toFlown(gs[n - 1]!.pos);
+            if (sweeper.free(end, startW, p.marginM) && legWell(end, startW) && legWell(end, toFlown(gs[0]!.pos))) return n;
+        }
         return 0;
     };
     let course = renumber(gates);
@@ -531,25 +658,37 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         } else laps = 1;
         const startYaw = nearestYaw(sub(toFlown(course[0]!.pos), startW));
         const r = checkTrack(build(course, startYaw, startW, laps), walls, T, p.marginM, false, true);
-        if (r.ok) break;
+        // fix3b Y2: the first leg of the finished course that crosses a poor tile (point 0 is the start; a closed course
+        // also flies from its last gate to the start and to gate 1): its far gate is dropped (the last gate for the way home)
+        const pts = [startW, ...course.map((g) => toFlown(g.pos))];
+        let poor = -1;
+        for (let i = 0; i + 1 < pts.length && poor < 0; i++) if (!legWell(pts[i]!, pts[i + 1]!)) poor = i;
+        if (poor < 0 && laps > 1 && (!legWell(pts[pts.length - 1]!, startW) || !legWell(pts[pts.length - 1]!, pts[1]!))) poor = course.length - 1;
+        if (r.ok && poor < 0) break;
         const bad = r.gates.findIndex((g) => !g.clear || !g.directionOk);
         const badLeg = r.legs.findIndex((l) => !l.clear);
-        const drop = bad >= 0 ? bad : badLeg >= 0 ? Math.max(0, badLeg - 1) : course.length - 1;
-        drops.push(bad >= 0 ? 'gate' : badLeg >= 0 ? 'leg' : 'last');
+        const drop = bad >= 0 ? bad : badLeg >= 0 ? Math.max(0, badLeg - 1) : !r.ok ? course.length - 1 : Math.min(poor, course.length - 1);
+        drops.push(bad >= 0 ? 'gate' : badLeg >= 0 ? 'leg' : !r.ok ? 'last' : 'poor');
         course = renumber(course.filter((_, i) => i !== drop));
     }
     if (course.length === 0) laps = p.laps;
-    const startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
+    // review FX-5: a course turned to start near the spawn is another course for its best laps: generatorVersion
+    // records the turn (the server keeps a fixed list of params keys, the version is a free string)
+    const walked = course;
+    // review FY-4: the turned ring's first leg (start to the gate nearest the spawn) is judged for a poor scan too
+    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => legWell(startW, toFlown(gs[0]!.pos)) && checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
+    const startShift = course.length ? Math.max(0, walked.findIndex((g) => g.pos === course[0]!.pos)) : 0;
+    const startYaw = course.length ?nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
     const shell = build(course, startYaw, startW, laps);
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
     const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false, true) : null;
-    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length });
+    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, eyeHi, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length });
     return {
         ...shell,
         generator: {
             name: GENERATOR_NAME,
-            version: Q ? GENERATOR_VERSION_QUALITY : GENERATOR_VERSION,
+            version: generatorVersion(!!Q, startShift),
             seed,
             params: {
                 marginM: p.marginM,

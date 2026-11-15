@@ -21,6 +21,9 @@ const [base, outFile, shots, idsArg] = process.argv.slice(2);
 if (!base || !outFile || !shots || !idsArg) { console.error('usage: course-path-probe.mjs <base with /en> <out.json> <shots dir> <id>[,...]'); process.exit(2); }
 const NAMES = { '70b50d42': 'wroclaw', '887f27aa': 'tunis', ab5efa0e: 'forest' };
 const LIMIT_MS = 900_000;
+// Y3 (lane fix3b, owner's message 52): eye level is a gate centre 1.2 to 2.0 m above the first wall below it; the exit code
+// allows one 10 cm wall voxel either way (EYE_TOL_M) because the ray meets the voxel's face, the generator its cell
+const EYE_LO = 1.2, EYE_HI = 2.0, EYE_TOL_M = 0.1;
 // F1-no-freeze: a scan without walls cannot load the bot scenario (test-modes.ts needs collision): NOBOT=1 leaves it out
 // (the scripted pilot then sets the craft alone; the bot only held it in a hover)
 const BOT = process.env.NOBOT ? '' : '&simradio=scenario';
@@ -84,6 +87,7 @@ const INSTALL = () => {
 
 // top-down picture of the walls around the gates and every gate's height above the ground under it
 const TOPDOWN = () => {
+    const EYE_LO = 1.2, EYE_HI = 2.0; // the page has no module scope: same numbers as the constants above
     const h = window.__gsfpv, col = h.session.collision, poses = h.course.gatePoses();
     if (!col || !poses.length) return { err: col ? 'no gates' : 'no walls' };
     const xs = poses.map((p) => p.pos[0]), zs = poses.map((p) => p.pos[2]), ys = poses.map((p) => p.pos[1]);
@@ -108,14 +112,14 @@ const TOPDOWN = () => {
     poses.forEach((p, k) => { const [a, b] = px(p.pos); if (k) g.lineTo(a, b); else g.moveTo(a, b); }); g.closePath(); g.stroke();
     poses.forEach((p, k) => {
         const [a, b] = px(p.pos); const hh = heights[k];
-        g.fillStyle = hh === null ? '#f0f' : hh <= 4 ? '#3f3' : hh <= 8 ? '#fc3' : '#f33';
+        g.fillStyle = hh === null ? '#f0f' : hh >= EYE_LO && hh <= EYE_HI ? '#3f3' : hh < EYE_LO ? '#39f' : hh <= 4 ? '#fc3' : '#f33';
         g.beginPath(); g.arc(a, b, 6, 0, Math.PI * 2); g.fill();
         g.fillStyle = '#fff'; g.font = 'bold 13px sans-serif'; g.fillText(String(k + 1), a + 8, b - 6);
     });
     g.fillStyle = '#fff'; g.font = '13px sans-serif';
-    g.fillText(`${(x1 - x0).toFixed(0)} x ${(z1 - z0).toFixed(0)} m, ${step.toFixed(2)} m/px; green <= 4 m above ground, yellow <= 8, red higher`, 8, H - 10);
+    g.fillText(`${(x1 - x0).toFixed(0)} x ${(z1 - z0).toFixed(0)} m, ${step.toFixed(2)} m/px; green ${EYE_LO}-${EYE_HI} m above the ground (eye level), blue lower, yellow to 4 m, red higher`, 8, H - 10);
     let span = 0; for (const a of poses) for (const b of poses) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));
-    return { url: cv.toDataURL('image/png'), W, H, step, heights, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
+    return { url: cv.toDataURL('image/png'), W, H, step, heights, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
 };
 
 const rot = (q, v) => { // q = [w, x, y, z]
@@ -289,7 +293,7 @@ for (const id of idsArg.split(',')) {
             let span = 0; for (const a of ps) for (const b of ps) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));
             const hs = await ev((pp) => { const col = window.__gsfpv.session.collision; return pp.map((p) => { const h = col.queryRay(p.pos[0], p.pos[1], p.pos[2], 0, -1, 0, 80); return h ? +(p.pos[1] - h.y).toFixed(2) : null; }); }, ps);
             const hv = hs.filter((v) => v !== null);
-            r.regen.push({ seed: c.seed, gates: ps.length, spanM: +span.toFixed(1), aboveGround: hv.length ? [Math.min(...hv), Math.max(...hv)] : null, noGround: hs.length - hv.length, s: +((Date.now() - tg) / 1000).toFixed(1), yRange: ps.length ? [Math.min(...ps.map((p) => p.pos[1])), Math.max(...ps.map((p) => p.pos[1]))].map((v) => +v.toFixed(1)) : null });
+            r.regen.push({ seed: c.seed, gates: ps.length, spanM: +span.toFixed(1), aboveGround: hv.length ? [Math.min(...hv), Math.max(...hv)] : null, eye: hv.filter((v) => v >= EYE_LO && v <= EYE_HI).length, noGround: hs.length - hv.length, s: +((Date.now() - tg) / 1000).toFixed(1), yRange: ps.length ? [Math.min(...ps.map((p) => p.pos[1])), Math.max(...ps.map((p) => p.pos[1]))].map((v) => +v.toFixed(1)) : null });
         }
     } catch (e) { r.fail = String(e).slice(0, 240); }
     out.push(r);
@@ -298,3 +302,8 @@ for (const id of idsArg.split(',')) {
 }
 await browser.close();
 for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, busy: r.profile?.map((x) => [x.atS, x.ms]), lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, rewind: r.rewind, afterR: r.afterR, span: r.top?.spanM, regen: r.regen, shots: [r.shotWallsS, r.shotCourseS], errors: r.errors.length, fail: r.fail }));
+// exit 1 on a failed run or a gate out of the eye band (with EYE_TOL_M) or with no wall below it
+const offBand = (hs) => (hs ?? []).filter((v) => v === null || v < EYE_LO - EYE_TOL_M || v > EYE_HI + EYE_TOL_M).length;
+const badN = out.filter((r) => r.fail || !r.top || offBand(r.top.heights) > 0).length;
+console.log(`eye band ${EYE_LO}-${EYE_HI} m (+-${EYE_TOL_M}): ${out.map((r) => `${r.id} first course ${r.top ? r.top.heights.length - offBand(r.top.heights) : 0} of ${r.top?.heights.length ?? 0}`).join(', ')}; runs failing ${badN}`);
+process.exit(badN ? 1 : 0);

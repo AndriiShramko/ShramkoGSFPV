@@ -1,0 +1,303 @@
+{
+ "base": "http://localhost:5780/en",
+ "id": "70b50d42",
+ "start": "shiftg",
+ "reloadAt": "in-use",
+ "profile": "U:\\Temp\\walls-store-WUgCDO",
+ "runs": [
+  {
+   "label": "build",
+   "readyS": 3.3,
+   "decidedS": 3.4,
+   "first": {
+    "state": "offer",
+    "source": "none",
+    "bakes": 0,
+    "voxelM": null,
+    "cacheKind": "idb",
+    "cacheMiss": "absent",
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [],
+    "usageMb": 0,
+    "quotaMb": 10240,
+    "persisted": false
+   },
+   "startedS": 6.4,
+   "inUseS": 81.4,
+   "atInUse": {
+    "state": "in-use",
+    "source": "bake",
+    "bakes": 1,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": "absent",
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": true,
+    "lastStore": null,
+    "line": "Walls built in 69 s. Crashes are on. The walls are rough in this scan. Now the course is being built; its progress follows here.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "final": {
+    "state": "in-use",
+    "source": "bake",
+    "bakes": 1,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": "absent",
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": {
+     "ok": true,
+     "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+     "ms": 343.09999999403954,
+     "bytes": 58294590
+    },
+    "line": "Walls built in 69 s. Crashes are on. The walls are rough in this scan. Now the course is being built; its progress follows here.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "logs": []
+  },
+  {
+   "label": "reload",
+   "readyS": 1.8,
+   "decidedS": 4,
+   "first": {
+    "state": "in-use",
+    "source": "cache",
+    "bakes": 0,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": null,
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "Walls 5 cm from this browser's store, no rebuild.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "inUseS": 4.3,
+   "atInUse": {
+    "state": "in-use",
+    "source": "cache",
+    "bakes": 0,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": null,
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "Walls 5 cm from this browser's store, no rebuild.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "final": {
+    "state": "in-use",
+    "source": "cache",
+    "bakes": 0,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": null,
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "Walls 5 cm from this browser's store, no rebuild.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "logs": []
+  },
+  {
+   "label": "fresh page",
+   "readyS": 2.5,
+   "decidedS": 4.5,
+   "first": {
+    "state": "in-use",
+    "source": "cache",
+    "bakes": 0,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": null,
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "Walls 5 cm from this browser's store, no rebuild.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "inUseS": 4.8,
+   "atInUse": {
+    "state": "in-use",
+    "source": "cache",
+    "bakes": 0,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": null,
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "Walls 5 cm from this browser's store, no rebuild.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "final": {
+    "state": "in-use",
+    "source": "cache",
+    "bakes": 0,
+    "voxelM": 0.05,
+    "cacheKind": "idb",
+    "cacheMiss": null,
+    "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+    "keyInput": {
+     "sceneId": "70b50d42",
+     "version": 1,
+     "etag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+     "base": "none",
+     "voxelM": 0.05
+    },
+    "storing": false,
+    "lastStore": null,
+    "line": "Walls 5 cm from this browser's store, no rebuild.",
+    "sizeEtag": "\"509be231724348e7bbd2fe7cb27a1d40\"",
+    "rows": [
+     {
+      "key": "b307175a8c5b22e5fcf7a0fec4a066e1a3d565258181f16c9a1a89737289aebf",
+      "voxelM": 0.05,
+      "bytesStored": 58294590,
+      "stale": false
+     }
+    ],
+    "usageMb": 55.8,
+    "quotaMb": 10296,
+    "persisted": false
+   },
+   "logs": []
+  }
+ ],
+ "kept": true,
+ "cached": true
+}

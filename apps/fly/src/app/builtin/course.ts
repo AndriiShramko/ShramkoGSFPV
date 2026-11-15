@@ -23,6 +23,8 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
+import { aimOf } from '../../course/guide';
+import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
 import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
@@ -30,7 +32,7 @@ import type { CheckJob, CourseGrid, CourseJob, FromCourseWorker } from '../../co
 import { COURSE_WARN_MS, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, courseSteps, isParked, progressLine, spokenLine } from '../../course/progress';
 import { sayVia } from '../say-via';
 import { S } from '@gsfpv/sim-core';
-import { canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { canSave, checkTrack, edit, flownCollision, flownStart, marginOf, nearestWall, openEditor, toTrackV1, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
 import type { RayFn } from '../../course/editor/camera';
 import type { CourseCheck, EditorState } from '@gsfpv/tracks';
@@ -65,6 +67,7 @@ export const course: Feature = {
         ctx.hook.course = hook;
         // stage G4-prove: the probes read where the gates stand (flown frame) to fly through them and draw them from above
         hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]] })) : []);
+        hook.guide = () => ({ ...hud.guideState });
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
@@ -190,7 +193,24 @@ export const course: Feature = {
                 shownNext = next;
             }
             hud.update(v, run.gates.length);
+            // stage X2-gate-one: the guide to the next gate (gate 1 before the start), from the moment the course appears
+            const target = v.running || v.next >= 0 ? v.next : 0;
+            const done = !v.running && v.laps >= v.lapsPerRun;
+            const g = run.gates[target];
+            const cam = done || !g ? null : guideCamera();
+            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target);
             sync();
+        };
+        /** the drawn camera in the flown world (the gates are drawn at their flown places, course/view.ts) */
+        const guideCamera = (): GuideCamera | null => {
+            const e = ctx.renderer.camera;
+            const cc = e?.camera;
+            if (!e || !cc) return null;
+            const p = e.getPosition(), r = e.right, u = e.up, f = e.forward;
+            const aspect = Math.max(1, window.innerWidth) / Math.max(1, window.innerHeight);
+            const half = Math.tan(((cc.fov ?? 115) * Math.PI) / 360);
+            const tanH = cc.horizontalFov ? half : half * aspect;
+            return { pos: [p.x, p.y, p.z], right: [r.x, r.y, r.z], up: [u.x, u.y, u.z], fwd: [f.x, f.y, f.z], tanH, tanV: tanH / aspect };
         };
 
         // stage G1-progress: the generation's line on the HUD every PROGRESS_TICK_MS, spoken to Fly by Sound at the pacer's pace
@@ -333,6 +353,34 @@ export const course: Feature = {
         const flownTransform = (): [number, number, number, number] => {
             const tr = ctx.session.transform;
             return [tr.s, tr.t[0] ?? 0, tr.t[1] ?? 0, tr.t[2] ?? 0];
+        };
+        // lane fix3b, Y1: the Save check of the course in use, untouched, the way the edit mode's Save runs it (wallsCheck on
+        // the session's walls, the flown transform, the course's own margin), plus the measured report. Read only.
+        hook.saveCheck = (move) => {
+            const col = ctx.session.collision;
+            const tr0 = run?.track;
+            if (!col || !tr0) return null;
+            const T = flownTransform();
+            // Y3: a copy with one gate moved (given in the flown frame, written back in the course frame); never the course in use
+            const tr = move
+                ? { ...tr0, gates: tr0.gates.map((g, i) => (i === move.gate ? { ...g, pos: [0, 1, 2].map((k) => ((move.pos[k] as number) - T[k + 1]!) / T[0]) as [number, number, number] } : g)) }
+                : tr0;
+            const margin = marginOf(tr);
+            const problems = wallsCheck(col, T, margin)(upgradeTrack(tr));
+            // never measured here: the free radii every 0.25 m of one Tunis course on 5 cm walls took about 20 min in Node
+            // (fix3b Y1 pass 1, save-check-audit), the page's thread would hang; the failing legs give their ends (course frame)
+            const rep = checkTrack(tr, col, T, margin, false);
+            const posOf = new Map<string, readonly number[]>([['start', tr.start?.pos ?? []], ...tr.gates.map((g) => [g.id, g.pos] as [string, readonly number[]])]);
+            const st = flownStart(tr, T);
+            const near = st ? nearestWall(col, st.pos) : null;
+            const g1 = run!.gates[0];
+            return {
+                transform: T, margin, walls: { res: col.voxelResolution, flip: col.flipXY, min: [col.gridMinX, col.gridMinY, col.gridMinZ], n: [col.numVoxelsX, col.numVoxelsY, col.numVoxelsZ] },
+                spawn: [...ctx.session.spawn], start: tr.start, startFlown: st?.pos ?? null, gate1: g1 ? [g1.pos[0], g1.pos[1], g1.pos[2]] : null,
+                gates: tr.gates.length, laps: tr.laps, seed: tr.generator?.seed ?? null, proof: tr.generator?.params?.proof ?? null,
+                problems, startFreeM: rep.startFreeM, nearWallM: near ? Math.round(near.distance * 1000) / 1000 : null,
+                legs: rep.legs.filter((l) => !l.clear).map((l) => ({ from: l.from, to: l.to, lengthM: l.lengthM, ends: [posOf.get(l.from) ?? null, posOf.get(l.to) ?? null] })), gatesBad: rep.gates.filter((g) => !g.clear || !g.directionOk).map((g) => ({ id: g.id, freeM: g.freeM, axisInDeg: g.axisInDeg })), issues: rep.issues.slice(0, 6)
+            };
         };
 
         /**
