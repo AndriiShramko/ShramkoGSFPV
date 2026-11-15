@@ -16,6 +16,22 @@ export interface DrawnRing {
     readonly pts: readonly P2[];
     /** its minor axis on the page, CSS px */
     readonly minor: number;
+    /** the ring's own axis (the one it turns about) as drawn on the page: the way from its centre to centre + axis */
+    readonly axis?: P2;
+}
+
+/**
+ * Review EI-4: an edge-on ring is drawn as a polyline folded on itself, its front and back halves with opposite segment
+ * directions, so the nearest segment's direction flipped by a sub-pixel. The tangent is turned so that the way across it
+ * (ringTurnDeg's) points along the ring's drawn axis, or, with no axis, to the page's right (then down): the same drag turns
+ * the same way on every press.
+ */
+export function orientTangent(t: P2, axis?: P2): P2 {
+    // across the line, as ringTurnDeg reads it: (-t.y, t.x)
+    const ax = -t[1];
+    const ay = t[0];
+    const k = axis && Math.hypot(axis[0], axis[1]) > 1e-6 ? ax * axis[0] + ay * axis[1] : Math.abs(ax) > 1e-9 ? ax : ay;
+    return k < 0 ? [-t[0], -t[1]] : t;
 }
 
 /** The minor axis of a drawn ring around its drawn centre `c`: twice the nearest point's distance (an ellipse's semi-minor). */
@@ -46,7 +62,7 @@ export function pickRing(m: P2, rings: readonly DrawnRing[], tolPx = RING_PICK_P
         if (!(r.minor < edgePx) || r.pts.length < 2) return;
         for (let k = 0; k < r.pts.length; k++) {
             const s = segment(m, r.pts[k]!, r.pts[(k + 1) % r.pts.length]!);
-            if (s.d <= tolPx && (!best || s.d < best.dist)) best = { index: i, tangent: s.t, dist: s.d };
+            if (s.d <= tolPx && (!best || s.d < best.dist)) best = { index: i, tangent: orientTangent(s.t, r.axis), dist: s.d };
         }
     });
     return best;

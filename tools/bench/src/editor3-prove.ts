@@ -130,7 +130,7 @@ async function drag(p: Page, x: number, y: number, dx: number, dy: number): Prom
 
 /** load, choose the controller, make a course */
 async function prepare(page: Page, id: string, out: Record<string, unknown>, keyboard = false): Promise<boolean> {
-    await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1`);
+    await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1&probe=1`);
     const r = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 240000);
     out.ready = { ms: r.ms, status: r.v };
     if (r.v !== 'ready') return false;
@@ -671,7 +671,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
 /** H2: the page again (same tab, same local /api/tracks stand-in): does the saved course come, and gate `del` where it was moved */
 async function reloadSaved(page: Page, id: string, saved: string, del: number, movedPos: number[] | undefined): Promise<Record<string, unknown>> {
     const out: Record<string, unknown> = {};
-    await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1`);
+    await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1&probe=1`);
     await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 240000);
     await page.focus('.screen.radio [data-action="radio-keyboard"]').catch(() => undefined);
     if (await page.evaluate(() => !!document.querySelector('.screen.radio'))) await page.keyboard.press('Enter');

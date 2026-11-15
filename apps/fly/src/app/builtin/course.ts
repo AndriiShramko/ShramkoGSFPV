@@ -16,7 +16,7 @@
 // saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
-import { liveSearch } from '../env';
+import { liveSearch, q as pageQuery } from '../env';
 import type { Feature, FlightContext } from '../context';
 import { withWalls } from '../../walls-first';
 import type { CourseHook } from '../../course/hook';
@@ -134,14 +134,18 @@ export const course: Feature = {
         let crashCleared = 0;
         /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
         // train 3 I1 (D1): the framing of the selected gate (course/editor/frame.ts) replaced the K2 aim from the paused drone
-        const aim = (): void => frameSel();
+        const aim = (): void => {
+            frameSel();
+        };
         /** the gate the edit view was last framed on (a new selection frames again, the same one does not) */
         let framedId: string | number | null = null;
         /** I1 (D1): the edit view glides to the selected gate, a third of the view high, 35 degrees aside, 20 above */
-        const frameSel = (): void => {
-            if (!ed || !view || mode === 'fly') return;
+        // review EI-7: true when the framing is done for this selection (a glide started, or no place is free: D1 keeps the
+        // view); false when it was skipped (flying, a drag, the view suspended), so a later repaint frames it
+        const frameSel = (): boolean => {
+            if (!ed || !view || mode === 'fly') return false;
             const eg = ed.course.gates[ed.selected];
-            if (!eg) return;
+            if (!eg) return false;
             const p = gateFlownPose(eg, flownTransform());
             // the axis through the opening: the gate's local z turned by its pose (quat w, x, y, z)
             const [w, x, y, z] = p.quat;
@@ -151,7 +155,7 @@ export const course: Feature = {
             const tanHalfV = cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
             const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV, from: view.cam.pos }, camRay);
             (edHook as { frame?: unknown }).frame = f ? { side: f.sideDeg, dist: Math.round(f.dist * 100) / 100, skipped: f.skipped } : { blocked: true };
-            if (f) view.glideTo(camFrom(f.eye, f.at, view.cam.speed));
+            return f ? view.glideTo(camFrom(f.eye, f.at, view.cam.speed)) : true;
         };
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
@@ -688,10 +692,7 @@ export const course: Feature = {
             const eg = ed.course.gates[ed.selected];
             view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null, eg?.shape.kind === 'cube-frame');
             // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
-            if (eg && eg.id !== framedId) {
-                framedId = eg.id;
-                frameSel();
-            }
+            if (eg && eg.id !== framedId && frameSel()) framedId = eg.id;
             edHook.open = true;
             (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
@@ -768,8 +769,9 @@ export const course: Feature = {
             // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
             (window as unknown as { __gsfpvEditMeasure?: () => unknown }).__gsfpvEditMeasure = () => (view ? { ...view.measure(), frame: (edHook as { frame?: unknown }).frame ?? null } : null);
             // I2 (probe only, local runs): the selected gate `m` m ahead of the drone, its centre `up` m above it, facing it, with
-            // the opening `open` m (as one drag: one undo step and the walls check); returns the drone's flown position
-            (window as unknown as { __gsfpvEditPutAhead?: (m: number, up: number, open: number) => unknown }).__gsfpvEditPutAhead = (m, up, open) => {
+            // the opening `open` m (as one drag: one undo step and the walls check); returns the drone's flown position.
+            // Review EI-6: it changes the course, so it is there only on a page opened with ?probe=1 (the editor3 probes)
+            if (pageQuery.get('probe') === '1') (window as unknown as { __gsfpvEditPutAhead?: (m: number, up: number, open: number) => unknown }).__gsfpvEditPutAhead = (m, up, open) => {
                 const s = ctx.session.runner.sim.s;
                 const eye: [number, number, number] = [s[S.px] ?? 0, s[S.py] ?? 0, s[S.pz] ?? 0];
                 const f = forwardOf(s[S.qw] ?? 1, s[S.qx] ?? 0, s[S.qy] ?? 0, s[S.qz] ?? 0);
@@ -881,6 +883,11 @@ export const course: Feature = {
             const sim = ctx.session.sim;
             const st = modeStep(mode, !!sim?.armed, !!sim?.crashed, crashHold);
             crashHold = st.hold;
+            // review EI-5: a crashed drone under the edit view goes back to the start (the mode line said CRASH . ANGLE)
+            if (st.respawn) {
+                if (ctx.crash.active) { ctx.clearCrash(); crashCleared++; }
+                ctx.session.respawnStart();
+            }
             // G3: the edit view holds the renderer's camera every frame. g2/full5 drew the drone's crash view after a floor add
             // while the edit eye stood still (crashview.ts frame() poses its chase camera each frame while a crash is active,
             // before the features' frame work); camTaken counts the frames another writer had moved it (read by the probes).

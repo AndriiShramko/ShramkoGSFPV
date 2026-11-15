@@ -350,8 +350,23 @@ export class EditView {
                 const s = cc.worldToScreen(new PcVec3(c.x + u.x * ct + v.x * st, c.y + u.y * ct + v.y * st, c.z + u.z * ct + v.z * st), new PcVec3());
                 pts.push([s.x, s.y]);
             }
-            return { pts, minor: minorAxis(pts, [cs.x, cs.y]) };
+            // review EI-4: the ring's own axis on the page orients its line's direction (ring-pick.ts orientTangent)
+            const a = ax[i]!;
+            const as = cc.worldToScreen(new PcVec3(c.x + a.x * r, c.y + a.y * r, c.z + a.z * r), new PcVec3());
+            return { pts, minor: minorAxis(pts, [cs.x, cs.y]), axis: [as.x - cs.x, as.y - cs.y] as P2 };
         });
+    }
+
+    /**
+     * Review EI-3: the taken edge-on ring in the hover yellow (on) or back (off). The turn handle stays shown during the drag
+     * (D2: the dragged handle in yellow); its own input sits the drag out because the edit view stops the pointer events
+     * before they reach the canvas (onOwnPress, onPointerMove). PlayCanvas 2.23.2 TransformGizmo._hover() with no mesh
+     * clears its own hover; Shape.hover(state) recolours one shape (build/playcanvas.mjs 121541).
+     */
+    private ringLook(axis: number, on: boolean): void {
+        const g = this.turn as unknown as { _hover?: (m?: unknown) => void; _shapes?: Record<string, { hover?: (s: boolean) => void }> };
+        g._hover?.();
+        g._shapes?.['xyz'[axis]!]?.hover?.(on);
     }
 
     /** I1 (D4): an edge-on ring dragged across its line turns the gate about that ring's axis (snapped unless Ctrl) */
@@ -486,7 +501,9 @@ export class EditView {
             this.glide = null;
             this.openingAtStart = this.opening;
             this.startOf();
-            this.turn.enabled = false;
+            // review EI-3: the rings stay shown, the taken one yellow; the press does not reach the gizmo's canvas listener
+            e.stopPropagation();
+            this.ringLook(rp.index, true);
             return;
         }
         if (own < 0) return;
@@ -509,7 +526,11 @@ export class EditView {
     };
 
     private onPointerMove = (e: PointerEvent): void => {
-        if (this.ring) return this.ringMove(e);
+        if (this.ring) {
+            // review EI-3: the gizmo (shown) does not hover other shapes while the edit view turns the ring
+            e.stopPropagation();
+            return this.ringMove(e);
+        }
         const p = this.press;
         if (!p || p.id !== e.pointerId || this.dragging) return;
         if (!p.look && Math.hypot(e.clientX - p.x, e.clientY - p.y) > CLICK_SLOP_PX) p.look = true;
@@ -571,8 +592,8 @@ export class EditView {
             this.host.onDrag(this.pose(this.openingAtStart), true);
         }
         if (this.ring) {
+            this.ringLook(this.ring.axis, false);
             this.ring = null;
-            if (this.tool === 'turn') this.turn.enabled = true;
         }
         this.endStale();
         const p = this.press;

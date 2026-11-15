@@ -17,6 +17,12 @@ export interface ModeStep {
     readonly change: 'to-fly' | 'to-edit' | null;
     /** true after a crash in flight until the drone is seen disarmed */
     readonly hold: boolean;
+    /**
+     * Review EI-5: the drone lies crashed while the edit view is shown: put it back at the start now (the page's respawn), so
+     * the mode line says DISARMED or ARMED, not CRASH, while the pilot edits. Also a crash after a Space tap disarmed in the
+     * air, which happens in the edit mode itself.
+     */
+    readonly respawn: boolean;
 }
 
 /** One frame: the mode now, the switch to make ('to-fly', 'to-edit') or null, and the crash hold for the next frame. */
@@ -32,8 +38,9 @@ export function modeStep(prev: EditMode, armed: boolean, crashed: boolean, hold 
     } else {
         mode = h ? 'edit' : 'fly';
     }
-    if (mode === prev) return { mode, change: null, hold: h };
-    return { mode, change: mode === 'fly' ? 'to-fly' : 'to-edit', hold: h };
+    const respawn = crashed && mode === 'edit';
+    if (mode === prev) return { mode, change: null, hold: h, respawn };
+    return { mode, change: mode === 'fly' ? 'to-fly' : 'to-edit', hold: h, respawn };
 }
 
 /** The mode the drone's state asks for with no crash hold: armed flies; disarmed or crashed edits. */

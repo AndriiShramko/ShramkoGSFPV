@@ -53,31 +53,40 @@ export function raySphere(ray: Ray, c: V3, r: number): number | null {
     return -b - Math.sqrt(disc);
 }
 
+/** two gates whose centres lie this close in angle from the ray (tan) are a tie: the nearer one wins */
+const PICK_TIE_TAN = 1e-6;
+
 /**
- * The index of the gate the ray takes, or -1. The gate whose sphere the ray enters first wins. A sphere the camera stands in
- * (it flies close to a gate) is taken only when the ray enters no other one, and among those the gate whose centre is
- * nearest to the ray: so the gate under the cursor wins over the one around the camera.
+ * The index of the gate the ray takes, or -1. Among the spheres the ray enters ahead, the gate whose centre lies nearest the
+ * ray in angle (miss / along: nearest the cursor on the page) wins, a tie goes to the nearer one. Review EI-1: the entry
+ * distance alone gave the click on gate 2 to the framed gate 1, whose 1.31 m sphere seen from 2.55 m covers some 31 degrees
+ * round the view's middle. A sphere the camera stands in (it flies close to a gate) is taken only when the ray enters no
+ * other one, and among those the gate whose centre is nearest to the ray: so the gate under the cursor wins over the one
+ * around the camera.
  */
 export function pickGate(ray: Ray, gates: readonly Pickable[]): number {
     let ahead = -1;
     let aheadT = Infinity;
+    let aheadTan = Infinity;
     let around = -1;
     let aroundMiss = Infinity;
     for (let i = 0; i < gates.length; i++) {
         const g = gates[i]!;
         const t = raySphere(ray, g.pos, pickRadius(g.shape));
         if (t === null) continue;
-        if (t > 0) {
-            if (t < aheadT) {
-                ahead = i;
-                aheadT = t;
-            }
-            continue;
-        }
         // how far the gate's centre lies from the ray
         const v: V3 = [g.pos[0] - ray.o[0], g.pos[1] - ray.o[1], g.pos[2] - ray.o[2]];
         const along = v[0] * ray.d[0] + v[1] * ray.d[1] + v[2] * ray.d[2];
         const miss = Math.sqrt(Math.max(0, v[0] * v[0] + v[1] * v[1] + v[2] * v[2] - along * along));
+        if (t > 0) {
+            const tan = miss / Math.max(1e-9, along);
+            if (tan < aheadTan - PICK_TIE_TAN || (tan <= aheadTan + PICK_TIE_TAN && t < aheadT)) {
+                ahead = i;
+                aheadT = t;
+                aheadTan = tan;
+            }
+            continue;
+        }
         if (miss < aroundMiss) {
             around = i;
             aroundMiss = miss;

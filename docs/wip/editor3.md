@@ -4,6 +4,34 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage fixes (review EI-1 to EI-7, train 3, 2026-11-15; NOT finished: the code fixes are in, the browser runs are left):
+- [x] EI-1 (major) stands: pickGate took the sphere the ray entered first. Now among the spheres entered ahead the gate whose
+  centre lies nearest the ray in angle (miss / along) wins, a tie goes to the nearer one (pick.ts). Test editor3-ei.test.ts
+  EI-1 (gate A 2.5 m on the axis, gate B 8 m 12 deg aside, the ray through B picks B), NEG OK.
+- [x] EI-2 (major) stands: the framing rays now start at the gate's edge (size/2 out from the centre), max = dist - size/2
+  + FRAME_WALL_GAP_M (frame.ts). Test EI-2 (a RayFn that hits at 0 within 0.3 m of the centre), NEG OK. editor3-i1's
+  'near' wall RayFn made origin-aware (the wall at the same distance from the centre).
+- [x] EI-3 (minor) stands: the edge-on ring drag no longer sets turn.enabled = false; the press and the moves are stopped
+  at the window capture listener (they do not reach the gizmo's canvas listeners) and the taken ring gets the hover
+  yellow (view-mouse.ts ringLook, PlayCanvas 2.23.2 Shape.hover). Source test EI-3, NEG OK. Not seen in a browser.
+- [x] EI-4 (minor) stands: pickRing orients the tangent so that the way across it points along the ring's drawn axis
+  (ring-pick.ts orientTangent; drawnRings passes the axis's page projection). Test EI-4 (a folded line, presses 3 px above
+  and below give the same turn, 15 deg for 30 px at RING_DEG_PER_PX 0.5), NEG OK.
+- [x] EI-5 (minor) stands from the code: the OSD reads sim crashed (ui/hud.ts:404) and the to-edit path only cleared the
+  crash view, not the sim. modeStep returns respawn (crashed while the edit view is shown); course.ts then clears the crash
+  view and calls ctx.session.respawnStart() (the page's own respawn). hud.ts not touched. Test EI-5, NEG OK;
+  editor3-flying ED-3 toEqual rows gained respawn. Not seen in a browser.
+- [x] EI-6 (minor) stands: __gsfpvEditPutAhead only on a page opened with ?probe=1 (env.ts q); editor3-clean.ts and
+  editor3-prove.ts open the page with &probe=1. Source test EI-6, NEG OK.
+- [x] EI-7 (minor) stands: frameSel returns true when a glide started or no place is free (D1 keeps the view), false when
+  skipped (flying, a drag, the view suspended); framedId is set only on true. Source test EI-7, NEG OK.
+- Checks: vitest tools/bench/test/editor3-* 17 files 98 tests pass; tsc --noEmit apps/fly exit 0, tools/bench exit 0.
+- [ ] left: a6-reference.test.ts (course.ts now calls respawnStart in the edit mode; flight code itself not changed);
+  release build; the editor chain on Wroclaw 70b50d42 and Tunis 887f27aa (editor3-prove.ts, editor3-clean.ts with
+  &probe=1) with the pictures again: check a click on gate 2 beside the framed gate 1 on Wroclaw (EI-1), Tab to a red gate
+  frames it (EI-2), the turn rings stay shown and the taken one yellow in an edge-on drag (EI-3), the mode line after a
+  crash in the test flight says DISARMED or ARMED (EI-5); then gates.py --only vitest,architecture,i18n,b18.
+
 Stage I3-prove (train 3, 2026-11-15):
 - [x] I3.0 merge origin/main b5b62d47 (lead notes only): 02b162e5. Release build of that tree started
   (U:/Temp/gsfpv-train3/editor3/i3/build.log).
@@ -1480,6 +1508,9 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
     after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- fixes (EI-1 to EI-7): about 30 replies; the most went to reading PlayCanvas's gizmo input path for EI-3 and the crash
+  state path for EI-5 before a fix. Cheaper: the review naming the file:line of the gizmo's pointer handlers and of the
+  OSD's crash source, and one stage per finding group (code fixes, then a separate browser stage).
 - I3-prove pass 3: about 30 replies; the most went to waiting for the chain and to one lost accept-fly run (the chain held
   the GPU lock while accept-fly takes that lock itself: a 10-minute deadlock). Cheaper: read whether a probe takes the lock
   itself before wrapping it (accept-fly does, mouse-free-probe does not).

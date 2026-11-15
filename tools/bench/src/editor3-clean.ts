@@ -83,7 +83,8 @@ const table = (p: Page): Promise<Record<string, unknown>> => p.evaluate(() => {
 });
 
 async function open(page: Page, out: Record<string, unknown>, usePad: boolean): Promise<boolean> {
-    await page.goto(`${SITE}/en/fly/?scene=${SCENE}&nowarn=1`);
+    // review EI-6: probe=1 installs the page's course-changing probe hook (__gsfpvEditPutAhead)
+    await page.goto(`${SITE}/en/fly/?scene=${SCENE}&nowarn=1&probe=1`);
     const st = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 240000);
     if (st !== 'ready') { out.status = st; return false; }
     if (usePad) {

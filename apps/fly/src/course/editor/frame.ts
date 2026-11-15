@@ -108,16 +108,21 @@ export function frameDir(axis: V3, centre: V3, from: V3, sideDeg: number): V3 {
 
 /**
  * The framing of a gate: the first free place in the order side angles (FRAME_SIDES) at the framing distance, then the same
- * angles at each nearer step. A place is free when a ray from the gate's centre towards it meets no wall before the eye (plus
- * FRAME_WALL_GAP_M). `ray` null: no walls known, the first place. Null when no place is free (the view stays).
+ * angles at each nearer step. A place is free when a ray from the gate's edge (half its size out from the centre) towards it
+ * meets no wall before the eye (plus FRAME_WALL_GAP_M). `ray` null: no walls known, the first place. Null when no place is free (the view stays).
  */
 export function frameGate(g: FrameIn, ray: RayFn | null): Framing | null {
     const d = frameDistance(g.size, g.tanHalfV);
+    // the gate's half size: the rays start there (every distance tried is at least FRAME_MIN_SIZES sizes, beyond it)
+    const edge = g.size / 2;
     let skipped = 0;
     for (const dist of frameDistances(d, g.size)) {
         for (const side of FRAME_SIDES) {
             const u = frameDir(g.axis, g.centre, g.from, side);
-            if (!ray || ray(g.centre, u, dist + FRAME_WALL_GAP_M) === null) {
+            // review EI-2: the ray starts at the gate's edge, not its centre: a centre in foliage or a wall voxel made every
+            // ray hit at 0 (voxel-collision queryRay) and the gates a pilot has to fix were never framed
+            const o: V3 = [g.centre[0] + u[0] * edge, g.centre[1] + u[1] * edge, g.centre[2] + u[2] * edge];
+            if (!ray || ray(o, u, dist - edge + FRAME_WALL_GAP_M) === null) {
                 const eye: V3 = [g.centre[0] + u[0] * dist, g.centre[1] + u[1] * dist, g.centre[2] + u[2] * dist];
                 return { eye, at: g.centre, sideDeg: side, dist, skipped };
             }

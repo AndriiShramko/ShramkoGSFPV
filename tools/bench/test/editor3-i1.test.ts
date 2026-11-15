@@ -66,7 +66,11 @@ describe('I1 D1: the order of the fallbacks with a blocked ray', () => {
         expect(frameGate(gate, blockSide(at35))!.sideDeg).toBe(60);
         // a wall all round nearer than the framing distance: the nearest step that fits
         const wall = d0 + 0.1;
-        const near: RayFn = (_o, _d, max) => (max > wall ? wall : null);
+        // the wall at `wall` from the gate's centre whatever the ray's start (review EI-2: the rays start at the gate's edge)
+        const near: RayFn = (o, _d, max) => {
+            const from = Math.hypot(o[0] - gate.centre[0], o[1] - gate.centre[1], o[2] - gate.centre[2]);
+            return from + max > wall ? wall - from : null;
+        };
         const f = frameGate(gate, near)!;
         expect(f.dist).toBeLessThan(wall);
         expect(f.dist).toBeGreaterThanOrEqual(FRAME_MIN_SIZES * 1.6 - 1e-9);

@@ -147,11 +147,12 @@ describe('editor3 E3: flying inside the edit mode', () => {
         expect(hold).toBe(true);
         // a fresh arm: the switch seen off, then on, flies again
         let st = modeStep(mode, false, false, hold);
-        expect(st).toEqual({ mode: 'edit', change: null, hold: false });
+        expect(st).toEqual({ mode: 'edit', change: null, hold: false, respawn: false });
         st = modeStep(st.mode, true, false, st.hold);
-        expect(st).toEqual({ mode: 'fly', change: 'to-fly', hold: false });
-        // respawn.keepArmed off: the respawn leaves the drone disarmed and the edit view stays
-        expect(modeStep('edit', false, true)).toEqual({ mode: 'edit', change: null, hold: false });
+        expect(st).toEqual({ mode: 'fly', change: 'to-fly', hold: false, respawn: false });
+        // respawn.keepArmed off: the respawn leaves the drone disarmed and the edit view stays (review EI-5: the page respawns
+        // a drone lying crashed under the edit view)
+        expect(modeStep('edit', false, true)).toEqual({ mode: 'edit', change: null, hold: false, respawn: true });
         expect(editModeOf(false, true, 'fly')).toBe('edit');
     });
 
