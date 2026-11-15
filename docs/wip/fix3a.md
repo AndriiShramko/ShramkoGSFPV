@@ -173,13 +173,18 @@ Stage fixes (review FX-1 to FX-5)
 - [~] walls-store-probe Tunis 887f27aa: the pass-1 run (fx/store-tunis.log) waited 480 s at state none, source shipped,
       then 'Target crashed': Tunis has shipped walls, nothing is built or stored. Pass 2: the probe records r.shipped and
       passes such a scan when all three opens keep source shipped with no bakes and no store write (no 480 s wait).
-      Runner U:/Temp/gsfpv-train3/fix3a/fx2/run.sh, server 5785.
+      Runner U:/Temp/gsfpv-train3/fix3a/fx2/run.sh, server 5785, release of 92b4394f (no product change since). Run: exit 0,
+      209 s held; build, reload and fresh page all source shipped, bakes 0, no lastStore (shipped true, shippedOk true;
+      U:/Temp/gsfpv-train3/fix3a/fx2/ev/walls-store-887f27aa.json). This scan does not exercise the store path.
 - [~] FX-4 in a browser: gate-guide-probe --above (camera pitched down 80 deg at the start yaw, gate 1 above the view, guide
       at the top edge) on Wroclaw without dist/walls, Shift+G (walls-first start); the rects check now includes the walls
-      box (#ui > .bake-box).
-- [ ] tracks-page probe after FX-4 and FX-5 (EVIDENCE_NAME=fix3a-fx/tracks-page, see run.sh last line): not run, the GPU
-      lock was held by other lanes from 09:49 to 10:17. Left.
-- (FX-4 browser check: see the [~] line above.)
+      box (#ui > .bake-box). Run 1 (fx2/guide-wroclaw.log): no course within 400 s (the vitest gate ran beside it; the
+      probe logged nothing while it waited). The probe now says the walls and course state every 30 s (--wait-s); run 2
+      by fx2/run-guide.sh, server 5786.
+- [x] tracks-page after FX-4 and FX-5 (release of 92b4394f, its own servers and lock): exit 0, 46 of 46 passed in 493 s;
+      'A look (link seed 1)': painted false, guide shown for gate 1, side right, behind, bearing 91.7 deg
+      (evidence/2026-11-15/fix3a-fx/tracks-page.json).
+- [x] gates.py --only vitest,architecture,i18n,b18 on 57244213: all PASS (vitest 147 s).
 
 ## Gate 1 from the spawn
 

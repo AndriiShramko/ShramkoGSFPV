@@ -43,7 +43,15 @@ try {
     } catch { /* no Controls screen */ }
     await sleep(1500);
     if (shiftg) await page.keyboard.press('Shift+KeyG');
-    await page.waitForFunction(() => { const c = window.__gsfpv?.course; return c && (c.source === 'generated' || !!c.problem); }, null, { timeout: 400000, polling: 1000 });
+    // the course (walls-first on a scan without walls: the walls are built first); the walls and the course said every 30 s
+    const waitS = Number((args.find((a) => a.startsWith('--wait-s=')) ?? '--wait-s=400').slice(9));
+    for (let k = 0; ; k++) {
+        const st = await page.evaluate(() => { const g = window.__gsfpv, c = g?.course, w = g?.walls; return { done: !!c && (c.source === 'generated' || !!c.problem), course: c ? { source: c.source, problem: c.problem ?? null } : null, walls: w ? { state: w.state, source: w.source, line: String(w.line ?? '').slice(0, 100) } : null, box: document.querySelector('#ui > .bake-box')?.textContent?.trim().slice(0, 100) ?? null }; });
+        if (st.done) break;
+        if (k % 30 === 0) console.log(`wait ${Math.round((Date.now() - t0) / 1000)} s ${JSON.stringify(st)}`);
+        if (Date.now() - t0 > waitS * 1000) throw new Error(`no course after ${waitS} s: ${JSON.stringify(st)}`);
+        await sleep(1000);
+    }
     r.genS = Math.round((Date.now() - t0) / 1000);
     await sleep(2500);
 
