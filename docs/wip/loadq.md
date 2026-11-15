@@ -57,16 +57,61 @@ Stage L2-build
   by mutation (the rule is new): move ignored: 'expected 3.796875 to be +0'; frame bound ignored: 'expected 5.6953125 to
   be less than 1.6875'; line state removed: "expected 'hidden' to be 'still'". gen-catalog --check says the catalogue
   outputs are stale for the new setting (only the lead runs gen-catalog; see For the lead).
-- [ ] 3. Release build of the change, then the browser proof on Wroclaw 70b50d42 (holds of at most 10 min, probe
-  tools/bench/scripts/loadq-probe.mjs, port 5820): 16 M by hand reaches 15.59 M and the line says full; DROP=10 (3
-  tries) and STALL=10 end full with the line showing the retries; the +30 ms frame run: the line says kept, the press
-  works; an untouched pilot as L1 (a) (3.89 M, 30.65 dB). Record slowestMs of a fault-free run against STREAM_STALL_MS.
-- [ ] 4. Pictures in U:/Temp/gsfpv-train3/shots: loadq-loading.png, loadq-full.png, loadq-held.png, each looked at.
+- [x] 3. Release build of 3314a9a7 (dist sha256 a473ce6c..., U:/Temp/gsfpv-train3/loadq/build-l2c.log; the runs lq2-16,
+  -drop, -slow, -strong, -strong-still, -lub-* ran on 000b96fd/592243c2, product code the same but for the network
+  line), serve-csp 5820 with the Wroclaw walls stand-in in dist/walls, probe loadq-probe.mjs, one GPU lock per run
+  (U:/Temp/gsfpv-train3/loadq/run2.sh, batch-l2.sh, batch-l2b.sh; samples lq2-*.json there). Wroclaw spawn 1920x1080:
+  - 16 M by hand (lq2-16, G6 off): drawn 15.59 M (L1: 15.59), engine budget 16, governor step 0, settled 40.5 s after
+    the reveal, the line 'Detail: 0.5 of 16 M, files to go: 141, about 31 s' at 3 s and 'Detail: full for your
+    setting' from 42 s. Slowest file of fault-free runs: 3.2, 1.9, 1.3, 1.9 s (lq2-16, -slow, -strong, -strong-still)
+    against STREAM_STALL_MS 20 s.
+  - Every tenth file fails three times (lq2-drop, DROP=10): ends full, 15.59 M, settled 62.4 s after the reveal (L1:
+    0 of 5 such loads finished in 60 s, 10.75 to 15.57 M). 564 failed requests, nothing given up.
+  - Frames low (lq2-slow50, +50 ms of CPU a frame): the governor wanted 6 M (step 4); the page kept 16 M and at 10 s
+    the line said 'Detail: kept at your setting. The picture is slower than your screen' + 'Let the page choose'; the
+    press at 23 s: engine budget 16 -> 6 M, render scale 0.5, line 'Detail: 6.4 of 16 M, lowered to keep the flight
+    smooth'. (+30 ms, lq2-slow: frames stayed at the 30 Hz period of the headless display, the governor never wanted
+    less: no held state; the run proves only the full path.)
+  - Untouched pilot, desktop-strong (lq2-strong, G6 off): 3.89 M drawn of 4 M (L1 3.89 M), settled 14.2 s, the line
+    hidden, score 30.65 dB against lq-wro-ref16 (L1 30.65; U:/Temp/gsfpv-train3/loadq/score-l2-wro.txt). G4 holds.
+  - G6 on the untouched pilot (lq2-strong-still): at rest the budget rose 4 -> 16 M (memory cap 16 at
+    deviceMemory 8); a push to 2 m/s: the engine budget was back at 4 M in the next frame (framesToBase 1), drawn 15.59
+    M then 4.74 M 12 frames later.
+  - Stalled files: NOT fixed under the local stand-in. lq2-stall1 (each tenth file unanswered on its first request
+    only) and lq2-stall (never answered): 144 and 224 requests in 120 and 200 s, every one distinct, reveal at 72 s,
+    0.02 to 0.03 M drawn at the end. The keeper cut 18 and 41 stalls and unloaded them, but no stalled file was ever
+    requested a second time. What the pilot sees now: 'Detail: files that did not arrive: 6. Trying again' from 1.6 s
+    (it said only 'files to go' before 3314a9a7). Cause is a guess, not measured: the hung requests keep the browser's
+    six connections to the HTTP/1.1 local server (the engine's XHR is not aborted by unload, playcanvas Http), so
+    nothing else is sent; the CDN speaks HTTP/2, where this would not block. See left.
+- [x] 4. Pictures in U:/Temp/gsfpv-train3/shots, each looked at:
+  - loadq-loading.png: the street still blurry and smeared, under 'Walls 5 cm' the line 'Detail: 0.5 of 16 M, files to
+    go: 141, about 31 s'.
+  - loadq-full.png: the same street sharp to the cathedral towers, the line 'Detail: full for your setting'.
+  - loadq-held.png: the street mostly sharp, the line 'Detail: kept at your setting. The picture is slower than your
+    screen' with the button 'Let the page choose' beside it.
+  - loadq-lowered.png (lq2-slow50 after the press), loadq-network.png (lq2-stall1): taken, not looked at.
+  - G6, Lublin 2f1ddf5f from 140 m up, pitch -35, base 0.5 M, 1920x1080, governor off, BENCH_UNCAPPED=1:
+    loadq-still-before.png (G6 off, 60 s): roofs and streets are coarse smeared blobs; loadq-still-after.png (G6 on,
+    45 s after the reveal, at rest): the same view sharp, single cars, crosswalks and roof tiles readable. Scores against
+    lq-g5-lub-16-1920x1080 (U:/Temp/gsfpv-train3/loadq/score-l2-lub.txt): before 17.97 dB; G6 on at 5, 10, 20, 45 s
+    after the reveal (the rest began during the load): 22.14, 24.73, 51.96, 51.97 dB; 8 s after the push 17.77 dB.
+    After the push the engine budget was 0.5 M in the next frame; drawn 15.78 M, then 14.46 M (12 frames), 9.87 M (30),
+    5.58 M (60): the engine sheds the extra splats over about 60 uncapped frames, as L1 measured.
+  - Typecheck render-pc, apps/fly exit 0 after 3314a9a7; tools/bench/test/a6-reference.test.ts passes (1 test).
 - [ ] 5. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16; lod-view on and off on Wroclaw and Lublin 2f1ddf5f;
   governor-start; a6-reference; gates.py --only vitest,architecture,i18n,b18,leaks.
 - [ ] 6. 'What the owner does', 'not verified', every changed file under 'For the lead'. Commit.
-Left for the next run of L2 (the reply budget of this run ended after item 1): items 2 to 6 above, in that order;
-none of the new code has run in a browser yet (only typecheck and unit tests).
+Left for the next run of L2 (this run's reply budget ended after item 4), in this order:
+1. Item 5: accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against a release build of HEAD on port 5820 (it takes the GPU
+   lock itself); lod-view on and off on Wroclaw 70b50d42 and Lublin 2f1ddf5f (the numbers of laptop3 hold);
+   governor-start; gates.py --only vitest,architecture,i18n,b18,leaks.
+2. Item 6: 'What the owner does', 'Not verified', every changed file under 'For the lead'; look at loadq-lowered.png and
+   loadq-network.png. Commit.
+3. Stalled files (one line, not chased): under the local HTTP/1.1 server a file that never answers blocks the load
+   though the keeper cuts it (item 3, lq2-stall1, lq2-stall); suspect the hung XHR in the engine (playcanvas Http, not
+   aborted by GSplatAssetLoader.unload) holding the browser's six connections. Not measured on HTTP/2; the line names it.
+4. gen-catalog --check is stale for the new setting display.stillDetail: the lead runs scripts/gen-catalog.ts.
 
 ## Facts (measured)
 

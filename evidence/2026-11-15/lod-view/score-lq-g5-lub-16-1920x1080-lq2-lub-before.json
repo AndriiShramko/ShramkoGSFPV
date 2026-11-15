@@ -1,0 +1,83 @@
+{
+ "name": "lod-view/score-lq-g5-lub-16-1920x1080",
+ "date": "2026-11-15T21:24:16.304Z",
+ "reference": "lq-g5-lub-16-1920x1080",
+ "labels": [
+  "lq2-lub-before",
+  "lq2-lubrest5",
+  "lq2-lubrest10",
+  "lq2-lubrest20",
+  "lq2-lubrest45",
+  "lq2-lub-after"
+ ],
+ "band": null,
+ "measure": "PSNR on luma in dB against the reference run's picture of the same place (a turn's pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference's lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged",
+ "rows": [
+  {
+   "label": "lq2-lub-before",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.91,
+   "psnrQuarter": 23.82,
+   "litShare": 0.508,
+   "psnrLit": 17.97
+  },
+  {
+   "label": "lq2-lubrest5",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 25.08,
+   "psnrQuarter": 29.99,
+   "litShare": 0.508,
+   "psnrLit": 22.14
+  },
+  {
+   "label": "lq2-lubrest10",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 27.67,
+   "psnrQuarter": 32.7,
+   "litShare": 0.508,
+   "psnrLit": 24.73
+  },
+  {
+   "label": "lq2-lubrest20",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 54.9,
+   "psnrQuarter": 61.99,
+   "litShare": 0.508,
+   "psnrLit": 51.96
+  },
+  {
+   "label": "lq2-lubrest45",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 54.91,
+   "psnrQuarter": 61.99,
+   "litShare": 0.508,
+   "psnrLit": 51.97
+  },
+  {
+   "label": "lq2-lub-after",
+   "picture": "end",
+   "against": "lq-g5-lub-16-1920x1080-end",
+   "width": 1920,
+   "height": 1080,
+   "psnr": 20.71,
+   "psnrQuarter": 23.53,
+   "litShare": 0.508,
+   "psnrLit": 17.77
+  }
+ ]
+}
