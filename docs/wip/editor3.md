@@ -34,7 +34,12 @@ Stage fixes3 (train 3, 2026-11-15, review EJ-1 to EJ-5 of the J stages):
   - Prove Wroclaw ran (fx3/wroclaw, probe exit 0, 19:01), its record and pictures NOT read (reply budget). gates.py
     --only vitest,architecture,i18n,b18: all PASS (exit 0, 19:03, fx3/gates.log). Lock free after the chain.
 - [ ] left (next worker, in this order):
-  a. E1 regression from EJ-2 (measured in the Tunis size picture, cause a guess): reframeOnDragEnd saw the box 'before' as
+  a. [~] pass 2 a7c0d7ac: gateBox() and debug() now apply the edit view's camera before they project (hitAt and measure
+     got it in F3.1; a drag's first transform:move and its end come between frames); debug() gives cam.gap (camera entity
+     to edit eye before the read, m); course.ts writes edHook.reframe {before, after, w, h, changed, framed}, recorded by
+     editor3-prove.ts after each Size drag with the eye's glide (eyeMovedM) and the gap at the click step. Test
+     editor3-fixes3 8 pass, NEG OK on view-mouse.ts; tsc apps/fly and tools/bench clean. Browser chain fx3b running.
+     Was: E1 regression from EJ-2 (measured in the Tunis size picture, cause a guess): reframeOnDragEnd saw the box 'before' as
      already outside, or null. Suspect course.ts dragTo: dragBox taken at the first dragTo call (the gizmo's first
      transform:move, the stand already scaled) or view.gateBox() null at that time. Record before/after in the edit hook,
      fix (take the box at transform:start through a host call), rerun prove on Tunis.
