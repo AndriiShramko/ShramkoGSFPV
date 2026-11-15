@@ -276,8 +276,8 @@ if (!only || only.some((n) => !n.startsWith('sonic'))) {
     await panel('rooms', { how: '9', open: key('Digit9'), again: key('Digit9') });
     await panel('frame-stats', { how: 'F3', open: key('F3'), again: key('F3') });
     await panel('recording', { how: 'F9', open: key('F9'), again: key('F9'), wait: 2000 });
-    await panel('course', { how: 'Shift+G', open: key('Shift+KeyG'), again: key('Shift+KeyT'), wait: 4000 });
-    await panel('course-editor', { how: 'Shift+B', open: key('Shift+KeyB'), again: key('Shift+KeyB'), wait: 2500 });
+    await panel('course', { how: 'Shift+G', open: key('Shift+KeyG'), again: key('Shift+KeyT'), wait: render ? 25000 : 4000 });
+    await panel('course-editor', { how: 'Shift+B', open: key('Shift+KeyB'), again: key('Shift+KeyB'), wait: render ? 6000 : 2500 });
     // the pause menu's items that open a window
     let items = [];
     try {
