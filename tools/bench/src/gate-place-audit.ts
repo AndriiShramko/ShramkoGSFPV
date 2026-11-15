@@ -83,7 +83,9 @@ async function main(): Promise<void> {
     const newest = (id: string): number => Math.max(...readdirSync(join(root, id)).map((d) => /^v(\d+)$/.exec(d)).filter((m): m is RegExpExecArray => !!m).map((m) => Number(m[1])));
     const all = [...ids.map((id) => ({ id, v: newest(id) })).map(({ id, v }) => ({ id, v, dir: join(root, id, `v${v}`) as string | null })), { id: '887f27aa', dir: null, v: 1 }];
     const only = arg('--scenes')?.split(',') ?? null;
-    const T = [1, 0, 0, 0] as unknown as SceneTransform;
+    // course4 C2: --scale s flies the scan as the page does after the pilot's Scene size x s (transform s,0,0,0; spawn x s)
+    const S = Number(arg('--scale') ?? 1);
+    const T = [S, 0, 0, 0] as unknown as SceneTransform;
     const rows: Record<string, unknown>[] = [];
     const out = arg('--out');
     for (const s of all) {
@@ -91,7 +93,7 @@ async function main(): Promise<void> {
         try {
             const walls = flownCollision(await wallsOf(s.id, s.dir), T);
             const set = await sceneSettings(s.id, s.v);
-            let spawn: Vec3 = [set.position[0], set.position[1], set.position[2]];
+            let spawn: Vec3 = [set.position[0] * S, set.position[1] * S, set.position[2] * S];
             const o = { x: 0, y: 0, z: 0 };
             if (walls.querySphere(spawn[0], spawn[1], spawn[2], SPAWN_R, o) && findSphereSpawn(walls, spawn[0], spawn[1], spawn[2], SPAWN_R, o)) spawn = [o.x, o.y, o.z];
             const tq = performance.now();
@@ -130,7 +132,7 @@ async function main(): Promise<void> {
                 }
                 sh.sort((a, b) => a - b);
                 const spawnShare = r2(qualityShare(q, spawn));
-                console.log(JSON.stringify({ scene: s.id, diag: c, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
+                console.log(JSON.stringify({ scene: s.id, diag: c, stats: free.stats, outdoor: free.outdoor, rooms: free.rooms.length, volumeM3: Math.round(free.volumeM3), box, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
                 continue;
             }
             // --seed-list a,b,c: the seeds a page run printed (y3/ev regen[].seed), instead of first..first+seeds

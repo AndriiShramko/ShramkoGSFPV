@@ -754,3 +754,79 @@ a browser stage.
 Cost (course4 C0 pass 2): about 30 replies; most went to shaping a test world whose pocket is poor (four tries) and to
 finding that the old runner had already run; checking the pocket rule on Lublin's Node audit before writing the unit test
 would have shown at once that the reached cells are the wrong set.
+
+## Status C2-scaled-scans
+
+Logs U:/Temp/gsfpv-train3/course4/c2/. origin/main had nothing new for this branch at 74ea638a.
+- [x] release build of 74ea638a: BUILD EXIT 0 (c2/build.log); dist holds it (no page run yet)
+- [x] the microgreens scan: the live catalogue (GET https://gsfpv.flyreelstudio.eu/api/catalog, read only, c2/catalog.json,
+      13 scenes) has no title with 'micro' or 'green'; the owner's scene is Forest Floor Scenery ab5efa0e (author Dany
+      Bittel, 'a tiny plot of land in the forest, roughly 6 cm in diameter', macro lens). Its entry has no scale default (no
+      catalogue entry has one, and the live catalogue has no 'defaults' key), so the page starts it at transform s = 1 and
+      the enlargement is the pilot's own Scene size (keys [ ], x0.25 to x100, stored per scene in prefs scene.transform).
+- [x] measured (gate-place-audit.ts with the new --scale s: transform s,0,0,0, spawn x s; Node, no lock; walls stand-in
+      U:/Temp/gsfpv-train3/walls/release/ab5efa0e/v2, voxel 0.05 scan units, grid 6.0 x 5.0 x 5.8 units):
+      * enlargement: the scan's own unit is about 1 cm of the real plot (6 cm real, 6 units), so at s = 1 it is already
+        about x100 the real size; the pilot's Scene size multiplies that. The walls' voxel in the page is 0.05 x s m
+        (scale.ts voxelAt), the free-space cell 4 voxels (freespace.ts cellM = g x blockM, g = 1 here).
+      * the craft: boundRadius 0.0425 m (air65, meteor65) to 0.3175 m (taurusx8), pavo20pro-3s 0.0768 m (tools/bench/src/
+        drone-sizes.ts, c2/drone-sizes.log); it does not scale with the scene. At s = 20 the craft (r 0.077 m) is 0.0039 scan
+        units, a 1/13 of one wall voxel.
+      * courses for seeds 1-5 (c2/diag-s*.log, seeds-s5.json, seeds-s15.json): s = 1: 10 gates at fit scale 0.5 (every
+        seed), proven, Save problems 0; s = 3, 5, 10: 24 gates at fit scale 1, Save problems 0 (heights 3.3-12 m, a dense
+        band, not eye level); s = 15, 20, 30, 100: 0 gates for every seed, so fitCourse answers track null and the page
+        says course.none ('No course fitted the free space this time. Shift+G tries another layout'; course.ts:327),
+        and Shift+G again gives the same: a dead end.
+      * which rule refuses (diag, freeSpace stats): s = 10: cell 2 m, reachable 13839, scanned 2673, usable 2592 (103
+        rooms); s = 15: cell 3 m, reachable 11398, scanned 1463, usable 0 (0 rooms); s = 20: cell 4 m, reachable 6024,
+        scanned 362, usable 0; s = 100: cell 20 m, 45 cells, scanned 0. The cut is freeSpace step 4 and 5 (freespace.ts
+        333-349 and 351-397): the scan counts as outdoor (fill reaches the box border) and an outdoor cell is 'scanned'
+        only with a wall straight down within outdoorDownM 6 m (1 cell at 4 m cells, 2 at 3 m) and its nearest wall within
+        outdoorNearM 8 m; these and rayM 12 m, minRoomM3 8 m3 and boxM 80 m are fixed flown metres, while the walls' cell
+        grows as 0.2 x s m. The few scanned cells that remain are single cells that the room step's one erosion removes
+        (no core cell). Gate size, legs (3-15 m), margin 0.5 m and the quality threshold never come into it: no cell is
+        usable before the gates are tried. qualityMap tileM 4 m is one voxel block at s = 20 (spawnShare 0, goodShareQ 0).
+- [ ] design written below; not built
+- [ ] build, tests, NEG, page proof, pictures, gates.py, a6-reference: not started
+
+## Design C2 (from the numbers above; not built)
+
+The one measure of the scan: U = max(1, s x u) in flown m, where s is the pilot's Scene size (the transform's s) and u
+the walls' voxel against a true-scale bake (voxelResolution / 0.05; 1 for every catalogue scan, ab5efa0e included). For
+every scan at its true scale and Scene size 1, U = 1 and every number is today's (the fix3b tables do not change: to be
+proven by rerunning gate-place-audit --scenes 70b50d42,887f27aa --seeds 5 against fixes/after.json).
+1. freeSpace: every flown-metre default becomes default x U: rayM, outdoorDownM, outdoorNearM, boxM, minRoomM3 (x U^3);
+   marginM stays the craft's (MARGIN_M), but never under half a cell. This alone keeps s = 15 to 100 at today's s = 1 to
+   10 cell counts (the cell is 0.2 x s m, the rules then cover the same cells).
+2. qualityMap tileM x U, eye band only at U = 1 (FY-6 already uses the dense band off scale 1; ab5efa0e has no ground a
+   person walks on, so the dense band is the rule there).
+3. generate and fit: the plan's lengths (gate 1.5 m square, 1.2 m ring, legs 3-15 m, spacing, m3PerGate x U^3) start at
+   U, then fitCourse steps down COURSE_SCALES relative to U (U, U/2, ...) to the smallest gate the craft passes (ring
+   opening >= RING_MIN_DRONE_DIAMETERS x the craft's diameter, 0.34 m for the smallest craft), never below one wall
+   voxel's size x 4 (a gate thinner than the walls cannot be proven against them).
+4. No course: course.none is replaced by a line that leads: at a Scene size where the walls are coarser than the gates
+   ('the scan is enlarged x{s}: press [ to fly it smaller'), one press on it sets the largest Scene size that gave a course
+   in the measure above (s = 10 for ab5efa0e) and generates again.
+Open for the lead: whether gates should grow with U (S7 says the gate follows the measure; then at s = 20 a gate is 30 m
+for a 0.077 m craft) or stay the craft's size while only the free-space rules follow U. The numbers above favour the
+second (the craft does not scale); item 3 builds the first and its ladder down reaches the craft's size.
+
+## Left (C2-scaled-scans)
+
+1. Build design items 1 and 2 in packages/tracks/src/freespace.ts (FreeSpaceOptions.unitM, default 1) and quality.ts
+   (QualityOptions.tileM from the caller); pass U from apps/fly/src/course/worker.ts (m.transform[0] x grid.res / 0.05,
+   at least 1) and from tools/bench/src/gate-place-audit.ts. Unit test: a synthetic walls world built at res 0.05 and the
+   same world at res 1.0 (s = 20) gives usable cells in both (old code: 0 at res 1.0): NEG with neg_control.py.
+2. Rerun gate-place-audit --scenes ab5efa0e --scale 15,20,30,100 --seeds 5 (expect courses) and --scenes
+   70b50d42,887f27aa --seeds 5 (expect the rows of fix3b fixes/after.json unchanged).
+3. Design item 3 (lengths x U, ladder to the craft) after the lead's answer to the open point; item 4 (the leading line,
+   four locales) in apps/fly/src/app/builtin/course.ts:327.
+4. Page proof on the release build: serve dist on 5780 with the walls stand-in copied into dist/walls, open
+   http://localhost:5780/en on ab5efa0e, set Scene size x20 through window.__gsfpv.scale.set(20), Shift+G; record time,
+   gate count, sizes; pictures course4-microgreens-pilot.png and course4-microgreens-top.png; keyboard pilot through
+   gates 1 and 2.
+5. gates.py --only vitest,architecture,i18n,b18; a6-reference (only if flight code is touched; none so far).
+
+Cost (course4 C2 pass 1): about 25 replies; the most went to finding where the microgreens scan and its scale live (no
+title, no catalogue scale: the enlargement is the pilot's key) and to the audit's missing --scale; the measurement itself
+took 4 runs. Handing the id ab5efa0e and 'scale is the pilot's Scene size' in the prompt would have saved about 10 replies.
