@@ -29,12 +29,28 @@ Stage J1-fix (train 3, 2026-11-15; NOT finished, pass 1 stopped at the reply bud
   rules. vitest editor3- and tracks-finish: 19 files 112 tests pass (after the flying regex fix). NEG OK twice (old
   ring-pick, rules, course, view-mouse with and without arrow-share; logs j1/neg.log, j1/neg2.log). tsc --noEmit apps/fly
   0, tools/bench 0.
+- [x] J1.3 (pass 2) release build of ad63cd0a exit 0 (sha256 bfa09ed9..., j1/build-p2.log); editor3-gizmo.ts accepts the
+  'ring:' hits (this commit). Run j1/gz.sh: Tunis 887f27aa probe exit 0 (j1/gizmo/gizmo-after-887f27aa.json); Wroclaw did
+  not run (the GPU lock stayed held by another lane for over 9 min).
+  Tunis measures (MODE=after): edge-on y ring (minor 9 px): 64 px gave 30 deg (EI-3 turned in a browser, the drag held the
+  ring). Open rings FAIL: x and y were pressed at [1005,556] and [1002,559], 46 to 48 px from the centre (the probe's
+  points where the gizmo picked 'x' or 'y'), hitAt there said 'ring:z', and 404 px of drag gave 15 deg. A measure, not yet
+  a cause: the rings drawnRings() computes (radius units(85) * the turn gizmo root's scale) do not lie where the gizmo
+  draws its rings (the gizmo's own x/y hits at 47 px, the edge-on hit at [1030,271] some 275 px out). Size: end cube x
+  52 px gave 1.2 -> 1.92 m, centre cube 44 px 1.2 -> 1.56 m.
 - [ ] left (next worker, in this order):
-  f. Unit tests with NEG for a to e, typecheck, a6-reference not needed (no flight code), then the browser stage: release
-     build, measures of E1 to E5 on Tunis 887f27aa and Wroclaw 70b50d42 (walls stand-in U:/Temp/gsfpv-train2/walls/release/
-     70b50d42), EI-3, EI-5 (arm first), the Wroclaw click within 200 px, the five pictures, gates.py --only
-     vitest,architecture,i18n,b18.
-
+  a. E3 open rings: measure first, in the page: drawnRings() points against the gizmo's drawn ring meshes (measure().parts
+     rects of the turn set) on Tunis; candidates (guesses): the root scale read is not the one the gizmo draws with this
+     frame, or worldToScreen of this.host.camera differs from the camera the gizmo projects with. Fix so pickRing's rings
+     lie on the drawn rings; until then an open ring press may take the wrong ring (ring:z at the x ring). Then x, y, z
+     each >= 20 deg per 100 px along the tangent on Tunis and Wroclaw (editor3-gizmo.ts turn[].px and deg, j1/gz.sh).
+  b. Browser measures still to take (none taken yet): E1 the gate's box after a size change 1.2 -> 2.4 m framed again within
+     0.5 s (__gsfpvEditMeasure glide and a gateBox read); E2 the Size handle rects against the gate centre (within 10 px)
+     and their colours, a ring showing only the x pair; E4 the outline colour in Move, Turn, Size; E5 the arrows' width in
+     px in the flight and in the edit view; EI-5 (arm first, crash into a published wall, mode line not CRASH red) on Tunis
+     and Wroclaw; the Wroclaw click within 200 px of the selected gate; the five pictures editor3-size, -turn, -move,
+     -wroclaw-size, -wroclaw-turn (-1920.png in U:/Temp/gsfpv-train3/shots), each looked at.
+  c. gates.py --only vitest,architecture,i18n,b18 (not run in pass 2).
 Stage fixes (review EI-1 to EI-7, train 3, 2026-11-15; NOT finished: the code fixes are in, the browser runs are left):
 - [x] EI-1 (major) stands: pickGate took the sphere the ray entered first. Now among the spheres entered ahead the gate whose
   centre lies nearest the ray in angle (miss / along) wins, a tie goes to the nearer one (pick.ts). Test editor3-ei.test.ts
@@ -1561,6 +1577,8 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
 
 ## Cost notes
 - J1-fix pass 1: about 30 replies, stopped after the merge and the causes; the most went to finding where PlayCanvas's
+- J1 pass 2: the most turns went to reading view-mouse.ts and the 1099-line probes to find a runner; one browser run gave the
+  open-ring failure late. Cheaper: run editor3-gizmo.ts (j1/gz.sh) right after the build, before any other reading.
   gizmo source lives (build/playcanvas/src/extras/gizmo/*.js, not the bundled playcanvas.mjs) and to reading the three
   pictures. Cheaper: the agent map naming that folder, and the stage split into code (E1 to E5 with tests) and a browser
   stage, as the left list above now is.

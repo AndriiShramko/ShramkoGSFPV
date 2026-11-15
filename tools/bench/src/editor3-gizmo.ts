@@ -198,7 +198,7 @@ async function ringPoints(page: Page, axis: string): Promise<number[][]> {
                 const x = c[0]! + Math.cos(t) * r;
                 const y = c[1]! + Math.sin(t) * r;
                 const hit = h?.(x, y);
-                if (hit && (hit[1] === ax || hit[1] === `edge:${ax}`)) { pts.push([a, x, y, r]); break; }
+                if (hit && (hit[1] === ax || hit[1] === `edge:${ax}` || hit[1] === `ring:${ax}`)) { pts.push([a, x, y, r]); break; }
                 if (hit) break;
             }
         }
@@ -281,7 +281,7 @@ async function proof(page: Page): Promise<Record<string, unknown>> {
         for (const dx of [70, -70, 60, -60, 80, -80, 50, -50]) for (let dy = -14; dy <= 14; dy += 2) {
             const hit = h?.(c[0]! + dx, c[1]! + dy);
             if (hit && hit[1] === 'edge:y') return { x: c[0]! + dx, y: c[1]! + dy, hit };
-            if (hit && hit[1] === 'y' && !any) any = { x: c[0]! + dx, y: c[1]! + dy, hit };
+            if (hit && (hit[1] === 'y' || hit[1] === 'ring:y') && !any) any = { x: c[0]! + dx, y: c[1]! + dy, hit };
         }
         return any;
     }, [s] as const);
