@@ -86,6 +86,27 @@ Pass 2 of X2:
       product code changed in pass 2, so a6-reference and the apps/fly typecheck were not run again (passed in pass 1).
 Stage X2 is done; nothing is left of it.
 
+Stage X3-start-near-spawn (closed ring starts at the gate nearest the spawn)
+- [x] measure first (gate-one-audit.ts now writes x3: which side of a gate the spawn is on and the straight fly-in to it):
+      on 32 of 33 closed rings the nearest gate is not gate 1; flying in to the nearest gate along its axis is shorter than
+      to gate 1 on 27 of 32 (straight line, walls not counted). My guess that the nearest gate is mostly the last one with
+      the spawn on its exit side was wrong: exit side on 20 of 32. Rows U:/Temp/gsfpv-train3/fix3a/gate-one-audit-x3.json.
+- [x] packages/tracks/src/generate.ts startNearSpawn: a closed course (laps > 1) is turned to start at the gate nearest
+      opts.spawn (new CourseOptions.spawn, the session's spawn sent by apps/fly/src/course/worker.ts; without it the start
+      cell's centre); kept only when the turned ring passes the whole-course proof (checkTrack), else the generator's order.
+      Open courses, saved, served and edited courses and the key-N course are not touched (only generateCourse calls it).
+- [x] unit test packages/tracks/test/start-near-spawn.test.ts (4): pure turn keeps the set, the successors (direction) and
+      renumbers g1..; no proof or gate 1 already nearest keeps the order; three-room world seeds 1-6: on every ring gate 1
+      is nearest and proven; a spawn beside gate k turns the ring (at least one) with the same set and direction.
+      Negative control (origin/main generate.ts): NEG OK, pure tests by TypeError (no function), the 'another spawn' test
+      by AssertionError (turned 0).
+- [x] after-run of gate-one-audit (U:/Temp/gsfpv-train3/fix3a/gate-one-audit-x3-after.json): 50 courses, gates, nearest
+      and ring/open the same on all 50; turned 1 of 33 rings (0230d903 seed 2: gate 1 18.2 -> 5.6 m). Cause measured
+      (three-room world, every turn of seeds 1-6 tried with checkTrack): each gate's axis is laid within 35 deg of ITS leg in;
+      turning the ring gives the new gate 1 a leg in from the start and the old gate 1 a leg in from the old last gate, so
+      both fail 'axis off the leg in' (40-110 deg measured) on almost every turn. Ring generation time 18.0 s -> 17.2 s
+      summed over 33 rings (no measurable cost).
+
 ## Gate 1 from the spawn
 
 Measured by tools/bench/src/gate-one-audit.ts (Node, log U:/Temp/gsfpv-train3/fix3a/gate-one-audit.log, rows

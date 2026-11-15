@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { findSphereSpawn, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, FIT_BUDGET_MS, fitCourse, flownCollision, freeSpace, qualityBounds, qualityMap } from '@gsfpv/tracks';
+import { BEFORE_GATE_M, COURSE_DEFAULTS, FIT_BUDGET_MS, fitCourse, flownCollision, freeSpace, gateAxis, qualityBounds, qualityMap } from '@gsfpv/tracks';
 import type { SceneTransform, Vec3 } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 
@@ -92,7 +92,7 @@ async function main(): Promise<void> {
             const free = freeSpace(walls, { spawn, bounds: box ?? undefined });
             for (let seed = 1; seed <= seeds; seed++) {
                 const t0 = performance.now();
-                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? quality : undefined }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? quality : undefined, spawn }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
                 const gates = (got.track?.gates ?? []).map((g) => g.pos as Vec3);
                 const dist = (p: Vec3): number => Math.hypot(p[0] - spawn[0], p[1] - spawn[1], p[2] - spawn[2]);
                 const g1 = gates[0] ?? null;
@@ -101,12 +101,34 @@ async function main(): Promise<void> {
                 const nearestIdx = gates.length ? gates.map(dist).indexOf(nearest!) + 1 : null;
                 const ring = (got.track?.laps ?? 0) > 1;
                 const bearing = c ? r1((Math.atan2(c.x, c.z) * 180) / Math.PI) : null;
+                // stage X3: the nearest gate as gate 1 with the generator's direction. A gate counts when passed along its
+                // axis (path.ts gateAxis); from the spawn the pilot reaches the point BEFORE_GATE_M before it on the axis and
+                // flies through. 'side' > 0: the spawn is on the gate's exit side (it must fly round the gate first).
+                // flyInM: straight spawn -> that point + BEFORE_GATE_M (no walls taken into account: a lower bound).
+                const gs = got.track?.gates ?? [];
+                const flyIn = (i: number): { side: number; flyInM: number } => {
+                    const ax = gateAxis(gs[i]!.quat as unknown as number[]);
+                    const p = gs[i]!.pos as Vec3;
+                    const entry: Vec3 = [p[0] - ax[0] * BEFORE_GATE_M, p[1] - ax[1] * BEFORE_GATE_M, p[2] - ax[2] * BEFORE_GATE_M];
+                    const side = (spawn[0] - p[0]) * ax[0] + (spawn[1] - p[1]) * ax[1] + (spawn[2] - p[2]) * ax[2];
+                    return { side: r1(side), flyInM: r1(dist(entry) + BEFORE_GATE_M) };
+                };
+                const st = got.track?.start?.pos ?? null;
+                const x3 = gs.length && nearestIdx !== null
+                    ? {
+                          startToSpawnM: st ? r1(dist(st as unknown as Vec3)) : null,
+                          gate1Side: flyIn(0).side, gate1FlyInM: flyIn(0).flyInM,
+                          nearestSide: flyIn(nearestIdx - 1).side, nearestFlyInM: flyIn(nearestIdx - 1).flyInM,
+                          minFlyInM: r1(Math.min(...gs.map((_, i) => flyIn(i).flyInM))), minFlyInGate: gs.map((_, i) => flyIn(i).flyInM).reduce((b, v, i, a) => (v < a[b]! ? i : b), 0) + 1
+                      }
+                    : null;
                 const row = {
                     scene: s.id, seed, gates: gates.length, spawn: spawn.map(r1), yaw: r1(yaw), pushed,
                     toGate1M: g1 ? r1(dist(g1)) : null, nearestM: nearest === null ? null : r1(nearest), nearestGate: nearestIdx,
                     gate1InFrame: c ? inFrustum(c) : null, gate1BearingDeg: bearing, ring, laps: got.track?.laps ?? null,
                     lastToFirstM: gates.length > 1 ? r1(Math.hypot(gates[0]![0] - gates[gates.length - 1]![0], gates[0]![2] - gates[gates.length - 1]![2])) : null,
-                    ms: Math.round(performance.now() - t0)
+                    ms: Math.round(performance.now() - t0),
+                    x3
                 };
                 rows.push(row);
                 console.log(JSON.stringify(row));

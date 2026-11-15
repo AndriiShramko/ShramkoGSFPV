@@ -96,6 +96,9 @@ export interface CourseOptions {
     /** G2: where the scan is good (quality.ts). Gates go into its dense band over well-scanned tiles and the walk spreads
      *  over the whole box instead of keeping within OUT_LEGS legs of the start. Without it every course is as before. */
     readonly quality?: QualityMap;
+    /** X3: the scene's own spawn, flown world (the session's spawn, not the craft: one seed gives every pilot the same
+     *  course). A closed course starts at the gate nearest it (startNearSpawn); without it the start cell's centre is used. */
+    readonly spawn?: Vec3;
     /** CR-1: what the walk did (audits and probes). Not written into the file: the server keeps a fixed list of params keys
      *  (server.ts PARAM_KEYS, apps/api/tracks.py), and these are diagnostics, not the course. */
     readonly onWalk?: (w: WalkInfo) => void;
@@ -204,6 +207,37 @@ const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const len = (a: Vec3): number => Math.sqrt(dot(a, a));
 const dist2 = (a: Vec3, b: Vec3): number => dot(sub(a, b), sub(a, b));
+
+/**
+ * Stage X3 (train 3, lane fix3a): a closed course starts at the gate nearest the scene's spawn (straight distance, flown
+ * world; ties keep the lower number). The ring is turned, not changed: the same gates in the same places, the same direction
+ * of travel, renumbered g1.. from that gate. Turning it changes two legs (the leg back to the start now closes before the
+ * new gate 1, and the old last and first gates are joined directly), so the turned ring is kept only when `proven` holds
+ * for it (the whole-course proof); otherwise, and for an open course, the generator's order stays. `yawOf` gives the start
+ * yaw toward a course's gate 1. Measured on 50 courses (tools/bench/src/gate-one-audit.ts, docs/wip/fix3a.md): on 32 of
+ * 33 closed rings the nearest gate was not gate 1.
+ */
+export function startNearSpawn(
+    course: readonly TrackGate[],
+    spawn: Vec3,
+    toFlown: (q: Vec3) => Vec3,
+    proven: (gates: TrackGate[], startYaw: number) => boolean,
+    yawOf: (gates: readonly TrackGate[]) => number
+): TrackGate[] {
+    if (course.length < 2) return [...course];
+    let k = 0;
+    let best = Infinity;
+    course.forEach((g, i) => {
+        const d = dist2(toFlown(g.pos as Vec3), spawn);
+        if (d < best) {
+            best = d;
+            k = i;
+        }
+    });
+    if (k === 0) return [...course];
+    const turned = [...course.slice(k), ...course.slice(0, k)].map((g, i) => ({ ...g, id: `g${i + 1}` }));
+    return proven(turned, yawOf(turned)) ? turned : [...course];
+}
 
 /** The course's title for a seed: 'Course ' and the seed in base 36 (plan section 7). */
 export function courseTitle(seed: number): string {
@@ -539,7 +573,8 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         course = renumber(course.filter((_, i) => i !== drop));
     }
     if (course.length === 0) laps = p.laps;
-    const startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
+    if (laps > 1) course = startNearSpawn(course, opts.spawn ?? startW, toFlown, (gs, yaw) => checkTrack(build(gs, yaw, startW, laps), walls, T, p.marginM, false, true).ok, (gs) => nearestYaw(sub(toFlown(gs[0]!.pos), startW)));
+    const startYaw = course.length ?nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
     const shell = build(course, startYaw, startW, laps);
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
