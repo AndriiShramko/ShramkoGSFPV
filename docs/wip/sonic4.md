@@ -395,7 +395,14 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   the first press voices "Narrator on." at 30.38 s, the second gives target.answer at 34.42 s; the saved value follows (true, false).
   (6) Tunis 887f27aa narrator off: 0 voiced, checkpoint cue, no wait. (7) Reader box (selfVoice off): 0 voiced, no wait, hum at
   the course. Pages: 0 page errors in all four runs.
-- [ ] Left (stage fixes): K2.3 to K2.5 (Q5, Q6, Q7) still open. Seen in the proof, not this lane's code, not fixed: #ui is a
+- [x] Handover check (pass 2, on d8b55f43): gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 94 s;
+  U:/Temp/gsfpv-gates-20261115-170756). a6-reference not re-run: no flight, input or collision file changed since fx-a6.log.
+  Server on 5760 stopped.
+- [ ] Left (stage fixes): K2.4 (Q6) and K2.5 (Q7) still open; K2.3 (Q5) not run in a browser. For Q6 the course's finish in a
+  free flight was not found yet: lessons.ts observe() sees 'attempt-pass' and 'passed' events (line about 717), and the runner
+  pushes a 'lap' cue in passedGate (packages/sonic-fpv/src/lesson/runner.ts about 948); which of them marks the course of Shift+G
+  finished in scan-free is to be read first. The probe still did not drive a course to its finish, so gate passed, finish, gate
+  behind and wrong way with the narrator off were proven by unit tests only (sonic-quiet-cues), not in a browser. Seen in the proof, not this lane's code, not fixed: #ui is a
   polite live region (apps/fly page shell) and receives the HUD (THR, ARMED, ANGLE about 10 times a second) and the course box
   lines ("Course: finding the free space ... Course ready: 24 gates", apps/fly/src/app/builtin/course.ts box text) in every
   setting; with the reader box on and the narrator off a screen reader would still read the course box. Suspect file: the #ui
@@ -459,3 +466,4 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   before the first edit would have found all four and saved about 4 replies. Only K2.1 fitted; K2.2 to K2.6 need a fresh worker each.
 - 2026-11-15 fixes pass 3 (continuation): most replies went to measuring the r11 Shift+G failure (a new tool for the walls, then reading laps.ts and run.ts); r11's trail logging course.next with each life would have shown the restart in one read. Running the busy probe, the d7 re-run and r11 in one detached script cost one wait.
 - 2026-11-15 lane quiet stage fixes: most replies went to finding every speaker and cue kind (runner, lessons, course, walls, planner) and to the move of the table after sonic-int-lazy failed; a list of the engine's speakers and the planner's one-off cue kinds in docs/agent-map.md, and knowing that the main chunk must not name mode texts, would have saved about 6 replies. The browser proof did not fit and needs a fresh worker started with the release build.
+- 2026-11-15 lane quiet fixes pass 2: most replies went to the browser proof (one probe extension for voice and live-region hooks, four runs, two summaries) and to finding the rig's hooks for Q5; three probes run in parallel without the lock saved two replies. Cheaper: a probe that already recorded speak calls and cues from K1, and a note in agent-map of where a course of Shift+G finishes in the sound mode.
