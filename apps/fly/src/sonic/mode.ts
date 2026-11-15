@@ -72,6 +72,12 @@ export interface ModeStart {
      * scene's spawn, on the switch on and again on the switch off (review SO-1).
      */
     readonly here?: boolean;
+    /**
+     * the flight's own rules are kept without the placement of `here` (train 3, Y2): a course made with N over a flight that was
+     * switched on in place starts at its own start, but its crash rule and bump stay the pilot's, so switching off after it starts
+     * no new life (two before: crash.enabled cleared, then the bump taken back).
+     */
+    readonly keepRules?: boolean;
 }
 
 export class SonicMode {
@@ -132,7 +138,8 @@ export class SonicMode {
         // in place the pilot's crash setting stays: crash.enabled is a 'life' setting (respawn.ts: setCrashOn, then
         // applyLifeSettings), so setting it here and clearing it in leave() each made a new life, the craft stopped dead
         // (review SO-1, the r11 life spy)
-        this.prefIds = Object.keys(MODE_PREFS).filter((id) => !(this.here && id === 'crash.enabled'));
+        const keep = this.here || o.keepRules === true;
+        this.prefIds = Object.keys(MODE_PREFS).filter((id) => !(keep && id === 'crash.enabled'));
         for (const id of this.prefIds) h.prefs.setSession(id, MODE_PREFS[id]);
         // a scan lesson flies its scan at the lesson's size, walls on (the session was made with them: the entry and the
         // lesson host set them before the scan loaded; this keeps them while the mode runs)
@@ -146,7 +153,7 @@ export class SonicMode {
         h.setLesson(this.lesson ? this.lesson.assists : null);
         // a lesson on a scan flies with the lesson's bump too (v13-int step 4): a lesson world brings it itself (lesson-world.ts)
         // in place (o.here) the flight keeps its own rules: no new life on the switch on, none on the switch off
-        this.lessonFlight(this.lesson?.world.kind === 'scan' && o.here !== true ? LESSON_FLIGHT : null);
+        this.lessonFlight(this.lesson?.world.kind === 'scan' && !keep ? LESSON_FLIGHT : null);
         const b = this.bridge;
         b.world = o.world ?? null;
         b.layers = this.lesson ? this.lesson.layers : null;

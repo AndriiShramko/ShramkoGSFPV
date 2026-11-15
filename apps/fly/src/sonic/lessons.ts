@@ -408,7 +408,8 @@ export class LessonHost {
             this.p.mode.bridge.engine?.reset?.();
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
-                this.p.mode.enter({ lesson, runner, world, floorY, here });
+                // a course made with N over an in-place flight keeps the pilot's rules too (keepRules), so its switch off starts no life
+                this.p.mode.enter({ lesson, runner, world, floorY, here, keepRules: free !== null && this.freeHere });
             } finally {
                 this.cutSpeech = false;
             }

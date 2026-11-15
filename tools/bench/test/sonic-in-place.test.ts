@@ -308,4 +308,40 @@ describe('the free flight opened in place keeps the craft where it is', () => {
         expect(respawns).not.toHaveBeenCalled();
         expect(lives).toBe(0);
     });
+
+    // train 3 Y2 (y1-browser runs: 2 'settings' lives and the craft stopped dead on the switch off after a course made with N): the
+    // course opened over an in-place flight keeps the pilot's crash rule and bump, so the switch off after it starts no new life.
+    it('a course made with N over an in-place flight: the switch off after it starts no new life and keeps the speed', async () => {
+        const track = garden();
+        const scan = scanOf(track);
+        const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
+        const r = await Rig.make(free, { scan, course: { key: () => 'N', ask: async () => ({ ok: true, track }) } });
+        rig = r;
+        r.onPref = (id) => {
+            if (id !== 'crash.enabled') return;
+            const s = r.session;
+            if (s.setCrashOn(r.sessionPrefs.get(id) !== false)) s.applyLifeSettings(s.presetId, s.overrides);
+        };
+        const said = (key: string): boolean => r.engine.said.some((s) => s.line.key === key);
+        expect(await r.host.openFree(free, { here: true })).toBe(true);
+        await r.run(60000, null, () => said('sonic.say.courseOffer') && r.host.runner?.phase === 'flying');
+        expect(r.press('scene.next')).toBe(true);
+        await r.run(60000, null, () => said('sonic.say.courseReady') && r.host.runner?.phase === 'flying');
+        expect(said('sonic.say.courseReady')).toBe(true);
+        expect(r.session.lifeOverrides().bump).toBeUndefined();
+        expect(r.sessionPrefs.get('crash.enabled')).toBeUndefined();
+        let lives = 0;
+        const onLife = r.session.onLife;
+        r.session.onLife = (...a: Parameters<NonNullable<typeof onLife>>) => {
+            lives++;
+            onLife?.(...a);
+        };
+        await r.run(1500, () => ({ forward: 1 }));
+        expect(r.speed).toBeGreaterThan(1);
+        const v = r.speed;
+        r.mode.leave();
+        await r.run(20);
+        expect(lives).toBe(0);
+        expect(r.speed).toBeGreaterThan(v / 2);
+    });
 });
