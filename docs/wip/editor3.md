@@ -21,8 +21,30 @@ Stage fixes3 (train 3, 2026-11-15, review EJ-1 to EJ-5 of the J stages):
     ARROW_NEAR_MIN = 0.15 (estimate) of the third: at 2 m it is a ninth of its flight width.
   - EJ-5 stands (read): shareArrows walked app.root every frame. It now walks only the children of app.root named
     'course-stage' (STAGE_NAME, CourseStage's own root).
-- [ ] F3.2 release build, gizmo probe (presses at the gizmo's own _getSelection points) and the editor chain on Tunis
-  887f27aa and Wroclaw 70b50d42, pictures again; accept E3 only at >= 20 deg per 100 px for x, y and z.
+- [x] F3.2 cdfcd464: hitAt(x, y, own) gives the gizmo's own hit test; editor3-gizmo.ts OWN=1 finds the ring points by it.
+  Chain U:/Temp/gsfpv-train3/editor3/fx3/chain.sh on the release of cdfcd464 (build exit 0, fx3/build.log):
+  - Gizmo probe OWN=1 (fx3/gizmo/gizmo-after-*.json), both scenes the same: pressed at the gizmo's own x point [966,470]
+    30 deg in 56 px (53.6 deg per 100 px), y [902,556] 30 deg in 48 px (62.5), z [954,466] 30 deg in 48 px (62.5); the
+    local turn axis from the rounded quats: x ring 0.92 x, y ring 1.0 y, z ring 0.92 z. E3 accepted by the rule (>= 20).
+    Still: hitAt read AFTER the drag and its undo names the x point 'ring:z' and the y and z points 'ring:x' (left b).
+  - Prove Tunis (fx3/tunis, probe exit 0, 18:49-18:55). Pictures looked at: editor3-turn-1920.png (18:50): selected gate
+    yellow, rings red, green, blue round the centre, the arrows thin also near the eye (EJ-4). editor3-size-1920.png
+    (18:50): the Size line red, not hover-yellow (EJ-3), ONE line from the centre (no pair), but the gate at 2.4 m does NOT
+    fit the view: no reframe after the size drag (J2 had it framed): left a.
+  - Prove Wroclaw ran (fx3/wroclaw, probe exit 0, 19:01), its record and pictures NOT read (reply budget). gates.py
+    --only vitest,architecture,i18n,b18: all PASS (exit 0, 19:03, fx3/gates.log). Lock free after the chain.
+- [ ] left (next worker, in this order):
+  a. E1 regression from EJ-2 (measured in the Tunis size picture, cause a guess): reframeOnDragEnd saw the box 'before' as
+     already outside, or null. Suspect course.ts dragTo: dragBox taken at the first dragTo call (the gizmo's first
+     transform:move, the stand already scaled) or view.gateBox() null at that time. Record before/after in the edit hook,
+     fix (take the box at transform:start through a host call), rerun prove on Tunis.
+  b. hitAt after a ring drag names another ring than the gizmo's own hit (fx3/gizmo json 'hit' vs 'ownHit'); the press
+     itself turns the right axis. Not chased.
+  c. Read fx3/wroclaw (e4.json, sum.txt: click near the selected gate, crash, size reframe) and the -wroclaw pictures;
+     accept-fly, mouse-free, tracks-page, a6 (J2 left a) not run.
+  d. E2 asks one PAIR of handles along a ring's width; PlayCanvas draws one line to +x only: a mirrored -x line is not
+     built (lead's decision whether one red line is enough).
+  e. EJ-4 tint: the arrows' yellow [1,0.72,0.1] near the selected yellow lives in course/view.ts (lane course4).
 
 Stage J2-prove (train 3, 2026-11-15):
 - [x] J2.3 (pass 2) tracks-page reads the edit mode c8619281: SELECTED_PAINT is the yellow outline [255,235,64] (E4), 'E camera
@@ -1691,6 +1713,9 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
     after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- fixes3: about 30 replies; the most went to the Edit tool refusing unread files (one lost turn) and to waiting for the
+  chain (lock wait 9 min before the gizmo runs). Cheaper: read every file slice to be edited in the first batch, and start
+  the chain right after the first commit.
 - J2-prove pass 2: about 30 replies; the most went to waiting for the chain in 9-minute holds and to reading the records
   field by field. Cheaper: a summary script that prints the owner's-path rows in one table for both scenes.
 - J2-prove: about 32 replies; the most went to fitting the probe (untouched Save, wall push, crash) and to one Wroclaw
