@@ -179,7 +179,9 @@ async function desk(page: Page): Promise<Record<string, unknown>> {
     out.crashSeen = { modeBefore: flyNow?.mode, crashActive: cr?.crashActive, mode: cr?.mode };
     await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
     await sleep(1500);
-    out.afterCrash = { mode: (await dbg(page))?.mode, ...(await table(page)) };
+    // review EI-5: the mode line's own text after the crash (DISARMED or ARMED, not CRASH)
+    const modeText = (): Promise<string> => page.evaluate(() => (document.querySelector('.hud .osd.tl')?.textContent ?? '').replace(/\s+/g, ' ').slice(0, 80));
+    out.afterCrash = { mode: (await dbg(page))?.mode, modeText: await modeText(), ...(await table(page)) };
     await shot(page, `editor3-after-crash-1920${TAG}.png`);
     await sleep(3000);
     out.afterCrash5s = { mode: (await dbg(page))?.mode, ...(await table(page)) };
