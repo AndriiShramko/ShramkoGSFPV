@@ -245,6 +245,9 @@ export class Rig {
     keyHints = true;
     /** lane quiet (Q5): the pilot's narrator setting is off */
     narratorOff = false;
+    /** lane quiet2 (N6): the narrator hint was said in an earlier flight, and how often it was marked in this one */
+    tipSaid = false;
+    tipMarks = 0;
     pilot: LessonPilot | null = null;
     /** the page's reaction to a session pref the mode sets or clears (respawn.ts: crash.enabled is a 'life' setting); null: none */
     onPref: ((id: string) => void) | null = null;
@@ -338,7 +341,15 @@ export class Rig {
             speechRate: () => rig.speechRate,
             lessonKeys: () => rig.lessonKeys,
             keyHints: () => rig.keyHints,
-            narratorOff: () => rig.narratorOff
+            narratorOff: () => rig.narratorOff,
+            narratorTip: {
+                key: () => 'Shift+V',
+                said: () => rig.tipSaid,
+                mark: () => {
+                    rig.tipSaid = true;
+                    rig.tipMarks++;
+                }
+            }
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);

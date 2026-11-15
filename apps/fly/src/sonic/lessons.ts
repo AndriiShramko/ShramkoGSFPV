@@ -94,7 +94,15 @@ export interface LessonPage {
         inUse(): { next: number; gates: readonly SonicObject[] } | null;
         /** lane onecourse (D2, D3): Shift+G's action, the same for N: a new course replaces the one in the scene */
         generate(): void;
+        /** lane quiet2 (N6): the finished laps of the course's attempt now (CourseHook.laps); absent: never counted */
+        laps?(): number;
     };
+    /**
+     * Lane quiet2 (the lead's N6): the one hint after the first course finished by sound with the narrator on: the narrator key's
+     * name as the pilot's keyboard types it, whether the hint was said in an earlier flight, and its mark (SonicState.narratorTip).
+     * Absent: never said.
+     */
+    narratorTip?: { key(): string; said(): boolean; mark(): void };
     /**
      * Walls for the scan flown (walls lane, feature.ts through app/walls-then.ts wallsThen): built here when the scan has none,
      * with their progress in the walls box; true when the session has walls. Absent: the free flight only says it has none.
@@ -642,7 +650,32 @@ export class LessonHost {
         const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: fromCourse ? target : run.beaconTarget() } : {}), floorY: this.floorY };
         this.p.mode.hear(sample, input);
         this.p.stage.setTarget(target ? target.id : null);
+        this.tipAfterCourse(own);
         this.checkPassed();
+    }
+
+    /** the course's finished laps at the last frame of the free flight over it; null before the first such frame */
+    private lapsSeen: number | null = null;
+
+    /**
+     * Lane quiet2 (the lead's N6, the owner's message 54): a lap of the course in the scene finished by sound in the free flight,
+     * with the narrator on, says once (never again in this browser) that the narrator key switches the narrator off. A course
+     * already lapped before the switch-on does not count (the first frame only reads the count).
+     */
+    private tipAfterCourse(own: SonicObject | null): void {
+        const tip = this.p.narratorTip;
+        const laps = this.p.course?.laps?.();
+        const lesson = this.lesson;
+        if (!tip || laps === undefined || own || !lesson || lesson.id !== SCAN_FREE_ID || isScanCourse(lesson) || !this.p.course?.inUse()) {
+            this.lapsSeen = null;
+            return;
+        }
+        const before = this.lapsSeen;
+        this.lapsSeen = laps;
+        if (before === null || laps <= before) return;
+        if (this.p.narratorOff?.() === true || tip.said()) return;
+        tip.mark();
+        void this.p.mode.bridge.say({ key: 'sonic.say.narratorTip', params: { key: tip.key() } }, false, { lesson: true });
     }
 
     /** The line of keys with the pilot's names of them now (a layout may change between steps). */

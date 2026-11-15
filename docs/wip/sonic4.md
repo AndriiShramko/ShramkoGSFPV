@@ -434,9 +434,16 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   load, and the scan's sound starts when it is in); scanFailed: still spoken (else the pilot has no sign at all); GPU hint: nothing
   (it reports the graphics, not the flight); intro, keys, course offer, fly.go, walls building, course and walls progress: nothing
   (they teach or report a flight that goes on); K and I: spoken (asked, N1); narrator off: 'answer' no; narrator on: spoken.
-- [ ] N6 not started: Q6 (the hint sonic.say.narratorTip once after the first course finished with the narrator on: hook the
-  'attempt-pass' event of scan-free in lessons.ts observe(), line about 717, a flag in the sonic collection: packages/prefs schema,
-  then migrate.test and the pinned tables) and Q7 (CAPTION_LINES 3 to 2 in captions.ts; '.course-hud' into PANELS or the captions
+- [x] N6 Q6 (pass 2, this commit): the scan-free runner emits no 'attempt-pass' for the course in the scene (its goal is 5000 m;
+  the course feature counts the gates), so the hook is the course hook's finished laps (CourseHook.laps, LapTimer keeps the count
+  after 'done'): lessons.ts tipAfterCourse() in frame(): a rise of the count over the course in use, in the free flight, narrator on,
+  not said before: sonic.say.narratorTip once with the key's name (names.of('sonic.narrator')); the mark SonicState.narratorTip
+  (packages/prefs doc.ts, kept only when true; store.ts narratorTipSaid / setNarratorTipSaid). A course lapped before the switch-on
+  does not count. "First course finished" = the first lap finished (a generated course of more laps says it after lap 1).
+  Test tools/bench/test/sonic-quiet-n6.test.ts 5 passed, with migrate.test 30 passed (quiet2/n6-v1.log); NEG OK on lessons.ts
+  against HEAD (n6-neg.log); tsc apps/fly, packages/prefs, tools/bench 0 errors. No new localStorage key (a field in the sonic
+  collection), so no pinned table changes.
+- [ ] N6 Q7 (CAPTION_LINES 3 to 2 in captions.ts; '.course-hud' into PANELS or the captions
   moved under the course box, apps/fly/src/course/hud.css '.course-hud' is the clock block; measure in a browser).
 - [x] Checks of N1, N2, N4: sonic-quiet2 (6), catalog.test: 16 passed (U:/Temp/gsfpv-train3/quiet2/v2.log); with sonic-narrator-key,
   app-keys, keymap.test, sonic-quiet-cues, sonic-quiet: 82 passed in v1.log (its 3 fails fixed in v2); tsc apps/fly 0 errors

@@ -58,7 +58,7 @@ import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
-import { allProgress } from './store';
+import { allProgress, narratorTipSaid, setNarratorTipSaid } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
 import { setLessonView } from '../app/sonic-view';
 
@@ -200,7 +200,9 @@ function courseOf(ctx: FlightContext, names: KeyNames): NonNullable<LessonPage['
     return {
         key: () => names.of('course.generate'),
         inUse: () => shared(),
-        generate: () => ctx.hook.course?.sound?.generate()
+        generate: () => ctx.hook.course?.sound?.generate(),
+        // lane quiet2 (N6): the course feature's finished laps of this attempt (the hook it fills every frame)
+        laps: () => ctx.hook.course?.laps ?? 0
     };
 }
 
@@ -221,6 +223,8 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         lessonKeys: () => names.lessonStart(),
         keyHints: () => keyHintsOn(entry.setup.host),
         narratorOff: () => entry.setup.prefs.narrator === false,
+        // lane quiet2 (N6): the one hint after the first course by sound, its key by the pilot's layout, its mark in the prefs
+        narratorTip: { key: () => names.of('sonic.narrator'), said: () => narratorTipSaid(ctx.prefs), mark: () => setNarratorTipSaid(ctx.prefs) },
         speechRate: () => entry.setup.prefs.speechRate,
         session: () => ctx.session,
         // a lesson with other walls: the flown session is replaced, the way the scene host replaces a scan (app/scene-host.ts),
