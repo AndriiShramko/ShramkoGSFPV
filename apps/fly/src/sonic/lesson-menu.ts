@@ -367,12 +367,13 @@ export function homeKey(page: HomePage): (e: Pick<KeyboardEvent, 'repeat'>) => v
 
 /**
  * The pause key's handler in a lesson (Escape and P are one binding, pause.toggle): Escape opens the lesson menu, P the simulator's
- * pause menu (which keeps the feedback form, the settings and the rest of the simulator's items) as everywhere else.
+ * pause menu (which keeps the feedback form, the settings and the rest of the simulator's items) as everywhere else. Switched on
+ * in place (`inPlace`, train 3 decision c) Escape opens the pause menu too: one menu, with "Switch off Fly by Sound" in it.
  */
-export function pauseKey(menu: Pick<LessonMenu, 'open'>, pauseMenu: () => void): (e: Pick<KeyboardEvent, 'code' | 'repeat'>) => void {
+export function pauseKey(menu: Pick<LessonMenu, 'open'>, pauseMenu: () => void, inPlace: () => boolean = () => false): (e: Pick<KeyboardEvent, 'code' | 'repeat'>) => void {
     return (e) => {
         if (e.repeat) return;
-        if (e.code === 'Escape') menu.open();
+        if (e.code === 'Escape' && !inPlace()) menu.open();
         else pauseMenu();
     };
 }

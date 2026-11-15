@@ -1032,6 +1032,42 @@ async function pauseItemText(page: Page): Promise<string | null> {
 }
 
 /**
+ * The life spy (review SO-1): every new life of the flown session (its onLife, with the reason) and every call that can make one
+ * (applyLifeSettings, rebuildSim, setWallsOn, setCrashOn, setLessonFlight, setTransform, respawnStart) is written to
+ * window.__lifeSpy with the page time, so a run names what stopped the craft. Installed on the session object itself.
+ */
+async function lifeSpy(page: Page): Promise<void> {
+    await page.evaluate(() => {
+        const w = window as unknown as { __lifeSpy?: object[]; __gsfpv: { session: Record<string, unknown> & { onLife?: (l: { header: { life: { reason: string } } }) => void } } };
+        const ses = w.__gsfpv.session;
+        if (w.__lifeSpy && (ses as { __spied?: boolean }).__spied) return;
+        w.__lifeSpy = [];
+        const log = w.__lifeSpy;
+        (ses as { __spied?: boolean }).__spied = true;
+        const life = ses.onLife;
+        ses.onLife = (l) => { log.push({ t: Math.round(performance.now()), life: l.header.life.reason }); life?.(l); };
+        for (const name of ['applyLifeSettings', 'rebuildSim', 'setWallsOn', 'setCrashOn', 'setLessonFlight', 'setTransform', 'respawnStart']) {
+            const f = ses[name];
+            if (typeof f !== 'function') continue;
+            ses[name] = function (this: unknown, ...a: unknown[]): unknown {
+                const r = (f as (...x: unknown[]) => unknown).apply(this, a);
+                log.push({ t: Math.round(performance.now()), call: name, args: JSON.stringify(a).slice(0, 80), result: JSON.stringify(r ?? null).slice(0, 40) });
+                return r;
+            };
+        }
+    });
+}
+
+async function lifeLog(page: Page): Promise<object[]> {
+    return page.evaluate(() => ((window as unknown as { __lifeSpy?: object[] }).__lifeSpy ?? []).slice(-20));
+}
+
+/** A new life in the spy's log after page time `t0` (a 'life' entry: what makes the craft level and still). */
+function livesAfter(log: object[], t0: number): object[] {
+    return log.filter((e) => (e as { t: number }).t >= t0 && 'life' in e);
+}
+
+/**
  * R11 off (review SO-4): with W held (the craft moving), Backslash switches the mode off. The pose and velocity are read in the
  * same page task as the key (no frame between them by design, so a new life would show as a jump or a stop): the craft must not
  * move more than 0.1 m beyond its own speed times the time between the reads, and keep at least half its speed (a new life is
@@ -1039,6 +1075,7 @@ async function pauseItemText(page: Page): Promise<string | null> {
  */
 async function r11Off(page: Page, tag: string, run: Record<string, unknown>): Promise<void> {
     const labelOn = await pauseItemText(page);
+    await lifeSpy(page);
     await page.keyboard.down('KeyW');
     await sleep(1500);
     const st = await page.evaluate(async (i: number[]) => {
@@ -1058,14 +1095,16 @@ async function r11Off(page: Page, tag: string, run: Record<string, unknown>): Pr
     await sleep(1000);
     const after = await probe10(page);
     const labelOff = await pauseItemText(page);
+    const spy = await lifeLog(page);
     const sp = (v: number[]): number => Math.hypot(v[0] ?? 0, v[1] ?? 0, v[2] ?? 0);
     const moved = Math.hypot((st.after.p[0] ?? 0) - (st.before.p[0] ?? 0), (st.after.p[1] ?? 0) - (st.before.p[1] ?? 0), (st.after.p[2] ?? 0) - (st.before.p[2] ?? 0));
     const dt = (st.after.t - st.before.t) / 1000;
-    const off = { labelOn, labelOff, moved: Math.round(moved * 1000) / 1000, dtS: Math.round(dt * 1000) / 1000, speedBefore: Math.round(sp(st.before.v) * 100) / 100, speedAfter: Math.round(sp(st.after.v) * 100) / 100, lessonAfter: after.lesson };
+    const off = { labelOn, labelOff, moved: Math.round(moved * 1000) / 1000, dtS: Math.round(dt * 1000) / 1000, speedBefore: Math.round(sp(st.before.v) * 100) / 100, speedAfter: Math.round(sp(st.after.v) * 100) / 100, lessonAfter: after.lesson, lives: livesAfter(spy, st.before.t - 1), spy: spy.filter((e) => (e as { t: number }).t >= st.before.t - 1) };
     run.off = off;
     check(`${tag}: the pause item says "${ENTRY_EN['sonic.menu.hereOff']}" while the mode is on`, labelOn !== null && labelOn.includes(ENTRY_EN['sonic.menu.hereOff'] ?? '?'), off);
     check(`${tag}: Backslash switches it off where the craft is (moved under 0.1 m beyond its own travel)`, moved < 0.1 + sp(st.before.v) * dt, off);
     check(`${tag}: the speed is kept on the switch off (at least half; the craft was moving)`, sp(st.before.v) > 0.5 && sp(st.after.v) >= 0.5 * sp(st.before.v), off);
+    check(`${tag}: the switch off starts no new life`, off.lives.length === 0, off.spy);
     check(`${tag}: after the switch off no lesson runs and the item says "${ENTRY_EN['sonic.menu.here']}"`, after.lesson === null && labelOff !== null && labelOff.includes(ENTRY_EN['sonic.menu.here'] ?? '?') && !labelOff.includes(ENTRY_EN['sonic.menu.hereOff'] ?? '?'), off);
 }
 
@@ -1091,7 +1130,14 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await page.keyboard.press('Enter');
         await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
         await sleep(800);
-        // the one press: Backslash; nothing else is pressed until the first cue
+        // the craft moving (SO-1): W held, the life spy on, then the one press: Backslash; nothing else is pressed until the first cue
+        await lifeSpy(page);
+        await page.keyboard.down('KeyW');
+        await sleep(1500);
+        const onBefore = await page.evaluate((i: number[]) => {
+            const s = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv.session.sim.s;
+            return { v: Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0), t: performance.now() };
+        }, POSE_IDX);
         const t0 = Date.now();
         await page.keyboard.press('Backslash');
         let firstCue: { s: number; cues: string[] } | null = null;
@@ -1107,11 +1153,25 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
             }
             return p;
         }, (p) => firstCue !== null && p.lesson === 'scan-free' && p.phase === 'flying', 120000, 100).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
+        const onAfter = await page.evaluate((i: number[]) => {
+            const s = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv.session.sim.s;
+            return Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0);
+        }, POSE_IDX);
+        await page.keyboard.up('KeyW');
+        const onSpy = (await lifeLog(page)).filter((e) => (e as { t: number }).t >= onBefore.t - 1);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-inplace.png`, fullPage: false });
-        const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null };
+        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1), spy: onSpy };
+        const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null, switchOn };
         (result.r11 as { runs: object[] }).runs.push(run);
         check(`${tag}: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue`, on !== null && firstCue !== null, run);
+        check(`${tag}: the switch on in the air starts no new life and keeps the speed (at least half; W held)`, switchOn.lives.length === 0 && onBefore.v > 0.5 && onAfter >= 0.5 * onBefore.v, switchOn);
         if (on === null) { await ctx.close(); continue; }
+        if (process.env.Z5_QUICK === '1') {
+            // the switch only (SO-1, SO-4): no course
+            await r11Off(page, tag, run);
+            await ctx.close();
+            continue;
+        }
         // N: a course (walls first when the scan has none: wallsThen builds them)
         const from = (await events(page)).length;
         const lines = new Set<string>();

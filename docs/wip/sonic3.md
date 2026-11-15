@@ -5,6 +5,18 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage Y1-switch-and-pins (train 3 wave 2):
+- [~] Before run: release build of 2065b16d (1932 files), fixes-run.sh (r11 Tunis 5 m/s) under way, log z5-r11-tunis4.log
+  (run-4 evidence kept as z5-r11-tunis4-run4.json). Backslash to first cue 0.263 s; N to gate 1 54.0 s.
+- [x] Probe r11: life spy (session onLife reasons and every call that can make a new life) around both switches; the switch
+  on is now made with W held and checked for no new life and kept speed; Z5_QUICK=1 runs the switches only (no course).
+- [x] Decision c: in place Escape opens the pause menu as P does (lesson-menu.ts pauseKey inPlace, lessons.ts inPlace,
+  feature.ts); tools/bench/test/sonic-escape-in-place.test.ts 2 of 2, NEG OK on origin/main lesson-menu.ts; sonic-lesson-keys 37 pass.
+- [x] Package train3 f767aa9: lesson counts 32 in CITATION, README, llms.txt, AGENTS.md; pass-rule control, room scale and
+  beacon R1 leave the speed lessons out (test/helpers/new-lessons.ts SPEED_LESSONS); proofs.ts quote; those 4 files 69 of 69.
+- [ ] Left: tts fixtures for the 28 new lines (measure-tts.ps1 started), the words check (tools/listen-words.ts, Whisper, GPU
+  lock), package suite, pin move; SO-1 cause from the spy run; SO-9, SO-10; status lines SO-5..7; gates.
+
 Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into train3 2e1618f):
 - [x] SO-1 stands: in place the mode applied LESSON_FLIGHT (bump 'slide') as a 'life' setting on enter and took it back on
   leave, so every switch started a new life (in the air: stopped dead; crashed or held: the scene spawn). Fix: ModeStart.here

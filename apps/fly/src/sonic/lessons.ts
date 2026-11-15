@@ -216,6 +216,11 @@ export class LessonHost {
     /** the course flown now (S3): its "Course ready" line, said again when the course is passed and flown once more (SN-3) */
     private ready: SpeechLine | null = null;
 
+    /** True while the free flight (or its course) runs switched on in place over the pilot's own flight (in-place.ts). */
+    get inPlace(): boolean {
+        return this.freeHere && this.free !== null;
+    }
+
     /** Opens the free flight over a scan (scanFreeLesson): no track, no target, the scan's own spawn, the walls and height heard. */
     openFree(lesson: LessonDef, o: { here?: boolean } = {}): Promise<boolean> {
         if (lesson.id !== SCAN_FREE_ID) return Promise.resolve(false);

@@ -550,7 +550,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         view: new DomLessonMenuView(document.body, window)
     });
     offs.push(
-        ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open()), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
+        ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open(), () => h.inPlace), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         () => lessonMenu.dispose(),
         ctx.keys.on('sonic.home', homeKey(home), { when: () => home.active() }),
         watchSoundGap(new SoundGap({
