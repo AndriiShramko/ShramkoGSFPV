@@ -23,7 +23,7 @@ export interface AudioDeps {
     makeContext(): AudioContextLike | null;
     /** an empty utterance, inside the same activation: Chrome lets a page speak only after one */
     unlockSpeech(): void;
-    createEngine(o: { theme: ThemeDef; prefs: SonicPrefs; locale: Locale; speech?: SpeechOut | null; caption: (text: string, line: SpeechLine) => void }): PageEngine;
+    createEngine(o: { theme: ThemeDef; prefs: SonicPrefs; locale: Locale; speech?: SpeechOut | null; caption: (text: string, line: SpeechLine, o: { readonly quiet: boolean }) => void }): PageEngine;
 }
 
 export const browserDeps: AudioDeps = {

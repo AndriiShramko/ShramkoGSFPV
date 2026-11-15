@@ -282,7 +282,13 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   onSpeech and caption(text, line, { quiet }) only, not voiced, not waited, no duck; RunnerOptions.freeFlight: the first
   attempt is not placed back. test/free-start.test.ts (NEG OK on the old runner.ts); test/prefs.test.ts default list.
   Package suite 1358 passed, 4 skipped; tsc tsconfig.json, core, node: 0 errors each (U:/Temp/gsfpv-train3/quiet/pkg-*.log).
-- [~] K1.3b simulator (pass 2, this commit, NOT green yet): bridge.ts `quiet` predicate (say with quiet, no sequential read
+- [x] K1.3b green (stage K2 pass 1): apps/fly tsc 0 errors (audio.ts createEngine caption type and bridge.ts BridgeEngine.say
+  take `quiet`); sonic-quiet.test.ts Q2 now asserts the craft's distance from the start never shrinks by 0.5 m or more (the old
+  bound of 2 m a step failed on the rig craft's own speed, 2.5 m a 100 ms step, not on a place back); runnerOptions test store
+  has collection(); sonic-start-screen.test.ts: settings 17 stops, the stops after 'sonic-narrator' one place later.
+  sonic-quiet, sonic-start-screen, sonic-int-reader, sonic-scan-course: 50 passed (U:/Temp/gsfpv-train3/quiet/k2-v4.log).
+  neg_control.py against 704f2043 for apps/fly/src/sonic/lessons.ts: NEG OK, 3 of 7 fail by assertion (k2-neg1.log).
+- [x] K1.3b history (pass 2): bridge.ts `quiet` predicate (say with quiet, no sequential read
   time); entry.ts quietFlight(prefs, lessonId, paused) (narrator false, lesson scan-free, not paused) and CaptionSink.add(text,
   { live }); captions.ts add: a quiet line is not added when the captions are hidden, aria-hidden when the region is live;
   audio.ts passes the caption's quiet; feature.ts wires bridge.quiet; lessons.ts runnerOptions gives freeFlight to scan-free;

@@ -84,18 +84,20 @@ describe('Q2: no flight waits for a line', () => {
             const p0 = r.pos;
             await r.run(1000, forward);
             expect(dist(r.pos, p0)).toBeGreaterThan(0.5); // the sticks answer within the first second
-            let last = r.pos;
-            let jump = 0;
+            // the craft flies straight on from the start: its distance from the start never shrinks (a place back would shrink it)
+            let away = dist(r.pos, p0);
+            let back = 0;
             for (let i = 0; i < 400 && r.host.runner?.phase !== 'flying'; i++) {
                 await r.run(100, forward);
-                jump = Math.max(jump, dist(r.pos, last));
-                last = r.pos;
+                const d = dist(r.pos, p0);
+                back = Math.max(back, away - d);
+                away = Math.max(away, d);
             }
             await r.run(500, forward);
-            jump = Math.max(jump, dist(r.pos, last));
+            back = Math.max(back, away - dist(r.pos, p0));
             expect(r.host.runner?.phase).toBe('flying');
             expect(r.sonic.filter((e) => e.kind === 'reset')).toEqual([]);
-            expect(jump).toBeLessThan(2); // no place back to the start (5 m/s at most: 0.5 m a step)
+            expect(back).toBeLessThan(0.5); // no place back to the start
         }, 120000);
     }
 
@@ -103,6 +105,6 @@ describe('Q2: no flight waits for a line', () => {
         const page = { locale: 'en' as const, store: null as never, path: () => 'full' as const };
         const place = { start: { pos: [0, 1, 0] as Vec3, yawDeg: 0 }, floorY: 0, returnTo: null };
         expect(runnerOptions(page, SCAN_FREE_ID, place, 0).freeFlight).toBe(true);
-        expect(runnerOptions({ ...page, store: { get: () => undefined, set: () => undefined } as never }, 'rings-first', place, 0).freeFlight).toBeUndefined();
+        expect(runnerOptions({ ...page, store: { collection: () => ({ progress: {} }) } as never }, 'rings-first', place, 0).freeFlight).toBeUndefined();
     });
 });

@@ -66,7 +66,7 @@ export interface BridgeOut {
 export interface BridgeEngine {
     setLayers(layers: LessonLayers): void;
     cue(e: CueEvent): void;
-    say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void>;
+    say(line: SpeechLine, o?: { readonly interrupt?: boolean; readonly quiet?: boolean }): Promise<void>;
     /** once per rendered frame (SonicMode.hear); the bridge itself never calls it */
     update?(input: SonicFrameInput): void;
     /**
