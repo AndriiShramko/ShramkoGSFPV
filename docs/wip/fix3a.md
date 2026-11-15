@@ -1293,3 +1293,9 @@ Logs U:/Temp/gsfpv-train3/course4/z2/.
 - [ ] (6) b11e45d1 gates 15 m over the wall
 - [ ] table seeds 1-3; page proofs on 39e63ce9, 7a475d38, ab5efa0e (x1 and x15, x20, x100 with the line's press);
       pictures course4-room-pilot, -room-top, -microgreens-pilot, -microgreens-top, fix3b-lublin-top; a6-reference
+      (not needed so far: no flight, input or collision code touched)
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks on 22bb889e: all PASS (vitest 193 s, z2/gates.log).
+
+Cost (course5 Z2-scans pass 1): about 28 replies for items 1a and 1b; the most went to finding which rule refused gate 1
+at x15/x20/x100 (the walk log named 'turn' but not the leg's length or height); a walk log that names the first leg's
+nearest candidate from the start (added now: nearM, nearUp) would have cut it to one run.
