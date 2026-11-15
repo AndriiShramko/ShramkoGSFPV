@@ -51,7 +51,7 @@ export class FakeEngine {
     private cues_: readonly ActiveCue[] = [];
     layers: LessonLayers[] = [];
     cues: CueEvent[] = [];
-    said: { line: SpeechLine; interrupt: boolean; text: string; at: number }[] = [];
+    said: { line: SpeechLine; interrupt: boolean; text: string; at: number; quiet?: boolean }[] = [];
     frames = 0;
     lastInput: SonicFrameInput | null = null;
     inputs: SonicFrameInput[] = [];
@@ -117,11 +117,14 @@ export class FakeEngine {
      */
     lateCancelMs: number | null = null;
 
-    say(line: SpeechLine, o?: { interrupt?: boolean }): Promise<void> {
+    say(line: SpeechLine, o?: { interrupt?: boolean; quiet?: boolean }): Promise<void> {
         const text = this.tr.text(line);
         const interrupt = o?.interrupt === true;
-        this.said.push({ line, interrupt, text, at: this.clock.t });
+        const quiet = o?.quiet === true;
+        this.said.push({ line, interrupt, text, at: this.clock.t, quiet });
         this.onSpeech?.(line, text);
+        // the narrator off (train 3): the package's engine reports the line and neither voices nor waits for it
+        if (quiet) return Promise.resolve();
         if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve, key: line.key, start: this.clock.t }));
         // speechSynthesis.cancel() ends what is queued at once (a line that had not begun, with lateCancelMs, reports it that much later)
         if (interrupt) {

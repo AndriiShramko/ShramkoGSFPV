@@ -88,6 +88,8 @@
   "sonic.settings.keyHints.brief": "Коротко",
   "sonic.settings.keyHints.off": "Выключено",
   "sonic.settings.layers": "Громкость и высота каждого звука",
+  "sonic.settings.narrator": "Диктор",
+  "sonic.settings.narratorWhat": "Выключен: только звуки. В полёте ничего не говорится и ничто не ждёт фразы; уроки сохраняют свои слова.",
   "sonic.start.continue": "Продолжить: {title}",
   "sonic.start.course": "Начать курс с самого начала",
   "sonic.start.courseKeeps": "Твой прогресс сохранится.",

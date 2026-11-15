@@ -143,7 +143,9 @@ export function runnerOptions(page: Pick<LessonPage, 'locale' | 'store' | 'path'
         path: page.path(),
         speechRate: page.speechRate?.() ?? 1,
         ...(page.keyNames ? { keys: page.keyNames() } : {}),
-        returnTo: place.returnTo
+        returnTo: place.returnTo,
+        // train 3 (the owner's message 54): the free flight's task is said over the flight; nothing flown meanwhile is undone
+        ...(lessonId === SCAN_FREE_ID ? { freeFlight: true } : {})
     };
 }
 

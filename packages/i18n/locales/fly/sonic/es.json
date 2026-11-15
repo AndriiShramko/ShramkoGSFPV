@@ -88,6 +88,8 @@
   "sonic.settings.keyHints.brief": "Breve",
   "sonic.settings.keyHints.off": "Desactivado",
   "sonic.settings.layers": "Volumen y tono de cada sonido",
+  "sonic.settings.narrator": "Narrador",
+  "sonic.settings.narratorWhat": "Apagado: solo sonidos. En un vuelo no se dice nada y nada espera a una frase; las lecciones conservan sus palabras.",
   "sonic.start.continue": "Continuar: {title}",
   "sonic.start.course": "Empezar el curso desde el principio",
   "sonic.start.courseKeeps": "Tu progreso se conserva.",

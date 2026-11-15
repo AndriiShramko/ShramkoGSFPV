@@ -316,7 +316,7 @@ const STOPS = [
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
     // lane sonic-beacon: the target hum showing the way after sound from above and below
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */

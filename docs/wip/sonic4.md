@@ -277,10 +277,28 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   to the start when it moved more than START_SLACK_M (1 m) while the task was said ("left"), so flying during the intro is undone
   at its end; in place (Backslash) lessons.ts act() skips that place. The probe needs a PAGE=sonic switch: read the scan's scale
   from the ordinary page (modeScanPage in apps/fly/src/app/builtin/sonic-flight.ts builds ?sonic=scan&scene=..&sz=..).
-- [ ] K1.3 Q1 setting 'Narrator' (SonicPrefs in the package, branch train5: prefs.ts KEYS and validator, contract.ts; the
-  simulator's start-screen.ts check beside 'sonic-sr', the sound panel, the pause menu entry; sonic-start-screen.test.ts count).
-- [ ] K1.4 Q2 no wait in a flight: the runner's intro of scan-free must not hold the attempt start nor undo the flight
-  (the first attempt begins at once; no place back), in the three settings; bridge.ts sequential waits stay for lessons only.
+- [x] K1.3a package (pass 2, train5 = 293ebae on ab2d6ac, also in C:/dev/ShramkoSonicFPV branch train5; its work tree on train4
+  untouched): SonicPrefs.narrator (absent or true: on; prefs.ts KEYS, ADDED_KEYS, validator, default); engine say({ quiet }):
+  onSpeech and caption(text, line, { quiet }) only, not voiced, not waited, no duck; RunnerOptions.freeFlight: the first
+  attempt is not placed back. test/free-start.test.ts (NEG OK on the old runner.ts); test/prefs.test.ts default list.
+  Package suite 1358 passed, 4 skipped; tsc tsconfig.json, core, node: 0 errors each (U:/Temp/gsfpv-train3/quiet/pkg-*.log).
+- [~] K1.3b simulator (pass 2, this commit, NOT green yet): bridge.ts `quiet` predicate (say with quiet, no sequential read
+  time); entry.ts quietFlight(prefs, lessonId, paused) (narrator false, lesson scan-free, not paused) and CaptionSink.add(text,
+  { live }); captions.ts add: a quiet line is not added when the captions are hidden, aria-hidden when the region is live;
+  audio.ts passes the caption's quiet; feature.ts wires bridge.quiet; lessons.ts runnerOptions gives freeFlight to scan-free;
+  start-screen.ts check 'sonic-narrator' after 'sonic-sr' (texts sonic.settings.narrator, narratorWhat in en, es, pl, ru);
+  rig say honours quiet; new tools/bench/test/sonic-quiet.test.ts. Pin packages/sonic-fpv = 293ebae (this commit).
+  State at the stop (U:/Temp/gsfpv-train3/quiet/k1-vitest.log, k1-tsc-fly.log):
+  - tsc apps/fly: 5 errors, all audio.ts:81: apps/fly sees the old caption type `(text, line) => void` (AudioDeps.createEngine's
+    option type in audio.ts, or the package's built types: look which; fix the type, not the call).
+  - sonic-quiet.test.ts: the 3 Q1 tests pass; the 3 Q2 tests and the runnerOptions test fail (not read yet: open the log; the
+    Q2 harness opens openFree without a course and with `track: null as never` in RigScan, a guess for the cause).
+  - sonic-start-screen.test.ts: 4 tests fail after the new 'sonic-narrator' stop (pinned counts or "Item n of N" lists in that
+    file beyond STOPS; read the failures and update the pinned lists).
+  - sonic-int-reader.test.ts, sonic-scan-course.test.ts: pass.
+- [ ] K1.4 Q2 no wait in a flight: code done in K1.3 (freeFlight); proven only when sonic-quiet.test.ts Q2 passes, with
+  neg_control.py against 704f2043 for apps/fly/src/sonic/bridge.ts, lessons.ts, entry.ts. Seen while reading: K's key help and I's
+  status (asked by the pilot) are quiet too with the narrator off in a flight (quietFlight does not tell them apart): decide.
 - [ ] K1.5 unit tests with negative controls (narrator off: no line to the voice or the reader's region in a flight; no wait in a
   flight in each setting; the setting kept and applied at once; captions by their own setting); package tests and its three
   typechecks; pin packages/sonic-fpv to the new train5 commit; tsc apps/fly; gates.py --only vitest,architecture,i18n,b18; a6-reference.

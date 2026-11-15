@@ -78,9 +78,12 @@ export class Captions {
      * One spoken line, newest last. The eye sees the last CAPTION_LINES. While a screen reader reads the region (live) the older
      * lines of a burst stay in it, hidden from the eye (see CAPTION_KEEP_LIVE); else the oldest go at once, as before.
      */
-    add(text: string): void {
+    add(text: string, o: { readonly live?: boolean } = {}): void {
         if (this.root.hidden || text.trim() === '') return;
-        const line = h('p', { class: 'sonic-caption' }, text);
+        // a line for the eye only (the narrator off, train 3): not shown, nothing; shown, hidden from a screen reader
+        const eyeOnly = o.live === false;
+        if (eyeOnly && !this.mode.visible) return;
+        const line = h('p', { class: 'sonic-caption', ...(eyeOnly && this.mode.live ? { 'aria-hidden': 'true' } : {}) }, text);
         this.root.append(line);
         this.timers.set(line, setTimeout(() => this.drop(line), CAPTION_MS));
         this.fit();

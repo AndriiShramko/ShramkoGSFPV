@@ -88,6 +88,8 @@
   "sonic.settings.keyHints.brief": "Krótko",
   "sonic.settings.keyHints.off": "Wyłączone",
   "sonic.settings.layers": "Głośność i wysokość każdego dźwięku",
+  "sonic.settings.narrator": "Narrator",
+  "sonic.settings.narratorWhat": "Wyłączony: tylko dźwięki. W locie nic nie jest mówione i nic nie czeka na zdanie; lekcje zachowują swoje słowa.",
   "sonic.start.continue": "Kontynuuj: {title}",
   "sonic.start.course": "Zacznij kurs od początku",
   "sonic.start.courseKeeps": "Twoje postępy zostają.",

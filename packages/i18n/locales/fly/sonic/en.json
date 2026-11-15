@@ -88,6 +88,8 @@
   "sonic.settings.keyHints.brief": "Brief",
   "sonic.settings.keyHints.off": "Off",
   "sonic.settings.layers": "Volume and pitch of each sound",
+  "sonic.settings.narrator": "Narrator",
+  "sonic.settings.narratorWhat": "Off: sounds only. In a flight nothing is spoken and nothing waits for a line; the lessons keep their words.",
   "sonic.start.continue": "Continue: {title}",
   "sonic.start.course": "Start the course from the beginning",
   "sonic.start.courseKeeps": "Your progress is kept.",

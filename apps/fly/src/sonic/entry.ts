@@ -4,7 +4,7 @@
 // page (app/builtin/sonic-flight.ts) finds it here when its features install, and the lesson host (lessons.ts) uses
 // it to open lessons. A page that was not entered through ?sonic= has no entry, so every hook of the mode is off, and
 // it never loads this file (the main chunk asks entry-state.ts; v12-int step 4).
-import { isBuiltinThemeId, updatePrefs } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, isBuiltinThemeId, updatePrefs } from '@shramko/sonic-fpv';
 import type { LessonDef, Locale, SonicPrefs, SpeechLine, SpeechOut } from '@shramko/sonic-fpv';
 import { SonicAudio } from './audio';
 import type { AudioDeps } from './audio';
@@ -16,13 +16,23 @@ import type { FlightSession } from '../session';
 
 /** What the setup needs of the captions region (the real one is a DOM region; a recorder in tests). */
 export interface CaptionSink {
-    add(text: string): void;
+    /** `live: false`: for the eye only, never to a screen reader (a line said with the narrator off, train 3) */
+    add(text: string, o?: { readonly live?: boolean }): void;
     configure(mode: CaptionMode): void;
 }
 
 /** Shown to the eye by SonicPrefs.captions; read by a screen reader when "my screen reader speaks" (selfVoice off). */
 export function captionMode(prefs: SonicPrefs): CaptionMode {
     return { visible: prefs.captions, live: !prefs.selfVoice };
+}
+
+/**
+ * Train 3 (the owner's message 54): the narrator off (SonicPrefs.narrator false) is "sounds only" in a flight, the free flight over a
+ * scan (in place or on the sound page) and its course, while it is not paused: no line voiced, none to a screen reader, none waited for.
+ * The lessons of the lesson list and the paused menus keep their words.
+ */
+export function quietFlight(prefs: SonicPrefs, lessonId: string | null, paused: boolean): boolean {
+    return prefs.narrator === false && lessonId === SCAN_FREE_ID && !paused;
 }
 
 /** The settings a shared link may set for a visit (@gsfpv/scenes sonic-link.ts): the sound's language, never the listener's own. */
@@ -51,7 +61,7 @@ export class SonicSetup {
         const prefs = loadSonicPrefs(host);
         this.saved = prefs;
         this.captions = captions;
-        this.audio = new SonicAudio({ locale, prefs, onCaption: (text) => captions.add(text), ...(o.deps ? { deps: o.deps } : {}), ...(o.speech === undefined ? {} : { speech: o.speech }) });
+        this.audio = new SonicAudio({ locale, prefs, onCaption: (text, _line, c) => captions.add(text, c?.quiet === true ? { live: false } : {}), ...(o.deps ? { deps: o.deps } : {}), ...(o.speech === undefined ? {} : { speech: o.speech }) });
         captions.configure(captionMode(prefs));
     }
 

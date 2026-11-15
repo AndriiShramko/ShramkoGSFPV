@@ -146,6 +146,12 @@ export class SonicBridge {
      * re-derives them). Set by the page from the pilot's settings; null: the engine's own waits, as before.
      */
     sequential: (() => boolean) | null = null;
+    /**
+     * Train 3 (the owner's message 54): the narrator is off and this is a flight (not a lesson of the lesson list). True: a line is
+     * neither voiced nor sent to a screen reader nor waited for (the engine's say with `quiet`; no sequential reading time); it is still
+     * a speech event and a caption for the eye. Set by the page; null: never quiet.
+     */
+    quiet: (() => boolean) | null = null;
     /** how long a line takes to read, ms (the engine's own estimate at the pilot's speaking speed); `sequential` needs it */
     readTimeMs: ((text: string) => number) | null = null;
     /** waits `ms` (the page's timers; a test passes its own clock's) */
@@ -542,11 +548,12 @@ export class SonicBridge {
         this.lastLine = line;
         this.speaking++;
         const run = this.epoch;
-        const readTime = this.sequential?.() === true ? this.readTimeMs : null;
+        const quiet = this.quiet?.() === true;
+        const readTime = !quiet && this.sequential?.() === true ? this.readTimeMs : null;
         // a line that interrupts: what was being read and what waited for its turn are over now
         if (readTime !== null && interrupt) this.cutReading();
         this.handed = null;
-        const said = this.engine?.say(line, { interrupt }) ?? Promise.resolve();
+        const said = this.engine?.say(line, quiet ? { interrupt, quiet: true } : { interrupt }) ?? Promise.resolve();
         try {
             if (readTime === null) {
                 await said;

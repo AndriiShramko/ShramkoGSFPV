@@ -43,6 +43,7 @@ import type { FlightContext } from '../app/context';
 import { t, locale } from '../i18n';
 import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
+import { quietFlight } from './entry';
 import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
@@ -275,6 +276,10 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // "my screen reader speaks": the lesson waits for its lines read one after the other, as the reader reads them (v12-int step 6)
     mode.bridge.sequential = () => !entry.setup.prefs.selfVoice;
     mode.bridge.readTimeMs = (text) => estimateSpeechS(text, entry.setup.prefs.speechRate) * 1000;
+    // train 3 (the owner's message 54): the narrator off is "sounds only" in a flight (the free flight over a scan, in place or on the
+    // sound page, and its course): no line voiced, none to a screen reader, none waited for. Read at each line, so a change applies at
+    // once. The paused menus keep their words, and so do the lessons of the lesson list.
+    mode.bridge.quiet = () => quietFlight(entry.setup.prefs, host?.lesson?.id ?? null, mode.bridge.paused);
     // a replay taking the engine or giving it back: the progress panel follows at once (review F5: it hides while a replay plays)
     const onPlayback = new Set<() => void>();
     ctx.sonic = new PageRuntime(entry.setup, mode, () => { for (const f of [...onPlayback]) f(); });
