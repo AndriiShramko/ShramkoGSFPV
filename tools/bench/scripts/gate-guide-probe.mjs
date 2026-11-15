@@ -86,9 +86,25 @@ try {
         check(`${label}: inside the screen`, !!v.guideBox && v.guideBox.left >= 0 && v.guideBox.top >= 0 && v.guideBox.right <= v.vw && v.guideBox.bottom <= v.vh, { box: v.guideBox, vw: v.vw, vh: v.vh });
         return b;
     };
-    // the craft's pose written into the sim (S.px 0-2, S.vx 3-5, S.qw 6-9, rates 10-12) for a few frames, then one read
+    // what draws the camera (measured in pass 1: on Wroclaw 24 yaws written into sim.s gave one bearing). The session
+    // draws sim.s unless cameraOverride is set or cameraAim (play.ts, the stabilised gimbal along the pilot's aim)
+    // returns an aim; then the yaw comes from that aim and not from s[6..9].
+    r.camMode = await page.evaluate(() => {
+        const ss = window.__gsfpv.session;
+        const a = ss.cameraAim?.() ?? null;
+        return { override: !!ss.cameraOverride, aim: a, editorOpen: !!window.__gsfpv.editor?.open };
+    });
+    // the craft's pose written into the sim (S.px 0-2, S.vx 3-5, S.qw 6-9, rates 10-12) for a few frames, then one read;
+    // when the gimbal aim draws the camera, the aim's yaw is the one turned (the pilot's own way to look), its pitch kept
     const pose = (pos, yawRad) => page.evaluate(async ({ pos, yawRad }) => {
-        const s = window.__gsfpv.session.sim.s;
+        const ss = window.__gsfpv.session;
+        const s = ss.sim.s;
+        const orig = ss.__probeAim ?? ss.cameraAim;
+        const a0 = orig?.() ?? null;
+        if (a0) {
+            ss.__probeAim = orig;
+            ss.cameraAim = () => { const a = orig() ?? a0; return { ...a, yawDeg: (yawRad * 180) / Math.PI }; };
+        }
         const put = () => {
             if (pos) { s[0] = pos[0]; s[1] = pos[1]; s[2] = pos[2]; }
             for (let i = 3; i < 6; i++) s[i] = 0;
@@ -109,7 +125,10 @@ try {
             for (const d of [best.deg - step, best.deg + step]) { const t = await at(d); if (t.err < best.err) best = t; }
         }
         const v = (await at(best.deg)).v;
-        r.turns.push({ want, yawDeg: best.deg, got: +bearing(v).deg.toFixed(1) });
+        const got = bearing(v).deg;
+        r.turns.push({ want, yawDeg: best.deg, got: +got.toFixed(1) });
+        // the turn itself is checked, so a case cannot pass because the start pose happened to fit
+        check(`turn to ${want} deg reached (${got.toFixed(1)} deg)`, Math.abs(wrap(got - want)) < 10, { want, got, yawDeg: best.deg });
         return v;
     };
 

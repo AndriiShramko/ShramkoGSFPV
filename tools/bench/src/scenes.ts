@@ -36,8 +36,9 @@ export interface SceneSettings {
     extra: [number, number, number][]; // other camera positions from animation keyframes
 }
 
-export async function sceneSettings(id: string): Promise<SceneSettings> {
-    const j = JSON.parse(new TextDecoder().decode(await cached(id, 'settings.json', `${CDN}/${id}/v1/settings.json`)));
+export async function sceneSettings(id: string, version = 1): Promise<SceneSettings> {
+    const name = version === 1 ? 'settings.json' : `settings.v${version}.json`;
+    const j = JSON.parse(new TextDecoder().decode(await cached(id, name, `${CDN}/${id}/v${version}/settings.json`)));
     const cam = j.cameras?.[0]?.initial ?? j.camera;
     const extra: [number, number, number][] = [];
     const pos: number[] | undefined = j.animTracks?.[0]?.keyframes?.values?.position;

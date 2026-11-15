@@ -66,20 +66,29 @@ Stage X2-gate-one (gate 1 not in sight on Tunis seed 1)
       as it is (old editor, lane editor3 replaces it).
 - [x] a6-reference 1 passed; gates.py --only vitest,architecture,i18n,b18: all PASS (vitest 121 s); tsc apps/fly and
       tools/bench: 0 errors.
-Left (X2):
-- gate-guide-probe 'near': make the turn work on Wroclaw (the drawn camera did not follow s[6..9] there; a guess: the
-  session's renderer pose is not taken from sim.s while parked on that page, or hook.session is not the live session;
-  measure session.cameraOverride and session.cameraAim there first), then re-run Tunis and Wroclaw with --extra and keep
-  the Tunis behind and 844 pictures (run Wroclaw first, Tunis last).
-- gate-one-audit: read v2 walls (ab5efa0e) and retry eb5f51dc's settings fetch.
+Pass 2 of X2:
+- [x] cause of the turn that did not turn, measured (r.camMode in both runs): cameraOverride false, editor closed,
+      session.cameraAim returns an aim (play.ts, the stabilised gimbal along the pilot's aim: Wroclaw yawDeg 93.2, Tunis
+      90.0, pitch 0), so the drawn yaw comes from that aim, not from s[6..9]. The probe now turns the aim's yaw when an aim
+      draws the camera (sim.s otherwise) and checks every turn itself (within 10 deg of the wanted bearing).
+- [x] re-run, release of a58510dd (no product change since), server 5781, one GPU hold per run, Wroclaw first, Tunis last:
+      Wroclaw 70b50d42 Shift+G: 22 of 22 passed, 49 s, course in 14 s; start "Gate 1 - 17 m", bearing 19.4 deg (in the
+      frame, shown because farther than 12 m); turns reached 150.0 and 0.0 deg; behind 150 deg passed with the turn mark;
+      near 6.0 m, 0.0 deg: guide hidden. Tunis 887f27aa link seed 1: 22 of 22, 43 s; start bearing 91.7, "Gate 1 - 17 m";
+      turns reached 149.8, 149.8, 0.1 deg; near 6.0 m: hidden; Escape clear of the pause menu; 844x390 inside and clear.
+      Ev U:/Temp/gsfpv-train3/fix3a/ev/gate-guide-wroclaw.json and gate-guide-tunis.json. Pictures looked at:
+      fix3a-gate1-wroclaw.png (gate 1 ahead with the label over it), fix3a-gate1-behind.png and fix3a-gate1-844.png (Tunis,
+      arrow on the right edge with the turn mark), fix3a-gate1-tunis-near.png (gate ahead, no guide).
+- [x] gate-one-audit reads the newest walls version and its settings (sceneSettings(id, version), tools/bench/src/scenes.ts);
+      ab5efa0e (v2) and eb5f51dc measured (the earlier eb5f51dc failure was the network: the same URL answers 200 now).
 
 ## Gate 1 from the spawn
 
 Measured by tools/bench/src/gate-one-audit.ts (Node, log U:/Temp/gsfpv-train3/fix3a/gate-one-audit.log, rows
 U:/Temp/gsfpv-train3/fix3a/gate-one-audit.json): spawn from the scan's settings camera (findSpawn), course by fitCourse
 as the worker asks it, seeds 1-5; in view = gate 1 inside the frustum of the spawn camera (115 deg horizontal, 20 deg
-uptilt, 1280x800, the prefs fallbacks; a preset may differ). Distances in m. ab5efa0e: its published walls are v2 (the
-script reads v1 only); eb5f51dc: its settings.json fetch failed (network); both not measured.
+uptilt, 1280x800, the prefs fallbacks; a preset may differ). Distances in m. ab5efa0e (walls and settings v2) and
+eb5f51dc were measured in pass 2 (log gate-one-audit-2.log, rows gate-one-audit-2.json in the same folder).
 
 | scan | seed: gates, to gate 1 m, nearest m (gate), gate 1 in spawn view, ring/open |
 |---|---|
@@ -88,13 +97,13 @@ script reads v1 only); eb5f51dc: its settings.json fetch failed (network); both 
 | 2f1ddf5f | 1: 16, 43.3, 41.1 (g9), not in view, ring; 2: 14, 44.2, 41.4 (g11), not in view, ring; 3: 16, 44.2, 41.3 (g10), not in view, ring; 4: 16, 44.4, 41.9 (g3), not in view, ring; 5: 16, 43.3, 41.7 (g3), not in view, ring |
 | 70b50d42 | 1: 24, 9.5, 3.5 (g24), not in view, ring; 2: 24, 10.3, 7.7 (g12), not in view, ring; 3: 24, 11, 3.5 (g24), not in view, ring; 4: 24, 18.8, 7 (g13), not in view, ring; 5: 24, 17.5, 10.2 (g10), in view, ring |
 | 9baef54b | 1: 24, 16, 4.1 (g22), in view, ring; 2: 24, 18.3, 6.6 (g23), in view, ring; 3: 24, 11.8, 11.8 (g1), not in view, open; 4: 24, 21, 20.3 (g2), in view, open; 5: 24, 17.2, 6.6 (g23), in view, ring |
-| ab5efa0e | error Error: ENOENT: no such file or directory, open 'U:\Temp\gsfp |
+| ab5efa0e | 1: 10, 5.6, 4.1 (g8), in view, ring; 2: 10, 5.6, 4.8 (g7), in view, ring; 3: 10, 5.8, 4.1 (g8), in view, ring; 4: 10, 6, 4.9 (g7), in view, ring; 5: 10, 5.4, 4.1 (g8), in view, ring |
 | ba7aa29d | 1: 5, 11.1, 11.1 (g1), in view, ring; 2: 17, 22.6, 22.6 (g1), in view, open; 3: 19, 24.2, 11.1 (g19), in view, open; 4: 24, 13, 13 (g1), in view, open; 5: 18, 13, 13 (g1), in view, open |
 | d10c5638 | 1: 4, 13.4, 13.4 (g1), in view, open; 2: 5, 13.4, 13.4 (g1), in view, open; 3: 4, 13.4, 13.4 (g1), in view, open; 4: 4, 13.4, 13.4 (g1), in view, open; 5: 4, 13.4, 13.4 (g1), in view, open |
-| eb5f51dc | error TypeError: fetch failed |
+| eb5f51dc | 1: 24, 15.6, 6.3 (g24), not in view, ring; 2: 24, 20, 8.2 (g24), in view, ring; 3: 24, 15.1, 4.6 (g8), in view, ring; 4: 24, 20.6, 7 (g23), in view, ring; 5: 24, 20, 4.6 (g23), in view, ring |
 | 887f27aa | 1: 24, 17.2, 17.2 (g1), not in view, open; 2: 14, 14.7, 14.7 (g1), not in view, open; 3: 24, 20.1, 17.2 (g24), not in view, open; 4: 24, 12.9, 12.9 (g1), not in view, open; 5: 24, 15.4, 15.4 (g1), not in view, open |
 
-Totals: 40 courses; gate 1 in the spawn view 18; closed rings 23; the nearest gate is not gate 1 in 25.
+Totals: 50 courses on 10 scans; gate 1 in the spawn view 27; closed rings 33; the nearest gate is not gate 1 in 35.
 
 Reading: on the closed rings gate 1 is mostly out of the spawn view and the nearest gate is the last one (g24): the
 ring closes near the spawn and gate 1 leads away from it. Tunis seed 1: gate 1 17.2 m away, behind the spawn (bearing
@@ -152,3 +161,5 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
   the plain-lines test (no "could not"); commit before any file swap, and grep tools/bench/test for rules on bake.* keys first.
 - X2: most turns went to the probe turning the craft (three Wroclaw runs); one page.evaluate that prints cameraOverride,
   cameraAim and the camera's forward after a yaw write would have shown the cause in one run.
+- X2 pass 2: about 20 replies; reading the session's camera branch (cameraOverride, cameraAim) and grepping their setters
+  found the cause without a browser run; the two GPU runs passed first time. Reading code before the next run was cheaper.

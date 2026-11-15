@@ -7,7 +7,7 @@
 // or an open path. Node only: no browser, no GPU.
 //
 //   cd tools/bench && npx tsx src/gate-one-audit.ts [--walls U:/Temp/gsfpv-train3/walls/release] [--seeds 5] [--scenes id,id] [--out f.json]
-// The scans: every folder of --walls (published walls, <id>/v1/scene.voxel.*) and Tunis 887f27aa (shipped walls, scenes.ts).
+// The scans: every folder of --walls (published walls, <id>/v<newest>/scene.voxel.*) and Tunis 887f27aa (shipped walls, scenes.ts).
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
@@ -65,7 +65,9 @@ async function main(): Promise<void> {
     const root = arg('--walls') ?? 'U:/Temp/gsfpv-train3/walls/release';
     const seeds = Number(arg('--seeds') ?? 5);
     const ids = existsSync(root) ? readdirSync(root).filter((d) => /^[0-9a-f]{8}$/.test(d)) : [];
-    const all: { id: string; dir: string | null }[] = [...ids.map((id) => ({ id, dir: join(root, id, 'v1') })), { id: '887f27aa', dir: null }];
+    // the newest published version of each scan's walls (ab5efa0e is at v2); its settings are read from the same version
+    const newest = (id: string): number => Math.max(...readdirSync(join(root, id)).map((d) => /^v(\d+)$/.exec(d)).filter((m): m is RegExpExecArray => !!m).map((m) => Number(m[1])));
+    const all: { id: string; dir: string | null; v: number }[] = [...ids.map((id) => ({ id, v: newest(id) })).map(({ id, v }) => ({ id, v, dir: join(root, id, `v${v}`) })), { id: '887f27aa', dir: null, v: 1 }];
     const only = arg('--scenes')?.split(',') ?? null;
     const T = [1, 0, 0, 0] as unknown as SceneTransform;
     const rows: Record<string, unknown>[] = [];
@@ -73,7 +75,7 @@ async function main(): Promise<void> {
         if (only && !only.includes(s.id)) continue;
         try {
             const walls = flownCollision(await wallsOf(s.id, s.dir), T);
-            const set = await sceneSettings(s.id);
+            const set = await sceneSettings(s.id, s.v);
             let spawn: Vec3 = [set.position[0], set.position[1], set.position[2]];
             const yaw = heading(set.position, set.target);
             const push = { x: 0, y: 0, z: 0 };
@@ -90,7 +92,7 @@ async function main(): Promise<void> {
             const free = freeSpace(walls, { spawn, bounds: box ?? undefined });
             for (let seed = 1; seed <= seeds; seed++) {
                 const t0 = performance.now();
-                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: 1 }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? quality : undefined }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? quality : undefined }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
                 const gates = (got.track?.gates ?? []).map((g) => g.pos as Vec3);
                 const dist = (p: Vec3): number => Math.hypot(p[0] - spawn[0], p[1] - spawn[1], p[2] - spawn[2]);
                 const g1 = gates[0] ?? null;
