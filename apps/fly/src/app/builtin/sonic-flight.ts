@@ -9,7 +9,7 @@
 // start screen (/{lang}/fly/?sonic=start: its lessons, its sound settings, and a link to the site's page about the mode) in a new
 // tab, the flight left paused under the menu. Since v0.13 (the owner's M41-1: an ordinary pilot opens the mode from the menu, no
 // address codes) the item opens the mode itself, no longer the page about it (/{lang}/sound/, which the start screen links).
-import { sonicEntry, sonicInstaller } from '../../sonic/entry-state';
+import { quietAtPress, sonicEntry, sonicInstaller } from '../../sonic/entry-state';
 import { sharedNumber } from '@gsfpv/scenes';
 import { seedOfLink } from '../../course/link';
 import type { Feature, MenuItem } from '../context';
@@ -83,15 +83,21 @@ export interface HereHost {
  * key and item switch it off. A second item keeps the lessons, in a new tab (the mode's start screen for this scan). `load`
  * fetches the switch once, at the first press (a page that never presses it downloads nothing of the mode).
  */
-export function hereItems(host: HereHost, load: () => Promise<HereSwitch>, lessonsHref: () => string, opened: (url: string) => void): () => void {
+export function hereItems(host: HereHost, load: () => Promise<HereSwitch>, lessonsHref: () => string, opened: (url: string) => void, atPress?: () => (() => void) | null): () => void {
     let sw: Promise<HereSwitch> | null = null;
     let now: HereSwitch | null = null;
     const toggle = (): void => {
+        // lane quiet3 (M4): a press that switches on quiets the page in the press itself (atPress, the narrator off); the mode's own
+        // sync takes it over once installed, and a switch-on that did not come up gives it back
+        const undo = now?.on === true || !atPress ? null : atPress();
         const p = (sw ??= load());
         p.then((s) => {
             now = s;
             return s.toggle();
+        }).then((on) => {
+            if (!on) undo?.();
         }).catch(() => {
+            undo?.();
             sw = null;
         });
     };
@@ -128,6 +134,11 @@ export const sonicFlight: Feature = {
         // location: a page always has it; Node (unit tests) does not (review SN-1)
         const href = (): string => modeScanPage((ctx as { session?: FlownScan }).session, typeof location === 'undefined' ? '' : new URL(location.href).search);
         const opened = (url: string): void => void open(url, '_blank', 'noopener');
-        return hereItems(ctx, () => import('../../sonic/in-place').then((m) => m.inPlaceSwitch(ctx, () => opened(href()))), href, opened);
+        // lane quiet3 (M4): the narrator off (the saved sound setting; only false is off, as the mode's readPrefs reads it)
+        const pressQuiet = (): (() => void) | null => {
+            const saved = (ctx.prefs.collection('sonic') as { prefs?: { narrator?: unknown } }).prefs;
+            return saved?.narrator === false && typeof document !== 'undefined' ? quietAtPress(document.getElementById('ui')) : null;
+        };
+        return hereItems(ctx, () => import('../../sonic/in-place').then((m) => m.inPlaceSwitch(ctx, () => opened(href()))), href, opened, pressQuiet);
     }
 };

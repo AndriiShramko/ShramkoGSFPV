@@ -118,7 +118,8 @@ describe('course4 review CU-1 and CU-2: the merge seams with lane onecourse', ()
         expect(done.spoken).toBe(`${tr('course.best', { time: '0:59.88' })}. ${tr('course.card.title')}. ${tr('course.card.total', { time: '2:01.11' })}`);
         const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
         expect(src).toMatch(/hud\.splash\(end\.splash/);
-        expect(src).toMatch(/sayLine\(end\.spoken\)/);
+        // review CV-1: the line keeps main's quiet cue (lap notes, the finish fanfare at the end) for the narrator off
+        expect(src).toContain("sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' })");
     });
 });
 

@@ -1,0 +1,13 @@
+{
+ "what": "quiet-probe.mjs ENTRY=scan (the sound page's free flight, Enter) on the release build of 9206d8ca (c7606bf9 plus a lead note line), render off, http://localhost:5760/en. The full outputs (s-*.json, pic-set.json) are kept in U:/Temp/gsfpv-train3/int-d/evidence-not-in-git: their lesson keys trip the CI secret scan's generic-api-key rule.",
+ "fields": "readyS: s from Enter to the page's ready; moveS: s from Enter to the craft over 0.5 m/s with W held from ready; voiced: lines with words to the voice from the start; liveLastS: the last write to a live region (s); courseS and humS: s from Shift+G to the course and to the hum of gate 1",
+ "runs": [
+  { "scene": "70b50d42", "setting": "narrator on", "readyS": 2.12, "moveS": 2.6, "courseS": 12.93, "humS": 12.93, "scanLoadingSaid": 1, "errors": 0 },
+  { "scene": "70b50d42", "setting": "narrator off", "readyS": 1.68, "moveS": 2.17, "voiced": 0, "liveLastS": 0.9, "liveLastText": "The scan is ready", "courseS": 11.23, "humS": 11.23, "scanLoadingSaid": 0, "errors": 0 },
+  { "scene": "70b50d42", "setting": "screen reader, narrator on", "readyS": 1.64, "moveS": 2.23, "voiced": 0, "courseS": 7.18, "humS": 7.18, "scanLoadingSaid": 1, "errors": 0 },
+  { "scene": "887f27aa", "setting": "narrator on", "readyS": 1.84, "moveS": 2.44, "courseS": 7.34, "humS": 7.34, "scanLoadingSaid": 1, "errors": 0 },
+  { "scene": "887f27aa", "setting": "narrator off", "readyS": 1.77, "moveS": 2.36, "voiced": 0, "liveLastS": 0.99, "liveLastText": "The scan is ready", "courseS": 7.14, "humS": 7.14, "errors": 0 },
+  { "scene": "887f27aa", "setting": "screen reader, narrator on", "readyS": 1.76, "moveS": 2.23, "voiced": 0, "courseS": 7.83, "humS": 7.83, "errors": 0 }
+ ],
+ "picSet": "pic-set.json: the settings picture run, U:/Temp/gsfpv-train3/shots/train3d-narrator-setting.png"
+}

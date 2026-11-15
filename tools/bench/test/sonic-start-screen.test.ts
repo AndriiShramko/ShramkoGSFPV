@@ -316,7 +316,7 @@ const STOPS = [
     ...lessonPaths().full.map((id) => `lesson:${id}`), 'sonic-reset',
     // v13-int step 3: sound from above and below after the target height note; the sound panel and the attitude display after the frame;
     // lane sonic-beacon: the target hum showing the way after sound from above and below
-    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
+    'sonic-theme', 'sonic-calm', 'sonic-polarity', 'sonic-rate', 'sonic-captions', 'sonic-sr', 'sonic-narrator', 'sonic-motor', 'sonic-motor-level', 'sonic-height-target', 'sonic-height-direction', 'sonic-beacon', 'sonic-frame', 'sonic-look-soundPanel', 'sonic-look-attitude', 'sonic-key-hints', 'summary',
     'sonic-about', 'sonic-leave'
 ];
 /** The focused control as STOPS names it. */
@@ -357,12 +357,12 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         // a lesson says its own place and state, not an item number
         expect(at('lesson:ears-headphones')).toBe(`Lessons. ${titleOf('ears-headphones')}. Lesson 1 of ${SHIPPED_LESSON_IDS.length}, not started, Fast path`);
         expect(at('lesson:rings-first')).toBe(`${titleOf('rings-first')}. ${placeOf('rings-first')}, not started, Fast path`);
-        // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3), 15 before lane sonic-beacon's switch
+        // the settings' stops: the screen's own count, 11 before v13-int's three switches (step 3), 15 before lane sonic-beacon's switch, 16 before lane quiet's
         const settings = STOPS.slice(STOPS.indexOf('sonic-theme'), STOPS.indexOf('summary') + 1).length;
-        expect(settings).toBe(16);
+        expect(settings).toBe(17); // 16 before lane quiet's narrator switch
         expect(at('sonic-theme')).toBe(`Settings. Sound theme: Soft. Item 1 of ${settings}.`);
-        expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 8 of ${settings}.`);
-        expect(at('sonic-height-target')).toBe(`Target height note: on. Item 9 of ${settings}.`);
+        expect(at('sonic-motor-level')).toBe(`Motor volume: 0 dB. Item 9 of ${settings}.`);
+        expect(at('sonic-height-target')).toBe(`Target height note: on. Item 10 of ${settings}.`);
         expect(at('sonic-about')).toBe('About Fly by Sound and its source code. Item 1 of 2.');
         // round: Down from the last is the first; Up from the first the last; Home and End
         doc.key('ArrowDown');
@@ -555,7 +555,7 @@ describe('C3 (M41-4, W13): the start screen and the mode\'s settings as a spoken
         over.s.show('settings');
         expect(page.map((x) => x.line.params?.text ?? x.line.key)).toEqual(['Settings']);
         doc.key('ArrowDown');
-        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 16.');
+        expect(page.at(-1)?.line.params?.text).toBe('Sound theme: Soft. Item 1 of 17.');
         expect(over.engine.said).toEqual([]);
         over.s.dispose();
     });
@@ -609,11 +609,11 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
     const DIRECTION_WHAT = EN.say('menu.setting.height-direction-what').replace(/\.$/, '');
     const BEACON_WHAT = EN.say('menu.setting.beacon-what').replace(/\.$/, '');
     const SWITCHES = [
-        { id: 'sonic-height-direction', name: EN.say('menu.setting.height-direction'), n: 10, tail: `. ${DIRECTION_WHAT}` },
+        { id: 'sonic-height-direction', name: EN.say('menu.setting.height-direction'), n: 11, tail: `. ${DIRECTION_WHAT}` },
         // lane sonic-beacon: the package's words for the target hum showing the way, its description after the value
-        { id: 'sonic-beacon', name: EN.say('menu.setting.beacon'), n: 11, tail: `. ${BEACON_WHAT}` },
-        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 13, tail: '' },
-        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 14, tail: '' }
+        { id: 'sonic-beacon', name: EN.say('menu.setting.beacon'), n: 12, tail: `. ${BEACON_WHAT}` },
+        { id: 'sonic-look-soundPanel', name: 'Sound panel: see every sound', n: 14, tail: '' },
+        { id: 'sonic-look-attitude', name: 'Horizon and height display', n: 15, tail: '' }
     ] as const;
     /** what each switch keeps: the package's setting in the saved sound document, the panels in the collection beside it */
     const saved = (store: ReturnType<typeof mkStore>, id: string): unknown => {
@@ -629,7 +629,7 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         for (const sw of SWITCHES) {
             byTestId(doc, 'sonic-about')!.focus();
             byTestId(doc, sw.id)!.focus();
-            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 16.`, interrupt: true });
+            expect(lastHeard(engine), sw.id).toEqual({ text: `Settings. ${sw.name}: on${sw.tail}. Item ${sw.n} of 17.`, interrupt: true });
             expect(byTestId(doc, sw.id)!.checked, sw.id).toBe(true);
         }
         // and within the section, the next stop after the long description cuts it (a line that interrupts)
@@ -675,9 +675,9 @@ describe('v13-int step 3: sound from above and below, the sound panel and the at
         expect(byTestId(doc, 'sonic-look-attitude')!.checked).toBe(true);
         doc.key('ArrowDown');
         byTestId(doc, 'sonic-height-direction')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 10 of 16.`);
+        expect(lastHeard(again.engine).text).toBe(`Settings. Sound from above and below: off. ${DIRECTION_WHAT}. Item 11 of 17.`);
         byTestId(doc, 'sonic-beacon')!.focus();
-        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 11 of 16.`);
+        expect(lastHeard(again.engine).text).toBe(`Target hum shows the way: off. ${BEACON_WHAT}. Item 12 of 17.`);
         again.s.dispose();
     });
 

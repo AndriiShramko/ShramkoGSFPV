@@ -8,8 +8,14 @@ import { h } from '../ui/dom';
 import { t } from '../i18n';
 import './sonic.css';
 
-/** How many lines show at once, and how long a line stays, ms. */
-export const CAPTION_LINES = 3;
+/**
+ * How many lines show at once, and how long a line stays, ms. Lane quiet3 (the lead's M2): "at most two lines" is two rows of text on
+ * the screen: the newest line alone, clamped to CAPTION_ROWS rows by sonic.css (the whole text stays in the page for a screen
+ * reader); an older line leaves the eye when a new one comes.
+ */
+export const CAPTION_LINES = 1;
+/** The rows the line shown takes at most (sonic.css .sonic-caption -webkit-line-clamp). */
+export const CAPTION_ROWS = 2;
 export const CAPTION_MS = 12000;
 /**
  * Lines the region holds at most while a screen reader reads it. A lesson says four to six lines in one go when it opens; a line
@@ -20,6 +26,11 @@ export const CAPTION_KEEP_LIVE = 24;
 /** The mode's panels the captions stay clear of (progress-panel.ts, look-panels.ts), and by how much, px (v13-int review K2). */
 export const PANELS = '.sonic-progress, .sonic-sounds, .sonic-attitude';
 export const CAPTION_GAP_PX = 8;
+/**
+ * The course's clock block (course/hud.ts, top centre). Lane quiet2 (N6): the captions never cover it; while it is shown and meets
+ * the region's columns, the region starts CAPTION_GAP_PX under its bottom (the lead saw three lines over the clock).
+ */
+export const CLOCK = '.course-hud';
 /**
  * How far over the view's centre the lines shown end at the lowest, px: the target is there (the lessons' page proof's bound,
  * tools/bench/src/sonic-lessons-page.ts). v13-int review K2, part 2: the captions' column right of the panels is narrower than the
@@ -78,9 +89,12 @@ export class Captions {
      * One spoken line, newest last. The eye sees the last CAPTION_LINES. While a screen reader reads the region (live) the older
      * lines of a burst stay in it, hidden from the eye (see CAPTION_KEEP_LIVE); else the oldest go at once, as before.
      */
-    add(text: string): void {
+    add(text: string, o: { readonly live?: boolean } = {}): void {
         if (this.root.hidden || text.trim() === '') return;
-        const line = h('p', { class: 'sonic-caption' }, text);
+        // a line for the eye only (the narrator off, train 3): not shown, nothing; shown, hidden from a screen reader
+        const eyeOnly = o.live === false;
+        if (eyeOnly && !this.mode.visible) return;
+        const line = h('p', { class: 'sonic-caption', ...(eyeOnly && this.mode.live ? { 'aria-hidden': 'true' } : {}) }, text);
         this.root.append(line);
         this.timers.set(line, setTimeout(() => this.drop(line), CAPTION_MS));
         this.fit();
@@ -100,6 +114,7 @@ export class Captions {
         const lines = [...this.root.children];
         lines.forEach((el, i) => el.classList.toggle('sonic-sr-only', i < lines.length - CAPTION_LINES));
         if (this.root.hidden || !this.mode.visible) return;
+        this.underClock();
         const panels = this.panelBoxes();
         const floor = this.centreFloor();
         if (panels.length === 0 && floor === null) return;
@@ -132,6 +147,22 @@ export class Captions {
             out.push({ left: b.left - CAPTION_GAP_PX, right: b.right + CAPTION_GAP_PX, top: b.top - CAPTION_GAP_PX, bottom: b.bottom + CAPTION_GAP_PX });
         }
         return out;
+    }
+
+    /**
+     * The region in its own place (the stylesheet's top), or under the course's clock block while that is shown and meets the region's
+     * columns (a hidden block, display none, has no box). Nothing on a page without layout or style (a test's stand-in without them).
+     */
+    private underClock(): void {
+        const style = (this.root as { style?: { top: string } }).style;
+        if (!style || typeof this.root.getBoundingClientRect !== 'function') return;
+        style.top = '';
+        const r = this.root.getBoundingClientRect();
+        for (const el of this.root.ownerDocument.querySelectorAll<HTMLElement>(CLOCK)) {
+            const c = el.getBoundingClientRect();
+            if (c.width === 0 || c.height === 0) continue;
+            if (r.right > c.left && r.left < c.right && c.bottom + CAPTION_GAP_PX > r.top) style.top = `${Math.ceil(c.bottom + CAPTION_GAP_PX)}px`;
+        }
     }
 
     /** The page changed size: what fits is measured again (a line hidden in a short window comes back in a taller one). */

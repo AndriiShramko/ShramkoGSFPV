@@ -58,6 +58,9 @@ const READ = () => {
     return {
         course: c ? { on: c.on, seed: c.seed, gates: c.gates, next: c.next, laps: c.laps } : null,
         sonic: so ? { lesson: so.lesson, phase: so.phase, target: so.target ? so.target.id : null, yaw: so.yaw, pos: so.pos, prims: so.stagePrims } : null,
+        // lane quiet3 (D7_NARRATOR=off): what reached the voice and the one-shot sounds played (feature.ts hook oneShots)
+        voiced: (window.__voiced || []).slice(),
+        oneShots: so && so.oneShots ? so.oneShots : [],
         speech
     };
 };
@@ -77,10 +80,44 @@ const save = () => writeFileSync(outFile, JSON.stringify(out, null, 1));
 
 try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    // lane quiet3 (D7_NOCOURSE=1, X2 row 3): the course worker's answer loses its track, so Shift+G gives no course (course.none)
+    if (process.env.D7_NOCOURSE) {
+        await ctx.addInitScript(() => {
+            const W = window.Worker;
+            window.Worker = class extends W {
+                set onmessage(fn) {
+                    super.onmessage = (e) => {
+                        const d = e.data;
+                        if (d && typeof d === 'object' && 'track' in d && d.t !== 'progress' && d.t !== 'checked' && d.t !== 'error') { window.__noCourse = (window.__noCourse || 0) + 1; return fn.call(this, { data: { ...d, track: null, short: false } }); }
+                        return fn.call(this, e);
+                    };
+                }
+                get onmessage() { return super.onmessage; }
+            };
+        });
+    }
     const page = await ctx.newPage();
     page.on('pageerror', (e) => out.errors.push(String(e.message).slice(0, 160)));
     await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false&simradio=scenario&set.respawn.auto=1&set.respawn.target=rewind&render=off${process.env.D7_SG ? `&sg=${process.env.D7_SG}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
+    if (process.env.D7_NARRATOR === 'off') {
+        // lane quiet3: the narrator setting off in the prefs document, a spy on the voice, then the page again
+        await ctx.addInitScript(() => { window.__voiced = []; try { const s = window.speechSynthesis; const sp = s.speak.bind(s); s.speak = (u) => { window.__voiced.push(String(u.text).slice(0, 80)); return sp(u); }; } catch { /* no voice */ } });
+        out.prefsKey = await page.evaluate(() => {
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                let d;
+                try { d = JSON.parse(localStorage.getItem(k)); } catch { continue; }
+                if (!d || !d.collections || !d.collections.sonic) continue;
+                d.collections.sonic.prefs = { ...(d.collections.sonic.prefs || {}), narrator: false };
+                localStorage.setItem(k, JSON.stringify(d));
+                return k;
+            }
+            return null;
+        });
+        await page.reload({ waitUntil: 'load', timeout: 120000 });
+        await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
+    }
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     await page.waitForTimeout(2000);
     const x = page.locator('.screen.radio [data-action=radio-close]');
@@ -93,6 +130,26 @@ try {
     // review OC-1 (D7_BUSY=1): a second Shift+G 1 s later, while the course is being made, must be said, not dropped
     const nBusy = (await page.evaluate(READ)).speech.length;
     if (process.env.D7_BUSY) { await page.waitForTimeout(1000); await page.keyboard.press('Shift+KeyG'); out.busyPressS = +((Date.now() - t0) / 1000).toFixed(2); }
+    if (process.env.D7_NOCOURSE) {
+        // row 3: what the pilot hears when Shift+G gives no course (with D7_NARRATOR=off: a sound, no words)
+        const n0 = (await page.evaluate(READ)).oneShots.length;
+        for (;;) {
+            const r = await page.evaluate(READ);
+            const shots = r.oneShots.slice(n0);
+            const said = r.speech.slice(nBusy);
+            if (shots.some((s) => String(s.cue).includes('wrong-side')) || said.some((e) => e.key === 'course.none') || Date.now() - t0 > 180000) {
+                await page.waitForTimeout(1500);
+                const z = await page.evaluate(READ);
+                out.noCourse = { s: +((Date.now() - t0) / 1000).toFixed(1), forced: await page.evaluate(() => window.__noCourse || 0), course: z.course, voiced: z.voiced, oneShots: z.oneShots.slice(n0), said: z.speech.slice(nBusy).map((e) => ({ t: e.t, key: e.key, text: e.text })) };
+                break;
+            }
+            await page.waitForTimeout(500);
+        }
+        save();
+        console.log('no course', JSON.stringify(out.noCourse).slice(0, 600));
+        await browser.close();
+        process.exit(0);
+    }
     // the wait logs what it reads every 10 s (pass 3: the first run timed out here with no log)
     out.wait = [];
     for (let k = 0; ; k++) {
@@ -136,7 +193,7 @@ try {
         stop = true;
         await poll;
         const after = await page.evaluate(READ);
-        const c = { name, nextBefore: before.course?.next, nextAfter: after.course?.next, lapsBefore: before.course?.laps, lapsAfter: after.course?.laps, lines: seen, wrongWay: seen.filter((l) => l.key === 'fly.wrong-way').length, gateBehind: seen.filter((l) => /gate-?[bB]ehind/.test(l.key)).length, s: +((Date.now() - tc) / 1000).toFixed(1) };
+        const c = { name, nextBefore: before.course?.next, nextAfter: after.course?.next, lapsBefore: before.course?.laps, lapsAfter: after.course?.laps, lines: seen, wrongWay: seen.filter((l) => l.key === 'fly.wrong-way').length, gateBehind: seen.filter((l) => /gate-?[bB]ehind/.test(l.key)).length, voiced: after.voiced.slice(before.voiced.length), sounds: after.oneShots.slice(before.oneShots.length).map((o) => o.cue), s: +((Date.now() - tc) / 1000).toFixed(1) };
         out.cases.push(c);
         console.log(name, JSON.stringify(c).slice(0, 500));
         save();

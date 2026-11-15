@@ -89,6 +89,8 @@ export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?
     ['sonic.say.helpRepeat', 'sonic.repeat'],
     // lane sonic-hints: X, from the lesson to the main menu
     ['sonic.say.helpHome', 'sonic.home'],
+    // lane quiet (message 54): the apostrophe, the narrator off and on
+    ['sonic.say.helpNarrator', 'sonic.narrator'],
     ['help.status', 'sonic.status'],
     ['help.glossary', 'sonic.glossary'],
     ['help.reset', 'respawn.start'],

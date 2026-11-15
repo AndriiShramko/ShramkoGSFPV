@@ -1,0 +1,1306 @@
+{
+  "name": "sonic-int-review-r12-train3d",
+  "context": {
+    "browser": {
+      "kind": "system-chrome",
+      "version": "157.0.8103.52",
+      "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "why": "installed"
+    },
+    "date": "2026-11-15T19:28:37.797Z",
+    "gitHead": "5eee34e5",
+    "gitDirty": true,
+    "node": "v22.13.0",
+    "platform": "win32 10.0.19045",
+    "cpu": "Intel(R) Core(TM) i9-7980XE CPU @ 2.60GHz"
+  },
+  "site": "http://127.0.0.1:5765",
+  "release": {
+    "sha": "9206d8ca",
+    "sonic": "293ebae",
+    "built": "2026-11-15T18:36:26.809Z"
+  },
+  "git": "5eee34e5",
+  "seconds": 264,
+  "passed": 9,
+  "total": 9,
+  "pass": true,
+  "checks": [
+    {
+      "name": "R12 speed-1: the lesson opens from its link with one Enter",
+      "pass": true
+    },
+    {
+      "name": "R12 speed-1: flown to its end and counted (passed, no fly.moving-on)",
+      "pass": true,
+      "value": {
+        "id": "speed-1",
+        "openedS": 1.233,
+        "flightS": 52,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 4,
+        "medianSpeed": 1.47,
+        "maxSpeed": 1.68,
+        "spokenTail": [
+          "lesson.speed-1.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-1.intro.1",
+          "lesson.speed-1.intro.2",
+          "lesson.speed-1.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-1.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 39,
+            "pos": [
+              -3.2,
+              3.4,
+              -1.7
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.32,
+                0,
+                -0.95
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 41,
+            "pos": [
+              -2.3,
+              3.3,
+              -4.6
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.27,
+                -0.18,
+                -0.95
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 43,
+            "pos": [
+              -0.9,
+              2.7,
+              -7.2
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.14,
+                -0.15,
+                -0.98
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 45,
+            "pos": [
+              0.4,
+              2.4,
+              -9.9
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.32,
+                -0.07,
+                -0.95
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 47,
+            "pos": [
+              2,
+              2.2,
+              -12.3
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.22,
+                -0.08,
+                -0.97
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 49,
+            "pos": [
+              3.8,
+              2.1,
+              -14.7
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.12,
+                -0.03,
+                -0.99
+              ],
+              "d": 2.4
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "R12 speed-2: the lesson opens from its link with one Enter",
+      "pass": true
+    },
+    {
+      "name": "R12 speed-2: flown to its end and counted (passed, no fly.moving-on)",
+      "pass": true,
+      "value": {
+        "id": "speed-2",
+        "openedS": 1.127,
+        "flightS": 37,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 3,
+        "medianSpeed": 2.53,
+        "maxSpeed": 8.19,
+        "spokenTail": [
+          "lesson.speed-2.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-2.intro.1",
+          "lesson.speed-2.intro.2",
+          "lesson.speed-2.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-2.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 23,
+            "pos": [
+              -1.3,
+              3.8,
+              11.9
+            ],
+            "target": "ring-2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.11,
+                -0.08,
+                -0.99
+              ],
+              "d": 3.1
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 25,
+            "pos": [
+              -3,
+              3.2,
+              6.9
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.08,
+                0,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 27,
+            "pos": [
+              -4.1,
+              3.3,
+              2.1
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0,
+                0.01,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 29,
+            "pos": [
+              -2.9,
+              3.3,
+              -3
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.02,
+                0.01,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 31,
+            "pos": [
+              -0.9,
+              2.2,
+              -7.7
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.03,
+                0.05,
+                -1
+              ],
+              "d": 3.1
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 33,
+            "pos": [
+              1.8,
+              2.2,
+              -12.1
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.08,
+                -0.07,
+                -0.99
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "R12 speed-3: the lesson opens from its link with one Enter",
+      "pass": true
+    },
+    {
+      "name": "R12 speed-3: flown to its end and counted (passed, no fly.moving-on)",
+      "pass": true,
+      "value": {
+        "id": "speed-3",
+        "openedS": 1.155,
+        "flightS": 33,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 3,
+        "medianSpeed": 3.51,
+        "maxSpeed": 10.37,
+        "spokenTail": [
+          "lesson.speed-3.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-3.intro.1",
+          "lesson.speed-3.intro.2",
+          "lesson.speed-3.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-3.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 19,
+            "pos": [
+              0,
+              3,
+              20.2
+            ],
+            "target": "ring-1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.06,
+                0,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 21,
+            "pos": [
+              0.4,
+              3,
+              14.7
+            ],
+            "target": "ring-1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.03,
+                0.08,
+                -1
+              ],
+              "d": 3.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 23,
+            "pos": [
+              -2.6,
+              3.7,
+              8.2
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.3,
+                -0.1,
+                -0.95
+              ],
+              "d": 3.4
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 25,
+            "pos": [
+              -4.2,
+              3.4,
+              1.5
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.01,
+                -0.03,
+                -1
+              ],
+              "d": 3.4
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 27,
+            "pos": [
+              -2.1,
+              2.8,
+              -5.4
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.12,
+                -0.12,
+                -0.99
+              ],
+              "d": 3.7
+            },
+            "keys": [
+              "KeyW",
+              "ShiftLeft"
+            ]
+          },
+          {
+            "s": 29,
+            "pos": [
+              1.3,
+              2.1,
+              -11.6
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.03,
+                -0.02,
+                -1
+              ],
+              "d": 3.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "R12 speed-4: the lesson opens from its link with one Enter",
+      "pass": true
+    },
+    {
+      "name": "R12 speed-4: flown to its end and counted (passed, no fly.moving-on)",
+      "pass": true,
+      "value": {
+        "id": "speed-4",
+        "openedS": 1.296,
+        "flightS": 31,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 3,
+        "medianSpeed": 4.52,
+        "maxSpeed": 13.78,
+        "spokenTail": [
+          "lesson.speed-4.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-4.intro.1",
+          "lesson.speed-4.intro.2",
+          "lesson.speed-4.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-4.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 17,
+            "pos": [
+              1.2,
+              5.3,
+              20.2
+            ],
+            "target": null,
+            "phase": "intro",
+            "attempt": 0,
+            "hum": null,
+            "keys": []
+          },
+          {
+            "s": 19,
+            "pos": [
+              3.2,
+              5.3,
+              20.2
+            ],
+            "target": null,
+            "phase": "intro",
+            "attempt": 0,
+            "hum": null,
+            "keys": []
+          },
+          {
+            "s": 21,
+            "pos": [
+              0.4,
+              3,
+              14.7
+            ],
+            "target": "ring-1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.16,
+                0.08,
+                -0.98
+              ],
+              "d": 4.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 23,
+            "pos": [
+              -3.6,
+              3.3,
+              6.4
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.1,
+                -0.03,
+                -0.99
+              ],
+              "d": 4.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 25,
+            "pos": [
+              -3,
+              3.5,
+              -2.7
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.02,
+                -0.12,
+                -0.99
+              ],
+              "d": 4.4
+            },
+            "keys": [
+              "KeyW",
+              "ShiftLeft"
+            ]
+          },
+          {
+            "s": 27,
+            "pos": [
+              1,
+              2.2,
+              -10.7
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.01,
+                -0.04,
+                -1
+              ],
+              "d": 4.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "no page error, no console error in any page",
+      "pass": true,
+      "value": []
+    }
+  ],
+  "result": {
+    "r12": [
+      {
+        "id": "speed-1",
+        "openedS": 1.233,
+        "flightS": 52,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 4,
+        "medianSpeed": 1.47,
+        "maxSpeed": 1.68,
+        "spokenTail": [
+          "lesson.speed-1.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-1.intro.1",
+          "lesson.speed-1.intro.2",
+          "lesson.speed-1.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-1.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 39,
+            "pos": [
+              -3.2,
+              3.4,
+              -1.7
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.32,
+                0,
+                -0.95
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 41,
+            "pos": [
+              -2.3,
+              3.3,
+              -4.6
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.27,
+                -0.18,
+                -0.95
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 43,
+            "pos": [
+              -0.9,
+              2.7,
+              -7.2
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.14,
+                -0.15,
+                -0.98
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 45,
+            "pos": [
+              0.4,
+              2.4,
+              -9.9
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.32,
+                -0.07,
+                -0.95
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 47,
+            "pos": [
+              2,
+              2.2,
+              -12.3
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.22,
+                -0.08,
+                -0.97
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          },
+          {
+            "s": 49,
+            "pos": [
+              3.8,
+              2.1,
+              -14.7
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.12,
+                -0.03,
+                -0.99
+              ],
+              "d": 2.4
+            },
+            "keys": [
+              "KeyW",
+              "KeyQ"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "speed-2",
+        "openedS": 1.127,
+        "flightS": 37,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 3,
+        "medianSpeed": 2.53,
+        "maxSpeed": 8.19,
+        "spokenTail": [
+          "lesson.speed-2.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-2.intro.1",
+          "lesson.speed-2.intro.2",
+          "lesson.speed-2.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-2.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 23,
+            "pos": [
+              -1.3,
+              3.8,
+              11.9
+            ],
+            "target": "ring-2",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.11,
+                -0.08,
+                -0.99
+              ],
+              "d": 3.1
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 25,
+            "pos": [
+              -3,
+              3.2,
+              6.9
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.08,
+                0,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 27,
+            "pos": [
+              -4.1,
+              3.3,
+              2.1
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0,
+                0.01,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 29,
+            "pos": [
+              -2.9,
+              3.3,
+              -3
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.02,
+                0.01,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 31,
+            "pos": [
+              -0.9,
+              2.2,
+              -7.7
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.03,
+                0.05,
+                -1
+              ],
+              "d": 3.1
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 33,
+            "pos": [
+              1.8,
+              2.2,
+              -12.1
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.08,
+                -0.07,
+                -0.99
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "speed-3",
+        "openedS": 1.155,
+        "flightS": 33,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 3,
+        "medianSpeed": 3.51,
+        "maxSpeed": 10.37,
+        "spokenTail": [
+          "lesson.speed-3.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-3.intro.1",
+          "lesson.speed-3.intro.2",
+          "lesson.speed-3.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-3.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 19,
+            "pos": [
+              0,
+              3,
+              20.2
+            ],
+            "target": "ring-1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.06,
+                0,
+                -1
+              ],
+              "d": 3
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 21,
+            "pos": [
+              0.4,
+              3,
+              14.7
+            ],
+            "target": "ring-1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.03,
+                0.08,
+                -1
+              ],
+              "d": 3.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 23,
+            "pos": [
+              -2.6,
+              3.7,
+              8.2
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.3,
+                -0.1,
+                -0.95
+              ],
+              "d": 3.4
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 25,
+            "pos": [
+              -4.2,
+              3.4,
+              1.5
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.01,
+                -0.03,
+                -1
+              ],
+              "d": 3.4
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 27,
+            "pos": [
+              -2.1,
+              2.8,
+              -5.4
+            ],
+            "target": "ring-5",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.12,
+                -0.12,
+                -0.99
+              ],
+              "d": 3.7
+            },
+            "keys": [
+              "KeyW",
+              "ShiftLeft"
+            ]
+          },
+          {
+            "s": 29,
+            "pos": [
+              1.3,
+              2.1,
+              -11.6
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                -0.03,
+                -0.02,
+                -1
+              ],
+              "d": 3.5
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "speed-4",
+        "openedS": 1.296,
+        "flightS": 31,
+        "phase": "passed",
+        "attempt": 1,
+        "gates": 6,
+        "dodges": 3,
+        "medianSpeed": 4.52,
+        "maxSpeed": 13.78,
+        "spokenTail": [
+          "lesson.speed-4.title",
+          "sonic.say.lessonKeys",
+          "lesson.speed-4.intro.1",
+          "lesson.speed-4.intro.2",
+          "lesson.speed-4.goal.1",
+          "fly.go",
+          "sonic.say.lessonKeys",
+          "lesson.speed-4.pass",
+          "fly.lesson-passed"
+        ],
+        "trail": [
+          {
+            "s": 17,
+            "pos": [
+              1.2,
+              5.3,
+              20.2
+            ],
+            "target": null,
+            "phase": "intro",
+            "attempt": 0,
+            "hum": null,
+            "keys": []
+          },
+          {
+            "s": 19,
+            "pos": [
+              3.2,
+              5.3,
+              20.2
+            ],
+            "target": null,
+            "phase": "intro",
+            "attempt": 0,
+            "hum": null,
+            "keys": []
+          },
+          {
+            "s": 21,
+            "pos": [
+              0.4,
+              3,
+              14.7
+            ],
+            "target": "ring-1",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.16,
+                0.08,
+                -0.98
+              ],
+              "d": 4.5
+            },
+            "keys": [
+              "KeyW",
+              "KeyE"
+            ]
+          },
+          {
+            "s": 23,
+            "pos": [
+              -3.6,
+              3.3,
+              6.4
+            ],
+            "target": "ring-3",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.1,
+                -0.03,
+                -0.99
+              ],
+              "d": 4.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          },
+          {
+            "s": 25,
+            "pos": [
+              -3,
+              3.5,
+              -2.7
+            ],
+            "target": "ring-4",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.02,
+                -0.12,
+                -0.99
+              ],
+              "d": 4.4
+            },
+            "keys": [
+              "KeyW",
+              "ShiftLeft"
+            ]
+          },
+          {
+            "s": 27,
+            "pos": [
+              1,
+              2.2,
+              -10.7
+            ],
+            "target": "ring-6",
+            "phase": "flying",
+            "attempt": 1,
+            "hum": {
+              "dir": [
+                0.01,
+                -0.04,
+                -1
+              ],
+              "d": 4.6
+            },
+            "keys": [
+              "KeyW"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "problems": []
+}

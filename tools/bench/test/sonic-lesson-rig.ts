@@ -51,7 +51,7 @@ export class FakeEngine {
     private cues_: readonly ActiveCue[] = [];
     layers: LessonLayers[] = [];
     cues: CueEvent[] = [];
-    said: { line: SpeechLine; interrupt: boolean; text: string; at: number }[] = [];
+    said: { line: SpeechLine; interrupt: boolean; text: string; at: number; quiet?: boolean }[] = [];
     frames = 0;
     lastInput: SonicFrameInput | null = null;
     inputs: SonicFrameInput[] = [];
@@ -117,11 +117,14 @@ export class FakeEngine {
      */
     lateCancelMs: number | null = null;
 
-    say(line: SpeechLine, o?: { interrupt?: boolean }): Promise<void> {
+    say(line: SpeechLine, o?: { interrupt?: boolean; quiet?: boolean }): Promise<void> {
         const text = this.tr.text(line);
         const interrupt = o?.interrupt === true;
-        this.said.push({ line, interrupt, text, at: this.clock.t });
+        const quiet = o?.quiet === true;
+        this.said.push({ line, interrupt, text, at: this.clock.t, quiet });
         this.onSpeech?.(line, text);
+        // the narrator off (train 3): the package's engine reports the line and neither voices nor waits for it
+        if (quiet) return Promise.resolve();
         if (this.parallel) return new Promise<void>((resolve) => this.queue.push({ endsAt: this.clock.t + estimateSpeechS(text, 1) * 1000, resolve, key: line.key, start: this.clock.t }));
         // speechSynthesis.cancel() ends what is queued at once (a line that had not begun, with lateCancelMs, reports it that much later)
         if (interrupt) {
@@ -240,6 +243,11 @@ export class Rig {
     lessonKeys: LessonStartKeys = DEFAULT_LESSON_START_KEYS;
     /** the pilot's 'Key hints at the start of each step' (lane sonic-hints): false is off */
     keyHints = true;
+    /** lane quiet (Q5): the pilot's narrator setting is off */
+    narratorOff = false;
+    /** lane quiet2 (N6): the narrator hint was said in an earlier flight, and how often it was marked in this one */
+    tipSaid = false;
+    tipMarks = 0;
     pilot: LessonPilot | null = null;
     /** the page's reaction to a session pref the mode sets or clears (respawn.ts: crash.enabled is a 'life' setting); null: none */
     onPref: ((id: string) => void) | null = null;
@@ -332,7 +340,16 @@ export class Rig {
             keyNames: () => rig.keyNames,
             speechRate: () => rig.speechRate,
             lessonKeys: () => rig.lessonKeys,
-            keyHints: () => rig.keyHints
+            keyHints: () => rig.keyHints,
+            narratorOff: () => rig.narratorOff,
+            narratorTip: {
+                key: () => 'Shift+V',
+                said: () => rig.tipSaid,
+                mark: () => {
+                    rig.tipSaid = true;
+                    rig.tipMarks++;
+                }
+            }
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);

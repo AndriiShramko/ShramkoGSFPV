@@ -31,6 +31,7 @@
 import { S, attitude } from '@gsfpv/sim-core';
 import type { Sim, SimEvent } from '@gsfpv/sim-core';
 import { REPLAY_KEY_ACTIONS, SPEECH_END_KEY } from '@shramko/sonic-fpv';
+import { quietCue } from './quiet-cues';
 import type { CueEvent, FlightSample, LessonLayers, LessonSession, MaterialClass, Pose, SessionEvent, SonicFrameInput, SonicWorld, SpeechLine, Vec3 } from '@shramko/sonic-fpv';
 
 /** Contacts closer together than this are one touch: a touch begins after this much quiet, ticks (0.5 s). */
@@ -66,7 +67,7 @@ export interface BridgeOut {
 export interface BridgeEngine {
     setLayers(layers: LessonLayers): void;
     cue(e: CueEvent): void;
-    say(line: SpeechLine, o?: { readonly interrupt?: boolean }): Promise<void>;
+    say(line: SpeechLine, o?: { readonly interrupt?: boolean; readonly quiet?: boolean }): Promise<void>;
     /** once per rendered frame (SonicMode.hear); the bridge itself never calls it */
     update?(input: SonicFrameInput): void;
     /**
@@ -146,6 +147,12 @@ export class SonicBridge {
      * re-derives them). Set by the page from the pilot's settings; null: the engine's own waits, as before.
      */
     sequential: (() => boolean) | null = null;
+    /**
+     * Train 3 (the owner's message 54): the narrator is off and this is a flight (not a lesson of the lesson list). True: a line is
+     * neither voiced nor sent to a screen reader nor waited for (the engine's say with `quiet`; no sequential reading time); it is still
+     * a speech event and a caption for the eye. Set by the page; null: never quiet.
+     */
+    quiet: (() => boolean) | null = null;
     /** how long a line takes to read, ms (the engine's own estimate at the pilot's speaking speed); `sequential` needs it */
     readTimeMs: ((text: string) => number) | null = null;
     /** waits `ms` (the page's timers; a test passes its own clock's) */
@@ -521,7 +528,7 @@ export class SonicBridge {
      * F1). A host line that interrupts cuts the lesson's lines that were not said to their end: they are said again once the host is done
      * (cutLines). A line of the lesson that comes later drops those (the lesson moved on), and one that interrupts ends the lesson's own.
      */
-    async say(line: SpeechLine, interrupt = false, o: { readonly lesson?: boolean } = {}): Promise<void> {
+    async say(line: SpeechLine, interrupt = false, o: { readonly lesson?: boolean; readonly asked?: boolean } = {}): Promise<void> {
         if (!this.on) return;
         const lesson = o.lesson === true;
         if (lesson) {
@@ -542,11 +549,17 @@ export class SonicBridge {
         this.lastLine = line;
         this.speaking++;
         const run = this.epoch;
-        const readTime = this.sequential?.() === true ? this.readTimeMs : null;
+        // lane quiet2 (the lead's N1): a line the pilot asked for with a key (`asked`: K's key help, I's status) is said whatever the
+        // narrator is set to; the narrator silences only what the mode says by itself
+        const quiet = o.asked !== true && this.quiet?.() === true;
+        // lane quiet (Q3, review QV-2): a quiet line's event keeps a sound (quiet-cues.ts, the one table of them)
+        const sound = quiet ? quietCue(line.key) : null;
+        if (sound) this.engine?.cue(sound);
+        const readTime = !quiet && this.sequential?.() === true ? this.readTimeMs : null;
         // a line that interrupts: what was being read and what waited for its turn are over now
         if (readTime !== null && interrupt) this.cutReading();
         this.handed = null;
-        const said = this.engine?.say(line, { interrupt }) ?? Promise.resolve();
+        const said = this.engine?.say(line, quiet ? { interrupt, quiet: true } : { interrupt }) ?? Promise.resolve();
         try {
             if (readTime === null) {
                 await said;
