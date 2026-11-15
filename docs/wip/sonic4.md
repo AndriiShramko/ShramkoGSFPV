@@ -589,8 +589,16 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - [x] X1.4 tests: new tools/bench/test/sonic-quiet3.test.ts; sonic-captions-fit.test.ts expectations moved to one line shown;
   with sonic-review, sonic-in-place, sonic-int-lazy, sonic-quiet2, sonic-quiet-w3: 65 passed (quiet3/v4.log). NEG OK for the M4
   block on origin/main's sonic-flight.ts (quiet3/neg-m4.log) and for M2 on its captions.ts and sonic.css (quiet3/neg-m2.log).
-- [~] X1.5 "after": release build, the same probe on Wroclaw and Tunis, narrator off and on.
-- [ ] X1.6 typecheck apps/fly and tools/bench, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
+- [x] X1.5 "after" on the release of dd6241f6 (exit 0, sha256 3b50b16b..., quiet3/after-build.log; stand-in walls in dist/walls;
+  quiet3/after-*.json; pictures U:/Temp/gsfpv-train3/shots/quiet3-after-*.png, 12). Narrator off: #ui set to off +0.002 s after the
+  press (before the install, Wroclaw +0.182 s, Tunis +0.166 s); lines to a live region from the press to 10 s: 0 on Wroclaw and 0
+  on Tunis (was 4 and 8); the recorder's regions 0. Narrator on (control): 380 and 376 lines in 10 s (before 380 and 382), the
+  first at +0.124 and +0.135 s as before. Course and first hum after Shift+G: Wroclaw 29.05 s, Tunis 7.94 s (narrator off). 0 page
+  errors in all four. M2 rectangles (all four runs the same): one caption shown at each size; 1920x1080 caption 1041,226-1255,276,
+  1280x720 721,226-935,276, 844x390 359,226-485,254; clock 921,120-999,217 / 601,120-679,217 / 383,120-461,217: no overlap, the
+  caption starts 9 px under the clock's bottom.
+- [x] X1.6 tsc --noEmit apps/fly 0 and tools/bench 0 (quiet3/tsc-*.log); a6-reference 1 passed (quiet3/a6.log).
+- [ ] X1.7 gates.py --only vitest,architecture,i18n,b18,leaks.
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
