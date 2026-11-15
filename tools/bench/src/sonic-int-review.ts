@@ -1134,10 +1134,13 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await lifeSpy(page);
         await page.keyboard.down('KeyW');
         await sleep(1500);
-        const onBefore = await page.evaluate((i: number[]) => {
+        // Y2 pass 2: pose, crashed and armed at the press and at the first cue, to tell a wall contact from a brake
+        const craftNow = (): Promise<{ v: number; t: number; pos: number[]; vel: number[]; crashed: number; armed: number }> => page.evaluate((i: number[]) => {
             const s = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv.session.sim.s;
-            return { v: Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0), t: performance.now() };
-        }, POSE_IDX);
+            const r = (x: number | undefined): number => Math.round((x ?? 0) * 100) / 100;
+            return { v: Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0), t: performance.now(), pos: [r(s[i[0]]), r(s[i[1]]), r(s[i[2]])], vel: [r(s[i[3]]), r(s[i[4]]), r(s[i[5]])], crashed: s[i[6]] ?? -1, armed: s[i[7]] ?? -1 };
+        }, [...POSE_IDX, S.crashed, S.armed]);
+        const onBefore = await craftNow();
         const t0 = Date.now();
         await page.keyboard.press('Backslash');
         let firstCue: { s: number; cues: string[] } | null = null;
@@ -1153,14 +1156,12 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
             }
             return p;
         }, (p) => firstCue !== null && p.lesson === 'scan-free' && p.phase === 'flying', 120000, 100).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
-        const onAfter = await page.evaluate((i: number[]) => {
-            const s = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv.session.sim.s;
-            return Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0);
-        }, POSE_IDX);
+        const atCue = await craftNow();
+        const onAfter = atCue.v;
         await page.keyboard.up('KeyW');
         const onSpy = (await lifeLog(page)).filter((e) => (e as { t: number }).t >= onBefore.t - 1);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-inplace.png`, fullPage: false });
-        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1), spy: onSpy };
+        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed }, spy: onSpy };
         const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null, switchOn };
         (result.r11 as { runs: object[] }).runs.push(run);
         check(`${tag}: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue`, on !== null && firstCue !== null, run);
@@ -1192,11 +1193,13 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
         const trail: object[] = [];
         const tF = Date.now();
-        const end = await steerByHum(page, (p) => p.phase === 'passed' || p.phase === 'idle', 360000, lines, trail, undefined, speed, stats);
+        // Y2 pass 2: Z5_FLIGHT_S raises the flight cap for slow runs (default 360 s; the whole run must stay under the 10-minute lock rule)
+        const capS = Number(process.env.Z5_FLIGHT_S ?? (speed <= 2 ? 480 : 360)) || 360;
+        const end = await steerByHum(page, (p) => p.phase === 'passed' || p.phase === 'idle', capS * 1000, lines, trail, undefined, speed, stats);
         await sleep(3000);
         const spoken = spokenAfter(await events(page), from);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
-        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-12), trail: trail.slice(-8) };
+        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-8) };
         check(`${tag}: the course was flown to its end by the hum`, end.phase === 'passed' || end.phase === 'idle', run.flight);
         await r11Off(page, tag, run);
         await ctx.close();
