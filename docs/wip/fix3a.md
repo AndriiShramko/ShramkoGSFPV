@@ -145,6 +145,27 @@ only, places kept): that changes the gates, which the stage forbids, so it is no
       both fail 'axis off the leg in' (40-110 deg measured) on almost every turn. Ring generation time 18.0 s -> 17.2 s
       summed over 33 rings (no measurable cost).
 
+Stage fixes (review FX-1 to FX-5)
+- [x] FX-1 stands (read walls.ts: startKeep only reached `await cacheP`, queue() swapped synchronously, so the write
+      began after in-use as on origin/main; my X1 'cause' described no change). Fix: wallcache.ts keepThenUse; runBase and
+      runRefine wait for the store write before queue() (note line bake.keeping meanwhile), at most KEEP_WAIT_MS 5000 (a
+      design choice, not a measurement; measured writes 0.34 and 0.65 s), then the walls go in anyway (92b4394f).
+- [x] FX-2 stands (WallCache.open falls back to MemKv; keepBuilt said ok). Fix: put reports memory, keepBuilt returns
+      ok false error 'memory', the line says bake.notKept (92b4394f).
+- [x] FX-3 stands (showKeep returned when another line held the box). Fix: wallcache.ts keptLine: not kept is said on
+      the done line, after any other line, or alone in an empty box, and always spoken (92b4394f).
+- [x] FX-4 stands by reading (measureAvoid had no .bake-box; .bake-box is a child of #ui like the guide). Fix: course/hud.ts
+      adds the box to the avoid list and watches it in the MutationObserver (92b4394f). No unit test (needs a DOM).
+- [x] FX-5 stands, but the suggested fix would not work: bestKey reads tr.version (always 1), not generator.version, and
+      the server refuses unknown params keys (apps/api/tracks.py PARAM_KEYS), so params.startShift cannot be saved. Fix:
+      generate.ts generatorVersion writes '<v>.s<shift>' for a turned ring (server: free string up to 40); link.ts bestKey
+      adds 's<shift>' before the drone only then, so unturned courses keep their best keys (92b4394f).
+- [x] tests: walls.test.ts 4 new, tracks-review TR-10 extended, start-near-spawn version checks: 66 + 4 passed;
+      negative controls (neg_control.py, ref 92b4394f~1): walls NEG OK (AssertionError), link.ts NEG OK (1 failed,
+      AssertionError), generate.ts NEG OK (1 failed, AssertionError). tsc apps/fly and packages/tracks: no errors.
+- [~] release build of 92b4394f (1930 files, no dist/walls); runner U:/Temp/gsfpv-train3/fix3a/fx/run.sh:
+      walls-store-probe Wroclaw (button, reload at in-use), Tunis, then tracks-page; gates.py beside it.
+
 ## Gate 1 from the spawn
 
 Measured by tools/bench/src/gate-one-audit.ts (Node, log U:/Temp/gsfpv-train3/fix3a/gate-one-audit.log, rows
@@ -189,7 +210,10 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
 
 ## Cause
 
-- Measured: the walls go in use before the store write starts. apps/fly/src/walls.ts:416 queue() sets state
+- Review FX-1 (stage fixes): the X1 fix did not change this order (the write still began one microtask after
+  in-use); since 92b4394f the walls go in use only after the write ended. That the integrator's loss came from a reload
+  inside the write is still a GUESS: no run reproduced the loss (both quiet-PC runs and the in-use reloads kept the walls).
+- Measured (first pass): the walls go in use before the store write starts. apps/fly/src/walls.ts:416 queue() sets state
   'in-use' (onSwap, walls.ts:336), the line says built (walls.ts:423), and only then walls.ts:425 starts
   `void remember(...)`, a fire-and-forget IndexedDB write of 58.3 MB (wallcache.ts:222-224: data row, meta row,
   evict). Nothing waits for it and nothing shows it; a reload or a closed tab inside that window loses the walls.
