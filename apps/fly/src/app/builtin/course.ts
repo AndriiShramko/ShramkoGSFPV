@@ -363,8 +363,10 @@ export const course: Feature = {
             const T = flownTransform();
             const margin = marginOf(tr);
             const problems = wallsCheck(col, T, margin)(upgradeTrack(tr));
-            // measured (free radii, minutes on 5 cm walls) only when the Save check finds a problem
-            const rep = checkTrack(tr, col, T, margin, problems.length > 0);
+            // never measured here: the free radii every 0.25 m held the page's thread for minutes on Tunis 5 cm walls when
+            // the Save check found a problem (fix3b Y1 pass 2, hang probe); the failing legs give their ends (course frame)
+            const rep = checkTrack(tr, col, T, margin, false);
+            const posOf = new Map<string, readonly number[]>([['start', tr.start?.pos ?? []], ...tr.gates.map((g) => [g.id, g.pos] as [string, readonly number[]])]);
             const st = flownStart(tr, T);
             const near = st ? nearestWall(col, st.pos) : null;
             const g1 = run!.gates[0];
@@ -373,7 +375,7 @@ export const course: Feature = {
                 spawn: [...ctx.session.spawn], start: tr.start, startFlown: st?.pos ?? null, gate1: g1 ? [g1.pos[0], g1.pos[1], g1.pos[2]] : null,
                 gates: tr.gates.length, laps: tr.laps, seed: tr.generator?.seed ?? null, proof: tr.generator?.params?.proof ?? null,
                 problems, startFreeM: rep.startFreeM, nearWallM: near ? Math.round(near.distance * 1000) / 1000 : null,
-                legs: rep.legs.filter((l) => !l.clear), gatesBad: rep.gates.filter((g) => !g.clear || !g.directionOk).map((g) => ({ id: g.id, freeM: g.freeM, axisInDeg: g.axisInDeg })), issues: rep.issues.slice(0, 6)
+                legs: rep.legs.filter((l) => !l.clear).map((l) => ({ from: l.from, to: l.to, lengthM: l.lengthM, ends: [posOf.get(l.from) ?? null, posOf.get(l.to) ?? null] })), gatesBad: rep.gates.filter((g) => !g.clear || !g.directionOk).map((g) => ({ id: g.id, freeM: g.freeM, axisInDeg: g.axisInDeg })), issues: rep.issues.slice(0, 6)
             };
         };
 
