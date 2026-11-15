@@ -99,19 +99,30 @@ Stage L2-build
     After the push the engine budget was 0.5 M in the next frame; drawn 15.78 M, then 14.46 M (12 frames), 9.87 M (30),
     5.58 M (60): the engine sheds the extra splats over about 60 uncapped frames, as L1 measured.
   - Typecheck render-pc, apps/fly exit 0 after 3314a9a7; tools/bench/test/a6-reference.test.ts passes (1 test).
-- [ ] 5. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16; lod-view on and off on Wroclaw and Lublin 2f1ddf5f;
-  governor-start; a6-reference; gates.py --only vitest,architecture,i18n,b18,leaks.
-- [ ] 6. 'What the owner does', 'not verified', every changed file under 'For the lead'. Commit.
-Left for the next run of L2 (this run's reply budget ended after item 4), in this order:
-1. Item 5: accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against a release build of HEAD on port 5820 (it takes the GPU
-   lock itself); lod-view on and off on Wroclaw 70b50d42 and Lublin 2f1ddf5f (the numbers of laptop3 hold);
-   governor-start; gates.py --only vitest,architecture,i18n,b18,leaks.
-2. Item 6: 'What the owner does', 'Not verified', every changed file under 'For the lead'; look at loadq-lowered.png and
-   loadq-network.png. Commit.
-3. Stalled files (one line, not chased): under the local HTTP/1.1 server a file that never answers blocks the load
+- [~] 5. Checks. Done: gates.py --only vitest,architecture,i18n,b18,leaks on 11da9c15
+  (U:/Temp/gsfpv-gates-20261115-224649): architecture, i18n, B18, leaks PASS; vitest 5002 passed, 14 skipped, 1 failed:
+  packages/render-pc/test/lod.test.ts:124 (lodMetaProblem under 50 ms of a real timer; not this lane's file, from
+  6d50b814) failed while the machine was loaded; the file alone passes 33 of 33. a6-reference passed after 3314a9a7
+  (item 4); no flight, input or collision code changed since. Not done: the browser checks below; the runner waited
+  for the GPU lock from 22:36 to 23:26 (other lanes held it) and was stopped.
+- [x] 6. 'What the owner does', 'Not verified', every changed file (sections at the end) (11da9c15). The Splat budget
+  help said the line is "at the bottom left"; the pictures show it under the scene credit at the top left: the four
+  texts now say "under the scene's credit" (11da9c15). loadq-lowered.png looked at: the sharp street, the line
+  'Detail: 6.4 of 16 M, lowered to keep the flight smooth'. loadq-network.png looked at: a black, smeared street (a few
+  coarse splats), the line 'Detail: files that did not arrive: 6. Trying again'.
+Left for the next run of L2, in this order:
+1. Browser checks with the ready runner (the dist of 3314a9a7 is current: only docs and texts of the help changed since;
+   rebuild first if the help text must show: node scripts/build-release.mjs):
+   `bash U:/Temp/gsfpv-train3/loadq/run-item5.sh gov acc lod` detached (it starts serve-csp dist 5820, takes the lock
+   for governor-start itself, accept-fly and lod-view-probe take it themselves; progress in item5-progress.txt). lod:
+   Lublin 2f1ddf5f and Wroclaw 70b50d42 at 1 M on and off, scored against laptop3's references l3-lub-ref16 and
+   l3-wro-ref16 (copied into .cache/lod-view); compare with laptop3 P2 (Lublin 1 M start 19.65 on / 19.44 off, Wroclaw
+   1 M start 24.98 / 24.80). accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (first line must name localhost:5820).
+   Write the numbers into item 5, commit.
+2. Stalled files (one line, not chased): under the local HTTP/1.1 server a file that never answers blocks the load
    though the keeper cuts it (item 3, lq2-stall1, lq2-stall); suspect the hung XHR in the engine (playcanvas Http, not
    aborted by GSplatAssetLoader.unload) holding the browser's six connections. Not measured on HTTP/2; the line names it.
-4. gen-catalog --check is stale for the new setting display.stillDetail: the lead runs scripts/gen-catalog.ts.
+3. gen-catalog --check is stale for the new setting display.stillDetail: the lead runs scripts/gen-catalog.ts.
 
 ## Facts (measured)
 
