@@ -1,5 +1,5 @@
 // The detail line (lane loadq, the owner's message 58, decisions G1 to G3, docs/wip/loadq.md): one line where the walls
-// line lives (on the credit, bottom left) that says what the page does with the scan's detail: still coming (how much
+// line lives (under the scene credit) that says what the page does with the scan's detail: still coming (how much
 // of the setting, files to go, about how long), full for the setting (a few seconds, then it hides), or what holds it
 // back: the frame rate keeper (with one press to let it choose), no finer level in the scan, files that did not arrive
 // (trying again; after the last try one press asks them again). A pilot who never set the splat budget by hand sees it

@@ -293,3 +293,48 @@ measured); a setting switches it off. The line shows it: "Detail: sharpening whi
 - Lower resolution does not buy quality: Lublin at 1366x768 scores no better than at 1920x1080, and the governor's
   half render scale with 6 M (29.46 dB) is worse than 4 M at full scale (30.65 dB, Wroclaw street).
 - Rest time is the cheapest quality: +4.9 dB after 5 s at rest on this PC (G6).
+
+## What the owner does
+
+1. Open Wroclaw (70b50d42) as before. A line under the scene's credit, below "Walls 5 cm", says how far the detail
+   has come: "Detail: 0.5 of 16 M, files to go: 141, about 31 s". Nothing to press; it counts down while you fly.
+2. To have it all: Settings, Display, Splat budget, "16 million splats". The page keeps that number. When every file is
+   in, the line says "Detail: full for your setting" for a few seconds and hides.
+3. If the laptop cannot draw 16 M smoothly, the page still draws 16 M and the line says "Detail: kept at your setting.
+   The picture is slower than your screen" with one button, "Let the page choose". Press it and the page lowers the
+   detail until the flight is smooth; the line then says how much it draws ("6.4 of 16 M, lowered to keep the flight
+   smooth"). Choosing a number in Splat budget again gives the number back.
+4. If the network loses files, the page asks for them again by itself and the line says "files that did not arrive:
+   6. Trying again". If they still do not come, the line says to check the connection and has a "Try again" button.
+5. Hover still or press Pause to look around: the line says "Detail: sharper while you hold still" and the picture
+   sharpens over a few seconds; the first stick move brings the flight's detail back. Settings, Display, "More detail
+   at rest" switches this off.
+
+## Not verified
+
+- The owner's laptop was not used. Every number in this file is from this PC (RTX 4090, headless Chrome, display
+  paced at 30 Hz, or BENCH_UNCAPPED=1 where said), with the device class forced through `set.display.deviceClass=`.
+  How often the "kept" state shows on a 144 Hz RTX laptop is not measured.
+- Stalled files under HTTP/2 (the CDN): not measured. Under the local HTTP/1.1 server a file that never answers still
+  blocks the load (left, item 3); the line names it, the load does not finish.
+- The memory cap of G6 (navigator.deviceMemory under 4 / 8 GB) was not met on a device with that memory: this PC
+  reports 8.
+- Phones and tablets: the line and G6 were not walked on a touch device.
+
+## Files changed by this lane (against the merge base f286dd49)
+
+- apps/fly/src/app/detail-rule.ts (new): drawPlan (G1), detailState and detailLine (G2), StillRise and stillCapM (G6).
+- apps/fly/src/app/builtin/detail.ts (new): the detail line under the scene credit, its two buttons.
+- apps/fly/src/app/builtin/still.ts (new): G6 at rest, setting display.stillDetail.
+- apps/fly/src/app/quality.ts: hand-set budget kept, keeperSlow, release(), the still budget.
+- apps/fly/src/app/builtin/drawing.ts: tells Quality whether the budget comes from the setting.
+- apps/fly/src/app/features.ts: registers detail and still. apps/fly/src/app/test-hook.ts: window.__gsfpv.detail().
+- packages/render-pc/src/stream-keeper.ts (new): retries with growing pause, stall cut, counts (G3);
+  packages/render-pc/src/renderer.ts (ticks it, loader.maxRetries 0, streamStats, retryFailedFiles);
+  packages/render-pc/src/index.ts (exports).
+- packages/prefs/src/defs/display.ts: display.stillDetail; packages/prefs/test/defs.test.ts (count 83).
+- packages/i18n/locales/fly/detail/{en,es,pl,ru}.json (new); packages/i18n/locales/fly/drawing/{en,es,pl,ru}.json
+  (Splat budget help: a hand-set number is kept; where the line is).
+- tests: packages/render-pc/test/stream-keeper.test.ts, tools/bench/test/loadq-detail.test.ts (new).
+- probe: tools/bench/scripts/loadq-probe.mjs (new). Evidence: evidence/2026-11-15/lod-view/score-lq-*.json.
+- For the lead to run: scripts/gen-catalog.ts (the catalogue outputs are stale for display.stillDetail).
