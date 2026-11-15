@@ -23,8 +23,11 @@ Stage P3-weak-budget
   view-lod-switches.test.ts (NEG OK), render-pc and fly typecheck exit 0 (this commit)
 - [x] 2. Multiplier 1.5 and 1.7 measured on Lublin at 0.5 M and 1 M (runner U:/Temp/gsfpv-train3/laptop3/run-p3.sh,
   build 66aa1609 on port 5741, against the P2 16 M reference): REJECTED, see Facts P3 (this commit)
-- [ ] 3. Next candidate, not started: why a lower multiplier freezes the page (find the cause first, see "Left"), then the
-  coarse cover of the frame and the budget inside it; the far field (`?viewlodfar=8`, runner set `far8`) not measured yet
+- [x] 3. Far field `?viewlodfar=8` at 1 M measured (runner set far8): REJECTED, see Facts P3. The cause of the freeze
+  below multiplier 2 was NOT looked into (pass 2 spent its replies on the governor, the after pictures and the checks)
+- [x] 6. Build 8461f4c6 (dist sha256 d82824fd...), served on 5741; "after" runs at 0.5 M and 1 M (runner set after),
+  scored against l3-lub-ref16; pictures laptop3-lublin-above-0p5M-after.png and -1M-after.png in
+  U:/Temp/gsfpv-train3/shots (the 140 m place); a6-reference 1 of 1 pass
 - [x] 5. Governor start step (R32, weak-devices-plan 2.1): FrameGovernor.startAt / settledStep, the step held 10 s is
   remembered in localStorage `gsfpv.governor.start` keyed by device class and GPU name, the next load starts there
   (quality.ts startFrom, builtin/drawing.ts); test governor-start.test.ts 4 of 4 (NEG OK), governor.test.ts pass,
@@ -139,6 +142,28 @@ score-p3-lub.txt). One run each, each probe held the GPU lock itself, about 4 mi
   every place from above by 0.08 to 0.14 dB.
 - 0.5 M, multiplier 1.7 and 1.5: the run ended with `page.screenshot: Timeout 30000ms exceeded` (the page drew no frame
   for 30 s, a frozen page for a pilot); 1 M, multiplier 1.5: `the scan did not reveal: {"s":"loading"}`.
+- 1 M, `?viewlodfar=8` (multiplier 2; outside the frame only the coarse stand-in), one run 04:28 to 04:31, build
+  66aa1609, vs P2 "on": start 19.74 vs 19.65, 40 m up 20.22 vs 20.14, 140 m up 19.48 vs 19.43 (+0.05 to +0.09 dB from
+  above, one run each, about the size of run-to-run noise); turns at once: yaw 95 17.53 vs 19.17 (-1.64), yaw 185 19.42
+  vs 20.36 (-0.94), pitch down 20.19 vs 19.11 (+1.08); settled: yaw 95 19.83 vs 19.71, yaw 185 22.02 vs 21.15, pitch down
+  20.42 vs 20.17, after the spin 20.96 vs 19.98. Bytes over the run 216.6 MB vs 149.3. In the frame from above 78 to 90 %
+  of 0.96 M (P2 on: about 75 to 86 %). REJECTED: the snap turn at once is worse by 0.9 to 1.6 dB (the city behind is
+  coarser when it turns into view) for a gain from above within noise, and 1.45 times the bytes.
+- After (build 8461f4c6: defaults unchanged, multiplier 2, far levels 3, plus the governor's start step, which a fresh
+  probe profile does not use), 04:33 to 04:41, against l3-lub-ref16, Lublin from above, dB:
+
+| Picture | 0.5 M before (P2 on) | 0.5 M after | 1 M before (P2 on) | 1 M after |
+|---|---|---|---|---|
+| start place | 18.22 | 18.22 | 19.65 | 19.66 |
+| 40 m up | 18.66 | 18.66 | 20.14 | 20.14 |
+| 140 m up | 18.01 | 18.03 | 19.43 | 19.44 |
+| yaw 95 (at once / settled) | 18.16 / 18.23 | 18.22 / 18.23 | 19.17 / 19.71 | 19.17 / 19.71 |
+| yaw 185 | 19.23 / 19.75 | 19.23 / 19.75 | 20.36 / 21.15 | 20.36 / 21.09 |
+| pitch down | 17.90 / 18.76 | 17.90 / 18.76 | 19.11 / 20.17 | 19.08 / 20.12 |
+
+  The 0.5 M after picture and the 0.5 M "on" picture of P2, looked at side by side: the same picture (smeared roofs and
+  courtyards in the near bottom half, the far park and buildings close to 16 M). The 1 M pair was compared by the
+  score only (equal within 0.05 dB), not by eye.
 - Engine reading (playcanvas 2.23.2 build, GSplatBudgetBalancer.balance): every node keeps at least its coarsest level
   (the total starts at totalCoarsestCount; a budget below it gives every node its coarsest), so a node is never dropped
   by the choice; a hole is a file not loaded yet. Finer bands are added in the order of log(distance) - band * log(multiplier),
@@ -148,6 +173,12 @@ score-p3-lub.txt). One run each, each probe held the GPU lock itself, about 4 mi
 
 - P3: a multiplier below 2 is not taken: 1.7 measured worse from above at 1 M, 1.5 and 1.7 at 0.5 M froze the page.
   The default stays 2; the switch stays for the measurement.
+
+- P3: `?viewlodfar=8` not taken (snap turn worse at once by 0.9 to 1.6 dB, gain from above within noise); the default
+  stays 3 far levels, the switch stays for the measurement.
+- P3: the governor's start step is taken (R32, weak-devices-plan 2.1): no number of the picture changes on a fresh
+  profile, and on a device that settled lower it removes the first seconds of missed frames on the next load. The
+  10 s hold before a step is remembered is an estimate (two calm windows of DEFAULT_GOVERNOR), not measured.
 
 - D91 numbered after main's last D90; renumber at the merge if another lane took D91.
 - `active` now also needs a streamed scan present, so on a single-file scan the renderer sets the engine's own rule
@@ -180,7 +211,26 @@ half of the frame, which gets about the same level as the far field (level over 
 that fills most of the picture, less for the far rim), not more culling outside it. The rule's clear gain is after
 turns and at street level, and it costs 1.6 to 2.6 times the bytes over a flight with turns.
 
+P3, what a pilot on a weak computer sees now (budget 0.5 to 1 M): Lublin from above looks as before this stage. The
+three candidates measured (multiplier 1.7 and 1.5, far field 8) did not improve it and were rejected; the frame's
+priority of lod-view already spends 78 to 90 % of the budget inside the frame from above, so the chopped near half of the
+picture is not a culling problem. New: a device that settled on a lower governor step starts there on its next load
+instead of missing frames for its first seconds; a wrong start climbs back after 5 s of calm.
+
+P3, not solved and why:
+- The near half of the frame from above is still smeared at 0.5 and 1 M. The lever left is a different spread of the
+  budget inside the frame (more for the near ground that fills most of the screen); the only knob of the engine's
+  balancer for it is the multiplier, and every value below 2 either scored worse (1.7 at 1 M) or froze the page (1.5 and
+  1.7 at 0.5 M). The freeze's cause (balancer, loader or GPU) was not found; it must be found before a value below 2 or a
+  balancer of our own (screen-size priority, a coarse cover first) can be tried.
+- The budget chosen from the device class and corrected by the measured frame time: the governor already lowers it
+  from the class's preset; the device class itself has no timing (a guess from what the browser says).
+- No weak device was used: all budgets were forced by `budget=` on an RTX 4090 capped at 30 frames/s.
+
 ## Not verified
+
+- P3: the governor's start step in a browser: no probe flew twice on one profile, so the remembered step and the start
+  from it are held by the unit test only. The cause of the freeze below multiplier 2. The 1 M after picture by eye.
 
 - No browser run in this stage (the stage asked for none): the review fix is held by the unit test only; the
   hand-off's live checks (`lod().view` active and calls growing on Lublin and Wroclaw, `&viewlod=0`) were not run on a
@@ -204,3 +254,5 @@ turns and at street level, and it costs 1.6 to 2.6 times the bytes over a flight
 - P2: the most turns went to a first series lost to Git Bash turning `--path /en/fly/` into a Windows path (10 minutes,
   half of it waiting for another lane's lock); `MSYS2_ARG_CONV_EXCL='*'` in the runner from the start would have saved it.
 - P3 (first worker): the most turns went to reading the engine's balancer and wiring a URL switch through four files; four probes of 4 minutes each gave one usable score (three runs froze or did not reveal). A short 1-minute probe (start place only, no turns) per candidate first would have found the freeze in a quarter of the time.
+- P3 (pass 2): the most turns went to waiting on accept-fly (over 10 minutes) with a wrong wait loop first (Git Bash
+  `ps` does not show node's command line); a ready wait helper on the process command line would have saved two turns.
