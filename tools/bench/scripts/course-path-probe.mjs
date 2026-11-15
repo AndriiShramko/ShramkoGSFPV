@@ -10,6 +10,7 @@
 // Stage F1-no-freeze: also every long task of the page's main thread (PerformanceObserver 'longtask') from Shift+G to the
 // course, the longest time the shown walls/course text did not change while a build ran (maxSilentS), the longest time the
 // page did not answer the probe (maxReadGapS), and where the walls were built (hook walls.lastBake.where).
+// PROFILE=1: a CDP CPU profile of the main thread over the same time; every busy run of 300 ms or more with its functions.
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { pickBrowser } from '../src/chrome.mjs';
@@ -122,6 +123,29 @@ const rot = (q, v) => { // q = [w, x, y, z]
 };
 const clockMs = (txt) => { const m = /(\d+):(\d{2})(?:[.,](\d+))?/.exec(txt || ''); return m ? (Number(m[1]) * 60 + Number(m[2])) * 1000 + (m[3] ? Number(m[3].padEnd(3, '0').slice(0, 3)) : 0) : null; };
 
+// runs of busy samples (anything but '(idle)', gaps under 10 ms) of at least 300 ms in a CDP profile, each with the
+// functions that held it: self time and inclusive time (a function counted once per sample); seconds from Profiler.start
+const busyRuns = (p) => {
+    const byId = new Map(p.nodes.map((n) => [n.id, n]));
+    const parent = new Map();
+    for (const n of p.nodes) for (const c of n.children || []) parent.set(c, n.id);
+    const label = (n) => { const f = n.callFrame; return `${f.functionName || '(anon)'}@${(f.url || '').split('/').pop()}:${f.lineNumber + 1}:${f.columnNumber + 1}`; };
+    const runs = []; let cur = null, t = p.startTime;
+    for (let i = 0; i < p.samples.length; i++) {
+        t += p.timeDeltas[i] || 0;
+        const n = byId.get(p.samples[i]);
+        if (n.callFrame.functionName === '(idle)') { if (cur && t - cur.end > 10000) { runs.push(cur); cur = null; } continue; }
+        if (!cur || t - cur.end > 10000) { if (cur) runs.push(cur); cur = { start: t, end: t, self: new Map(), incl: new Map(), n: 0 }; }
+        cur.end = t; cur.n++;
+        cur.self.set(label(n), (cur.self.get(label(n)) || 0) + 1);
+        const seen = new Set();
+        for (let id = n.id; id !== undefined; id = parent.get(id)) { const l = label(byId.get(id)); if (!seen.has(l)) { seen.add(l); cur.incl.set(l, (cur.incl.get(l) || 0) + 1); } }
+    }
+    if (cur) runs.push(cur);
+    const top = (m, n) => [...m].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => [k, Math.round((v / n) * 100)]);
+    return runs.filter((r) => r.end - r.start >= 300000).map((r) => ({ atS: +((r.start - p.startTime) / 1e6).toFixed(1), ms: Math.round((r.end - r.start) / 1000), samples: r.n, selfPct: top(r.self, r.n), inclPct: top(r.incl, r.n) }));
+};
+
 const out = [];
 for (const id of idsArg.split(',')) {
     const name = NAMES[id] || id;
@@ -139,8 +163,10 @@ for (const id of idsArg.split(',')) {
         await page.waitForTimeout(2000);
         const x = page.locator('.screen.radio [data-action=radio-close]');
         if (await x.count()) { await x.first().click(); await page.waitForTimeout(800); }
-        r.install = await ev(INSTALL);
         r.pressAtMs = await ev(() => performance.now());
+        // PROFILE=1: a CPU profile of the page's main thread from Shift+G to the course (CDP Profiler, 2 ms samples)
+        const cdp = process.env.PROFILE ? await ctx.newCDPSession(page) : null;
+        if (cdp) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.setSamplingInterval', { interval: 2000 }); await cdp.send('Profiler.start'); }
         const t0 = Date.now();
         await page.keyboard.press('Shift+KeyG');
         let lastShown = null, lastChange = 0, lastRead = 0;
@@ -164,8 +190,12 @@ for (const id of idsArg.split(',')) {
         const lt = await ev((from) => (window.__lt || []).filter((e) => e[0] >= from), r.pressAtMs);
         r.longtasks = { n: lt.length, sumMs: Math.round(lt.reduce((a, e) => a + e[1], 0)), maxMs: Math.round(Math.max(0, ...lt.map((e) => e[1]))),
             top: lt.slice().sort((a, b) => b[1] - a[1]).slice(0, 8).map((e) => ({ atS: +((e[0] - r.pressAtMs) / 1000).toFixed(1), ms: Math.round(e[1]) })) };
+        if (cdp) { const { profile } = await cdp.send('Profiler.stop'); r.profile = busyRuns(profile); }
         if (r.courseAtS === undefined) throw new Error(r.problem || r.fail || 'no course');
         await page.waitForTimeout(3500); // the arrival warning and the gates' delay
+        // the scripted pilot goes in after the walls: a walls swap (session.rebuildSim) makes a new runner, and a hook set
+        // on the old one before Shift+G never ran (F1 run of 02:08: no pass, no crash)
+        r.install = await ev(INSTALL);
         const poses = await ev(() => window.__gsfpv.course.gatePoses());
         r.gates = poses.length;
         const top = await ev(TOPDOWN);
@@ -224,4 +254,4 @@ for (const id of idsArg.split(',')) {
     await ctx.close();
 }
 await browser.close();
-for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, afterR: r.afterR, errors: r.errors.length, fail: r.fail }));
+for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, busy: r.profile?.map((x) => [x.atS, x.ms]), lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, afterR: r.afterR, errors: r.errors.length, fail: r.fail }));
