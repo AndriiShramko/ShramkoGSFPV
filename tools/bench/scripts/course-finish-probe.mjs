@@ -150,7 +150,7 @@ try {
     if (process.env.CLOSED === '1') {
         r.tries = [];
         for (let i = 0; i < 8; i++) {
-            const now = await ev(() => { const k = window.__gsfpv.course; return { seed: k.seed, laps: k.track ? k.track.laps : null, gates: k.gates }; });
+            const now = await ev(() => { const k = window.__gsfpv.course; return { seed: k.seed, laps: k.look().roles[0] === 'startFinish' ? 2 : 1, gates: k.gates }; }); // hook.track has no laps: the role says closed
             r.tries.push(now);
             if (now.laps > 1) break;
             await page.keyboard.press('Shift+KeyG');
@@ -166,7 +166,7 @@ try {
     const poses = await ev(() => window.__gsfpv.course.gatePoses());
     r.gates = poses.length;
     r.shapes = poses.map((p) => p.shape.kind);
-    r.closed = await ev(() => { const c = window.__gsfpv.course; return c.track ? c.track.laps : null; });
+    r.closed = await ev(() => window.__gsfpv.course.look().roles[0] === 'startFinish');
     r.look = await ev(() => window.__gsfpv.course.look());
     r.before = await ev(() => ({ clock: window.__gsfpv.course.clockText(), guide: window.__gsfpv.course.guide(), next: window.__gsfpv.course.next, laps: window.__gsfpv.course.laps }));
     const ax = poses.map((p) => rot(p.quat, [0, 0, 1]));

@@ -1208,24 +1208,56 @@ Logs U:/Temp/gsfpv-train3/course4/z1/.
       of each other); course4-finish-card-tunis-lap1 (844x390: the card is small and sits under the Share button and the
       scene credit; the clock block 0:00.00 with four lines stands in the middle of the view); course4-next-gate-tunis
       (the next gate 5 lit lime with its plate, clear; the clock block stands right above it in the middle of the view).
-- [ ] gates.py: vitest, architecture, i18n, leaks PASS; b18 FAILED on the word 'undefined' in this file (fixed in this
-      commit, not rerun). a6-reference 1 passed.
+- [x] gates.py pass 1: vitest, architecture, i18n, leaks PASS; b18 failed on a placeholder word in this file. a6-reference
+      1 passed (pass 1; pass 2 touched no flight, input or collision code).
 
-## Left (Z1-see)
+## Status Z1-see pass 2 (course5)
 
-1. Repair from the pictures (not done, budget): (a) hide or dim the clock block while the splash or card shows
-   (course/hud.ts), so the two texts do not overlap; (b) at 844x390 the clock block covers the middle third and the card
-   sits under the top buttons: move the clock block to a corner in short views and the card below the top bar
-   (hud.css); (c) the START banner reads 16 px wide from 60 m: make the guide's line say START / FINISH for gate 1 (a
-   screen-space label, course/guide.ts, four locales) rather than grow the 3D banner; then take the pictures again.
-2. No lap splash was seen: both scans gave an OPEN course (laps 1), so every lap end is the card. course4-lap-splash.png
-   and the 'gone 2 s after the lap end' check for the splash need a closed course (a seed that closes, or the editor's
-   lap setting); the card at Wroclaw 1920x1080 had kind none 2.2 s after the end although CARD_HOLD_MS is 3000 (Tunis:
-   alpha 0.75 at 2.2 s): measure the hud's clock on the big scan (course/hud.ts tick), a guess: frame time.
-3. The probe names its pictures by lap count, which resets on an open course: each run overwrote the last picture
-   (course-finish-probe.mjs line 206: add the run number). 390x844 was never reached (3 ends, sizes advance per end).
-4. Not run: OFF=1 ('Lap time on screen' off), pause-over-course-probe (8 of 8), the Fly by Sound page proof of CU-1 and
-   CU-2 (Shift+G in the sound mode gives single gates; the spoken line and the splash at a lap end), Forest Floor
-   ab5efa0e (A2), A1 (no wall cell in the gate tube), A3 (ladder by the flown craft), gates.py rerun for b18.
+Logs U:/Temp/gsfpv-train3/course4/z1b/. Release build of 223d52d5: BUILD EXIT 0, dist/walls from
+U:/Temp/gsfpv-train3/walls/release (9 scans incl. 70b50d42); served on 5780, stopped.
+- [x] Repairs (223d52d5): (c) the guide's screen label names the role: 'START - 60 m', 'START / FINISH - 60 m',
+      'FINISH - 12 m' (finish.ts gateRole, guideLabel; hud.ts guide; course.ts; key course.hud.guideRole in en, es, pl,
+      ru); course-finish.test.ts 'course5 Z1' 2 tests, NEG OK (old finish.ts, course.ts and locales). (a) the clock's
+      block is hidden (visibility) while the splash or card shows (hud.css .course-dim). (b) views under 500 px high:
+      clock block in the lower right corner, splash and card in the lower middle (hud.css). Typecheck fly exit 0;
+      course-finish.test.ts 16 passed.
+- [x] Probe (223d52d5 and this commit): CLOSED=1 presses Shift+G until gate 1 is START / FINISH (8 tries), ENDS lap
+      ends each at the next size, pictures named -e<n>-<size>, the time the splash or card is gone measured in page
+      time from its opening, the clock block's rectangle after it, the guide label at 60 m. hook.track has no laps
+      field: the probe reads closed from look().roles.
+- [x] Browser runs (one lock hold each): Wroclaw 70b50d42 290 s, Tunis 887f27aa 241 s, Winter Garden 7a475d38 112 s;
+      exit 0, crashes 0, page errors 0 on all three.
+      Wroclaw: 9 courses by Shift+G (15 to 34 gates), all open; 4 run ends at 1920x1080, 1280x720, 844x390, 390x844:
+      card 0:26.66 / clock Last 0:26.67, 0:28.23 / 0:28.23, 0:26.66 / 0:26.67, 0:26.70 / 0:26.70 (0.01 s at most);
+      card gone 3467, 3471, 3477, 3438 ms after the end (hold 3000 + fade 400 + poll); the clock block hidden under the
+      card at all four; card and clock block clear of the middle third and inside the width at all four.
+      Tunis: 9 courses (24 to 40 gates), all open; ends 0:30.73/0:30.73, 0:32.32/0:32.33, 0:31.06/0:31.07,
+      0:30.93/0:30.93; gone 3464, 3432, 3434, 3484 ms; middle third free and inside width at all four.
+      Guide at 60 m on both: 'START - 60 m', 77 x 16 px, font 13 px (banner 16.4 x 5.2 px).
+      Winter Garden (closed on the 2nd seed, 37 gates): lap splash 0:21.10 at 1920x1080 and 0:23.63 (+2.53) at
+      844x390, both equal to the clock's Last; splash gone 1946 and 1947 ms after the lap end; card 1:06.93 at
+      390x844 gone 3489 ms; guide 'START / FINISH - 60 m' 130 x 16 px.
+      The 2.2 s card on Wroclaw in pass 1 was the probe: it waited after a screenshot that takes about 1 s.
+- [x] Pictures looked at (U:/Temp/gsfpv-train3/shots): course4-lap-splash.png (Winter Garden, 1920x1080: the lap's
+      time 0:21.10 in large white digits in the upper middle, no clock block, the guide 'Gate 2 - 6 m' at the left
+      edge); course4-finish-card.png (Wroclaw 1280x720: 'Course done 0:28.23 +1.56 Total .. Best lap' alone in the upper
+      middle, no clock lines behind it); course4-844.png (Tunis 844x390: the card in the lower middle above the bottom
+      line, clear of the top buttons and the credit); course4-start-60m-tunis.png (the gate is lost in the scene from
+      60 m; the label 'START - 60 m' in a dark box marks it and reads at once). course4-start-gate.png and
+      course4-next-gate.png are copies of this pass's Wroclaw pictures, not looked at again (pass 1 described them).
+- [ ] gates.py pass 2: vitest, architecture, i18n, leaks PASS (vitest 123 s); b18 FAILED on the placeholder word in
+      this file's pass-1 line, rewritten in this commit, not rerun.
 
+## Left (Z1-see after pass 2)
+
+1. A finding for the lead: on Wroclaw and Tunis 18 of 18 courses Shift+G gave are open (laps 1), so a pilot of the
+   owner's scans never sees the lap splash, only the card at each run's end; the closing rule is in
+   packages/tracks/src/generate.ts lines 685-690 (a gate half way along must see the start).
+2. Not run: gates.py rerun for b18; OFF=1 ('Lap time on screen' off); pause-over-course-probe (8 of 8); the Fly by
+   Sound page proof of CU-1 and CU-2 (Shift+G in the sound mode gives single gates; the spoken line and the splash at a
+   lap end); Forest Floor ab5efa0e (A2); A1 (no wall cell in the gate tube); A3 (ladder by the flown craft).
+3. course4-start-gate.png and course4-next-gate.png of this pass not looked at; the checker on the ring was seen in
+   pass 1 only.
+
+Cost (course5 Z1-see pass 2): about 30 replies; the most went to three probe runs and their pictures; a probe that reads closed from the hook and a known closing seed per scan would have saved the 16 open retries.
 Cost (course5 Z1-see): about 30 replies; the most went to the browser proof and reading its pictures; the probe flew open courses only, so the splash path stayed unseen; a probe option that asks a closed course would have saved a run.
