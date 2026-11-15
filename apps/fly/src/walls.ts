@@ -180,6 +180,14 @@ export function mountWalls(o: WallsOptions): WallsHook {
     }
     more.addEventListener('toggle', () => { if (more.open) { fold(false); placeMenu(); } });
     window.addEventListener('resize', placeMenu);
+    // Esc closes the open panel and only the panel (capture: before the app's keys see it)
+    const onEsc = (e: KeyboardEvent): void => {
+        if (e.key !== 'Escape' || !more.open) return;
+        more.open = false;
+        e.stopPropagation();
+        e.preventDefault();
+    };
+    window.addEventListener('keydown', onEsc, true);
     // top middle: only what needs the pilot (a build or refine button, progress, the result); empty
     // otherwise, so it covers nothing (on a phone the pad hint sits there)
     // CR-2: while a build runs, a bar that moves on the compositor (it keeps moving when the main thread is held by the
@@ -241,6 +249,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             box.remove();
             more.remove();
             window.removeEventListener('resize', placeMenu);
+            window.removeEventListener('keydown', onEsc, true);
         },
         rows: async () => (await cacheP).rows(),
         clear: () => clearStore(),

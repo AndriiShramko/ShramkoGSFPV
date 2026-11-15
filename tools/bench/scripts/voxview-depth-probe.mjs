@@ -48,7 +48,7 @@ async function panel() {
         await page.click('[data-testid=walls-summary]');
         await sleep(600);
         const read = () => page.evaluate(() => {
-            const box = (el) => { if (!el || el.offsetParent === null) return null; const b = el.getBoundingClientRect(); return { l: Math.round(b.left), t: Math.round(b.top), r: Math.round(b.right), b: Math.round(b.bottom), w: Math.round(b.width), h: Math.round(b.height) }; };
+            const box = (el) => { if (!el || el.getClientRects().length === 0) return null; const b = el.getBoundingClientRect(); return { l: Math.round(b.left), t: Math.round(b.top), r: Math.round(b.right), b: Math.round(b.bottom), w: Math.round(b.width), h: Math.round(b.height) }; };
             const menu = document.querySelector('.walls-menu');
             const close = document.querySelector('[data-action=voxpanel-close]');
             const fold = document.querySelector('[data-action=voxpanel-fold]');
@@ -66,8 +66,10 @@ async function panel() {
         await page.click('[data-testid=walls-summary]'); await sleep(300);
         await page.keyboard.press('Escape'); await sleep(300);
         after.esc = await page.evaluate(() => !document.querySelector('[data-testid=walls-more]')?.open);
-        await page.evaluate(() => { const d = document.querySelector('[data-testid=walls-more]'); if (d) d.open = true; }); await sleep(300);
-        await page.click('[data-testid=walls-summary]', { force: true }).catch(() => {}); await sleep(300);
+        // the chip as a person uses it: one click opens, the next click closes
+        await page.click('[data-testid=walls-summary]'); await sleep(300);
+        after.chipOpened = await page.evaluate(() => !!document.querySelector('[data-testid=walls-more]')?.open);
+        await page.click('[data-testid=walls-summary]').catch(() => {}); await sleep(300);
         after.chip = await page.evaluate(() => !document.querySelector('[data-testid=walls-more]')?.open);
         r.panel[`${w}x${hgt}`] = { ...v, after };
         step(`panel ${w}x${hgt}: ${JSON.stringify({ menu: v.menu, inView: v.menuInView, close: v.close, closeInView: v.closeInView, closeOnTop: v.closeOnTop, scroll: [v.scrollH, v.clientH, v.overflowY], after })}`);
