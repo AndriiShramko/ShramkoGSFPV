@@ -17,7 +17,46 @@ Stage S1-count-a-course (train 3 wave 3, last finishing lane):
   course3 worker posts 'progress' messages before the track; sonic/course-ask.ts courseAnswer read any other message of the
   job as 'failed' and ended the worker at the first progress message. Fix: progress is no answer. Test sonic-scan-course
   "waits through the worker's progress messages": 6 of 6, NEG OK on the old course-ask.ts; apps/fly tsc 0 errors.
-- [ ] Counted runs again (release build first): Tunis 3, Housefly 3, Wroclaw 3; then Tunis 5, Wroclaw 5; miss records read.
+- [x] Counted runs after the fix (release 9d063579, walls 70b50d42 v1 10 cm and d10c5638 v1 5 cm copied into dist/walls,
+  render off, no GPU lock, port 5830, Z5_FLIGHT_S 300; U:/Temp/gsfpv-train3/sonic3/s1/runs.sh c, evidence c-*.json, summary
+  by s1/sum.py):
+  | Run | N to gate 1 | course | flight | median / max m/s | checks |
+  |---|---|---|---|---|---|
+  | Tunis 887f27aa 3 m/s | 30.7 s | NOT counted: attempt 1 failed at g1 at 6 s, attempt 2 reached g24 of the course and failed at 274 s, attempt 3 flying at the cap | 303 s | 0.99 / 2.99 | 8 of 10 |
+  | Housefly d10c5638 3 m/s | 52.3 s | NOT counted: g1 passed, then no move for the rest of the 300 s at g2 | 303 s | 0 / 2.86 | 7 of 10 |
+  | Wroclaw 70b50d42 3 m/s | - | stopped at the reply budget before its course | - | - | - |
+  Miss records (item 4), Tunis: (1) g1, attempt 1: the craft came at g1 from BEHIND its plane (gate frame z -6.0 to 0, the
+  runner passes a gate only from +z to -z); the hum's bearing equals the true bearing of the gate centre in every sample (0 deg
+  median and max error, aim offset 0 m: no racing line in the scan course). So the cue leads the pilot into the gate from the
+  wrong side: the hum names the gate centre, never the side to enter from. (2) g24, attempt 2: the craft hovered 0.1 to 0.8 m
+  from the gate centre at 0 m/s for the last 3 s, Space and Shift alternating, no W: at the centre the hum's direction turns
+  steep (the probe pilot holds W only with the hum under slope 0.3) and nothing tells "go through". Housefly g2: craft still at
+  [7, 19.5, 2.5] from 286 to 300 s with W and Shift held, hum 11.8 m ahead, 6 deg below; dodges 0 in the whole run (the stall
+  rule did not fire: cause not measured; a wall contact or a crash hold is a guess).
+  Verdict (from the record): the cues lead past the gate (no entry side; degenerate direction at the centre), not a too
+  coarse pilot and not a too sharp turn (no miss came from a turn at speed).
+- [ ] LEFT, in this order (stage stopped past its reply budget at a clean commit; no job of this lane runs, no lock held):
+  1. Package (branch train3) cue fix with a unit test and a negative control: the hum of a gate aims at an approach point on
+     the gate's entry side (centre + normal x a distance, an estimate until measured by tools/ear-pilot.ts) while the craft is
+     behind the plane or off the gate axis, and at a point beyond the gate (centre - normal x d) within about 2 m of the plane,
+     so its direction always leads through the opening from +z; or switch layers.racingLine on in scanCourseLesson
+     (apps/fly/src/sonic/scan-lesson.ts) only after checking that RacingLine (package src/cues/line.ts) follows the gate
+     normals (it smooths gate centres today: not checked). Pin move after it.
+  2. Probe pilot (tools/bench/src/sonic-int-review.ts steerByHum): hold W through the gate when the hum is ahead and loud
+     (close), not only when level: a rule a human can do from loudness; the lesson text of the scan course must say it
+     ("when the hum is loud and ahead, keep going straight through"), locales en es pl ru.
+  3. Housefly g2 stall: read c-d10c5638-3.json trail/switchOn and S.crashed during the stall; why dodges stayed 0.
+  4. Rerun runs.sh with "887f27aa:3 d10c5638:3 70b50d42:3", then 5 m/s on Tunis and Wroclaw; release build first and the
+     walls copy.
+  5. Attempt time limit of the scan course at 2 m/s: scanCourseLesson takes scan-free's attemptLimitS, which is null, so a
+     scan course has NO attempt time limit at any speed (read in code, lessons/scan-free.json and runner.ts 1199); the Y2
+     "attempt time" guess was wrong. Non-final failures say only progress, retry and hint, never the reason (runner.ts
+     endAttempt): a pilot does not hear why attempt 1 or 2 failed (left for a lesson-speech change).
+  6. Switch on still loses speed with no new life (Tunis 6.94 -> 0 with a 'crash' life at +6 s; Housefly 6.66 -> 0.21, crashed
+     0, armed 1): old item C.
+  7. The course3 worker's progress ('progress' messages with estMs) is not said in Fly by Sound: only "making a course"; the
+     owner's rule wants stage and time left for anything over 2 s (Tunis 30.7 s, Housefly 52.3 s from N to gate 1).
+  8. gates.py --only vitest,architecture,i18n,b18 on the head before handing over (not run in S1).
 
 Stage Y2-prove (train 3 wave 2, finishing):
 - [x] Y1 LEFT 1: a course made with N over an in-place flight keeps the pilot's crash rule and bump (mode.ts ModeStart.keepRules,
@@ -535,6 +574,11 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 S1: most replies went to the course that never came (two batches of 7 to 11 minutes each, render off then on)
+  before reading course-ask.ts against the merged worker; after any merge, a grep of the merged message types against
+  their readers (FromCourseWorker in course-ask.ts) would have found it before the first browser run. My own process kill
+  matched its own command line once (filter by process name).
 
 - 2026-11-15 Y2 pass 2: most replies went to waiting on the browser queue and reading why a run failed; looking at the -end
   shots first (one Read each) showed in one reply that every earlier "passed" course was a moved-on fail. A probe check
