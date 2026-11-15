@@ -54,7 +54,7 @@ const READ = () => {
     const c = g.course;
     let so = null;
     try { so = g.sonic ? g.sonic(true) : null; } catch { so = null; }
-    const speech = so ? so.events.filter((e) => e.kind === 'speech').map((e) => ({ t: e.t, key: e.key })) : [];
+    const speech = so ? so.events.filter((e) => e.kind === 'speech').map((e) => ({ t: e.t, key: e.key, text: e.text ? String(e.text).slice(0, 80) : undefined })) : [];
     return {
         course: c ? { on: c.on, seed: c.seed, gates: c.gates, next: c.next, laps: c.laps } : null,
         sonic: so ? { lesson: so.lesson, phase: so.phase, target: so.target ? so.target.id : null, yaw: so.yaw, pos: so.pos, prims: so.stagePrims } : null,
@@ -79,7 +79,7 @@ try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     page.on('pageerror', (e) => out.errors.push(String(e.message).slice(0, 160)));
-    await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false&simradio=scenario&set.respawn.auto=1&set.respawn.target=rewind&render=off`, { waitUntil: 'load', timeout: 120000 });
+    await page.goto(`${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false&simradio=scenario&set.respawn.auto=1&set.respawn.target=rewind&render=off${process.env.D7_SG ? `&sg=${process.env.D7_SG}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     await page.waitForTimeout(2000);
@@ -123,13 +123,13 @@ try {
         const tc = Date.now();
         const seen = [];
         let stop = false;
-        const poll = (async () => { let k = n0; while (!stop) { const s = await page.evaluate(READ); for (; k < s.speech.length; k++) seen.push({ key: s.speech[k].key, s: +((Date.now() - tc) / 1000).toFixed(2) }); await page.waitForTimeout(100); } })();
+        const poll = (async () => { let k = n0; while (!stop) { const s = await page.evaluate(READ); for (; k < s.speech.length; k++) seen.push({ key: s.speech[k].key, text: s.speech[k].text, s: +((Date.now() - tc) / 1000).toFixed(2) }); await page.waitForTimeout(100); } })();
         await fn();
         await page.waitForTimeout(2500);
         stop = true;
         await poll;
         const after = await page.evaluate(READ);
-        const c = { name, nextBefore: before.course?.next, nextAfter: after.course?.next, lines: seen, wrongWay: seen.filter((l) => l.key === 'fly.wrong-way').length, gateBehind: seen.filter((l) => /gate-?[bB]ehind/.test(l.key)).length, s: +((Date.now() - tc) / 1000).toFixed(1) };
+        const c = { name, nextBefore: before.course?.next, nextAfter: after.course?.next, lapsBefore: before.course?.laps, lapsAfter: after.course?.laps, lines: seen, wrongWay: seen.filter((l) => l.key === 'fly.wrong-way').length, gateBehind: seen.filter((l) => /gate-?[bB]ehind/.test(l.key)).length, s: +((Date.now() - tc) / 1000).toFixed(1) };
         out.cases.push(c);
         console.log(name, JSON.stringify(c).slice(0, 500));
         save();
@@ -163,6 +163,12 @@ try {
         await fly(p0, { nose: al });
         await turnAt([-al[0], 0, -al[2]]);
         await fly(add(p0, al, -12));
+    });
+    // review OC-2: the rest of the lap (gates 4 to N, then gate 1 again where the course is a loop); the lap line must be said
+    await runCase('(lap) gates 4 to N straight through, then gate 1', async () => {
+        for (let i = 3; i < poses.length; i++) await through(poses[i]);
+        const c = (await page.evaluate(READ)).course;
+        if (c && c.laps < 1) await through(poses[0]);
     });
     await ctx.close();
 } catch (e) { out.fail = String(e).slice(0, 300); console.log('FAIL', out.fail); }
