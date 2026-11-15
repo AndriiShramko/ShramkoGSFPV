@@ -42,6 +42,16 @@ export interface FreeSpaceOptions {
      *  is, the spawn sits in a closed pocket of a poor scan (Lublin 2f1ddf5f: 900 cells, share 0): the fill starts again
      *  from the good clear cell nearest the spawn, so the course lies in the well-scanned part and the guide leads there */
     readonly goodAt?: (p: Vec3) => boolean;
+    /** course4 C2: the scan's one measure, flown m (sceneUnitM): every flown-metre default of the rules (rayM, boxM,
+     *  outdoorDownM, outdoorNearM; minRoomM3 by its cube) is multiplied by it. 1 at true scale: today's numbers */
+    readonly unitM?: number;
+}
+
+/** course4 C2: the scan's one measure in flown m: the pilot's Scene size (the transform's s), never under 1, so a scan
+ *  flown at its own size keeps every number. Not the walls' voxel: Wroclaw 70b50d42's stand-in is coarser than 0.05 m at
+ *  its true size and a voxel-based measure changed its course (gate-place-audit, course4/c2/p2/true-head.json) */
+export function sceneUnitM(transform: readonly number[]): number {
+    return Math.max(1, transform[0] ?? 1);
 }
 
 /** The defaults. Every one is an estimate from tracks-plan.md 2.1 except where tools/bench/src/tracks-generate.ts says it measured it. */
@@ -135,11 +145,12 @@ function fnv(h: number, v: number): number {
 
 export function freeSpace(walls: VoxelCollision, opts: FreeSpaceOptions): FreeSpace {
     const marginM = opts.marginM ?? FREE_DEFAULTS.marginM;
-    const boxM = opts.boxM ?? FREE_DEFAULTS.boxM;
+    const U = Math.max(1, opts.unitM ?? 1);
+    const boxM = opts.boxM ?? FREE_DEFAULTS.boxM * U;
     const maxCells = opts.maxCells ?? FREE_DEFAULTS.maxCells;
     const enclosureMin = opts.enclosureMin ?? FREE_DEFAULTS.enclosureMin;
-    const rayM = opts.rayM ?? FREE_DEFAULTS.rayM;
-    const minRoomM3 = opts.minRoomM3 ?? FREE_DEFAULTS.minRoomM3;
+    const rayM = opts.rayM ?? FREE_DEFAULTS.rayM * U;
+    const minRoomM3 = opts.minRoomM3 ?? FREE_DEFAULTS.minRoomM3 * U * U * U;
     const flood = opts.floodFill ?? true;
     const flip = walls.flipXY;
 
@@ -329,9 +340,9 @@ export function freeSpace(walls: VoxelCollision, opts: FreeSpaceOptions): FreeSp
     };
     const need = Math.ceil(enclosureMin * 26 - 1e-9);
     const downRay = rayDirs.findIndex(([dx, dy, dz]) => dx === 0 && dz === 0 && dy === (flip ? 1 : -1));
-    const downSteps = Math.max(1, Math.floor(FREE_DEFAULTS.outdoorDownM / cellM));
+    const downSteps = Math.max(1, Math.floor((FREE_DEFAULTS.outdoorDownM * U) / cellM));
     const scannedAt = (i: number): boolean => {
-        if (outdoor) return hitWithin(i, downRay, downSteps) && (dist[i]! * cellM) / 3 <= FREE_DEFAULTS.outdoorNearM;
+        if (outdoor) return hitWithin(i, downRay, downSteps) && (dist[i]! * cellM) / 3 <= FREE_DEFAULTS.outdoorNearM * U;
         if (need <= 0) return true;
         let hits = 0, misses = 0;
         for (let r = 0; r < 26; r++) {

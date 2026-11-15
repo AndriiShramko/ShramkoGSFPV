@@ -786,8 +786,25 @@ Logs U:/Temp/gsfpv-train3/course4/c2/. origin/main had nothing new for this bran
         grows as 0.2 x s m. The few scanned cells that remain are single cells that the room step's one erosion removes
         (no core cell). Gate size, legs (3-15 m), margin 0.5 m and the quality threshold never come into it: no cell is
         usable before the gates are tried. qualityMap tileM 4 m is one voxel block at s = 20 (spawnShare 0, goodShareQ 0).
-- [ ] design written below; not built
-- [ ] build, tests, NEG, page proof, pictures, gates.py, a6-reference: not started
+- [x] design written below (pass 1)
+- [x] pass 2, design items 1 and 2 built (logs c2/p2/): freespace.ts FreeSpaceOptions.unitM multiplies rayM, boxM,
+      outdoorDownM, outdoorNearM (minRoomM3 by U^3); quality.ts QualityOptions.unitM multiplies tileM, groundSkipM,
+      minBandM, maxBandM; sceneUnitM(transform) = max(1, s). Changed from the design: U is the Scene size alone, not the
+      walls' voxel against 0.05 m: with the voxel in it, Wroclaw 70b50d42 (its stand-in is coarser than 0.05 m at true size)
+      changed 5 of 10 rows at Scene size 1 (c2/p2/true-head.json against the first after run). The worker and
+      gate-place-audit pass U. Test packages/tracks/test/scaled-scan.test.ts 2 passed; NEG OK (neg_control.py, freespace.ts
+      of HEAD: 'expected 0 to be greater than 1000'). Typecheck packages/tracks and apps/fly exit 0.
+- [x] true-scale tables unchanged: gate-place-audit --scenes 70b50d42,887f27aa --seeds 5 on HEAD sources (neg_control.py
+      swap, c2/p2/true-head.json) against the new code (c2/p2/true-after.json): 10 of 10 rows identical (ms left out).
+      (fix3b fixes/after.json differs from both in 10 rows; that comes from course4 C0's commits, not from this change.)
+- [x] ab5efa0e at Scene size x20 after items 1 and 2 (c2/p2/diag-s20.log): reachable 5834, scanned 3585, usable 3523
+      (was 0), 1 room, 225472 m3, tileM 80, band 8-48 m, 3 good tiles, spawnShare 0. Still 0 gates for seeds 1-5 at
+      x15, x20, x30, x100 (c2/p2/seeds-s*.json): the walk (gate-place-audit now prints an empty walk) is banded, wants 24
+      gates, has a far target at 128-140 m and lays no first gate ('0-0c-=0 b1 n24 far132 band[8,48]', c2/p2/w20.json).
+      The refusing rule is not yet measured; a guess: the first leg from the start (the spawn clamped into the grid,
+      share 0) to a band cell (8-48 m over the ground, 4 m cells) is longer than legMax (15 m, or SPREAD_LEG_MAX_M over a
+      map) or fails the turn/axis rule; generate.ts walkCourse 500-600.
+- [ ] design item 3, item 4, page proof, pictures, gates.py: not started
 
 ## Design C2 (from the numbers above; not built)
 
@@ -813,19 +830,24 @@ second (the craft does not scale); item 3 builds the first and its ladder down r
 
 ## Left (C2-scaled-scans)
 
-1. Build design items 1 and 2 in packages/tracks/src/freespace.ts (FreeSpaceOptions.unitM, default 1) and quality.ts
-   (QualityOptions.tileM from the caller); pass U from apps/fly/src/course/worker.ts (m.transform[0] x grid.res / 0.05,
-   at least 1) and from tools/bench/src/gate-place-audit.ts. Unit test: a synthetic walls world built at res 0.05 and the
-   same world at res 1.0 (s = 20) gives usable cells in both (old code: 0 at res 1.0): NEG with neg_control.py.
-2. Rerun gate-place-audit --scenes ab5efa0e --scale 15,20,30,100 --seeds 5 (expect courses) and --scenes
-   70b50d42,887f27aa --seeds 5 (expect the rows of fix3b fixes/after.json unchanged).
-3. Design item 3 (lengths x U, ladder to the craft) after the lead's answer to the open point; item 4 (the leading line,
-   four locales) in apps/fly/src/app/builtin/course.ts:327.
+1. Items 1 and 2 are done (pass 2). Measure why walkCourse lays no first gate at x20 (generate.ts 500-600: the first
+   leg's length against legMinM/legMaxM, turnOk, axisCosMin, sweeper.free at marginM against 1 m voxels); a small
+   counter in WalkInfo or an audit --diag line is the cheap way. Then fix only the measured rule.
+2. Open point decided by this worker (nobody to ask): gates and legs keep the craft's metres (the craft does not scale;
+   a 30 m gate for a 0.077 m craft makes no sense); only the rules that read the walls follow U. If the walk needs
+   longer legs because cells are 4 m, scale legMinM to at least one cell (cellM) and legMaxM to at least 4 cells, not x U.
+   Rerun --scenes ab5efa0e --scale 15,20,30,100 --seeds 5 (expect courses) and --scenes 70b50d42,887f27aa --seeds 5
+   against c2/p2/true-head.json (must stay 10 of 10 identical).
+3. Item 4 (the leading line, four locales) in apps/fly/src/app/builtin/course.ts:327.
 4. Page proof on the release build: serve dist on 5780 with the walls stand-in copied into dist/walls, open
    http://localhost:5780/en on ab5efa0e, set Scene size x20 through window.__gsfpv.scale.set(20), Shift+G; record time,
    gate count, sizes; pictures course4-microgreens-pilot.png and course4-microgreens-top.png; keyboard pilot through
    gates 1 and 2.
 5. gates.py --only vitest,architecture,i18n,b18; a6-reference (only if flight code is touched; none so far).
+
+Cost (course4 C2 pass 2): about 30 replies; the most went to reading generate.ts and fit.ts to find why the walk is
+empty and to the baseline of the true-scale tables (neg_control.py needs 'node node_modules/tsx/dist/cli.mjs', the
+.bin/tsx shim does not start under it). A WalkInfo that names the refusing rule would have saved about 6 replies.
 
 Cost (course4 C2 pass 1): about 25 replies; the most went to finding where the microgreens scan and its scale live (no
 title, no catalogue scale: the enlargement is the pilot's key) and to the audit's missing --scale; the measurement itself

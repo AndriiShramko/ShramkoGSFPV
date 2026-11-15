@@ -37,6 +37,9 @@ export interface QualityOptions {
     readonly minM?: number;
     readonly bandShare?: number;
     readonly goodShare?: number;
+    /** course4 C2: the scan's one measure, flown m (freespace.ts sceneUnitM): tileM, the ground's skip and the band's
+     *  thickness and reach are multiplied by it; 1 at true scale */
+    readonly unitM?: number;
 }
 
 export interface QualityMap {
@@ -131,6 +134,7 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const minM = opts.minM ?? D.minM;
     const bandShare = opts.bandShare ?? D.bandShare;
     const goodShare = opts.goodShare ?? D.goodShare;
+    const U = Math.max(1, opts.unitM ?? 1);
     const flip = walls.flipXY;
     const blockM = 4 * walls.voxelResolution;
     const [nbx, nby, nbz] = blockDims(walls);
@@ -138,7 +142,7 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     // world bounds of the grid (a legacy grid stores x and y negated)
     const wx0 = flip ? -(gx + nbx * blockM) : gx;
     const wz0 = gz;
-    let tileM = opts.tileM ?? D.tileM;
+    let tileM = opts.tileM ?? D.tileM * U;
     const spanX = nbx * blockM, spanZ = nbz * blockM;
     while (Math.ceil(spanX / tileM) * Math.ceil(spanZ / tileM) > D.maxTiles) tileM *= 2;
     const nx = Math.max(1, Math.ceil(spanX / tileM)), nz = Math.max(1, Math.ceil(spanZ / tileM));
@@ -158,8 +162,8 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const fullLayer = (tileM / walls.voxelResolution) * (tileM / walls.voxelResolution) * (blockM / walls.voxelResolution);
     const ground = new Float32Array(nt).fill(NaN);
     const groundL = new Int32Array(nt).fill(-1);
-    const skipL = Math.max(1, Math.round(D.groundSkipM / blockM));
-    const nb = Math.ceil(D.maxBandM / binM);
+    const skipL = Math.max(1, Math.round((D.groundSkipM * U) / blockM));
+    const nb = Math.ceil((D.maxBandM * U) / binM);
     const sum = new Float64Array(nb);
     let withGround = 0;
     for (let t = 0; t < nt; t++) {
@@ -184,7 +188,7 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const skipM = skipL * blockM;
     const hist = Array.from(sum, (v) => (withGround ? Math.round((v / withGround) * 100) / 100 : 0));
     const b0 = denseBand(hist, binM, skipM, minM, bandShare);
-    const band: [number, number] = [Math.max(minM, b0[0]), Math.max(b0[1], Math.max(minM, b0[0]) + D.minBandM)];
+    const band: [number, number] = [Math.max(minM, b0[0]), Math.max(b0[1], Math.max(minM, b0[0]) + D.minBandM * U)];
     const dense = new Float32Array(nt);
     for (let t = 0; t < nt; t++) {
         if (groundL[t]! < 0) continue;

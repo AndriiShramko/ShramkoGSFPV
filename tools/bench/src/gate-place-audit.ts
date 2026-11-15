@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { blockDims, findSphereSpawn, forEachBlock, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, goodForGate, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, goodForGate, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, sceneUnitM, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { QualityMap, SceneTransform, Vec3 } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 
@@ -97,10 +97,10 @@ async function main(): Promise<void> {
             const o = { x: 0, y: 0, z: 0 };
             if (walls.querySphere(spawn[0], spawn[1], spawn[2], SPAWN_R, o) && findSphereSpawn(walls, spawn[0], spawn[1], spawn[2], SPAWN_R, o)) spawn = [o.x, o.y, o.z];
             const tq = performance.now();
-            const q = qualityMap(walls);
+            const q = qualityMap(walls, { unitM: sceneUnitM(T as unknown as number[]) });
             const qMs = Math.round(performance.now() - tq);
             const box = qualityBounds(q, spawn);
-            const free = freeSpace(walls, { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined });
+            const free = freeSpace(walls, { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined , unitM: sceneUnitM(T as unknown as number[]) });
             const share = (t: number): number => (t < 0 || !(q.best > 0) ? 0 : r2(q.near[t]! / q.best));
             if (arg('--diag')) {
                 // the generator's eye-band filter (generate.ts walkCourse) counted stage by stage, scale 1
@@ -144,13 +144,15 @@ async function main(): Promise<void> {
                 const onWalk = (w: { walked: number; cutClose: number; drops: readonly string[]; kept: number }): void => {
                     const by: Record<string, number> = {};
                     for (const d of w.drops) by[d] = (by[d] ?? 0) + 1;
-                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}`);
+                    const x = w as unknown as { banded?: boolean; wanted?: number; farM?: number; band?: number[] | null };
+                    // course4 C2: an empty walk says whether it was banded, how many gates it wanted and how far its target lay
+                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}` : ''));
                 };
                 const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
                 const ms = Math.round(performance.now() - t0);
                 const tr = got.track;
                 if (!tr) {
-                    rows.push({ scene: s.id, seed, gates: 0, ms });
+                    rows.push({ scene: s.id, seed, gates: 0, ms, tried: got.tried, walks });
                     continue;
                 }
                 const problems = wallsCheck(walls, T, marginOf(tr))(upgradeTrack(tr)).length;
