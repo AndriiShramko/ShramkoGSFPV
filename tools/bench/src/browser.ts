@@ -27,7 +27,8 @@ export interface Launched {
  */
 export async function launchChrome(o: Parameters<typeof chromium.launch>[0] = {}): Promise<{ browser: Browser; which: BrowserInfo }> {
     const pick = pickBrowser({ expected: chromium.executablePath() });
-    const browser = await chromium.launch({ ...o, ...pick.launch });
+    // BENCH_UNCAPPED=1 (chrome.mjs) brings launch flags: they join the caller's, they do not replace them
+    const browser = await chromium.launch({ ...o, ...pick.launch, args: [...(o.args ?? []), ...(pick.launch.args ?? [])] });
     const which = describeBrowser(pick, browser.version());
     noteBrowser(which);
     return { browser, which };

@@ -20,7 +20,7 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const DIR = join(REPO, '.cache', 'lod-view');
 
 /** In the page: two PNGs (base64) decoded and compared. */
-const COMPARE = async ({ a, b }) => {
+const COMPARE = async ({ a, b, rows }) => {
     const dec = async (b64) => {
         const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
         const bmp = await createImageBitmap(new Blob([bin], { type: 'image/png' }));
@@ -32,11 +32,13 @@ const COMPARE = async ({ a, b }) => {
     const A = await dec(a);
     const B = await dec(b);
     if (A.width !== B.width || A.height !== B.height) return { error: `sizes differ: ${A.width}x${A.height} and ${B.width}x${B.height}` };
-    const w = A.width, h = A.height, n = w * h;
+    // --rows a:b: only the rows from a to b (shares of the height, 0 = top): a region of the picture (near half = 0.5:1 from above)
+    const y0 = Math.round((rows ? rows[0] : 0) * A.height), y1 = Math.round((rows ? rows[1] : 1) * A.height);
+    const w = A.width, h = y1 - y0, n = w * h, off = y0 * w;
     const la = new Float32Array(n), lb = new Float32Array(n);
     let e = 0, lit = 0;
     for (let i = 0; i < n; i++) {
-        const k = i * 4;
+        const k = (i + off) * 4;
         la[i] = 0.299 * A.data[k] + 0.587 * A.data[k + 1] + 0.114 * A.data[k + 2];
         lb[i] = 0.299 * B.data[k] + 0.587 * B.data[k + 1] + 0.114 * B.data[k + 2];
         const d = la[i] - lb[i];
@@ -62,11 +64,14 @@ const COMPARE = async ({ a, b }) => {
 async function main() {
     const argv = process.argv.slice(2);
     let ref = '';
+    let band = null;
     const labels = [];
     for (let i = 0; i < argv.length; i++) {
         if (argv[i] === '--ref') ref = argv[++i];
+        else if (argv[i] === '--rows') band = argv[++i].split(':').map(Number);
         else labels.push(argv[i]);
     }
+    if (band && !(band.length === 2 && band[0] >= 0 && band[1] <= 1 && band[0] < band[1])) throw new Error('--rows a:b with 0 <= a < b <= 1');
     if (!ref || !labels.length) throw new Error('usage: lod-view-score.mjs --ref <label> <label> [<label> ...]');
     if (!existsSync(DIR)) throw new Error(`no pictures: ${DIR}`);
     const names = readdirSync(DIR).filter((f) => f.startsWith(`${ref}-`) && f.endsWith('.png')).map((f) => f.slice(ref.length + 1, -4));
@@ -83,7 +88,7 @@ async function main() {
             for (const name of [...names, ...names.filter((x) => /-end$/.test(x)).flatMap((x) => [x.replace(/-end$/, '-0'), x.replace(/-end$/, '-1')])]) {
                 if (rows.some((r) => r.label === label && r.picture === name)) continue;
                 if (!existsSync(join(DIR, `${label}-${name}.png`)) || !existsSync(join(DIR, `${ref}-${refFor(name)}.png`))) continue;
-                const r = await page.evaluate(COMPARE, { a: b64(ref, refFor(name)), b: b64(label, name) });
+                const r = await page.evaluate(COMPARE, { a: b64(ref, refFor(name)), b: b64(label, name), rows: band });
                 rows.push({ label, picture: name, against: `${ref}-${refFor(name)}`, ...r });
             }
         }
@@ -97,9 +102,17 @@ async function main() {
     for (const p of pictures) console.log(pad(p, 22) + labels.map((l) => { const r = rows.find((x) => x.label === l && x.picture === p); return pad(r ? (r.error ? 'error' : `${r.psnrLit} / ${r.psnrQuarter}`) : '-', 26); }).join(''));
     const outDir = join(REPO, 'evidence', new Date().toISOString().slice(0, 10), 'lod-view');
     mkdirSync(outDir, { recursive: true });
-    const file = join(outDir, `score-${ref}-${labels[0]}.json`);
-    writeFileSync(file, asciiJson(JSON.stringify({ name: `lod-view/score-${ref}`, date: new Date().toISOString(), reference: ref, labels, measure: 'PSNR on luma in dB against the reference run\'s picture of the same place (a turn\'s pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference\'s lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged', rows }, null, 1)) + '\n');
+    const file = join(outDir, `score-${ref}-${labels[0]}${band ? `-rows${band.join('-')}` : ''}.json`);
+    writeFileSync(file, asciiJson(JSON.stringify(scoreRecord({ ref, labels, band, rows }), null, 1)) + '\n');
     console.log(`written ${file.replace(REPO, '.').replace(/\\/g, '/')}`);
+}
+
+/**
+ * The evidence record of one scoring pass. `band` is the --rows region ([a, b] as shares of the picture's height, or
+ * null for the whole picture); `rows` are the results. They are two keys: a record must say which band it scored.
+ */
+export function scoreRecord({ ref, labels, band, rows, date = new Date().toISOString() }) {
+    return { name: `lod-view/score-${ref}`, date, reference: ref, labels, band: band ?? null, measure: 'PSNR on luma in dB against the reference run\'s picture of the same place (a turn\'s pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference\'s lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged', rows };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url).toLowerCase() === resolve(process.argv[1]).toLowerCase()) await main();

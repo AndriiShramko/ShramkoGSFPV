@@ -27,7 +27,7 @@ const origin = new URL(base).origin;
 mkdirSync(dirname(outFile), { recursive: true });
 
 const pick = pickHarnessBrowser({ expected: chromium.executablePath() }, false);
-const browser = await chromium.launch({ ...pick.launch, headless: true, args: extraArgs });
+const browser = await chromium.launch({ ...pick.launch, headless: true, args: [...(pick.launch.args || []), ...extraArgs] });
 const out = { what: 'rc2-lna-diag.mjs', base, origin, at: new Date().toISOString(), browser: browser.version(), browserKind: pick.kind, args: extraArgs, runs: {} };
 const bcdp = await browser.newBrowserCDPSession();
 

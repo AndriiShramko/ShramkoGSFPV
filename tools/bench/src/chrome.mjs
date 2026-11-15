@@ -31,6 +31,25 @@ export function benchHeadless(env = process.env) {
     return env.BENCH_VISIBLE !== '1';
 }
 
+/**
+ * BENCH_UNCAPPED=1: frames are no longer paced by the display. On the owner's PC the display runs at 30 Hz (3840 x 2160,
+ * Win32_VideoController CurrentRefreshRate 30) and headless Chrome's compositor waits for its vertical blank, so every
+ * bench run there was capped at 30 frames/s (33.3 ms median, lane laptop4 Q1). The two flags change only when a finished
+ * frame is shown, not what is drawn. Off by default: a run that counts as the owner's own view keeps his pacing.
+ */
+export const UNCAPPED_ARGS = Object.freeze(['--disable-gpu-vsync', '--disable-frame-rate-limit']);
+
+/** The launch flags of BENCH_UNCAPPED (above): empty unless it is '1'. */
+export function benchUncappedArgs(env = process.env) {
+    return env.BENCH_UNCAPPED === '1' ? [...UNCAPPED_ARGS] : [];
+}
+
+/** `launch` with the BENCH_UNCAPPED flags as `args` when the switch is on; unchanged otherwise. */
+function withPacing(launch, env) {
+    const args = benchUncappedArgs(env);
+    return args.length ? { ...launch, args } : launch;
+}
+
 /** A Playwright build (chromium-<revision>/...), wherever it is linked from. */
 export function isPlaywrightBuild(path) {
     return /[\\/]chromium(?:_headless_shell)?-\d+[\\/]/.test(path);
@@ -103,15 +122,15 @@ export function pickBrowser(o = {}) {
     const bundled = () => (o.expected && exists(o.expected) ? o.expected : bundledChromium(env, platform, exists, o.list ?? readdirSync));
     if (force && force !== 'chrome' && force !== 'bundled') {
         if (!exists(force)) throw new Error(`BENCH_BROWSER=${force}: no such executable`);
-        return { kind: 'custom', launch: { executablePath: force, headless: benchHeadless(env) }, executable: force, why: 'BENCH_BROWSER' };
+        return { kind: 'custom', launch: withPacing({ executablePath: force, headless: benchHeadless(env) }, env), executable: force, why: 'BENCH_BROWSER' };
     }
     if (force === 'chrome' || (force !== 'bundled' && system)) {
-        return { kind: 'system-chrome', launch: { channel: 'chrome', headless: benchHeadless(env) }, executable: system, why: force === 'chrome' ? 'BENCH_BROWSER' : 'installed' };
+        return { kind: 'system-chrome', launch: withPacing({ channel: 'chrome', headless: benchHeadless(env) }, env), executable: system, why: force === 'chrome' ? 'BENCH_BROWSER' : 'installed' };
     }
     const b = bundled();
     if (!b) throw new Error('no browser for the harness: install Google Chrome, or point PLAYWRIGHT_BROWSERS_PATH at a folder with a Playwright chromium-<revision> build (never `playwright install` here)');
     const why = force === 'bundled' ? 'BENCH_BROWSER' : linked ? `no system Chrome (${linked} links to a Playwright build)` : 'no system Chrome';
-    return { kind: 'bundled-chromium', launch: { executablePath: b, headless: benchHeadless(env) }, executable: b, why };
+    return { kind: 'bundled-chromium', launch: withPacing({ executablePath: b, headless: benchHeadless(env) }, env), executable: b, why };
 }
 
 /** One line for logs and evidence: which browser, which build, where. */

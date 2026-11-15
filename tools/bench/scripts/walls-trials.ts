@@ -41,7 +41,7 @@ function inside(a: VoxelCollision, b: VoxelCollision): { solid: number; shared: 
 }
 
 const pick = pickBrowser({ expected: chromium.executablePath() });
-const browser = await chromium.launch({ ...pick.launch, headless: true, args: ['--enable-precise-memory-info'] });
+const browser = await chromium.launch({ ...pick.launch, headless: true, args: [...(pick.launch.args || []), '--enable-precise-memory-info'] });
 const out: Record<string, unknown>[] = [];
 const fly = (scene: string, extra = '') => `${site}/en/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false${extra}`;
 const g = (page: any, f: string) => page.evaluate(f);
