@@ -1342,6 +1342,39 @@ Logs U:/Temp/gsfpv-train3/course4/z3/.
       39e63ce9 seeds 1-10, 91 gates: flat 0.011 (1 placed of 13 drawn, refused by space 49 times), tunnel 0.132: this room
       (course at step 0.3) is named as one where a flat square does not fit. The flat square's rise is not lowered: the
       table cannot tell which leg of the proof refuses it (left).
+- [x] Release build of 98a43f6a (z3/build2.log): BUILD EXIT 0, 1933 files; holds the redraw. Published walls copied into
+      dist/walls by z3/keys2.sh.
 - [~] (2) Keyboard pilot: tools/bench/scripts/course-keys-probe.mjs (real key events of the game scheme, reads the craft's
-      place only; every gate in order; counted per element; the climb speed over the flat square). Not run yet.
+      place only; every gate in order; counted per element; the climb speed over the flat square).
+      Run 1 (z3/keys-wroclaw-1.log): no course in 420 s: the radio screen took the keys; the probe now closes it.
+      Run 2 (z3/keys-wroclaw.log, Wroclaw, Shift+G seed 289710480, 37 gates: ring 10, flat 2, cube 6, tunnel 4, square 4;
+      course in 14.7 s; 26 gates flown in 231 s): gates 1-8 counted in order: ring, ring, the flat square (climb: vyMax
+      5.07 m/s, rise 2.62 m between the probe's points, 2.96 s: a keyboard pilot holding Space makes the climb; game
+      speed normal 5 m/s up), a cube, a tunnel of 3 (all three rings counted: next 4 -> 7 on the first ring's pass, the
+      momentum carried the craft through rings 2 and 3 within 0.1 s; not proven ring by ring), a cube. Gate 9, a square:
+      the probe passed its plane ('through') but the page did not count it; every later gate waited for gate 9
+      (counted 6 of 26 flown). Cause NOT measured: either the craft crossed outside the square's opening or the square's
+      count in the page fails. The probe now records where the craft crosses each gate's plane in the gate's frame
+      ('cross' [x, y] against 'half' of the opening).
+      Run 3 (z3/keys-k2.log) with the link seed (&course=g1.289710480, 5th argument) built no course in 240 s: the link's
+      form is not the one apps/fly/src/course/link.ts seedOfLink reads (not checked).
 - [ ] (3) tunnel picture along the row's axis; (4) the chain; pictures; 'What the owner does'.
+
+Left (Z3, exact, in order):
+1. Read apps/fly/src/course/link.ts seedOfLink for the link form of a seed (or press Shift+G and accept a new seed), then
+   run z3/keys2.sh <maxGates> <seed> <tag> (one GPU-lock hold, 580 s cap) and read 'cross' and 'half' of the first square
+   that is not counted. Outside the opening: fix the probe's aim (tolerance 0.25 m at the point before the gate). Inside:
+   the page's square count is the fault (packages/sonic-fpv/src/lesson/goals.ts gateCrossing reads side/2 for 'square';
+   check the square's quat from elements.ts squareOf against the ring it replaced) - sonic-fpv is not this lane's:
+   if the cause is there, stop and report blocked.
+2. Then one of each element counted on Wroclaw by the keyboard pilot, a tunnel ring by ring (probe: stop the craft
+   between rings, or count 'next' per ring).
+3. Item (3) and (4) of the stage: tunnel picture, the chain (tracks-page, course-path-probe Wroclaw and Tunis,
+   save-check-probe, gate-guide-probe, accept-fly B6 B7 B9-B16, a6-reference, typecheck, gates.py with leaks),
+   pictures course4-elements-tunnel/flat/top.png, 'What the owner does' for course4 and course5.
+4. Flat square share on Wroclaw 0.104 (refused by the proof 76 times): find which leg of the proof refuses it before
+   lowering FLAT_RISE_M.
+
+Cost (course5 Z3 pass 1): about 30 replies; most went to waiting for the GPU lock (two holds of other lanes, about 25
+minutes) and to two keyboard runs that failed before flying (radio screen, link seed). A probe that logs the open
+screens and the crossing point from its first version would have saved two runs.

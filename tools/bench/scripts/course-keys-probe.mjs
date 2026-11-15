@@ -13,7 +13,7 @@ import { pickBrowser } from '../src/chrome.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
-const [base, outFile, item, maxArg] = process.argv.slice(2);
+const [base, outFile, item, maxArg, seedArg] = process.argv.slice(2);
 if (!base || !outFile || !item) { console.error('usage: course-keys-probe.mjs <base with /en> <out.json> <id>[:name] [maxGates]'); process.exit(2); }
 const MAX_GATES = Number(maxArg || 99);
 const pick = pickBrowser({ expected: chromium.executablePath() });
@@ -64,10 +64,21 @@ const state = () => page.evaluate(() => { const s = window.__gsfpv.session.sim.s
 /** fly to `t` with keys; `pass` (a gate centre and its pass direction): done once the craft is past the gate's plane by `beyond` m */
 async function flyTo(t, tol, pass, ms) {
     const t0 = Date.now();
-    let tick = 0, s, vyMax = 0;
+    let tick = 0, s, vyMax = 0, cross = null, lastP = null;
     for (;;) {
         s = await state();
         vyMax = Math.max(vyMax, s.v[1]);
+        // where the craft crossed the gate's plane, in the gate's frame (x right, y up of the gate), sampled every ~30 ms
+        if (pass && lastP && !cross) {
+            const da = dot(sub(lastP, pass.c), pass.d), db = dot(sub(s.p, pass.c), pass.d);
+            if (da < 0 && db >= 0) {
+                const u = -da / (db - da);
+                const at = [lastP[0] + u * (s.p[0] - lastP[0]), lastP[1] + u * (s.p[1] - lastP[1]), lastP[2] + u * (s.p[2] - lastP[2])];
+                const e = sub(at, pass.c);
+                cross = [r2(dot(e, rot(pass.q, [1, 0, 0]))), r2(dot(e, rot(pass.q, [0, 1, 0])))];
+            }
+        }
+        lastP = s.p;
         const e = sub(t, s.p);
         if (pass ? dot(sub(s.p, pass.c), pass.d) >= pass.beyond : len(e) < tol) break;
         if (Date.now() - t0 > ms) { await releaseAll(); return { ok: false, s, vyMax }; }
@@ -92,11 +103,11 @@ async function flyTo(t, tol, pass, ms) {
         tick++;
         await page.waitForTimeout(30);
     }
-    return { ok: true, s, vyMax };
+    return { ok: true, s, vyMax, cross };
 }
 
 try {
-    await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false&set.crash.enabled=0`, { waitUntil: 'load', timeout: 120000 });
+    await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false&set.crash.enabled=0${seedArg ? `&course=g1.${seedArg}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     await page.waitForTimeout(2000);
@@ -105,7 +116,8 @@ try {
     if (await x.count()) { await x.first().click(); await page.waitForTimeout(800); }
     r.screens = await page.evaluate(() => [...document.querySelectorAll('.screen')].filter((e) => e.offsetParent).map((e) => e.className).join('|'));
     const t0 = Date.now();
-    await page.keyboard.press('Shift+KeyG');
+    // a seed (5th argument) rebuilds the same course by its link (course/link.ts); without one Shift+G draws a new course
+    if (!seedArg) await page.keyboard.press('Shift+KeyG');
     const c = await until(page, () => { const c = window.__gsfpv.course; return { gates: c.gates, drawn: c.drawn, problem: c.problem, seed: c.seed }; }, (v) => v.gates > 0 && v.drawn > 0, 240000, 500);
     r.courseS = r2((Date.now() - t0) / 1000);
     r.seed = c.seed;
@@ -129,11 +141,12 @@ try {
         const before = (await state()).next;
         const tg = Date.now();
         const toA = await flyTo(a, 0.25, null, 40000);
-        const thru = await flyTo(b, 0, { c: g.pos, d: [-z[0], -z[1], -z[2]], beyond: 0.4 * dA }, 15000);
+        const thru = await flyTo(b, 0, { c: g.pos, d: [-z[0], -z[1], -z[2]], q: g.quat, beyond: 0.4 * dA }, 15000);
+        const half = g.shape.kind === 'ring' ? g.shape.diameter / 2 : g.shape.side / 2;
         await page.waitForTimeout(100);
         const after = (await state()).next;
         const el = r.elements.find((e) => k >= e.from && k <= e.to);
-        r.passes.push({ gate: k + 1, kind: el ? el.kind : g.shape.kind, shape: g.shape.kind, flat: Math.abs(z[1]) > 0.9, reachedA: toA.ok, through: thru.ok, before, after, counted: after !== before, s: r2((Date.now() - tg) / 1000), vyMax: r2(Math.max(toA.vyMax, thru.vyMax)), riseM: r2(-z[1] > 0.9 ? 2 * dA : 0) });
+        r.passes.push({ gate: k + 1, kind: el ? el.kind : g.shape.kind, shape: g.shape.kind, flat: Math.abs(z[1]) > 0.9, reachedA: toA.ok, through: thru.ok, before, after, counted: after !== before, cross: thru.cross, half: r2(half), s: r2((Date.now() - tg) / 1000), vyMax: r2(Math.max(toA.vyMax, thru.vyMax)), riseM: r2(-z[1] > 0.9 ? 2 * dA : 0) });
         console.log(JSON.stringify(r.passes[r.passes.length - 1]));
     }
     await releaseAll();
