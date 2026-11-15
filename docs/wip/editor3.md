@@ -5,6 +5,42 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 ## Status
 
 Stage J2-prove (train 3, 2026-11-15):
+- [x] J2.3 (pass 2) tracks-page reads the edit mode c8619281: SELECTED_PAINT is the yellow outline [255,235,64] (E4), 'E camera
+  after Tab' waits 900 ms (0.4 s glide) and checks the new selection in view, a camera move only recorded. tsc tools/bench 0.
+  Not yet run in a browser (the chain was stopped before it).
+- [x] J2.4 (pass 2) chain j2/chain.sh on the dist of 7f48dd05, records j2/tunis/e4.json, j2/wroclaw/e4.json, sum.txt each:
+  - Both scenes: Save of the untouched generated course as the first press after Shift+B: SAVED version 1, 0 problems
+    (Tunis 24 gates, Wroclaw 20 gates). Wall push right after it: gate 2 down by its Y arrow (Tunis y 1.2 -> 0.6 m, Wroclaw
+    2.55 -> 1.95 m), problems 0 -> 1, Save refused, the refusal selected gate 2, framed it (side 35 deg, 2.04 m, at
+    [960,540]) and the line named it: 'Not saved. Gate 2 stands in a wall. Pull its arrows ...'. Moved out by the same arrow
+    (Tunis y 1.1, Wroclaw 2.45), problems 0, Save version 2 on both.
+  - Turn rings in the prove probe, both scenes the same: ring:x 60 px 30 deg, 140 px 75 deg; ring:z 30 / 75; ring:y 30 / 60
+    (the y ring turns now; train-3 item 2 had 0 deg). The gizmo probe (j2/gizmo/gizmo-after-*.json) still presses its x
+    point at [1005,556] 48 px from the centre, hitAt says 'ring:z', 404 px give 15 deg on both scenes (J1 left d stands).
+  - Size 1.2 -> 2.42 m by the centre cube, no move, no turn; Move X 80 px = 0.4 m Tunis, 0.3 m Wroclaw; W A S D E Q
+    2.4-2.53 m a press; right button 0.46 m of the aim; F: gate at [960,540], 2.04 m, 0.33 of the view, both scenes.
+  - Pad flight with gate 1 6 m ahead: course.next 0 -> 1 on both. Crash after the gate: the edit view back by itself
+    (Tunis 1640 ms, Wroclaw 1577 ms), no crash card, mode line 'ARMED . ANGLE' (the fake pad's arm switch still on).
+  - Click on a gate near the selected one: Tunis click on gate 1 at 381 px selected it; Wroclaw FAIL: 3 clicks (gates 16,
+    15, 4 at 916, 208, 205 px from the selected one) all left gate 2 selected (record wroclaw/e4.json 'click'). The gizmo
+    probe's click on Wroclaw (gate 3 at [1317,390]) did select it.
+  - Tunis Save loop still refuses 'the way from the start to gate 1 goes through a wall' with gate 1 put 6 m ahead (left f);
+    on Wroclaw the loop deleted red gates down to 3 and saved version 3; a fresh page opened it from Courses (3 gates,
+    the moved gate at offM 0). Tunis fresh page opened version 2 (24 gates). Esc twice left on Tunis, Esc once on Wroclaw
+    (saved).
+  - Pictures looked at (Tunis 18:04-18:05, Wroclaw 18:14): move, turn, size, refused, flying, wroclaw: the selected gate
+    yellow in every tool and in the refusal; after the size change to 2.4 m the gate fits the view; the size tool shows one
+    red pair with a yellow centre cube on a ring; the turn rings red, green, blue round the centre, no straight red line;
+    the course arrows thin in the edit view, full width in the flight. edit-clean taken by j2/clean (18:20) not looked at.
+- [ ] left (pass 3, in this order):
+  a. The chain was still running at the reply budget (gizmo runs done 18:23; stopping it was not permitted): accept-fly B6
+     B7 B9 B10 B11 B12 B13 B14 B15 B16, mouse-free, tracks-page (with c8619281), a6-reference, gates.py --only
+     vitest,architecture,i18n,b18 write j2/accept.log, mouse-free.log, tracks-page.log, a6.log, gates.log and one line each
+     in j2/chain.txt ('END' when done): read those; rerun only what is missing.
+  b. Wroclaw click on a gate near the selected one fails (see above); suspect view-mouse.ts pick by the angle to the gate's
+     centre (EI-1). Not chased.
+  c. Gizmo probe x ring picked as ring:z (drawnRings radius against the gizmo's own rings, a guess, J1 measure stands).
+  d. Tunis start-leg refusal (old left f), outside the lane (fix3a/course4 check). Look at editor3-edit-clean-1920.png.
 - [x] J2.0 merge origin/main f286dd49 (CI secret scan list, no conflict) 7f48dd05; release build of 7f48dd05 exit 0 (sha256
   607a4319..., U:/Temp/gsfpv-train3/editor3/j2/build.log).
 - [x] J2.1 probe editor3-prove.ts 560afc0c: Save of the untouched generated course as the first press after Shift+B (a
@@ -1567,7 +1603,27 @@ button shows the table.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
   tasks were measured.
 
-## What the owner does (as of I3-prove pass 3, release of 92f1e323, Tunis 887f27aa and Wroclaw 70b50d42, records in i3p3/)
+## What the owner does (as of J2-prove pass 2, release of 7f48dd05, Tunis 887f27aa and Wroclaw 70b50d42, records in j2/)
+
+1. Shift+G: a course is made in the scene (Tunis 24 gates, Wroclaw 20).
+2. Shift+B: the edit view, gate 1 selected in yellow with its arrows.
+3. Save (top bar): the untouched course is saved, version 1, on both scenes.
+4. Click a gate: it is selected (Tunis yes; Wroclaw near the selected gate: no, 3 of 3 clicks missed).
+5. Move tool, drag an arrow: 80 px = 0.3-0.4 m. Turn tool, drag a ring: x, y, z each turn (30 deg for 60 px).
+6. Size tool, drag the centre cube: 1.2 -> 2.4 m, the view frames the gate again after the drag.
+7. Bar buttons ring, square, dive, cube; copy; the cross deletes; Ctrl+Z and Ctrl+Y undo and redo each.
+8. Tab and Shift+Tab, the bar's arrows: the next or previous gate. F: the selected gate in the middle, a third of the view.
+9. W A S D, E, Q fly the view 2.4 m a press; right button held looks around.
+10. Add gate (top bar) or a click on the floor: a gate there, red with its reason when the check refuses it.
+11. A gate pushed into a wall, Save: refused, that gate selected, framed and named 'Gate 2'; pulled out, Save: version 2.
+12. Arm the pad (or Space): fly the course from the edit view, gate 1 counts; a crash comes back to the edit view by itself.
+13. A fresh page, Courses, Edit: the saved course with the moved gate in its place.
+14. Esc twice: leaves the edit view (Esc once after a Save).
+Not proven: the Wroclaw click near the selected gate (fails); the gizmo probe's x ring (picked as z, 404 px = 15 deg);
+the Tunis Save after the probe's red edits (the start leg is refused with gate 1 6 m ahead); the mode line after a crash
+reads 'ARMED . ANGLE' with the fake pad's switch still on; accept-fly, mouse-free, tracks-page, a6, gates not run in pass 2.
+
+## What the owner does (older: as of I3-prove pass 3, release of 92f1e323, records in i3p3/)
 
 Pass 3 re-walked every step below on both scenes with the same probe; the numbers that changed or are new:
 - 3. Shift+Tab back to gate 1: true on both. 4. X arrow 80 px drag: 0.3 m on both, the arrow 82 px on screen; after the drag
@@ -1615,6 +1671,8 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
     after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- J2-prove pass 2: about 30 replies; the most went to waiting for the chain in 9-minute holds and to reading the records
+  field by field. Cheaper: a summary script that prints the owner's-path rows in one table for both scenes.
 - J2-prove: about 32 replies; the most went to fitting the probe (untouched Save, wall push, crash) and to one Wroclaw
   lock wait of 9 min that never got the lock. Cheaper: split the prove stage into one stage per scene, and do the wall
   push right after the untouched Save from the start (an older problem otherwise answers first).
