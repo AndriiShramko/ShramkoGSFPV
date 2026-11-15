@@ -99,6 +99,8 @@ export class FrameGovernor {
     streamHitches = 0;
     /** the previous frame reported streaming: its work can make this interval late */
     private streamedBefore = false;
+    /** the time of the last frame that reported streaming (onFrame `streamed`); settledStep waits for calm after it */
+    private lastStreamed = -Infinity;
     /** the display period is learned and frames are judged (see onFrame) */
     private judging = false;
 
@@ -148,12 +150,14 @@ export class FrameGovernor {
     }
 
     /**
-     * The step when it has held for `holdMs` of judged frames at time `t` (no step change since), else null: the
-     * step this device settles at, worth remembering for the next load.
+     * The step when it has held for `holdMs` of judged frames at time `t` (no step change since) and the scan's
+     * streamer made no progress in that time, else null: the step this device settles at while it flies a loaded
+     * view, worth remembering for the next load. Steps taken while a streamed scan loads (its hitches count as
+     * missed frames, onFrame) are not remembered (review LP-1).
      */
     settledStep(t: number, holdMs: number): number | null {
         if (!this.judging || !this.enabled) return null;
-        return t - this.lastChange >= holdMs ? this.step : null;
+        return t - Math.max(this.lastChange, this.lastStreamed) >= holdMs ? this.step : null;
     }
 
     /**
@@ -173,6 +177,7 @@ export class FrameGovernor {
      * docs/wip/v08-c.md).
      */
     onFrame(t: number, excused = false, held = false, streamed = false): QualityStep | null {
+        if (streamed) this.lastStreamed = t;
         if (this.last < 0) {
             this.last = t;
             this.streamedBefore = streamed;
@@ -483,7 +488,18 @@ export const GOVERNOR_START_KEY = 'gsfpv.governor.start';
  */
 export const GOVERNOR_SETTLE_MS = 10000;
 
-/** The device's id in the record: its class and the GPU's name (gpuName). */
+/**
+ * Whether a device of this class may start below the top step: not 'desktop-strong', so nothing changes for a strong
+ * PC at default settings (weak-devices-plan focus point 4, review LP-1). Its step is still remembered, never used.
+ */
+export function governorMayStartLower(deviceClass: string): boolean {
+    return deviceClass !== 'desktop-strong';
+}
+
+/**
+ * The device's id in the record: its class and the GPU's name (gpuName). The plan's "release major" is the record's
+ * version `v` (governorStartRecord): the app carries no release number; a change of the governor's steps bumps `v`.
+ */
 export function governorDeviceId(deviceClass: string, gpu: string): string {
     return `${deviceClass}|${gpu}`;
 }

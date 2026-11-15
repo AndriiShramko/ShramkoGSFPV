@@ -41,9 +41,10 @@ export class Quality {
 
     /**
      * R32: start the governor at the step this device (governorDeviceId) settled at on its last flight, once per
-     * page; later calls (a scene switch) only keep the id. ?governor=0 keeps the top step (tests).
+     * page; later calls (a scene switch) only keep the id. ?governor=0 keeps the top step (tests). `mayStartLower`
+     * false (a strong desktop, governorMayStartLower) keeps the top step too; the settled step is still remembered.
      */
-    startFrom(id: string): void {
+    startFrom(id: string, mayStartLower = true): void {
         if (this.deviceId === id) return;
         const first = this.deviceId === null;
         this.deviceId = id;
@@ -51,7 +52,7 @@ export class Quality {
         try { raw = globalThis.localStorage?.getItem(GOVERNOR_START_KEY) ?? null; } catch { /* storage blocked */ }
         const s = savedStartStep(raw, id, this.governor.steps.length);
         this.savedStep = s;
-        if (first && this.governor.enabled && s > 0) {
+        if (first && mayStartLower && this.governor.enabled && s > 0) {
             this.governor.startAt(s);
             this.apply();
         }

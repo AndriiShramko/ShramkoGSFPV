@@ -34,6 +34,8 @@ const V02: Record<string, string> = {
     // v0.9 lane N: the N-walk's bookmark and the "N was used" flag (machine-local, never migrated)
     'gsfpv.tour.v1': JSON.stringify({ v: 1, at: 1760000000000, seen: ['39e63ce9'], ss: 0 }),
     'gsfpv.nextUsed.v1': '1',
+    // train 3 lane laptop3: the governor's settled step of this machine (machine-local, never migrated)
+    'gsfpv.governor.start': JSON.stringify({ v: 1, id: 'desktop-weak|intel xe-lp', step: 2 }),
     // train 1c lane rc2: the RC bridge switch of this browser (machine-local, never migrated)
     'gsfpv.rcBridge': '1',
     'gsfpv.profiles.v1': JSON.stringify({ [POCKET.deviceKey]: POCKET, [PAD.deviceKey]: PAD, [ALIEN.deviceKey]: ALIEN }),
@@ -56,16 +58,25 @@ const V02: Record<string, string> = {
  * with the scene id (`gsfpv.walls.${sceneId}`, reported as 'gsfpv.walls.*').
  */
 const SOURCES = [join(REPO, 'apps', 'fly', 'src'), join(REPO, 'packages', 'scenes', 'src'), join(REPO, 'packages', 'input', 'src')];
-function keysInSource(dirs: string[] = SOURCES): Set<string> {
+/**
+ * packages/render-pc/src writes one key too (governor.ts 'gsfpv.governor.start', review LP-2). Its keys are read with
+ * more than one dotted part; the other sources keep the one-part pattern (a wider pattern there finds keys of other
+ * lanes not classified yet, docs/wip/laptop3.md "For the lead").
+ */
+const DOTTED_SOURCES = [join(REPO, 'packages', 'render-pc', 'src')];
+const ONE_PART = /['"`](gsfpv\.[A-Za-z]+(?:\.v\d+)?)(\.\$\{|['"`])/g;
+const DOTTED = /['"`](gsfpv\.[A-Za-z]+(?:\.[A-Za-z]+)*(?:\.v\d+)?)(\.\$\{|['"`])/g;
+function keysInSource(dirs: string[] = SOURCES, dotted: string[] = DOTTED_SOURCES): Set<string> {
     const out = new Set<string>();
-    const walk = (dir: string) => {
+    const walk = (dir: string, re: RegExp) => {
         for (const n of readdirSync(dir)) {
             const p = join(dir, n);
-            if (statSync(p).isDirectory()) walk(p);
-            else if (/\.tsx?$/.test(n)) for (const m of readFileSync(p, 'utf8').matchAll(/['"`](gsfpv\.[A-Za-z]+(?:\.v\d+)?)(\.\$\{|['"`])/g)) out.add(m[2] === '.${' ? `${m[1]}.*` : m[1]);
+            if (statSync(p).isDirectory()) walk(p, re);
+            else if (/\.tsx?$/.test(n)) for (const m of readFileSync(p, 'utf8').matchAll(re)) out.add(m[2] === '.${' ? `${m[1]}.*` : m[1]);
         }
     };
-    for (const d of dirs) walk(d);
+    for (const d of dirs) walk(d, ONE_PART);
+    for (const d of dotted) walk(d, DOTTED);
     out.delete('gsfpv.prefs.v1'); // the v0.3 document itself, once the page uses it
     return out;
 }

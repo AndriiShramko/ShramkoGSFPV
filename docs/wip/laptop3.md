@@ -41,6 +41,19 @@ Stage P3-weak-budget
 - [ ] 4. (superseded by 5 to 7) Pictures laptop3-lublin-above-0p5M-after.png and -1M-after.png (runner set `after`), Wroclaw street check (set `wro`
   with MUL and TAG), accept-fly B6 B7 B9 to B16, a6-reference, gates vitest, architecture, i18n, b18; status table
 
+Stage fixes (review LP-1 to LP-3)
+- [x] LP-1 (major, stands): governor.ts settledStep now needs the hold without streaming progress too (lastStreamed),
+  and governorMayStartLower: a 'desktop-strong' device never starts below the top step (quality.ts startFrom,
+  builtin/drawing.ts). The plan's "release major" is the record's `v` (no release number in the app). Tests
+  governor-start.test.ts 6 of 6 and governor.test.ts (33 of 33 together), NEG OK (both new tests fail on the old
+  governor.ts); render-pc, fly typecheck exit 0 (this commit)
+- [x] LP-2 (minor, stands): 'gsfpv.governor.start' in MACHINE_LOCAL_KEYS with a reason, in the V02 fixture, and
+  packages/render-pc/src in the source scan of migrate.test.ts (with a dotted-key pattern, the old pattern could not
+  see a key with two dots); migrate and defs 43 of 43, NEG OK (old migrate.ts fails the scan); prefs typecheck exit 0
+  (this commit)
+- [x] LP-3 (minor, stands): the Fly by Sound sentence in For the lead rewritten (this commit)
+- [ ] LP-1 browser proof: two loads on one profile (local release, port 5742)
+
 Left for the next worker (P3): the runner is ready (`bash run-p3.sh build`, then serve-csp dist 5741, then
 `run-p3.sh <set> score-lub`; one probe is about 4 minutes and takes the GPU lock itself). The switches are in the code;
 the default is unchanged (multiplier 2, farLevels 3), so no product change is in yet. Candidates left: (a) the frozen page
@@ -186,6 +199,11 @@ score-p3-lub.txt). One run each, each probe held the GPU lock itself, about 4 mi
   profile, and on a device that settled lower it removes the first seconds of missed frames on the next load. The
   10 s hold before a step is remembered is an estimate (two calm windows of DEFAULT_GOVERNOR), not measured.
 
+- Stage fixes, LP-1: both guards taken, not one: a step is remembered only after 10 s without a step change AND without
+  stream progress (so a weak device's record is not a loading artefact), and a strong desktop never starts lower (focus
+  point 4 holds even if a record is wrong). The plan's "release major" in the key is not added: the app has no release
+  number; the record's `v` is bumped when the governor's steps change.
+
 - D91 numbered after main's last D90; renumber at the merge if another lane took D91.
 - `active` now also needs a streamed scan present, so on a single-file scan the renderer sets the engine's own rule
   (no effect on a scan without an octree) and `lod().view.active` is false there, as the hand-off's check expects for
@@ -201,14 +219,25 @@ Review of view-lod.ts and its wiring (renderer.ts onViewLod, flight.ts `?viewlod
 - Scan change in flight: same engine class, the wrapper stays; the gap now resets the turn state; the new scan gets
   multiplier 2 when active flips back (onViewLod calls applyLodMultiplier). The pass at load (loadSplat line ~526) uses
   the last active value, corrected the next frame.
-- Fly by Sound with rendering off: no frame drawn means no 'framerender', so tick never runs and nothing is asked; read
-  only, no run.
+- Fly by Sound with rendering off: the engine fires 'framerender' on every tick, before it checks autoRender
+  (playcanvas.mjs 2.23.2 line 59376; renderer.ts sets autoRender inside that event), so tick does run; nothing is asked
+  because without a streamed scan there is no octree instance: install() fails, tick returns early (view-lod.ts 433),
+  active is false. Read only, no run (corrected in stage fixes, review LP-3).
 - Room with a second drone: other drones are entities, the page has one camera (`addComponent('camera'` only in
   renderer.ts and the separate drones3d studio app, which has no splats), so the frame and the look-ahead are the one
   camera's. Note for VR or a second view: `after()` takes the engine's camera node but the look-ahead and the stored
   axis come from the renderer's own camera; a second camera drawing the same scan would mix them.
 - Two SplatRenderers on one page would take the class-wide wrapper from each other every frame (ownership moves in
   install()); there is one (createRenderer, renderer.ts:373). Not changed.
+
+Stage fixes, LP-2: the source scan of packages/prefs/test/migrate.test.ts matches only one-part keys
+(`gsfpv.name` or `gsfpv.name.vN`). Read with the dotted pattern, apps/fly/src writes 13 more keys that are not
+classified: gsfpv.hint.macro (app/macro-hint.ts), gsfpv.tour.probe (app/tour.ts), gsfpv.course.best and .offered
+(course/link.ts), gsfpv.course.voter, .votes and .tokens (course/store.ts), gsfpv.rooms.nick (rooms/nick.ts),
+gsfpv.hint.gpu, .soft and .said (sonic/gpu-hint.ts), gsfpv.sonicrec.profile (sonic-session/consent.ts), and
+gsfpv.rooms.host.* (builtin/rooms.ts, sessionStorage); gsfpv.flyreelstudio.eu (scene-facts.ts) is a host name, not a key.
+They belong to other lanes, so this lane widened the pattern for packages/render-pc/src only. Widening it for all
+sources needs each of those keys classified first (legacy or machine-local with a reason).
 
 P2, for the owner's question (Lublin from above on a 0.5 M to 1 M device): the frame's priority does not change that
 picture. From above with the city in view the budget is already 82 to 88 % in the frame; what looks chopped is the near

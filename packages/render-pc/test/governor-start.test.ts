@@ -57,6 +57,26 @@ describe('governor start step (R32)', () => {
         expect(settled(t + 20000, 10000)).toBe(s);
     });
 
+    it('a step held while the scan streams is not settled; it settles after a hold without streaming (LP-1)', () => {
+        const g = new gov.FrameGovernor();
+        const settled = (t: number, hold: number) => ((g as unknown as Loose).settledStep as ((t: number, h: number) => number | null) | undefined)?.call(g, t, hold);
+        // 60 frames to learn the 30 Hz period, then 12 s on time while the streamer reports progress every 10th frame
+        let t = feed(g, 0, 60, 33.3);
+        for (let i = 0; i < 360; i++) { t += 33.3; g.onFrame(t, false, false, i % 10 === 0); }
+        expect(g.step).toBe(0);
+        expect(settled(t, 10000)).toBeNull();
+        // streaming stops: 10 s later the step counts as settled
+        t = feed(g, t, 301, 33.3);
+        expect(settled(t, 10000)).toBe(0);
+    });
+
+    it('a strong desktop never starts below the top step, the other classes may (LP-1)', () => {
+        const may = fn('governorMayStartLower');
+        expect(may('desktop-strong')).toBe(false);
+        expect(may('desktop-weak')).toBe(true);
+        expect(may('phone')).toBe(true);
+    });
+
     it('the record is read back only for the same device and a step that exists', () => {
         const id = fn('governorDeviceId')('desktop-weak', 'intel xe-lp') as string;
         expect(id).toBe('desktop-weak|intel xe-lp');
