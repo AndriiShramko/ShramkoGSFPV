@@ -7,6 +7,9 @@
 // before the crash and after the respawn; then R, and they are read again.
 //   node tools/bench/scripts/course-path-probe.mjs http://localhost:5720/en <out.json> <shots dir> <id>[,<id>...]
 // Headless; takes no GPU lock itself (wrap it). Presses only Shift+G and R: nothing is sent or saved.
+// Stage F1-no-freeze: also every long task of the page's main thread (PerformanceObserver 'longtask') from Shift+G to the
+// course, the longest time the shown walls/course text did not change while a build ran (maxSilentS), the longest time the
+// page did not answer the probe (maxReadGapS), and where the walls were built (hook walls.lastBake.where).
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { pickBrowser } from '../src/chrome.mjs';
@@ -19,6 +22,11 @@ const NAMES = { '70b50d42': 'wroclaw', '887f27aa': 'tunis', ab5efa0e: 'forest' }
 const LIMIT_MS = 900_000;
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
+
+const LONGTASKS = () => {
+    window.__lt = [];
+    try { new PerformanceObserver((l) => { for (const e of l.getEntries()) window.__lt.push([e.startTime, e.duration]); }).observe({ type: 'longtask', buffered: true }); } catch { /* no longtask API */ }
+};
 
 const READ = () => {
     const g = window.__gsfpv || {};
@@ -117,6 +125,7 @@ for (const id of idsArg.split(',')) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     const page = await ctx.newPage();
     const r = { id, errors: [], lines: [] };
+    await page.addInitScript(LONGTASKS);
     page.on('pageerror', (e) => r.errors.push(String(e.message).slice(0, 160)));
     const ev = (f, a) => page.evaluate(f, a);
     const until = async (f, ok, ms, every = 500) => { const t = Date.now(); for (;;) { const v = await ev(f); if (ok(v) || Date.now() - t > ms) return v; await page.waitForTimeout(every); } };
@@ -128,17 +137,30 @@ for (const id of idsArg.split(',')) {
         const x = page.locator('.screen.radio [data-action=radio-close]');
         if (await x.count()) { await x.first().click(); await page.waitForTimeout(800); }
         r.install = await ev(INSTALL);
+        r.pressAtMs = await ev(() => performance.now());
         const t0 = Date.now();
         await page.keyboard.press('Shift+KeyG');
+        let lastShown = null, lastChange = 0, lastRead = 0;
+        r.maxSilentS = 0; r.maxReadGapS = 0;
         for (;;) {
             const s = await ev(READ);
             const at = +((Date.now() - t0) / 1000).toFixed(1);
+            r.maxReadGapS = Math.max(r.maxReadGapS, +(at - lastRead).toFixed(1)); lastRead = at;
+            if (s.wallsProgress || s.courseProgress) {
+                const shown = `${s.box ?? ''}|${s.note ?? ''}`;
+                if (lastShown === null || shown !== lastShown) { if (lastShown !== null) r.maxSilentS = Math.max(r.maxSilentS, +(at - lastChange).toFixed(1)); lastShown = shown; lastChange = at; }
+                else r.maxSilentS = Math.max(r.maxSilentS, +(at - lastChange).toFixed(1));
+            } else lastShown = null;
             for (const k of ['wallsProgress', 'box', 'courseProgress', 'note']) if (s[k] && !r.lines.some((l) => l.k === k && l.text === s[k] && l === r.lines.findLast((m) => m.k === k))) r.lines.push({ at, k, text: s[k] });
             if (s.gates > 0 && s.drawn > 0) { r.courseAtS = at; break; }
             if (s.problem && !s.wallsProgress && !s.courseProgress && at > 5 && !s.gates) { r.problem = s.problem; break; }
             if (Date.now() - t0 > LIMIT_MS) { r.fail = 'timeout'; break; }
             await page.waitForTimeout(500);
         }
+        r.bake = await ev(() => { const w = window.__gsfpv.walls; return w && w.lastBake ? JSON.parse(JSON.stringify(w.lastBake)) : null; });
+        const lt = await ev((from) => (window.__lt || []).filter((e) => e[0] >= from), r.pressAtMs);
+        r.longtasks = { n: lt.length, sumMs: Math.round(lt.reduce((a, e) => a + e[1], 0)), maxMs: Math.round(Math.max(0, ...lt.map((e) => e[1]))),
+            top: lt.slice().sort((a, b) => b[1] - a[1]).slice(0, 8).map((e) => ({ atS: +((e[0] - r.pressAtMs) / 1000).toFixed(1), ms: Math.round(e[1]) })) };
         if (r.courseAtS === undefined) throw new Error(r.problem || r.fail || 'no course');
         await page.waitForTimeout(3500); // the arrival warning and the gates' delay
         const poses = await ev(() => window.__gsfpv.course.gatePoses());
@@ -199,4 +221,4 @@ for (const id of idsArg.split(',')) {
     await ctx.close();
 }
 await browser.close();
-for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, afterR: r.afterR, errors: r.errors.length, fail: r.fail }));
+for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, afterR: r.afterR, errors: r.errors.length, fail: r.fail }));
