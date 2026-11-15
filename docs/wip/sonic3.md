@@ -35,7 +35,13 @@ Stage S1-count-a-course (train 3 wave 3, last finishing lane):
   rule did not fire: cause not measured; a wall contact or a crash hold is a guess).
   Verdict (from the record): the cues lead past the gate (no entry side; degenerate direction at the centre), not a too
   coarse pilot and not a too sharp turn (no miss came from a turn at speed).
-- [ ] LEFT, in this order (stage stopped past its reply budget at a clean commit; no job of this lane runs, no lock held):
+- [x] Pass 2, item 1: package train3 ce07871 "gate aim" (src/lesson/gate-aim.ts, lesson opt-in layers.gateAim): the hum of a
+  gate aims beside the frame on the entry side while the craft is behind the plane, at the approach point 3 m out on the axis
+  while off the cone (0.6 x distance), at the centre in the cone, and 3 m beyond the gate within 2 m of the plane in front of
+  the opening (all four distances estimates). Package test/gate-aim.test.ts 7 of 7, NEG OK on the old runner.ts; package suite
+  1346 passed. Pin moved to ce07871; scanCourseLesson sets gateAim (sonic-scan-course NEG OK on the old scan-lesson.ts);
+  sonic-scan-course + sonic-in-place + sonic-scan-free 22 of 22; apps/fly tsc 0 errors.
+- [ ] LEFT (pass 1 list; item 1 done above):
   1. Package (branch train3) cue fix with a unit test and a negative control: the hum of a gate aims at an approach point on
      the gate's entry side (centre + normal x a distance, an estimate until measured by tools/ear-pilot.ts) while the craft is
      behind the plane or off the gate axis, and at a point beyond the gate (centre - normal x d) within about 2 m of the plane,

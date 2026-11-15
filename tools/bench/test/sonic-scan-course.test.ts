@@ -34,6 +34,8 @@ describe('a course of gates in a free scan flight (S3)', () => {
         expect(course.id).toBe(SCAN_FREE_ID);
         expect(course.goals).toEqual([{ kind: 'timed-course', laps: track.laps }]);
         expect(course.layers.on).toContain('target');
+        // sonic3 S1: the hum of a gate leads through it from the entry side (package layers.gateAim)
+        expect(course.layers.gateAim).toBe(true);
         expect(course.world).toMatchObject({ kind: 'scan', sceneId: '7a475d38', track: { id: track.id, version: track.version } });
         expect(isScanCourse(course)).toBe(true);
         expect(isScanCourse(free)).toBe(false);
