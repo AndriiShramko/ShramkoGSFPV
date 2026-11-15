@@ -731,6 +731,8 @@ export const course: Feature = {
             edHook.refused = null;
             checks?.ask(st.course, flownTransform(), edMargin);
             showEd();
+            // H2: the camera goes to the new gate (a floor click left it behind the view on both scans in H1)
+            aim();
             say(t('course.edit.did', { what: t('course.edit.bar.add'), gate: gateLine(st, scale()) }));
         };
         /** lane editor3 E3: armed flies (the drone's camera, the course from gate 1), disarmed or crashed edits again */

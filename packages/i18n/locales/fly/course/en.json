@@ -28,7 +28,7 @@
   "keys.course.edit": "Course: edit the obstacles",
   "course.edit.menu": "Course: edit the obstacles",
   "course.edit.title": "Course editor",
-  "course.edit.opened": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate and drag its arrows, rings or centre box. Esc leaves",
+  "course.edit.opened": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: its arrows move it; Move, Turn and Size on the gate's bar switch to rings or the centre box. Esc leaves",
   "course.edit.gate": "Gate {n} of {of}: {shape}, {size} m",
   "course.edit.shape.ring": "ring",
   "course.edit.shape.square": "square",

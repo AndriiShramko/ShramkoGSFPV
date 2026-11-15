@@ -217,7 +217,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // select the added gate (now at `del`)
     for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) await page.keyboard.press('Shift+Tab');
     await sleep(1600);
-    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-1920.png' : 'editor3-select-1920.png') });
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-select-1920.png' : 'editor3-select-1920.png') });
 
     const tDrag0 = await now(page);
     // the ring, the centre box and the kind on the next gate (Tab), so the gate flown through later is only moved
@@ -241,8 +241,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (q > 0.01) break;
     }
     out.turn = turns;
-    // Size: the key T, then the centre box (walked out from the centre in case the box is not under it)
-    await page.keyboard.press('KeyT');
+    if (id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-turn-1920.png') });
+    out.turnUndo = await undoRedo(page);
+    // Size: the gate bar's Size button (the mouse road; T is its key), then the centre box
+    await page.click('.ce-gatebar [data-bar="size"]', { timeout: 3000 }).catch(async () => { await page.keyboard.press('KeyT'); });
     await sleep(400);
     out.sizeTool = (await dbg(page))?.tool;
     const sc: unknown[] = [];
@@ -256,32 +258,39 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (Math.abs(a.stand.opening - b.stand.opening) > 0.01) break;
     }
     out.scale = sc;
-    // its kind: the bar's square
-    const k0 = (await ed(page)).said;
-    // a kind it does not have yet (the window's gate line names its kind)
-    const line0 = await page.evaluate(() => document.querySelector('.course-editor .ce-gate')?.textContent ?? '');
-    const kindTo = /square/.test(line0) ? 'ring' : 'square';
-    out.kindTo = kindTo;
-    const kb = `.ce-gatebar [data-bar="${kindTo}"]`;
-    out.kindButton = await page.evaluate((s) => {
-        const e = document.querySelector(s) as HTMLElement | null;
-        if (!e) return 'none';
-        const r = e.getBoundingClientRect();
-        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-        return { rect: [Math.round(r.left), Math.round(r.top), Math.round(r.width)], bar: getComputedStyle(e.parentElement!).display, onTop: top === e || e.contains(top), top: top ? top.tagName + '.' + String(top.className) : null };
-    }, kb);
-    await page.click(kb, { timeout: 2000 }).catch(async (e) => {
-        out.kindClickError = String(e).replace(/\u001b\[[0-9;]*m/g, '').slice(0, 600);
-        // as a person does: the mouse on the button's middle, whatever Playwright's stability check says
-        const box = await page.locator(kb).boundingBox().catch(() => null);
+    if (id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-size-1920.png') });
+    out.scaleUndo = await undoRedo(page);
+    // H2: every kind once from the gate bar, clicked with the mouse on the button's middle (as a person), then undo/redo
+    const kinds: unknown[] = [];
+    for (const k of ['square', 'dive', 'cube', 'ring']) {
+        const box = await page.locator(`.ce-gatebar [data-bar="${k}"]`).boundingBox().catch(() => null);
         if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-        out.kindMouseClick = !!box;
-    });
-    await sleep(500);
-    out.kind = { saidBefore: (k0 ?? '').slice(0, 80), said: ((await ed(page)).said ?? '').slice(0, 80), changed: (await ed(page)).changed };
+        await sleep(600);
+        kinds.push({ kind: k, box: !!box, line: (await sample(page)).line, said: ((await ed(page)).said ?? '').slice(0, 70) });
+    }
+    out.kinds = kinds;
+    out.kindUndo = await undoRedo(page);
+    // the bar's Next and Previous
+    const s0 = (await ed(page)).selected;
+    await clickBar(page, 'next');
+    const s1 = (await ed(page)).selected;
+    await clickBar(page, 'prev');
+    const s2 = (await ed(page)).selected;
+    out.barNextPrev = { from: s0, next: s1, prev: s2, handles: (await dbg(page))?.handles, tool: (await dbg(page))?.tool };
+    // Duplicate: one more gate, selected, with its handles; undo and redo
+    const nDup = (await hook(page))?.gates ?? 0;
+    await clickBar(page, 'duplicate');
+    const dupD = await dbg(page);
+    out.duplicate = { gates: [nDup, (await hook(page))?.gates], selected: (await ed(page)).selected, handles: dupD?.handles, bar: await barShown(page), ur: await undoRedo(page) };
+    // Delete the copy with the bar: the next gate selected with its handles and its bar (ED-1); undo and redo
+    const nDel2 = (await hook(page))?.gates ?? 0;
+    await clickBar(page, 'delete');
+    const delD = await dbg(page);
+    out.delete2 = { gates: [nDel2, (await hook(page))?.gates], selected: (await ed(page)).selected, handles: delD?.handles, tool: delD?.tool, bar: await barShown(page), ur: await undoRedo(page) };
+    // Ctrl+Z took the copy back, Ctrl+Y deleted it again: the course is as before the duplicate
     // back to gate 1 (Shift+Tab) and its X arrow
-    await page.keyboard.press('Shift+Tab');
-    await until(() => ed(page), (e) => e.selected === del, 2000);
+    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) { await page.keyboard.press('Shift+Tab'); await sleep(150); }
+    out.shiftTabBack = (await ed(page)).selected === del;
     await sleep(800);
     // the X arrow: another gate selected sets Move (toolAfter); the arrow found along the gate's X axis
     out.moveTool = (await dbg(page))?.tool;
@@ -300,7 +309,9 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     }
     out.moveX = moves;
     out.drags = await span(page, tDrag0, await now(page));
-    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-drag-1920.png' : 'editor3-drag-1920.png') });
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-1920.png' : 'editor3-move-1920.png') });
+    out.moveUndo = await undoRedo(page);
+    const movedPos = (await dbg(page))?.stand.pos;
 
     // the camera: keys and the right button
     const keys: unknown[] = [];
@@ -347,7 +358,9 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const yawSign = ga && gb && ga[2]! > 0 && gb[2]! > 0 && gb[0] !== ga[0] ? (gb[0]! > ga[0]! ? 1 : -1) : 1;
     let pitch = -0.35;
     let z4 = -1;
-    for (let i = 0; i < 60; i++) {
+    // H2: forward only while the gate sits near the middle (a small error), slower when near; turn back when it is behind
+    let shot = false;
+    for (let i = 0; i < 110; i++) {
         const d = await dbg(page);
         const h = await hook(page);
         const g = d?.gates[del];
@@ -359,18 +372,19 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (g && g[2]! > 0) {
             const ex = (g[0]! - W / 2) / (W / 2);
             const ey = (g[1]! - H / 2) / (H / 2);
-            yaw = clamp(-yawSign * 0.9 * ex);
-            thr = clamp(-0.7 * ey);
-            pit = Math.abs(ex) > 0.35 ? 0 : pitch;
+            yaw = clamp(-yawSign * 1.1 * ex);
+            thr = clamp(-0.9 * ey);
+            pit = Math.abs(ex) < 0.12 && Math.abs(ey) < 0.25 ? (g[2]! > 6 ? pitch : pitch * 0.6) : 0;
             if (i === 4) z4 = g[2]!;
-            if (i === 12 && z4 > 0 && g[2]! > z4 + 0.3) pitch = -pitch;
+            if (i === 14 && z4 > 0 && g[2]! > z4 + 0.3) pitch = -pitch;
+            if (!shot && g[2]! < 6 && id !== '70b50d42') { shot = true; await page.screenshot({ path: join(SHOTS, 'editor3-flying-1920.png') }); }
         }
         await pad(page, [0, pit, thr, yaw, 0], null);
         await sleep(250);
     }
     out.flyYawSign = yawSign;
     out.flyPitch = pitch;
-    await page.screenshot({ path: join(SHOTS, `editor3-${id}-flying.png`) });
+    if (!shot && id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-flying-1920.png') });
     await pad(page, [0, 0, -1, 0, 0], 0x50);
     await sleep(300);
     await pad(page, null, 0x50 | (1 << 2));
@@ -402,12 +416,105 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '')
     };
     await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-floor-add-1920.png' : 'editor3-floor-add-1920.png') });
-    // leave without saving
-    await page.keyboard.press('Escape');
+    out.floorAddUndo = await undoRedo(page);
+    // the Add gate is taken back (undo) so the saved course is the one flown
+    await page.click('[data-top="undo"]', { timeout: 3000 }).catch(() => undefined);
+    await sleep(500);
+    out.path = await span(page, tPath, await now(page));
+    // H2: Save on the LOCAL stand-in of /api/tracks (main() routes it; nothing leaves this PC), then the saved course again
+    await page.click('[data-top="save"]', { timeout: 3000 }).catch((e) => { out.saveClickError = String(e).slice(0, 120); });
+    await sleep(800);
+    const nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
+    if (nameField) { await page.keyboard.type('Probe H2'); await page.keyboard.press('Enter'); }
+    const sv = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 20000);
+    out.save = { nameField, ok: sv.ok, ms: sv.ms, saved: (sv.v as { saved?: string | null } | null)?.saved ?? null, said: ((await ed(page)).said ?? '').slice(0, 100), problem: sv.v?.problem ?? null, posts: await page.evaluate(() => (window as unknown as { __posts?: number }).__posts ?? null) };
+    out.savedGatePos = movedPos?.map(r2);
     await sleep(500);
     if ((await ed(page)).open) await page.keyboard.press('Escape');
     out.exit = { closed: (await until(() => ed(page), (e) => !e.open, 3000)).ok };
+    const saved = (out.save as { saved?: string | null }).saved;
+    if (saved) out.reload = await reloadSaved(page, id, saved, del, movedPos);
     return out;
+}
+
+/** H2: the page again (same tab, same local /api/tracks stand-in): does the saved course come, and gate `del` where it was moved */
+async function reloadSaved(page: Page, id: string, saved: string, del: number, movedPos: number[] | undefined): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = {};
+    await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1`);
+    await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 240000);
+    await page.focus('.screen.radio [data-action="radio-keyboard"]').catch(() => undefined);
+    if (await page.evaluate(() => !!document.querySelector('.screen.radio'))) await page.keyboard.press('Enter');
+    const c = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 30000);
+    const h = c.v as (Hook & { track?: { id?: string; version?: number } | null; source?: string | null }) | null;
+    out.auto = { ok: c.ok, ms: c.ms, gates: h?.gates, source: h?.source ?? null, track: h?.track ?? null };
+    if ((h?.track?.id ?? '') !== saved) {
+        // not loaded by itself: the list of the scene's courses (the window's Courses part) names it?
+        out.listText = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300));
+        return out;
+    }
+    await page.keyboard.press('Shift+KeyB');
+    await until(() => ed(page), (e) => !!e.open, 30000);
+    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) { await page.keyboard.press('Shift+Tab'); await sleep(150); }
+    await sleep(600);
+    const p = (await dbg(page))?.stand.pos;
+    out.gate = { index: del, pos: p?.map(r2), savedPos: movedPos?.map(r2), offM: r2(dist(p, movedPos)) };
+    return out;
+}
+
+/** the selected gate as the probe compares it: pose, opening, gate count and the window's gate line */
+async function sample(p: Page): Promise<{ sel?: number; gates?: number; pos?: number[]; q?: number[]; open: number | null; line: string }> {
+    const d = await dbg(p);
+    const h = await hook(p);
+    const line = await p.evaluate(() => document.querySelector('.course-editor .ce-gate')?.textContent ?? '');
+    return { sel: h?.editor?.selected, gates: h?.gates, pos: d?.stand.pos.map(r2), q: d?.stand.quat.map(r2), open: d ? r2(d.stand.opening) : null, line: line.slice(0, 60) };
+}
+
+/** the top bar's Undo, then Redo, each by a mouse click; the state before, after undo and after redo */
+async function undoRedo(p: Page): Promise<Record<string, unknown>> {
+    const before = await sample(p);
+    await p.click('[data-top="undo"]', { timeout: 3000 }).catch(() => undefined);
+    await sleep(600);
+    const undo = await sample(p);
+    await p.click('[data-top="redo"]', { timeout: 3000 }).catch(() => undefined);
+    await sleep(600);
+    const redo = await sample(p);
+    const same = (a: typeof before, b: typeof before): boolean => JSON.stringify([a.gates, a.pos, a.q, a.open, a.line]) === JSON.stringify([b.gates, b.pos, b.q, b.open, b.line]);
+    return { undoChanged: !same(before, undo), redoBack: same(before, redo), before, undo, redo };
+}
+
+/** a gate bar button pressed with the mouse on its middle */
+async function clickBar(p: Page, idBar: string): Promise<void> {
+    const box = await p.locator(`.ce-gatebar [data-bar="${idBar}"]`).boundingBox().catch(() => null);
+    if (box) await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await sleep(900);
+}
+
+const barShown = (p: Page): Promise<string> => p.evaluate(() => { const b = document.querySelector('.ce-gatebar') as HTMLElement | null; return b ? `${getComputedStyle(b).display} ${b.style.left} ${b.style.top}` : 'none'; });
+
+/** a stand-in of /api/tracks in this browser context only: POST keeps the file, the list and the file read it back */
+const tracks = new Map<string, { body: Record<string, unknown>; version: number }>();
+async function fakeTracks(ctx: import('playwright').BrowserContext): Promise<void> {
+    await ctx.route('**/api/tracks**', async (route) => {
+        const req = route.request();
+        const url = new URL(req.url());
+        if (req.method() === 'POST') {
+            const body = JSON.parse(req.postData() ?? '{}') as Record<string, unknown>;
+            const tid = String(body.id);
+            tracks.set(tid, { body, version: Number(body.version) || 1 });
+            return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: tid, version: Number(body.version) || 1, editToken: 'a'.repeat(32) }) });
+        }
+        const m = /\/api\/tracks\/([^/]+)\/v(\d+)$/.exec(url.pathname);
+        if (m) {
+            const t = tracks.get(decodeURIComponent(m[1]!));
+            return t ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(t.body) }) : route.fulfill({ status: 404, body: '{}' });
+        }
+        // one scene per run reads this list, so every kept file is listed
+        const rows = [...tracks.values()].map((t) => ({
+            id: String(t.body.id), version: t.version, title: String(t.body.title ?? ''), gates: Array.isArray(t.body.gates) ? t.body.gates.length : 0,
+            lengthM: 0, created: new Date().toISOString(), up: 0, down: 0, rating: 0
+        }));
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ v: 1, tracks: rows }) });
+    });
 }
 
 async function phone(page: Page, id: string): Promise<Record<string, unknown>> {
@@ -420,6 +527,12 @@ async function phone(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(1600);
     const bars = await page.evaluate(() => [...document.querySelectorAll('.ce-gatebar, .ce-topbar, [data-top="add"]')].map((e) => { const r = e.getBoundingClientRect(); return [e.className || e.getAttribute('data-top'), Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
     out.bars = bars;
+    // H2: nothing covers the selected gate: what lies on top at the gate's screen point, and the top bar on one line
+    const g = (await dbg(page))?.stand.screen;
+    out.gateScreen = g?.map((v) => Math.round(v));
+    out.onGate = g ? await page.evaluate(([x, y]) => { const e = document.elementFromPoint(x!, y!); return e ? e.tagName + '.' + String(e.className) : null; }, [g[0]!, g[1]!]) : null;
+    out.topBarH = await page.evaluate(() => { const e = document.querySelector('.ce-topbar'); return e ? Math.round(e.getBoundingClientRect().height) : null; });
+    out.barFits = await page.evaluate(() => [...document.querySelectorAll('.ce-gatebar, .ce-topbar')].every((e) => { const r = e.getBoundingClientRect(); return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight; }));
     await page.screenshot({ path: join(SHOTS, 'editor3-844.png') });
     return out;
 }
@@ -484,6 +597,7 @@ async function main(): Promise<void> {
         const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 1 });
         // as text: tsx wraps named functions in __name(), which the page does not have
         await ctx.addInitScript({ content: `var __name = (f) => f; (${install.toString()})();` });
+        await fakeTracks(ctx);
         const page = await ctx.newPage();
         page.on('pageerror', (e) => log.push(`${name} pageerror: ${e.message}`.slice(0, 300)));
         page.on('console', (m) => { if (m.type() === 'error') log.push(`${name} console: ${m.text()}`.slice(0, 200)); });

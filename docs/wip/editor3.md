@@ -266,6 +266,18 @@ H1 pass 2:
      editor3-full-1920.png.
   5. gates.py --only vitest,architecture,i18n,b18 (not run in pass 2).
 
+Stage H2-prove (train 3 wave 2):
+- [x] H2.0 release of 7fcdeb5b built (build-release sha 7fcdeb5b, 1932 files); run1 of the H1 probe on it queued
+  (OUT h2/run1, both scenes, PHONE=1)
+- [x] H2.1 (this commit) left 2: course.ts placeAt calls aim() after an Add gate (the camera goes to the new gate);
+  left 3: course.edit.opened in en, es, pl, ru names Move, Turn, Size on the gate's bar instead of all three handles.
+  Probe tools/bench/src/editor3-prove.ts: shots editor3-move/turn/size/flying-1920.png and editor3-wroclaw-1920.png (Move on
+  Wroclaw); undo and redo by the top bar's buttons after the X drag, the ring, the size box, the kinds, Duplicate, Delete and
+  the floor Add; each kind once from the bar; the bar's Next and Previous; Save against a stand-in of /api/tracks routed
+  inside the browser context (nothing leaves the PC) and the page loaded again; the flight steers forward only when the gate
+  is near the middle; the phone run reads what lies on the selected gate. tools/bench tsc 0, apps/fly tsc 0.
+- [ ] H2.2 left 1 (ED-2 second Space does not disarm a keyboard pilot in the mode's flight): see For the lead.
+
 Old list of pass 1 (items 1-4 done above):
 - [ ] left (next worker, in this order; stopped at the reply budget of 30):
   1. the 'before' run: if U:/Temp/gsfpv-train3/editor3/h1/before/e4.json exists, read it (release of bb670ead, both scenes);
