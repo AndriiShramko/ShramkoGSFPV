@@ -5,7 +5,7 @@
 // the scene's link, the pilot's setting or the scene's entry asks for another one (v0.7 lane R, app/drawing.ts):
 // setTopBudget moves the governor's steps, the slider and cinema with it. The preset's top render scale
 // (v0.10, setPresetScale) caps the resolution the governor lowers from: a phone starts at 70 % of its pixels.
-import { FrameGovernor } from '@gsfpv/render-pc';
+import { FrameGovernor, GOVERNOR_SETTLE_MS, GOVERNOR_START_KEY, governorStartRecord, savedStartStep } from '@gsfpv/render-pc';
 import type { SplatRenderer } from '@gsfpv/render-pc';
 import { q } from './env';
 
@@ -32,6 +32,30 @@ export class Quality {
         this.renderer = renderer;
         this.governor.enabled = q.get('governor') !== '0';
         this.userMaxScale = renderer.renderScale;
+    }
+
+    /** the device's id for the remembered start step (startFrom), null until the class and the GPU are known */
+    private deviceId: string | null = null;
+    /** the step last written for deviceId */
+    private savedStep = -1;
+
+    /**
+     * R32: start the governor at the step this device (governorDeviceId) settled at on its last flight, once per
+     * page; later calls (a scene switch) only keep the id. ?governor=0 keeps the top step (tests). `mayStartLower`
+     * false (a strong desktop, governorMayStartLower) keeps the top step too; the settled step is still remembered.
+     */
+    startFrom(id: string, mayStartLower = true): void {
+        if (this.deviceId === id) return;
+        const first = this.deviceId === null;
+        this.deviceId = id;
+        let raw: string | null = null;
+        try { raw = globalThis.localStorage?.getItem(GOVERNOR_START_KEY) ?? null; } catch { /* storage blocked */ }
+        const s = savedStartStep(raw, id, this.governor.steps.length);
+        this.savedStep = s;
+        if (first && mayStartLower && this.governor.enabled && s > 0) {
+            this.governor.startAt(s);
+            this.apply();
+        }
     }
 
     get cinema(): boolean {
@@ -114,5 +138,13 @@ export class Quality {
         // after a late callback (5.5 ms after a 120 ms one, measured on ba7aa29d) never teaches it a
         // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
         if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
+        // remember the step this device settled at for the next load (startFrom)
+        if (this.deviceId !== null && !this.cinemaOn) {
+            const s = this.governor.settledStep(this.renderer.frameTime, GOVERNOR_SETTLE_MS);
+            if (s !== null && s !== this.savedStep) {
+                this.savedStep = s;
+                try { globalThis.localStorage?.setItem(GOVERNOR_START_KEY, governorStartRecord(this.deviceId, s)); } catch { /* storage full or blocked */ }
+            }
+        }
     }
 }

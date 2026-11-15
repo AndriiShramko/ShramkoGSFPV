@@ -1,0 +1,73 @@
+{
+  "name": "gpu-select/edge-link",
+  "date": "2026-11-13T22:57:45.094Z",
+  "label": "edge-link",
+  "mode": "link",
+  "browserName": "edge",
+  "page": "http://127.0.0.1:13804/ (a page of the probe with <a href=\"ms-settings:display-advancedgraphics\">)",
+  "settingsWindowOpenBefore": false,
+  "browser": {
+    "product": "Edg/157.0.4341.46",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36 Edg/157.0.0.0"
+  },
+  "ask": {
+    "dialog": [
+      {
+        "type": "Window",
+        "name": "This site is trying to open Settings."
+      },
+      {
+        "type": "Text",
+        "name": "This site is trying to open Settings."
+      },
+      {
+        "type": "Text",
+        "name": "http://127.0.0.1:13804 wants to open this application."
+      },
+      {
+        "type": "CheckBox",
+        "name": "Always allow http://127.0.0.1:13804 to open links of this type in the associated app"
+      },
+      {
+        "type": "Button",
+        "name": "Open"
+      },
+      {
+        "type": "Button",
+        "name": "Cancel"
+      }
+    ],
+    "accessibilityForced": [
+      "--force-renderer-accessibility"
+    ],
+    "settingsOpened": false,
+    "settingsWindow": null
+  },
+  "allowed": {
+    "settings": {
+      "running": true,
+      "window": "Settings",
+      "texts": [
+        "System",
+        "Display",
+        "Graphics"
+      ]
+    },
+    "opened": true,
+    "graphicsPage": true
+  },
+  "verdict": {
+    "asksFirst": [
+      "Window: This site is trying to open Settings.",
+      "Text: This site is trying to open Settings.",
+      "Text: http://127.0.0.1:13804 wants to open this application.",
+      "CheckBox: Always allow http://127.0.0.1:13804 to open links of this type in the associated app",
+      "Button: Open",
+      "Button: Cancel"
+    ],
+    "opensWithoutConsent": false,
+    "opensWhenAllowed": true,
+    "onGraphicsPage": true,
+    "settingsWindow": "Settings"
+  }
+}

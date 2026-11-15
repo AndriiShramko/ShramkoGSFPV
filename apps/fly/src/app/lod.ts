@@ -3,7 +3,7 @@
 // city scan and could not see that it used levels of detail; F3 now says how many levels the scan has,
 // how they are chosen, how many splats of how large a budget are drawn and at what resolution, and
 // whether the quality governor lowered them.
-import type { LodState } from '@gsfpv/render-pc';
+import type { LodState, ViewLodStats } from '@gsfpv/render-pc';
 import type { FlightContext } from './context';
 
 /** A translator (i18n t): passed in, so this module runs in Node tests without the page's dictionaries. */
@@ -26,6 +26,8 @@ export interface LodReport extends LodState {
     settingBudgetM: number;
     /** missed frames that came while the scan was streaming (counted by the governor like any other; FrameGovernor.streamHitches) */
     streamHitches: number;
+    /** the frame's priority in the choice of detail (lane lod-view, render-pc view-lod.ts): at work or not, and its counts */
+    view: ViewLodStats;
 }
 
 /** The report for the flight on screen. */
@@ -40,7 +42,8 @@ export function lodReport(ctx: Pick<FlightContext, 'renderer' | 'session' | 'qua
         governorStep: g.step,
         governorBudgetM: g.current.splatBudgetMillions,
         settingBudgetM: ctx.quality.settingBudgetMillions,
-        streamHitches: g.streamHitches
+        streamHitches: g.streamHitches,
+        view: ctx.renderer.viewLodStats()
     };
 }
 

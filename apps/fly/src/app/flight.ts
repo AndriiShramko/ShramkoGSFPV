@@ -206,6 +206,11 @@ export async function fly(ui: HTMLElement, canvas: HTMLCanvasElement, link: Scen
             // test switches of the stochastic drawing (the bench's control arm and upstream's variant keys)
             ...(parseImpl(q.get('impl')) ? { stochasticImpl: parseImpl(q.get('impl')) } : {}),
             accumVariant: q.get('accum') ?? '',
+            // ?viewlod=0: the engine's own choice of detail for this load (lane lod-view)
+            viewLod: q.get('viewlod') !== '0',
+            // ?lodmul=1.5, ?viewlodfar=8: the measurement's switches of that rule (laptop3 P3)
+            ...(q.get('lodmul') ? { viewLodMultiplier: Number(q.get('lodmul')) } : {}),
+            ...(q.get('viewlodfar') ? { viewLodFarLevels: Number(q.get('viewlodfar')) } : {}),
             lagFrames: Number(q.get('lagFrames') ?? 0),
             renderScale: q.get('scale') ? Number(q.get('scale')) : 1,
             // asked once the renderer's device exists (a WebGL fallback gets the default budget)

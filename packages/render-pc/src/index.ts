@@ -7,6 +7,8 @@ export * from './accum-policy';
 export { AccumDrawing, accumMissing, worldLayer, ACCUM_UPSTREAM } from './accum';
 export type { AccumStats } from './accum';
 export * from './lod';
+export { ViewLod, VIEW_LOD_DEFAULTS, ENGINE_LOD_MULTIPLIER, MAX_LEAD_DEG, MIN_ASK_MS, TURN_MIN_DEG_S, frameHalfAngles, outsideFrame, rampFor, viewFactor, turnOf, turned, leadDeg, viewLodMissing } from './view-lod';
+export type { ViewLodParams, ViewLodStats, ViewRamp } from './view-lod';
 export * from './frame-timing';
 export * from './voxel-overlay';
 export { heightColor, voxelColor, writeColors, packChunk } from './voxel-colors';

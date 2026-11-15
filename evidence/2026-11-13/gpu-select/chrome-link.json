@@ -1,0 +1,41 @@
+{
+  "name": "gpu-select/chrome-link",
+  "date": "2026-11-13T22:57:25.081Z",
+  "label": "chrome-link",
+  "mode": "link",
+  "browserName": "chrome",
+  "page": "http://127.0.0.1:13764/ (a page of the probe with <a href=\"ms-settings:display-advancedgraphics\">)",
+  "settingsWindowOpenBefore": false,
+  "browser": {
+    "product": "Chrome/140.0.7339.81",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+  },
+  "ask": {
+    "dialog": [],
+    "accessibilityForced": [
+      "--force-renderer-accessibility"
+    ],
+    "settingsOpened": false,
+    "settingsWindow": null
+  },
+  "allowed": {
+    "settings": {
+      "running": true,
+      "window": "Settings",
+      "texts": [
+        "System",
+        "Display",
+        "Graphics"
+      ]
+    },
+    "opened": true,
+    "graphicsPage": true
+  },
+  "verdict": {
+    "asksFirst": [],
+    "opensWithoutConsent": false,
+    "opensWhenAllowed": true,
+    "onGraphicsPage": true,
+    "settingsWindow": "Settings"
+  }
+}

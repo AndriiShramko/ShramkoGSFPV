@@ -17,6 +17,7 @@ import { t } from '../../i18n';
 import type { Feature, FlightContext } from '../context';
 import { deviceFor, drawingBudget, drawingDefaults, drawingFor, drawingMode, handheld, linkOf, mobile, setLive } from '../drawing';
 import { cleanDraw } from '../clean-draw';
+import { gpuName, governorDeviceId, governorMayStartLower } from '@gsfpv/render-pc';
 
 /** How long the HUD line stays, ms: a refused request is read once, the "on" line is a reminder. */
 const NOTE_MS = 7000;
@@ -30,6 +31,9 @@ function apply(ctx: FlightContext, announce: boolean): void {
     const engine = r.setStochastic(d.stochastic && !clean);
     ctx.quality.setTopBudget(d.budgetM);
     ctx.quality.setPresetScale(d.renderScale);
+    // R32: the governor starts at the step this device settled at on its last flight (render-pc governor.ts)
+    // (not on a strong desktop: there the top step stays the start, review LP-1)
+    ctx.quality.startFrom(governorDeviceId(d.deviceClass, gpuName(r.gpuInfo)), governorMayStartLower(d.deviceClass));
     // a scene switch set the shared renderer's budget to the top while it loaded: back to the governor's step
     ctx.quality.apply();
     const request = linkOf(ctx.scene);
@@ -54,6 +58,9 @@ function apply(ctx: FlightContext, announce: boolean): void {
 export const drawing: Feature = {
     id: 'drawing',
     install(ctx) {
+        // a streamed scan's files, downloaded at a time: the engine's 2 on a phone or tablet (peak memory), 6 elsewhere (lane
+        // lod-view: a turn's new view arrives sooner; docs/wip/lod-view.md)
+        ctx.renderer.setParallelLoads(handheld ? 2 : 6);
         apply(ctx, true);
         const offSession = ctx.events.on('session', () => apply(ctx, true));
         const offStore = ctx.prefs.onChange((c: PrefChange) => {
