@@ -178,9 +178,11 @@
 .course-editor .ce-drawer::after { content: ' \25BE'; }
 .course-editor.ce-open .ce-drawer::after { content: ' \25B4'; }
 @media (max-width: 900px), (max-height: 500px) {
-    .ce-topbar { top: 4px; padding: 3px 4px; gap: 4px; flex-wrap: nowrap; }
+    /* H2-look pass 2: below the page's top row (Share, Feedback: ui/top-row.ts writes --top-row-bottom) and on the left,
+       so it covers neither that row nor the OSD line above it, and ends before the 'Course editor' window (x 400 at 844) */
+    .ce-topbar { top: calc(var(--top-row-bottom, 78px) + 4px); left: 8px; transform: none; padding: 3px 4px; gap: 4px; flex-wrap: nowrap; }
     /* H2-look: every button of the two bars is a 44 px target on a phone */
-    .ce-topbar .ce-tb { min-height: 44px; min-width: 44px; padding: 3px 8px; }
+    .ce-topbar .ce-tb { min-height: 44px; min-width: 44px; padding: 3px 5px; }
     .ce-topbar .ce-tb-line { display: none; }
     .ce-gatebar .ce-gb { width: 44px; height: 44px; padding: 11px; }
 }
@@ -199,9 +201,10 @@
 }
 .ce-size-tag[hidden] { display: none; }
 /* lane editor3 H2-look (the lead's decision): in the edit view the flight's windows are hidden: the end-of-flight stats card
-   (ui/osd-stats.ts), the controller hint (ui/hud.ts arm-card), the lap clock and the course line (course/hud.ts). The mode
+   (ui/osd-stats.ts), the controller hint (ui/hud.ts arm-card), the lap clock and the course line (course/hud.ts), the
+   course's note and the take-off prompt (ui/hud.ts hud-note, gate-msg). The mode
    flag is the one the page reads (devices/keyboard.ts EDIT_MODE): back in the test flight (ce-flying) and after Exit. */
-body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud) { display: none !important; }
+body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud, .hud-note, .gate-msg) { display: none !important; }
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }

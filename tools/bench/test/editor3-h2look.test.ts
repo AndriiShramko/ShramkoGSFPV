@@ -28,13 +28,15 @@ describe('editor3 H2-look', () => {
         }
     });
 
-    it('in the edit view the stats card, the controller hint, the lap clock and the course line are hidden', () => {
-        expect(CSS).toMatch(/body:has\(\.course-editor:not\(\.ce-flying\)\) :is\(\.osd-stats, \.arm-card, \.course-hud\) \{ display: none !important; \}/);
+    it('in the edit view the stats card, the controller hint, the lap clock and the course line, the note of the course and the take-off prompt are hidden', () => {
+        expect(CSS).toMatch(/body:has\(\.course-editor:not\(\.ce-flying\)\) :is\(\.osd-stats, \.arm-card, \.course-hud, \.hud-note, \.gate-msg\) \{ display: none !important; \}/);
     });
 
     it('on a phone every button of the top bar and the gate bar is a 44 px target', () => {
         const phone = CSS.slice(CSS.indexOf('@media (max-width: 900px), (max-height: 500px)'));
         expect(phone).toMatch(/\.ce-topbar \.ce-tb \{ min-height: 44px; min-width: 44px;/);
         expect(phone).toMatch(/\.ce-gatebar \.ce-gb \{ width: 44px; height: 44px;/);
+        // pass 2: the top bar sits below the page's top row, not over it
+        expect(phone).toMatch(/\.ce-topbar \{ top: calc\(var\(--top-row-bottom, 78px\) \+ 4px\); left: 8px; transform: none;/);
     });
 });
