@@ -5,6 +5,7 @@
 // (the library has no abort), and it frees the step's memory and GPU buffers at once.
 import { bakeCollision, bakeErrorToWire } from './bake';
 import type { BakeOptions, BakeResult } from './bake';
+import { gzip, wallsSha } from './wallcache';
 
 export interface BakeRequest { contentUrl: string; kind: 'meta' | 'lod-meta'; o: BakeOptions }
 export type BakeReply =
@@ -43,7 +44,11 @@ scope.onmessage = (ev) => {
         }
         try {
             const r = await bakeCollision(contentUrl, kind, device, (stage) => scope.postMessage({ type: 'stage', stage } satisfies BakeReply), o);
-            scope.postMessage({ type: 'done', r } satisfies BakeReply, [r.json.buffer, r.bin.buffer] as Transferable[]);
+            // the hash and the store's gzip are done here: on the page they held its main thread for about
+            // 0.35 s and 4.2 s on Wroclaw (course-path-probe PROFILE=1, 2026-11-15)
+            r.sha256 = await wallsSha(r.json, r.bin);
+            r.binGz = await gzip(r.bin);
+            scope.postMessage({ type: 'done', r } satisfies BakeReply, [r.json.buffer, r.bin.buffer, r.binGz.buffer] as Transferable[]);
         } catch (e) {
             scope.postMessage({ type: 'error', e: bakeErrorToWire(e) } satisfies BakeReply);
         } finally {

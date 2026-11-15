@@ -2,7 +2,7 @@
 // so the page's main thread stays free: the flight, the walls box line and the course go on during a build.
 // A browser that gives a worker no WebGPU builds on the page as before (bakeCollision with the renderer's device).
 import type { GraphicsDevice } from 'playcanvas';
-import { BakeTimeoutError, bakeCollision, bakeErrorFromWire, gpuLimitsOf, memCapGb } from './bake';
+import { BakeTimeoutError, bakeCollision, bakeErrorFromWire, gpuLimitsOf, markCounted, memCapGb } from './bake';
 import type { BakeOptions, BakeResult } from './bake';
 import type { BakeReply, BakeRequest } from './bake-worker';
 
@@ -49,7 +49,7 @@ export function bakeOffThread(contentUrl: string, kind: 'meta' | 'lod-meta', dev
         worker.onmessage = (ev: MessageEvent<BakeReply>) => {
             const m = ev.data;
             if (m.type === 'stage') onStage(m.stage);
-            else if (m.type === 'done') { end(); resolve(m.r); }
+            else if (m.type === 'done') { end(); markCounted(m.r.json, m.r.bin, m.r.solidVoxels); resolve(m.r); }
             else if (m.type === 'error') { end(); reject(bakeErrorFromWire(m.e)); }
             else { end(); noWorkerGpu = m.why; console.warn('walls build on the page:', m.why); page().then(resolve, reject); }
         };

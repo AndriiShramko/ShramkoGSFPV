@@ -275,7 +275,20 @@ export function outOfRoom(e: unknown): boolean {
 }
 
 /** Refuse walls without a single solid voxel: flying through everything is not "walls built". */
+/**
+ * Walls whose solid voxels were already counted by the bake worker (F1-no-freeze): the page does not count
+ * the same bytes again on its main thread (Wroclaw 70b50d42 at 5 cm, 113 MB: about 360 ms of the 1067 ms
+ * long task at the walls' arrival, course-path-probe PROFILE=1). Keyed by the very arrays the worker sent.
+ */
+const counted = new WeakMap<Uint8Array, { json: Uint8Array; solid: number }>();
+
+export function markCounted(json: Uint8Array, bin: Uint8Array, solid: number): void {
+    if (solid > 0) counted.set(bin, { json, solid });
+}
+
 export function assertWalls(json: Uint8Array, bin: Uint8Array): number {
+    const known = counted.get(bin);
+    if (known && known.json === json) return known.solid;
     let solid = 0;
     try {
         solid = countSolidVoxelsFromBytes(json, bin);
@@ -335,6 +348,13 @@ export interface BakeResult {
     kept?: number;
     ms: { read: number; voxelize: number; total: number };
     peakJsHeapMb: number | null;
+    /**
+     * Set by the bake worker: the walls' SHA-256 (wallsSha) and the gzipped .bin for the store, so the page
+     * neither hashes nor gzips the bytes on its main thread (Wroclaw 113 MB: digest about 350 ms, the store's
+     * CompressionStream 4205 ms of main-thread work, course-path-probe PROFILE=1).
+     */
+    sha256?: string;
+    binGz?: Uint8Array;
 }
 
 /**

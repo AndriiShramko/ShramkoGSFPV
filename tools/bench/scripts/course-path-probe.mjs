@@ -55,7 +55,9 @@ const INSTALL = () => {
         const orig = sc.bot.update.bind(sc.bot);
         sc.bot.update = (sim) => { const ch = orig(sim); ch[4] = 1; ch[0] = 0; ch[1] = 0; ch[3] = 0; ch[2] = hover * 2 - 1; return ch; };
     }
-    const setQ = (st) => { st[6] = cp.q[0]; st[7] = cp.q[1]; st[8] = cp.q[2]; st[9] = cp.q[3]; };
+    // armed (S.armed 34) while led, as the bot's arm switch did: the director records the pilot's path only for an
+    // armed craft, and without it a crash respawns at the start (F1 run of 02:21 without the bot: kind 'start')
+    const setQ = (st) => { st[6] = cp.q[0]; st[7] = cp.q[1]; st[8] = cp.q[2]; st[9] = cp.q[3]; if (st[35] === 0) st[34] = 1; };
     const prev = s.runner.onStep;
     s.runner.onStep = (sim) => {
         prev?.(sim);
@@ -226,9 +228,11 @@ for (const id of idsArg.split(',')) {
         r.aim = await ev(() => {
             const s = window.__gsfpv.session, col = s.collision, cp = window.__cp; const p = cp.p;
             let best = null;
-            for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2; const d = [Math.cos(a), -0.05, Math.sin(a)]; const L = Math.hypot(...d);
+            // level first; a scan with no wall near the gates (Forest Floor: a floor) takes the floor ahead and below
+            for (const dy of [-0.05, -0.4, -1.2, -4]) { if (best) break;
+            for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2; const d = [Math.cos(a), dy, Math.sin(a)]; const L = Math.hypot(...d);
                 const hit = col.queryRay(p[0], p[1], p[2], d[0] / L, d[1] / L, d[2] / L, 25);
-                if (hit) { const m = Math.hypot(hit.x - p[0], hit.y - p[1], hit.z - p[2]); if (m > 2 && (!best || m < best.m)) best = { m, d: [d[0] / L, d[1] / L, d[2] / L] }; } }
+                if (hit) { const m = Math.hypot(hit.x - p[0], hit.y - p[1], hit.z - p[2]); if (m > 2 && (!best || m < best.m)) best = { m, d: [d[0] / L, d[1] / L, d[2] / L] }; } } }
             if (!best) return null;
             const st = s.sim.s; for (let i = 0; i < 3; i++) st[3 + i] = best.d[i] * 12; cp.mode = 'free';
             return { wallM: +best.m.toFixed(1) };

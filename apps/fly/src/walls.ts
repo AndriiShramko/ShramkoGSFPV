@@ -367,7 +367,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
         if (!input) return;
         try {
             const c = await cacheP;
-            await c.put(input, r.json, r.bin, { gaussians: r.gaussians, bakeMs: r.ms.total, sha256: sha });
+            await c.put(input, r.json, r.bin, { gaussians: r.gaussians, bakeMs: r.ms.total, sha256: sha, binGz: r.binGz });
             // ask once for storage that the browser does not clear under pressure; refused is fine
             await navigator.storage?.persist?.().catch(() => false);
         } catch (e) {
@@ -410,7 +410,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
-            const sha = await wallsSha(r.json, r.bin);
+            const sha = r.sha256 ?? await wallsSha(r.json, r.bin);
             // the pilot asked for walls on a scan without any: they fly with them, whatever the switch said
             o.switchOn();
             queue(r.json, r.bin, sha, 'bake');
@@ -461,7 +461,7 @@ export function mountWalls(o: WallsOptions): WallsHook {
             const r = await bakeOffThread(s.scene.contentUrl, s.scene.contentKind, device, onStageOf, { voxelM, size: w.size ?? undefined, shipped, limits: fake });
             w.bakes++;
             saveBakeSpeed(r.ms.total / 1000, r.gaussians);
-            const sha = await wallsSha(r.json, r.bin);
+            const sha = r.sha256 ?? await wallsSha(r.json, r.bin);
             o.hook.bake = { ok: true, kind: 'refine', where: lastBakeWhere, voxelM, gaussians: r.gaussians, solidVoxels: r.solidVoxels, ms: r.ms, peakJsHeapMb: r.peakJsHeapMb, binBytes: r.bin.length, collisionSha256: sha };
             o.hook.bakedBytes = { json: r.json, bin: r.bin };
             w.lastBake = o.hook.bake;
