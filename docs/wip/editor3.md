@@ -13,8 +13,46 @@ Stage H3-prove (train 3, 2026-11-15):
   en es pl ru); probe editor3-prove.ts opens the saved course on a fresh page from Courses (top bar) and its row's Open,
   flies gate 1 with the keyboard (keyboardFly), records the top line after Save; the /api/tracks stand-in lists by scene.
   Release build of 176374af's tree: exit 0 (U:/Temp/gsfpv-train3/editor3/h3/build2.log), Wroclaw stand-in walls in dist/walls.
-- [~] H3.2 chain U:/Temp/gsfpv-train3/editor3/h3/chain.sh: Tunis hold (full path, keyboard flight, 844), Wroclaw hold,
-  accept-fly, mouse-free, a6-reference, gates.
+- [x] H3.2 chain.sh + chain2.sh (U:/Temp/gsfpv-train3/editor3/h3; pass 1 waited over 9 min for the lock twice, pass 2
+  held it Tunis 10:31:58-10:36:22, Wroclaw 10:36:25-10:40:00). Records h3/tunis/e4.json, h3/wroclaw/e4.json, sums sum.txt.
+  - accept-fly B6 B7 B9-B16 on http://localhost:5805 (first line 'accept-fly target: http://localhost:5805'): 10/10 PASS.
+  - mouse-free-probe http://localhost:5805/en: 78 PASS, 0 FAIL; the rooms entry threw (waitForSelector 5 s, no rooms
+    service on a local release: known). a6-reference 1/1 pass. gates.py --only vitest,architecture,i18n,b18 on 6cd4fd99:
+    all PASS (vitest 212 s).
+  - Tunis 887f27aa (rows): open 24 gates, gate 1 selected with handles; add -> 25, red, the line names gate 2 and what to
+    do; click: no target (clicks []); Tab 1 -> 2; delete 25 -> 24, next selected with handles; Move X 80 px -> 0.45 m;
+    turn rings y and x quatChange 0 (z not reached in this record's first rows); turn undo/redo true/true; Size centre box
+    1.2 -> 1.56 m, moved 0; size undo/redo true/true; kinds square, dive with lines; kind undo/redo true/true; bar next and
+    previous 1 -> 2 -> 1; duplicate 24 -> 25 undo/redo true; delete 25 -> 24 undo/redo true; W S D A E Q 2.4-2.53 m a step;
+    right-button look at moved 0.48; pad flight course.next 0 -> 1, back to edit (eye moved 0 m); floor add 24 -> 25, red
+    (problems 6 -> 8), undo works; Save REFUSED after the probe deleted the red gates: "Not saved. The way from the start
+    to gate 1 goes through a wall. Pull the arrows of gate 1 toward the start"; Esc x3 closed (first Esc showed the refusal
+    line, second 'Esc again leaves', third left).
+  - Tunis keyboard run: W in the mode does not arm (camera moved 2.27 m), Space arms (328 ms, mode fly), Space disarms
+    (333 ms, mode edit). keyboardFly: NOT passed (course.next 0 -> 0, 150 steps): at arming gate 1 (grown 23 steps to 3.5 m)
+    stood BEHIND the drone's camera (depth -2.8 m), the steps never brought it in front.
+  - Tunis 844x390: top bar [8,82,381x52], gate bar [8,328,542x54], fits, the canvas under the gate point.
+  - Wroclaw 70b50d42: open 24, click on gate 24 selects it; Move X 0.9 m; turn ring 1 quatChange 0, ring 2 0.518; Size
+    1.5 -> 1.94 m; W S D A E Q 2.4-2.53 m; pad flight course.next 0 -> 1, back to edit; floor add 24 -> 25 not red (said
+    'Add gate. Gate 2 of 25: square, 1.5 m'); Save OK in 306 ms, id becbec-b18783b2, the top bar line: "Saved as your
+    course: Course bo42nq, version 1. It is in Courses on the top bar"; Esc x2 left. Fresh page: not loaded by itself (as
+    decided); Courses list showed "No course is saved for this scene yet" (rows 0): a PROBE fault, most likely the H3 scene
+    filter of the /api/tracks stand-in (the saved id starts 'becbec', so body.scene is not '70b50d42'); not proven.
+- [ ] left (next worker, in this order):
+  a. editor3-prove.ts fakeTracks: drop the scene filter added in H3 (or match the scene the page sends); re-run Wroclaw to
+     prove: Courses -> Open -> the moved gate where it was put.
+  b. keyboardFly: before Space put the view 6 m before gate 1 facing it (S held until the gate's depth is about 6 m, the
+     gate in front), then fly; record course.next 0 -> 1.
+  c. Tunis Save: the start leg "from the start to gate 1 goes through a wall" stays after deletes. The probe should do what
+     the line says (pull gate 1's arrows toward the start) instead of deleting. If the start pose itself is in a wall, the
+     cause is the course generator's start (lane fix3a): report, do not fix here.
+  d. Turn rings: on Tunis y and x gave quatChange 0, on Wroclaw ring 1 gave 0 (H1.2 guess unmeasured: drag across an
+     edge-on ring stays under the 15 degree snap). Measure the gizmo angle per move.
+  e. Tunis: no click target (no other gate on screen more than 160 px away): turn the view to a second gate first.
+  f. After a refused Save the top bar line read "Click a gate to change it..." 20 s later (save.topLine), the refusal only
+     in 'said': check whether the refusal line is replaced too early (course.ts say / sayLine).
+  g. Pictures editor3-move/turn/size/wroclaw/flying-1920.png and editor3-844.png were taken again in this run
+     (U:/Temp/gsfpv-train3/shots) but NOT looked at (reply budget); editor3-after-kbd-flight-1920.png too.
 
 Stage H2-look (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
 - Pass 2 (2026-11-15, NOT finished, stopped at the reply budget):
@@ -1032,28 +1070,31 @@ button shows the table.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
   tasks were measured.
 
-## What the owner does (mouse first; walked by the probe on Tunis and Wroclaw, G3 runs A-F)
+## What the owner does (as of H3-prove, release of 6cd4fd99's tree, Tunis 887f27aa and Wroclaw 70b50d42)
 
-1. Shift+B (or the pause menu's Edit course): the same scene, gate 1 selected with the Move arrows on it, the top bar
-   (Add gate, Undo, Redo, Save, Courses, Keys, Exit) and the gate bar under the gate. Proven (runA, runE, runF).
-2. Click a gate: it is selected, the arrows on it, the bar under it. Proven on Wroclaw (runA); Tunis: no click target found.
-3. Pull the X arrow: the gate moves along X (0.45-0.54 m for 80 px), nothing else changes. Proven.
-4. Press Turn on the bar (or R), pull a ring: the gate turns, stays in place. Proven (one or two of three rings on Tunis
-   gave no turn, left f).
-5. Press Size on the bar (or T), pull the box: the opening grows (1.2 -> 1.58 m), stays in place. Proven.
-6. On the bar: ring, square, dive, cube change the kind; Duplicate; Delete (the next gate is selected with its handles and
-   bar); the arrows (or Tab, Shift+Tab) go to the previous and next gate. Proven. Ctrl+Z and Ctrl+Y (or Undo and Redo)
-   for each. Proven, except the kind's undo on Tunis.
-7. Add gate, then click on the floor: a new gate stands in front of the view, selected. Proven; on Tunis it is red.
-8. W A S D move the view, E up, Q down, the right button held looks, the wheel sets the speed. Proven (2.3-2.5 m a step).
-9. Move the sticks of the controller (a camera drone needs no arming) or press Space (keyboard pilot): the view is the
-   drone's, fly through the gate: the course counts it. Disarm (Space again or the arm switch) or crash: the edit view
-   comes back where it was. Proven with the pad (course.next 0 -> 1) and the keyboard toggle (runB); the keyboard pass
-   through a gate not proven.
-10. Save: with red gates it says which and how many; with none it saves (proven on Wroclaw). Esc, then Esc again,
-    leaves (proven). Loading the saved course again: not proven.
+1. Shift+B: the same scene, gate 1 selected with the Move arrows, the top bar and the gate bar. Proven on both.
+2. Click a gate: it is selected with its handles. Proven on Wroclaw (gate 24); Tunis: no second gate on screen to click.
+3. Pull the X arrow: the gate moves along X only (Tunis 0.45 m, Wroclaw 0.9 m for 80 px). Proven.
+4. Turn (bar or R), pull a ring: the gate turns in place. Proven by one ring (0.518) on Wroclaw; on Tunis y and x gave 0.
+5. Size (bar or T), pull the centre box: the opening grows in place (Tunis 1.2 -> 1.56 m, Wroclaw 1.5 -> 1.94 m). Proven.
+6. Bar: ring, square, dive, cube; Duplicate; Delete; the arrows or Tab and Shift+Tab. Ctrl+Z / Ctrl+Y or Undo / Redo
+   for each: proven on Tunis (undo changed, redo back for turn, size, kind, duplicate, delete, move, floor add).
+7. Add gate, click the floor: a new gate in front of the view, selected. Proven; red on Tunis (the line says what to do),
+   not red on Wroclaw.
+8. W A S D, E, Q fly the view (2.4-2.53 m a step), the right button held looks. Proven.
+9. Test flight with the pad: course.next 0 -> 1, then back to the edit view. Proven on both. With the keyboard: Space
+   arms (328 ms) and disarms (333 ms) proven; a pass through gate 1 with keys NOT proven (gate behind the drone at arming).
+   The flight's windows (stats, controller hint, lap clock, crash toast) hidden in the edit view by editor.css.
+10. Save: Wroclaw saved in 306 ms, the top bar says "Saved as your course: ..., version 1. It is in Courses on the top
+    bar". Tunis: refused, "the way from the start to gate 1 goes through a wall" (left c).
+11. Fresh page: the course is not loaded by itself (decided); opening it from Courses NOT proven (probe stand-in, left a).
+12. Esc, Esc again leaves. Proven on both.
 
 ## Cost notes
+- H3-prove: about 40 replies; the most went to the GPU lock (two 9-minute waits that both gave up, then a second
+  pass) and to probe edits written without a dry run; a run.sh that keeps waiting for the lock and a 60 s dry run of
+  the new probe steps (keyboard flight start, Courses list) would have saved a pass.
+
 - editor3 H2-look pass 2: most turns went to shell quoting (a heredoc python with an apostrophe failed and a test title
   with an apostrophe broke the parse) and to reading the probe; a probe that lists what each part covers found three new
   faults in one run, cheaper than looking at pictures first.
