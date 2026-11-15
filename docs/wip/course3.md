@@ -311,6 +311,13 @@ Stage F2-fast-course (train 3 wave 2: a course in under 15 s in Node and 30 s in
 - Left of F2: nothing of the five items. Not done: a 20-seed Tunis audit of the CR-4 walk (now about 3 s a course, so 20
   seeds take about a minute); the Forest Floor item of F1 (record every life's decision in the probe).
 
+Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight check, top-down pictures).
+
+- [x] course-quality-audit.ts flies every course along its own path at 3 and 12 m/s (flyPath, K1.1; row v3, v12, failing;
+  SUMMARY failing) and --top draws the first seed's course over the walls in Node (tools/bench/src/course-top-png.ts, no
+  GPU lock). Smoke run Tunis seed 1: 2.4 s, 24 gates, v3 and v12 done. tsc tools/bench: 0 errors.
+- [~] 20-seed audit, 4 scans in parallel: runner U:/Temp/gsfpv-train3/course3/f3/run.sh, output f3/audit/.
+
 ## Facts F2-web (the owner's path, page, 2026-11-15 03:39-03:44)
 
 - Wroclaw 70b50d42 (stand-in walls 5 cm in dist/walls): course 4.7 s after Shift+G (pass mark 30 s; before F2 40.5 s in G4

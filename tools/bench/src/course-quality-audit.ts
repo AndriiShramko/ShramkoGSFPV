@@ -4,15 +4,18 @@
 // well-scanned tiles the course visits (a tile within VISIT_M of a gate), the gate count. Node only, walls read only.
 //
 //   cd tools/bench && npx tsx src/course-quality-audit.ts --walls <dir> --scene <id> --spawn x,y,z [--seeds 20]
-//       [--from 1] [--hist] [--quality] [--out file.json]
+//       [--from 1] [--hist] [--quality] [--out file.json] [--top file.png]
+// Every course is also flown along its own path at 3 and 12 m/s through its lap detector (K1.1, fly.ts flyPath): v3, v12
+// say 'done' or which gate missed. --top draws the first seed's course over the walls (course-top-png.ts).
 // --hist prints the map only (no courses). The courses are fitCourse's, as the page's worker asks them.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelMetadata } from '@gsfpv/collision';
-import { fitCourse, flownCollision, freeSpace, qualityBounds, qualityMap, heightAbove, inDenseBand, tileOf } from '@gsfpv/tracks';
+import { fitCourse, flownCollision, flyPath, freeSpace, qualityBounds, qualityMap, heightAbove, inDenseBand, tileOf } from '@gsfpv/tracks';
 import type { SceneTransform, Vec3, WalkInfo } from '@gsfpv/tracks';
+import { writeCourseTop } from './course-top-png';
 
 /** a tile counts as visited when a gate stands within this many flown m of its centre (estimate: one long leg's half) */
 export const VISIT_M = 8;
@@ -85,11 +88,20 @@ function main(): void {
         const P = (fit.track?.generator?.params ?? {}) as Record<string, unknown>;
         // CR-1, CR-4: the walk of the kept try (the last with as many gates as the course) and every try's cut
         const W = [...walks].reverse().find((w) => w.kept === gates.length) ?? null;
-        const row = { seed, stop: P.stop, farM: W?.farM, outGates: W?.outGates, backtracks: W?.backtracks, walked: P.walked, cutClose: W?.cutClose, drops: W?.drops.join(','), wanted: P.wanted, tries: P.tries, fits: walks.length, walks: walks.map((w) => `${w.walked}-${w.cutClose}-${w.drops.length}=${w.kept}`).join(' '), gates: gates.length, scale: fit.scale, inBand, visited: seen.size, reachM: Math.round(reach), heights, ms };
+        const fly: Record<string, string> = {};
+        let failing = false;
+        if (fit.track && gates.length > 0) for (const v of [3, 12]) {
+            const f = flyPath(fit.track, v, T);
+            fly[`v${v}`] = f.done ? 'done' : `stuck g${f.stuckAt}; ${f.misses.map((m) => `g${m.gate} ${m.cause}`).join(', ')}`;
+            if (!f.done) failing = true;
+        }
+        const top = arg('--top');
+        if (top && seed === from && gates.length > 0) console.log('TOP ' + JSON.stringify({ file: top, ...writeCourseTop(top, walls, q, pos, spawn) }));
+        const row = { seed, ...fly, failing, stop: P.stop, farM: W?.farM, outGates: W?.outGates, backtracks: W?.backtracks, walked: P.walked, cutClose: W?.cutClose, drops: W?.drops.join(','), wanted: P.wanted, tries: P.tries, fits: walks.length, walks: walks.map((w) => `${w.walked}-${w.cutClose}-${w.drops.length}=${w.kept}`).join(' '), gates: gates.length, scale: fit.scale, inBand, visited: seen.size, reachM: Math.round(reach), heights, ms };
         rows.push(row);
         console.log(JSON.stringify(row));
     }
-    const R = rows as { gates: number; inBand: number; visited: number; reachM: number; ms: number }[];
+    const R = rows as { failing: boolean; gates: number; inBand: number; visited: number; reachM: number; ms: number }[];
     const n = R.length || 1;
     const counts = R.map((r) => r.gates);
     const mean = counts.reduce((a, b) => a + b, 0) / n;
@@ -100,7 +112,7 @@ function main(): void {
         bandShare: Math.round((R.reduce((a, r) => a + r.inBand, 0) / allGates) * 1000) / 1000,
         visitedShare: Math.round((R.reduce((a, r) => a + r.visited, 0) / n / Math.max(1, boxGood)) * 1000) / 1000,
         gatesMin: Math.min(...counts), gatesMax: Math.max(...counts), gatesMean: Math.round(mean * 10) / 10, gatesSd: Math.round(sd * 10) / 10,
-        reachMeanM: Math.round(R.reduce((a, r) => a + r.reachM, 0) / n), meanMs: Math.round(R.reduce((a, r) => a + r.ms, 0) / n)
+        reachMeanM: Math.round(R.reduce((a, r) => a + r.reachM, 0) / n), failing: R.filter((r) => r.failing).length, meanMs: Math.round(R.reduce((a, r) => a + r.ms, 0) / n)
     };
     console.log('SUMMARY ' + JSON.stringify(summary));
     const out = arg('--out');
