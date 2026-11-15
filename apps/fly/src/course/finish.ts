@@ -98,3 +98,34 @@ export function resultsCard(lapTimes: readonly number[]): ResultsCard {
     const best = lapTimes.length ? Math.min(...lapTimes) : null;
     return { total: lapClock(lapTimes.length ? total : null), best: lapClock(best), laps: lapTimes.map((t) => lapClock(t)) };
 }
+
+/**
+ * Course4 review CU-1: whether a generate job composes competition elements. Fly by Sound asks its course through the
+ * same generate (lane onecourse); the ear pilot was measured on single upright gates only, so the sound mode asks none.
+ */
+export function courseElements(sonic: unknown): boolean {
+    return !sonic;
+}
+
+type Words = (key: string, vars?: Record<string, string | number>) => string;
+
+/** Course4 review CU-2: what one lap's end gives, both shown (splash or card) and said (the spoken lap line) */
+export interface LapEnd {
+    /** the lap is a new best (written by the caller) */
+    readonly best: boolean;
+    readonly splash: LapSplash;
+    /** the shown line of the lap ('Lap 12.34' or 'Best lap 12.34') */
+    readonly said: string;
+    /** the results card at the course's end, else null (the splash alone) */
+    readonly card: ResultsCard | null;
+    /** what Fly by Sound says: the lap line, and at the end the card's title and total after it */
+    readonly spoken: string;
+}
+
+export function lapEnd(ev: 'lap' | 'done', lastMs: number, bestBeforeMs: number | null, lapTimes: readonly number[], tr: Words): LapEnd {
+    const best = bestBeforeMs === null || lastMs < bestBeforeMs;
+    const said = best ? tr('course.best', { time: lapClock(lastMs) }) : tr('course.lapDone', { time: lapClock(lastMs) });
+    const card = ev === 'done' ? resultsCard(lapTimes) : null;
+    const spoken = card ? `${said}. ${tr('course.card.title')}. ${tr('course.card.total', { time: card.total })}` : said;
+    return { best, splash: lapSplash(lastMs, bestBeforeMs), said, card, spoken };
+}

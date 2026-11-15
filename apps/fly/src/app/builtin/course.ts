@@ -23,7 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { gateRoles, lapSplash, lapSplashMode, noCourseSize, resultsCard } from '../../course/finish';
+import { courseElements, gateRoles, lapEnd, lapSplashMode, noCourseSize } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -199,22 +199,20 @@ export const course: Feature = {
                 const last = v.lastLapMs ?? 0;
                 // lane course4 (S4, S5): the best is read before this lap writes it, so the splash shows the gain against it
                 const before = readBest(keyOf(run.track));
-                const best = before === null || last < before;
-                if (best) writeBest(keyOf(run.track), last);
-                const said = best ? t('course.best', { time: lapClock(last) }) : t('course.lapDone', { time: lapClock(last) });
+                const end = lapEnd(ev, last, before, v.lapTimes, t);
+                if (end.best) writeBest(keyOf(run.track), last);
                 const mode = lapSplashMode(ctx.prefs.get('course.lapSplash'));
-                const s = lapSplash(last, before);
                 const now = performance.now();
-                if (ev === 'done') {
-                    const c = resultsCard(v.lapTimes);
-                    hud.card(c, s, mode, {
+                const c = end.card;
+                if (c) {
+                    hud.card(c, end.splash, mode, {
                         title: t('course.card.title'), total: t('course.card.total', { time: c.total }), best: t('course.card.best', { time: c.best }),
                         laps: c.laps.length > 1 ? c.laps.map((time, i) => t('course.card.lap', { n: i + 1, time })) : []
                     }, now);
-                } else hud.splash(s, mode, said, now);
+                } else hud.splash(end.splash, mode, end.said, now);
                 // lane onecourse fixes (review OC-2), kept by course4 review CU-2: the lap and the course end are said to
                 // Fly by Sound too, not only shown; at the end the card's title and total follow the lap's line
-                sayLine(ev === 'done' ? `${said}. ${t('course.card.title')}. ${t('course.card.total', { time: resultsCard(v.lapTimes).total })}` : said);
+                sayLine(end.spoken);
             }
             hud.tick(performance.now());
             const next = v.running || v.next >= 0 ? v.next : -1;
@@ -484,7 +482,7 @@ export const course: Feature = {
                 created: new Date().toISOString(),
                 // course4 review CU-1: Fly by Sound asks its course through this generate() too (lane onecourse); the ear
                 // pilot was measured on single upright gates only, so the competition elements are for the eyes' mode
-                elements: !ctx.sonic
+                elements: courseElements(ctx.sonic)
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);

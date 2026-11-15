@@ -86,3 +86,38 @@ describe('course4 C1: the setting and the results card', () => {
         expect(resultsCard([62310, 60120, 59880])).toEqual({ total: '3:02.31', best: '0:59.88', laps: ['1:02.31', '1:00.12', '0:59.88'] });
     });
 });
+
+describe('course4 review CU-1 and CU-2: the merge seams with lane onecourse', () => {
+    const en = JSON.parse(readFileSync(new URL('../../../packages/i18n/locales/fly/course/en.json', import.meta.url), 'utf8')) as Record<string, string>;
+    const tr = (k: string, vars?: Record<string, string | number>): string => (en[k] ?? k).replace(/\{(\w+)\}/g, (_, n: string) => String(vars?.[n] ?? ''));
+
+    it('CU-1: a course asked by Fly by Sound holds single upright gates only; the eyes mode asks the elements', () => {
+        const el = (finish as { courseElements?: (s: unknown) => boolean }).courseElements;
+        expect(typeof el).toBe('function');
+        expect(el!({ on: true })).toBe(false);
+        expect(el!(null)).toBe(true);
+        expect(el!(undefined)).toBe(true);
+        // the page feature sends this answer in its generate job
+        const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
+        expect(src).toMatch(/elements:\s*courseElements\(ctx\.sonic\)/);
+    });
+
+    it('CU-2: a lap end gives both the splash and the spoken lap line; the course end the card and the line', () => {
+        const end = (finish as { lapEnd?: (ev: 'lap' | 'done', ms: number, before: number | null, laps: readonly number[], t: typeof tr) => { splash: unknown; said: string; card: unknown; spoken: string; best: boolean } }).lapEnd;
+        expect(typeof end).toBe('function');
+        const lap = end!('lap', 61230, 60000, [61230], tr);
+        expect(lap.best).toBe(false);
+        expect(lap.splash).toEqual(lapSplash(61230, 60000));
+        expect(lap.card).toBeNull();
+        expect(lap.spoken).toBe(tr('course.lapDone', { time: '1:01.23' }));
+        expect(lap.spoken).toBe(lap.said);
+        const done = end!('done', 59880, 60000, [61230, 59880], tr);
+        expect(done.best).toBe(true);
+        expect(done.splash).toEqual(lapSplash(59880, 60000));
+        expect(done.card).toEqual(resultsCard([61230, 59880]));
+        expect(done.spoken).toBe(`${tr('course.best', { time: '0:59.88' })}. ${tr('course.card.title')}. ${tr('course.card.total', { time: '2:01.11' })}`);
+        const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
+        expect(src).toMatch(/hud\.splash\(end\.splash/);
+        expect(src).toMatch(/sayLine\(end\.spoken\)/);
+    });
+});

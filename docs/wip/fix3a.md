@@ -1179,3 +1179,16 @@ that other lanes kept taking between 20 s polls; a lock queue (a ticket file per
 the run start.
 Cost (course4 fixes): about 30 replies; the most went to the merge and the four majors with tests; the browser proof
 (CU-6) did not fit. A stage of its own for the browser proof, started with the release build, would fit it.
+
+## Status Z1-see (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z1/.
+- [x] Merged origin/main (f286dd49: .gitleaksignore, walls-store-probe) into fix3a: 3e3fab06, no conflicts.
+- [x] CU-1 test: finish.ts courseElements(sonic) (course.ts generate sends it); course-finish.test.ts 'CU-1' NEG OK
+      against finish.ts + course.ts of 3e3fab06 ('expected undefined to be function').
+- [x] CU-2 test: finish.ts lapEnd() gives the splash (or card) and the spoken line from one call; course.ts frame() uses
+      it; course-finish.test.ts 'CU-2' NEG OK (same run). Typecheck fly exit 0.
+- [x] A4: bestKey appends '.k<scale>' (generator.params.scale, the size step) from generator 4 on; tracks-review.test.ts
+      'A4' NEG OK against link.ts of 3e3fab06. course-finish + tracks-review 25 passed.
+- [ ] CU-6 browser proof on Wroclaw and Tunis, pictures, repairs.
+- [ ] gates.py --only vitest,architecture,i18n,b18,leaks; a6-reference.

@@ -135,6 +135,18 @@ describe('TR-10: the best lap key names the scene, the walls and the scale', () 
         expect(bestKey(withVersion(generatorVersion(true, 2, true)), 'pavo20')).not.toBe(bestKey(withVersion(generatorVersion(true, 0, true)), 'pavo20'));
         expect(bestKey(withVersion('4.e1.s2'), 'pavo20')).toContain('.e1');
     });
+    it('A4: a course laid at another size step keeps its own best (generator 4 on); version 3 keys stay', () => {
+        const at = (v: string, scale?: number) => {
+            const { scale: _drop, ...rest } = (course.generator?.params ?? {}) as Record<string, unknown>;
+            const params = { ...rest, freeDigest: 'aaaa', ...(scale === undefined ? {} : { scale }) };
+            return { ...course, generator: { ...course.generator!, version: v, params } } as TrackFile;
+        };
+        expect(bestKey(at('4', 0.5), 'pavo20')).not.toBe(bestKey(at('4'), 'pavo20'));
+        expect(bestKey(at('4', 0.5), 'pavo20')).not.toBe(bestKey(at('4', 0.4), 'pavo20'));
+        expect(bestKey(at('4.e1', 0.5), 'pavo20')).not.toBe(bestKey(at('4.e1'), 'pavo20'));
+        expect(bestKey(at('4', 1), 'pavo20')).toBe(bestKey(at('4'), 'pavo20'));
+        expect(bestKey(at('3', 0.5), 'pavo20')).toBe(bestKey(at('3'), 'pavo20'));
+    });
     it('CU-3: the generator marks a course .e1 only when the elements changed it', () => {
         for (const seed of [1, 2, 3, 4, 5, 6]) {
             const free = freeSpace(walls, { spawn: SPAWN_A });
