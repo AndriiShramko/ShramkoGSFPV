@@ -47,7 +47,39 @@ Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
   (Wroclaw) = the new gate is red; its course-frame pos [0.16, 1, 0] (Tunis) while the selected gate 0 stands at
   [12.41, 7.72, 0.32]. The two pictures show no gate and a view looking up at the sky from near the ground. Cause not
   measured yet: G2.9 records the click's ray, wall hit, point and the edit view before the click (746d5c95).
-- [ ] left (next worker, in this order; dist is the release of 58bb57c2, do not rebuild unless apps/fly changes):
+- [x] G2.9 measurement (release 746d5c95, g2/floor3/e4.json, lock 06:36:58-06:38:54, Tunis): the edit view before the
+  click stood at eye [9.45, 7.03, 0.13] (picture editor3-floor-before-1920.png shows the gate with its handles and bar), but
+  the click's ray (view-mouse.ts onUp, from the renderer's camera entity: getPosition and screenToWorld) started at
+  [-0.42, 0.69, 0.04] looking down (d y -0.99): the drone's pose after the test flight, held by the entity between frames.
+  Wall hit 0.84 m, the gate went to [-0.46, 0.95, -0.03], behind the view; problems 5 -> 6, the problem line "the way from
+  gate 0 to gate 1 goes through a wall". MEASURED cause, not the facing.
+- [x] G2.10 fix 8fbb67e3: fly-cam.ts camRay(cam, x, y, w, h, fov, horizontalFov) builds the click ray from the edit camera's
+  own pose; view-mouse.ts uses it for the pick and the add, and writes the edit pose to the entity before the gizmos pick
+  (onOwnPress). editor3-g2.test.ts 5/5, NEG OK (neg_control.py ref HEAD 746d5c95, fly-cam.ts and view-mouse.ts); editor3-*
+  and a6-reference 9 files 50/50; apps/fly tsc 0.
+- [x] G2.11 run on the release of 8fbb67e3 (g2/full3/e4.json, lock 06:43:26-06:47:43, Tunis and Wroclaw, KBD=0). The ray
+  now starts at the edit eye (Tunis o [9.45, 7.03, 0.13] = view eye; Wroclaw o [-5.88, 6.52, -16.46] = view eye), wall hit
+  10.8 m and 15.2 m, the gate goes 7.9 m (Tunis) and 11.6 m (Wroclaw) ahead of the view along its look (computed from
+  place.at and floorBefore.viewBefore). NOT done: problems still rise (Tunis 5 -> 7, "the way from gate 0 to gate 1 goes
+  through a wall"; Wroclaw 2 -> 3, "gate 1 is in a wall"), and the pictures after the add show the DRONE's view (no handles,
+  no bar, no gate), while editor3-floor-before-1920.png showed the edit view with handles right before the click.
+- New fault seen, not in this list (left): after the test flight's disarm the flight STATS window (AIR TIME ... "Enter or
+  Esc: all stats and the menu") stands over the edit view (editor3-floor-before-1920.png); suspect the flight-end stats
+  panel of the fly page (not the editor folder).
+- [ ] left (next worker, in this order; dist is the release of 8fbb67e3; items 1 and 2 of the stage and the full line are
+  proven in G2.7/G2.8, the old list below is done except its point 3):
+  1. MEASURE why the page draws the drone's view after Add gate + floor click (full3 pictures). Add to course.ts
+     __gsfpvEditView: ctx.session.cameraOverride, mode, view's suspended flag, and a frame counter of the last onCamera; read
+     them in the probe right after the click and 2 s later (floorAdd). Guesses only, not measured: course3's "course tied to
+     the respawn" resets the session camera on a course change, or showEd/aim after the add. If the cause is in course3's
+     files (apps/fly/src/course/** outside editor/, packages/tracks/**), stop and return blocked with the file.
+  2. Then why the added gate is red with the gate in front (Tunis "the way from gate 0 to gate 1 goes through a wall",
+     Wroclaw "gate 1 is in a wall"): record the floor hit point, the gate's lower edge height over it (addLift: opening/2 +
+     ADD_FLOOR_M 0.5) and the check's margin before changing add-place.ts.
+  3. Note for probes: view-mouse.ts standScreen() and the probe's stand.screen use the renderer entity, which between frames
+     may hold the drone's pose; judge "in front" by place.at against floorBefore.viewBefore (as G2.11 did).
+  4. gates.py --only vitest,architecture,i18n,b18 on the final head (run on 8fbb67e3 below, see the result line).
+- [ ] old left list of pass 1 (1 and 2 done in G2.8-G2.11):
   1. `KBD=1 PHONE=0 OUT=U:/Temp/gsfpv-train3/editor3/g2/full2 SCENES=887f27aa,70b50d42 PORT=5804 bash
      U:/Temp/gsfpv-train3/editor3/g1/run.sh` (the 06:15 try waited 9 min on a lock held by others, no record). Read in
      full2/e4.json: kbd-887f27aa space1 (mode 'fly') and space2 (mode 'edit', armed false: item 2, code bfe1003f, NOT yet seen
