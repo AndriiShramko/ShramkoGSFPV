@@ -305,6 +305,11 @@ Stage F2-fast-course (train 3 wave 2: a course in under 15 s in Node and 30 s in
   only around each probe; runner U:/Temp/gsfpv-train3/course3/f2/web/run.sh, results f2/web/path-<scan>.json, shots
   U:/Temp/gsfpv-train3/shots/course3-{wroclaw,tunis}-*.png). Facts F2-web.
 - [x] CR-5 line: races in rooms stay as they are (decision of the lead), For the lead corrected.
+- [x] gates.py --only vitest,architecture,i18n,b18 on 2c165940: all PASS (vitest 119 s; logs U:/Temp/gsfpv-gates-20261115-034817).
+  The first run on 0a22b429 failed one test by its 120 s timeout (sweep-fast's sweepOne reference on long 5 cm segments);
+  2c165940 shortened that reference (the test alone 14.7 s).
+- Left of F2: nothing of the five items. Not done: a 20-seed Tunis audit of the CR-4 walk (now about 3 s a course, so 20
+  seeds take about a minute); the Forest Floor item of F1 (record every life's decision in the probe).
 
 ## Facts F2-web (the owner's path, page, 2026-11-15 03:39-03:44)
 
@@ -495,7 +500,18 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - Fly by Sound lines in the browser: the probe ran without Fly by Sound, nothing spoken was captured.
 - Tunis walls build was not run (it ships walls); the walls line on Tunis was not seen.
 
+- F2: the page's course time (4.7 s Wroclaw, 3.5 s Tunis) is one run each with the GPU lock held; the free step on the page
+  took 3.5 s on Wroclaw against FREE_SPACE_MS 5100 from Node, so the first line says "about 0:10 left" (the estimate errs long).
+- F2: the 10 cm and 20 cm try rates behind COURSE_CELL_EXPONENT 0.9 were measured under load (other agents held the lock).
+- F2: tools/bench/test/a6-reference.test.ts not run: no flight, input or collision code changed (packages/collision is
+  untouched; the generator's proof reads it through its own sweep).
+- F2: the hooks for editor3 are tested here only (course3-hooks.test.ts); lane editor3's branch was not merged or built with them.
+
 ## Cost notes
+
+- F2-fast-course: about 45 replies (over budget); most went to waiting for the GPU lock held by other agents (two waits of
+  9-10 min) and to an equivalence test that was too slow for the full vitest gate. The cpu profile found the cause in one
+  run; a lock owner file and timing the reference test under the full gate before the first commit would have saved about 8.
 
 - F1-no-freeze: about 40 replies (over budget); most went to two probe runs lost before Shift+G (the bot scenario needs
   walls; the worker got functions in its message): a 30 s smoke run of a new probe path on the small scan before the
