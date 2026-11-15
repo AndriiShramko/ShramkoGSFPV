@@ -56,12 +56,56 @@ Stage G3-prove (train 3 wave 3):
     without saving" and the editor stayed open (closed false, both scans). Suspect the floor add's undo or the delete
     loop resets askedFor between the presses, or 900 ms is too short; course.ts command('exit') ask() (a guess).
   - Path long task max 156 ms (Tunis), 88 ms (Wroclaw); fps before 30, idle in mode 30 (Wroclaw).
-- [~] G3.4 pass 3: read store.ts saveMine/save (line 83, 113): the page takes a save only with status 201 AND an id that
-  matches SERVER_TRACK_ID '<6-32 hex>-<8 hex>' (packages/tracks server.ts 12); the probe's stand-in echoed the page's own
-  id, so 'save: http 201' was the PROBE's fault, not the page's. Probe now answers like the server (new id, versions path),
-  records the compared gate's pose right before Save (out.compare, isMoved), Esc up to 3 times 1.5 s apart with each line.
-  Runs runE (Tunis) and runF (Wroclaw) by U:/Temp/gsfpv-train3/editor3/g3/chain3.sh.
-- [ ] left (next worker, in this order; dist is the release of 1c2b773d, do not rebuild before a code change):
+- [x] G3.4 pass 3 (probe 73a6d46a, dist = release of 1c2b773d, no app code changed in this pass): read store.ts
+  saveMine/save (line 83, 113): the page takes a save only with status 201 AND an id that matches SERVER_TRACK_ID
+  '<6-32 hex>-<8 hex>' (packages/tracks server.ts 12); the probe's stand-in echoed the page's own id, so 'save: http 201'
+  was the PROBE's fault, not the page's. Probe now answers like the server (new id, versions path), records the compared
+  gate's pose right before Save (out.compare, isMoved), presses Esc up to 3 times 1.5 s apart and records each line.
+  Runs by U:/Temp/gsfpv-train3/editor3/g3/chain3.sh: runE Tunis (lock 07:42:46-07:45:38), runF Wroclaw (07:45:42-07:48:29).
+  MEASURED (g3/runE/e4.json, g3/runF/e4.json):
+  - Test flight with the simulated gamepad: course.next 0 -> 1 on BOTH scans (Tunis flight step 90 of 91, Wroclaw step
+    82 of 83; gate 1 was 13.5 m / 9.7 m ahead, opening made 3.5 m by '+' and taken back by 23 Ctrl+Z); the disarm brought
+    the edit view back: modeAfter 'edit', editEyeBackM 0 (both). Item 1 of pass 2 PROVEN for the pad.
+  - Save on the local stand-in: Wroclaw saved ('Saved as your course: Course ayh0ah, version 1', id becbec-8ded5a40, 307 ms)
+    after the loop deleted 11 red gates (24 -> 13, problems 0). Tunis refused: 'Not saved: fix the red gates first.
+    Problems: 2. the way from gate 0 to gate 1 goes through a wall', the loop deleted gate 0 again and again (24 -> 10)
+    and problems stayed 1-3.
+  - Exit: Tunis closed after 3 Esc (escSaid: 1st left the save refusal line, 2nd 'The changes are not saved. Esc again
+    leaves without saving', 3rd closed); Wroclaw (saved, nothing unsaved) closed after 2 Esc. So the second Esc after the
+    warning DOES leave; in pass 2 the first Esc went to the focused name field (nameField 'ce-name' after Save), a reading
+    of escSaid, not traced in code. Item 6 of pass 2: not an editor fault.
+  - Reload of the saved course (Wroclaw): the page did NOT take the saved course by itself after a fresh load (auto.gates 0,
+    source 'none', 30 s); the probe did not open the Courses list, so 'the moved gate is where it was put after load' is
+    NOT proven. Also the loop had deleted the moved gate (movedGone true).
+  - Floor add: Tunis problems 5 -> 7 ('the way from gate 0 to gate 1 goes through a wall'), Wroclaw 4 -> 4 (the new gate
+    not red; the one line 'gate 2 to gate 3'); the new gate in front of the view on both (stand.screen z 8 and 12).
+  - Long tasks on the path: max 81 ms (Tunis), 75 ms (Wroclaw); fps before 30 / 29.9, idle in the mode 30 / 29.9, path 29.9.
+  - Pictures (Read, looked at): move-1920: a Unity user knows it at once (3 coloured arrows, plane squares, the bar under
+    the gate; but the gate stands in a palm). turn-1920: a Blender user knows the rotate rings at once. size-1920: weakest,
+    only one small white box on a grey line, no X/Y/Z boxes, a Blender user would have to try it. wroclaw-1920: clear
+    (move arrows on the gate, the bar under it, the street ahead). flying-1920: clear (ARMED, gate in green, the line
+    'Flying your course with the changes. Disarm to edit again', no handles). 844: the gate bar fits at the bottom and the
+    selected gate with its handles is visible, BUT the course line 'Gates: 24. Fly through gate 1' lies under the 'Course
+    editor' window head and the controller hint box covers the middle of the view; a person would understand the bar, not
+    the crowded top.
+- [x] G3.5 accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 on the local release (first line 'accept-fly target:
+  http://localhost:5815', it held the lock 07:49:25-07:55:16): 10 of 10 PASS (log g3/accept.log). gates.py --only
+  vitest,architecture,i18n,b18 on 73a6d46a + this status: all PASS (vitest 90 s; logs U:/Temp/gsfpv-gates-20261115-075516).
+  a6-reference 1/1 pass and mouse-free-probe 78 PASS / 0 FAIL stand from pass 2 (G3.3): no app code changed since.
+- [ ] left (next worker, in this order; dist is the release of 1c2b773d):
+  a. Tunis Save: the course had 5 problems before the floor add (at open: not recorded) and 'the way from gate 0 to gate 1 goes through a wall' does
+     not go by deleting gate 0 (14 deletes, 24 -> 10). Record gate 0's and 1's pose and the leg report before more
+     deletes; suspect the leg from the spawn or course3's generator on Tunis (packages/tracks, a guess).
+  b. Reload: open the Courses list after the fresh load, pick the saved course and compare out.compare.pos (probe work in
+     tools/bench/src/editor3-prove.ts reloadSaved). Make the loop keep the moved gate (delete it only as the last way).
+  c. Keyboard course flight (keyboard as the source) course.next 0 -> 1: the Space toggle is proven (runB), the pass is not.
+  d. 844x390: the course line under the 'Course editor' head and the hint box over the view (seen in editor3-844.png);
+     suspect the fly page's top-right window layout, not the editor folder.
+  e. Size handle reads weakly for a Blender user (one white box); PlayCanvas ScaleGizmo with uniform only? apps/fly/src/
+     course/editor (a guess).
+  f. Pass 2 items still open: 4 (who sets cameraOverride false after an add), 5 (Tunis rings y 0 / z 0.131), 8 (0-based
+     gate number in the save refusal, course3's text).
+- [ ] superseded left list of pass 2 (0, 1, 2 partly, 6 done in G3.4):
   0. Run chain U:/Temp/gsfpv-train3/editor3/g3/chain2.sh again with OUT runE/runF (the probe fixes of this pass), then
      items 1, 2, 6 below from its record. accept-fly B6 B7 B9-B16 on a local address is NOT run yet (it takes the lock
      itself: SITE=http://localhost:<port> npx tsx src/accept-fly.ts B6 B7 B9 B10 B11 B12 B13 B14 B15 B16).
@@ -834,19 +878,32 @@ button shows the table.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
   tasks were measured.
 
-## What the owner does (mouse first; to be checked again after E4.4-E4.6)
+## What the owner does (mouse first; walked by the probe on Tunis and Wroclaw, G3 runs A-F)
 
-1. Shift+B (or the pause menu's Edit course): the same scene, the top bar appears: Add gate, Undo, Redo, Exit.
-2. Click a gate: the arrows, rings and the centre box appear on it, the small bar right of it.
-3. Pull an arrow to move, a ring to turn, the centre box to resize; Ctrl held for no snap; Ctrl+Z undoes a drag.
-4. The bar: ring, square, dive, cube change the kind; Duplicate; Delete; the arrows go to the previous and next gate (Tab too).
-5. Add gate, then click on the scene where the gate goes.
-6. W A S D move the view, E up, Q down, the right button held looks, the wheel sets the speed.
-7. Move the sticks of the controller (or arm it): the view is the drone's, fly the course; disarm or crash: the edit view
-   comes back where it was.
-8. Exit (or Esc twice) leaves; Save in the window keeps the course.
+1. Shift+B (or the pause menu's Edit course): the same scene, gate 1 selected with the Move arrows on it, the top bar
+   (Add gate, Undo, Redo, Save, Courses, Keys, Exit) and the gate bar under the gate. Proven (runA, runE, runF).
+2. Click a gate: it is selected, the arrows on it, the bar under it. Proven on Wroclaw (runA); Tunis: no click target found.
+3. Pull the X arrow: the gate moves along X (0.45-0.54 m for 80 px), nothing else changes. Proven.
+4. Press Turn on the bar (or R), pull a ring: the gate turns, stays in place. Proven (one or two of three rings on Tunis
+   gave no turn, left f).
+5. Press Size on the bar (or T), pull the box: the opening grows (1.2 -> 1.58 m), stays in place. Proven.
+6. On the bar: ring, square, dive, cube change the kind; Duplicate; Delete (the next gate is selected with its handles and
+   bar); the arrows (or Tab, Shift+Tab) go to the previous and next gate. Proven. Ctrl+Z and Ctrl+Y (or Undo and Redo)
+   for each. Proven, except the kind's undo on Tunis.
+7. Add gate, then click on the floor: a new gate stands in front of the view, selected. Proven; on Tunis it is red.
+8. W A S D move the view, E up, Q down, the right button held looks, the wheel sets the speed. Proven (2.3-2.5 m a step).
+9. Move the sticks of the controller (a camera drone needs no arming) or press Space (keyboard pilot): the view is the
+   drone's, fly through the gate: the course counts it. Disarm (Space again or the arm switch) or crash: the edit view
+   comes back where it was. Proven with the pad (course.next 0 -> 1) and the keyboard toggle (runB); the keyboard pass
+   through a gate not proven.
+10. Save: with red gates it says which and how many; with none it saves (proven on Wroclaw). Esc, then Esc again,
+    leaves (proven). Loading the saved course again: not proven.
 
 ## Cost notes
+
+- G3-prove pass 3: about 25 replies; the most went to the two scene runs and the accept-fly plus gates run (about 15
+  minutes of waiting in three blocking commands); reading store.ts's save check before pass 2's run (one grep) would have
+  fixed the probe's stand-in id a pass earlier.
 
 - G3-prove pass 2: about 31 replies; the most went to finding the run's own probe faults (the yaw sign read on the wrong
   camera, a delete loop that kept deleting the same index) one browser run late; dumping the first 3 flight samples and
