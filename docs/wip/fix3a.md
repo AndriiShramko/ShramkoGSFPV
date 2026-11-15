@@ -47,9 +47,31 @@ Stage X2-gate-one (gate 1 not in sight on Tunis seed 1)
       app/builtin/course.ts frame() feeds it the drawn camera, hook course.guide(); key course.hud.guide in en, es, pl, ru.
       Unit test tools/bench/test/course-guide.test.ts 8 passed; negative control (guide.ts absent on origin/main): NEG OK,
       it fails by the missing module, not by an assertion. tsc apps/fly: no errors.
-- [ ] browser proof on Tunis (link seed 1) and Wroclaw 70b50d42 (Shift+G on the published walls): four shots, numbers
-- [ ] tracks-page 'A look (link seed 1)': a gate in the frame OR the guide pointing to gate 1 on the right side
-- [ ] a6-reference, gates.py --only vitest,architecture,i18n,b18
+- [x] browser proof, release of a58510dd, server 5781, dist/walls = U:/Temp/gsfpv-train3/walls/release (Wroclaw on its
+      published walls), probe tools/bench/scripts/gate-guide-probe.mjs under the GPU lock (one hold per run):
+      Tunis link seed 1 (ev U:/Temp/gsfpv-train3/fix3a/ev/gate-guide-tunis.json): 18 of 19 passed. Start: guide "Gate 1 -
+      17 m" on the right with the turn mark, probe bearing 91.7 deg from the camera pose (behind right), metres within 1 m,
+      clear of note and lap block, aria-hidden true; behind (turned to 150 deg): passed; Escape: clear of the pause menu;
+      844x390: inside the screen and clear. Failed: 'near' check, the guide DID hide (shown false, in frame, 6 m) but the
+      probe's turn reached only 32 deg, over the check's 20 deg.
+      Wroclaw 70b50d42 Shift+G (ev .../gate-guide-wroclaw.json, run 3): 18 of 19; course in 10 s; start guide "Gate 1 -
+      10 m" left with the turn mark, matches the bearing; the same 'near' failure: here writing the sim's yaw did not turn
+      the drawn camera at all (24 yaws, one bearing), so 'behind' passed only because the start was behind already.
+      Pictures looked at: fix3a-gate1-tunis.png (Tunis start), fix3a-gate1-wroclaw.png (Wroclaw start), 844 (Tunis run).
+      fix3a-gate1-behind.png and fix3a-gate1-844.png in U:/Temp/gsfpv-train3/shots are now the Wroclaw run's (overwritten).
+- [x] tracks-page 'A look (link seed 1)': passes on paint OR the guide naming gate 1 on the side of the bearing computed
+      from the camera pose and gate 1's place. Before (8fe8bba2): FAIL; after (a58510dd): PASS, painted false, guide shown,
+      gate 0, side right, bearing 91.7 (evidence/2026-11-15/fix3a/tracks-look-after.json). The guide's lime arrow counts
+      as 'next' paint (100 px here, under MIN_PX 200, so it cannot pass the paint branch alone). 'E camera after Tab' left
+      as it is (old editor, lane editor3 replaces it).
+- [x] a6-reference 1 passed; gates.py --only vitest,architecture,i18n,b18: all PASS (vitest 121 s); tsc apps/fly and
+      tools/bench: 0 errors.
+Left (X2):
+- gate-guide-probe 'near': make the turn work on Wroclaw (the drawn camera did not follow s[6..9] there; a guess: the
+  session's renderer pose is not taken from sim.s while parked on that page, or hook.session is not the live session;
+  measure session.cameraOverride and session.cameraAim there first), then re-run Tunis and Wroclaw with --extra and keep
+  the Tunis behind and 844 pictures (run Wroclaw first, Tunis last).
+- gate-one-audit: read v2 walls (ab5efa0e) and retry eb5f51dc's settings fetch.
 
 ## Gate 1 from the spawn
 
@@ -128,3 +150,5 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
   walls, so nothing to build). A one-line check of walls.source before a long run would have saved two runs.
 - X1 pass 2: a negative control by git checkout HEAD wiped an uncommitted edit (one turn lost) and a new walls line hit
   the plain-lines test (no "could not"); commit before any file swap, and grep tools/bench/test for rules on bake.* keys first.
+- X2: most turns went to the probe turning the craft (three Wroclaw runs); one page.evaluate that prints cameraOverride,
+  cameraAim and the camera's forward after a yaw write would have shown the cause in one run.
