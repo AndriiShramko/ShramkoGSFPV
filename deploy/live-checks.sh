@@ -118,6 +118,7 @@ process.exit(ok ? 0 : 1);' "$OUT/course-path-$1.json" && [ $rc -eq 0 ]
 run course-path-wroclaw locked cpband 70b50d42
 # Train 3 integration C (lane fix3a): the guide to gate 1 after Shift+G on Wroclaw (gate-guide-probe.mjs header: presses
 # Shift+G and Escape only, the course lives in the page, nothing is saved).
+# Train 3 integration E: the same run also checks that gate 1 carries the START role (the read-only hook course.look).
 run gate-guide-wroclaw locked node scripts/gate-guide-probe.mjs "$SITE/en" 70b50d42 "$OUT/gate-guide-wroclaw.json" "$OUT" wroclaw --shiftg --wait-s=500
 # Train 3 integration C (lane onecourse): one course in the scene. onecourse-probe.mjs presses only flight keys (Shift+G,
 # Backslash, N; its scripted pilot passes two gates); the course lives in the page and nothing is sent or saved
@@ -185,6 +186,27 @@ console.log("fail", j.fail || "-", "narrator", j.narrator, "voiced 0..10 s", voi
 process.exit(!j.fail && voiced === 0 && live === 0 && moved ? 0 : 1);' "$OUT/narrator-off.json"
 }
 run narrator-off narratoroff
+# Train 3 integration E (lanes fix3a and editor3). The edit mode on Wroclaw: editor3-smoke.ts (header: a course made in this
+# tab by Shift+G, never saved; Shift+B, a click selects a gate, drags on the centre box, an arrow and a ring, Ctrl+Z, Esc
+# leaves; it never presses a save, send or create control; its pictures go to U:/Temp/gsfpv-train3/shots). The check: the
+# click selected a gate, an arrow moved it, Esc closed the mode, and the page holds no saved course.
+editlive() {
+  SCENES=70b50d42 OUT="$OUT" TAG=live-edit npx tsx src/editor3-smoke.ts || return 1
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const s = (j.scenes || {})["70b50d42"] || {};
+const sel = !!(s.click && s.click.ok);
+const moved = (s.move || []).some((m) => m.moved > 0.05);
+const closed = !!(s.exit && s.exit.closed);
+console.log("selected by a click", sel, "moved by an arrow", moved, "closed by Esc", closed, s.error || "");
+process.exit(sel && moved && closed ? 0 : 1);' "$OUT/live-edit.json"
+}
+run edit-mode-wroclaw locked editlive
+# Fly by Sound over a course made in the ordinary flight (lane mix, sonic-int-review.ts r11 with Z5_COURSE_FIRST=1: Shift+G
+# in the ordinary flight, then Backslash; the same keys as soniccheck above, nothing sent or saved; rendering off, no lock).
+# The check: the sound mode takes that course (one set of gates) and the hum has a target.
+sonicfirst() { Z5_COURSE_FIRST=1 soniccheck "$@"; }
+run sonic-eye-course-wroclaw sonicfirst eye-wroclaw 70b50d42 0 60 Shift+KeyG 'takes the course made by eye' 'makes a course'
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

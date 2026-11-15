@@ -498,6 +498,15 @@ Status (integration E worker 1 stopped at a clean point; a fresh worker continue
       Regenerated with gen-catalog in the commit of this line; catalog gate then PASS. The dist that run.sh built is of
       8b4d7eb3, before this regeneration: its site catalog pages are stale (the fly page is not affected); rebuild before
       the pictures of the site or the release.
+- [x] Seam d tooling (16d044b6, worker 2): one hook field course.editor.pose (apps/fly/src/course/hook.ts, written in
+      showEd of apps/fly/src/app/builtin/course.ts from gateFlownPose of the course state, not the view's stand-in);
+      editor3-prove.ts drags each ring 60, 100 and 140 px and records gateDeg (the gate's own rotation before and after)
+      and gate100ok (at least 20 degrees at 100 px). Typecheck of apps/fly and tools/bench clean. [ ] The run on a build
+      that has the field (the dist of run.sh does not: its Tunis run gives gateDeg null).
+- [x] Live checks (worker 2): deploy/live-checks.sh gets edit-mode-wroclaw (editor3-smoke.ts, read-only by its header and
+      by its code: no click on data-top save, no /api call) and sonic-eye-course-wroclaw (r11 with Z5_COURSE_FIRST=1);
+      gate-guide-probe.mjs now also checks 'gate 1 is START' (hook course.look().roles), so the existing gate-guide-wroclaw
+      line covers the START role. bash -n passes; not run.
 - [~] Release build and probes: U:/Temp/gsfpv-train3/e/run.sh runs detached (summary U:/Temp/gsfpv-train3/e/summary.txt,
       one line per probe with its exit code; logs beside it; evidence JSON in evidence/2026-11-15/train3e/; raw shots in
       U:/Temp/gsfpv-train3/shots/train3e-raw). It builds, copies the nine published wall folders into dist/walls, serves
