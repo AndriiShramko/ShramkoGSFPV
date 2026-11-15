@@ -782,7 +782,7 @@ export const course: Feature = {
             top?.adding(false);
             if (!ed) return;
             const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
-            const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform()));
+            const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform(), edMargin));
             // G1: lane course3's EditAction add (after the selected gate, its kind and opening, one undo step)
             // G2: facing along the course, from the selected gate (course frame -> flown: s * pos + offset)
             const tr = flownTransform();
@@ -804,8 +804,9 @@ export const course: Feature = {
             edHook.refused = null;
             checks?.ask(st.course, flownTransform(), edMargin);
             showEd();
-            // H2: the camera goes to the new gate (a floor click left it behind the view on both scans in H1)
-            aim();
+            // G2: the camera stays where the pilot clicked from (the gate stands where he clicked, in his view). The H2 aim()
+            // here moved the edit eye to gateCamera's pose, which starts at the drone and stops at the first wall: g2/full3
+            // measured the eye 2 m from the drone on the floor (Tunis viewAfter [1.53, 0.45, 0.87]): the drone's view, no gate.
             say(t('course.edit.did', { what: t('course.edit.bar.add'), gate: gateLine(st, scale()) }));
         };
         /** lane editor3 E3: armed flies (the drone's camera, the course from gate 1), disarmed or crashed edits again */

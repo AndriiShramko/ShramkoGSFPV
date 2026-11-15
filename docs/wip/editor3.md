@@ -66,6 +66,19 @@ Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
 - New fault seen, not in this list (left): after the test flight's disarm the flight STATS window (AIR TIME ... "Enter or
   Esc: all stats and the menu") stands over the edit view (editor3-floor-before-1920.png); suspect the flight-end stats
   panel of the fly page (not the editor folder).
+- [x] G2.12 measured from g2/full3/e4.json floorAdd.viewAfter (already recorded, no new run needed): after the add the edit
+  eye stood at Tunis [1.53, 0.45, 0.87] (2 m from the drone on the floor, gate at [15.41, 4.05, 6.21]) and Wroclaw
+  [-0.51, 2.43, -9.01]. Cause in my own wiring: placeAt's aim() (H2) moved the eye to camView = gateCamera(gate, drone, ray),
+  which starts at the drone and stops at the first wall: the drone's view. Not course3's code. Fix: placeAt no longer calls
+  aim() (the ray fix 8fbb67e3 already puts the gate 7.9 m / 11.6 m ahead of the view).
+  Red gate, from the check's code (packages/tracks check.ts 295-315, MARGIN_M 0.5): a gate is clear only when its frame loop
+  (opening/2 + ring tube or square bar/2) swept with a 0.5 m sphere touches no wall; addLift put the OPENING's lower edge
+  0.5 m over the floor, so the frame plus the sphere reached into the floor on any flat floor (Wroclaw "gate 1 is in a
+  wall"). Fix: addLift(state, tr, margin) = (opening/2 + frame) * s + margin (edMargin) + ADD_FLOOR_M 0.3 (an estimate).
+  Tunis "the way from gate 0 to gate 1 goes through a wall" (leg sweep from gate 0, 7.7 m up, to the floor gate): not
+  explained by the lift alone; to be seen in the next run. Test editor3-g2.test.ts 6 tests (new: floor clearance, placeAt
+  without aim), editor3-flying, a6-reference: 3 files 20/20; NEG OK (neg_control.py ref HEAD 535b09c4, add-place.ts and
+  course.ts: AssertionError -0.1 >= 0.5); apps/fly tsc 0.
 - [ ] left (next worker, in this order; dist is the release of 8fbb67e3; items 1 and 2 of the stage and the full line are
   proven in G2.7/G2.8, the old list below is done except its point 3):
   1. MEASURE why the page draws the drone's view after Add gate + floor click (full3 pictures). Add to course.ts

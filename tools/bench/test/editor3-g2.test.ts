@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { barAnchor } from '../../../apps/fly/src/course/editor/bar-place';
-import { addFacing, facingFrom } from '../../../apps/fly/src/course/editor/add-place';
+import { ADD_FLOOR_M, addFacing, addLift, facingFrom } from '../../../apps/fly/src/course/editor/add-place';
 
 const ROOT = join(__dirname, '../../..');
 const read = (p: string): string => readFileSync(join(ROOT, p), 'utf8');
@@ -59,6 +59,28 @@ describe('editor3 G2', () => {
         // no selected gate (or one right above): the way from the eye, as before
         expect(addFacing(eye, at, null)).toEqual(facingFrom(eye, at));
         expect(addFacing(eye, at, [0, 5, -10.2])).toEqual(facingFrom(eye, at));
+    });
+
+    it('a floor-added gate clears the floor by the walls check margin with its frame (g2/full3 Wroclaw: gate 1 is in a wall)', () => {
+        const margin = 0.5;
+        for (const shape of [{ kind: 'ring', diameter: 1.2, tube: 0.1 }, { kind: 'square', side: 1.5, bar: 0.12 }] as const) {
+            for (const s of [1, 2]) {
+                const state = { course: { gates: [{ id: 'g0', shape, pos: [0, 0, 0], quat: [1, 0, 0, 0], direction: 'forward' }] }, selected: 0, undo: [], redo: [], problems: [] } as unknown as Parameters<typeof addLift>[0];
+                const lift = addLift(state, [s, 0, 0, 0], margin);
+                const half = shape.kind === 'ring' ? shape.diameter / 2 + shape.tube : shape.side / 2 + shape.bar / 2;
+                // the frame's lowest point over a flat floor, minus the check's sphere: still in the air
+                expect(lift - half * s - margin).toBeGreaterThanOrEqual(ADD_FLOOR_M - 1e-9);
+                expect(ADD_FLOOR_M).toBeGreaterThan(0);
+            }
+        }
+        // the camera stays where the pilot clicked from: placeAt does not move it (H2's aim() put the eye at the drone)
+        const course = read('apps/fly/src/app/builtin/course.ts');
+        const i = course.indexOf('const placeAt = (ray: Ray): void => {');
+        const j = course.indexOf('const editFrame = (): void => {');
+        expect(i).toBeGreaterThan(0);
+        expect(j).toBeGreaterThan(i);
+        expect(course.slice(i, j)).not.toMatch(/\baim\(\);/);
+        expect(course.slice(i, j)).toMatch(/addLift\(ed, flownTransform\(\), edMargin\)/);
     });
 
     it('a click ray comes from the edit camera, not from the renderer entity (g2/floor3: the drone pose after a test flight)', async () => {

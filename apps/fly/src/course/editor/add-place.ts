@@ -17,8 +17,12 @@ export const ADD_MIN_M = 1;
 /** how far a click looks for a wall, flown m (an estimate) */
 export const ADD_RAY_M = 200;
 
-/** review ED-4: the new gate's lower edge stands this far above the floor the click hit, flown m (an estimate) */
-export const ADD_FLOOR_M = 0.5;
+/**
+ * review ED-4, G2: the new gate's frame stands this far above the floor the click hit beyond the walls check's margin, flown m
+ * (an estimate: about three 10 cm wall voxels). G2.11 (g2/full3, Wroclaw "gate 1 is in a wall"): the lower edge of the
+ * OPENING stood 0.5 m up, so the frame (ring tube, square half bar) came nearer the floor than the check's margin (0.5 m).
+ */
+export const ADD_FLOOR_M = 0.3;
 
 /**
  * Where a click's ray (eye, unit dir) puts the new gate: `hit` is the distance to the wall along it, null for none. `lift`
@@ -37,10 +41,20 @@ export function addPoint(eye: V3, dir: V3, hit: number | null, lift = 0): V3 {
     return [eye[0] + dir[0] * d, eye[1] + dir[1] * d, eye[2] + dir[2] * d];
 }
 
-/** review ED-4: how far above a floor hit the new gate's centre goes: half its flown opening (a copy of the selected gate's) plus ADD_FLOOR_M */
-export function addLift(state: EditorState, tr: Flown): number {
+/** G2: how far a gate's frame reaches past its opening's edge, scan m (packages/tracks check.ts outlineOf: ring tube, square half bar) */
+export function frameReach(shape: EditorState['course']['gates'][number]['shape']): number {
+    if (shape.kind === 'ring') return shape.tube;
+    if (shape.kind === 'square' || shape.kind === 'cube-frame') return shape.bar / 2;
+    return 0;
+}
+
+/**
+ * review ED-4, G2: how far above a floor hit the new gate's centre goes: half its flown opening (a copy of the selected
+ * gate's), its frame, the walls check's `margin` (flown m) and ADD_FLOOR_M, so the check finds the gate clear of the floor.
+ */
+export function addLift(state: EditorState, tr: Flown, margin = 0): number {
     const like = state.course.gates[state.selected] ?? state.course.gates[0];
-    return like ? (openingOf(like.shape) * tr[0]) / 2 + ADD_FLOOR_M : 0;
+    return like ? (openingOf(like.shape) / 2 + frameReach(like.shape)) * tr[0] + Math.max(0, margin) + ADD_FLOOR_M : 0;
 }
 
 /**

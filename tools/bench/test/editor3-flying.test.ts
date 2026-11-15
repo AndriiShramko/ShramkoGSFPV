@@ -41,7 +41,8 @@ describe('editor3 E3: a gate added by a click on the place', () => {
         const opening = 1.2 * TR[0];
         const p = addPoint([0, 2, 0], dir, hit, addLift(stateOf([gate('g1', [0, 0, 0])]), TR));
         // the centre is half the opening plus the clearance above the floor: the gate's lower edge is in the air
-        expect(p[1]).toBeCloseTo(opening / 2 + ADD_FLOOR_M, 6);
+        // G2: plus the frame (tube 0.05 scan m, flown at TR[0]); no check margin is passed here
+        expect(p[1]).toBeCloseTo(opening / 2 + 0.05 * TR[0] + ADD_FLOOR_M, 6);
         expect(p[1] - opening / 2).toBeGreaterThan(0);
         // pulled back along the floor by ADD_BACK_M towards the eye, not into it
         expect(p[2]).toBeCloseTo(-(hit * Math.cos(a)) + ADD_BACK_M, 6);
