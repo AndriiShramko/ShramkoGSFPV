@@ -1469,5 +1469,27 @@ Logs U:/Temp/gsfpv-train3/course4/fixcv/.
       Tests: course-finish.test.ts 'CV-2', 'CV-3', 'CV-4' NEG OK against course.ts and finish.ts of e66fa15a (3 of 3 failed);
       fit.test.ts 'CV-5' NEG OK against fit.ts of e66fa15a. packages/tracks + apps/fly/src/course + the 11 bench tests that
       read course.ts: 31 files, 245 passed. tsc fly 0, tsc tracks 0.
-- [ ] Release build, page probe of CV-2 (eyes course with elements, then Fly by Sound in place: no course taken), catalogue
-      table and the two-lap proof on Wroclaw, gates.py with leaks.
+- [x] Release build of 9a9de108: BUILD EXIT 0, 1934 files, sha256 d3f8af03... (fixcv/build.log); dist/walls from
+      U:/Temp/gsfpv-train3/walls/release (10 scans); server 5780, stopped.
+- [x] CV-2 in the page: onecourse-probe.mjs on Wroclaw 70b50d42, render off (fixcv/onecourse-wro.log, exit 0): Shift+G by
+      eye 44 gates (elements on), gates 1-2 flown, Backslash: the sound mode's target null (before the fix, live
+      f286dd49 and int-c: target 'g3', the eyes course taken). Shift+G in the sound mode: 21 single gates, target g1; N: 22
+      gates, target g1.
+- [x] Two-lap proof on Wroclaw (course-finish-probe.mjs SIZES=1920x1080,1280x720 LAPS=2, one GPU-lock hold,
+      fixcv/wroclaw.log, exit 0): 28 gates, open course, two runs, each end the card shown (0:29.90, 0:31.56).
+      Forest Floor ab5efa0e at x100 (SCALE=100, fixcv/forest.log, exit 0): line 'No course fits this scan at Scene size
+      x100. Shift+G sets x10 and builds the course'; the second Shift+G set x10: 40 gates, closed, the lap splash 0:43.53.
+- [x] Catalogue table (gate-place-audit --seeds 3, fixcv/table.json, TABLE EXIT 0, 39 rows) against cu2/table.json
+      (sources b887433b), gates/step/proven/problems: 34 of 39 rows equal; changed: Forest Floor ab5efa0e seeds 1-3 7/5/7
+      gates at step 2/3 -> 20/20/20 at step 0.4; d10c5638 seed 2 12 at 2/3 -> 21 at 0.3; 39e63ce9 seed 3 12 -> 13. These come
+      from the Z2 and Z3 changes since b887433b (a guess by date: the audit passes no deadline, so CV-5 does not act there;
+      not measured against e66fa15a).
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks on 9a9de108: GATES EXIT 0, 'all gates passed' (fixcv/gates.log).
+
+For the lead (course5 fixes): tools/bench/test/sonic-quiet-w3.test.ts (the sound lane's QW-1 check) now reads
+sayLine(end.spoken, ...) instead of sayLine(line, ...): the merge seam, the cue argument is main's. After Backslash on an
+eyes course with elements, the ear pilot has no course until he presses Shift+G or N (one press; the eyes course stays
+drawn). The worktree's packages/sonic-fpv was moved to main's pin 293ebae by git submodule update.
+
+Cost (course5 fixes): about 30 replies; the most went to finding the recipes of the table and the page probes in this long
+status file. A short 'how to rerun' block per probe at the top of the course part would have saved about 5.
