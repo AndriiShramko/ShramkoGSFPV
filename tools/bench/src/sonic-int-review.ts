@@ -38,6 +38,7 @@
 // SITE=https://gsfpv.flyreelstudio.eu runs a probe against that site instead (after a release; nothing is written to the site).
 // Port 5420. Exit 1 when a check fails; the evidence is evidence/<date>/sonic-int-review.json.
 import { mkdirSync, readFileSync, rmdirSync, statSync } from 'node:fs';
+import { humTurned } from './sonic-steer';
 import { join } from 'node:path';
 import { S } from '../../../packages/sim-core/src';
 import type { BrowserContext, Page } from 'playwright';
@@ -892,7 +893,8 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         if (stats && p.target && stats.targets[stats.targets.length - 1] !== p.target.id) stats.targets.push(p.target.id);
         // a stall is the craft not moving AND the hum not turning (Z5 Wroclaw 5 m/s: Shift held with E froze the turn for 270 s
         // on a ledge 2 m above gate 10; the hum stayed at the same side the whole time)
-        const turned = v !== undefined && stallFrom.dir !== undefined && v[0] * stallFrom.dir[0] + v[2] * stallFrom.dir[2] < 0.995;
+        // sonic3 S1: on the ground plane, normalised (sonic-steer.ts; the raw dot read a hum 6 degrees below as a turn every frame)
+        const turned = humTurned(v, stallFrom.dir);
         if (Math.hypot(p.pos[0] - stallFrom.pos[0], p.pos[2] - stallFrom.pos[2]) > 0.3 || turned) stallFrom = { pos: p.pos, t: Date.now(), dir: v };
         else if (Date.now() - stallFrom.t > 3000) {
             if (stats) stats.dodges++;
