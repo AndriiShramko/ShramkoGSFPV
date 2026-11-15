@@ -67,7 +67,38 @@ Stage S2-switch-and-speed (train 3 wave 3):
   | Tunis 887f27aa | 3 | 28.1 s | NOT counted: at g14 at the 300 s cap, 27 dodges, hum 86 m away | 303 | 0.33 / 2.99 | 0 |
   Highest clean speed: Wroclaw 5 m/s, Housefly 5 m/s (both counted on two builds), Tunis none.
 - [x] Regression r9 of sonic-int-review on f2f6589e: 11 of 11 checks (352 s, GPU lock by the probe).
-- [ ] LEFT after S2 pass 2, in this order:
+- [x] Pass 3, gates.py --only vitest,architecture,i18n,b18 on 25206b7d: all PASS (vitest 168 s; logs
+  U:/Temp/gsfpv-gates-20261115-073355).
+- [x] Pass 3, Wroclaw render on, release f2f6589e (sonic 5afa093), walls 70b50d42 v1 10 cm, port 5830, GPU lock by the probe
+  (s2/g-70b50d42-5.json): 9 of 10, NOT counted: 24 gates seen, 2 misses (g24 again: closest 0.6 m, plane not crossed), at the
+  300 s cap in attempt 3; switch on 7.02 -> 7.74 no life, 0 events; off 5.15 -> 5.15 no life. Both render-on Wroclaw runs
+  (pass 2 and 3) miss g24; the render-off runs on the same build counted. Looked at z5-70b50d42-5-inplace.png (cathedral
+  street, wall pulses on the radar, landed 0.0 m/s ALT 0.1 m at "Go.", a wall blur fills the right half) and -end.png (park,
+  gates drawn, "Stage 7 passed", Attempt 3, Counted 0 of 1). Copies named z5-70b50d42-*.png are still pass 2's NOT counted run.
+- [x] Pass 3, probe rule tried and reverted (not in git): W only while the hum is within 0.2 of the middle when it is under
+  max(2 m, speed x 1 s) away. Render off on f2f6589e (s2/h-*.json): Tunis 5 NOT counted (13 gates, 3 misses g2 g13 and one
+  more, moved on; pass 2 without the rule reached 19), Housefly 5 COUNTED (10 of 10, 4 gates, flight 64 s, median / max 0.53 /
+  4.93 m/s, 1 miss). No sign it helps Tunis, so not kept (a rule that is only a guess).
+- [x] Pass 3, Tunis switch on failed once (h-887f27aa-5): 6.85 -> 2.98 m/s, sim events 'disarm', 'crash' within 0.4 s, no new
+  life. Measured: at the press vel [-1.95, 0.1, 6.57] while the open-side turn had put the nose on the 26.3 m ray; the craft
+  moved 0.35 m in 372 ticks and crashed under the pilot's own crash rule (side rays 1.2 to 3.1 m). The cause is the probe
+  flying its old momentum into the narrow street at the spawn (a guess that momentum, not the switch, did it: the switch
+  itself made 0 events in 9 of 9 other runs since e5969b28).
+- [x] Pass 3, Tunis 3 m/s 'hum 86 m away' measured (f-887f27aa-3 spy): 13 lives in 300 s (stuck-flipped, stuck-wedged, one
+  crash). Repeated stuck lives raise the director's rewind backoff (packages/sim-core/src/director.ts rewind(): age = backoff
+  x rewindTicks) until it is past the history depth, then toStart() puts the craft at the scan's spawn; the sound course in
+  place does not follow that life (apps/fly/src/sonic/feature.ts 'life' handler only re-follows the runner), so the hum
+  still leads to g14, 86 to 92 m away through Tunis' walls. Not the course generator's legs.
+- [ ] LEFT after S2 pass 3, in this order:
+  1. Tunis: no counted course. (a) Sound course in place after a life the director put at the start: restart the course
+     (or put the craft back at its last gate) in apps/fly/src/sonic/feature.ts 'life' handler, reading the director's last
+     decision (kind 'start' at this tick, as apps/fly/src/course/run.ts courseLife does); unit test with a negative control.
+     (b) 5 m/s misses near the plane (g19 slide, g2 and g13 right after the gate before): read whether the miss record's
+     local z sign matches gate-aim.ts (+Z entry): rows with local z -1 to -2 show aimOffM 1, which gate-aim gives only for
+     z > 0; files tools/bench/src/sonic-int-review.ts missRecord and package src/lesson/gate-aim.ts.
+  2. Wroclaw render on misses g24 twice (render off counts): read the g24 miss rows of s2/g-70b50d42-5.json and
+     s2/z-70b50d42-5.json; then one more render-on run for a counted shot pair.
+- [x] (superseded by the pass 3 list) LEFT after S2 pass 2, in this order:
   1. Tunis, no counted course. New 5 m/s misses: g19, craft came round from behind and slid along the plane at 4.5 to 4.7
      m/s into the opening (local [0.2, 0, 0.9]) and out of it (the slide aim [0,0,1] has no braking; a speed cap near the
      plane, a guess); g2, rows have no gate frame until 0.6 s before the miss (record gap; cause not read). 3 m/s: stuck at
@@ -808,5 +839,6 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   run); one script queueing every run with the next one's setup would have cut the waits to one call; the walls-built case
   should have been run first with rendering on, as the walls lane did.
 - 2026-11-15 S1 pass 3: most turns went to reading the 1388-line probe and the long status file in slices, and to waiting for runs; the batch of 5 runs (30 min) did not fit in the budget, so 2 were stopped. Cheaper: start the batch in the first reply (release build and runs detached), and keep one summary script that prints gates, miss gate, spy and switch-on in one call.
+- 2026-11-15 S2 pass 3: the render-on run started in reply 3 and two render-off runs beside it made all data arrive in one wait; the most turns went to tracing the 86 m hum through the respawn director and the sonic life handler. Cheaper: a sum.py option that prints the spy and switch-on vectors with the miss rows, and a rule tried only when one run can show it helps (one Tunis run cannot).
 - 2026-11-15 S2 pass 2: starting the render-on batch in reply 4 and the build plus three chains in one detached script made all data arrive in two waits; the most turns went to reading the miss rows (the record's local frame and the aim offset); a sum.py option printing every miss row with the aim branch name would have been one call.
 - 2026-11-15 S2: most turns went to finding why the off and on checks failed (a paused flight, a spawn facing a wall) before any run; running three render-off chains and the r12 lessons in one detached batch made the data arrive in two waits; the render-on shots needed a second batch the budget did not hold, so a batch with render on for the 5 m/s runs from the start would have saved it.
