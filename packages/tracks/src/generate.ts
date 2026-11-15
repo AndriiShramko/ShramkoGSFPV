@@ -146,6 +146,14 @@ export const EYE_SCALE_TOL = 0.2;
  *  tile's quality (quality.ts near) is under this share of the scan's best quarter (estimate: before Y2 the gates of
  *  Wroclaw, Tunis and Opole stood at 0.18-0.28 of it, gate-place-audit.ts, place-before.json) */
 export const POOR_SHARE = 0.15;
+/** course4 C0 (4): freeSpace's goodAt for a course over a quality map: a well-scanned tile of at least POOR_SHARE (the
+ *  tile rule of the eye band in walkCourse) */
+export function goodForGate(q: QualityMap): (p: Vec3) => boolean {
+    return (p) => {
+        const t = tileOf(q, p);
+        return t >= 0 && q.good[t] === 1 && qualityShare(q, p) >= POOR_SHARE;
+    };
+}
 /** fix3b Y2: a leg's quality is read every this many m along it (gate-place-audit.ts reads every 1 m; 2 m let legs of
  *  Wroclaw down to 0.04-0.11 of the best quarter through, place-after.json) */
 const LEG_STEP_M = 1;

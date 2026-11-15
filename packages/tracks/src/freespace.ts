@@ -38,6 +38,10 @@ export interface FreeSpaceOptions {
     readonly floodFill?: boolean;
     /** G2: the box looked at, flown world (quality.ts qualityBounds: the well-scanned extent); replaces boxM around the spawn */
     readonly bounds?: { readonly min: Vec3; readonly max: Vec3 };
+    /** course4 C0 (4): where the scan is good enough for a gate (generate.ts goodForGate). When no cell joined to the spawn
+     *  is, the spawn sits in a closed pocket of a poor scan (Lublin 2f1ddf5f: 900 cells, share 0): the fill starts again
+     *  from the good clear cell nearest the spawn, so the course lies in the well-scanned part and the guide leads there */
+    readonly goodAt?: (p: Vec3) => boolean;
 }
 
 /** The defaults. Every one is an estimate from tracks-plan.md 2.1 except where tools/bench/src/tracks-generate.ts says it measured it. */
@@ -264,9 +268,34 @@ export function freeSpace(walls: VoxelCollision, opts: FreeSpaceOptions): FreeSp
     const spawnCell = cellOf(free, sp);
     const reach = new Uint8Array(n);
     let reachable = 0;
-    const seed0 = nearest(spawnCell, (i) => solid[i] === 0, clearEnough);
+    let seed0 = nearest(spawnCell, (i) => solid[i] === 0, clearEnough);
     if (flood) reachable = fill(seed0, clearEnough, reach);
     else for (let i = 0; i < n; i++) if (clearEnough(i)) { reach[i] = 1; reachable++; }
+    const goodAt = opts.goodAt;
+    if (flood && goodAt) {
+        let any = false;
+        for (let i = 0; i < n && !any; i++) if (reach[i] && goodAt(cellCentre(free, i))) any = true;
+        if (!any) {
+            // the good clear cell nearest the spawn (straight distance in cells), not joined to it
+            const at = spawnCell >= 0 ? spawnCell : Math.max(0, seed0);
+            const ax = at % nx, ay = ((at - ax) / nx) % ny, az = (at - ax - ay * nx) / nxy;
+            let best = -1, bd = Infinity;
+            for (let i = 0; i < n; i++) {
+                if (reach[i] || !clearEnough(i)) continue;
+                const x = i % nx, y = ((i - x) / nx) % ny, z = (i - x - y * nx) / nxy;
+                const d = (x - ax) * (x - ax) + (y - ay) * (y - ay) + (z - az) * (z - az);
+                if (d < bd && goodAt(cellCentre(free, i))) {
+                    best = i;
+                    bd = d;
+                }
+            }
+            if (best >= 0) {
+                reach.fill(0);
+                reachable = fill(best, clearEnough, reach);
+                seed0 = best;
+            }
+        }
+    }
 
     // outdoor: the fill reaches more than outdoorShare of the box's border cells
     let border = 0, borderHit = 0;

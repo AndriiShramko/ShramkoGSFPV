@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { blockDims, findSphereSpawn, forEachBlock, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, goodForGate, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { QualityMap, SceneTransform, Vec3 } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 
@@ -98,7 +98,7 @@ async function main(): Promise<void> {
             const q = qualityMap(walls);
             const qMs = Math.round(performance.now() - tq);
             const box = qualityBounds(q, spawn);
-            const free = freeSpace(walls, { spawn, bounds: box ?? undefined });
+            const free = freeSpace(walls, { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined });
             const share = (t: number): number => (t < 0 || !(q.best > 0) ? 0 : r2(q.near[t]! / q.best));
             if (arg('--diag')) {
                 // the generator's eye-band filter (generate.ts walkCourse) counted stage by stage, scale 1

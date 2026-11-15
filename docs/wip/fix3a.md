@@ -630,13 +630,43 @@ Stage C0-places-left (fix3b's left items)
       of a street on this course. Tunis top map not drawn. POOR_SHARE 0.15 and EYE_FREE_M 1.0 kept (no picture shows a gate
       in a smeared end); still estimates.
 - [ ] (1) R3 no gate in leaves: not built (see Left)
-- [ ] (4) Lublin start in the well-scanned part: not built
-- [ ] (5) Opole page run alone and fix3b-opole-pilot.png: not run (see Left)
-- [ ] (6) page check on the release of the head: not run (see Left)
+- [~] (4) Lublin start in the well-scanned part: freespace.ts option goodAt (generate.ts goodForGate: good tile and
+      share >= POOR_SHARE); when no reached cell is good the fill starts again from the good clear cell nearest the spawn;
+      worker.ts and gate-place-audit.ts pass it. Test pocket-start.test.ts (street plus a closed pocket of 0.08 share):
+      NEG OK (old freespace.ts: 4 gates, in the pocket); packages/tracks vitest 16 files 128 passed; tsc packages/tracks and
+      apps/fly exit 0. BUT Lublin 2f1ddf5f is unchanged in Node (audit-pocket.log: seeds 1, 2: 16 and 14 gates, span 12 m):
+      the check runs over the reached cells, and Lublin's pocket reaches some cell over a good tile that the scanned and
+      room steps then drop (guess, not measured). Wroclaw seeds 1, 2 (24, 14 gates) and Tunis seed 1 (24) as before.
+- [x] (5) Opole page run alone (runner on port 5780, release of b010742b, REGEN=0): exit 0 in 25 s, 6 gates at 1.6-2.0 m,
+      0 without ground; fix3b-opole-pilot.png looked at (rings over the terrace and stairs at eye level). The 590 s crash
+      did not come back alone; its cause is not named (it ran after Tunis in the same page run: a guess).
+- [x] (6) page check on the release of b010742b (BUILD EXIT 0; U:/Temp/gsfpv-train3/course4/c0/ev, summary.txt): Save check
+      untouched problem null on Wroclaw (Shift+G to course 5.1 s) and Tunis (4.0 s), the pushed gate refused on both
+      (leg-wall); page heights Wroclaw seeds 1156744997, 446102219, 1517131788: 24, 24, 14 gates, eye 23, 24, 13, centres
+      1.5-2.2 m, 0 without ground; Tunis three seeds 24 gates each, 1.6-2.0 m; guide on Tunis 6 of 6 checks.
+      fix3b-wroclaw-pilot-2.png (seed 1517131788) looked at: the camera 8 m before gate 6 stands in a dark conifer, the ring
+      itself in front of a tree: the leaves case of R3 is on the approach, not only in the opening.
+- [x] (3) Tunis top map 887f27aa-1-top.png (0.15 m/px) looked at: all 24 gates in green or yellow tiles, none in red or
+      orange; lowest gate share 0.27. Section 887f27aa-1-g23.png: gate 23 (4.2 m over the tile ground, 1.9 m over the ray
+      ground) stands over a raised mass that continues to the right at that level: a terrace of the medina, not a too low
+      ground measure; kept. POOR_SHARE 0.15 and EYE_FREE_M 1.0 kept: no picture shows a gate in a smeared end of a street.
+- [x] Wroclaw seed 2 gives 14 gates: measured (audit-w2.log, walks 9, 5, then 24 walked, 9 cut at the ring's close, 1 gate
+      dropped): the ring closing cut, a valid closed course of 14; not a fault.
 - [x] after 7be35fc4: gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 93 s, logs
       U:/Temp/gsfpv-gates-20261115-152459); a6-reference exit 0
 
-## Left (C0)
+## Left (C0, after pass 2)
+
+1. (4) Lublin: move the goodAt check in packages/tracks/src/freespace.ts from the reached cells to the usable cells (room
+   >= 0, after step 5): when none is good, call freeSpace again with the spawn at the good clear cell nearest the spawn
+   (not in reach) and without goodAt; keep pocket-start.test.ts; rerun gate-place-audit --scenes 2f1ddf5f,70b50d42,887f27aa
+   --seed-list 1,2 (now: Lublin span 12 m) and the page run on Lublin with the guide.
+2. (1) R3: not built. The leaves of fix3b-wroclaw-pilot-2.png lie on the approach (8 m before gate 6), so the tube must
+   reach further than 3 m. Data source still open: the walls hold crowns, thin foliage needs splat positions in the worker.
+3. Items 5 and 6 are done above on the release of b010742b; the release does not hold the goodAt change (no effect on
+   Wroclaw, Tunis, Opole in Node).
+
+## Left (C0, pass 1)
 
 1. (6) and (5): the runner U:/Temp/gsfpv-train3/course4/c0/run.sh (copies the walls stand-in into dist, serves on 5780,
    save-check --push Wroclaw and Tunis, gate-place Wroclaw (pilot views 1, 6) and Tunis, gate-guide Tunis, then Opole alone
@@ -657,3 +687,6 @@ Stage C0-places-left (fix3b's left items)
 Cost (course4 C0): about 27 replies; most went to finding a data source for R3 (no splat positions anywhere the generator
 runs) and to a page runner that only waited for the GPU lock; starting the runner as the first command of the stage and
 asking the lead whether R3 may read the scan files in Node would have saved both.
+Cost (course4 C0 pass 2): about 30 replies; most went to shaping a test world whose pocket is poor (four tries) and to
+finding that the old runner had already run; checking the pocket rule on Lublin's Node audit before writing the unit test
+would have shown at once that the reached cells are the wrong set.
