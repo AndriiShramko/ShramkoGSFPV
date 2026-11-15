@@ -373,6 +373,9 @@ Stage Y1-save-check
 - fix3b Y2 pass 2: 30 replies; most went to the page probe (a new one, gate-place-probe.mjs) and the two audit waits; the
   top map came out 346 px wide and useless for poor ends; a quality-share layer drawn in Node beside the audit would be cheaper.
 
+- fix3b Y3: about 35 replies; most went to blocking waits on the runner and to two probe faults found only in the run
+  (walls-store and published walls); a dry run of each repaired probe on one scan before the long runner would have saved three.
+
 Left for pass 3 (Y2): (1) Opole page run (crashed at 590 s: run it alone, REGEN=0) and fix3b-opole-pilot.png;
 (2) fix3b-wroclaw-top.png and -tunis-top.png are too small and show no quality: draw the tile share (quality.ts near / best)
 in the top map, step about 0.15 m/px; look at -tunis-top.png; (3) Wroclaw page third course had a gate at 5.0 m and one with
@@ -443,7 +446,47 @@ nine published walls of U:/Temp/gsfpv-train3/walls/release (Wroclaw on its walls
 - [x] gates.py subset in the runner: FAIL architecture ('tracks generator uses non-deterministic Math', the Math.hypot of
       c5d92269 in generate.ts legWell); replaced by Math.sqrt of the sum of squares; check-architecture ok, packages/tracks
       vitest 14 files 119 passed. The browser runs below are on the build with hypot (same n except within 1 ulp of a metre).
-- [ ] runner: build, gates, a6, save-check Wroclaw and Tunis (with --push), gate-place Wroclaw and Tunis (Y2 pictures),
-      course-path both, gate-guide both, walls-store both, accept-fly B6 B7 B9-B16, tracks-page
-- [ ] pictures looked at; What the owner does; not proven
+- [x] runner U:/Temp/gsfpv-train3/fix3b/y3/run.sh on the release of cd381338 (build 86 s), summary y3/summary.txt, evidence
+      y3/ev, pictures U:/Temp/gsfpv-train3/shots/fix3b-y3; numbers in Measured (Y3)
+- [x] gates.py --only vitest,architecture,i18n,b18 after f44e0971: all PASS (vitest 286 s); a6-reference exit 0
+- [x] pictures looked at: fix3b-wroclaw-pilot.png (gate 1 at eye level in the cobbled street, dense scan),
+      fix3b-tunis-pilot.png (gate 1 in the town gate at eye level, under the palm crowns, not in them),
+      fix3b-wroclaw-pilot-2.png (gates at eye level beside the cathedral; this view faces a shop window, not gate 6: the
+      probe's turn, not the course)
 
+## Measured (Y3)
+
+- Save check (save-check-probe --push, Shift+G): Wroclaw 70b50d42 published walls 10 cm: Shift+G to drawn course 8.1 s,
+  24 gates, problems 0; gate 1 pushed 0.3 m into the wall 1.7 m from it: 3 problems (leg-wall start-g1, leg-wall g1-g2,
+  gate-wall g1), the course in use again 0. Tunis 887f27aa shipped 5 cm: 4 s, 24 gates, problems 0; pushed into the wall 3 m
+  away: 3 problems; in use again 0. The check is not loosened.
+- Heights in the page (ray down from each gate centre to the first wall): course-path Wroclaw first course (7.1 s) 24 of 24 in
+  1.2-2.0 (+-0.1), 1.6-2.1 m; regen three courses eye 24/23/24 (one gate at 3.1 m), 6.6-10.7 s.
+  course-path Tunis first course (7.6 s) 23 of 24 (gate 15 at 3.4 m): probe exit 1; regen 24/24/.. at 1.6-2.0 m, 6.3-8 s.
+  gate-place Wroclaw regen 24/24/21 eye (one course 1.6-3.3 m), 4.2-7.3 s; Tunis 23/24/24 (highest 2.05 m), 3.4-4.7 s.
+- course-path both: 3 gates passed, crash gives a rewind (Tunis back 8.7 m), R resets to gate 1, errors 0.
+- gate-guide --shiftg: Wroclaw exit 0 (20 s), Tunis exit 0 (13 s); at both starts gate 1 was behind (Wroclaw -118 deg 10.6 m,
+  Tunis 93 deg 19 m) and the guide showed side and metres (11 m, 19 m); the new hidden-guide branch did not run.
+- walls-store: Tunis exit 0 (153 s); Wroclaw exit 124 (waited 590 s, source published, state none: the probe waited for a
+  build); probe fixed to treat published like shipped, rerun exit 1 (shippedOk wanted source 'shipped'); fixed again,
+  not rerun.
+- accept-fly SITE=http://localhost:5787 B6 B7 B9-B16: all PASS (364 s).
+- tracks-page: 45 of 46 (evidence/2026-11-15/fix3b-y3/tracks-page.json); FAIL 'E camera: after Tab the camera looks at the
+  newly selected gate, in view': gate 2 at y 0.95, camera free 0.70 m, 0 px of the gate drawn. Editor camera with
+  eye-level gates near the ground (apps/fly/src/course/editor, lane editor3i): a guess, not measured.
+
+## What the owner does (fix3b)
+
+Open Wroclaw or Tunis, press Shift+G: in 4 to 11 s a course of 24 gates stands in the street at a person's eye height
+(gate centre about 1.6 m above the ground), and Save accepts it as it is. If gate 1 is behind him, the side arrow says
+where and how far it is.
+
+## Not proven (Y3)
+
+- Not every gate is at eye level: one of 24 in 3 of 8 page courses stood at 3.1-3.4 m (Tunis first course gate 15).
+  Suspect: the band top rising 0.4 m when too few cells (generate.ts WalkInfo.eyeHi) or the ray meeting a hole in the
+  walls; not measured.
+- Poor ends of streets: no page measure of quality under the gates (the Node audit did it in Y2); pictures show dense parts.
+- The guide's hidden case for a near gate in view did not occur in these starts.
+- Wroclaw walls-store after the last probe fix: not rerun. tracks-page E camera: see Measured. Y2's left items (Opole,
+  quality top map, R3 leaves, Lublin) remain as written under 'Left for pass 3 (Y2)'.

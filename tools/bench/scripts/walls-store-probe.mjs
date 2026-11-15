@@ -60,7 +60,8 @@ async function open(p, label, build) {
     run.first = await snap(p);
     // a scan with shipped walls (Tunis 887f27aa) builds nothing and stores nothing: the first pass waited 480 s for a build
     // that never starts. Recorded and checked as such (no build, no bakes), not waited for.
-    if (run.first && run.first.source === 'shipped') r.shipped = true;
+    // fix3b Y3: published walls (Wroclaw 70b50d42 with dist/walls) also come ready made: Y3's run waited 590 s for a build
+    if (run.first && (run.first.source === 'shipped' || run.first.source === 'published')) r.shipped = true;
     if (build && !r.shipped && run.first && run.first.state !== 'in-use' && run.first.state !== 'queued') {
         await p.waitForTimeout(2000);
         // as course-path-probe.mjs: the radio screen takes the keys until it is closed
@@ -114,7 +115,7 @@ try {
     r.kept = reloadAt === 'in-use' ? true : !!(ls && ls.ok && (ls.ms <= KEEP_NOTE_S * 1000 || r.runs[0].sawKeeping));
     r.cached = r.runs.slice(1).every((x) => x.final && x.final.state === 'in-use' && x.final.source === 'cache' && x.final.bakes === 0);
     // shipped walls: every open keeps source 'shipped', no build runs and no store write is made
-    if (r.shipped) r.shippedOk = r.runs.length === 3 && r.runs.every((x) => x.final && x.final.source === 'shipped' && !x.final.bakes && !x.final.lastStore);
+    if (r.shipped) r.shippedOk = r.runs.length === 3 && r.runs.every((x) => x.final && (x.final.source === 'shipped' || x.final.source === 'published') && !x.final.bakes && !x.final.lastStore);
 } catch (e) { r.error = String(e).slice(0, 400); }
 await ctx.close();
 writeFileSync(out, JSON.stringify(r, null, 1));
