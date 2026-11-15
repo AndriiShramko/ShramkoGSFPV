@@ -258,13 +258,14 @@ async function far() {
         tick();
     });
     const frame = () => page.evaluate(() => new Promise((res) => { const d = []; let last = performance.now(); const end = last + 3000; const f = (t) => { d.push(t - last); last = t; if (t < end) requestAnimationFrame(f); else { d.sort((a, b) => a - b); res({ n: d.length, meanMs: Math.round((d.reduce((a, b) => a + b, 0) / d.length) * 10) / 10, p95Ms: Math.round(d[Math.floor(d.length * 0.95)] * 10) / 10 }); } }; requestAnimationFrame(f); }));
-    const pickStats = (s) => ({ chunks: s.chunks, quads: s.quads, triangles: s.triangles, whole: s.whole, wallChunks: s.wallChunks, plannedChunks: s.plannedChunks, drawnChunks: s.drawnChunks, share: s.share, perLevel: s.perLevel, farthestM: s.farthestM, drawnFarM: s.drawnFarM, radiusM: s.radiusM, fineRadiusM: s.fineRadiusM, detail: s.detail, keeperMs: s.frameMs, voxelCm: s.voxelCm });
+    const pickStats = (s) => ({ chunks: s.chunks, quads: s.quads, triangles: s.triangles, whole: s.whole, wallChunks: s.wallChunks, plannedChunks: s.plannedChunks, drawnChunks: s.drawnChunks, share: s.share, perLevel: s.perLevel, meshesPerLevel: s.meshesPerLevel, pendingUploads: s.pendingUploads, farthestM: s.farthestM, drawnFarM: s.drawnFarM, radiusM: s.radiusM, fineRadiusM: s.fineRadiusM, detail: s.detail, keeperMs: s.frameMs, voxelCm: s.voxelCm });
     const fill = async (label, ms) => {
         const s0 = Date.now(), series = [];
         let full = -1, ok = false;
         while (Date.now() - s0 < ms) {
             const s = await page.evaluate(() => ({ st: window.__gsfpv.voxels.stats(), ok: window.__gsfpv.voxels.settled() }));
-            series.push([Math.round((Date.now() - s0) / 100) / 10, s.st.share ?? null, s.st.drawnFarM ?? null, s.st.chunks]);
+            series.push([Math.round((Date.now() - s0) / 100) / 10, s.st.share ?? null, s.st.drawnFarM ?? null, s.st.chunks, s.st.fillLeftS ?? null]);
+            if (!r.far.midLine && s.st.share > 0 && s.st.share < 100) r.far.midLine = await page.evaluate(() => [...document.querySelectorAll('.walls-menu *, [class*=voxel] *')].map((e) => e.textContent?.trim() ?? '').find((x) => x.includes('%') && x.length < 260) ?? null);
             if (full < 0 && s.st.share === 100) full = Date.now() - s0;
             if (s.ok && Date.now() - s0 > 1500) { ok = true; break; }
             await sleep(1000);

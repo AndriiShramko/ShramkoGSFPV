@@ -9,7 +9,7 @@ import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
 import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
-import { KEEPER_EVERY_MS, drawnShare, keeperStep } from './voxel-keeper';
+import { KEEPER_EVERY_MS, drawnShare, fillLeftS, keeperStep } from './voxel-keeper';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
@@ -79,8 +79,10 @@ export interface VoxelStats {
     wallChunks: number;
     plannedChunks: number;
     drawnChunks: number;
-    /** drawnChunks / plannedChunks in percent (100 when nothing is planned) */
+    /** drawnChunks / plannedChunks in percent (0 before the first plan, 100 when the plan is empty) */
     share: number;
+    /** the whole view while it fills: seconds left at the pace so far (null: unknown or full) */
+    fillLeftS: number | null;
     /** chunks on screen at their planned level, per level (index: 0 voxels, 1 blocks of 4, 2 cubes of 8, 3 cubes of 16 voxels) */
     perLevel: number[];
     /** the meshes (draws) those chunks take per level: far chunks are joined into group meshes */
@@ -134,6 +136,8 @@ export class VoxelController {
     private keeper = { last: 0, sum: 0, n: 0, at: 0, fast: 0, ms: 0 };
     private lastPlan: PlannedChunk[] = [];
     private planFar = 0;
+    /** when the whole view's fill began (performance.now), 0 when full */
+    private fillFrom = 0;
     private session: FlightSession;
     private overlay: VoxelOverlay | null = null;
     private worker: Worker | null = null;
@@ -601,6 +605,12 @@ export class VoxelController {
         const col = this.col;
         // on screen = uploaded at the planned level; a mesh waiting in the upload queue is not counted
         const sh = drawnShare(this.lastPlan, (k) => (this.overlay?.pending(String(k)) ? undefined : this.loaded.get(k)));
+        // nothing planned yet (the grid is being prepared): nothing is drawn, not all of it
+        const share = this.planned ? sh.share : 0;
+        // the fill's pace: from the first plan of the whole view that was not all on screen
+        const now = performance.now();
+        if (!this.whole || share >= 100) this.fillFrom = 0;
+        else if (this.fillFrom === 0) this.fillFrom = now;
         return {
             state: this.state,
             mode: this.mode,
@@ -618,7 +628,8 @@ export class VoxelController {
             wallChunks: this.occupied?.size ?? 0,
             plannedChunks: sh.total,
             drawnChunks: sh.drawn,
-            share: sh.share,
+            share,
+            fillLeftS: this.fillFrom ? fillLeftS(now - this.fillFrom, share) : null,
             perLevel: sh.perLevel,
             meshesPerLevel: sh.meshesPerLevel,
             farthestM: this.planFar,

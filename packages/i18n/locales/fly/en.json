@@ -472,6 +472,7 @@
   "voxels.preparing": "Preparing the grid…",
   "voxels.status": "{cm} cm voxels within {m} m · {k}k faces",
   "voxels.statusWhole": "{cm} cm voxels · the whole scene: {share}% drawn, to {m} m · {k}k faces",
+  "voxels.fillLeft": "about {s} s left",
   "voxels.floaters": "{n} floating pieces highlighted",
   "voxels.noWalls": "No walls yet: V builds them and shows the grid.",
   "voxels.failed": "The voxel grid could not be built: {msg}",

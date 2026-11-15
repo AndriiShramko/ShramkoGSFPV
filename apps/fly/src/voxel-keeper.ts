@@ -50,3 +50,12 @@ export function drawnShare(plan: readonly ShareItem[], drawnAt: (key: number) =>
     }
     return { total, drawn, share: total ? Math.floor((drawn / total) * 100) : 100, farM, drawnFarM, perLevel, meshesPerLevel };
 }
+
+/**
+ * Seconds left until the whole scene is on screen, from the pace so far: `elapsedMs` since the fill
+ * began and the share drawn now (percent). null when nothing is drawn yet or all is (no pace to tell).
+ */
+export function fillLeftS(elapsedMs: number, share: number): number | null {
+    if (!(share > 0) || share >= 100 || !(elapsedMs > 0)) return null;
+    return Math.max(1, Math.round((elapsedMs * (100 - share)) / share / 1000));
+}

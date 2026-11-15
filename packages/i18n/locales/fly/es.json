@@ -472,6 +472,7 @@
   "voxels.preparing": "Preparando la rejilla…",
   "voxels.status": "vóxeles de {cm} cm hasta {m} m · {k} mil caras",
   "voxels.statusWhole": "vóxeles de {cm} cm · la escena entera: {share} % dibujada, hasta {m} m · {k} mil caras",
+  "voxels.fillLeft": "quedan unos {s} s",
   "voxels.floaters": "{n} piezas flotantes resaltadas",
   "voxels.noWalls": "Aún no hay paredes: la tecla V las construye y muestra la rejilla.",
   "voxels.failed": "No se pudo construir la rejilla de vóxeles: {msg}",

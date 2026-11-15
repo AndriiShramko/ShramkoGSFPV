@@ -1,7 +1,7 @@
 // The voxel view's frame rate keeper (lane voxview, V3): slow frames halve the near budgets' share
 // down to a floor, fast frames give it back only after several looks in a row. Pure numbers.
 import { describe, expect, it } from 'vitest';
-import { drawnShare, keeperStep, KEEPER_MIN, KEEPER_FAST_TURNS, KEEPER_SLOW_MS, KEEPER_FAST_MS } from '../../../apps/fly/src/voxel-keeper';
+import { drawnShare, fillLeftS, keeperStep, KEEPER_MIN, KEEPER_FAST_TURNS, KEEPER_SLOW_MS, KEEPER_FAST_MS } from '../../../apps/fly/src/voxel-keeper';
 
 describe('voxel frame rate keeper', () => {
     it('halves the share on slow frames, never under the floor', () => {
@@ -53,5 +53,16 @@ describe('voxel view: the share in the walls line', () => {
     });
     it('a mesh drawn at another level than planned is not counted', () => {
         expect(drawnShare(plan, (k) => (k === -5 ? 2 : k === 1 ? 0 : 1)).drawn).toBe(2);
+    });
+});
+
+describe('voxel view: time left while the whole scene fills', () => {
+    it('follows the pace so far, and says nothing with no pace or when full', () => {
+        expect(fillLeftS(4000, 40)).toBe(6);
+        expect(fillLeftS(9000, 90)).toBe(1);
+        expect(fillLeftS(100, 99)).toBe(1);
+        expect(fillLeftS(5000, 0)).toBeNull();
+        expect(fillLeftS(5000, 100)).toBeNull();
+        expect(fillLeftS(0, 50)).toBeNull();
     });
 });
