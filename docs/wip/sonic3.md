@@ -68,7 +68,48 @@ Stage S1-count-a-course (train 3 wave 3, last finishing lane):
   passes the worker's 'progress' steps, feature.ts courseOf says them through 'sonic.say.text' and stops the clock at the
   answer. Test sonic-course-speech 1 of 1; mutation control (the pacer not primed) fails by assertion (new file, no old
   version); sonic-scan-course 7 of 7; apps/fly tsc 0 errors. Not heard in a browser yet (the pass-3 runs use the dist of 04e072fc).
-- [ ] LEFT after pass 2, in this order:
+- [x] Pass 3, item D: r11 read the craft only after the intro; Tunis flew 21.8 m blind into a wall with W held, Wroclaw and
+  Housefly crashed ('stuck-flipped') 3.4 to 4.3 s after the press. r11 now reads the craft AT the first cue and lets W go there
+  (3d119c47); lives counted up to the cue, later ones in switchOn.livesAfterCue. r11 miss records name the gate flown before
+  the attempt ended (fe62e736; pass 2 named g1 for a miss at g10).
+- [x] Pass 3 counted runs (release 04e072fc = one-lap course, before 700d63c1/3d119c47 for the page; walls 70b50d42 v1 10 cm
+  and d10c5638 v1 5 cm in dist/walls; render off, no GPU lock, port 5830, Z5_FLIGHT_S 300; TAG=f, evidence
+  U:/Temp/gsfpv-train3/sonic3/s1/f-*.json and f-*.log, summary by s1/sum.py):
+  | Run | N to gate 1 | course | flight | median / max m/s | switch on before / at cue, lives | checks |
+  |---|---|---|---|---|---|---|
+  | Tunis 887f27aa 3 m/s (old probe) | 26.1 s | NOT counted: attempts 1 and 2 missed g10 (0.9 m from its centre at 3.9 m/s, the hum 90 deg right, true bearing 9 to 40 deg, aim 3 m beyond the gate); attempt 3 passed g10 and was at g16 or g17 at the cap | 303 s | 1.0 / 2.99 | 6.64 / 0.22 (old read, after the intro) | 8 of 10 |
+  | Wroclaw 70b50d42 3 m/s | 25.1 s | COUNTED pass to the end: 24 gates, attempt 2 (attempt 1 missed at g6 at 37 s), fly.best-time | 262 s | 1.03 / 2.99 | 6.62 / 7.47, none | 9 of 10 |
+  | Housefly d10c5638 3 m/s | 119.0 s | COUNTED pass to the end: 3 gates, attempt 1, no miss | 35 s | 0.22 / 2.8 | 6.64 / 7.74, none | 9 of 10 |
+  First counted course on Wroclaw (the owner's big scan, published walls 10 cm). The switch-on check passes with the new read
+  on Wroclaw and Housefly. The failed check of both: "speed kept on the switch off" (the precondition: the craft had landed
+  after the pass, below the "moving" bound). Tunis flight life spy (f-887f27aa-3.json flight.spy): respawnStart + life
+  'manual-start' at 73.1 s and 168.5 s (the retry of attempts 2 and 3 places the craft at the course start), 'crash' at 115.9 s,
+  'stuck-flipped' at 129.1 s: the pass-2 "back near the start" was the runner's retry place after a failed attempt, not a
+  crash loop (pass 2 had no miss record because the record named the wrong gate: fixed in fe62e736). The bouncing between y
+  2.1 and -0.4 at the start is not explained (not measured in pass 3).
+  Tunis 5, Wroclaw 5 (same batch) were stopped at the reply budget before they ran.
+- [ ] LEFT after pass 3, in this order:
+  1. Tunis g10 miss: rerun Tunis 3 with the fixed miss record (release build first: the page code of 700d63c1 is not in dist)
+     and read the g10 record: craft in the gate frame (side and crossing), the gate's normal against the leg (the hum went 90
+     deg right 1.4 m before the gate: the craft probably came at g10 along its plane; a guess). If the course lays a gate whose
+     normal is far from the leg into it, the gate aim (package src/lesson/gate-aim.ts) must lead around to the entry side
+     earlier (the approach point while off the cone); else the generator's sound course needs gentler turns.
+  2. Median speed: the probe pilot holds about 1 m/s at "3 m/s" (W pulsed only with the hum within about 30 deg and level).
+     The acceptance asks for 3 m/s or faster: make the pilot hold speed through small corrections (W with the hum within 45
+     deg, turn while moving), a rule a human can do from the cues; Z5_FLIGHT_S can go above 300 for render-off runs (no GPU lock).
+  3. Housefly N to gate 1 took 119 s (pass 2: 49.6 s): not measured why (the walls 5 cm and the worker's tries; course-speech
+     now says the steps). Read f-d10c5638-3.log course lines.
+  4. 5 m/s on Tunis and Wroclaw: NOBUILD unset (page code changed): JOBS="887f27aa:3 887f27aa:5 70b50d42:5" TAG=g bash
+     U:/Temp/gsfpv-train3/sonic3/s1/pass2.sh (detached, about 6 min a run).
+  5. Hear course-speech in the browser (spoken tail of a run after the build of 700d63c1: sonic.say.text lines between
+     courseMaking and courseReady).
+  6. Item F: no attempt time limit in a scan course at any speed (scan-free attemptLimitS null; read in code: runner.ts 1200);
+     the reason of a failed attempt is said only when the lesson offers the next one (runner.ts endAttempt: attempts 1 and 2
+     say progress, retry, hint). Saying the reason on every failed attempt changes all lessons' speech schedules (package
+     lesson-schedule fixtures): a package stage of its own, or an opt-in field for the scan course.
+  7. Highest clean speed per scan (item G): only 3 m/s known (Wroclaw and Housefly counted, Tunis not).
+  8. gates.py --only vitest,architecture,i18n,b18 on the head (not run in pass 3).
+- [x] (superseded by the pass 3 list) LEFT after pass 2, in this order:
   A. Tunis 3 m/s: what puts the craft back near the start after g4 and keeps it bouncing between y 2.1 and -0.4 (trail of
      d-887f27aa-3.json, 285 to 299 s). Guess, not measured: a crash respawn of the pilot's crash rule that goes to the course
      start (course3 ties the course to the respawn: apps/fly/src/app/builtin/course.ts or respawn.ts, outside this lane) and
@@ -679,3 +720,4 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - 2026-11-15 Z5-prove: most turns went to waiting for browser runs (GPU lock held 15 min by another job, then 10 to 15 min per
   run); one script queueing every run with the next one's setup would have cut the waits to one call; the walls-built case
   should have been run first with rendering on, as the walls lane did.
+- 2026-11-15 S1 pass 3: most turns went to reading the 1388-line probe and the long status file in slices, and to waiting for runs; the batch of 5 runs (30 min) did not fit in the budget, so 2 were stopped. Cheaper: start the batch in the first reply (release build and runs detached), and keep one summary script that prints gates, miss gate, spy and switch-on in one call.
