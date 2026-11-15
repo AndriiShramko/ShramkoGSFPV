@@ -95,6 +95,9 @@ async function watch(page, ms, ok = () => false) {
         s = await page.evaluate(READ);
         const l = s.sonic?.lastLine;
         if (l && lines[lines.length - 1] !== l) lines.push(l);
+        // lane mix M1: the course's next gate over time with the craft and the last life decision (why progress changed)
+        const tr = await page.evaluate(() => { const g = window.__gsfpv, se = g.session, d = se.director && se.director.last; return { next: g.course ? g.course.next : null, pilot: window.__cp ? window.__cp.mode : null, y: se.runner.sim.s[1], tick: se.runner.sim.tick, life: d ? { kind: d.kind ?? null, tick: d.tick ?? null, sampleTick: d.sampleTick ?? null, reason: d.reason ?? null } : null }; }).catch(() => null);
+        if (tr && (out.trace = out.trace || []) && (out.trace.length === 0 || out.trace[out.trace.length - 1].next !== tr.next || JSON.stringify(out.trace[out.trace.length - 1].life) !== JSON.stringify(tr.life))) out.trace.push({ s: +((Date.now() - t) / 1000).toFixed(2), ...tr });
         if (ok(s) || Date.now() - t > ms) break;
         await page.waitForTimeout(250);
     }

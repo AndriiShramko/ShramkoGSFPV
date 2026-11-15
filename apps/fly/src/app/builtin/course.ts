@@ -14,7 +14,7 @@
 // table, course/editor/keys.ts; its window, course/editor/panel.ts): select, move, turn, shape, size, add and delete gates,
 // every change re-proven on the walls (packages/tracks editor.ts); "Save as my course" posts a pilot's course (a fork of a
 // saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
-import type { TrackFile } from '@shramko/sonic-fpv';
+import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
 import { liveSearch } from '../env';
 import type { Feature, FlightContext } from '../context';
@@ -23,6 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
+import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize, soundGates } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -71,8 +72,12 @@ export const course: Feature = {
         let adminLive = false;
         ctx.hook.course = hook;
         // stage G4-prove: the probes read where the gates stand (flown frame) to fly through them and draw them from above
-        hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]] })) : []);
+        // course4 C4: and each gate's shape (the elements probe passes every kind)
+        hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]], shape: { ...g.shape } })) : []);
         hook.guide = () => ({ ...hud.guideState });
+        // lane course4: the START / FINISH banners, the number plate, the lap's splash and the results card as drawn
+        hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
+        hook.splash = () => ({ ...hud.splashState });
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
@@ -164,7 +169,9 @@ export const course: Feature = {
                 sync();
                 return;
             }
-            stage.show(run.gates);
+            // lane course4 (S1): the START / FINISH gate checkered with its banner, a checkered line on the ground under it
+            const col = ctx.session.collision;
+            stage.show(run.gates, gateRoles(run.gates.length, run.track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
             shownNext = -2;
             frame();
         };
@@ -191,18 +198,31 @@ export const course: Feature = {
 
         const frame = (): void => {
             if (!run || !hook.on || ed) return;
+            // lane mix (X2): while Fly by Sound is on (ctx.sonic) a flat square or cube frame passes by its ball
+            run.byEar(!!ctx.sonic);
             const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
             if (ev === 'lap' || ev === 'done') {
                 const last = v.lastLapMs ?? 0;
+                // lane course4 (S4, S5): the best is read before this lap writes it, so the splash shows the gain against it
                 const before = readBest(keyOf(run.track));
-                // lane onecourse fixes (review OC-2): the lap and the course end are said to Fly by Sound too, not only shown
-                const line = before === null || last < before ? t('course.best', { time: lapClock(last) }) : t('course.lapDone', { time: lapClock(last) });
-                if (before === null || last < before) writeBest(keyOf(run.track), last);
-                ctx.hud.flash(line, before === null || last < before ? 3000 : 2500);
-                // lane quiet2 (review QW-1): with the narrator off the lap's notes say it (the package's own 'lap' cue);
-                // lane quiet3 (the lead's M3): the course's end plays the finish notes (the package's 'fanfare')
-                sayLine(line, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' });
+                const end = lapEnd(ev, last, before, v.lapTimes, t);
+                if (end.best) writeBest(keyOf(run.track), last);
+                const mode = lapSplashMode(ctx.prefs.get('course.lapSplash'));
+                const now = performance.now();
+                const c = end.card;
+                if (c) {
+                    hud.card(c, end.splash, mode, {
+                        title: t('course.card.title'), total: t('course.card.total', { time: c.total }), best: t('course.card.best', { time: c.best }),
+                        laps: c.laps.length > 1 ? c.laps.map((time, i) => t('course.card.lap', { n: i + 1, time })) : []
+                    }, now);
+                } else hud.splash(end.splash, mode, end.said, now);
+                // lane onecourse fixes (review OC-2), kept by course4 review CU-2: the lap and the course end are said to
+                // Fly by Sound too, not only shown; at the end the card's title and total follow the lap's line.
+                // Review CV-1: with the narrator off the lap's notes (lane quiet2, QW-1) and the course end's finish notes
+                // (lane quiet3, the lead's M3) still say it.
+                sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' });
             }
+            hud.tick(performance.now());
             const next = v.running || v.next >= 0 ? v.next : -1;
             if (next !== shownNext) {
                 stage.setNext(next, run.path, run.track.laps > 1);
@@ -214,7 +234,7 @@ export const course: Feature = {
             const done = !v.running && v.laps >= v.lapsPerRun;
             const g = run.gates[target];
             const cam = done || !g ? null : guideCamera();
-            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target);
+            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target, gateRole(target, run.gates.length, run.track.laps > 1));
             sync();
         };
         /** the drawn camera in the flown world (the gates are drawn at their flown places, course/view.ts) */
@@ -258,7 +278,13 @@ export const course: Feature = {
             hook.progress = null;
         };
 
-        const fail = (problem: string, text: string): void => {
+        /** course4 review CU-4: the Scene size the next generate() sets first (after a 'no course fits') */
+        let resizeTo: number | null = null;
+        /** course5 review CV-3: the Scene size the 'no course fits' line was said at; resizeTo holds only while it is unchanged */
+        let resizeFrom = 1;
+        /** course5 review CV-4: the Scene sizes that gave no course in this scene (cleared with the scene) */
+        const noCourseAt = new Set<number>();
+        const fail =(problem: string, text: string): void => {
             stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
@@ -327,7 +353,17 @@ export const course: Feature = {
                 ctx.hud.flash(t('course.server.loaded', { n: tr.gates.length }), 4000);
                 return;
             }
-            if (!m.track) return fail(m.short ? 'too few gates' : 'nothing fits', t('course.none'));
+            if (!m.track) {
+                // course4 review CU-4: no dead end; the line names the Scene size the next Shift+G sets, and that press sets it
+                // and builds again (Forest Floor at x15, x20, x100 gave no course for any seed)
+                const sc = ctx.hook.scale;
+                const size = sc ? sc.size() : 1;
+                resizeTo = sc ? noCourseSize(size, noCourseAt) : null;
+                noCourseAt.add(size);
+                resizeFrom = size;
+                const x = (v: number): string => String(Math.round(v * 100) / 100);
+                return fail(m.short ? 'too few gates' : 'nothing fits', resizeTo !== null ? t('course.noneResize', { s: x(size), to: x(resizeTo) }) : t('course.none'));
+            }
             const tr = m.track;
             const mine = job;
             const show = (): void => {
@@ -429,6 +465,21 @@ export const course: Feature = {
         };
 
         const generate = (seed: number): void => {
+            // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
+            // scene has it (scale.ts pending), then builds
+            const sc = ctx.hook.scale;
+            // course5 review CV-3: a size the pilot changed himself since the line drops it
+            if (resizeTo !== null && sc && Math.abs(sc.size() - resizeFrom) > 1e-6) resizeTo = null;
+            if (resizeTo !== null && sc && !busy) {
+                const to = resizeTo;
+                resizeTo = null;
+                sc.set(to);
+                const wait = (n: number): void => {
+                    if (sc.pending() !== 1 && n < 50) return void window.setTimeout(() => wait(n + 1), 200);
+                    generate(seed);
+                };
+                return wait(0);
+            }
             const s = ctx.session;
             const w = walls();
             if (!w) return wallsFirst(() => generate(seed));
@@ -447,7 +498,12 @@ export const course: Feature = {
                 spawn: [s.spawn[0], s.spawn[1], s.spawn[2]],
                 seed, scene: { id: s.scene.id, version: s.scene.version },
                 transform: flownTransform(),
-                created: new Date().toISOString()
+                created: new Date().toISOString(),
+                // course4 review CU-1: Fly by Sound asks its course through this generate() too (lane onecourse); the ear
+                // pilot was measured on single upright gates only, so the competition elements are for the eyes' mode
+                elements: courseElements(ctx.sonic),
+                // course5 Z2 (A3, review CU-7): the ladder's smallest gate is sized by the craft that is flown
+                craftRadiusM: s.params?.boundRadius
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);
@@ -555,8 +611,15 @@ export const course: Feature = {
         // lane onecourse (message 52): the course in the scene for Fly by Sound: the course shown, its next gate (the same objects
         // the lap timer passes) and Shift+G's own action (D1, D2). No change event: the sound mode reads inUse() every frame (lead's
         // decision P3, review OC-6: nothing listened to it)
+        // lane mix (X1, message 52): every course in the scene is handed over, a course with elements too, with its progress; a
+        // flat square or cube frame as the zone of its ball (soundGates), built once per course so the objects stay the same
+        let earGates: { of: CourseRun; gates: readonly SonicObject[] } | null = null;
+        const gatesByEar = (r: CourseRun): readonly SonicObject[] => {
+            if (earGates?.of !== r) earGates = { of: r, gates: soundGates(r.gates) };
+            return earGates.gates;
+        };
         hook.sound = {
-            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: run.gates } : null),
+            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: gatesByEar(run) } : null),
             generate: () => generate(pressSeed())
         };
         // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene
@@ -601,6 +664,9 @@ export const course: Feature = {
         ctx.events.on('session', () => {
             closeEdit(true);
             job++;
+            // course5 review CV-3, CV-4: a 'no course fits' size belongs to the scene it was said in
+            resizeTo = null;
+            noCourseAt.clear();
             disarm();
             busy = false;
             checking = null;
@@ -633,8 +699,10 @@ export const course: Feature = {
             run = new CourseRun(track, ctx.session.transform, null);
             provenOn = ctx.session.collision;
             hook.on = true;
-            stage.show(run.gates);
-            stage.setNext(ed.selected, run.path, track.laps > 1);
+            // review CU-10: the editor shows START / FINISH as the flight does, and no number plate on the selected gate
+            const col = ctx.session.collision;
+            stage.show(run.gates, gateRoles(run.gates.length, track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
+            stage.setNext(ed.selected, run.path, track.laps > 1, false);
             // stage F1-finish: the selected gate magenta, a failing gate red (tracks-plan 2.11)
             const paints = editPaints(ed.course.gates.map((g) => g.id), ed.selected, ed.problems);
             stage.paintEdit(paints);

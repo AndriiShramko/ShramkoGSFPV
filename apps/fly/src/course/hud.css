@@ -74,3 +74,88 @@
 .course-guide.behind-left::before {
     content: '\21BA';
 }
+/* Lane course4 (lead decisions S4 and S5; course/hud.ts splash, card): the lap's time when a lap ends, centred in the upper
+   middle (its centre at 20 % of the height, never in the middle third where the pilot aims), digits 8 % of the view's height,
+   no box, a soft shadow; green for a new best, white otherwise; 'small' half that size. The results card at the end of the
+   last lap in the same place. hud.ts fades it by opacity; it never takes a pointer or a key. While it shows the clock's block
+   dims (the two overlap at 1080 p). */
+.course-splash {
+    position: absolute;
+    left: 50%;
+    top: 20vh;
+    transform: translate(-50%, -50%);
+    max-height: 26vh;
+    overflow: hidden;
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+    color: #fff;
+    font: 800 8vh/1 system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .75), 0 0 14px rgba(0, 0, 0, .45);
+    z-index: 5;
+}
+.course-splash.small {
+    font-size: 4vh;
+}
+.course-splash.best {
+    color: #a6ff1a;
+}
+.course-splash-delta {
+    font-size: .45em;
+    line-height: 1.2;
+}
+.course-splash.card {
+    font-size: 6vh;
+}
+.course-splash.card.small {
+    font-size: 3.4vh;
+}
+.course-card-title,
+.course-card-line,
+.course-card-lap {
+    color: #fff;
+    font-size: .4em;
+    font-weight: 700;
+    line-height: 1.25;
+}
+.course-card-lap {
+    font-weight: 600;
+    /* course4 review CU-8: the laps wrap inside a narrow (portrait) view instead of running off both sides */
+    max-width: 92vw;
+    white-space: normal;
+}
+.course-splash[hidden],
+.course-splash.course-covered,
+.hud-off .course-splash {
+    display: none;
+}
+/* Course5 Z1: the clock's block is hidden (not dimmed) while the splash or the card shows: dimmed, its lines showed through
+   the card (course4-finish-card-wroclaw at 1280x720). The splash says the lap's time meanwhile. */
+.course-hud.course-dim {
+    visibility: hidden;
+}
+/* Course5 Z1: a short view (a phone on its side, 844x390): the top bar's buttons fill the upper third, so the clock's block
+   goes to the lower right corner over the 'crashes' line and the splash and the card to the lower middle; nothing stands
+   in the middle third (course-finish-probe.mjs measures the rectangles). Font sizes here are design values. */
+@media (max-height: 500px) {
+    .course-hud {
+        top: auto;
+        left: auto;
+        right: max(16px, env(safe-area-inset-right));
+        bottom: calc(max(14px, env(safe-area-inset-bottom)) + 26px);
+        transform: none;
+        text-align: right;
+        font-size: 0.7rem;
+        line-height: 1.25;
+    }
+    .course-time {
+        font-size: 1.15rem;
+    }
+    .course-splash {
+        top: auto;
+        bottom: calc(max(14px, env(safe-area-inset-bottom)) + 26px);
+        transform: translateX(-50%);
+        max-height: 32vh;
+    }
+}
