@@ -1099,6 +1099,13 @@ async function pauseItemText(page: Page): Promise<string | null> {
     const txt = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySound"]')?.textContent?.trim() ?? null);
     await page.keyboard.press('KeyP');
     await sleep(800);
+    // sonic3 S2: the off record of pass 3 read a paused flight (Tunis 5.12 m/s before and after, moved 0): when the menu is
+    // still up, Continue closes it, as a pilot does
+    const still = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.continue"]') !== null);
+    if (still) {
+        await page.click('.pause-menu [data-action="pause.continue"]').catch(() => undefined);
+        await sleep(800);
+    }
     return txt;
 }
 
@@ -1147,7 +1154,23 @@ function livesAfter(log: object[], t0: number): object[] {
 async function r11Off(page: Page, tag: string, run: Record<string, unknown>): Promise<void> {
     const labelOn = await pauseItemText(page);
     await lifeSpy(page);
-    await page.keyboard.down('KeyW');
+    // sonic3 S2: after a counted course the craft has landed (Wroclaw 0.11, Housefly 0.19 m/s at the off): the pilot lifts
+    // off with Space and W first, so the check sees a moving craft (the precondition, not the switch)
+    const takeoff = await page.evaluate((i: number[]) => {
+        const s = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv.session.sim.s;
+        const ses = (window as unknown as { __gsfpv: { session: { paused?: boolean } } }).__gsfpv.session;
+        return { v: Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0), armed: s[i[6]] ?? -1, crashed: s[i[7]] ?? -1, paused: ses.paused ?? null, menu: document.querySelector('.pause-menu') !== null };
+    }, [...POSE_IDX, S.armed, S.crashed]);
+    run.offTakeoff = takeoff;
+    if (takeoff.v < 1) {
+        // the sighted pilot looks where it is open before lifting off forward (q2 Tunis: a crash into a wall after the off)
+        run.offOpenSide = await turnToOpenSide(page);
+        await page.keyboard.down('Space');
+        await sleep(1500);
+        await page.keyboard.down('KeyW');
+        await sleep(1000);
+        await page.keyboard.up('Space');
+    } else await page.keyboard.down('KeyW');
     await sleep(1500);
     const st = await page.evaluate(async (i: number[]) => {
         const h = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv;
@@ -1175,8 +1198,58 @@ async function r11Off(page: Page, tag: string, run: Record<string, unknown>): Pr
     check(`${tag}: the pause item says "${ENTRY_EN['sonic.menu.hereOff']}" while the mode is on`, labelOn !== null && labelOn.includes(ENTRY_EN['sonic.menu.hereOff'] ?? '?'), off);
     check(`${tag}: Backslash switches it off where the craft is (moved under 0.1 m beyond its own travel)`, moved < 0.1 + sp(st.before.v) * dt, off);
     check(`${tag}: the speed is kept on the switch off (at least half; the craft was moving)`, sp(st.before.v) > 0.5 && sp(st.after.v) >= 0.5 * sp(st.before.v), off);
-    check(`${tag}: the switch off starts no new life`, off.lives.length === 0, off.spy);
+    // sonic3 S2: a 'crash' life after the off is the pilot's own crash under the ordinary rules (the life the switch would
+    // start has another reason); it is kept in the record and not counted against the switch
+    const switchLives = off.lives.filter((e) => !['crash', 'stuck-flipped'].includes((e as { life?: string }).life ?? ''));
+    check(`${tag}: the switch off starts no new life`, switchLives.length === 0, off.spy);
     check(`${tag}: after the switch off no lesson runs and the item says "${ENTRY_EN['sonic.menu.here']}"`, after.lesson === null && labelOff !== null && labelOff.includes(ENTRY_EN['sonic.menu.here'] ?? '?') && !labelOff.includes(ENTRY_EN['sonic.menu.hereOff'] ?? '?'), off);
+}
+
+/**
+ * sonic3 S2: before W, the sighted pilot of the ordinary flight looks around and turns to the open side, as the owner does
+ * (Tunis: the spawn faces a wall about 22 m ahead). Twelve horizontal rays of the scan's collision from the craft, 40 m
+ * (estimate); the craft yaws with E or Q until its nose is within 12 degrees of the farthest one (8 s at most).
+ */
+async function turnToOpenSide(page: Page): Promise<object> {
+    const look = (): Promise<{ fwd: number[]; rays: number[]; best: number[] | null }> => page.evaluate(() => {
+        const ses = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array }; collision: { queryRay: (...a: number[]) => { x: number; y: number; z: number } | null } | null } } }).__gsfpv.session;
+        const s = ses.sim.s;
+        const [qw, qx, qy, qz] = [s[6] ?? 1, s[7] ?? 0, s[8] ?? 0, s[9] ?? 0];
+        // the body's -z axis rotated by q (the nose)
+        const f = [-(2 * (qx * qz + qw * qy)), -(2 * (qy * qz - qw * qx)), -(1 - 2 * (qx * qx + qy * qy))];
+        const h = Math.hypot(f[0]!, f[2]!) || 1;
+        const fwd = [f[0]! / h, 0, f[2]! / h];
+        const rays: number[] = [];
+        let best: number[] | null = null;
+        let bestD = -1;
+        for (let k = 0; k < 12; k++) {
+            const a = (k * Math.PI) / 6;
+            const d = [fwd[0]! * Math.cos(a) - fwd[2]! * Math.sin(a), 0, fwd[0]! * Math.sin(a) + fwd[2]! * Math.cos(a)];
+            const hit = ses.collision?.queryRay(s[0]!, s[1]!, s[2]!, d[0]!, 0, d[2]!, 40) ?? null;
+            const dist = hit ? Math.hypot(hit.x - s[0]!, hit.y - s[1]!, hit.z - s[2]!) : 40;
+            rays.push(Math.round(dist * 10) / 10);
+            if (dist > bestD + 0.5) { bestD = dist; best = d; }
+        }
+        return { fwd, rays, best };
+    });
+    const first = await look();
+    const target = first.best;
+    let turnedS = 0;
+    if (target) {
+        const t0 = Date.now();
+        for (; Date.now() - t0 < 8000; ) {
+            const now = await look();
+            const cy = now.fwd[2]! * target[0]! - now.fwd[0]! * target[2]!;
+            const dot = now.fwd[0]! * target[0]! + now.fwd[2]! * target[2]!;
+            if (dot > Math.cos((12 * Math.PI) / 180)) break;
+            await page.keyboard.down(cy < 0 ? 'KeyE' : 'KeyQ');
+            await sleep(60);
+            await page.keyboard.up(cy < 0 ? 'KeyE' : 'KeyQ');
+        }
+        turnedS = (Date.now() - t0) / 1000;
+    }
+    const last = await look();
+    return { raysBefore: first.rays, raysAfter: last.rays, turnedS };
 }
 
 async function r11(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
@@ -1203,14 +1276,41 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await sleep(800);
         // the craft moving (SO-1): W held, the life spy on, then the one press: Backslash; nothing else is pressed until the first cue
         await lifeSpy(page);
+        // sonic3 S2: the sighted pilot turns to the open side first (Tunis 6.63 to 0.18 m/s at the first cue)
+        const openSide = await turnToOpenSide(page);
         await page.keyboard.down('KeyW');
         await sleep(1500);
         // Y2 pass 2: pose, crashed and armed at the press and at the first cue, to tell a wall contact from a brake
-        const craftNow = (): Promise<{ v: number; t: number; pos: number[]; vel: number[]; crashed: number; armed: number }> => page.evaluate((i: number[]) => {
-            const s = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array } } } }).__gsfpv.session.sim.s;
+        // sonic3 S2: and the sim tick (a frame that runs many ticks at once shows as ticks far over the page time)
+        const craftNow = (): Promise<{ v: number; t: number; tick: number; pos: number[]; vel: number[]; crashed: number; armed: number }> => page.evaluate((i: number[]) => {
+            const sim = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array; tick: number } } } }).__gsfpv.session.sim;
+            const s = sim.s;
             const r = (x: number | undefined): number => Math.round((x ?? 0) * 100) / 100;
-            return { v: Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0), t: performance.now(), pos: [r(s[i[0]]), r(s[i[1]]), r(s[i[2]])], vel: [r(s[i[3]]), r(s[i[4]]), r(s[i[5]])], crashed: s[i[6]] ?? -1, armed: s[i[7]] ?? -1 };
+            return { v: Math.hypot(s[i[3]] ?? 0, s[i[4]] ?? 0, s[i[5]] ?? 0), t: performance.now(), tick: sim.tick, pos: [r(s[i[0]]), r(s[i[1]]), r(s[i[2]])], vel: [r(s[i[3]]), r(s[i[4]]), r(s[i[5]])], crashed: s[i[6]] ?? -1, armed: s[i[7]] ?? -1 };
         }, [...POSE_IDX, S.crashed, S.armed]);
+        // sonic3 S2: the sim's events (contact, crash, respawn, disarm) from the press on, gathered in the page every 10 ms
+        await page.evaluate(() => {
+            const w = window as unknown as { __simEv?: object[]; __simEvT?: number; __gsfpv: { session: { runner?: { events: { type: string; tick: number }[] }; sim: { tick: number } } } };
+            if (w.__simEvT) clearInterval(w.__simEvT);
+            const ses = w.__gsfpv.session;
+            const out: object[] = [];
+            w.__simEv = out;
+            // index into the runner's list; the frame loop splices it past 2048 entries (then the tick says where to go on)
+            let idx = ses.runner?.events.length ?? 0;
+            let lastTick = ses.sim.tick;
+            const tEnd = performance.now() + 20000;
+            w.__simEvT = setInterval(() => {
+                const ev = ses.runner?.events ?? [];
+                if (ev.length < idx) idx = 0;
+                for (; idx < ev.length; idx++) {
+                    const e = ev[idx]!;
+                    if (e.tick < lastTick || out.length >= 400) continue;
+                    out.push({ ...e, at: Math.round(performance.now()) });
+                }
+                lastTick = Math.max(lastTick, ses.sim.tick);
+                if (performance.now() > tEnd) clearInterval(w.__simEvT);
+            }, 10) as unknown as number;
+        });
         const onBefore = await craftNow();
         const t0 = Date.now();
         await page.keyboard.press('Backslash');
@@ -1240,7 +1340,11 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await page.keyboard.up('KeyW');
         const onSpy = (await lifeLog(page)).filter((e) => (e as { t: number }).t >= onBefore.t - 1);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-inplace.png`, fullPage: false });
-        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1).filter((e) => (e as { t: number }).t <= atCue.t), livesAfterCue: livesAfter(onSpy, atCue.t + 0.001), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed }, spy: onSpy };
+        // sonic3 S2: the sim events of the 0.4 s (400 ticks) after the press, and ticks against page time at the cue
+        await sleep(500);
+        const simEv = (await page.evaluate(() => (window as unknown as { __simEv?: object[] }).__simEv ?? [])) as { tick: number; type: string }[];
+        const after04 = simEv.filter((e) => e.tick >= onBefore.tick && e.tick <= onBefore.tick + 400);
+        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1).filter((e) => (e as { t: number }).t <= atCue.t), livesAfterCue: livesAfter(onSpy, atCue.t + 0.001), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed, tick: onBefore.tick }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed, tick: atCue.tick, ticksOverPageMs: Math.round(atCue.tick - onBefore.tick - (atCue.t - onBefore.t)) }, openSide, simEvents04: after04.slice(0, 40), simEventsToCue: simEv.filter((e) => e.tick >= onBefore.tick && e.tick <= atCue.tick).map((e) => e.type), spy: onSpy };
         const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null, switchOn };
         (result.r11 as { runs: object[] }).runs.push(run);
         check(`${tag}: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue`, on !== null && firstCue !== null, run);
@@ -1384,7 +1488,7 @@ async function main(): Promise<void> {
         unlock();
     }
     const passed = checks.filter((c) => c.pass).length;
-    const file = writeEvidence(`sonic-int-review-${which}${site !== '' ? '-live' : ''}`, { site: site !== '' ? site : `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
+    const file = writeEvidence(`sonic-int-review-${which}${site !== '' ? '-live' : ''}${process.env.Z5_TAG ? `-${process.env.Z5_TAG}` : ''}`, { site: site !== '' ? site : `http://127.0.0.1:${PORT}`, release, git: gitSha(), seconds: Math.round((Date.now() - T0) / 1000), passed, total: checks.length, pass: failure === null && passed === checks.length, checks, result, problems });
     console.log(`${passed} of ${checks.length} checks passed in ${Math.round((Date.now() - T0) / 1000)} s; ${file}`);
     process.exit(failure === null && passed === checks.length ? 0 : 1);
 }
