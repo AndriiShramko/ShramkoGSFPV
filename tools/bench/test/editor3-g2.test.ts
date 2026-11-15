@@ -61,6 +61,32 @@ describe('editor3 G2', () => {
         expect(addFacing(eye, at, [0, 5, -10.2])).toEqual(facingFrom(eye, at));
     });
 
+    it('a click ray comes from the edit camera, not from the renderer entity (g2/floor3: the drone pose after a test flight)', async () => {
+        const fc = (await import('../../../apps/fly/src/course/editor/fly-cam')) as unknown as Record<string, unknown>;
+        const camRay = fc['camRay'] as ((c: unknown, x: number, y: number, w: number, h: number, fov: number, hor: boolean) => { o: number[]; d: number[] } | null) | undefined;
+        expect(typeof camRay).toBe('function');
+        const cam = { pos: [9.45, 7.03, 0.13], yaw: 0.8, pitch: -0.3, speed: 4 };
+        const fwd = (fc['camForward'] as (c: unknown) => number[])(cam);
+        // the centre of the canvas: the edit camera's eye, along its forward
+        const mid = camRay!(cam, 960, 540, 1920, 1080, 60, false)!;
+        expect(mid.o).toEqual([9.45, 7.03, 0.13]);
+        for (let i = 0; i < 3; i++) expect(mid.d[i]).toBeCloseTo(fwd[i]!, 9);
+        // the bottom edge: half the vertical field of view below the forward
+        const low = camRay!(cam, 960, 1080, 1920, 1080, 60, false)!;
+        const cosA = low.d.reduce((s, v, i) => s + v * fwd[i]!, 0);
+        expect((Math.acos(cosA) * 180) / Math.PI).toBeCloseTo(30, 6);
+        expect(low.d[1]!).toBeLessThan(mid.d[1]!);
+        // a horizontal field of view: the right edge is half of it to the side, on the same height
+        const right = camRay!({ ...cam, pitch: 0 }, 1920, 540, 1920, 1080, 90, true)!;
+        expect(right.d[1]).toBeCloseTo(0, 9);
+        const f0 = (fc['camForward'] as (c: unknown) => number[])({ ...cam, pitch: 0 });
+        expect((Math.acos(right.d.reduce((s, v, i) => s + v * f0[i]!, 0)) * 180) / Math.PI).toBeCloseTo(45, 6);
+        // the view builds the click ray with it, and gives the entity its pose before the gizmos pick
+        const view = read('apps/fly/src/course/editor/view-mouse.ts');
+        expect(view).toMatch(/const ray = camRay\(this\.cam, /);
+        expect(view).not.toMatch(/cc\.screenToWorld\(/);
+    });
+
     it('the opening line names one set of handles at a time and Move, Turn, Size on the bar, in en, es, pl, ru', () => {
         const words: Record<string, string[]> = {
             en: ['one set of handles', 'Move', 'Turn', 'Size', 'Space'],

@@ -5,9 +5,9 @@
 // editor's window is one of mouse-look.ts CURSOR_WINDOWS, so no pointer lock is held.
 import { Entity, Gizmo, Quat as PcQuat, RotateGizmo, ScaleGizmo, TranslateGizmo, Vec3 as PcVec3 } from 'playcanvas';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
-import { CAM_KEYS, camForward, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
+import { CAM_KEYS, camForward, camRay, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
 import { fromPcQuat, toPcQuat, type FlownPose } from './drag';
-import { pickGate, rayThrough, type Pickable, type Ray } from './pick';
+import { pickGate, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
 
@@ -225,6 +225,8 @@ export class EditView {
     private onOwnPress = (e: PointerEvent): void => {
         this.unmute();
         if (this.suspended || e.target !== this.canvas || e.button !== 0) return;
+        // G2: the gizmos pick with the renderer's camera entity: give it the edit view's pose first (g2/floor3)
+        this.apply();
         const hits = this.byPress.map((h) => {
             // PlayCanvas 2.23.2 TransformGizmo._getSelection(x, y): the gizmo's own shapes under a canvas point, nearest first
             const sel = (h as unknown as { _getSelection?: (x: number, y: number) => unknown[] })._getSelection?.(e.offsetX, e.offsetY);
@@ -319,10 +321,10 @@ export class EditView {
         if (wasDrag || p.look || p.button !== 0) return;
         const r = this.canvas.getBoundingClientRect();
         const cc = this.host.camera.camera as CameraComponent;
-        const far = cc.screenToWorld(e.clientX - r.left, e.clientY - r.top, cc.farClip, new PcVec3());
-        const eye = this.host.camera.getPosition();
-        const ray = rayThrough([eye.x, eye.y, eye.z], [far.x, far.y, far.z]);
+        // G2: the ray from the edit camera's own pose (the entity may hold the drone's pose between frames, g2/floor3)
+        const ray = camRay(this.cam, e.clientX - r.left, e.clientY - r.top, r.width, r.height, cc.fov, cc.horizontalFov);
         if (!ray) return;
+        this.apply();
         if (this.adding && this.host.onPlace) {
             this.adding = false;
             return this.host.onPlace(ray);

@@ -39,6 +39,14 @@ Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
 - [x] gates.py --only vitest,architecture,i18n,b18 on 95a91a95: architecture, i18n PASS; b18 FAIL (editor3-g2.test.ts had
   non-ASCII, fixed in 26ac534e, b18 PASS after); vitest 4793 pass, 1 fail: tools/bench/test/app-dji-rc2.test.ts "answers 60
   ms late" (timing, the release build ran beside it; passes alone 19/19 with editor3-g2). Not re-run in full after 58bb57c2.
+- [x] G2.8 full run on the release of 58bb57c2 (g2/full2/e4.json, lock 06:26:25-06:30:51, Tunis, Wroclaw, keyboard Tunis,
+  1920x1080). PROVEN item 2: kbd-887f27aa space1 mode 'fly' armed true (312 ms), space2 mode 'edit' armed false (320 ms).
+  PROVEN full course: line "The course is full. Delete a gate you do not need first: click it and press the cross on its
+  bar. Then add the new one.", digitInLine false. FAILED item 3 on both scans: the gate is added (24 -> 25) but
+  stand.screen z -2 (behind the camera; Tunis [901,-1138], Wroclaw [941,-922]), problems 6 -> 7 (Tunis) and 2 -> 3
+  (Wroclaw) = the new gate is red; its course-frame pos [0.16, 1, 0] (Tunis) while the selected gate 0 stands at
+  [12.41, 7.72, 0.32]. The two pictures show no gate and a view looking up at the sky from near the ground. Cause not
+  measured yet: G2.9 records the click's ray, wall hit, point and the edit view before the click (746d5c95).
 - [ ] left (next worker, in this order; dist is the release of 58bb57c2, do not rebuild unless apps/fly changes):
   1. `KBD=1 PHONE=0 OUT=U:/Temp/gsfpv-train3/editor3/g2/full2 SCENES=887f27aa,70b50d42 PORT=5804 bash
      U:/Temp/gsfpv-train3/editor3/g1/run.sh` (the 06:15 try waited 9 min on a lock held by others, no record). Read in

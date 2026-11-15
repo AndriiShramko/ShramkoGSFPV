@@ -54,6 +54,34 @@ export function camForward(c: FlyCam): [number, number, number] {
     return [Math.sin(c.yaw) * cp, Math.sin(c.pitch), -Math.cos(c.yaw) * cp];
 }
 
+/**
+ * G2 (measured in g2/floor3): the ray of a click at canvas pixel (x, y) of a w x h canvas, from the edit camera's own pose,
+ * not from the renderer's camera entity: after a test flight in the mode the entity held the drone's pose at the time of the
+ * pointerup (ray origin 0.69 m over the spawn, looking down, while the edit view stood at 7 m), so a floor click put the gate
+ * behind the view inside a wall. `fovDeg` is the camera's field of view, horizontal when `horizontalFov`. No roll (lookAt
+ * with the world up, as setCameraLookAt).
+ */
+export function camRay(c: FlyCam, x: number, y: number, w: number, h: number, fovDeg: number, horizontalFov: boolean): { o: V3; d: V3 } | null {
+    if (!(w > 0 && h > 0 && fovDeg > 0 && fovDeg < 180)) return null;
+    const aspect = w / h;
+    const t = Math.tan((fovDeg * Math.PI) / 360);
+    const tanH = horizontalFov ? t : t * aspect;
+    const tanV = horizontalFov ? t / aspect : t;
+    const nx = (2 * x) / w - 1;
+    const ny = 1 - (2 * y) / h;
+    const f = camForward(c);
+    const sy = Math.sin(c.yaw);
+    const cy = Math.cos(c.yaw);
+    const sp = Math.sin(c.pitch);
+    const cp = Math.cos(c.pitch);
+    const r = [cy, 0, sy];
+    const u = [-sy * sp, cp, cy * sp];
+    const d = [0, 1, 2].map((i) => f[i]! + nx * tanH * r[i]! + ny * tanV * u[i]!);
+    const n = Math.hypot(d[0]!, d[1]!, d[2]!);
+    if (!(n > 1e-9)) return null;
+    return { o: [c.pos[0], c.pos[1], c.pos[2]], d: [d[0]! / n, d[1]! / n, d[2]! / n] };
+}
+
 /** A point one metre ahead of the camera (what setCameraLookAt looks at). */
 export function camTarget(c: FlyCam): [number, number, number] {
     const f = camForward(c);
