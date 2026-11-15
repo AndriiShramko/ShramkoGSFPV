@@ -98,6 +98,33 @@ export function savesUntouched(t: TrackFile, walls: VoxelCollision, transform: S
 }
 
 /**
+ * Review FY-3: a course the Save check refuses untouched loses the gates the check names (a gate in a wall or facing the
+ * wrong way: that gate; a leg through a wall: its far gate, or its near one when the far end is the start or the finish),
+ * one round at a time, until the check passes it. Null when no gate is named (the start itself is in a wall) or none is
+ * left. The proof record keeps the generator's verdict; only its gates change.
+ */
+export function trimToSave(t: TrackFile, walls: VoxelCollision, transform: SceneTransform): TrackFile | null {
+    let cur = t;
+    for (let round = 0; round < t.gates.length; round++) {
+        const problems = wallsCheck(walls, transform, marginOf(cur))(upgradeTrack(cur));
+        if (problems.length === 0) return cur;
+        const ids = new Set(cur.gates.map((g) => g.id));
+        const named = new Set<string>();
+        for (const p of problems) {
+            if (p.code === 'outside' || p.code === 'gate-wall' || p.code === 'gate-direction') named.add(p.gate);
+            else if (p.code === 'leg-wall') named.add(ids.has(p.to) ? p.to : p.from);
+        }
+        // one gate a round, the earliest named: a gate moved into a wall also turns its next gate's way in, and that
+        // gate is mended by the first one's drop (the next round checks again)
+        const drop = cur.gates.findIndex((g) => named.has(g.id));
+        const gates = cur.gates.filter((_, i) => i !== drop);
+        if (gates.length === cur.gates.length || gates.length === 0) return null;
+        cur = { ...cur, gates: gates.map((g, i) => ({ ...g, id: `g${i + 1}` })) };
+    }
+    return null;
+}
+
+/**
  * The first course of at least `gatesMin` gates over COURSE_SCALES (each with SEEDS_PER_SCALE derived seeds); at scale 1
  * the seeds and courses are exactly those of the page's enoughGates before K1.2. Else the course with the most gates.
  */
@@ -107,7 +134,15 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
     let bestOk = false;
     let tried = 0;
     let longest = 0;
-    const end = (): FitResult => ({ track: best, short: best !== null && (best.gates.length < gatesMin || !bestOk), scale: bestScale, tried, proven: best !== null && bestOk });
+    const end = (): FitResult => {
+        // review FY-3: no try passed the Save check: the best one loses the gates the check names (a proof that failed
+        // stays failed: trimming cannot mend it)
+        if (best && !bestOk && provenCourse(best)) {
+            const cut = trimToSave(best, walls, opts.transform);
+            if (cut) return { track: cut, short: cut.gates.length < gatesMin, scale: bestScale, tried, proven: true };
+        }
+        return { track: best, short: best !== null && (best.gates.length < gatesMin || !bestOk), scale: bestScale, tried, proven: best !== null && bestOk };
+    };
     for (const scale of COURSE_SCALES) {
         const params = { ...scaledParams(scale), ...(opts.params ?? {}) };
         let s = opts.seed >>> 0;

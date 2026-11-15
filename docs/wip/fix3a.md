@@ -564,7 +564,17 @@ Logs U:/Temp/gsfpv-train3/fix3b/fixes/. Merged origin/main (two lead notes, docs
       generate.ts closeAt ends the ring only at a gate whose legs home (to the start and to gate 1) are well scanned. Test
       fit.test.ts 'review FY-1' NEG OK (neg_control.py, ref origin/main, fit.ts).
 - [x] FY-2 link.ts bestKey adds '.g<major>' for generator 3 and up; tracks-review TR-10 rows, NEG OK (ref origin/main).
-- [~] FY-3 smallest step: the worker's track message carries proven (worker.ts). Trimming an unproven best is left.
+- [x] FY-3 the worker's track message carries proven (worker.ts); pass 2: fit.ts trimToSave: when no try passes the Save
+      check, the best one (its proof ok) loses one named gate a round (the earliest: gate in a wall, facing wrong, outside,
+      or a leg's far gate) until the check passes it, then proven true. Test fit.test.ts 'review FY-3' NEG OK (neg_control.py,
+      ref 0ea3eea7, fit.ts); the proof record (pathM) stays the untrimmed one's.
+- [x] FY-5 test packages/tracks/test/closing-leg.test.ts: a 48 x 48 m plaza scanned only along its facades (middle share
+      0.00, facades 0.56-1.53); seeds 1-5 give closed rings of 24 gates, every leg incl. last->start and last->gate 1 at
+      least POOR_SHARE at the generator's 1 m points. NEG OK against 6281ec68 (= c5d92269^, generate.ts: a leg crossed a
+      0.00 tile); against 4d96c847^ it passes (the poor-leg drop already kept the legs well; FY-1's closeAt change is
+      proven by fit.test.ts 'review FY-1'). At 0.5 m points seed 3's leg g6->g7 clips a poor tile's corner by 0.2 m
+      (between two 1 m points; left as is: 0.2 m of a 4 m tile).
+- [x] pass 2: packages/tracks vitest 15 files 125 passed; tsc packages/tracks and apps/fly clean.
 - [x] FY-4 startNearSpawn's predicate also needs legWell(start, new gate 1).
 - [x] packages/tracks vitest 14 files 121 passed; tsc packages/tracks and apps/fly clean; tracks-review/finish 13 passed.
 - [x] FY-6 generate.ts: the eye band only when k is 1 and the scan's flown scale is within EYE_SCALE_TOL 0.2 (estimate)

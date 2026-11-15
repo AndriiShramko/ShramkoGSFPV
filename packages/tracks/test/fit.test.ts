@@ -174,6 +174,31 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
     });
 
+    it('review FY-3: when every try is refused by the Save check, the best one comes without the gates the check names', () => {
+        // the real generator; on every try gate 2 is put against the wall at x = 0 after its proof passed
+        const moved: TrackFile[] = [];
+        const allIntoWall = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            if (t.gates.length < 3) return t;
+            const g1 = t.gates[1]!;
+            const b = { ...t, gates: [t.gates[0]!, { ...g1, pos: [0.05, g1.pos[1], g1.pos[2]] as Vec3 }, ...t.gates.slice(2)] };
+            moved.push(b);
+            return b;
+        }) as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, 1, allIntoWall);
+        // control: every try was refused by the Save check untouched
+        expect(moved.length).toBeGreaterThan(0);
+        for (const b of moved) expect(wallsCheck(walls, IDENTITY, marginOf(b))(upgradeTrack(b)).length).toBeGreaterThan(0);
+        expect(r.track).not.toBeNull();
+        expect(r.proven).toBe(true);
+        expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
+        // the moved gate is gone, the others stay
+        const src = moved.find((b) => b.generator!.seed === r.track!.generator!.seed && b.gates.length === r.track!.gates.length + 1);
+        expect(src).toBeDefined();
+        expect(r.track!.gates.some((g) => g.pos[0] === 0.05)).toBe(false);
+    });
+
     it('the smallest scale keeps the ring at RING_MIN_DRONE_DIAMETERS drone diameters', () => {
         const last = COURSE_SCALES[COURSE_SCALES.length - 1]!;
         expect(RING_DIAMETER_M * last).toBeGreaterThanOrEqual(RING_MIN_DRONE_DIAMETERS * 2 * SMALLEST_DRONE_RADIUS_M);
