@@ -352,6 +352,70 @@ Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight chec
 - [ ] Not done in this stage: browser look at the pictures' course on the page (the Node picture is the walls' super
   blocks, not the rendered scan); K1.2 (2f1ddf5f, d10c5638 spawn 62 m and 22 m high).
 
+Stage F4-prove (train 3 wave 2: the owner's path in a browser on Wroclaw and Tunis). Facts in Facts F4.
+
+- [x] Release of a6dc06d8 first (node scripts/build-release.mjs, 1930 files, U:/Temp/gsfpv-train3/course3/f4/build.log).
+- [x] 576b5c7c, 503c5ea2: course-path-probe.mjs at 1920x1080 (VW, VH), one picture of each build's progress, the pilot's
+  rewind (session.rewind, the respawn.rewind key's action) 2 s after the next gate, three Shift+G regenerations (gates,
+  span, height above the ground), the eye point reached by a short led line.
+- [x] Runs (serve-csp 5726, NOBOT=1, GPU lock only around each browser command): U:/Temp/gsfpv-train3/course3/f4/run.sh
+  (phase A dist/walls empty 04:26-04:29 -> path-A.json; phase B stand-in walls 04:31-04:33 -> path-B.json) and run2.sh
+  (stand-in walls 04:38-04:41 -> path-B2.json, walls probes, accept-fly). 0 page errors in all five scan runs.
+- [x] Pictures looked at (U:/Temp/gsfpv-train3/shots/): one line each in Facts F4.
+- [x] accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 on http://localhost:5726 (first line "accept-fly target:
+  http://localhost:5726"): 10 of 10 PASS (f4/accept-fly.log).
+- [x] Walls probes: walls-published-probe 70b50d42 published 5 cm in 3.6 s, no build, tunnel 20 passes 0 penetrations;
+  ab5efa0e offers its build, 404 not an error: both pass. walls-offthread-same-probe ab5efa0e: worker and page walls the
+  same (solid 124612, SHA-256 74c7218a1092), longest long task 7025 ms on the page, 0 ms in the worker.
+- [x] tools/bench/test/a6-reference.test.ts 1/1 passed (no flight, input or collision code changed).
+- [x] gates.py --only vitest,architecture,i18n,b18 on 503c5ea2: all PASS (vitest 147 s; logs U:/Temp/gsfpv-gates-20261115-045318).
+- [ ] Left 1: the walls box line is hard to read over a bright sky (course3-progress-walls.png): fly.css .bake-status
+  has no backdrop (13 px, #d1d5db, text shadow only). Give it the backdrop of .hud-note (rgba(0,0,0,.6), padding).
+- [ ] Left 2: when the course starts, the course note (.hud-note, top centre) is drawn over the walls box's end line
+  "Walls built in 126 s ... its progress follows here." (course3-progress-course.png): both sit at the top centre once
+  the banner "First the walls of this scan, then the course." is gone. Fix in walls.ts endProgress (with a course next,
+  hide the end line when the course note shows) or place the note under the box.
+- [ ] Left 3: course3-wroclaw-pilot.png shows the spawn, not gate 1: before the first flight the camera does not follow
+  a craft the probe moves (the sim position was at the eye point, f4/path-B2.json pilotAt). The probe must take off (W)
+  first. course3-wroclaw-respawn.png is the pilot's view on the course meanwhile.
+- [ ] Left 4: the pilot's rewind went back 12.9 s (backTicks 12914, 12926, 12682), not the respawn.rewindS length; the
+  course followed the rewind correctly (state of that moment). The director's choice of the sample (outside the lane) not
+  looked into.
+- [ ] Left 5: on walls built in the browser one regeneration spanned 103.8 m against 171-198 m for the others (one of 4).
+
+## Facts F4 (the owner's path, release of a6dc06d8, headless 1920x1080, this PC, GPU lock held during each run)
+
+Key by key, what the owner sees:
+- Wroclaw without walls (phase A), Shift+G: 0 s box "Walls: checking the scan size. Step 1 of 3 ... about 2:00 left";
+  1 s "reading the scan. Step 2 of 3, 1 %"; percent and seconds move on; 74 s "1:13 so far; longer than usual, still
+  working"; 93.9 s "building the walls on your graphics card. Step 3 of 3, 71 %. 1:33 so far, about 0:30 left"; 123.5 s
+  "2:03 so far; longer than usual, still working"; 132.4 s "Walls built in 126 s. Crashes are on. The walls are rough
+  in this scan. Now the course is being built; its progress follows here." and at once the course note "Course: finding
+  the free space. Step 1 of 2, 0 %. about 0:10 left"; 136.4 s "placing the gates and obstacles. Step 2 of 2, 64 %, about
+  0:05 left"; 139.5 s "Gates: 24. Fly through gate 1 to start the clock." with the gates drawn. Walls built in the worker
+  (read 92.8 s, voxelize 33.4 s, level 2, 5 cm). Longest time the shown text stood still: 2.0 s; the page answered
+  the probe within 1.5 s; 1 long task (271 ms) from Shift+G to the course.
+- Wroclaw with the published walls stand-in, Shift+G to the gates drawn: 5.1 s and 6.0 s (two runs); Tunis 6.9 s and 8.5 s.
+  Longest still text 2.0 and 1.9 s (Tunis 1.3, 1.4 s); long tasks at most 50 ms.
+- Gates 1-3 passed (clock 0:00.43-0:00.46, 1.34-1.40, 2.36). Crash into a wall at 12 m/s with respawn at the last place
+  (kind 'rewind', put back 1.9-6.4 m): next gate stays 4, clock 8.36 s before, then 10.56-11.00 s and 2 s later
+  12.56-13.00 s (runs on), all four runs (A, B, B2 Wroclaw; Tunis the same).
+- Pilot's rewind 2 s after passing gate 4 (clock 16.43-16.83 s): gate 4 is given back (next 4 -> 3, "Gate 4 of 24"),
+  clock 3.95, 4.34, 3.96 s (Wroclaw), 4.18, 3.75 s (Tunis): the course of the moment the rewind went to (after gate 3).
+- R: gate 1, clock 0:00.00, "Gate 1 of 24" in every run.
+- Regenerate three times (Shift+G with a course; 3.7-11.1 s each). Wroclaw stand-in: first 24 gates span 180.3 / 173.5 m;
+  regenerations 24, 24, 24 gates, span 147, 193, 191.7 m (B) and 205.2, 195.5, 190.6 m (B2), height above the ground
+  2.25-5.25, 2.2-5.75, 2.1-5.4 m. Wroclaw built walls (A): 173.5 then 198.1, 171.1, 103.8 m. Tunis: 24 then 22, 24, 24
+  and 24, 24, 24 gates, span 95.6-112 m, height 1.65-4.25 m (0-4 gates a course without ground within 80 m under them).
+- Pictures: course3-progress-walls.png: box line "reading the scan. Step 2 of 3, 19 %. 0:20 so far, about 1:30 left"
+  with the moving bar under it, under the banner; light text on the sky, hard to read (Left 1).
+  course3-progress-course.png: the course note "finding the free space. Step 1 of 2, 11 %. about 0:10 left" readable on
+  its dark backdrop, drawn over the walls end line (Left 2). course3-wroclaw-top.png (run B; run B2 drew over it): 24
+  gates on both arms of the main street, NW about 120 m and SE about 100 m from the spawn, green and yellow, one gate
+  without ground under it; out and back on the same street, so gates 2/11, 12/24, 13/23 stand side by side.
+  course3-wroclaw-pilot.png: the spawn view, not the course (Left 3); course3-wroclaw-respawn.png: the street with the
+  gate 4 ring ahead, clock 0:12.70, "Gate 4 of 24".
+
 ## Facts F3 (20 seeds, --quality, course-quality-audit.ts at 96bf02da, Node 22, 4 processes at once, no GPU lock)
 
 | scan | gates in band | well-scanned visited | gates min-max | mean | sd | before3 mean / sd | reach m | K1.1 failing (3, 12 m/s) | s a course (map + free + fit) |
@@ -584,7 +648,13 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
   untouched; the generator's proof reads it through its own sweep).
 - F2: the hooks for editor3 are tested here only (course3-hooks.test.ts); lane editor3's branch was not merged or built with them.
 
+- F4: the progress pictures and times are headless runs; the spoken lines and a visible window were not checked. The
+  Tunis walls build in the browser was not run (Tunis has its walls). The live site was not probed.
+
 ## Cost notes
+
+- F4-prove: about 30 replies; the GPU lock wait (8 min) and the probe's pilot picture (two runs, still the spawn view) took
+  the most. Taking off before moving the craft would have been known from a 30 s smoke run on the small scan first.
 
 - F3-audit: about 28 replies; the audit itself took 4 min (F2 made it fast); most replies went to the two-arm walk tried
   and reverted. Drawing the pictures in Node (no GPU lock) saved the browser wait; a quick 3-seed audit of a walk change
