@@ -58,7 +58,20 @@ Stage I3-prove (train 3, 2026-11-15):
   rings and cubes small inside the gate), editor3-wroclaw-1920.png (square yellow, arrows small), editor3-flying-1920.png
   (flying: gate 1 green, THR line, key hints, voltage and time back), editor3-edit-clean-1920.png (pass 1, same app: no
   flight part), editor3-f-1920.png (after F: gate 1 in the middle, about 450 of 1080 px high with its tube, 0.42).
-- [ ] I3.5 left (next worker, in this order):
+- [x] I3.6 (pass 3) merge origin/main bf45e440 (lead notes only): 7283e83e. Left c fixed in aa9a189f: the cause read in
+  PlayCanvas 2.23.2 (prerender draws the axis guide for activeAxis = hover || selected, build/playcanvas.mjs 121750,
+  122452) and seen in editor3-wroclaw-1920.png (the X arrow yellow = under the mouse while the red line stands);
+  handle-look.ts guideOnlyWhileDragging wraps _drawGuideLines of the three gizmos, so the guide shows only while a handle is
+  dragged. Left d: view.debug() gives fov {deg, horizontal, aspect} (aa9a189f), the probe turns a horizontal field into the
+  vertical one (92f1e323). Checks: tools/bench/test/editor3-i3.test.ts 3 pass with editor3-i1 (15 pass), NEG OK
+  (neg_control.py ref HEAD, handle-look.ts), apps/fly and tools/bench tsc 0 errors. Left a: the probe puts gate 1 6 m ahead
+  of the drone before the Save loop and again on a start-leg refusal (at most 3 more), records putGate1 (92f1e323).
+  Left e by reading: on a pad page the keyboard is passive and Space calls controls.toggleArm (devices/keyboard.ts 181-186,
+  app/input.ts 143), the pad's own arm switch stays off, so no arm; a pad pilot arms with the pad (step 13). Not a fault of
+  the edit mode; not changed.
+- [~] I3.7 (pass 3) chain U:/Temp/gsfpv-train3/editor3/i3p3/chain.sh (log chain.txt): release of aa9a189f, Tunis and
+  Wroclaw editor3-prove.ts, editor3-clean.ts Tunis, accept-fly, mouse-free, a6, gates subset.
+- [ ] I3.5 left of pass 2 (a, c, d, e handled in I3.6; b stays):
   a. Tunis Save: every course was refused down to 2 gates ('the way from the start to gate 1 goes through a wall' for each
      gate that became gate 1; start [0.1, 2.1, 0.3] yaw 180, gate 1 [-0.857, 1.03, 19.229]; the early refusal's problems
      gate-wall g25 freeM 6 and gate-direction g2 171.3 deg). The check is lane fix3a's. Next try in the probe: before the
