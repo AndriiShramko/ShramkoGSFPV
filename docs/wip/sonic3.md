@@ -43,10 +43,42 @@ Stage S2-switch-and-speed (train 3 wave 3):
   | Tunis 887f27aa | 5 | 26.8 s | NOT counted: moved on after attempt 3 (miss at g14, 0.8 m, plane not crossed) | 216 | 3.68 / 4.99 | 3 | none |
   5 m/s is the scan free flight's cap, so 5 is the highest asked. Housefly N to gate 1 at 3 m/s took 125 s (60 s at 5): not
   measured why.
-- [~] Item 5, screenshots: the counted runs above ran with rendering off, so their z5-<scan>-<speed>-inplace.png and -end.png
-  in U:/Temp/gsfpv-train3/shots show the HUD and gates only (z5-70b50d42-5-end.png looked at: "Counted 1 of 1", "New best
-  time: 2 minutes 4 seconds", TEST MODE render=off banner). Render-on runs not done (reply budget).
-- [ ] LEFT after S2, in this order:
+- [x] Pass 2, item 5, render-on runs (release 37e1547f, pin 30836c1/ce07871 era page, GPU lock by the probe, s2/z-*.json):
+  Housefly 5 m/s 10 of 10 checks, COUNTED (5 gates, attempt 2, flight 63 s, N to gate 1 82.7 s); Wroclaw 5 m/s 9 of 10, NOT
+  counted (24 gates seen, miss at g24, at the 220 s cap). Looked at all four shots: Wroclaw inplace shows the scan, wall
+  pulses on the radar, 0.0 m/s ALT 0.1 m at "Go." (the shot is taken landed at the course start, not in the air); Wroclaw end
+  shows the street with gates drawn, "Stage 12 passed", Attempt 2, Counted 0 of 1; Housefly inplace grey void with the fly's
+  leg; Housefly end "Counted 1 of 1", "New best time: 27.6 seconds". Saved as U:/Temp/gsfpv-train3/shots/z5-<scan>-inplace.png
+  and -end.png (Wroclaw's pair is the NOT counted render-on run; its counted runs are render off).
+- [x] Pass 2, Tunis misses: the miss rows of e-887f27aa-5 (g14) show the cause: ring 1.2 m, craft at local [-0.8, -0.3, 1.1]
+  at 4.2 m/s, outside the cone, so the old gate aim sent the hum to the approach point 3 m out, BEHIND the craft (hum -90
+  deg); the craft turned and crossed the plane 0.8 m off the centre (goals.ts: a crossing outside the opening is 'missed').
+  Package train3 5afa093 (local only): within 2 m of the plane beside the opening the hum points beyond the gate only when
+  the straight way crosses the plane inside the opening with a 20 % margin, else on the axis in front (slide; 1 m minimum);
+  the approach point is never behind the craft (all estimates). test/gate-aim.test.ts 8 of 8, NEG OK on the old gate-aim.ts;
+  package suite 1347 passed, tsc 0. Pin moved (f2f6589e); sonic-scan-course, sonic-in-place, sonic-scan-free 23 of 23.
+- [x] Pass 2 runs on release f2f6589e (sonic 5afa093), render off, walls 70b50d42 v1 10 cm and d10c5638 v1 5 cm in dist/walls
+  (s2/pass2.sh, evidence s2/f-*.json):
+  | Scan | asked m/s | N to gate 1 | course | flight s | median / max m/s | misses |
+  |---|---|---|---|---|---|---|
+  | Wroclaw 70b50d42 | 5 | 26.6 s | COUNTED, 24 gates, attempt 1 | 166 | 4.16 / 5.0 | 0 |
+  | Housefly d10c5638 | 5 | 69.2 s | COUNTED, 5 gates | 35 | 0.44 / 4.98 | 0 |
+  | Tunis 887f27aa | 5 | 31.8 s | NOT counted: 19 gates reached (before: 14), moved on after 3 misses (g19, g2) | 139 | 3.48 / 5.0 | 3 |
+  | Tunis 887f27aa | 3 | 28.1 s | NOT counted: at g14 at the 300 s cap, 27 dodges, hum 86 m away | 303 | 0.33 / 2.99 | 0 |
+  Highest clean speed: Wroclaw 5 m/s, Housefly 5 m/s (both counted on two builds), Tunis none.
+- [x] Regression r9 of sonic-int-review on f2f6589e: 11 of 11 checks (352 s, GPU lock by the probe).
+- [ ] LEFT after S2 pass 2, in this order:
+  1. Tunis, no counted course. New 5 m/s misses: g19, craft came round from behind and slid along the plane at 4.5 to 4.7
+     m/s into the opening (local [0.2, 0, 0.9]) and out of it (the slide aim [0,0,1] has no braking; a speed cap near the
+     plane, a guess); g2, rows have no gate frame until 0.6 s before the miss (record gap; cause not read). 3 m/s: stuck at
+     g14 from about 287 s at [-6, 2, 2] turning Q/E with the hum 86 m away (the hum's next gate is far: a course leg of 86 m
+     through walls is a guess). Files: package src/lesson/gate-aim.ts, the course generator's legs (apps/fly/src/course).
+  2. Wroclaw render on with the new pin for a counted render-on shot pair (the counted Wroclaw runs are render off).
+  3. gates.py --only vitest,architecture,i18n,b18 on the head: NOT run (reply budget).
+  4. The off on Tunis 3 read 0.13 m/s (the craft stuck at g14, precondition). The off's take-off already climbs with Space
+     alone 1.5 s before W (sonic-int-review.ts r11Off); the 'stuck-flipped' of e-70b50d42-5 after that climb is not measured
+     (the up ray is not read). In pass 2 every Wroclaw and Housefly off kept the speed with no life.
+- Old LEFT after S2 pass 1 (items 1 and 4 r9 done in pass 2; kept for the record):
   1. Render-on counted runs for the shots (GPU lock, about 3 to 5 min each, under the 10-minute rule): Z5_RENDER=on PORT=5830
      bash U:/Temp/gsfpv-train3/sonic3/s2/runs.sh z "70b50d42:5 d10c5638:5" (the probe takes the lock itself for render on);
      LOOK at z5-70b50d42-5-inplace.png and -end.png, same for d10c5638, and name them z5-<scan>-inplace.png / -end.png.
@@ -776,4 +808,5 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   run); one script queueing every run with the next one's setup would have cut the waits to one call; the walls-built case
   should have been run first with rendering on, as the walls lane did.
 - 2026-11-15 S1 pass 3: most turns went to reading the 1388-line probe and the long status file in slices, and to waiting for runs; the batch of 5 runs (30 min) did not fit in the budget, so 2 were stopped. Cheaper: start the batch in the first reply (release build and runs detached), and keep one summary script that prints gates, miss gate, spy and switch-on in one call.
+- 2026-11-15 S2 pass 2: starting the render-on batch in reply 4 and the build plus three chains in one detached script made all data arrive in two waits; the most turns went to reading the miss rows (the record's local frame and the aim offset); a sum.py option printing every miss row with the aim branch name would have been one call.
 - 2026-11-15 S2: most turns went to finding why the off and on checks failed (a paused flight, a spawn facing a wall) before any run; running three render-off chains and the r12 lessons in one detached batch made the data arrive in two waits; the render-on shots needed a second batch the budget did not hold, so a batch with render on for the 5 m/s runs from the start would have saved it.
