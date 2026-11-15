@@ -33,9 +33,11 @@ export interface ShareItem { key: number; lod: number; dist: number; members?: n
  * What the walls line shows (V2): the share of the planned wall chunks that are ON SCREEN at their
  * planned level. `drawnAt(key)` is the level a mesh is drawn at now, undefined while it waits for
  * its upload (a mesh the worker built but the overlay has not uploaded is not counted). A group
- * counts its members; the far distance drawn is its farthest chunk's.
+ * counts its members; the far distance drawn is its farthest chunk's. `meshShare` is the share of the
+ * planned meshes on screen (percent, not rounded): the fill's pace is read from it, because a fill is
+ * paced by meshes (a far group of 64 chunks lands as fast as one near chunk).
  */
-export function drawnShare(plan: readonly ShareItem[], drawnAt: (key: number) => number | undefined): { total: number; drawn: number; share: number; farM: number; drawnFarM: number; perLevel: number[]; meshesPerLevel: number[] } {
+export function drawnShare(plan: readonly ShareItem[], drawnAt: (key: number) => number | undefined): { total: number; drawn: number; share: number; farM: number; drawnFarM: number; perLevel: number[]; meshesPerLevel: number[]; meshShare: number } {
     let total = 0, drawn = 0, farM = 0, drawnFarM = 0;
     const perLevel = [0, 0, 0, 0], meshesPerLevel = [0, 0, 0, 0];
     for (const c of plan) {
@@ -48,7 +50,8 @@ export function drawnShare(plan: readonly ShareItem[], drawnAt: (key: number) =>
         perLevel[c.lod] += n;
         meshesPerLevel[c.lod]++;
     }
-    return { total, drawn, share: total ? Math.floor((drawn / total) * 100) : 100, farM, drawnFarM, perLevel, meshesPerLevel };
+    const meshes = meshesPerLevel.reduce((a, b) => a + b, 0);
+    return { total, drawn, share: total ? Math.floor((drawn / total) * 100) : 100, farM, drawnFarM, perLevel, meshesPerLevel, meshShare: plan.length ? (meshes / plan.length) * 100 : 100 };
 }
 
 /** How far back the fill's pace is read (ms): the last 2 s, so the slow first near chunks do not drag it. Estimate. */

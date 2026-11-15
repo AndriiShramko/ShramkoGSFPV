@@ -57,6 +57,13 @@ describe('voxel view: the share in the walls line', () => {
 });
 
 describe('voxel view: time left while the whole scene fills', () => {
+    it('reads the pace from the meshes on screen, not the chunks', () => {
+        // one far group of 63 chunks and one near chunk: the near one on screen is 1 of 64 chunks but 1 of 2 meshes
+        const plan = [{ key: -1, lod: 3, dist: 200, members: 63 }, { key: 1, lod: 0, dist: 2 }];
+        const s = drawnShare(plan, (k) => (k === 1 ? 0 : undefined));
+        expect(s.share).toBe(1);
+        expect(s.meshShare).toBe(50);
+    });
     it('follows the pace of the last 2 s, not the slow start', () => {
         // slow near chunks: 2 % in 8 s, then 5 % in the last 2 s -> 93 % left at 5 % per 2 s
         expect(fillLeftS([{ t: 0, share: 0 }, { t: 8000, share: 2 }, { t: 9000, share: 4 }], 10000, 7)).toBe(37);

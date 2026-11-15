@@ -614,7 +614,7 @@ export class VoxelController {
         if (!this.whole || share >= 100) { this.fillFrom = 0; this.fillSamples = []; }
         else {
             if (this.fillFrom === 0) this.fillFrom = now;
-            this.fillSamples.push({ t: now, share });
+            this.fillSamples.push({ t: now, share: sh.meshShare });
             trimFillSamples(this.fillSamples, now);
         }
         return {
@@ -635,7 +635,7 @@ export class VoxelController {
             plannedChunks: sh.total,
             drawnChunks: sh.drawn,
             share,
-            fillLeftS: this.fillFrom ? fillLeftS(this.fillSamples, now, share) : null,
+            fillLeftS: this.fillFrom ? fillLeftS(this.fillSamples, now, sh.meshShare) : null,
             perLevel: sh.perLevel,
             meshesPerLevel: sh.meshesPerLevel,
             farthestM: this.planFar,

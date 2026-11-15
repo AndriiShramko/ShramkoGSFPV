@@ -229,7 +229,17 @@ Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
    the pace since the start when the last 2 s brought nothing. tools/bench/test/voxview-keeper.test.ts 9 passed;
    control with the voxel-keeper.ts of HEAD: "expected null to be 37", "expected null to be 9". Probe midLine picks
    the text with "drawn,". Typecheck apps/fly 0 errors. Browser rerun on 70b50d42: item 1b.
-1b. [ ] Rebuild the release, rerun FAR_PHASES=spawn on 70b50d42 and read the series' 5th column (time left).
+1b. [x] Rerun on release 41d67990 (sha256 bb32ce7c27b5..., port 5742, FAR_PHASES=spawn, BENCH_UNCAPPED=1,
+   U:/Temp/gsfpv-train2/voxview/far-x2e.json): full at 16.5 s (27236 of 27236 chunks to 231 m, 1889 meshes),
+   frame 7.6 ms (scan alone 7.1). Time left by the chunk share's 2 s pace: 202 s at 1 % (9.2 s), 40 s at 5 %,
+   12 s at 16 %, 11 s at 20 %, 4 s at 48 %, 1 s at 73 %; real: 7.3, 6.2, 5.2, 4.2, 2.1, 1.1 s. Still too high
+   early: the share counts chunks, the fill is paced by meshes (281 of 1889 meshes at 1 %). From the same series
+   the mesh count gives about 11 s at 1 % and 4 s at 5 % (worked by hand, an estimate).
+1c. [x] The pace is read from the share of meshes on screen (this commit): drawnShare returns meshShare
+   (apps/fly/src/voxel-keeper.ts), apps/fly/src/voxels.ts feeds it to fillLeftS; the walls line's percent stays the
+   chunk share. Test +1 (10 passed); control with the HEAD voxel-keeper.ts: "expected undefined to be 50".
+   Typecheck apps/fly 0 errors.
+1d. [ ] Rebuild, rerun FAR_PHASES=spawn on 70b50d42, read the time left against the real end.
 2. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5742/en; it takes the GPU lock itself),
    walls-published-probe on the local copy (wrap in the lock), gates.py --only vitest (alone, no probe beside it).
 3. Status: What the owner does, Not verified (no weak device), For the lead (list below is current).
