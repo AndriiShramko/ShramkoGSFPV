@@ -11,7 +11,7 @@ import { pickGate, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
 import { blendCam, FRAME_GLIDE_MS } from './frame';
-import { AXIS_RGB, gizmoSize, HANDLE_PX, units } from './handle-look';
+import { AXIS_RGB, gizmoSize, guideOnlyWhileDragging, HANDLE_PX, units } from './handle-look';
 import { edgeTakesPress, minorAxis, pickRing, ringTurnDeg, type DrawnRing, type P2 } from './ring-pick';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
@@ -308,6 +308,10 @@ export class EditView {
             if (drag) g._drag = (state: boolean): void => { drag(state); hideOff(); };
             hideOff();
         }
+        // I3 (D2): the axis guide (a line across the whole view along the axis) only while a handle is dragged, as in Blender.
+        // PlayCanvas 2.23.2 draws it also for the axis under the mouse (prerender, build/playcanvas.mjs 121750, 122452), so
+        // after a Move drag the pointer resting on the X arrow kept a red line across the view (editor3-move-1920.png).
+        for (const h of [move, turn, size]) guideOnlyWhileDragging(h);
     }
 
     /** the stand-in's pose at a drag's start (the tags beside the handles count from it) */
@@ -684,6 +688,8 @@ export class EditView {
             axes: { x: axis(this.stand.right), y: axis(this.stand.up), z: axis(this.stand.forward) },
             gates: this.host.gates().map((g) => scr(g.pos[0], g.pos[1], g.pos[2])),
             cam: { pos: [...this.cam.pos], speed: this.cam.speed },
+            // I3: the camera's field in degrees and whether it is horizontal (the probe's frameF share of the view)
+            fov: { deg: cc.fov, horizontal: !!cc.horizontalFov, aspect: Math.round((r.width / (r.height || 1)) * 1000) / 1000 },
             held: [...this.held],
             dragging: this.dragging,
             staleEnded: this.staleEnded,

@@ -60,3 +60,17 @@ export function gizmoSize(halfExtentPx: number, ratio = 0.3): number {
 
 /** a size in CSS px as the gizmo's units */
 export const units = (px: number): number => px / UNIT_PX;
+
+/**
+ * I3 (D2): a PlayCanvas 2.23.2 transform gizmo draws its axis guide (a line across the whole view) also for the axis under
+ * the mouse (prerender -> _drawGuideLines, build/playcanvas.mjs 121750, 122452), so after a Move drag the pointer resting
+ * on the X arrow kept a red line across the view. Wrap it so the guide is drawn only while a handle is dragged (Blender).
+ */
+export function guideOnlyWhileDragging(gizmo: unknown): void {
+    const g = gizmo as { _dragging?: boolean; _drawGuideLines?: (...a: unknown[]) => void };
+    const draw = g._drawGuideLines?.bind(gizmo);
+    if (!draw) return;
+    g._drawGuideLines = (...a: unknown[]): void => {
+        if (g._dragging) draw(...a);
+    };
+}
