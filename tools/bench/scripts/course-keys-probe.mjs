@@ -174,6 +174,24 @@ try {
             r.passes.push({ gate: k + 1, kind: e0 ? e0.kind : g.shape.kind, countedBefore: true, before, after: before, counted: true });
             continue;
         }
+        // lane mix proof (5), MISS_FLAT=1: the first flat square is first climbed past once beside its frame (crossing its plane
+        // half + 1.2 m off its centre along the square's own x axis, inside the ear's ball, outside the square): the ordinary
+        // flight keeps the strict rule, so the page's next gate must not step; then the craft goes back below and flies through
+        const elM = r.elements.find((e) => k >= e.from && k <= e.to);
+        if (process.env.MISS_FLAT === '1' && !r.miss && elM && elM.kind === 'flat') {
+            const halfM = g.shape.kind === 'ring' ? g.shape.diameter / 2 : g.shape.side / 2;
+            const off = rot(g.quat, [1, 0, 0]).map((v) => v * (halfM + 1.2 * unit));
+            const aOff = [a[0] + off[0], a[1] + off[1], a[2] + off[2]], bOff = [b[0] + off[0], b[1] + off[1], b[2] + off[2]];
+            const mBefore = (await state()).next;
+            const toM = await flyTo(aOff, 0.25, null, 40000);
+            const thM = await flyTo(bOff, 0, { c: g.pos, d: [-z[0], -z[1], -z[2]], q: g.quat, beyond: 0.4 * dA }, 15000);
+            await page.waitForTimeout(300);
+            const mAfter = (await state()).next;
+            r.miss = { gate: k + 1, kind: 'flat', offM: r2(halfM + 1.2 * unit), half: r2(halfM), reachedA: toM.ok, through: thM.ok, cross: thM.cross, before: mBefore, after: mAfter, refused: mAfter === mBefore };
+            console.log('MISS ' + JSON.stringify(r.miss));
+            // back below the square, beside it, then the ordinary attempt from the point before it
+            await flyTo(aOff, 0.25, null, 40000);
+        }
         let toA, thru, after, tries = 0;
         do {
             tries++;
@@ -226,4 +244,5 @@ writeFileSync(outFile, JSON.stringify(r, null, 1));
 await ctx.close();
 await browser.close();
 console.log(JSON.stringify({ id: r.id, screens: r.screens, courseS: r.courseS, seed: r.seed, gates: r.gates, counts: r.counts, flown: r.passes?.length, counted: r.counted, byKind: r.byKind, flownS: r.flownS, lap: r.lap, rings: r.rings, errors: r.errors.length, fail: r.fail }));
-process.exit(r.fail || r.counted !== r.passes?.length ? 1 : 0);
+if (r.miss) console.log('MISS ' + JSON.stringify(r.miss));
+process.exit(r.fail || r.counted !== r.passes?.length || (r.miss && !r.miss.refused) ? 1 : 0);

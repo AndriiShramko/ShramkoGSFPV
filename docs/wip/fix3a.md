@@ -1543,6 +1543,12 @@ Logs U:/Temp/gsfpv-train3/mix/.
       U:/Temp/gsfpv-train3/shots/course4-finish-open.png, looked at: 'Course done', the run's time 0:28.36 large in the
       splash's place, under it 'Total 0:28.36 Best lap 0:28.36'. X4 holds today; no change.
 
+- [x] Pass 3: merged origin/main 38c22358 (only docs/wip/train3-lead.md: dist of b937b66c stays valid). course-keys-probe.mjs
+      MISS_FLAT=1: the first flat square is first climbed past beside its frame (plane crossed half + 1.2 m off its centre,
+      inside the ear's ball, outside the square), next gate must not step (r.miss.refused), then flown through.
+- [~] Pass 3 chain (U:/Temp/gsfpv-train3/mix/chain3.sh, logs mix/c3/, summary mix/c3/summary.txt): keys-miss, onecourse
+      twice, tracks-page, course-path Wroclaw and Tunis, pause-over-course, accept-fly B6 B7 B9-B16, r9, r12, a6, gates.
+
 ## What the owner does (mix)
 He presses Shift+G and flies a few gates by eye. He presses Backslash. The voice says Fly by Sound is on over his course;
 the hum leads to the next gate he has not flown yet; no voice asks for a key and no second set of gates appears. A flat
