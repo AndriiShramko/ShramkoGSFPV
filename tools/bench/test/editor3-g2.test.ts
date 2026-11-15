@@ -60,9 +60,9 @@ describe('editor3 G2', () => {
     it('the opening line names one set of handles at a time and Move, Turn, Size on the bar, in en, es, pl, ru', () => {
         const words: Record<string, string[]> = {
             en: ['one set of handles', 'Move', 'Turn', 'Size', 'Space'],
-            es: ['un solo juego de controles', 'Mover', 'Girar', 'Tamaño', 'Espacio'],
-            pl: ['jeden zestaw uchwytów', 'Przesuń', 'Obróć', 'Rozmiar', 'Spacja'],
-            ru: ['один набор ручек', 'Сдвинуть', 'Повернуть', 'Размер', 'Пробел']
+            es: ['un solo juego de controles', 'Mover', 'Girar', 'Tama\u00f1o', 'Espacio'],
+            pl: ['jeden zestaw uchwyt\u00f3w', 'Przesu\u0144', 'Obr\u00f3\u0107', 'Rozmiar', 'Spacja'],
+            ru: ['\u043e\u0434\u0438\u043d \u043d\u0430\u0431\u043e\u0440 \u0440\u0443\u0447\u0435\u043a', '\u0421\u0434\u0432\u0438\u043d\u0443\u0442\u044c', '\u041f\u043e\u0432\u0435\u0440\u043d\u0443\u0442\u044c', '\u0420\u0430\u0437\u043c\u0435\u0440', '\u041f\u0440\u043e\u0431\u0435\u043b']
         };
         for (const [lang, want] of Object.entries(words)) {
             const s = (JSON.parse(read(`packages/i18n/locales/fly/course/${lang}.json`)) as Record<string, string>)['course.edit.opened'] ?? '';
