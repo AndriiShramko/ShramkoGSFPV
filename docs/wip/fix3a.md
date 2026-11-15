@@ -12,7 +12,13 @@ Stage X1-walls-store
       the walls in use (the integrator's way) (5c1ef83e)
 - [x] measure: Tunis (has shipped walls, nothing to store), Wroclaw button, Wroclaw Shift+G with reload at in-use
 - [x] cause (below, measured in part)
-- [ ] fix in apps/fly/src/walls.ts (plan below), unit test, negative control
+- [x] fix: apps/fly/src/wallcache.ts keepBuilt (key made again when missing, result ok/key/ms/bytes/error);
+      apps/fly/src/walls.ts startKeep before queue() in runBase and runRefine, showKeep after endProgress (line
+      adds bake.keeping when the write runs past 2 s, the owner's rule, and bake.notKept when it fails; mode 'off'
+      keeps nothing and says nothing, as before); hook w.storing, w.lastStore; keys bake.keeping and bake.notKept in
+      en, es, pl, ru. Unit test tools/bench/test/walls.test.ts (4 new, 23 passed); negative control with
+      origin/main wallcache.ts: 3 failed by AssertionError; tsc apps/fly exit 0.
+- [~] probe: store row within N s of in-use (lastStore.ms)
 - [ ] proof runs on Wroclaw (button and --start shiftg --reload-at in-use), evidence JSON, typecheck,
       gates.py --only vitest,architecture,i18n,b18
 

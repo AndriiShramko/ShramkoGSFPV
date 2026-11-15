@@ -71,6 +71,40 @@ export async function wallsKey(k: WallsKeyInput): Promise<string> {
     return sha256Hex(new TextEncoder().encode(keyText(k)));
 }
 
+/** What became of walls built here (lane fix3a): kept in the store, or why not. */
+export interface KeepResult {
+    ok: boolean;
+    key: string | null;
+    /** the store write, from its start to its end */
+    ms: number;
+    bytes: number;
+    /** 'no-key': the scene's size request failed before and after the build; else the store's own error */
+    error?: string;
+}
+
+/**
+ * Keep walls built in this browser. The key input made before the build is used; when there is none
+ * (the size request failed then) it is made once more now. The write starts at once and the result says
+ * whether the walls are kept, so the walls line can tell the pilot when they are not.
+ */
+export async function keepBuilt(o: {
+    input: WallsKeyInput | null;
+    makeInput: () => Promise<WallsKeyInput | null>;
+    put: (input: WallsKeyInput) => Promise<{ key: string; bytesStored: number }>;
+    now: () => number;
+}): Promise<KeepResult> {
+    const t0 = o.now();
+    let input = o.input;
+    if (!input) input = await o.makeInput().catch(() => null);
+    if (!input) return { ok: false, key: null, ms: o.now() - t0, bytes: 0, error: 'no-key' };
+    try {
+        const row = await o.put(input);
+        return { ok: true, key: row.key, ms: o.now() - t0, bytes: row.bytesStored };
+    } catch (e) {
+        return { ok: false, key: await wallsKey(input).catch(() => null), ms: o.now() - t0, bytes: 0, error: String((e as Error)?.message ?? e).slice(0, 200) };
+    }
+}
+
 async function streamBytes(s: ReadableStream<Uint8Array>): Promise<Uint8Array> {
     return new Uint8Array(await new Response(s).arrayBuffer());
 }
