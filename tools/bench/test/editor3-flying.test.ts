@@ -180,7 +180,8 @@ describe('editor3 E3: flying inside the edit mode', () => {
     it('the page does not pause the flight for the editor and gives the keys to the flight while armed', () => {
         expect(COURSE_TS).not.toMatch(/ctx\.pause\('panel'\)/);
         expect(COURSE_TS).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit'\)/);
-        expect(COURSE_TS).toMatch(/if \(ed\) return editFrame\(\);/);
+        // J1 (E5): the edit branch also thins the course arrows before it returns editFrame()
+        expect(COURSE_TS).toMatch(/if \(ed\) \{[^}]*\s+return editFrame\(\);/);
         expect(COURSE_TS).toMatch(/modeStep\(mode, !!sim\?\.armed, !!sim\?\.crashed, crashHold\);\s*crashHold = st\.hold;/);
         expect(COURSE_TS).toMatch(/if \(shows\.lapClock\) hud\.update/);
         expect(COURSE_TS).toMatch(/onPlace: \(ray\) => placeAt\(ray\)/);

@@ -37,7 +37,7 @@ import { MAX_GATES_EDIT, canSave, checkTrack, edit, flownCollision, flownStart, 
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
 import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
-import { frameGate } from '../../course/editor/frame';
+import { frameGate, reframeAfterDrag } from '../../course/editor/frame';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
@@ -55,6 +55,8 @@ import type { EditorCommand, KeyPress } from '../../course/editor/keys';
 import { ACTION_KEYS, actionKey, gateLine, problemsLine, refusalText } from '../../course/editor/words';
 import { ADD_FIX_KEY, SAVE_FIX_KEY, firstWrong } from '../../course/editor/texts';
 import { adminVersionBody, editPaints, lapOf, lappedIds, mayVote } from '../../course/editor/rules';
+import { shareArrows, type ScaleNode } from '../../course/editor/arrow-share';
+import { EDIT_ARROW_SHARE } from '../../course/editor/handle-look';
 import { readBests } from '../../course/link';
 import { AdminClient, ApiError, adminHinted } from '../../admin/api';
 import { TracksAdminClient } from '../../admin/tracks/api';
@@ -664,8 +666,20 @@ export const course: Feature = {
             run: () => void save(), enabled: () => run !== null && hook.source === 'generated' && hook.saved === null && !saving
         });
 
+        // J1 (E5): the course's arrows at a third of their width in the edit view (not in its test flight), full again after
+        let arrowsThin = false;
         ctx.events.on('frame', () => {
-            if (ed) return editFrame();
+            const root = ctx.renderer.app.root as unknown as ScaleNode;
+            if (ed) {
+                const thin = mode !== 'fly';
+                if (thin || arrowsThin) shareArrows(root, thin ? EDIT_ARROW_SHARE : 1);
+                arrowsThin = thin;
+                return editFrame();
+            }
+            if (arrowsThin) {
+                shareArrows(root, 1);
+                arrowsThin = false;
+            }
             // TR-5: the scale feature (session.setTransform) and the walls switch fire no 'session' event
             if (run && !busy && (run.stale(ctx.session.transform) || ctx.session.collision !== provenOn)) return proveAgain();
             frame();
@@ -764,7 +778,7 @@ export const course: Feature = {
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
             const eg = ed.course.gates[ed.selected];
-            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null, eg?.shape.kind === 'cube-frame');
+            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null, eg ? eg.shape.kind : null);
             // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
             if (eg && eg.id !== framedId && frameSel()) framedId = eg.id;
             edHook.open = true;
@@ -1030,6 +1044,10 @@ export const course: Feature = {
                 checks?.ask(st.course, flownTransform(), edMargin);
             }
             showEd();
+            // J1 (E1): a drag that left the gate outside the middle 80 % of the view (a size change, a long move) frames it
+            // again; never during the drag (this is its end)
+            const gb = view?.gateBox();
+            if (gb && reframeAfterDrag(gb.box, gb.w, gb.h)) frameSel();
             // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
             const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
             if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));

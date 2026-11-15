@@ -37,7 +37,7 @@ describe('editor3 H1: one set of handles at a time', () => {
         expect(VIEW_TS).not.toMatch(/for \(const h of this\.handles\) h\.attach/);
         expect(VIEW_TS).toMatch(/on\.attach\(\[this\.stand\]\)/);
         expect(COURSE_TS).toMatch(/setTool: \(tl\) => view\?\.setTool\(tl\)/);
-        expect(COURSE_TS).toMatch(/view\?\.put\([^\n]*eg \? eg\.id : null, eg\?\.shape\.kind === 'cube-frame'\)/);
+        expect(COURSE_TS).toMatch(/view\?\.put\([^\n]*eg \? eg\.id : null, eg \? eg\.shape\.kind : null\)/);
     });
     it('the window opens closed on every screen (not only on a phone)', () => {
         const media = CSS.indexOf('@media (max-width: 900px)');

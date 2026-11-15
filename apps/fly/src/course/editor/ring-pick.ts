@@ -52,20 +52,42 @@ function segment(m: P2, a: P2, b: P2): { d: number; t: P2 } {
     return { d, t: l > 0 ? [vx / l, vy / l] : [1, 0] };
 }
 
+/** J1 (E3): a picked ring: its index (0 x, 1 y, 2 z), its line's oriented direction there, the pointer's distance to it,
+ *  whether it is seen edge-on, and the page direction a drag must take to turn it the positive way (unit) */
+export interface RingPick {
+    readonly index: number;
+    readonly tangent: P2;
+    readonly dist: number;
+    readonly edge: boolean;
+    readonly dir: P2;
+}
+
 /**
- * The ring under the pointer `m` among the thin ones (minor axis below `edgePx`): the nearest within `tolPx` of its drawn
- * line, with the line's unit direction there. Null: none (the gizmo's own pick has the press).
+ * The ring under the pointer `m`: the nearest within `tolPx` of its drawn line, with the line's unit direction there. J1 (E3
+ * of train 3): every ring, not only the thin ones. PlayCanvas 2.23.2 RotateGizmo in its absolute mode turns a ring by the
+ * drag projected on one fixed page direction whatever point of the ring was pressed, so a drag along the y ring at its
+ * side gave 0 deg after the snap. The edit view turns every ring itself: an edge-on one (minor axis below `edgePx`) by the
+ * drag across its line (`dir` = the oriented tangent turned a quarter, as ringTurnDeg), an open one by the drag along the
+ * drawn segment (`dir` = the segment's own direction: the points come in the order a positive turn moves them). Null: none.
  */
-export function pickRing(m: P2, rings: readonly DrawnRing[], tolPx = RING_PICK_PX, edgePx = RING_EDGE_PX): { index: number; tangent: P2; dist: number } | null {
-    let best: { index: number; tangent: P2; dist: number } | null = null;
+export function pickRing(m: P2, rings: readonly DrawnRing[], tolPx = RING_PICK_PX, edgePx = RING_EDGE_PX): RingPick | null {
+    let best: RingPick | null = null;
     rings.forEach((r, i) => {
-        if (!(r.minor < edgePx) || r.pts.length < 2) return;
+        if (r.pts.length < 2) return;
+        const edge = r.minor < edgePx;
         for (let k = 0; k < r.pts.length; k++) {
             const s = segment(m, r.pts[k]!, r.pts[(k + 1) % r.pts.length]!);
-            if (s.d <= tolPx && (!best || s.d < best.dist)) best = { index: i, tangent: orientTangent(s.t, r.axis), dist: s.d };
+            if (s.d > tolPx || (best && s.d >= best.dist)) continue;
+            const t = orientTangent(s.t, r.axis);
+            best = { index: i, tangent: t, dist: s.d, edge, dir: edge ? [-t[1], t[0]] : s.t };
         }
     });
     return best;
+}
+
+/** J1 (E3): the turn in degrees for the pointer's travel (dx, dy) from the press: the share along `dir` times `degPerPx` */
+export function ringDeg(dir: P2, dx: number, dy: number, degPerPx = RING_DEG_PER_PX): number {
+    return degPerPx * (dx * dir[0] + dy * dir[1]);
 }
 
 /**

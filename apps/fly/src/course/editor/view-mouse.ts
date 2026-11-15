@@ -11,8 +11,8 @@ import { pickGate, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
 import { blendCam, FRAME_GLIDE_MS } from './frame';
-import { AXIS_RGB, gizmoSize, guideOnlyWhileDragging, HANDLE_PX, units } from './handle-look';
-import { edgeTakesPress, minorAxis, pickRing, ringTurnDeg, type DrawnRing, type P2 } from './ring-pick';
+import { AXIS_RGB, gizmoSize, guideOnlyWhileDragging, HANDLE_PX, sizeAxes, units } from './handle-look';
+import { minorAxis, pickRing, ringDeg, type DrawnRing, type P2 } from './ring-pick';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
 export const CLICK_SLOP_PX = 4;
@@ -83,6 +83,8 @@ export class EditView {
     /** lane editor3 H1: the one set of handles shown (Move when a gate gets selected) and the gate it belongs to */
     tool: Tool = 'move';
     private toolGate: string | number | null = null;
+    /** J1 (E2): the selected gate's shape kind ('ring', 'square', 'cube-frame') */
+    private kind: string | null = null;
     /** H2-look: the Size set and the opening in metres shown beside it while it is dragged */
     private readonly size: ScaleGizmo;
     private readonly tag: HTMLDivElement;
@@ -96,8 +98,8 @@ export class EditView {
     private glide: { from: FlyCam; to: FlyCam; t0: number } | null = null;
     private fitW = 0;
     private fitH = 0;
-    /** I1 (D4): a ring seen edge-on taken by the edit view: its axis (0 x, 1 y, 2 z), its line's direction, the press */
-    private ring: { axis: number; tangent: P2; x: number; y: number } | null = null;
+    /** I1 (D4), J1 (E3): a ring taken by the edit view: its axis (0 x, 1 y, 2 z), the page way of a positive turn, the press */
+    private ring: { axis: number; dir: P2; x: number; y: number } | null = null;
 
     constructor(host: EditViewHost, start: FlyCam) {
         this.host = host;
@@ -181,11 +183,11 @@ export class EditView {
         this.apply();
     }
 
-    /** The stand-in at the selected gate (null: no gate, the handles hidden). Not while a drag holds it. */
-    put(p: FlownPose | null, gate: string | number | null = null, deep = false): void {
+    /** The stand-in at the selected gate (null: no gate, the handles hidden). Not while a drag holds it. `kind`: the
+     *  gate's shape kind (J1 E2: the Size handle's axes, handle-look.ts sizeAxes); left out, the last one stays. */
+    put(p: FlownPose | null, gate: string | number | null = null, kind?: string | null): void {
         if (this.dragging) return;
-        // I1 (D2): Size shows three lines with a cube at each end (each changes the one opening); `deep` kept for the callers
-        void deep;
+        if (kind !== undefined) this.kind = kind;
         this.fit();
         this.standPose = p;
         this.tool = toolAfter(this.tool, this.toolGate, gate);
@@ -200,6 +202,18 @@ export class EditView {
         this.stand.setLocalScale(1, 1, 1);
         this.opening = p.opening;
         this.showTool();
+        this.sizeShapes();
+    }
+
+    /** J1 (E2): the Size handle's lines for this gate only (a ring one pair along its width), the others not drawn */
+    private sizeShapes(): void {
+        const on = sizeAxes(this.kind);
+        const shapes = (this.size as unknown as { _shapes?: Record<string, { visible: boolean }> })._shapes ?? {};
+        for (const a of ['x', 'y', 'z'] as const) {
+            this.size.enableShape(a, on.includes(a));
+            const sh = shapes[a];
+            if (sh) sh.visible = on.includes(a);
+        }
     }
 
     /** lane editor3 H1: the gate bar's Move, Turn or Size (or M, R, T): only that set of handles is on the gate */
@@ -312,6 +326,21 @@ export class EditView {
         // PlayCanvas 2.23.2 draws it also for the axis under the mouse (prerender, build/playcanvas.mjs 121750, 122452), so
         // after a Move drag the pointer resting on the X arrow kept a red line across the view (editor3-move-1920.png).
         for (const h of [move, turn, size]) guideOnlyWhileDragging(h);
+        // J1 (E2): PlayCanvas 2.23.2 TransformGizmo._hover lights x, y, z and xyz for the centre cube under the mouse (the
+        // three yellow lines of editor3-size-1920.png, the pointer rests on the centre after a drag): only the cube lights
+        type Hv = { _hover?: (mi?: unknown) => void; _hoverAxis?: string; _hovering?: Set<string>; _shapes?: Record<string, { hover(s: boolean): void }> };
+        const sg = size as unknown as Hv;
+        const hover = sg._hover?.bind(size);
+        if (hover) {
+            sg._hover = (mi?: unknown): void => {
+                hover(mi);
+                if (sg._hoverAxis !== 'xyz') return;
+                for (const a of ['x', 'y', 'z']) {
+                    if (!sg._hovering?.delete(a)) continue;
+                    sg._shapes?.[a]?.hover(false);
+                }
+            };
+        }
     }
 
     /** the stand-in's pose at a drag's start (the tags beside the handles count from it) */
@@ -338,10 +367,13 @@ export class EditView {
         const r = units(HANDLE_PX.ringRadius) * (root ? root.getLocalScale().x : 0);
         const c = this.stand.getPosition().clone();
         const ax = [this.stand.right.clone(), this.stand.up.clone(), this.stand.forward.clone()];
+        // J1 (E3): the points go round in the order a positive turn about the local axis moves them (u x v = that axis):
+        // the local x, y and z (z is the back, PlayCanvas's forward is -z), so an open ring's segment is its drag direction
+        const loc = [ax[0]!, ax[1]!, this.stand.forward.clone().mulScalar(-1)];
         const cs = cc.worldToScreen(c, new PcVec3());
         return [0, 1, 2].map((i) => {
-            const u = ax[(i + 1) % 3]!;
-            const v = ax[(i + 2) % 3]!;
+            const u = loc[(i + 1) % 3]!;
+            const v = loc[(i + 2) % 3]!;
             const pts: P2[] = [];
             for (let k = 0; k < 64; k++) {
                 const t = (k / 64) * 2 * Math.PI;
@@ -369,10 +401,11 @@ export class EditView {
         g._shapes?.['xyz'[axis]!]?.hover?.(on);
     }
 
-    /** I1 (D4): an edge-on ring dragged across its line turns the gate about that ring's axis (snapped unless Ctrl) */
+    /** I1 (D4), J1 (E3): a ring dragged (across its line when edge-on, along it when open) turns the gate about its axis
+     *  (snapped unless Ctrl) */
     private ringMove(e: PointerEvent): void {
         const g = this.ring!;
-        let deg = ringTurnDeg(g.tangent, e.clientX - g.x, e.clientY - g.y);
+        let deg = ringDeg(g.dir, e.clientX - g.x, e.clientY - g.y);
         if (this.move.snap) deg = Math.round(deg / SNAP_TURN_DEG) * SNAP_TURN_DEG;
         const axis = g.axis === 0 ? new PcVec3(1, 0, 0) : g.axis === 1 ? new PcVec3(0, 1, 0) : new PcVec3(0, 0, 1);
         const q = new PcQuat().copy(this.startRot).mul(new PcQuat().setFromAxisAngle(axis, deg));
@@ -490,12 +523,11 @@ export class EditView {
             return h.enabled && sel && sel[0] ? sel[0] : null;
         });
         const own = pressOwner(sels.map((s) => !!s));
-        // I1 (D4): a turn ring seen edge-on within RING_PICK_PX is taken here when the gizmo has nothing under the pointer or
-        // has that same ring (it would turn it by 0 deg): ring-pick.ts edgeTakesPress
+        // I1 (D4), J1 (E3): every turn ring within RING_PICK_PX is taken here: the gizmo's absolute mode turned the y ring by
+        // 0 deg for a drag along it at its side, and an edge-on one always (ring-pick.ts pickRing)
         const rp = this.tool === 'turn' && this.turn.enabled && this.standPose ? pickRing([e.offsetX, e.offsetY], this.drawnRings()) : null;
-        const ownAxis = own < 0 ? null : ((sels[own]?.node?.name ?? '').split(':')[1] ?? '');
-        if (rp && edgeTakesPress(ownAxis, rp.index)) {
-            this.ring = { axis: rp.index, tangent: rp.tangent, x: e.clientX, y: e.clientY };
+        if (rp) {
+            this.ring = { axis: rp.index, dir: rp.dir, x: e.clientX, y: e.clientY };
             this.dragging = true;
             this.dragged = true;
             this.glide = null;
@@ -674,6 +706,32 @@ export class EditView {
         return h > 1e-6 ? [f[0] / h, f[2] / h] : [0, -1];
     }
 
+    /**
+     * J1 (E1): the selected gate's drawn box on the canvas (CSS px from its corner: x0, y0, x1, y1) and the canvas's size:
+     * the corners at the centre +- right and up (and forward for a cube frame) times half the opening. box null: a corner
+     * lies behind the eye. Null: no gate. Read only (course.ts asks it when a drag ends, frame.ts reframeAfterDrag).
+     */
+    gateBox(): { box: [number, number, number, number] | null; w: number; h: number } | null {
+        if (!this.standPose) return null;
+        const cc = this.host.camera.camera as CameraComponent;
+        const c = this.stand.getPosition();
+        const k = this.opening / 2;
+        const r = this.stand.right.clone().mulScalar(k);
+        const u = this.stand.up.clone().mulScalar(k);
+        const f = this.stand.forward.clone().mulScalar(this.kind === 'cube-frame' ? k : 0);
+        let box: [number, number, number, number] | null = [Infinity, Infinity, -Infinity, -Infinity];
+        for (let i = 0; i < 8 && box; i++) {
+            const p = new PcVec3().copy(c);
+            p.add(new PcVec3().copy(r).mulScalar(i & 1 ? 1 : -1));
+            p.add(new PcVec3().copy(u).mulScalar(i & 2 ? 1 : -1));
+            p.add(new PcVec3().copy(f).mulScalar(i & 4 ? 1 : -1));
+            const s = cc.worldToScreen(p, new PcVec3());
+            if (!(s.z > 0)) box = null;
+            else box = [Math.min(box[0], s.x), Math.min(box[1], s.y), Math.max(box[2], s.x), Math.max(box[3], s.y)];
+        }
+        return { box, w: this.canvas.clientWidth, h: this.canvas.clientHeight };
+    }
+
     /** The selected gate's centre on the page (CSS px) and its depth (above 0: in front); null when no gate is selected. */
     standScreen(): [number, number, number] | null {
         // G2 (measured, REPRO run g2/repro2): this read only the Move set, so Turn or Size (one set at a time) hid the bar
@@ -742,10 +800,10 @@ export class EditView {
         type Hit = { node?: { name?: string } };
         const sel = (h as unknown as { _getSelection?: (x: number, y: number) => Hit[] })._getSelection?.(x - r.left, y - r.top);
         const name = sel?.[0]?.node?.name ?? '';
-        // I1 (D4): an edge-on ring the edit view takes itself (the same rule as onOwnPress)
+        // I1 (D4), J1 (E3): a ring the edit view takes itself (the same rule as onOwnPress): 'edge:y' edge-on, 'ring:y' open
         const rp = this.tool === 'turn' ? pickRing([x - r.left, y - r.top], this.drawnRings()) : null;
         const axis = sel && sel[0] ? (name.split(':')[1] ?? '') : null;
-        if (rp && edgeTakesPress(axis, rp.index)) return [this.tool, `edge:${'xyz'[rp.index]}`];
+        if (rp) return [this.tool, `${rp.edge ? 'edge' : 'ring'}:${'xyz'[rp.index]}`];
         return axis !== null ? [this.tool, axis] : null;
     }
 

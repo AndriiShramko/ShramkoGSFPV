@@ -99,8 +99,10 @@ describe('I1 D4: the pick of an edge-on ring and its angle from the mouse travel
         expect(p.index).toBe(1);
         expect(Math.abs(p.tangent[0])).toBeCloseTo(1, 6);
         expect(pickRing([1000, 556], rings)).toBeNull();
-        // a ring seen open is the gizmo's own: not taken here even on its line
-        expect(pickRing([1045, 540 + 1], [rings[0]!])).toBeNull();
+        // J1 (E3): a ring seen open is taken here too (the gizmo's absolute mode turned it by 0 deg), dragged along its line
+        const open = pickRing([1045, 540 + 1], [rings[0]!])!;
+        expect(open.edge).toBe(false);
+        expect(Math.abs(open.dir[1])).toBeGreaterThan(0.99);
     });
     it('turns by about half a degree per px of travel across the line', () => {
         expect(RING_DEG_PER_PX).toBe(0.5);
@@ -121,7 +123,8 @@ describe('I1 D4: the pick of an edge-on ring and its angle from the mouse travel
         expect(take('y', null)).toBe(false);
         expect(take(null, null)).toBe(false);
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
-        expect(vm.split('edgeTakesPress(').length - 1).toBeGreaterThanOrEqual(2);
+        // J1 (E3): the edit view takes every ring it picks, edge-on or open (ringDeg along the pick's own direction)
+        expect(vm).toMatch(/if \(rp\) \{\s*this\.ring = \{ axis: rp\.index, dir: rp\.dir/);
     });
     it('hides the shapes switched off (grey centre sphere and face ring) also after each drag', () => {
         const vm = src('apps/fly/src/course/editor/view-mouse.ts');
