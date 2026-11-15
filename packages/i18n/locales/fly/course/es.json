@@ -70,6 +70,7 @@
   "course.edit.p.startWall": "la salida está dentro de una pared",
   "course.edit.p.gateWall": "la puerta {g} está dentro de una pared",
   "course.edit.p.legWall": "el camino de la puerta {a} a la puerta {b} atraviesa una pared",
+  "course.edit.p.legStart": "el camino de la salida a la puerta {b} atraviesa una pared",
   "course.edit.p.direction": "la puerta {g} está girada {deg} grados respecto al camino de entrada",
   "course.edit.p.noStart": "el circuito no tiene salida",
   "course.edit.r.placement": "No se hizo: {why}",

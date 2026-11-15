@@ -70,6 +70,7 @@
   "course.edit.p.startWall": "the start is in a wall",
   "course.edit.p.gateWall": "gate {g} is in a wall",
   "course.edit.p.legWall": "the way from gate {a} to gate {b} goes through a wall",
+  "course.edit.p.legStart": "the way from the start to gate {b} goes through a wall",
   "course.edit.p.direction": "gate {g} is turned {deg} degrees away from the way in",
   "course.edit.p.noStart": "the course has no start",
   "course.edit.r.placement": "Not done: {why}",

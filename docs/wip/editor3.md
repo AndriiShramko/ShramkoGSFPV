@@ -4,6 +4,54 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage H1-tunis (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
+- [x] H1.0 merge origin/main 78efaaaf into editor3: commit 607e1cb9 (no conflicts). apps/fly and tools/bench tsc 0 errors;
+  editor3-*.test.ts 9 files 53 tests pass; release build of 607e1cb9 into dist: exit 0 (log U:/Temp/gsfpv-train3/editor3/h1/build.log).
+  dist/walls is NOT filled yet: the Wroclaw stand-in walls (U:/Temp/gsfpv-train2/walls/release/70b50d42) must be copied
+  into dist/walls before a Wroclaw run (as in G3.2).
+- [x] H1.1 (b) answered by reading the code, not run: the Save refusal "the way from gate 0 to gate 1 goes through a wall"
+  is the leg from the START to the first gate. packages/tracks check.ts 247 puts { id: 'start' } before the gates, so the
+  leg report's from is 'start'; words.ts gateNo('start') was findIndex -1 + 1 = 0. Deleting the first gate only makes the
+  next gate the first one: the leg from the start (the generator's start pose, which the editor never moves) to it is
+  checked again, so the problem stays. Fixed in the words: texts.ts problemParts (numbers from 1; a leg from the start
+  says "the way from the start to gate N"), new key course.edit.p.legStart in en, es, pl, ru. Test
+  tools/bench/test/editor3-h1.test.ts 3 tests, NEG OK (neg_control.py ref HEAD, texts.ts, words.ts and the four locale
+  files; on the old code the import of problemParts is missing, so it fails by a TypeError, not an assertion).
+  editor3-*.test.ts 10 files 56 tests pass; apps/fly tsc 0.
+- [x] H1.2 (c) read from the G3 records (g3/runA/e4.json), not run again:
+  - "No click target" on Tunis: the probe's candidate list was EMPTY (click.clicks []), i.e. no other gate stood on screen
+    more than 160 px from the selected one (editor3-prove.ts 207). The page's pick was never tried on Tunis; not an
+    editor fault by this record. A proof needs the probe to turn the view to a second gate first.
+  - Kind undo on Tunis: NOT a lost undo. After the bar's Dive the gate is tilted; Cube and Ring then change the shape but
+    leave the tilt, and gateLine (words.ts 34-43) names any gate whose axis points down "dive gate". The record shows the
+    lines "Shape changed. Gate 2 of 24: dive gate" after Cube and after Ring, and the probe's sample (pos, quat, opening,
+    line) has no shape field, so undo of ring -> cube looked unchanged. The real fault for the pilot: pressing Ring or
+    Cube on a dive gate keeps it a dive gate (the tilt stays). Fix wanted: a kind other than Dive also stands the gate up
+    (packages/tracks editor.ts 'shape' action or the bar's handler in course.ts; not changed).
+  - Rings on Tunis: y ring (walk r 88 px, drag 60 px down) and x ring (r 190) gave quatChange 0; z ring (r 196) 0.518.
+    Cause NOT measured (a guess: the probe drags along a circle's tangent, but a ring seen nearly edge-on is a thin
+    ellipse and PlayCanvas RotateGizmo turns by the angle about the ring's axis, so a drag across the ellipse gives
+    less than the 15 degree snap SNAP_TURN_DEG and rounds to 0). Measure next: record the gizmo's angle per move
+    (RotateGizmo 'transform:move') with snap off.
+- [ ] left (next worker, in this order):
+  a. Tunis measurement (a): load http://localhost:58xx/en/fly/?scene=887f27aa&nowarn=1&course=g1.<seed> for the page's
+     own seed and two more (the probe's Shift+G uses randomSeed(), course.ts 942; a link seed is seedOfLink), open the
+     editor, dump the full course (add the course's gates and start to __gsfpvEditView, course.ts 716) and the problems;
+     then in Node checkTrack(track, flownCollision(walls, T), T, marginOf(track), true) on the CDN walls of 887f27aa
+     (tools/bench/src/scenes.ts loadScene) for freeM and the place of each refused leg and gate, height above the ground
+     and nearestWall distance (check.ts 353). Write whether an untouched generated Tunis course passes; if not, numbers
+     go under 'For the lead' (generator is lane fix3a's; do not change it or the check).
+  b. The refused Save (lead's decision): canSave false -> select the first wrong gate (for 'leg-wall' the gate 'to', for
+     'start-wall' gate 1), view.setCam toward it (camera.ts), handles on it, one sentence from problemParts plus what to
+     do (move it, turn it, delete it) in en, es, pl, ru; course.ts saveMine 976 and saveAdmin 1025. Same for a floor add
+     the check refuses (course.ts placeAt / onPlace): say why, keep it selected.
+  c. A leg from the start that a moved first gate cannot clear: the start pose is fixed; the sentence must lead to moving
+     gate 1 (the "to" gate) toward the start, not to deleting it.
+  d. Ring or Cube on a dive gate stands the gate up (H1.2 kind undo), with a unit test.
+  e. Rings: measure the angle per move as said in H1.2, then fix or change the probe's drag.
+  f. Browser proof on Tunis and once on Wroclaw as the stage asks (pictures editor3-tunis-refused-1920.png,
+     editor3-tunis-turn-1920.png), gates.py --only vitest,architecture,i18n,b18, commit.
+
 Stage G3-prove (train 3 wave 3):
 - [x] G3.1 code 67c8d31e: G2 left 1 (who poses the camera after a floor add) read from the code: crashview.ts frame() (line
   117-144) writes the chase camera every frame while a crash is active, before the features' frame work; the G2.13 pictures
@@ -900,6 +948,10 @@ button shows the table.
     leaves (proven). Loading the saved course again: not proven.
 
 ## Cost notes
+
+- H1-tunis: about 30 replies; the most went to finding where the page's generated course and its seed come from
+  (worker.ts, course.ts, tracks-audit.ts) before any measurement; a debug accessor that returns the whole edited course
+  and its full check report on the page would have made (a) one browser run instead of a Node replica.
 
 - G3-prove pass 3: about 25 replies; the most went to the two scene runs and the accept-fly plus gates run (about 15
   minutes of waiting in three blocking commands); reading store.ts's save check before pass 2's run (one grep) would have

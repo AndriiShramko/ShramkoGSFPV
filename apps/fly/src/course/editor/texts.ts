@@ -1,7 +1,7 @@
 // The course editor's locale keys (lane tracks, stage T3-editor-ui): every refusal and problem code of
 // packages/tracks/src/editor.ts and every action has its key in packages/i18n/locales/fly/course/*.json. No DOM, no i18n
 // import, so a Node test can hold the tables to the four languages.
-import type { CourseProblem, EditAction, EditRefusal } from '@gsfpv/tracks';
+import type { Course, CourseProblem, EditAction, EditRefusal } from '@gsfpv/tracks';
 import { CAM_ROWS, KEY_ROWS } from './keys';
 import { TOOLS, TOP_BUTTONS } from './bar-place';
 
@@ -26,6 +26,23 @@ export const PROBLEM_KEYS: Record<CourseProblem['code'], string> = {
     'gate-direction': 'course.edit.p.direction',
     'no-start': 'course.edit.p.noStart'
 };
+
+/** train 3 H1: a leg from the start is named so (the check's id 'start' is no gate; it was shown as "gate 0") */
+export const LEG_START_KEY = 'course.edit.p.legStart';
+
+/** A gate's number as the pilot sees it (from 1), 0 when the id is no gate of the course. */
+export const gateNumber = (c: Course, id: string): number => c.gates.findIndex((g) => g.id === id) + 1;
+
+/** train 3 H1: the locale key and the values of one problem; gate numbers count from 1, a leg from the start names the start. */
+export function problemParts(c: Course, p: CourseProblem): { key: string; args: Record<string, number> } {
+    const key = PROBLEM_KEYS[p.code];
+    switch (p.code) {
+        case 'outside': case 'gate-wall': return { key, args: { g: gateNumber(c, p.gate) } };
+        case 'gate-direction': return { key, args: { g: gateNumber(c, p.gate), deg: Math.round(p.deg) } };
+        case 'leg-wall': return gateNumber(c, p.from) === 0 ? { key: LEG_START_KEY, args: { b: gateNumber(c, p.to) } } : { key, args: { a: gateNumber(c, p.from), b: gateNumber(c, p.to) } };
+        default: return { key, args: {} };
+    }
+}
 
 /** what an accepted action did, by the key row that names it */
 export const ACTION_KEYS: Record<EditAction['kind'], string> = {
@@ -65,7 +82,7 @@ export function editorLocaleKeys(): string[] {
         // lane editor3 E3: the top bar, Duplicate and flying inside the mode
         'course.edit.bar.add', 'course.edit.bar.addHint', 'course.edit.bar.duplicate', 'course.edit.flyHint', 'course.edit.flying',
         // review ED-6: a gate taken by a click
-        'course.edit.selected'];
+        'course.edit.selected', LEG_START_KEY];
     return [...new Set([...fixed, ...Object.values(REFUSAL_KEYS), ...Object.values(PROBLEM_KEYS), ...Object.values(ACTION_KEYS), ...KEY_ROWS.map((r) => r.labelKey),
         ...CAM_ROWS.map((r) => r.labelKey), ...TOP_BUTTONS.map((b) => b.labelKey), ...TOOLS.map((b) => b.labelKey)])];
 }

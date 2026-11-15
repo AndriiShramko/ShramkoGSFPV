@@ -70,6 +70,7 @@
   "course.edit.p.startWall": "start jest w ścianie",
   "course.edit.p.gateWall": "bramka {g} jest w ścianie",
   "course.edit.p.legWall": "droga od bramki {a} do bramki {b} przechodzi przez ścianę",
+  "course.edit.p.legStart": "droga od startu do bramki {b} przechodzi przez ścianę",
   "course.edit.p.direction": "bramka {g} jest obrócona o {deg} stopni względem drogi wlotu",
   "course.edit.p.noStart": "tor nie ma startu",
   "course.edit.r.placement": "Nie zrobiono: {why}",

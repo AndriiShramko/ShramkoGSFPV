@@ -70,6 +70,7 @@
   "course.edit.p.startWall": "старт в стене",
   "course.edit.p.gateWall": "ворота {g} в стене",
   "course.edit.p.legWall": "путь от ворот {a} к воротам {b} проходит сквозь стену",
+  "course.edit.p.legStart": "путь от старта к воротам {b} проходит сквозь стену",
   "course.edit.p.direction": "ворота {g} повёрнуты на {deg} градусов от пути входа",
   "course.edit.p.noStart": "у трассы нет старта",
   "course.edit.r.placement": "Не сделано: {why}",
