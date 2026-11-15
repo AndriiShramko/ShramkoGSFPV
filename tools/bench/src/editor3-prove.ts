@@ -334,6 +334,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // H3 pass 2 (left d): every ring is tried (no stop at the first that turns), each with a 60 px and then a 140 px drag
     // along its tangent, and the angle each drag gave is recorded (degrees from the quaternion change)
     const seenAxis = new Set<string>();
+    const quat0 = (await ed(page)).pose?.quat;
     for (const dir of [[1, 0], [0, -1], [0.71, -0.71], [-1, 0], [0, 1], [-0.71, 0.71]]) {
         const a0 = (await dbg(page))!;
         const w = await walk(page, a0.stand.screen, dir, 40, '');
@@ -357,6 +358,33 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         }
         const g100 = (per.find((p) => (p as { len: number }).len === 100) as { gateDeg: number | null } | undefined)?.gateDeg ?? null;
         turns.push({ dir, axis, r: w.r, per, turned: per.some((p) => (p as { deg: number }).deg > 0), gate100: g100, gate100ok: g100 !== null && g100 >= 20 });
+    }
+    // integration E (seam d, one repair): a ring the six directions above did not reach (the turns before it may leave it
+    // edge-on) is looked for again after the gate is put back by the top bar's Undo to its first rotation, along 16
+    // directions, and measured by one 100 px drag along its tangent with the gate's own pose
+    const qd = (q0: number[] | undefined, q1: number[] | undefined): number | null => (q0 && q1 ? Math.round((2 * Math.acos(Math.min(1, Math.abs(q0.reduce((s, v, i) => s + v * (q1[i] ?? 0), 0)))) * 180) / Math.PI) : null);
+    const missing = ['ring:x', 'ring:y', 'ring:z'].filter((ax) => !seenAxis.has(ax));
+    if (missing.length > 0) {
+        let undos = 0;
+        for (; undos < 12 && (qd(quat0, (await ed(page)).pose?.quat) ?? 0) > 0; undos++) {
+            await page.click('[data-top="undo"]', { timeout: 3000 }).catch(() => undefined);
+            await sleep(400);
+        }
+        for (const ax of missing) {
+            let found: { dir: number[]; r: number; x: number; y: number } | null = null;
+            for (let k = 0; k < 16 && !found; k++) {
+                const dir = [Math.cos((k * Math.PI) / 8), Math.sin((k * Math.PI) / 8)];
+                const a = (await dbg(page))!;
+                const w = await walk(page, a.stand.screen, dir, 40, ax);
+                if (w && String(w.hit[1]) === ax) found = { dir, r: w.r, x: w.x, y: w.y };
+            }
+            if (!found) { turns.push({ axis: ax, second: true, hit: null, undos, backDeg: qd(quat0, (await ed(page)).pose?.quat) }); continue; }
+            const g0 = (await ed(page)).pose?.quat;
+            await drag(page, found.x, found.y, -found.dir[1]! * 100, found.dir[0]! * 100);
+            const g1 = (await until(() => ed(page), (e) => (qd(g0, e.pose?.quat) ?? 0) > 0, 1500)).v.pose?.quat;
+            const g100 = qd(g0, g1);
+            turns.push({ axis: ax, second: true, dir: found.dir.map(r2), r: found.r, undos, gate100: g100, gate100ok: g100 !== null && g100 >= 20 });
+        }
     }
     out.turn = turns;
     await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-turn-1920.png' : 'editor3-turn-1920.png') });
