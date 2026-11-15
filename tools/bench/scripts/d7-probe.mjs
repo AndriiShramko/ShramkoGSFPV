@@ -90,6 +90,9 @@ try {
     await page.waitForTimeout(8000);
     const t0 = Date.now();
     await page.keyboard.press('Shift+KeyG');
+    // review OC-1 (D7_BUSY=1): a second Shift+G 1 s later, while the course is being made, must be said, not dropped
+    const nBusy = (await page.evaluate(READ)).speech.length;
+    if (process.env.D7_BUSY) { await page.waitForTimeout(1000); await page.keyboard.press('Shift+KeyG'); out.busyPressS = +((Date.now() - t0) / 1000).toFixed(2); }
     // the wait logs what it reads every 10 s (pass 3: the first run timed out here with no log)
     out.wait = [];
     for (let k = 0; ; k++) {
@@ -101,6 +104,10 @@ try {
         await page.waitForTimeout(500);
     }
     out.course = { ...(await page.evaluate(READ)).course, madeS: +((Date.now() - t0) / 1000).toFixed(1) };
+    // every line said from the first Shift+G to the course made (times are the page's event times, ms)
+    out.saidWhileMaking = (await page.evaluate(READ)).speech.slice(nBusy).map((e) => ({ t: e.t, key: e.key, text: e.text }));
+    save();
+    if (process.env.D7_BUSY_ONLY) { console.log('busy only: done'); await browser.close(); process.exit(0); }
     await page.waitForTimeout(6000);
     out.install = await page.evaluate(INSTALL);
     const poses = await page.evaluate(() => window.__gsfpv.course.gatePoses());
