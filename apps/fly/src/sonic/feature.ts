@@ -219,6 +219,7 @@ function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: P
         keyNames: () => names.runner(),
         lessonKeys: () => names.lessonStart(),
         keyHints: () => keyHintsOn(entry.setup.host),
+        narratorOff: () => entry.setup.prefs.narrator === false,
         speechRate: () => entry.setup.prefs.speechRate,
         session: () => ctx.session,
         // a lesson with other walls: the flown session is replaced, the way the scene host replaces a scan (app/scene-host.ts),

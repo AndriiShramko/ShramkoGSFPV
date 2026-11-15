@@ -342,9 +342,12 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   in-place.ts, feature.ts intro (line about 585). New sounds go in the package (C:/dev/ShramkoSonicFPV branch train5, pin in
   packages/sonic-fpv) with an offline audio proof (level against the bar, no clipping) and the limit of sounds at once; the
   package's voices evidence needs `pnpm listen:words` only for new spoken lines (see cost notes O1 pass 3, O2).
-- [ ] K2.3 Q5 a lesson of the list opened with the narrator off switches the narrator on for itself, says so in its first line,
-  gives the setting back at its end (quietFlight in entry.ts already keeps lessons of the list voiced; what is left is the said
-  reason and the restore of the saved value, which today never changes).
+- [x] K2.3 Q5 (stage fixes pass 2): a lesson of the list keeps its words with the narrator off (entry.ts quietFlight, from K1);
+  now it says sonic.say.lessonNarrator ("The narrator is on for this lesson. It goes off again when the lesson ends.") once,
+  right after its title (lessons.ts 'say' action, the first step; LessonPage.narratorOff wired in feature.ts). The saved value
+  is never changed by a lesson, so nothing has to be given back. Test tools/bench/test/sonic-lesson-narrator.test.ts 3 passed;
+  neg_control.py on lessons.ts against HEAD: NEG OK by assertion (q5-neg.log); with sonic-hints, sonic-quiet, sonic-quiet-cues,
+  sonic-narrator-key: 31 passed (q5-v2.log); tsc apps/fly 0 errors. Not run in a browser.
 - [ ] K2.4 Q6 one line after the first course finished by sound with the narrator on, naming the K2.1 key; a flag in the sonic
   collection so it is never said again.
 - [ ] K2.5 Q7 captions: at most two lines, never over the course's clock block; measure the rectangles at 1920x1080, 1280x720,

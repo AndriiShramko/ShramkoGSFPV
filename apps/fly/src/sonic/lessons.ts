@@ -114,6 +114,12 @@ export interface LessonPage {
     lessonKeys?(): LessonStartKeys;
     /** the pilot's "Key hints" (SonicState.keyHints, key-hints.ts): false leaves the line of keys out; absent: on */
     keyHints?(): boolean;
+    /**
+     * Lane quiet (Q5): the pilot's narrator is off (SonicPrefs.narrator false). A lesson of the lesson list keeps its words anyway
+     * (entry.ts quietFlight) and says so once after its title; the saved setting is never changed, so it is off again after it.
+     * Absent: on.
+     */
+    narratorOff?(): boolean;
 }
 
 /** Where a lesson is opened from and with what: its start and floor (a scan lesson's own), a scan's gates, the way back of G. */
@@ -676,7 +682,10 @@ export class LessonHost {
                 const v = run.view();
                 const step = `${v.step}/${v.steps}`;
                 if (step !== this.hintStep) {
+                    // Q5: the lesson's first line (its title) with the narrator off: the narrator is on for this lesson, said once
+                    const first = this.hintStep === null;
                     this.hintStep = step;
+                    if (first && this.lesson?.id !== SCAN_FREE_ID && this.p.narratorOff?.() === true) void mode.bridge.say({ key: 'sonic.say.lessonNarrator' }, false, { lesson: true });
                     if (this.p.keyHints?.() !== false) void mode.bridge.say(this.keysLine(), false, { lesson: true });
                 }
                 break;

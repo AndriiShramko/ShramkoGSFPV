@@ -243,6 +243,8 @@ export class Rig {
     lessonKeys: LessonStartKeys = DEFAULT_LESSON_START_KEYS;
     /** the pilot's 'Key hints at the start of each step' (lane sonic-hints): false is off */
     keyHints = true;
+    /** lane quiet (Q5): the pilot's narrator setting is off */
+    narratorOff = false;
     pilot: LessonPilot | null = null;
     /** the page's reaction to a session pref the mode sets or clears (respawn.ts: crash.enabled is a 'life' setting); null: none */
     onPref: ((id: string) => void) | null = null;
@@ -335,7 +337,8 @@ export class Rig {
             keyNames: () => rig.keyNames,
             speechRate: () => rig.speechRate,
             lessonKeys: () => rig.lessonKeys,
-            keyHints: () => rig.keyHints
+            keyHints: () => rig.keyHints,
+            narratorOff: () => rig.narratorOff
         };
         rig.host = new LessonHost(page);
         if (lw) rig.host.seed(first.id, lw);
