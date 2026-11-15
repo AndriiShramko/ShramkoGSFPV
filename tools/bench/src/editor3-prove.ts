@@ -359,7 +359,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         turns.push({ dir, axis, r: w.r, per, turned: per.some((p) => (p as { deg: number }).deg > 0), gate100: g100, gate100ok: g100 !== null && g100 >= 20 });
     }
     out.turn = turns;
-    if (id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-turn-1920.png') });
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-turn-1920.png' : 'editor3-turn-1920.png') });
     out.turnUndo = await undoRedo(page);
     // review EI-3 (fixes pass 2): the view lowered (Q taps) to the gate's height, so the y ring is seen edge-on; a ring the
     // edit view takes itself ('edge:' from __gsfpvEditHit) is pressed and held half way: the turn set must stay enabled and
@@ -425,6 +425,8 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
         await sleep(600);
         kinds.push({ kind: k, box: !!box, line: (await sample(page)).line, said: ((await ed(page)).said ?? '').slice(0, 70) });
+        // integration E: the flat square (the bar's dive kind) selected, as a picture for the lead
+        if (k === 'dive') await page.screenshot({ path: join(SHOTS, `editor3-${id === '70b50d42' ? 'wroclaw' : 'tunis'}-flat-1920.png`) });
     }
     out.kinds = kinds;
     out.kindUndo = await undoRedo(page);
