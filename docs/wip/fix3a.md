@@ -35,7 +35,21 @@ Stage X1-walls-store
 - Bake time was 63 to 69 s here against 156 s in the first pass (a lighter way, line "rough"; the machine's saved
   bake speed changes the plan). Not examined.
 
-Stage 2 (gate 1 not in sight on Tunis seed 1): not started.
+Stage X2-gate-one (gate 1 not in sight on Tunis seed 1)
+- [x] release build of 8fe8bba2 (1930 files); 'before' run of the check 'A look (link seed 1)' alone (new LOOK_ONLY=1 of
+      tools/bench/src/tracks-page.ts): FAIL, paint on next 0 later 10 arrow 208, off: later 8 arrow 208 (24 gates, drawn
+      78) (evidence/2026-11-15/fix3a/tracks-look-before.json)
+- [~] Node measurement tools/bench/src/gate-one-audit.ts (spawn as session findSpawn, course as the worker asks it,
+      seeds 1-5, nine published walls + Tunis): running detached, log U:/Temp/gsfpv-train3/fix3a/gate-one-audit.log;
+      table goes under '## Gate 1 from the spawn'
+- [x] guide to the next gate: apps/fly/src/course/guide.ts (aimOf, placeGuide; GUIDE_NEAR_M 12, GUIDE_FRAME_SHARE 0.85,
+      GUIDE_MARGIN_PX 10 are design choices, not measurements), course/hud.ts guide() and hud.css .course-guide,
+      app/builtin/course.ts frame() feeds it the drawn camera, hook course.guide(); key course.hud.guide in en, es, pl, ru.
+      Unit test tools/bench/test/course-guide.test.ts 8 passed; negative control (guide.ts absent on origin/main): NEG OK,
+      it fails by the missing module, not by an assertion. tsc apps/fly: no errors.
+- [ ] browser proof on Tunis (link seed 1) and Wroclaw 70b50d42 (Shift+G on the published walls): four shots, numbers
+- [ ] tracks-page 'A look (link seed 1)': a gate in the frame OR the guide pointing to gate 1 on the right side
+- [ ] a6-reference, gates.py --only vitest,architecture,i18n,b18
 
 ## Measured
 

@@ -23,6 +23,8 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
+import { aimOf } from '../../course/guide';
+import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
 import { bestKey, editOfLink, firstOffer, readBest, seedOfLink, servedOfLink, withCourse, writeBest } from '../../course/link';
 import { CourseStore, type CourseRow } from '../../course/store';
@@ -65,6 +67,7 @@ export const course: Feature = {
         ctx.hook.course = hook;
         // stage G4-prove: the probes read where the gates stand (flown frame) to fly through them and draw them from above
         hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]] })) : []);
+        hook.guide = () => ({ ...hud.guideState });
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
@@ -190,7 +193,24 @@ export const course: Feature = {
                 shownNext = next;
             }
             hud.update(v, run.gates.length);
+            // stage X2-gate-one: the guide to the next gate (gate 1 before the start), from the moment the course appears
+            const target = v.running || v.next >= 0 ? v.next : 0;
+            const done = !v.running && v.laps >= v.lapsPerRun;
+            const g = run.gates[target];
+            const cam = done || !g ? null : guideCamera();
+            hud.guide(cam && g ? aimOf(cam, [g.pos[0], g.pos[1], g.pos[2]]) : null, target);
             sync();
+        };
+        /** the drawn camera in the flown world (the gates are drawn at their flown places, course/view.ts) */
+        const guideCamera = (): GuideCamera | null => {
+            const e = ctx.renderer.camera;
+            const cc = e?.camera;
+            if (!e || !cc) return null;
+            const p = e.getPosition(), r = e.right, u = e.up, f = e.forward;
+            const aspect = Math.max(1, window.innerWidth) / Math.max(1, window.innerHeight);
+            const half = Math.tan(((cc.fov ?? 115) * Math.PI) / 360);
+            const tanH = cc.horizontalFov ? half : half * aspect;
+            return { pos: [p.x, p.y, p.z], right: [r.x, r.y, r.z], up: [u.x, u.y, u.z], fwd: [f.x, f.y, f.z], tanH, tanV: tanH / aspect };
         };
 
         // stage G1-progress: the generation's line on the HUD every PROGRESS_TICK_MS, spoken to Fly by Sound at the pacer's pace

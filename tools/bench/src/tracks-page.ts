@@ -640,7 +640,8 @@ async function main(): Promise<void> {
             out.adminLink = await adminLinkFlow(browser, served.site, log, (out.editor as { fork?: { id?: string | null } }).fork?.id ?? null, secret);
             throw new Error('EDITOR_ONLY');
         }
-        out.hint = await hintClearOfTimer(browser, served.site, log);
+        // LOOK_ONLY=1: the A look alone (lane fix3a, stage X2-gate-one)
+        if (process.env.LOOK_ONLY !== '1') out.hint = await hintClearOfTimer(browser, served.site, log);
         // HINT_ONLY=1: the hint check alone (its negative control on a build of origin/main)
         if (process.env.HINT_ONLY === '1') throw new Error('HINT_ONLY');
 
@@ -653,6 +654,7 @@ async function main(): Promise<void> {
         // the paint, not the whole difference: hiding the course also hides the HUD's lap block (run 4: 16495 px changed with the root detached)
         check(`A look (link seed 1, ${lk.v?.gates} gates): >= ${MIN_PX} more pixels of the course's paint than with Shift+T`, (lk.v?.drawn ?? 0) > 0 && total(look.on) - total(look.off) >= MIN_PX, { drawn: lk.v?.drawn, ...look });
         check('A Shift+T: drawn 0', look.drawnOff === 0, look.drawnOff);
+        if (process.env.LOOK_ONLY === '1') throw new Error('LOOK_ONLY');
         const before = lk.v?.track?.id ?? null;
         await a.keyboard.press('Shift+KeyG');
         const gen = await until(() => course(a), (h) => (h?.source === 'generated' && h.track?.id !== before) || !!h?.problem, 90000);
@@ -757,7 +759,7 @@ async function main(): Promise<void> {
         out.editor = await editorFlow(browser, served.site, log);
         out.adminLink = await adminLinkFlow(browser, served.site, log, (out.editor as { fork?: { id?: string | null } }).fork?.id ?? null, secret);
     } catch (err) {
-        if (String(err) !== 'Error: HINT_ONLY' && String(err) !== 'Error: EDITOR_ONLY') check('the run finished', false, String(err).slice(0, 300));
+        if (!['Error: HINT_ONLY', 'Error: EDITOR_ONLY', 'Error: LOOK_ONLY'].includes(String(err))) check('the run finished', false, String(err).slice(0, 300));
     } finally {
         await browser?.close().catch(() => undefined);
         letGo();

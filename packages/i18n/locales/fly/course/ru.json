@@ -6,6 +6,7 @@
   "course.menu.off": "Трасса: скрыть",
   "course.hud.lap": "Круг {n} из {of}",
   "course.hud.next": "Ворота {n} из {of}",
+  "course.hud.guide": "Ворота {n} · {m} м",
   "course.hud.last": "Последний {time}",
   "course.hud.best": "Лучший {time}",
   "course.generating": "Строю трассу в свободном пространстве этого скана...",
