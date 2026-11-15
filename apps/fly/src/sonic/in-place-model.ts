@@ -32,6 +32,14 @@ export function failedLine(noWebAudio: boolean, key: string): { readonly key: st
     return noWebAudio ? { key: 'sonic.start.noAudio' } : { key: 'sonic.menu.hereFailed', params: { key } };
 }
 
+/**
+ * The introduction said at the switch-on (lane onecourse, D1): with a course in the scene it says the hum leads to its next gate and
+ * names no key that makes a course; without one it names Shift+G for a course.
+ */
+export function introKey(courseInScene: boolean): 'sonic.say.inPlaceIntroCourse' | 'sonic.say.inPlaceIntro' {
+    return courseInScene ? 'sonic.say.inPlaceIntroCourse' : 'sonic.say.inPlaceIntro';
+}
+
 /** A pilot who never flew by sound: no lesson progress saved and never chose "I already fly by sound". */
 export function firstTimer(progress: Readonly<Record<string, unknown>>, fliesBySound: boolean): boolean {
     return !fliesBySound && Object.keys(progress).length === 0;

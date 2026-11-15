@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { analyticCollision } from '../../../packages/collision/src';
-import { Rig } from './sonic-lesson-rig';
+import { Rig, SharedCourse } from './sonic-lesson-rig';
 import type { RigScan } from './sonic-lesson-rig';
 import { parseTrack, scanFreeLesson } from '../../../packages/sonic-fpv/src';
 import type { TrackFile } from '../../../packages/sonic-fpv/src';
@@ -46,7 +46,8 @@ describe('the free flight by sound over a scan without walls builds them and goe
         let finish: (ok: boolean) => void = () => undefined;
         const r = await Rig.make(free, {
             scan: scanOf(track),
-            course: { key: () => 'N', ask: async () => ({ ok: false, why: 'none fits' }) },
+            // lane onecourse: the course feature's course, none in the scene yet (the offer names Shift+G)
+            course: new SharedCourse(() => track, { s: 5, t: [0, 0, 0] }),
             walls: {
                 build: () =>
                     new Promise<boolean>((ok) => {

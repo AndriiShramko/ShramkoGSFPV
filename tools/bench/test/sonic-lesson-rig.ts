@@ -18,6 +18,9 @@ import type { AppEvents } from '../../../apps/fly/src/app/context';
 import type { ActionHandler } from '../../../apps/fly/src/app/keys';
 import { LessonPilot, rayClearance } from '../../../apps/fly/src/play/lesson-pilot';
 import { LessonHost } from '../../../apps/fly/src/sonic/lessons';
+import { CourseRun } from '../../../apps/fly/src/course/run';
+import type { FlownTransform } from '../../../apps/fly/src/course/run';
+import type { SonicObject, TrackFile as CourseTrack } from '../../../packages/sonic-fpv/src';
 import { engineDicts } from '../../../apps/fly/src/sonic/host-lines';
 import type { LessonPage } from '../../../apps/fly/src/sonic/lessons';
 import { buildScanLesson } from '../../../apps/fly/src/sonic/scan-lesson';
@@ -254,8 +257,9 @@ export class Rig {
      * A page on the first lesson's world (or, with `scan`, on that scan). `store`: the pilot's saved state of an earlier page
      * (progress, best times) instead of an empty one.
      */
-    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course']; walls?: LessonPage['walls'] } = {}): Promise<Rig> {
+    static async make(first: LessonDef, o: { scan?: RigScan; store?: ReturnType<typeof mkStore>; course?: LessonPage['course'] | SharedCourse; walls?: LessonPage['walls'] } = {}): Promise<Rig> {
         const rig = new Rig();
+        if (o.course instanceof SharedCourse) rig.shared = o.course;
         if (o.store) rig.store = o.store;
         const scan = o.scan ?? null;
         const lw = scan ? null : lessonFlightWorld(first);
@@ -320,17 +324,8 @@ export class Rig {
                           src: { collision: () => rig.session.collision, transform: () => ({ s: scan.transform[0], t: [scan.transform[1], scan.transform[2], scan.transform[3]] }) }
                       }, { course: lesson.id === SCAN_FREE_ID })
                     : null,
-            course: o.course
-                ? {
-                      key: o.course.key,
-                      ask: async () => {
-                          const a = await o.course!.ask();
-                          // what feature.ts courseOf does with an answer: the course goes into the tracks cache under its id and version
-                          if (a.ok) rig.courses.set(`${a.track.id}@${a.track.version}`, a.track);
-                          return a;
-                      }
-                  }
-                : undefined,
+            // lane onecourse: the course in the scene (the course feature's, course.ts hook.sound), as feature.ts courseOf gives it
+            course: o.course instanceof SharedCourse ? o.course.page() : o.course,
             walls: o.walls,
             showMenu: () => { rig.menus++; },
             clock: () => rig.clock.t,
@@ -378,6 +373,8 @@ export class Rig {
         const s = this.mode.frame(this.clock.t);
         if (!s) return;
         this.last = s;
+        // the course feature's frame counts the passes of the course in the scene before the sound mode reads its next gate
+        this.shared?.feed(this.clock.t, s.pos);
         if (this.host.active) this.host.frame(s);
         else this.mode.hear(s);
     }
@@ -466,6 +463,44 @@ export class Rig {
 
     dispose(): void {
         this.session.dispose();
+    }
+
+    /** lane onecourse: the course feature's course when the test gave one (Rig.make course: a SharedCourse) */
+    shared: SharedCourse | null = null;
+}
+
+/**
+ * Lane onecourse (the owner's message 52): the course in the scene as the course feature holds it (app/builtin/course.ts hook.sound)
+ * over the real CourseRun and its lap timer: generate() replaces the course (Shift+G, and N in Fly by Sound), the passes are counted
+ * from the craft's position each frame, and the progress belongs to it, not to the sound mode.
+ */
+export class SharedCourse {
+    run: CourseRun | null = null;
+    /** how many courses generate() made */
+    made = 0;
+    constructor(
+        private readonly make: () => CourseTrack,
+        private readonly tr: FlownTransform,
+        /** the key name the page gives for the action */
+        private readonly keyName = 'Shift+G'
+    ) {}
+
+    generate(): void {
+        this.made++;
+        this.run = new CourseRun(this.make(), this.tr);
+    }
+
+    inUse(): { track: CourseTrack; next: number; gates: readonly SonicObject[] } | null {
+        const r = this.run;
+        return r ? { track: r.track, next: r.view().next, gates: r.gates } : null;
+    }
+
+    feed(tMs: number, pos: Vec3): void {
+        this.run?.feed(tMs, pos);
+    }
+
+    page(): NonNullable<LessonPage['course']> {
+        return { key: () => this.keyName, inUse: () => this.inUse(), generate: () => this.generate() };
     }
 }
 
