@@ -85,7 +85,7 @@ export function randomSeed(): number {
 }
 
 /** A worker of its own (made on the first ask, ended after each answer: a course is asked for seldom, and the walls copy is large). */
-export function askCourse(s: CourseSource, seed: number): Promise<CourseAnswer> {
+export function askCourse(s: CourseSource, seed: number, onProgress?: (step: string, estMs: number) => void): Promise<CourseAnswer> {
     const msg = courseJob(s, seed, 1, new Date().toISOString());
     if (!msg) return Promise.resolve({ ok: false, why: 'no walls' });
     return new Promise((resolve) => {
@@ -97,6 +97,8 @@ export function askCourse(s: CourseSource, seed: number): Promise<CourseAnswer> 
         };
         const timer = setTimeout(() => done({ ok: false, why: 'failed' }), COURSE_LIMIT_MS);
         worker.onmessage = (e: MessageEvent<FromCourseWorker>) => {
+            // sonic3 S1 pass 3: each step of the worker is said (course-speech.ts)
+            if (e.data.t === 'progress' && e.data.job === msg.job) onProgress?.(e.data.step, e.data.estMs);
             const a = courseAnswer(e.data, msg.job);
             if (a) done(a);
         };

@@ -63,6 +63,11 @@ Stage S1-count-a-course (train 3 wave 3, last finishing lane):
   = 1 in courseAnswer (a setting of the sound course; the generator default unchanged). Test sonic-scan-course "a course by
   sound is one lap": 7 of 7, NEG OK on HEAD course-ask.ts; apps/fly and tools/bench tsc 0 errors. Probe r11 records the
   flight's life spy (flight.spy, s from the flight start) and the last 30 trail rows (item A: measure before fixing).
+- [x] Pass 3, item E: the course's making is said in Fly by Sound: sonic/course-speech.ts (ProgressClock + SpeechPacer +
+  spokenLine of course/progress.ts; the line of N counts as the first, so no progress line over it), askCourse(..., onProgress)
+  passes the worker's 'progress' steps, feature.ts courseOf says them through 'sonic.say.text' and stops the clock at the
+  answer. Test sonic-course-speech 1 of 1; mutation control (the pacer not primed) fails by assertion (new file, no old
+  version); sonic-scan-course 7 of 7; apps/fly tsc 0 errors. Not heard in a browser yet (the pass-3 runs use the dist of 04e072fc).
 - [ ] LEFT after pass 2, in this order:
   A. Tunis 3 m/s: what puts the craft back near the start after g4 and keeps it bouncing between y 2.1 and -0.4 (trail of
      d-887f27aa-3.json, 285 to 299 s). Guess, not measured: a crash respawn of the pilot's crash rule that goes to the course

@@ -53,6 +53,7 @@ import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
 import { askCourse, randomSeed } from './course-ask';
+import { courseSpeech } from './course-speech';
 import { soundCourseSeed } from '../app/builtin/sonic-flight';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
@@ -191,7 +192,7 @@ async function scanLesson(ctx: FlightContext, mode: SonicMode, entry: SonicEntry
  * the page's course= link (the course Shift+G made on the sighted page that opened this one), later ones a random seed. The course
  * goes into the tracks cache under its id and version, so the lesson that names it (scanCourseLesson) finds it without a fetch.
  */
-function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonNullable<LessonPage['course']> {
+function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames, mode: SonicMode): NonNullable<LessonPage['course']> {
     // the address as it is now, read the way the other features read it (app/env.ts is the one reader of the page's query at boot;
     // packages/prefs/test/main-audit.test.ts)
     let linkSeed = soundCourseSeed(new URL(location.href).search);
@@ -200,7 +201,12 @@ function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonN
         async ask() {
             const seed = linkSeed ?? randomSeed();
             linkSeed = null;
-            const a = await askCourse(ctx.session, seed);
+            // sonic3 S1 pass 3: the making is said with its step and the time left (course-speech.ts), as the line of N was
+            const speech = courseSpeech((text) => void mode.bridge.say({ key: 'sonic.say.text', params: { text } }, false, { lesson: true }), t, () => performance.now(), (fn, ms) => {
+                const id = window.setInterval(fn, ms);
+                return () => window.clearInterval(id);
+            });
+            const a = await askCourse(ctx.session, seed, (step, estMs) => speech.progress(step, estMs)).finally(() => speech.stop());
             if (a.ok) tracks.set(`${a.track.id}@${a.track.version}`, Promise.resolve(a.track));
             return a;
         }
@@ -210,7 +216,7 @@ function courseOf(ctx: FlightContext, tracks: TrackCache, names: KeyNames): NonN
 /** The page as the lesson host sees it. */
 function pageOf(ctx: FlightContext, mode: SonicMode, entry: SonicEntry, stage: PrimitiveStage, tracks: TrackCache, showMenu: () => void, names: KeyNames): LessonPage {
     return {
-        course: courseOf(ctx, tracks, names),
+        course: courseOf(ctx, tracks, names, mode),
         // walls lane: a free flight over a scan without walls gets them built (progress in the walls box) and goes on with them
         walls: { build: () => wallsThen(ctx, () => {}).then((r) => r === 'now' || r === 'built') },
         mode,
