@@ -124,6 +124,37 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   (+2), with overlay.test.ts 31 passed. Negative controls: the overlay.ts of 97b62626 has no groupPlan (TypeError,
   no assertion possible); groupPlan without its one-level check fails "expected 8 to be 7"; drawnShare counting a
   group as one chunk fails "expected 3 to be 10". Typecheck apps/fly, packages/collision, packages/render-pc: 0 errors.
+- [x] X2.8 Time left in the walls line (commit 3be318ba): voxels.fillLeft in packages/i18n/locales/fly/{en,es,pl,ru}.json
+  appended to voxels.statusWhole while the share is under 100; apps/fly/src/voxel-keeper.ts fillLeftS (test +1,
+  mutation control: dividing by 100 instead of the share fails "expected 2 to be 6"); the share is 0 before the
+  first plan (it read 100 while the grid was prepared). a6-reference PASS; gates.py --only architecture,i18n,b18,leaks
+  PASS (U:/Temp/gsfpv-gates-20261115-234714).
+- [x] X2.9 Browser after (release 854214b2 and 3be318ba, port 5742, Facts X2 after). Pictures looked at:
+  voxview-far.png, voxview-street.png, voxview-far-weak.png (Wroclaw), voxview-tunis.png.
+
+## Facts X2 after (release 854214b2 / 3be318ba, voxels alone, BENCH_UNCAPPED=1, 1280x800, port 5742)
+
+Results U:/Temp/gsfpv-train2/voxview/far-x2c.json, far-x2c-weak.json, far-x2d-tunis.json, far-x2d.json (logs beside).
+- Wroclaw 70b50d42, street eye: 27236 of 27236 wall chunks on screen, to 231 m (the farthest wall chunk), chunks per
+  level 158 / 1145 / 4367 / 21566 in meshes 158 / 423 / 655 / 632 (1868 draws, before 27236), 1.24 M faces. Frame
+  6.2 and 6.4 ms mean (p95 17-18) against 28.5 ms before; the scan alone 5.4 to 7.2 ms. From the switch to the far
+  end on screen: 16.5 s (3be318ba; the first 7 s prepare the grid, share 0) and 10.2 s (854214b2), before 214.6 s.
+  Share over time (3be318ba): 2 % at 9.2 s, 19 % at 11.3 s, 71 % at 14.4 s, 96 % at 15.5 s, 100 % at 16.5 s.
+- Wroclaw 60 m up, looking down 40 deg: 27236 chunks to 236 m, meshes 174 / 478 / 1089 / 877, frame 9.9 ms (p95 34)
+  against 33.3 ms before; the swap after the move took 4.2 s, share 77 % to 100 %, the far part stayed drawn.
+- Weak device forced (voxels.setDetail(0.125), the keeper's floor, 60 m up): 27236 chunks to 236 m, per level
+  48 / 110 / 458 / 26620, meshes 48 / 102 / 331 / 660, 0.38 M faces, frame 9.6 ms (p95 34). The far part stays.
+- Tunis 887f27aa (shipped 5 cm walls), street eye: 5340 of 5340 chunks to 116 m, per level 417 / 1455 / 3468 / 0,
+  1048 meshes, frame 3.6 ms (scan alone 5.6 ms), full 5.1 s after the switch. 60 m up: 5340 to 130 m, 1540 meshes,
+  frame 5.1 ms, swap 3.0 s.
+- V3 rule (apps/fly/src/voxel-keeper.ts): a mean frame over 40 ms in a 1 s look halves the near budgets' share (floor
+  1/8), 4 looks in a row under 20 ms double it; the coarsest level always holds every chunk. On this PC the frames
+  stay 4 to 10 ms, so the keeper never acted; its thresholds are estimates (no weak device was used).
+- Pictures (U:/Temp/gsfpv-train3/shots), looked at: voxview-far.png (60 m over Wroclaw: the whole city in voxels to
+  the horizon, only courtyards and the sky black; voxview-far-before.png showed a patch under the craft only);
+  voxview-street.png (near walls per voxel, the street's far end filled with larger cubes, no hole);
+  voxview-far-weak.png (same coverage as voxview-far.png, coarser near ground); voxview-tunis.png (60 m over Tunis:
+  the whole old town in voxels to the scan's edge).
 
 ## Facts X2 (browser, Wroclaw 70b50d42, stand-in 5 cm walls, BENCH_UNCAPPED=1, 1280x800)
 
@@ -192,23 +223,15 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-Stage X2-whole-scene, in this order (the X2 code draws the whole scene; seen in a browser on Wroclaw, Facts X2 browser):
-1. Group meshes for the far levels (the measured cost is 27236 meshes, Facts X2 browser): one mesh per group of
-   4x4x4 chunks at level 3 (and 2x2x2 at level 2), keyed apart from the chunks, built by the worker in one message;
-   a group replaces its chunks only after it lands (no hole). Target: frame time near the scan alone (7 ms here).
-2. The share counts uploads, not worker results: drawn = in the overlay (overlay has(key) at the planned level);
-   and raise maxUploadsPerFrame for small meshes (the face cap of 20000 per frame stays): measure the fill time again
-   (now 214.6 s at the street; the prompt wants seconds).
-3. The keeper (apps/fly/src/voxel-keeper.ts): its 40 ms threshold is an estimate; after 1 and 2, measure again and
-   state the rule with the numbers.
-4. Unit tests for 1 and 2 with negative controls (a group covers every cell of its chunks; the share is below 100
-   while uploads wait).
-5. Rebuild the release, rerun voxview-depth-probe.mjs --far on 70b50d42 (before numbers stand, Facts X2 browser),
-   pictures voxview-far.png, voxview-street.png again; Tunis 887f27aa (no stand-in walls: the walls build themselves;
-   the probe waits up to 500 s for them): voxview-tunis.png and its numbers.
-6. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5740/en), walls-published-probe on the
-   local copy, typecheck apps/fly, packages/collision, packages/render-pc, gates.py --only
-   vitest,architecture,i18n,b18,leaks, a6-reference. Status: What the owner does, Not verified, For the lead.
+Stage X2-whole-scene, in this order (built and measured: Facts X2 after):
+1. Time left reads too high early (Wroclaw street, 3be318ba: 452 s at 2 %, 136 s at 7 %, done 7 s later): the
+   average from the fill's start is dragged by the slow near chunks. Use the pace of the last 2 s (samples kept in
+   apps/fly/src/voxels.ts stats(), pure rule in voxel-keeper.ts fillLeftS), test with control, rebuild, rerun
+   FAR_PHASES=spawn on 70b50d42 and read the series' 5th column. The probe's midLine picked "Opacity100 %": select
+   the text with "drawn," instead (tools/bench/scripts/voxview-depth-probe.mjs, fill()).
+2. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5742/en; it takes the GPU lock itself),
+   walls-published-probe on the local copy (wrap in the lock), gates.py --only vitest (alone, no probe beside it).
+3. Status: What the owner does, Not verified (no weak device), For the lead (list below is current).
 - Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; X1 put
   it back on the pin with git submodule update (clean working tree, nothing lost).
 
@@ -217,7 +240,7 @@ Stage X2-whole-scene, in this order (the X2 code draws the whole scene; seen in 
 - Changed outside the voxel view in X2: packages/collision/src/mesh.ts (buildChunkBlockFaces option merge; facesFromOcc
   takes any cell size) and packages/collision/src/overlay.ts (far levels, whole-scene plan): not vendored files;
   apps/fly/src/app/test-hook.ts (voxels.setDetail in the hook type); packages/i18n/locales/fly/{en,es,pl,ru}.json
-  (voxels.statusWhole).
+  (voxels.statusWhole, voxels.fillLeft); packages/render-pc/src/voxel-overlay.ts (pending(key)).
 - Changed outside the voxel view: apps/fly/src/walls.ts (the panel's header, fold, close, placement: the block that
   builds 'walls-more'), apps/fly/src/fly.css (.walls-menu and the new .walls-head rules), tools/bench/src/a1-api-check.ts
   (five public members in USED). apps/fly/src/course/view.ts is NOT changed: its materials already have depthTest and
