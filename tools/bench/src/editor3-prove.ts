@@ -607,8 +607,13 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         const pick = (await ed(page)).selected ?? -1;
         const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
         if (pick === del) movedGone = true;
-        const how = await page.click('.ce-gatebar [data-bar="delete"]', { timeout: 3000, force: true }).then(() => 'bar').catch(async () => { await page.keyboard.press('Delete'); return 'key'; });
-        removed.push({ pick, problems: e.problems, gates: (await hook(page))?.gates, how, line: line.slice(0, 90) });
+        // pass 2 run 1: page.click(force) on the bar's cross deleted nothing 22 times (24 gates stayed): a real mouse press
+        // on the cross with what lies under it recorded, then the Delete key if the count did not change
+        const g0 = (await hook(page))?.gates ?? 0;
+        const bar = await clickBar(page, 'delete');
+        let how = 'bar';
+        if (((await hook(page))?.gates ?? 0) === g0) { await page.keyboard.press('Delete'); await sleep(900); how = ((await hook(page))?.gates ?? 0) < g0 ? 'key' : 'none'; }
+        removed.push({ pick, problems: e.problems, gates: [g0, (await hook(page))?.gates], how, bar, line: line.slice(0, 90) });
     }
     out.redRemoved = { steps: removed, problems: (await ed(page)).problems, gates: (await hook(page))?.gates, movedGone };
     // G3 pass 3: the gate the reload compares is the one at index `cmp` right before Save (the moved gate when it stayed and
