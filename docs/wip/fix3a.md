@@ -1245,15 +1245,15 @@ U:/Temp/gsfpv-train3/walls/release (9 scans incl. 70b50d42); served on 5780, sto
       line, clear of the top buttons and the credit); course4-start-60m-tunis.png (the gate is lost in the scene from
       60 m; the label 'START - 60 m' in a dark box marks it and reads at once). course4-start-gate.png and
       course4-next-gate.png are copies of this pass's Wroclaw pictures, not looked at again (pass 1 described them).
-- [ ] gates.py pass 2: vitest, architecture, i18n, leaks PASS (vitest 123 s); b18 FAILED on the placeholder word in
-      this file's pass-1 line, rewritten in this commit, not rerun.
+- [x] gates.py pass 2: vitest, architecture, i18n, leaks PASS (vitest 123 s); b18 failed on the placeholder word in
+      this file's pass-1 line, rewritten; b18 rerun alone: PASS.
 
 ## Left (Z1-see after pass 2)
 
 1. A finding for the lead: on Wroclaw and Tunis 18 of 18 courses Shift+G gave are open (laps 1), so a pilot of the
    owner's scans never sees the lap splash, only the card at each run's end; the closing rule is in
    packages/tracks/src/generate.ts lines 685-690 (a gate half way along must see the start).
-2. Not run: gates.py rerun for b18; OFF=1 ('Lap time on screen' off); pause-over-course-probe (8 of 8); the Fly by
+2. Not run: OFF=1 ('Lap time on screen' off); pause-over-course-probe (8 of 8); the Fly by
    Sound page proof of CU-1 and CU-2 (Shift+G in the sound mode gives single gates; the spoken line and the splash at a
    lap end); Forest Floor ab5efa0e (A2); A1 (no wall cell in the gate tube); A3 (ladder by the flown craft).
 3. course4-start-gate.png and course4-next-gate.png of this pass not looked at; the checker on the ring was seen in
