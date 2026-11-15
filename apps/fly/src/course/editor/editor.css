@@ -197,6 +197,11 @@
     .ce-topbar .ce-tb-line { display: none; }
     .ce-gatebar .ce-gb { width: 44px; height: 44px; padding: 11px; }
 }
+/* train 3 I2 (D7): a view lower than 500 px: the bar goes under the scene credit and the Walls chip's summary (top-bar.ts
+   place() writes their lowest bottom edge to --ce-below), so 'Walls 5 cm' and the credit stay readable */
+@media (max-height: 500px) {
+    .ce-topbar { top: max(calc(var(--top-row-bottom, 78px) + 4px), var(--ce-below, 0px)); }
+}
 /* lane editor3 H2-look: the opening in metres beside the Size handle while it is dragged (view-mouse.ts showTag) */
 .ce-size-tag {
     position: fixed;
@@ -219,8 +224,8 @@ body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud,
 /* train 3 I2 (D5, the lead's decision): the rest of the flight goes too: the throttle style hint under the mode line
    (ui/mode-chip.ts), the THR, speed and ALT line, the key hints line and the voltage and time (ui/hud.ts .osd bl, br, tr),
    F3's lines (.osd-col), the REC row with Auto and the folder button and its dot and notice (app/builtin/cinema.ts), the
-   crash card (ui/crash-overlay.ts). The mode line (.osd.tl: DISARMED and the flight mode) stays. */
-body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd.br, .hud .osd.tr, .osd-col, .rec-bar, .rec-dot, .rec-notice, .crash-overlay) { display: none !important; }
+   crash card (ui/crash-overlay.ts), the next-scene hint after a crash (ui/next-hint.ts). The mode line (.osd.tl: DISARMED and the flight mode) stays. */
+body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd.br, .hud .osd.tr, .osd-col, .rec-bar, .rec-dot, .rec-notice, .crash-overlay, .next-hint) { display: none !important; }
 /* train 3 I2 (D7, the lead's decision): on a view lower than 500 px the edit mode is a mouse and keyboard tool: the Walls chip's
    open menu (walls switch, voxel grid, style, opacity, export, import: walls.ts walls-more) is hidden in the edit view, the
    chip's summary line ('Walls 5 cm') stays; back in the test flight and after Exit */

@@ -46,7 +46,7 @@ async function until<T>(get: () => Promise<T>, ok: (v: T) => boolean, ms: number
 const table = (p: Page): Promise<Record<string, unknown>> => p.evaluate(() => {
     const parts: Record<string, string> = {
         hint: '.mode-chip', thr: '.hud .osd.bl', keys: '.hud .osd.br', rec: '.rec-bar', recDot: '.rec-dot', volt: '.hud .osd.tr', stats: '.osd-stats',
-        crash: '.crash-overlay', crashToast: '.crash-toast', lap: '.course-hud', note: '.hud-note', gateMsg: '.gate-msg', armCard: '.arm-card', f3: '.osd-col',
+        crash: '.crash-overlay', crashToast: '.crash-toast', lap: '.course-hud', note: '.hud-note', gateMsg: '.gate-msg', armCard: '.arm-card', f3: '.osd-col', nextHint: '.next-hint',
         modeLine: '.hud .osd.tl', voxels: '.wv', topbar: '.ce-topbar', gatebar: '.ce-gatebar'
     };
     const shown = (e: Element | null): boolean => {
@@ -210,29 +210,40 @@ async function kbd(page: Page): Promise<Record<string, unknown>> {
     out.armMs = Date.now() - t0;
     out.modeArmed = fm?.mode;
     const vp = page.viewportSize()!;
+    out.droneArmed = fm?.drone;
     const steps: unknown[] = [];
     const climb = process.env.CLIMB ?? '';
-    for (let i = 0; i < 60; i++) {
+    // pass 3: the gate's world height (the hook's answer); the climb key is held across steps while the drone is under it and
+    // let go only after 400 ms (a shorter Space is the disarming tap); the gate behind: turn (E); ahead: E/Q to centre, W
+    const gateY = (out.put as { gate?: number[] } | null)?.gate?.[1] ?? null;
+    let climbAt = 0;
+    for (let i = 0; i < 80; i++) {
         const d = await dbg(page);
         const c = await course(page);
         const g = d?.gates?.[0];
-        steps.push([i, c?.next, d?.mode, (await osd()).replace(/\s+/g, ' '), d?.drone?.[1] ?? null, g ? g.map((v) => Math.round(v)) : null]);
+        const y = d?.drone?.[1] ?? null;
+        steps.push([i, c?.next, d?.mode, (await osd()).replace(/\s+/g, ' '), y, g ? g.map((v) => Math.round(v)) : null, climbAt ? 'C' : '']);
         if (c?.next !== nextBefore || d?.mode !== 'fly') break;
         const keys: string[] = [];
-        if (i >= 4) {
+        if (climb && gateY !== null && y !== null) {
+            const low = y < gateY - 0.2;
+            if (low && !climbAt) { await page.keyboard.down(climb); climbAt = Date.now(); }
+            else if (!low && climbAt && Date.now() - climbAt > 400) { await page.keyboard.up(climb); climbAt = 0; }
+        }
+        if (i >= 2) {
             if (g && g[2]! > 0) {
                 const ex = (g[0]! - vp.width / 2) / (vp.width / 2);
-                const ey = (g[1]! - vp.height / 2) / (vp.height / 2);
                 if (ex > 0.1) keys.push('KeyE'); else if (ex < -0.1) keys.push('KeyQ');
-                if (climb && ey < -0.15) keys.push(climb);
                 if (Math.abs(ex) < 0.4) keys.push('KeyW');
-            } else keys.push('KeyW');
+            } else keys.push('KeyE');
         }
         for (const k of keys) await page.keyboard.down(k);
         await sleep(250);
         for (const k of keys) await page.keyboard.up(k);
         await sleep(50);
     }
+    if (climbAt) { await sleep(Math.max(0, 450 - (Date.now() - climbAt))); await page.keyboard.up(climb); }
+    await sleep(300);
     out.steps = steps;
     out.nextAfter = (await course(page))?.next;
     out.flyingTable = await table(page);

@@ -60,8 +60,33 @@ export class TopBar {
         });
         window.addEventListener('keydown', this.onAct, true);
         window.addEventListener('pointerdown', this.onAct, true);
+        window.addEventListener('resize', this.place);
+        this.ui = ui;
+        if (typeof ResizeObserver !== 'undefined') this.watch = new ResizeObserver(() => this.place());
         this.adding(false);
+        this.place();
+        requestAnimationFrame(() => this.place());
     }
+
+    private readonly ui: HTMLElement;
+    private readonly watch: ResizeObserver | null = null;
+    private watched: Element[] = [];
+    /** train 3 I2 (D7): on a view lower than 500 px the bar goes under the scene credit and the Walls chip's summary, so it
+     * covers neither: their lowest bottom edge (page px) is written to --ce-below, used by editor.css (max-height: 500px) */
+    private readonly place = (): void => {
+        const parts = [...this.ui.querySelectorAll('.attribution, [data-testid="walls-box"]')];
+        if (this.watch && (parts.length !== this.watched.length || parts.some((p, i) => p !== this.watched[i]))) {
+            this.watch.disconnect();
+            for (const p of parts) this.watch.observe(p);
+            this.watched = parts;
+        }
+        let below = 0;
+        for (const p of parts) {
+            const r = p.getBoundingClientRect();
+            if (r.height > 0 && r.top < window.innerHeight / 2) below = Math.max(below, r.bottom);
+        }
+        this.root.style.setProperty('--ce-below', `${Math.round(below + 4)}px`);
+    };
 
     /** D6: one line, at most 420 px with an ellipsis (editor.css); the full text in its title */
     private setLine(text: string): void {
@@ -87,6 +112,7 @@ export class TopBar {
     /** the drone flies: the bar steps aside (the line stays, it says how to come back) */
     flying(on: boolean): void {
         this.root.classList.toggle('flying', on);
+        this.place();
         this.hold.reset();
         this.line.classList.remove('refused');
         this.setLine(t(on ? 'course.edit.flying' : 'course.edit.flyHint'));
@@ -96,6 +122,8 @@ export class TopBar {
         this.hold.stop();
         window.removeEventListener('keydown', this.onAct, true);
         window.removeEventListener('pointerdown', this.onAct, true);
+        window.removeEventListener('resize', this.place);
+        this.watch?.disconnect();
         this.root.remove();
     }
 }

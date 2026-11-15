@@ -70,7 +70,7 @@ describe('editor3 I2 the top bar line (D6)', () => {
 describe('editor3 I2 the flight is not in the edit view (D5, D7)', () => {
     it('every part of the flight is hidden while the mode is open and not flying', () => {
         const hidden = [...CSS.matchAll(/body:has\(\.course-editor:not\(\.ce-flying\)\) :is\(([^)]*)\)\s*\{\s*display: none !important;/g)].map((m) => m[1]!).join(', ');
-        for (const q of ['.mode-chip', '.hud .osd.bl', '.hud .osd.br', '.hud .osd.tr', '.rec-bar', '.osd-stats', '.crash-overlay', '.crash-toast', '.course-hud', '.hud-note', '.gate-msg']) {
+        for (const q of ['.mode-chip', '.hud .osd.bl', '.hud .osd.br', '.hud .osd.tr', '.rec-bar', '.osd-stats', '.crash-overlay', '.crash-toast', '.course-hud', '.hud-note', '.gate-msg', '.next-hint']) {
             expect(hidden, q).toContain(q);
         }
         // the mode line stays
@@ -82,5 +82,13 @@ describe('editor3 I2 the flight is not in the edit view (D5, D7)', () => {
         expect(i).toBeGreaterThan(0);
         expect(CSS.slice(i - 120, i)).toContain('@media (max-height: 500px) {');
         expect(CSS.slice(i - 60, i)).toContain('body:has(.course-editor:not(.ce-flying))');
+    });
+
+    it('below 500 px the top bar goes under the scene credit and the Walls summary (D7)', () => {
+        expect(TOP).toMatch(/querySelectorAll\('\.attribution, \[data-testid="walls-box"\]'\)/);
+        expect(TOP).toMatch(/setProperty\('--ce-below'/);
+        expect(TOP).toMatch(/addEventListener\('resize', this\.place\)/);
+        const m = /@media \(max-height: 500px\) \{\s*\.ce-topbar \{ top: ([^;]*);/.exec(CSS);
+        expect(m?.[1]).toContain('var(--ce-below');
     });
 });
