@@ -15,6 +15,8 @@ Stage L1-measure (no product change)
 - [x] 6. Design from the numbers: section "Design for L2" (L1 close commit)
 
 Stage L1 is finished. The runs of items 3 to 5 ran 20:45 to 21:30 on build 0605d06f (product code unchanged since).
+Hand-over gates (gates.py --only vitest,architecture,i18n,b18) on 0d08dad1: all PASS (vitest 118 s; Python must be on
+PATH for tools/bench/test/rooms-socket.test.ts, it spawns `python`).
 
 Stage L2-build
 - [ ] (after L1)
