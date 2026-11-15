@@ -449,7 +449,15 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   app-keys, keymap.test, sonic-quiet-cues, sonic-quiet: 82 passed in v1.log (its 3 fails fixed in v2); tsc apps/fly 0 errors
   (tsc1.log); neg_control.py against 7dde5e2c on bridge.ts and runtime.ts: NEG OK (neg1.log). live-quiet.ts is new (no old
   version) and the 250 ms wiring in feature.ts is not in the rig: browser proof needed.
-- [ ] Left: N3 decision by the lead (or a package sound); N6 (Q6, Q7); gates.py --only vitest,architecture,i18n,b18;
+- [ ] Q7 plan (pass 2, read, not built): CAPTION_LINES 3 to 2 (captions.ts line 12). '.course-hud' into PANELS alone is not
+  enough: the captions start at 92 px and the clock block at about 120 px (hud.css .course-hud top 14+30+76 px), and fit() always
+  keeps the newest line, so one line still covers the clock. Build: in fit() place the region under the visible .course-hud
+  (root.style.top = its bottom + CAPTION_GAP_PX, cleared when it is hidden or covered; guard a stand-in without style), and refit
+  from feature.ts's 250 ms liveTimer (the course box appears without a caption). Tests that pin three shown lines follow:
+  tools/bench/test/sonic-captions-fit.test.ts (the 'all three shown' cases), sonic-review.test.ts 145-177 use mod.CAPTION_LINES;
+  new case: a stand-in .course-hud (its querySelectorAll stub answers only '.sonic-attitude' today) pushes the region under it.
+  Then measure the rectangles in a browser (captions box against .course-hud) on the release build.
+- [ ] Left: N3 decision by the lead (or a package sound); N6 Q7; gates.py --only vitest,architecture,i18n,b18;
   a6-reference (keymap.ts changed, an input file); browser proof stage (Shift+V both ways, K and I voiced with the narrator off,
   #ui aria-live off in a quiet flight, the GPU hint quiet) on the release build, Wroclaw and Tunis.
 
