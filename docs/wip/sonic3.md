@@ -11,8 +11,41 @@ Stage Y2-prove (train 3 wave 2, finishing):
   "a course made with N over an in-place flight": NEG OK on HEAD mode.ts and lessons.ts (bump 'slide' after the course opened);
   sonic-in-place + sonic-scan-course + sonic-mode 24 of 24; apps/fly tsc 0 errors; a6-reference 1 of 1 (hash unchanged).
 - [x] Probe r12 (9f93a023): the speed lessons opened from their links and flown by the hum to their end, one page per lesson.
-- [~] Browser runs (U:/Temp/gsfpv-train3/sonic3/y2-browser.sh, release of 9f93a023, ports 5825 and 5826, log y2-browser.log):
-  r11 Tunis 5 and 2, Wroclaw stand-in 5 and 2, Housefly built 3; r12 speed-1..4; accept-fly B6 B7 B9..B16; mouse-free-probe.
+- [x] Browser runs, part 1 (U:/Temp/gsfpv-train3/sonic3/y2-browser.sh, release of 9f93a023, headless Chrome, probe took the
+  GPU lock per run, port 5825; evidence y2-tunis5.json, y2-tunis2.json, y2-wroclaw5.json, logs y2-*.log, shots
+  U:/Temp/gsfpv-train3/shots/z5-<scene>-<speed>-inplace.png and -end.png):
+  | Run | Backslash to first cue | switch on speed before / at cue, lives | N to gate 1 | course | median / max | switch off before / after, lives | checks |
+  |---|---|---|---|---|---|---|---|
+  | Tunis 887f27aa 5 m/s | 0.263 s | 6.63 / 0.11, none | 42.7 s | passed in 50 s | 3.36 / 4.96 | 5.13 / 5.13, none | 9 of 10 |
+  | Tunis 887f27aa 2 m/s | 0.300 s | 6.64 / 0.10, none | 50.2 s | NOT passed (363 s cap) | 0.16 / 1.97 | - | 8 of 10 |
+  | Wroclaw 70b50d42 stand-in 5 m/s | 0.234 s | 6.77 / 5.13, then a crash at +3.6 s | 77.4 s | passed in 64 s | 3.51 / 4.98 | 0.34 / 0.34, none | 8 of 10 |
+  The keepRules fix holds in the page: the switch off after a course kept the speed (5.13 -> 5.13) and started no life on
+  both scans (Y1: 2 'settings' lives). Wroclaw's "speed kept on the switch off" FAIL is the check's precondition (the craft
+  was at 0.34 m/s, under the "moving" bound), not a stop. Wroclaw's switch-on FAIL is a wall crash 3.6 s after the press with
+  the pilot's own crash setting on (W released at the first cue, the craft coasting at 5 m/s).
+  Tunis 2 m/s course: 8 gates; attempt 1 reached g8, then retry, attempt 2 reached g5, attempt 3 at g2 when the probe's 360 s
+  cap ended it; spoken before the retries: fly.stage, fly.wrong-way (twice), fly.progress, lesson.free-garden.retry,
+  hint.1, fly.go. The W-pulsing pilot held a median of 0.16 m/s, so the course at "2 m/s" ran out of the probe's time; the
+  reason line of each failed attempt is cut off the 12-line tail (not read).
+- [ ] LEFT, in this order (stage stopped at its reply budget; the detached run was stopped during Wroclaw 2 m/s, the lock it
+  held was removed):
+  1. Rerun the rest of y2-browser.sh (drop the two Tunis runs and Wroclaw 5 from it; the release build of 9f93a023 is in
+     dist): Wroclaw stand-in 2 m/s, Housefly d10c5638 built 3 m/s (Z5_RENDER=on), r12 speed-1..4 (one page each),
+     accept-fly B6 B7 B9..B16 on SITE=http://localhost:5826 (first line must name it), mouse-free-probe under the lock.
+  2. Tunis switch on: 6.6 -> 0.1 m/s at the first cue with no new life, twice (5 and 2 m/s runs); first cues
+     safety.wall:front-left and safety.wall:front at 0.26 s: a wall ahead after 1.5 s of W at the spawn. Add S.crashed and
+     the pose at the press and at the cue to r11's switchOn to tell a contact from a brake of the free flight's assist.
+  3. Tunis 2 m/s course: print the reason line of each failed attempt (spokenTail 40, not 12) and raise r11's flight cap
+     for slow runs (course length / speed x 3); then rerun Tunis 2.
+  4. Look at the shots z5-887f27aa-5-inplace.png, z5-887f27aa-5-end.png, z5-70b50d42-5-*.png (Read tool) and describe them.
+  5. Audio proof line-side (package, under the lock): PROOFS=line-side PROOFS_OUT=evidence/audio-proofs-line.json
+     node node_modules/vitest/vitest.mjs run --config vitest.proof.config.ts. The package's audio proofs today: direction,
+     pulse-rate, ceiling, fade-in, voice-budget, target-note-gap, target-note-pan, engine-reset (evidence/audio-proofs.json);
+     line-side is written, never run.
+  6. The lesson "turn slightly and listen" does not exist (no lesson file in the package lessons/): building it (lesson
+     JSON, locales en es pl ru, tts measure, words check, pin move) is a stage of its own.
+  7. gates.py --only vitest,architecture,i18n,b18 on the head (not run in Y2), then the keys and three-table summary in For
+     the lead stay as written (unchanged by Y2).
 
 Stage Y1-switch-and-pins (train 3 wave 2):
 - [x] Before run: release build of 2065b16d (1932 files), fixes-run.sh (r11 Tunis 887f27aa 5 m/s, port 5823, old probe), log
@@ -457,6 +490,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 Y2: most replies went to reading the probe and the mode again to place the fix and r12; the browser queue then
+  needed 9 to 10 minutes of waiting per two runs, so the stage ran out before half the queue. Starting the queue in the first
+  reply on the Y1 build (the fix only changes the last checks) would have given every run within the budget.
 
 - 2026-11-15 Y1 pass 2: most replies went to the three stops of the switch (crash pref, runner place, lesson pilot's arming),
   each found only by a browser run; a unit rig built from the page's real InputHost and respawn feature would have shown all
