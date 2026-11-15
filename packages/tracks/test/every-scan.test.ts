@@ -52,6 +52,26 @@ describe('course4 C3: the ladder of gate sizes', () => {
         }
     }, 60000);
 
+    it('a spawn at the end of a bent nook (free radius under a ring) starts the small course in the room', () => {
+        // the low room and a bent nook 1.0 m wide: out of the room along x, then along z; no straight leg leaves it
+        const inside = (x: number, y: number, z: number): boolean =>
+            y >= 0 && y < 1.8 && ((x >= 0 && x < 5 && z >= 0 && z < 5) || (x >= 4.9 && x < 6.5 && z >= 2 && z < 3) || (x >= 5.5 && x < 6.5 && z >= 2 && z < 4.4));
+        const walls = analyticCollision([-0.3, -0.3, -0.3], [6.8, 2.1, 5.3], 0.05, (x, y, z) => !inside(x, y, z));
+        const spawn: Vec3 = [6.0, 0.9, 4.1];
+        const free = freeSpace(walls, { spawn });
+        const refree = (marginM: number) => freeAtMargin(walls, { spawn }, marginM);
+        for (const seed of [1, 2]) {
+            const r = fitCourse(free, walls, { seed, scene: SCENE, transform: IDENTITY, created: CREATED }, 4, undefined, null, refree);
+            expect(r.track, `seed ${seed}`).not.toBeNull();
+            const t = r.track!;
+            expect(t.gates.length).toBeGreaterThanOrEqual(2);
+            // the course starts in the room (where a ring could stand), not in the nook
+            expect(t.start?.pos[0], `seed ${seed} start`).toBeLessThan(5);
+            const margin = t.generator!.params.marginM as number;
+            expect(checkTrack(t, walls, IDENTITY, margin, false).ok).toBe(true);
+        }
+    }, 60000);
+
     it('where the plan course fits, refree changes nothing (the same course, the same digest)', () => {
         const walls = threeRooms();
         const free = freeSpace(walls, { spawn: SPAWN_A });

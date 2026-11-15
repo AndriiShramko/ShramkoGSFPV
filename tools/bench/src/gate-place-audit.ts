@@ -104,7 +104,16 @@ async function main(): Promise<void> {
             const freeOpts = { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined, unitM: sceneUnitM(T as unknown as number[]) };
             const free = freeSpace(walls, { ...freeOpts, ...(arg('--margin') ? { marginM: Number(arg('--margin')) } : {}) });
             // course4 C3: the page's worker reads the free space again at a smaller step's margin (--no-refree: as before C3)
-            const refree = arg('--no-refree') ? null : (marginM: number) => freeAtMargin(walls, freeOpts, marginM);
+            // the time one fitCourse spent reading the free space again (refreeMs in each row)
+            let refreeMs = 0;
+            const refree = arg('--no-refree')
+                ? null
+                : (marginM: number) => {
+                      const t = performance.now();
+                      const f = freeAtMargin(walls, freeOpts, marginM);
+                      refreeMs += performance.now() - t;
+                      return f;
+                  };
             const share = (t: number): number => (t < 0 || !(q.best > 0) ? 0 : r2(q.near[t]! / q.best));
             if (arg('--diag')) {
                 // the generator's eye-band filter (generate.ts walkCourse) counted stage by stage, scale 1
@@ -161,10 +170,13 @@ async function main(): Promise<void> {
                 const onWalk = (w: { walked: number; cutClose: number; drops: readonly string[]; kept: number }): void => {
                     const by: Record<string, number> = {};
                     for (const d of w.drops) by[d] = (by[d] ?? 0) + 1;
-                    const x = w as unknown as { banded?: boolean; wanted?: number; farM?: number; band?: number[] | null };
+                    const x = w as unknown as { banded?: boolean; wanted?: number; farM?: number; band?: number[] | null; refused?: Record<string, number>; stop?: string; eyeHi?: number };
                     // course4 C2: an empty walk says whether it was banded, how many gates it wanted and how far its target lay
-                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}` : ''));
+                    // course4 C3: and which rule refused its candidates, and why it stopped
+                    const why = x.refused ? ` eye${x.eyeHi} ${Object.entries(x.refused).map(([k, v]) => `${k}${v}`).join(' ')} stop:${x.stop}` : '';
+                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}${why}` : ''));
                 };
+                refreeMs = 0;
                 const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, refree);
                 const ms = Math.round(performance.now() - t0);
                 const tr = got.track;
@@ -210,7 +222,7 @@ async function main(): Promise<void> {
                 for (const a of pts) for (const b of pts) span = Math.max(span, Math.hypot(a[0]! - b[0]!, a[2]! - b[2]!));
                 const hs = gates.map((g) => g.h ?? NaN).filter((v) => Number.isFinite(v)).sort((x, y) => x - y);
                 const row = {
-                    scene: s.id, seed, gates: gates.length, laps: tr.laps, scale: got.scale, tried: got.tried, proven: got.proven, walks, ms, problems, qMs, band: q.band, best: Math.round(q.best),
+                    scene: s.id, seed, gates: gates.length, laps: tr.laps, scale: got.scale, tried: got.tried, proven: got.proven, walks, ms, refreeMs: Math.round(refreeMs), problems, qMs, band: q.band, best: Math.round(q.best),
                     span: Math.round(span), hMin: hs[0], hMed: hs[hs.length >> 1], hMax: hs[hs.length - 1],
                     eye: gates.filter((g) => g.h !== null && g.h >= 1.2 && g.h <= 2.0).length,
                     eyeRay: gates.filter((g) => g.hRay >= 1.2 && g.hRay <= 2.0).length,

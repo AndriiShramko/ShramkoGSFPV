@@ -125,6 +125,10 @@ export interface WalkInfo {
     /** gates dropped by the whole-course proof: 'gate' (opening or direction), 'leg' (blocked leg), 'last' (no reason found) */
     readonly drops: readonly string[];
     readonly kept: number;
+    /** course4 C3: candidates the walk refused, by rule, summed over its steps (cands: the pool's size; reach, pot, turn,
+     *  space, sweep, proof), and why it stopped */
+    readonly refused?: Readonly<Record<string, number>>;
+    readonly stop?: string;
 }
 
 /** fix3b Y2 (owner's message 52, 2026-11-15): "the detail, the highest density of the point cloud, is at the level of
@@ -398,6 +402,17 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         return true;
     };
     const cands = pool.map((i) => ({ cell: i, pos: eyeAt.get(i)?.pos ?? cellCentre(free, i), free: eyeAt.get(i)?.free ?? clearanceM(free, i), used: false }));
+    // course4 C3: a smaller course (scale < 1, the ladder's lower steps) starts where a ring could stand: the nearest cell
+    // (in steps along the free space) with a ring's free radius. Winter Garden 7a475d38's spawn cell has a free radius of
+    // 0.256 m; every leg from it hit a wall at the 0.2 m margin of step 0.4 (gate-place-audit walks: wall 360 of 360,
+    // no gate laid). The plan's size keeps its start, so its courses and trackDigests stay as they were.
+    let startCell = free.startCell;
+    if (k !== 1 && startCell >= 0 && clearanceM(free, startCell) < RING_MIN_FREE_M * k) {
+        const S0 = stepsFrom(free, startCell);
+        let best = -1;
+        for (let i = 0; i < S0.length; i++) if (S0[i]! > 0 && (best < 0 || S0[i]! < S0[best]!) && clearanceM(free, i) >= RING_MIN_FREE_M * k) best = i;
+        if (best >= 0) startCell = best;
+    }
 
     // G2 spread walk (only over a quality map): the way along the free space from the start (fromS) and to a seeded far
     // target (toT), both in cell steps. The out half lays its gates evenly along the way to the target, the back half
@@ -413,8 +428,8 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // then home, the gates shared by the phases' lengths.
     let ends: number[] = [halfN, N];
     let pots: (Int32Array | null)[] = [null, null];
-    if (Q && free.startCell >= 0) {
-        const S = stepsFrom(free, free.startCell);
+    if (Q && startCell >= 0) {
+        const S = stepsFrom(free, startCell);
         fromS = S;
         let maxS = 0;
         for (const c of cands) maxS = Math.max(maxS, S[c.cell]!);
@@ -423,7 +438,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         // median steps per metre of straight distance (cells at least SPREAD_RATIO_MIN_M away; clamp 1-1.8, estimate).
         const ratios: number[] = [];
         for (const c of cands) {
-            const d = Math.sqrt(dist2(c.pos, cellCentre(free, free.startCell)));
+            const d = Math.sqrt(dist2(c.pos, cellCentre(free, startCell)));
             if (S[c.cell]! > 0 && d >= SPREAD_RATIO_MIN_M) ratios.push((S[c.cell]! * free.cellM) / d);
         }
         ratios.sort((a, b) => a - b);
@@ -470,9 +485,9 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         return last;
     };
     let forced = 0;
-    let curCell = free.startCell;
+    let curCell = startCell;
 
-    const startW: Vec3 = free.startCell >= 0 ? cellCentre(free, free.startCell) : [T[1], T[2], T[3]];
+    const startW: Vec3 = startCell >= 0 ? cellCentre(free, startCell) : [T[1], T[2], T[3]];
     if (Q && qualityShare(Q, startW) < POOR_SHARE) startPoor = startW;
     const shapeFor = (freeM: number): TrackGate['shape'] =>
         freeM >= SQUARE_MIN_FREE_M * k ? { kind: 'square', side: r3((SQUARE_SIDE_M * k) / s), bar: r3((SQUARE_BAR_M * k) / s) } : { kind: 'ring', diameter: r3((RING_DIAMETER_M * k) / s), tube: r3((RING_TUBE_M * k) / s) };
@@ -504,6 +519,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     const trail: { cur: Vec3; cell: number; dir: Vec3 | null }[] = [];
     const legMemo = new Map<number, boolean>();
     let legMemoAt: Vec3 | null = null;
+    const refused = { cands: cands.length, startFree: startCell >= 0 ? r3(clearanceM(free, startCell)) : -1, reach: 0, pot: 0, turn: 0, space: 0, sweep: 0, wall: 0, exit: 0, well: 0, proof: 0 };
     const turnOk = (from: Vec3, prev: Vec3 | null, to: Vec3): Vec3 | null => {
         const leg = sub(to, from);
         const L = len(leg);
@@ -531,15 +547,27 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         const left = Math.max(1, ends[phase]! - gates.length);
         const want = spread && pot && curCell >= 0 && pot[curCell]! >= 0 ? (pot[curCell]! * (left - 1)) / left : 0;
         for (const c of cands) {
-            if (!back && dist2(startW, c.pos) > reach2) continue;
+            if (!back && dist2(startW, c.pos) > reach2) {
+                refused.reach++;
+                continue;
+            }
             if (c.used) continue;
-            if (spread && pot![c.cell]! < 0) continue;
+            if (spread && pot![c.cell]! < 0) {
+                refused.pot++;
+                continue;
+            }
             const u = turnOk(cur, prevDir, c.pos);
-            if (!u) continue;
+            if (!u) {
+                refused.turn++;
+                continue;
+            }
             let near = Infinity;
             for (const g of flownGates) near = Math.min(near, dist2(g, c.pos));
             near = Math.min(near, dist2(startW, c.pos));
-            if (near < p.spacingM * p.spacingM) continue;
+            if (near < p.spacingM * p.spacingM) {
+                refused.space++;
+                continue;
+            }
             // out: away from what is laid; back (the second half): toward the start, so the lap can close.
             // G2: nearest to the wanted step count along the way
             // (in m, plus the free radius up to SPREAD_ROOM_M: the middle of a street, where a leg is free more often)
@@ -578,13 +606,19 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         const legOk = (c: (typeof cands)[number]): boolean => {
             let v = legMemo.get(c.cell);
             if (v === undefined) {
-                v = sweeper.free(cur, c.pos, p.marginM) && exitOk(c.pos) && legWell(cur, c.pos);
+                const wall = sweeper.free(cur, c.pos, p.marginM);
+                const ex = wall && exitOk(c.pos);
+                v = ex && legWell(cur, c.pos);
+                if (!wall) refused.wall++;
+                else if (!ex) refused.exit++;
+                else if (!v) refused.well++;
                 legMemo.set(c.cell, v);
             }
             return v;
         };
         for (let j = 0, sweeps = 0; j < options.length && open.length < 4 && sweeps < sweepsMax; j++, sweeps++) {
             if (legOk(options[j]!.c) && wayOn(options[j]!)) open.push(options[j]!);
+            else refused.sweep++;
         }
         // G2: a spread walk that is stuck steps back one gate (left used: a dead end) and walks on from the gate before
         if (open.length === 0 && spread && gates.length > 0 && backtracks < SPREAD_BACKTRACKS * (ends.length - 1)) {
@@ -626,7 +660,10 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         // one-gate proof: the leg from where the walk stands and this gate's opening, frame and run (the whole course is
         // proven once at the end); proving the whole course per candidate cost about 44 s a course on real walls
         const trial = build([gate], yk, cur, 1); // open: the one-gate proof has no leg out (laps did not matter to it before K1)
-        if (!checkTrack(trial, walls, T, p.marginM, false, true).ok) continue;
+        if (!checkTrack(trial, walls, T, p.marginM, false, true).ok) {
+            refused.proof++;
+            continue;
+        }
         trail.push({ cur, cell: curCell, dir: prevDir });
         gates.push(gate);
         flownGates.push(toFlown(gate.pos));
@@ -691,7 +728,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // unmeasured: the free-radius probes of a measured proof took about 5 s on the three-room test world (time-scratch run,
     // docs/wip/tracks.md Findings); the caller measures when it needs the numbers
     const proof = course.length ? checkTrack(shell, walls, T, p.marginM, false, true) : null;
-    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, eyeHi, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length });
+    opts.onWalk?.({ band: Q ? [r3(Q.band[0]), r3(Q.band[1])] : null, banded, eyeHi, farM: r3(farM), outGates, backtracks, wanted: N, walked: gates.length, cutClose, drops, kept: course.length, refused, stop });
     return {
         ...shell,
         generator: {
