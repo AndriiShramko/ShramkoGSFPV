@@ -36,7 +36,29 @@ Stage S3-yaw-lesson-and-proofs (train 3 wave 3, last finishing stage; head befor
   no path) restarts the course by sound from its first gate (apps/fly/src/sonic/mode.ts lifeRestartsCourse and
   restartAfterLife, scan courses only, no place; feature.ts 'life' handler). tools/bench/test/sonic-life-course.test.ts 5 of
   5, NEG OK on origin/main mode.ts; sonic-mode, sonic-scan-course, sonic-in-place with it 31 of 31; apps/fly tsc 0.
-- [ ] Pass 3: Tunis browser run on the new build; Wroclaw render on; budget chime proof.
+- [x] Pass 3 browser runs, release 4dd60b9c (sonic 0af508a), walls 70b50d42 v1 10 cm and d10c5638 v1 5 cm copied into
+  dist/walls, r11 (s3/pass3.sh, evidence U:/Temp/gsfpv-train3/sonic3/s2/k-*.json, summary s2/sum.py 'k-*.json'):
+  | Scan | render | asked m/s | N to gate 1 | course | flight s | median / max m/s | misses | checks |
+  |---|---|---|---|---|---|---|---|---|
+  | Tunis 887f27aa | off | 5 | 26.7 s | COUNTED, 24 gates, attempt 2, best 2 min 12 s | 250 | 3.18 / 5.0 | 1 (g11) | 9 of 10 |
+  | Tunis 887f27aa | off | 3 | 26.7 s | COUNTED, 24 gates | 293 | 1.02 / 2.99 | 1 (g17) | 10 of 10 |
+  | Wroclaw 70b50d42 | ON | 5 | 25.5 s | COUNTED, 24 gates, attempt 1, best 2 min 2 s | 125 | 4.26 / 5.0 | 0 | 9 of 10 |
+  First counted Tunis course by sound ever. Tunis 5 said fly.reset-start 3 times: the new restart fired on director-start
+  lives; Tunis 3 had 3 'crash' lives put back where they were (kept the gate). Failed checks are preconditions of the probe,
+  not the switch: Tunis 5 switch on 3.35 -> 0.48 m/s with wall contacts and 0 lives (the narrow street at the spawn, as S2
+  pass 3; momentum is a guess), Wroclaw switch off 0.42 -> 0.42 m/s, 0 lives (the craft was barely moving at the off).
+  Shots looked at: z5-70b50d42-5-end.png (Wroclaw street drawn, gates, "Stage 24 passed", "New best time: 2 minutes 2
+  seconds", Counted 1 of 1), z5-887f27aa-5-end.png (render off, "Stage 24 passed", Attempt 2, Counted 1 of 1).
+  Highest clean speed now: Wroclaw 5 m/s (render on and off), Housefly 5 m/s (S2), Tunis 5 m/s (5 is the cap of the
+  scan free flight). Gates vitest, architecture, i18n, b18 PASS on 4dd60b9c (vitest 110 s, U:/Temp/gsfpv-gates-20261115-082148).
+- [ ] LEFT after pass 3, in this order:
+  1. Offline audio proof of the stream budget's open-way chime (package src/cues/budget.ts; the line-side proof in
+     test-audio/page/proofs.ts is the pattern: tier 2 at 9 m/s toward an obstacle with a free side, budget on against budget
+     off, the chime's side level against the hazard pulses). Not started (reply budget).
+  2. Tunis render on and Housefly on this build: not run in pass 3.
+  3. Both end shots show ALT below 0 (-0.3 m Wroclaw, -0.9 m Tunis) with the craft landed after the course: not measured why;
+     suspect the HUD altitude reference of a scan course start (apps/fly HUD), not the sound.
+  4. The package branch train3 (0af508a) must be pushed to the package origin before sonic3 merges (lanes do not push).
 - LEFT before pass 3 (in this order): Tunis (S2 pass 3 LEFT 1: no counted course; the sound course does not follow a life the director
   put at the start, apps/fly/src/sonic/feature.ts 'life' handler), then Wroclaw render on (g24 missed twice; render off
   counts), then an audio proof of the stream budget's open-way chime (package src/cues/budget.ts). The package branch train3
@@ -762,6 +784,9 @@ fade-in, target-note-gap (0 ms overlap on 8 notes), engine-reset.
 ## For the lead
 
 ### What the owner does (S3, 2026-11-15): fly any scan by sound
+Pass 3 update (release 4dd60b9c): Tunis 887f27aa now counts too, at 3 and 5 m/s (render off), and Wroclaw counts at 5 m/s
+with rendering on; a crash that sends the craft to the start now starts the course again from gate 1 ("Back to the start.").
+Where the lines below say Tunis does not count, this update holds.
 1. Open any scan from the catalogue and fly it as always.
 2. Press Backslash (\), or Escape and the pause item "Fly by Sound here". Fly by Sound switches on in place: no new life, the
    craft keeps its speed (5 of 5 switch-ons, 0 sim events in the 0.4 s after the press, S2 item 2). Within 0.23 to 3.3 s he
@@ -860,6 +885,7 @@ anything heard by a human ear (all passes are the ear pilot).
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+- 2026-11-15 S3 pass 3: the cause was already measured in the left list, so the fix took 6 replies and one detached script (build, two render-off Tunis chains and the render-on Wroclaw chain) gave all results in one wait; the chime proof did not fit: a stage with a code fix plus three proofs should be two stages.
 
 - 2026-11-15 S3 pass 2: the lesson took about 30 replies even with the full file list of plan section 7; most went to the
   pinned counts found one test run at a time (navigation, schedule, words rounding, two simulator tests) and to quoting
