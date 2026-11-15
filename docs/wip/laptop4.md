@@ -44,6 +44,8 @@ Stage fixes (review findings LQ-1 to LQ-3; all three stand, none refuted)
   chrome.test.ts with it 18 of 18; bench typecheck exit 0; `node --check` of the five edited .mjs ok (this commit)
 - [x] LQ-3: view-lod-rim.test.ts has 6 tests; the line above now says 6 of 6 (this commit)
 - No page probe re-run: no fix changes what is drawn (bench scripts only)
+- [x] gates.py --only vitest,architecture,i18n,b18 on 47df2540: all PASS (vitest 112 s; logs
+  U:/Temp/gsfpv-gates-20261115-113403). walls-trials.ts is outside the bench tsconfig: its one-line change not typechecked
 
 ## Facts (measured)
 
@@ -168,3 +170,5 @@ has only sky in its top half). One run each.
   pointed at the busy card before any browser run.
 - Q2: the most turns went to a name clash in the score script (one lost scoring pass) and to waiting for two release
   builds; building once with every candidate switch in it before the first probe would have saved a build.
+- Fixes: the most turns went to one lost batch of edits (files not yet read by the edit tool); reading the exact edit
+  lines with the Read tool in the first batch, instead of with sed, would have saved two turns.
