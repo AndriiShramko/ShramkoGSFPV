@@ -52,7 +52,14 @@ Stage fixes (review LP-1 to LP-3)
   see a key with two dots); migrate and defs 43 of 43, NEG OK (old migrate.ts fails the scan); prefs typecheck exit 0
   (this commit)
 - [x] LP-3 (minor, stands): the Fly by Sound sentence in For the lead rewritten (this commit)
-- [ ] LP-1 browser proof: two loads on one profile (local release, port 5742)
+- [x] LP-1 browser proof: release build febb30b9 (dist sha256 abedd7c0...), serve-csp port 5742, new probe
+  tools/bench/scripts/governor-start-probe.mjs (headless system Chrome 157 through chrome.mjs pickBrowser, one
+  profile, four loads of scene 39e63ce9, kind lod-meta, under the GPU lock): W1 desktop-weak overloaded (setFrameDelay
+  1.4 periods) reached step 4 in 3.8 s and wrote `{"v":1,"id":"desktop-weak|nvidia lovelace","step":4}`; W2
+  desktop-weak started at step 4 (first step seen and at the reveal); S1 desktop-strong overloaded wrote step 4 for the
+  strong id; S2 desktop-strong started at step 0 (first step seen and at the reveal, budget 4 M, scale 1). All four
+  checks true (evidence/2026-11-15/lod-view/l3-governor-start.json, log U:/Temp/gsfpv-train3/laptop3/govstart.log)
+  (this commit)
 
 Left for the next worker (P3): the runner is ready (`bash run-p3.sh build`, then serve-csp dist 5741, then
 `run-p3.sh <set> score-lub`; one probe is about 4 minutes and takes the GPU lock itself). The switches are in the code;
@@ -264,6 +271,11 @@ P3, not solved and why:
 
 ## Not verified
 
+- Stage fixes: the probe did not run the old code (no browser negative control; the unit tests' NEG OK covers it). The
+  "no remembered step while the scan streams" rule is held by the unit test only: in W1 the scan had stopped streaming
+  when the step was written, no browser run wrote during a heavy streamed load (Lublin). a6-reference not run (no
+  flight, input or collision file touched). The whole vitest gate not run after these fixes.
+
 - P3: the governor's start step in a browser: no probe flew twice on one profile, so the remembered step and the start
   from it are held by the unit test only. The cause of the freeze below multiplier 2. The 1 M after picture by eye.
 
@@ -289,5 +301,8 @@ P3, not solved and why:
 - P2: the most turns went to a first series lost to Git Bash turning `--path /en/fly/` into a Windows path (10 minutes,
   half of it waiting for another lane's lock); `MSYS2_ARG_CONV_EXCL='*'` in the runner from the start would have saved it.
 - P3 (first worker): the most turns went to reading the engine's balancer and wiring a URL switch through four files; four probes of 4 minutes each gave one usable score (three runs froze or did not reveal). A short 1-minute probe (start place only, no turns) per candidate first would have found the freeze in a quarter of the time.
+- Stage fixes: the most turns went to the prefs key scan (widening its pattern found 13 unclassified keys of other
+  lanes, so it had to be narrowed to render-pc again) and to finding a two-load profile pattern; a ready probe helper
+  with a persistent profile in tools/bench would have saved three turns.
 - P3 (pass 2): the most turns went to waiting on accept-fly (over 10 minutes) with a wrong wait loop first (Git Bash
   `ps` does not show node's command line); a ready wait helper on the process command line would have saved two turns.
