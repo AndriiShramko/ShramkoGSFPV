@@ -168,12 +168,18 @@ Stage fixes (review FX-1 to FX-5)
 - [x] walls-store-probe Wroclaw 70b50d42, button, reload at in-use (the integrator's way), under the GPU lock, gates
       running beside it (load): exit 0 in 302 s; kept true, cached true; reload ready 2.7 s, fresh page ready 2.6 s
       (U:/Temp/gsfpv-train3/fix3a/fx/ev/walls-store-70b50d42-inuse.json; the build took about 4.5 min, step 2 'longer
-      than usual'). The write time (w.lastStore.ms) of this run was not read out of the JSON (budget).
-- [ ] walls-store-probe Tunis 887f27aa: started, stopped at the end of the reply budget (Tunis has shipped walls, so it
-      does not exercise the store; the first pass saw it run to its timeout). Left.
+      than usual'). Read out of the JSON (pass 2): runs[0].atInUse.lastStore = ok true, ms 225.1, bytes 58294590,
+      storing false at the in-use look: the write had ended before the walls went in use (FX-1 order, as built).
+- [~] walls-store-probe Tunis 887f27aa: the pass-1 run (fx/store-tunis.log) waited 480 s at state none, source shipped,
+      then 'Target crashed': Tunis has shipped walls, nothing is built or stored. Pass 2: the probe records r.shipped and
+      passes such a scan when all three opens keep source shipped with no bakes and no store write (no 480 s wait).
+      Runner U:/Temp/gsfpv-train3/fix3a/fx2/run.sh, server 5785.
+- [~] FX-4 in a browser: gate-guide-probe --above (camera pitched down 80 deg at the start yaw, gate 1 above the view, guide
+      at the top edge) on Wroclaw without dist/walls, Shift+G (walls-first start); the rects check now includes the walls
+      box (#ui > .bake-box).
 - [ ] tracks-page probe after FX-4 and FX-5 (EVIDENCE_NAME=fix3a-fx/tracks-page, see run.sh last line): not run, the GPU
       lock was held by other lanes from 09:49 to 10:17. Left.
-- [ ] FX-4 not seen in a browser (the guide at the top centre while the walls box shows a line). Left.
+- (FX-4 browser check: see the [~] line above.)
 
 ## Gate 1 from the spawn
 

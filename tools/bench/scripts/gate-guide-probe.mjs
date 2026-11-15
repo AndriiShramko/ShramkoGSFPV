@@ -21,6 +21,7 @@ const [base, id, out, shots, name] = args;
 if (!base || !id || !out || !shots || !name) { console.error('usage: gate-guide-probe.mjs <base with /en> <scene> <out.json> <shots dir> <name> [--shiftg] [--extra]'); process.exit(2); }
 const shiftg = args.includes('--shiftg');
 const extra = args.includes('--extra');
+const above = args.includes('--above');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const checks = [];
 const check = (what, pass, detail) => { checks.push({ what, pass: !!pass, detail }); console.log(`${pass ? 'PASS' : 'FAIL'}  ${what}  ${JSON.stringify(detail).slice(0, 300)}`); };
@@ -62,7 +63,8 @@ try {
             guide: gd, text: guideEl?.textContent ?? '', guideBox: box(guideEl), ariaHidden: guideEl?.getAttribute('aria-hidden') ?? null,
             cam: [p.x, p.y, p.z], right: [R.x, R.y, R.z], fwd: [F.x, F.y, F.z], gate: gp, gates: poses.length, next: c.next,
             note: box(document.querySelector('#ui > .hud-note')), block: box(document.querySelector('[data-testid=course-hud]')),
-            menu: box(document.querySelector('.pause-menu')), vw: innerWidth, vh: innerHeight
+            menu: box(document.querySelector('.pause-menu')), walls: box(document.querySelector('#ui > .bake-box')),
+            wallsLine: document.querySelector('#ui > .bake-box')?.textContent?.trim().slice(0, 120) ?? '', vw: innerWidth, vh: innerHeight
         };
     });
     const bearing = (v) => {
@@ -82,7 +84,7 @@ try {
         check(`${label}: guide shown for gate ${v.guide.gate + 1} (hook next ${v.next})`, v.guide.shown && !!v.guideBox, { shown: v.guide.shown, box: v.guideBox, text: v.text });
         check(`${label}: side ${v.guide.side} matches the bearing from the camera pose (${b.deg.toFixed(1)} deg)${v.guide.behind ? ', behind' : ''}`, sideOk, { side: v.guide.side, cx, vw: v.vw, behind: v.guide.behind, inFrame: v.guide.inFrame });
         check(`${label}: metres within 1 m (${metresOf(v.text)} shown, ${b.dist.toFixed(2)} measured)`, metresOf(v.text) !== null && Math.abs(metresOf(v.text) - b.dist) <= 1, v.text);
-        check(`${label}: clear of the note and the lap block`, !meets(v.guideBox, v.note) && !meets(v.guideBox, v.block), { guide: v.guideBox, note: v.note, block: v.block });
+        check(`${label}: clear of the note, the lap block and the walls box`, !meets(v.guideBox, v.note) && !meets(v.guideBox, v.block) && !meets(v.guideBox, v.walls), { guide: v.guideBox, note: v.note, block: v.block, walls: v.walls });
         check(`${label}: inside the screen`, !!v.guideBox && v.guideBox.left >= 0 && v.guideBox.top >= 0 && v.guideBox.right <= v.vw && v.guideBox.bottom <= v.vh, { box: v.guideBox, vw: v.vw, vh: v.vh });
         return b;
     };
@@ -96,14 +98,14 @@ try {
     });
     // the craft's pose written into the sim (S.px 0-2, S.vx 3-5, S.qw 6-9, rates 10-12) for a few frames, then one read;
     // when the gimbal aim draws the camera, the aim's yaw is the one turned (the pilot's own way to look), its pitch kept
-    const pose = (pos, yawRad) => page.evaluate(async ({ pos, yawRad }) => {
+    const pose = (pos, yawRad, pitchDeg = null) => page.evaluate(async ({ pos, yawRad, pitchDeg }) => {
         const ss = window.__gsfpv.session;
         const s = ss.sim.s;
         const orig = ss.__probeAim ?? ss.cameraAim;
         const a0 = orig?.() ?? null;
         if (a0) {
             ss.__probeAim = orig;
-            ss.cameraAim = () => { const a = orig() ?? a0; return { ...a, yawDeg: (yawRad * 180) / Math.PI }; };
+            ss.cameraAim = () => { const a = orig() ?? a0; return { ...a, yawDeg: (yawRad * 180) / Math.PI, ...(pitchDeg === null ? {} : { pitchDeg }) }; };
         }
         const put = () => {
             if (pos) { s[0] = pos[0]; s[1] = pos[1]; s[2] = pos[2]; }
@@ -113,7 +115,7 @@ try {
         };
         for (let k = 0; k < 8; k++) { put(); await new Promise((res) => requestAnimationFrame(() => res())); }
         return [s[6], s[7], s[8], s[9], s[0], s[1], s[2]].map((x) => +x.toFixed(3));
-    }, { pos, yawRad });
+    }, { pos, yawRad, pitchDeg });
     /** a yaw that puts the gate at `want` deg of bearing (the sign convention measured: two tries) */
     const turnTo = async (pos, want) => {
         // a search, not a formula: every 15 deg of yaw, then halving steps around the best (the sign convention is not assumed)
@@ -137,6 +139,19 @@ try {
     check('aria-hidden on the guide', v0.ariaHidden === 'true', v0.ariaHidden);
     judge('start', v0);
     r.shotStart = await shot(name);
+    if (above) {
+        // review FX-4: the camera pitched down 80 deg at the start yaw puts gate 1 above the view, so the guide goes to the top
+        // edge centre, where the walls box (top centre) still holds its line after a walls-first course start. Read at once.
+        const yaw0 = r.camMode.aim ? r.camMode.aim.yawDeg : 0;
+        await pose(null, (yaw0 * Math.PI) / 180, -80);
+        const va = await read();
+        r.reads.above = va;
+        check('above: the walls box is up (walls-first start)', !!va.walls, { walls: va.walls, line: va.wallsLine });
+        check('above: guide shown at the top', va.guide.shown && !!va.guideBox && va.guideBox.top < va.vh / 3, { box: va.guideBox, guide: va.guide });
+        check('above: the guide does not meet the walls box', !!va.guideBox && !meets(va.guideBox, va.walls), { guide: va.guideBox, walls: va.walls });
+        r.shotAbove = await shot(`${name}-above`);
+        await pose(null, (yaw0 * Math.PI) / 180, r.camMode.aim ? r.camMode.aim.pitchDeg : null);
+    }
     if (extra) {
         const vb = await turnTo(null, 150);
         judge('behind', vb);

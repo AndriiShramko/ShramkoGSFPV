@@ -58,7 +58,10 @@ async function open(p, label, build) {
     await p.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     run.decidedS = at();
     run.first = await snap(p);
-    if (build && run.first && run.first.state !== 'in-use' && run.first.state !== 'queued') {
+    // a scan with shipped walls (Tunis 887f27aa) builds nothing and stores nothing: the first pass waited 480 s for a build
+    // that never starts. Recorded and checked as such (no build, no bakes), not waited for.
+    if (run.first && run.first.source === 'shipped') r.shipped = true;
+    if (build && !r.shipped && run.first && run.first.state !== 'in-use' && run.first.state !== 'queued') {
         await p.waitForTimeout(2000);
         // as course-path-probe.mjs: the radio screen takes the keys until it is closed
         const x = p.locator('.screen.radio [data-action=radio-close]');
@@ -71,7 +74,7 @@ async function open(p, label, build) {
         }
         run.startedS = at();
     }
-    const limit = build ? Number(opt('--build-s', '480')) : 60;
+    const limit = r.shipped ? 10 : build ? Number(opt('--build-s', '480')) : 60;
     let w = run.first;
     while (at() < limit) {
         w = await p.evaluate(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w ? { state: w.state, source: w.source } : null; });
@@ -110,8 +113,10 @@ try {
     // the owner's rule (2 s) is the limit, not a measurement: a longer write must have been said in the line
     r.kept = reloadAt === 'in-use' ? true : !!(ls && ls.ok && (ls.ms <= KEEP_NOTE_S * 1000 || r.runs[0].sawKeeping));
     r.cached = r.runs.slice(1).every((x) => x.final && x.final.state === 'in-use' && x.final.source === 'cache' && x.final.bakes === 0);
+    // shipped walls: every open keeps source 'shipped', no build runs and no store write is made
+    if (r.shipped) r.shippedOk = r.runs.length === 3 && r.runs.every((x) => x.final && x.final.source === 'shipped' && !x.final.bakes && !x.final.lastStore);
 } catch (e) { r.error = String(e).slice(0, 400); }
 await ctx.close();
 writeFileSync(out, JSON.stringify(r, null, 1));
-console.log(JSON.stringify({ cached: !!r.cached, kept: !!r.kept, error: r.error }));
-process.exit(r.cached && r.kept ? 0 : 1);
+console.log(JSON.stringify({ cached: !!r.cached, kept: !!r.kept, shipped: !!r.shipped, shippedOk: !!r.shippedOk, error: r.error }));
+process.exit((r.shipped ? r.shippedOk : r.cached && r.kept) ? 0 : 1);
