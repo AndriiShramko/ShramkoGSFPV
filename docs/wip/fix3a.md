@@ -1374,10 +1374,62 @@ Logs U:/Temp/gsfpv-train3/course4/z3/.
       0.00 m past each ring's plane and 1 m before the next ring. Flat squares climbed from below: vyMax 4.07 and 4.02 m/s
       over a rise of 2.62 m between the probe's points (run 2: 5.07 m/s; the game's climb at normal speed is 5 m/s up).
       A person holding Space makes the climb: the flat square is not changed.
-- [~] (3) Pictures: course4-elements-top.png (gate-place-map --elements, seed 289710480, the k4 course): START /
-      FINISH now written on the map (gate 1 START, gate 37 FINISH on this open course); tunnel and flat pictures from the
-      keyboard pilot's eye at the point before the gate (course-keys-probe, 6th argument) in run k5.
-- [ ] (4) the chain; 'What the owner does'.
+- [x] (3) Pictures (U:/Temp/gsfpv-train3/shots), looked at. course4-elements-top.png (gate-place-map --elements, seed
+      289710480, the k4 course on Wroclaw, 37 gates): a person sees the cyan line from a red box 'START' at gate 1 (upper
+      left) down the street to a red box 'FINISH' at gate 37 (lower right), gates coloured by kind (white ring, yellow
+      square, magenta cube, green flat); the tight row of tunnels at gates 22-30 overlaps in one spot. The map now writes
+      START / FINISH (START/FINISH on a closed course). course4-elements-tunnel.png (run k6, the keyboard pilot turned to
+      the row's axis 0.45 m before the first ring): three rings one inside the other down the street, the passed ring dark
+      grey filling the frame, the next ring lime with plate 6, the third teal behind it: a tunnel seen along its axis.
+      course4-elements-flat.png (run k6, just past gate 2, turned toward gate 3): the lime flat square lies overhead at the
+      top edge, half behind the top buttons, with the guide 'Gate 3 - 1 m'; it is 1 m away and 2.5 m up, so from here only
+      its edge shows: a weak picture of the square, the climb itself is proven by the numbers in (2).
+- [x] (4) The chain on the release of cfe7ffc1 (BUILD EXIT 0, 1933 files; dist/walls from the published set, 10 scans;
+      logs U:/Temp/gsfpv-train3/course4/z3/chain/, port 5782 and 5783, stopped):
+      tracks-page 45 of 46: the one FAIL is 'E camera: after Tab the camera looks at the newly selected gate' (px 0):
+      the editor's camera, lane editor3's code (apps/fly/src/course/editor), not chased.
+      course-path-probe failed first on Wroclaw (16 of 18) and Tunis (30 of 33) in the eye band: the off-band gates
+      were 4.0 to 4.5 m high, the flat squares (2.5 m over the band by design). The probe now gives a flat square (pass
+      axis vertical) the band 1.2 to 2 + 2.5 m. Rerun: Wroclaw 40 of 40 (flat 2), Tunis 37 of 37 (flat 2), exit 0 both.
+      save-check-probe shiftg --push: Wroclaw 38 gates in 10.1 s, Tunis 38 gates in 6.1 s, problems 0; gate 1 pushed into
+      the wall: problems 3 on both (leg-wall, leg-wall, gate-wall); exit 0.
+      gate-guide-probe Wroclaw --shiftg: 6 of 6.
+      accept-fly (first line 'accept-fly target: http://localhost:5782'): B6 B7 B9 B10 B11 true, B12 B13 B14 B15 B16 true.
+      a6-reference 1 passed. tests packages/tracks + apps/fly/src/course: 20 files, 141 passed. tsc tracks 0, bench 0.
+      gates.py --only vitest,architecture,i18n,b18,leaks: all PASS (vitest 105 s).
+
+## What the owner does (course4 and course5)
+
+- Shift+G in any scan: a course comes in a few seconds (Wroclaw 4.5 to 14 s, Tunis 6 to 9 s); in small rooms the gates
+  are smaller, but never smaller than the craft he flies can pass.
+- The first gate is checkered with START (START / FINISH when the course closes into a loop); the guide at the screen's
+  edge says 'START - 60 m' from afar; the last gate of an open course says FINISH.
+- The next gate is lime with its number; passed gates go dark.
+- At a lap's end the lap time shows large in the upper middle for about 2 s, green for a new best; after the last lap a
+  card with the time for about 3.5 s; the small clock block hides meanwhile. Settings, course part: 'Lap time on
+  screen' large, small or off.
+- On a scan made bigger with Scene size (the microgreens scan Forest Floor): x1, x10, x15, x20, x30 give a course; at
+  x100 the line names x10 and the next Shift+G sets it and builds.
+- A Shift+G course mixes rings, squares, cube frames, tunnels of 3 to 5 rings and squares lying flat to climb through.
+- Fly by Sound builds its course of single upright gates only.
+- A course link (Share) rebuilds the same course; the best lap is kept per course, a changed course starts a new best.
+
+Not proven, with the numbers: element shares on Wroclaw seeds 1-20 are tunnel 0.19, flat 0.10, square 0.155, cube 0.20
+against 0.2, 0.15, 0.2, 0.2 (tolerance 0.05); the room 39e63ce9 fits almost no flat square (0.011). A1 (no gate in tree
+crowns) is not built. Closed courses on the owner's scans are rare (18 of 18 Shift+G courses on Wroclaw and Tunis were
+open in Z1), so he mostly sees the run's card, not the lap splash. The keyboard pilot flew 21 of 37 gates of one
+Wroclaw course, not a whole lap; Tunis was not flown with keys. The flat square is climbed at 4.0 to 5.1 m/s with Space
+held (a 2.62 m rise between the probe's points), proven by a script, not by a person.
+
+Left (Z3 after pass 2):
+1. tracks-page E camera after Tab (editor3's lane): px 0 on the release of cfe7ffc1.
+2. Item 4 of the old list answered: the flat square's refusals are the flown check (51) and the leg out (25), not
+   its space; why the check refuses it is not measured (packages/tracks/src/check.ts on the element's gates).
+3. A1, Z2 items (4) to (6) and the room page proofs stay as in 'Status Z2-scans'.
+
+Cost (course5 Z3 pass 2): about 50 replies; the most went to the keyboard pilot (four runs: the link seed in base 36,
+the probe's undamped aim, two picture runs) and waiting for the GPU lock. A probe that stops before each gate and logs
+the crossing from its first version would have saved three runs.
 
 Left (Z3, exact, in order):
 1. Read apps/fly/src/course/link.ts seedOfLink for the link form of a seed (or press Shift+G and accept a new seed), then
