@@ -121,7 +121,7 @@ describe('B1 (W3): the runner gets the pilot\'s path, key names, speaking speed 
         expect('keys' in bare).toBe(false);
     });
 
-    it('in the page the lesson stands where it is on the pilot\'s path: rings-first is lesson 6 of 8 on the fast path, 20 of 28 on the full one', async () => {
+    it('in the page the lesson stands where it is on the pilot\'s path: rings-first is lesson 6 of 8 on the fast path, 21 of 33 on the full one (28 since v0.13, the speed lessons speed-1..4 and turn-listen since train 3)', async () => {
         const paths = lessonPaths();
         const fast = await open('rings-first', (r) => { r.paths = 'fast'; });
         expect(fast.host.runner!.view()).toMatchObject({ path: 'fast', lessonIndex: paths.fast.indexOf('rings-first') + 1, lessonCount: paths.fast.length });
@@ -129,7 +129,7 @@ describe('B1 (W3): the runner gets the pilot\'s path, key names, speaking speed 
         fast.dispose();
         rig = null;
         const full = await open('rings-first');
-        expect(full.host.runner!.view()).toMatchObject({ path: 'full', lessonIndex: paths.full.indexOf('rings-first') + 1, lessonCount: 28 });
+        expect(full.host.runner!.view()).toMatchObject({ path: 'full', lessonIndex: paths.full.indexOf('rings-first') + 1, lessonCount: 33 });
     }, 60000);
 
     it('the names reach the lesson\'s lines: after three failed attempts in a row hover-height offers the next lesson under the name the page gives N', async () => {
@@ -401,11 +401,11 @@ describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws 
         };
         const index = lessonPaths().full.indexOf('rings-first') + 1;
         // the task: the lesson and the step
-        expect(say()).toMatchObject({ key: 'status.progress-step', params: { lesson: index, lessons: 28, step: 1, steps: 2 } });
+        expect(say()).toMatchObject({ key: 'status.progress-step', params: { lesson: index, lessons: 33, step: 1, steps: 2 } });
         await r.run(240000, throughTheGate, () => r.lessonEvents('attempt-pass').length === 1 && r.lessonEvents('attempt-start').length === 2);
         const now = say();
-        expect(now).toMatchObject({ key: 'status.progress', params: { lesson: index, lessons: 28, step: 2, steps: 2, n: 2, counted: 1, required: getLesson('rings-first').pass.required } });
-        expect(now.text).toContain(`Lesson ${index} of 28`);
+        expect(now).toMatchObject({ key: 'status.progress', params: { lesson: index, lessons: 33, step: 2, steps: 2, n: 2, counted: 1, required: getLesson('rings-first').pass.required } });
+        expect(now.text).toContain(`Lesson ${index} of 33`);
         expect(now.text).toContain('Attempt 2. Counted 1 of 3.');
         // the line is the runner's own, word for word
         expect(now.key).toBe(r.host.runner!.statusLine().key);
@@ -438,7 +438,7 @@ describe('B4 (W6, M41-7): I says the runner\'s status line; a large panel draws 
         }
         expect(starts).toBeGreaterThanOrEqual(3);
         expect(counted).toBe(3);
-        expect(panel.text.split('\n')).toEqual(['Rings', `Lesson ${lessonPaths().full.indexOf('rings-first') + 1} of 28`, 'Step 2 of 2', `Attempt ${starts}`, 'Counted 3 of 3']);
+        expect(panel.text.split('\n')).toEqual(['Rings', `Lesson ${lessonPaths().full.indexOf('rings-first') + 1} of 33`, 'Step 2 of 2', `Attempt ${starts}`, 'Counted 3 of 3']);
         // the same numbers as I
         const line = r.host.runner!.statusLine();
         expect(panel.text).toContain(`Counted ${line.params!.counted} of ${line.params!.required}`);

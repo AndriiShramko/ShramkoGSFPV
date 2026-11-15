@@ -50,10 +50,15 @@ function menuPage(): { ctx: FlightContext; items: MenuItem[] } {
                 items.push(it);
                 return () => void items.splice(items.indexOf(it), 1);
             }
-        }
+        },
+        // train 3 (sonic3): the shim binds Backslash, the switch in place
+        keys: { on: () => () => undefined }
     } as unknown as FlightContext;
     return { ctx, items };
 }
+
+/** The lessons item (train 3: the second item; the first switches the mode on in place). */
+const lessonsItem = (items: MenuItem[]): MenuItem => items.find((i) => i.id === 'pause.flyBySoundLessons')!;
 
 describe('the pause menu\'s one way into the mode on an ordinary page (step 3)', () => {
     it('on a scan page the item links the mode\'s start screen for that scan at its size (train 2), and reads no location in Node (review SN-1)', () => {
@@ -61,10 +66,10 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         (ctx as unknown as { session: unknown }).session = { builtin: null, scene: { id: '39e63ce9' }, transform: { s: 2.5 } };
         const off = sonicFlight.install(ctx) as () => void;
         vi.stubGlobal('document', { documentElement: { lang: 'pl' } });
-        expect(items[0]!.href?.()).toBe('/pl/fly/?sonic=scan&scene=39e63ce9&sz=2.5');
+        expect(lessonsItem(items).href?.()).toBe('/pl/fly/?sonic=scan&scene=39e63ce9&sz=2.5');
         // control: a built-in world keeps the plain start screen
         (ctx as unknown as { session: unknown }).session = { builtin: {}, scene: { id: 'garden' }, transform: { s: 1 } };
-        expect(items[0]!.href?.()).toBe('/pl/fly/?sonic=start');
+        expect(lessonsItem(items).href?.()).toBe('/pl/fly/?sonic=start');
         off();
     });
 
@@ -74,13 +79,15 @@ describe('the pause menu\'s one way into the mode on an ordinary page (step 3)',
         vi.unstubAllGlobals();
     });
 
-    it('an ordinary page gets exactly one item: no key, in the tools section where the mode\'s own item sits, a link to the mode\'s start screen /{lang}/fly/?sonic=start (v0.13 M41-1), opened in a new tab; its teardown takes it out', () => {
+    it('an ordinary page gets two items: Fly by Sound here (train 3: no link, the in-place key), and the lessons, a link to the mode\'s start screen /{lang}/fly/?sonic=start (v0.13 M41-1) opened in a new tab; its teardown takes them out', () => {
         const { ctx, items } = menuPage();
         const off = sonicFlight.install(ctx) as () => void;
-        expect(items).toHaveLength(1);
-        const it = items[0]!;
+        expect(items).toHaveLength(2);
+        expect(items[0]).toMatchObject({ id: 'pause.flyBySound', action: 'flyBySound.toggle', labelKey: 'sonic.menu.here', section: 'tools' });
+        expect(items[0]!.href).toBeUndefined();
+        const it = lessonsItem(items);
         // review R8: last of the tools section (after "Report a bug or an idea", 110), a quiet end of the list
-        expect(it).toMatchObject({ id: 'pause.flyBySound', action: null, labelKey: 'sonic.menu.page', section: 'tools', order: 120 });
+        expect(it).toMatchObject({ id: 'pause.flyBySoundLessons', action: null, labelKey: 'sonic.menu.lessonsTab', section: 'tools', order: 120 });
         const opened: unknown[][] = [];
         vi.stubGlobal('open', (...a: unknown[]) => void opened.push(a));
         for (const l of LANGS) {

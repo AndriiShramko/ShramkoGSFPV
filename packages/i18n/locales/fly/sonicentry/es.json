@@ -1,4 +1,8 @@
 {
   "sonic.menu.page": "Fly by Sound: ciegos o con baja visión",
-  "sonic.say.lessonFailed": "La lección no se abrió. Elígela otra vez o elige otra."
+  "sonic.say.lessonFailed": "La lección no se abrió. Elígela otra vez o elige otra.",
+  "sonic.menu.here": "Fly by Sound aquí",
+  "sonic.menu.hereOff": "Apagar Fly by Sound",
+  "sonic.menu.lessonsTab": "Lecciones de Fly by Sound: ciegos o con baja visión",
+  "sonic.menu.hereFailed": "Fly by Sound aún no ha empezado. Pulsa {key} una vez más: esa pulsación lo inicia."
 }

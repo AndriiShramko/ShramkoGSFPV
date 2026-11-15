@@ -32,7 +32,9 @@ function worlds(): { name: string; world: AnalyticWorldInfo }[] {
     const specs = new Map<string, { name: string; spec: AnalyticWorldSpec }>();
     for (const id of SHIPPED_LESSON_IDS) {
         const l = getLesson(id);
-        if (l.world.kind === 'analytic') specs.set(JSON.stringify(l.world.spec), { name: id, spec: l.world.spec });
+        // a world shared by several lessons keeps the first lesson's name (speed-1..4 fly the world of rings-course)
+        const k = JSON.stringify(l.world.kind === 'analytic' ? l.world.spec : null);
+        if (l.world.kind === 'analytic' && !specs.has(k)) specs.set(k, { name: id, spec: l.world.spec });
     }
     const extra: [string, AnalyticWorldSpec][] = [
         ['corridor-straight', makeSpec('corridor', { layout: 'straight', straightM: 40 }, 3)],

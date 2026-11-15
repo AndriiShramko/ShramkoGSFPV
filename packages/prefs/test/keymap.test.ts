@@ -67,6 +67,8 @@ const SHIPPED_IN_WAVE2: readonly string[] = [
 ];
 /** Keys shipped for Fly by Sound (v0.12, docs/wip/v12-plan.md sections 1 and 3): bound at step 0, handled by the lanes' features. */
 const SHIPPED_IN_V12: readonly string[] = ['sonic.record', 'sonic.send', 'sonic.status', 'sonic.repeat', 'sonic.glossary'];
+/** Train 3, lane sonic3: Backslash switches Fly by Sound on and off in place, on every page (app/builtin/sonic-flight.ts). */
+const SHIPPED_BY_SONIC3: readonly string[] = ['flyBySound.toggle'];
 /** Lane sonic-hints: X leaves a lesson for the mode's main menu (sonic/feature.ts). Every key of the mode: */
 const MODE_KEYS: readonly string[] = [...SHIPPED_IN_V12, 'sonic.home'];
 
@@ -87,7 +89,9 @@ const ADDED_AFTER_DESIGN: Record<string, string[]> = {
     'sonic.repeat': ['Z'],
     'sonic.glossary': ['G'],
     // lane sonic-hints: X, the mode's main menu from a lesson
-    'sonic.home': ['X']
+    'sonic.home': ['X'],
+    // train 3, lane sonic3: Backslash, Fly by Sound on and off in place
+    'flyBySound.toggle': ['\\']
 };
 
 /**
@@ -151,7 +155,7 @@ describe('v0.2 keys keep working', () => {
     });
 
     it('only the keys the page handled at the start of wave 1 are shipped, so the refactor changes no key (plus those wave 2 and v0.12 shipped)', () => {
-        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS, ...SHIPPED_BY_TRACKS, ...SHIPPED_BY_ROOMS].sort());
+        expect(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action).sort()).toEqual([...SHIPPED_AT_WAVE1, ...SHIPPED_IN_WAVE2, ...MODE_KEYS, ...SHIPPED_BY_TRACKS, ...SHIPPED_BY_ROOMS, ...SHIPPED_BY_SONIC3].sort());
     });
 
     it('Fly by Sound\'s T U I Z G route in flight and while crashed on a page entered through ?sonic=, with no Shift, Ctrl, Alt or Meta; none is a keyboard-flying key', () => {
