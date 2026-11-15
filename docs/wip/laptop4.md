@@ -31,6 +31,8 @@ Stage Q2-near-field
 - [x] 3. Pictures in U:/Temp/gsfpv-train3/shots: laptop4-lublin-above-0p5M-before/-after.png and -1M-before/-after.png
   (after = before: the default is unchanged), candidates -cand-rim2, -rim4, -m17, -m15; Wroclaw street, turns and bytes
   not run (needed only for a kept candidate)
+- [x] 4. a6-reference 1 of 1 pass; gates.py --only vitest,architecture,i18n,b18 on 2872f5e4: all PASS (vitest 124 s;
+  logs U:/Temp/gsfpv-gates-20261115-112715); server on 5740 stopped. accept-fly B6 to B16 not run (no product change)
 
 ## Facts (measured)
 
@@ -138,6 +140,10 @@ has only sky in its top half). One run each.
 
 ## Not verified
 
+- Q2: one run per setting, no repeat (differences under about 0.1 dB are within noise); Wroclaw street, the turns and the
+  bytes over a flight not measured for the candidates (none kept); accept-fly B6 to B16 not run (defaults unchanged);
+  only the 1 M pair of base and rim2 looked at by eye; (b) not built.
+
 - Which program loaded the card during laptop3's runs (03:11 to 03:26 UTC) and during q1-0p5-m17-4k: not known
   (nvidia-smi shows no compute process now; no log of that time).
 - The slow run q1-0p5-m17-4k is put down to outside GPU load as a guess: its GPU load was not recorded.
@@ -149,3 +155,5 @@ has only sky in its top half). One run each.
 - Q1: the most turns went to a 4K run lost waiting on another lane's lock (timeout 280 s ran out) and to a first run at
   1920x1080 that could not show the slow start; reading laptop3's own `thermalBefore` first (one command) would have
   pointed at the busy card before any browser run.
+- Q2: the most turns went to a name clash in the score script (one lost scoring pass) and to waiting for two release
+  builds; building once with every candidate switch in it before the first probe would have saved a build.
