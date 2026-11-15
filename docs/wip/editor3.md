@@ -79,9 +79,33 @@ Stage I1-gizmo (train 3, 2026-11-15):
     stretches parts off the centre.
 - [x] I1.4 gates.py --only vitest,architecture,i18n,b18 on 5c51b4f1: all PASS (vitest 123 s, architecture, i18n, b18;
   i1/gates.log, logs U:/Temp/gsfpv-gates-20261115-115016).
-- [ ] left: shrink the parts so their drawn extent is at most 16 px (handle-look.ts HANDLE_PX: measured ratios drawn/size
-  1.13 for the cone, up to 1.67 for a cube: cone 14 px long, end cubes 9 to 10 px, centre cube 10 to 11 px would fit;
-  an estimate until measured), rebuild, re-run gz.sh after on both scenes, read maxSmallPart and the T parts.
+- [x] I1.5 (pass 3) parts shrunk, 9e2c2af6: handle-look.ts HANDLE_PX cone 13x9 px, end cubes 9 px, centre cube 9.5 px
+  as set; DRAWN_PER_SET 1.67 (measured by editor3-gizmo.ts on 5c51b4f1's tree: drawn/set 1.13 cone, up to 1.67 cube).
+  editor3-i1.test.ts 12 pass, NEG OK (neg_control.py ref HEAD, handle-look.ts); apps/fly and tools/bench tsc 0 errors.
+  Release build of 3a42b572's tree plus the change: exit 0 (i1/build-after3.log; the bundle holds arrowLength:13,
+  sizeBox:9, centreBox:9.5). gz.sh after: Tunis lock 11:56:30-11:57:55, Wroclaw 11:57:58-11:59:09 and a second
+  Wroclaw run 11:59:38-12:00:50 (records gizmo-after-*.json; run1-gizmo-after-70b50d42.json; the 5c51b4f1 records kept
+  as prev2-gizmo-after-*.json).
+  - maxSmallPart 15 px on both scenes (was 20). Move heads x 12x8, y 9x15, z 13x9; Size centre box 13x13, box x 12x12,
+    box y 13x12, box z 15x15; lines 3 px wide; rings unchanged (disk 115x163, 77x170, 174x36).
+  - Tunis: click selected gate 4 (ok), eye 2.04 m, 342 px = 0.32; Tab x3 -> 5, 6, 7 at 0.32, rings' minor axes 82/52/120,
+    67/42/98, 82/52/120 px; flown away 4.72 m 157 px, F back to 2.04 m 342 px; X arrow 316 px -> 2.0 m, turned 0, undo 0;
+    rings x, y, z 30 deg each (24, 24, 36 px), undo 0 deg; edge-on y (minor 4 px) picked 'edge:y', 64 px -> 30 deg, undo;
+    Size end x 1.2 -> 1.92 m, centre 1.2 -> 1.56 m, moved 0, undo back.
+  - Wroclaw: the click on gate 2 did NOT select it in either run (at [996,314] and [830,383], selected stayed 1; on
+    5c51b4f1's tree it selected at [560,322]). The rest ran on gate 1 framed after opening: 2.04 / 2.55 m, 0.32; Tab x3
+    2, 3, 4 at 0.32, rings 82/52/120, 67/42/98, 67/42/98; F 5.33 m 171 px -> 2.55 m 342 px; X 2.0 m; rings 30 deg each;
+    edge-on y (6 px) 30 deg; Size end 1.5 -> 2.58 m, centre 1.5 -> 2.22 m; every undo back.
+  - Pictures looked at (pass 3, earlier run of 5c51b4f1): Tunis move: the yellow selected ring gate in the middle third
+    among the palms, small arrows at its centre, the orange course chevrons inside it are larger than the handles. Tunis
+    size: the same gate, small white centre cube and coloured end cubes on thin lines. All six -drag pictures: the
+    tag ('Moved 2.0 m', 'Turned 30 deg', 'Opening 1.9 m' / '2.6 m') beside the handle, the gate yellow and fully seen,
+    the dragged axis' long guide line across the view. The six named pictures of this run (smaller parts) were not
+    looked at again.
+- [ ] left: the Wroclaw click select (above). Measured: two runs, two points, no selection; suspect the click lands in
+  the opening of gate 2 and pick.ts pickGate (used by view-mouse.ts 591) takes only the frame, or the probe aims at the
+  centre; a guess, not measured. Not this stage's fix: D5 and D6 (THR, speed and ALT line, key hints, REC row, voltage
+  and time still in the edit view; the top bar line wraps to two lines, seen in every picture).
 
 Stage H3-prove (train 3, 2026-11-15):
 - [x] H3.0 code e8d3655b: the crash toast (.crash-toast, ui/crash-overlay.ts) hidden in the edit view (H2 c2); the top bar
