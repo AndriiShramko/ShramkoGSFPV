@@ -1215,22 +1215,30 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         let firstCue: { s: number; cues: string[] } | null = null;
         let firstLine: { s: number; key: string } | null = null;
         const phases = new Set<string>();
+        // sonic3 S1 pass 3: the craft is read AT the first cue and W is let go there, as a pilot does who hears a wall cue (pass 2
+        // read it after the intro: Tunis flew 21.8 m blind into a wall, Wroclaw and Housefly kept 75 % of their speed and then
+        // crashed ('stuck-flipped') 3.4 to 4.3 s after the press; the check failed on the pilot's blind W, not on the switch)
+        let cueCraft: Awaited<ReturnType<typeof craftNow>> | null = null;
         const on = await until('the first cue after Backslash', async () => {
             const p = await probe10(page);
             if (p.phase) phases.add(p.phase);
-            if (firstCue === null && (p.cues ?? []).length > 0) firstCue = { s: (Date.now() - t0) / 1000, cues: (p.cues ?? []).slice(0, 6) };
+            if (firstCue === null && (p.cues ?? []).length > 0) {
+                firstCue = { s: (Date.now() - t0) / 1000, cues: (p.cues ?? []).slice(0, 6) };
+                cueCraft = await craftNow();
+                await page.keyboard.up('KeyW');
+            }
             if (firstLine === null) {
                 const sp = spokenAfter(await events(page), 0);
                 if (sp.length > 0) firstLine = { s: (Date.now() - t0) / 1000, key: sp[0] };
             }
             return p;
         }, (p) => firstCue !== null && p.lesson === 'scan-free' && p.phase === 'flying', 120000, 100).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
-        const atCue = await craftNow();
+        const atCue = cueCraft ?? (await craftNow());
         const onAfter = atCue.v;
         await page.keyboard.up('KeyW');
         const onSpy = (await lifeLog(page)).filter((e) => (e as { t: number }).t >= onBefore.t - 1);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-inplace.png`, fullPage: false });
-        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed }, spy: onSpy };
+        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1).filter((e) => (e as { t: number }).t <= atCue.t), livesAfterCue: livesAfter(onSpy, atCue.t + 0.001), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed }, spy: onSpy };
         const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null, switchOn };
         (result.r11 as { runs: object[] }).runs.push(run);
         check(`${tag}: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue`, on !== null && firstCue !== null, run);
