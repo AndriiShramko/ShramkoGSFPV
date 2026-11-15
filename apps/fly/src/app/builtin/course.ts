@@ -23,6 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
+import { gateRoles, lapSplash, lapSplashMode, resultsCard } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -68,6 +69,9 @@ export const course: Feature = {
         // stage G4-prove: the probes read where the gates stand (flown frame) to fly through them and draw them from above
         hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]] })) : []);
         hook.guide = () => ({ ...hud.guideState });
+        // lane course4: the START / FINISH banners, the number plate, the lap's splash and the results card as drawn
+        hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
+        hook.splash = () => ({ ...hud.splashState });
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);
@@ -151,7 +155,9 @@ export const course: Feature = {
                 sync();
                 return;
             }
-            stage.show(run.gates);
+            // lane course4 (S1): the START / FINISH gate checkered with its banner, a checkered line on the ground under it
+            const col = ctx.session.collision;
+            stage.show(run.gates, gateRoles(run.gates.length, run.track.laps > 1), (role) => t(`course.gate.${role}`), (x, y, z) => col?.queryRay(x, y, z, 0, -1, 0, 80)?.y ?? null);
             shownNext = -2;
             frame();
         };
@@ -181,12 +187,23 @@ export const course: Feature = {
             const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
             if (ev === 'lap' || ev === 'done') {
                 const last = v.lastLapMs ?? 0;
+                // lane course4 (S4, S5): the best is read before this lap writes it, so the splash shows the gain against it
                 const before = readBest(keyOf(run.track));
-                if (before === null || last < before) {
-                    writeBest(keyOf(run.track), last);
-                    ctx.hud.flash(t('course.best', { time: lapClock(last) }), 3000);
-                } else ctx.hud.flash(t('course.lapDone', { time: lapClock(last) }), 2500);
+                const best = before === null || last < before;
+                if (best) writeBest(keyOf(run.track), last);
+                const said = best ? t('course.best', { time: lapClock(last) }) : t('course.lapDone', { time: lapClock(last) });
+                const mode = lapSplashMode(ctx.prefs.get('course.lapSplash'));
+                const s = lapSplash(last, before);
+                const now = performance.now();
+                if (ev === 'done') {
+                    const c = resultsCard(v.lapTimes);
+                    hud.card(c, s, mode, {
+                        title: t('course.card.title'), total: t('course.card.total', { time: c.total }), best: t('course.card.best', { time: c.best }),
+                        laps: c.laps.length > 1 ? c.laps.map((time, i) => t('course.card.lap', { n: i + 1, time })) : []
+                    }, now);
+                } else hud.splash(s, mode, said, now);
             }
+            hud.tick(performance.now());
             const next = v.running || v.next >= 0 ? v.next : -1;
             if (next !== shownNext) {
                 stage.setNext(next, run.path, run.track.laps > 1);

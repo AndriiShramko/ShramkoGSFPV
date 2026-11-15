@@ -695,10 +695,28 @@ Logs U:/Temp/gsfpv-train3/course4/c1/. origin/main had nothing new (git log HEAD
       fade 400 ms, card 3000 ms are the lead's design values) and course/hud-clock.ts (lapClock moved out of hud.ts, re-exported
       there); test tools/bench/test/course-finish.test.ts 10 passed. Negative control: the module is new, so the test fails
       on the old code by a missing import, not by an assertion.
-- [ ] 'before' pictures and measure on Wroclaw 70b50d42 (not taken)
-- [ ] S1 to S6 in the page, i18n, setting, browser proof, gates (see Left C1)
+- [ ] 'before' pictures and measure on Wroclaw 70b50d42 (not taken; dist still holds the ad5ceb37 'before' build)
+- [x] (pass 2) S1 to S6 in code: view.ts (checkered START / FINISH frame, banner with the word, checkered line on the ground
+      from collision.queryRay, number plate over the next gate, passed grey 0.45 -> 0.2), hud.ts + hud.css (.course-splash at
+      top 20vh, 8vh digits, small 4vh, card 6vh, fades by splashAlpha, clock block dims while it shows, covered by the pause
+      menu with the block; S3 line course.hud.toStart before the clock runs), course.ts frame() (splash and card instead of
+      the two flashes, best read before it is written; hook course.look and course.splash for probes), laps.ts LapView.lapTimes,
+      prefs course.lapSplash (display, enum large|small|off, default large), texts in en/es/pl/ru (course.gate.*, course.card.*,
+      course.hud.toStart, set.course.lapSplash*; course.ready and course.server.loaded say START). Checks: typecheck fly, tracks,
+      prefs exit 0; vitest course-finish + packages/prefs/test (with migrate.test.ts) + packages/tracks/test: 387 passed;
+      NEG OK for prefs/defs/course.ts and tracks/laps.ts (neg_control.py, logs c1/neg-*.log).
+      Banner size from 60 m (geometry, not measured on screen): a 2.4 m square gate with 0.1 m bars is 2.6 m outer, banner
+      2.6 x 0.78 m; at the flight view's 115 deg horizontal fov on 1920 px, 960 / tan(57.5 deg) = 612 px per radian, so 27 x 8 px
+      at 60 m, the frame 27 px wide (8 cells of 3.3 px). An estimate until the browser proof measures it.
+- [ ] browser proof, pictures, accept-fly, tracks-page, gates.py, a6-reference (see Left C1, items 1 and 8)
 
 ## Left (C1-start-finish)
+
+Items 2 to 7 below are done in pass 2 (see Status); 1 and 8 are left. New in pass 2: the editor's own show() (course.ts line
+about 606) draws no roles on purpose (the editor paints every gate); hook course.look() gives banners, groundLines, plate,
+roles; hook course.splash() gives kind, text, delta, tone, mode, at, alpha; the splash element is [data-testid=course-splash].
+The ring's checker cells (view.ts checkerPrims, q0 = gate quat x 90 deg about X) are not yet seen in a picture: check that
+they lie on the ring and not across it.
 
 1. 'Before' measure on the release of ad5ceb37 already in dist: copy the walls stand-in into dist/walls, serve on 5780, Shift+G
    on Wroclaw; first and last gate are painted like the others (view.ts PAINT: next lime, later teal, passed grey); a lap

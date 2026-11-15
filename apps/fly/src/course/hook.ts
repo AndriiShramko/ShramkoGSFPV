@@ -33,6 +33,10 @@ export interface CourseHook {
     clockText?: () => string | null;
     /** stage X2-gate-one: what the guide to the next gate shows now (course/hud.ts GuideState) */
     guide?: () => { shown: boolean; gate: number; metres: number; side: 'left' | 'right'; behind: boolean; inFrame: boolean; bearingDeg: number; x: number; y: number };
+    /** lane course4 (S1, S2): banners over START / FINISH gates, lines on the ground, the gate carrying the number plate, roles */
+    look?: () => { banners: number; groundLines: number; plate: number; roles: ('start' | 'finish' | 'startFinish' | null)[] };
+    /** lane course4 (S4, S5): the lap's splash or the results card now (course/hud.ts SplashState) */
+    splash?: () => { kind: 'none' | 'splash' | 'card'; text: string; delta: string; tone: string; mode: string; at: number; alpha: number };
     /** lane fix3b, Y1: the edit mode's Save check of the course in use, untouched, with the measured report; null without
      *  a course or walls (test data, read only). `move` checks a copy with one gate at another place (flown frame): the
      *  negative row of Y3 (a gate pushed into a wall must still be refused); the course in use is not changed. */

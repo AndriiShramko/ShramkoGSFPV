@@ -9,7 +9,12 @@ import type { Box, GuideAim } from './guide';
 import './hud.css';
 
 import { lapClock } from './hud-clock';
+import { CARD_HOLD_MS, SPLASH_FADE_MS, SPLASH_HOLD_MS, splashAlpha } from './finish';
+import type { LapSplash, LapSplashMode, ResultsCard } from './finish';
 export { lapClock };
+
+/** what the lap's splash and the results card show now (the page hook course.splash; probes read it) */
+export interface SplashState { kind: 'none' | 'splash' | 'card'; text: string; delta: string; tone: string; mode: string; at: number; alpha: number }
 
 /** what the guide shows now (the page hook course.guide; probes read it) */
 export interface GuideState { shown: boolean; gate: number; metres: number; side: 'left' | 'right'; behind: boolean; inFrame: boolean; bearingDeg: number; x: number; y: number }
@@ -38,8 +43,18 @@ export class CourseHud {
     /** the boxes the guide stays out of (note, lap block, top row), measured when they change, never per frame */
     private avoid: Box[] = [];
     readonly guideState: GuideState = { shown: false, gate: -1, metres: 0, side: 'right', behind: false, inFrame: false, bearingDeg: 0, x: 0, y: 0 };
+    /** S4 and S5 (lane course4): the lap's time large in the upper middle, and the results card at the end of the last lap */
+    private readonly splashEl: HTMLDivElement;
+    readonly splashState: SplashState = { kind: 'none', text: '', delta: '', tone: '', mode: '', at: 0, alpha: 0 };
+    private splashHold = SPLASH_HOLD_MS;
 
     constructor(private readonly parent: HTMLElement) {
+        this.splashEl = document.createElement('div');
+        this.splashEl.className = 'course-splash';
+        this.splashEl.setAttribute('data-testid', 'course-splash');
+        this.splashEl.setAttribute('role', 'status');
+        this.splashEl.hidden = true;
+        parent.appendChild(this.splashEl);
         this.el = document.createElement('div');
         this.el.className = 'course-hud';
         this.el.setAttribute('data-testid', 'course-hud');
@@ -178,6 +193,7 @@ export class CourseHud {
         if (this.el.classList.contains(COVERED_CLASS) === on) return;
         this.el.classList.toggle(COVERED_CLASS, on);
         this.guideEl.classList.toggle(COVERED_CLASS, on);
+        this.splashEl.classList.toggle(COVERED_CLASS, on);
         if (!on) this.again();
     }
 
@@ -185,19 +201,24 @@ export class CourseHud {
         if (v === null) {
             this.el.hidden = true;
             this.guide(null, -1);
+            if (this.splashState.kind !== 'none') this.clearSplash();
             return;
         }
         if (this.el.hidden) {
             this.el.hidden = false;
             this.again();
         }
-        const time = lapClock(v.lapMs);
-        const lines = [
-            t('course.hud.lap', { n: Math.max(1, v.lap), of: v.lapsPerRun }),
-            t('course.hud.next', { n: v.next + 1, of: gates }),
-            t('course.hud.last', { time: lapClock(v.lastLapMs) }),
-            t('course.hud.best', { time: lapClock(v.bestLapMs) })
-        ].join('\n');
+        // S3 (lane course4): before the clock runs one line says to fly through START (the guide points there)
+        const waiting = !v.running && v.laps === 0;
+        const time = waiting ? '' : lapClock(v.lapMs);
+        const lines = waiting
+            ? t('course.hud.toStart')
+            : [
+                  t('course.hud.lap', { n: Math.max(1, v.lap), of: v.lapsPerRun }),
+                  t('course.hud.next', { n: v.next + 1, of: gates }),
+                  t('course.hud.last', { time: lapClock(v.lastLapMs) }),
+                  t('course.hud.best', { time: lapClock(v.bestLapMs) })
+              ].join('\n');
         const key = time + lines;
         if (key === this.shown) return;
         this.shown = key;
@@ -205,10 +226,89 @@ export class CourseHud {
         this.lines.textContent = lines;
     }
 
+    /**
+     * S4: a lap ended at `now` (performance.now ms): its time large in the upper middle (hud.css .course-splash), green with the
+     * gain on a new best, white with the loss on a slower lap, the time alone on the first; `said` is the same for a screen
+     * reader. Nothing when the setting is 'off'.
+     */
+    splash(s: LapSplash, mode: LapSplashMode, said: string, now: number): void {
+        if (mode === 'off') return this.clearSplash();
+        const el = this.splashEl;
+        const covered = el.classList.contains(COVERED_CLASS);
+        el.replaceChildren();
+        el.className = `course-splash ${mode} ${s.tone}`;
+        el.classList.toggle(COVERED_CLASS, covered);
+        const time = document.createElement('div');
+        time.className = 'course-splash-time';
+        time.textContent = s.time;
+        el.append(time);
+        if (s.delta) {
+            const d = document.createElement('div');
+            d.className = 'course-splash-delta';
+            d.textContent = s.delta;
+            el.append(d);
+        }
+        el.setAttribute('aria-label', said);
+        this.open('splash', s.time, s.delta, s.tone, mode, now, SPLASH_HOLD_MS);
+    }
+
+    /** S5: the end of the last lap: the results card in the same place (the last lap's splash on top), CARD_HOLD_MS. */
+    card(c: ResultsCard, s: LapSplash, mode: LapSplashMode, labels: { title: string; total: string; best: string; laps: string[] }, now: number): void {
+        if (mode === 'off') return this.clearSplash();
+        const el = this.splashEl;
+        const covered = el.classList.contains(COVERED_CLASS);
+        el.replaceChildren();
+        el.className = `course-splash card ${mode} ${s.tone}`;
+        el.classList.toggle(COVERED_CLASS, covered);
+        const add = (cls: string, text: string): void => {
+            const d = document.createElement('div');
+            d.className = cls;
+            d.textContent = text;
+            el.append(d);
+        };
+        add('course-card-title', labels.title);
+        add('course-splash-time', s.time);
+        if (s.delta) add('course-splash-delta', s.delta);
+        // one line for the total and the best, one for the laps: the card stays above the middle third of the view
+        add('course-card-line', `${labels.total}   ${labels.best}`);
+        if (labels.laps.length) add('course-card-lap', labels.laps.join('   '));
+        el.setAttribute('aria-label', [labels.title, labels.total, labels.best].join('. '));
+        this.open('card', c.total, s.delta, s.tone, mode, now, CARD_HOLD_MS);
+    }
+
+    private open(kind: SplashState['kind'], text: string, delta: string, tone: string, mode: string, now: number, hold: number): void {
+        this.splashHold = hold;
+        Object.assign(this.splashState, { kind, text, delta, tone, mode, at: now, alpha: 1 });
+        this.splashEl.hidden = false;
+        this.splashEl.style.opacity = '1';
+        // the clock's block dims while the splash shows: at 1080 p they would overlap (block 120-224 px, splash 173-259 px)
+        this.el.classList.add('course-dim');
+    }
+
+    private clearSplash(): void {
+        this.splashEl.hidden = true;
+        this.splashEl.replaceChildren();
+        this.el.classList.remove('course-dim');
+        Object.assign(this.splashState, { kind: 'none', alpha: 0 });
+    }
+
+    /** Fades the splash or the card by the time since it opened (finish.ts splashAlpha); every frame of the course. */
+    tick(now: number): void {
+        const st = this.splashState;
+        if (st.kind === 'none') return;
+        const a = splashAlpha(now - st.at, this.splashHold, SPLASH_FADE_MS);
+        if (a <= 0) return this.clearSplash();
+        if (a !== st.alpha) {
+            st.alpha = a;
+            this.splashEl.style.opacity = a.toFixed(3);
+        }
+    }
+
     dispose(): void {
         this.watch.disconnect();
         removeEventListener('resize', this.onResize);
         this.el.remove();
         this.guideEl.remove();
+        this.splashEl.remove();
     }
 }

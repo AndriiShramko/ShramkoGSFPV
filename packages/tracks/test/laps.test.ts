@@ -45,6 +45,15 @@ describe('LapTimer', () => {
         expect(v.bestLapMs).toBe(v.lastLapMs);
     });
 
+    it('course4 C1: the view lists each finished lap of the attempt (the results card reads them)', () => {
+        const timer = new LapTimer(GATES, { laps: 1 });
+        expect(timer.view().lapTimes).toEqual([]);
+        fly(timer, STRAIGHT);
+        const v = timer.view();
+        expect(v.lapTimes).toHaveLength(1);
+        expect(v.lapTimes[0]).toBe(v.lastLapMs);
+    });
+
     it('control: a skipped gate gives no lap, and the gate after it does not count', () => {
         const timer = new LapTimer(GATES, { laps: 1 });
         // around gate 2 (x = 5 at z = -20), back on the line for gate 3

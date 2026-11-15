@@ -1,6 +1,17 @@
 // Lane course4, stage C1-start-finish: the pure parts of apps/fly/src/course/finish.ts (lead decisions S1, S4, S5).
 import { describe, expect, it } from 'vitest';
 import { CARD_HOLD_MS, LAP_SPLASH_DEFAULT, LAP_SPLASH_MODES, SPLASH_FADE_MS, SPLASH_HOLD_MS, gateRoles, lapSplash, lapSplashMode, resultsCard, splashAlpha } from '../../../apps/fly/src/course/finish';
+import { SCHEMA } from '../../../packages/prefs/src';
+
+describe('course4 C1: the setting Lap time on screen in the settings schema (S4)', () => {
+    it('is a Display setting with the three values of finish.ts, large by default, shown in Settings', () => {
+        const d = SCHEMA.byId.get('course.lapSplash');
+        expect(d?.type).toBe('enum');
+        expect(d && d.type === 'enum' ? [...d.options] : []).toEqual([...LAP_SPLASH_MODES]);
+        expect(d?.default).toBe(LAP_SPLASH_DEFAULT);
+        expect(d?.shown).toContain('settings');
+    });
+});
 
 describe('course4 C1: START and FINISH gates (S1)', () => {
     it('a closed course: gate 1 is START / FINISH, no other gate says anything', () => {

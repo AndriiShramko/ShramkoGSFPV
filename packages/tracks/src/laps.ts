@@ -40,6 +40,8 @@ export interface LapView {
     readonly splits: readonly number[];
     readonly lastLapMs: number | null;
     readonly bestLapMs: number | null;
+    /** each finished lap of this attempt, ms, in order (lane course4: the results card lists them) */
+    readonly lapTimes: readonly number[];
 }
 
 /** A LapTimer's attempt at one moment (LapTimer.snapshot). */
@@ -186,7 +188,8 @@ export class LapTimer {
             lapMs: this.running ? Math.max(0, at - this.lapStart - this.pausedMs) : 0,
             splits: [...this.splits],
             lastLapMs: this.lastMs,
-            bestLapMs: this.bestMs
+            bestLapMs: this.bestMs,
+            lapTimes: [...this.lapTimes]
         };
     }
 }
