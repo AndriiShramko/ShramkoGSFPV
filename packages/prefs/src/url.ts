@@ -30,6 +30,7 @@ export const APP_URL_PARAMS_NOT_SETTINGS: Readonly<Record<string, string>> = {
     input: 'test: force the touch sticks on a desktop (?input=touch)',
     impl: 'test: ?impl=engine draws the stochastic drawing with the engine own dither instead of the accumulating SuperSplat renderer (v0.11 lane S: the benches control arm); no pilot setting, Render Stochastic always means the best stochastic available',
     accum: 'test: ?accum=key:value,... seeds the accumulating stochastic renderer with upstream variant keys, e.g. taa:off or taaMoveMax:32 (v0.11 lane S: the benches); no pilot setting',
+    viewlod: 'test: ?viewlod=0 draws a streamed scan with the engine own choice of detail, without the frame\'s priority (lane lod-view: the benches control arm, and a way back); no pilot setting',
     scale: 'test: a fixed render scale for benches and screenshots (the pilot\'s control is display.quality)',
     refine: 'test: finer walls by the plan, only on request, or never (bench modes of walls.ts)',
     bake: 'test: build walls at once for a scan without them (phase C bench)',

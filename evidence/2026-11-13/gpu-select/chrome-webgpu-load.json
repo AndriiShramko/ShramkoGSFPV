@@ -1,0 +1,55 @@
+{
+  "name": "gpu-select/chrome-webgpu-load",
+  "date": "2026-11-13T20:12:52.244Z",
+  "label": "chrome-webgpu-load",
+  "mode": "webgpu",
+  "browserName": "chrome",
+  "browser": {
+    "product": "Chrome/140.0.7339.81",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+  },
+  "loads": {
+    "high-performance": {
+      "load": {
+        "frames": 580,
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "description": ""
+      },
+      "perAdapter": {
+        "Intel(R) UHD Graphics": {
+          "engines": 13,
+          "max3d": 98.94,
+          "avg3d": 98.74,
+          "maxAny": 98.94,
+          "dedicatedMb": 0,
+          "sharedMb": 79.3
+        }
+      }
+    },
+    "low-power": {
+      "load": {
+        "frames": 616,
+        "vendor": "intel",
+        "architecture": "gen-12lp",
+        "description": ""
+      },
+      "perAdapter": {
+        "Intel(R) UHD Graphics": {
+          "engines": 13,
+          "max3d": 99.97,
+          "avg3d": 98.98,
+          "maxAny": 99.97,
+          "dedicatedMb": 0,
+          "sharedMb": 94.7
+        }
+      }
+    }
+  },
+  "verdict": {
+    "high": "intel gen-12lp",
+    "highBusiest": "Intel(R) UHD Graphics 98.94 %",
+    "low": "intel gen-12lp",
+    "lowBusiest": "Intel(R) UHD Graphics 99.97 %"
+  }
+}
