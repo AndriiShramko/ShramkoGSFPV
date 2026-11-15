@@ -1005,8 +1005,36 @@ Pass 2 (logs U:/Temp/gsfpv-train3/course4/c4p2/):
       single upright gates by construction).
 - [x] hook course.gatePoses gives each gate's shape (course.ts, hook.ts) for the new probe
       tools/bench/scripts/course-elements-probe.mjs (scripted pilot that SETS the craft state, not key events).
+- [x] tracks-review TR-4 (gate vitest) failed since C1: view.ts plateCanvas called document in the Node test; setNext
+      draws no plate without a document (view.ts). Test 8 passed. a6-reference exit 0 (1 passed). gates.py --only
+      vitest,architecture,i18n,b18 before the fix: vitest 1 failed of 4994 (that test), architecture, i18n, b18 PASS; not
+      re-run after the fix (budget).
+- [x] page, release of f047721c (gatePoses with shapes; the view.ts fix after it changes nothing in a browser), serve-csp
+      dist 5780, dist/walls = U:/Temp/gsfpv-train3/walls/release, one GPU-lock hold per scan, course-elements-probe.mjs
+      (logs c4p2/page-*.log, json c4p2/page-*.json). Pilot SETS the craft along each gate's own axis: not key events.
+      Wroclaw 70b50d42: Shift+G course in 24.9 s, 25 gates: ring 14, cube 5, square 5, flat 1, no tunnel on this seed;
+      25 of 25 gates counted in order (the flat square passed upward), lap 0:31.83 recorded, crashes 0.
+      Winter Garden room 7a475d38: course in 10.2 s, 26 gates: square 12, tunnel 2, ring 2, flat 2, cube 4; 26 of 26
+      counted (every tunnel gate), lap 1 of 3 done (0:20.60), crashes 0.
+- [x] pictures U:/Temp/gsfpv-train3/shots/, looked at: course4-elements-flat.png (Wroclaw: a square lying flat over a
+      ring ahead, seen from below, START line on screen); course4-elements-tunnel.png (Winter Garden: a square with a ring
+      inside, the row is not seen along its axis: a weak picture of a tunnel); course4-elements-room.png (Winter Garden
+      view); course4-elements-top.png (see above).
 
-## Left (C4-elements)
+## Left (C4-elements, after pass 2)
+
+1. A keyboard pilot (real key events) through each element: not built; course-elements-probe sets the craft's state.
+2. Wroclaw places tunnels at 0.09 and flat squares at 0.04 of drawn elements (design 0.2 and 0.15): a refused element is
+   not drawn again (elements.ts composeElements). Redraw on refusal, or lower FLAT_RISE_M, from this table.
+3. Fly by Sound ear pilot on Tunis at 5 m/s ended at g12 of its third attempt with 'gate missed' after 24 gates in the
+   first (sonic lane's pilot, sonic-int-review.ts r11); the gate kinds of its course not read. Not chased.
+4. A tunnel picture along the row's axis (the probe's yaw is taken from the first gate; look at it again).
+5. tracks-page, course-path-probe on Wroclaw and Tunis, accept-fly B6 B7 B9-B16 not run; gates.py subset to re-run after
+   the view.ts fix.
+6. Look at the editor's bar and shape action on a generated cube-frame and flat square (lane editor3's code).
+7. gate-place-map --sections none throws after the top map (line 240, reading 'ax').
+
+## Left (C4-elements, pass 1)
 
 1. Node table with elements on Wroclaw 70b50d42 and rooms 39e63ce9, 7a475d38, seeds 1-10: gate-place-audit has no
    --elements flag yet (add it: pass elements: true and print onElements drawn, placed, noSpace, noProof). The placed
@@ -1043,11 +1071,14 @@ Pass 2 (logs U:/Temp/gsfpv-train3/course4/c4p2/):
 - After the last lap a results card shows for about 3 s.
 - In the course part of the settings: 'Lap time on screen: large, small, off'.
 - On a scan made bigger with Scene size (the microgreens scan) the gates grow with it.
-- New in C4, not yet seen in a page: a Shift+G course mixes rings, squares, cubes, tunnels of 3-5 gates and a flat
-  square to climb through, where the space allows.
+- A Shift+G course mixes rings, squares, cube frames, tunnels of 3-5 gates and a square lying flat to climb through,
+  where the space allows; every one of them counts when flown through (seen in the page on Wroclaw and Winter Garden).
+- Fly by Sound makes its course of single upright gates only.
 
 Not proven (C4): every page item of 'Left (C4-elements)'; the shares on real scans; that a pilot can fly the 2.5 m climb
 through a flat square 1.5 m after a gate.
+
+Cost (course4 C4 pass 2): about 33 replies; the most went to reading the sonic review tool to find the ear-pilot run and to writing the elements probe; a ready probe that leads the craft through every gate (course-path-probe with a gate list) would have saved 5.
 
 Cost (course4 C4): about 29 replies; the most went to finding that the walk lays rings only (the first design converted
 only squares into cubes and flat squares and placed none). Reading the audit's per-gate kinds before designing would have

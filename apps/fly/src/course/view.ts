@@ -346,7 +346,9 @@ export class CourseStage {
         this.plate = null;
         this.look.plate = -1;
         const g = next >= 0 ? this.gates[next] : undefined;
-        if (g) {
+        // a page without a document (the Node tests of the stage) draws no number plate
+        if (g && typeof document === 'undefined') this.look.plate = next;
+        else if (g) {
             const side = g.width * PLATE_SHARE;
             const over = g.role ? 0.1 * g.width + g.width * BANNER_HEIGHT_SHARE : 0;
             this.plate = this.sign(this.root, 'course-plate', this.picture(`plate:${next + 1}`, () => plateCanvas(next + 1)), [g.pos[0], g.top + over + 0.1 * g.width + side / 2, g.pos[2]], g.yaw, side, side, Math.max(0.02, side * 0.04));
