@@ -229,13 +229,36 @@ Stage F1-no-freeze (train 3 wave 2; the walls build is this lane's now).
   4015 ms at 121.3 s, 50 ms at 125.4 s. The shown text stood still once for 4.6 s (121.3 -> 125.9 s, course "finding
   the free space 0 %" -> "5 %"), the page did not answer the probe for at most 4.1 s: both are the 4015 ms task, which
   falls just after the walls came in and the course started, not in the build.
-- [ ] Left: find the 4015 ms and 1094 ms main-thread tasks at the walls' arrival (suspects: session.installCollision
-  parsing 452 M solid voxels' octree, consumers of new walls; the course's walls() copy is two slices and is not it);
-  a performance profile (CDP Profiler) around 118-126 s of the same run shows it.
-- [ ] Left: "the drone stops at a wall": without the bot scenario the probe's craft was not armed: passes did not
-  register (next 0, clock 0:00.00) and no crash came (crash reason null). Next: arm the craft in INSTALL (or load the
-  scenario after the walls are in), then rerun STEPS=wroclaw and STEPS=forest.
-- [ ] Left: Forest Floor ab5efa0e course-path run (STEPS=forest; the run at 02:05 hit the postMessage bug).
+- [x] (pass 2) 3216f47c: course-path-probe PROFILE=1 (CDP Profiler, 2 ms samples, busy runs of 300 ms or more with self
+  and inclusive functions). Run 02:21-02:24 on the release of 1b932072 (f1/path-70b50d42.json): build 77 s in the worker,
+  course at 127.3 s, long tasks 1067 ms at 77.7 s and 4049 ms at 78.8 s. Profile: 426 ms 'digest' (walls.ts wallsSha
+  on the page, 83 % self), 497 ms queueCollision (assertWalls countSolidVoxelsFromBytes 72 %, setWalls 25 %), 4205 ms
+  '(program)' under wallcache put (95 %): the store's gzip (CompressionStream over the 113 MB .bin) on the main thread.
+- [x] (pass 2) aaadf7be: the bake worker computes sha256 and binGz (BakeResult.sha256, .binGz; walls.ts takes them, the
+  store gets binGz); bake-off-thread marks the worker's solid count (bake.ts markCounted) so assertWalls does not count
+  the same arrays again. tools/bench/test/walls-arrival.test.ts 3/3 (with walls-offthread, walls-ladder: 21/21);
+  neg_control.py --ref HEAD (bake.ts): NEG OK. tsc apps/fly, tools/bench: 0 errors. Left of the arrival: setWalls
+  (about 125 ms) and rebuildSim.
+- [x] (pass 2) The scripted pilot's hook was lost: the walls swap (session.rebuildSim) makes a new runner, INSTALL ran before
+  Shift+G. INSTALL now runs after the course arrives: passes 1, 2, 3 registered on Wroclaw (02:21 run, clock 0:02.33 at gate 3),
+  the crash came (reason crash) but the respawn went to the start (director kind 'start', no path: craft not armed, so
+  the course restarted, as it must for a start). The probe now arms the led craft (S.armed) and on a scan without a wall
+  near gate 3 aims at the floor (Forest Floor: "no wall within 25 m of gate 3").
+- [x] (pass 2) Rerun on the release of aaadf7be (f1/build3.log; serve-csp 5724, dist/walls empty, rendering on, Shift+G,
+  NOBOT=1, PROFILE=1; GPU lock 02:29:32-02:31:50 and 02:31:50-02:32:36). Wroclaw 70b50d42 (f1/path-70b50d42.json): built
+  in the worker, tried 1, 5 cm, read 25.9 s, voxelize 32.5 s, total 58.4 s, solid 452738550; course 106.4 s after
+  Shift+G, 24 gates, span 140.7 m; long tasks from Shift+G: 1, 348 ms at 63.8 s (no profile run of 300 ms or more);
+  the line never stood still more than 1.1 s (maxSilentS), the page answered within 0.6 s (maxReadGapS); 0 page errors.
+  Gates 1, 2, 3 passed (next 1, 2, 3; clock 0:02.33 at gate 3); sent at 12 m/s at a wall 3.7 m away: crash, automatic
+  respawn kind 'rewind' 3.7 m back, the course kept (next 3, clock 10.70 s then 12.73 s); R: next 0, clock 0.
+  Forest Floor ab5efa0e (f1/path-ab5efa0e.json): worker, 11.8 s, solid 124612; course 16.3 s, 10 gates; 0 long tasks;
+  maxSilentS 1.1, maxReadGapS 0.6; 0 errors. Gates 1 and 2 passed; while led to gate 3 the course went back to gate 1
+  (next 0, clock 0) before the probe's crash; the probe's crash (floor, 4.8 m) respawned kind 'rewind' 4.7 m back.
+- [x] gates.py --only vitest,architecture,i18n,b18 on aaadf7be: all PASS (vitest 105 s; logs U:/Temp/gsfpv-gates-20261115-023236).
+- [ ] Left: Forest Floor, why the course went back to gate 1 while the probe led the craft from gate 2 to gate 3 (gate 3
+  has no ground under it within 80 m: heights[2] null; likely the led line crossed a wall, a crash and a respawn whose
+  kind the probe did not record because its crash watch starts in 'free' mode). Record every life's decision in the probe.
+- [x] Forest Floor ab5efa0e course-path run: done in pass 2 (above).
 - [x] gates.py --only vitest,architecture,i18n,b18 on 44ba373c: all PASS (vitest 106 s; logs U:/Temp/gsfpv-gates-20261115-021355).
 - [ ] Item 3 (no resolve in 420 s): not reproduced. Here the same scan built in 120 s with rendering on, in the worker.
   The 420 s run (lane sonic3, 23:27) fell in the hour when this lane's audits ran with about 48 node processes on the
@@ -420,3 +443,6 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
   starting the long audit as the first command of a stage would have saved about 6 replies.
 - fixes pass 2: about 30 replies; most went to waiting for the Tunis audit (4-10 min a course under other agents' load) in
   10-minute blocks; auditing Wroclaw first and Tunis with fewer seeds, or a quiet machine, would have left room for CR-3.
+- F1-no-freeze pass 2: about 35 replies; the CDP profile in the probe found the 4.2 s task in one run (the store's gzip), where
+  guessing from code pointed at the octree parse; most replies went to reading the arrival path before the profile ran.
+  Profiling first (PROFILE=1 is in the probe now) and recording every life's decision in the probe would have saved about 8.
