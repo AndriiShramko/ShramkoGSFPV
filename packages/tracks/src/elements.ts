@@ -133,6 +133,8 @@ export interface Composed {
     /** tries refused by their space test and by their proof (an owed element is tried again at later gates) */
     readonly noSpace: Record<ElementKind, number>;
     readonly noProof: Record<ElementKind, number>;
+    /** the proof's refusals by leg: [the leg in, the leg out, the flown check] (course5 Z3: which leg refuses a flat square) */
+    readonly noProofLeg: Record<ElementKind, [number, number, number]>;
 }
 
 /** The walk's course composed into elements (see the header). Gate ids are renumbered g1.. */
@@ -141,6 +143,7 @@ export function composeElements(c: ComposeInput): Composed {
     const placed: Record<ElementKind, number> = { single: 0, square: 0, tunnel: 0, flat: 0, cube: 0 };
     const noSpace: Record<ElementKind, number> = { single: 0, square: 0, tunnel: 0, flat: 0, cube: 0 };
     const noProof: Record<ElementKind, number> = { single: 0, square: 0, tunnel: 0, flat: 0, cube: 0 };
+    const noProofLeg: Record<ElementKind, [number, number, number]> = { single: [0, 0, 0], square: [0, 0, 0], tunnel: [0, 0, 0], flat: [0, 0, 0], cube: [0, 0, 0] };
     const out: TrackGate[] = [];
     const n = c.gates.length;
     let total = n;
@@ -188,12 +191,14 @@ export function composeElements(c: ComposeInput): Composed {
             }
             return null;
         };
-        /** the element proven with its neighbours */
-        const proven = (el: TrackGate[]): boolean => {
+        /** the element proven with its neighbours: -1, or the leg that refuses it (0 in, 1 out, 2 the flown check) */
+        const refusedBy = (el: TrackGate[]): number => {
             const first = c.toFlown(el[0]!.pos as unknown as Vec3);
             const last = c.toFlown(el[el.length - 1]!.pos as unknown as Vec3);
             const tail = next && i + 1 < n ? [c.gates[i + 1]!] : [];
-            return c.legWell(prev, first) && (!next || c.legWell(last, next)) && c.proven([...el, ...tail], prev);
+            if (!c.legWell(prev, first)) return 0;
+            if (next && !c.legWell(last, next)) return 1;
+            return c.proven([...el, ...tail], prev) ? -1 : 2;
         };
         let put: TrackGate[] | null = null;
         if (!fixed) {
@@ -212,8 +217,10 @@ export function composeElements(c: ComposeInput): Composed {
                         noSpace[kind]++;
                         continue;
                     }
-                    if (!proven(el)) {
+                    const leg = refusedBy(el);
+                    if (leg >= 0) {
                         noProof[kind]++;
+                        noProofLeg[kind][leg]++;
                         continue;
                     }
                     put = el;
@@ -230,5 +237,5 @@ export function composeElements(c: ComposeInput): Composed {
         } else out.push(g);
         prev = c.toFlown(out[out.length - 1]!.pos as unknown as Vec3);
     }
-    return { gates: out.map((g, i) => ({ ...g, id: `g${i + 1}` })), drawn, placed, noSpace, noProof };
+    return { gates: out.map((g, i) => ({ ...g, id: `g${i + 1}` })), drawn, placed, noSpace, noProof, noProofLeg };
 }

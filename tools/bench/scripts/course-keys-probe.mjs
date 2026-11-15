@@ -5,7 +5,7 @@
 // axis, then a point past it (a flat square: below it, then above it: the climb); after each gate the page's next gate is
 // read, so each element is counted or not. The climb speed is measured over the flat square's pass (game.ts GAME_SPEEDS
 // normal: 5 m/s up).
-//   node tools/bench/scripts/course-keys-probe.mjs http://localhost:5780/en <out.json> <id>[:<name>] [maxGates]
+//   node tools/bench/scripts/course-keys-probe.mjs http://localhost:5780/en <out.json> <id>[:<name>] [maxGates] [seed, decimal] [shots dir]
 // Headless; takes no GPU lock itself (wrap it). Presses only Shift+G and flying keys: nothing is sent or saved.
 import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
@@ -13,7 +13,7 @@ import { pickBrowser } from '../src/chrome.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
-const [base, outFile, item, maxArg, seedArg] = process.argv.slice(2);
+const [base, outFile, item, maxArg, seedArg, shots] = process.argv.slice(2);
 if (!base || !outFile || !item) { console.error('usage: course-keys-probe.mjs <base with /en> <out.json> <id>[:name] [maxGates]'); process.exit(2); }
 const MAX_GATES = Number(maxArg || 99);
 const pick = pickBrowser({ expected: chromium.executablePath() });
@@ -54,6 +54,9 @@ const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } })
 const page = await ctx.newPage();
 page.on('pageerror', (e) => r.errors.push(String(e.message).slice(0, 160)));
 const held = new Set();
+// every change of the page's next gate with the craft's place (the tunnel's rings are proven one by one from it)
+const nextLog = [];
+let lastNext = null;
 const setKey = async (code, on) => {
     if (on && !held.has(code)) { held.add(code); await page.keyboard.down(code); }
     else if (!on && held.has(code)) { held.delete(code); await page.keyboard.up(code); }
@@ -79,13 +82,17 @@ async function flyTo(t, tol, pass, ms) {
             }
         }
         lastP = s.p;
+        if (s.next !== lastNext) { nextLog.push({ next: s.next, p: s.p }); lastNext = s.next; }
         const e = sub(t, s.p);
-        if (pass ? dot(sub(s.p, pass.c), pass.d) >= pass.beyond : len(e) < tol) break;
+        // course5 Z3 pass 2: a person stops near the point before the gate (run k3 crossed gate 2 1.46 m off its axis with the
+        // momentum it had at that point) and then pushes through
+        if (pass ? dot(sub(s.p, pass.c), pass.d) >= pass.beyond : len(e) < tol && len(s.v) < 0.6) break;
         if (Date.now() - t0 > ms) { await releaseAll(); return { ok: false, s, vyMax }; }
         const f0 = rot(s.q, [0, 0, -1]);
         const fh = Math.hypot(f0[0], f0[2]) || 1;
         const f = [f0[0] / fh, 0, f0[2] / fh], rt = [-f[2], 0, f[0]];
-        const ef = dot(e, f), er = dot(e, rt), eu = e[1];
+        // the error less the way the craft is already going (0.5 s of its speed): keys let go before the target, not past it
+        const ef = dot(e, f) - 0.5 * dot(s.v, f), er = dot(e, rt) - 0.5 * dot(s.v, rt), eu = e[1] - 0.4 * s.v[1];
         // heading: toward the target's horizontal part when it is more than 1 m away
         const eh = Math.hypot(e[0], e[2]);
         const turn = eh > 1 ? Math.atan2(dot([e[0], 0, e[2]], rt), dot([e[0], 0, e[2]], f)) : 0;
@@ -107,7 +114,7 @@ async function flyTo(t, tol, pass, ms) {
 }
 
 try {
-    await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false&set.crash.enabled=0${seedArg ? `&course=g1.${seedArg}` : ''}`, { waitUntil: 'load', timeout: 120000 });
+    await page.goto(`${base}/fly/?scene=${id}&nowarn=1&set.input.howToFly=false&set.crash.enabled=0${seedArg ? `&course=g1.${Number(seedArg).toString(36)}` : ''}`, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     await page.waitForTimeout(2000);
@@ -140,13 +147,31 @@ try {
         const a = along(g.pos, z, dA), b = along(g.pos, z, -dA);
         const before = (await state()).next;
         const tg = Date.now();
-        const toA = await flyTo(a, 0.25, null, 40000);
-        const thru = await flyTo(b, 0, { c: g.pos, d: [-z[0], -z[1], -z[2]], q: g.quat, beyond: 0.4 * dA }, 15000);
+        // a gate the page counted already (the craft's momentum through a tunnel's next ring) is not flown again
+        if (before > k) {
+            const e0 = r.elements.find((e) => k >= e.from && k <= e.to);
+            r.passes.push({ gate: k + 1, kind: e0 ? e0.kind : g.shape.kind, countedBefore: true, before, after: before, counted: true });
+            continue;
+        }
+        let toA, thru, after, tries = 0;
+        do {
+            tries++;
+            toA = await flyTo(a, 0.25, null, 40000);
+            // pictures from the pilot's eye at the point before the gate: the first tunnel ring and the first flat square
+            const el0 = r.elements.find((e) => e.from === k);
+            if (shots && tries === 1 && el0 && (el0.kind === 'tunnel' || el0.kind === 'flat') && !(r.shots ?? []).includes(el0.kind)) {
+                await page.waitForTimeout(700);
+                await page.screenshot({ path: `${shots}/course4-elements-${el0.kind}.png` });
+                r.shots = [...(r.shots ?? []), el0.kind];
+            }
+            thru = await flyTo(b, 0, { c: g.pos, d: [-z[0], -z[1], -z[2]], q: g.quat, beyond: 0.4 * dA }, 15000);
+            await page.waitForTimeout(100);
+            after = (await state()).next;
+            // a person who missed the gate turns round and flies it again (once)
+        } while (after === before && tries < 2);
         const half = g.shape.kind === 'ring' ? g.shape.diameter / 2 : g.shape.side / 2;
-        await page.waitForTimeout(100);
-        const after = (await state()).next;
         const el = r.elements.find((e) => k >= e.from && k <= e.to);
-        r.passes.push({ gate: k + 1, kind: el ? el.kind : g.shape.kind, shape: g.shape.kind, flat: Math.abs(z[1]) > 0.9, reachedA: toA.ok, through: thru.ok, before, after, counted: after !== before, cross: thru.cross, half: r2(half), s: r2((Date.now() - tg) / 1000), vyMax: r2(Math.max(toA.vyMax, thru.vyMax)), riseM: r2(-z[1] > 0.9 ? 2 * dA : 0) });
+        r.passes.push({ gate: k + 1, kind: el ? el.kind : g.shape.kind, shape: g.shape.kind, flat: Math.abs(z[1]) > 0.9, reachedA: toA.ok, through: thru.ok, before, after, counted: after !== before, tries, cross: thru.cross, half: r2(half), s: r2((Date.now() - tg) / 1000), vyMax: r2(Math.max(toA.vyMax, thru.vyMax)), riseM: r2(-z[1] > 0.9 ? 2 * dA : 0) });
         console.log(JSON.stringify(r.passes[r.passes.length - 1]));
     }
     await releaseAll();
@@ -154,10 +179,22 @@ try {
     r.counted = r.passes.filter((p) => p.counted).length;
     r.byKind = {};
     for (const p of r.passes) { const m = (r.byKind[p.kind] ??= { gates: 0, counted: 0 }); m.gates++; if (p.counted) m.counted++; }
+    // a tunnel ring by ring: the page's next gate steps to k+1 (no jump) while the craft is between ring k's plane and the next ring's
+    r.rings = [];
+    for (const e of r.elements.filter((x) => x.kind === 'tunnel' && x.to < n)) {
+        for (let k = e.from; k <= e.to; k++) {
+            const at = nextLog.find((l) => l.next === k + 1);
+            const d = [-ax[k][0], -ax[k][1], -ax[k][2]];
+            const pastK = at ? dot(sub(at.p, poses[k].pos), d) : null;
+            const toNext = at && k < e.to ? dot(sub(at.p, poses[k + 1].pos), d) : null;
+            r.rings.push({ gate: k + 1, stepped: !!at, pastPlaneM: pastK === null ? null : r2(pastK), beforeNextM: toNext === null ? null : r2(toNext), oneByOne: !!at && pastK >= 0 && (toNext === null || toNext < 0) });
+        }
+    }
+    r.nextLog = nextLog.map((l) => ({ next: l.next, p: l.p.map(r2) }));
     r.lap = await page.evaluate(() => { const c = window.__gsfpv.course; return { laps: c.laps, last: c.lastLapMs, clock: c.clockText ? c.clockText() : null }; });
 } catch (e) { r.fail = String(e).slice(0, 240); }
 writeFileSync(outFile, JSON.stringify(r, null, 1));
 await ctx.close();
 await browser.close();
-console.log(JSON.stringify({ id: r.id, screens: r.screens, courseS: r.courseS, seed: r.seed, gates: r.gates, counts: r.counts, flown: r.passes?.length, counted: r.counted, byKind: r.byKind, flownS: r.flownS, lap: r.lap, errors: r.errors.length, fail: r.fail }));
+console.log(JSON.stringify({ id: r.id, screens: r.screens, courseS: r.courseS, seed: r.seed, gates: r.gates, counts: r.counts, flown: r.passes?.length, counted: r.counted, byKind: r.byKind, flownS: r.flownS, lap: r.lap, rings: r.rings, errors: r.errors.length, fail: r.fail }));
 process.exit(r.fail || r.counted !== r.passes?.length ? 1 : 0);

@@ -56,6 +56,8 @@ export function png(w: number, h: number, rgb: Uint8Array): Buffer {
 
 // 3 x 5 digits, rows top to bottom, 3 bits a row
 const DIG = ['111101101101111', '010110010010111', '111001111100111', '111001111001111', '101101111001001', '111100111001111', '111100111101111', '111001001001001', '111101111101111', '111101111001111'];
+// course5 Z3: the letters of START / FINISH for the top map's first gate
+const LET: Record<string, string> = { S: '111100111001111', T: '111010010010010', A: '010101111101101', R: '110101110101101', F: '111100110100100', I: '111010010010111', N: '110101101101101', H: '101101111101101', '/': '001001010100100' };
 class Img {
     readonly d: Uint8Array;
     constructor(readonly w: number, readonly h: number) {
@@ -76,7 +78,7 @@ class Img {
     }
     text(x: number, y: number, s: string, c: readonly number[], scale = 3): void {
         for (let k = 0; k < s.length; k++) {
-            const g = DIG[Number(s[k])];
+            const g = /[0-9]/.test(s[k]!) ? DIG[Number(s[k])] : LET[s[k]!];
             if (!g) continue;
             for (let r = 0; r < 5; r++) for (let q = 0; q < 3; q++) if (g[r * 3 + q] === '1')
                 for (let a = 0; a < scale; a++) for (let b = 0; b < scale; b++) this.set(x + (k * 4 + q) * scale + a, y + r * scale + b, c);
@@ -229,12 +231,24 @@ async function main(): Promise<void> {
             for (let a = -4; a <= 4; a++) for (let b = -4; b <= 4; b++) img.set(i + a, j + b, col);
             img.text(i + 7, j - 7, String(k + 1), col);
         });
+        // course5 Z3: the first gate (where the clock starts and, on a closed course, stops) named START / FINISH
+        {
+            const [gi, gj] = P(gates[0]!.p);
+            const label = tr.laps > 1 ? 'START/FINISH' : 'START';
+            for (let a = -9; a <= 9; a++) for (const b of [-9, 9]) img.set(gi + a, gj + b, [255, 80, 80]), img.set(gi + b, gj + a, [255, 80, 80]);
+            img.text(gi + 12, gj + 8, label, [255, 80, 80]);
+            if (tr.laps <= 1) {
+                const [fi, fj] = P(gates[gates.length - 1]!.p);
+                for (let a = -9; a <= 9; a++) for (const b of [-9, 9]) img.set(fi + a, fj + b, [255, 80, 80]), img.set(fi + b, fj + a, [255, 80, 80]);
+                img.text(fi + 12, fj + 8, 'FINISH', [255, 80, 80]);
+            }
+        }
         const [si, sj] = P(pts[0]!);
         for (let a = -5; a <= 5; a++) img.set(si + a, sj + a, [255, 0, 255]), img.set(si + a, sj - a, [255, 0, 255]);
         img.save(join(out, `${name}-${seed}-top.png`));
         // sections
         const want = arg('--sections');
-        const list = want === 'all' ? rows.map((r) => r.gate) : (want ?? '').split(',').filter(Boolean).map(Number);
+        const list = want === 'all' ? rows.map((r) => r.gate) : (want ?? '').split(',').filter(Boolean).map(Number).filter((k) => k >= 1 && k <= gates.length);
         for (const k of list) {
             const g = gates[k - 1]!;
             const ah = Math.hypot(g.ax[0], g.ax[2]) || 1;

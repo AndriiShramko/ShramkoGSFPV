@@ -1342,6 +1342,11 @@ Logs U:/Temp/gsfpv-train3/course4/z3/.
       39e63ce9 seeds 1-10, 91 gates: flat 0.011 (1 placed of 13 drawn, refused by space 49 times), tunnel 0.132: this room
       (course at step 0.3) is named as one where a flat square does not fit. The flat square's rise is not lowered: the
       table cannot tell which leg of the proof refuses it (left).
+      Pass 2: Composed.noProofLeg counts the proof's refusals by leg (z3/elem-wro2.json, Wroclaw seeds 1-20, same totals as
+      above: flat drawn 63, placed 40, noSpace 37, noProof 76). Flat square refused by the leg in 0, the leg out (from the
+      square, 2.5 m up, to the next gate: legWell) 25, the flown check (check.ts) 51. Tunnel: in 8, out 26, check 6.
+      Decision: FLAT_RISE_M stays 2.5. The flat share 0.104 is within the stated 0.05 of 0.15, and the keyboard pilot
+      climbs this rise (below); a lower rise would only be a guess at what the flown check refuses.
 - [x] Release build of 98a43f6a (z3/build2.log): BUILD EXIT 0, 1933 files; holds the redraw. Published walls copied into
       dist/walls by z3/keys2.sh.
 - [~] (2) Keyboard pilot: tools/bench/scripts/course-keys-probe.mjs (real key events of the game scheme, reads the craft's
@@ -1358,7 +1363,21 @@ Logs U:/Temp/gsfpv-train3/course4/z3/.
       ('cross' [x, y] against 'half' of the opening).
       Run 3 (z3/keys-k2.log) with the link seed (&course=g1.289710480, 5th argument) built no course in 240 s: the link's
       form is not the one apps/fly/src/course/link.ts seedOfLink reads (not checked).
-- [ ] (3) tunnel picture along the row's axis; (4) the chain; pictures; 'What the owner does'.
+      Pass 2: the link takes the seed in base 36 (g1.4shi1c); the probe sent it in decimal. Fixed in the probe.
+      Run k3 (z3/keys-k3.log, the same course by its link): gate 2 crossed its plane 1.46 m right of the centre (opening
+      half 0.6 m), so every later gate waited: the probe's aim, not the page (run 2's gate 9 the same way). The probe now
+      steers on the error less 0.5 s of the craft's speed, stops (under 0.6 m/s) at the point before a gate, and flies a
+      missed gate once more.
+- [x] (2) Run k4 (z3/keys-k4.log, Wroclaw 70b50d42, seed 289710480, 37 gates, course in 5.07 s): 21 of 21 gates flown
+      and counted in order, one try each, 225 s: ring 9 of 9, square 3 of 3, cube 4 of 4, tunnel 3 of 3, flat 2 of 2.
+      Crossings within 0.44 m of the centre (half 0.6). Tunnel ring by ring: the page's next gate stepped at 0.01, 0.00 and
+      0.00 m past each ring's plane and 1 m before the next ring. Flat squares climbed from below: vyMax 4.07 and 4.02 m/s
+      over a rise of 2.62 m between the probe's points (run 2: 5.07 m/s; the game's climb at normal speed is 5 m/s up).
+      A person holding Space makes the climb: the flat square is not changed.
+- [~] (3) Pictures: course4-elements-top.png (gate-place-map --elements, seed 289710480, the k4 course): START /
+      FINISH now written on the map (gate 1 START, gate 37 FINISH on this open course); tunnel and flat pictures from the
+      keyboard pilot's eye at the point before the gate (course-keys-probe, 6th argument) in run k5.
+- [ ] (4) the chain; 'What the owner does'.
 
 Left (Z3, exact, in order):
 1. Read apps/fly/src/course/link.ts seedOfLink for the link form of a seed (or press Shift+G and accept a new seed), then
