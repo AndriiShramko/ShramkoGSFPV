@@ -56,6 +56,18 @@ export interface FitResult {
     readonly scale: number;
     /** courses generated */
     readonly tried: number;
+    /** the course passed the generator's own final proof (checkTrack with the turns after the gates, stricter than the Save) */
+    readonly proven: boolean;
+}
+
+/**
+ * Lane fix3b: the generator's final proof (generate.ts, generator.params.proof) is the Save check plus the turn after
+ * each gate. A course whose proof failed is not given while a proven one can be had: the next seed or scale is tried.
+ * A course without a proof record (no gates, or a fake generator in tests) counts as proven.
+ */
+export function provenCourse(t: TrackFile): boolean {
+    const p = t.generator?.params?.proof as { ok?: boolean } | null | undefined;
+    return p?.ok !== false;
 }
 
 /**
@@ -65,26 +77,31 @@ export interface FitResult {
 export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, gatesMin: number = COURSE_DEFAULTS.gatesMin, make: typeof generateCourse = generateCourse, deadline: FitDeadline | null = null): FitResult {
     let best: TrackFile | null = null;
     let bestScale = 1;
+    let bestOk = false;
     let tried = 0;
     let longest = 0;
+    const end = (): FitResult => ({ track: best, short: best !== null && (best.gates.length < gatesMin || !bestOk), scale: bestScale, tried, proven: best !== null && bestOk });
     for (const scale of COURSE_SCALES) {
         const params = { ...scaledParams(scale), ...(opts.params ?? {}) };
         let s = opts.seed >>> 0;
         for (let i = 0; i < SEEDS_PER_SCALE; i++) {
             // review T2-6: with a course in hand, a try that would end past the deadline is not started (the page's
             // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate
-            if (deadline && best && deadline.now() + longest > deadline.at) return { track: best, short: true, scale: bestScale, tried };
+            if (deadline && best && deadline.now() + longest > deadline.at) return end();
             const t0 = deadline ? deadline.now() : 0;
             const t = make(free, walls, { ...opts, seed: s & 0x7fffffff, params });
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;
-            if (t.gates.length >= gatesMin) return { track: t, short: false, scale, tried };
-            if (t.gates.length > (best?.gates.length ?? 0)) {
+            const ok = provenCourse(t);
+            if (ok && t.gates.length >= gatesMin) return { track: t, short: false, scale, tried, proven: true };
+            // a proven course beats an unproven one of any length; among the same kind the one with more gates
+            if (t.gates.length > 0 && ((ok && !bestOk) || (ok === bestOk && t.gates.length > (best?.gates.length ?? 0)))) {
                 best = t;
                 bestScale = scale;
+                bestOk = ok;
             }
             s = nextSeed(s);
         }
     }
-    return { track: best, short: best !== null, scale: bestScale, tried };
+    return end();
 }

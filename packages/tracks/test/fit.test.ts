@@ -94,6 +94,34 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(FIT_BUDGET_MS).toBeLessThan(150_000);
     });
 
+    it('lane fix3b: a course whose final proof failed is not given while the next seed gives a proven one', () => {
+        // the real generator, with the proof of the first try marked failed (as generate.ts records it)
+        let n = 0;
+        const firstFails = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            if (n++ > 0 || !t.generator) return t;
+            return { ...t, generator: { ...t.generator, params: { ...t.generator.params, proof: { ok: false, marginM: 0.5, pathM: 1 } } } };
+        }) as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, 1, firstFails);
+        // the tiny room gives no gate on some plan-size seeds, so more than one try can follow the refused one
+        expect(r.tried).toBeGreaterThanOrEqual(2);
+        expect(r.proven).toBe(true);
+        expect(r.track!.gates.length).toBeGreaterThanOrEqual(1);
+        expect((r.track!.generator!.params.proof as { ok: boolean }).ok).toBe(true);
+        // what the pilot gets passes the edit mode's Save check untouched
+        expect(wallsCheck(walls, IDENTITY, marginOf(r.track!))(upgradeTrack(r.track!))).toEqual([]);
+        // when no try is proven the course with the most gates still comes (the pilot is led on), marked not proven
+        const allFail = ((f: Parameters<typeof generateCourse>[0], w: Parameters<typeof generateCourse>[1], o: Parameters<typeof generateCourse>[2]): TrackFile => {
+            const t = generateCourse(f, w, o);
+            return t.generator ? { ...t, generator: { ...t.generator, params: { ...t.generator.params, proof: { ok: false, marginM: 0.5, pathM: 1 } } } } : t;
+        }) as typeof generateCourse;
+        const none = fitCourse(free, walls, opts, 1, allFail);
+        expect(none.track).not.toBeNull();
+        expect(none.proven).toBe(false);
+        expect(none.short).toBe(true);
+    });
+
     it('the smallest scale keeps the ring at RING_MIN_DRONE_DIAMETERS drone diameters', () => {
         const last = COURSE_SCALES[COURSE_SCALES.length - 1]!;
         expect(RING_DIAMETER_M * last).toBeGreaterThanOrEqual(RING_MIN_DRONE_DIAMETERS * 2 * SMALLEST_DRONE_RADIUS_M);
