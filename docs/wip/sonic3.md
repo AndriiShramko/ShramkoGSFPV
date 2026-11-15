@@ -43,6 +43,7 @@ Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into
 - [x] gates.py on aeb5fab2: architecture, i18n PASS; b18 FAIL (non-ASCII in sonic-in-place.test.ts, fixed: char codes);
   vitest FAIL in 2 files outside the lane: rooms-open-vote.test.ts ("rooms.py did not start") and app-dji-rc2.test.ts
   (a 60 ms timing case; passes alone). After the fix: b18, i18n, architecture PASS (U:/Temp/gsfpv-gates-20261115-012152).
+  vitest rerun on 4a2451ed: PASS in 107 s (U:/Temp/gsfpv-gates-20261115-012217): all four gates pass on 4a2451ed.
 
 Stage Z5-prove (local release of cc103a49, package pin train3 4e7cef6, port 5820/5821, headless Chrome 157, GPU lock):
 - [x] Release build (dist sha cc103a49, 1930 files). Probe r11 in tools/bench/src/sonic-int-review.ts (2f972a90): ordinary
