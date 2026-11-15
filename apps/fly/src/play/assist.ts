@@ -265,6 +265,12 @@ export class AutoArm {
         this.want = true;
     }
 
+    /** The motors run already (a pilot installed over a running flight): on, wanted, no new arming edge. */
+    keepOn(): void {
+        this.state = 'on';
+        this.want = true;
+    }
+
     /** Motors off (Space in easy play): the next flying input starts them again. */
     stop(): void {
         this.want = false;

@@ -35,8 +35,15 @@ Stage Y1-switch-and-pins (train 3 wave 2):
   lessons.ts, NEG OK on HEAD lessons.ts alone; 5 sonic files 26 of 26; apps/fly tsc 0 errors.
   Crash at switch-on: the pilot's own setting, because the switch must start no new life and the before run lost its course
   with crash off too (the stall above), so the crash setting does not decide the course.
+- [x] Pass 2, rerun (release 0e78a878, r11 Z5_QUICK Tunis 5 m/s, y1-spy2.json): 7 of 8. Switch off: no life, speed 5.14 ->
+  5.14, moved 0 m, both labels PASS. Switch on: no life, no respawn, but speed 6.66 -> 0.06 at the first cue: the free
+  flight's lesson pilot (apps/fly/src/play/lesson-pilot.ts, built by app/input.ts setLesson) starts its AutoArm 'off' and
+  sends the arm channel low, so the model disarmed in the air. Fix (decision d, play/**): a LessonPilot built over a running
+  flight keeps the motors (AutoArm.keepOn in play/assist.ts). Test tools/bench/test/sonic-in-place-motors.test.ts 1 of 1,
+  NEG OK on HEAD lesson-pilot.ts and assist.ts (expected -1 to be greater than 0); a6-reference, app-play, app-game,
+  app-centre-throttle, sonic-mode, sonic-in-place, sonic-bump: 7 files 99 of 99; apps/fly tsc 0 errors.
 - [ ] LEFT, in this order (stage stopped at its reply budget; nothing uncommitted in either repo but the two old evidence files):
-  2. Browser: release build, then r11 Z5_QUICK Tunis again, expect the switch checks to pass (8 of 8 with the course run).
+  2. Browser: release build, then r11 Tunis (course), expect 8 of 8.
   3. Package: words check, node tools/run-tool.mjs listen-words (Whisper, takes the GPU lock itself; SHRAMKO_LISTEN_PY must
      name a Python with faster-whisper, check first), commit evidence/listen/VL-4-words.json; then the full package suite
      (detached, log), expect 0 failures; then pin packages/sonic-fpv to that commit (docs/agent-map.md pin recipe), simulator
@@ -358,11 +365,10 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - What a listener should notice: one press, sound within 0.23 to 3.3 s (Facts Z5; under half a second in 5 of 7 runs; height tone and room bed), then the spoken intro
   once; near walls their pulses on that side; on N "making a course", then the hum of gate 1: it is louder in the ear it is
   on, and in a course with the line on (not shipped yet) it beats when the craft is off the line; at a gate its note and a
-  short preview of the next; above 4.5 m/s fewer streams (tier 1: three). Only tier 1 can sound in anything that ships today:
-  in place the pilot flies with scan-free's 5 m/s cap, so tier 2 (from 8 m/s: two streams and the open-way chime instead of the
-  hazards, the height ticks off) has been measured only in the package's ear-pilot ladder, never in a shipped flight; the
-  owner's "normal FPV speed" is not reached until a speed stage lifts that cap (review SO-10). Front and back can still be
-  confused: turn a little and hear where the hum moves.
+  short preview of the next; above 4.5 m/s fewer streams (three, no shape trace). Every shipped flight is capped at or under
+  5 m/s (scan-free 5, speed-4 4.5), so that is the only reduction a pilot can hear; the owner's "normal FPV speed" is not
+  reached until a later stage lifts the caps (review SO-10). Front and back can still be confused: turn a little and hear
+  where the hum moves.
 
 - Review fixes (stage fixes): SO-3 stands and is outside the lane: ctx.hook.walls.build for 70b50d42 in a headless page with
   rendering on did not resolve in 420 s (apps/fly/src/app/walls-then.ts, walls lane); rerun r11 with Z5_WALLS=built after it is
