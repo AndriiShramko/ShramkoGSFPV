@@ -10,6 +10,12 @@ Stage P1-take-in
 - [x] 3. docs/decisions.md D91: second exception to "public engine API only" in render-pc (this commit)
 - [x] 4. Second review of packages/render-pc/src/view-lod.ts and its wiring; one fix with test and negative control (this commit)
 
+Stage P2-measure-here
+- [x] 1. Release build of ebcee4ad (dist sha256 f62b80e5...), served by serve-csp on port 5740
+- [~] 2. The laptop's probes on this PC (runner U:/Temp/gsfpv-train3/laptop3/run-p2.sh, logs beside it): Lublin and
+  Wroclaw at 0.5 M and 1 M, rule on and `&viewlod=0`, and a 16 M reference; scores by lod-view-score.mjs
+- [ ] 3. Table next to the laptop's numbers, pictures in U:/Temp/gsfpv-train3/shots, what a person sees in each pair
+
 ## Facts (measured)
 
 - The squashed tree has no other program's name: `git grep --cached -i "DJI|otherRows"` finds only this project's own
