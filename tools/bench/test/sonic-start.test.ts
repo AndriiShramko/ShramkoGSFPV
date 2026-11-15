@@ -19,8 +19,8 @@ import { enableZoom } from '../../../apps/fly/src/sonic/zoom';
 const done = (attempts = 3, passed = true) => ({ passed, attempts });
 
 describe('the lessons on the screen', () => {
-    it('every shipped lesson (28 since v0.13), once, by module in ladder order, whatever the path', () => {
-        expect(SHIPPED_LESSON_IDS).toHaveLength(28);
+    it('every shipped lesson (33: 28 since v0.13, the speed lessons speed-1..4 and turn-listen since train 3), once, by module in ladder order, whatever the path', () => {
+        expect(SHIPPED_LESSON_IDS).toHaveLength(33);
         for (const path of ['full', 'fast'] as const) {
             const m = buildModel({}, null, path);
             const ids = m.modules.flatMap((x) => x.lessons.map((l) => l.id));

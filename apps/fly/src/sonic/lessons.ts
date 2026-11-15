@@ -83,7 +83,7 @@ export interface LessonPage {
      * scan to the lesson's size first (it may load it, which takes a while), and resolves when the craft flies it; null
      * when the page cannot fly a scan. A scan that does not load rejects, and the lesson does not open.
      */
-    scanLesson(lesson: LessonDef): Promise<ScanLesson | null>;
+    scanLesson(lesson: LessonDef, here?: boolean): Promise<ScanLesson | null>;
     /**
      * A course of gates in the scan flown now, for the free flight over a scan (train 2, S3: N there asks for one; course-ask.ts),
      * and the name of that key as the pilot's keyboard types it. Absent: N in a free flight goes to the menu, as before.
@@ -207,14 +207,26 @@ export class LessonHost {
     private free: LessonDef | null = null;
     /** The free flight as it was opened, without a course: what a course is made from and what a failed ask goes back to. */
     private freeBase: LessonDef | null = null;
+    /**
+     * Train 3 (sonic3, the owner: "flying by sound must be switched on for any scene"): the free flight was switched on in place
+     * (in-place.ts), so every open of it (the first, the walls coming in, a failed course ask) starts where the craft is now and
+     * does not move it; a course of gates still starts at its own first gate.
+     */
+    private freeHere = false;
     /** the course flown now (S3): its "Course ready" line, said again when the course is passed and flown once more (SN-3) */
     private ready: SpeechLine | null = null;
 
+    /** True while the free flight (or its course) runs switched on in place over the pilot's own flight (in-place.ts). */
+    get inPlace(): boolean {
+        return this.freeHere && this.free !== null;
+    }
+
     /** Opens the free flight over a scan (scanFreeLesson): no track, no target, the scan's own spawn, the walls and height heard. */
-    openFree(lesson: LessonDef): Promise<boolean> {
+    openFree(lesson: LessonDef, o: { here?: boolean } = {}): Promise<boolean> {
         if (lesson.id !== SCAN_FREE_ID) return Promise.resolve(false);
         this.free = lesson;
         this.freeBase = lesson;
+        this.freeHere = o.here === true;
         this.ready = null;
         return this.open(SCAN_FREE_ID);
     }
@@ -345,8 +357,9 @@ export class LessonHost {
             let start: Pose = lesson.start;
             let objects: readonly SonicObject[] | null = null;
             let scan: ScanLesson | null = null;
+            const here = free !== null && this.freeHere && !isScanCourse(lesson);
             if (lesson.world.kind === 'scan') {
-                scan = await this.p.scanLesson(lesson);
+                scan = await this.p.scanLesson(lesson, here);
                 if (!scan) throw new Error(`lesson ${lessonId} flies a scan and the page flies none`);
                 world = scan.world;
                 floorY = scan.floorY;
@@ -395,13 +408,15 @@ export class LessonHost {
             this.p.mode.bridge.engine?.reset?.();
             try {
                 // enter() starts the bridge (the clock at 0), begins the runner and, through afterRunner, takes its first actions
-                this.p.mode.enter({ lesson, runner, world, floorY });
+                // a course made with N over an in-place flight keeps the pilot's rules too (keepRules), so its switch off starts no life
+                this.p.mode.enter({ lesson, runner, world, floorY, here, keepRules: free !== null && this.freeHere });
             } finally {
                 this.cutSpeech = false;
             }
             if (scan) {
                 // a scan's craft waits at the scan's own spawn: it goes to the track's start now, not when the first attempt begins
-                this.p.mode.place(start);
+                // switched on in place (freeHere): the start is where the craft is, and it is not moved
+                if (!here) this.p.mode.place(start);
                 // the walls are as fine as the scan's file: said plainly, after the intro
                 if (wallsAreCoarse(scan.voxelM)) void this.p.mode.bridge.say({ key: 'sonic.say.wallsCoarse', params: { cm: voxelCm(scan.voxelM as number) } }, false, { lesson: true });
                 // a free flight over a scan that has no walls (train 2): no wall can warn, said and shown (the captions), with the way to get them
@@ -567,6 +582,10 @@ export class LessonHost {
                 mode.bridge.engine?.cue(a.event);
                 break;
             case 'place':
+                // in place the start is where the craft was switched on: the runner's place there (its begin, the first attempt
+                // after the intro) would be a respawn, the craft stopped dead or pulled back (review SO-1, r11 life spy);
+                // R places through its own reset (mode.ts), a re-centre goes to a checkpoint
+                if (a.to === 'start' && mode.inPlace) break;
                 mode.place(a.pose);
                 break;
             case 'ask':

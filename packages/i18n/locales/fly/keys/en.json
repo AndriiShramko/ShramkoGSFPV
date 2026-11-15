@@ -18,5 +18,6 @@
   "keys.settings.open": "Settings",
   "keys.share.open": "Share this scene",
   "keys.voxels.cycle": "Voxel grid: off / over the scan / voxels only",
-  "keys.walls.toggle": "Walls on / off for this scan"
+  "keys.walls.toggle": "Walls on / off for this scan",
+  "keys.flyBySound.toggle": "Fly by Sound here: on / off"
 }
