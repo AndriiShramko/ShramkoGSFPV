@@ -43,16 +43,35 @@ Status (worker 1 stopped at its step budget; a fresh worker continues from here)
   pass), negative control NEG OK (both new tests fail on origin/main's fly.css and top-row.ts).
 - [x] Gates once on b3c9f9cb..595bdac0 merged tree: gates.py exit 0, 'B18 PASS' 1 line (log U:/Temp/gsfpv-train3/integA/gates.log).
 - [x] Release build (exit 0) and the nine published walls copied into dist/walls.
-- [~] Probes: U:/Temp/gsfpv-train3/integA/run2.sh (server 5760), one line per probe in summary2.txt, logs and JSON under
-  U:/Temp/gsfpv-train3/integA/ and its ev/. Done when stopped: cp-build 0, cp-wroclaw 0, cp-tunis 0, walls-published 0,
-  governor-start 0, centre-throttle 0, mouse-free 1 (read its log: mouse-free.log). Still running: hid-source, wizard,
-  lod-on, lod-off, lod-ref, lod-score, accept-fly, sonic-r9, rooms-two, tracks-page, a6. Then run3.sh (server 5762) repeats
-  the walls store check (its first try, walls-cache 1, never started the build: the radio screen held Shift+G; fixed).
-- [~] deploy/live-checks.sh: lod-view on and off on 2f1ddf5f and 70b50d42 and course-path-probe on Wroclaw added, not run.
-  Left: confirm the field names it reads (page.lod.view.active, failed, missing, calls; product.engine lodBehindPenalty,
-  lodUpdateAngle, lodMultiplier) against evidence/2026-11-15/lod-view/train3a-lub-on.json and -off.json.
-- [ ] Left: copy the probe JSON into evidence/2026-11-15/train3a/ (JSON only; lod-view writes JPGs under
-  evidence/2026-11-15/lod-view/: keep them out of the commit), write the parts below from the results, push main.
+- [x] Probes: U:/Temp/gsfpv-train3/integA/run2.sh and run3.sh, summary2.txt (one line per probe with its exit code).
+- [x] deploy/live-checks.sh: lod-view on and off on 2f1ddf5f and 70b50d42 and course-path-probe on Wroclaw, not run. Field
+  names checked against train3a-lub-on.json (view active true, failed null, missing [], calls 112) and train3a-lub-off.json
+  (active false, calls 0, engine lodBehindPenalty 5, lodUpdateAngle 90, lodMultiplier 3): all present.
+- [x] Probe JSON in evidence/2026-11-15/train3a/ (23 files) and evidence/2026-11-15/lod-view/*train3a*.json; no JPG or PNG.
+
+Gates: gates.py exit 0, 'B18 PASS' 1 line, on the merged tree with seams a and b (before the evidence commit).
+
+Probes (local release of 595bdac0 code, nine published walls in dist/walls, server 5760; exit codes from summary2.txt):
+- accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16: exit 0, 10 of 10; first line 'accept-fly target: http://localhost:5760'.
+- course-path-probe: Wroclaw build in the browser exit 0, Wroclaw published exit 0, Tunis exit 0 (numbers under Measured).
+- walls-published-probe, nine scans: exit 0, 9 pass, ready 3.3 to 12.6 s, no 404.
+- governor-start-probe (in one lock hold): exit 0, all=true (weak starts at the remembered step 4, strong at the top).
+- lod-view-probe Lublin 2f1ddf5f at 1 M, rule on and viewlod=0, reference 16 M; lod-view-score exit 0. PSNR over the scan,
+  off / on: after the spin 18.41 / 19.97 dB, yaw 185 19.01 / 21.12, yaw 95 18.33 / 19.72, pitch down 18.58 / 20.13; from
+  above about equal (up140 19.47 / 19.43, up40 19.77 / 20.14); pitch up worse with the rule (26.05 / 23.08).
+- sonic-int-review r9: exit 0, 11 of 11 (Fly by Sound works after the walls and renderer changes).
+- rooms-two-page exit 0; centre-throttle-probe all exit 0; hid-source-probe exit 0; wizard-auto-check exit 0;
+  tools/bench/test/a6-reference.test.ts 1 passed (hash unchanged).
+- mouse-free-probe: exit 1, 78 PASS, 0 FAIL, then the timeout in the rooms entry (pause.rooms not visible): the same
+  failure as train 2b (train2b-lead.md, a local release has no rooms service); not a seam of this train.
+- tracks-page: exit 1, 44 of 46. FAIL 'A look (link seed 1, 24 gates)': the course is loaded (HUD 'Gate 1 of 24') but
+  no gate is in the spawn view of Tunis (next 0 px, later 11 against 8 px). FAIL 'E camera: after Tab the camera looks at
+  the newly selected gate' (px under the minimum). Both passed in train 2b; the cause is course3's new generator (the
+  seed-1 course of g1.1 now lies outside the start view), not a seam between the lanes. Picture looked at:
+  U:/Temp/gsfpv-tracks-page/2026-11-15/a-seed1-on.png. Not chased (see Not verified).
+- Walls store (run3.sh, server 5762, Wroclaw folder out of dist/walls): the worker build finished in 220.2 s (state
+  in-use, source bake); after a reload and in a fresh page of the same profile the walls did NOT come from the cache:
+  state 'offer', source 'none' after 62 s in both. dist/walls has 9 folders again.
 
 Measured so far:
 - Wroclaw 70b50d42 with its folder out of dist/walls (course-path-probe, NOBOT=1 REGEN=1): walls built in the worker,
@@ -72,6 +91,27 @@ apps/api: only tests/fixtures/tracks/valid-generated-quality.json (a test fixtur
 changed locales are fly/course, fly/gpuhint and fly/sonic, built into the static site). apps/rooms unchanged: rooms no.
 Static ship only; the published walls are already live.
 
+Live checks: deploy/live-checks.sh gained lod-view on and off on 2f1ddf5f and 70b50d42 (read only: the probe opens the
+page, turns and reads lod()) and course-path-probe on Wroclaw (the course is generated in the page and never saved). The
+editor's Save and the votes stay out. Not run.
+
+Pictures for the lead:
+- U:/Temp/gsfpv-train3/shots/train3a-walls-line.png (walls line over the sky, looked at: readable)
+- U:/Temp/gsfpv-train3/shots/train3a-course-start.png (course note under the walls box, looked at: no overlap)
+- U:/Temp/gsfpv-tracks-page/2026-11-15/a-seed1-on.png (the seed-1 course: no gate in the spawn view)
+- C:/dev/gsfpv-v03/evidence/2026-11-15/lod-view/train3a-lub-on-turn-yaw185-end.jpg and train3a-lub-off-turn-yaw185-end.jpg
+  (not in git; the rule on and off after a turn)
+
+What the owner should try:
+- Open a catalogue scan: the walls come by download; a line says what happens.
+- Open a scan outside the catalogue: the walls build without freezing the page; the line shows the step, the share and
+  the time left (on Wroclaw this took about 2.5 to 3.5 minutes here).
+- Wroclaw, press Shift+G: a course in a few seconds with its progress line; gates along the streets at eye level.
+  Press Shift+G again: a course of the same size (24 gates).
+- Crash, then respawn (R): the course goes on from the gate you reached.
+- Weak computer: the picture after turns and in streets is sharper (about 1 to 2 dB in our measure). Not yet: a big scan
+  from above at 0.5 to 1 million splats, the near part is still smeared (a separate lane works on it).
+
 Not verified (so far):
 - Lane laptop3's 13 localStorage keys that packages/prefs/test/migrate.test.ts cannot see (its scan reads one-part keys):
   gsfpv.hint.macro (app/macro-hint.ts), gsfpv.tour.probe (app/tour.ts), gsfpv.course.best and gsfpv.course.offered
@@ -87,6 +127,15 @@ Not verified (so far):
 - The lane laptop3 merge brings changes to packages/i18n/locales/fly/gpuhint/* and the GPU hint files of the laptop agent
   (its squash); this integration did not edit them.
 - Probes ran while the gates ran (CPU shared): the timing numbers of cp-build may be longer than on a quiet PC.
+- Walls store: walls built by the worker are not read back from IndexedDB after a reload or in a fresh page (state
+  offer, source none after 62 s; evidence/2026-11-15/train3a/walls-cache-70b50d42.json). Cause not found
+  (apps/fly/src/walls.ts and wallcache.ts); a pilot on a scan outside the catalogue rebuilds the walls on every visit.
+- tracks-page A look and E camera (above): the probe's seed-1 view or the generator's start point needs a decision of
+  the lead; not chased.
+- mouse-free rooms entry on a local release without a rooms service: still not checked (since train 2b).
+- Forest Floor ab5efa0e: STEPS=forest not run (no per-life record in course-path-probe).
 
 Cost notes: worker 1 spent its turns on finding each probe's arguments (one probe at a time) and on blocking waits of
 10 minutes that hit the tool's limit; a table of probe command lines in docs/agent-map.md would have saved about 8 turns.
+Worker 2 spent most turns waiting on run2 and run3 in 10-minute blocks and on reading the two failed probes; one waiter
+script that prints a short result table at its end would have saved about 5 turns.

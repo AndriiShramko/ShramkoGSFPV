@@ -1,0 +1,46 @@
+{
+ "base": "http://localhost:5762/en",
+ "id": "70b50d42",
+ "runs": [
+  {
+   "label": "build",
+   "readyS": 6.7,
+   "firstState": {
+    "state": "offer",
+    "source": "none"
+   },
+   "final": {
+    "state": "in-use",
+    "source": "bake"
+   },
+   "wallsInUseAfterOpenS": 220.2
+  },
+  {
+   "label": "reload",
+   "readyS": 1.9,
+   "firstState": {
+    "state": "offer",
+    "source": "none"
+   },
+   "final": {
+    "state": "offer",
+    "source": "none"
+   },
+   "wallsInUseAfterOpenS": 62.2
+  },
+  {
+   "label": "fresh page",
+   "readyS": 1.9,
+   "firstState": {
+    "state": "offer",
+    "source": "none"
+   },
+   "final": {
+    "state": "offer",
+    "source": "none"
+   },
+   "wallsInUseAfterOpenS": 62.2
+  }
+ ],
+ "cached": false
+}

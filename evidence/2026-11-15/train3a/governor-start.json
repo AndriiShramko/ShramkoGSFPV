@@ -1,0 +1,92 @@
+{
+ "site": "http://localhost:5760",
+ "scene": "39e63ce9",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "157.0.8103.52",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed"
+ },
+ "loads": [
+  {
+   "name": "W1",
+   "cls": "desktop-weak",
+   "overload": true,
+   "recordBefore": null,
+   "stepsBeforeReveal": [
+    0
+   ],
+   "stepAtReveal": 0,
+   "revealMs": 3090,
+   "msToLowest": 3692,
+   "stepAfterOverload": 4,
+   "lod": {
+    "kind": "lod-meta",
+    "governorStep": 4,
+    "governorBudgetM": 0.9375,
+    "renderScale": 0.5
+   },
+   "recordAfter": "{\"v\":1,\"id\":\"desktop-weak|nvidia lovelace\",\"step\":4}",
+   "drawingClass": "desktop-weak"
+  },
+  {
+   "name": "W2",
+   "cls": "desktop-weak",
+   "overload": false,
+   "recordBefore": "{\"v\":1,\"id\":\"desktop-weak|nvidia lovelace\",\"step\":4}",
+   "stepsBeforeReveal": [
+    4
+   ],
+   "stepAtReveal": 4,
+   "revealMs": 1831,
+   "lod": {
+    "kind": "lod-meta",
+    "governorStep": 4,
+    "governorBudgetM": 0.9375,
+    "renderScale": 0.5
+   },
+   "recordAfter": "{\"v\":1,\"id\":\"desktop-weak|nvidia lovelace\",\"step\":4}",
+   "drawingClass": "desktop-weak"
+  },
+  {
+   "name": "S1",
+   "cls": "desktop-strong",
+   "overload": true,
+   "recordBefore": "{\"v\":1,\"id\":\"desktop-weak|nvidia lovelace\",\"step\":4}",
+   "stepsBeforeReveal": [
+    0
+   ],
+   "stepAtReveal": 0,
+   "revealMs": 1893,
+   "msToLowest": 3747,
+   "stepAfterOverload": 4,
+   "lod": {
+    "kind": "lod-meta",
+    "governorStep": 4,
+    "governorBudgetM": 1.5,
+    "renderScale": 0.5
+   },
+   "recordAfter": "{\"v\":1,\"id\":\"desktop-strong|nvidia lovelace\",\"step\":4}",
+   "drawingClass": "desktop-strong"
+  },
+  {
+   "name": "S2",
+   "cls": "desktop-strong",
+   "overload": false,
+   "recordBefore": "{\"v\":1,\"id\":\"desktop-strong|nvidia lovelace\",\"step\":4}",
+   "stepsBeforeReveal": [
+    0
+   ],
+   "stepAtReveal": 0,
+   "revealMs": 1835,
+   "lod": {
+    "kind": "lod-meta",
+    "governorStep": 0,
+    "governorBudgetM": 4,
+    "renderScale": 1
+   },
+   "recordAfter": "{\"v\":1,\"id\":\"desktop-strong|nvidia lovelace\",\"step\":4}",
+   "drawingClass": "desktop-strong"
+  }
+ ]
+}
