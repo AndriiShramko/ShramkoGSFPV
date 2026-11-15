@@ -264,6 +264,41 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - Backslash: Fly by Sound off; the course and its gate count stay.
 - He flies past a gate beside it or over it: he hears once "The gate is behind you" (pl "Bramka jest za tob(a-ogonek)"), the hum leads back to it, he turns, flies back to the front and through it, and it counts; no "wrong way" on the way back (d7-probe in the browser, Wroclaw). Turned round and flying back along a leg nose-first, he hears "You are flying back. Turn around." once.
 
+## Quiet (lane quiet, the owner's message 54: Fly by Sound without the narrator, no flight waits for a line)
+
+### Status (stage K1-no-waits)
+- [x] K1.0 release build of sonic4 704f2043 (pin ab2d6ac): vite and pages built; the last step (tar of dist.tgz) failed with
+  "file changed as we read it" because the walls stand-in was copied into dist/walls while tar ran (this worker's order, not the
+  code). dist itself is whole; the next build must copy the walls only after "exit 0" in the log. Server serve-csp port 5760.
+- [x] K1.1 probe tools/bench/scripts/quiet-probe.mjs (render off, no lock; READER=1 sets selfVoice off in the prefs document,
+  NARRATOR=off sets the new setting once built) and quiet-summary.mjs. Measured "before" on Wroclaw 70b50d42 (Facts K1-a).
+- [ ] K1.2 measure the ?sonic=scan page (the sound page's free flight on a scan, not in place): the owner most likely opened
+  the scan there. Suspect from reading, not measured: packages/sonic-fpv/src/lesson/runner.ts startAttempt() sends the craft back
+  to the start when it moved more than START_SLACK_M (1 m) while the task was said ("left"), so flying during the intro is undone
+  at its end; in place (Backslash) lessons.ts act() skips that place. The probe needs a PAGE=sonic switch: read the scan's scale
+  from the ordinary page (modeScanPage in apps/fly/src/app/builtin/sonic-flight.ts builds ?sonic=scan&scene=..&sz=..).
+- [ ] K1.3 Q1 setting 'Narrator' (SonicPrefs in the package, branch train5: prefs.ts KEYS and validator, contract.ts; the
+  simulator's start-screen.ts check beside 'sonic-sr', the sound panel, the pause menu entry; sonic-start-screen.test.ts count).
+- [ ] K1.4 Q2 no wait in a flight: the runner's intro of scan-free must not hold the attempt start nor undo the flight
+  (the first attempt begins at once; no place back), in the three settings; bridge.ts sequential waits stay for lessons only.
+- [ ] K1.5 unit tests with negative controls (narrator off: no line to the voice or the reader's region in a flight; no wait in a
+  flight in each setting; the setting kept and applied at once; captions by their own setting); package tests and its three
+  typechecks; pin packages/sonic-fpv to the new train5 commit; tsc apps/fly; gates.py --only vitest,architecture,i18n,b18; a6-reference.
+- [ ] K1.6 the same numbers after (quiet-probe before/after, both pages, three settings).
+
+### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
+Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
+- The craft answers the stick at once: KeyW held from the Backslash press, speed over 0.5 m/s at 0.56 s; the runner's phase is
+  'intro' from 0.25 s to 10.55 s (reader case 10.64 s), then 'flying'. No place back in place (one position jump at 19.4 s
+  from y 0.9 to 3.1 after the craft sat on the floor: a crash life, not the runner).
+- Lines said at the switch on (t 0.0): lesson.scan-free.title, lessonKeysFree, inPlaceOn, courseOffer, inPlaceIntro; at 10.4 s
+  fly.go and lessonKeysFree again. The host's speech queue is busy from 0.25 s to 32.7 s (reader case 33.0 s).
+- Shift+G 20.2 s after the switch on: the course ready (24 gates) at +10.8 s, the first hum of gate 1 in the same sample (+10.8 s):
+  the 10.8 s are the generation; the talk (4 progress and ready lines, sonic.say.text at 20.0, 24.1, 27.8, 30.8 s) does not hold
+  the hum. Spoken lines in the 180 s flight with a course: 11 in each case.
+- Headless Chrome has no system voices: the "voice" case's waits are the engine's estimates too, so both cases show the same
+  times; a real voice was not measured.
+
 ## Not verified (lane onecourse2)
 - OC-1 with a failed generate (course.none or course.failed said in Fly by Sound): not run in a browser; no cheap way to make the course worker fail on a catalogue scan was found.
 - The ear pilot's wedges at Wroclaw walls (pilot or page): not measured.
@@ -297,4 +332,5 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - 2026-11-15 fixes (OC-1 to OC-6) pass 2: most replies went to the lap proof (a random course reset its run in (b), and the speech text sat in e.text, not e.params): a fixed seed by sg= from the start and the event shape in the probe's header would have saved 3 replies; the gate run found a real regression (corridor beacon) that the per-change tests had not covered.
 - 2026-11-15 onecourse2 P1-close: most replies went to the four r11 runs (about 26 min, read one by one) and to Edit's read-before-write rule on 8 locale files; running proofs1 and proofs2 as one detached script from the start and reading all evidence with one summary script would have saved about 5 replies, so the lock proofs did not fit.
 - 2026-11-15 onecourse2 P1-close pass 2: the whole left list ran as one detached script (build, r11, proofs2, gates) with four blocking waits, about 14 replies; most of the rest went to finding the life log inside the r11 evidence (value.spy) and two b18 fails from a placeholder-rule word in this file (the second from naming it in the fix note); a one-line summary per r11 run printed by the tool itself would have saved 3 replies.
+- 2026-11-15 quiet K1 pass 1: most replies went to finding where a flight could wait (bridge, runner, lessons, mode: no explicit hold found by reading) and to the probe's setup (prefs key, stick key); the in-place measure showed no wait, so the owner's page (?sonic=scan) is still to measure. A map line "where a sound flight can hold the pilot: runner startAttempt place, bridge sequential" would have saved about 6 replies; the stage (measure, package plus simulator, tests, gates) does not fit 30 replies and should be split into measure, build and proof.
 - 2026-11-15 fixes pass 3 (continuation): most replies went to measuring the r11 Shift+G failure (a new tool for the walls, then reading laps.ts and run.ts); r11's trail logging course.next with each life would have shown the restart in one read. Running the busy probe, the d7 re-run and r11 in one detached script cost one wait.
