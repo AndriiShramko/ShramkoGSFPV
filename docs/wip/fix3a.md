@@ -81,6 +81,10 @@ Pass 2 of X2:
       arrow on the right edge with the turn mark), fix3a-gate1-tunis-near.png (gate ahead, no guide).
 - [x] gate-one-audit reads the newest walls version and its settings (sceneSettings(id, version), tools/bench/src/scenes.ts);
       ab5efa0e (v2) and eb5f51dc measured (the earlier eb5f51dc failure was the network: the same URL answers 200 now).
+      Commit cd1b49a6.
+- [x] tsc tools/bench 0 errors; gates.py --only vitest,architecture,i18n,b18 on cd1b49a6: all PASS (vitest 177 s). No
+      product code changed in pass 2, so a6-reference and the apps/fly typecheck were not run again (passed in pass 1).
+Stage X2 is done; nothing is left of it.
 
 ## Gate 1 from the spawn
 
