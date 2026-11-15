@@ -493,7 +493,11 @@ Status (integration E worker 1 stopped at a clean point; a fresh worker continue
       fly-mode.ts of 8ea44111: NEG OK.
 - [x] Seam b: git diff 4e6ef171..HEAD -- apps/fly/src/session lists no file. Seam d: docs/decisions.md has no change
       since 4e6ef171 (no new numbers).
-- [~] Gates: gates.py started on 8b4d7eb3 (log U:/Temp/gsfpv-train3/e/gates1.log).
+- [x] Gates on 8b4d7eb3 (log U:/Temp/gsfpv-train3/e/gates1.log): typecheck, vitest, api-unittest, architecture, i18n,
+      b18 ('B18 PASS'), leaks PASS; catalog FAIL (stale features.json, docs/settings.md, README.md, llms.txt, site llms.txt).
+      Regenerated with gen-catalog in the commit of this line; catalog gate then PASS. The dist that run.sh built is of
+      8b4d7eb3, before this regeneration: its site catalog pages are stale (the fly page is not affected); rebuild before
+      the pictures of the site or the release.
 - [~] Release build and probes: U:/Temp/gsfpv-train3/e/run.sh runs detached (summary U:/Temp/gsfpv-train3/e/summary.txt,
       one line per probe with its exit code; logs beside it; evidence JSON in evidence/2026-11-15/train3e/; raw shots in
       U:/Temp/gsfpv-train3/shots/train3e-raw). It builds, copies the nine published wall folders into dist/walls, serves
