@@ -51,9 +51,19 @@ Stage fixes3 (train 3, 2026-11-15, review EJ-1 to EJ-5 of the J stages):
      transform:move, the stand already scaled) or view.gateBox() null at that time. Record before/after in the edit hook,
      fix (take the box at transform:start through a host call), rerun prove on Tunis.
   b. hitAt after a ring drag names another ring than the gizmo's own hit (fx3/gizmo json 'hit' vs 'ownHit'); the press
-     itself turns the right axis. Not chased.
-  c. Read fx3/wroclaw (e4.json, sum.txt: click near the selected gate, crash, size reframe) and the -wroclaw pictures;
-     accept-fly, mouse-free, tracks-page, a6 (J2 left a) not run.
+     itself turns the right axis. Not chased. A guess, not measured: the probe reads right after the undo, before a frame,
+     so the gizmo's root still holds the turned pose while drawnRings() reads the stand's undone one (debug read only).
+  c. [~] pass 3: chain fx3b (release of a7c0d7ac, probe exit 0 on both, gates.py --only vitest,architecture,i18n,b18 all
+     PASS 19:34) read. Wroclaw 70b50d42 (fx3b/wroclaw/e4.json): click near the selected gate: gate 12 at 280 px selected
+     (ok); gate 11 at [1760,407] 811 px not (that point lies under the editor panel, x > 1530: the probe's aim, not the
+     view); crash in the test flight: back in the edit view by itself in 15 ms, no crash card, mode line 'ARMED . ANGLE'
+     (fake pad's arm switch). Size reframe: the same boxes as Tunis to the pixel, framed false (fixed in 3233a7ef). a6
+     unit test pass (1 of 1) on 3233a7ef. Chain fx3c (release of 3233a7ef, both scenes, gates) started 19:35 for the browser
+     proof of the reframe and new pictures. accept-fly, mouse-free, tracks-page: not run.
+  f. New, seen, not explained: the box of the selected gate before the size drag has its centre at y 265 of 1080 (x 964)
+     on both scenes, while measure() put the framed gate at [960,540] in J2. Either the framing aims below the ring's
+     centre (gate centres at eye level came with integration C) or the box is taken after earlier steps moved the gate.
+     Suspect: course.ts frameSel / frame.ts frameGate centre vs view-mouse.ts gateBox. Not chased.
   d. E2 asks one PAIR of handles along a ring's width; PlayCanvas draws one line to +x only: a mirrored -x line is not
      built (lead's decision whether one red line is enough).
   e. EJ-4 tint: the arrows' yellow [1,0.72,0.1] near the selected yellow lives in course/view.ts (lane course4).
