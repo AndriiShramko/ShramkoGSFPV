@@ -1555,8 +1555,17 @@ Logs U:/Temp/gsfpv-train3/mix/.
       courseOffer); b: next 2 -> 2 (target g3). In both traces the only drop to next 0 is the step 'shiftG-sound' (a new
       seed: Shift+G in the sound mode makes a new course, X3), and no life decision (rewind) happened after Backslash.
       Pass 2's run 1 had no trace; its 'next 0 at 12 s' is most likely the same new course (a guess, not measured).
-- [~] Pass 3 chain (U:/Temp/gsfpv-train3/mix/chain3.sh, logs mix/c3/, summary mix/c3/summary.txt): tracks-page,
-      course-path Wroclaw and Tunis, pause-over-course, accept-fly B6 B7 B9-B16, r9, r12, a6, gates.
+- [x] Pass 3 chain on the release of b937b66c served on 5787 (U:/Temp/gsfpv-train3/mix/chain3.sh, logs mix/c3/,
+      summary mix/c3/summary.txt): course-path-probe Wroclaw exit 0 (17 of 17 in the eye band, flat 2), Tunis exit 0 (36 of
+      36, flat 5); pause-over-course exit 0; accept-fly B6 B7 B9 B10 B11 all true (178 s), B12 to B16 all true (371 s);
+      sonic-int-review r9 11 of 11 (exit 0), r12 9 of 9 (exit 0); a6-reference 1 of 1. tracks-page 45 of 46: the one FAIL
+      is 'E camera: after Tab the camera looks at the newly selected gate' px 0, the editor's known fault (Left item 1 of
+      course5 above, not this lane's files).
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks first run: FAIL architecture (laps.ts segmentDistM used Math.hypot,
+      forbidden in the tracks generator) and one vitest timing case (app-dji-rc2 'answers 60 ms late', rc.late; passes alone).
+      Fixed laps.ts with Math.sqrt (db5fcfe3); packages/tracks + apps/fly/src/course + app-dji-rc2 + a6: 22 files, 161
+      passed; tsc tracks 0. Second gates run: all PASS (vitest 137 s; logs U:/Temp/gsfpv-gates-20261115-222139).
+      The release in dist is of b937b66c (Math.hypot); the sqrt form is the same distance, not rebuilt.
 
 ## What the owner does (mix)
 He presses Shift+G and flies a few gates by eye. He presses Backslash. The voice says Fly by Sound is on over his course;
@@ -1565,7 +1574,16 @@ square or a cube frame counts when he flies through its place (near its centre);
 Sound off the same square must be flown through as before. At FINISH of a course that does not come back to its start he
 sees 'Course done' and his time large.
 
-## Left (M1 after pass 2, exact, in order)
+## For the lead (mix M1)
+- Changed files under apps/fly/src/sonic: none. Changed: apps/fly/src/app/builtin/course.ts, apps/fly/src/course/run.ts,
+  apps/fly/src/course/finish.ts, packages/tracks/src/laps.ts, tests and tools/bench probes (sonic-int-review r11
+  Z5_COURSE_FIRST, onecourse-probe trace, course-keys-probe MISS_FLAT).
+- SOUND_BALL_PAD_M 1.5 m is an estimate; the ear pilot r11 needed no more (flat and cube counted by ball on Wroclaw).
+- Not verified: the owner's path with a real ear (r11 is a scripted ear pilot); Tunis for the ear pilot (r11 ran on
+  Wroclaw only); the release was not rebuilt after db5fcfe3 (numerically the same distance).
+- Lane M1 finished; nothing is left of its list.
+
+## Left (M1 after pass 2, exact, in order; all done in pass 3)
 1. Proof (5): keyboard pilot in the ordinary flight (course-keys-probe.mjs, recipe U:/Temp/gsfpv-train3/course4/z3/keys2.sh,
    Wroclaw seed 289710480, GPU lock): one counted and one refused pass of a flat square. The probe has no 'miss the flat
    square once' mode: add it in tools/bench/scripts/course-keys-probe.mjs (fly the flat square's leg once level beside it,
@@ -1604,3 +1622,5 @@ lessons.ts courseTarget -> engine gateAim' in docs/agent-map.md would have saved
 Cost (mix M1 pass 2): about 30 replies; the most went to the first onecourse run losing progress (a trace had to be added
 and the probe run again) and to finding byKind in r11's output (it is only in the evidence json, which r11 overwrites per
 run). An r11 option for the evidence file name and a byKind line in its log would have saved about 4.
+Cost (mix M1 pass 3): about 20 replies; the most went to the first gates run failing on Math.hypot in laps.ts (pass 1 ran
+no architecture check). Running scripts/check-architecture.mjs right after a change in packages/tracks would have saved 3.
