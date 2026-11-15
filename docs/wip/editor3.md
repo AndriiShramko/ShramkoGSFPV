@@ -13,8 +13,43 @@ Stage G3-prove (train 3 wave 3):
   The writer is a reading until the run's camTaken says so. view-mouse.ts isSuspended(). Test tools/bench/test/editor3-g3.test.ts
   3 tests, NEG OK (neg_control.py ref HEAD 60f54e59, course.ts and view-mouse.ts); editor3-g2/-g3/-flying 22/22;
   apps/fly and tools/bench tsc 0. Probe: floorAdd records camTaken, crashCleared, crashActive, statsWindow; FULL=0 (1c2b773d).
-- [~] G3.2 release of 1c2b773d and the browser runs (U:/Temp/gsfpv-train3/editor3/g3/chain.sh: runA Tunis + Wroclaw full
-  path, runB keyboard + 844x390, one lock hold each).
+- [x] G3.2 release of 1c2b773d (build done 07:13:12, train-3 walls of 70b50d42 copied into dist/walls), runA Tunis + Wroclaw
+  (g3/runA/e4.json, lock 07:20:18-07:25:03), runB keyboard + 844x390 on Tunis (g3/runB/e4.json, lock 07:25:07-07:25:54).
+  MEASURED cause of G2 left 1: after the floor add another writer took the camera with cameraOverride false (no crash
+  active): camTaken n 56 (Tunis) and 55 (Wroclaw) frames, override false, crash false; on Wroclaw before the add 3 frames
+  with crash true. The per-frame hold fixes the picture: shots/editor3-floor-add-1920.png (looked at) shows the edit view,
+  the new gate under the Move handles and the gate bar; stand.screen z 8 (Tunis) and 12 (Wroclaw) = in front (was -2).
+  Which code sets the override false is not named (suspect a 'life' event: respawn.ts 94 onLife -> clearCrash, a guess).
+  Stats window after the disarm: not on the page (statsWindow false, crashCleared 0).
+  Also proven in runA, both scans: open with one key (mode edit, handles); Add gate (24 -> 25, selected 1); click on
+  another gate (Wroclaw 11 selected; Tunis no click target found); Tab 1 -> 2 (Tunis), 11 -> 12 (Wroclaw); Delete (next
+  gate selected, handles, bar flex); Turn ring drag quatChange 0.518, moved 0 (Tunis: 2 of 3 rings gave 0 change, the z ring
+  turned); Size 1.2 -> 1.58 (Tunis), 1.5 -> 1.98 (Wroclaw), moved 0; each kind from the bar; bar Next/Previous 1 -> 2 -> 1;
+  Duplicate 24 -> 25; Delete 25 -> 24; Shift+Tab back; X arrow moved 0.45 m (Tunis) and 0.54 m (Wroclaw) for an 80 px drag,
+  opening unchanged; undo and redo of turn, size, kind (Wroclaw; Tunis undoChanged false for the kind), duplicate, delete,
+  move, floor add; W S D A E Q moved the eye 2.27-2.53 m each; right-button look moved the look point 0.48 m. Frame rate
+  before 30 / 29.7, in the mode idle 29.9 / 29.9, during drags 29.6 / 29; longest long task in the mode path 160 ms
+  (Tunis), 129 ms (Wroclaw), idle in mode 56 ms. runB: keyboard Space 1 fly armed (315 ms), Space 2 edit disarmed (309 ms);
+  full course line has no digit; 844x390: gate bar [8, 340, 410x42] and top bar [217, 4, 409x36] fit, the selected gate's
+  point is the canvas (nothing covers it).
+- [ ] left (next worker, in this order; dist is the release of 1c2b773d, do not rebuild before a code change):
+  1. Test flight with the simulated gamepad: fly.armed false, nextAfter 0 on both scans, modeAfter edit. The HUD in the
+     picture says "ANGLE CH5, Stick in the centre (camera drone): no arming needed", so the probe's pad may fly a camera
+     drone that never arms, and gate 1 is not put 6 m ahead of the spawn. Probe work in tools/bench/src/editor3-prove.ts
+     (fly section near line 380-420): put gate 1 6 m ahead facing the spawn (Move drag or EditAction add), arm by the
+     keyboard (Space, proven in runB) and fly W; then the pad with its arm switch; record course.next 0 -> 1.
+  2. Save: the probe does not delete the red gates first, so Save refused ("Problems: 5", Tunis; 3, Wroclaw) and the
+     reload of the moved gate is not proven. Add a loop: select each red gate (ed.problems / the red list) and Delete
+     until problems 0, then Save, then load and compare savedGatePos with the moved pose.
+  3. Added gate still red: Tunis problems 5 -> 7 ("the way from gate 0 to gate 1 goes through a wall"), Wroclaw 3 -> 2.
+     Record the check's leg report (packages/tracks check.ts 257-270) before a change.
+  4. Name the code that sets cameraOverride false after an add (record a stack in a setter on ctx.session.cameraOverride
+     in the probe's init script).
+  5. Tunis ring drags: 2 of 3 gave quatChange 0 (r 88 y ring, r 190 x ring); Tunis kind undo undoChanged false.
+  6. Exit: closed false on both scans.
+  7. Look at the six pictures and write the Blender/Unity line for each; mouse-free-probe; accept-fly B6 B7 B9-B16 on
+     a local address; a6-reference; gates.py --only vitest,architecture,i18n,b18.
+  8. The save refusal shows a 0-based gate number ("gate 0 to gate 1"): course3's text (For the lead).
 
 Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
 - [x] G2.0 the G1 REPRO run on the old dist never got the lock (held by others 05:25-05:45 and 05:37-06:02); the
@@ -780,6 +815,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- G3-prove: about 32 replies; the most went to the 7-minute GPU lock queue and to the full path run whose summary showed
+  four probe gaps (no 6 m gate, no red-gate deletion before Save, a camera-drone pad, no Exit) at once; a probe step list
+  checked against the stage text before the run would have closed those gaps in the same build.
 
 - G2 pass 3: the most turns went to the build plus browser run (about 9 min) that showed the camera fix was not the cause
   of the picture; reading the pictures of full3 against viewAfter BEFORE fixing (the eye was right in the record, the
