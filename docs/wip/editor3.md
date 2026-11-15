@@ -4,6 +4,13 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage I3-prove (train 3, 2026-11-15):
+- [x] I3.0 merge origin/main b5b62d47 (lead notes only): 02b162e5. Release build of that tree started
+  (U:/Temp/gsfpv-train3/editor3/i3/build.log).
+- [~] I3.1 probe editor3-prove.ts: the pad flight puts gate 1 6 m ahead of the drone (__gsfpvEditPutAhead 6, 1, 2.5 as
+  one drag, one Ctrl+Z after). Chain U:/Temp/gsfpv-train3/editor3/i3/chain.sh: prove on Tunis and Wroclaw, editor3-clean
+  kbd,desk on both, accept-fly, mouse-free, a6, gates (log i3/chain.txt).
+
 Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
 - [x] I2.0 merge origin/main 7fb0ddf7 (lead notes only): 6c4aa696. Release build of 6c4aa696's tree exit 0
   (U:/Temp/gsfpv-train3/editor3/i2/build0.log), kept as U:/Temp/gsfpv-train3/editor3/i2/dist-before.

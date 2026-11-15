@@ -391,8 +391,12 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // then the pad: gate 1 (the moved gate `del`) made bigger with + so the probe's rough steering passes it (undone after)
     const selFly = (await ed(page)).selected;
     const open0 = (await dbg(page))?.stand.opening ?? 0;
+    // I3 (the stage's words): gate 1 placed 6 m ahead of the drone, 1 m up, opening 2.5 m, as ONE drag (one Ctrl+Z after);
+    // a build without the hook falls back to growing the opening with +
     let grow = 0;
-    while (grow < 30 && ((await dbg(page))?.stand.opening ?? 0) < 3.5) { await page.keyboard.press('Equal'); grow++; await sleep(60); }
+    const putAhead = await page.evaluate(() => (window as unknown as { __gsfpvEditPutAhead?: (m: number, up: number, open: number) => unknown }).__gsfpvEditPutAhead?.(6, 1, 2.5) ?? null);
+    if (putAhead !== null) { grow = 1; out.putAhead = putAhead; }
+    while (putAhead === null && grow < 30 && ((await dbg(page))?.stand.opening ?? 0) < 3.5) { await page.keyboard.press('Equal'); grow++; await sleep(60); }
     await sleep(400);
     const openFly = (await dbg(page))?.stand.opening ?? 0;
     await pad(page, [0, 0, -1, 0, 0], 0x50);
