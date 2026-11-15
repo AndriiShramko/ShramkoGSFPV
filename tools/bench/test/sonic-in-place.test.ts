@@ -162,7 +162,9 @@ describe('the switch did not come up: the line leads on', () => {
             const d = JSON.parse(readFileSync(join(REPO, `packages/i18n/locales/fly/sonicentry/${lang}.json`), 'utf8')) as Record<string, string>;
             const s = d['sonic.menu.hereFailed'] ?? '';
             expect(s, lang).toContain('{key}');
-            expect(s.toLowerCase(), lang).not.toMatch(/backslash|barra invertida|ukośnik|косую/);
+            // the old fixed words of the four languages, the pl and ru ones by char codes: this file stays ASCII (gate B18)
+            const fixed = ['backslash', 'barra invertida', `uko${String.fromCharCode(0x15b)}nik`, String.fromCharCode(0x43a, 0x43e, 0x441, 0x443, 0x44e)];
+            expect(fixed.filter((w) => s.toLowerCase().includes(w)), lang).toEqual([]);
         }
     });
 });
