@@ -677,6 +677,38 @@ async function sizeRepro(page: Page, id: string): Promise<Record<string, unknown
     await sleep(400);
     v0 = (await ed(page)).view?.at;
     await sizeDrag('run1-order-key');
+    // G2: every kind of drag, each followed by a bar press (must find the bar visible): the X arrow, a ring, and a ring drag
+    // that ends outside the canvas (on the top bar); turns in degrees
+    const deg = (a: number[], b: number[]): number => {
+        const d = Math.abs(a.reduce((s, v, i) => s + v * (b[i] ?? 0), 0));
+        return Math.round(((2 * Math.acos(Math.min(1, d)) * 180) / Math.PI) * 10) / 10;
+    };
+    bars.push(await clickBar(page, 'move'));
+    {
+        const a = (await dbg(page))!;
+        const dir = a.axes.x;
+        const w = await walk(page, a.stand.screen, dir, 12, 'x');
+        if (w) await drag(page, w.x, w.y, dir[0]! * 80, dir[1]! * 80);
+        tries.push({ label: 'arrow-x', tool: a.tool, r: w?.r ?? null, hit: w?.hit ?? null, movedM: r2(dist(a.stand.pos, (await dbg(page))!.stand.pos)) });
+    }
+    bars.push(await clickBar(page, 'turn'));
+    for (const label of ['ring3', 'ring-out']) {
+        const a = (await dbg(page))!;
+        const w = await walk(page, a.stand.screen, [1, 0], 40, '');
+        if (w && label === 'ring3') await drag(page, w.x, w.y, 0, 60);
+        if (w && label === 'ring-out') {
+            await page.mouse.move(w.x, w.y);
+            await sleep(150);
+            await page.mouse.down();
+            await page.mouse.move(w.x, w.y + 60, { steps: 6 });
+            await page.mouse.move(960, 28, { steps: 8 });
+            await page.mouse.up();
+            await sleep(700);
+        }
+        const b = (await dbg(page))!;
+        tries.push({ label, tool: a.tool, r: w?.r ?? null, hit: w?.hit ?? null, deg: deg(a.stand.quat, b.stand.quat), movedM: r2(dist(a.stand.pos, b.stand.pos)) });
+        bars.push(await clickBar(page, label === 'ring3' ? 'turn' : 'size'));
+    }
     out.bars = bars;
     out.tries = tries;
     out.ups = await page.evaluate(() => (window as unknown as { __ups?: unknown[] }).__ups ?? []);
