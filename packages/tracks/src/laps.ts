@@ -47,7 +47,9 @@ export function segmentDistM(c: Vec3, a: Vec3, b: Vec3): number {
     const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]] as const;
     const len2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
     const u = len2 > 0 ? Math.max(0, Math.min(1, (ac[0] * ab[0] + ac[1] * ab[1] + ac[2] * ab[2]) / len2)) : 0;
-    return Math.hypot(ac[0] - u * ab[0], ac[1] - u * ab[1], ac[2] - u * ab[2]);
+    // Math.sqrt is exact in IEEE 754 on every machine (Math.hypot is not: scripts/check-architecture.mjs)
+    const dx = ac[0] - u * ab[0], dy = ac[1] - u * ab[1], dz = ac[2] - u * ab[2];
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 export interface LapOptions {
