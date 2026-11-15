@@ -29,6 +29,10 @@ describe('editor3 G2', () => {
         // a move from a gizmo that kept its axis is not a drag; a kept axis is ended on the up
         expect(view).toMatch(/if \(this\.dragging\) host\.onDrag\(this\.pose\(this\.openingAtStart\), false\)/);
         expect(view).toMatch(/this\.endStale\(\);/);
+        // measured in the G2 REPRO run: the bar's place read only the Move set's nodes, so Turn or Size hid the bar
+        const ss = view.slice(view.indexOf('standScreen(): '), view.indexOf('standScreen(): ') + 400);
+        expect(ss).not.toMatch(/handles\[0\]\?\.nodes\.length/);
+        expect(ss).toMatch(/this\.handles\.some\(\(h\) => h\.nodes\.length > 0\)/);
     });
 
     it('Space while the course is flown in the edit mode stops the motors of a keyboard pilot (the edit view comes back)', () => {

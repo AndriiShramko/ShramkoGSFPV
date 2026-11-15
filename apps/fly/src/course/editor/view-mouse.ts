@@ -382,7 +382,8 @@ export class EditView {
 
     /** The selected gate's centre on the page (CSS px) and its depth (above 0: in front); null when no gate is selected. */
     standScreen(): [number, number, number] | null {
-        if (!this.handles[0]?.nodes.length) return null;
+        // G2 (measured, REPRO run g2/repro2): this read only the Move set, so Turn or Size (one set at a time) hid the bar
+        if (!this.handles.some((h) => h.nodes.length > 0)) return null;
         const cc = this.host.camera.camera as CameraComponent;
         const r = this.canvas.getBoundingClientRect();
         const s = cc.worldToScreen(this.stand.getPosition(), new PcVec3());
