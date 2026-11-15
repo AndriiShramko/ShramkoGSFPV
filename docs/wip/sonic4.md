@@ -376,6 +376,12 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   the table); with sonic-quiet, sonic-narrator-key, sonic-int-lazy: 25 passed (U:/Temp/gsfpv-train3/quiet/fx-v2.log); tsc apps/fly
   0 errors; neg_control.py against HEAD on say-via.ts, bridge.ts, runtime.ts: NEG OK, 3 failed (fx-neg1.log, bridge case by
   assertion). First try put the table in app/: sonic-int-lazy failed (the main chunk named 13 mode texts), so it lives in sonic/.
+  Commit 64b565c1. Then gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 85 s; U:/Temp/gsfpv-gates-20261115-165721);
+  a6-reference 1 passed (fx-a6.log).
+- [ ] Left (stage fixes, the reply budget ran out): the seven proof steps on Wroclaw 70b50d42 (and once Tunis) on a release build
+  were never run on this lane (K2.6 open since K2), so they are not "re-run" either: release build, serve-csp on 5760, quiet-probe
+  with NARRATOR=off and Shift+G: expect no sonic.say.text voiced (engine say with quiet) and engine cues checkpoint at the course
+  ready; the narrator key (Quote) in a browser; K2.3 to K2.5 (Q5, Q6, Q7) still open.
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
@@ -434,3 +440,4 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   sonic-optin, then catalog.test found only by the gate run, two gate runs more); a grep for "'sonic.home'" across all tests
   before the first edit would have found all four and saved about 4 replies. Only K2.1 fitted; K2.2 to K2.6 need a fresh worker each.
 - 2026-11-15 fixes pass 3 (continuation): most replies went to measuring the r11 Shift+G failure (a new tool for the walls, then reading laps.ts and run.ts); r11's trail logging course.next with each life would have shown the restart in one read. Running the busy probe, the d7 re-run and r11 in one detached script cost one wait.
+- 2026-11-15 lane quiet stage fixes: most replies went to finding every speaker and cue kind (runner, lessons, course, walls, planner) and to the move of the table after sonic-int-lazy failed; a list of the engine's speakers and the planner's one-off cue kinds in docs/agent-map.md, and knowing that the main chunk must not name mode texts, would have saved about 6 replies. The browser proof did not fit and needs a fresh worker started with the release build.
