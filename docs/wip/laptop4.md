@@ -24,7 +24,7 @@ Stage Q2-near-field
   run-q2.sh (sets base, mul, rim, wro; TURNS=1 for the full run), short runs without turns first
 - [x] 1. lod-view-score.mjs `--rows a:b` (a region of the picture: 0.5:1 the near half from above, 0:0.5 the far half);
   candidate (c) `?viewlodrim=` (view-lod.ts rimFactor, RIM_FROM 2, RIM_SPAN 4, both estimates; off by default), wired
-  through flight.ts, session, renderer.ts, prefs url.ts; test view-lod-rim.test.ts 9 of 9, NEG OK; view-lod,
+  through flight.ts, session, renderer.ts, prefs url.ts; test view-lod-rim.test.ts 6 of 6, NEG OK; view-lod,
   switches, main-audit pass (57 of 57 with it); render-pc and fly typecheck exit 0 (this commit)
 - [x] 2. Measured (a) multiplier 1.7 and 1.5, (c) rim 2 and 4, against l3-lub-ref16 by near and far half: NO candidate
   wins (Facts Q2-near); (b) not built (Decisions). The rim switch stays off by default for the measurement (this commit)
@@ -33,6 +33,17 @@ Stage Q2-near-field
   not run (needed only for a kept candidate)
 - [x] 4. a6-reference 1 of 1 pass; gates.py --only vitest,architecture,i18n,b18 on 2872f5e4: all PASS (vitest 124 s;
   logs U:/Temp/gsfpv-gates-20261115-112715); server on 5740 stopped. accept-fly B6 to B16 not run (no product change)
+
+Stage fixes (review findings LQ-1 to LQ-3; all three stand, none refuted)
+- [x] LQ-1: lod-view-score.mjs wrote `rows: band` and then `rows` (results), the band was lost. The record is now built
+  by exported `scoreRecord` with keys `band` and `rows`. Test tools/bench/test/bench-records.test.ts (this commit)
+- [x] LQ-2: startStockBrowser (gpu-select-probe.mjs, used by lod-view-probe) ignored BENCH_UNCAPPED=1. Its command line
+  is now exported `stockLaunchArgs`, which adds benchUncappedArgs() and records them in `launch.added`; csp-check,
+  latency-walls-check, rc2-lna-diag and walls-trials join `pick.launch.args` to their own flags; README says so.
+  bench-records.test.ts 4 of 4, NEG OK (neg_control.py against HEAD: fails by assertion on both old files);
+  chrome.test.ts with it 18 of 18; bench typecheck exit 0; `node --check` of the five edited .mjs ok (this commit)
+- [x] LQ-3: view-lod-rim.test.ts has 6 tests; the line above now says 6 of 6 (this commit)
+- No page probe re-run: no fix changes what is drawn (bench scripts only)
 
 ## Facts (measured)
 

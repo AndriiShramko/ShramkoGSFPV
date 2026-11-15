@@ -103,8 +103,16 @@ async function main() {
     const outDir = join(REPO, 'evidence', new Date().toISOString().slice(0, 10), 'lod-view');
     mkdirSync(outDir, { recursive: true });
     const file = join(outDir, `score-${ref}-${labels[0]}${band ? `-rows${band.join('-')}` : ''}.json`);
-    writeFileSync(file, asciiJson(JSON.stringify({ name: `lod-view/score-${ref}`, date: new Date().toISOString(), reference: ref, labels, rows: band, measure: 'PSNR on luma in dB against the reference run\'s picture of the same place (a turn\'s pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference\'s lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged', rows }, null, 1)) + '\n');
+    writeFileSync(file, asciiJson(JSON.stringify(scoreRecord({ ref, labels, band, rows }), null, 1)) + '\n');
     console.log(`written ${file.replace(REPO, '.').replace(/\\/g, '/')}`);
+}
+
+/**
+ * The evidence record of one scoring pass. `band` is the --rows region ([a, b] as shares of the picture's height, or
+ * null for the whole picture); `rows` are the results. They are two keys: a record must say which band it scored.
+ */
+export function scoreRecord({ ref, labels, band, rows, date = new Date().toISOString() }) {
+    return { name: `lod-view/score-${ref}`, date, reference: ref, labels, band: band ?? null, measure: 'PSNR on luma in dB against the reference run\'s picture of the same place (a turn\'s pictures against the reference at the end of that turn): psnr over the whole picture, psnrLit over the reference\'s lit pixels (the scan, not the black sky), psnrQuarter with 4x4 pixels averaged', rows };
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url).toLowerCase() === resolve(process.argv[1]).toLowerCase()) await main();

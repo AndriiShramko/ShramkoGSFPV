@@ -33,8 +33,9 @@ Nothing here installs browsers: never run `playwright install`.
 
 **Frame pacing: `BENCH_UNCAPPED=1`.** The owner's display runs at 30 Hz and headless Chrome's compositor waits for its
 vertical blank, so a run on his PC shows at most 30 frames/s (33.3 ms) whatever the scene costs. `BENCH_UNCAPPED=1` adds
-`--disable-gpu-vsync --disable-frame-rate-limit` to `pickBrowser().launch.args` (`launchChrome` joins them to the
-caller's): the frame time is then what the page costs, the picture is the same. Off by default; a frame time measured
+`--disable-gpu-vsync --disable-frame-rate-limit` to `pickBrowser().launch.args` (`launchChrome`, freeze-probe,
+csp-check, latency-walls-check, rc2-lna-diag and walls-trials join them to their own flags; `startStockBrowser` of
+gpu-select-probe, used by lod-view-probe, adds them itself and records them in `launch.added`): the frame time is then what the page costs, the picture is the same. Off by default; a frame time measured
 without it on that PC is the display's period, not the page's cost (lane laptop4 Q1).
 
 ## Logic-only mode: `?render=off` (machines without a GPU)
