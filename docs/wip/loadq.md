@@ -125,6 +125,10 @@ Stage L2-build
     detail: Lublin start 73.33 on / 32.27 off, 140 m up 57.56 / 33.54; Wroclaw start up0 69.55 / 41.05 dB. The on/off
     gap there is the time spent at rest, not the view rule; any lod-view comparison of the view rule needs
     set.display.stillDetail=0 in its query from now on.
+  - Hand-over gates.py --only vitest,architecture,i18n,b18,leaks on eceb4f6f (U:/Temp/gsfpv-gates-20261116-001704,
+    Python 3.11 on PATH): architecture, i18n, B18, leaks PASS; vitest 5001 passed, 16 skipped, 1 file failed:
+    tools/bench/test/rooms-socket.test.ts "rooms.py did not start" (its start wait ran out under the full run; not this
+    lane's file, unchanged against origin/main); alone it passes 2 of 2. lod.test.ts passed this time.
   - governor-start, typecheck (render-pc, apps/fly exit 0 after 3314a9a7; since then only a bench script and docs),
     a6-reference (item 4) done. Servers 5820, 5821, 5822 stopped by the runners' traps (no node process of this
     worktree left).
