@@ -21,8 +21,8 @@ describe('editor paint', () => {
             { code: 'leg-wall' as const, from: 'start', to: 'g1', freeM: 0.2 }
         ];
         expect([...badGates(probs, ids)].sort()).toEqual([0, 2, 3]);
-        expect(editPaints(ids, 2, probs)).toEqual(['bad', 'later', 'selected-bad', 'bad']);
-        expect(editPaints(ids, 1, [{ code: 'outside', gate: 'g2' }, { code: 'gate-direction', gate: 'g4', deg: 50 }])).toEqual(['later', 'selected-bad', 'later', 'bad']);
+        expect(editPaints(ids, 2, probs)).toEqual(['bad', 'later', 'selected', 'bad']);
+        expect(editPaints(ids, 1, [{ code: 'outside', gate: 'g2' }, { code: 'gate-direction', gate: 'g4', deg: 50 }])).toEqual(['later', 'selected', 'later', 'bad']);
     });
 });
 

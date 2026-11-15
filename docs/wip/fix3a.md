@@ -601,3 +601,1026 @@ Left (fixes, after pass 2 at 929f2e23; FY-1 to FY-5 done):
    yet (search apps/fly/src for the caller of new CourseRun). Housefly is d10c5638 (walls in the release stand-in); the
    microgreens scene id is not found in the walls stand-in (U:/Temp/gsfpv-train3/walls/release has 9 scans). Add
    --scale <s> to the audit, run Housefly at its page scale, compare eyeHi (onWalk) and gate heights with scale 1.
+
+# Lane course4 (train 3): a course the pilot can read, a course in a scaled scan
+
+Same worktree and branch, built on c83340a2. Logs U:/Temp/gsfpv-train3/course4/, pictures U:/Temp/gsfpv-train3/shots/course4-c0.
+
+## Status
+
+Stage C0-places-left (fix3b's left items)
+- [x] merge origin/main (lead note) into fix3a: 464456c3
+- [x] Node picture tool tools/bench/src/gate-place-map.ts (no GPU): top map at 0.15 m/px over the course (tile share of the
+      best quarter: red < 0.10, orange < POOR_SHARE, yellow < 0.30, green above; wall voxels 0.4-4 m over the tile ground
+      darken it; legs, gate numbers, start) and a vertical section through each gate (walls, tile ground, straight ray, opening)
+- [x] (2) ground measure, from pictures: Wroclaw seed 925664764 (the page's third course seed) gates 5 and 7 stood 3.4 and
+      4.6 m over the tile ground while the ray ground was 1.7 m below; the sections (wroclaw-925664764-g5.png, -g7.png) show
+      a solid object about 1.5-2 m tall and about 5 m wide standing on the street (car, hedge or kiosk), the street at the
+      tile ground beside it: the ray ground was the object's top, not a terrace. Fix quality.ts standGround (OBJECT_M 1.0,
+      STAND_R_M 2.5, both estimates): over an object the ground is the street the side rays meet; generate.ts eye band uses
+      it. Test eye-level.test.ts 'course4 C0' (a 1.8 m object on the street): NEG OK against HEAD (neg_control.py, quality.ts
+      and generate.ts; old code put a gate 3.4 m over the street). packages/tracks vitest 15 files 126 passed; tsc
+      packages/tracks clean.
+- [x] after (map/after-*.log, Node, release walls stand-in, T = 1,0,0,0): Wroclaw seeds 925664764, 1, 2, 3: gates 24, 24,
+      14, 24; no gate over 3 m above the tile ground (before: 2 of 24 on 925664764); ray height max 2.0 m. Tunis seeds 1, 2:
+      24 gates each, ray height max 2.0-2.05 m, but 1 and 2 gates 3.4-4.2 m over the tile ground (no street beside them
+      within 2.5 m: terraces or steps of the medina, not looked at in a section)
+- [~] (3) thresholds from pictures: wroclaw-925664764-top.png looked at: gates stand in green or yellow tiles; legs 16-18
+      run along the edge of a large red area (an open square whose middle has no voxels in the band); no gate in a red end
+      of a street on this course. Tunis top map not drawn. POOR_SHARE 0.15 and EYE_FREE_M 1.0 kept (no picture shows a gate
+      in a smeared end); still estimates.
+- [ ] (1) R3 no gate in leaves: not built (see Left)
+- [~] (4) Lublin start in the well-scanned part: freespace.ts option goodAt (generate.ts goodForGate: good tile and
+      share >= POOR_SHARE); when no reached cell is good the fill starts again from the good clear cell nearest the spawn;
+      worker.ts and gate-place-audit.ts pass it. Test pocket-start.test.ts (street plus a closed pocket of 0.08 share):
+      NEG OK (old freespace.ts: 4 gates, in the pocket); packages/tracks vitest 16 files 128 passed; tsc packages/tracks and
+      apps/fly exit 0. BUT Lublin 2f1ddf5f is unchanged in Node (audit-pocket.log: seeds 1, 2: 16 and 14 gates, span 12 m):
+      the check runs over the reached cells, and Lublin's pocket reaches some cell over a good tile that the scanned and
+      room steps then drop (guess, not measured). Wroclaw seeds 1, 2 (24, 14 gates) and Tunis seed 1 (24) as before.
+- [x] (5) Opole page run alone (runner on port 5780, release of b010742b, REGEN=0): exit 0 in 25 s, 6 gates at 1.6-2.0 m,
+      0 without ground; fix3b-opole-pilot.png looked at (rings over the terrace and stairs at eye level). The 590 s crash
+      did not come back alone; its cause is not named (it ran after Tunis in the same page run: a guess).
+- [x] (6) page check on the release of b010742b (BUILD EXIT 0; U:/Temp/gsfpv-train3/course4/c0/ev, summary.txt): Save check
+      untouched problem null on Wroclaw (Shift+G to course 5.1 s) and Tunis (4.0 s), the pushed gate refused on both
+      (leg-wall); page heights Wroclaw seeds 1156744997, 446102219, 1517131788: 24, 24, 14 gates, eye 23, 24, 13, centres
+      1.5-2.2 m, 0 without ground; Tunis three seeds 24 gates each, 1.6-2.0 m; guide on Tunis 6 of 6 checks.
+      fix3b-wroclaw-pilot-2.png (seed 1517131788) looked at: the camera 8 m before gate 6 stands in a dark conifer, the ring
+      itself in front of a tree: the leaves case of R3 is on the approach, not only in the opening.
+- [x] (3) Tunis top map 887f27aa-1-top.png (0.15 m/px) looked at: all 24 gates in green or yellow tiles, none in red or
+      orange; lowest gate share 0.27. Section 887f27aa-1-g23.png: gate 23 (4.2 m over the tile ground, 1.9 m over the ray
+      ground) stands over a raised mass that continues to the right at that level: a terrace of the medina, not a too low
+      ground measure; kept. POOR_SHARE 0.15 and EYE_FREE_M 1.0 kept: no picture shows a gate in a smeared end of a street.
+- [x] Wroclaw seed 2 gives 14 gates: measured (audit-w2.log, walks 9, 5, then 24 walked, 9 cut at the ring's close, 1 gate
+      dropped): the ring closing cut, a valid closed course of 14; not a fault.
+- [x] after 7be35fc4: gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 93 s, logs
+      U:/Temp/gsfpv-gates-20261115-152459); a6-reference exit 0
+
+## Left (C0, after pass 2)
+
+1. (4) Lublin: move the goodAt check in packages/tracks/src/freespace.ts from the reached cells to the usable cells (room
+   >= 0, after step 5): when none is good, call freeSpace again with the spawn at the good clear cell nearest the spawn
+   (not in reach) and without goodAt; keep pocket-start.test.ts; rerun gate-place-audit --scenes 2f1ddf5f,70b50d42,887f27aa
+   --seed-list 1,2 (now: Lublin span 12 m) and the page run on Lublin with the guide.
+2. (1) R3: not built. The leaves of fix3b-wroclaw-pilot-2.png lie on the approach (8 m before gate 6), so the tube must
+   reach further than 3 m. Data source still open: the walls hold crowns, thin foliage needs splat positions in the worker.
+3. Items 5 and 6 are done above on the release of b010742b; the release does not hold the goodAt change (no effect on
+   Wroclaw, Tunis, Opole in Node).
+
+## Left (C0, pass 1)
+
+1. (6) and (5): the runner U:/Temp/gsfpv-train3/course4/c0/run.sh (copies the walls stand-in into dist, serves on 5780,
+   save-check --push Wroclaw and Tunis, gate-place Wroclaw (pilot views 1, 6) and Tunis, gate-guide Tunis, then Opole alone
+   with REGEN=0) waited for the GPU lock (held by another lane) and was stopped before any probe ran. dist holds the release
+   of c83340a2 (code of 929f2e23, BUILD EXIT 0); after this stage's standGround the release must be built again first
+   (node scripts/build-release.mjs, then the runner).
+2. (1) R3: measured that the walls DO hold tree crowns (round dark blobs 0.4-4 m over the ground in wroclaw-925664764-top.png),
+   and the free space keeps gates out of them; the conifer the lead saw is thin foliage under the walls' opacity cut, so only
+   splat positions can find it. Not built: the worker has no splat positions (apps/fly/src/course/worker.ts gets only the
+   walls octree); cost in ms and bytes not measured. Also: the page's course for seed 925664764 had 19 gates, Node's 24 on
+   the same walls stand-in (the page's spawn or fit budget differs: not measured), so the conifer gate of fix3b-wroclaw-pilot-2
+   could not be matched to a Node gate.
+3. (4) Lublin 2f1ddf5f: not started (cause measured in Y2: the spawn's free space has no good tile).
+4. (3) Tunis top map: run gate-place-map --scene 887f27aa --seed-list 1 and look; also draw a section of Tunis seed 1's gate
+   at 4.2 m over the tile ground to tell a terrace from a too low tile ground.
+5. Wroclaw seed 2 now gives 14 gates (24 before standGround): a fit retry with more seeds may be needed; not measured why.
+
+Cost (course4 C0): about 27 replies; most went to finding a data source for R3 (no splat positions anywhere the generator
+runs) and to a page runner that only waited for the GPU lock; starting the runner as the first command of the stage and
+asking the lead whether R3 may read the scan files in Node would have saved both.
+## Status C1-start-finish
+
+Logs U:/Temp/gsfpv-train3/course4/c1/. origin/main had nothing new (git log HEAD..origin/main empty at ad5ceb37).
+- [x] release build of ad5ceb37 (the 'before' build): BUILD EXIT 0 (c1/build-before.log); dist holds it now
+- [x] pure parts: apps/fly/src/course/finish.ts (gateRoles, lapSplash, splashAlpha, resultsCard, lapSplashMode; hold 1500 ms,
+      fade 400 ms, card 3000 ms are the lead's design values) and course/hud-clock.ts (lapClock moved out of hud.ts, re-exported
+      there); test tools/bench/test/course-finish.test.ts 10 passed. Negative control: the module is new, so the test fails
+      on the old code by a missing import, not by an assertion.
+- [ ] 'before' pictures and measure on Wroclaw 70b50d42 (not taken; dist still holds the ad5ceb37 'before' build)
+- [x] (pass 2) S1 to S6 in code: view.ts (checkered START / FINISH frame, banner with the word, checkered line on the ground
+      from collision.queryRay, number plate over the next gate, passed grey 0.45 -> 0.2), hud.ts + hud.css (.course-splash at
+      top 20vh, 8vh digits, small 4vh, card 6vh, fades by splashAlpha, clock block dims while it shows, covered by the pause
+      menu with the block; S3 line course.hud.toStart before the clock runs), course.ts frame() (splash and card instead of
+      the two flashes, best read before it is written; hook course.look and course.splash for probes), laps.ts LapView.lapTimes,
+      prefs course.lapSplash (display, enum large|small|off, default large), texts in en/es/pl/ru (course.gate.*, course.card.*,
+      course.hud.toStart, set.course.lapSplash*; course.ready and course.server.loaded say START). Checks: typecheck fly, tracks,
+      prefs exit 0; vitest course-finish + packages/prefs/test (with migrate.test.ts) + packages/tracks/test: 387 passed;
+      NEG OK for prefs/defs/course.ts and tracks/laps.ts (neg_control.py, logs c1/neg-*.log).
+      Banner size from 60 m (geometry, not measured on screen): a 2.4 m square gate with 0.1 m bars is 2.6 m outer, banner
+      2.6 x 0.78 m; at the flight view's 115 deg horizontal fov on 1920 px, 960 / tan(57.5 deg) = 612 px per radian, so 27 x 8 px
+      at 60 m, the frame 27 px wide (8 cells of 3.3 px). An estimate until the browser proof measures it.
+- [ ] browser proof, pictures, accept-fly, tracks-page, gates.py, a6-reference (see Left C1, items 1 and 8)
+
+## Left (C1-start-finish)
+
+Items 2 to 7 below are done in pass 2 (see Status); 1 and 8 are left. New in pass 2: the editor's own show() (course.ts line
+about 606) draws no roles on purpose (the editor paints every gate); hook course.look() gives banners, groundLines, plate,
+roles; hook course.splash() gives kind, text, delta, tone, mode, at, alpha; the splash element is [data-testid=course-splash].
+The ring's checker cells (view.ts checkerPrims, q0 = gate quat x 90 deg about X) are not yet seen in a picture: check that
+they lie on the ring and not across it.
+
+1. 'Before' measure on the release of ad5ceb37 already in dist: copy the walls stand-in into dist/walls, serve on 5780, Shift+G
+   on Wroclaw; first and last gate are painted like the others (view.ts PAINT: next lime, later teal, passed grey); a lap
+   end only flashes the note course.lapDone / course.best (app/builtin/course.ts frame(), around line 183); course end the
+   same. Take two pictures. Pose the craft with the HOLD helper of tools/bench/scripts/gate-place-probe.mjs (line 54);
+   fly laps by writing sim.s along the path as tools/bench/src/rooms-race.ts fly() does (path: CourseRun.path).
+2. packages/tracks/src/laps.ts LapView: add lapTimes (the card needs each lap); view() returns [...this.lapTimes].
+3. S1 view.ts: for gateRoles(...) != null a checker band outside the frame (two rows of boxes, white 1,1,1 and black 0.02,
+   alternating) and a banner box above it with a canvas texture (emissiveMap; PlayCanvas Texture + setSource as
+   apps/fly/src/drones3d/studio.ts tex() does) saying START, FINISH or START / FINISH; ground line from
+   ctx.session.collision.queryRay(x, y, z, 0, -1, 0, 80) under the gate (same frame as gatePoses, see gate-place-probe.mjs
+   line 108). State the banner's pixels from 60 m (at fov 115 deg, 1920 px: about 612 px per radian, a 0.6 m word is 6 px).
+4. S2 view.ts: passed grey must be darker than later teal (now 0.45 grey vs teal, about the same brightness); a number plate
+   over the next gate (same banner code).
+5. S3 hud.ts update(): before the start (not running, laps 0) one line course.hud.toStart instead of the lap lines; course.ready
+   and course.server.loaded texts say START instead of gate 1.
+6. S4 and S5 hud.ts + hud.css: .course-splash (top 20vh, translate -50%, font 8vh, small 4vh, green #a6ff1a for best, white
+   otherwise, text-shadow, no box) and .course-card (same place, 3 s); alpha from splashAlpha per frame; course.ts frame()
+   replaces the two ctx.hud.flash calls with them, using readBest before writeBest as bestBeforeMs. The splash overlaps the
+   clock block at 1080 (block 120-224 px, splash 173-259 px): dim the block while the splash shows.
+7. Setting course.lapSplash: packages/prefs/src/defs/course.ts (COURSE_DEFS is empty; there is no 'course' group in
+   schema.ts GROUPS, so group 'display', enum LAP_SPLASH_MODES, default large, since 2); add it to a list in
+   packages/prefs/test/defs.test.ts; run packages/prefs/test/migrate.test.ts; labels set.course.lapSplash(.help, .opt.*) in
+   packages/i18n/locales/fly/course/{en,es,pl,ru}.json.
+8. Browser proof and pictures as the stage names them; accept-fly, tracks-page, typecheck, gates.py, a6-reference.
+
+Cost (course4 C1 pass 2): about 30 replies; items 2 to 7 written and tested at commit 1efa5dba; the most went to reading
+the view, HUD, prefs tests and the lap timer test before writing (and three edits refused for files not read first). The
+browser proof (items 1 and 8) needs a fresh stage that starts with the release build and a probe written from
+gate-place-probe.mjs; gates.py --only vitest,architecture,i18n,b18 was not run in pass 2.
+Cost (course4 C1): about 30 replies, all reading: the course view, HUD, lap timer, settings schema and the probes to find
+how to pose and fly; nothing of S1 to S6 in the page yet. A stage this size needs the map of these files (view.ts, hud.ts,
+course.ts frame(), prefs defs, gate-place-probe HOLD, rooms-race fly) handed in the prompt, or a split into a code stage and
+a browser stage.
+Cost (course4 C0 pass 2): about 30 replies; most went to shaping a test world whose pocket is poor (four tries) and to
+finding that the old runner had already run; checking the pocket rule on Lublin's Node audit before writing the unit test
+would have shown at once that the reached cells are the wrong set.
+
+## Status C2-scaled-scans
+
+Logs U:/Temp/gsfpv-train3/course4/c2/. origin/main had nothing new for this branch at 74ea638a.
+- [x] release build of 74ea638a: BUILD EXIT 0 (c2/build.log); dist holds it (no page run yet)
+- [x] the microgreens scan: the live catalogue (GET https://gsfpv.flyreelstudio.eu/api/catalog, read only, c2/catalog.json,
+      13 scenes) has no title with 'micro' or 'green'; the owner's scene is Forest Floor Scenery ab5efa0e (author Dany
+      Bittel, 'a tiny plot of land in the forest, roughly 6 cm in diameter', macro lens). Its entry has no scale default (no
+      catalogue entry has one, and the live catalogue has no 'defaults' key), so the page starts it at transform s = 1 and
+      the enlargement is the pilot's own Scene size (keys [ ], x0.25 to x100, stored per scene in prefs scene.transform).
+- [x] measured (gate-place-audit.ts with the new --scale s: transform s,0,0,0, spawn x s; Node, no lock; walls stand-in
+      U:/Temp/gsfpv-train3/walls/release/ab5efa0e/v2, voxel 0.05 scan units, grid 6.0 x 5.0 x 5.8 units):
+      * enlargement: the scan's own unit is about 1 cm of the real plot (6 cm real, 6 units), so at s = 1 it is already
+        about x100 the real size; the pilot's Scene size multiplies that. The walls' voxel in the page is 0.05 x s m
+        (scale.ts voxelAt), the free-space cell 4 voxels (freespace.ts cellM = g x blockM, g = 1 here).
+      * the craft: boundRadius 0.0425 m (air65, meteor65) to 0.3175 m (taurusx8), pavo20pro-3s 0.0768 m (tools/bench/src/
+        drone-sizes.ts, c2/drone-sizes.log); it does not scale with the scene. At s = 20 the craft (r 0.077 m) is 0.0039 scan
+        units, a 1/13 of one wall voxel.
+      * courses for seeds 1-5 (c2/diag-s*.log, seeds-s5.json, seeds-s15.json): s = 1: 10 gates at fit scale 0.5 (every
+        seed), proven, Save problems 0; s = 3, 5, 10: 24 gates at fit scale 1, Save problems 0 (heights 3.3-12 m, a dense
+        band, not eye level); s = 15, 20, 30, 100: 0 gates for every seed, so fitCourse answers track null and the page
+        says course.none ('No course fitted the free space this time. Shift+G tries another layout'; course.ts:327),
+        and Shift+G again gives the same: a dead end.
+      * which rule refuses (diag, freeSpace stats): s = 10: cell 2 m, reachable 13839, scanned 2673, usable 2592 (103
+        rooms); s = 15: cell 3 m, reachable 11398, scanned 1463, usable 0 (0 rooms); s = 20: cell 4 m, reachable 6024,
+        scanned 362, usable 0; s = 100: cell 20 m, 45 cells, scanned 0. The cut is freeSpace step 4 and 5 (freespace.ts
+        333-349 and 351-397): the scan counts as outdoor (fill reaches the box border) and an outdoor cell is 'scanned'
+        only with a wall straight down within outdoorDownM 6 m (1 cell at 4 m cells, 2 at 3 m) and its nearest wall within
+        outdoorNearM 8 m; these and rayM 12 m, minRoomM3 8 m3 and boxM 80 m are fixed flown metres, while the walls' cell
+        grows as 0.2 x s m. The few scanned cells that remain are single cells that the room step's one erosion removes
+        (no core cell). Gate size, legs (3-15 m), margin 0.5 m and the quality threshold never come into it: no cell is
+        usable before the gates are tried. qualityMap tileM 4 m is one voxel block at s = 20 (spawnShare 0, goodShareQ 0).
+- [x] design written below (pass 1)
+- [x] pass 2, design items 1 and 2 built (logs c2/p2/): freespace.ts FreeSpaceOptions.unitM multiplies rayM, boxM,
+      outdoorDownM, outdoorNearM (minRoomM3 by U^3); quality.ts QualityOptions.unitM multiplies tileM, groundSkipM,
+      minBandM, maxBandM; sceneUnitM(transform) = max(1, s). Changed from the design: U is the Scene size alone, not the
+      walls' voxel against 0.05 m: with the voxel in it, Wroclaw 70b50d42 (its stand-in is coarser than 0.05 m at true size)
+      changed 5 of 10 rows at Scene size 1 (c2/p2/true-head.json against the first after run). The worker and
+      gate-place-audit pass U. Test packages/tracks/test/scaled-scan.test.ts 2 passed; NEG OK (neg_control.py, freespace.ts
+      of HEAD: 'expected 0 to be greater than 1000'). Typecheck packages/tracks and apps/fly exit 0.
+- [x] true-scale tables unchanged: gate-place-audit --scenes 70b50d42,887f27aa --seeds 5 on HEAD sources (neg_control.py
+      swap, c2/p2/true-head.json) against the new code (c2/p2/true-after.json): 10 of 10 rows identical (ms left out).
+      (fix3b fixes/after.json differs from both in 10 rows; that comes from course4 C0's commits, not from this change.)
+- [x] ab5efa0e at Scene size x20 after items 1 and 2 (c2/p2/diag-s20.log): reachable 5834, scanned 3585, usable 3523
+      (was 0), 1 room, 225472 m3, tileM 80, band 8-48 m, 3 good tiles, spawnShare 0. Still 0 gates for seeds 1-5 at
+      x15, x20, x30, x100 (c2/p2/seeds-s*.json): the walk (gate-place-audit now prints an empty walk) is banded, wants 24
+      gates, has a far target at 128-140 m and lays no first gate ('0-0c-=0 b1 n24 far132 band[8,48]', c2/p2/w20.json).
+      The refusing rule is not yet measured; a guess: the first leg from the start (the spawn clamped into the grid,
+      share 0) to a band cell (8-48 m over the ground, 4 m cells) is longer than legMax (15 m, or SPREAD_LEG_MAX_M over a
+      map) or fails the turn/axis rule; generate.ts walkCourse 500-600.
+- [ ] design item 3, item 4, page proof, pictures, gates.py: not started
+
+## Design C2 (from the numbers above; not built)
+
+The one measure of the scan: U = max(1, s x u) in flown m, where s is the pilot's Scene size (the transform's s) and u
+the walls' voxel against a true-scale bake (voxelResolution / 0.05; 1 for every catalogue scan, ab5efa0e included). For
+every scan at its true scale and Scene size 1, U = 1 and every number is today's (the fix3b tables do not change: to be
+proven by rerunning gate-place-audit --scenes 70b50d42,887f27aa --seeds 5 against fixes/after.json).
+1. freeSpace: every flown-metre default becomes default x U: rayM, outdoorDownM, outdoorNearM, boxM, minRoomM3 (x U^3);
+   marginM stays the craft's (MARGIN_M), but never under half a cell. This alone keeps s = 15 to 100 at today's s = 1 to
+   10 cell counts (the cell is 0.2 x s m, the rules then cover the same cells).
+2. qualityMap tileM x U, eye band only at U = 1 (FY-6 already uses the dense band off scale 1; ab5efa0e has no ground a
+   person walks on, so the dense band is the rule there).
+3. generate and fit: the plan's lengths (gate 1.5 m square, 1.2 m ring, legs 3-15 m, spacing, m3PerGate x U^3) start at
+   U, then fitCourse steps down COURSE_SCALES relative to U (U, U/2, ...) to the smallest gate the craft passes (ring
+   opening >= RING_MIN_DRONE_DIAMETERS x the craft's diameter, 0.34 m for the smallest craft), never below one wall
+   voxel's size x 4 (a gate thinner than the walls cannot be proven against them).
+4. No course: course.none is replaced by a line that leads: at a Scene size where the walls are coarser than the gates
+   ('the scan is enlarged x{s}: press [ to fly it smaller'), one press on it sets the largest Scene size that gave a course
+   in the measure above (s = 10 for ab5efa0e) and generates again.
+Open for the lead: whether gates should grow with U (S7 says the gate follows the measure; then at s = 20 a gate is 30 m
+for a 0.077 m craft) or stay the craft's size while only the free-space rules follow U. The numbers above favour the
+second (the craft does not scale); item 3 builds the first and its ladder down reaches the craft's size.
+
+## Left (C2-scaled-scans)
+
+1. Items 1 and 2 are done (pass 2). Measure why walkCourse lays no first gate at x20 (generate.ts 500-600: the first
+   leg's length against legMinM/legMaxM, turnOk, axisCosMin, sweeper.free at marginM against 1 m voxels); a small
+   counter in WalkInfo or an audit --diag line is the cheap way. Then fix only the measured rule.
+2. Open point decided by this worker (nobody to ask): gates and legs keep the craft's metres (the craft does not scale;
+   a 30 m gate for a 0.077 m craft makes no sense); only the rules that read the walls follow U. If the walk needs
+   longer legs because cells are 4 m, scale legMinM to at least one cell (cellM) and legMaxM to at least 4 cells, not x U.
+   Rerun --scenes ab5efa0e --scale 15,20,30,100 --seeds 5 (expect courses) and --scenes 70b50d42,887f27aa --seeds 5
+   against c2/p2/true-head.json (must stay 10 of 10 identical).
+3. Item 4 (the leading line, four locales) in apps/fly/src/app/builtin/course.ts:327.
+4. Page proof on the release build: serve dist on 5780 with the walls stand-in copied into dist/walls, open
+   http://localhost:5780/en on ab5efa0e, set Scene size x20 through window.__gsfpv.scale.set(20), Shift+G; record time,
+   gate count, sizes; pictures course4-microgreens-pilot.png and course4-microgreens-top.png; keyboard pilot through
+   gates 1 and 2.
+5. gates.py --only vitest,architecture,i18n,b18; a6-reference (only if flight code is touched; none so far).
+
+Cost (course4 C2 pass 2): about 30 replies; the most went to reading generate.ts and fit.ts to find why the walk is
+empty and to the baseline of the true-scale tables (neg_control.py needs 'node node_modules/tsx/dist/cli.mjs', the
+.bin/tsx shim does not start under it). A WalkInfo that names the refusing rule would have saved about 6 replies.
+
+Cost (course4 C2 pass 1): about 25 replies; the most went to finding where the microgreens scan and its scale live (no
+title, no catalogue scale: the enlargement is the pilot's key) and to the audit's missing --scale; the measurement itself
+took 4 runs. Handing the id ab5efa0e and 'scale is the pilot's Scene size' in the prompt would have saved about 10 replies.
+
+## Status C3-every-scan
+
+Logs U:/Temp/gsfpv-train3/course4/c3/. Release build of 6557daf6: BUILD EXIT 0 (c3/build.log).
+- [x] catalogue (c2/catalog.json, 13 scenes) and what each is: 887f27aa Tunis old town streets (street, shipped walls);
+      39e63ce9 Modlinek Villa red room and bathroom (room, shipped walls); 7a475d38 Winter Garden, Poland (interior, a
+      glass house, shipped walls); 70b50d42 Wroclaw Cathedral and streets (street); ab5efa0e Forest Floor (macro scan,
+      the microgreens scene); d10c5638 Housefly (object, macro); 2f1ddf5f Lublin (street); ba7aa29d Opole Cathedral and
+      Old Town (street); 9baef54b University of Opole (street, campus); 0230d903 Muster Truck Show Opole (object field,
+      outdoor); eb5f51dc Laval castle (street, castle yard); 1994c65c Osada Slavotovo (outdoor village); b11e45d1 Yamato
+      Koriyama castle (outdoor, castle walls). The nine without shipped walls use the stand-in U:/Temp/gsfpv-train3/walls/
+      release; gate-place-audit now reads the four with shipped walls from the CDN.
+- [x] before (gate-place-audit.ts --seeds 3, c3/before.json, code of 6557daf6): 11 of 13 give a course for seeds 1-3;
+      39e63ce9 and 7a475d38 give none (tried 9, walks empty). The refusing rule (gate-place-audit --diag, c3/diag-before.log
+      and --margin 0.25, c3/diag-m0.25.log): freeSpace reads the scan at the plan's margin 0.5 m for every step of the
+      ladder. 39e63ce9: reachable 727 cells (0.2 m), usable 0 at 0.5 m; at 0.25 m usable 2204 (18 m3), largest free radius
+      0.9 m, longest free straight 5.8 m at radius 0.2 m, 4.8 m at 0.6 m. 7a475d38: the spawn's fill reached 2 cells at 0.5 m;
+      at 0.25 m usable 67017 (8995 m3, 20 rooms), largest free radius 5.4 m, straight 21 m at radius 1 m. Today's gate
+      sizes against that: square 1.5 m needs a free radius of 2.2 m x step, ring 1.2 m a margin of 0.5 m x step.
+- [x] built: COURSE_SCALES 1, 2/3, 0.4, 0.3 (square opening 1.5, 1.0, 0.6, 0.45 m; ring 1.2, 0.8, 0.48, 0.36 m; was 1, 0.5,
+      0.3); fitCourse reads the free space again at a smaller step's margin (refree, once per margin) through
+      freeAtMargin (margin and minRoomM3 x step cubed); the page's worker and gate-place-audit pass it. Test
+      packages/tracks/test/every-scan.test.ts 3 passed (a 5 x 1.2 x 5 m room: 0 usable cells at 0.5 m, a course of small
+      gates on seeds 1-3 that the Save check and a pilot at 3 m/s pass; threeRooms: the same digest with refree). NEG OK
+      against fit.ts of HEAD (neg_control.py). Typecheck packages/tracks, apps/fly, tools/bench exit 0; fit, scaled-scan,
+      spawn-outside tests 16 passed.
+- [x] after table (gate-place-audit.ts --seeds 3, c3/after.json, code of 44e82ef8) against before: 20 of 39 rows identical
+      (ms and walks left out): every row that fitted at step 1 (70b50d42, 887f27aa, 0230d903, 2f1ddf5f, 9baef54b,
+      ba7aa29d, eb5f51dc seeds 1 and 3), so the street tables keep today's size. Changed rows (scene seed: gates, step,
+      ms): 39e63ce9 Modlinek 1-3: 5 rings of 0.48 m at step 0.4, proven, Save problems 0, 0.7-0.8 s, centres 1.7-2.5 m
+      high (was none); b11e45d1 1-3: 24 gates at step 0.4, 3.3-5.0 s (was 6 at 0.3), centres 14.5-15.1 m over the first
+      wall below (suspect: the audit's ground ray, or gates over a castle wall; not looked at); ab5efa0e 1-3: 5-7 gates at
+      step 2/3 (was 10 at 0.5); 1994c65c 1-3: 24 at 2/3 (was 24 at 0.5); eb5f51dc 2: 24 at 2/3; d10c5638 1-3: 12 gates
+      at 2/3 (was 5-6 at 0.5) but 50-96 s (was 11-13 s). 7a475d38 Winter Garden still none: tried 12, 11.5-12.4 s.
+- [ ] left, see 'Left (C3-every-scan)'
+
+## Left (C3-every-scan)
+
+1. 7a475d38 Winter Garden gives no course after the ladder (c3/after.json, tried 12): measure which rule refuses
+   (gate-place-audit --scenes 7a475d38 --diag 1 --margin 0.2 and 0.15; the walk prints 'b0 n.. far..': the eye band
+   1.2-2.0 m of a true-scale scan, or the quality map). Fix only the measured rule; rerun --scenes 7a475d38 --seeds 3.
+2. d10c5638 now takes 50-96 s for one course in Node (was 11-13 s): the page's limit is FIT_BUDGET_MS 120 s; measure
+   where the time goes (freeAtMargin at 2/3 on 821284 cells, or the tries) before the page proof; a guess, not measured.
+3. b11e45d1 gates 14.5-15.1 m above the first wall below: look at the top map (gate-place-map.ts) before calling it wrong.
+4. The page line when no course fits (course.ts:327, course.none): lead the pilot (C2 design item 4), four locales.
+5. Page proof on the release build (rebuild first: dist is of 6557daf6): two rooms (39e63ce9 and, after item 1,
+   7a475d38) and ab5efa0e at Scene size x20: course-path-probe.mjs <base>/en <out> U:/Temp/gsfpv-train3/shots <ids>
+   (it leads the flight model through gates 1-3 by setting the craft's state; a pure keyboard pilot probe does not
+   exist yet); pictures course4-room-pilot.png and course4-room-top.png, each looked at.
+6. gates.py --only vitest,architecture,i18n,b18; a6-reference (no flight code touched so far).
+
+## Status C3-every-scan pass 2
+
+Logs U:/Temp/gsfpv-train3/course4/c3p2/. Release build of 7b068fb0: BUILD EXIT 0 (c3p2/build.log; not yet served).
+- [x] item 1 measured (gate-place-audit, WalkInfo now names the refusing rule: refused.{reach,pot,turn,space,sweep,wall,
+      exit,well,proof}, stop, startFree; c3p2/wg1.json): 7a475d38 at steps 1 and 2/3 has no candidate (the spawn's fill
+      reaches 2-20 cells); at steps 0.4 and 0.3 2895-3920 candidates, and every leg from the start hit a wall at the step's
+      margin (wall 360 of 360 sweeps), start cell free radius 0.256 m. The eye band and the quality map are not the cause
+      (diag at margin 0.2 and 0.15: 1748 eye cells, c3p2/diag-m*.log). Fix (generate.ts walkCourse): a course below the
+      plan's size (k < 1) starts at the nearest cell, in steps along the free space, with a ring's free radius
+      (RING_MIN_FREE_M x k) when the spawn cell has less; k = 1 keeps its start (street tables untouched by construction).
+      7a475d38 seeds 1-3: 24 gates at step 0.4 (square 0.6 m / ring 0.48 m), proven, Save problems 0, 4.1-6.4 s.
+      Test every-scan.test.ts 'bent nook' (spawn at the end of a bent 1.0 m nook off a 5 x 1.8 x 5 m room): NEG OK against
+      generate.ts of HEAD (old: 1 gate, start in the nook). packages/tracks 135 tests passed; typecheck tracks, bench exit 0.
+      Commit 28ce609f.
+- [x] catalogue table again (gate-place-audit --seeds 3, c3p2/after2.json, code of 28ce609f) against c3/after.json: 27 of 39
+      rows identical (ms, walks left out), among them every street row at step 1 (70b50d42, 887f27aa, 0230d903, 2f1ddf5f,
+      9baef54b, ba7aa29d, eb5f51dc). Changed: 7a475d38 0 -> 24 gates (all 3 seeds); 39e63ce9 seed 3 5 -> 4 gates; 1994c65c
+      and b11e45d1 same gate count and step, other fields moved (the start cell). Every scan of the catalogue now gives a
+      course on seeds 1-3.
+- [x] item 2 measured: d10c5638 Housefly 49.1, 62.2, 112.9 s for seeds 3, 2, 1, of which reading the free space again
+      (refreeMs, new in the audit) is 0.46-0.52 s: the time goes into the tries (5-6 tries at step 2/3), not freeAtMargin.
+      Seed 1 at 112.9 s is close to FIT_BUDGET_MS 120 s. Not fixed yet.
+- [ ] items 3-6, see 'Left (C3-every-scan pass 2)'
+
+## Left (C3-every-scan pass 2)
+
+1. Housefly d10c5638: the tries take 49-113 s (refree 0.5 s). Measure inside a try where the time goes (the walk's sweeps
+   against the one-gate proof checkTrack and the final whole-course proof; time them in WalkInfo like refused) before
+   any change. Page limit FIT_BUDGET_MS 120 s, GENERATE_LIMIT_MS 150 s (course.ts:272).
+2. b11e45d1 gates 14.5-15.1 m above the first wall below: look at gate-place-map.ts's top map before calling it wrong.
+3. course.none (apps/fly/src/app/builtin/course.ts:327, locale packages/i18n/locales/fly/course/*.json course.none) must
+   lead, four locales. The generator uses the scene's spawn (course.ts:438), so 'fly elsewhere' does not help. Proposed:
+   with Scene size s > 1 the line names the key ('Press [ to fly the scan smaller, then Shift+G'); at s <= 1 every
+   catalogue scan now gives a course, so the line only meets custom scans.
+4. Page proof on a fresh release build (dist is of 7b068fb0; rebuild from the head): rooms 39e63ce9 and 7a475d38, and
+   ab5efa0e at Scene size x20, course-path-probe.mjs; pictures course4-room-pilot.png and course4-room-top.png, looked at.
+   Check in the page that the pilot is placed at the moved start (the course's start pose) on 7a475d38.
+5. gates.py --only vitest,architecture,i18n,b18; a6-reference (no flight code touched so far).
+
+Cost (course4 C3 pass 2): about 33 replies; the most went to a test world for the moved start (four geometries: the nook
+too narrow for the fill, then the plan's scale working at step 0.3 in both codes). Measuring the room's per-step
+candidate counts in one debug run first would have saved 3.
+
+Cost (course4 C3): about 30 replies; the most went to the two whole-catalogue Node runs (13 scans x 3 seeds, 6-9 min
+each) and to a test room that the free space's erosion step emptied (a room one cell high has no core cell: 0.8 and 1.0 m
+rooms gave nothing at any margin, 1.2 m works). A catalogue table runner that prints the summary would have saved 3.
+
+## Status C4-elements
+
+Logs U:/Temp/gsfpv-train3/course4/c4/. Release build of 05e983f8: BUILD EXIT 0 (c4/build.log; not served, no page run yet).
+- [x] measured, kinds today (gate-place-audit.ts --scenes 70b50d42,39e63ce9 --seeds 10, c4/before.json, code of 05e983f8):
+      Wroclaw 70b50d42 225 gates in 10 courses, 225 rings (100 %), 0 squares, Save problems 0; Modlinek room 39e63ce9 49
+      gates, 49 rings at step 0.4, problems 0. The walk lays a square only where the cell's free radius is at least
+      2.2 m x step, and the eye-level cells never have it. The other room was not run (budget).
+- [x] read in the code, per kind of the course format (ring, square, cube-frame; 'dive' is not a shape but the editor's
+      turn of a gate to lie flat, editor.ts PITCH_DOWN): the view draws all three and a flat gate (course/view.ts
+      halfOuter, banner on the side of a flat gate); a pass is counted by gateCrossing (sonic-fpv lesson/goals.ts: the step
+      crosses the gate's local z plane forward inside the opening), so a flat or turned gate counts the same way; the Save
+      check is checkTrack (editor.ts wallsCheck): opening, frame and run through the gate clear, leg in within 35 deg of
+      the gate's pass axis. Fly by Sound: the sound mode asks its course through course-ask.ts (sonic lane), which does not
+      set the new job flag, so its courses stay single upright gates (by construction, not flown yet).
+- [x] built (packages/tracks/src/elements.ts, generate.ts CourseOptions.elements, onElements; worker job flag
+      'elements', set by the page's Shift+G only): the walk's proven course is composed into elements, each with its own
+      space test and a proof with its neighbours (checkTrack), then the whole course is proven once more (a failure keeps
+      the single gates). Elements and design shares (estimates of the lead's S9): single 0.25 (the walk's ring), upright
+      square 0.2 (the ring's opening), tunnel 0.2 (3-5 gates of the gate's shape, 1.0 m x step apart along its axis; the way
+      along the row free at frame width plus margin), flat 0.15 (the gate, then a square lying flat 1.5 m ahead and 2.5 m
+      above it, passed upward: a climb; the column up past it free), cube 0.2 (cube-frame of the ring's opening; its length
+      along the axis free). Gate 1 (START) and the last gate of an open course (FINISH) stay single. Same seed, same course:
+      the element draw has its own seeded source. Generator version gets '.e1' (another best-lap key). Total gates at most
+      SERVER_MAX_GATES 60. Not built: two gates one over the other (see For the lead).
+- [x] test packages/tracks/test/elements.test.ts 4 passed (shares of 1600 draws over 200 seeds within 0.04 of the design;
+      no element where its space test or its proof fails; tunnel a row along the axis, flat passed upward, upright gates
+      keep the walk's height; generator on threeRooms seeds 1-6: same trackDigest twice, checkTrack ok, at least 3 shape
+      kinds). NEG OK against generate.ts of HEAD (AssertionError). packages/tracks 139 tests passed; typecheck tracks, fly,
+      bench exit 0. Debug run on threeRooms seeds 1-3 (5 m high rooms): tunnels refused 2 by space, 1 by proof; the flat
+      square refused by space (it needs about 6 m over a gate at 1.8 m).
+- [ ] left, see 'Left (C4-elements)'
+
+Pass 2 (logs U:/Temp/gsfpv-train3/course4/c4p2/):
+- [x] gate-place-audit --elements (prints onElements drawn, placed, noSpace, noProof and the gate kinds); run
+      --scenes 70b50d42,39e63ce9,7a475d38 --seeds 10 (elements.json, elements.log), Save problems 0 in all 30 courses.
+      Elements drawn / placed (refused by space, by proof), gate 1 and an open course's last gate not drawn:
+      Wroclaw 70b50d42, 280 gates: single 47/47, square 38/38, tunnel 46/18 (16, 12), flat 26/7 (6, 13), cube 40/37 (3, 0);
+      gates ring 197, square 45, cube-frame 38. Placed shares of 197 drawn: tunnel 0.09, flat 0.04, cube 0.19, square 0.19,
+      single (with the refused) 0.49, against the design 0.2, 0.15, 0.2, 0.2, 0.25.
+      Modlinek room 39e63ce9, 62 gates: single 6/6, square 7/7, tunnel 6/2 (4, 0), flat 4/0 (4, 0), cube 7/6 (1, 0).
+      Winter Garden 7a475d38, 354 gates: single 58/58, square 48/48, tunnel 44/32 (4, 8), flat 28/18 (2, 8), cube 43/43.
+      So: the flat square never fits in Modlinek (by space), and on Wroclaw tunnels and flat squares come at under half of
+      their design share; FLAT_RISE_M and TUNNEL_GAP_M not changed (a refused element is not drawn again: see Left).
+- [x] gate-place-map --elements colours the gates by kind (ring white, square yellow, cube magenta, flat green):
+      U:/Temp/gsfpv-train3/shots/course4-elements-top.png, Wroclaw seed 1, 30 gates: a tunnel at gates 4-7, flat squares
+      9, 14, 16, cubes 2, 20, 22, 25, 28, squares 17, 18, rings the rest. Looked at: a person sees the course along the
+      street with coloured marks of each kind; the tunnel's four gates sit on top of one another at this scale.
+      (--sections none throws in the section code after the top map: not fixed, the top map is written first.)
+- [x] Fly by Sound, ear pilot (sonic-int-review.ts r11, Tunis 887f27aa, 5 m/s, render off, port 5781, release of
+      5be8164c; evidence/2026-11-15/sonic-int-review-r11-course4.json): 9 of 10 checks pass; N makes a course; the pilot
+      passed g1 to g24 in its first attempt, then the lesson said retry twice and the third attempt ended at g12 with
+      'gate missed' (FAIL 'flown to its end'). The course's gate kinds were not read (course-ask sets no elements flag:
+      single upright gates by construction).
+- [x] hook course.gatePoses gives each gate's shape (course.ts, hook.ts) for the new probe
+      tools/bench/scripts/course-elements-probe.mjs (scripted pilot that SETS the craft state, not key events).
+- [x] tracks-review TR-4 (gate vitest) failed since C1: view.ts plateCanvas called document in the Node test; setNext
+      draws no plate without a document (view.ts). Test 8 passed. a6-reference exit 0 (1 passed). gates.py --only
+      vitest,architecture,i18n,b18 before the fix: vitest 1 failed of 4994 (that test), architecture, i18n, b18 PASS; not
+      re-run after the fix (budget).
+- [x] page, release of f047721c (gatePoses with shapes; the view.ts fix after it changes nothing in a browser), serve-csp
+      dist 5780, dist/walls = U:/Temp/gsfpv-train3/walls/release, one GPU-lock hold per scan, course-elements-probe.mjs
+      (logs c4p2/page-*.log, json c4p2/page-*.json). Pilot SETS the craft along each gate's own axis: not key events.
+      Wroclaw 70b50d42: Shift+G course in 24.9 s, 25 gates: ring 14, cube 5, square 5, flat 1, no tunnel on this seed;
+      25 of 25 gates counted in order (the flat square passed upward), lap 0:31.83 recorded, crashes 0.
+      Winter Garden room 7a475d38: course in 10.2 s, 26 gates: square 12, tunnel 2, ring 2, flat 2, cube 4; 26 of 26
+      counted (every tunnel gate), lap 1 of 3 done (0:20.60), crashes 0.
+- [x] pictures U:/Temp/gsfpv-train3/shots/, looked at: course4-elements-flat.png (Wroclaw: a square lying flat over a
+      ring ahead, seen from below, START line on screen); course4-elements-tunnel.png (Winter Garden: a square with a ring
+      inside, the row is not seen along its axis: a weak picture of a tunnel); course4-elements-room.png (Winter Garden
+      view); course4-elements-top.png (see above).
+
+## Left (C4-elements, after pass 2)
+
+1. A keyboard pilot (real key events) through each element: not built; course-elements-probe sets the craft's state.
+2. Wroclaw places tunnels at 0.09 and flat squares at 0.04 of drawn elements (design 0.2 and 0.15): a refused element is
+   not drawn again (elements.ts composeElements). Redraw on refusal, or lower FLAT_RISE_M, from this table.
+3. Fly by Sound ear pilot on Tunis at 5 m/s ended at g12 of its third attempt with 'gate missed' after 24 gates in the
+   first (sonic lane's pilot, sonic-int-review.ts r11); the gate kinds of its course not read. Not chased.
+4. A tunnel picture along the row's axis (the probe's yaw is taken from the first gate; look at it again).
+5. tracks-page, course-path-probe on Wroclaw and Tunis, accept-fly B6 B7 B9-B16 not run; gates.py subset to re-run after
+   the view.ts fix.
+6. Look at the editor's bar and shape action on a generated cube-frame and flat square (lane editor3's code).
+7. gate-place-map --sections none throws after the top map (line 240, reading 'ax').
+
+## Left (C4-elements, pass 1)
+
+1. Node table with elements on Wroclaw 70b50d42 and rooms 39e63ce9, 7a475d38, seeds 1-10: gate-place-audit has no
+   --elements flag yet (add it: pass elements: true and print onElements drawn, placed, noSpace, noProof). The placed
+   shares on real scans are not measured; the flat square may never fit in a room (2.5 m x step rise).
+2. Shares of the placed elements against the design: state them from item 1; tune FLAT_RISE_M or TUNNEL_GAP_M only
+   from that table.
+3. Page proof (release build of the head; serve-csp dist 5780; GPU lock per browser command): keyboard pilot passes one of
+   each element on Wroclaw and on a room, each counted (dive through the flat square, cube, every tunnel ring); course line
+   and laps; Fly by Sound course by its own ask: only single upright gates, ear pilot flies it to the end at 5 m/s
+   (rendering off). No pure keyboard pilot probe exists (course-path-probe sets the craft's state).
+4. Pictures to U:/Temp/gsfpv-train3/shots/: course4-elements-tunnel.png, -flat.png, -top.png (gate-place-map on Wroclaw),
+   -room.png, each looked at.
+5. tracks-page, course-path-probe on Wroclaw and Tunis, accept-fly B6 B7 B9-B16, gates.py --only
+   vitest,architecture,i18n,b18, a6-reference (no flight code touched).
+6. Check the editor's bar and the editor's shape action on a cube-frame and on a flat square made by the generator
+   (lane editor3 owns apps/fly/src/course/editor; only look).
+
+## For the lead (C4)
+
+- Two gates one over the other: the proof (check.ts) flies straight legs from centre to centre and asks the leg in within
+  35 deg of a gate's axis; a gate straight above another is passed by a loop it cannot express. It needs a leg kind 'loop'
+  in path.ts and check.ts, and the laps would count it as now.
+- A flag passed on one side needs a new kind in the course format (sonic-fpv validate.ts), the view, gateCrossing (a half
+  plane), the Save check and the editor's bar.
+- The flat square is passed upward (a climb). A dive (downward) needs the leg before it to come from above, that is a gate
+  higher than eye level before it; with the eye-level rule of fix3b it is not built.
+
+## What the owner does (course4, whole lane)
+
+- Shift+G in any scan of the catalogue: a course comes; in small rooms its gates are smaller (down to 0.45 m squares).
+- The start gate is checkered with START (START / FINISH on a closed course); fly through it and the clock starts.
+- The next gate is bright with its number; passed gates go darker.
+- At the end of a lap the lap time shows large in the upper middle for about 1.5 s: green when it is a new best.
+- After the last lap a results card shows for about 3 s.
+- In the course part of the settings: 'Lap time on screen: large, small, off'.
+- On a scan made bigger with Scene size (the microgreens scan) the gates keep the craft's size; where no course fits at
+  that Scene size (Forest Floor x15, x20, x100), the line names a size that gives one and the next Shift+G sets it and builds.
+- A Shift+G course mixes rings, squares, cube frames, tunnels of 3-5 gates and a square lying flat to climb through,
+  where the space allows; every one of them counts when flown through (seen in the page on Wroclaw and Winter Garden).
+- Fly by Sound makes its course of single upright gates only.
+
+Not proven (C4): every page item of 'Left (C4-elements)'; the shares on real scans; that a pilot can fly the 2.5 m climb
+through a flat square 1.5 m after a gate.
+
+Cost (course4 C4 pass 2): about 33 replies; the most went to reading the sonic review tool to find the ear-pilot run and to writing the elements probe; a ready probe that leads the craft through every gate (course-path-probe with a gate list) would have saved 5.
+
+Cost (course4 C4): about 29 replies; the most went to finding that the walk lays rings only (the first design converted
+only squares into cubes and flat squares and placed none). Reading the audit's per-gate kinds before designing would have
+saved 3.
+
+## Status course4 fixes (review CU-1 to CU-10)
+
+Logs U:/Temp/gsfpv-train3/course4/cu/. No browser run in this stage (budget went to the merge and the four majors).
+- [x] CU-1 and CU-2 stand: merged origin/main (42 commits) into fix3a, commit dd19ca7b. Conflicts in course.ts frame() and
+      the four course locales resolved keeping both: splash and card, plus sayLine of the lap line (at the end: the line,
+      the card's title and total). course.readySpoken names START in en/es/pl/ru. generate() sends elements: !ctx.sonic, so
+      Shift+G and hook.sound.generate in Fly by Sound get single upright gates. Typecheck fly exit 0. Not tested by a unit
+      test (course.ts is the page feature); the R11 ear pilot was NOT rerun on the merged head.
+- [x] CU-3 stands: GENERATOR_VERSION_QUALITY '4' (C0's courses are other gates than version 3 on main for the same seed;
+      bestKey's '.g<major>' splits them); '.e1' is set only when the elements changed the course; bestKey appends '.e<n>'.
+      Tests tools/bench/test/tracks-review.test.ts (keys, and '.e1' iff composed on threeRooms seeds 1-6) NEG OK against
+      link.ts + generate.ts of dd19ca7b. Commit 95be1c07.
+- [x] CU-5 stands: fitCourse below step 1 stops only at a course of its full share (fullOf); else the next step is tried
+      and the course with more gates kept; step 1 keeps FY-1 (street rows unchanged by construction). Test fit.test.ts
+      (fake counts 7, 10 -> 10 at step 0.4) NEG OK ('expected 7 to be 10'). packages/tracks + tracks-review + tracks-finish
+      153 tests passed; typecheck tracks exit 0. Commit 95be1c07. The catalogue table was NOT rerun.
+- [x] CU-4 stands, measured on HEAD sources of dd19ca7b (gate-place-audit --scenes ab5efa0e --scale s --seeds 5,
+      cu/s*.json; one run per scale, the comma list throws 'scene scale NaN'): x15 0 gates, x20 0, x30 24 gates at step 2/3
+      (proven, problems 0), x100 0, for every seed. (The x20 to x100 runs overlapped the CU-3/CU-5 edits and the negative
+      controls' file swaps: which code each loaded is not certain.) Built: a 'no course' line course.noneResize names the
+      Scene size, and the next Shift+G sets it (hook.scale.set), waits for scale.ts pending to settle (at most 10 s) and
+      builds; finish.ts noCourseSize: over x10 -> x10, other than x1 -> x1, x1 -> x2 (x2 an estimate). Test
+      course-finish.test.ts NEG OK. The owner text above now says gates keep the craft's size.
+- [x] CU-8: .course-card-lap max-width 92vw, white-space normal (not seen in a browser).
+- [ ] CU-6 (blocker) browser proof of S1 to S6 on Wroclaw and Tunis: NOT done; see Left.
+- [ ] CU-7, CU-9, CU-10: not fixed; see Left and For the lead.
+
+## Left (course4 fixes)
+
+1. CU-6: release build of the head; serve dist on 5780 with dist/walls = U:/Temp/gsfpv-train3/walls/release; on Wroclaw
+   70b50d42 and Tunis 887f27aa at 1920x1080, 1280x720, 844x390: checkered frame, banner, ground line, plate, splash (=
+   clock to 0.01 s), the 'off' setting, card (also 390x844 for CU-8), middle-third rectangles; pictures course4-start-gate,
+   -next-gate, -lap-splash, -finish-card, -844 in U:/Temp/gsfpv-train3/shots; measure the banner's pixels from 60 m.
+   Then the two-lap proof on Wroclaw and on Forest Floor ab5efa0e (x1 and x20: the line course.noneResize and the press).
+2. Rerun the R11 ear pilot (sonic-int-review.ts r11, Tunis) on the merged head (CU-1).
+3. Rerun the catalogue table (gate-place-audit --seeds 3) for CU-5: street rows at step 1 must equal c3p2/after2.json;
+   ab5efa0e at x1 should keep at least 10 gates.
+4. Forest Floor x15, x20, x100 still lay no course (walk empty, C2 Left item 1); the line now leads to x10.
+5. CU-10: editor show() without roles and the lime plate on the selected gate (course.ts showEd, view.ts setNext): pass
+   roles to the editor's show() and a flag that skips the plate.
+6. CU-9: fly the flat-square climb (FLAT_FWD_M 1.5, FLAT_RISE_M 2.5) by a stick pilot; not proven.
+
+## For the lead (course4 fixes)
+
+- CU-7: the ladder's last step is sized for the smallest craft (boundRadius 0.0425 m: ring 0.36 m, square 0.45 m);
+  taurusx8 (boundRadius 0.3175 m) cannot pass those in a small room. The job carries no drone; passing the drone's
+  boundRadius in CourseJob is the fix if the lead wants it per craft.
+- Merge of origin/main is in fix3a (dd19ca7b): the integration's merge should be clean for course.ts and the locales.
+
+## Status course4 fixes pass 2
+
+Logs U:/Temp/gsfpv-train3/course4/cu2/. Release build of b887433b: BUILD EXIT 0 (cu2/build.log), served on 5780 with
+dist/walls = U:/Temp/gsfpv-train3/walls/release.
+- [x] CU-10 fixed: the editor's show() draws the START / FINISH roles (banner, checker; paintEdit keeps the dark cells
+      dark) and setNext(..., plate = false) puts no number plate on the selected gate. Test tracks-review.test.ts 'CU-10'
+      (10 passed) NEG OK against view.ts of b887433b ('expected 2 to be -1'); typecheck fly exit 0. Not seen in a browser.
+- [ ] CU-6 browser proof: probe tools/bench/scripts/course-finish-probe.mjs written (commit d4a580e1, syntax checked, never
+      run): the Wroclaw run waited 25 minutes for C:/dev/.gpu-lock (other lanes took it at 17:41 and 17:50 between its
+      20 s polls) and was stopped unrun. No picture taken.
+- [x] CU-1 rerun: R11 ear pilot on the merged head (sonic-int-review.ts r11, Tunis, render off, no lock, port 5781,
+      release b887433b, cu2/r11.log, evidence sonic-int-review-r11-course4-cu2): 18 PASS, 1 FAIL, exit 1. Course checks
+      pass ('N makes a course (gate 1 is the hum's target)', 24 gates, 6.8 s). The FAIL is 'the speed is kept on the
+      switch off' (Fly by Sound switch, sonic lane's code, not the course).
+- [x] CU-5 table rerun (gate-place-audit --seeds 3, cu2/table.json, sources of b887433b) against c3p2/after2.json: 36 of
+      39 rows identical (gates, step, proven, problems, walks, band), among them every street row at step 1. Changed:
+      Modlinek 39e63ce9 seeds 1-3: 5/5/4 gates at step 0.4 -> 12/11/12 at step 0.3. NOT fixed for the owner's scan: Forest
+      Floor ab5efa0e stays 7/5/7 gates at step 2/3 (before C3: 10/10/10 at step 0.5). Cause, read in fit.ts: the return
+      at line 184 takes a course of fullOf(t) gates at once (FULL_SHARE 0.5 of wanted), and 7 is over half of the wanted
+      count at step 2/3, so the CU-5 change at line 197 is never reached.
+
+## Left (course4 fixes pass 2)
+
+1. CU-6 (blocker): run the probe, wrapped in the lock loop, one hold per scan, release of b887433b in dist (rebuild for
+   d4a580e1 is not needed for S1-S6; CU-10 is editor only). Server: node tools/bench/scripts/serve-csp.mjs dist 5780
+   (dist/walls already copied from U:/Temp/gsfpv-train3/walls/release). Commands (out dir U:/Temp/gsfpv-train3/course4/cu2):
+   SIZES=1920x1080,1280x720,844x390 LAPS=3 node tools/bench/scripts/course-finish-probe.mjs http://localhost:5780/en
+   <out>/wroclaw.json U:/Temp/gsfpv-train3/shots 70b50d42:wroclaw ; then SIZES=1280x720,844x390,390x844 for 887f27aa:tunis;
+   OFF=1 LAPS=1 for 887f27aa:tunis-off; LAPS=2 for ab5efa0e:forest; SCALE=20 LAPS=2 for ab5efa0e:forest-x20 (line
+   course.noneResize, then the second Shift+G sets x10). Each run prints per lap end: size, kind, text, delta, tone, shown,
+   centre share (about 0.20), font share (about 0.08), middle third free, inside width (CU-8), card laps inside, clock has
+   the splash text; and at60 = the START banner's pixels from 60 m (projected through the flight camera). Look at the
+   pictures course4-start-gate(-back), -start-60m, -next-gate, -lap-splash, -finish-card. Not covered by the probe: S6
+   under the pause menu (pause-over-course-probe.mjs exists).
+2. CU-5 for ab5efa0e: below step 1, the immediate return at fit.ts line 184 needs the course's full wanted count (or keep
+   trying the next step and keep more gates); then rerun the table (street rows must stay identical) and fit.test.ts.
+3. Forest Floor x15, x20, x100 still lay no course; the line leads to x10 (unchanged).
+4. CU-9: fly the flat-square climb by a stick pilot; not proven.
+5. gates.py --only vitest,architecture,i18n,b18 not run in this pass.
+
+Cost (course4 fixes pass 2): about 30 replies; the most went to writing the browser probe and then waiting on a GPU lock
+that other lanes kept taking between 20 s polls; a lock queue (a ticket file per waiter) or a shorter poll would have let
+the run start.
+Cost (course4 fixes): about 30 replies; the most went to the merge and the four majors with tests; the browser proof
+(CU-6) did not fit. A stage of its own for the browser proof, started with the release build, would fit it.
+
+## Status Z1-see (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z1/.
+- [x] Merged origin/main (f286dd49: .gitleaksignore, walls-store-probe) into fix3a: 3e3fab06, no conflicts.
+- [x] CU-1 test: finish.ts courseElements(sonic) (course.ts generate sends it); course-finish.test.ts 'CU-1' NEG OK
+      against finish.ts + course.ts of 3e3fab06 ('expected the export to be a function': the old finish.ts has none).
+- [x] CU-2 test: finish.ts lapEnd() gives the splash (or card) and the spoken line from one call; course.ts frame() uses
+      it; course-finish.test.ts 'CU-2' NEG OK (same run). Typecheck fly exit 0.
+- [x] A4: bestKey appends '.k<scale>' (generator.params.scale, the size step) from generator 4 on; tracks-review.test.ts
+      'A4' NEG OK against link.ts of 3e3fab06. course-finish + tracks-review 25 passed.
+- [x] Release build of bba44f5e: BUILD EXIT 0 (z1/build2.log); dist/walls from U:/Temp/gsfpv-train3/walls/release;
+      served on 5780 (stopped).
+- [~] CU-6 browser proof: course-finish-probe.mjs run, one GPU lock hold per scan (z1/wroclaw.json, z1/tunis.json, exit 0
+      both, crashes 0, page errors 0). Measured:
+      Wroclaw 70b50d42: Shift+G course in 11.13 s, 31 gates, OPEN course (laps 1: roles start .. finish, no START/FINISH);
+      two runs flown, each ends with the card: 0:27.33 (first) and 0:29.10 (+1.76, slower); the clock's Last equals the
+      card time both times; card rect inside the width, clear of the middle third (1920x1080, 1280x720).
+      Tunis 887f27aa: 9.12 s, 29 gates, OPEN course; three runs: 0:31.46/0:31.47 (first; card 0:31.47 against clock Last
+      0:31.46: 0.01 s apart), 0:32.43 (+0.96), 0:31.33 (-0.13, best, green); card clear of the middle third at 1280x720
+      and 844x390. START banner from 60 m: 16.4 x 5.2 px at 1920x1080 (Wroclaw), 10.9 x 3.5 px at 1280x720 (Tunis).
+      Pictures looked at (U:/Temp/gsfpv-train3/shots): course4-start-gate-wroclaw (a checkered black and white ring with a
+      white START banner and the lime plate 1 above: told apart from an ordinary gate at once; the checker lies on the
+      ring); course4-start-60m-wroclaw (the gate is hidden by foliage splats; only the guide 'Gate 1 - 60 m' is seen; the
+      banner cannot be read); course4-finish-card-wroclaw-lap1 (1280x720: 'Course done 0:29.10 +1.76 Total .. Best lap'
+      in the upper middle, the clock block's lines 'Gate 1 of 31', 'Best 0:27.33' show through the card: two texts on top
+      of each other); course4-finish-card-tunis-lap1 (844x390: the card is small and sits under the Share button and the
+      scene credit; the clock block 0:00.00 with four lines stands in the middle of the view); course4-next-gate-tunis
+      (the next gate 5 lit lime with its plate, clear; the clock block stands right above it in the middle of the view).
+- [x] gates.py pass 1: vitest, architecture, i18n, leaks PASS; b18 failed on a placeholder word in this file. a6-reference
+      1 passed (pass 1; pass 2 touched no flight, input or collision code).
+
+## Status Z1-see pass 2 (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z1b/. Release build of 223d52d5: BUILD EXIT 0, dist/walls from
+U:/Temp/gsfpv-train3/walls/release (9 scans incl. 70b50d42); served on 5780, stopped.
+- [x] Repairs (223d52d5): (c) the guide's screen label names the role: 'START - 60 m', 'START / FINISH - 60 m',
+      'FINISH - 12 m' (finish.ts gateRole, guideLabel; hud.ts guide; course.ts; key course.hud.guideRole in en, es, pl,
+      ru); course-finish.test.ts 'course5 Z1' 2 tests, NEG OK (old finish.ts, course.ts and locales). (a) the clock's
+      block is hidden (visibility) while the splash or card shows (hud.css .course-dim). (b) views under 500 px high:
+      clock block in the lower right corner, splash and card in the lower middle (hud.css). Typecheck fly exit 0;
+      course-finish.test.ts 16 passed.
+- [x] Probe (223d52d5 and this commit): CLOSED=1 presses Shift+G until gate 1 is START / FINISH (8 tries), ENDS lap
+      ends each at the next size, pictures named -e<n>-<size>, the time the splash or card is gone measured in page
+      time from its opening, the clock block's rectangle after it, the guide label at 60 m. hook.track has no laps
+      field: the probe reads closed from look().roles.
+- [x] Browser runs (one lock hold each): Wroclaw 70b50d42 290 s, Tunis 887f27aa 241 s, Winter Garden 7a475d38 112 s;
+      exit 0, crashes 0, page errors 0 on all three.
+      Wroclaw: 9 courses by Shift+G (15 to 34 gates), all open; 4 run ends at 1920x1080, 1280x720, 844x390, 390x844:
+      card 0:26.66 / clock Last 0:26.67, 0:28.23 / 0:28.23, 0:26.66 / 0:26.67, 0:26.70 / 0:26.70 (0.01 s at most);
+      card gone 3467, 3471, 3477, 3438 ms after the end (hold 3000 + fade 400 + poll); the clock block hidden under the
+      card at all four; card and clock block clear of the middle third and inside the width at all four.
+      Tunis: 9 courses (24 to 40 gates), all open; ends 0:30.73/0:30.73, 0:32.32/0:32.33, 0:31.06/0:31.07,
+      0:30.93/0:30.93; gone 3464, 3432, 3434, 3484 ms; middle third free and inside width at all four.
+      Guide at 60 m on both: 'START - 60 m', 77 x 16 px, font 13 px (banner 16.4 x 5.2 px).
+      Winter Garden (closed on the 2nd seed, 37 gates): lap splash 0:21.10 at 1920x1080 and 0:23.63 (+2.53) at
+      844x390, both equal to the clock's Last; splash gone 1946 and 1947 ms after the lap end; card 1:06.93 at
+      390x844 gone 3489 ms; guide 'START / FINISH - 60 m' 130 x 16 px.
+      The 2.2 s card on Wroclaw in pass 1 was the probe: it waited after a screenshot that takes about 1 s.
+- [x] Pictures looked at (U:/Temp/gsfpv-train3/shots): course4-lap-splash.png (Winter Garden, 1920x1080: the lap's
+      time 0:21.10 in large white digits in the upper middle, no clock block, the guide 'Gate 2 - 6 m' at the left
+      edge); course4-finish-card.png (Wroclaw 1280x720: 'Course done 0:28.23 +1.56 Total .. Best lap' alone in the upper
+      middle, no clock lines behind it); course4-844.png (Tunis 844x390: the card in the lower middle above the bottom
+      line, clear of the top buttons and the credit); course4-start-60m-tunis.png (the gate is lost in the scene from
+      60 m; the label 'START - 60 m' in a dark box marks it and reads at once). course4-start-gate.png and
+      course4-next-gate.png are copies of this pass's Wroclaw pictures, not looked at again (pass 1 described them).
+- [x] gates.py pass 2: vitest, architecture, i18n, leaks PASS (vitest 123 s); b18 failed on the placeholder word in
+      this file's pass-1 line, rewritten; b18 rerun alone: PASS.
+
+## Left (Z1-see after pass 2)
+
+1. A finding for the lead: on Wroclaw and Tunis 18 of 18 courses Shift+G gave are open (laps 1), so a pilot of the
+   owner's scans never sees the lap splash, only the card at each run's end; the closing rule is in
+   packages/tracks/src/generate.ts lines 685-690 (a gate half way along must see the start).
+2. Not run: OFF=1 ('Lap time on screen' off); pause-over-course-probe (8 of 8); the Fly by
+   Sound page proof of CU-1 and CU-2 (Shift+G in the sound mode gives single gates; the spoken line and the splash at a
+   lap end); Forest Floor ab5efa0e (A2); A1 (no wall cell in the gate tube); A3 (ladder by the flown craft).
+3. course4-start-gate.png and course4-next-gate.png of this pass not looked at; the checker on the ring was seen in
+   pass 1 only.
+
+Cost (course5 Z1-see pass 2): about 30 replies; the most went to three probe runs and their pictures; a probe that reads closed from the hook and a known closing seed per scan would have saved the 16 open retries.
+Cost (course5 Z1-see): about 30 replies; the most went to the browser proof and reading its pictures; the probe flew open courses only, so the splash path stayed unseen; a probe option that asks a closed course would have saved a run.
+
+## Status Z2-scans (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z2/.
+- [x] Release build of a92e37e3 started first (z2/build.log).
+- [x] (1a) CU-5 on Forest Floor ab5efa0e x1: measured (gate-place-audit --seeds 3, z2/ff-x1-before.log): 7/7/7 gates at
+      step 2/3, the generator's wanted count there is 7 (n7 in walks) and 20 at step 0.4; so a course of its whole count
+      stopped the ladder. Fix packages/tracks/src/fit.ts wantOf: below step 1 a course stops the ladder only with its
+      whole wanted count and at least GOOD_GATES_BELOW_PLAN = 10 (estimate: the owner's 10 before C3); else the next step
+      is tried and the course with more gates kept. After (z2/ff-x1-after.log): 20/20/20 gates at step 0.4, proven,
+      problems 0, 1.5 to 1.8 s. fit.test.ts 12 passed, NEG OK against fit.ts of a92e37e3. Audit walks now show n<wanted>.
+- [x] (1b) Forest Floor x15, x20, x100 measured (walks now carry nearM, nearUp, legMaxM of the first leg; z2/ff-x*.json):
+      x15: the nearest candidate 21 m from the start, 21 m straight below it (nearUp -21); x20: 28 m, -28; every first
+      leg refused by turnOk (the leg's axis rule: a leg straight down): turn 5922 of 2961 candidates, gates 0. x100: the
+      free space's cells are 20 m (cellM 0.2 x 100) against legMaxM 15: no leg between two cells; reach refuses 7830.
+      Fix generate.ts: a start with no first leg moves to the candidate nearest to it that has one and where a ring of
+      the step can stand (START_MOVE_TRIES 64, estimate); a start that has a first leg keeps its place. After (seeds 1-3,
+      z2/ff2-x*.json): x10 24 gates step 1; x15 24/24/24 step 1; x20 24/24/24 step 1; x30 24 at step 2/3; all proven,
+      problems 0, 57 to 209 ms. x100 still none: the line course.noneResize leads to x10 (noCourseSize, CU-4), where 24
+      gates come. No unit test for the start move (a world with the spawn far over the eye band was not built: budget).
+- [x] packages/tracks + tracks-review + tracks-finish: 155 passed after one change: every-scan.test.ts 'bent nook'
+      failed after the 1a commit (the ladder now goes on to step 0.3, where the 1 m nook holds a ring and the course with
+      more gates starts there; proven by swapping generate.ts back: still failed). The test now asks a start in the room
+      only above the last step, and at the last step that the smallest ring fits around the start. typecheck tracks 0.
+- [x] Release build of a92e37e3: BUILD EXIT 0, 1933 files (z2/build.log). It holds neither 1a nor 1b: rebuild first.
+- [x] Pass 2: release build of 5e574e35: BUILD EXIT 0, 1933 files (z2b/build.log). It holds 1a and 1b but not A3:
+      rebuild before the page proofs, then copy the published walls into dist/walls.
+- [~] (2) A1 tried and reverted (not committed). Built: over a quality map, after the gate is made in walkCourse
+      (generate.ts, before the one-gate proof), sweeper.free(pos - 8k*axis, pos + 8k*axis, opening/2*k) else refuse
+      (refused.tube), generator version 5. Test world: the eye-level street with conifers (cones 0.4-7 m, radius 1.8 m at
+      the foot) every 6 m at z +-3.5 and two in the middle (x 26, 44). Measured (vitest, z2b/dbg.log): the walk refused 65
+      candidates by the tube and stopped 'no free leg' with 0 gates (middle trees every 18 m) or 2 gates (two middle trees)
+      on seeds 1-3, while the old generator laid >= 4 gates whose tubes were ALL already clear (NEG BAD: the test passed on
+      the old code). So in that world the rule only removes gates; a refused candidate is marked used and the walk ends.
+      Next: measure the rule on Wroclaw 70b50d42 first (gate-place-map on the seed of fix3b-wroclaw-pilot-2, count gates
+      whose tube holds a wall cell, old vs new), and refuse the yaw only (try the next yaw step whose leg-in still meets
+      axisCosMin) instead of using the candidate up; build the unit world from a real blocked gate of that map.
+- [x] (3) A3 ladder by the flown craft: fit.ts courseScales(craftRadiusM) (smallest ring = RING_MIN_DRONE_DIAMETERS x
+      the craft's diameter; steps under it dropped, the craft's own step appended; craft wider than the plan: step 1 only;
+      the smallest craft keeps COURSE_SCALES). CourseOptions.craftRadiusM, CourseJob.craftRadiusM, course.ts sends
+      session.params.boundRadius. Test packages/tracks/test/craft-ladder.test.ts (6 x 3 x 6 m room, pavo20pro-3s 0.0768 m:
+      no opening under 0.6134 m) NEG OK against fit.ts of 5e574e35 (0.36 against 0.6134). fit, every-scan, scaled-scan,
+      craft-ladder: 19 passed; tsc tracks 0, tsc fly 0. Not measured: which scans lose their course for a 5 inch craft (a
+      room flown with nazgulf5v3, boundRadius 0.1864 m, now tries step 1 only); the page line for that case is not built.
+- [ ] (4) Lublin 2f1ddf5f leaves the spawn's pocket
+- [ ] (5) Housefly d10c5638 within 30 s
+- [ ] (6) b11e45d1 gates 15 m over the wall
+- [ ] table seeds 1-3; page proofs on 39e63ce9, 7a475d38, ab5efa0e (x1 and x15, x20, x100 with the line's press);
+      pictures course4-room-pilot, -room-top, -microgreens-pilot, -microgreens-top, fix3b-lublin-top; a6-reference
+      (not needed so far: no flight, input or collision code touched)
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks on 22bb889e: all PASS (vitest 193 s, z2/gates.log).
+
+Cost (course5 Z2-scans pass 1): about 28 replies for items 1a and 1b; the most went to finding which rule refused gate 1
+at x15/x20/x100 (the walk log named 'turn' but not the leg's length or height); a walk log that names the first leg's
+nearest candidate from the start (added now: nearM, nearUp) would have cut it to one run.
+Cost (course5 Z2-scans pass 2): about 30 replies; most went to the A1 unit world (three tries of a synthetic conifer street,
+none made the old generator put a gate with a blocked tube). Measuring the blocked tubes on the real Wroclaw seed first
+and building the unit world from that gate would have saved them.
+
+## Status Z3-elements (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z3/.
+- [x] Release build of 0ffe12fa: BUILD EXIT 0, 1933 files (z3/build.log). It does not hold the redraw below: rebuild.
+- [~] (1) A refused element is drawn again at a later gate (packages/tracks/src/elements.ts composeElements: the drawn
+      elements not yet placed are owed, oldest first, and every gate tries them; a gate where none fits stays single and
+      the next drawn single gives its gate to an owed element; where nothing is refused the course is the one of C4).
+      Generator version '.e2' (A4: another course for a seed, another best-lap key). Test elements.test.ts 'drawn again'
+      (30 gates, no room above the first 15: placed shares within 0.03 of the design over 200 seeds) NEG OK against
+      elements.ts of 0ffe12fa (single 0.32 against 0.25). elements + tracks-review: 16 passed.
+      Table (gate-place-audit --elements, build 98a43f6a; z3/elem-wro.json, z3/elem-rooms.json, shares in z3/shares.txt).
+      Share = placed elements of a kind / the walk's gates that draw (the fixed first and last gate excluded); a gate that
+      stays single after a refusal counts as single (the audit's placed.single counts drawn singles only).
+      Tolerance stated: 0.05 (a share over 386 draws has a standard deviation of at most 0.02 from the draw alone).
+      Wroclaw 70b50d42 seeds 1-20, 386 gates: single 0.350 (+0.100), square 0.155 (-0.045), tunnel 0.192 (-0.008),
+      flat 0.104 (-0.046), cube 0.199 (-0.001). Before (C4 pass 2): tunnel 0.09, flat 0.04. All four elements within 0.05;
+      single is over because it holds the flat squares still owed at the course's end (flat drawn 63, placed 40, refused
+      by space 37 and by the proof 76 times). Square 0.155: drawn 61, placed 60, never refused: the draw alone.
+      7a475d38 seeds 1-10, 216 gates: single 0.287, square 0.222, tunnel 0.181, flat 0.120, cube 0.190: all within 0.05.
+      39e63ce9 seeds 1-10, 91 gates: flat 0.011 (1 placed of 13 drawn, refused by space 49 times), tunnel 0.132: this room
+      (course at step 0.3) is named as one where a flat square does not fit. The flat square's rise is not lowered: the
+      table cannot tell which leg of the proof refuses it (left).
+      Pass 2: Composed.noProofLeg counts the proof's refusals by leg (z3/elem-wro2.json, Wroclaw seeds 1-20, same totals as
+      above: flat drawn 63, placed 40, noSpace 37, noProof 76). Flat square refused by the leg in 0, the leg out (from the
+      square, 2.5 m up, to the next gate: legWell) 25, the flown check (check.ts) 51. Tunnel: in 8, out 26, check 6.
+      Decision: FLAT_RISE_M stays 2.5. The flat share 0.104 is within the stated 0.05 of 0.15, and the keyboard pilot
+      climbs this rise (below); a lower rise would only be a guess at what the flown check refuses.
+- [x] Release build of 98a43f6a (z3/build2.log): BUILD EXIT 0, 1933 files; holds the redraw. Published walls copied into
+      dist/walls by z3/keys2.sh.
+- [~] (2) Keyboard pilot: tools/bench/scripts/course-keys-probe.mjs (real key events of the game scheme, reads the craft's
+      place only; every gate in order; counted per element; the climb speed over the flat square).
+      Run 1 (z3/keys-wroclaw-1.log): no course in 420 s: the radio screen took the keys; the probe now closes it.
+      Run 2 (z3/keys-wroclaw.log, Wroclaw, Shift+G seed 289710480, 37 gates: ring 10, flat 2, cube 6, tunnel 4, square 4;
+      course in 14.7 s; 26 gates flown in 231 s): gates 1-8 counted in order: ring, ring, the flat square (climb: vyMax
+      5.07 m/s, rise 2.62 m between the probe's points, 2.96 s: a keyboard pilot holding Space makes the climb; game
+      speed normal 5 m/s up), a cube, a tunnel of 3 (all three rings counted: next 4 -> 7 on the first ring's pass, the
+      momentum carried the craft through rings 2 and 3 within 0.1 s; not proven ring by ring), a cube. Gate 9, a square:
+      the probe passed its plane ('through') but the page did not count it; every later gate waited for gate 9
+      (counted 6 of 26 flown). Cause NOT measured: either the craft crossed outside the square's opening or the square's
+      count in the page fails. The probe now records where the craft crosses each gate's plane in the gate's frame
+      ('cross' [x, y] against 'half' of the opening).
+      Run 3 (z3/keys-k2.log) with the link seed (&course=g1.289710480, 5th argument) built no course in 240 s: the link's
+      form is not the one apps/fly/src/course/link.ts seedOfLink reads (not checked).
+      Pass 2: the link takes the seed in base 36 (g1.4shi1c); the probe sent it in decimal. Fixed in the probe.
+      Run k3 (z3/keys-k3.log, the same course by its link): gate 2 crossed its plane 1.46 m right of the centre (opening
+      half 0.6 m), so every later gate waited: the probe's aim, not the page (run 2's gate 9 the same way). The probe now
+      steers on the error less 0.5 s of the craft's speed, stops (under 0.6 m/s) at the point before a gate, and flies a
+      missed gate once more.
+- [x] (2) Run k4 (z3/keys-k4.log, Wroclaw 70b50d42, seed 289710480, 37 gates, course in 5.07 s): 21 of 21 gates flown
+      and counted in order, one try each, 225 s: ring 9 of 9, square 3 of 3, cube 4 of 4, tunnel 3 of 3, flat 2 of 2.
+      Crossings within 0.44 m of the centre (half 0.6). Tunnel ring by ring: the page's next gate stepped at 0.01, 0.00 and
+      0.00 m past each ring's plane and 1 m before the next ring. Flat squares climbed from below: vyMax 4.07 and 4.02 m/s
+      over a rise of 2.62 m between the probe's points (run 2: 5.07 m/s; the game's climb at normal speed is 5 m/s up).
+      A person holding Space makes the climb: the flat square is not changed.
+- [x] (3) Pictures (U:/Temp/gsfpv-train3/shots), looked at. course4-elements-top.png (gate-place-map --elements, seed
+      289710480, the k4 course on Wroclaw, 37 gates): a person sees the cyan line from a red box 'START' at gate 1 (upper
+      left) down the street to a red box 'FINISH' at gate 37 (lower right), gates coloured by kind (white ring, yellow
+      square, magenta cube, green flat); the tight row of tunnels at gates 22-30 overlaps in one spot. The map now writes
+      START / FINISH (START/FINISH on a closed course). course4-elements-tunnel.png (run k6, the keyboard pilot turned to
+      the row's axis 0.45 m before the first ring): three rings one inside the other down the street, the passed ring dark
+      grey filling the frame, the next ring lime with plate 6, the third teal behind it: a tunnel seen along its axis.
+      course4-elements-flat.png (run k6, just past gate 2, turned toward gate 3): the lime flat square lies overhead at the
+      top edge, half behind the top buttons, with the guide 'Gate 3 - 1 m'; it is 1 m away and 2.5 m up, so from here only
+      its edge shows: a weak picture of the square, the climb itself is proven by the numbers in (2).
+- [x] (4) The chain on the release of cfe7ffc1 (BUILD EXIT 0, 1933 files; dist/walls from the published set, 10 scans;
+      logs U:/Temp/gsfpv-train3/course4/z3/chain/, port 5782 and 5783, stopped):
+      tracks-page 45 of 46: the one FAIL is 'E camera: after Tab the camera looks at the newly selected gate' (px 0):
+      the editor's camera, lane editor3's code (apps/fly/src/course/editor), not chased.
+      course-path-probe failed first on Wroclaw (16 of 18) and Tunis (30 of 33) in the eye band: the off-band gates
+      were 4.0 to 4.5 m high, the flat squares (2.5 m over the band by design). The probe now gives a flat square (pass
+      axis vertical) the band 1.2 to 2 + 2.5 m. Rerun: Wroclaw 40 of 40 (flat 2), Tunis 37 of 37 (flat 2), exit 0 both.
+      save-check-probe shiftg --push: Wroclaw 38 gates in 10.1 s, Tunis 38 gates in 6.1 s, problems 0; gate 1 pushed into
+      the wall: problems 3 on both (leg-wall, leg-wall, gate-wall); exit 0.
+      gate-guide-probe Wroclaw --shiftg: 6 of 6.
+      accept-fly (first line 'accept-fly target: http://localhost:5782'): B6 B7 B9 B10 B11 true, B12 B13 B14 B15 B16 true.
+      a6-reference 1 passed. tests packages/tracks + apps/fly/src/course: 20 files, 141 passed. tsc tracks 0, bench 0.
+      gates.py --only vitest,architecture,i18n,b18,leaks: all PASS (vitest 105 s).
+
+## What the owner does (course4 and course5)
+
+- Shift+G in any scan: a course comes in a few seconds (Wroclaw 4.5 to 14 s, Tunis 6 to 9 s); in small rooms the gates
+  are smaller, but never smaller than the craft he flies can pass.
+- The first gate is checkered with START (START / FINISH when the course closes into a loop); the guide at the screen's
+  edge says 'START - 60 m' from afar; the last gate of an open course says FINISH.
+- The next gate is lime with its number; passed gates go dark.
+- At a lap's end the lap time shows large in the upper middle for about 2 s, green for a new best; after the last lap a
+  card with the time for about 3.5 s; the small clock block hides meanwhile. Settings, course part: 'Lap time on
+  screen' large, small or off.
+- On a scan made bigger with Scene size (the microgreens scan Forest Floor): x1, x10, x15, x20, x30 give a course; at
+  x100 the line names x10 and the next Shift+G sets it and builds.
+- A Shift+G course mixes rings, squares, cube frames, tunnels of 3 to 5 rings and squares lying flat to climb through.
+- Fly by Sound builds its course of single upright gates only.
+- A course link (Share) rebuilds the same course; the best lap is kept per course, a changed course starts a new best.
+
+Not proven, with the numbers: element shares on Wroclaw seeds 1-20 are tunnel 0.19, flat 0.10, square 0.155, cube 0.20
+against 0.2, 0.15, 0.2, 0.2 (tolerance 0.05); the room 39e63ce9 fits almost no flat square (0.011). A1 (no gate in tree
+crowns) is not built. Closed courses on the owner's scans are rare (18 of 18 Shift+G courses on Wroclaw and Tunis were
+open in Z1), so he mostly sees the run's card, not the lap splash. The keyboard pilot flew 21 of 37 gates of one
+Wroclaw course, not a whole lap; Tunis was not flown with keys. The flat square is climbed at 4.0 to 5.1 m/s with Space
+held (a 2.62 m rise between the probe's points), proven by a script, not by a person.
+
+Left (Z3 after pass 2):
+1. tracks-page E camera after Tab (editor3's lane): px 0 on the release of cfe7ffc1.
+2. Item 4 of the old list answered: the flat square's refusals are the flown check (51) and the leg out (25), not
+   its space; why the check refuses it is not measured (packages/tracks/src/check.ts on the element's gates).
+3. A1, Z2 items (4) to (6) and the room page proofs stay as in 'Status Z2-scans'.
+
+Cost (course5 Z3 pass 2): about 50 replies; the most went to the keyboard pilot (four runs: the link seed in base 36,
+the probe's undamped aim, two picture runs) and waiting for the GPU lock. A probe that stops before each gate and logs
+the crossing from its first version would have saved three runs.
+
+Left (Z3, exact, in order):
+1. Read apps/fly/src/course/link.ts seedOfLink for the link form of a seed (or press Shift+G and accept a new seed), then
+   run z3/keys2.sh <maxGates> <seed> <tag> (one GPU-lock hold, 580 s cap) and read 'cross' and 'half' of the first square
+   that is not counted. Outside the opening: fix the probe's aim (tolerance 0.25 m at the point before the gate). Inside:
+   the page's square count is the fault (packages/sonic-fpv/src/lesson/goals.ts gateCrossing reads side/2 for 'square';
+   check the square's quat from elements.ts squareOf against the ring it replaced) - sonic-fpv is not this lane's:
+   if the cause is there, stop and report blocked.
+2. Then one of each element counted on Wroclaw by the keyboard pilot, a tunnel ring by ring (probe: stop the craft
+   between rings, or count 'next' per ring).
+3. Item (3) and (4) of the stage: tunnel picture, the chain (tracks-page, course-path-probe Wroclaw and Tunis,
+   save-check-probe, gate-guide-probe, accept-fly B6 B7 B9-B16, a6-reference, typecheck, gates.py with leaks),
+   pictures course4-elements-tunnel/flat/top.png, 'What the owner does' for course4 and course5.
+4. Flat square share on Wroclaw 0.104 (refused by the proof 76 times): find which leg of the proof refuses it before
+   lowering FLAT_RISE_M.
+
+Cost (course5 Z3 pass 1): about 30 replies; most went to waiting for the GPU lock (two holds of other lanes, about 25
+minutes) and to two keyboard runs that failed before flying (radio screen, link seed). A probe that logs the open
+screens and the crossing point from its first version would have saved two runs.
+
+## Status course5 fixes (review CV-1 to CV-5)
+
+Logs U:/Temp/gsfpv-train3/course4/fixcv/.
+- [x] CV-1 (blocker, stands): merge of origin/main 4e6ef171 (e66fa15a). The one conflict, course.ts frame(): the lane's
+      lapEnd, splash and card kept, ended with sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' }).
+      course-finish.test.ts CU-2 and sonic-quiet-w3.test.ts QW-1 (the sound lane's source check, its literal was 'line')
+      check the two-argument call. The worktree's packages/sonic-fpv was moved to main's pin 293ebae (git submodule update;
+      before it tsc fly gave 12 errors on SonicPrefs.narrator). tsc fly 0.
+- [x] CV-2 (major, stands: inUse returned any course): finish.ts soundTakes(track) is false for a generator version
+      ending '.e<n>'; hook.sound.inUse returns null for such a course, so the sound mode offers its Shift+G (single gates).
+- [x] CV-3 (major, stands): resizeTo is cleared in the session handler and dropped when the Scene size differs from the
+      size the line was said at (resizeFrom).
+- [x] CV-4 (minor, stands: x1 gave x2, x2 gave x1): noCourseSize(size, tried) skips the sizes that gave no course in this
+      scene (noCourseAt, cleared with the scene) and walks NO_COURSE_SIZES 1, 2, 3, 5, 10, 30 (the Forest Floor sizes with a
+      course, x2 an estimate); all tried gives null and the page says course.none.
+- [x] CV-5 (minor, stands): fitCourse checks its deadline with no course in hand too.
+      Tests: course-finish.test.ts 'CV-2', 'CV-3', 'CV-4' NEG OK against course.ts and finish.ts of e66fa15a (3 of 3 failed);
+      fit.test.ts 'CV-5' NEG OK against fit.ts of e66fa15a. packages/tracks + apps/fly/src/course + the 11 bench tests that
+      read course.ts: 31 files, 245 passed. tsc fly 0, tsc tracks 0.
+- [x] Release build of 9a9de108: BUILD EXIT 0, 1934 files, sha256 d3f8af03... (fixcv/build.log); dist/walls from
+      U:/Temp/gsfpv-train3/walls/release (10 scans); server 5780, stopped.
+- [x] CV-2 in the page: onecourse-probe.mjs on Wroclaw 70b50d42, render off (fixcv/onecourse-wro.log, exit 0): Shift+G by
+      eye 44 gates (elements on), gates 1-2 flown, Backslash: the sound mode's target null (before the fix, live
+      f286dd49 and int-c: target 'g3', the eyes course taken). Shift+G in the sound mode: 21 single gates, target g1; N: 22
+      gates, target g1.
+- [x] Two-lap proof on Wroclaw (course-finish-probe.mjs SIZES=1920x1080,1280x720 LAPS=2, one GPU-lock hold,
+      fixcv/wroclaw.log, exit 0): 28 gates, open course, two runs, each end the card shown (0:29.90, 0:31.56).
+      Forest Floor ab5efa0e at x100 (SCALE=100, fixcv/forest.log, exit 0): line 'No course fits this scan at Scene size
+      x100. Shift+G sets x10 and builds the course'; the second Shift+G set x10: 40 gates, closed, the lap splash 0:43.53.
+- [x] Catalogue table (gate-place-audit --seeds 3, fixcv/table.json, TABLE EXIT 0, 39 rows) against cu2/table.json
+      (sources b887433b), gates/step/proven/problems: 34 of 39 rows equal; changed: Forest Floor ab5efa0e seeds 1-3 7/5/7
+      gates at step 2/3 -> 20/20/20 at step 0.4; d10c5638 seed 2 12 at 2/3 -> 21 at 0.3; 39e63ce9 seed 3 12 -> 13. These come
+      from the Z2 and Z3 changes since b887433b (a guess by date: the audit passes no deadline, so CV-5 does not act there;
+      not measured against e66fa15a).
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks on 9a9de108: GATES EXIT 0, 'all gates passed' (fixcv/gates.log).
+
+For the lead (course5 fixes): tools/bench/test/sonic-quiet-w3.test.ts (the sound lane's QW-1 check) now reads
+sayLine(end.spoken, ...) instead of sayLine(line, ...): the merge seam, the cue argument is main's. After Backslash on an
+eyes course with elements, the ear pilot has no course until he presses Shift+G or N (one press; the eyes course stays
+drawn). The worktree's packages/sonic-fpv was moved to main's pin 293ebae by git submodule update.
+
+Cost (course5 fixes): about 30 replies; the most went to finding the recipes of the table and the page probes in this long
+status file. A short 'how to rerun' block per probe at the top of the course part would have saved about 5.
+
+# Lane mix (train 3): Fly by Sound takes the course in the scene, a course with elements too
+
+## Status M1-one-course-mixed
+
+Logs U:/Temp/gsfpv-train3/mix/.
+- [x] Measured before the change (the code of 26bb9bbe equals 9a9de108 in source; only this file differs): onecourse-probe
+      on Wroclaw 70b50d42 (course5 fixcv/onecourse-wro.log, exit 0): Shift+G by eye 44 gates with elements, gates 1-2 flown,
+      Backslash: the sound mode's target null (no course until a key: the line courseOffer, lessons.ts:526).
+- [x] X1: apps/fly/src/app/builtin/course.ts hook.sound.inUse hands over every course in the scene with its progress
+      (soundTakes removed). X2: packages/tracks/src/laps.ts soundBallM (a square whose pass axis is within 45 degrees of
+      vertical, and every cube frame: radius side / 2 + bar + SOUND_BALL_PAD_M 1.5 m, an estimate), LapTimer.setByEar; the
+      pass is the flown step's distance to the centre (segmentDistM) within the ball, any direction, only while by ear.
+      apps/fly/src/course/run.ts CourseRun.byEar; course.ts frame() calls run.byEar(!!ctx.sonic) every frame.
+      apps/fly/src/course/finish.ts soundGates: the ear gets such an element as a zone of the ball's size at its centre (the
+      gate aim leads through openings only, so the hum leads to the centre); built once per course (same objects).
+      X3 unchanged (courseElements). No file under apps/fly/src/sonic changed.
+      Tests: laps.test.ts 'lane mix X2' (3 cases) NEG OK against laps.ts of HEAD 26bb9bbe; course-finish.test.ts 'lane mix X1,
+      X2' (replaces CV-2) NEG OK against finish.ts and course.ts of 26bb9bbe. packages/tracks + apps/fly/src/course + 6 bench
+      tests reading course.ts or the sound course + a6-reference: 26 files, 197 passed. tsc fly 0, tsc tracks 0.
+- [x] sonic-int-review r11 option Z5_COURSE_FIRST=1 (tools/bench/src/sonic-int-review.ts): Shift+G in the ORDINARY flight
+      before Backslash, waits for the drawn course, records each gate's element (flat = square with vertical pass axis);
+      presses no course key in the sound mode; checks 'Fly by Sound takes the course made by eye (one set of gates, no line
+      asks for a key)' (gates equal, sonic.say.courseOffer said 0 times); flight.byKind lists 'gN:kind:ball|strict' in the
+      order the hum led. tsc bench 0. Not yet run.
+- [x] Release build of b937b66c (mix/build.log): BUILD EXIT 0, 1934 files, sha256 16677500...; dist/walls copied from
+      U:/Temp/gsfpv-train3/walls/release (10 scans). The probe commit after it changes only tools/bench (dist stays valid).
+
+- [x] Proof (1), pass 2 (release of b937b66c on 5784, render off, no lock; onecourse-probe now records a trace of the
+      course's next gate and the last life decision): run mix/onecourse-wro2 (exit 0): Shift+G by eye 32 gates, gates 1-2
+      flown (next 2), Backslash: course next 2, clock 'Gate 3 of 32', the hum's target g3, lines inPlaceIntroCourse and
+      lessonKeysFree, courseOffer said 0 times, stagePrims 0 (one gate set). Shift+G in the sound mode then a new course of
+      21 gates (X3), N a new one of 24, Backslash off keeps it; a fresh page without course: courseOffer 0, target null.
+      The first run (mix/onecourse-wro, exit 0, no trace yet) showed next 2 after the passes and next 0 with 'Fly through
+      START' 12 s after Backslash: not reproduced in run 2; cause not measured (a guess: the probe's held craft crashed
+      and the auto-respawn rewound to before gate 1; run 2's trace shows such crash rewinds while the course was built).
+- [x] Proof (4): d7-probe on Wroclaw at 5 m/s (mix/d7.log, exit 0): pass gate 1 counted; (a) gate behind said at 3.05 s,
+      then through; (b) gate behind at 2.76 s, then through; (d) no line; (c) 'You are flying back' at 3.08 s; lap ends
+      with 'Best lap! 1:52.03'.
+- [x] Proofs (2) and (3): r11, Wroclaw, 5 m/s, Z5_COURSE_FIRST=1 (render off, no lock). Narrator on (mix/r11-on.log,
+      port 5785): 11 of 11 checks PASS, exit 0; course by eye 32 gates (21 ring, 4 square, 5 cube-frame, 2 flat), offered 0,
+      all g1 to g32 counted in 186 s, laps 1, median 1.58 m/s, max 4.98. Narrator off (mix/r11-off.log, r11-off.json, port
+      5786): 13 of 13 PASS, exit 0; 37 gates counted in 169 s: ring strict 27, square strict 3, cube-frame by ball 6, flat by
+      ball 1; nothing reached the voice; fanfare at the end. SOUND_BALL_PAD_M 1.5 m (an estimate) was enough: not changed.
+      The evidence json of the narrator-on run was overwritten by the second run (same file name); its log holds the checks.
+- [x] Proof (6), X4 (release of b937b66c, GPU lock, mix/finish-wro.log, exit 0): open course of 34 gates on Wroclaw (roles
+      start .. finish, laps false) flown to FINISH by the scripted pilot: the picture
+      U:/Temp/gsfpv-train3/shots/course4-finish-open.png, looked at: 'Course done', the run's time 0:28.36 large in the
+      splash's place, under it 'Total 0:28.36 Best lap 0:28.36'. X4 holds today; no change.
+
+- [x] Pass 3: merged origin/main 38c22358 (only docs/wip/train3-lead.md: dist of b937b66c stays valid). course-keys-probe.mjs
+      MISS_FLAT=1: the first flat square is first climbed past beside its frame (plane crossed half + 1.2 m off its centre,
+      inside the ear's ball, outside the square), next gate must not step (r.miss.refused), then flown through.
+- [x] Proof (5), ordinary flight, keyboard pilot (mix/c3/keys-miss.log, ev/keys-miss.json, GPU lock 61 s, exit 0):
+      Wroclaw seed 289710480, 37 gates, gates 1-4 flown. Gate 3 (flat square, half 0.6): the climb beside it crossed its plane
+      at [1.72, 0.16] (1.8 m off its centre, inside the ear's ball) and was refused (next 2 -> 2); then the climb through
+      crossed at [0.21, 0] and counted (next 2 -> 3). 4 of 4 counted. The strict rule holds with Fly by Sound off.
+- [x] Left item 3 (progress lost after Backslash), onecourse-probe twice more (mix/c3/onecourse-a, -b, render off, exit 0
+      both): not reproduced. a: next 4 before Backslash, 4 for the whole 12 s after (target g5, inPlaceIntroCourse, no
+      courseOffer); b: next 2 -> 2 (target g3). In both traces the only drop to next 0 is the step 'shiftG-sound' (a new
+      seed: Shift+G in the sound mode makes a new course, X3), and no life decision (rewind) happened after Backslash.
+      Pass 2's run 1 had no trace; its 'next 0 at 12 s' is most likely the same new course (a guess, not measured).
+- [x] Pass 3 chain on the release of b937b66c served on 5787 (U:/Temp/gsfpv-train3/mix/chain3.sh, logs mix/c3/,
+      summary mix/c3/summary.txt): course-path-probe Wroclaw exit 0 (17 of 17 in the eye band, flat 2), Tunis exit 0 (36 of
+      36, flat 5); pause-over-course exit 0; accept-fly B6 B7 B9 B10 B11 all true (178 s), B12 to B16 all true (371 s);
+      sonic-int-review r9 11 of 11 (exit 0), r12 9 of 9 (exit 0); a6-reference 1 of 1. tracks-page 45 of 46: the one FAIL
+      is 'E camera: after Tab the camera looks at the newly selected gate' px 0, the editor's known fault (Left item 1 of
+      course5 above, not this lane's files).
+- [x] gates.py --only vitest,architecture,i18n,b18,leaks first run: FAIL architecture (laps.ts segmentDistM used Math.hypot,
+      forbidden in the tracks generator) and one vitest timing case (app-dji-rc2 'answers 60 ms late', rc.late; passes alone).
+      Fixed laps.ts with Math.sqrt (db5fcfe3); packages/tracks + apps/fly/src/course + app-dji-rc2 + a6: 22 files, 161
+      passed; tsc tracks 0. Second gates run: all PASS (vitest 137 s; logs U:/Temp/gsfpv-gates-20261115-222139).
+      The release in dist is of b937b66c (Math.hypot); the sqrt form is the same distance, not rebuilt.
+
+## What the owner does (mix)
+He presses Shift+G and flies a few gates by eye. He presses Backslash. The voice says Fly by Sound is on over his course;
+the hum leads to the next gate he has not flown yet; no voice asks for a key and no second set of gates appears. A flat
+square or a cube frame counts when he flies through its place (near its centre); the hum leads to its centre. With Fly by
+Sound off the same square must be flown through as before. At FINISH of a course that does not come back to its start he
+sees 'Course done' and his time large.
+
+## For the lead (mix M1)
+- Changed files under apps/fly/src/sonic: none. Changed: apps/fly/src/app/builtin/course.ts, apps/fly/src/course/run.ts,
+  apps/fly/src/course/finish.ts, packages/tracks/src/laps.ts, tests and tools/bench probes (sonic-int-review r11
+  Z5_COURSE_FIRST, onecourse-probe trace, course-keys-probe MISS_FLAT).
+- SOUND_BALL_PAD_M 1.5 m is an estimate; the ear pilot r11 needed no more (flat and cube counted by ball on Wroclaw).
+- Not verified: the owner's path with a real ear (r11 is a scripted ear pilot); Tunis for the ear pilot (r11 ran on
+  Wroclaw only); the release was not rebuilt after db5fcfe3 (numerically the same distance).
+- Lane M1 finished; nothing is left of its list.
+
+## Left (M1 after pass 2, exact, in order; all done in pass 3)
+1. Proof (5): keyboard pilot in the ordinary flight (course-keys-probe.mjs, recipe U:/Temp/gsfpv-train3/course4/z3/keys2.sh,
+   Wroclaw seed 289710480, GPU lock): one counted and one refused pass of a flat square. The probe has no 'miss the flat
+   square once' mode: add it in tools/bench/scripts/course-keys-probe.mjs (fly the flat square's leg once level beside it,
+   read course.next unchanged, then through it). The unit test laps.test.ts 'lane mix X2' already proves strict off-ear.
+2. Chain on the release of b937b66c (dist is valid; serve dist on a port 5780-5799): tracks-page, course-path-probe on
+   Wroclaw and Tunis, pause-over-course-probe, accept-fly B6 B7 B9-B16 (SITE), sonic-int-review r9 and r12, then
+   gates.py --only vitest,architecture,i18n,b18,leaks.
+3. Seen once, not reproduced: onecourse run 1 (mix/onecourse-wro.log) lost the progress 12 s after Backslash (next 0,
+   'Fly through START'); run 2 kept it. Suspect: the probe's held craft and the auto-respawn rewind
+   (apps/fly/src/course/run.ts afterLife), a guess. Run onecourse-probe two more times and read out.trace if it repeats.
+
+## Left (M1, pass 1 list, done up to item 1-3 and 5 above; ports 5780-5799, logs U:/Temp/gsfpv-train3/mix/)
+1. Serve dist on 5784 (node tools/bench/scripts/serve-csp.mjs dist 5784). Proof (1): onecourse-probe.mjs
+   http://localhost:5784/en mix/onecourse-wro.json U:/Temp/gsfpv-train3/shots 70b50d42 mix (render off, no lock): after
+   Backslash expect target 'g3' (gate 3 of the same course), no courseOffer line, one gate set (stagePrims 0). The probe's
+   later step 'shiftG-sound' then builds a new single-gate course (X3).
+2. Proof (2) and (3): PORT=5785 Z5_SCENE=70b50d42 Z5_SPEEDS=5 Z5_COURSE_FIRST=1 node --import tsx tools/bench/src/sonic-int-review.ts r11
+   (render off: no lock; the same recipe as earlier r11 runs, check how they were started in this file's Y3 part), then the
+   same with Z5_NARRATOR=off. Read run.eyeCourse, flight.counted, flight.byKind. If a flat or cube is not counted, read
+   missRecords and the trail's closest distance to its centre and adjust SOUND_BALL_PAD_M (packages/tracks/src/laps.ts)
+   from that number; then laps.test.ts again.
+3. Proof (4): d7-probe.mjs http://localhost:5784/en mix/d7.json 70b50d42 5.
+4. Proof (5): course-keys-probe.mjs (keyboard pilot, ordinary flight) on Wroclaw seed 289710480 as run k4 (z3/keys2.sh in
+   U:/Temp/gsfpv-train3/course4/z3/, GPU lock): the flat squares counted strictly, plus one refused pass beside a flat square
+   (the probe has no such mode yet: add a 'miss the flat square once' option or record it by hand from a run's cross/half).
+5. Proof (6): course-finish-probe.mjs (U:/Temp/gsfpv-train3/course4/fixcv/page.sh is the recipe; LAPS=1) on Wroclaw,
+   picture U:/Temp/gsfpv-train3/shots/course4-finish-open.png looked at. Code reading: course.ts frame() on 'done' calls
+   hud.card(c, end.splash, ...), and hud.ts card() draws the run's time in the splash element (course-splash-time), so X4
+   is expected to hold today: not measured.
+6. Chain: tracks-page, course-path-probe Wroclaw and Tunis, pause-over-course-probe, accept-fly B6 B7 B9-B16 (SITE),
+   sonic-int-review r9 and r12, then gates.py --only vitest,architecture,i18n,b18,leaks. Write 'What the owner does'.
+
+Cost (mix M1 pass 1): about 30 replies; the most went to finding where the sound mode gets the course (lessons.ts,
+feature.ts, the engine's gate aim) and reading r11's long body. A map line 'sound target <- course.ts hook.sound.inUse ->
+lessons.ts courseTarget -> engine gateAim' in docs/agent-map.md would have saved about 5.
+Cost (mix M1 pass 2): about 30 replies; the most went to the first onecourse run losing progress (a trace had to be added
+and the probe run again) and to finding byKind in r11's output (it is only in the evidence json, which r11 overwrites per
+run). An r11 option for the evidence file name and a byKind line in its log would have saved about 4.
+Cost (mix M1 pass 3): about 20 replies; the most went to the first gates run failing on Math.hypot in laps.ts (pass 1 ran
+no architecture check). Running scripts/check-architecture.mjs right after a change in packages/tracks would have saved 3.

@@ -108,6 +108,8 @@ const TOPDOWN = () => {
     g.putImageData(img, 0, 0);
     const px = (p) => [(p[0] - x0) / step, (p[2] - z0) / step];
     const heights = poses.map((p) => { const r = col.queryRay(p.pos[0], p.pos[1], p.pos[2], 0, -1, 0, 80); return r ? +(p.pos[1] - r.y).toFixed(2) : null; });
+    // course5 Z3: a square lying flat (pass axis vertical; packages/tracks/src/elements.ts, FLAT_RISE_M over the gate before it)
+    const flat = poses.map((p) => { const [w, x, y, z] = p.quat; return Math.max(Math.abs(2 * (y * z - w * x)), Math.abs(2 * (y * z + w * x))) > 0.9; });
     g.strokeStyle = 'rgba(80,200,255,0.9)'; g.lineWidth = 2; g.beginPath();
     poses.forEach((p, k) => { const [a, b] = px(p.pos); if (k) g.lineTo(a, b); else g.moveTo(a, b); }); g.closePath(); g.stroke();
     poses.forEach((p, k) => {
@@ -119,7 +121,7 @@ const TOPDOWN = () => {
     g.fillStyle = '#fff'; g.font = '13px sans-serif';
     g.fillText(`${(x1 - x0).toFixed(0)} x ${(z1 - z0).toFixed(0)} m, ${step.toFixed(2)} m/px; green ${EYE_LO}-${EYE_HI} m above the ground (eye level), blue lower, yellow to 4 m, red higher`, 8, H - 10);
     let span = 0; for (const a of poses) for (const b of poses) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));
-    return { url: cv.toDataURL('image/png'), W, H, step, heights, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
+    return { url: cv.toDataURL('image/png'), W, H, step, heights, flat, eye: heights.filter((v) => v !== null && v >= EYE_LO && v <= EYE_HI).length, spanM: +span.toFixed(1), yRange: [Math.min(...ys), Math.max(...ys)] };
 };
 
 const rot = (q, v) => { // q = [w, x, y, z]
@@ -303,7 +305,9 @@ for (const id of idsArg.split(',')) {
 await browser.close();
 for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, busy: r.profile?.map((x) => [x.atS, x.ms]), lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, rewind: r.rewind, afterR: r.afterR, span: r.top?.spanM, regen: r.regen, shots: [r.shotWallsS, r.shotCourseS], errors: r.errors.length, fail: r.fail }));
 // exit 1 on a failed run or a gate out of the eye band (with EYE_TOL_M) or with no wall below it
-const offBand = (hs) => (hs ?? []).filter((v) => v === null || v < EYE_LO - EYE_TOL_M || v > EYE_HI + EYE_TOL_M).length;
-const badN = out.filter((r) => r.fail || !r.top || offBand(r.top.heights) > 0).length;
-console.log(`eye band ${EYE_LO}-${EYE_HI} m (+-${EYE_TOL_M}): ${out.map((r) => `${r.id} first course ${r.top ? r.top.heights.length - offBand(r.top.heights) : 0} of ${r.top?.heights.length ?? 0}`).join(', ')}; runs failing ${badN}`);
+// a flat square stands up to FLAT_RISE_M (2.5 m, elements.ts) over the band: its own band is EYE_LO .. EYE_HI + 2.5
+const FLAT_RISE = 2.5;
+const offBand = (hs, fl) => (hs ?? []).filter((v, k) => v === null || v < EYE_LO - EYE_TOL_M || v > EYE_HI + (fl?.[k] ? FLAT_RISE : 0) + EYE_TOL_M).length;
+const badN = out.filter((r) => r.fail || !r.top || offBand(r.top.heights, r.top.flat) > 0).length;
+console.log(`eye band ${EYE_LO}-${EYE_HI} m (+-${EYE_TOL_M}; flat squares +${FLAT_RISE} m): ${out.map((r) => `${r.id} first course ${r.top ? r.top.heights.length - offBand(r.top.heights, r.top.flat) : 0} of ${r.top?.heights.length ?? 0} (flat ${(r.top?.flat ?? []).filter(Boolean).length})`).join(', ')}; runs failing ${badN}`);
 process.exit(badN ? 1 : 0);

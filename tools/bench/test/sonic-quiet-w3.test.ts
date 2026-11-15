@@ -32,7 +32,8 @@ describe('QW-1, QW-2, QW-6: the course and walls lines pass their own sound', ()
     const walls = text('apps/fly/src/walls.ts');
     const builtinWalls = text('apps/fly/src/app/builtin/walls.ts');
     it('a lap plays the lap notes, the course end the finish notes (the lead M3)', () => {
-        expect(course).toContain("sayLine(line, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' })");
+        // lane course5 (review CV-1): the line is the course's own lap line (end.spoken: splash, card and line in one)
+        expect(course).toContain("sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' })");
     });
     it('Shift+G with no course plays the falling sound, a press while busy the wait sound', () => {
         expect(course).toContain("sayLine(text, { kind: 'wrong-side' })");

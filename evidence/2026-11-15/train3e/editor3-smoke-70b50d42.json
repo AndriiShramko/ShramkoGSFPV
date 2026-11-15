@@ -1,0 +1,249 @@
+{
+ "site": "http://localhost:5778",
+ "date": "2026-11-15T23:37:33.129Z",
+ "scenes": {
+  "70b50d42": {
+   "scene": "70b50d42",
+   "ready": {
+    "ms": 8020,
+    "status": "ready"
+   },
+   "course": {
+    "ok": true,
+    "ms": 11828,
+    "gates": 43,
+    "problem": null
+   },
+   "open": {
+    "ok": true,
+    "selected": 0,
+    "handles": true,
+    "layer": true,
+    "stand": {
+     "pos": [
+      0.4000000059604645,
+      2.5999999046325684,
+      -12
+     ],
+     "quat": [
+      -0.5555697481794487,
+      0,
+      0.8314699362621742,
+      0
+     ],
+     "scale": 1,
+     "opening": 1.2,
+     "screen": [
+      640,
+      400,
+      1.81
+     ]
+    },
+    "axes": {
+     "x": [
+      0.9701425001453319,
+      -0.24253562503633297
+     ],
+     "y": [
+      0,
+      -1
+     ],
+     "z": [
+      -0.9103664774626049,
+      -0.41380294430118403
+     ]
+    },
+    "gatesOnScreen": 29,
+    "pointerLock": false
+   },
+   "keys": [
+    {
+     "key": "KeyW",
+     "moved": 2.8,
+     "delta": [
+      1.41,
+      -0.96,
+      2.22
+     ]
+    },
+    {
+     "key": "KeyS",
+     "moved": 2.8,
+     "delta": [
+      -1.41,
+      0.96,
+      -2.22
+     ]
+    },
+    {
+     "key": "KeyD",
+     "moved": 2.8,
+     "delta": [
+      -2.36,
+      0,
+      1.5
+     ]
+    },
+    {
+     "key": "KeyA",
+     "moved": 2.8,
+     "delta": [
+      2.36,
+      0,
+      -1.5
+     ]
+    },
+    {
+     "key": "KeyE",
+     "moved": 2.8,
+     "delta": [
+      0,
+      2.8,
+      0
+     ]
+    },
+    {
+     "key": "KeyQ",
+     "moved": 2.67,
+     "delta": [
+      0,
+      -2.67,
+      0
+     ]
+    }
+   ],
+   "rightLook": {
+    "eyeMoved": 0,
+    "atMoved": 0,
+    "pointerLock": false
+   },
+   "wheel": {
+    "before": 4,
+    "after": 5.4
+   },
+   "backs": 4,
+   "click": {
+    "target": -1,
+    "note": "no other gate on screen away from the handles",
+    "gates": 43
+   },
+   "scale": {
+    "opening": [
+     1.2,
+     1.2
+    ],
+    "moved": 2.6,
+    "changed": true
+   },
+   "move": [
+    {
+     "axis": "x",
+     "r": 70,
+     "moved": 2.1
+    }
+   ],
+   "turn": [
+    {
+     "along": "x",
+     "r": 110,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "x",
+     "r": 130,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "x",
+     "r": 95,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "x",
+     "r": 150,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "y",
+     "r": 110,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "y",
+     "r": 130,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "y",
+     "r": 95,
+     "quatChange": 0,
+     "moved": 0.3
+    },
+    {
+     "along": "y",
+     "r": 150,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "z",
+     "r": 110,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "z",
+     "r": 130,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "z",
+     "r": 95,
+     "quatChange": 0,
+     "moved": 0
+    },
+    {
+     "along": "z",
+     "r": 150,
+     "quatChange": 0,
+     "moved": 0
+    }
+   ],
+   "undo": {
+    "moved": 0.3,
+    "quat": 0,
+    "opening": [
+     1.2,
+     1.2
+    ]
+   },
+   "exit": {
+    "closed": true,
+    "view": null
+   }
+  }
+ },
+ "browser": {
+  "kind": "system-chrome",
+  "version": "157.0.8103.52",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed"
+ },
+ "log": [
+  "70b50d42 console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "70b50d42 console: Failed to load resource: the server responded with a status of 403 ()",
+  "70b50d42 console: Failed to load resource: the server responded with a status of 403 ()",
+  "70b50d42 console: Failed to load resource: the server responded with a status of 403 ()",
+  "70b50d42 console: Failed to load resource: the server responded with a status of 403 ()",
+  "70b50d42 console: Failed to load resource: the server responded with a status of 403 ()",
+  "70b50d42 console: Failed to load resource: the server responded with a status of 403 ()",
+  "70b50d42: course true 43 gates in 11828 ms"
+ ]
+}

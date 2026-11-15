@@ -103,3 +103,35 @@ describe('fix3b Y3: the ground under a gate is the one a straight ray finds', ()
         expect(gates).toBeGreaterThanOrEqual(12);
     });
 });
+
+// course4 C0: Wroclaw seed 925664764 gates 5 and 7 stood 1.7 m over the top of an object on the street (a car, a hedge) and
+// 3.4 and 4.6 m over the street (gate-place-map sections); the eye band is over the street a person stands on.
+describe('course4 C0: a gate over a parked object is at eye level over the street, not over the object', () => {
+    /** the street of Y2 with an object 1.8 m tall, 2 m wide and 5 m long in its middle every 7 m */
+    function parked() {
+        return analyticCollision([-0.4, -1, -8], [80.4, 14, 8], 0.2, (x, y, z) => {
+            if (y < 0) return true;
+            if (x < 0 || x >= 80) return true;
+            if (z > -1 && z < 1 && x > 10 && x % 7 < 5) return y < 1.8;
+            if (z > -6 && z < 6) return false;
+            if (x < WELL_M) return y < 4 || x % 4 < 0.4;
+            return x % 4 < 0.4;
+        });
+    }
+    const walls = parked();
+    const q = qualityMap(walls);
+    const box = qualityBounds(q, SPAWN);
+    const free = freeSpace(walls, { spawn: SPAWN, bounds: box ?? undefined, kind: 'outdoor' });
+
+    it('every gate centre is at most 2.0 m (one voxel of slack) over the street', () => {
+        let gates = 0;
+        for (const seed of [1, 2, 3, 4, 5, 6]) {
+            const t = generateCourse(free, walls, { seed, scene: SCENE, transform: IDENTITY, created: CREATED, quality: q });
+            for (const g of t.gates) {
+                expect((g.pos as unknown as Vec3)[1]).toBeLessThanOrEqual(2.2);
+                gates++;
+            }
+        }
+        expect(gates).toBeGreaterThanOrEqual(12);
+    });
+});

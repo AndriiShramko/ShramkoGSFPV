@@ -37,6 +37,9 @@ export interface QualityOptions {
     readonly minM?: number;
     readonly bandShare?: number;
     readonly goodShare?: number;
+    /** course4 C2: the scan's one measure, flown m (freespace.ts sceneUnitM): tileM, the ground's skip and the band's
+     *  thickness and reach are multiplied by it; 1 at true scale */
+    readonly unitM?: number;
 }
 
 export interface QualityMap {
@@ -131,6 +134,7 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const minM = opts.minM ?? D.minM;
     const bandShare = opts.bandShare ?? D.bandShare;
     const goodShare = opts.goodShare ?? D.goodShare;
+    const U = Math.max(1, opts.unitM ?? 1);
     const flip = walls.flipXY;
     const blockM = 4 * walls.voxelResolution;
     const [nbx, nby, nbz] = blockDims(walls);
@@ -138,7 +142,7 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     // world bounds of the grid (a legacy grid stores x and y negated)
     const wx0 = flip ? -(gx + nbx * blockM) : gx;
     const wz0 = gz;
-    let tileM = opts.tileM ?? D.tileM;
+    let tileM = opts.tileM ?? D.tileM * U;
     const spanX = nbx * blockM, spanZ = nbz * blockM;
     while (Math.ceil(spanX / tileM) * Math.ceil(spanZ / tileM) > D.maxTiles) tileM *= 2;
     const nx = Math.max(1, Math.ceil(spanX / tileM)), nz = Math.max(1, Math.ceil(spanZ / tileM));
@@ -158,8 +162,8 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const fullLayer = (tileM / walls.voxelResolution) * (tileM / walls.voxelResolution) * (blockM / walls.voxelResolution);
     const ground = new Float32Array(nt).fill(NaN);
     const groundL = new Int32Array(nt).fill(-1);
-    const skipL = Math.max(1, Math.round(D.groundSkipM / blockM));
-    const nb = Math.ceil(D.maxBandM / binM);
+    const skipL = Math.max(1, Math.round((D.groundSkipM * U) / blockM));
+    const nb = Math.ceil((D.maxBandM * U) / binM);
     const sum = new Float64Array(nb);
     let withGround = 0;
     for (let t = 0; t < nt; t++) {
@@ -184,7 +188,7 @@ export function qualityMap(walls: VoxelCollision, opts: QualityOptions = {}): Qu
     const skipM = skipL * blockM;
     const hist = Array.from(sum, (v) => (withGround ? Math.round((v / withGround) * 100) / 100 : 0));
     const b0 = denseBand(hist, binM, skipM, minM, bandShare);
-    const band: [number, number] = [Math.max(minM, b0[0]), Math.max(b0[1], Math.max(minM, b0[0]) + D.minBandM)];
+    const band: [number, number] = [Math.max(minM, b0[0]), Math.max(b0[1], Math.max(minM, b0[0]) + D.minBandM * U)];
     const dense = new Float32Array(nt);
     for (let t = 0; t < nt; t++) {
         if (groundL[t]! < 0) continue;
@@ -300,6 +304,38 @@ export function groundBelow(walls: VoxelCollision, p: Vec3, maxM: number): numbe
         if (!hit || Math.abs(hit.y - g) > 2 * r) return NaN;
     }
     return g;
+}
+
+/** course4 C0: the ray ground under a gate is an object, not the street, when it stands this much over the tile's ground (estimate) */
+export const OBJECT_M = 1.0;
+/** course4 C0: the side rays that look for the street beside an object, flown m from the gate's column (estimate: wider than
+ *  a parked car or a hedge, 1.8-2 m; the Wroclaw objects under gates 5 and 7 of seed 925664764 measured about 5 m along
+ *  the opening, see docs/wip/fix3a.md course4) */
+export const STAND_R_M = 2.5;
+
+/**
+ * course4 C0: the ground a person under the gate stands on. groundBelow, unless that is the top of an object on the street
+ * (a car, a hedge, a kiosk: Wroclaw seed 925664764 gates 5 and 7 stood 1.7 m over such a top and 3.4 and 4.6 m over the
+ * street, gate-place-map sections): when the ray ground is more than OBJECT_M over the tile's ground and at least two of
+ * eight straight rays STAND_R_M around the column meet the tile's ground (within OBJECT_M / 2), the lowest of those is the
+ * ground. A terrace or a raised floor is wider than STAND_R_M, so its rays stay up and it keeps its own ground.
+ */
+export function standGround(walls: VoxelCollision, q: QualityMap, p: Vec3, maxM: number): number {
+    const g = groundBelow(walls, p, maxM);
+    if (!Number.isFinite(g)) return g;
+    const t = tileOf(q, p);
+    const tg = t < 0 ? NaN : q.ground[t]!;
+    if (!Number.isFinite(tg) || g - tg <= OBJECT_M) return g;
+    const d = STAND_R_M, e = STAND_R_M * 0.7071;
+    let low = Infinity, n = 0;
+    for (const [dx, dz] of [[d, 0], [-d, 0], [0, d], [0, -d], [e, e], [-e, e], [e, -e], [-e, -e]] as const) {
+        const hit = walls.queryRay(p[0] + dx, p[1], p[2] + dz, 0, -1, 0, p[1] - tg + OBJECT_M);
+        if (hit && Math.abs(hit.y - tg) <= OBJECT_M / 2) {
+            n++;
+            low = Math.min(low, hit.y);
+        }
+    }
+    return n >= 2 ? low : g;
 }
 
 /** fix3b Y2: the tile's quality (near) as a share of the scan's best quarter, 0 outside the map */

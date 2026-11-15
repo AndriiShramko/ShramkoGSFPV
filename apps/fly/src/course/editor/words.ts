@@ -3,19 +3,12 @@
 import { t } from '../../i18n';
 import type { Course, CourseProblem, EditRefusal, EditorState } from '@gsfpv/tracks';
 import type { CourseMark } from '../store';
-import { PROBLEM_KEYS, REFUSAL_KEYS, markParts } from './texts';
-export { ACTION_KEYS, PROBLEM_KEYS, REFUSAL_KEYS, editorLocaleKeys } from './texts';
-
-const gateNo = (c: Course, id: string): number => c.gates.findIndex((g) => g.id === id) + 1;
+import { REFUSAL_KEYS, markParts, problemParts } from './texts';
+export { ACTION_KEYS, PROBLEM_KEYS, REFUSAL_KEYS, actionKey, editorLocaleKeys } from './texts';
 
 export function problemText(c: Course, p: CourseProblem): string {
-    const k = PROBLEM_KEYS[p.code];
-    switch (p.code) {
-        case 'outside': case 'gate-wall': return t(k, { g: gateNo(c, p.gate) });
-        case 'gate-direction': return t(k, { g: gateNo(c, p.gate), deg: Math.round(p.deg) });
-        case 'leg-wall': return t(k, { a: gateNo(c, p.from), b: gateNo(c, p.to) });
-        default: return t(k);
-    }
+    const { key, args } = problemParts(c, p);
+    return t(key, args);
 }
 
 export function refusalText(c: Course, r: EditRefusal): string {

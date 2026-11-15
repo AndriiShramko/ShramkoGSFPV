@@ -1322,6 +1322,22 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await page.focus('.screen.radio [data-action="radio-keyboard"]');
         await page.keyboard.press('Enter');
         await until('the Controls screen to go', () => page.evaluate(() => !document.querySelector('.screen.radio')), (v) => v, 10000);
+        // lane mix (X1): Z5_COURSE_FIRST=1 makes the course by Shift+G in the ORDINARY flight before the switch (a course with
+        // elements); Fly by Sound then takes that course and no course key is pressed. kinds: each gate's element as the page holds it
+        const courseFirst = process.env.Z5_COURSE_FIRST === '1';
+        let eyeCourse: { gates: number; kinds: string[]; s: number } | null = null;
+        if (courseFirst) {
+            const tG = Date.now();
+            await page.keyboard.press('Shift+KeyG');
+            await until('the course by eye', () => page.evaluate(() => (window as unknown as { __gsfpv: { course?: { gates?: number; drawn?: number } } }).__gsfpv.course ?? null), (c) => (c?.gates ?? 0) > 0 && (c?.drawn ?? 0) > 0, 300000, 250);
+            const kinds = await page.evaluate(() => {
+                const c = (window as unknown as { __gsfpv: { course: { sound?: { inUse: () => { track: { gates: { shape: { kind: string }; quat: number[] }[] } } | null } } } }).__gsfpv.course;
+                return (c.sound?.inUse()?.track.gates ?? []).map((g) => (g.shape.kind === 'square' && Math.abs(2 * ((g.quat[2] ?? 0) * (g.quat[3] ?? 0) - (g.quat[0] ?? 1) * (g.quat[1] ?? 0))) >= 0.7 ? 'flat' : g.shape.kind));
+            });
+            eyeCourse = { gates: kinds.length, kinds, s: (Date.now() - tG) / 1000 };
+            log(`R11: course by eye ${kinds.length} gates in ${eyeCourse.s} s: ${kinds.join(',')}`);
+            await sleep(800);
+        }
         await sleep(800);
         // the craft moving (SO-1): W held, the life spy on, then the one press: Backslash; nothing else is pressed until the first cue
         await lifeSpy(page);
@@ -1421,8 +1437,8 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const from = (await events(page)).length;
         const lines = new Set<string>();
         // lane onecourse (D2): Shift+G makes the course in every mode; Z5_COURSE_KEY=KeyN keeps one run with N (the same action)
-        const courseKey = process.env.Z5_COURSE_KEY ?? 'Shift+KeyG';
-        await page.keyboard.press(courseKey);
+        const courseKey = courseFirst ? 'none (the course made by eye)' : process.env.Z5_COURSE_KEY ?? 'Shift+KeyG';
+        if (!courseFirst) await page.keyboard.press(courseKey);
         const tN = Date.now();
         const ready = await until('the course', async () => {
             const p = await probe10(page);
@@ -1431,6 +1447,12 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         }, (p) => p.target !== null || lines.has('sonic.say.courseNone') || lines.has('sonic.say.scanNoWalls'), 420000, 250).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
         run.course = { key: courseKey, gates: ready?.course?.gates ?? null, s: (Date.now() - tN) / 1000, target: ready?.target?.id ?? null, lines: [...lines], wallsFiles: wallsFiles.slice(0, 6), walls: ready?.walls ?? null };
         check(`${tag}: N makes a course (gate 1 is the hum's target)`, ready?.target !== null && ready?.target !== undefined, run.course);
+        if (courseFirst) {
+            // lane mix (X1): the sound mode took the course by eye: same number of gates, and no line offered a course key
+            const offered = spokenAfter(await events(page), 0).filter((k) => k === 'sonic.say.courseOffer').length;
+            run.eyeCourse = { ...eyeCourse, offered, targetShape: (ready?.target?.shape as { kind?: string } | undefined)?.kind ?? null };
+            check(`${tag}: Fly by Sound takes the course made by eye (one set of gates, no line asks for a key)`, offered === 0 && (ready?.course?.gates ?? -1) === eyeCourse?.gates, run.eyeCourse);
+        }
         if (!ready?.target) {
             await r11Off(page, tag, run);
             await ctx.close();
@@ -1453,6 +1475,8 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         // (reason.gate-missed, fly.moving-on): the runner moves on after the last attempt; only a course counted without it passes
         (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle' || courseEnd(end)) && !spoken.includes('fly.moving-on');
         (run.flight as Record<string, unknown>).misses = spoken.filter((k) => k === 'reason.gate-missed' || k === 'lesson.free-garden.retry').length;
+        // lane mix (X2): the gates the hum led to, in order, with their element and the rule that counts them by ear
+        if (eyeCourse) (run.flight as Record<string, unknown>).byKind = stats.targets.map((id) => { const k = eyeCourse!.kinds[Number(id.slice(1)) - 1] ?? '?'; return `${id}:${k}:${k === 'flat' || k === 'cube-frame' ? 'ball' : 'strict'}`; });
         check(`${tag}: the course was flown to its end by the hum and counted (no fly.moving-on)`, (run.flight as Record<string, unknown>).counted === true, run.flight);
         if (narratorOff) {
             // the voice from the press to the course's end, the one-shot sounds (a gate, a lap, the finish) and the lines said quiet

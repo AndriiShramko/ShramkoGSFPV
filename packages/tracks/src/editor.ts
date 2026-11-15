@@ -215,10 +215,13 @@ export function edit(state: EditorState, action: EditAction, check: CourseCheck)
         const yaw = yawQuat(yawOfGate(g.quat));
         next[sel] = { ...g, quat: roundQuat(isDive(g.quat) ? yaw : quatMultiply(yaw, PITCH_DOWN)) };
     } else if (action.kind === 'shape') {
-        if (g.shape.kind === action.to) return refuse(state, { code: 'same' });
+        // lane editor3 H1: a kind other than dive pressed on a dive gate also stands it up (the pilot asked for a ring, not a
+        // diving ring); the same kind on a dive gate only stands it up
+        const dive = isDive(g.quat);
+        if (g.shape.kind === action.to && !dive) return refuse(state, { code: 'same' });
         const opening = openingOf(g.shape);
-        const shape: ObjectShape = action.to === 'ring' ? { kind: 'ring', diameter: opening, tube: Math.min(r3(RING_TUBE_M / s), opening) } : { kind: action.to, side: opening, bar: Math.min(r3(SQUARE_BAR_M / s), opening) };
-        next[sel] = { ...g, shape };
+        const shape: ObjectShape = g.shape.kind === action.to ? g.shape : action.to === 'ring' ? { kind: 'ring', diameter: opening, tube: Math.min(r3(RING_TUBE_M / s), opening) } : { kind: action.to, side: opening, bar: Math.min(r3(SQUARE_BAR_M / s), opening) };
+        next[sel] = { ...g, shape, quat: dive ? roundQuat(yawQuat(yawOfGate(g.quat))) : g.quat };
     } else if (action.kind === 'size') {
         const flown = r3(openingOf(g.shape) * s + action.steps * SIZE_STEP_M);
         if (flown < MIN_OPENING_M - 1e-9) return refuse(state, { code: 'size-min', minM: MIN_OPENING_M });

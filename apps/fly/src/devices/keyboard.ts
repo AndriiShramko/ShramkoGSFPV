@@ -37,6 +37,8 @@ const THR_DOWN_MS = 333;
 const RAMP_MAX_STEP_MS = 200;
 /** The game scheme sends a frame at least this often while the keyboard flies (the loops need a steady stream). */
 const GAME_FRAME_MS = 10;
+/** train 3 I2 (D8): a Space shorter than this while flying in the edit mode is a tap (back to editing), longer is a climb (estimate) */
+export const EDIT_TAP_MS = 200;
 
 /** Inputs that take no text: a focused slider or checkbox must not swallow R, P or Esc. */
 const NOT_TEXT = new Set(['range', 'checkbox', 'radio', 'button', 'submit', 'reset']);
@@ -57,8 +59,32 @@ function inChipMenu(el: EventTarget | null): boolean {
  * its lesson menu, sonic/lesson-menu.ts): Space and arrows belong to its buttons, checkboxes, radios and sliders. (The start screen is
  * hidden, not removed, while the flight has the page, so only a shown one counts.)
  */
+const DIALOGS = '.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-start:not([hidden]), .sonic-menu';
+/**
+ * Review ED-2 (lane editor3): the course editor's edit mode (its window is there and the drone does not fly) keeps the flying
+ * keys: W A S D E Q move its camera, so they must not start the motors. app/builtin/course.ts sets ce-flying on the window
+ * while the drone flies in the mode.
+ */
+export const EDIT_MODE = '.course-editor:not(.ce-flying)';
+
+/** editor3 G2: the course is flown inside the edit mode (course.ts editFrame sets ce-flying on the editor's window) */
+export const EDIT_FLYING = '.course-editor.ce-flying';
+
+export function editModeFlying(): boolean {
+    return typeof document !== 'undefined' && !!document.querySelector(EDIT_FLYING);
+}
+
 export function dialogOpen(): boolean {
-    return !!document.querySelector('.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-start:not([hidden]), .sonic-menu');
+    return !!document.querySelector(`${DIALOGS}, ${EDIT_MODE}`);
+}
+
+/**
+ * Review ED-2: Space in the edit mode is the keyboard pilot's way to fly the course at once (the controller's arm switch does
+ * the same for a pad): only with no other dialog open and not on a control of the editor (Space presses a focused button).
+ */
+export function editModeArm(code: string, target: EventTarget | null): boolean {
+    if (code !== 'Space' || document.querySelector(DIALOGS) || !document.querySelector(EDIT_MODE)) return false;
+    return !(target instanceof Element && target.closest('button, a, input, select, textarea, [contenteditable]'));
 }
 
 /** What the game scheme needs from the page besides the keys: the pilot and the mouse settings. */
@@ -88,6 +114,8 @@ export class KeyboardSource {
     /** page time the throttle ramp has been integrated up to */
     private rampT = 0;
     private lastGameEmit = -1e9;
+    /** train 3 I2 (D8): the time of a Space pressed while flying in the edit mode (null: none, or it was the arming press) */
+    private editSpaceAt: number | null = null;
 
     constructor(controls: Controls) {
         this.controls = controls;
@@ -140,7 +168,7 @@ export class KeyboardSource {
     }
 
     private onDown = (e: KeyboardEvent): void => {
-        if (typing(e.target) || dialogOpen() || inChipMenu(e.target)) return;
+        if (typing(e.target) || inChipMenu(e.target) || (dialogOpen() && !editModeArm(e.code, e.target))) return;
         if (/^F(1[3-9]|2[0-4])$/.test(e.code) || /^F(1[3-9]|2[0-4])$/.test(e.key)) {
             if (/^F2[04]$/.test(e.code) || /^F2[04]$/.test(e.key)) return; // reserved: harness control keys
             if (this.passive) return;
@@ -155,6 +183,18 @@ export class KeyboardSource {
                 if (!e.repeat) this.onArm();
                 e.preventDefault();
             }
+            return;
+        }
+        // editor3 G2 (the lead's decision): in the edit mode Space arms and Space again disarms a keyboard pilot. Train 3 I2
+        // (D8): Space is also the game scheme's only climb key, so while the course is flown in the mode a held Space climbs
+        // and a short tap (let go within EDIT_TAP_MS, onUp) is the way back to editing (the motors stop)
+        if (this.isGame && e.code === 'Space' && editModeFlying()) {
+            if (!e.repeat) {
+                this.editSpaceAt = e.timeStamp;
+                this.down.add('Space');
+                this.emitGame(e.timeStamp);
+            }
+            e.preventDefault();
             return;
         }
         if (this.isGame) { this.onDownGame(e); return; }
@@ -185,7 +225,12 @@ export class KeyboardSource {
 
     private onUp = (e: KeyboardEvent): void => {
         if (this.isGame) {
-            if (this.down.delete(e.code) && !this.passive) this.emitGame(e.timeStamp);
+            // train 3 I2 (D8): a Space pressed while flying in the edit mode and let go within EDIT_TAP_MS is a tap: disarm
+            const at = e.code === 'Space' ? this.editSpaceAt : null;
+            if (e.code === 'Space') this.editSpaceAt = null;
+            const tap = at !== null && !this.passive && editModeFlying() && e.timeStamp - at < EDIT_TAP_MS;
+            if (tap) this.game!.pilot.arm.stop();
+            if ((this.down.delete(e.code) || tap) && !this.passive) this.emitGame(e.timeStamp);
             return;
         }
         this.ramp(e.timeStamp); // the time since the last tick was held too

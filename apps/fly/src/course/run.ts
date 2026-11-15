@@ -97,6 +97,11 @@ export class CourseRun {
         this.mark(tMs);
     }
 
+    /** Lane mix (X2): Fly by Sound on or off; in it the flat squares and cube frames pass by the ball (laps.ts soundBallM). */
+    byEar(on: boolean): void {
+        this.timer.setByEar(on);
+    }
+
     /** R to the start, a new flight model or the course switched off: the attempt ends; the next position starts a new line. */
     reset(): void {
         this.timer.reset();

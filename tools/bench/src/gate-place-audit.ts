@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { blockDims, findSphereSpawn, forEachBlock, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, freeAtMargin, goodForGate, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, sceneUnitM, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { QualityMap, SceneTransform, Vec3 } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 
@@ -81,9 +81,12 @@ async function main(): Promise<void> {
     const first = Number(arg('--first') ?? 1);
     const ids = existsSync(root) ? readdirSync(root).filter((d) => /^[0-9a-f]{8}$/.test(d)) : [];
     const newest = (id: string): number => Math.max(...readdirSync(join(root, id)).map((d) => /^v(\d+)$/.exec(d)).filter((m): m is RegExpExecArray => !!m).map((m) => Number(m[1])));
-    const all = [...ids.map((id) => ({ id, v: newest(id) })).map(({ id, v }) => ({ id, v, dir: join(root, id, `v${v}`) as string | null })), { id: '887f27aa', dir: null, v: 1 }];
+    const all = [...ids.map((id) => ({ id, v: newest(id) })).map(({ id, v }) => ({ id, v, dir: join(root, id, `v${v}`) as string | null })), ...['887f27aa', '39e63ce9', '7a475d38', 'b11e45d1'].map((id) => ({ id, dir: null as string | null, v: 1 }))];
+    // course4 C3: the four catalogue scans with shipped walls (catalogue collision true) are read from the CDN as the page does
     const only = arg('--scenes')?.split(',') ?? null;
-    const T = [1, 0, 0, 0] as unknown as SceneTransform;
+    // course4 C2: --scale s flies the scan as the page does after the pilot's Scene size x s (transform s,0,0,0; spawn x s)
+    const S = Number(arg('--scale') ?? 1);
+    const T = [S, 0, 0, 0] as unknown as SceneTransform;
     const rows: Record<string, unknown>[] = [];
     const out = arg('--out');
     for (const s of all) {
@@ -91,14 +94,26 @@ async function main(): Promise<void> {
         try {
             const walls = flownCollision(await wallsOf(s.id, s.dir), T);
             const set = await sceneSettings(s.id, s.v);
-            let spawn: Vec3 = [set.position[0], set.position[1], set.position[2]];
+            let spawn: Vec3 = [set.position[0] * S, set.position[1] * S, set.position[2] * S];
             const o = { x: 0, y: 0, z: 0 };
             if (walls.querySphere(spawn[0], spawn[1], spawn[2], SPAWN_R, o) && findSphereSpawn(walls, spawn[0], spawn[1], spawn[2], SPAWN_R, o)) spawn = [o.x, o.y, o.z];
             const tq = performance.now();
-            const q = qualityMap(walls);
+            const q = qualityMap(walls, { unitM: sceneUnitM(T as unknown as number[]) });
             const qMs = Math.round(performance.now() - tq);
             const box = qualityBounds(q, spawn);
-            const free = freeSpace(walls, { spawn, bounds: box ?? undefined });
+            const freeOpts = { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined, unitM: sceneUnitM(T as unknown as number[]) };
+            const free = freeSpace(walls, { ...freeOpts, ...(arg('--margin') ? { marginM: Number(arg('--margin')) } : {}) });
+            // course4 C3: the page's worker reads the free space again at a smaller step's margin (--no-refree: as before C3)
+            // the time one fitCourse spent reading the free space again (refreeMs in each row)
+            let refreeMs = 0;
+            const refree = arg('--no-refree')
+                ? null
+                : (marginM: number) => {
+                      const t = performance.now();
+                      const f = freeAtMargin(walls, freeOpts, marginM);
+                      refreeMs += performance.now() - t;
+                      return f;
+                  };
             const share = (t: number): number => (t < 0 || !(q.best > 0) ? 0 : r2(q.near[t]! / q.best));
             if (arg('--diag')) {
                 // the generator's eye-band filter (generate.ts walkCourse) counted stage by stage, scale 1
@@ -129,8 +144,21 @@ async function main(): Promise<void> {
                     if (p[1] - g - Math.min(free.cellM / 2, fr - EYE_FREE_M) <= top) c.eye++;
                 }
                 sh.sort((a, b) => a - b);
+                // course4 C3: the room's free space against the gate sizes: the largest free radius of a usable cell and
+                // the longest straight row of usable cells along x or z whose free radius is at least r
+                const [nx, ny, nz] = free.dims;
+                let maxClear = 0;
+                for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0) { const c = clearanceM(free, i); if (c < 1e8) maxClear = Math.max(maxClear, c); }
+                const straight = (r: number): number => {
+                    let best = 0;
+                    const ok = (x: number, y: number, z: number): boolean => { const i = x + nx * (y + ny * z); return free.room[i]! >= 0 && clearanceM(free, i) >= r; };
+                    for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) { let run = 0; for (let x = 0; x < nx; x++) { run = ok(x, y, z) ? run + 1 : 0; best = Math.max(best, run); } }
+                    for (let x = 0; x < nx; x++) for (let y = 0; y < ny; y++) { let run = 0; for (let z = 0; z < nz; z++) { run = ok(x, y, z) ? run + 1 : 0; best = Math.max(best, run); } }
+                    return r2(best * free.cellM);
+                };
+                const room = { maxClearM: r2(maxClear), straightM: Object.fromEntries([0.2, 0.4, 0.6, 1.0].map((r) => [r, straight(r)])) };
                 const spawnShare = r2(qualityShare(q, spawn));
-                console.log(JSON.stringify({ scene: s.id, diag: c, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
+                console.log(JSON.stringify({ scene: s.id, diag: c, room, stats: free.stats, outdoor: free.outdoor, rooms: free.rooms.length, volumeM3: Math.round(free.volumeM3), box, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
                 continue;
             }
             // --seed-list a,b,c: the seeds a page run printed (y3/ev regen[].seed), instead of first..first+seeds
@@ -142,13 +170,24 @@ async function main(): Promise<void> {
                 const onWalk = (w: { walked: number; cutClose: number; drops: readonly string[]; kept: number }): void => {
                     const by: Record<string, number> = {};
                     for (const d of w.drops) by[d] = (by[d] ?? 0) + 1;
-                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}`);
+                    const x = w as unknown as { banded?: boolean; wanted?: number; farM?: number; band?: number[] | null; refused?: Record<string, number>; stop?: string; eyeHi?: number };
+                    // course4 C2: an empty walk says whether it was banded, how many gates it wanted and how far its target lay
+                    // course4 C3: and which rule refused its candidates, and why it stopped
+                    const why = x.refused ? ` eye${x.eyeHi} ${Object.entries(x.refused).map(([k, v]) => `${k}${v}`).join(' ')} stop:${x.stop}` : '';
+                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}/n${x.wanted}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}${why}` : ''));
                 };
-                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+                refreeMs = 0;
+                // course4 C4: --elements composes the course as the page's Shift+G does; the last composition is kept
+                const ELEM = process.argv.includes('--elements');
+                let comp: { drawn: Record<string, number>; placed: Record<string, number>; noSpace: Record<string, number>; noProof: Record<string, number> } | null = null;
+                const onElements = (c: typeof comp): void => {
+                    comp = c;
+                };
+                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk, ...(ELEM ? { elements: true, onElements } : {}) }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, refree);
                 const ms = Math.round(performance.now() - t0);
                 const tr = got.track;
                 if (!tr) {
-                    rows.push({ scene: s.id, seed, gates: 0, ms });
+                    rows.push({ scene: s.id, seed, gates: 0, ms, tried: got.tried, walks });
                     continue;
                 }
                 const problems = wallsCheck(walls, T, marginOf(tr))(upgradeTrack(tr)).length;
@@ -189,14 +228,16 @@ async function main(): Promise<void> {
                 for (const a of pts) for (const b of pts) span = Math.max(span, Math.hypot(a[0]! - b[0]!, a[2]! - b[2]!));
                 const hs = gates.map((g) => g.h ?? NaN).filter((v) => Number.isFinite(v)).sort((x, y) => x - y);
                 const row = {
-                    scene: s.id, seed, gates: gates.length, laps: tr.laps, scale: got.scale, tried: got.tried, proven: got.proven, walks, ms, problems, qMs, band: q.band, best: Math.round(q.best),
+                    scene: s.id, seed, gates: gates.length, laps: tr.laps, scale: got.scale, tried: got.tried, proven: got.proven, walks, ms, refreeMs: Math.round(refreeMs), problems, qMs, band: q.band, best: Math.round(q.best),
                     span: Math.round(span), hMin: hs[0], hMed: hs[hs.length >> 1], hMax: hs[hs.length - 1],
                     eye: gates.filter((g) => g.h !== null && g.h >= 1.2 && g.h <= 2.0).length,
                     eyeRay: gates.filter((g) => g.hRay >= 1.2 && g.hRay <= 2.0).length,
                     lowUnder03: gates.filter((g) => !(g.low >= 0.3)).length,
                     gateQmin: Math.min(...gates.map((g) => g.q)), legQmin: Math.min(...legs.map((l) => l.minQ)), legBadM: r2(legs.reduce((a, l) => a + l.badM, 0)),
                     layerM: prof.layerM, peakAt: r2(peak * prof.layerM), profile: prof.perTile.slice(0, Math.ceil(6 / prof.layerM)),
-                    gateRows: gates, legRows: legs
+                    gateRows: gates, legRows: legs,
+                    ...(comp ? { elements: comp } : {}),
+                    kinds: gates.reduce<Record<string, number>>((m, g) => ((m[g.kind] = (m[g.kind] ?? 0) + 1), m), {})
                 };
                 rows.push(row);
                 const { gateRows: _g, legRows: _l, profile: _p, ...short } = row;

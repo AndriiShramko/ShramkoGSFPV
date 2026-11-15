@@ -104,6 +104,10 @@ try {
         const a = ss.cameraAim?.() ?? null;
         return { override: !!ss.cameraOverride, aim: a, editorOpen: !!window.__gsfpv.editor?.open };
     });
+    // integration E of train 3: gate 1 carries the START role (lane course4's read-only hook course.look; the paint of the
+    // checkered gate), read once as the course appears
+    r.roles = await page.evaluate(() => window.__gsfpv.course?.look?.()?.roles ?? null);
+    check('gate 1 is START', Array.isArray(r.roles) && (r.roles[0] === 'start' || r.roles[0] === 'startFinish'), { roles: Array.isArray(r.roles) ? r.roles.slice(0, 4) : r.roles });
     // the craft's pose written into the sim (S.px 0-2, S.vx 3-5, S.qw 6-9, rates 10-12) for a few frames, then one read;
     // when the gimbal aim draws the camera, the aim's yaw is the one turned (the pilot's own way to look), its pitch kept
     const pose = (pos, yawRad, pitchDeg = null) => page.evaluate(async ({ pos, yawRad, pitchDeg }) => {

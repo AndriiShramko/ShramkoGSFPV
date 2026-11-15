@@ -1,0 +1,434 @@
+{
+ "what": "centre-throttle-probe.mjs: a fake DJI FPV Remote Controller 3 on navigator.hid",
+ "base": "http://localhost:5770/en",
+ "scene": "887f27aa",
+ "at": "2026-11-15T23:26:31.920Z",
+ "browser": {
+  "kind": "system-chrome",
+  "version": "157.0.8103.52",
+  "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "why": "installed",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+  "webgl": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4090 (0x00002684) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "softwareGl": false,
+  "counts": true
+ },
+ "dji-centred": {
+  "pass": true,
+  "seconds": 11,
+  "checks": {
+   "checkRowCentred": true,
+   "chipCentred": true,
+   "noArmingStepsInCentre": true,
+   "intoTheAir": true
+  },
+  "note": {
+   "checkRow": {
+    "style": "centred",
+    "why": "seen",
+    "title": "Throttle stick: Stick in the centre (camera drone). Chosen automatically: your throttle stick rests in the centre."
+   },
+   "start": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": "Stick in the centre",
+    "offer": false,
+    "armCard": true,
+    "cardText": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick.",
+    "steps": false,
+    "centre": {
+     "arm": "off",
+     "control": "velocity",
+     "landed": false,
+     "heightM": 2
+    },
+    "throttle": {
+     "now": "centred",
+     "pending": null,
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "seen": "centre",
+     "setting": "auto"
+    }
+   },
+   "climb": [
+    {
+     "alt": 0.014994020363276572,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2.0149940203632766
+     }
+    },
+    {
+     "alt": 0.5341511158390069,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 2.534151115839007
+     }
+    },
+    {
+     "alt": 1.2695470158791275,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 3.2695470158791275
+     }
+    },
+    {
+     "alt": 1.9647623081430812,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 3.964762308143081
+     }
+    },
+    {
+     "alt": 2.772557659280298,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 4.772557659280298
+     }
+    },
+    {
+     "alt": 3.577624331633489,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 5.577624331633489
+     }
+    },
+    {
+     "alt": 4.292761803765271,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.292761803765271
+     }
+    },
+    {
+     "alt": 4.657833660121733,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.657833660121733
+     }
+    },
+    {
+     "alt": 4.668927637652038,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.668927637652038
+     }
+    },
+    {
+     "alt": 4.669132188757098,
+     "armed": true,
+     "centre": {
+      "arm": "on",
+      "control": "velocity",
+      "landed": false,
+      "heightM": 6.669132188757098
+     }
+    }
+   ],
+   "up": {
+    "armed": true,
+    "crashed": false,
+    "alt": 4.669132188757098,
+    "chip": "Stick in the centre",
+    "offer": false,
+    "armCard": false,
+    "cardText": "",
+    "steps": false,
+    "centre": {
+     "arm": "on",
+     "control": "velocity",
+     "landed": false,
+     "heightM": 6.669132188757098
+    },
+    "throttle": {
+     "now": "centred",
+     "pending": null,
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "seen": "centre",
+     "setting": "auto"
+    }
+   },
+   "letGo": {
+    "armed": true,
+    "crashed": false,
+    "alt": 4.668662853782194,
+    "chip": "Stick in the centre",
+    "offer": false,
+    "armCard": false,
+    "cardText": "",
+    "steps": false,
+    "centre": {
+     "arm": "on",
+     "control": "velocity",
+     "landed": false,
+     "heightM": 6.668662853782194
+    },
+    "throttle": {
+     "now": "centred",
+     "pending": null,
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "seen": "centre",
+     "setting": "auto"
+    }
+   }
+  },
+  "errors": []
+ },
+ "dji-flip": {
+  "pass": true,
+  "seconds": 16,
+  "checks": {
+   "chipFromZero": true,
+   "offerAfterRest": true,
+   "upDoesNotStart": true,
+   "armsAtZero": true,
+   "liftsFpv": true
+  },
+  "note": {
+   "checkRow": {
+    "style": "centred",
+    "why": "seen",
+    "title": "Throttle stick: Stick in the centre (camera drone). Chosen automatically: your throttle stick rests in the centre."
+   },
+   "start": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": "Stick in the centre",
+    "offer": false,
+    "armCard": true,
+    "cardText": "Stick in the centre (camera drone): no arming needed. Push the throttle stick up to climb, down to descend, let go to hover. The motors start when you move a stick.",
+    "steps": false,
+    "centre": {
+     "arm": "off",
+     "control": "velocity",
+     "landed": false,
+     "heightM": 2
+    },
+    "throttle": {
+     "now": "centred",
+     "pending": null,
+     "resolved": {
+      "style": "centred",
+      "why": "seen"
+     },
+     "seen": "centre",
+     "setting": "auto"
+    }
+   },
+   "afterJ": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": "From zero",
+    "offer": false,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": {
+     "now": "zero",
+     "pending": null,
+     "resolved": {
+      "style": "zero",
+      "why": "choice"
+     },
+     "seen": "centre",
+     "setting": "zero"
+    }
+   },
+   "rested": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": "From zero",
+    "offer": true,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": {
+     "now": "zero",
+     "pending": null,
+     "resolved": {
+      "style": "zero",
+      "why": "choice"
+     },
+     "seen": "centre",
+     "setting": "zero"
+    }
+   },
+   "upNoArm": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": "From zero",
+    "offer": false,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": {
+     "now": "zero",
+     "pending": null,
+     "resolved": {
+      "style": "zero",
+      "why": "choice"
+     },
+     "seen": "centre",
+     "setting": "zero"
+    }
+   },
+   "armedFpv": {
+    "armed": true,
+    "crashed": false,
+    "alt": -0.0019959839701029214,
+    "chip": "From zero",
+    "offer": false,
+    "armCard": false,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": {
+     "now": "zero",
+     "pending": null,
+     "resolved": {
+      "style": "zero",
+      "why": "choice"
+     },
+     "seen": "centre",
+     "setting": "zero"
+    }
+   },
+   "climbFpv": [
+    {
+     "alt": 0.13353857979346362,
+     "armed": true,
+     "crashed": false
+    },
+    {
+     "alt": 0.5492896346206186,
+     "armed": true,
+     "crashed": false
+    },
+    {
+     "alt": 1.5718469225849279,
+     "armed": true,
+     "crashed": false
+    },
+    {
+     "alt": 3.060777128634329,
+     "armed": true,
+     "crashed": false
+    },
+    {
+     "alt": 4.642908651142561,
+     "armed": true,
+     "crashed": false
+    },
+    {
+     "alt": 4.602143532753783,
+     "armed": false,
+     "crashed": true
+    },
+    {
+     "alt": 3.877765985857047,
+     "armed": false,
+     "crashed": true
+    },
+    {
+     "alt": 3.45059696577667,
+     "armed": false,
+     "crashed": true
+    },
+    {
+     "alt": 2.8489040394364524,
+     "armed": false,
+     "crashed": true
+    },
+    {
+     "alt": 2.165587593691244,
+     "armed": false,
+     "crashed": true
+    }
+   ]
+  },
+  "errors": []
+ },
+ "dji-bottom": {
+  "pass": true,
+  "seconds": 7,
+  "checks": {
+   "chipFromZero": true,
+   "seenBottom": true,
+   "armCardAtBottom": true
+  },
+  "note": {
+   "checkRow": {
+    "style": "zero",
+    "why": "seen",
+    "title": "Throttle stick: From zero (FPV). Chosen automatically: your throttle stick rests at the bottom."
+   },
+   "start": {
+    "armed": false,
+    "crashed": false,
+    "alt": 0,
+    "chip": "From zero",
+    "offer": false,
+    "armCard": true,
+    "cardText": "",
+    "steps": true,
+    "centre": null,
+    "throttle": {
+     "now": "zero",
+     "pending": null,
+     "resolved": {
+      "style": "zero",
+      "why": "seen"
+     },
+     "seen": "bottom",
+     "setting": "auto"
+    }
+   }
+  },
+  "errors": []
+ },
+ "pass": true
+}
