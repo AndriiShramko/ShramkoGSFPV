@@ -16,7 +16,7 @@ import type { InPlaceDeps } from '../../../apps/fly/src/sonic/in-place-model';
 import type { SonicEntry } from '../../../apps/fly/src/sonic/entry';
 import { analyticCollision } from '../../../packages/collision/src';
 import { S } from '../../../packages/sim-core/src';
-import { Rig } from './sonic-lesson-rig';
+import { Rig, SharedCourse } from './sonic-lesson-rig';
 import type { RigScan } from './sonic-lesson-rig';
 import { SCAN_FREE_ID, parseTrack, scanFreeLesson } from '../../../packages/sonic-fpv/src';
 import type { TrackFile } from '../../../packages/sonic-fpv/src';
@@ -311,11 +311,13 @@ describe('the free flight opened in place keeps the craft where it is', () => {
 
     // train 3 Y2 (y1-browser runs: 2 'settings' lives and the craft stopped dead on the switch off after a course made with N): the
     // course opened over an in-place flight keeps the pilot's crash rule and bump, so the switch off after it starts no new life.
+    // lane onecourse (message 52): N is Shift+G's action now, the course feature's course; no lesson opens over the flight
     it('a course made with N over an in-place flight: the switch off after it starts no new life and keeps the speed', async () => {
         const track = garden();
         const scan = scanOf(track);
         const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
-        const r = await Rig.make(free, { scan, course: { key: () => 'N', ask: async () => ({ ok: true, track }) } });
+        const shared = new SharedCourse(() => track, { s: 5, t: [0, 0, 0] });
+        const r = await Rig.make(free, { scan, course: shared });
         rig = r;
         r.onPref = (id) => {
             if (id !== 'crash.enabled') return;
@@ -326,8 +328,9 @@ describe('the free flight opened in place keeps the craft where it is', () => {
         expect(await r.host.openFree(free, { here: true })).toBe(true);
         await r.run(60000, null, () => said('sonic.say.courseOffer') && r.host.runner?.phase === 'flying');
         expect(r.press('scene.next')).toBe(true);
-        await r.run(60000, null, () => said('sonic.say.courseReady') && r.host.runner?.phase === 'flying');
-        expect(said('sonic.say.courseReady')).toBe(true);
+        await r.run(500);
+        expect(shared.made).toBe(1);
+        expect(r.host.runner?.phase).toBe('flying');
         expect(r.session.lifeOverrides().bump).toBeUndefined();
         expect(r.sessionPrefs.get('crash.enabled')).toBeUndefined();
         let lives = 0;
