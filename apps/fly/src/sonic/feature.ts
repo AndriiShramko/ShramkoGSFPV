@@ -40,7 +40,7 @@ import type { SessionOptions } from '../session';
 import { dialogOpen, typing } from '../devices/keyboard';
 import type { FlightContext } from '../app/context';
 import { t, locale } from '../i18n';
-import { SonicMode } from './mode';
+import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
 import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
@@ -643,10 +643,12 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             ctx.input.lessonPilot?.resetFlight();
         }),
         // a new life (a reset, a respawn, a new flight model): the same, for the runner it may have made
-        ctx.events.on('life', () => {
+        ctx.events.on('life', (l) => {
             if (!mode.active) return;
             mode.follow(ctx.session);
             ctx.input.lessonPilot?.resetFlight();
+            // sonic3 S3 pass 3: the director sent the craft to the course's start, so the course by sound starts again there too
+            if (lifeRestartsCourse(l.reason, ctx.session.director?.last ?? null, ctx.session.runner.sim.tick)) mode.restartAfterLife();
         })
     );
     // R's release decides short (the last checkpoint) from long (the start, taken while held)

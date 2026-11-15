@@ -33,7 +33,7 @@ import type { ActionHandler } from '../app/keys';
 import type { AppEvents, Bus } from '../app/context';
 import { SonicBridge, touchMaterial } from './bridge';
 import type { BridgeEngine } from './bridge';
-import { clearScanPrefs, forceScanPrefs } from './scan-lesson';
+import { clearScanPrefs, forceScanPrefs, isScanCourse } from './scan-lesson';
 import { LESSON_FLIGHT } from './lesson-world';
 
 /** R held this long is the long press (back to the lesson's start), ms. */
@@ -45,6 +45,28 @@ export const COST_KEEP = 3000;
 // (input.howToFly off: the card that shows the keys by itself on a first visit is a sight-first dialog in the page's live
 // region; a lesson speaks its own keys, and K still opens the card by hand)
 export const MODE_PREFS: Readonly<Record<string, unknown>> = Object.freeze({ 'crash.enabled': false, 'input.play': 'easy', 'input.howToFly': false });
+
+/** The lives the respawn director makes by itself (sim-core RespawnReason); R and the mode's own place are 'manual-start'. */
+const AUTO_LIVES: readonly string[] = ['crash', 'stuck-flipped', 'stuck-wedged'];
+
+/** The director's decision as the session keeps it (sim-core RespawnDecision, the fields read here). */
+export interface DirectorLast {
+    readonly tick: number;
+    readonly kind: 'rewind' | 'start';
+    readonly sampleTick: number | null;
+}
+
+/**
+ * sonic3 S3 pass 3 (Tunis, a course by sound never counted): a crash or a stuck craft that the respawn director sent back to
+ * the start (target 'start', or a rewind with no path left) at this tick `nowTick`. The craft is then at the session's spawn,
+ * which is the course's start (lessons.ts places a scan course there), while the runner kept its gate: the hum led 86 m
+ * through walls to the gate it was at. Such a life starts the runner's attempt again from its first gate, as the drawn
+ * course does (course/run.ts courseLife 'restart'). A life put back where it was ('rewind' with a path) keeps the gate.
+ */
+export function lifeRestartsCourse(reason: string, last: DirectorLast | null, nowTick: number): boolean {
+    if (!AUTO_LIVES.includes(reason) || last === null || last.tick !== nowTick) return false;
+    return last.kind === 'start' || last.sampleTick === null;
+}
 
 /** What the mode needs of the page (FlightContext's parts; fakes in tests). */
 export interface ModeHost {
@@ -303,6 +325,16 @@ export class SonicMode {
         const r = this.bridge.resetTo(to, code);
         const pose = r ? r.pose : this.ownPose(to);
         if (pose) this.place(pose);
+    }
+
+    /**
+     * A new life the director sent to the start (lifeRestartsCourse) in a course by sound over a scan: the runner's attempt again
+     * from its first gate. The craft is already at the start, so it is not placed again (a place would be one more life). The
+     * shipped lessons keep their own rule (their recordings replay as flown).
+     */
+    restartAfterLife(): void {
+        if (!this.on || !this.bridge.runner || !this.lesson || !isScanCourse(this.lesson)) return;
+        this.bridge.resetTo('start', 'Respawn');
     }
 
     /** Where a reset goes when no runner says: the last checkpoint reached, else the lesson's start, else the spawn as it is. */

@@ -32,7 +32,12 @@ Stage S3-yaw-lesson-and-proofs (train 3 wave 3, last finishing stage; head befor
   logs U:/Temp/gsfpv-gates-20261115-074355). Package suite on 38534c9: 69 files passed, 1 skipped; 1347 tests passed, 4
   skipped; package tsc 0.
 - [x] Item 5, "What the owner does" in For the lead (key by key, speeds per scan, what is not proven).
-- LEFT (in this order): Tunis (S2 pass 3 LEFT 1: no counted course; the sound course does not follow a life the director
+- [x] Pass 3, Tunis cause fixed in code: a crash or stuck life the director sends to the start (kind 'start', or a rewind with
+  no path) restarts the course by sound from its first gate (apps/fly/src/sonic/mode.ts lifeRestartsCourse and
+  restartAfterLife, scan courses only, no place; feature.ts 'life' handler). tools/bench/test/sonic-life-course.test.ts 5 of
+  5, NEG OK on origin/main mode.ts; sonic-mode, sonic-scan-course, sonic-in-place with it 31 of 31; apps/fly tsc 0.
+- [ ] Pass 3: Tunis browser run on the new build; Wroclaw render on; budget chime proof.
+- LEFT before pass 3 (in this order): Tunis (S2 pass 3 LEFT 1: no counted course; the sound course does not follow a life the director
   put at the start, apps/fly/src/sonic/feature.ts 'life' handler), then Wroclaw render on (g24 missed twice; render off
   counts), then an audio proof of the stream budget's open-way chime (package src/cues/budget.ts). The package branch train3
   (0af508a) must be pushed to the package origin before sonic3 merges (lanes do not push).
