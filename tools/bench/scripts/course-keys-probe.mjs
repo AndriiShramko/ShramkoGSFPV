@@ -100,13 +100,16 @@ try {
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
     await page.waitForTimeout(2000);
-    await page.mouse.click(640, 360);
+    // the radio screen opens on a page without ?simradio and takes the keys (course-elements-probe.mjs closes it too)
+    const x = page.locator('.screen.radio [data-action=radio-close]');
+    if (await x.count()) { await x.first().click(); await page.waitForTimeout(800); }
+    r.screens = await page.evaluate(() => [...document.querySelectorAll('.screen')].filter((e) => e.offsetParent).map((e) => e.className).join('|'));
     const t0 = Date.now();
     await page.keyboard.press('Shift+KeyG');
-    const c = await until(page, () => { const c = window.__gsfpv.course; return { gates: c.gates, drawn: c.drawn, problem: c.problem, seed: c.seed }; }, (v) => v.gates > 0 && v.drawn > 0, 420000, 500);
+    const c = await until(page, () => { const c = window.__gsfpv.course; return { gates: c.gates, drawn: c.drawn, problem: c.problem, seed: c.seed }; }, (v) => v.gates > 0 && v.drawn > 0, 240000, 500);
     r.courseS = r2((Date.now() - t0) / 1000);
     r.seed = c.seed;
-    if (!(c.gates > 0)) throw new Error('no course: ' + c.problem);
+    if (!(c.gates > 0)) throw new Error('no course: ' + c.problem + ' screens ' + r.screens);
     await page.waitForTimeout(3000);
     const unit = (await page.evaluate(() => (window.__gsfpv.session.transform ? window.__gsfpv.session.transform.s : 1))) || 1;
     const poses = await page.evaluate(() => window.__gsfpv.course.gatePoses());
@@ -143,5 +146,5 @@ try {
 writeFileSync(outFile, JSON.stringify(r, null, 1));
 await ctx.close();
 await browser.close();
-console.log(JSON.stringify({ id: r.id, courseS: r.courseS, seed: r.seed, gates: r.gates, counts: r.counts, flown: r.passes?.length, counted: r.counted, byKind: r.byKind, flownS: r.flownS, lap: r.lap, errors: r.errors.length, fail: r.fail }));
+console.log(JSON.stringify({ id: r.id, screens: r.screens, courseS: r.courseS, seed: r.seed, gates: r.gates, counts: r.counts, flown: r.passes?.length, counted: r.counted, byKind: r.byKind, flownS: r.flownS, lap: r.lap, errors: r.errors.length, fail: r.fail }));
 process.exit(r.fail || r.counted !== r.passes?.length ? 1 : 0);

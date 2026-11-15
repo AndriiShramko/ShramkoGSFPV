@@ -1329,8 +1329,19 @@ Logs U:/Temp/gsfpv-train3/course4/z3/.
       the next drawn single gives its gate to an owed element; where nothing is refused the course is the one of C4).
       Generator version '.e2' (A4: another course for a seed, another best-lap key). Test elements.test.ts 'drawn again'
       (30 gates, no room above the first 15: placed shares within 0.03 of the design over 200 seeds) NEG OK against
-      elements.ts of 0ffe12fa (single 0.32 against 0.25). elements + tracks-review: 16 passed. Table on Wroclaw seeds
-      1-20 and rooms 39e63ce9, 7a475d38 seeds 1-10 running (z3/elem-wro.log, z3/elem-rooms.log).
+      elements.ts of 0ffe12fa (single 0.32 against 0.25). elements + tracks-review: 16 passed.
+      Table (gate-place-audit --elements, build 98a43f6a; z3/elem-wro.json, z3/elem-rooms.json, shares in z3/shares.txt).
+      Share = placed elements of a kind / the walk's gates that draw (the fixed first and last gate excluded); a gate that
+      stays single after a refusal counts as single (the audit's placed.single counts drawn singles only).
+      Tolerance stated: 0.05 (a share over 386 draws has a standard deviation of at most 0.02 from the draw alone).
+      Wroclaw 70b50d42 seeds 1-20, 386 gates: single 0.350 (+0.100), square 0.155 (-0.045), tunnel 0.192 (-0.008),
+      flat 0.104 (-0.046), cube 0.199 (-0.001). Before (C4 pass 2): tunnel 0.09, flat 0.04. All four elements within 0.05;
+      single is over because it holds the flat squares still owed at the course's end (flat drawn 63, placed 40, refused
+      by space 37 and by the proof 76 times). Square 0.155: drawn 61, placed 60, never refused: the draw alone.
+      7a475d38 seeds 1-10, 216 gates: single 0.287, square 0.222, tunnel 0.181, flat 0.120, cube 0.190: all within 0.05.
+      39e63ce9 seeds 1-10, 91 gates: flat 0.011 (1 placed of 13 drawn, refused by space 49 times), tunnel 0.132: this room
+      (course at step 0.3) is named as one where a flat square does not fit. The flat square's rise is not lowered: the
+      table cannot tell which leg of the proof refuses it (left).
 - [~] (2) Keyboard pilot: tools/bench/scripts/course-keys-probe.mjs (real key events of the game scheme, reads the craft's
       place only; every gate in order; counted per element; the climb speed over the flat square). Not run yet.
 - [ ] (3) tunnel picture along the row's axis; (4) the chain; pictures; 'What the owner does'.
