@@ -581,6 +581,10 @@ export class LessonHost {
                 mode.bridge.engine?.cue(a.event);
                 break;
             case 'place':
+                // in place the start is where the craft was switched on: the runner's place there (its begin, the first attempt
+                // after the intro) would be a respawn, the craft stopped dead or pulled back (review SO-1, r11 life spy);
+                // R places through its own reset (mode.ts), a re-centre goes to a checkpoint
+                if (a.to === 'start' && mode.inPlace) break;
                 mode.place(a.pose);
                 break;
             case 'ask':

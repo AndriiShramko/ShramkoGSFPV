@@ -238,6 +238,8 @@ export class Rig {
     /** the pilot's 'Key hints at the start of each step' (lane sonic-hints): false is off */
     keyHints = true;
     pilot: LessonPilot | null = null;
+    /** the page's reaction to a session pref the mode sets or clears (respawn.ts: crash.enabled is a 'life' setting); null: none */
+    onPref: ((id: string) => void) | null = null;
     session!: FlightSession;
     mode!: SonicMode;
     host!: LessonHost;
@@ -263,8 +265,8 @@ export class Rig {
         rig.mode = new SonicMode({
             events: rig.events,
             prefs: {
-                setSession: (id: string, v: unknown) => { rig.sessionPrefs.set(id, v); return { ok: true, value: v } as never; },
-                clearSession: (id?: string) => { if (id) rig.sessionPrefs.delete(id); }
+                setSession: (id: string, v: unknown) => { rig.sessionPrefs.set(id, v); rig.onPref?.(id); return { ok: true, value: v } as never; },
+                clearSession: (id?: string) => { if (id && rig.sessionPrefs.delete(id)) rig.onPref?.(id); }
             },
             session: () => rig.session,
             setLesson: (a) => {

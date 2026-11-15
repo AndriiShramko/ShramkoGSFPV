@@ -21,15 +21,22 @@ Stage Y1-switch-and-pins (train 3 wave 2):
   merged by U:/Temp/gsfpv-train3/sonic3/merge_tts.py; every old value reproduced exactly: en 397, es pl ru 487 each);
   test/lesson-schedule.test.ts counts en 429 lines / 301 longer, es pl ru 515 lines / 280, 376, 515 longer: 13 of 13.
   (measure-tts.ps1 writes a BOM and CRLF and all en lines: never commit its output, merge it.)
+- [x] Pass 2: the Tunis stall of the before run (z5-r11-tunis4.json trail, 344 to 358 s): the craft sat at y 10.0, x 4.4 to
+  5.0, z 17.1 with W and Space held for 14 s; the hum pointed at g2 5.6 m away, up 34 deg and ahead (dir 0.0, 0.56, -0.82):
+  the sound named the gate, the craft could not climb or go on (something overhead and ahead). The probe's pilot has no
+  way around an overhang; not a sound fault (what blocks it at y 10 is not measured).
+- [x] Pass 2, SO-1 cause, measured (release e452bed4, r11 Z5_QUICK Tunis 5 m/s, port 5823, y1-spy.json, 5 of 8): switch on:
+  setCrashOn(false) true -> life 'settings' -> applyLifeSettings; then respawnStart (the runner's 'place' to the start at its
+  begin) -> life 'manual-start'; 6.2 s later a second respawnStart (the first attempt's place: the craft left the start during
+  the intro); speed 6.61 -> 0.02. Switch off: setCrashOn(true) true -> life 'settings', speed 5.11 -> 0 in 3 ms.
+  Fix: mode.ts in place sets no crash.enabled (the pilot's own crash setting stays) and clears only what it set; lessons.ts
+  takes no runner 'place' to 'start' in place (mode.inPlace); R still places (its own reset path in mode.ts). Test
+  sonic-in-place.test.ts "with the page pref reaction wired" (rig option onPref, as respawn.ts): NEG OK on HEAD mode.ts and
+  lessons.ts, NEG OK on HEAD lessons.ts alone; 5 sonic files 26 of 26; apps/fly tsc 0 errors.
+  Crash at switch-on: the pilot's own setting, because the switch must start no new life and the before run lost its course
+  with crash off too (the stall above), so the crash setting does not decide the course.
 - [ ] LEFT, in this order (stage stopped at its reply budget; nothing uncommitted in either repo but the two old evidence files):
-  1. Why the Tunis course stalls at g2 with a median 0.3 m/s (before run): read the trail in z5-r11-tunis4.json (pilot or sound).
-  2. SO-1 cause: release build of HEAD, then PORT=5823 Z5_QUICK=1 Z5_SCENE=887f27aa Z5_SPEEDS=5 Z5_WALLS=shipped r11 (the
-     probe takes the GPU lock itself): run.switchOn.spy and run.off.spy name the call and the life reason. Candidates read in
-     code: crash.enabled cleared on leave (respawn.ts:67 setCrashOn -> applyLifeSettings, reason 'settings', "level and
-     still"); scene.walls / scene.transform session prefs cleared (clearScanPrefs) -> walls.ts follow -> setWallsOn newLife.
-     Fix in mode.ts (in place: set and clear no 'life' pref, MODE_PREFS without crash.enabled when here, no scan prefs when
-     here) with a unit test in sonic-in-place.test.ts that wires respawn's pref reaction; crash at switch-on: keep the pilot's
-     setting (run 4 showed the course lost with crash on? the spy run tells whether that was the crash or the stop).
+  2. Browser: release build, then r11 Z5_QUICK Tunis again, expect the switch checks to pass (8 of 8 with the course run).
   3. Package: words check, node tools/run-tool.mjs listen-words (Whisper, takes the GPU lock itself; SHRAMKO_LISTEN_PY must
      name a Python with faster-whisper, check first), commit evidence/listen/VL-4-words.json; then the full package suite
      (detached, log), expect 0 failures; then pin packages/sonic-fpv to that commit (docs/agent-map.md pin recipe), simulator

@@ -256,4 +256,56 @@ describe('the free flight opened in place keeps the craft where it is', () => {
         expect(Math.hypot(r.pos[0] - (at[0] as number), r.pos[2] - (at[2] as number))).toBeLessThan(0.1);
         expect(Math.hypot(r.pos[0] - scan.spawn[0], r.pos[2] - scan.spawn[2])).toBeGreaterThan(1);
     });
+
+    // review SO-1, found by the r11 life spy in the browser (y1-spy.json): the page's crash rule is a 'life' setting
+    // (respawn.ts: setCrashOn, then applyLifeSettings), so the mode's crash.enabled false made a new life on the switch on and
+    // its clear another on the switch off; and the runner's 'place' to the start (its begin, and the first attempt when the craft
+    // left the start during the intro) took the respawn path. In place none of them may happen.
+    it('with the page pref reaction wired: switched on and off in the air, no new life, the speed and the way flown kept', async () => {
+        const track = garden();
+        const scan = scanOf(track);
+        const free = scanFreeLesson('7a475d38', [5, 0, 0, 0]);
+        const r = await Rig.make(free, { scan });
+        rig = r;
+        // what respawn.ts does on the page when crash.enabled changes (the pilot's own setting: on)
+        r.onPref = (id) => {
+            if (id !== 'crash.enabled') return;
+            const s = r.session;
+            if (s.setCrashOn(r.sessionPrefs.get(id) !== false)) s.applyLifeSettings(s.presetId, s.overrides);
+        };
+        let lives = 0;
+        const onLife = r.session.onLife;
+        r.session.onLife = (...a: Parameters<NonNullable<typeof onLife>>) => {
+            lives++;
+            onLife?.(...a);
+        };
+        const respawns = vi.spyOn(r.session, 'respawnStart');
+        const flyTo = async (): Promise<void> => {
+            await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+            expect(r.host.runner?.phase).toBe('flying');
+            await r.run(1500, () => ({ forward: 1 }));
+            expect(r.speed).toBeGreaterThan(1);
+        };
+        expect(await r.host.openFree(free, { here: true })).toBe(true);
+        await flyTo();
+        // off in the air: the same tick, then the flight goes on
+        const v1 = r.speed;
+        r.mode.leave();
+        await r.run(20);
+        expect(lives).toBe(0);
+        expect(r.speed).toBeGreaterThan(v1 / 2);
+        // on again in the air
+        const v2 = r.speed;
+        expect(await r.host.openFree(free, { here: true })).toBe(true);
+        await r.run(50, () => ({ forward: 1 }));
+        expect(lives).toBe(0);
+        expect(r.speed).toBeGreaterThan(v2 / 2);
+        // flown on during the intro: the first attempt does not put the craft back where it was switched on
+        await r.run(1500, () => ({ forward: 1 }));
+        const flown = [...r.pos];
+        await r.run(60000, null, () => r.host.runner?.phase === 'flying');
+        expect(Math.hypot(r.pos[0] - (flown[0] as number), r.pos[2] - (flown[2] as number))).toBeLessThan(3);
+        expect(respawns).not.toHaveBeenCalled();
+        expect(lives).toBe(0);
+    });
 });

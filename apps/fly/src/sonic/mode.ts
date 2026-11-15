@@ -95,6 +95,10 @@ export class SonicMode {
     private longDone = false;
     /** placed by the mode itself since the last sample (a re-centre): the next touch is not this one's echo */
     private placedAt = -Infinity;
+    /** switched on in place (ModeStart.here) */
+    private here = false;
+    /** the MODE_PREFS ids enter() set (leave() clears these) */
+    private prefIds: string[] = [];
 
     constructor(host: ModeHost) {
         this.host = host;
@@ -103,6 +107,11 @@ export class SonicMode {
 
     get active(): boolean {
         return this.on;
+    }
+
+    /** Switched on in place: the craft flies on where it is (a runner's place to the start is not taken, lessons.ts). */
+    get inPlace(): boolean {
+        return this.on && this.here;
     }
 
     /** The engine the mode sounds through (step 7), or null. */
@@ -119,7 +128,12 @@ export class SonicMode {
         if (this.on) this.leave();
         this.on = true;
         const h = this.host;
-        for (const [id, v] of Object.entries(MODE_PREFS)) h.prefs.setSession(id, v);
+        this.here = o.here === true;
+        // in place the pilot's crash setting stays: crash.enabled is a 'life' setting (respawn.ts: setCrashOn, then
+        // applyLifeSettings), so setting it here and clearing it in leave() each made a new life, the craft stopped dead
+        // (review SO-1, the r11 life spy)
+        this.prefIds = Object.keys(MODE_PREFS).filter((id) => !(this.here && id === 'crash.enabled'));
+        for (const id of this.prefIds) h.prefs.setSession(id, MODE_PREFS[id]);
         // a scan lesson flies its scan at the lesson's size, walls on (the session was made with them: the entry and the
         // lesson host set them before the scan loaded; this keeps them while the mode runs)
         if (o.lesson) forceScanPrefs(h.prefs, o.lesson.world);
@@ -175,7 +189,9 @@ export class SonicMode {
         for (const off of this.offs) off();
         this.offs = [];
         const h = this.host;
-        for (const id of Object.keys(MODE_PREFS)) h.prefs.clearSession(id);
+        for (const id of this.prefIds) h.prefs.clearSession(id);
+        this.prefIds = [];
+        this.here = false;
         clearScanPrefs(h.prefs);
         h.setLesson(null);
         this.lessonFlight(null);
