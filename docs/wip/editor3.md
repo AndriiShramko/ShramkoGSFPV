@@ -205,6 +205,30 @@ Stage H1-handles-first (train 3 wave 2, the finishing lane):
   Test tools/bench/test/editor3-tools.test.ts 6 pass; with editor3-fixes, -flying, -gatebar, -mouse, -press,
   tracks-editor-ui 7 files 50/50; NEG OK (neg_control.py ref bb670ead, 8 files); apps/fly tsc 0. NOT yet seen in a browser.
 
+- [x] H1.1b course.ts exposes window.__gsfpvEditHit(x, y) (view.hitAt, read only) for the probe; apps/fly tsc 0 (this commit)
+- [ ] left (next worker, in this order; stopped at the reply budget of 30):
+  1. the 'before' run: if U:/Temp/gsfpv-train3/editor3/h1/before/e4.json exists, read it (release of bb670ead, both scenes);
+     else skip it: the lock was held by another lane from 01:37 and the run was stopped at the budget.
+  2. probe tools/bench/src/editor3-prove.ts for one set of handles: before the ring step click
+     `.ce-gatebar [data-bar="turn"]` and record dbg().tool; before the centre box press the key T; before the X arrow read
+     tool 'move' (set by Shift+Tab to another gate: toolAfter). Find the press point by walking out from stand.screen along
+     the axis in 6 px steps with window.__gsfpvEditHit(x, y) until it names the shown tool (ring radius read from the gizmo),
+     then press there. Record the radius found.
+  3. ED-3 per the lead's wording (after a crash the view returns to the edit camera and stays there): fly-mode.ts today keeps
+     flying through a crash (review ED-3 decision of the fixes stage, test editor3-flying.test.ts line 122). Change to: a crash
+     in 'fly' goes to 'edit' and holds there while the keepArmed respawn re-arms; flying again needs armed seen false then
+     true (switch off/on, or Space). Update that test (its expectation flips), negative control on fly-mode.ts. Look for a way
+     to disarm the respawned drone from course.ts first (else it may drift while the edit view shows); a6-reference stays.
+  4. probe ED-2 step: in the keys step read controls.gate.armed and mode after W (must stay false/'edit'); then Space: mode
+     'fly'; Space again (or disarm): 'edit'. ED-4 step: Add gate, click at 0.85 of the height (floor), wait 4 s, record the
+     new gate's paint/problems (not red) and a screenshot editor3-floor-add-1920.png; look at it.
+  5. a release build of this branch, then `OUT=U:/Temp/gsfpv-train3/editor3/h1/after PHONE=1 bash
+     U:/Temp/gsfpv-train3/editor3/h1/run.sh` (both scenes, port 5801, lock taken only around the probe, 590 s cap); read
+     turn quatChange > 0 with movedM 0, scale opening changes with movedM 0 on Wroclaw, kind click ok, look atMovedM > 0 on
+     Tunis; LOOK at editor3-drag-1920.png and editor3-wroclaw-drag-1920.png (one set of handles, window closed) and
+     editor3-844.png (the gate bar with 11 buttons readable at 844 wide).
+  6. full course with Add gate in a browser (the text is unit-tested only); gates.py --only vitest,architecture,i18n,b18.
+
 ## Facts (measured)
 
 - E4 (tools/bench/src/editor3-prove.ts, SITE http://localhost:5800, release of d726a3cb with the Wroclaw walls stand-in in
@@ -421,6 +445,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- H1: about 30 replies; the most went to reading view-mouse.ts, course.ts and the probe in slices and to a 'before' probe that
+  waited on the GPU lock held by another lane (01:37 onwards), so no browser run fitted; a lock queue that says the holder
+  and its end time, and a probe step list kept in the status file, would have let the code go first and the run land.
 
 - fixes pass 2: about 33 replies; the most went to the release build (about 6 minutes) and the probe run waited out, and to
   reading the locale and panel layout for ED-7; starting the build and the probe as the first command and writing ED-5/6/7
