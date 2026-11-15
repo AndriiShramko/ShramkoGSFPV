@@ -55,6 +55,9 @@ const HOOKS = () => {
         const el = n.nodeType === 1 ? n : n.parentElement;
         if (!el) return null;
         if (el.closest('[aria-hidden="true"]')) return null;
+        // review QW-5: a region inside a hidden element (the recorder's closed panel, hidden attribute: display none) is not in the
+        // accessibility tree, so a screen reader gets nothing from it
+        if (el.closest('[hidden]')) return null;
         const r = el.closest('[aria-live]');
         return r && r.getAttribute('aria-live') !== 'off' ? r : null;
     };

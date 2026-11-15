@@ -46,7 +46,12 @@ export const QUIET_SOUNDS: Readonly<Record<string, QuietSound>> = Object.freeze(
     'sonic.say.scanNoWalls': { cue: null, why: 'a fact of the scan, not an event of the flight; the caption shows it' },
     // the course made by Shift+G (app/builtin/course.ts): its progress lines are free text; its ready line passes its own sound, the
     // short chime ({ kind: 'checkpoint' }, sayVia's quietCue), as the walls ready do
-    'sonic.say.text': { cue: null, why: 'progress of the course being made: the flight goes on; the ready line plays the chime itself' }
+    // Free text (app/builtin/course.ts, app/builtin/walls.ts): the table's answer is for the progress lines; the speakers pass their own
+    // sound for the rest (review QW-1, QW-2, QW-6): the course ready 'checkpoint' chime; a lap or the course's end (course.best,
+    // course.lapDone) the 'lap' notes (the runner sends none for this course: it is counted by the course feature); Shift+G that
+    // brings no course (fail(): course.failed, course.none and the like) and a walls build that failed 'wrong-side' (no gate is there
+    // to be missed then); Shift+G pressed while the course is being made, and the walls' "the picture may stop" the 'answer' wait
+    'sonic.say.text': { cue: null, why: 'progress of the course or the walls being made: the flight goes on; the other lines pass their own sound' }
 });
 
 /** The sound of the narrator switched off by its key (Q4): two notes down, unlike the chime of a gate or a course ready. */

@@ -122,7 +122,8 @@ export function startSonic(d: SonicStartDeps): StartHandle {
                 }
                 // a scan lesson loads its scan at the lesson's size, walls on: set before the flight loads it (the mode keeps
                 // them while it runs and takes them off when it leaves), and the pilot hears that it takes a while
-                if (forceScanPrefs(d.prefs, lesson.world)) void setup.audio.engine.say({ key: 'sonic.say.scanLoading' }, { interrupt: false }).catch(() => undefined);
+                // (review QW-3: with the narrator off a scan flight starts without that line; the page shows the load)
+                if (forceScanPrefs(d.prefs, lesson.world) && setup.prefs.narrator !== false) void setup.audio.engine.say({ key: 'sonic.say.scanLoading' }, { interrupt: false }).catch(() => undefined);
                 try {
                     await d.launch({ lessonId: id, world: lessonFlightWorld(lesson), sceneId: lesson.world.kind === 'scan' ? lesson.world.sceneId : null, free, freeOf: (x) => freeLessonOf(request, x), setup, screen });
                 } catch (e) {

@@ -429,8 +429,11 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - [x] N5 the table (apps/fly/src/sonic/quiet-cues.ts QUIET_SOUNDS is the code's copy), narrator off in a flight:
   gate behind (sonic.say.gateBehind, fly.gate-behind): 'wrong-side' cue; put back (fly.reset-start, fly.reset-checkpoint): 'reset'
   sweep; mode on (sonic.say.inPlaceOn): 'answer' yes; walls ready (sonic.say.wallsIn) and course ready (course.readySpoken): 'checkpoint'
-  chime; wrong way, wrong side, stage: their own cue is sent with the line (runner.ts, lessons.ts), nothing added; gate passed and
-  finish: the runner's gate and lap notes, no line needed; crash: the touch cue; scanLoading: not said, nothing (the page shows the
+  chime; wrong way, wrong side, stage: their own cue is sent with the line (runner.ts, lessons.ts), nothing added; gate passed: the
+  gate's own notes; lap and finish of the Shift+G course (course.best, course.lapDone, counted by the course feature, not the runner):
+  the 'lap' notes passed by course.ts (fixes QW-1); Shift+G with no course (course.ts fail()) and a failed walls build: 'wrong-side';
+  Shift+G while the course is made and the walls' "the picture may stop": 'answer' wait (fixes QW-2, QW-6); crash: the touch cue;
+  scanLoading: not said, nothing, also from the sound page (fixes QW-3) (the page shows the
   load, and the scan's sound starts when it is in); scanFailed: still spoken (else the pilot has no sign at all); GPU hint: nothing
   (it reports the graphics, not the flight); intro, keys, course offer, fly.go, walls building, course and walls progress: nothing
   (they teach or report a flight that goes on); K and I: spoken (asked, N1); narrator off: 'answer' no; narrator on: spoken.
@@ -521,6 +524,35 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   'What the owner does'; For the lead (package pin 293ebae on train5, unchanged in W2; files outside apps/fly/src/sonic changed
   in W1 and W2: tools/bench tests and scripts, packages/prefs keymap.ts, doc.ts, store.ts, the four fly locales, this file).
 - Not verified: nothing was heard by a human ear; no real screen reader; es, pl, ru texts not checked by a native speaker.
+
+### Status (lane quiet2, stage fixes, review QW-1 to QW-8)
+- [x] F0 merge of origin/main (a9d32ad9, a lead note) into sonic4: 03fa6bba, no conflict. (The W1 merge 7dde5e2c held the rest.)
+- [x] QW-1, QW-2, QW-3, QW-5 (part), QW-6 (this commit): course.ts lap and finish line pass { kind: 'lap' }; fail() passes 'wrong-side';
+  Shift+G while busy passes 'answer' wait; walls.ts endProgress(ok false) and the mayStop line hand a kind to the speaker,
+  app/builtin/walls.ts maps 'failed' to 'wrong-side' and 'wait' to 'answer' wait; start.ts says scanLoading only with the narrator on;
+  entry.ts flightLessonOf: the entry's free flight (in place or the scan link's) counts as scan-free until the host has a lesson
+  (feature.ts uses it for bridge.quiet and #ui). quiet-cues.ts 'sonic.say.text' row and the N5 row above corrected. New test
+  tools/bench/test/sonic-quiet-w3.test.ts; with sonic-quiet2 and walls-first: 36 passed (quiet2/w3-v1.log); NEG OK on entry.ts,
+  start.ts, course.ts, walls.ts, app/builtin/walls.ts against 03fa6bba (w3-neg.log); tsc apps/fly 0, tools/bench 0.
+- [x] QW-5 recorder part refuted: the recorder's panel (sonic-session/panel.ts root #sonicrec-panel) is created with the hidden
+  attribute, so its live regions are display none and out of the accessibility tree; the probe counted them because it skipped only
+  aria-hidden. quiet-probe.mjs now skips a region inside [hidden] too. No change to panel.ts.
+- [ ] QW-4 (blocker, the lead's): the pin 293ebae is only on the package's local branch train5 (git branch -a --contains: train5);
+  its diff to 878f055 touches 6 files, all under src/ and test/ (README untouched). The package is checked out on train4 with the two
+  evidence files modified. Push train5 or merge 293ebae into the package's main before sonic4 goes to main. Not done here (no push).
+- [ ] QW-7 (minor): the lead decides what N6's "two lines" means. Now: two caption entries (CAPTION_LINES 2), each wraps freely.
+  If rows are meant: .sonic-caption with -webkit-line-clamp 2 in sonic.css (the screen reader still gets the whole text). Not changed.
+- [x] QW-8: 'For the lead' below names every changed file outside apps/fly/src/sonic.
+
+### For the lead (lane quiet2, whole branch against origin/main)
+- Changed outside apps/fly/src/sonic: apps/fly/src/app/say-via.ts (quietCue, quiet lines); apps/fly/src/app/builtin/course.ts (lane
+  course4's file: sayLine's quietCue and the three call sites of QW-1 and QW-2; merge with course4 by hand); apps/fly/src/walls.ts and
+  apps/fly/src/app/builtin/walls.ts (the speaker's kind 'failed' and 'wait', QW-2 and QW-6); packages/prefs/src/doc.ts, keymap.ts
+  and packages/prefs/test/catalog.test.ts, keymap.test.ts; packages/i18n/locales/fly/sonic/* and fly/sonickeys/* (four locales);
+  tools/bench/scripts/quiet-probe.mjs, quiet-summary.mjs; tools/bench/test sonic-* tests, app-keys, sonic-lesson-rig.ts; this file.
+- The gitlink packages/sonic-fpv points at 293ebae, which is only on the package's local branch train5 (QW-4): push it or merge it
+  into the package's main first.
+- Open decisions: N3 (the off sound is 'answer' no; a sound of its own needs a package change) and QW-7 (rows or entries).
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:

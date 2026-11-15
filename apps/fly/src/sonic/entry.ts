@@ -35,6 +35,20 @@ export function quietFlight(prefs: SonicPrefs, lessonId: string | null, paused: 
     return prefs.narrator === false && lessonId === SCAN_FREE_ID && !paused;
 }
 
+/**
+ * Lane quiet2 (review QW-5): the lesson a flight counts as, for quietFlight. The host sets its lesson about 0.12 s after the switch on
+ * (measured in W2 pass 2); before that, the free flight the entry opens (in place, or the scan link's free flight) counts already, so
+ * the first frames of a quiet flight are quiet too. Once the host had a lesson, its own answer stands (null: none).
+ */
+export function flightLessonOf(entry: { readonly lessonId: string | null; readonly here?: boolean; readonly free?: unknown }): (now: string | null) => string | null {
+    const first = entry.here === true || (entry.free ?? null) !== null ? entry.lessonId : null;
+    let had = false;
+    return (now) => {
+        if (now !== null) had = true;
+        return now ?? (had ? null : first);
+    };
+}
+
 /** The settings a shared link may set for a visit (@gsfpv/scenes sonic-link.ts): the sound's language, never the listener's own. */
 export type VisitPrefs = Partial<Pick<SonicPrefs, 'theme' | 'calm' | 'heightPolarity' | 'listenerFrame'>>;
 

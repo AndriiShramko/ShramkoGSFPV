@@ -199,7 +199,8 @@ export const course: Feature = {
                 const line = before === null || last < before ? t('course.best', { time: lapClock(last) }) : t('course.lapDone', { time: lapClock(last) });
                 if (before === null || last < before) writeBest(keyOf(run.track), last);
                 ctx.hud.flash(line, before === null || last < before ? 3000 : 2500);
-                sayLine(line);
+                // lane quiet2 (review QW-1): with the narrator off the lap's notes say it (the package's own 'lap' cue)
+                sayLine(line, { kind: 'lap' });
             }
             const next = v.running || v.next >= 0 ? v.next : -1;
             if (next !== shownNext) {
@@ -262,7 +263,8 @@ export const course: Feature = {
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
             ctx.hud.flash(text, 4000);
             // lane onecourse fixes (review OC-1): a pilot by sound hears why no course came and what to press (the text names Shift+G)
-            sayLine(text);
+            // lane quiet2 (review QW-2): with the narrator off one short falling sound says no course came (no gate is there to miss)
+            sayLine(text, { kind: 'wrong-side' });
         };
 
         // lane review TR-3: a job that does not answer in time (a hostile course kept the worker in the sweeps for minutes) ends
@@ -431,7 +433,8 @@ export const course: Feature = {
             if (!w) return wallsFirst(() => generate(seed));
             // lane onecourse fixes (review OC-1): a press while a course is being made says how far it is (the progress line)
             if (busy) {
-                if (hook.progress) sayLine(hook.progress);
+                // lane quiet2 (review QW-2): with the narrator off the press is answered by the package's "wait" sound
+                if (hook.progress) sayLine(hook.progress, { kind: 'answer', what: 'wait' });
                 return;
             }
             busy = true;
