@@ -75,7 +75,39 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   app-dji-rc2.test.ts failure was load from the probe beside it.
 - [x] X1 closed (this commit). The gate behind a wall over the scan is handed to the lead (For the lead, item 3):
   its cause is in the splat drawing (packages/render-pc/src/renderer.ts, accum.ts), outside this lane.
-- [ ] X2-whole-scene: not started (next run).
+- [x] X2.1 Release build of f7064fd6 (node scripts/build-release.mjs, sha256 d96c4708b187...), log
+  U:/Temp/gsfpv-train2/voxview/build-x2a.log. Not yet served nor run in a browser (dist/walls not copied yet).
+- [x] X2.2 Measured the walls data (tools/bench/scripts/voxview-cells.ts, Node, no browser, Facts X2):
+  Wroclaw stand-in 70b50d42 holds 27236 occupied chunks; the old view plans at most the 20 m radius (934 chunks in X1).
+- [x] X2.3 Built (this commit), not yet run in a browser: far levels 2 and 3 (cubes of 8 and 16 voxels) in
+  packages/collision/src/mesh.ts (buildChunkBlockFaces option merge) and overlay.ts (COARSE_LEVELS, overlayLevels,
+  levelCellVoxels; planChunks option whole: no radius, past the fine and block budgets level 2 while farQuads lasts,
+  then the coarsest level for every remaining chunk; ChunkPlan.perLevel, farQuads). apps/fly/src/voxels.ts: the
+  view of voxels alone (no preview) plans the whole scene; a feed keeps the worker busy after each chunk (before, at
+  most 4 chunks were asked per 150 ms plan); in the whole view no chunk is removed before its new level lands; stats
+  whole, wallChunks, plannedChunks, drawnChunks, share, perLevel, farthestM, drawnFarM, detail, frameMs.
+  V3 keeper apps/fly/src/voxel-keeper.ts (pure): a mean frame over 40 ms in a 1 s look halves the share of the
+  budgets (floor 1/8), 4 looks in a row under 20 ms double it; all three numbers are estimates, not measured on a
+  weak device. The share multiplies fineQuads, coarseQuads and farQuads (250000, estimate); the coarsest level is
+  never cut. Hook voxels.setDetail(d) forces the share (apps/fly/src/app/test-hook.ts, app/builtin/voxels.ts).
+  Walls line: voxels.statusWhole in packages/i18n/locales/fly/{en,es,pl,ru}.json ("... the whole scene: {share}%
+  drawn, to {m} m ...").
+- [x] X2.4 Unit tests: packages/collision/test/voxview-whole.test.ts (6: far cubes cover every wall cell = merged
+  brute-force faces at merge 1, 2, 4; cube edges on 16-voxel lines; every occupied chunk planned once at any radius
+  and budget; nearest at level 0, levels never finer with distance; a smaller budget moves chunks coarser, none
+  leave) and tools/bench/test/voxview-keeper.test.ts (3). With overlay.test.ts: 23 passed. Negative control: with
+  origin/main overlay.ts and mesh.ts, 6 of 6 fail (5 by assertion, e.g. "expected 7186 to be 656", "expected +0 to
+  be 144"; one TypeError reading lod). The keeper is a new file (no old version to put back). Typecheck apps/fly 0
+  errors; packages/collision not typechecked on its own yet.
+
+## Facts X2 (measured, Node)
+
+tools/bench/scripts/voxview-cells.ts on U:/Temp/gsfpv-train2/walls/release/70b50d42/v1 (51 s, result
+U:/Temp/gsfpv-train2/voxview/cells-70b50d42.json): 5 cm voxels, grid 5908 x 496 x 7508 voxels = 295 x 25 x 375 m,
+324781154 solid voxels, 8611537 solid blocks, chunk 48 voxels (2.4 m), 124 x 11 x 157 chunks, 27236 occupied.
+Whole scene quads: level 1 (blocks of 4) 5487897 (worker time 19.3 s in Node), level 2 (8 voxels) 1472858 (10.1 s),
+level 3 (16 voxels) 489565 (11.5 s). So the whole scan at level 3 is about 1 M triangles but 27236 chunks; one mesh
+instance per chunk may make the draw calls the limit (a guess, not measured: measure the frame time first, X2 left 1).
 
 ## Facts X1 (before, origin/main 4e6ef171, release on port 5740, headless Chrome, 1280x800)
 
@@ -108,12 +140,31 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-1. Stage X2-whole-scene (its prompt). dist holds the release of 6988977b with the stand-in walls; rebuild first.
+Stage X2-whole-scene, in this order (the code of X2.3 is committed, nothing of it was seen in a browser yet):
+1. Rebuild the release (dist holds f7064fd6, without X2.3), copy U:/Temp/gsfpv-train2/walls/release into dist/walls,
+   serve on 5740. Measure with BENCH_UNCAPPED=1 on Wroclaw 70b50d42 in the voxels-alone view (key V twice): cells
+   and chunks drawn (stats wallChunks, plannedChunks, drawnChunks, perLevel, farthestM, drawnFarM), frame time at the
+   spawn and 60 m up, time from the switch to share 100. The "before" numbers come from origin/main's release (a
+   second build or the X1 facts: 934 chunks to 20 m). A new probe is needed (voxview-depth-probe.mjs has the open,
+   the hold and the stats; add a --far mode with the 60 m eye, the street eye and setDetail(0.125)).
+2. If the frame time with 27236 chunk meshes is too long (draw calls), merge far chunks into group meshes (a level
+   3 chunk of 4x4x4 chunks is a chunk of 192 voxels: overlayChunk works on it with merge 4), keyed apart from the
+   chunks; only then.
+3. Tunis 887f27aa (no published walls: the walls build themselves, 5 cm): the same numbers.
+4. Pictures voxview-far-before.png, voxview-far.png, voxview-street.png, voxview-tunis.png, each looked at.
+5. The weak device: setDetail(0.125) and show the far part stays (drawnFarM, perLevel).
+6. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5740/en), walls-published-probe on the
+   local copy, typecheck apps/fly and packages/collision, gates.py --only vitest,architecture,i18n,b18,leaks,
+   a6-reference. Status: What the owner does, Not verified, For the lead.
 - Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; X1 put
   it back on the pin with git submodule update (clean working tree, nothing lost).
 
 ## For the lead
 
+- Changed outside the voxel view in X2: packages/collision/src/mesh.ts (buildChunkBlockFaces option merge; facesFromOcc
+  takes any cell size) and packages/collision/src/overlay.ts (far levels, whole-scene plan): not vendored files;
+  apps/fly/src/app/test-hook.ts (voxels.setDetail in the hook type); packages/i18n/locales/fly/{en,es,pl,ru}.json
+  (voxels.statusWhole).
 - Changed outside the voxel view: apps/fly/src/walls.ts (the panel's header, fold, close, placement: the block that
   builds 'walls-more'), apps/fly/src/fly.css (.walls-menu and the new .walls-head rules), tools/bench/src/a1-api-check.ts
   (five public members in USED). apps/fly/src/course/view.ts is NOT changed: its materials already have depthTest and

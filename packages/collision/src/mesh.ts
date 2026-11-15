@@ -131,8 +131,14 @@ export interface ChunkOptions {
      * the voxels facing it across the border are empty, its side is still drawn.
      */
     closedBorder?: boolean;
-    /** fill ChunkMesh.rows: the cell row of each quad */
+    /** fill ChunkMesh.rows: the cell row of each quad (in blocks for buildChunkBlockFaces) */
     rows?: boolean;
+    /**
+     * buildChunkBlockFaces only: blocks per side of one cell (1, 2, 4, ...): a cell of `merge`^3
+     * blocks with at least one solid voxel is one solid cube of 4 * merge voxels a side (the voxel
+     * view's far levels). It must divide size / 4.
+     */
+    merge?: number;
 }
 
 /** The chunk (in units of `size` voxels) holding a world point of `col`. */
@@ -215,31 +221,34 @@ export function buildChunkFaces(col: VoxelCollision, chunk: { x: number; y: numb
 export function buildChunkBlockFaces(col: VoxelCollision, chunk: { x: number; y: number; z: number }, size = 32, opts: ChunkOptions = {}): ChunkMesh {
     const comp = opts.components;
     checkChunkArgs(col, chunk, size, comp);
-    const cells = size / 4;
+    const f = opts.merge ?? 1;
+    if (!Number.isInteger(f) || f < 1 || (size / 4) % f !== 0) throw new RangeError(`merge must be a whole divisor of ${size / 4}, got ${f}`);
+    const cells = size / 4 / f;
     const o = [chunk.x * cells, chunk.y * cells, chunk.z * cells];
-    // occupancy of the chunk's blocks plus a one-block halo: local index 0 is block o - 1
+    // occupancy of the chunk's cells plus a one-cell halo: local index 0 is cell o - 1
     const E = cells + 2;
     const occ = new Uint8Array(E * E * E);
     let solidInside = 0;
     const closed = !!opts.closedBorder;
-    forEachBlock(col, [o[0] - 1, o[1] - 1, o[2] - 1], [o[0] + cells + 1, o[1] + cells + 1, o[2] + cells + 1], (bx, by, bz) => {
-        const lx = bx - o[0] + 1, ly = by - o[1] + 1, lz = bz - o[2] + 1;
+    forEachBlock(col, [(o[0] - 1) * f, (o[1] - 1) * f, (o[2] - 1) * f], [(o[0] + cells + 1) * f, (o[1] + cells + 1) * f, (o[2] + cells + 1) * f], (bx, by, bz) => {
+        const lx = Math.floor(bx / f) - o[0] + 1, ly = Math.floor(by / f) - o[1] + 1, lz = Math.floor(bz / f) - o[2] + 1;
         if (lx < 0 || ly < 0 || lz < 0 || lx >= E || ly >= E || lz >= E) return;
         const inside = lx > 0 && ly > 0 && lz > 0 && lx <= cells && ly <= cells && lz <= cells;
         if (!inside && closed) return;
-        occ[(lz * E + ly) * E + lx] = 1;
-        if (inside) solidInside++;
+        const i = (lz * E + ly) * E + lx;
+        if (inside && occ[i] === 0) solidInside++;
+        occ[i] = 1;
     });
     if (solidInside === 0) return emptyMesh(comp, opts.rows);
-    return facesFromOcc(col, occ, cells, o, 4, comp, opts.rows);
+    return facesFromOcc(col, occ, cells, o, 4 * f, comp, opts.rows);
 }
 
 /**
  * Exposed faces of an occupancy grid of `size` cells per axis plus a one-cell halo (local index 0
- * is cell o - 1), merged into 1-D runs. A cell is `cellVox` voxels a side: 1 (voxels) or 4
- * (blocks). Positions are world metres of `col`.
+ * is cell o - 1), merged into 1-D runs. A cell is `cellVox` voxels a side: 1 (voxels) or 4 * f
+ * (f^3 blocks). Positions are world metres of `col`.
  */
-function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: number[], cellVox: 1 | 4, comp: BlockComponents | undefined, wantRows = false): ChunkMesh {
+function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: number[], cellVox: number, comp: BlockComponents | undefined, wantRows = false): ChunkMesh {
     const E = size + 2;
     const stride = [1, E, E * E];
     let faces = 0;
@@ -280,7 +289,17 @@ function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: num
     const rows = wantRows ? new Int32Array(quads) : undefined;
     const flip = col.flipXY;
     const res = col.voxelResolution * cellVox; // cell size in metres
-    const toBlock = cellVox === 1 ? 2 : 0; // cell index -> block index
+    const toBlock = cellVox === 1 ? 2 : 0; // cell index -> block index (voxels, single blocks)
+    const per = cellVox === 1 ? 1 : cellVox / 4; // blocks per side of a cell
+    // a merged cell's component: the first of its blocks that has one (some of its blocks are empty)
+    const compOf = (cx: number, cy: number, cz: number): number => {
+        if (per === 1) return componentAt(comp!, cx >> toBlock, cy >> toBlock, cz >> toBlock);
+        for (let z = 0; z < per; z++) for (let y = 0; y < per; y++) for (let x = 0; x < per; x++) {
+            const id = componentAt(comp!, cx * per + x, cy * per + y, cz * per + z);
+            if (id >= 0) return id;
+        }
+        return -1;
+    };
     const gmin = [col.gridMinX, col.gridMinY, col.gridMinZ];
     const lo = [0, 0, 0], du = [0, 0, 0], dv = [0, 0, 0];
     for (let k = 0; k < quads; k++) {
@@ -310,10 +329,10 @@ function facesFromOcc(col: VoxelCollision, occ: Uint8Array, size: number, o: num
         indices[ii + 3] = base; indices[ii + 4] = base + 2; indices[ii + 5] = base + 3;
         // runs never run along y, so every cell of a run shares the first one's row
         c[n] = a; c[q] = b; c[r] = r0;
-        if (rows) rows[k] = o[1] + c[1] - 1;
+        if (rows) rows[k] = (o[1] + c[1] - 1) * per;
         if (component && comp) {
             // a run is one line of touching solid cells, so the block of its first cell names its component
-            const id = componentAt(comp, (o[0] + c[0] - 1) >> toBlock, (o[1] + c[1] - 1) >> toBlock, (o[2] + c[2] - 1) >> toBlock);
+            const id = compOf(o[0] + c[0] - 1, o[1] + c[1] - 1, o[2] + c[2] - 1);
             if (id < 0) throw new Error('a face lies in a block the components do not list');
             component.fill(id, k * 4, k * 4 + 4);
         }

@@ -29,12 +29,12 @@ export type ToWorker =
     | { t: 'init'; gen: number; grid: WorkerGrid; nodes: Uint32Array; leaf: Uint32Array; size: number; layout: VoxelLayout; minBlocks: number; cut: CeilingCut | null }
     | { t: 'mark'; gen: number; minBlocks: number }
     | { t: 'ceiling'; gen: number; cut: CeilingCut | null }
-    | { t: 'chunk'; gen: number; key: number; x: number; y: number; z: number; lod: 0 | 1; style: VoxelStyle; lo: number; hi: number };
+    | { t: 'chunk'; gen: number; key: number; x: number; y: number; z: number; lod: number; style: VoxelStyle; lo: number; hi: number };
 
 export type FromWorker =
     | { t: 'ready'; gen: number; occupied: Int32Array; blocks: number; components: number; floaters: number; ms: number }
     | { t: 'marked'; gen: number; floaters: number }
-    | ({ t: 'chunk'; gen: number; key: number; lod: 0 | 1; faces: number; floaterQuads: number; ms: number } & PackedChunk)
+    | ({ t: 'chunk'; gen: number; key: number; lod: number; faces: number; floaterQuads: number; ms: number } & PackedChunk)
     | { t: 'error'; gen: number; message: string };
 
 interface WorkerScope {

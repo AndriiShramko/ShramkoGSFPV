@@ -8,7 +8,8 @@
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
 import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
-import type { CeilingCut, VoxelCollision } from '@gsfpv/collision';
+import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
+import { KEEPER_EVERY_MS, keeperStep } from './voxel-keeper';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
@@ -69,6 +70,22 @@ export interface VoxelStats {
     /** the plan's reach: per voxel up to fineRadiusM, per block up to radiusM (m) */
     fineRadiusM: number;
     radiusM: number;
+    /** the view of voxels alone plans the whole scene (X2): every occupied chunk, far ones as larger cubes */
+    whole: boolean;
+    /** chunks of the walls holding a wall cell, chunks planned, chunks drawn at their planned level */
+    wallChunks: number;
+    plannedChunks: number;
+    drawnChunks: number;
+    /** drawnChunks / plannedChunks in percent (100 when nothing is planned) */
+    share: number;
+    /** chunks drawn now per level (index: 0 voxels, 1 blocks of 4, 2 cubes of 8, 3 cubes of 16 voxels) */
+    perLevel: number[];
+    /** distance of the farthest chunk planned, and of the farthest drawn (m) */
+    farthestM: number;
+    drawnFarM: number;
+    /** the frame rate keeper's share of the face budgets (1 = full; V3: it never removes chunks) and its mean frame (ms) */
+    detail: number;
+    frameMs: number;
     inFlight: number;
     pendingUploads: number;
     /** connected pieces of the walls and the floating ones among them */
@@ -104,6 +121,14 @@ export class VoxelController {
     radiusM = 20;
     fineQuads = 600_000;
     coarseQuads = 250_000;
+    /** level 2 cubes (8 voxels) past the two budgets in the whole-scene view; the rest of the scene is level 3 (estimate) */
+    farQuads = 250_000;
+    /** the frame rate keeper's share of the budgets, its mean frame time, and a forced share (test hook) */
+    private detail = 1;
+    private forced: number | null = null;
+    private keeper = { last: 0, sum: 0, n: 0, at: 0, fast: 0, ms: 0 };
+    private lastPlan: PlannedChunk[] = [];
+    private planFar = 0;
     private session: FlightSession;
     private overlay: VoxelOverlay | null = null;
     private worker: Worker | null = null;
@@ -117,10 +142,13 @@ export class VoxelController {
     private components = 0;
     private floaters = 0;
     private known = { fine: new Map<number, number>(), coarse: new Map<number, number>() };
+    /** levels 2 and up: quads per chunk and their sums (lod -> ...) */
+    private knownFar = new Map<number, Map<number, number>>();
+    private sumFar = new Map<number, { q: number; n: number }>();
     private sum = { fine: 0, nFine: 0, coarse: 0, nCoarse: 0, ms: 0, n: 0 };
-    private wanted = new Map<number, 0 | 1>();
+    private wanted = new Map<number, number>();
     /** the level drawn per chunk; STALE: drawn in colours a floater preview change made old */
-    private loaded = new Map<number, 0 | 1 | typeof STALE>();
+    private loaded = new Map<number, number>();
     /** the floater filter's preview (previewFloaters): N, or null when off */
     private previewN: number | null = null;
     /** the collision ceiling's preview (previewCeiling): a height in scan metres, or null when off */
@@ -264,6 +292,17 @@ export class VoxelController {
         this.notify();
     }
 
+    /** The view of voxels alone with no preview running: the whole scene is planned (X2). */
+    private get whole(): boolean {
+        return this.shown === 'only' && this.previewN === null && this.previewC === null;
+    }
+
+    /** Force the keeper's share of the budgets (0.05..1; null: the keeper decides again). Tests and the bench. */
+    forceDetail(d: number | null): void {
+        this.forced = d === null || !Number.isFinite(d) ? null : Math.max(0.05, Math.min(1, d));
+        this.lastPlanAt = 0;
+    }
+
     /** V: off -> over the scan -> voxels only -> off. */
     cycle(): VoxelMode {
         this.setMode(VOXEL_MODES[(VOXEL_MODES.indexOf(this.mode) + 1) % VOXEL_MODES.length]);
@@ -334,7 +373,8 @@ export class VoxelController {
         if (want !== this.col) this.resetFor(want);
         this.recut();
         this.ceilingPlane();
-        if (this.shown === 'off' || !this.overlay || !this.col) return;
+        if (this.shown === 'off' || !this.overlay || !this.col) { this.keeper.last = 0; return; }
+        this.keep(now);
         const t0 = performance.now();
         this.overlay.update();
         const t1 = performance.now();
@@ -349,6 +389,19 @@ export class VoxelController {
             this.perf.replan += t2 - t1;
             this.perf.replanMax = Math.max(this.perf.replanMax, t2 - t1);
         }
+    }
+
+    /** V3: the frame rate keeper (voxel-keeper.ts) lowers the far cubes' detail when frames are slow; it never removes chunks. */
+    private keep(now: number): void {
+        const k = this.keeper;
+        if (k.last > 0) { k.sum += now - k.last; k.n++; }
+        k.last = now;
+        if (now - k.at < KEEPER_EVERY_MS || k.n === 0) return;
+        k.ms = k.sum / k.n;
+        k.at = now; k.sum = 0; k.n = 0;
+        const next = keeperStep(this.detail, k.ms, k.fast);
+        k.fast = next.fast;
+        if (next.detail !== this.detail) { this.detail = next.detail; this.lastPlanAt = 0; }
     }
 
     /** During the ceiling preview: the plane at the previewed height in the flown world, centred under the camera. */
@@ -371,6 +424,9 @@ export class VoxelController {
         this.occupied = null;
         this.known.fine.clear();
         this.known.coarse.clear();
+        this.knownFar.clear();
+        this.sumFar.clear();
+        this.lastPlan = [];
         this.wanted.clear();
         this.loaded.clear();
         this.inFlight.clear();
@@ -456,8 +512,15 @@ export class VoxelController {
         }
         const id = `${m.key}:${m.lod}`;
         this.inFlight.delete(id);
-        (m.lod === 0 ? this.known.fine : this.known.coarse).set(m.key, m.quads);
-        if (m.lod === 0) { this.sum.fine += m.quads; this.sum.nFine++; } else { this.sum.coarse += m.quads; this.sum.nCoarse++; }
+        if (m.lod <= 1) (m.lod === 0 ? this.known.fine : this.known.coarse).set(m.key, m.quads);
+        else {
+            if (!this.knownFar.has(m.lod)) this.knownFar.set(m.lod, new Map());
+            this.knownFar.get(m.lod)!.set(m.key, m.quads);
+            const f = this.sumFar.get(m.lod) ?? { q: 0, n: 0 };
+            f.q += m.quads; f.n++;
+            this.sumFar.set(m.lod, f);
+        }
+        if (m.lod === 0) { this.sum.fine += m.quads; this.sum.nFine++; } else if (m.lod === 1) { this.sum.coarse += m.quads; this.sum.nCoarse++; }
         this.sum.ms += m.ms;
         this.sum.n++;
         // no longer wanted at this level (the camera moved on): measured, not drawn
@@ -465,32 +528,14 @@ export class VoxelController {
         // same key: the upload replaces the other level in the same frame, so nothing blinks
         this.overlay.add(String(m.key), m);
         this.loaded.set(m.key, m.lod);
+        // keep the worker busy: the next chunks of the last plan, nearest first, without waiting for the next plan
+        this.feed();
     }
 
-    private replan(): void {
-        const col = this.col;
-        if (!col || !this.occupied || !this.worker || !this.overlay) return;
-        const p = this.session.renderer.camera.getPosition();
-        const avgFine = this.sum.nFine ? this.sum.fine / this.sum.nFine : undefined;
-        const avgCoarse = this.sum.nCoarse ? this.sum.coarse / this.sum.nCoarse : undefined;
-        // a floater preview looks further: the pieces it would drop are often away from the craft
-        const radius = this.previewN !== null ? Math.max(this.radiusM, PREVIEW_RADIUS_M) : this.radiusM;
-        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads, coarseQuads: this.coarseQuads, known: this.known, avgFine, avgCoarse });
-        this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
-        this.planned = true;
-        this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
-        let quads = this.overlay.stats().quads;
-        for (const [key, lod] of this.loaded) {
-            const want = this.wanted.get(key);
-            // a chunk that should now be coarse stays fine until its coarse mesh lands (no hole),
-            // unless that keeps the drawn faces over the budgets (flying fast through a dense scan)
-            const over = want === 1 && lod === 0 && quads > this.fineQuads + this.coarseQuads;
-            if (want !== undefined && !over) continue;
-            quads -= this.known[lod === 0 ? 'fine' : 'coarse'].get(key) ?? 0;
-            this.overlay.remove(String(key));
-            this.loaded.delete(key);
-        }
-        for (const c of plan.chunks) {
+    /** Ask the worker for the chunks of the last plan not yet drawn at their level, up to maxInFlight at once. */
+    private feed(): void {
+        if (!this.worker || !this.overlay) return;
+        for (const c of this.lastPlan) {
             if (this.inFlight.size >= this.maxInFlight) break;
             if (this.loaded.get(c.key) === c.lod) continue;
             const id = `${c.key}:${c.lod}`;
@@ -502,9 +547,50 @@ export class VoxelController {
         }
     }
 
+    private replan(): void {
+        const col = this.col;
+        if (!col || !this.occupied || !this.worker || !this.overlay) return;
+        const p = this.session.renderer.camera.getPosition();
+        const avgFine = this.sum.nFine ? this.sum.fine / this.sum.nFine : undefined;
+        const avgCoarse = this.sum.nCoarse ? this.sum.coarse / this.sum.nCoarse : undefined;
+        // a floater preview looks further: the pieces it would drop are often away from the craft
+        const radius = this.previewN !== null ? Math.max(this.radiusM, PREVIEW_RADIUS_M) : this.radiusM;
+        const whole = this.whole;
+        const d = this.forced ?? this.detail;
+        const avgFar = new Map<number, number>();
+        for (const [lod, f] of this.sumFar) avgFar.set(lod, f.q / f.n);
+        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads * d, coarseQuads: this.coarseQuads * d, known: this.known, avgFine, avgCoarse, whole, farQuads: this.farQuads * d, knownFar: this.knownFar, avgFar });
+        this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
+        this.planFar = plan.chunks.length ? plan.chunks[plan.chunks.length - 1].dist : 0;
+        this.lastPlan = plan.chunks;
+        this.planned = true;
+        this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
+        let quads = this.overlay.stats().quads;
+        for (const [key, lod] of this.loaded) {
+            const want = this.wanted.get(key);
+            // a chunk that should now be coarse stays fine until its coarse mesh lands (no hole),
+            // unless that keeps the drawn faces over the budgets (flying fast through a dense scan)
+            // (the whole-scene view keeps every chunk until its new level lands: no hole)
+            const over = !whole && want === 1 && lod === 0 && quads > this.fineQuads + this.coarseQuads;
+            if (want !== undefined && !over) continue;
+            quads -= (lod <= 1 ? this.known[lod === 0 ? 'fine' : 'coarse'].get(key) : this.knownFar.get(lod)?.get(key)) ?? 0;
+            this.overlay.remove(String(key));
+            this.loaded.delete(key);
+        }
+        this.feed();
+    }
+
     stats(): VoxelStats {
         const o = this.overlay?.stats();
         const col = this.col;
+        const perLevel = [0, 0, 0, 0];
+        let drawn = 0, drawnFar = 0;
+        for (const c of this.lastPlan) {
+            const l = this.loaded.get(c.key);
+            if (l === c.lod) { drawn++; drawnFar = Math.max(drawnFar, c.dist); }
+        }
+        for (const l of this.loaded.values()) if (l >= 0) perLevel[l]++;
+        const planned = this.lastPlan.length;
         return {
             state: this.state,
             mode: this.mode,
@@ -518,6 +604,16 @@ export class VoxelController {
             depthItems: o?.depthItems ?? 0,
             fineRadiusM: this.plan.fineRadius,
             radiusM: this.plan.radius,
+            whole: this.whole,
+            wallChunks: this.occupied?.size ?? 0,
+            plannedChunks: planned,
+            drawnChunks: drawn,
+            share: planned ? Math.floor((drawn / planned) * 100) : 100,
+            perLevel,
+            farthestM: this.planFar,
+            drawnFarM: drawnFar,
+            detail: this.forced ?? this.detail,
+            frameMs: this.keeper.ms,
             inFlight: this.inFlight.size,
             pendingUploads: o?.pendingUploads ?? 0,
             components: this.components,

@@ -69,7 +69,7 @@ export interface TestHook {
     /** the pilot's walls switch (C): on / off, and the current log header that records it */
     wallsSwitch?: { on: () => boolean; set: (on: boolean) => void; state: () => string; header: () => LifeHeader };
     /** the voxel grid (V): mode, style, opacity, what is drawn */
-    voxels?: { stats: () => VoxelStats; perf: () => VoxelController['perf']; settled: () => boolean; setMode: (m: VoxelMode) => void; setStyle: (s: VoxelStyle) => void; setOpacity: (a: number) => void; setRadius: (m: number) => void };
+    voxels?: { stats: () => VoxelStats; perf: () => VoxelController['perf']; settled: () => boolean; setMode: (m: VoxelMode) => void; setStyle: (s: VoxelStyle) => void; setOpacity: (a: number) => void; setRadius: (m: number) => void; setDetail: (d: number | null) => void };
     /** phase D: the exported trajectory as text (the same text the export button saves) */
     trajectoryText?: (kind: 'csv' | 'json') => string;
     governor?: FrameGovernor;

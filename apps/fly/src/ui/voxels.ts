@@ -26,7 +26,10 @@ export function voxelStatus(v: VoxelController): string {
     if (s.state === 'off') return t('voxels.keys');
     if (s.state === 'preparing') return t('voxels.preparing');
     const reach = Math.max(1, Math.round(s.radiusM));
-    const line = t('voxels.status', { m: reach, k: Math.round(s.quads / 1000), cm: s.voxelCm ?? '—' });
+    // the whole scene (voxels alone, X2): its share drawn while the far end fills, and how far it reaches
+    const line = s.whole
+        ? t('voxels.statusWhole', { share: s.share, m: Math.max(1, Math.round(s.farthestM)), k: Math.round(s.quads / 1000), cm: s.voxelCm ?? '—' })
+        : t('voxels.status', { m: reach, k: Math.round(s.quads / 1000), cm: s.voxelCm ?? '—' });
     // the floater filter (G.3): what it dropped, or where to drop the pieces the grid highlights
     const dropped = s.dropped ? t('voxels.dropped', { pieces: s.dropped.pieces, n: s.dropped.minBlocks }) : '';
     if (s.floaters > 0) return [line, t('voxels.floaters', { n: s.floaters }), dropped || t('voxels.dropHint')].join(' · ');

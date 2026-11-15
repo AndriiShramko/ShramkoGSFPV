@@ -20,6 +20,24 @@ export const QUAD_WALL = 0;
 export const QUAD_FLOATER = 1;
 export const QUAD_ABOVE_CEILING = 2;
 
+/**
+ * The voxel view's far levels (X2): blocks per side of one cube at level 2, 3, ... (level 0 draws
+ * voxels, level 1 single 4x4x4 blocks). Level 2 cubes are 8 voxels a side, level 3 cubes 16.
+ */
+export const COARSE_LEVELS: readonly number[] = [2, 4];
+
+/** The levels a chunk of `size` voxels can be drawn at: 0, 1, then each far level whose cube divides the chunk. */
+export function overlayLevels(size: number): number[] {
+    const out = [0, 1];
+    COARSE_LEVELS.forEach((f, i) => { if ((size / 4) % f === 0) out.push(i + 2); });
+    return out;
+}
+
+/** Edge of one cube at a level, in voxels. */
+export function levelCellVoxels(lod: number): number {
+    return lod === 0 ? 1 : lod === 1 ? 4 : 4 * COARSE_LEVELS[lod - 2];
+}
+
 /** Chunk edge in voxels for a voxel size: about 2.4 m, a multiple of 4, from 32 to 128 voxels. */
 export function overlayChunkSize(res: number): number {
     if (!(res > 0)) throw new RangeError(`voxel size must be positive, got ${res}`);
@@ -89,15 +107,16 @@ export interface OverlayChunk {
  * collision ceiling's `cut` (ceiling.ts ceilingCut), the quads above it; a block the cut passes
  * through stays a wall at level 1.
  */
-export function overlayChunk(col: VoxelCollision, chunk: { x: number; y: number; z: number }, size: number, lod: 0 | 1, comp?: BlockComponents, floaters?: Uint8Array, cut?: CeilingCut | null): OverlayChunk {
+export function overlayChunk(col: VoxelCollision, chunk: { x: number; y: number; z: number }, size: number, lod: number, comp?: BlockComponents, floaters?: Uint8Array, cut?: CeilingCut | null): OverlayChunk {
     const rows = !!cut;
     // level 1 chunks are closed at their borders: next to a level 0 chunk they leave no crack
-    const m = lod === 0 ? buildChunkFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), rows }) : buildChunkBlockFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), closedBorder: true, rows });
+    const m = lod === 0 ? buildChunkFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), rows }) : buildChunkBlockFaces(col, chunk, size, { ...(comp ? { components: comp } : {}), closedBorder: true, rows, merge: levelCellVoxels(lod) / 4 });
     const quads = m.indices.length / 6;
     const nv = quads * 4;
     const normals = new Float32Array(nv * 3);
     for (let i = 0; i < nv * 3; i++) normals[i] = m.normals[i];
-    const cell = col.voxelResolution * (lod === 0 ? 1 : 4);
+    if (lod > 1 && !overlayLevels(size).includes(lod)) throw new RangeError(`level ${lod} does not fit a chunk of ${size} voxels`);
+    const cell = col.voxelResolution * levelCellVoxels(lod);
     const flip = col.flipXY;
     // world coordinates of the grid's corner: cell edges sit at whole numbers of cells from it
     const origin = [flip ? -col.gridMinX : col.gridMinX, flip ? -col.gridMinY : col.gridMinY, col.gridMinZ];
@@ -140,9 +159,19 @@ export interface PlanOptions {
     known?: { fine: ReadonlyMap<number, number>; coarse: ReadonlyMap<number, number> };
     avgFine?: number;
     avgCoarse?: number;
+    /**
+     * The whole scene (the view of voxels alone, X2): no radius; past the two budgets every
+     * occupied chunk is still planned, at level 2 while `farQuads` lasts and at the coarsest level
+     * the chunk size allows after that. Nothing is cut away.
+     */
+    whole?: boolean;
+    farQuads?: number;
+    /** quads per chunk at levels 2 and up (lod -> key -> quads) and their running averages (lod -> quads) */
+    knownFar?: ReadonlyMap<number, ReadonlyMap<number, number>>;
+    avgFar?: ReadonlyMap<number, number>;
 }
 
-export interface PlannedChunk { key: number; x: number; y: number; z: number; lod: 0 | 1; dist: number }
+export interface PlannedChunk { key: number; x: number; y: number; z: number; lod: number; dist: number }
 
 export interface ChunkPlan {
     chunks: PlannedChunk[];
@@ -151,6 +180,9 @@ export interface ChunkPlan {
     radius: number;
     fineQuads: number;
     coarseQuads: number;
+    /** quads planned at levels 2 and up, and the chunks per level (index = lod) */
+    farQuads: number;
+    perLevel: number[];
 }
 
 /**
@@ -166,7 +198,8 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
     const px = col.flipXY ? -x : x, py = col.flipXY ? -y : y, pz = z;
     const g = [col.gridMinX, col.gridMinY, col.gridMinZ];
     const c = [Math.floor((px - g[0]) / cm), Math.floor((py - g[1]) / cm), Math.floor((pz - g[2]) / cm)];
-    const reach = Math.ceil(o.radius / cm) + 1;
+    const radius = o.whole ? Infinity : o.radius;
+    const reach = o.whole ? Math.max(dims[0], dims[1], dims[2]) : Math.ceil(o.radius / cm) + 1;
     const found: PlannedChunk[] = [];
     const dist1 = (p: number, lo: number): number => (p < lo ? lo - p : p > lo + cm ? p - lo - cm : 0);
     const lo = [Math.max(0, c[0] - reach), Math.max(0, c[1] - reach), Math.max(0, c[2] - reach)];
@@ -177,20 +210,20 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
         for (const key of occupied) {
             const [cx, cy, cz] = chunkOfKey(dims, key);
             const d = Math.hypot(dist1(px, g[0] + cx * cm), dist1(py, g[1] + cy * cm), dist1(pz, g[2] + cz * cm));
-            if (d <= o.radius) found.push({ key, x: cx, y: cy, z: cz, lod: 0, dist: d });
+            if (d <= radius) found.push({ key, x: cx, y: cy, z: cz, lod: 0, dist: d });
         }
     } else {
         for (let cz = lo[2]; cz <= hi[2]; cz++) {
             const dz = dist1(pz, g[2] + cz * cm);
-            if (dz > o.radius) continue;
+            if (dz > radius) continue;
             for (let cy = lo[1]; cy <= hi[1]; cy++) {
                 const dy = dist1(py, g[1] + cy * cm);
-                if (Math.hypot(dy, dz) > o.radius) continue;
+                if (Math.hypot(dy, dz) > radius) continue;
                 for (let cx = lo[0]; cx <= hi[0]; cx++) {
                     const key = chunkKey(dims, cx, cy, cz);
                     if (!occupied.has(key)) continue;
                     const d = Math.hypot(dist1(px, g[0] + cx * cm), dy, dz);
-                    if (d > o.radius) continue;
+                    if (d > radius) continue;
                     found.push({ key, x: cx, y: cy, z: cz, lod: 0, dist: d });
                 }
             }
@@ -198,9 +231,13 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
     }
     found.sort((a, b) => a.dist - b.dist || a.key - b.key);
     const avgF = o.avgFine ?? 1500, avgC = o.avgCoarse ?? 150;
-    let fine = 0, coarse = 0, fineR = 0, allR = 0;
-    let fineOpen = true;
+    let fine = 0, coarse = 0, far = 0, fineR = 0, allR = 0;
+    let fineOpen = true, coarseOpen = true, farOpen = true;
     const out: PlannedChunk[] = [];
+    const levels = overlayLevels(size);
+    const top = levels[levels.length - 1];
+    const perLevel = [0, 0, 0, 0];
+    const farQ = (lod: number, key: number): number => o.knownFar?.get(lod)?.get(key) ?? o.avgFar?.get(lod) ?? avgC / 4 ** (lod - 1);
     for (const ch of found) {
         if (fineOpen) {
             const q = o.known?.fine.get(ch.key) ?? avgF;
@@ -212,13 +249,29 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
             }
             fineOpen = false; // nearest first: once a chunk goes coarse, every farther one does too
         }
-        const q = o.known?.coarse.get(ch.key) ?? avgC;
-        if (coarse + q > o.coarseQuads) break;
-        coarse += q;
-        out.push({ ...ch, lod: 1 });
+        if (coarseOpen) {
+            const q = o.known?.coarse.get(ch.key) ?? avgC;
+            if (coarse + q <= o.coarseQuads) {
+                coarse += q;
+                out.push({ ...ch, lod: 1 });
+                allR = ch.dist;
+                continue;
+            }
+            coarseOpen = false;
+        }
+        if (!o.whole) break;
+        // the whole scene: farther chunks only ever get coarser, and the coarsest level takes all the rest
+        let lod = top;
+        if (farOpen && top > 2) {
+            const q = farQ(2, ch.key);
+            if (far + q <= (o.farQuads ?? 0)) { far += q; lod = 2; } else farOpen = false;
+        }
+        if (lod === top) far += lod > 1 ? farQ(lod, ch.key) : 0;
+        out.push({ ...ch, lod });
         allR = ch.dist;
     }
-    return { chunks: out, fineRadius: fineR, radius: allR, fineQuads: fine, coarseQuads: coarse };
+    for (const c of out) perLevel[c.lod]++;
+    return { chunks: out, fineRadius: fineR, radius: allR, fineQuads: fine, coarseQuads: coarse, farQuads: far, perLevel };
 }
 
 /**
