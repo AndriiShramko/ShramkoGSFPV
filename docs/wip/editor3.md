@@ -56,6 +56,11 @@ Stage G3-prove (train 3 wave 3):
     without saving" and the editor stayed open (closed false, both scans). Suspect the floor add's undo or the delete
     loop resets askedFor between the presses, or 900 ms is too short; course.ts command('exit') ask() (a guess).
   - Path long task max 156 ms (Tunis), 88 ms (Wroclaw); fps before 30, idle in mode 30 (Wroclaw).
+- [~] G3.4 pass 3: read store.ts saveMine/save (line 83, 113): the page takes a save only with status 201 AND an id that
+  matches SERVER_TRACK_ID '<6-32 hex>-<8 hex>' (packages/tracks server.ts 12); the probe's stand-in echoed the page's own
+  id, so 'save: http 201' was the PROBE's fault, not the page's. Probe now answers like the server (new id, versions path),
+  records the compared gate's pose right before Save (out.compare, isMoved), Esc up to 3 times 1.5 s apart with each line.
+  Runs runE (Tunis) and runF (Wroclaw) by U:/Temp/gsfpv-train3/editor3/g3/chain3.sh.
 - [ ] left (next worker, in this order; dist is the release of 1c2b773d, do not rebuild before a code change):
   0. Run chain U:/Temp/gsfpv-train3/editor3/g3/chain2.sh again with OUT runE/runF (the probe fixes of this pass), then
      items 1, 2, 6 below from its record. accept-fly B6 B7 B9-B16 on a local address is NOT run yet (it takes the lock

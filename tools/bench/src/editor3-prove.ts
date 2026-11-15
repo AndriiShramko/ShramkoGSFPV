@@ -517,6 +517,15 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         removed.push({ pick, selected: (await ed(page)).selected, problems: e.problems, red: bad.length, how });
     }
     out.redRemoved = { steps: removed, problems: (await ed(page)).problems, gates: (await hook(page))?.gates, movedGone };
+    // G3 pass 3: the gate the reload compares is the one at index `cmp` right before Save (the moved gate when it stayed and
+    // no lower gate went; otherwise its successor), its pose recorded here; isMoved says whether it is the moved gate
+    const left = (await hook(page))?.gates ?? 0;
+    const lowerGone = removed.some((r) => typeof (r as { pick?: number }).pick === 'number' && (r as { pick: number }).pick < del);
+    const cmp = Math.max(0, Math.min(del, left - 1));
+    for (let n = 0; n < 60 && (await ed(page)).selected !== cmp; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < cmp ? 'Tab' : 'Shift+Tab'); await sleep(80); }
+    await sleep(400);
+    const cmpPos = (await dbg(page))?.stand.pos;
+    out.compare = { index: cmp, pos: cmpPos?.map(r2), isMoved: dist(cmpPos, movedPos) < 0.02, movedGone, lowerGone };
     await page.click('[data-top="save"]', { timeout: 3000 }).catch((e) => { out.saveClickError = String(e).slice(0, 120); });
     await sleep(800);
     const nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
@@ -527,10 +536,11 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(500);
     // Exit: Esc; with unsaved changes the first Esc says so and a second one leaves ("The design", Enter and leave)
     let escs = 0;
-    for (; escs < 2 && (await ed(page)).open; escs++) { await page.keyboard.press('Escape'); await sleep(900); }
-    out.exit = { closed: !(await ed(page)).open, escs, said: ((await ed(page)).said ?? '').slice(0, 100) };
+    const escSaid: string[] = [];
+    for (; escs < 3 && (await ed(page)).open; escs++) { await page.keyboard.press('Escape'); await sleep(1500); escSaid.push(((await ed(page)).said ?? '').slice(0, 80)); }
+    out.exit = { closed: !(await ed(page)).open, escs, said: ((await ed(page)).said ?? '').slice(0, 100), escSaid, mode: (await dbg(page) as unknown as { mode?: string } | null)?.mode ?? null };
     const saved = (out.save as { saved?: string | null }).saved;
-    if (saved) out.reload = await reloadSaved(page, id, saved, del, movedPos);
+    if (saved) out.reload = await reloadSaved(page, id, saved, cmp, cmpPos);
     return out;
 }
 
@@ -604,9 +614,15 @@ async function fakeTracks(ctx: import('playwright').BrowserContext): Promise<voi
         const url = new URL(req.url());
         if (req.method() === 'POST') {
             const body = JSON.parse(req.postData() ?? '{}') as Record<string, unknown>;
-            const tid = String(body.id);
-            tracks.set(tid, { body, version: Number(body.version) || 1 });
-            return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: tid, version: Number(body.version) || 1, editToken: 'a'.repeat(32) }) });
+            // G3 pass 3: the server names a new course '<scene hex>-<8 hex>' (packages/tracks server.ts SERVER_TRACK_ID); the
+            // page refuses any other id ('save: http 201' in run D), so the stand-in answers like the server
+            const ver = /\/api\/tracks\/([^/]+)\/versions$/.exec(url.pathname);
+            const own = String(body.id ?? '');
+            const sceneHex = String(body.scene ?? '').replace(/[^0-9a-f]/g, '').slice(0, 32).padEnd(6, '0');
+            const tid = ver ? decodeURIComponent(ver[1]!) : /^[0-9a-f]{6,32}-[0-9a-f]{8}$/.test(own) ? own : `${sceneHex}-${Math.random().toString(16).slice(2, 10).padEnd(8, '0')}`;
+            const version = ver ? (tracks.get(tid)?.version ?? 0) + 1 : 1;
+            tracks.set(tid, { body: { ...body, id: tid, version }, version });
+            return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify({ id: tid, version, editToken: 'a'.repeat(32) }) });
         }
         const m = /\/api\/tracks\/([^/]+)\/v(\d+)$/.exec(url.pathname);
         if (m) {
