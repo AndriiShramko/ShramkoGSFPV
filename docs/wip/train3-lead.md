@@ -257,3 +257,115 @@ flight is cut at 60 s by design; 120 s). U:/Temp/gsfpv-train3/train3b/livecheck-
 Cost notes: the package typecheck under tsconfig.node.json was found only by the full gates after the build; running
 the package's own typecheck beside its test suite before the merge would have saved a gate rerun and a second package
 push.
+
+## Integration C (fix3a with fix3b, onecourse, laptop4)
+
+Worktree C:/dev/gsfpv-v03, branch main, from 8df388d2 (origin/main did not move). Logs U:/Temp/gsfpv-train3/int-c,
+evidence JSON evidence/2026-11-15/train3c/.
+
+Merged
+- Package first: C:/dev/ShramkoSonicFPV main <- train5 (--no-ff) = 878f055, pushed (origin/main 878f055). Package tests
+  1355 passed, 4 skipped; tsc tsconfig.core.json, tsconfig.json, tsconfig.node.json: 0 errors each. README line 131
+  unchanged (same md5 before and after); the two modified evidence files stay uncommitted; worktree back on train4.
+  train4 (74a05dd with 7678880) not merged. The simulator's pin stays ab2d6ac: it is the second parent of 878f055, so a
+  commit of the pushed main; no pin commit needed.
+- fix3a at c83340a2 (lanes fix3a and fix3b): dd8a0b1c. No conflict.
+- sonic4 at 704f2043 (lanes onecourse and onecourse2, with the two measuring commits of lane sonic4): c672dca3. No
+  conflict (course.ts, hook.ts, sonic-int-review.ts and the four fly/course and fly/sonic locales merged by git itself).
+- laptop4 at a2aaed8b: b7c918e6. No conflict. Its one line in apps/fly/src/session/index.ts passes the off switch
+  ?viewlodrim= to the renderer; flight untouched (a6-reference passes).
+- Seam work: bda6eac0 (onecourse-probe reads the guide's gate and the Save check after Shift+G in Fly by Sound and
+  takes a picture after the second Shift+G; deploy/live-checks.sh, see Live checks). No product code changed by the
+  integration. docs/decisions.md: no lane added a decision (no number to renumber).
+
+Held back: editor3 (its review fixes run in C:/dev/gsfpv-voice), course4 (commits after c83340a2 not taken), quiet, race,
+the speed lane sonic4 (package commit 7678880 on train4). Not read, not merged.
+
+Gates: gates.py on b7c918e6 (all three merges), exit 0: typecheck, vitest, api-unittest, architecture, i18n, catalog,
+B18 PASS (logs U:\Temp\gsfpv-gates-20261115-160422). Locale keys after the merge: fly/course 135 in en, es, pl, ru;
+fly/sonic 117 in each.
+
+Probes (release build of b7c918e6 plus the onecourse-probe change, build exit 0 in 81 s; dist/walls = the nine published
+scan folders of U:/Temp/gsfpv-train3/walls/release copied with cp -r; Tunis on its shipped walls; servers 5760 and 5768,
+r11/r9/r12 on 5761 to 5765; summary files int-c/summary.txt and summary2.txt):
+- a6-reference: 1 passed (hash held).
+- onecourse-probe, Wroclaw, render on under the lock: Shift+G 24 gates; the scripted pilot passed gates 1 and 2 (next 1,
+  2); Backslash: next 2, the hum's target g3, the guide's gate 2 (= g3): seam (d) holds; the sound mode's own prims 0 in
+  every step (one gate set); Shift+G in the sound mode: new seed, 24 gates, target g1, guide gate 0, Save check problems
+  0 untouched (seam (e)); N: new seed, target g1, prims 0; Backslash off keeps the course; no course: the lines
+  inPlaceIntro and lessonKeysFree, nothing made. Page errors 0. Render-off run: the same except that the scripted pilot
+  passed no gate on a 19-gate course (next 0 after both passes; the render-on run passed both).
+- d7-probe (D7_SG=9w94zz, render off): exit 0; generator 3 gives this link seed a new course (1554327750, not the lane's
+  598369679). Gate 1 counted; case (a) said "The gate is behind you" once (2.08 s), no wrong way, but the course went
+  back to gate 1 (next 1 to 0, a rewind is the guess, not measured), so cases (b), (c), (d) ran at next 0 and said
+  nothing (wrongWay 0, gateBehind 0); (lap) next 0 to 1, no lap. The four cases are not proven on this course: see Not
+  verified.
+- save-check-probe --push: Wroclaw Shift+G to course 10.1 s, 24 gates, problems 0, gate 1 pushed into the wall 2.83 m
+  away: 3 problems, untouched again 0; Tunis 5 s, 24 gates, problems 0, pushed: 3 problems, again 0.
+- course-path-probe: Wroclaw 24 of 24 gate centres in 1.2-2.0 m (+-0.1; heights 1.6 to 2.0 m), course at 7.1 s, runs
+  failing 0; Tunis 24 of 24 (1.6 to 2.0 m), 7 s, runs failing 0. Exit 0 both.
+- gate-place-probe Wroclaw (pilot view of gate 1): exit 0; the first two regenerated courses have 24 and 13 gates, every one in the eye band (1.6 to 2.0 m).
+- gate-guide-probe --shiftg: Wroclaw 6 of 6, Tunis 6 of 6.
+- walls-store-probe Tunis: exit 0, shipped true, shippedOk true (153 s).
+- walls-published-probe, all nine published scans on the local copy: 9 of 9 pass (source published, no build).
+- pause-over-course-probe (render off): pass true at 1920 and 844 wide.
+- accept-fly B6 B7 B9 to B16, first line "accept-fly target: http://localhost:5768": 10 of 10 true.
+- tracks-page: 45 of 46; FAIL 'E camera: after Tab ...' (the old editor's camera; lane editor3 replaces it), the same
+  row lane fix3b reported.
+- sonic-int-review r9 11 of 11 (185 s); r12 9 of 9 (159 s); r11 Wroclaw Shift+G 5 m/s, cap 600 s: 10 of 10, the ear pilot
+  flew the course to its end and the lap was counted at 167 s; r11 Wroclaw N: 10 of 10 (275 s); r11 Tunis Shift+G: 10 of
+  10 (178 s).
+- lod-view-probe on Lublin 2f1ddf5f: on active true, failed none, missing 0, calls 107; off (&viewlod=0) active false,
+  penalty 5, angle 90, multiplier 3: both pass the lodcheck rule of live-checks.sh.
+- The local server on 5760 ended without a line in its log after course-path Tunis; walls-store, walls-published,
+  accept-fly and lod-view met a refused connection and were run again on 5768 (run2.sh, a check of the server before each).
+
+Deploy order for the lead (git diff --stat a7f39528..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms
+packages/i18n/locales): nginx no; API no (apps/api not changed, release-api.sh not needed, --locales not needed: the
+changed locales are fly/course, fly/sonic and fly/*.json of the static release, not bot or mail); rooms no. Ship the
+static release of main (the usual release build and upload); the published walls are already on the server and are not
+part of this release. Then deploy/live-checks.sh.
+
+Live checks (deploy/live-checks.sh, bda6eac0, not run): course-path-wroclaw now runs cpband (the probe plus a read of
+the first course's gate-centre heights: every centre in 1.2-2.0 m +-0.1 m); new gate-guide-wroclaw (Shift+G and Escape
+only); new one-course (onecourse-probe with NOCOURSE=0, render off, flight keys only; checks one gate set after
+Backslash and after Shift+G in Fly by Sound); the sound checks press Shift+G (Z5_COURSE_KEY=Shift+KeyG) and a new
+sonic-course-wroclaw-n keeps one N press. Every probe added reads only: no Save, Send or Create is pressed, nothing is
+stored on the server (the Save check read is the page's own check of a copy).
+
+Pictures for the lead (looked at):
+- U:/Temp/gsfpv-train3/shots/train3c-gates-eye-wroclaw.png: pilot view on Wroclaw by the cathedral, gate 1 (green) and
+  the teal gates at eye level in front of the camera over the grass, not over the head.
+- U:/Temp/gsfpv-train3/shots/train3c-one-course.png: Fly by Sound after Shift+G, two gates passed, Backslash and Shift+G
+  again: one set of teal gates, the guide chip "Gate 1 . 18 m"; the three spoken captions cover the clock block (known).
+- U:/Temp/gsfpv-train3/shots/train3c-guide.png: Wroclaw after Shift+G, gate 1 behind: the chip "Gate 1 . 11 m" with the
+  turn mark at the left edge.
+
+What the owner should try
+- Wroclaw, Shift+G: in about 7 to 10 s a course of 24 gates stands in the streets at eye height.
+- If gate 1 is not in view, the chip at the screen edge says "Gate 1" and the metres, with an arrow to turn.
+- Fly through two gates, then Backslash: Fly by Sound goes on, the hum leads to the next gate of the same course, no
+  second set of gates appears.
+- In Fly by Sound press Shift+G (or N): a new course replaces the old one; the hum leads to gate 1.
+- Backslash again: Fly by Sound goes off, the course and its count stay.
+- The check before Save finds no problem in a course made by Shift+G, in the flight and in Fly by Sound (Save itself
+  was not pressed in these runs).
+
+Not verified
+- d7-probe on the merged build: only case (a)'s "The gate is behind you" was heard once; the course went back to gate 1
+  after it, so cases (b), (c), (d) and the lap ran at gate 1 and proved nothing (the lane's proof was on the old
+  generator's course). Not chased: the probe's scripted moves (7 m beside, 4.5 m over) were written for the old course.
+- The scripted pilot of onecourse-probe passed no gate with render off (19-gate course); with render on it passed both.
+- The captions of the sound mode stack three lines over the course's clock block (lane quiet).
+- The ear pilot gets wedged at walls near gate 1 on some random Wroclaw courses (not seen in these three r11 runs).
+- A failed generate said in Fly by Sound: never run in a browser.
+- No gate in leaves is not built (one ring in a conifer; lane course4). One to three gates of 24 on Wroclaw stand 3.1 to
+  4.8 m high against the tile ground (lane course4); in these runs the straight ray found 1.6 to 2.0 m.
+- The quality thresholds are estimates. tracks-page 'E camera after Tab' fails (lane editor3).
+- Gate heights of a course made by Shift+G inside Fly by Sound were not measured in the page; it is the same generate
+  call as in the flight and its Save check gave 0 problems.
+- Nothing was heard by a human ear. deploy/live-checks.sh not run (by rule). Why the local server on 5760 stopped: not
+  found.
+
+Cost notes: the longest part was waiting for the probe runs (about 55 minutes in two background scripts); a server
+check before each probe in the first script would have saved the second script and four reruns.

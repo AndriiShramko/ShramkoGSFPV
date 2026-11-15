@@ -1,0 +1,114 @@
+{
+ "base": "http://localhost:5760/en",
+ "id": "70b50d42",
+ "rows": [
+  {
+   "way": "shiftg",
+   "done": true,
+   "source": "generated",
+   "problem": null,
+   "seed": 1925847305,
+   "walls": {
+    "state": "none",
+    "source": "published"
+   },
+   "genS": 16,
+   "pressToCourseS": 10.1,
+   "check": {
+    "transform": [
+     1,
+     0,
+     0,
+     0
+    ],
+    "margin": 0.5,
+    "walls": {
+     "res": 0.1,
+     "flip": false,
+     "min": [
+      -151.2,
+      -4,
+      -211.20000000000002
+     ],
+     "n": [
+      2944,
+      236,
+      3756
+     ]
+    },
+    "spawn": [
+     -11.900656700134277,
+     3.1238160133361816,
+     -16.831905364990234,
+     93.15394252224232
+    ],
+    "start": {
+     "pos": [
+      -11.6,
+      2.8,
+      -16.8
+     ],
+     "yawDeg": 112.5
+    },
+    "startFlown": [
+     -11.6,
+     2.8,
+     -16.8
+    ],
+    "gate1": [
+     -0.4,
+     2.4,
+     -12
+    ],
+    "gates": 24,
+    "laps": 1,
+    "seed": 1925847305,
+    "proof": {
+     "ok": true,
+     "marginM": 0.5,
+     "pathM": 218.111
+    },
+    "problems": [],
+    "startFreeM": 6,
+    "nearWallM": 1.9,
+    "legs": [],
+    "gatesBad": [],
+    "issues": []
+   },
+   "push": {
+    "from": [
+     -0.4,
+     2.4,
+     -12
+    ],
+    "to": [
+     1.81,
+     2.4,
+     -14.21
+    ],
+    "wallM": 2.83,
+    "inWall": true,
+    "problems": [
+     {
+      "code": "leg-wall",
+      "from": "start",
+      "to": "g1",
+      "freeM": 6
+     },
+     {
+      "code": "leg-wall",
+      "from": "g1",
+      "to": "g2",
+      "freeM": 6
+     },
+     {
+      "code": "gate-wall",
+      "gate": "g1",
+      "freeM": 6
+     }
+    ],
+    "untouchedAfter": 0
+   }
+  }
+ ]
+}

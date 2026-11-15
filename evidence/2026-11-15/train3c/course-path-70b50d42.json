@@ -1,0 +1,273 @@
+[
+ {
+  "id": "70b50d42",
+  "errors": [],
+  "lines": [
+   {
+    "at": 0,
+    "k": "courseProgress",
+    "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+   },
+   {
+    "at": 0,
+    "k": "note",
+    "text": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left."
+   },
+   {
+    "at": 1,
+    "k": "courseProgress",
+    "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
+   },
+   {
+    "at": 1,
+    "k": "note",
+    "text": "Course: finding the free space. Step 1 of 2, 11 %. 0:01 so far, about 0:10 left."
+   },
+   {
+    "at": 1.5,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 75 %. 0:01 so far, about 0:05 left."
+   },
+   {
+    "at": 1.5,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 75 %. 0:01 so far, about 0:05 left."
+   },
+   {
+    "at": 3,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 83 %. 0:02 so far, about 0:05 left."
+   },
+   {
+    "at": 3,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 83 %. 0:02 so far, about 0:05 left."
+   },
+   {
+    "at": 3.5,
+    "k": "courseProgress",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 98 %. 0:03 so far, about 0:05 left."
+   },
+   {
+    "at": 3.5,
+    "k": "note",
+    "text": "Course: placing the gates and obstacles. Step 2 of 2, 98 %. 0:03 so far, about 0:05 left."
+   },
+   {
+    "at": 4,
+    "k": "courseProgress",
+    "text": "Course ready: 24 gates. They appear in 3 seconds, keep flying."
+   },
+   {
+    "at": 4,
+    "k": "note",
+    "text": "Course ready: 24 gates. They appear in 3 seconds, keep flying."
+   },
+   {
+    "at": 7.1,
+    "k": "note",
+    "text": "Gates: 24. Fly through gate 1 to start the clock. Shift+T hides the course"
+   }
+  ],
+  "pressAtMs": 8573.90000000596,
+  "maxSilentS": 2.6,
+  "maxReadGapS": 1.5,
+  "courseFirstS": 0,
+  "shotCourseS": 1.5,
+  "courseAtS": 7.1,
+  "bake": null,
+  "longtasks": {
+   "n": 0,
+   "sumMs": 0,
+   "maxMs": 0,
+   "top": []
+  },
+  "install": {
+   "hover": 0.27743940434601666,
+   "bot": true
+  },
+  "gates": 24,
+  "top": {
+   "W": 352,
+   "H": 368,
+   "step": 0.5,
+   "heights": [
+    1.7,
+    1.7,
+    1.6,
+    1.7,
+    1.7,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.6,
+    1.7,
+    2,
+    1.6,
+    1.6,
+    2,
+    2,
+    1.6,
+    1.6,
+    1.6,
+    1.6
+   ],
+   "eye": 24,
+   "spanM": 67.3,
+   "yRange": [
+    2.4,
+    4
+   ]
+  },
+  "pilotAt": [
+   -5.14,
+   2.4,
+   -11.1
+  ],
+  "pilot-bAt": [
+   -5.14,
+   2.4,
+   -11.1
+  ],
+  "passes": [
+   {
+    "gate": 1,
+    "next": 1,
+    "clock": "0:00.43Lap 1 of 1\nGate 2 of 24\nLast -\nBest -"
+   },
+   {
+    "gate": 2,
+    "next": 2,
+    "clock": "0:01.40Lap 1 of 1\nGate 3 of 24\nLast -\nBest -"
+   },
+   {
+    "gate": 3,
+    "next": 3,
+    "clock": "0:02.33Lap 1 of 1\nGate 4 of 24\nLast -\nBest -"
+   }
+  ],
+  "beforeCrash": {
+   "next": 3,
+   "clock": "0:08.36Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+   "clockMs": 8360
+  },
+  "aim": {
+   "wallM": 3.3
+  },
+  "crash": {
+   "crashTick": 32673,
+   "lifeTick": 34673,
+   "reason": "crash",
+   "decision": {
+    "tick": 34673,
+    "reason": "crash",
+    "kind": "rewind",
+    "incidentTick": 32673,
+    "sampleTick": 27650,
+    "backoff": 1,
+    "pathAgeTicks": 5023
+   },
+   "crashAt": [
+    15.384414523964752,
+    2.7098689578232578,
+    17.39253360287481
+   ],
+   "lifeAt": [
+    18.521342811822226,
+    2.8980795895781117,
+    16.52131600919636
+   ],
+   "crashes": 1,
+   "backM": 3.3
+  },
+  "afterRespawn": [
+   {
+    "next": 3,
+    "clock": "0:10.70Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+    "clockMs": 10700
+   },
+   {
+    "next": 3,
+    "clock": "0:12.70Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+    "clockMs": 12700
+   }
+  ],
+  "rewind": {
+   "gate": 4,
+   "passNext": 4,
+   "passClock": "0:14.50Lap 1 of 1\nGate 5 of 24\nLast -\nBest -",
+   "before": {
+    "next": 4,
+    "clock": "0:16.53Lap 1 of 1\nGate 5 of 24\nLast -\nBest -",
+    "clockMs": 16530
+   },
+   "after": {
+    "next": 3,
+    "clock": "0:11.90Lap 1 of 1\nGate 4 of 24\nLast -\nBest -",
+    "clockMs": 11900
+   },
+   "kind": "rewind",
+   "backTicks": 5030
+  },
+  "afterR": {
+   "next": 0,
+   "clock": "0:00.00Lap 1 of 1\nGate 1 of 24\nLast -\nBest -",
+   "clockMs": 0
+  },
+  "regen": [
+   {
+    "seed": 1678322186,
+    "gates": 24,
+    "spanM": 55.8,
+    "aboveGround": [
+     1.5,
+     2
+    ],
+    "eye": 24,
+    "noGround": 0,
+    "s": 10.3,
+    "yRange": [
+     1.8,
+     5.8
+    ]
+   },
+   {
+    "seed": 1341195482,
+    "gates": 21,
+    "spanM": 104.3,
+    "aboveGround": [
+     1.5,
+     2
+    ],
+    "eye": 21,
+    "noGround": 0,
+    "s": 12.6,
+    "yRange": [
+     2.4,
+     6.4
+    ]
+   },
+   {
+    "seed": 1688799430,
+    "gates": 24,
+    "spanM": 99.2,
+    "aboveGround": [
+     1.6,
+     2.1
+    ],
+    "eye": 22,
+    "noGround": 0,
+    "s": 14.7,
+    "yRange": [
+     2.4,
+     6.6
+    ]
+   }
+  ]
+ }
+]
