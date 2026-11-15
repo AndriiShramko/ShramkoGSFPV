@@ -97,8 +97,8 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   and budget; nearest at level 0, levels never finer with distance; a smaller budget moves chunks coarser, none
   leave) and tools/bench/test/voxview-keeper.test.ts (3). With overlay.test.ts: 23 passed. Negative control: with
   origin/main overlay.ts and mesh.ts, 6 of 6 fail (5 by assertion, e.g. "expected 7186 to be 656", "expected +0 to
-  be 144"; one TypeError reading lod). The keeper is a new file (no old version to put back). Typecheck apps/fly 0
-  errors; packages/collision not typechecked on its own yet.
+  be 144"; one TypeError reading lod). The keeper is a new file (no old version to put back). Typecheck apps/fly and packages/collision: 0
+  errors each.
 
 ## Facts X2 (measured, Node)
 
