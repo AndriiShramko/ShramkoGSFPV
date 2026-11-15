@@ -1141,7 +1141,41 @@ dist/walls = U:/Temp/gsfpv-train3/walls/release.
 - [x] CU-10 fixed: the editor's show() draws the START / FINISH roles (banner, checker; paintEdit keeps the dark cells
       dark) and setNext(..., plate = false) puts no number plate on the selected gate. Test tracks-review.test.ts 'CU-10'
       (10 passed) NEG OK against view.ts of b887433b ('expected 2 to be -1'); typecheck fly exit 0. Not seen in a browser.
-- [~] CU-6 browser proof: probe tools/bench/scripts/course-finish-probe.mjs (new) on the release of b887433b.
+- [ ] CU-6 browser proof: probe tools/bench/scripts/course-finish-probe.mjs written (commit d4a580e1, syntax checked, never
+      run): the Wroclaw run waited 25 minutes for C:/dev/.gpu-lock (other lanes took it at 17:41 and 17:50 between its
+      20 s polls) and was stopped unrun. No picture taken.
+- [x] CU-1 rerun: R11 ear pilot on the merged head (sonic-int-review.ts r11, Tunis, render off, no lock, port 5781,
+      release b887433b, cu2/r11.log, evidence sonic-int-review-r11-course4-cu2): 18 PASS, 1 FAIL, exit 1. Course checks
+      pass ('N makes a course (gate 1 is the hum's target)', 24 gates, 6.8 s). The FAIL is 'the speed is kept on the
+      switch off' (Fly by Sound switch, sonic lane's code, not the course).
+- [x] CU-5 table rerun (gate-place-audit --seeds 3, cu2/table.json, sources of b887433b) against c3p2/after2.json: 36 of
+      39 rows identical (gates, step, proven, problems, walks, band), among them every street row at step 1. Changed:
+      Modlinek 39e63ce9 seeds 1-3: 5/5/4 gates at step 0.4 -> 12/11/12 at step 0.3. NOT fixed for the owner's scan: Forest
+      Floor ab5efa0e stays 7/5/7 gates at step 2/3 (before C3: 10/10/10 at step 0.5). Cause, read in fit.ts: the return
+      at line 184 takes a course of fullOf(t) gates at once (FULL_SHARE 0.5 of wanted), and 7 is over half of the wanted
+      count at step 2/3, so the CU-5 change at line 197 is never reached.
 
+## Left (course4 fixes pass 2)
+
+1. CU-6 (blocker): run the probe, wrapped in the lock loop, one hold per scan, release of b887433b in dist (rebuild for
+   d4a580e1 is not needed for S1-S6; CU-10 is editor only). Server: node tools/bench/scripts/serve-csp.mjs dist 5780
+   (dist/walls already copied from U:/Temp/gsfpv-train3/walls/release). Commands (out dir U:/Temp/gsfpv-train3/course4/cu2):
+   SIZES=1920x1080,1280x720,844x390 LAPS=3 node tools/bench/scripts/course-finish-probe.mjs http://localhost:5780/en
+   <out>/wroclaw.json U:/Temp/gsfpv-train3/shots 70b50d42:wroclaw ; then SIZES=1280x720,844x390,390x844 for 887f27aa:tunis;
+   OFF=1 LAPS=1 for 887f27aa:tunis-off; LAPS=2 for ab5efa0e:forest; SCALE=20 LAPS=2 for ab5efa0e:forest-x20 (line
+   course.noneResize, then the second Shift+G sets x10). Each run prints per lap end: size, kind, text, delta, tone, shown,
+   centre share (about 0.20), font share (about 0.08), middle third free, inside width (CU-8), card laps inside, clock has
+   the splash text; and at60 = the START banner's pixels from 60 m (projected through the flight camera). Look at the
+   pictures course4-start-gate(-back), -start-60m, -next-gate, -lap-splash, -finish-card. Not covered by the probe: S6
+   under the pause menu (pause-over-course-probe.mjs exists).
+2. CU-5 for ab5efa0e: below step 1, the immediate return at fit.ts line 184 needs the course's full wanted count (or keep
+   trying the next step and keep more gates); then rerun the table (street rows must stay identical) and fit.test.ts.
+3. Forest Floor x15, x20, x100 still lay no course; the line leads to x10 (unchanged).
+4. CU-9: fly the flat-square climb by a stick pilot; not proven.
+5. gates.py --only vitest,architecture,i18n,b18 not run in this pass.
+
+Cost (course4 fixes pass 2): about 30 replies; the most went to writing the browser probe and then waiting on a GPU lock
+that other lanes kept taking between 20 s polls; a lock queue (a ticket file per waiter) or a shorter poll would have let
+the run start.
 Cost (course4 fixes): about 30 replies; the most went to the merge and the four majors with tests; the browser proof
 (CU-6) did not fit. A stage of its own for the browser proof, started with the release build, would fit it.
