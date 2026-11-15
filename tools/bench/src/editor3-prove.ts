@@ -389,7 +389,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         const fb = (await dbg(page))!;
         const v2 = (await ed(page)).view;
         const eyeGate = dist(v2?.eye, fb.stand.pos);
-        const fovDeg = await page.evaluate(() => (window as unknown as { __gsfpvEditView?: () => { fov?: number } }).__gsfpvEditView?.()?.fov ?? null);
+        // I3 pass 3 (left d): the hook gives the field (deg, horizontal or not, aspect); a horizontal field is turned into the
+        // vertical one, tan(v/2) = tan(h/2) / aspect
+        const fv = await page.evaluate(() => (window as unknown as { __gsfpvEditView?: () => { fov?: { deg: number; horizontal: boolean; aspect: number } } }).__gsfpvEditView?.()?.fov ?? null);
+        const fovDeg = fv ? (fv.horizontal ? 2 * Math.atan(Math.tan((fv.deg * Math.PI) / 360) / (fv.aspect || 1)) * 180 / Math.PI : fv.deg) : null;
         const fov = (fovDeg ?? 60) * Math.PI / 180;
         out.frameF = {
             eyeMovedM: r2(dist(v1?.eye, v2?.eye)), atToGateM: r2(dist(v2?.at, fb.stand.pos)), eyeGateM: r2(eyeGate), opening: r2(fb.stand.opening),
@@ -594,6 +597,20 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // index `cmp` as it was saved.
     let loopSaved = false;
     let lastPoses: (number[] | undefined)[] = [];
+    // I3 pass 3 (left a): Tunis refused every gate 1 with 'the way from the start to gate 1 goes through a wall'. Gate 1 is
+    // put 6 m ahead of the drone (where the pad flight flew it free) and kept; a refusal that selects gate 1 again puts the
+    // new gate 1 there too (at most 3 times) instead of deleting it. The drone's place, the start and gate 1 are recorded.
+    const putGate1 = async (why: string): Promise<unknown> => {
+        for (let n = 0; n < 40 && (await ed(page)).selected !== 0; n++) { await page.keyboard.press('Shift+Tab'); await sleep(100); }
+        const before = (await dbg(page)) as unknown as { drone?: number[]; course?: { start?: unknown; gates?: { pos?: number[] }[] } } | null;
+        const r = await page.evaluate(() => (window as unknown as { __gsfpvEditPutAhead?: (m: number, up: number, open: number) => unknown }).__gsfpvEditPutAhead?.(6, 1, 2.5) ?? null);
+        await sleep(1500);
+        const after = (await dbg(page)) as unknown as { course?: { gates?: { pos?: number[] }[] } } | null;
+        return { why, selected: (await ed(page)).selected, put: r, drone: before?.drone ?? null, start: before?.course?.start ?? null, gate1Before: before?.course?.gates?.[0]?.pos?.map(r2) ?? null, gate1After: after?.course?.gates?.[0]?.pos?.map(r2) ?? null, problems: (await ed(page)).problems };
+    };
+    const puts: unknown[] = [];
+    if (!earlySaved) puts.push(await putGate1('before the Save loop'));
+    out.putGate1 = puts;
     for (let i = 0; i < 22 && !earlySaved; i++) {
         await sleep(1200);
         const cvi = (await dbg(page)) as unknown as { course?: { gates?: { pos?: number[] }[] } } | null;
@@ -606,6 +623,11 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (si.ok) { loopSaved = true; await sleep(300); removed.push({ saved: true, gates: (await hook(page))?.gates, problems: e.problems, line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '') }); break; }
         const pick = (await ed(page)).selected ?? -1;
         const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
+        if (pick === 0 && puts.length < 4 && /start/i.test(line)) {
+            puts.push(await putGate1(line.slice(0, 90)));
+            removed.push({ pick, problems: e.problems, how: 'putAhead', line: line.slice(0, 90) });
+            continue;
+        }
         if (pick === del) movedGone = true;
         // pass 2 run 1: page.click(force) on the bar's cross deleted nothing 22 times (24 gates stayed): a real mouse press
         // on the cross with what lies under it recorded, then the Delete key if the count did not change
