@@ -88,7 +88,14 @@ export interface LessonPage {
      * A course of gates in the scan flown now, for the free flight over a scan (train 2, S3: N there asks for one; course-ask.ts),
      * and the name of that key as the pilot's keyboard types it. Absent: N in a free flight goes to the menu, as before.
      */
-    course?: { ask(): Promise<CourseAnswer>; key(): string };
+    course?: {
+        /** the key that makes a course (Shift+G) as the pilot's keyboard types it */
+        key(): string;
+        /** lane onecourse (D1): the course in the scene (the course feature's), its next gate and gates; null without one */
+        inUse(): { next: number; gates: readonly SonicObject[] } | null;
+        /** lane onecourse (D2, D3): Shift+G's action, the same for N: a new course replaces the one in the scene */
+        generate(): void;
+    };
     /**
      * Walls for the scan flown (walls lane, feature.ts through app/walls-then.ts wallsThen): built here when the scan has none,
      * with their progress in the walls box; true when the session has walls. Absent: the free flight only says it has none.
@@ -247,28 +254,24 @@ export class LessonHost {
      * False when the page asks for none (the caller goes to the menu).
      */
     private async flyCourse(): Promise<boolean> {
+        // lane onecourse (message 52, D2/D3/D5): N in the free flight is Shift+G's action: the course feature makes the one course
+        // of the scene (its walls first, its progress line spoken), and the hum takes it in frame() (courseTarget). No course of
+        // the sound mode's own, no gates drawn by it.
         const course = this.p.course;
-        const base = this.freeBase;
-        if (!course || !base) return false;
-        const say = (line: SpeechLine): void => void this.p.mode.bridge.say(line, false, { lesson: true });
-        const asked = this.runner;
-        say({ key: 'sonic.say.courseMaking' });
-        const a = await course.ask();
-        // review SN-9: the pilot left this flight while the worker ran (the menu, a lesson, the scan button): the answer opens nothing
-        // over what he does now
-        if (this.runner !== asked || this.lesson?.id !== SCAN_FREE_ID) return true;
-        if (!a.ok) {
-            // one line for the failed ask; the free flight that opens again says neither the no-walls line nor the offer once more (SN-8)
-            say({ key: a.why === 'no walls' ? 'sonic.say.scanNoWalls' : 'sonic.say.courseNone' });
-            this.free = base;
-            this.ready = null;
-            return this.open(SCAN_FREE_ID, { keepSpeech: true, quiet: true });
-        }
-        this.free = scanCourseLesson(base, a.track);
-        const ok = await this.open(SCAN_FREE_ID);
-        this.ready = ok ? { key: 'sonic.say.courseReady', params: { n: a.track.gates.length, laps: a.track.laps, key: course.key() } } : null;
-        if (this.ready) say(this.ready);
-        return ok;
+        if (!course || !this.freeBase) return false;
+        course.generate();
+        return true;
+    }
+
+    /**
+     * Lane onecourse (D1): the next gate of the course in the scene while the free flight runs without a lesson course of its own;
+     * the course feature counts the passes and the laps, so switching the mode on or off keeps the progress.
+     */
+    private courseTarget(): SonicObject | null {
+        if (this.lesson?.id !== SCAN_FREE_ID || isScanCourse(this.lesson)) return null;
+        const c = this.p.course?.inUse() ?? null;
+        if (!c || c.next < 0) return null;
+        return c.gates[c.next] ?? null;
     }
 
     /** the page clock when the walls build of a free flight began or last said it goes on; null when no build runs */
@@ -425,7 +428,7 @@ export class LessonHost {
                 } else if (free && scan.voxelM === null && this.p.walls) this.wallsForFree(this.p.walls);
                 else if (free && scan.voxelM === null) void this.p.mode.bridge.say({ key: 'sonic.say.scanNoWalls' }, false, { lesson: true });
                 // train 2, S3: the free flight with walls names the key that asks for a course of gates in this scan (flyCourse)
-                else if (free && !isScanCourse(lesson) && this.p.course) void this.p.mode.bridge.say({ key: 'sonic.say.courseOffer', params: { key: this.p.course.key() } }, false, { lesson: true });
+                else if (free && !isScanCourse(lesson) && this.p.course && !this.p.course.inUse()) void this.p.mode.bridge.say({ key: 'sonic.say.courseOffer', params: { key: this.p.course.key() } }, false, { lesson: true });
             }
             return true;
         } catch (e) {
@@ -530,7 +533,8 @@ export class LessonHost {
         // the runner's events go out through the bridge (the bus), and the host sees them there (observe)
         this.p.mode.bridge.events(run.step(sample, this.soundWorld));
         this.drain();
-        const target = run.target();
+        // lane onecourse (D1): the free flight's target is the next gate of the course in the scene when it has none of its own
+        const target = run.target() ?? this.courseTarget();
         // a module-0 scene is the engine's input in place of the craft; else the craft in its world, the next gate its target
         // lane sonic-beacon: and where the target hum points (the target, or the next track point where the goal has no gate or zone)
         const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: run.beaconTarget() } : {}), floorY: this.floorY };

@@ -160,6 +160,36 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 7. Acceptance of V2 (the goal): a Wroclaw N course counted by the ear pilot at 8 m/s (2 courses x 3 seeds, at least 4 of 6),
    12 m/s reported as measured, 2 and 5 m/s not worse than the V1 table, and the mess table re-measured with this tool.
 
+## One course (lane onecourse, stage O1, the owner's messages 52 and 53)
+
+### Status
+- [x] O1.0 release build of the branch as it was (98a065b3, package pin 7678880), walls stand-in U:/Temp/gsfpv-train2/walls/release copied into dist/walls, server serve-csp port 5760.
+- [x] O1.1 probe tools/bench/scripts/onecourse-probe.mjs (the owner's path with real keys; render=off by default, RENDER=on for pictures under the GPU lock). Measured "before" (Facts O1-a); picture U:/Temp/gsfpv-train3/shots/onecourse-before.png looked at: two gate sets at once (the course feature's gate and the sound mode's own teal and yellow rings).
+- [~] O1.2 D1 to D6 built, apps/fly tsc 0 errors (this commit), NOT yet proven:
+  - apps/fly/src/course/hook.ts: CourseForSound (inUse: track, next, gates; onChange; generate), CourseHook.sound.
+  - apps/fly/src/app/builtin/course.ts: hook.sound filled; change listeners called from setRun and toggle; the `ctx.sonic` guard removed from course.generate only (Shift+G works in the sound mode; course.toggle and course.edit keep it).
+  - apps/fly/src/sonic/lessons.ts: page.course is now { key, inUse, generate }; flyCourse (N in the free flight) calls generate (the same action, no ask, no scanCourseLesson, no gates of its own); frame() takes courseTarget() (the next gate of the course in the scene) when the runner has no target; the courseOffer line only when no course is in the scene.
+  - apps/fly/src/sonic/feature.ts: courseOf reads ctx.hook.course.sound; key() names course.generate; inPlaceIntro's {course} names course.generate (Shift+G).
+- [ ] O1.3 rewrite the 5 tests that encode the old design (they fail now, by design change, not by a fault): sonic-scan-course.test.ts (2: "N asks the page for a course", "review SN-2/3/6/9"), sonic-walls-free.test.ts (2), sonic-in-place.test.ts (1: "a course made with N over an in-place flight"); the rig tools/bench/test/sonic-lesson-rig.ts lines 310-330 builds course.ask: give it { key, inUse, generate } over a fake shared course. New tests with negative controls: two courses exist on the old code; progress kept over switch on/off; Shift+G in the sound mode replaces the course; N is the same action; no line names N.
+- [ ] O1.4 remove the dead parts: course-ask.ts users (askCourse, randomSeed, courseSpeech, soundCourseSeed imports in feature.ts; CourseAnswer, scanCourseLesson in lessons.ts; this.ready path), after O1.3 decides what the tests still need.
+- [ ] O1.5 texts: every line that names N for a course names Shift+G (simulator locales sonic/*, sonickeys/*, the package's texts and lessons in en, es, pl, ru, the keys list, the /sound/ page). The intro when a course is in the scene still says "{course} makes a course of gates here" (now with Shift+G); D1 wants no key line then: a variant line without that clause (4 languages) is left.
+- [ ] O1.6 D7 (message 53) not started.
+- [ ] O1.7 proof on a new release build: onecourse-probe.mjs (steps 1 to 5 of the stage), the ear pilot (6) at 5 m/s on Wroclaw, sonic-int-review r9, r11 (Wroclaw, Tunis; r11 presses N: adapt to Shift+G, one run keeps N), r12, accept-fly B6 B7 B9 to B16, pause-over-course-probe, a6-reference, gates.py --only vitest,architecture,i18n,b18, picture onecourse-after.png.
+
+### Facts O1-a (measured "before", release 98a065b3, Wroclaw 70b50d42, stand-in walls, render=off; U:/Temp/gsfpv-train3/onecourse/before-off.json, before-on.json)
+- Shift+G in the ordinary flight: 24 gates (seed 406159527), drawn 93; the scripted pilot passed gates 1 and 2 (next 1, then 2).
+- Backslash: lines sonic.say.inPlaceIntro (names N for a course) and sonic.say.lessonKeys; the hum's target null (the course feature's gate 3 is not led to); the course line goes on at gate 3.
+- Shift+G in the sound mode: nothing (the course feature's key ignored the press while ctx.sonic; 240 s watched, same seed, same gate 3).
+- N in the sound mode: sonic.say.courseMaking, the progress text, courseReady, the lesson goal; the sound mode's own course, target g1, 51 entities on the sound stage (render=on run) beside the course feature's 112: two gate sets. The course feature's course was reset to gate 1 by the lesson open (its line shows 0:00.00, Gate 1 of 24).
+- Backslash off: the course feature's course stays (on, 24 gates), at gate 1 after the reset above.
+- No course in the scene, Backslash: inPlaceIntro and lessonKeys; nothing generated.
+
+### What the owner does (after O1.7 passes; not proven yet)
+- Shift+G: a course in the scene, in the ordinary flight and in Fly by Sound alike.
+- Backslash: Fly by Sound on; the hum leads to the next gate of that course, the gate count goes on.
+- Shift+G again (or N in Fly by Sound): a new course replaces the old; the hum leads to gate 1.
+- Backslash: Fly by Sound off; the course and its gate count stay.
+
 ## Not verified
 - All V1 numbers are the package's ear pilot and kinematic craft in Node, not the simulator's physics and not a human ear;
   the pilot's gains and the craft's limits are the package's estimates.
@@ -177,3 +207,4 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - 2026-11-15 V1 pass 2: most replies went to finding where the line meets the gate aim (runner.ts beaconTarget) and the Tunis
   walls on disk; a note in the agent-map naming the scene voxel cache (.cache/scenes/<id>) and the line/aim order would have
   saved about 4 replies. Running the gates and the Tunis flights detached at the start cost no waiting.
+- 2026-11-15 O1 (onecourse): most replies went to reading how the sound course is made (course-ask, lesson host, runner) and to a probe of the owner's path; the build and the two probe runs cost no extra replies. An agent-map line "the course for Fly by Sound: CourseHook.sound (course/hook.ts)" now saves that reading for the next worker; the 5 old tests of the N course need a rewrite before any proof.
