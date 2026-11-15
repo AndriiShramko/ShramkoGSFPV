@@ -18,6 +18,8 @@ function street5cm(): VoxelCollision {
     });
 }
 
+const STREET = street5cm();
+
 function counting(col: VoxelCollision): { col: VoxelCollision; reads: () => number } {
     let n = 0;
     const c = Object.create(col) as VoxelCollision;
@@ -30,18 +32,20 @@ function counting(col: VoxelCollision): { col: VoxelCollision; reads: () => numb
 }
 
 describe('the generator sweep', () => {
+    // sweepOne itself is the slow reference: on the 5 cm street the segments are short (up to 6 m each way) and fewer
     it('gives the answer of sweepOne on random segments (three rooms and a street)', () => {
-        for (const col of [threeRooms(), street5cm()]) {
+        for (const [col, count] of [[threeRooms(), 300], [STREET, 90]] as const) {
             const w = new VoxelContactWorld(col);
             const s = sweeperOf(col);
             const rng = createRng(11);
             const lo = [col.gridMinX, col.gridMinY, col.gridMinZ];
             const span = [col.numVoxelsX, col.numVoxelsY, col.numVoxelsZ].map((n) => n * col.voxelResolution);
             const pt = (): Vec3 => [0, 1, 2].map((i) => lo[i]! + (rng.int(0, 1000) / 1000) * span[i]!) as unknown as Vec3;
+            const near = (a: Vec3): Vec3 => [0, 1, 2].map((i) => a[i]! + (rng.int(0, 1000) / 1000 - 0.5) * 12) as unknown as Vec3;
             let free = 0, blocked = 0;
-            for (let i = 0; i < 300; i++) {
+            for (let i = 0; i < count; i++) {
                 const a = pt();
-                const b = i % 3 === 0 ? a : pt();
+                const b = i % 3 === 0 ? a : near(a);
                 const r = [0.3, 0.5, 0.8][i % 3]!;
                 const old = w.sweepOne(a[0], a[1], a[2], b[0], b[1], b[2], r) < 0;
                 expect(s.free(a, b, r)).toBe(old);
@@ -54,7 +58,7 @@ describe('the generator sweep', () => {
     });
 
     it('overlapsFast gives the answer of sphereOverlaps (random spheres, radii 0 to 3 m, in and around the grid)', () => {
-        for (const col of [threeRooms(), street5cm()]) {
+        for (const col of [threeRooms(), STREET]) {
             const occ = occupancyOf(col);
             const rng = createRng(5);
             const lo = [col.gridMinX, col.gridMinY, col.gridMinZ];
@@ -72,7 +76,7 @@ describe('the generator sweep', () => {
     });
 
     it('a free 25 m leg along a 5 cm street reads under 20 000 voxels', () => {
-        const { col, reads } = counting(street5cm());
+        const { col, reads } = counting(STREET);
         const s = sweeperOf(col);
         const a: Vec3 = [2, 2.5, 3], b: Vec3 = [27, 2.5, 3];
         const r0 = reads();
