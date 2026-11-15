@@ -316,7 +316,41 @@ Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight chec
 - [x] course-quality-audit.ts flies every course along its own path at 3 and 12 m/s (flyPath, K1.1; row v3, v12, failing;
   SUMMARY failing) and --top draws the first seed's course over the walls in Node (tools/bench/src/course-top-png.ts, no
   GPU lock). Smoke run Tunis seed 1: 2.4 s, 24 gates, v3 and v12 done. tsc tools/bench: 0 errors.
-- [~] 20-seed audit, 4 scans in parallel: runner U:/Temp/gsfpv-train3/course3/f3/run.sh, output f3/audit/.
+- [x] 20-seed audit of 96bf02da (walk of F2), 4 scans in parallel, 3-4 min in all: runner U:/Temp/gsfpv-train3/course3/f3/run.sh,
+  output f3/audit/. Table in Facts F3. Pass on the numbers: gates sd clearly below before3 on all four, Tunis 3.8 (< 6.5),
+  every course flies done at 3 and 12 m/s (failing 0 of 80), all gates in the dense band, 2.6-4.4 s a course in Node.
+- [x] Pictures looked at (U:/Temp/gsfpv-train3/shots/course3-<scan>-top.png, seed 1, 0.4 m a pixel). Wroclaw: 24 gates,
+  all green (eye level), along the NW arm of the crossing for about 125 m, no cluster; the SE arm (about 200 m) and the SW
+  street, scanned as well, have no gate. Tunis: 24 gates, green, south from the spawn and west along the main street for
+  about 90 m; its east part and the north streets have none. 0230d903: seed 1 a loop of about 40 m round a square near the
+  spawn (other seeds reach 65-146 m). eb5f51dc: gates round the small scanned centre (not a street scan; the rest is sky
+  splats). Verdict: no cluster, but a well-scanned street without gates on Wroclaw and Tunis (the one-arm walk).
+- [x] Fix tried, 7ff82355: two arms (out to A, across the start to B, home; gates shared by the phases' lengths); unit test
+  "goes both ways" passed (NEG OK against HEAD, "expected 0 to be greater than or equal to 30"), digest pins held (72/72).
+  Audit once more (f3/audit2/, pictures f3/audit2/twoarm-*.png): worse. Wroclaw gates 19.7 sd 5.3 (cut 9-12 gates on 8 of
+  20 seeds), visited 0.084; Tunis 18.3 sd 3.8, visited 0.247; 0230d903 sd 2.0; eb5f51dc sd 4.3. Reverted in 713f492c.
+- [ ] Left (next worker): the two-arm walk of 7ff82355 with two fixes. (1) closeAt (generate.ts, the finished course)
+  cuts the course at the gate of the crossing that sees the start (gates 12-13 of 24, the middle phase passes the start):
+  for a two-arm walk let closeAt look only at n >= ends[1]. (2) each arm gets a quarter of the way (W / 4, about 105 m
+  on 24 gates of up to 25 m legs) because the home half lays gates over the same street again; the whole street length a
+  closed course of 24 gates covers is about 210 m either way. To reach more, the back half needs fewer gates (longer
+  legs home) or N above 24 on big scans (packages/tracks COURSE_DEFAULTS.gatesMax; product decision). Then run
+  f3/run.sh again and look at the four pictures.
+- [ ] Not done in this stage: browser look at the pictures' course on the page (the Node picture is the walls' super
+  blocks, not the rendered scan); K1.2 (2f1ddf5f, d10c5638 spawn 62 m and 22 m high).
+
+## Facts F3 (20 seeds, --quality, course-quality-audit.ts at 96bf02da, Node 22, 4 processes at once, no GPU lock)
+
+| scan | gates in band | well-scanned visited | gates min-max | mean | sd | before3 mean / sd | reach m | K1.1 failing (3, 12 m/s) | s a course (map + free + fit) |
+|---|---|---|---|---|---|---|---|---|---|
+| 70b50d42 Wroclaw | 1 | 0.098 | 23-24 | 24 | 0.2 | 19.3 / 5.2 | 112 | 0 of 20 | 0.86 + 2.03 + 1.38 = 4.3 |
+| 887f27aa Tunis | 1 | 0.307 | 13-24 | 22.2 | 3.8 | 13.5 / 6.5 | 86 | 0 of 20 | 0.19 + 1.02 + 2.61 = 3.8 |
+| 0230d903 | 1 | 0.072 | 22-24 | 23.8 | 0.5 | 20.7 / 6.1 | 116 | 0 of 20 | 0.35 + 2.24 + 1.78 = 4.4 |
+| eb5f51dc | 1 | 0.255 | 15-24 | 22.6 | 2.9 | 13.6 / 8.4 | 75 | 0 of 20 | 0.93 + 1.24 + 0.41 = 2.6 |
+
+Visited share before3 / after3 (G2): Wroclaw 0.05 / 0.066, Tunis 0.229 / 0.188, 0230d903 0.036 / 0.039, eb5f51dc
+0.081 / 0.112. Times are measured under load (other lanes on the PC), not with the lock. Logs f3/audit/<scan>.log, rows
+with v3, v12 per seed.
 
 ## Facts F2-web (the owner's path, page, 2026-11-15 03:39-03:44)
 
@@ -515,6 +549,10 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - F2: the hooks for editor3 are tested here only (course3-hooks.test.ts); lane editor3's branch was not merged or built with them.
 
 ## Cost notes
+
+- F3-audit: about 28 replies; the audit itself took 4 min (F2 made it fast); most replies went to the two-arm walk tried
+  and reverted. Drawing the pictures in Node (no GPU lock) saved the browser wait; a quick 3-seed audit of a walk change
+  before the 20-seed one would have shown the closeAt cut sooner.
 
 - F2-fast-course: about 45 replies (over budget); most went to waiting for the GPU lock held by other agents (two waits of
   9-10 min) and to an equivalence test that was too slow for the full vitest gate. The cpu profile found the cause in one
