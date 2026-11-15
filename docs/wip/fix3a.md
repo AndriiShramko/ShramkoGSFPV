@@ -1532,8 +1532,37 @@ Logs U:/Temp/gsfpv-train3/mix/.
 - [x] Proof (4): d7-probe on Wroclaw at 5 m/s (mix/d7.log, exit 0): pass gate 1 counted; (a) gate behind said at 3.05 s,
       then through; (b) gate behind at 2.76 s, then through; (d) no line; (c) 'You are flying back' at 3.08 s; lap ends
       with 'Best lap! 1:52.03'.
+- [x] Proofs (2) and (3): r11, Wroclaw, 5 m/s, Z5_COURSE_FIRST=1 (render off, no lock). Narrator on (mix/r11-on.log,
+      port 5785): 11 of 11 checks PASS, exit 0; course by eye 32 gates (21 ring, 4 square, 5 cube-frame, 2 flat), offered 0,
+      all g1 to g32 counted in 186 s, laps 1, median 1.58 m/s, max 4.98. Narrator off (mix/r11-off.log, r11-off.json, port
+      5786): 13 of 13 PASS, exit 0; 37 gates counted in 169 s: ring strict 27, square strict 3, cube-frame by ball 6, flat by
+      ball 1; nothing reached the voice; fanfare at the end. SOUND_BALL_PAD_M 1.5 m (an estimate) was enough: not changed.
+      The evidence json of the narrator-on run was overwritten by the second run (same file name); its log holds the checks.
+- [x] Proof (6), X4 (release of b937b66c, GPU lock, mix/finish-wro.log, exit 0): open course of 34 gates on Wroclaw (roles
+      start .. finish, laps false) flown to FINISH by the scripted pilot: the picture
+      U:/Temp/gsfpv-train3/shots/course4-finish-open.png, looked at: 'Course done', the run's time 0:28.36 large in the
+      splash's place, under it 'Total 0:28.36 Best lap 0:28.36'. X4 holds today; no change.
 
-## Left (M1, exact, in order; ports 5780-5799, logs U:/Temp/gsfpv-train3/mix/)
+## What the owner does (mix)
+He presses Shift+G and flies a few gates by eye. He presses Backslash. The voice says Fly by Sound is on over his course;
+the hum leads to the next gate he has not flown yet; no voice asks for a key and no second set of gates appears. A flat
+square or a cube frame counts when he flies through its place (near its centre); the hum leads to its centre. With Fly by
+Sound off the same square must be flown through as before. At FINISH of a course that does not come back to its start he
+sees 'Course done' and his time large.
+
+## Left (M1 after pass 2, exact, in order)
+1. Proof (5): keyboard pilot in the ordinary flight (course-keys-probe.mjs, recipe U:/Temp/gsfpv-train3/course4/z3/keys2.sh,
+   Wroclaw seed 289710480, GPU lock): one counted and one refused pass of a flat square. The probe has no 'miss the flat
+   square once' mode: add it in tools/bench/scripts/course-keys-probe.mjs (fly the flat square's leg once level beside it,
+   read course.next unchanged, then through it). The unit test laps.test.ts 'lane mix X2' already proves strict off-ear.
+2. Chain on the release of b937b66c (dist is valid; serve dist on a port 5780-5799): tracks-page, course-path-probe on
+   Wroclaw and Tunis, pause-over-course-probe, accept-fly B6 B7 B9-B16 (SITE), sonic-int-review r9 and r12, then
+   gates.py --only vitest,architecture,i18n,b18,leaks.
+3. Seen once, not reproduced: onecourse run 1 (mix/onecourse-wro.log) lost the progress 12 s after Backslash (next 0,
+   'Fly through START'); run 2 kept it. Suspect: the probe's held craft and the auto-respawn rewind
+   (apps/fly/src/course/run.ts afterLife), a guess. Run onecourse-probe two more times and read out.trace if it repeats.
+
+## Left (M1, pass 1 list, done up to item 1-3 and 5 above; ports 5780-5799, logs U:/Temp/gsfpv-train3/mix/)
 1. Serve dist on 5784 (node tools/bench/scripts/serve-csp.mjs dist 5784). Proof (1): onecourse-probe.mjs
    http://localhost:5784/en mix/onecourse-wro.json U:/Temp/gsfpv-train3/shots 70b50d42 mix (render off, no lock): after
    Backslash expect target 'g3' (gate 3 of the same course), no courseOffer line, one gate set (stagePrims 0). The probe's
@@ -1557,3 +1586,6 @@ Logs U:/Temp/gsfpv-train3/mix/.
 Cost (mix M1 pass 1): about 30 replies; the most went to finding where the sound mode gets the course (lessons.ts,
 feature.ts, the engine's gate aim) and reading r11's long body. A map line 'sound target <- course.ts hook.sound.inUse ->
 lessons.ts courseTarget -> engine gateAim' in docs/agent-map.md would have saved about 5.
+Cost (mix M1 pass 2): about 30 replies; the most went to the first onecourse run losing progress (a trace had to be added
+and the probe run again) and to finding byKind in r11's output (it is only in the evidence json, which r11 overwrites per
+run). An r11 option for the evidence file name and a byKind line in its log would have saved about 4.
