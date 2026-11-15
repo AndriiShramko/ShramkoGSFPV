@@ -96,14 +96,14 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
 
     it('review FY-1: a course far short of the gates the generator wanted is not taken at once; nor is a smaller scale tried while one reached gatesMin', () => {
         // a fake generator: try k gives counts[k] gates of the 24 it wanted (no proof record: counts as proven)
-        const fakeOf = (counts: number[]) => {
+        const fakeOf = (counts: number[], wanted = 24) => {
             let k = 0;
             const scales: number[] = [];
             const make = ((_f: unknown, _w: unknown, o: Parameters<typeof generateCourse>[2]): TrackFile => {
                 scales.push(o.params?.scale ?? 1);
                 const n = counts[Math.min(k++, counts.length - 1)]!;
                 const gate = { id: 'g', shape: { kind: 'ring', diameter: 1.2, tube: 0.1 }, pos: [0, 1.6, 0], quat: [0, 0, 0, 1], direction: 'forward' };
-                return { id: `t${k}`, version: 1, scene: SCENE, laps: 1, gates: Array.from({ length: n }, (_, i) => ({ ...gate, id: `g${i + 1}` })), generator: { name: 'fake', version: '3', seed: k, params: { wanted: 24 } } } as unknown as TrackFile;
+                return { id: `t${k}`, version: 1, scene: SCENE, laps: 1, gates: Array.from({ length: n }, (_, i) => ({ ...gate, id: `g${i + 1}` })), generator: { name: 'fake', version: '3', seed: k, params: { wanted } } } as unknown as TrackFile;
             }) as unknown as typeof generateCourse;
             return { make, scales };
         };
@@ -126,6 +126,17 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(rc.track!.gates.length).toBe(10);
         expect(rc.scale).toBe(COURSE_SCALES[2]);
         expect(c.scales.length).toBe(12);
+        // course5 Z2: 7 of 12 wanted is over half, and still the next step's 10 gates are tried and kept (Forest Floor
+        // ab5efa0e: 7/5/7 at step 2/3, 10 and more at 0.4)
+        const d = fakeOf([0, 0, 0, 7, 5, 7, 10, 9, 8, 6, 6, 6], 12);
+        const rd = fitCourse(null as never, null as never, opts, 4, d.make);
+        expect(rd.track!.gates.length).toBe(10);
+        expect(rd.scale).toBe(COURSE_SCALES[2]);
+        // a step that gives the whole wanted count stops at once
+        const e = fakeOf([0, 0, 0, 12, 5], 12);
+        const re = fitCourse(null as never, null as never, opts, 4, e.make);
+        expect(re.track!.gates.length).toBe(12);
+        expect(e.scales.length).toBe(4);
     });
 
     it('lane fix3b: a course whose final proof failed is not given while the next seed gives a proven one', () => {

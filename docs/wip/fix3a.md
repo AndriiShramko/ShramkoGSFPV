@@ -1261,3 +1261,21 @@ U:/Temp/gsfpv-train3/walls/release (9 scans incl. 70b50d42); served on 5780, sto
 
 Cost (course5 Z1-see pass 2): about 30 replies; the most went to three probe runs and their pictures; a probe that reads closed from the hook and a known closing seed per scan would have saved the 16 open retries.
 Cost (course5 Z1-see): about 30 replies; the most went to the browser proof and reading its pictures; the probe flew open courses only, so the splash path stayed unseen; a probe option that asks a closed course would have saved a run.
+
+## Status Z2-scans (course5)
+
+Logs U:/Temp/gsfpv-train3/course4/z2/.
+- [x] Release build of a92e37e3 started first (z2/build.log).
+- [x] (1a) CU-5 on Forest Floor ab5efa0e x1: measured (gate-place-audit --seeds 3, z2/ff-x1-before.log): 7/7/7 gates at
+      step 2/3, the generator's wanted count there is 7 (n7 in walks) and 20 at step 0.4; so a course of its whole count
+      stopped the ladder. Fix packages/tracks/src/fit.ts wantOf: below step 1 a course stops the ladder only with its
+      whole wanted count and at least GOOD_GATES_BELOW_PLAN = 10 (estimate: the owner's 10 before C3); else the next step
+      is tried and the course with more gates kept. After (z2/ff-x1-after.log): 20/20/20 gates at step 0.4, proven,
+      problems 0, 1.5 to 1.8 s. fit.test.ts 12 passed, NEG OK against fit.ts of a92e37e3. Audit walks now show n<wanted>.
+- [ ] (1b) Forest Floor x15, x20, x100: which rule refuses gate 1
+- [ ] (2) A1 no wall cell in the gate tube, test, conifer gate gone
+- [ ] (3) A3 ladder by the flown craft
+- [ ] (4) Lublin 2f1ddf5f leaves the spawn's pocket
+- [ ] (5) Housefly d10c5638 within 30 s
+- [ ] (6) b11e45d1 gates 15 m over the wall
+- [ ] table seeds 1-3; page proofs on 39e63ce9, 7a475d38, ab5efa0e; pictures; gates.py; a6-reference

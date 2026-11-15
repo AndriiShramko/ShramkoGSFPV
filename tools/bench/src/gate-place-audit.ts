@@ -174,7 +174,7 @@ async function main(): Promise<void> {
                     // course4 C2: an empty walk says whether it was banded, how many gates it wanted and how far its target lay
                     // course4 C3: and which rule refused its candidates, and why it stopped
                     const why = x.refused ? ` eye${x.eyeHi} ${Object.entries(x.refused).map(([k, v]) => `${k}${v}`).join(' ')} stop:${x.stop}` : '';
-                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}${why}` : ''));
+                    walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}/n${x.wanted}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}${why}` : ''));
                 };
                 refreeMs = 0;
                 // course4 C4: --elements composes the course as the page's Shift+G does; the last composition is kept

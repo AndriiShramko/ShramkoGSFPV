@@ -43,6 +43,17 @@ export function fullOf(t: TrackFile, gatesMin: number): number {
     const want = (t.generator?.params as { wanted?: unknown } | undefined)?.wanted;
     return Math.max(gatesMin, major >= 3 && typeof want === 'number' ? Math.ceil(FULL_SHARE * want) : 0);
 }
+/** course5 Z2 (review CU-5): the gates a course of a step below the plan's size needs to stop the ladder: the generator's
+ *  whole wanted count (at least gatesMin). Half of it (fullOf) took 7 gates at step 2/3 on Forest Floor ab5efa0e, where the
+ *  next step gives 20 (gate-place-audit, course4/z2), and the whole count, as GOOD_GATES_BELOW_PLAN says. */
+export function wantOf(t: TrackFile, gatesMin: number): number {
+    const want = (t.generator?.params as { wanted?: unknown } | undefined)?.wanted;
+    return Math.max(fullOf(t, gatesMin), typeof want === 'number' ? want : 0, GOOD_GATES_BELOW_PLAN);
+}
+/** course5 Z2: below the plan's size a course stops the ladder only with at least this many gates (estimate: the 10 the
+ *  owner flew on Forest Floor ab5efa0e before C3). The generator's wanted count there is 7 at step 2/3 (a whole course by
+ *  its measure) and 20 at step 0.4 (gate-place-audit, course4/z2/ff-x1-after.log). */
+export const GOOD_GATES_BELOW_PLAN = 10;
 /** When fitCourse must stop: `at` on the clock `now` (ms). */
 export interface FitDeadline {
     readonly at: number;
@@ -181,7 +192,7 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;
-            if (ok && t.gates.length >= fullOf(t, gatesMin)) return { track: t, short: false, scale, tried, proven: true };
+            if (ok && t.gates.length >= (scale < 1 ? wantOf(t, gatesMin) : fullOf(t, gatesMin))) return { track: t, short: false, scale, tried, proven: true };
             // a proven course beats an unproven one of any length; among the same kind the one with more gates
             if (t.gates.length > 0 && ((ok && !bestOk) || (ok === bestOk && t.gates.length > (best?.gates.length ?? 0)))) {
                 best = t;
@@ -194,7 +205,7 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
         // course4 review CU-5: below the plan's size a course under its full share does not stop the ladder: the next step
         // is tried and the course with more gates kept (Forest Floor ab5efa0e: 10 gates at the old step 0.5, then 5-7 at the
         // new 2/3, which stopped the ladder; c3/before.json, c3p2/after2.json). Step 1 keeps FY-1 (street tables unchanged).
-        if (best && bestOk && best.gates.length >= (scale < 1 ? fullOf(best, gatesMin) : gatesMin)) return end();
+        if (best && bestOk && best.gates.length >= (scale < 1 ? wantOf(best, gatesMin) : gatesMin)) return end();
     }
     return end();
 }
