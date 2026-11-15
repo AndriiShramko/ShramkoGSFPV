@@ -650,6 +650,31 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   +30.51 s after Shift+G; 0 page errors.
 - [x] Row 8, first course (r11 narrator on, Wroclaw, sonic-int-review-r11-on-70b50d42.json, 10 of 10): narratorTip said once after
   the course of 15 gates (laps 1, 83 s). Never on the second course: not run in a browser (r11 flies one course).
+- [x] Row 7 (r12 Z5_NARRATOR=off Z5_LESSONS=speed-1, release of e9dc3d84; evidence r12-off-speed1, r12-off-half): to its end 5 of
+  5 checks: opened in 1.6 s, passed at attempt 1 in 54 s, spoken (the lesson speaks) with lessonNarrator once, the saved narrator
+  false after it. Left with X after 15 s (Z5_HALF=1; the lesson was still in its intro): 4 of 4, lessonNarrator once, homeBack
+  said, the saved narrator false.
+- [x] Row 9 (quiet-probe ENTRY=scan, the start screen's sonic-start-scan-flier with Enter; s-*.json), Wroclaw / Tunis: the page
+  ready 3.04 / 1.89 s (on), 2.78 / 2.52 s (off), 3.00 / 1.88 s (reader) after Enter; the craft over 0.5 m/s 0.5 to 0.8 s after
+  ready with W held from ready; scanLoading said: on 1 / 1, reader 1 / 1, off 0 / 0 (QW-3); voiced lines off 0 / 0 (on 13 / 13);
+  with the narrator off the live regions got 24 lines, all the loading screen's before ready ("Opening the scan" to "The scan is
+  ready"), none after. Shift+G course and hum in the same sample in all six. 0 page errors. The streams ran two probes at once, so
+  the course times (Wroclaw 18 to 49 s) are under load.
+- [x] Row 10 r11 narrator on (release of e9dc3d84): Wroclaw 10 of 10 (above), Tunis 10 of 10 (199 s).
+- [ ] Left (in this order): row 10 r9 and r12 narrator on (they take the GPU lock themselves; r12 one lesson per run, Z5_LESSONS);
+  accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 on a local server of dist (it takes the lock); pause-over-course-probe (check
+  whether it takes the lock); a6-reference; tsc apps/fly (done 0 in this commit, see below) and tools/bench (0 at 1fae4e1f);
+  gates.py --only vitest,architecture,i18n,b18,leaks; the pictures (quiet-probe RENDER=on RECTS=1 SHOTS=<prefix> for captions,
+  copy the 1920x1080 one to quiet-captions.png; ENTRY=scan RENDER=on SETSHOT=U:/Temp/gsfpv-train3/shots/quiet-settings.png for
+  the setting, the start screen shows sonic-narrator) inside the lock wrap; the off table (QW-6) from quiet-cues.ts QUIET_SOUNDS
+  plus the speakers' own sounds (course ready checkpoint, lap 'lap', course end 'fanfare', no course and walls failed
+  'wrong-side', busy and "picture may stop" 'answer' wait, narrator off 'answer' no); 'What the owner does'; 'For the lead' (add
+  apps/fly/src/sonic/feature.ts oneShots, apps/fly/src/sonic/quiet-cues.ts, tools/bench/scripts/d7-probe.mjs, quiet-probe.mjs,
+  tools/bench/src/sonic-int-review.ts, tools/bench/test/sonic-quiet-w3.test.ts; package pin 293ebae unchanged).
+- [ ] Probe observations, not chased: d7 with the narrator off, after case (d) next went 3 to 0 and the (lap) case ended at next 1,
+  laps 0 (d7-off-70b50d42.json; compare with a narrator-on d7 run before calling it a fault; suspect the probe's backing-up
+  case, tools/bench/scripts/d7-probe.mjs). r11 Tunis narrator off: the lift-off after the course left the craft at 0.08 m/s, so the
+  switch-off speed check failed (sonic-int-review.ts r11Off, the probe's precondition).
 - [ ] Left (in this order): re-run run-x2.sh from r11 Tunis on (the build in dist is current for 25e7bdb4 plus this commit's
   probe-only changes; rebuild only if app code changes); read q-*-off.json for rows 1, 4, 5 (quiet-summary.mjs); row 1 course end:
   the one-lap course gave 'lap' and no 'fanfare' (M3 says finish notes at the course's end: check in app/builtin/course.ts whether
@@ -741,3 +766,5 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
 - 2026-11-15 X2 (quiet3): most replies went to making the probes see the narrator-off flight (r11 and d7 had no narrator switch,
   the page had no record of one-shot sounds); probes with Z5_NARRATOR / D7_NARRATOR and a oneShots hook ready before a proof stage,
   and the ten rows split over three stages, would have made it fit.
+- 2026-11-15 X2 pass 2 (quiet3): most replies went to adding probe switches (no-course, r12 narrator, scan entry) and to reading
+  JSON by hand; two parallel detached streams saved waiting. A row-level summary script per probe would have saved about 8 replies.
