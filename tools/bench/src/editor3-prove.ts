@@ -757,7 +757,8 @@ async function main(): Promise<void> {
             await run(`repro-${SCENES[0]}`, { width: 1920, height: 1080 }, (p) => sizeRepro(p, SCENES[0]!));
             return;
         }
-        for (const id of SCENES) await run(id, { width: 1920, height: 1080 }, (p) => scene(p, id));
+        // FULL=0: only the keyboard and the phone runs (a second lock hold, each under 10 minutes)
+        if (process.env.FULL !== '0') for (const id of SCENES) await run(id, { width: 1920, height: 1080 }, (p) => scene(p, id));
         if (process.env.KBD !== '0') await run(`kbd-${SCENES[0]}`, { width: 1920, height: 1080 }, (p) => keyboardRun(p, SCENES[0]!));
         if (process.env.PHONE === '1') await run(`phone-${SCENES[0]}`, { width: 844, height: 390 }, (p) => phone(p, SCENES[0]!));
     } finally {
