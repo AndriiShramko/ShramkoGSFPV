@@ -6,7 +6,7 @@ Worktree `C:/dev/gsfpv-site-sound`, branch `laptop3` from origin/main 1de775ed. 
 
 Stage P1-take-in
 - [x] 1. Squash of origin/laptop-handoff (6c859e96) onto origin/main 1de775ed, one commit; lockfile unchanged
-- [ ] 2. All gates (gates.py exit 0) and a6-reference
+- [x] 2. All gates (gates.py exit 0) and a6-reference (on 6ddf601d; this commit records them)
 - [x] 3. docs/decisions.md D91: second exception to "public engine API only" in render-pc (this commit)
 - [x] 4. Second review of packages/render-pc/src/view-lod.ts and its wiring; one fix with test and negative control (this commit)
 
@@ -21,6 +21,13 @@ Stage P1-take-in
   turned view asked the engine for a full update on every frame: the new test turns the view 20 frames 60 ms apart and
   the old code asked 20 times (`expected 20 to be +0`), the new code 0. view-lod.test.ts 34 of 34 pass; negative control
   NEG OK (neg_control.py, old view-lod.ts from HEAD 32160aae); render-pc typecheck exit 0.
+
+- Gates (gates.py, 2026-11-15): first run FAIL typecheck and vitest (bench: `motorChoice` not in SonicPrefs,
+  `scanFreeLesson is not a function`, 13 failures in 6 sonic-* files) because the worktree's submodule
+  packages/sonic-fpv was checked out at 378cc50d, left by the merged sound lane, not at the pinned 598a98f9.
+  After `git submodule update packages/sonic-fpv`: typecheck PASS, vitest PASS (324 files passed, 1 skipped;
+  4807 tests passed, 14 skipped, 0 failed); api-unittest, architecture, i18n, catalog, B18 PASS in the first run
+  (logs U:/Temp/gsfpv-gates-20261115-025028 and -025755). a6-reference.test.ts 1 of 1 pass (hash unchanged).
 
 ## Decisions
 
@@ -50,4 +57,14 @@ Review of view-lod.ts and its wiring (renderer.ts onViewLod, flight.ts `?viewlod
 
 ## Not verified
 
+- No browser run in this stage (the stage asked for none): the review fix is held by the unit test only; the
+  hand-off's live checks (`lod().view` active and calls growing on Lublin and Wroclaw, `&viewlod=0`) were not run on a
+  local release.
+- Fly by Sound with rendering off and the second-drone case: by reading the code, not by a run.
+- The gates' api-unittest, architecture, i18n, catalog and B18 ran once, while the review fix was being written; B18
+  and architecture ran after it was in place (by the run's timing), the other three do not read the files it changed.
+
 ## Cost notes
+
+- P1: the most turns went to the first gates run failing on a stale submodule checkout in a reused worktree; checking
+  `git submodule status` right after creating the branch would have saved a gates run.
