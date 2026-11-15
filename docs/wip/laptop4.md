@@ -16,7 +16,8 @@ Stage Q1-why
   Switch `BENCH_UNCAPPED=1` in tools/bench/src/chrome.mjs (pickBrowser launch args; browser.ts launchChrome joins them to
   the caller's), chrome.d.mts, README; test chrome.test.ts 14 of 14, NEG OK; bench typecheck exit 0; frame time measured
   with it (Facts Q2) (this commit)
-- [ ] 3. gates.py --only vitest,architecture,i18n,b18 before handing over
+- [x] 3. gates.py --only vitest,architecture,i18n,b18 on 2c90d1ea: all PASS (vitest 155 s; logs
+  U:/Temp/gsfpv-gates-20261115-110810); server on 5740 stopped (this commit)
 
 ## Facts (measured)
 
@@ -98,3 +99,7 @@ the CDP profile (PROFILE=1), GPU load before the page (nvidia-smi):
 - No run on a weak device; budgets forced by `budget=`.
 
 ## Cost notes
+
+- Q1: the most turns went to a 4K run lost waiting on another lane's lock (timeout 280 s ran out) and to a first run at
+  1920x1080 that could not show the slow start; reading laptop3's own `thermalBefore` first (one command) would have
+  pointed at the busy card before any browser run.
