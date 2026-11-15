@@ -329,13 +329,24 @@ Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight chec
   "goes both ways" passed (NEG OK against HEAD, "expected 0 to be greater than or equal to 30"), digest pins held (72/72).
   Audit once more (f3/audit2/, pictures f3/audit2/twoarm-*.png): worse. Wroclaw gates 19.7 sd 5.3 (cut 9-12 gates on 8 of
   20 seeds), visited 0.084; Tunis 18.3 sd 3.8, visited 0.247; 0230d903 sd 2.0; eb5f51dc sd 4.3. Reverted in 713f492c.
-- [ ] Left (next worker): the two-arm walk of 7ff82355 with two fixes. (1) closeAt (generate.ts, the finished course)
-  cuts the course at the gate of the crossing that sees the start (gates 12-13 of 24, the middle phase passes the start):
-  for a two-arm walk let closeAt look only at n >= ends[1]. (2) each arm gets a quarter of the way (W / 4, about 105 m
-  on 24 gates of up to 25 m legs) because the home half lays gates over the same street again; the whole street length a
-  closed course of 24 gates covers is about 210 m either way. To reach more, the back half needs fewer gates (longer
-  legs home) or N above 24 on big scans (packages/tracks COURSE_DEFAULTS.gatesMax; product decision). Then run
-  f3/run.sh again and look at the four pictures.
+- [x] (pass 2, 29428815) Two-arm walk back (revert of 713f492c); closeAt of a two-arm course looks only at its home phase
+  (from outGates). audit3: Wroclaw 24 sd 0, visited 0.108, but arms of about 70 and 60 m (steps along the grid's axes
+  on diagonal streets); Tunis 18.7 sd 3.5: 18 of 20 walks stopped at the home phase with the 8 step-backs used up.
+- [x] (pass 2, 5a62e855) The arms are planned in straight metres: W is scaled by the scan's median steps per metre of
+  straight distance (cells 20 m or more from the start, clamp 1-1.8; SPREAD_RATIO_MIN_M and the clamp are estimates);
+  a second arm is taken when its way is at least SPREAD_ARM_MIN_M 30 m (estimate; the share 0.5 of the first arm left
+  Tunis one-armed in audit4); step-backs 8 per arm; when the two-arm walk ends short of N the one-arm walk of the same
+  seed is tried too and the course with more gates kept. Courses without a map unchanged: quality, generate, fit,
+  fixtures 72/72 (digest pins hold); tsc packages/tracks, tools/bench, apps/fly: 0 errors. Audit6 in Facts F3 pass 2.
+- [x] (pass 2) Pictures of audit6 looked at (seed 1, U:/Temp/gsfpv-train3/shots/course3-<scan>-top.png). Wroclaw: gates
+  on both arms of the main street, NW about 105 m and SE about 75 m from the spawn, all green, no cluster; the SE street
+  goes on for about 150 m more and the SW street has none. Tunis: the whole main street west to its end (about 80 m) and
+  about 20 m east, green; the north streets have none. 0230d903: a loop of about 70 m along the north street beside the
+  spawn; the town's inner streets have none. eb5f51dc: not a street scan (small centre in sky splats).
+- [ ] Left: 24 gates of legs up to 25 m, out and back, cover about 180-210 m of street; the rest of a big scan's
+  well-scanned streets (Wroclaw SE end and SW street, Tunis north streets) needs N above 24 on big scans
+  (COURSE_DEFAULTS.gatesMax, product decision, see For the lead). No unit test of the one-arm fallback (the audit shows
+  it: Tunis min 9 -> 14, eb5f51dc min 6 -> 16).
 - [x] gates.py --only vitest,architecture,i18n,b18 on f25cdaaa: all PASS (vitest 97 s; logs U:/Temp/gsfpv-gates-20261115-035931).
 - [ ] Not done in this stage: browser look at the pictures' course on the page (the Node picture is the walls' super
   blocks, not the rendered scan); K1.2 (2f1ddf5f, d10c5638 spawn 62 m and 22 m high).
@@ -352,6 +363,18 @@ Stage F3-audit (train 3 wave 2: 20-seed audit of the fast walk, K1.1 flight chec
 Visited share before3 / after3 (G2): Wroclaw 0.05 / 0.066, Tunis 0.229 / 0.188, 0230d903 0.036 / 0.039, eb5f51dc
 0.081 / 0.112. Times are measured under load (other lanes on the PC), not with the lock. Logs f3/audit/<scan>.log, rows
 with v3, v12 per seed.
+
+## Facts F3 pass 2 (20 seeds, --quality, course-quality-audit.ts at 5a62e855, f3/run.sh audit6, Node 22, 4 processes at once, no GPU lock)
+
+| scan | gates in band | well-scanned visited | gates min-max | mean | sd | F3 one-arm mean / sd / visited | reach m | K1.1 failing (3, 12 m/s) | ms a course (whole generate) |
+|---|---|---|---|---|---|---|---|---|---|
+| 70b50d42 Wroclaw | 1 | 0.113 | 24-24 | 24 | 0 | 24 / 0.2 / 0.098 | 111 | 0 of 20 | 1877 |
+| 887f27aa Tunis | 1 | 0.329 | 14-24 | 23.5 | 2.2 | 22.2 / 3.8 / 0.307 | 97 | 0 of 20 | 4091 |
+| 0230d903 | 1 | 0.084 | 24-24 | 24 | 0 | 23.8 / 0.5 / 0.072 | 103 | 0 of 20 | 2154 |
+| eb5f51dc | 1 | 0.28 | 16-24 | 23.5 | 1.8 | 22.6 / 2.9 / 0.255 | 76 | 0 of 20 | 719 |
+
+Before3 mean / sd: Wroclaw 19.3 / 5.2, Tunis 13.5 / 6.5, 0230d903 20.7 / 6.1, eb5f51dc 13.6 / 8.4. Intermediate audits
+(f3/audit3, audit4, audit5) in Status. Times measured under load (other lanes), not with the lock.
 
 ## Facts F2-web (the owner's path, page, 2026-11-15 03:39-03:44)
 
@@ -524,8 +547,19 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
   page's check of a served course, the editor's wallsCheck). The answers are the same as sweepOne's (tests on random
   segments and spheres); the first sweep on a walls object builds the super block bits (Wroclaw 1.7 s in Node, about
   6 MB of Uint32Array for 5 cm walls of 295 x 375 x 25 m; 0.15 s on Tunis).
+- F3 pass 2 (product decision): a closed course of 24 gates (COURSE_DEFAULTS.gatesMax) with legs up to 25 m covers
+  about 180-210 m of street out and back; the two-arm walk (5a62e855) now puts that on both sides of the spawn (Wroclaw
+  NW about 105 m and SE about 75 m), but Wroclaw's SE end and SW street and Tunis' north streets stay without gates.
+  To reach them a course over a quality map needs more gates on big scans (for example N from the well-scanned area,
+  capped near 40); a fixed N per scan keeps the size the same between regenerations (message 51). Not changed here.
+- F3 pass 2: a course over a quality map from 5a62e855 differs from the same seed's course before (two-arm walk); saved
+  courses are files and are not touched, a g1.<seed> link is rebuilt by the current code on both sides.
 
 ## Not verified
+
+- F3 pass 2: no browser run of the two-arm courses (the pictures are the Node walls' super blocks, not the rendered
+  scan; the page's own course on Wroclaw and Tunis with stand-in walls was not looked at after 5a62e855). The one-arm
+  fallback and the steps-per-metre scale have no unit test of their own (shown only by the 20-seed audit).
 
 - G3: the negative control fails each test on the missing courseLife (the old reset lived in builtin/course.ts, which a
   Node test cannot drive); the old reset-on-every-life behaviour itself was not replayed in a test.
@@ -589,3 +623,4 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - F1-no-freeze pass 2: about 35 replies; the CDP profile in the probe found the 4.2 s task in one run (the store's gzip), where
   guessing from code pointed at the octree parse; most replies went to reading the arrival path before the profile ran.
   Profiling first (PROFILE=1 is in the probe now) and recording every life's decision in the probe would have saved about 8.
+- F3-audit pass 2: about 28 replies; most went to three audit rounds (audit3-5) each showing one new failure mode (diagonal street steps, one-armed Tunis, stuck home phase). Printing per-seed stop/outGates/backtracks rows for all four scans in the first audit would have shown all three at once.
