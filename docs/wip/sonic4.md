@@ -523,3 +523,7 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   and every test that pins the narrator key; one patch script with asserts for locales and pinned tests saved the read-before-edit
   replies. N1 to N6 with a package sound does not fit 30 replies: split into N1-N5 and N6 plus gates.
 - 2026-11-15 lane quiet fixes pass 2: most replies went to the browser proof (one probe extension for voice and live-region hooks, four runs, two summaries) and to finding the rig's hooks for Q5; three probes run in parallel without the lock saved two replies. Cheaper: a probe that already recorded speak calls and cues from K1, and a note in agent-map of where a course of Shift+G finishes in the sound mode.
+- 2026-11-15 quiet2 W1-finish pass 2: most replies went to finding where the course of Shift+G finishes in the sound mode (runner
+  events, then the course hook, then LapTimer: the answer is CourseHook.laps, the runner sees nothing) and to Edit's read-before-edit
+  on four files; a map line "course finished in Fly by Sound = CourseHook.laps rises" would have saved about 6 replies. Q7 and the
+  gates did not fit; the Q7 plan is written above.
