@@ -440,6 +440,9 @@ nine published walls of U:/Temp/gsfpv-train3/walls/release (Wroclaw on its walls
       Shift+G to the course; gate-guide-probe start look: gate 1 nearer than 12 m and within 20 deg of the view's centre
       with the guide hidden counts as correct; course-path-probe colours and counts the eye band 1.2-2.0 m and exits 1 when
       a gate of the first course is out of it by more than one 10 cm voxel or has no wall below; tsc apps/fly clean
+- [x] gates.py subset in the runner: FAIL architecture ('tracks generator uses non-deterministic Math', the Math.hypot of
+      c5d92269 in generate.ts legWell); replaced by Math.sqrt of the sum of squares; check-architecture ok, packages/tracks
+      vitest 14 files 119 passed. The browser runs below are on the build with hypot (same n except within 1 ulp of a metre).
 - [ ] runner: build, gates, a6, save-check Wroclaw and Tunis (with --push), gate-place Wroclaw and Tunis (Y2 pictures),
       course-path both, gate-guide both, walls-store both, accept-fly B6 B7 B9-B16, tracks-page
 - [ ] pictures looked at; What the owner does; not proven

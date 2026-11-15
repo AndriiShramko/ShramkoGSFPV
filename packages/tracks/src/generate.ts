@@ -380,7 +380,8 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     let startPoor: Vec3 | null = null;
     const legWell = (a: Vec3, b: Vec3): boolean => {
         if (!Q || eyeHi === 0 || a === startPoor || b === startPoor) return true;
-        const n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[2] - a[2]) / LEG_STEP_M));
+        const dx = b[0] - a[0], dz = b[2] - a[2];
+        const n = Math.max(1, Math.ceil(Math.sqrt(dx * dx + dz * dz) / LEG_STEP_M)); // sqrt, not hypot: check-architecture's rule
         for (let j = 0; j <= n; j++) if (qualityShare(Q, [a[0] + ((b[0] - a[0]) * j) / n, 0, a[2] + ((b[2] - a[2]) * j) / n]) < POOR_SHARE) return false;
         return true;
     };
