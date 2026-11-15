@@ -878,5 +878,31 @@ Logs U:/Temp/gsfpv-train3/course4/c3/. Release build of 6557daf6: BUILD EXIT 0 (
       gates on seeds 1-3 that the Save check and a pilot at 3 m/s pass; threeRooms: the same digest with refree). NEG OK
       against fit.ts of HEAD (neg_control.py). Typecheck packages/tracks, apps/fly, tools/bench exit 0; fit, scaled-scan,
       spawn-outside tests 16 passed.
-- [~] after table (c3/after.json), true-scale tables (70b50d42, 887f27aa against c2/p2/true-head.json), page proof on two
-      rooms and the microgreens scan, pictures, gates.py, a6-reference
+- [x] after table (gate-place-audit.ts --seeds 3, c3/after.json, code of 44e82ef8) against before: 20 of 39 rows identical
+      (ms and walks left out): every row that fitted at step 1 (70b50d42, 887f27aa, 0230d903, 2f1ddf5f, 9baef54b,
+      ba7aa29d, eb5f51dc seeds 1 and 3), so the street tables keep today's size. Changed rows (scene seed: gates, step,
+      ms): 39e63ce9 Modlinek 1-3: 5 rings of 0.48 m at step 0.4, proven, Save problems 0, 0.7-0.8 s, centres 1.7-2.5 m
+      high (was none); b11e45d1 1-3: 24 gates at step 0.4, 3.3-5.0 s (was 6 at 0.3), centres 14.5-15.1 m over the first
+      wall below (suspect: the audit's ground ray, or gates over a castle wall; not looked at); ab5efa0e 1-3: 5-7 gates at
+      step 2/3 (was 10 at 0.5); 1994c65c 1-3: 24 at 2/3 (was 24 at 0.5); eb5f51dc 2: 24 at 2/3; d10c5638 1-3: 12 gates
+      at 2/3 (was 5-6 at 0.5) but 50-96 s (was 11-13 s). 7a475d38 Winter Garden still none: tried 12, 11.5-12.4 s.
+- [ ] left, see 'Left (C3-every-scan)'
+
+## Left (C3-every-scan)
+
+1. 7a475d38 Winter Garden gives no course after the ladder (c3/after.json, tried 12): measure which rule refuses
+   (gate-place-audit --scenes 7a475d38 --diag 1 --margin 0.2 and 0.15; the walk prints 'b0 n.. far..': the eye band
+   1.2-2.0 m of a true-scale scan, or the quality map). Fix only the measured rule; rerun --scenes 7a475d38 --seeds 3.
+2. d10c5638 now takes 50-96 s for one course in Node (was 11-13 s): the page's limit is FIT_BUDGET_MS 120 s; measure
+   where the time goes (freeAtMargin at 2/3 on 821284 cells, or the tries) before the page proof; a guess, not measured.
+3. b11e45d1 gates 14.5-15.1 m above the first wall below: look at the top map (gate-place-map.ts) before calling it wrong.
+4. The page line when no course fits (course.ts:327, course.none): lead the pilot (C2 design item 4), four locales.
+5. Page proof on the release build (rebuild first: dist is of 6557daf6): two rooms (39e63ce9 and, after item 1,
+   7a475d38) and ab5efa0e at Scene size x20: course-path-probe.mjs <base>/en <out> U:/Temp/gsfpv-train3/shots <ids>
+   (it leads the flight model through gates 1-3 by setting the craft's state; a pure keyboard pilot probe does not
+   exist yet); pictures course4-room-pilot.png and course4-room-top.png, each looked at.
+6. gates.py --only vitest,architecture,i18n,b18; a6-reference (no flight code touched so far).
+
+Cost (course4 C3): about 30 replies; the most went to the two whole-catalogue Node runs (13 scans x 3 seeds, 6-9 min
+each) and to a test room that the free space's erosion step emptied (a room one cell high has no core cell: 0.8 and 1.0 m
+rooms gave nothing at any margin, 1.2 m works). A catalogue table runner that prints the summary would have saved 3.
