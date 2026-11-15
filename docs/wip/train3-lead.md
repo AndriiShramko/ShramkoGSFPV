@@ -5,9 +5,11 @@ Source: the owner's message 51 (2026-11-14) after he flew release 4e9148cd1005 (
 ## Status
 
 - [x] Wave 1 (night of 2026-11-14): lanes editor3, course3, sonic3 built their code; one review each; fixes started. No lane finished its browser proof (the GPU lock was held for 24 minutes around a Node audit; the walls build of Wroclaw holds the page's main thread for 13.5 s, 10 s and up to 21 s).
-- [~] Wave 2 (2026-11-15), three chains: course3f; editor3f then laptop; sonic3f then hearing (a design document only).
+- [x] Wave 2 (2026-11-15, 00:36 to 04:16 UTC), three chains. course3f finished all four stages; laptop3 is accepted (a big scan from above at 0.5 to 1 M is still smeared in the near part); hearing: the design document docs/wip/sonic-headtrack-plan.md on branch sonic3; editor3f and sonic3f did not finish their browser proofs because the proofs found real faults (the gate bar hides after a drag, a second Space does not disarm, a gate added by a floor click stands behind the camera; no course by sound on a real scan was ever counted as passed: the earlier 'passed' rows were lessons that moved on after a failure).
+- [x] Integration A (course3 and laptop3): main ca5760fd, live since 2026-11-15 05:48 UTC as release a1c494cdd368; deploy/live-checks.sh 15 of 15 PASS (U:/Temp/gsfpv-train3/live-ca5760fd). Section 'Integration A' below.
+- [~] Wave 3 (from 2026-11-15 04:30 UTC): lanes editor3g (C:/dev/gsfpv-voice, branch editor3) and sonic3g (C:/dev/gsfpv-center-throttle, branch sonic3), three narrow stages each with up to three passes; lane fix3a (C:/dev/gsfpv-rooms, branch fix3a from main ca5760fd: the walls store, a guide to gate 1, gate 1 nearest to the scan's spawn; status docs/wip/fix3a.md); lane laptop4 (C:/dev/gsfpv-site-sound, branch laptop4 from main) starts when a slot of the pool of three is free.
+- [ ] Integration B (fix3a, editor3, sonic3 with the package's branch train3, laptop4 if ready), then the second release by the lead. The workflow script holds INTEGRATIONS.train3b.
 - [x] Published walls of the nine catalogue scans are live since 2026-11-15: lighter re-bakes assembled by the lead in U:/Temp/gsfpv-train3/walls/release (148,581,855 bytes with the .gz copies; Wroclaw 17,615,280 raw and 9,670,306 gzip at 10 cm); deploy/release-walls.sh copies the .gz and checks the hub's free room first (7.1 GB free before the upload). Local pre-check and the live page probe: all nine pass (source published, no build, 20 passes at 25 m/s stop at the walls). The walls-published-probe of deploy/live-checks.sh passes from now on.
-- [ ] Integration of train 3 (branches editor3, course3, sonic3 with the package's branch train3, laptop3), then the release by the lead.
 - [ ] Lane menu (R29): moved to the next train; it touches the entry points that the sound and editor lanes change now. Parked branch menu in C:/dev/gsfpv-tracks.
 
 ## Branches after wave 1
@@ -31,6 +33,7 @@ Source: the owner's message 51 (2026-11-14) after he flew release 4e9148cd1005 (
 ## Cost
 
 Wave 1, window 2026-11-14 20:30 to 2026-11-15 00:36 UTC: 89 USD at API prices; 31 workflow agents 68.9 USD (context up to 158 k each), the lead 20.5 USD in 28 steps at a context of up to 624 k.
+Wave 2, window 2026-11-15 00:36 to 04:16 UTC: 99 USD at API prices; 21 workflow agents 85.2 USD (997 calls, 47 per agent on average, context up to 389 k), the lead 13.6 USD in 33 steps. 71 % of the cost fell on calls at a context of 150 to 300 k: the line 'at most 30 replies per stage' in a prompt does not hold; a stage's budget is set by the size of its task.
 
 ## Integration A (course3 and laptop3)
 
