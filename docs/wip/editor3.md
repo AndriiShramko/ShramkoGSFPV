@@ -32,7 +32,34 @@ Stage G3-prove (train 3 wave 3):
   (Tunis), 129 ms (Wroclaw), idle in mode 56 ms. runB: keyboard Space 1 fly armed (315 ms), Space 2 edit disarmed (309 ms);
   full course line has no digit; 844x390: gate bar [8, 340, 410x42] and top bar [217, 4, 409x36] fit, the selected gate's
   point is the canvas (nothing covers it).
+- [x] G3.3 pass 2 (probe 260e5638, dist = release of 1c2b773d, no app code changed): runC Tunis (g3/runC/e4.json, lock
+  07:33:23-07:36:29), runD Wroclaw (g3/runD/e4.json, lock 07:36:32-07:39:19). gates.py --only vitest,architecture,i18n,b18
+  on 260e5638: all PASS (vitest 108 s, logs U:/Temp/gsfpv-gates-20261115-073152). a6-reference 1/1 pass (hash unchanged,
+  no flight code touched). mouse-free-probe on http://localhost:5814/en (render off, no lock): 78 PASS, 0 FAIL in 11
+  entries; the 12th entry 'rooms' threw (waitForSelector [data-action="pause.rooms"] 5 s: a local release has no rooms
+  service; lane rooms, not this lane). Measured in runC/runD:
+  - Keyboard Space with the PAD as the chosen source: Space does not arm (mode edit after 3.1 s, both scans); the keyboard
+    is passive then (devices/keyboard.ts header). Space toggle with the keyboard as the source is proven in runB.
+  - Pad flight: sticks put the mode in 'fly' (handles hidden) and the disarm brings the edit view back where it was
+    (editEyeBackM 0, both scans); controls.gate.armed stays false (camera drone, no arming). Gate 1 stands 13.4 m (Tunis)
+    and 9.6 m (Wroclaw) ahead of the spawn, nearly centred (x 841 and 848 of 1920). course.next stayed 0: the probe read
+    the yaw's sign on the EDIT camera (startZ 2.3 m), turned away and lost the gate. Fixed in the probe after the run
+    (sign read on the drone's camera, lower yaw gains), NOT run yet. '+' 23 / 20 times made the opening 3.5 m, 23 / 20
+    Ctrl+Z gave 1.2 / 1.5 back.
+  - Red-gate loop: deleting gate index 1 again and again did not clear "the way from gate 0 to gate 1 goes through a
+    wall" on Tunis (problems 6 -> 5 -> 4 ..., Save refused, Problems 5). Probe now deletes the moved gate when the same
+    pick gives no fewer problems (NOT run yet). Wroclaw reached Save: refused with problem "save: http 201", the page says
+    "The course was not saved this time. Press save again": suspect the probe's local /api/tracks stand-in in
+    editor3-prove.ts main() answers 201 where the page wants another answer, or the page's save treats 201 as a failure
+    (a guess, not read).
+  - Exit: two Esc presses with unsaved changes: the second still said "The changes are not saved. Esc again leaves
+    without saving" and the editor stayed open (closed false, both scans). Suspect the floor add's undo or the delete
+    loop resets askedFor between the presses, or 900 ms is too short; course.ts command('exit') ask() (a guess).
+  - Path long task max 156 ms (Tunis), 88 ms (Wroclaw); fps before 30, idle in mode 30 (Wroclaw).
 - [ ] left (next worker, in this order; dist is the release of 1c2b773d, do not rebuild before a code change):
+  0. Run chain U:/Temp/gsfpv-train3/editor3/g3/chain2.sh again with OUT runE/runF (the probe fixes of this pass), then
+     items 1, 2, 6 below from its record. accept-fly B6 B7 B9-B16 on a local address is NOT run yet (it takes the lock
+     itself: SITE=http://localhost:<port> npx tsx src/accept-fly.ts B6 B7 B9 B10 B11 B12 B13 B14 B15 B16).
   1. Test flight with the simulated gamepad: fly.armed false, nextAfter 0 on both scans, modeAfter edit. The HUD in the
      picture says "ANGLE CH5, Stick in the centre (camera drone): no arming needed", so the probe's pad may fly a camera
      drone that never arms, and gate 1 is not put 6 m ahead of the spawn. Probe work in tools/bench/src/editor3-prove.ts
@@ -815,6 +842,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- G3-prove pass 2: about 31 replies; the most went to finding the run's own probe faults (the yaw sign read on the wrong
+  camera, a delete loop that kept deleting the same index) one browser run late; dumping the first 3 flight samples and
+  the first 2 delete steps in a 60 s dry run before the full chain would have caught both.
 
 - G3-prove: about 32 replies; the most went to the 7-minute GPU lock queue and to the full path run whose summary showed
   four probe gaps (no 6 m gate, no red-gate deletion before Save, a camera-drone pad, no Exit) at once; a probe step list

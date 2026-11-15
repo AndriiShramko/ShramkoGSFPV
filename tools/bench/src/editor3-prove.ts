@@ -381,12 +381,20 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(150);
     await pad(page, null, 0x50);
     const arm = await until(armedNow, (v) => v === true, 2000);
-    // the sticks out of the centre start a camera drone's flight (it needs no arming)
+    // the sticks out of the centre start a camera drone's flight (it needs no arming); the yaw's sign is read on the
+    // DRONE's camera (pass 2's run C read the first point on the edit camera, startZ 2.3, and turned the wrong way)
+    await pad(page, [0, 0, 0.1, 0, 0], null);
+    const fm = await until(() => dbg(page), (d) => d?.mode === 'fly', 3000);
+    await pad(page, [0, 0, 0, 0, 0], null);
+    await sleep(300);
     const ga = (await dbg(page))?.gates[del];
-    await pad(page, [0, 0, 0.1, 0.4, 0], null);
-    await sleep(400);
+    await pad(page, [0, 0, 0, 0.25, 0], null);
+    await sleep(300);
     const gb = (await dbg(page))?.gates[del];
-    const dArm = await dbg(page);
+    await pad(page, [0, 0, 0, -0.25, 0], null);
+    await sleep(300);
+    await pad(page, [0, 0, 0, 0, 0], null);
+    const dArm = fm.v;
     const startZ = ga ? r2(ga[2]!) : null;
     const yawSign = ga && gb && ga[2]! > 0 && gb[2]! > 0 && gb[0] !== ga[0] ? (gb[0]! > ga[0]! ? 1 : -1) : 1;
     const flight: unknown[] = [];
@@ -405,14 +413,14 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         const g = d?.gates[del];
         flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null]);
         if (h?.next !== nextBefore || (i > 0 && d?.mode !== 'fly')) break;
-        let yaw = 0.4;
+        let yaw = 0.25;
         let thr = 0;
         let pit = 0;
         if (g && g[2]! > 0) {
             const ex = (g[0]! - W / 2) / (W / 2);
             const ey = (g[1]! - H / 2) / (H / 2);
             const near = g[2]! < 3;
-            yaw = clamp(-yawSign * 1.2 * ex, 0.6);
+            yaw = clamp(-yawSign * 0.7 * ex, 0.35);
             thr = near ? 0 : clamp(-0.6 * (ey - EY_AIM), 0.5);
             const aligned = Math.abs(ex) < 0.15 && Math.abs(ey - EY_AIM) < 0.3;
             pit = near ? pitch * 0.8 : aligned ? pitch : 0;
@@ -494,7 +502,11 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if ((e.problems ?? 0) === 0) break;
         const bad = (e.paints ?? []).map((p, j) => (p === 'bad' || p === 'selected-bad' ? j : -1)).filter((j) => j >= 0);
         if (!bad.length) { removed.push({ problems: e.problems, noRed: true }); break; }
-        const pick = [...bad].reverse().find((j) => j !== del) ?? bad[bad.length - 1]!;
+        // run C: deleting gate 1 again and again left "the way from gate 0 to gate 1" red: the same pick twice with no
+        // fewer problems means the moved gate itself is in the way, so it goes (the reload then compares the new gate 0)
+        const prev = removed[removed.length - 1] as { pick?: number; problems?: number } | undefined;
+        const stuck = !!prev && prev.pick !== del && bad.includes(del) && (e.problems ?? 0) >= (prev.problems ?? 0);
+        const pick = stuck ? del : ([...bad].reverse().find((j) => j !== del) ?? bad[bad.length - 1]!);
         if (pick === del) movedGone = true;
         for (let n = 0; n < 40 && (await ed(page)).selected !== pick; n++) {
             await page.keyboard.press(((await ed(page)).selected ?? 0) < pick ? 'Tab' : 'Shift+Tab');
