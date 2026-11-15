@@ -39,7 +39,7 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   (the panel above the chip, name, minus and cross at its top right; its lower edge covers part of the credit line, the
   chip stays free) and voxview-panel-844.png (under the chip at the top, header and cross visible, the rest scrolls)
   in U:/Temp/gsfpv-train3/shots, looked at.
-- [~] X1.7c Depth probe after (release 6988977b, Wroclaw 70b50d42, 18 gates after Shift+G in 19 s, 4 min under the lock,
+- [x] X1.7c (superseded by X1.7e, which ran the fixed probe) Depth probe after (release 6988977b, Wroclaw 70b50d42, 18 gates after Shift+G in 19 s, 4 min under the lock,
   U:/Temp/gsfpv-train2/voxview/depth-after.json): depthItems 36 (the gates' and arrows' copies). Eye 2 (12 m from gate
   1, yaw 285, voxels alone): 7 sample points that the rays put behind a wall, 7 right, none shows the gate; marked points
   1 (506,375) A 69,117,121 B 69,117,121 C 166,255,25 and 2 (519,378) A 63,107,111 = B (wall shown, gate hidden; before
@@ -66,12 +66,16 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
   full, its lower left hidden by a nearer low wall; the teal gate on the left hides the voxels behind it);
   voxview-depth-scan-marked.png (run 3: over the scan the lime gate is drawn over the tree trunk in front of it: wrong,
   see Left 1). Run 4 overwrote the same file names. The guide chip: "Gate 1 (dot) 8 m" (hook shown false: in frame, near).
-- [~] X1.8 Typecheck apps/fly and packages/render-pc: 0 errors. a6-reference, voxview-panel, voxel-depth tests: 10
+- [x] X1.8 Typecheck apps/fly and packages/render-pc: 0 errors. a6-reference, voxview-panel, voxel-depth tests: 10
   passed. gates.py --only vitest,architecture,i18n,b18,leaks (U:/Temp/gsfpv-gates-20261115-215628): architecture,
   i18n, b18, leaks PASS; vitest FAIL in tools/bench/test/app-dji-rc2.test.ts only ("answers 60 ms late ... 1097ms",
   a real-timer test of the input lane, run beside a browser probe; not touched here). Python: the gates need
   C:/Users/andri/AppData/Local/Programs/Python/Python311 on PATH (no "python" on PATH in this shell).
-- [ ] X2-whole-scene: not started.
+  vitest re-run alone (no probe beside it, this commit): PASS, 116 s, U:/Temp/gsfpv-gates-20261115-221113; so the
+  app-dji-rc2.test.ts failure was load from the probe beside it.
+- [x] X1 closed (this commit). The gate behind a wall over the scan is handed to the lead (For the lead, item 3):
+  its cause is in the splat drawing (packages/render-pc/src/renderer.ts, accum.ts), outside this lane.
+- [ ] X2-whole-scene: not started (next run).
 
 ## Facts X1 (before, origin/main 4e6ef171, release on port 5740, headless Chrome, 1280x800)
 
@@ -104,19 +108,9 @@ closes it at all four sizes; the chip closed it only at 844x390 in the probe's c
 
 ## Left
 
-Exact list for the next run of stage X1-depth (dist holds the release of 6988977b with the walls; the app has not
-changed since; serve on 5740):
-1. Over the scan, a gate behind a wall shows through (it does so with the voxels off too: the cause is outside the
-   voxel layer, in how the gates (World opaque, apps/fly/src/course/view.ts) and the splats (packages/render-pc/src/
-   renderer.ts) share depth). Guess, not measured: the splats do not hide an opaque item behind them where they are
-   thin, or are drawn without the depth test. For the lead to decide: either accept the scan's own behaviour over the
-   scan, or let the voxel overlay hide gate pixels behind voxel faces in the over-the-scan view (draw the voxel faces
-   depth-only and full-colour copies of the gates after them, hiding the World gates in that mode). Not built here.
-2. vitest: re-run gates.py --only vitest alone (no probe beside it) to see whether app-dji-rc2.test.ts fails without
-   load; it is not this lane's file.
-3. Then stage X2-whole-scene.
-- Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; this run
-  put it back on the pin with git submodule update (clean working tree, nothing lost).
+1. Stage X2-whole-scene (its prompt). dist holds the release of 6988977b with the stand-in walls; rebuild first.
+- Seen, not in this list: packages/sonic-fpv was checked out at b05aeda (not the pin 293ebae) in this worktree; X1 put
+  it back on the pin with git submodule update (clean working tree, nothing lost).
 
 ## For the lead
 
@@ -130,6 +124,13 @@ changed since; serve on 5740):
   DOM element on the screen, not in the scene: always on top. The editor's handles are DOM on the screen too (no render
   component in apps/fly/src/course/editor): they stay on top by design. The collision ceiling's plane is in the voxel
   layer itself (unchanged).
+- Over the scan, a gate behind a scan wall shows through it, with the voxels on AND with them off (X1.7e: 6 of 6
+  points behind a wall show the gate colour 166,255,25 in the scan alone). The voxels-only view is right (12 of 12).
+  The cause is in how the splats share depth with the World opaque items (packages/render-pc/src/renderer.ts and
+  accum.ts: which splat drawing is active and whether it is depth-tested against the gates); not measured further,
+  outside this lane. Options for the lead: accept the scan's own behaviour over the scan; or let the voxel overlay
+  hide gate pixels behind voxel faces in the over-the-scan view (voxel faces depth-only, then full-colour copies of the
+  gates after them, with the World gates hidden in that mode: needs a change in course/view.ts beyond depth settings).
 
 ## Not verified
 
