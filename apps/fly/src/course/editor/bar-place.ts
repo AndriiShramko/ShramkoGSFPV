@@ -20,6 +20,11 @@ export const BAR_BUTTONS: readonly { readonly id: string; readonly labelKey: str
     { id: 'next', labelKey: 'course.edit.key.next', press: { code: 'Tab' }, path: 'M7 4 L14 10 L7 16' }
 ];
 
+/** G2: the point the bar follows: none while the drone flies (hidden) or while a handle really drags; else the gate's */
+export function barAnchor<T>(hidden: boolean, dragging: boolean, where: T | null): T | null {
+    return hidden || dragging ? null : where;
+}
+
 /** Where the bar goes for a gate at (x, y) on a page w by h: centred under the handles, above them when there is no room
  * below, at the page's bottom edge when neither fits (a phone); kept inside the page; null hides it. */
 export function barPlace(at: readonly [number, number, number] | null, w: number, h: number, barW: number, barH: number): [number, number] | null {

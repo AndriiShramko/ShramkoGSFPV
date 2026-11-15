@@ -56,6 +56,18 @@ export function facingFrom(eye: V3, at: V3): Q4 {
     return [Math.cos(a / 2), 0, Math.sin(a / 2), 0];
 }
 
+/** G2: a gate further than this along the floor from the selected one faces the way from it, flown m (an estimate) */
+export const ADD_COURSE_MIN_M = 1;
+
+/**
+ * G2, the owner's path: the added gate goes after the selected one, so it faces along the course, the way from the selected
+ * gate `prev` to it (upright, turned about the vertical only); with no selected gate or one right above it, the way from the eye.
+ */
+export function addFacing(eye: V3, at: V3, prev: V3 | null): Q4 {
+    if (prev && Math.hypot(at[0] - prev[0], at[2] - prev[2]) >= ADD_COURSE_MIN_M) return facingFrom(prev, at);
+    return facingFrom(eye, at);
+}
+
 /** The Add gate change for flown point `at` turned by `quat`: the course frame of TrackGate.pos and .quat (flown = s * scan + offset). */
 export function addAction(at: V3, quat: Q4, tr: Flown): Extract<EditAction, { kind: 'add' }> {
     const s = tr[0];

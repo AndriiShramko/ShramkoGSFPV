@@ -4,7 +4,7 @@
 // It follows the gate on the screen; it needs the cursor, as the editor's window ('.course-editor' in CURSOR_WINDOWS).
 import { t } from '../../i18n';
 import type { KeyPress } from './keys';
-import { BAR_BUTTONS, TOOLS, barPlace, type Tool } from './bar-place';
+import { BAR_BUTTONS, TOOLS, barAnchor, barPlace, type Tool } from './bar-place';
 
 export interface GateBarHost {
     key(press: KeyPress): void;
@@ -13,6 +13,8 @@ export interface GateBarHost {
     /** lane editor3 H1: the set of handles shown on the gate, and a press on Move, Turn or Size */
     tool(): Tool;
     setTool(tool: Tool): void;
+    /** G2: a handle drags right now (only then the bar hides; it is back at once after the pointerup) */
+    dragging(): boolean;
 }
 
 const SVG = 'http://www.w3.org/2000/svg';
@@ -84,14 +86,14 @@ export class GateBar {
         return btn;
     }
 
-    /** a handle drag hides the bar (it would cover the gate being moved) */
+    /** the drone flies in the mode: no bar (a drag hides it by host.dragging(), not by this flag) */
     hide(on: boolean): void {
         this.hidden = on;
     }
 
     /** For the page probes (read only): the hide flag and what the last frame drew */
-    debug(): { hidden: boolean; vis: string } {
-        return { hidden: this.hidden, vis: this.root.style.visibility };
+    debug(): { hidden: boolean; dragging: boolean; vis: string } {
+        return { hidden: this.hidden, dragging: this.host.dragging(), vis: this.root.style.visibility };
     }
 
     private tick = (): void => {
@@ -100,7 +102,7 @@ export class GateBar {
             this.shownTool = tool;
             this.toolBtns.forEach((b, i) => b.setAttribute('aria-pressed', TOOLS[i]!.id === tool ? 'true' : 'false'));
         }
-        const at = this.hidden ? null : this.host.where();
+        const at = barAnchor(this.hidden, this.host.dragging(), this.host.where());
         const pos = barPlace(at, window.innerWidth, window.innerHeight, this.root.offsetWidth || 300, this.root.offsetHeight || 36);
         if (!pos) this.root.style.visibility = 'hidden';
         else {

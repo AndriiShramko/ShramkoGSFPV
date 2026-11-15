@@ -54,6 +54,10 @@ export class EditView {
     /** the selected gate's opening, flown m (the scale handle's factor multiplies it) */
     private opening = 0;
     private dragging = false;
+    /** G2: endStale() detaches a gizmo that kept its axis: its transform:end is not a drag of ours */
+    private quietEnd = false;
+    /** G2: how many stale gizmo drags were ended (for the probes) */
+    private staleEnded = 0;
     /** a handle was dragged during this press (its release is not a click) */
     private dragged = false;
     private press: { id: number; button: number; x: number; y: number; lx: number; ly: number; look: boolean } | null = null;
@@ -107,8 +111,12 @@ export class EditView {
                 this.dragged = true;
                 this.openingAtStart = this.opening;
             });
-            h.on('transform:move', () => host.onDrag(this.pose(this.openingAtStart), false));
+            // G2: a move from a gizmo that still believes it drags after the button went up is not a drag of ours
+            h.on('transform:move', () => {
+                if (this.dragging) host.onDrag(this.pose(this.openingAtStart), false);
+            });
             h.on('transform:end', () => {
+                if (this.quietEnd) return;
                 // the drag is over before the course takes it, so put() of the new gate places the stand-in again
                 this.dragging = false;
                 host.onDrag(this.pose(this.openingAtStart), true);
@@ -119,8 +127,11 @@ export class EditView {
         this.canvas.addEventListener('pointerdown', this.onDown);
         this.canvas.addEventListener('contextmenu', this.onMenu);
         this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
-        window.addEventListener('pointermove', this.onPointerMove);
-        window.addEventListener('pointerup', this.onUp);
+        // G2: capture, because a gizmo's own pointermove and pointerup stop propagation over its shapes (PlayCanvas 2.23.2
+        // Gizmo._onPointerUp), so a window listener in the bubble phase missed the up after every drag that ended on a handle
+        window.addEventListener('pointermove', this.onPointerMove, true);
+        window.addEventListener('pointerup', this.onUpCapture, true);
+        window.addEventListener('pointercancel', this.onUpCapture, true);
         window.addEventListener('keydown', this.onKey, true);
         window.addEventListener('keyup', this.onKeyUp, true);
         window.addEventListener('blur', this.onBlur);
@@ -253,6 +264,43 @@ export class EditView {
         this.apply();
     };
 
+    /** G2: the up is handled after the whole dispatch (the gizmo's own pointerup first), whoever stopped it on the way */
+    private onUpCapture = (e: PointerEvent): void => {
+        setTimeout(() => {
+            if (!this.disposed) this.onUp(e);
+        }, 0);
+    };
+
+    /** G2: true only while a handle really drags (the gate bar hides for that time) */
+    isDragging(): boolean {
+        return this.dragging;
+    }
+
+    /**
+     * G2: a gizmo still holding a selected axis after the button went up believes it drags: its next pointerdown is ignored
+     * (TransformGizmo POINTERDOWN returns while _dragging) and pointer moves send transform:move. Detaching fires its
+     * POINTERUP, which clears the axis; its transform:end is not a drag of ours (quietEnd). The shown set is put back.
+     */
+    private endStale(): number {
+        let n = 0;
+        for (const h of this.handles) {
+            const g = h as unknown as { _selectedAxis?: string; _hoverAxis?: string };
+            if (!g._selectedAxis) continue;
+            n++;
+            g._hoverAxis = '';
+            this.quietEnd = true;
+            try {
+                h.detach();
+            } finally {
+                this.quietEnd = false;
+            }
+            g._selectedAxis = '';
+            if (h === this.active() && this.standPose && !this.suspended) h.attach([this.stand]);
+        }
+        this.staleEnded += n;
+        return n;
+    }
+
     private onUp = (e: PointerEvent): void => {
         this.unmute();
         // review ED-1: a handle that took the press but sent no transform:end (its own pointerup returns while it is
@@ -261,6 +309,7 @@ export class EditView {
             this.dragging = false;
             this.host.onDrag(this.pose(this.openingAtStart), true);
         }
+        this.endStale();
         const p = this.press;
         if (!p || p.id !== e.pointerId) return;
         this.press = null;
@@ -367,6 +416,7 @@ export class EditView {
             cam: { pos: [...this.cam.pos], speed: this.cam.speed },
             held: [...this.held],
             dragging: this.dragging,
+            staleEnded: this.staleEnded,
             tool: this.tool,
             // lane editor3 H2: each set's own state (PlayCanvas 2.23.2 TransformGizmo fields), and a held pointer lock
             sets: this.handles.map((h) => {
@@ -401,8 +451,9 @@ export class EditView {
         this.canvas.removeEventListener('pointerdown', this.onDown);
         this.canvas.removeEventListener('contextmenu', this.onMenu);
         this.canvas.removeEventListener('wheel', this.onWheel);
-        window.removeEventListener('pointermove', this.onPointerMove);
-        window.removeEventListener('pointerup', this.onUp);
+        window.removeEventListener('pointermove', this.onPointerMove, true);
+        window.removeEventListener('pointerup', this.onUpCapture, true);
+        window.removeEventListener('pointercancel', this.onUpCapture, true);
         window.removeEventListener('keydown', this.onKey, true);
         window.removeEventListener('keyup', this.onKeyUp, true);
         window.removeEventListener('blur', this.onBlur);

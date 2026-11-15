@@ -28,7 +28,7 @@
   "keys.course.edit": "Circuito: editar los obstáculos",
   "course.edit.menu": "Circuito: editar los obstáculos",
   "course.edit.title": "Editor del circuito",
-  "course.edit.opened": "Editor abierto. W A S D mueven la vista, E sube, Q baja, mantén el botón derecho del ratón para mirar alrededor, la rueda cambia la velocidad. Haz clic en una puerta: sus flechas la mueven; Mover, Girar y Tamaño en la barra de la puerta cambian a anillos o al cubo central. Esc sale",
+  "course.edit.opened": "Editor abierto. W A S D mueven la vista, E sube, Q baja, mantén el botón derecho del ratón para mirar alrededor, la rueda cambia la velocidad. Haz clic en una puerta: lleva un solo juego de controles a la vez, elegido con Mover, Girar o Tamaño en la barra bajo ella (o M, R, T); arrástralos con el ratón. Espacio o el interruptor de armado del mando vuela el circuito, otra vez para editar. Esc sale",
   "course.edit.gate": "Puerta {n} de {of}: {shape}, {size} m",
   "course.edit.shape.ring": "aro",
   "course.edit.shape.square": "cuadrado",

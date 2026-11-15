@@ -65,6 +65,13 @@ const DIALOGS = '.screen.radio, .panel, .screen.drones, .screen.scenes, .sonic-s
  */
 export const EDIT_MODE = '.course-editor:not(.ce-flying)';
 
+/** editor3 G2: the course is flown inside the edit mode (course.ts editFrame sets ce-flying on the editor's window) */
+export const EDIT_FLYING = '.course-editor.ce-flying';
+
+export function editModeFlying(): boolean {
+    return typeof document !== 'undefined' && !!document.querySelector(EDIT_FLYING);
+}
+
 export function dialogOpen(): boolean {
     return !!document.querySelector(`${DIALOGS}, ${EDIT_MODE}`);
 }
@@ -172,6 +179,16 @@ export class KeyboardSource {
                 if (!e.repeat) this.onArm();
                 e.preventDefault();
             }
+            return;
+        }
+        // editor3 G2 (the lead's decision): in the edit mode Space arms and Space again disarms a keyboard pilot; while the
+        // course is flown in the mode Space is not the climb key but the way back to editing (the motors stop)
+        if (this.isGame && e.code === 'Space' && editModeFlying()) {
+            if (!e.repeat) {
+                this.game!.pilot.arm.stop();
+                this.emitGame(e.timeStamp);
+            }
+            e.preventDefault();
             return;
         }
         if (this.isGame) { this.onDownGame(e); return; }

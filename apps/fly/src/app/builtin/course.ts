@@ -38,7 +38,7 @@ import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
-import { ADD_RAY_M, addAction, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
+import { ADD_RAY_M, addAction, addFacing, addLift, addPoint } from '../../course/editor/add-place';
 import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
@@ -706,7 +706,7 @@ export const course: Feature = {
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
-            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl) });
+            bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null } : null);
@@ -782,7 +782,11 @@ export const course: Feature = {
             const hit = camRay ? camRay(ray.o, ray.d, ADD_RAY_M) : null;
             const at = addPoint(ray.o, ray.d, hit, addLift(ed, flownTransform()));
             // G1: lane course3's EditAction add (after the selected gate, its kind and opening, one undo step)
-            const out = edit(ed, addAction(at, facingFrom(ray.o, at), flownTransform()), keepProblems);
+            // G2: facing along the course, from the selected gate (course frame -> flown: s * pos + offset)
+            const tr = flownTransform();
+            const sel = ed.course.gates[ed.selected];
+            const prev: [number, number, number] | null = sel ? [sel.pos[0] * tr[0] + tr[1], sel.pos[1] * tr[0] + tr[2], sel.pos[2] * tr[0] + tr[3]] : null;
+            const out = edit(ed, addAction(at, addFacing(ray.o, at, prev), tr), keepProblems);
             if (!out.ok) {
                 ed = out.state;
                 edHook.refused = out.reason.code;
@@ -838,7 +842,6 @@ export const course: Feature = {
             if (!ed) return;
             const base = dragBase ?? ed;
             dragBase = base;
-            bar?.hide(!end);
             const old = base.course.gates[base.selected];
             if (!old) return;
             const g = placeGate(old, p, flownTransform());

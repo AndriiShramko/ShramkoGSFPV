@@ -4,6 +4,29 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
+- [~] G2.0 the G1 REPRO run (dist of 05dbc189, Tunis) started first: `REPRO=1 OUT=U:/Temp/gsfpv-train3/editor3/g2/repro
+  SCENES=887f27aa PORT=5802 bash U:/Temp/gsfpv-train3/editor3/g1/run.sh`, queued on the GPU lock from 05:36
+- [x] G2.1-G2.4 code (this commit), test tools/bench/test/editor3-g2.test.ts (4 tests), NEG OK (neg_control.py ref HEAD
+  8364c885, the 10 changed files: fails by the missing exports and assertions); with editor3-*, tracks-editor-ui, a6-reference
+  10 files 58/58 pass (a6 hash unchanged); apps/fly tsc 0.
+  - 1 the bar: view-mouse.ts listens to pointerup and pointercancel in the CAPTURE phase and handles the up after the dispatch
+    (setTimeout 0): PlayCanvas 2.23.2 Gizmo._onPointerUp (playcanvas.mjs 121197-121214) calls stopPropagation when the up lands
+    on a gizmo shape, so the old bubble listener missed the up of every drag that ended on the handle (press, mute and the
+    drag guard stayed). transform:move counts only while our drag runs; endStale() ends a gizmo that kept its axis after the
+    up (detach fires its POINTERUP; its transform:end swallowed by quietEnd; the shown set attached again). The gate bar hides
+    by host.dragging() (EditView.isDragging) through bar-place.ts barAnchor; course.ts dragTo no longer sets the hide flag.
+    The stopPropagation cause is read from the code, not yet measured (G2.0 is the measurement).
+  - 2 Space: devices/keyboard.ts: in the game scheme while '.course-editor.ce-flying' exists (the course flown in the mode),
+    Space stops the motors (AutoArm.stop) instead of climbing; the mode's modeStep sees armed false and the edit view comes
+    back where it was (existing to-edit path). The pilot scheme already toggled; a controller keeps its arm switch.
+  - 3 floor add: add-place.ts addFacing(eye, at, prev): the new gate faces the way from the selected gate (upright, turned
+    about the vertical), from the eye when there is no selected gate or it is within ADD_COURSE_MIN_M 1 m (an estimate);
+    course.ts placeAt uses it. In front of the camera: aim() after the add (H2). Why Tunis went red (3 -> 6): not measured yet.
+  - 4 course.edit.opened in en, es, pl, ru: one set of handles at a time, Move, Turn, Size on the bar under the gate (or M,
+    R, T), Space or the arm switch flies, again edits.
+- [ ] G2.5 release build of this commit, the browser runs (REPRO on Tunis, full run on Tunis and Wroclaw), pictures looked at
+
 Stage G1-merge-hooks (train 3 wave 3):
 - [x] G1.1 `git merge --no-ff course3` (493526f5, course3 head 18e6a876). Conflicts only in
   packages/i18n/locales/fly/course/{en,es,pl,ru}.json: both sides kept (editor keys and course3's progress.* keys), 156
