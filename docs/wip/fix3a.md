@@ -743,6 +743,10 @@ they lie on the ring and not across it.
    packages/i18n/locales/fly/course/{en,es,pl,ru}.json.
 8. Browser proof and pictures as the stage names them; accept-fly, tracks-page, typecheck, gates.py, a6-reference.
 
+Cost (course4 C1 pass 2): about 30 replies; items 2 to 7 written and tested at commit 1efa5dba; the most went to reading
+the view, HUD, prefs tests and the lap timer test before writing (and three edits refused for files not read first). The
+browser proof (items 1 and 8) needs a fresh stage that starts with the release build and a probe written from
+gate-place-probe.mjs; gates.py --only vitest,architecture,i18n,b18 was not run in pass 2.
 Cost (course4 C1): about 30 replies, all reading: the course view, HUD, lap timer, settings schema and the probes to find
 how to pose and fly; nothing of S1 to S6 in the page yet. A stage this size needs the map of these files (view.ts, hud.ts,
 course.ts frame(), prefs defs, gate-place-probe HOLD, rooms-race fly) handed in the prompt, or a split into a code stage and
