@@ -44,6 +44,7 @@ import { t, locale } from '../i18n';
 import { SonicMode, lifeRestartsCourse } from './mode';
 import type { SonicEntry } from './entry';
 import { quietFlight } from './entry';
+import { narratorKey } from './narrator-key';
 import { PageRuntime } from './runtime';
 import { digitAnswerHandler } from './digit-key';
 import { LessonHost, EVENT_LOG_CAP } from './lessons';
@@ -552,6 +553,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         ctx.keys.on('pause.toggle', pauseKey(lessonMenu, () => ctx.menu.open(), () => h.inPlace), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         () => lessonMenu.dispose(),
         ctx.keys.on('sonic.home', homeKey(home), { when: () => home.active() }),
+        // lane quiet (Q4): the apostrophe switches the narrator off and on in a flight, saved and applied at once like the start
+        // screen's check; on: two words, off: a sound alone (the checkpoint's chime until the package's own sound, K2.2)
+        ctx.keys.on('sonic.narrator', narratorKey({
+            on: () => entry.setup.prefs.narrator !== false,
+            set: (on) => entry.setup.update({ narrator: on }).ok,
+            sayOn: () => void sayLine({ key: 'sonic.say.narratorOn' }, true).catch(() => undefined),
+            cueOff: () => audio.engine.cue({ kind: 'checkpoint' })
+        }), { when: () => mode.active && h.active && !dialogOpen() && !ctx.menu.isOpen }),
         watchSoundGap(new SoundGap({
             lessonActive: () => mode.active && h.active,
             visible: () => document.visibilityState === 'visible',

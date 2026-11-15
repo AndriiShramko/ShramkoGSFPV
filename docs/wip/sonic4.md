@@ -315,7 +315,16 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 
 ### Status (stage K2-sounds-prove)
 - [x] K2.0 K1 made green first (commit 6c1a140a, see K1.3b): the stage could not build on red tests.
-- [ ] K2.1 Q4 the narrator key. Chosen: `Quote` (cap "'", aria "Quote"), when 'sonic'. Why: packages/prefs/src/keymap.ts says every
+- [x] K2.1 Q4 built (pass 2): KEYMAP sonic.narrator = Quote (cap "'", when 'sonic'); apps/fly/src/sonic/narrator-key.ts (the
+  handler: a repeat does nothing, setup.update({narrator}) then on: sonic.say.narratorOn said with interrupt, off: a cue only);
+  feature.ts wires it beside sonic.home (when: mode active, a lesson open, no dialog, no menu); KEY_HELP line sonic.say.helpNarrator
+  after helpHome; locales keys.sonic.narrator, sonic.key.Quote, sonic.say.helpNarrator, narratorOn (plus narratorTip for Q6 and
+  lessonNarrator for Q5, not used yet) in en, es, pl, ru. The off sound is the package's checkpoint chime ({kind:'checkpoint'})
+  until K2.2 gives its own. Tests: new tools/bench/test/sonic-narrator-key.test.ts (4), keymap.test, app-keys.test, sonic-optin
+  (the K list gains "'"), sonic-quiet: 84 passed (U:/Temp/gsfpv-train3/quiet/k2p2-v2.log); tsc apps/fly 0 errors; neg_control.py
+  on keymap.ts and mode-keys.ts against HEAD: NEG OK by assertion (k2p2-neg1.log). The feature.ts wiring itself is not covered by
+  a unit test (the rig runs SonicMode and LessonHost, not feature.ts): K2.6's browser proof (2) covers it.
+  Choice of the key, kept: `Quote` (cap "'", aria "Quote"), when 'sonic'. Why: packages/prefs/src/keymap.ts says every
   plain letter is bound (the free ones W A S D Q E are FLYING_CODES); Quote is bound nowhere in KEYMAP; Slash opens quick find in
   Firefox; digits belong to a running lesson's question (sonic/digit-key.ts), and the free flight is a running lesson. Work:
   KEYMAP entry `sonic.narrator` beside sonic.home (line about 126), label `keys.sonic.narrator` in the four fly locales,

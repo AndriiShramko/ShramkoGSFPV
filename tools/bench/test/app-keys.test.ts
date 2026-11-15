@@ -158,7 +158,7 @@ describe('one handler per key press, no key bound twice', () => {
 });
 
 describe('the sound mode\'s keys are on a page entered through ?sonic= only (v12-optin)', () => {
-    const SOUND: [string, ActionId][] = [['KeyT', 'sonic.record'], ['KeyU', 'sonic.send'], ['KeyI', 'sonic.status'], ['KeyZ', 'sonic.repeat'], ['KeyG', 'sonic.glossary'], ['KeyX', 'sonic.home']];
+    const SOUND: [string, ActionId][] = [['KeyT', 'sonic.record'], ['KeyU', 'sonic.send'], ['KeyI', 'sonic.status'], ['KeyZ', 'sonic.repeat'], ['KeyG', 'sonic.glossary'], ['KeyX', 'sonic.home'], ['Quote', 'sonic.narrator']];
     /** The keymap as v0.12 was released (8ce53fb): the five keys always. */
     const RELEASED = KEYMAP.map((b) => (b.when === 'sonic' ? { ...b, when: 'always' as const } : b));
 
@@ -185,7 +185,7 @@ describe('the sound mode\'s keys are on a page entered through ?sonic= only (v12
             for (const [code, action] of SOUND) {
                 expect(r.route(key({ code })), `${code} ${state}`).toBe(action);
                 expect(runs.get(action)).toBe(1);
-                expect(r.caps(action).map((k) => k.cap)).toEqual([code.slice(3)]);
+                expect(r.caps(action).map((k) => k.cap)).toEqual([code === 'Quote' ? '\'' : code.slice(3)]);
                 expect(r.routes(action)).toBe(true);
             }
             expect(r.listed().map((b) => b.action)).toEqual(KEYMAP.filter((b) => b.status === 'shipped').map((b) => b.action));

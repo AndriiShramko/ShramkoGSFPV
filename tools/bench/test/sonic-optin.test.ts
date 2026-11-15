@@ -333,7 +333,7 @@ describe('K in the mode: the mode\'s own key help, said (step 2, the mode\'s own
         const lines = keyHelpLines(capsOf(true));
         expect(lines.map((l) => l.key)).toEqual(['help.intro', ...KEY_HELP.map(([k]) => k), 'help.digits']);
         // lane onecourse: Shift+G, the one key for a course in every mode, after N
-        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'Shift+G', 'B', 'Z', 'X', 'I', 'G', 'R', 'T', 'U', 'L']);
+        expect(lines.slice(1, -1).map((l) => l.params?.key)).toEqual(['Esc', 'N', 'Shift+G', 'B', 'Z', 'X', '\'', 'I', 'G', 'R', 'T', 'U', 'L']);
         // Escape alone (P shares its binding and stays the pause menu's), with the menu's own line
         expect(lines[1]).toEqual({ key: 'sonic.say.helpMenu', params: { key: 'Esc' } });
         // B goes one step back and Z gives the task again: the page's own lines (the package's help.repeat says "the last line")
