@@ -21,10 +21,19 @@ Stage P3-weak-budget
 - [x] 1. URL switches `?lodmul=` (the scan's multiplier while the frame's priority works, 1.2 to 4) and `?viewlodfar=`
   (the far field's levels, 0 to 12): view-lod.ts lodRule/viewLodParamsOf, renderer, session, flight.ts; test
   view-lod-switches.test.ts (NEG OK), render-pc and fly typecheck exit 0 (this commit)
-- [~] 2. Measure the multiplier 1.5 and 1.7 on Lublin at 0.5 M and 1 M (runner U:/Temp/gsfpv-train3/laptop3/run-p3.sh,
-  server 5741), against the P2 16 M reference
-- [ ] 3. Keep what wins, the street case (Wroclaw) and the snap turn not worse; pictures -after
-- [ ] 4. accept-fly B6 B7 B9 to B16, a6-reference, gates vitest, architecture, i18n, b18; status table
+- [x] 2. Multiplier 1.5 and 1.7 measured on Lublin at 0.5 M and 1 M (runner U:/Temp/gsfpv-train3/laptop3/run-p3.sh,
+  build 66aa1609 on port 5741, against the P2 16 M reference): REJECTED, see Facts P3 (this commit)
+- [ ] 3. Next candidate, not started: why a lower multiplier freezes the page (find the cause first, see "Left"), then the
+  coarse cover of the frame and the budget inside it; the far field (`?viewlodfar=8`, runner set `far8`) not measured yet
+- [ ] 4. Pictures laptop3-lublin-above-0p5M-after.png and -1M-after.png (runner set `after`), Wroclaw street check (set `wro`
+  with MUL and TAG), accept-fly B6 B7 B9 to B16, a6-reference, gates vitest, architecture, i18n, b18; status table
+
+Left for the next worker (P3): the runner is ready (`bash run-p3.sh build`, then serve-csp dist 5741, then
+`run-p3.sh <set> score-lub`; one probe is about 4 minutes and takes the GPU lock itself). The switches are in the code;
+the default is unchanged (multiplier 2, farLevels 3), so no product change is in yet. Candidates left: (a) the frozen page
+at multiplier 1.5: cause unknown (balancer, loader or GPU), find it before trying a value below 2 again; (b) `?viewlodfar=8`
+at 1 M (outside the frame only the coarse stand-in); (c) the governor starting at step 0 on every load
+(weak-devices-plan.md line 23): a weak device's first seconds miss frames; start from the class's settled step.
 
 ## Facts (measured)
 
@@ -118,7 +127,23 @@ laptop3-wroclaw-street-* = the level view at 3 m):
   "off" has the near road as smeared blobs, only the far towers are a touch crisper in "off" (the budget it keeps for
   the far field and behind).
 
+### P3: the multiplier below 2 (2026-11-15, 04:11 to 04:27, build 66aa1609, port 5741)
+
+Same probe flags as P2 plus `&lodmul=`; scored by lod-view-score.mjs against l3-lub-ref16 (U:/Temp/gsfpv-train3/laptop3/
+score-p3-lub.txt). One run each, each probe held the GPU lock itself, about 4 minutes per run.
+- 1 M, multiplier 1.7 vs 2 (P2 "on"): start 19.51 vs 19.65, 40 m up 20.06 vs 20.14, 140 m up 19.34 vs 19.43 dB: worse at
+  every place from above by 0.08 to 0.14 dB.
+- 0.5 M, multiplier 1.7 and 1.5: the run ended with `page.screenshot: Timeout 30000ms exceeded` (the page drew no frame
+  for 30 s, a frozen page for a pilot); 1 M, multiplier 1.5: `the scan did not reveal: {"s":"loading"}`.
+- Engine reading (playcanvas 2.23.2 build, GSplatBudgetBalancer.balance): every node keeps at least its coarsest level
+  (the total starts at totalCoarsestCount; a budget below it gives every node its coarsest), so a node is never dropped
+  by the choice; a hole is a file not loaded yet. Finer bands are added in the order of log(distance) - band * log(multiplier),
+  so the multiplier is the rule "by size on the screen" already: the slope of that size per level.
+
 ## Decisions
+
+- P3: a multiplier below 2 is not taken: 1.7 measured worse from above at 1 M, 1.5 and 1.7 at 0.5 M froze the page.
+  The default stays 2; the switch stays for the measurement.
 
 - D91 numbered after main's last D90; renumber at the merge if another lane took D91.
 - `active` now also needs a streamed scan present, so on a single-file scan the renderer sets the engine's own rule
@@ -174,3 +199,4 @@ turns and at street level, and it costs 1.6 to 2.6 times the bytes over a flight
   `git submodule status` right after creating the branch would have saved a gates run.
 - P2: the most turns went to a first series lost to Git Bash turning `--path /en/fly/` into a Windows path (10 minutes,
   half of it waiting for another lane's lock); `MSYS2_ARG_CONV_EXCL='*'` in the runner from the start would have saved it.
+- P3 (first worker): the most turns went to reading the engine's balancer and wiring a URL switch through four files; four probes of 4 minutes each gave one usable score (three runs froze or did not reveal). A short 1-minute probe (start place only, no turns) per candidate first would have found the freeze in a quarter of the time.
