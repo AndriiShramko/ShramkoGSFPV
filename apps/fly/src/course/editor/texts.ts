@@ -36,6 +36,7 @@ export const ACTION_KEYS: Record<EditAction['kind'], string> = {
     dive: 'course.edit.key.dive',
     size: 'course.edit.key.sized',
     insert: 'course.edit.key.insert',
+    add: 'course.edit.key.insert',
     delete: 'course.edit.key.delete',
     order: 'course.edit.key.order',
     undo: 'course.edit.key.undo',

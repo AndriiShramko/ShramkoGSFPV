@@ -1,0 +1,536 @@
+{
+ "format": "shramko-sonic-track/1",
+ "id": "g1.1",
+ "version": 1,
+ "parent": null,
+ "title": "Course 1",
+ "scene": {
+  "kind": "scan",
+  "id": "0000bbbb",
+  "version": 1
+ },
+ "transform": [
+  1,
+  0,
+  0,
+  0
+ ],
+ "gates": [
+  {
+   "id": "g1",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    11.2,
+    4.2,
+    -1.2
+   ],
+   "quat": [
+    0.83147,
+    0,
+    -0.55557,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g2",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    18.4,
+    4.2,
+    0.4
+   ],
+   "quat": [
+    0.55557,
+    0,
+    -0.83147,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g3",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    22.4,
+    4.2,
+    -1.2
+   ],
+   "quat": [
+    0.83147,
+    0,
+    -0.55557,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g4",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    27.2,
+    4.2,
+    -1.2
+   ],
+   "quat": [
+    0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g5",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    32,
+    4.2,
+    -1.2
+   ],
+   "quat": [
+    0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g6",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    38.4,
+    4.2,
+    -0.4
+   ],
+   "quat": [
+    0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g7",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    42.4,
+    4.2,
+    -2
+   ],
+   "quat": [
+    0.83147,
+    0,
+    -0.55557,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g8",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    49.6,
+    4.2,
+    0.4
+   ],
+   "quat": [
+    0.55557,
+    0,
+    -0.83147,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g9",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    52.8,
+    4.2,
+    -2
+   ],
+   "quat": [
+    0.92388,
+    0,
+    -0.382683,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g10",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    72,
+    4.2,
+    -2
+   ],
+   "quat": [
+    0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g11",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    70.4,
+    3.4,
+    1.2
+   ],
+   "quat": [
+    -0.19509,
+    0,
+    -0.980785,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g12",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    64.8,
+    3.4,
+    -2.8
+   ],
+   "quat": [
+    -0.92388,
+    0,
+    -0.382683,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g13",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    59.2,
+    4.2,
+    -2
+   ],
+   "quat": [
+    -0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g14",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    56,
+    4.2,
+    -0.4
+   ],
+   "quat": [
+    -0.55557,
+    0,
+    -0.83147,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g15",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    49.6,
+    3.4,
+    -2.8
+   ],
+   "quat": [
+    -0.83147,
+    0,
+    -0.55557,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g16",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    45.6,
+    4.2,
+    -0.4
+   ],
+   "quat": [
+    -0.55557,
+    0,
+    -0.83147,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g17",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    40.8,
+    3.4,
+    2
+   ],
+   "quat": [
+    -0.55557,
+    0,
+    -0.83147,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g18",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    35.2,
+    4.2,
+    -1.2
+   ],
+   "quat": [
+    -0.83147,
+    0,
+    -0.55557,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g19",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    30.4,
+    4.2,
+    2
+   ],
+   "quat": [
+    -0.55557,
+    0,
+    -0.83147,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g20",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    24.8,
+    4.2,
+    2
+   ],
+   "quat": [
+    -0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g21",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    18.4,
+    3.4,
+    -2.8
+   ],
+   "quat": [
+    -0.92388,
+    0,
+    -0.382683,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g22",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    15.2,
+    4.2,
+    0.4
+   ],
+   "quat": [
+    -0.382683,
+    0,
+    -0.92388,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g23",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    4,
+    4.2,
+    -1.2
+   ],
+   "quat": [
+    -0.707107,
+    0,
+    -0.707107,
+    0
+   ],
+   "direction": "forward"
+  },
+  {
+   "id": "g24",
+   "shape": {
+    "kind": "square",
+    "side": 1.5,
+    "bar": 0.1
+   },
+   "pos": [
+    4,
+    3.4,
+    2.8
+   ],
+   "quat": [
+    0,
+    0,
+    -1,
+    0
+   ],
+   "direction": "forward"
+  }
+ ],
+ "laps": 3,
+ "start": {
+  "pos": [
+   6.4,
+   2.6,
+   0.4
+  ],
+  "yawDeg": 67.5
+ },
+ "author": {
+  "kind": "generator",
+  "name": "gsfpv-course"
+ },
+ "generator": {
+  "name": "gsfpv-course",
+  "version": "2",
+  "seed": 1,
+  "params": {
+   "marginM": 0.5,
+   "cellM": 0.8,
+   "freeDigest": "fnv1a32:0f89decd",
+   "wanted": 24,
+   "rooms": 1,
+   "volumeM3": 4104.192,
+   "tries": 24,
+   "walked": 24,
+   "stop": "count",
+   "closed": true,
+   "proof": {
+    "ok": true,
+    "marginM": 0.5,
+    "pathM": 150.914
+   }
+  }
+ },
+ "created": "2026-11-15T00:00:00.000Z"
+}

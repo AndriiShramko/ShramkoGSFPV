@@ -36,6 +36,8 @@ export interface FreeSpaceOptions {
     readonly kind?: 'auto' | 'indoor' | 'outdoor';
     /** false only for the negative control of the tests: every cell with clearance counts, joined to the spawn or not */
     readonly floodFill?: boolean;
+    /** G2: the box looked at, flown world (quality.ts qualityBounds: the well-scanned extent); replaces boxM around the spawn */
+    readonly bounds?: { readonly min: Vec3; readonly max: Vec3 };
 }
 
 /** The defaults. Every one is an estimate from tracks-plan.md 2.1 except where tools/bench/src/tracks-generate.ts says it measured it. */
@@ -151,6 +153,17 @@ export function freeSpace(walls: VoxelCollision, opts: FreeSpaceOptions): FreeSp
     const halfB = Math.ceil(boxM / 2 / blockM);
     const b0 = [0, 1, 2].map((a) => Math.max(0, Math.floor((sf[a]! - gmin[a]!) / blockM) - halfB));
     const b1 = [0, 1, 2].map((a) => Math.min(nb[a]!, Math.floor((sf[a]! - gmin[a]!) / blockM) + halfB + 1));
+    if (opts.bounds) {
+        // file space of the world box (a legacy grid negates x and y), always holding the spawn's block
+        const { min, max } = opts.bounds;
+        const lo: Vec3 = flip ? [-max[0], -max[1], min[2]] : [min[0], min[1], min[2]];
+        const hi: Vec3 = flip ? [-min[0], -min[1], max[2]] : [max[0], max[1], max[2]];
+        for (let a = 0; a < 3; a++) {
+            const s = Math.floor((sf[a]! - gmin[a]!) / blockM);
+            b0[a] = Math.max(0, Math.min(s, Math.floor((lo[a]! - gmin[a]!) / blockM)));
+            b1[a] = Math.min(nb[a]!, Math.max(s + 1, Math.ceil((hi[a]! - gmin[a]!) / blockM)));
+        }
+    }
     const span = [0, 1, 2].map((a) => Math.max(1, b1[a]! - b0[a]!));
     let g = Math.max(1, Math.ceil(FREE_DEFAULTS.minCellM / blockM - 1e-9));
     while (Math.ceil(span[0]! / g) * Math.ceil(span[1]! / g) * Math.ceil(span[2]! / g) > maxCells) g++;

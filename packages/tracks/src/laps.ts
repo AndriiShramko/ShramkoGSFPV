@@ -9,7 +9,9 @@
 //   closed    (laps > 1) after the last gate gate 0 again ends the lap and starts the next; after `laps` laps the
 //             attempt is over.
 //   pause     pause(t) .. resume(t) adds nothing to the lap; steps fed while paused are ignored.
-//   respawn   reset() ends the attempt (a crash, R or Y): the clock stops, gate 0 is next again.
+//   respawn   the caller decides (apps/fly/src/course/run.ts courseLife): a respawn where the pilot crashed changes
+//             nothing here (the clock runs on); R to the start calls reset() (the clock stops, gate 0 is next again);
+//             a rewind (Y) puts back the state of that moment with snapshot() .. restore(), the clock included.
 // The time of a pass is the time of the step that crossed (one physics step is 1 ms: sim-core DT).
 import { gateCrossing } from '@shramko/sonic-fpv';
 import type { SonicObject, Vec3 } from '@shramko/sonic-fpv';
@@ -38,6 +40,18 @@ export interface LapView {
     readonly splits: readonly number[];
     readonly lastLapMs: number | null;
     readonly bestLapMs: number | null;
+}
+
+/** A LapTimer's attempt at one moment (LapTimer.snapshot). */
+export interface LapState {
+    readonly running: boolean;
+    readonly next: number;
+    readonly lapStart: number;
+    readonly pausedMs: number;
+    readonly pausedAt: number | null;
+    readonly splits: readonly number[];
+    readonly lapTimes: readonly number[];
+    readonly lastMs: number | null;
 }
 
 export class LapTimer {
@@ -133,6 +147,31 @@ export class LapTimer {
         this.lapTimes = [];
         this.pausedMs = 0;
         this.pausedAt = null;
+    }
+
+    /** Everything an attempt is made of now, for restore() (the best lap is not in it: a lap flown stays flown). */
+    snapshot(): LapState {
+        return {
+            running: this.running, next: this.next, lapStart: this.lapStart, pausedMs: this.pausedMs, pausedAt: this.pausedAt,
+            splits: [...this.splits], lapTimes: [...this.lapTimes], lastMs: this.lastMs
+        };
+    }
+
+    /**
+     * A rewind: the attempt as it was at `atMs`, where `s` is the snapshot that held then, while the clock now reads `nowMs`.
+     * The lap's time is put back to what it was at `atMs` and runs on from `nowMs`; a pause going on now stays on.
+     */
+    restore(s: LapState, atMs: number, nowMs: number): void {
+        const elapsed = Math.max(0, (s.pausedAt ?? atMs) - s.lapStart - s.pausedMs);
+        const at = this.pausedAt ?? nowMs;
+        this.running = s.running;
+        this.next = s.next;
+        this.pausedMs = s.pausedMs;
+        this.lapStart = at - elapsed - s.pausedMs;
+        this.splits = [...s.splits];
+        this.lapTimes = [...s.lapTimes];
+        this.lastMs = s.lastMs;
+        this.nowMs = nowMs;
     }
 
     /** The state at `tMs` (default: the last step's time). */
