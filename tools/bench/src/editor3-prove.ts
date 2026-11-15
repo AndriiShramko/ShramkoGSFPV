@@ -483,10 +483,18 @@ async function undoRedo(p: Page): Promise<Record<string, unknown>> {
 }
 
 /** a gate bar button pressed with the mouse on its middle */
-async function clickBar(p: Page, idBar: string): Promise<void> {
+async function clickBar(p: Page, idBar: string): Promise<Record<string, unknown>> {
     const box = await p.locator(`.ce-gatebar [data-bar="${idBar}"]`).boundingBox().catch(() => null);
+    // H2 pass 2: what lies under the press point and whether the bar is shown, so a missed button is named
+    const under = box ? await p.evaluate(([x, y]) => {
+        const e = document.elementFromPoint(x!, y!);
+        const b = e?.closest('[data-bar]') as HTMLElement | null;
+        const bar = document.querySelector('.ce-gatebar') as HTMLElement | null;
+        return { el: b ? `bar:${b.dataset.bar}` : (e?.tagName ?? 'none'), vis: bar ? getComputedStyle(bar).visibility : 'none' };
+    }, [box.x + box.width / 2, box.y + box.height / 2]) : null;
     if (box) await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     await sleep(900);
+    return { id: idBar, box: box ? [Math.round(box.x), Math.round(box.y)] : null, ...under };
 }
 
 const barShown = (p: Page): Promise<string> => p.evaluate(() => { const b = document.querySelector('.ce-gatebar') as HTMLElement | null; return b ? `${getComputedStyle(b).display} ${b.style.left} ${b.style.top}` : 'none'; });
@@ -586,6 +594,76 @@ async function keyboardRun(page: Page, id: string): Promise<Record<string, unkno
     return out;
 }
 
+/** H2 pass 2 (REPRO=1): the Size fault of run1. One centre-box drag after each way in (the bar's Size, Undo + Redo, the key
+ * T, the run1 order Turn ring + Undo + Redo + Size), each with the sets' own state before, during and after the press. */
+async function sizeRepro(page: Page, id: string): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = { scene: id };
+    if (!(await prepare(page, id, out))) return out;
+    await sleep(1500);
+    await page.keyboard.press('Shift+KeyB');
+    await until(() => ed(page), (e) => !!e.open, 30000);
+    await sleep(1500);
+    await page.keyboard.press('Tab');
+    await sleep(1500);
+    const tries: unknown[] = [];
+    const sizeDrag = async (label: string): Promise<void> => {
+        const a = (await dbg(page))!;
+        const w = await walk(page, a.stand.screen, [0.71, -0.71], 0, '');
+        if (!w) { tries.push({ label, hit: null, tool: a.tool, sets: (a as unknown as { sets: unknown }).sets, stand: a.stand.screen }); return; }
+        await page.mouse.move(w.x, w.y);
+        await sleep(150);
+        await page.mouse.down();
+        await page.mouse.move(w.x + 30, w.y - 30, { steps: 6 });
+        const mid = (await dbg(page)) as unknown as { sets: unknown; dragging: boolean; muted: number; lock: boolean };
+        await page.mouse.move(w.x + 60, w.y - 60, { steps: 6 });
+        await sleep(100);
+        await page.mouse.up();
+        await sleep(700);
+        const b = (await dbg(page))!;
+        tries.push({
+            label, r: w.r, hit: w.hit, tool: a.tool, setsBefore: (a as unknown as { sets: unknown }).sets, mid: { sets: mid.sets, dragging: mid.dragging, muted: mid.muted, lock: mid.lock },
+            setsAfter: (b as unknown as { sets: unknown }).sets, opening: [r2(a.stand.opening), r2(b.stand.opening)], movedM: r2(dist(a.stand.pos, b.stand.pos)),
+            lookAtMovedM: r2(dist(v0, (await ed(page)).view?.at)), sel: (await ed(page)).selected
+        });
+    };
+    const bars: unknown[] = [];
+    let v0 = (await ed(page)).view?.at;
+    const ring = async (label: string): Promise<void> => {
+        const a = (await dbg(page))!;
+        const w = await walk(page, a.stand.screen, [1, 0], 40, '');
+        if (w) await drag(page, w.x, w.y, 0, 60);
+        tries.push({ label, tool: a.tool, r: w?.r ?? null, hit: w?.hit ?? null, quat: r2(dist(a.stand.quat, (await dbg(page))!.stand.quat)), sets: (a as unknown as { sets: unknown }).sets });
+    };
+    bars.push(await clickBar(page, 'size'));
+    v0 = (await ed(page)).view?.at;
+    await sizeDrag('bar-size');
+    out.ur1 = await undoRedo(page);
+    v0 = (await ed(page)).view?.at;
+    await sizeDrag('after-undo-redo');
+    await page.keyboard.press('KeyM');
+    await sleep(300);
+    await page.keyboard.press('KeyT');
+    await sleep(400);
+    v0 = (await ed(page)).view?.at;
+    await sizeDrag('key-t');
+    bars.push(await clickBar(page, 'turn'));
+    await ring('ring');
+    await undoRedo(page);
+    bars.push(await clickBar(page, 'size'));
+    v0 = (await ed(page)).view?.at;
+    await sizeDrag('run1-order-bar');
+    bars.push(await clickBar(page, 'turn'));
+    await ring('ring2');
+    await undoRedo(page);
+    await page.keyboard.press('KeyT');
+    await sleep(400);
+    v0 = (await ed(page)).view?.at;
+    await sizeDrag('run1-order-key');
+    out.bars = bars;
+    out.tries = tries;
+    return out;
+}
+
 async function main(): Promise<void> {
     mkdirSync(OUT, { recursive: true });
     mkdirSync(SHOTS, { recursive: true });
@@ -611,6 +689,10 @@ async function main(): Promise<void> {
         writeFileSync(join(OUT, 'e4.json'), JSON.stringify({ ...out, log }, null, 1));
     };
     try {
+        if (process.env.REPRO === '1') {
+            await run(`repro-${SCENES[0]}`, { width: 1920, height: 1080 }, (p) => sizeRepro(p, SCENES[0]!));
+            return;
+        }
         for (const id of SCENES) await run(id, { width: 1920, height: 1080 }, (p) => scene(p, id));
         if (process.env.KBD !== '0') await run(`kbd-${SCENES[0]}`, { width: 1920, height: 1080 }, (p) => keyboardRun(p, SCENES[0]!));
         if (process.env.PHONE === '1') await run(`phone-${SCENES[0]}`, { width: 844, height: 390 }, (p) => phone(p, SCENES[0]!));

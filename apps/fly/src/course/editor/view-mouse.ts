@@ -367,7 +367,14 @@ export class EditView {
             cam: { pos: [...this.cam.pos], speed: this.cam.speed },
             held: [...this.held],
             dragging: this.dragging,
-            tool: this.tool
+            tool: this.tool,
+            // lane editor3 H2: each set's own state (PlayCanvas 2.23.2 TransformGizmo fields), and a held pointer lock
+            sets: this.handles.map((h) => {
+                const g = h as unknown as { enabled: boolean; nodes: unknown[]; _selectedAxis?: string; _hoverAxis?: string };
+                return [g.enabled, g.nodes.length, g._selectedAxis ?? '', g._hoverAxis ?? ''];
+            }),
+            muted: this.muted.length,
+            lock: !!document.pointerLockElement
         };
     }
 
@@ -379,9 +386,10 @@ export class EditView {
         if (!h.nodes.length) return null;
         // PlayCanvas 2.23.2 (build/playcanvas.mjs 121283, 121530): a hit carries its meshInstances; the axis is the part of the
         // first one's node name after ':' (as the gizmo's own _getAxis)
-        type Hit = { meshInstances?: { node?: { name?: string } }[] };
+        // H2: _getSelection returns the nearest shape's mesh instances (playcanvas.mjs 121263-121300), not hit records
+        type Hit = { node?: { name?: string } };
         const sel = (h as unknown as { _getSelection?: (x: number, y: number) => Hit[] })._getSelection?.(x - r.left, y - r.top);
-        const name = sel?.[0]?.meshInstances?.[0]?.node?.name ?? '';
+        const name = sel?.[0]?.node?.name ?? '';
         return sel && sel[0] ? [this.tool, name.split(':')[1] ?? ''] : null;
     }
 

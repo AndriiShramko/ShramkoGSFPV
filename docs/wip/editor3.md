@@ -328,6 +328,37 @@ Stage H2-prove (train 3 wave 2):
      gates.py --only vitest,architecture,i18n,b18; then "What the owner does" rewritten from the proven steps.
   7. ED-2 second Space (For the lead) unless the lead decides.
 
+H2 pass 2 (stopped at the reply budget; the GPU lock was held by another lane from 02:21 to 02:28 and 02:31 to 02:46):
+- [x] view-mouse.ts hitAt read the axis wrong: PlayCanvas 2.23.2 _getSelection (playcanvas.mjs 121263-121300) returns the
+  nearest shape's mesh instances, not hit records; now `sel[0].node.name` (hits now name 'xyz', 'y', 'z'). debug() also
+  gives each set's [enabled, nodes, _selectedAxis, _hoverAxis], `muted` and `lock` (pointer lock) for the probes. apps/fly
+  tsc 0, tools/bench tsc 0. Release of this code built (h2p2/build1.log, sha 740da9b2 plus these two files).
+- [x] probe REPRO=1 (tools/bench/src/editor3-prove.ts sizeRepro; clickBar now returns what lies under its press and the
+  bar's visibility): `REPRO=1 OUT=U:/Temp/gsfpv-train3/editor3/h2p2/repro2 SCENES=887f27aa PORT=5804 bash
+  U:/Temp/gsfpv-train3/editor3/h1/run.sh` (lock 02:46:53-02:47:56). Facts (Tunis, 18 gates, gate 2 selected):
+  - left 1 (the Size fault of run1) does NOT reproduce: 5 of 5 centre-box drags scaled with movedM 0 and the look point
+    still (lookAtMovedM 0): the bar's Size (1.5 -> 1.94 m), then top bar Undo + Redo (undo and redo both proven) and again
+    (1.94 -> 2.5), the key T (2.5 -> 3.23), Undo + Redo then the bar's Size (3.23 -> 4.17), Undo + Redo then T (4.17 ->
+    5.38). During each press only the size set was on (muted 2), its _selectedAxis 'xyz', no pointer lock. So the run1
+    fault is not "Size after Undo/Redo"; its cause is still unknown (the run1 course had 6 gates and the gate was 3.1 m away).
+  - NEW FAULT (blocks run1's later steps the same way): after the centre-box drags the gate bar stays hidden
+    (visibility hidden while the gate is on screen and no drag runs): before the first drag the bar's Size lay under its
+    press (bar:size, visible); after three drags the bar's Turn and Size presses hit the CANVAS (bar hidden), so Turn
+    could not be chosen (both ring tries ran with tool 'size'). barPlace (bar-place.ts) is not null for a gate on screen, so
+    GateBar.hidden stayed true: hide(true) comes only from course.ts dragTo(end false) (a transform:move) and the to-fly
+    change. Suspect: a transform:move after the drag ended (the gizmo's own pointerup returned while the grown box was under
+    the cursor, playcanvas.mjs 121438-121448: `_hover` sets _hoverAxis first, so `_dragging` reads false and no
+    transform:end is sent; the onUp guard ends ours, a later pointer move then reads the stale drag).
+  repro1 (h2p2/repro1) had a Tab + Shift+Tab between tries, which sets Move by design (toolAfter); not a fault.
+- [ ] left (next worker, in this order):
+  1. The hidden bar: let the bar hide only while the view really drags (GateBar host `dragging()` from EditView.dragging,
+     instead of the hide flag set by dragTo), and in view-mouse.ts end a gizmo's stale drag on pointerup (detach and attach
+     the shown set when its _selectedAxis is still set after the up, which fires its POINTERUP, playcanvas.mjs 121449-121454).
+     Test in tools/bench/test/editor3-gatebar.test.ts or editor3-tools.test.ts, negative control, apps/fly tsc. Then the same
+     REPRO run: every bar press after a drag must say bar:<id> visible, and the ring tries must turn.
+  2.-7. as items 2-7 of the H2 list above (probe camera look point and re-aim; Save on a clean course; flight pass with the
+     gate ahead of the spawn; chain.sh and the six pictures; mouse-free-probe, accept-fly, a6-reference, gates.py; ED-2).
+
 Old list of pass 1 (items 1-4 done above):
 - [ ] left (next worker, in this order; stopped at the reply budget of 30):
   1. the 'before' run: if U:/Temp/gsfpv-train3/editor3/h1/before/e4.json exists, read it (release of bb670ead, both scenes);
@@ -624,3 +655,6 @@ button shows the table.
 - E2 pass 2: about 30 replies; most went to two release builds plus probe runs (about 8 minutes each, waited in one blocking
   call) and reading PlayCanvas shape names from build/playcanvas.mjs; a probe that takes a prebuilt dist and only one
   scene per run would halve the wait.
+- H2 pass 2: about 27 replies; the most went to reading PlayCanvas gizmo internals to guess the Size fault and to 16 minutes
+  in the GPU lock queue; a short REPRO run with each gizmo's own state in the debug hook answered it in one run, and should
+  have been the first step.
