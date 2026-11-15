@@ -1307,9 +1307,11 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
     result.r11 = { scene, walls: process.env.Z5_WALLS ?? 'as served', runs: [] as object[] };
     for (const speed of speeds) {
         log(`R11: ${scene}, Backslash in place, a course at ${speed} m/s`);
-        const ctx = await newContext(browser, served, prefsDoc(), null);
+        // lane quiet3 (X2 row 1): Z5_NARRATOR=off flies with the narrator setting off; the run then lists what reached the voice
+        const narratorOff = process.env.Z5_NARRATOR === 'off';
+        const ctx = await newContext(browser, served, prefsDoc(narratorOff ? { narrator: false } : {}), null);
         const page = await ctx.newPage();
-        const tag = `R11 ${scene} ${speed}`;
+        const tag = `R11 ${scene} ${speed}${narratorOff ? ' narrator off' : ''}`;
         page.on('pageerror', (e) => problems.push(`${tag}: pageerror ${e.message.slice(0, 300)}`));
         page.on('console', (m) => { if (m.type() === 'error' && !m.text().startsWith('Failed to load resource')) problems.push(`${tag}: console ${m.text().slice(0, 300)}`); });
         const wallsFiles: string[] = [];
@@ -1367,6 +1369,7 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         });
         const onBefore = await craftNow();
         const t0 = Date.now();
+        const uttBefore = await page.evaluate(() => (window as unknown as { __utt: unknown[] }).__utt.length);
         await page.keyboard.press('Backslash');
         let firstCue: { s: number; cues: string[] } | null = null;
         let firstLine: { s: number; key: string } | null = null;
@@ -1451,6 +1454,18 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle' || courseEnd(end)) && !spoken.includes('fly.moving-on');
         (run.flight as Record<string, unknown>).misses = spoken.filter((k) => k === 'reason.gate-missed' || k === 'lesson.free-garden.retry').length;
         check(`${tag}: the course was flown to its end by the hum and counted (no fly.moving-on)`, (run.flight as Record<string, unknown>).counted === true, run.flight);
+        if (narratorOff) {
+            // the voice from the press to the course's end, the one-shot sounds (a gate, a lap, the finish) and the lines said quiet
+            const quiet = await page.evaluate((from: number) => {
+                const w = window as unknown as { __utt: { text: string; called: number }[]; __gsfpv: { sonic: (e?: boolean) => { oneShots?: { t: number; cue: string }[]; events?: { t: number; kind: string; key?: string }[] } } };
+                const h = w.__gsfpv.sonic(true);
+                return { voiced: w.__utt.slice(from).map((u) => u.text.slice(0, 80)), oneShots: h.oneShots ?? null, now: Math.round(performance.now()) };
+            }, uttBefore);
+            const lineTimes = (await events(page)).filter((e) => e.kind === 'speech' && e.key !== 'speech.end').slice(-60).map((e) => ({ t: Math.round(e.t * 1000) / 1000, key: e.key }));
+            run.quiet = { ...quiet, lines: lineTimes };
+            check(`${tag}: with the narrator off nothing reaches the voice from the press to the course's end`, quiet.voiced.length === 0, quiet.voiced.slice(0, 10));
+            check(`${tag}: with the narrator off a sound is played for a passed gate and for the lap or finish`, (quiet.oneShots ?? []).some((o) => o.cue.includes('"gate"')) && (quiet.oneShots ?? []).some((o) => o.cue.includes('"lap"') || o.cue.includes('"fanfare"')), (quiet.oneShots ?? []).slice(-12));
+        }
         await r11Off(page, tag, run);
         await ctx.close();
     }

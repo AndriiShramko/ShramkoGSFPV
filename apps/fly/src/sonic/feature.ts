@@ -280,6 +280,14 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
     // the page was entered through ?sonic=: the engine, its captions and speech, the lessons and their keys are the mode's
     const audio = entry.setup.audio;
     mode.engine = audio.engine;
+    // lane quiet3 (QW-1 proof): the one-shot sounds played (a gate, a lap, an answer), for the acceptance runs (sonic-int-review.ts
+    // r11 lists them); at most 400, given back to the engine at the uninstall
+    const oneShots: { t: number; cue: string }[] = [];
+    const engineCue = audio.engine.cue;
+    audio.engine.cue = (e) => {
+        if (oneShots.length < 400) oneShots.push({ t: Math.round(performance.now()), cue: JSON.stringify(e).slice(0, 90) });
+        engineCue.call(audio.engine, e);
+    };
     // every line the engine says is a 'speech' event (the replay's and the report's) once the mode runs
     audio.engine.onSpeech = (line, text) => mode.bridge.speech(line.key, text);
     // "my screen reader speaks": the lesson waits for its lines read one after the other, as the reader reads them (v12-int step 6)
@@ -663,6 +671,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         beacon: entry.setup.prefs.beacon !== false,
         // train 2 (sonic-int-review.ts R10): the cue ids of the engine's last plan (a wall cue is 'safety.wall') and the motor switch
         cues: [...new Set((audio.engine.plan?.cues ?? []).map((c) => c.id))],
+        oneShots: oneShots.slice(),
         motor: entry.setup.prefs.motorSound === true,
         cost: mode.hearCost(),
         walls: { voxelM: ctx.session.collision ? ctx.session.collision.voxelResolution : null, builtin: !!ctx.session.builtin, scene: ctx.session.scene.id, scale: ctx.session.transform.s },
@@ -728,6 +737,7 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         document.removeEventListener('visibilitychange', onVisibility);
         stage?.dispose();
         entry.setup.audio.engine.onSpeech = null;
+        audio.engine.cue = engineCue;
         document.body.classList.remove('sonic-mode');
         delete ctx.sonic;
         delete ctx.hook.sonic;

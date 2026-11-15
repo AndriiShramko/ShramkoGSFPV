@@ -606,6 +606,12 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   presses while the first switch-on is still loading give #ui back until the install re-quiets it (about 0.2 s, not measured).
   QW-4 (the package pin 293ebae on train5 only) stays the integration's step.
 
+### Status (lane quiet3, stage X2-proof)
+- [x] X2.0 r11 can fly with the narrator off (Z5_NARRATOR=off: prefs narrator false; lists the voice from the press to the course's
+  end and the one-shot sounds); feature.ts hook.sonic gives oneShots (every engine.cue of the flight, at most 400, the engine's own
+  cue given back at the uninstall). tsc apps/fly 0, tools/bench 0 (quiet3x/tsc-*.log). Logs U:/Temp/gsfpv-train3/quiet3x/.
+- [~] X2.1 release build of this commit with the stand-in walls in dist/walls; rows 1 to 10.
+
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
 - The craft answers the stick at once: KeyW held from the Backslash press, speed over 0.5 m/s at 0.56 s; the runner's phase is
