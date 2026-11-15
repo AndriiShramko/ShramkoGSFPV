@@ -620,8 +620,36 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   (the course ready), lap 1 (the lap's end, QW-1), touch wall 3. A gate's sound is not an engine.cue (the planner's own), so the
   hook does not list it; gates judged by the hum's target moving g1 to g22. 10 of 12 checks: the 2 fails were the probe's own
   checks (warm-up '' counted, gate looked for in engine.cue); both corrected after the run (not re-run).
-- [~] Run stopped at the reply limit while r11 Tunis was flying: quiet-probe narrator off Wroclaw and Tunis exit 0
-  (quiet3x/q-*-off.json, not yet read); r11 Tunis, d7 narrator off, READER=1 not finished (jobs killed).
+- [x] Pass 2, M3 fix (e9dc3d84): row 1 showed 'lap' and no finish notes at the course's end; app/builtin/course.ts now passes
+  { kind: 'fanfare' } for ev 'done' and 'lap' for a lap. sonic-quiet-w3.test.ts 6 passed (quiet3x/w3-m3.log), NEG OK on course.ts of
+  117666f3 (quiet3x/neg-m3.log). Release build of e9dc3d84 exit 0 (quiet3x/build3.log), stand-in walls copied into dist/walls.
+  Probes (1fae4e1f and this commit): d7-probe D7_NOCOURSE=1 (the course worker's answer loses its track: course.none), r12
+  Z5_NARRATOR=off and Z5_HALF=1 (X after 15 s), quiet-probe ENTRY=scan (row 9), RENDER=on and SETSHOT (pictures). Scripts
+  quiet3x/run-a.sh, run-b.sh, run-c.sh (serve-csp 5761, r11/r12 PORT 5762, render off).
+- [x] Rows 1, 4, 5 (quiet-probe NARRATOR=off KI=1 QUOTE=1, release of 25e7bdb4, same app code but course.ts; q-*-off.json):
+  Wroclaw / Tunis: lines to a live region from Backslash to 10 s 0 / 0; the craft moves (over 0.5 m/s) 0.69 / 0.67 s after the
+  press with W held from it (the probe's step, not a wait); Shift+G course and hum of g1 in the same sample +25.82 / +7.03 s;
+  voiced in the whole flight 17 lines / 17: K's 14 (row 5, at 49.16 / 30.24 s), I's 2 ("Lesson 1 of 1 ... Step 2 of 2 ...",
+  "Recording is off.", row 5), Shift+V's "Narrator on." (row 4, first press); the second Shift+V (narrator off again, 75.56 /
+  56.40 s) voiced nothing (its sound, 'answer' no, is not listed by this probe). 0 page errors.
+- [x] Row 1 ear pilot, release of e9dc3d84 (r11 Z5_NARRATOR=off, 5 m/s; evidence/2026-11-15/sonic-int-review-r11-off-*.json):
+  Wroclaw 12 of 12 checks: first cue 0.299 s after Backslash, Shift+G course of 24 gates, g1 hum 23.57 s after the press, flown
+  g1 to g24, laps 1, 158 s; voice: only the engine's empty warm-up; one-shots answer yes 1, checkpoint 1 (course ready), fanfare 1
+  (the course's end, M3), touch 2. Tunis 11 of 12: first cue 0.268 s, 24 gates at 10.68 s, g1 to g24, laps 1, 194 s; one-shots
+  answer 1, checkpoint 1, wrong-side 1 (a gate missed), fanfare 1, touch 8; voice the same. The fail is the switch-off check after
+  the course: the craft was not moving (0.08 m/s before and after, the probe's lift-off did not take it up), not a narrator matter.
+- [x] Row 2 (d7-probe D7_NARRATOR=off, Wroclaw, d7-off-70b50d42.json; course of 17 gates made in 40.8 s): voiced 0 in all six cases.
+  (a) missed beside: fly.wrong-way and gateBehind said to the runner only, sounds wrong-way 1 and wrong-side 1; (b) over the gate:
+  wrong-side 1; (c) turned round: wrong-side 1; (d) and (lap): touch only. Probe observation: after (d) next went 3 to 0 and the
+  (lap) case ended at next 1, laps 0 (see Left).
+- [x] Row 3 (D7_NOCOURSE=1 D7_NARRATOR=off, Wroclaw, d7-nocourse-70b50d42.json): the forced answer 1, no course; the line "No
+  course fitted the free space this time. Shift+G ..." went to the runner, voiced nothing (the engine's empty warm-up only); sound:
+  wrong-side 1 (QW-2), besides touches.
+- [x] Row 6 (READER=1, narrator on, Wroclaw, q-70b50d42-reader.json): voiced 0 (the page's voice off), 2232 writes to live regions
+  in the flight; the craft over 0.5 m/s 0.74 s after the press (phase 'intro' to 10.66 s does not hold the stick); course and hum
+  +30.51 s after Shift+G; 0 page errors.
+- [x] Row 8, first course (r11 narrator on, Wroclaw, sonic-int-review-r11-on-70b50d42.json, 10 of 10): narratorTip said once after
+  the course of 15 gates (laps 1, 83 s). Never on the second course: not run in a browser (r11 flies one course).
 - [ ] Left (in this order): re-run run-x2.sh from r11 Tunis on (the build in dist is current for 25e7bdb4 plus this commit's
   probe-only changes; rebuild only if app code changes); read q-*-off.json for rows 1, 4, 5 (quiet-summary.mjs); row 1 course end:
   the one-lap course gave 'lap' and no 'fanfare' (M3 says finish notes at the course's end: check in app/builtin/course.ts whether

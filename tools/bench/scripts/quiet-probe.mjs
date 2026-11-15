@@ -17,6 +17,8 @@ const READER = process.env.READER === '1';
 const NARRATOR = process.env.NARRATOR ?? 'on';
 const FLY_S = Number(process.env.FLY_S ?? 180);
 const ENTRY_SCAN = process.env.ENTRY === 'scan';
+// lane quiet3 (X2 pictures): RENDER=on draws the scan (the caller holds the GPU lock); SETSHOT=<png> pictures the Narrator setting
+const RQ = process.env.RENDER === 'on' ? '' : '&render=off';
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 const out = { base, scene, reader: READER, narrator: NARRATOR, samples: [], errors: [] };
@@ -124,15 +126,22 @@ async function openPage() {
     await ctx.addInitScript(HOOKS);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => out.errors.push(String(e.message).slice(0, 160)));
-    const url = `${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false&render=off`;
+    const url = `${base}/fly/?scene=${scene}&nowarn=1&set.input.howToFly=false${RQ}`;
     await page.goto(url, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     out.prefsKey = await page.evaluate(SET_PREFS, [READER, NARRATOR]);
     if (ENTRY_SCAN) {
         // lane quiet3 (X2 row 9): the sound page's free flight, the scan link ?sonic=scan, with one Enter on its start screen
-        await page.goto(`${base}/fly/?sonic=scan&scene=${scene}&sz=1&nowarn=1&render=off`, { waitUntil: 'load', timeout: 120000 });
-        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
-        await page.focus('[data-testid="sonic-start-asked"]');
+        await page.goto(`${base}/fly/?sonic=scan&scene=${scene}&sz=1&nowarn=1${RQ}`, { waitUntil: 'load', timeout: 120000 });
+        const go = '[data-testid="sonic-start-scan"], [data-testid="sonic-start-scan-flier"]';
+        await page.waitForSelector(go, { timeout: 60000 });
+        if (process.env.SETSHOT) {
+            const n = page.locator('[data-testid="sonic-narrator"]');
+            out.setShot = (await n.count()) ? 'shown' : 'missing';
+            if (out.setShot === 'shown') { await n.first().scrollIntoViewIfNeeded(); await page.waitForTimeout(500); await page.screenshot({ path: process.env.SETSHOT }); }
+        }
+        out.scanButton = await page.locator(go).first().getAttribute('data-testid');
+        await page.locator(go).first().focus();
         return { ctx, page };
     }
     await page.goto(url, { waitUntil: 'load', timeout: 120000 });
