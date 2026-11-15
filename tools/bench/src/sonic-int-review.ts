@@ -788,6 +788,7 @@ interface R10Probe extends Probe {
     lastLine: string | null;
     pos: [number, number, number];
     yaw?: number;
+    course?: { laps: number; next: number; gates: number } | null;
 }
 
 /** One sample of the miss record (sonic3 S1): the craft, the gate, where the hum points and what the pilot held. */
@@ -841,7 +842,10 @@ function missRecord(buf: readonly MissSample[], gate: { id: string; pos: number[
 /** The hook's state; before the sound chunk has put its hook up, an empty one (no lesson). */
 const probe10 = (page: Page): Promise<R10Probe> => page.evaluate(() => {
     const f = (window as unknown as { __gsfpv?: { sonic?: (e?: boolean) => unknown } }).__gsfpv?.sonic;
-    return typeof f === 'function' ? f(false) : { lesson: null, phase: null, attempt: 0, asking: false, question: null, engine: 'none', speechQueue: 0, target: null, hum: null, cues: [], motor: false, walls: { voxelM: null, builtin: false, scene: '', scale: 1 }, lastLine: null, pos: [0, 0, 0] };
+    // lane onecourse O2.6: the course feature's course (its laps are the end of a course made by Shift+G or N)
+    const c = (window as unknown as { __gsfpv?: { course?: { laps: number; next: number; gates: number } } }).__gsfpv?.course;
+    const course = c ? { laps: c.laps, next: c.next, gates: c.gates } : null;
+    return typeof f === 'function' ? { ...(f(false) as object), course } : { lesson: null, phase: null, attempt: 0, asking: false, question: null, engine: 'none', speechQueue: 0, target: null, hum: null, cues: [], motor: false, walls: { voxelM: null, builtin: false, scene: '', scale: 1 }, lastLine: null, pos: [0, 0, 0] };
 }) as Promise<R10Probe>;
 const scanOrder = (page: Page): Promise<string[]> => page.evaluate(() => {
     const b = document.querySelector('[data-testid="sonic-start-beginning"]');
@@ -1406,14 +1410,16 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         // N: a course (walls first when the scan has none: wallsThen builds them)
         const from = (await events(page)).length;
         const lines = new Set<string>();
-        await page.keyboard.press('KeyN');
+        // lane onecourse (D2): Shift+G makes the course in every mode; Z5_COURSE_KEY=KeyN keeps one run with N (the same action)
+        const courseKey = process.env.Z5_COURSE_KEY ?? 'Shift+KeyG';
+        await page.keyboard.press(courseKey);
         const tN = Date.now();
         const ready = await until('the course', async () => {
             const p = await probe10(page);
             if (p.lastLine) lines.add(p.lastLine);
             return p;
         }, (p) => p.target !== null || lines.has('sonic.say.courseNone') || lines.has('sonic.say.scanNoWalls'), 420000, 250).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
-        run.course = { s: (Date.now() - tN) / 1000, target: ready?.target?.id ?? null, lines: [...lines], wallsFiles: wallsFiles.slice(0, 6), walls: ready?.walls ?? null };
+        run.course = { key: courseKey, gates: ready?.course?.gates ?? null, s: (Date.now() - tN) / 1000, target: ready?.target?.id ?? null, lines: [...lines], wallsFiles: wallsFiles.slice(0, 6), walls: ready?.walls ?? null };
         check(`${tag}: N makes a course (gate 1 is the hum's target)`, ready?.target !== null && ready?.target !== undefined, run.course);
         if (!ready?.target) {
             await r11Off(page, tag, run);
@@ -1427,14 +1433,15 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const tFPage = await page.evaluate(() => performance.now());
         // Y2 pass 2: Z5_FLIGHT_S raises the flight cap for slow runs (default 360 s; the whole run must stay under the 10-minute lock rule)
         const capS = Number(process.env.Z5_FLIGHT_S ?? (speed <= 2 ? 480 : 360)) || 360;
-        const end = await steerByHum(page, (p) => p.phase === 'passed' || p.phase === 'idle', capS * 1000, lines, trail, undefined, speed, stats);
+        const courseEnd = (p: R10Probe): boolean => (p.course?.laps ?? 0) >= 1;
+        const end = await steerByHum(page, (p) => p.phase === 'passed' || p.phase === 'idle' || courseEnd(p), capS * 1000, lines, trail, undefined, speed, stats);
         await sleep(3000);
         const spoken = spokenAfter(await events(page), from);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
-        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-30), missRecords: stats.misses ?? [], spy: (await lifeLog(page)).filter((e) => (e as { t: number }).t >= tFPage).map((e) => ({ ...e, s: Math.round(((e as { t: number }).t - tFPage) / 100) / 10 })) };
+        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, course: end.course ?? null, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-30), missRecords: stats.misses ?? [], spy: (await lifeLog(page)).filter((e) => (e as { t: number }).t >= tFPage).map((e) => ({ ...e, s: Math.round(((e as { t: number }).t - tFPage) / 100) / 10 })) };
         // Y2 pass 2 (shots z5-*-end.png): every Y1/Y2 'passed' course ended with "Gate n was missed. Let's go on to the next lesson"
         // (reason.gate-missed, fly.moving-on): the runner moves on after the last attempt; only a course counted without it passes
-        (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle') && !spoken.includes('fly.moving-on');
+        (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle' || courseEnd(end)) && !spoken.includes('fly.moving-on');
         (run.flight as Record<string, unknown>).misses = spoken.filter((k) => k === 'reason.gate-missed' || k === 'lesson.free-garden.retry').length;
         check(`${tag}: the course was flown to its end by the hum and counted (no fly.moving-on)`, (run.flight as Record<string, unknown>).counted === true, run.flight);
         await r11Off(page, tag, run);
