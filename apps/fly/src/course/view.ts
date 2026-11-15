@@ -22,8 +22,8 @@ import type { GateRole } from './finish';
 type Paint = 'next' | 'later' | 'passed' | 'arrow' | 'checkNext' | 'checkLater' | 'checkPassed' | 'checkDark' | EditPaint;
 /** sRGB colours (design choice, not measured): next lime, later dim teal, passed dark grey (S2: darker than later; the old
  *  0.45 grey was about as bright as the teal), arrows amber; the START / FINISH gate's light cells white when it is next, light
- *  grey later, dark grey passed, its dark cells near black; in the editor the selected gate magenta, a failing gate red, a
- *  failing selected gate orange (stage F1-finish). */
+ *  grey later, dark grey passed, its dark cells near black; in the editor the selected gate bright yellow (train 3 I1, D3: the
+ *  gate the handles belong to; was magenta), a failing gate red, a failing selected gate orange (stage F1-finish). */
 const PAINT: Record<Paint, [number, number, number]> = {
     next: [0.65, 1, 0.1],
     later: [0.15, 0.55, 0.55],
@@ -33,7 +33,7 @@ const PAINT: Record<Paint, [number, number, number]> = {
     checkLater: [0.7, 0.7, 0.7],
     checkPassed: [0.25, 0.25, 0.25],
     checkDark: [0.02, 0.02, 0.02],
-    selected: [1, 0.2, 1],
+    selected: [1, 0.92, 0.25],
     bad: [1, 0.08, 0.05],
     'selected-bad': [1, 0.5, 0]
 };
