@@ -2,19 +2,13 @@
 // flown walls' octree, runs freeSpace and generateCourse of @gsfpv/tracks and answers the track. Measured in Node
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
-import type { VoxelMetadata } from '@gsfpv/collision';
 import { COURSE_DEFAULTS, FIT_BUDGET_MS, checkTrack, fitCourse, freeSpace, generateCourse, marginOf, qualityBounds, qualityMap } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { FREE_SPACE_MS, courseTryMs, layTries } from './progress';
+import { metadataOf } from './grid';
+import type { CourseGrid } from './grid';
 
-export interface CourseGrid {
-    flip: boolean;
-    min: [number, number, number];
-    res: number;
-    n: [number, number, number];
-    leafSize: number;
-    treeDepth: number;
-}
+export type { CourseGrid } from './grid';
 
 export interface CourseJob {
     t: 'generate';
@@ -54,22 +48,6 @@ interface WorkerScope {
     postMessage(m: FromCourseWorker): void;
 }
 const scope = self as unknown as WorkerScope;
-
-function metadataOf(g: CourseGrid, nodes: number, leaf: number): VoxelMetadata {
-    const max = [0, 1, 2].map((a) => g.min[a] + g.n[a] * g.res);
-    return {
-        version: g.flip ? '1.0' : '1.1',
-        gridBounds: { min: [...g.min], max },
-        gaussianBounds: { min: [...g.min], max },
-        voxelResolution: g.res,
-        leafSize: g.leafSize,
-        treeDepth: g.treeDepth,
-        numInteriorNodes: 0,
-        numMixedLeaves: leaf / 2,
-        nodeCount: nodes,
-        leafDataCount: leaf
-    };
-}
 
 scope.onmessage = (e) => {
     const m = e.data;

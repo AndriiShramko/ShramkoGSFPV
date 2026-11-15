@@ -92,6 +92,9 @@ export type EditAction =
     | { readonly kind: 'dive' }
     | { readonly kind: 'size'; readonly steps: number }
     | { readonly kind: 'insert' }
+    /** F2 (lane editor3's Add gate): a gate after the selected one at `pos` and `quat`, the course's own frame (as
+     *  TrackGate.pos and .quat); the selected gate's shape; selected afterwards. Refused as insert is (max-gates, placement). */
+    | { readonly kind: 'add'; readonly pos: Vec3; readonly quat: Quat }
     | { readonly kind: 'delete' }
     /** the selected gate earlier (-1) or later (+1) in the order */
     | { readonly kind: 'order'; readonly step: number }
@@ -227,6 +230,11 @@ export function edit(state: EditorState, action: EditAction, check: CourseCheck)
         const k = INSERT_AHEAD_M / s;
         const pos: Vec3 = [r3(g.pos[0] + ahead[0] * k), r3(g.pos[1] + ahead[1] * k), r3(g.pos[2] + ahead[2] * k)];
         next.splice(sel + 1, 0, { ...g, id: nextGateId(gates), pos });
+        selected = sel + 1;
+    } else if (action.kind === 'add') {
+        if (n >= MAX_GATES_EDIT) return refuse(state, { code: 'max-gates', max: MAX_GATES_EDIT });
+        const pos: Vec3 = [r3(action.pos[0]), r3(action.pos[1]), r3(action.pos[2])];
+        next.splice(sel + 1, 0, { ...g, id: nextGateId(gates), pos, quat: roundQuat(action.quat) });
         selected = sel + 1;
     } else if (action.kind === 'delete') {
         if (n <= MIN_GATES) return refuse(state, { code: 'min-gates', min: MIN_GATES });

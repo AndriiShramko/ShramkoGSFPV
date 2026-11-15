@@ -266,6 +266,17 @@ Stage F1-no-freeze (train 3 wave 2; the walls build is this lane's now).
   measured. Whatever the cause, the step limit now ends a step after 3 x its estimate (Wroclaw level 2: 305 s) and
   takes the next lighter step.
 
+Stage F2-fast-course (train 3 wave 2: a course in under 15 s in Node and 30 s in the page; CR-3, CR-1, hooks for editor3).
+
+- [x] Hooks for lane editor3: EditAction { kind: 'add', pos, quat } (packages/tracks/src/editor.ts: a gate after the selected
+  one at that pose, course frame, rounded as the editor writes, the selected gate's shape, refused on a full course or a new
+  placement problem); metadataOf and CourseGrid in apps/fly/src/course/grid.ts (no side effects; worker.ts imports it and
+  re-exports CourseGrid); CourseEditorHook.flying (readonly, optional, course/hook.ts; the editor's wiring sets it).
+  Test tools/bench/test/course3-hooks.test.ts 3/3; neg_control.py --ref origin/main (editor.ts) on the two 'add' tests:
+  NEG OK by assertion ("expected true to be false"). tsc packages/tracks, apps/fly, tools/bench: 0 errors.
+  One line in apps/fly/src/course/editor/texts.ts (ACTION_KEYS.add, needed by its Record over EditAction kinds).
+- [~] Profile of one course on Wroclaw and Tunis (tools/bench/scripts/cpuprof-top.mjs; runner U:/Temp/gsfpv-train3/course3/f2/prof.sh).
+
 ## Facts (measured)
 
 - G2 quality map (course-quality-audit.ts --hist, Node 22, this PC). Wroclaw 70b50d42 (5 cm walls, 0.2 m blocks, 0.6 m

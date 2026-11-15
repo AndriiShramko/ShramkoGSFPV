@@ -62,4 +62,7 @@ export interface CourseEditorHook {
     /** stage K2: the editor's camera on the selected gate (course/editor/camera.ts), flown frame; null when closed */
     /** `look`: where the camera looks (K2.6: right of the gate when the window covers the right part), `free` the window's left edge over the width */
     view?: { eye: number[]; at: number[]; look?: number[]; free?: number } | null;
+    /** F2 (asked by lane editor3): the drone flies in the edit mode now (the mode's 'fly'), false in the edit view; probes
+     *  read it, the page writes it (the editor's wiring sets it, absent until then) */
+    readonly flying?: boolean;
 }
