@@ -227,8 +227,90 @@ async function depth() {
     step(`guide chip ${JSON.stringify(r.guide)}`);
 }
 
+// --far (stage X2-whole-scene): the voxels alone on the whole scene. Phases (env FAR_PHASES, default spawn,up,weak):
+// spawn: the switch at the street eye, share and far distance each second until settled, frame time, picture
+// <tag>-street; up: the spawn 60 m higher looking down 40 deg, picture <tag>-far; weak: setDetail(0.125) at the 60 m
+// eye, picture <tag>-weak. Frame time: mean and p95 of requestAnimationFrame gaps over 3 s (BENCH_UNCAPPED=1 unpaces).
+async function far() {
+    const phases = (process.env.FAR_PHASES ?? 'spawn,up,weak').split(',');
+    const { page } = await open(1280, 800, '');
+    for (;;) {
+        const w = await page.evaluate(() => { const v = window.__gsfpv?.voxels?.stats?.(); return v ? { state: v.state, cm: v.voxelCm } : null; });
+        if (w && w.cm) { step(`walls ready after ${Math.round((Date.now() - t0) / 1000)} s ${JSON.stringify(w)}`); break; }
+        if (Date.now() - t0 > 500000) throw new Error('no walls ' + JSON.stringify(w));
+        await sleep(2000);
+    }
+    await page.keyboard.press('Shift+KeyG');
+    for (;;) {
+        const st = await page.evaluate(() => { const c = window.__gsfpv?.course; return c ? { source: c.source, problem: c.problem ?? null } : null; });
+        if (st && (st.source === 'generated' || st.problem)) { step(`course after ${Math.round((Date.now() - t0) / 1000)} s`); break; }
+        if (Date.now() - t0 > 560000) { step('no course; the hold uses the craft pose only'); break; }
+        await sleep(1000);
+    }
+    const spawn = await page.evaluate(() => { const s = window.__gsfpv.session.sim.s; return [s[0], s[1], s[2]]; });
+    const yaw0 = await page.evaluate(() => { const s = window.__gsfpv.session.sim.s; return 2 * Math.atan2(s[8], s[6]); });
+    await page.evaluate(() => {
+        const ss = window.__gsfpv.session;
+        const orig = ss.cameraAim;
+        window.__hold = null;
+        if (orig) ss.cameraAim = () => { const a = orig.call(ss); return a && window.__hold ? { ...a, yawDeg: (-window.__hold.yaw * 180) / Math.PI, pitchDeg: window.__hold.pitch } : a; };
+        const tick = () => { const h = window.__hold; if (h) { const s = ss.sim.s; s[0] = h.pos[0]; s[1] = h.pos[1]; s[2] = h.pos[2]; for (let i = 3; i < 6; i++) s[i] = 0; s[6] = Math.cos(h.yaw / 2); s[7] = 0; s[8] = Math.sin(h.yaw / 2); s[9] = 0; for (let i = 10; i < 13; i++) s[i] = 0; } requestAnimationFrame(tick); };
+        tick();
+    });
+    const frame = () => page.evaluate(() => new Promise((res) => { const d = []; let last = performance.now(); const end = last + 3000; const f = (t) => { d.push(t - last); last = t; if (t < end) requestAnimationFrame(f); else { d.sort((a, b) => a - b); res({ n: d.length, meanMs: Math.round((d.reduce((a, b) => a + b, 0) / d.length) * 10) / 10, p95Ms: Math.round(d[Math.floor(d.length * 0.95)] * 10) / 10 }); } }; requestAnimationFrame(f); }));
+    const pickStats = (s) => ({ chunks: s.chunks, quads: s.quads, triangles: s.triangles, whole: s.whole, wallChunks: s.wallChunks, plannedChunks: s.plannedChunks, drawnChunks: s.drawnChunks, share: s.share, perLevel: s.perLevel, farthestM: s.farthestM, drawnFarM: s.drawnFarM, radiusM: s.radiusM, fineRadiusM: s.fineRadiusM, detail: s.detail, keeperMs: s.frameMs, voxelCm: s.voxelCm });
+    const fill = async (label, ms) => {
+        const s0 = Date.now(), series = [];
+        let full = -1, ok = false;
+        while (Date.now() - s0 < ms) {
+            const s = await page.evaluate(() => ({ st: window.__gsfpv.voxels.stats(), ok: window.__gsfpv.voxels.settled() }));
+            series.push([Math.round((Date.now() - s0) / 100) / 10, s.st.share ?? null, s.st.drawnFarM ?? null, s.st.chunks]);
+            if (full < 0 && s.st.share === 100) full = Date.now() - s0;
+            if (s.ok && Date.now() - s0 > 1500) { ok = true; break; }
+            await sleep(1000);
+        }
+        const st = pickStats(await page.evaluate(() => window.__gsfpv.voxels.stats()));
+        const settledMs = ok ? Date.now() - s0 : -1;
+        step(`${label}: share 100 at ${full} ms, settled ${settledMs} ms, ${JSON.stringify(st)}`);
+        return { label, shareFullMs: full, settledMs, stats: st, series };
+    };
+    const shot = async (name) => { await sleep(1500); const p = join(shots, `${name}.png`); await page.screenshot({ path: p }); step(`picture ${p}`); return p; };
+    r.far = { spawn, yaw0, phases: [] };
+    await page.evaluate(([pos, yaw]) => { window.__hold = { pos, yaw, pitch: 10 }; }, [spawn, yaw0]);
+    await sleep(1500);
+    r.far.frameScanOnly = await frame();
+    step(`frame, the scan alone at the spawn ${JSON.stringify(r.far.frameScanOnly)}`);
+    await page.evaluate(() => window.__gsfpv.voxels.setMode('only'));
+    if (phases.includes('spawn')) {
+        const ph = await fill('spawn (street)', 240000);
+        ph.frame = await frame();
+        ph.picture = await shot(`${tag}-street`);
+        ph.line = await page.evaluate(() => [...document.querySelectorAll('.walls-menu, .walls-chip, [class*=walls]')].map((e) => e.textContent?.trim()).filter(Boolean).slice(0, 4));
+        step(`frame ${JSON.stringify(ph.frame)} walls text ${JSON.stringify(ph.line)}`);
+        r.far.phases.push(ph);
+    }
+    if (phases.includes('up')) {
+        await page.evaluate(([pos, yaw]) => { window.__hold = { pos: [pos[0], pos[1] + 60, pos[2]], yaw, pitch: 40 }; }, [spawn, yaw0]);
+        const ph = await fill('60 m up', 240000);
+        ph.frame = await frame();
+        ph.picture = await shot(`${tag}-far`);
+        step(`frame ${JSON.stringify(ph.frame)}`);
+        r.far.phases.push(ph);
+    }
+    if (phases.includes('weak')) {
+        if (await page.evaluate(() => typeof window.__gsfpv.voxels.setDetail === 'function')) {
+            await page.evaluate(() => window.__gsfpv.voxels.setDetail(0.125));
+            const ph = await fill('weak (detail 0.125) 60 m up', 180000);
+            ph.frame = await frame();
+            ph.picture = await shot(`${tag}-weak`);
+            step(`frame ${JSON.stringify(ph.frame)}`);
+            r.far.phases.push(ph);
+        } else step('no setDetail in this build');
+    }
+}
+
 try {
-    if (args.includes('--panel')) await panel(); else await depth();
+    if (args.includes('--panel')) await panel(); else if (args.includes('--far')) await far(); else await depth();
 } catch (e) {
     r.error = String(e?.stack ?? e).slice(0, 600);
     console.log('ERROR ' + r.error);
