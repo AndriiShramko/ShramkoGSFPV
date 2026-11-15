@@ -633,7 +633,8 @@ Stage C0-places-left (fix3b's left items)
 - [ ] (4) Lublin start in the well-scanned part: not built
 - [ ] (5) Opole page run alone and fix3b-opole-pilot.png: not run (see Left)
 - [ ] (6) page check on the release of the head: not run (see Left)
-- [ ] gates.py --only vitest,architecture,i18n,b18 and a6-reference after the commit of standGround
+- [x] after 7be35fc4: gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 93 s, logs
+      U:/Temp/gsfpv-gates-20261115-152459); a6-reference exit 0
 
 ## Left (C0)
 
@@ -652,3 +653,7 @@ Stage C0-places-left (fix3b's left items)
 4. (3) Tunis top map: run gate-place-map --scene 887f27aa --seed-list 1 and look; also draw a section of Tunis seed 1's gate
    at 4.2 m over the tile ground to tell a terrace from a too low tile ground.
 5. Wroclaw seed 2 now gives 14 gates (24 before standGround): a fit retry with more seeds may be needed; not measured why.
+
+Cost (course4 C0): about 27 replies; most went to finding a data source for R3 (no splat positions anywhere the generator
+runs) and to a page runner that only waited for the GPU lock; starting the runner as the first command of the stage and
+asking the lead whether R3 may read the scan files in Node would have saved both.
