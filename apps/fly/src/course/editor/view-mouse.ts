@@ -194,6 +194,11 @@ export class EditView {
         }
     }
 
+    /** true while the drone flies (the handles are away and the view does not write the camera) */
+    isSuspended(): boolean {
+        return this.suspended;
+    }
+
     /** The camera put somewhere (a key selected a gate: the view goes to it). */
     setCam(c: FlyCam): void {
         this.cam = c;

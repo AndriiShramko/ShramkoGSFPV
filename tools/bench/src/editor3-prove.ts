@@ -437,6 +437,12 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         said: ((await ed(page)).said ?? '').slice(0, 120),
         line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? ''),
         place: (fd as unknown as { place?: unknown } | null)?.place ?? null,
+        // G3: who held the camera (another writer's frames, the crash cleared on the way back, the session's override)
+        camTaken: (fd as unknown as { camTaken?: unknown } | null)?.camTaken ?? null,
+        camBefore: (dbgBefore as unknown as { camTaken?: unknown } | null)?.camTaken ?? null,
+        crashCleared: (fd as unknown as { crashCleared?: unknown } | null)?.crashCleared ?? null,
+        crashActive: (fd as unknown as { crashActive?: unknown } | null)?.crashActive ?? null,
+        statsWindow: await page.evaluate(() => /AIR TIME/i.test(document.body.innerText)),
         viewAfter: (await ed(page)).view ?? null,
         problemLine: await page.evaluate(() => document.querySelector('.ce-problems, .ce-problem, [data-problems]')?.textContent?.slice(0, 160) ?? '')
     };

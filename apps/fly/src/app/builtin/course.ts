@@ -128,6 +128,8 @@ export const course: Feature = {
         let dragFrame = 0;
         /** G2 measurement: the last Add gate click (ray, wall hit, the point, the selected gate, the flown transform) */
         let lastPlace: Record<string, unknown> | null = null;
+        let camTaken = { n: 0, override: true, crash: false, t: 0 };
+        let crashCleared = 0;
         /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
         const aim = (): void => {
             if (!camView || !panel) return;
@@ -711,7 +713,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, camTaken, crashCleared, crashActive: ctx.crash.active, override: ctx.session.cameraOverride } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => unknown }).__gsfpvEditHit = (x, y) => view?.hitAt(x, y) ?? null;
             if (!adminLive && adminHinted()) {
@@ -815,6 +817,17 @@ export const course: Feature = {
             const sim = ctx.session.sim;
             const st = modeStep(mode, !!sim?.armed, !!sim?.crashed, crashHold);
             crashHold = st.hold;
+            // G3: the edit view holds the renderer's camera every frame. g2/full5 drew the drone's crash view after a floor add
+            // while the edit eye stood still (crashview.ts frame() poses its chase camera each frame while a crash is active,
+            // before the features' frame work); camTaken counts the frames another writer had moved it (read by the probes).
+            if (mode === 'edit' && view && !view.isSuspended()) {
+                const cp = ctx.renderer.camera.getPosition();
+                const e = view.cam.pos;
+                if (!ctx.session.cameraOverride || Math.hypot(cp.x - e[0], cp.y - e[1], cp.z - e[2]) > 0.01) {
+                    camTaken = { n: camTaken.n + 1, override: ctx.session.cameraOverride, crash: ctx.crash.active, t: Math.round(performance.now()) };
+                    view.setCam(view.cam);
+                }
+            }
             if (st.change === 'to-fly') {
                 mode = 'fly';
                 (edHook as { flying?: boolean }).flying = true;
@@ -837,6 +850,9 @@ export const course: Feature = {
                 bar?.hide(false);
                 top?.flying(false);
                 // the edit camera comes back where it was (its onCamera takes the renderer's camera again)
+                // G3: a crash of the test flight takes its chase camera and its stats window away (g2 pictures showed the
+                // stats window over the edit view): ctx.clearCrash is the page's own "back from a crash" (context.ts)
+                if (ctx.crash.active) { ctx.clearCrash(); crashCleared++; }
                 view?.suspend(false);
                 showEd();
             }
