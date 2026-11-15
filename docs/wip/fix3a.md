@@ -1493,3 +1493,25 @@ drawn). The worktree's packages/sonic-fpv was moved to main's pin 293ebae by git
 
 Cost (course5 fixes): about 30 replies; the most went to finding the recipes of the table and the page probes in this long
 status file. A short 'how to rerun' block per probe at the top of the course part would have saved about 5.
+
+# Lane mix (train 3): Fly by Sound takes the course in the scene, a course with elements too
+
+## Status M1-one-course-mixed
+
+Logs U:/Temp/gsfpv-train3/mix/.
+- [x] Measured before the change (the code of 26bb9bbe equals 9a9de108 in source; only this file differs): onecourse-probe
+      on Wroclaw 70b50d42 (course5 fixcv/onecourse-wro.log, exit 0): Shift+G by eye 44 gates with elements, gates 1-2 flown,
+      Backslash: the sound mode's target null (no course until a key: the line courseOffer, lessons.ts:526).
+- [x] X1: apps/fly/src/app/builtin/course.ts hook.sound.inUse hands over every course in the scene with its progress
+      (soundTakes removed). X2: packages/tracks/src/laps.ts soundBallM (a square whose pass axis is within 45 degrees of
+      vertical, and every cube frame: radius side / 2 + bar + SOUND_BALL_PAD_M 1.5 m, an estimate), LapTimer.setByEar; the
+      pass is the flown step's distance to the centre (segmentDistM) within the ball, any direction, only while by ear.
+      apps/fly/src/course/run.ts CourseRun.byEar; course.ts frame() calls run.byEar(!!ctx.sonic) every frame.
+      apps/fly/src/course/finish.ts soundGates: the ear gets such an element as a zone of the ball's size at its centre (the
+      gate aim leads through openings only, so the hum leads to the centre); built once per course (same objects).
+      X3 unchanged (courseElements). No file under apps/fly/src/sonic changed.
+      Tests: laps.test.ts 'lane mix X2' (3 cases) NEG OK against laps.ts of HEAD 26bb9bbe; course-finish.test.ts 'lane mix X1,
+      X2' (replaces CV-2) NEG OK against finish.ts and course.ts of 26bb9bbe. packages/tracks + apps/fly/src/course + 6 bench
+      tests reading course.ts or the sound course + a6-reference: 26 files, 197 passed. tsc fly 0, tsc tracks 0.
+- [ ] Release build and browser proof (1) to (6), then the chain (tracks-page, course-path-probe Wroclaw and Tunis,
+      pause-over-course-probe, accept-fly B6 B7 B9-B16, sonic-int-review r9 r12, gates.py with leaks).

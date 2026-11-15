@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import * as finish from '../../../apps/fly/src/course/finish';
 import { CARD_HOLD_MS, LAP_SPLASH_DEFAULT, LAP_SPLASH_MODES, SPLASH_FADE_MS, SPLASH_HOLD_MS, gateRoles, lapSplash, lapSplashMode, resultsCard, splashAlpha } from '../../../apps/fly/src/course/finish';
 import { SCHEMA } from '../../../packages/prefs/src';
+import type { SonicObject } from '@shramko/sonic-fpv';
 
 describe('course4 review CU-4: no course at a Scene size leads to one that gives a course', () => {
     it('names a measured Scene size and the four locales say it with the press', () => {
@@ -126,15 +127,32 @@ describe('course4 review CU-1 and CU-2: the merge seams with lane onecourse', ()
 describe('course5 review CV-2 to CV-4: the sound mode and the no-course size', () => {
     const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
 
-    it('CV-2: Fly by Sound does not take a course composed with elements; it takes single-gate and older courses', () => {
-        const takes = (finish as { soundTakes?: (t: { generator?: { version?: string } | null }) => boolean }).soundTakes;
-        expect(typeof takes).toBe('function');
-        expect(takes!({ generator: { version: 'k2.q1.e2' } })).toBe(false);
-        expect(takes!({ generator: { version: 'k2.e1' } })).toBe(false);
-        expect(takes!({ generator: { version: 'k2.q1' } })).toBe(true);
-        expect(takes!({ generator: null })).toBe(true);
-        expect(takes!({})).toBe(true);
-        expect(src).toMatch(/inUse: \(\) => \(run && hook\.on && soundTakes\(run\.track\)/);
+    it('lane mix X1, X2: Fly by Sound takes every course in the scene; a flat square and a cube frame go to it as the zone of their ball', () => {
+        // the course in the scene is handed over whatever its generator (no check of the version '.e<n>')
+        expect(src).toMatch(/inUse: \(\) => \(run && hook\.on \? \{ track: run\.track, next: hook\.next, gates: gatesByEar\(run\) \} : null\)/);
+        expect(src).not.toMatch(/soundTakes/);
+        const by = (finish as { soundGates?: (g: readonly SonicObject[]) => readonly SonicObject[] }).soundGates;
+        expect(typeof by).toBe('function');
+        const at = (id: string, shape: SonicObject['shape'], quat: SonicObject['quat']): SonicObject =>
+            ({ id, shape, pos: [1, 4, -20], quat, order: 0, solid: false, material: 'obstacle' });
+        const c45 = Math.SQRT1_2;
+        const ring = at('g1', { kind: 'ring', diameter: 1.2, tube: 0.1 }, [1, 0, 0, 0]);
+        const upright = at('g2', { kind: 'square', side: 1.2, bar: 0.1 }, [1, 0, 0, 0]);
+        const flat = at('g3', { kind: 'square', side: 1.2, bar: 0.1 }, [c45, c45, 0, 0]);
+        const cube = at('g4', { kind: 'cube-frame', side: 1.2, bar: 0.1 }, [1, 0, 0, 0]);
+        const out = by!([ring, upright, flat, cube]);
+        expect(out[0]).toBe(ring);
+        expect(out[1]).toBe(upright);
+        // the ball: half size 0.7 plus 1.5 m, a zone of twice that at the same centre with the same id and order
+        for (const [i, g] of [[2, flat], [3, cube]] as const) {
+            expect(out[i]!.shape.kind).toBe('zone');
+            expect((out[i]!.shape as { size: number[] }).size[0]).toBeCloseTo(4.4, 6);
+            expect(out[i]!.pos).toEqual(g.pos);
+            expect(out[i]!.id).toBe(g.id);
+        }
+        // X3: a course made inside Fly by Sound still asks no elements (lane course5's CU-1)
+        expect(finish.courseElements({})).toBe(false);
+        expect(finish.courseElements(null)).toBe(true);
     });
 
     it('CV-3: the pending size of a no-course line is dropped with the scene and when the size changed since', () => {

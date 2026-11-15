@@ -33,6 +33,45 @@ function fly(timer: LapTimer, pts: readonly Vec3[], t0 = 0, mps = 10, hook?: (tM
 
 const STRAIGHT: Vec3[] = [[0, 1.5, 0], [0, 1.5, -40]];
 
+describe('lane mix X2: in Fly by Sound a flat square and a cube frame pass by their ball; in the ordinary flight strictly', () => {
+    const c45 = Math.SQRT1_2;
+    // a square 1.2 m lying flat 2 m over the line (pitched up 90 degrees: its pass axis points down, it is passed upward)
+    const flat: SonicObject = { id: 'g2', shape: { kind: 'square', side: 1.2, bar: 0.1 }, pos: [0, 3.5, -20], quat: [c45, c45, 0, 0], order: 1, solid: false, material: 'obstacle' };
+    const cube: SonicObject = { id: 'g2', shape: { kind: 'cube-frame', side: 1.2, bar: 0.1 }, pos: [1.5, 1.5, -20], quat: [1, 0, 0, 0], order: 1, solid: false, material: 'obstacle' };
+    const course = (mid: SonicObject): SonicObject[] => [ring(0, -10), mid, ring(2, -30)];
+    const byEar = (t: LapTimer, on: boolean): void => (t as { setByEar?: (on: boolean) => void }).setByEar?.(on);
+    const kinds = (events: [string, number][]): string[] => events.map((e) => e[0]);
+    // the line flies 2 m under the flat square's centre and 1.5 m beside the cube's: inside the ball (0.7 + 1.5 m), outside the opening
+    it('the ball counts a flat square and a cube frame passed beside, only while Fly by Sound is on', () => {
+        for (const mid of [flat, cube]) {
+            const ear = new LapTimer(course(mid), { laps: 1 });
+            byEar(ear, true);
+            expect(kinds(fly(ear, STRAIGHT).events)).toEqual(['start', 'gate', 'done']);
+            const eye = new LapTimer(course(mid), { laps: 1 });
+            expect(kinds(fly(eye, STRAIGHT).events)).toEqual(['start']);
+        }
+    });
+    it('the ordinary flight counts the flat square climbed through its opening; the ball does not reach 3 m off', () => {
+        const climb: Vec3[] = [[0, 1.5, 0], [0, 1.5, -19], [0, 2, -20], [0, 5, -20], [0, 1.5, -25], [0, 1.5, -40]];
+        expect(kinds(fly(new LapTimer(course(flat), { laps: 1 }), climb).events)).toEqual(['start', 'gate', 'done']);
+        const far: Vec3[] = [[3, 1.5, 0], [3, 1.5, -40]];
+        const ear = new LapTimer([flat], { laps: 1 });
+        byEar(ear, true);
+        expect(fly(ear, far).events).toEqual([]);
+    });
+    it('upright squares, rings and a tunnel keep the strict pass in Fly by Sound; switching keeps the progress', () => {
+        const upright: SonicObject = { ...flat, quat: [1, 0, 0, 0], pos: [1.5, 1.5, -20] };
+        const ear = new LapTimer(course(upright), { laps: 1 });
+        byEar(ear, true);
+        expect(kinds(fly(ear, STRAIGHT).events)).toEqual(['start']);
+        const sw = new LapTimer(course(cube), { laps: 1 });
+        const first = fly(sw, [[0, 1.5, 0], [0, 1.5, -15]]);
+        byEar(sw, true);
+        const rest = fly(sw, [[0, 1.5, -15], [0, 1.5, -40]], first.t);
+        expect([...kinds(first.events), ...kinds(rest.events)]).toEqual(['start', 'gate', 'done']);
+    });
+});
+
 describe('LapTimer', () => {
     it('an open course flown through every gate in order is one lap, timed from gate 1 to the last gate', () => {
         const timer = new LapTimer(GATES, { laps: 1 });

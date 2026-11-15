@@ -2,6 +2,8 @@
 // pilot can read. Which gate says START, FINISH or both; the lap's time shown large when a lap ends (its text, colour and
 // gain or loss against the best lap, how long it stays and how it fades); the results card at the end of the last lap; the
 // setting 'Lap time on screen'. No DOM, no clock: course/hud.ts and app/builtin/course.ts draw what these answer.
+import { soundBallM } from '@gsfpv/tracks';
+import type { SonicObject } from '@shramko/sonic-fpv';
 import { lapClock } from './hud-clock';
 
 /**
@@ -129,12 +131,17 @@ export function courseElements(sonic: unknown): boolean {
 }
 
 /**
- * Course5 review CV-2: whether Fly by Sound may take the course in the scene. A course composed with elements (generator
- * version '<v>.e<n>', packages/tracks generate.ts) holds tunnels and flat squares the ear pilot was not measured on, so the
- * sound mode does not take it and offers its own Shift+G, which builds single upright gates (courseElements).
+ * Lane mix (the lead's X1, X2; the owner's message 52: the scene holds one course): Fly by Sound takes every course in the
+ * scene, a course with elements too. The gates it is handed are the course's own objects, except an element passed by its
+ * ball (packages/tracks laps.ts soundBallM: a flat square, a cube frame): that one is handed as a zone of the ball's size at
+ * the element's centre, so the hum leads to the centre (the gate aim leads through an opening only) and the pass is the
+ * ball's. Same objects in, same objects out: the array is built once per course.
  */
-export function soundTakes(track: { readonly generator?: { readonly version?: string } | null }): boolean {
-    return !/\.e\d+$/.test(track.generator?.version ?? '');
+export function soundGates(gates: readonly SonicObject[]): readonly SonicObject[] {
+    return gates.map((g) => {
+        const r = soundBallM(g);
+        return r === null ? g : { ...g, shape: { kind: 'zone', size: [2 * r, 2 * r, 2 * r] } };
+    });
 }
 
 type Words = (key: string, vars?: Record<string, string | number>) => string;

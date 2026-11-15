@@ -18,6 +18,38 @@ import type { SonicObject, Vec3 } from '@shramko/sonic-fpv';
 
 export type LapEvent = 'start' | 'gate' | 'lap' | 'done';
 
+/**
+ * Lane mix (the lead's X2): what the ball of an element the ear cannot fly as a sighted pilot does adds to the element's own
+ * half size, m. An estimate, checked by the ear pilot (sonic-int-review r11) on Wroclaw; docs/wip/fix3a.md part 'mix'.
+ */
+export const SOUND_BALL_PAD_M = 1.5;
+
+/** the pass axis (the gate's local +Z) leans this close to vertical for a square to lie flat (cos of about 45 degrees) */
+const FLAT_AXIS_Y = 0.7;
+
+/**
+ * Lane mix (X2): in Fly by Sound a square lying flat and a cube frame count as passed when the craft comes within this
+ * radius of the element's centre, from any direction: its half size (side / 2 + bar) plus SOUND_BALL_PAD_M. Null for every
+ * other gate (upright rings and squares, a tunnel's rings): those keep the strict pass through the opening.
+ */
+export function soundBallM(gate: SonicObject): number | null {
+    const s = gate.shape;
+    if (s.kind === 'cube-frame') return s.side / 2 + s.bar + SOUND_BALL_PAD_M;
+    if (s.kind !== 'square') return null;
+    // quat [w, x, y, z]: the world y of the local +Z axis is 2 (y z - w x)
+    const [w, x, y, z] = gate.quat;
+    return Math.abs(2 * (y * z - w * x)) >= FLAT_AXIS_Y ? s.side / 2 + s.bar + SOUND_BALL_PAD_M : null;
+}
+
+/** the distance from point `c` to the segment `a`-`b`, m */
+export function segmentDistM(c: Vec3, a: Vec3, b: Vec3): number {
+    const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]] as const;
+    const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]] as const;
+    const len2 = ab[0] * ab[0] + ab[1] * ab[1] + ab[2] * ab[2];
+    const u = len2 > 0 ? Math.max(0, Math.min(1, (ac[0] * ab[0] + ac[1] * ab[1] + ac[2] * ab[2]) / len2)) : 0;
+    return Math.hypot(ac[0] - u * ab[0], ac[1] - u * ab[1], ac[2] - u * ab[2]);
+}
+
 export interface LapOptions {
     /** laps of one attempt (the track's `laps`); 1 = an open course that ends at its last gate */
     readonly laps: number;
@@ -80,14 +112,27 @@ export class LapTimer {
         return this.lapsPerRun > 1;
     }
 
+    /** whether Fly by Sound flies the course now (lane mix, X2): its flat squares and cube frames pass by soundBallM */
+    private byEar = false;
+
+    /** Fly by Sound on or off (the caller tells it every frame); the attempt and its progress stay. */
+    setByEar(on: boolean): void {
+        this.byEar = on;
+    }
+
     /** One physics step from `a` to `b` ending at `tMs`; what happened, or null. */
     step(tMs: number, a: Vec3, b: Vec3): LapEvent | null {
         this.nowMs = tMs;
         if (this.pausedAt !== null) return null;
         const gate = this.gates[this.next];
         if (gate === undefined) return null;
-        const x = gateCrossing(gate, a, b);
-        if (x === null || !x.inside) return null;
+        const ball = this.byEar ? soundBallM(gate) : null;
+        if (ball !== null) {
+            if (segmentDistM(gate.pos, a, b) > ball) return null;
+        } else {
+            const x = gateCrossing(gate, a, b);
+            if (x === null || !x.inside) return null;
+        }
         if (!this.running) {
             if (this.next !== 0) return null;
             this.running = true;

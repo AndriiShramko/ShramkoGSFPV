@@ -14,7 +14,7 @@
 // table, course/editor/keys.ts; its window, course/editor/panel.ts): select, move, turn, shape, size, add and delete gates,
 // every change re-proven on the walls (packages/tracks editor.ts); "Save as my course" posts a pilot's course (a fork of a
 // saved one, or a new version of the pilot's own with the token kept in this tab), the scene's courses with marks and votes.
-import type { TrackFile } from '@shramko/sonic-fpv';
+import type { SonicObject, TrackFile } from '@shramko/sonic-fpv';
 import { t } from '../../i18n';
 import { liveSearch } from '../env';
 import type { Feature, FlightContext } from '../context';
@@ -23,7 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize, soundTakes } from '../../course/finish';
+import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize, soundGates } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -198,6 +198,8 @@ export const course: Feature = {
 
         const frame = (): void => {
             if (!run || !hook.on || ed) return;
+            // lane mix (X2): while Fly by Sound is on (ctx.sonic) a flat square or cube frame passes by its ball
+            run.byEar(!!ctx.sonic);
             const { ev, view: v } = run.fromSim(ctx.session.runner.sim);
             if (ev === 'lap' || ev === 'done') {
                 const last = v.lastLapMs ?? 0;
@@ -609,9 +611,15 @@ export const course: Feature = {
         // lane onecourse (message 52): the course in the scene for Fly by Sound: the course shown, its next gate (the same objects
         // the lap timer passes) and Shift+G's own action (D1, D2). No change event: the sound mode reads inUse() every frame (lead's
         // decision P3, review OC-6: nothing listened to it)
+        // lane mix (X1, message 52): every course in the scene is handed over, a course with elements too, with its progress; a
+        // flat square or cube frame as the zone of its ball (soundGates), built once per course so the objects stay the same
+        let earGates: { of: CourseRun; gates: readonly SonicObject[] } | null = null;
+        const gatesByEar = (r: CourseRun): readonly SonicObject[] => {
+            if (earGates?.of !== r) earGates = { of: r, gates: soundGates(r.gates) };
+            return earGates.gates;
+        };
         hook.sound = {
-            // course5 review CV-2: a course with elements is not handed to the ear pilot (soundTakes); his Shift+G builds one
-            inUse: () => (run && hook.on && soundTakes(run.track) ? { track: run.track, next: hook.next, gates: run.gates } : null),
+            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: gatesByEar(run) } : null),
             generate: () => generate(pressSeed())
         };
         // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene
