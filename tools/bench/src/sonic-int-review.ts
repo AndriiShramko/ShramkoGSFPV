@@ -1127,7 +1127,14 @@ async function lifeSpy(page: Page): Promise<void> {
         const log = w.__lifeSpy;
         (ses as { __spied?: boolean }).__spied = true;
         const life = ses.onLife;
-        ses.onLife = (l) => { log.push({ t: Math.round(performance.now()), life: l.header.life.reason }); life?.(l); };
+        // lane onecourse2 (P4): the course's next gate at each life and 0.5 s after it (a life that puts the craft at the start restarts the attempt)
+        const course = (): { next?: number; laps?: number } | undefined => (w.__gsfpv as unknown as { course?: { next?: number; laps?: number } }).course;
+        ses.onLife = (l) => {
+            const e: Record<string, unknown> = { t: Math.round(performance.now()), life: l.header.life.reason, next: course()?.next ?? null, laps: course()?.laps ?? null };
+            log.push(e);
+            setTimeout(() => { e.nextAfter = course()?.next ?? null; }, 500);
+            life?.(l);
+        };
         for (const name of ['applyLifeSettings', 'rebuildSim', 'setWallsOn', 'setCrashOn', 'setLessonFlight', 'setTransform', 'respawnStart']) {
             const f = ses[name];
             if (typeof f !== 'function') continue;
