@@ -129,6 +129,10 @@ describe('I1 D4: the pick of an edge-on ring and its angle from the mouse travel
 describe('I1 D2 D3: the handles look as in an ordinary 3D editor, the selected gate is marked', () => {
     it('no part is larger than 16 px but lines and rings; arrows about 90 px, rings 85 px, lines 2 to 3 px', () => {
         expect(PART_MAX_PX).toBeLessThanOrEqual(16);
+        // as drawn: a cube at an angle and the wide field make a part up to 1.67 times its set size (measured)
+        const drawn = Math.max(HANDLE_PX.arrowLength * 1.13, HANDLE_PX.arrowWidth * 1.67, HANDLE_PX.sizeBox * 1.67,
+            HANDLE_PX.centreBox * 1.67);
+        expect(drawn).toBeLessThanOrEqual(16);
         expect(HANDLE_PX.moveReach).toBe(90);
         expect(HANDLE_PX.ringRadius).toBe(85);
         expect(HANDLE_PX.line).toBeGreaterThanOrEqual(2);
