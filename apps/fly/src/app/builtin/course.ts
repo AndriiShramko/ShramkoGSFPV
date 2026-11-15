@@ -1055,7 +1055,10 @@ export const course: Feature = {
             const gb = view?.gateBox();
             const before = dragBox;
             dragBox = null;
-            if (st && gb && reframeOnDragEnd(before, gb.box, gb.w, gb.h)) frameSel();
+            const re = !!(st && gb && reframeOnDragEnd(before, gb.box, gb.w, gb.h));
+            // fixes3 pass 2 (left a): the boxes the decision saw, for the page probes
+            (edHook as { reframe?: unknown }).reframe = { before, after: gb?.box ?? null, w: gb?.w ?? 0, h: gb?.h ?? 0, changed: !!st, framed: re };
+            if (re) frameSel();
             // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
             const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
             if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));

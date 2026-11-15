@@ -718,6 +718,9 @@ export class EditView {
      */
     gateBox(): { box: [number, number, number, number] | null; w: number; h: number } | null {
         if (!this.standPose) return null;
+        // fixes3 pass 2 (left a): a drag's start and end come between frames, when the camera entity may hold the drone's
+        // pose: project with the edit view's camera, as hitAt and measure do (a box from the drone's eye read 'outside')
+        if (!this.suspended) this.apply();
         const cc = this.host.camera.camera as CameraComponent;
         const c = this.stand.getPosition();
         const k = this.opening / 2;
@@ -750,6 +753,11 @@ export class EditView {
     /** For the page probes (tools/bench/src/editor3-smoke.ts): the handles, the stand-in's pose, and where on the canvas
      * (CSS px) each gate's centre and the stand-in's local axes are. Read only. */
     debug(): Record<string, unknown> {
+        // fixes3 pass 2 (left a): how far the camera entity stood from the edit eye before this read, then project with the
+        // edit view's own pose (the entity may hold the drone's pose between frames, as hitAt and measure)
+        const e0 = this.host.camera.getPosition();
+        const camGap = Math.round(Math.hypot(e0.x - this.cam.pos[0], e0.y - this.cam.pos[1], e0.z - this.cam.pos[2]) * 100) / 100;
+        if (!this.suspended) this.apply();
         const cc = this.host.camera.camera as CameraComponent;
         const r = this.canvas.getBoundingClientRect();
         const scr = (x: number, y: number, z: number): number[] => {
@@ -771,7 +779,7 @@ export class EditView {
             stand: { pos: [p.x, p.y, p.z], quat: [...fromPcQuat(this.stand.getRotation().x, this.stand.getRotation().y, this.stand.getRotation().z, this.stand.getRotation().w)], scale: this.stand.getLocalScale().x, opening: this.opening, screen: scr(p.x, p.y, p.z) },
             axes: { x: axis(this.stand.right), y: axis(this.stand.up), z: axis(this.stand.forward) },
             gates: this.host.gates().map((g) => scr(g.pos[0], g.pos[1], g.pos[2])),
-            cam: { pos: [...this.cam.pos], speed: this.cam.speed },
+            cam: { pos: [...this.cam.pos], speed: this.cam.speed, gap: camGap },
             // I3: the camera's field in degrees and whether it is horizontal (the probe's frameF share of the view)
             fov: { deg: cc.fov, horizontal: !!cc.horizontalFov, aspect: Math.round((r.width / (r.height || 1)) * 1000) / 1000 },
             held: [...this.held],

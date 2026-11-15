@@ -42,7 +42,17 @@ describe('EJ-2: the view frames the gate again only when the drag took it out of
     it('course.ts takes the box when the drag begins and frames only a drag that changed the gate', () => {
         const c = src('apps/fly/src/app/builtin/course.ts');
         expect(c).toMatch(/if \(!dragBase\) dragBox = view\?\.gateBox\(\)\?\.box \?\? null;\s*const base = dragBase \?\? ed;/);
-        expect(c).toMatch(/if \(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\) frameSel\(\);/);
+        expect(c).toMatch(/const re = !!\(st && gb && reframeOnDragEnd\(before, gb\.box, gb\.w, gb\.h\)\);/);
+        expect(c).toMatch(/if \(re\) frameSel\(\);/);
+    });
+    it('pass 2: gateBox and debug project with the edit view camera (a drag starts between frames)', () => {
+        const v = src('apps/fly/src/course/editor/view-mouse.ts');
+        const gb = body(v, 'gateBox(): {');
+        expect(gb.indexOf('this.apply()')).toBeGreaterThan(-1);
+        expect(gb.indexOf('this.apply()')).toBeLessThan(gb.indexOf('worldToScreen'));
+        const db = body(v, 'debug(): Record');
+        expect(db.indexOf('this.apply()')).toBeGreaterThan(-1);
+        expect(db.indexOf('this.apply()')).toBeLessThan(db.indexOf('worldToScreen'));
     });
 });
 

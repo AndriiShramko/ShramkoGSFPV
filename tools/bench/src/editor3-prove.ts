@@ -24,12 +24,12 @@ type Dbg = {
     stand: { pos: number[]; quat: number[]; scale: number; opening: number; screen: number[] };
     axes: { x: number[]; y: number[]; z: number[] };
     gates: number[][];
-    cam: { pos: number[]; speed: number };
+    cam: { pos: number[]; speed: number; gap?: number };
     dragging: boolean;
     mode?: string;
     tool?: string;
 };
-type Ed = { open?: boolean; selected?: number; changed?: boolean; problems?: number; said?: string; view?: { eye: number[]; at: number[] } | null };
+type Ed = { open?: boolean; selected?: number; changed?: boolean; problems?: number; said?: string; view?: { eye: number[]; at: number[] } | null; reframe?: unknown };
 type Hook = { gates?: number; on?: boolean; next?: number; laps?: number; problem?: string | null; editor?: Ed };
 type W = {
     __gsfpv?: { status?: string; course?: Hook; controls?: { source?: string; gate?: { armed?: boolean } }; radio?: { wizard?: { state?: { id?: string } } } };
@@ -287,7 +287,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         d1 = (await dbg(page))!;
         cand = pick2(d1);
     }
-    const clicks: unknown[] = [{ backs, cand: cand.length }];
+    const clicks: unknown[] = [{ backs, cand: cand.length, camGap: d1.cam.gap ?? null }];
     for (const { g, i } of cand.slice(0, 3)) {
         await page.mouse.click(g[0]!, g[1]!);
         const c = await until(() => ed(page), (e) => e.selected === i, 2500);
@@ -403,7 +403,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (!w) { sc.push({ drag: [dx, dy], hit: null }); continue; }
         await drag(page, w.x, w.y, dx!, dy!);
         const b = (await dbg(page))!;
-        sc.push({ drag: [dx, dy], r: w.r, hit: w.hit, opening: [r2(a.stand.opening), r2(b.stand.opening)], movedM: r2(dist(a.stand.pos, b.stand.pos)), quatChange: r2(dist(a.stand.quat, b.stand.quat)) });
+        // fixes3 pass 2 (left a): the boxes E1's reframe decision saw, and the eye before and after the 0.4 s glide
+        await sleep(700);
+        const c = (await dbg(page))!;
+        sc.push({ drag: [dx, dy], r: w.r, hit: w.hit, opening: [r2(a.stand.opening), r2(b.stand.opening)], movedM: r2(dist(a.stand.pos, b.stand.pos)), quatChange: r2(dist(a.stand.quat, b.stand.quat)), reframe: (await ed(page)).reframe ?? null, eyeMovedM: r2(dist(b.cam.pos, c.cam.pos)), camGap: [a.cam.gap ?? null, b.cam.gap ?? null] });
         if (Math.abs(a.stand.opening - b.stand.opening) > 0.01) break;
     }
     out.scale = sc;
