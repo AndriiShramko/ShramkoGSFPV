@@ -477,3 +477,56 @@ Not verified
 
 Cost notes: most turns went to waiting for the probe script (about 75 minutes); running the gates first and the probes
 after them kept one script and no reruns, but the gates' vitest still met the build's load.
+
+## Integration E (the edit mode; START / FINISH and the lap's time; scans and elements)
+
+Status (integration E worker 1 stopped at a clean point; a fresh worker continues from "Left"):
+- [x] Merged fix3a 601a1151 with --no-ff: 44d76fce (no conflict).
+- [x] Merged editor3 8ea44111 with --no-ff: 8b4d7eb3. Conflicts in apps/fly/src/app/builtin/course.ts (frame(): the
+      editing flag of editor3 and run.byEar of lane mix kept; the guide keeps fix3a's gate role) and
+      apps/fly/src/course/view.ts (fix3a's START / FINISH paints kept, the selected gate takes the editor's yellow).
+      The fly/course locales merged by themselves (all four).
+- [x] Seam a in the same commit: the editor's test flight shows the lap clock, its splash and the guide to the next gate
+      again (apps/fly/src/course/editor/fly-mode.ts flyShows(true).lapClock true); the best lap is still not written there
+      (course.ts 'end.best && shows.writeBest'); the edit view hides the clock, the splash and the guide (showEd calls
+      hud.update(null), which clears both). Test tools/bench/test/editor3-flying.test.ts 13 of 13; negative control with
+      fly-mode.ts of 8ea44111: NEG OK.
+- [x] Seam b: git diff 4e6ef171..HEAD -- apps/fly/src/session lists no file. Seam d: docs/decisions.md has no change
+      since 4e6ef171 (no new numbers).
+- [~] Gates: gates.py started on 8b4d7eb3 (log U:/Temp/gsfpv-train3/e/gates1.log).
+- [~] Release build and probes: U:/Temp/gsfpv-train3/e/run.sh runs detached (summary U:/Temp/gsfpv-train3/e/summary.txt,
+      one line per probe with its exit code; logs beside it; evidence JSON in evidence/2026-11-15/train3e/; raw shots in
+      U:/Temp/gsfpv-train3/shots/train3e-raw). It builds, copies the nine published wall folders into dist/walls, serves
+      5760, runs the editor chain (editor3-prove.ts FULL=1, one lock hold per scene, Wroclaw then Tunis; its own pictures
+      go to U:/Temp/gsfpv-train3/shots/editor3-*-1920.png), course-path both scans, gate-guide (Shift+G Wroclaw),
+      course-finish (3 sizes), course-keys, pause-over-course, save-check with --push on both scans, mouse-free,
+      walls-store Tunis, walls-published, onecourse, d7, quiet-probe narrator off, tracks-page, accept-fly B6-B16, then
+      sonic-int-review r9, r11 (Z5_COURSE_FIRST on and with the narrator off, Shift+G Wroclaw and Tunis), r12 on ports
+      5761-5766. It writes ALLDONE as its last line. Do not start it again while it runs (check with ps for run.sh).
+
+Deploy order for the lead (from git diff --stat 4e6ef171..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api
+apps/rooms packages/i18n/locales): only packages/i18n/locales/fly/course/{en,es,pl,ru}.json changed, and they ship in the
+static site bundle. nginx: no. API: no file for release-api.sh, no --locales (it carries only apps/api/locales and the
+bot and mail locales). rooms: no. Then ship the static release.
+
+Left (exact, in order):
+1. Read gates1.log tail (exit 0; 'B18 PASS'); fix a seam if a gate fails.
+2. Seam d of the brief (the three turn rings): editor3-prove.ts measures each ring by the view's stand-in quaternion
+   (src/editor3-prove.ts lines 337-354, drags of 60 and 140 px), which is what review EJ-1 called self-checking. Needed: the
+   gate's own rotation read before and after a 100 px drag along each ring, at least 20 degrees each, on both scans.
+   No hook gives the selected gate's flown rotation today (edHook fields in apps/fly/src/app/builtin/course.ts near line
+   865); the smallest change is one hook field there (the selected gate's flown pose from gateFlownPose) plus the probe
+   reading it. If a ring turns nothing after ONE seam-size repair: reset main to 44d76fce, release fix3a alone, say so first.
+3. When summary.txt has ALLDONE: read each line; pictures train3e-editor.png, train3e-editor-element.png,
+   train3e-start-gate.png, train3e-lap-splash.png, train3e-elements.png (copy from the raw shots after looking at them;
+   the flat square selected and the START gate beside an ordinary one may need one extra page shot).
+4. Probes not in run.sh yet: centre-throttle-probe all, rooms-two-page, wizard-auto-check, hid-source-probe,
+   governor-start-probe (in the lock), lod-view-probe on and off once. Skip the rc2 bridge (port 47310).
+5. deploy/live-checks.sh: the three read-only checks of the brief (edit mode on Wroclaw without Save; START role of gate 1
+   after Shift+G; Fly by Sound over an ordinary-flight course aims at its next gate), after reading each probe's source.
+6. The rest of this section (Gates, Probes, Live checks, Pictures, What the owner should try, Not verified with the brief's
+   known list), commit evidence JSON (not PNG), full gates with leaks as a separate command, plain push of main.
+
+Cost notes: worker 1 used most turns on finding the probe recipes in the lanes' long status files and temp folders
+(mix/chain3.sh, editor3/fx3c/chain.sh, int-d/run.sh were the useful ones); a per-lane 'how to rerun' block would save
+about 6 turns.
