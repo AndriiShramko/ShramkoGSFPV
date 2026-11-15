@@ -292,6 +292,32 @@ Stage F2-fast-course (train 3 wave 2: a course in under 15 s in Node and 30 s in
   3776405 to be less than 2000000" against origin sweeps; "expected 966800 to be less than 20000" against 4296447d).
   All packages/tracks tests 111/111 (digest pins of generate, fit, fixtures hold: the answers are the same, so no seed's
   course changed). tsc packages/tracks: 0 errors.
+- [x] ffabfed4 CR-3: COURSE_TRY_MS_5CM 3100 (mean of 3336 and 2905 ms, the after2 profile runs, GPU lock held),
+  COURSE_CELL_EXPONENT 0.9 (10 cm 0230d903 2.4-4.9 s and 20 cm eb5f51dc 0.54-1.38 s a try, 3 seeds each,
+  course-quality-audit.ts --quality, measured under load without the lock: other agents held it), FREE_SPACE_MS 5100
+  (Wroclaw qualityMap 1547 + freeSpace 3547 ms). course-progress.test.ts 15/15; neg_control.py --ref HEAD (progress.ts):
+  NEG OK ("expected 5863 to be less than 5000"). tsc apps/fly: 0 errors.
+- [x] CR-1 8040b428: apps/api/tests/fixtures/tracks/valid-generated-quality.json, a 24-gate course laid over the quality map
+  (generator version '2', params only the server's keys) by tools/bench/src/course-fixture-quality.ts; the API's own test
+  apps/api/tests/test_tracks.py (every valid-*.json accepted) 19 passed, packages/tracks fixtures.test.ts 50 passed. No API
+  file changed (CR-1 was fixed in the generator, d74ed4b6). CR-6 stands as d74ed4b6 left it (no new evidence).
+- [x] Browser proof (release of 39c6b0da plus the CR-3 constants at 5 cm, 1930 files, serve-csp 5725, NOBOT=1, GPU lock
+  only around each probe; runner U:/Temp/gsfpv-train3/course3/f2/web/run.sh, results f2/web/path-<scan>.json, shots
+  U:/Temp/gsfpv-train3/shots/course3-{wroclaw,tunis}-*.png). Facts F2-web.
+- [x] CR-5 line: races in rooms stay as they are (decision of the lead), For the lead corrected.
+
+## Facts F2-web (the owner's path, page, 2026-11-15 03:39-03:44)
+
+- Wroclaw 70b50d42 (stand-in walls 5 cm in dist/walls): course 4.7 s after Shift+G (pass mark 30 s; before F2 40.5 s in G4
+  and 106.4 s from Shift+G with the build in F1), 24 gates, span 128.2 m, gate heights above the ground 2.3-5.65 m; lines
+  "finding the free space ... about 0:10 left" 0.1-3.1 s, "placing the gates and obstacles ... 62 %" from 3.6 s; one long
+  task of 54 ms; the line never stood still more than 1.0 s; 0 page errors. Gates 1-3 passed (clock 0:00.43, 1.43, 2.40);
+  crash into a wall at 12 m/s, respawn kind 'rewind', next gate kept (3), clock 10.57 then 12.56 s (runs on); R: gate 1,
+  clock 0:00.00. Looked at course3-wroclaw-top.png (gates along the street over about 130 m, all green or yellow) and
+  course3-wroclaw-pilot.png (street at eye level, gate 1 ahead, HUD "Gate 1 of 24").
+- Tunis 887f27aa: course 3.5 s, 24 gates, span 98.6 m, heights 1.8-4.05 m (3 gates without ground under them within
+  80 m); 0 long tasks; maxSilentS 1.0; 0 errors. Gates 1-3 passed; crash, 'rewind', next 3 kept, clock 10.93 then 12.93 s;
+  R: gate 1, 0:00.00.
 
 ## Facts (measured)
 
@@ -435,8 +461,22 @@ G4-prove (release of 8c1dfd71, serve-csp 5721, headless, GPU lock; U:/Temp/gsfpv
 - G3: builtin/course.ts carries a third hunk of this lane (the 'sim' crash reset is gone, the 'life' listener calls
   courseLife). Rooms were not changed (CR-5 corrects the earlier line here): apps/fly/src/rooms/race-page.ts:53 still runs
   ctx.events.on('life', () => this.run?.reset()), so in a room every life, a crash respawn at the last place included,
-  restarts the race attempt. Decide: keep that (one rule for every racer) or give race-page.ts the solo courseLife plus
-  afterLife call (outside this lane).
+  restarts the race attempt. Decided by the lead (train 3 wave 2): races in rooms stay as they are (they restart with
+  every life; rooms are switched off in the product).
+- F2 hooks for lane editor3 (join at integration): packages/tracks/src/editor.ts EditAction { kind: 'add', pos: Vec3,
+  quat: Quat } (course frame as TrackGate.pos and .quat; inserted after the selected gate with the selected gate's shape,
+  next free id, selected afterwards; refused 'max-gates' at MAX_GATES_EDIT and 'placement' on a new placement problem;
+  undo kept). apps/fly/src/course/grid.ts exports metadataOf(grid, nodes, leaf) and CourseGrid without side effects
+  (check-worker.ts can import it instead of its copy). apps/fly/src/course/hook.ts CourseEditorHook.flying?: readonly
+  boolean (only the field; the editor's wiring in builtin/course.ts sets it). One line of this lane in editor3's folder:
+  apps/fly/src/course/editor/texts.ts ACTION_KEYS.add = 'course.edit.key.insert' (its Record over EditAction kinds needs a
+  key; editor3 may point it at course.edit.bar.add).
+- F2: no API file is needed for a release by this stage: apps/api/tracks.py PARAM_KEYS already holds every key a course
+  over the quality map writes (only a new test fixture under apps/api/tests/fixtures/tracks).
+- F2: check.ts sweeperOf now answers through sweepFree and occupancy.ts for every caller (checkTrack: the generator, the
+  page's check of a served course, the editor's wallsCheck). The answers are the same as sweepOne's (tests on random
+  segments and spheres); the first sweep on a walls object builds the super block bits (Wroclaw 1.7 s in Node, about
+  6 MB of Uint32Array for 5 cm walls of 295 x 375 x 25 m; 0.15 s on Tunis).
 
 ## Not verified
 
