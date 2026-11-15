@@ -43,6 +43,8 @@ export interface StreamStats {
     loading: number;
     /** files waiting for their pause before they are asked again */
     retrying: number;
+    /** files that failed or stalled at least once and are still to come (waiting for their pause, queued or loading again) */
+    troubled: number;
     /** files given up after the last pause (retryAll asks them again) */
     givenUp: number;
     /** queued + loading + retrying: what is still to come */
@@ -79,6 +81,7 @@ export class StreamKeeper {
     private readonly given = new Set<string>();
     private arrivals: number[] = [];
     private queued = 0;
+    private troubled = 0;
     private loading = 0;
     private failures = 0;
     private stalls = 0;
@@ -147,6 +150,11 @@ export class StreamKeeper {
         if (this.arrivals.length > 0 && this.arrivals[0] < from) this.arrivals = this.arrivals.filter((t) => t >= from);
         this.queued = (l._loadQueue as Map<string, number>).size;
         this.loading = loading.size;
+        // a file that failed once and is not yet back: waiting for its pause, or queued or loading again
+        const queue = l._loadQueue as Map<string, number>;
+        let troubled = 0;
+        for (const url of this.tries.keys()) if (!this.given.has(url) && (this.waitUntil.has(url) || loading.has(url) || queue.has(url))) troubled++;
+        this.troubled = troubled;
     }
 
     /** Every file given up is asked again, with its tries from the start (the line's Try again press). */
@@ -171,6 +179,7 @@ export class StreamKeeper {
             queued: this.queued,
             loading: this.loading,
             retrying,
+            troubled: this.troubled,
             givenUp: this.given.size,
             pending: this.queued + this.loading + retrying,
             failures: this.failures,

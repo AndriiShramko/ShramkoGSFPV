@@ -26,6 +26,7 @@ function input(ctx: FlightContext): DetailInput {
         drawnM: ctx.renderer.lodState().drawn / 1e6,
         pending: s.pending,
         retrying: s.retrying,
+        troubled: s.troubled,
         givenUp: s.givenUp,
         filesPerSec: s.filesPerSec,
         still: ctx.quality.stillBudgetMillions > 0

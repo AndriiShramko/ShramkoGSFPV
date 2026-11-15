@@ -46,6 +46,8 @@ const DELAY = Number(env.DELAY || 0);
 const DROP = Number(env.DROP || 0);
 const DROPTRIES = Number(env.DROPTRIES || 3);
 const STALL = Number(env.STALL || 0);
+// STALLTRIES: only the first k requests of a stalled file go unanswered (unset: every request, a file that never comes)
+const STALLTRIES = env.STALLTRIES !== undefined ? Number(env.STALLTRIES) : Infinity;
 const UP = env.UP !== undefined ? Number(env.UP) : null;
 const PITCH = Number(env.PITCH || -35);
 const SHOTS = (env.SHOTS || '').split(',').filter(Boolean).map(Number);
@@ -184,7 +186,7 @@ if (DROP || STALL) {
             res.files.dropped++;
             return route.fulfill({ status: 503, body: 'dropped by loadq-probe' });
         }
-        if (STALL && e.n % STALL === 0) {
+        if (STALL && e.n % STALL === 0 && e.tries <= STALLTRIES) {
             res.files.stalled++;
             stalled.push(route);
             return;

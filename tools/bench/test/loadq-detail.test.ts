@@ -61,6 +61,15 @@ describe('G2: the detail line', () => {
     });
 });
 
+describe('G3: a file that stalled and is asked again', () => {
+    it('the line names the network while a file that failed once is loading again, not only during its pause', () => {
+        const i = { ...base, retrying: 0, troubled: 3, pending: 163 };
+        expect(detailState(i)).toBe('network');
+        expect(detailLine('network', i, say).text).toBe('detail.network {"files":3}');
+        expect(detailState({ ...i, handSet: false })).toBe('network');
+    });
+});
+
 describe('G6: more detail while the craft is still', () => {
     const rest: StillSample = { now: 0, paused: false, speed: 0.05, turnDegS: 2, roll: 0, pitch: 0, yaw: 0, throttle: -0.1, frameMs: 10 };
     /** frames of `ms` each for `secs` seconds at 100 frames a second; the budgets after each frame */

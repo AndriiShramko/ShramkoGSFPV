@@ -40,10 +40,23 @@ Stage L2-build
     and no stall cut: "expected 500 to be greater than or equal to 1000", "expected true to be false"; G4 guard
     removed: "expected 'coming' to be 'hidden'". tsc of render-pc and apps/fly exit 0; check-architecture ok;
     a1-api-check 71 checked, no problems.
-- [~] 2. G6 (bar passed in L1), code and unit tests in the G6 commit; browser pictures left.: still detection (speed under 0.3 m/s, turn under 15 deg/s for 1 s, or paused), the
-  x1.5 a second rise under a 66 ms median frame and the memory cap, back in the same frame on a stick move, a
-  setting to switch it off (new pref: defs + set.* label in four locales + defs.test list + catalogue tables), its unit
-  tests with negative controls, pictures loadq-still-before.png and loadq-still-after.png (Lublin from above, 0.5 M).
+- [x] 2. G6 built (000b96fd; probe switches 592243c2): apps/fly/src/app/detail-rule.ts StillRise and stillCapM, used by
+  apps/fly/src/app/builtin/still.ts on every frame event (after Quality.frame, so a move is seen in the frame it happens
+  and the base is set on the engine before the next frame is drawn). Still = speed under 0.3 m/s, turn rate under 15
+  deg/s on every axis, roll, pitch and yaw sticks within 0.05 of centre and the throttle within 0.05 of where it was
+  when rest began (all estimates), for 1 s; or the flight paused (the end of a pause is a move). Then x1.5 each second
+  (as measured in L1) while the last second's median frame is under 66 ms (the lead's estimate), one step back when it
+  is not, up to the memory cap (navigator.deviceMemory under 4 GB or 4: 4 M; under 8 or unknown: 8 M; 8 (Chrome's
+  top answer): 16 M; estimate). While the still budget stands, Quality draws it at the top render scale and the
+  governor neither counts frames nor remembers a settled step (slow still frames are chosen, not missed). The line
+  says 'Detail: sharper while you hold still (2.5 M)' (state still, for every pilot). Setting: Settings, Display,
+  'More detail at rest' (display.stillDetail, bool, on by default, advanced; label and help in en, es, pl, ru; defs.ts
+  A8 row, V03_SHIPPED, count 83). The Splat budget help text now says a hand-set number is kept (G1) in all four.
+  Tests: tools/bench/test/loadq-detail.test.ts 6 new (13 pass), prefs tests 273 pass, fly-parity pass, app-play,
+  drawing-ask, public-ranges, app-lod, governor-start 61 pass; tsc apps/fly and packages/prefs exit 0. Negative controls
+  by mutation (the rule is new): move ignored: 'expected 3.796875 to be +0'; frame bound ignored: 'expected 5.6953125 to
+  be less than 1.6875'; line state removed: "expected 'hidden' to be 'still'". gen-catalog --check says the catalogue
+  outputs are stale for the new setting (only the lead runs gen-catalog; see For the lead).
 - [ ] 3. Release build of the change, then the browser proof on Wroclaw 70b50d42 (holds of at most 10 min, probe
   tools/bench/scripts/loadq-probe.mjs, port 5820): 16 M by hand reaches 15.59 M and the line says full; DROP=10 (3
   tries) and STALL=10 end full with the line showing the retries; the +30 ms frame run: the line says kept, the press

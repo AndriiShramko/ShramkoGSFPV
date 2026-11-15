@@ -83,6 +83,7 @@ describe('StreamKeeper', () => {
         expect(l.processed).toBe(1);
         expect(k.stats().stalls).toBe(1);
         expect(k.stats().retrying).toBe(1);
+        expect(k.stats().troubled).toBe(1);
         // the answer arrives during the pause: kept, not asked again
         l.resources.set('slow', {});
         now += STREAM_RETRY_PAUSES_MS[0];
@@ -90,6 +91,30 @@ describe('StreamKeeper', () => {
         expect(l._failed.has('slow')).toBe(false);
         expect(l.unloaded).toEqual([]);
         expect(k.stats().retries).toBe(0);
+    });
+
+    it('counts a file that stalled as troubled while it is asked again, and not once it arrives', () => {
+        const k = new StreamKeeper();
+        const l = fakeLoader();
+        let now = 0;
+        l._currentlyLoading.add('dead');
+        k.tick(now, l);
+        now += STREAM_STALL_MS;
+        k.tick(now, l);
+        now += STREAM_RETRY_PAUSES_MS[0];
+        k.tick(now, l);
+        expect(l.unloaded).toEqual(['dead']);
+        expect(k.stats().retrying).toBe(0);
+        // the engine asks it again: loading again after a failure is still trouble the line names
+        l._currentlyLoading.add('dead');
+        now += 10;
+        k.tick(now, l);
+        expect(k.stats().troubled).toBe(1);
+        l._currentlyLoading.delete('dead');
+        now += 10;
+        k.tick(now, l);
+        expect(k.stats().troubled).toBe(0);
+        expect(k.stats().done).toBe(1);
     });
 
     it('counts arrivals, the slowest file and what is pending', () => {

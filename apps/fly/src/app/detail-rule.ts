@@ -63,6 +63,8 @@ export interface DetailInput {
     /** files still to come, waiting for a pause, given up (render-pc StreamStats) */
     pending: number;
     retrying: number;
+    /** files that failed or stalled once and are still to come (render-pc StreamStats.troubled) */
+    troubled?: number;
     givenUp: number;
     filesPerSec: number;
     /** G6: the craft is still and the detail has risen above the base (StillRise.boostM > 0), for every pilot */
@@ -72,7 +74,7 @@ export interface DetailInput {
 /** The state of the line. Network trouble shows for every pilot; the rest only for a budget set by hand (G4). */
 export function detailState(i: DetailInput): DetailState {
     if (i.givenUp > 0) return 'givenup';
-    if (i.retrying > 0) return 'network';
+    if (i.retrying > 0 || (i.troubled ?? 0) > 0) return 'network';
     if (i.still === true) return 'still';
     if (!i.handSet) return 'hidden';
     if (!i.released && i.keeperSlow) return 'kept';
@@ -117,7 +119,7 @@ export function detailLine(s: DetailState, i: DetailInput, say: Say): DetailLine
         case 'nofiner': return { text: say('detail.nofiner'), action: null, actionText: '' };
         case 'kept': return { text: say('detail.kept'), action: 'release', actionText: say('detail.release') };
         case 'lowered': return { text: say('detail.lowered', { drawn, top }), action: null, actionText: '' };
-        case 'network': return { text: say('detail.network', { files: i.retrying }), action: null, actionText: '' };
+        case 'network': return { text: say('detail.network', { files: Math.max(i.retrying, i.troubled ?? 0) }), action: null, actionText: '' };
         case 'givenup': return { text: say('detail.givenup', { files: i.givenUp }), action: 'retry', actionText: say('detail.retry') };
     }
 }
