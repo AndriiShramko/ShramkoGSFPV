@@ -543,6 +543,21 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 - [ ] QW-7 (minor): the lead decides what N6's "two lines" means. Now: two caption entries (CAPTION_LINES 2), each wraps freely.
   If rows are meant: .sonic-caption with -webkit-line-clamp 2 in sonic.css (the screen reader still gets the whole text). Not changed.
 - [x] QW-8: 'For the lead' below names every changed file outside apps/fly/src/sonic.
+- [x] Browser recheck on the release of db88e97c (exit 0, sha256 249a2dc9..., quiet2/w3-build.log), stand-in walls in dist/walls,
+  serve-csp 5760 (stopped), render off, no lock, NARRATOR=off KI=1 QUOTE=1 FLY_S=15 (quiet2/w3-70b50d42-off.json, -887f27aa-; script
+  quiet2/w3-proof.sh). Wroclaw: course ready and hum of g1 +29.3 s after Shift+G (same sample); voiced after 0.1 s: only K's 14 lines
+  (52.61 s), I's 2 and Shift+V's narratorOn (17 in all); #ui announced from the switch on to Shift+V: 4 (was 7), all at 0.14 s
+  (DISARMED, ANGLE, volts, THR line). Tunis: course +6.9 s, voiced the same 17, #ui 6 (was 5): "on" and "55 %" at 0.00 s and the
+  same 4 HUD lines at 0.13 s. The recorder's region no longer counted (hidden). 0 page errors in both.
+- [ ] Left of QW-5 (measured, cause a guess): the HUD burst at 0.13 to 0.14 s stays. The host's lesson is null in the 0.14 s sample,
+  so flightLessonOf should already answer scan-free; a guess is that the HUD writes before feature.ts's install (the mode's chunk is
+  loaded by apps/fly/src/sonic/in-place.ts loadMode, after the Backslash), or that bridge.paused is true at the install sync. Next:
+  log the install time and quietFlight's three inputs at the install sync in the probe, then fix in in-place.ts (quiet #ui at the
+  Backslash press when the narrator is off) or in feature.ts.
+- [ ] Left (proof stage): (9) ?sonic=scan in three settings (QW-3 is unit-tested only; quiet-probe opens in place only); a lap and
+  the course's end with the narrator off in a browser (QW-1: r11 ear pilot with Z5_NARRATOR=off); Shift+G that fails (QW-2: no cheap
+  way found to make generation fail on a catalogue scan); the W2 list items (1), (2), (5) to (8), accept-fly, pause-over-course-probe,
+  the pictures and caption rectangles; N3 and QW-7 by the lead; QW-4 by the lead.
 
 ### For the lead (lane quiet2, whole branch against origin/main)
 - Changed outside apps/fly/src/sonic: apps/fly/src/app/say-via.ts (quietCue, quiet lines); apps/fly/src/app/builtin/course.ts (lane
@@ -585,6 +600,9 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   tools/bench: 0 errors in the two tools).
 
 ## Cost notes
+- 2026-11-15 fixes (quiet2): most replies went to reading where each line is said (course.ts, walls.ts, start.ts, entry.ts, panel.ts)
+  and to digging the probe's JSON by hand (events in ms, live in s); a quiet-summary line with the live and voiced counts after the
+  switch on would have saved three replies.
 - 2026-11-15 W2 (quiet2): Q7 had to be built before the proof (6 replies, mostly Edit's read-before-edit); the stage's proof list
   (9 items, 2 pictures, 5 probes) does not fit 30 replies with one worker: one stage per 2 or 3 items, and r11 with a narrator switch
   ready before the stage, would have made it fit.
