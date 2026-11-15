@@ -54,6 +54,19 @@ const STILL = env.STILL !== undefined ? Number(env.STILL) : null;
 const STILLMS = Number(env.STILLMS || 66);
 const STILLMAX = Number(env.STILLMAX || 16);
 const UIAT = env.UIAT !== undefined ? Number(env.UIAT) : null;
+// L2 switches: STILLOFF=1 (the product's G6 "More detail at rest" off from the reveal, to compare with L1), PRESSAT (s after
+// the reveal: press the detail line's button when shown), MOVEAT (s after the reveal: push the craft to 2 m/s in one frame and log every
+// frame's sticks, speed and engine budget: how many frames the base takes to come back), UISTATES (state:name,...: one
+// picture with the notes, to the shots dir, the first time the detail line is shown in that state)
+const STILLOFF = env.STILLOFF === '1';
+const PRESSAT = env.PRESSAT !== undefined ? Number(env.PRESSAT) : null;
+const MOVEAT = env.MOVEAT !== undefined ? Number(env.MOVEAT) : null;
+const UISTATES = (env.UISTATES || '').split(',').filter(Boolean).map((x) => x.split(':'));
+const MOVELOG = `(() => {
+    const h = window.__gsfpv; const s = h.session; const a = s.renderer.app; window.__mv = [];
+    const tick = () => { const sim = s.runner.sim; const v = sim.s; if (window.__mv.length === 10) v[3] += 2; window.__mv.push([performance.now(), sim.ch[0], sim.ch[1], sim.ch[2], sim.ch[3], Math.hypot(v[3], v[4], v[5]), Math.round(a.scene.gsplat.splatBudget / 1e4) / 100, a.stats.frame.gsplats]); if (window.__mv.length < 600) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick); return true;
+})()`;
 const vw = Number(env.VW || 1920);
 const vh = Number(env.VH || 1080);
 const OUT = 'U:/Temp/gsfpv-train3/loadq';
@@ -91,6 +104,7 @@ const STATE = `(() => {
     const d = h.drawing; if (d) { out.from = d.from && d.from.budget; out.topM = d.budgetM; out.setting = d.budgetSetting; out.cls = d.class; }
     const g = h.governor; if (g) { out.govStep = g.step; out.govM = Math.round(g.current.splatBudgetMillions * 100) / 100; out.govOn = g.enabled; out.scale = g.current.renderScale; }
     out.renderScale = r.renderScale;
+    try { if (h.detail) { const d = h.detail(); out.detail = { state: d.state, shown: d.shown, text: d.text, action: d.action, stream: d.stream }; } if (h.still) out.still = h.still(); } catch (e) { out.detailErr = String(e).slice(0, 80); }
     try { const l = h.lod && h.lod(); if (l) { out.settingM = Math.round(l.settingBudgetM * 100) / 100; out.lodMode = l.mode; out.levels = l.levels; out.view = l.view && l.view.active; out.contentFailures = l.contentFailures.length; } } catch (e) { out.lodErr = String(e).slice(0, 80); }
     const inst = ${INSTANCE};
     if (inst) {
@@ -211,6 +225,33 @@ try {
             await page.addStyleTag({ content: '#ui.loadq-hide { visibility: hidden !important; }' }).catch(() => {});
             res.hold = await page.evaluate(HOLD(UP, PITCH)).catch((e) => ({ error: String(e.message) }));
             if (DELAY) await page.evaluate(`window.__gsfpv.setFrameDelay(${DELAY})`).catch(() => {});
+            if (STILLOFF) res.stillOff = await page.evaluate("JSON.stringify(window.__gsfpv.prefs.set('display.stillDetail', false))").catch((e) => String(e.message));
+        }
+        const ds = st.detail;
+        for (const [want, name] of UISTATES) if (ds && ds.shown && ds.state === want && !(res.uiStates ||= {})[want]) {
+            await page.screenshot({ path: `U:/Temp/gsfpv-train3/shots/${name}.png` });
+            res.uiStates[want] = { at: r2(revealAt === null ? null : (Date.now() - revealAt) / 1000), text: ds.text, action: ds.action };
+        }
+        if (revealAt !== null && PRESSAT !== null && !res.press && (Date.now() - revealAt) / 1000 >= PRESSAT && ds && ds.shown && ds.action) {
+            const before = { state: ds.state, text: ds.text, govM: st.govM, engineBudgetM: st.engineBudgetM };
+            const ok = await page.click('[data-action="detail-press"]', { timeout: 3000 }).then(() => true, (e) => String(e.message).slice(0, 100));
+            await sleep(1500);
+            const after = await page.evaluate(STATE).catch(() => ({}));
+            res.press = { at: r2((Date.now() - revealAt) / 1000), ok, before, after: { state: after.detail && after.detail.state, text: after.detail && after.detail.text, govM: after.govM, engineBudgetM: after.engineBudgetM, scale: after.renderScale } };
+        }
+        if (revealAt !== null && MOVEAT !== null && !res.move && (Date.now() - revealAt) / 1000 >= MOVEAT) {
+            res.move = { at: r2((Date.now() - revealAt) / 1000), still: st.still };
+            await page.evaluate(MOVELOG);
+            await sleep(200);
+            // the craft pushed to 2 m/s in the 11th logged frame (MOVELOG): a move as the still rule sees it
+            await sleep(1500);
+            const log = await page.evaluate('window.__mv').catch(() => []);
+            const moved = log.findIndex((x) => Math.abs(x[1]) >= 0.05 || Math.abs(x[2]) >= 0.05 || Math.abs(x[4]) >= 0.05 || x[5] >= 0.3);
+            const back = moved < 0 ? -1 : log.findIndex((x, i) => i >= moved && x[6] <= (st.still ? st.still.baseM : 0) + 0.01);
+            res.move.frames = log.length; res.move.movedFrame = moved; res.move.baseBackFrame = back;
+            res.move.framesToBase = moved >= 0 && back >= 0 ? back - moved : null;
+            res.move.around = moved >= 0 ? log.slice(Math.max(0, moved - 2), moved + 4).map((x) => x.map((v) => r2(v))) : log.slice(0, 3);
+            res.move.drawnAfter = [0, 12, 30, 60].map((k) => (log[moved + k] ? log[moved + k][7] : null));
         }
         const since = revealAt === null ? null : (Date.now() - revealAt) / 1000;
         row.sinceReveal = since === null ? null : r2(since);
@@ -283,5 +324,5 @@ for (const r of stalled) r.abort().catch(() => {});
 res.files.distinct = distinct.size;
 writeFileSync(join(OUT, `${label}.json`), JSON.stringify(res, null, 1));
 const e = res.end || {};
-console.log(JSON.stringify({ label, gpuBefore: res.gpuBefore && res.gpuBefore.utilPct, revealS: res.revealS, settled: res.settledSinceRevealS, drawn: e.drawn, engineBudgetM: e.engineBudgetM, topM: e.topM, from: e.from, govStep: e.govStep, govM: e.govM, scale: e.renderScale, area: e.areaLevel, want: e.areaWanted, queue: e.queue, inFlight: e.inFlight, givenUp: e.givenUp, pending: e.pending, files: res.files, vramMB: e.vramMB, fail: res.fail, errors: res.errors.length }));
+console.log(JSON.stringify({ detail: e.detail && [e.detail.state, e.detail.text, e.detail.stream], still: e.still, press: res.press, move: res.move && { framesToBase: res.move.framesToBase, movedFrame: res.move.movedFrame, drawnAfter: res.move.drawnAfter, still: res.move.still }, uiStates: res.uiStates, label, gpuBefore: res.gpuBefore && res.gpuBefore.utilPct, revealS: res.revealS, settled: res.settledSinceRevealS, drawn: e.drawn, engineBudgetM: e.engineBudgetM, topM: e.topM, from: e.from, govStep: e.govStep, govM: e.govM, scale: e.renderScale, area: e.areaLevel, want: e.areaWanted, queue: e.queue, inFlight: e.inFlight, givenUp: e.givenUp, pending: e.pending, files: res.files, vramMB: e.vramMB, fail: res.fail, errors: res.errors.length }));
 await browser.close();
