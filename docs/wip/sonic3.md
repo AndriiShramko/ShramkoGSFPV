@@ -5,6 +5,15 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage Y2-prove (train 3 wave 2, finishing):
+- [x] Y1 LEFT 1: a course made with N over an in-place flight keeps the pilot's crash rule and bump (mode.ts ModeStart.keepRules,
+  lessons.ts passes `free !== null && freeHere`), so the switch off after it starts no new life (bbb26df8). Test sonic-in-place
+  "a course made with N over an in-place flight": NEG OK on HEAD mode.ts and lessons.ts (bump 'slide' after the course opened);
+  sonic-in-place + sonic-scan-course + sonic-mode 24 of 24; apps/fly tsc 0 errors; a6-reference 1 of 1 (hash unchanged).
+- [x] Probe r12 (9f93a023): the speed lessons opened from their links and flown by the hum to their end, one page per lesson.
+- [~] Browser runs (U:/Temp/gsfpv-train3/sonic3/y2-browser.sh, release of 9f93a023, ports 5825 and 5826, log y2-browser.log):
+  r11 Tunis 5 and 2, Wroclaw stand-in 5 and 2, Housefly built 3; r12 speed-1..4; accept-fly B6 B7 B9..B16; mouse-free-probe.
+
 Stage Y1-switch-and-pins (train 3 wave 2):
 - [x] Before run: release build of 2065b16d (1932 files), fixes-run.sh (r11 Tunis 887f27aa 5 m/s, port 5823, old probe), log
   z5-r11-tunis4.log / .json (run-4 evidence kept as z5-r11-tunis4-run4.json): 6 of 8. Backslash to first cue 0.263 s, first
