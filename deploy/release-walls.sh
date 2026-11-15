@@ -20,13 +20,35 @@ if [ ${#IDS[@]} -eq 0 ]; then
   mapfile -t IDS < <(node -e "const m=require(require('path').resolve(process.argv[1],'manifest.json'));for(const [k,r] of Object.entries(m)) if(r.ok) console.log(k)" "$DIR")
 fi
 fail=0
+# room on the hub first: the payload must fit three times over and leave 2 GiB, else nothing is sent
+need=0
+for id in "${IDS[@]}"; do
+  for f in "$DIR/$id"/v*/scene.voxel.*; do [ -f "$f" ] && need=$((need + $(wc -c < "$f" | tr -d ' '))); done
+done
+avail=$("${SSH[@]}" "df -B1 --output=avail $B | tail -1" | tr -d ' \r')
+echo "payload bytes=$need hub free bytes=$avail"
+if [ -z "$avail" ] || [ "$avail" -lt $((need * 3 + 2147483648)) ]; then echo "STOP: not enough room on the hub"; exit 1; fi
 for id in "${IDS[@]}"; do
   for vdir in "$DIR/$id"/v*; do
     [ -f "$vdir/scene.voxel.json" ] && [ -f "$vdir/scene.voxel.bin" ] || { echo "$id: no scene.voxel.json + .bin in $vdir"; fail=1; continue; }
     v=$(basename "$vdir")
     R="$B/releases/walls/$id/$v"
-    "${SSH[@]}" "mkdir -p $R && chmod a+rx $B/releases/walls $B/releases/walls/$id $R"
-    for f in scene.voxel.bin scene.voxel.json; do
+    "${SSH[@]}" "mkdir -p $R && chmod a+rx $B/releases/walls $B/releases/walls/$id $R && rm -f $R/scene.voxel.bin.gz"
+    # the bin first, then its .gz (nginx gzip_static serves it to a browser that accepts gzip), the json last
+    FILES=(scene.voxel.bin); [ -f "$vdir/scene.voxel.bin.gz" ] && FILES+=(scene.voxel.bin.gz); FILES+=(scene.voxel.json)
+    for f in "${FILES[@]}"; do
+      if [ "$f" = scene.voxel.bin.gz ]; then
+        scp -q -P "$GSFPV_PORT" -i "$KEY" -o BatchMode=yes "$vdir/$f" "$GSFPV_HOST:$R/.$f.tmp"
+        "${SSH[@]}" "chmod a+r $R/.$f.tmp && mv -f $R/.$f.tmp $R/$f"
+        L=$(sha256sum "$vdir/$f" | cut -d' ' -f1)
+        H=$("${SSH[@]}" "sha256sum $R/$f" | cut -d' ' -f1)
+        W=$(curl -s -H 'Accept-Encoding: gzip' "$SITE/walls/$id/$v/scene.voxel.bin" | sha256sum | cut -d' ' -f1)
+        size=$(wc -c < "$vdir/$f" | tr -d ' ')
+        echo "$id/$v/$f bytes=$size local=${L:0:12} hub=${H:0:12} gzip-served=${W:0:12}"
+        if [ "$L" != "$H" ]; then echo "STOP: $id/$v/$f differs on the hub"; fail=1; fi
+        if [ "$L" != "$W" ]; then echo "WARN: $id/$v the site does not serve the .gz to a gzip client (the bin goes raw)"; fi
+        continue
+      fi
       scp -q -P "$GSFPV_PORT" -i "$KEY" -o BatchMode=yes "$vdir/$f" "$GSFPV_HOST:$R/.$f.tmp"
       "${SSH[@]}" "chmod a+r $R/.$f.tmp && mv -f $R/.$f.tmp $R/$f"
       L=$(sha256sum "$vdir/$f" | cut -d' ' -f1)

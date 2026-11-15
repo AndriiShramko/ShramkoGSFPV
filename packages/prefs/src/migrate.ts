@@ -48,7 +48,10 @@ export const MACHINE_LOCAL_KEYS: Readonly<Record<string, string>> = {
     'gsfpv.nextUsed.v1': "whether this browser already used the next-scene key, so the crash hint stays away; a fact about this browser, not a pilot's choice",
     // apps/fly devices/usb-look.ts (train 1c lane rc2): '1' once this browser opened the page with ?rcbridge=1, so the
     // Controls screen offers the RC bridge (a program on this computer, tools/rc-bridge) until ?rcbridge=0.
-    'gsfpv.rcBridge': "whether this browser was told to offer the RC bridge, a program that runs on this computer only; a fact about this machine, not a pilot's choice"
+    'gsfpv.rcBridge': "whether this browser was told to offer the RC bridge, a program that runs on this computer only; a fact about this machine, not a pilot's choice",
+    // packages/render-pc governor.ts (train 3 lane laptop3, R32): the frame governor's step this machine settled at,
+    // keyed by device class and GPU name, so the next load starts there instead of missing frames on the way down.
+    'gsfpv.governor.start': "the frame governor's step this machine's GPU settled at, a measurement of this computer, not a pilot's choice"
 };
 
 export interface LegacyBag { format: 'gsfpv-legacy'; version: 0; keys: Record<string, string> }

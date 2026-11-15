@@ -69,6 +69,37 @@ run rc2-probe-usb-refused locked node scripts/rc2-probe.mjs "$SITE/en" "$OUT/rc2
 run walls-published-probe locked node scripts/walls-published-probe.mjs "$SITE/en" "$OUT/walls-published-probe.json" 70b50d42,ab5efa0e,9baef54b
 # train 2: the sound page carries its five figures (a GET, nothing pressed)
 run sound-page-figures bash -c 'n=$(curl -s -m 30 "$SITE/en/sound/" | grep -o "class=\"sound-fig" | wc -l); echo "figures: $n"; [ "$n" -ge 5 ]'
+# train 3 (integration A, docs/wip/train3-lead.md): the frame-priority view rule (D91) on two streamed scans, and the
+# engine's own rule with &viewlod=0. lod-view-probe.mjs only reads (header: "nothing in the engine, it only reads"),
+# takes the GPU lock itself and writes evidence/<UTC date>/lod-view/<label>.json; the check reads page.lod.view and
+# product.engine from it. On: active, not failed, nothing missing, calls counted over the turns. Off: not active, penalty
+# 5, angle 90, multiplier 3.
+lodcheck() {
+  local f="$REPO/evidence/$(date -u +%F)/lod-view/$1.json"
+  node -e '
+const j = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+const v = (j.page && j.page.lod && j.page.lod.view) || {};
+const e = (j.product && j.product.engine) || {};
+console.log(JSON.stringify({ active: v.active, failed: v.failed, missing: v.missing, calls: v.calls, engine: e }));
+const ok = process.argv[2] === "on"
+  ? v.active === true && !v.failed && (v.missing || []).length === 0 && v.calls > 0
+  : v.active === false && e.lodBehindPenalty === 5 && e.lodUpdateAngle === 90 && e.lodMultiplier === 3;
+process.exit(ok ? 0 : 1);' "$f" "$2"
+}
+# lodrun <scene> on|off: the probe (turns on, so calls are counted while the view turns), then the check of its file
+lodrun() {
+  local q=() ; [ "$2" = off ] && q=(--no-turns --query '&viewlod=0')
+  MSYS2_ARG_CONV_EXCL='*' node scripts/lod-view-probe.mjs --site "$SITE" --scene "$1" --budget 1 --product --heights 0 "${q[@]}" --label "live3-$1-$2" &&
+    lodcheck "live3-$1-$2" "$2"
+}
+for sc in 2f1ddf5f 70b50d42; do
+  run "lod-view-on-$sc" lodrun "$sc" on
+  run "lod-view-off-$sc" lodrun "$sc" off
+done
+# train 3: a course generated in the page on Wroclaw (course-path-probe.mjs header: presses only Shift+G and R, nothing
+# is sent or saved; the course lives in the page, "Save for everyone" is never pressed): Shift+G with the published
+# walls, the gates along the street, regenerations, a crash with respawn keeps the next gate.
+run course-path-wroclaw locked node scripts/course-path-probe.mjs "$SITE/en" "$OUT/course-path-70b50d42.json" "$OUT" 70b50d42
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"
