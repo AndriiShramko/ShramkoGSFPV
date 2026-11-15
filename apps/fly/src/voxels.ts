@@ -7,9 +7,9 @@
 // in their own colour (no longer walls), and its panel's preview adds a translucent plane at the height.
 import { VoxelOverlay, VOXEL_STYLES } from '@gsfpv/render-pc';
 import type { VoxelStyle } from '@gsfpv/render-pc';
-import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
+import { FLOATER_MIN_BLOCKS_MAX, ceilingCut, chunkDims, overlapKeys, overlayChunkSize, planChunksAround, validCeiling } from '@gsfpv/collision';
 import type { CeilingCut, PlannedChunk, VoxelCollision } from '@gsfpv/collision';
-import { KEEPER_EVERY_MS, keeperStep } from './voxel-keeper';
+import { KEEPER_EVERY_MS, drawnShare, keeperStep } from './voxel-keeper';
 import type { FlightSession } from './session';
 import type { FromWorker, ToWorker, WorkerGrid } from './voxels.worker';
 
@@ -52,6 +52,9 @@ function saveVoxelPrefs(p: VoxelPrefs): void {
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } catch { /* storage blocked */ }
 }
 
+/** Uploads per frame in the whole-scene view (estimate; the overlay's per-frame face cap still holds). */
+const WHOLE_UPLOADS_PER_FRAME = 8;
+
 export type VoxelState = 'off' | 'no-walls' | 'preparing' | 'ready' | 'failed';
 
 export interface VoxelStats {
@@ -78,8 +81,10 @@ export interface VoxelStats {
     drawnChunks: number;
     /** drawnChunks / plannedChunks in percent (100 when nothing is planned) */
     share: number;
-    /** chunks drawn now per level (index: 0 voxels, 1 blocks of 4, 2 cubes of 8, 3 cubes of 16 voxels) */
+    /** chunks on screen at their planned level, per level (index: 0 voxels, 1 blocks of 4, 2 cubes of 8, 3 cubes of 16 voxels) */
     perLevel: number[];
+    /** the meshes (draws) those chunks take per level: far chunks are joined into group meshes */
+    meshesPerLevel: number[];
     /** distance of the farthest chunk planned, and of the farthest drawn (m) */
     farthestM: number;
     drawnFarM: number;
@@ -512,7 +517,9 @@ export class VoxelController {
         }
         const id = `${m.key}:${m.lod}`;
         this.inFlight.delete(id);
-        if (m.lod <= 1) (m.lod === 0 ? this.known.fine : this.known.coarse).set(m.key, m.quads);
+        // a group mesh (negative key) is not one chunk: it stays out of the per-chunk sizes the plan budgets with
+        if (m.key < 0) { this.sum.ms += m.ms; this.sum.n++; }
+        else if (m.lod <= 1) (m.lod === 0 ? this.known.fine : this.known.coarse).set(m.key, m.quads);
         else {
             if (!this.knownFar.has(m.lod)) this.knownFar.set(m.lod, new Map());
             this.knownFar.get(m.lod)!.set(m.key, m.quads);
@@ -520,9 +527,11 @@ export class VoxelController {
             f.q += m.quads; f.n++;
             this.sumFar.set(m.lod, f);
         }
-        if (m.lod === 0) { this.sum.fine += m.quads; this.sum.nFine++; } else if (m.lod === 1) { this.sum.coarse += m.quads; this.sum.nCoarse++; }
-        this.sum.ms += m.ms;
-        this.sum.n++;
+        if (m.key >= 0) {
+            if (m.lod === 0) { this.sum.fine += m.quads; this.sum.nFine++; } else if (m.lod === 1) { this.sum.coarse += m.quads; this.sum.nCoarse++; }
+            this.sum.ms += m.ms;
+            this.sum.n++;
+        }
         // no longer wanted at this level (the camera moved on): measured, not drawn
         if (this.wanted.get(m.key) !== m.lod || !this.overlay) return;
         // same key: the upload replaces the other level in the same frame, so nothing blinks
@@ -542,7 +551,7 @@ export class VoxelController {
             if (this.inFlight.has(id)) continue;
             this.inFlight.add(id);
             const [lo, hi] = this.overlay.heightRange;
-            const msg: ToWorker = { t: 'chunk', gen: this.gen, key: c.key, x: c.x, y: c.y, z: c.z, lod: c.lod, style: this.look, lo, hi };
+            const msg: ToWorker = { t: 'chunk', gen: this.gen, key: c.key, x: c.x, y: c.y, z: c.z, lod: c.lod, style: this.look, lo, hi, group: c.group ?? 1 };
             this.worker.postMessage(msg);
         }
     }
@@ -559,12 +568,17 @@ export class VoxelController {
         const d = this.forced ?? this.detail;
         const avgFar = new Map<number, number>();
         for (const [lod, f] of this.sumFar) avgFar.set(lod, f.q / f.n);
-        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads * d, coarseQuads: this.coarseQuads * d, known: this.known, avgFine, avgCoarse, whole, farQuads: this.farQuads * d, knownFar: this.knownFar, avgFar });
+        // the whole scene joins far chunks into group meshes (overlay.ts groupPlan): 27236 draws -> 2852 on Wroclaw
+        const plan = planChunksAround(col, this.size, this.occupied, p.x, p.y, p.z, { radius, fineQuads: this.fineQuads * d, coarseQuads: this.coarseQuads * d, known: this.known, avgFine, avgCoarse, whole, groups: whole, farQuads: this.farQuads * d, knownFar: this.knownFar, avgFar });
         this.plan = { fineRadius: plan.fineRadius, radius: plan.radius };
-        this.planFar = plan.chunks.length ? plan.chunks[plan.chunks.length - 1].dist : 0;
+        this.planFar = plan.chunks.reduce((f, c) => Math.max(f, c.farDist ?? c.dist), 0);
         this.lastPlan = plan.chunks;
         this.planned = true;
         this.wanted = new Map(plan.chunks.map((c) => [c.key, c.lod]));
+        // small far meshes: more of them per frame in the whole view; the per-frame face cap still holds (estimate)
+        this.overlay.maxUploadsPerFrame = whole ? WHOLE_UPLOADS_PER_FRAME : 2;
+        const dims = chunkDims(col, this.size);
+        const onScreen = (k: number): boolean => this.wanted.get(k) === this.loaded.get(k) && !this.overlay!.pending(String(k));
         let quads = this.overlay.stats().quads;
         for (const [key, lod] of this.loaded) {
             const want = this.wanted.get(key);
@@ -573,6 +587,8 @@ export class VoxelController {
             // (the whole-scene view keeps every chunk until its new level lands: no hole)
             const over = !whole && want === 1 && lod === 0 && quads > this.fineQuads + this.coarseQuads;
             if (want !== undefined && !over) continue;
+            // whole view: a chunk or group leaves only when the wanted meshes over the same chunks are on screen
+            if (whole && want === undefined && overlapKeys(dims, key).some((k) => this.wanted.has(k) && !onScreen(k))) continue;
             quads -= (lod <= 1 ? this.known[lod === 0 ? 'fine' : 'coarse'].get(key) : this.knownFar.get(lod)?.get(key)) ?? 0;
             this.overlay.remove(String(key));
             this.loaded.delete(key);
@@ -583,14 +599,8 @@ export class VoxelController {
     stats(): VoxelStats {
         const o = this.overlay?.stats();
         const col = this.col;
-        const perLevel = [0, 0, 0, 0];
-        let drawn = 0, drawnFar = 0;
-        for (const c of this.lastPlan) {
-            const l = this.loaded.get(c.key);
-            if (l === c.lod) { drawn++; drawnFar = Math.max(drawnFar, c.dist); }
-        }
-        for (const l of this.loaded.values()) if (l >= 0) perLevel[l]++;
-        const planned = this.lastPlan.length;
+        // on screen = uploaded at the planned level; a mesh waiting in the upload queue is not counted
+        const sh = drawnShare(this.lastPlan, (k) => (this.overlay?.pending(String(k)) ? undefined : this.loaded.get(k)));
         return {
             state: this.state,
             mode: this.mode,
@@ -606,12 +616,13 @@ export class VoxelController {
             radiusM: this.plan.radius,
             whole: this.whole,
             wallChunks: this.occupied?.size ?? 0,
-            plannedChunks: planned,
-            drawnChunks: drawn,
-            share: planned ? Math.floor((drawn / planned) * 100) : 100,
-            perLevel,
+            plannedChunks: sh.total,
+            drawnChunks: sh.drawn,
+            share: sh.share,
+            perLevel: sh.perLevel,
+            meshesPerLevel: sh.meshesPerLevel,
             farthestM: this.planFar,
-            drawnFarM: drawnFar,
+            drawnFarM: sh.drawnFarM,
             detail: this.forced ?? this.detail,
             frameMs: this.keeper.ms,
             inFlight: this.inFlight.size,

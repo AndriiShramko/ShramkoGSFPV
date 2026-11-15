@@ -387,6 +387,11 @@ export class VoxelOverlay {
         return this.entries.has(key);
     }
 
+    /** A mesh for this key waits in the upload queue (what is on screen for it, if anything, is older). */
+    pending(key: string): boolean {
+        return this.queue.has(key);
+    }
+
     remove(key: string): void {
         this.queue.delete(key);
         const e = this.entries.get(key);

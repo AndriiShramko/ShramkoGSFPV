@@ -29,7 +29,7 @@ export type ToWorker =
     | { t: 'init'; gen: number; grid: WorkerGrid; nodes: Uint32Array; leaf: Uint32Array; size: number; layout: VoxelLayout; minBlocks: number; cut: CeilingCut | null }
     | { t: 'mark'; gen: number; minBlocks: number }
     | { t: 'ceiling'; gen: number; cut: CeilingCut | null }
-    | { t: 'chunk'; gen: number; key: number; x: number; y: number; z: number; lod: number; style: VoxelStyle; lo: number; hi: number };
+    | { t: 'chunk'; gen: number; key: number; x: number; y: number; z: number; lod: number; style: VoxelStyle; lo: number; hi: number; group?: number };
 
 export type FromWorker =
     | { t: 'ready'; gen: number; occupied: Int32Array; blocks: number; components: number; floaters: number; ms: number }
@@ -116,7 +116,7 @@ scope.onmessage = (e) => {
         if (m.t === 'chunk') {
             if (m.gen !== gen || !col || !layout) return; // walls changed since the request
             const t0 = performance.now();
-            const c = overlayChunk(col, { x: m.x, y: m.y, z: m.z }, size, m.lod, comp ?? undefined, floaters ?? undefined, cut);
+            const c = overlayChunk(col, { x: m.x, y: m.y, z: m.z }, size * (m.group ?? 1), m.lod, comp ?? undefined, floaters ?? undefined, cut);
             const p = packChunk(c, layout, m.style, m.lo, m.hi);
             scope.postMessage(
                 { t: 'chunk', gen, key: m.key, lod: m.lod, faces: c.faces, floaterQuads: c.floaterQuads, ms: performance.now() - t0, ...p },

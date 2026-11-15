@@ -25,3 +25,28 @@ export function keeperStep(detail: number, frameMs: number, fast: number): { det
     }
     return { detail, fast: 0 };
 }
+
+/** One mesh of the plan as the share sees it (overlay.ts PlannedChunk). */
+export interface ShareItem { key: number; lod: number; dist: number; members?: number; farDist?: number }
+
+/**
+ * What the walls line shows (V2): the share of the planned wall chunks that are ON SCREEN at their
+ * planned level. `drawnAt(key)` is the level a mesh is drawn at now, undefined while it waits for
+ * its upload (a mesh the worker built but the overlay has not uploaded is not counted). A group
+ * counts its members; the far distance drawn is its farthest chunk's.
+ */
+export function drawnShare(plan: readonly ShareItem[], drawnAt: (key: number) => number | undefined): { total: number; drawn: number; share: number; farM: number; drawnFarM: number; perLevel: number[]; meshesPerLevel: number[] } {
+    let total = 0, drawn = 0, farM = 0, drawnFarM = 0;
+    const perLevel = [0, 0, 0, 0], meshesPerLevel = [0, 0, 0, 0];
+    for (const c of plan) {
+        const n = c.members ?? 1, far = c.farDist ?? c.dist;
+        total += n;
+        farM = Math.max(farM, far);
+        if (drawnAt(c.key) !== c.lod) continue;
+        drawn += n;
+        drawnFarM = Math.max(drawnFarM, far);
+        perLevel[c.lod] += n;
+        meshesPerLevel[c.lod]++;
+    }
+    return { total, drawn, share: total ? Math.floor((drawn / total) * 100) : 100, farM, drawnFarM, perLevel, meshesPerLevel };
+}

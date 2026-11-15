@@ -166,12 +166,19 @@ export interface PlanOptions {
      */
     whole?: boolean;
     farQuads?: number;
+    /** with whole: far chunks whose group (FAR_GROUP) is all at the same level are planned as one group mesh */
+    groups?: boolean;
     /** quads per chunk at levels 2 and up (lod -> key -> quads) and their running averages (lod -> quads) */
     knownFar?: ReadonlyMap<number, ReadonlyMap<number, number>>;
     avgFar?: ReadonlyMap<number, number>;
 }
 
-export interface PlannedChunk { key: number; x: number; y: number; z: number; lod: number; dist: number }
+/**
+ * One mesh of the plan: a chunk, or (X2, the whole scene) a group of `group` chunks per side at a
+ * far level, drawn as one mesh: then x, y, z count groups, key is groupKey's (negative), dist is
+ * its nearest chunk's, farDist its farthest one's and members the occupied chunks it covers.
+ */
+export interface PlannedChunk { key: number; x: number; y: number; z: number; lod: number; dist: number; group?: number; members?: number; farDist?: number }
 
 export interface ChunkPlan {
     chunks: PlannedChunk[];
@@ -183,6 +190,8 @@ export interface ChunkPlan {
     /** quads planned at levels 2 and up, and the chunks per level (index = lod) */
     farQuads: number;
     perLevel: number[];
+    /** occupied chunks the plan covers (a group counts its members) */
+    covered: number;
 }
 
 /**
@@ -271,7 +280,8 @@ export function planChunks(col: VoxelCollision, size: number, occupied: Readonly
         allR = ch.dist;
     }
     for (const c of out) perLevel[c.lod]++;
-    return { chunks: out, fineRadius: fineR, radius: allR, fineQuads: fine, coarseQuads: coarse, farQuads: far, perLevel };
+    const covered = out.length;
+    return { chunks: o.whole && o.groups ? groupPlan(dims, out) : out, covered, fineRadius: fineR, radius: allR, fineQuads: fine, coarseQuads: coarse, farQuads: far, perLevel };
 }
 
 /**
@@ -286,4 +296,91 @@ export function planChunksAround(col: VoxelCollision, size: number, occupied: Re
         if (plan.chunks.length > 0 || r >= maxRadius) return { ...plan, searchRadius: r };
         r = Math.min(maxRadius, r * 2);
     }
+}
+
+/**
+ * Chunks per side of the group meshes a level may join into, largest first (X2): the whole scene
+ * is 27236 chunks on Wroclaw 70b50d42, one draw each; a group whose area holds another level falls
+ * back to the next smaller side. tools/bench/scripts/voxview-cells.ts --plan counts the meshes the
+ * plan leaves (status file, Facts X2).
+ */
+export const FAR_GROUP: Readonly<Record<number, readonly number[]>> = { 1: [2], 2: [4, 2], 3: [8, 4, 2] };
+const GROUP_SIDES = [2, 4, 8];
+
+/** Key of group (x, y, z) of g chunks per side (2, 4 or 8): negative, apart from every chunk key. */
+export function groupKey(dims: readonly number[], g: number, x: number, y: number, z: number): number {
+    const slot = GROUP_SIDES.indexOf(g);
+    if (slot < 0) throw new RangeError(`group side must be 2, 4 or 8, got ${g}`);
+    const gd = dims.map((d) => Math.ceil(d / g));
+    return -1 - (((z * gd[1] + y) * gd[0] + x) * GROUP_SIDES.length + slot);
+}
+
+/** The group a negative key names (null for a chunk key). */
+export function groupOfKey(dims: readonly number[], key: number): { g: number; x: number; y: number; z: number } | null {
+    if (key >= 0) return null;
+    const n = -1 - key, slot = n % GROUP_SIDES.length, g = GROUP_SIDES[slot];
+    const gd = dims.map((d) => Math.ceil(d / g));
+    const [x, y, z] = chunkOfKey(gd, (n - slot) / GROUP_SIDES.length);
+    return { g, x, y, z };
+}
+
+/**
+ * The keys whose meshes cover some of the same chunks as key at another grain: a chunk's groups,
+ * a group's chunks and the groups of the other sides that meet it. A mesh leaves only when the
+ * wanted meshes among these are on screen (no hole while a group replaces its chunks).
+ */
+export function overlapKeys(dims: readonly number[], key: number): number[] {
+    const g0 = groupOfKey(dims, key);
+    const side = g0 ? g0.g : 1;
+    const lo = g0 ? [g0.x * side, g0.y * side, g0.z * side] : chunkOfKey(dims, key);
+    const hi = [0, 1, 2].map((a) => Math.min(dims[a], lo[a] + side));
+    const out = new Set<number>();
+    for (const g of [1, ...GROUP_SIDES]) {
+        if (g === side) continue;
+        for (let z = Math.floor(lo[2] / g); z * g < hi[2]; z++) for (let y = Math.floor(lo[1] / g); y * g < hi[1]; y++) for (let x = Math.floor(lo[0] / g); x * g < hi[0]; x++) {
+            out.add(g === 1 ? chunkKey(dims, x, y, z) : groupKey(dims, g, x, y, z));
+        }
+    }
+    return [...out];
+}
+
+/**
+ * Join chunks into group meshes (FAR_GROUP): a group of side g is one mesh when every occupied chunk
+ * in its area is planned at one level that offers g and at least two of them are not yet in a
+ * larger group; any other chunk stays itself. Each chunk is covered once, nearest first.
+ */
+export function groupPlan(dims: readonly number[], chunks: readonly PlannedChunk[], far: Readonly<Record<number, readonly number[]>> = FAR_GROUP): PlannedChunk[] {
+    const keyOf = (c: PlannedChunk, g: number): number => groupKey(dims, g, Math.floor(c.x / g), Math.floor(c.y / g), Math.floor(c.z / g));
+    // per side: the levels found in each group's area
+    const masks = new Map<number, Map<number, number>>();
+    for (const g of GROUP_SIDES) {
+        const m = new Map<number, number>();
+        for (const c of chunks) { const k = keyOf(c, g); m.set(k, (m.get(k) ?? 0) | (1 << c.lod)); }
+        masks.set(g, m);
+    }
+    const out: PlannedChunk[] = [];
+    const joined = new Set<PlannedChunk>();
+    for (const [lodS, sides] of Object.entries(far)) {
+        const lod = Number(lodS);
+        for (const g of sides) {
+            const groups = new Map<number, PlannedChunk[]>();
+            for (const c of chunks) {
+                if (c.lod !== lod || joined.has(c)) continue;
+                const k = keyOf(c, g);
+                if (masks.get(g)!.get(k) !== 1 << lod) continue;
+                const list = groups.get(k);
+                if (list) list.push(c); else groups.set(k, [c]);
+            }
+            for (const [key, members] of groups) {
+                if (members.length < 2) continue;
+                const f = members[0];
+                let dist = Infinity, farDist = 0;
+                for (const c of members) { joined.add(c); dist = Math.min(dist, c.dist); farDist = Math.max(farDist, c.dist); }
+                out.push({ key, x: Math.floor(f.x / g), y: Math.floor(f.y / g), z: Math.floor(f.z / g), lod, dist, group: g, members: members.length, farDist });
+            }
+        }
+    }
+    for (const c of chunks) if (!joined.has(c)) out.push(c);
+    out.sort((a, b) => a.dist - b.dist || a.key - b.key);
+    return out;
 }

@@ -107,6 +107,23 @@ Owner's messages 58 and 60 (2026-11-15); lead's decisions V1-V4. Stages: X1-dept
 - [x] X2.6 Measured on Wroclaw 70b50d42 in the browser, voxels alone, BENCH_UNCAPPED=1, 1280x800 (Facts X2 browser).
   Pictures looked at (U:/Temp/gsfpv-train3/shots): voxview-far-before.png, voxview-far.png, voxview-street.png,
   voxview-far-weak.png.
+- [x] X2.7 Left 1, 2, 4 built (this commit), not yet run in a browser. Group meshes: packages/collision/src/overlay.ts
+  FAR_GROUP (level 1: groups of 2 chunks a side; level 2: 4 then 2; level 3: 8, 4, then 2), groupKey/groupOfKey
+  (negative keys), overlapKeys, groupPlan (a group is one mesh when every occupied chunk in its area is at its level;
+  a mixed area falls back to the next smaller side), planChunks option groups (the whole view). Measured with
+  tools/bench/scripts/voxview-cells.ts --plan on the Wroclaw stand-in from the grid's centre
+  (U:/Temp/gsfpv-train2/voxview/plan-groups.json): 27236 chunks (per level 400 / 1666 / 6666 / 18504) -> 5993
+  meshes with {2:2, 3:4}, 4920 with {1:2, 2:2, 3:4}, 5461 with {1:2, 2:4, 3:8}, 2852 with the fallback sides
+  (per level 400 / 593 / 1038 / 821). The worker builds a group as one chunk of side x size voxels
+  (apps/fly/src/voxels.worker.ts, message field group). apps/fly/src/voxels.ts: in the whole view a mesh leaves
+  only when the wanted meshes over the same chunks are on screen (overlapKeys); groups stay out of the per-chunk
+  size averages; uploads per frame 8 in the whole view (WHOLE_UPLOADS_PER_FRAME, estimate; the 20000-face cap per
+  frame stays). Share: apps/fly/src/voxel-keeper.ts drawnShare counts chunks on screen at their planned level
+  (a mesh in the upload queue is not counted, VoxelOverlay.pending), groups by their members; stats
+  meshesPerLevel. Tests: packages/collision/test/voxview-whole.test.ts (+6) and tools/bench/test/voxview-keeper.test.ts
+  (+2), with overlay.test.ts 31 passed. Negative controls: the overlay.ts of 97b62626 has no groupPlan (TypeError,
+  no assertion possible); groupPlan without its one-level check fails "expected 8 to be 7"; drawnShare counting a
+  group as one chunk fails "expected 3 to be 10". Typecheck apps/fly, packages/collision, packages/render-pc: 0 errors.
 
 ## Facts X2 (browser, Wroclaw 70b50d42, stand-in 5 cm walls, BENCH_UNCAPPED=1, 1280x800)
 

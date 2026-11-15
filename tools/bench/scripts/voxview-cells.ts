@@ -4,7 +4,7 @@
 // worker time per level. Usage: npx tsx tools/bench/scripts/voxview-cells.ts <walls dir with scene.voxel.json>
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { openVoxelCollision, countSolidVoxelsFromBytes, blockComponents, occupiedChunks, overlayChunkSize, chunkOfKey, chunkDims, overlayChunk, COARSE_LEVELS } from '@gsfpv/collision';
+import { openVoxelCollision, countSolidVoxelsFromBytes, blockComponents, occupiedChunks, overlayChunkSize, chunkOfKey, chunkDims, overlayChunk, planChunks, COARSE_LEVELS, FAR_GROUP } from '@gsfpv/collision';
 
 const dir = process.argv[2];
 const json = readFileSync(join(dir, 'scene.voxel.json'));
@@ -24,7 +24,7 @@ const out: Record<string, unknown> = {
     chunkDims: dims, occupiedChunks: occ.length, componentsMs: Math.round(performance.now() - t0)
 };
 const levels: Record<string, unknown> = {};
-for (const lod of [1, ...COARSE_LEVELS.map((_, i) => i + 2)] as const) {
+for (const lod of process.argv.includes('--plan') ? [] : [1, ...COARSE_LEVELS.map((_, i) => i + 2)] as const) {
     const t = performance.now();
     let quads = 0, nonEmpty = 0;
     for (const key of occ) {
@@ -37,3 +37,16 @@ for (const lod of [1, ...COARSE_LEVELS.map((_, i) => i + 2)] as const) {
 }
 out.levels = levels;
 console.log(JSON.stringify(out));
+
+// The whole-scene plan from the grid's centre, 2 m over its floor, with the view's budgets: the
+// meshes (draws) it leaves without and with the far groups (overlay.ts FAR_GROUP).
+if (process.argv.includes('--plan')) {
+    const occSet = new Set<number>(occ);
+    const cx = col.gridMinX + (col.numVoxelsX * res) / 2, cy = col.gridMinY + 2, cz = col.gridMinZ + (col.numVoxelsZ * res) / 2;
+    const [px, py] = col.flipXY ? [-cx, -cy] : [cx, cy];
+    const o = { radius: 20, fineQuads: 600_000, coarseQuads: 250_000, whole: true, farQuads: 250_000 };
+    const a = planChunks(col, size, occSet, px, py, cz, o);
+    const b = planChunks(col, size, occSet, px, py, cz, { ...o, groups: true });
+    const byLevel = (cs: { lod: number }[]): number[] => [0, 1, 2, 3].map((l) => cs.filter((c) => c.lod === l).length);
+    console.log(JSON.stringify({ plan: { perLevelChunks: a.perLevel, covered: b.covered, meshesWithout: a.chunks.length, meshesWith: b.chunks.length, meshesByLevel: byLevel(b.chunks), groups: b.chunks.filter((c) => c.group).length, far: FAR_GROUP } }));
+}
