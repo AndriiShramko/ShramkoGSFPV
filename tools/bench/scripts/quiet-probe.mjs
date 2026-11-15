@@ -16,6 +16,7 @@ if (!base || !outFile || !scene) { console.error('usage: quiet-probe.mjs <base w
 const READER = process.env.READER === '1';
 const NARRATOR = process.env.NARRATOR ?? 'on';
 const FLY_S = Number(process.env.FLY_S ?? 180);
+const ENTRY_SCAN = process.env.ENTRY === 'scan';
 const pick = pickBrowser({ expected: chromium.executablePath() });
 const browser = await chromium.launch({ ...pick.launch, headless: true });
 const out = { base, scene, reader: READER, narrator: NARRATOR, samples: [], errors: [] };
@@ -127,6 +128,13 @@ async function openPage() {
     await page.goto(url, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     out.prefsKey = await page.evaluate(SET_PREFS, [READER, NARRATOR]);
+    if (ENTRY_SCAN) {
+        // lane quiet3 (X2 row 9): the sound page's free flight, the scan link ?sonic=scan, with one Enter on its start screen
+        await page.goto(`${base}/fly/?sonic=scan&scene=${scene}&sz=1&nowarn=1&render=off`, { waitUntil: 'load', timeout: 120000 });
+        await page.waitForSelector('[data-testid="sonic-start-asked"]', { timeout: 60000 });
+        await page.focus('[data-testid="sonic-start-asked"]');
+        return { ctx, page };
+    }
     await page.goto(url, { waitUntil: 'load', timeout: 120000 });
     await page.waitForFunction(() => ['ready', 'error'].includes(window.__gsfpv && window.__gsfpv.status), null, { timeout: 300000 });
     await page.waitForFunction(() => { const w = window.__gsfpv && window.__gsfpv.walls; return w && w.state !== 'checking'; }, null, { timeout: 60000 }).catch(() => 0);
@@ -150,7 +158,12 @@ try {
     const t0 = Date.now();
     const p0 = await page.evaluate(() => performance.now());
     // the mode on and the stick at once: KeyW held for 2 s from the press
-    await page.keyboard.press('Backslash');
+    if (ENTRY_SCAN) {
+        // the Enter that starts the free flight; the stick from the moment the page reports ready (scan loaded)
+        await page.keyboard.press('Enter');
+        await page.waitForFunction(() => window.__gsfpv && window.__gsfpv.status === 'ready', null, { timeout: 300000 });
+        out.readyS = +((Date.now() - t0) / 1000).toFixed(2);
+    } else await page.keyboard.press('Backslash');
     await page.keyboard.down('KeyW');
     await sample(page, t0, 2000, 'w');
     await page.keyboard.up('KeyW');
@@ -234,6 +247,8 @@ try {
     out.events = ev;
     out.spoken = ev.filter((e) => e.kind === 'speech' && e.key !== 'speech.end').length;
     const qp = await page.evaluate(() => window.__qp || null);
+    // row 9 (QW-3): the scan loading line (en) handed to the voice or a live region
+    if (ENTRY_SCAN && qp) out.scanLoadingSaid = [...(qp.speak || []), ...(qp.live || [])].filter((e) => String(e.text || '').startsWith('Loading the scan for this lesson')).length;
     const rel = (a) => (a || []).map((x) => ({ ...x, t: +((x.t - p0) / 1000).toFixed(2) }));
     out.voiced = qp && qp.speak ? rel(qp.speak) : null;
     out.live = qp ? rel(qp.live) : null;

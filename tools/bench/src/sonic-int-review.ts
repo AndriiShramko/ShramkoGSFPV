@@ -1485,8 +1485,11 @@ async function r12(browser: () => Promise<BrowserContext>, served: Served): Prom
     result.r12 = [] as object[];
     for (const id of ids) {
         log(`R12: lesson ${id} opened and flown by the hum`);
-        const ctx = await newContext(browser, served, prefsDoc(), null);
-        const tag = `R12 ${id}`;
+        // lane quiet3 (X2 row 7): Z5_NARRATOR=off opens the lesson with the narrator setting off; Z5_HALF=1 leaves it with X after 15 s
+        const narratorOff = process.env.Z5_NARRATOR === 'off';
+        const half = process.env.Z5_HALF === '1';
+        const ctx = await newContext(browser, served, prefsDoc(narratorOff ? { narrator: false } : {}), null);
+        const tag = `R12 ${id}${narratorOff ? ' narrator off' : ''}${half ? ' left half way' : ''}`;
         const t0 = Date.now();
         const page = await openLesson(ctx, served, id, tag).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
         check(`${tag}: the lesson opens from its link with one Enter`, page !== null);
@@ -1496,12 +1499,26 @@ async function r12(browser: () => Promise<BrowserContext>, served: Served): Prom
         const trail: object[] = [];
         const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
         const tF = Date.now();
-        const end = await steerByHum(page, (p) => p.phase === 'passed', 300000, lines, trail, undefined, undefined, stats);
+        const end = await steerByHum(page, (p) => p.phase === 'passed', half ? 15000 : 300000, lines, trail, undefined, undefined, stats);
+        if (half) { await page.keyboard.press('KeyX'); await sleep(1500); }
         await sleep(2000);
         await page.screenshot({ path: `${shots}/z5-${id}-end.png`, fullPage: false });
         const spoken = spokenAfter(await events(page), 0);
         const run = { id, openedS: opened, flightS: Math.round((Date.now() - tF) / 1000), phase: end.phase, attempt: end.attempt, gates: stats.targets.length, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-10), trail: trail.slice(-6) };
         (result.r12 as object[]).push(run);
+        if (narratorOff) {
+            const saved = await page.evaluate(() => {
+                for (let i = 0; i < localStorage.length; i++) {
+                    try { const d = JSON.parse(localStorage.getItem(localStorage.key(i) ?? '') ?? ''); const n = d?.collections?.sonic?.prefs?.narrator; if (n !== undefined) return n; } catch { /* not json */ }
+                }
+                return null;
+            });
+            const why = spoken.filter((k) => k === 'sonic.say.lessonNarrator').length;
+            Object.assign(run, { narratorSaved: saved, lessonNarratorSaid: why, spokenCount: spoken.length });
+            check(`${tag}: the lesson speaks with the narrator off and says why once`, spoken.length > 1 && why === 1, run);
+            check(`${tag}: the narrator setting is off again after it`, saved === false, run);
+            if (half) { await ctx.close(); continue; }
+        }
         // Y2 pass 2: 'passed' also follows the last failed attempt ("Let's go on to the next lesson", fly.moving-on); only a counted pass passes
         check(`${tag}: flown to its end and counted (passed, no fly.moving-on)`, end.phase === 'passed' && !spoken.includes('fly.moving-on'), run);
         await ctx.close();
