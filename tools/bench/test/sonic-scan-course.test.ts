@@ -77,6 +77,16 @@ describe('a course of gates in a free scan flight (S3)', () => {
         expect(courseAnswer({ t: 'progress', job: 4, step: 'free', estMs: 900 }, 4)).toBeNull();
         expect(courseAnswer({ t: 'progress', job: 4, step: 'lay', estMs: 1500 }, 4)).toBeNull();
     });
+
+    it('a course by sound is one lap of the generated course (sonic3 S1 pass 3: 24 gates x 3 laps did not fit in 300 s)', () => {
+        const track = { ...garden(), laps: 3 };
+        const a = courseAnswer({ t: 'track', job: 5, track } as unknown as Parameters<typeof courseAnswer>[0], 5);
+        expect(a?.ok).toBe(true);
+        expect(a?.ok ? a.track.laps : -1).toBe(1);
+        expect(a?.ok ? a.track.gates.length : -1).toBe(track.gates.length);
+        // the generator's own track is not changed
+        expect(track.laps).toBe(3);
+    });
 });
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));

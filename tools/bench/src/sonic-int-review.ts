@@ -1128,7 +1128,7 @@ async function lifeSpy(page: Page): Promise<void> {
 }
 
 async function lifeLog(page: Page): Promise<object[]> {
-    return page.evaluate(() => ((window as unknown as { __lifeSpy?: object[] }).__lifeSpy ?? []).slice(-20));
+    return page.evaluate(() => ((window as unknown as { __lifeSpy?: object[] }).__lifeSpy ?? []).slice(-60));
 }
 
 /** A new life in the spy's log after page time `t0` (a 'life' entry: what makes the craft level and still). */
@@ -1262,13 +1262,15 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
         const trail: object[] = [];
         const tF = Date.now();
+        // sonic3 S1 pass 3: the new lives of the flight (Tunis 3 m/s went back near the start after g4 and bounced there)
+        const tFPage = await page.evaluate(() => performance.now());
         // Y2 pass 2: Z5_FLIGHT_S raises the flight cap for slow runs (default 360 s; the whole run must stay under the 10-minute lock rule)
         const capS = Number(process.env.Z5_FLIGHT_S ?? (speed <= 2 ? 480 : 360)) || 360;
         const end = await steerByHum(page, (p) => p.phase === 'passed' || p.phase === 'idle', capS * 1000, lines, trail, undefined, speed, stats);
         await sleep(3000);
         const spoken = spokenAfter(await events(page), from);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
-        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-8), missRecords: stats.misses ?? [] };
+        run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-30), missRecords: stats.misses ?? [], spy: (await lifeLog(page)).filter((e) => (e as { t: number }).t >= tFPage).map((e) => ({ ...e, s: Math.round(((e as { t: number }).t - tFPage) / 100) / 10 })) };
         // Y2 pass 2 (shots z5-*-end.png): every Y1/Y2 'passed' course ended with "Gate n was missed. Let's go on to the next lesson"
         // (reason.gate-missed, fly.moving-on): the runner moves on after the last attempt; only a course counted without it passes
         (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle') && !spoken.includes('fly.moving-on');

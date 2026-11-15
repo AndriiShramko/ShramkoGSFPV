@@ -63,13 +63,20 @@ export function courseJob(s: CourseSource, seed: number, job: number, created: s
     };
 }
 
-/** The worker's answer to `job` as the page reads it; null for an answer to another job. */
+/**
+ * Laps of a course flown by sound (a setting of the sound course; the generator's default for the sighted course stays 3). sonic3
+ * S1 pass 2: the Wroclaw course of 24 gates times 3 laps did not fit in 300 s at the probe pilot's median of 1.04 m/s
+ * (d-70b50d42-3.json: g1 to g24, then g1 to g10 again, still flying); one lap is the course a pilot learns by ear.
+ */
+export const SOUND_COURSE_LAPS = 1;
+
+/** The worker's answer to `job` as the page reads it (a course for the ear: SOUND_COURSE_LAPS); null for an answer to another job. */
 export function courseAnswer(m: FromCourseWorker, job: number): CourseAnswer | null {
     if (m.job !== job) return null;
     // sonic3 S1: the worker of course3 says each step before it ('progress'); that is no answer (taken as 'failed' before, N made
     // no course on any scan in the browser: courseMaking, then nothing)
     if (m.t === 'progress') return null;
-    if (m.t === 'track') return m.track ? { ok: true, track: m.track } : { ok: false, why: 'none fits' };
+    if (m.t === 'track') return m.track ? { ok: true, track: { ...m.track, laps: SOUND_COURSE_LAPS } } : { ok: false, why: 'none fits' };
     return { ok: false, why: 'failed' };
 }
 

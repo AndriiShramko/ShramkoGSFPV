@@ -58,6 +58,11 @@ Stage S1-count-a-course (train 3 wave 3, last finishing lane):
   the air" (all), "course flown to its end" (Tunis, Wroclaw), "speed kept on the switch off" (Housefly: precondition, the
   craft had landed after the pass). 5 m/s on Tunis and Wroclaw not run (budget).
 - [x] gates.py --only vitest,architecture,i18n,b18 on 2c93bf48: all four PASS (vitest 92 s), logs U:/Temp/gsfpv-gates-20261115-062247.
+- [x] Pass 3, item B: the Wroclaw course was 24 gates x 3 laps (generator default laps 3, an estimate for the sighted
+  course; d-70b50d42-3.json gates g1..g24 then g1..g10 at 300 s). A course by sound is one lap: course-ask.ts SOUND_COURSE_LAPS
+  = 1 in courseAnswer (a setting of the sound course; the generator default unchanged). Test sonic-scan-course "a course by
+  sound is one lap": 7 of 7, NEG OK on HEAD course-ask.ts; apps/fly and tools/bench tsc 0 errors. Probe r11 records the
+  flight's life spy (flight.spy, s from the flight start) and the last 30 trail rows (item A: measure before fixing).
 - [ ] LEFT after pass 2, in this order:
   A. Tunis 3 m/s: what puts the craft back near the start after g4 and keeps it bouncing between y 2.1 and -0.4 (trail of
      d-887f27aa-3.json, 285 to 299 s). Guess, not measured: a crash respawn of the pilot's crash rule that goes to the course
