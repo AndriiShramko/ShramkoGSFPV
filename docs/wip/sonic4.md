@@ -378,10 +378,25 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   assertion). First try put the table in app/: sonic-int-lazy failed (the main chunk named 13 mode texts), so it lives in sonic/.
   Commit 64b565c1. Then gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 85 s; U:/Temp/gsfpv-gates-20261115-165721);
   a6-reference 1 passed (fx-a6.log).
-- [ ] Left (stage fixes, the reply budget ran out): the seven proof steps on Wroclaw 70b50d42 (and once Tunis) on a release build
-  were never run on this lane (K2.6 open since K2), so they are not "re-run" either: release build, serve-csp on 5760, quiet-probe
-  with NARRATOR=off and Shift+G: expect no sonic.say.text voiced (engine say with quiet) and engine cues checkpoint at the course
-  ready; the narrator key (Quote) in a browser; K2.3 to K2.5 (Q5, Q6, Q7) still open.
+- [x] Browser proof (stage fixes pass 2): release build of 6af1a229 (build-release exit 0, sha256 b764fb82...; walls stand-in copied
+  into dist/walls after the exit), serve-csp port 5760, quiet-probe.mjs (now records every speechSynthesis.speak, text added in a
+  live region that is not aria-hidden, the plan's cues, QUOTE=1 presses the narrator key twice), render off, no lock. Files
+  U:/Temp/gsfpv-train3/quiet/p2-off.json, p2-on.json, p2-reader.json, p2-tunis-off.json. Steps:
+  (1) Wroclaw 70b50d42, narrator off: 0 lines voiced in the flight (speak calls: an empty one at 0.03 s, the engine's warm-up, and
+  "Narrator on." after the key); the 11 lines of the flight are only reported (events, captions). (2) No wait: the craft answers
+  KeyW at 0.56 s (off), 0.57 s (on), 0.56 s (reader), 0.57 s (Tunis off), and again at 16.5 s in each. (3) Shift+G: the first hum
+  of gate 1 in the same sample as the course (7.02 s off, 8.38 s on, 8.71 s reader, 5.86 s Tunis). (4) Narrator off: the cue
+  target.checkpoint at the course's start (27.32 s, the gates appear at 27.28 s), Wroclaw and Tunis (26.08 s); with the narrator on
+  no such cue, the line is voiced instead (4 course lines voiced at 20.26 to 28.51 s). (5) Quote key: narrator on, first press at
+  31.62 s gives cue target.answer at 31.74 s (the off sound), second press at 35.66 s voices "Narrator on." at 35.67 s; started off,
+  the first press voices "Narrator on." at 30.38 s, the second gives target.answer at 34.42 s; the saved value follows (true, false).
+  (6) Tunis 887f27aa narrator off: 0 voiced, checkpoint cue, no wait. (7) Reader box (selfVoice off): 0 voiced, no wait, hum at
+  the course. Pages: 0 page errors in all four runs.
+- [ ] Left (stage fixes): K2.3 to K2.5 (Q5, Q6, Q7) still open. Seen in the proof, not this lane's code, not fixed: #ui is a
+  polite live region (apps/fly page shell) and receives the HUD (THR, ARMED, ANGLE about 10 times a second) and the course box
+  lines ("Course: finding the free space ... Course ready: 24 gates", apps/fly/src/app/builtin/course.ts box text) in every
+  setting; with the reader box on and the narrator off a screen reader would still read the course box. Suspect file: the #ui
+  aria-live attribute in the page shell; a guess, not measured with a real screen reader.
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
