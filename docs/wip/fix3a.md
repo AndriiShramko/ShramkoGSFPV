@@ -98,8 +98,35 @@ Stage X3-start-near-spawn (closed ring starts at the gate nearest the spawn)
 - [x] unit test packages/tracks/test/start-near-spawn.test.ts (4): pure turn keeps the set, the successors (direction) and
       renumbers g1..; no proof or gate 1 already nearest keeps the order; three-room world seeds 1-6: on every ring gate 1
       is nearest and proven; a spawn beside gate k turns the ring (at least one) with the same set and direction.
+      The 'another spawn' test uses three-room seeds 1, 2, 3, 15, 18: on seeds 1-6 no turn passes the proof; a search over
+      seeds 1-40 (scratch script, removed) found proven turns on seeds 15 and 18 only.
       Negative control (origin/main generate.ts): NEG OK, pure tests by TypeError (no function), the 'another spawn' test
-      by AssertionError (turned 0).
+      by AssertionError (expected 0 to be greater than 0).
+- [x] course3's 20-seed audit again (its f3/run.sh audit6 at 5a62e855, the last packages/tracks change on main; runner
+      U:/Temp/gsfpv-train3/fix3a/run-cq.sh, rows U:/Temp/gsfpv-train3/fix3a/cq/): Wroclaw, Tunis, eb5f51dc, 0230d903, 20
+      rows each, 0 rows differ in seed, gates, farM, reachM, visited, inBand and the heights as a set; summaries the same
+      (gates mean/sd 24/0, 23.5/2.2, 23.5/1.8, 24/0; visited 0.113, 0.329, 0.28, 0.084; reach 111, 97, 76, 103 m; K1.1
+      failing 0 of 20 at 3 and 12 m/s on all four). meanMs higher (3205 against 1877 on Wroclaw) and freeMs too, which my
+      change does not touch: the machine was loaded (tests ran at the same time).
+- [x] tsc packages/tracks, apps/fly, tools/bench: 0 errors; tracks tests 112 + 4 passed; a6-reference 1 passed (the
+      generator is not flight code; run anyway). apps/api: no fixture regenerated, no test asked for it (packages/tracks
+      fixtures.test passed with the new generator).
+- [ ] gates.py --only vitest,architecture,i18n,b18 (see the next line of the commit after this one)
+- [ ] browser proof (left, budget): release build; course-path-probe on Wroclaw 70b50d42 and Tunis 887f27aa (exit 0);
+      sonic-int-review r9 (11 of 11); tracks-page probe (no check that passed before fails). Expected no change on Tunis
+      (all five seeds are open courses, the code path is not taken) and on Wroclaw seeds 1-5 (no ring turned there).
+
+Table (b), straight distance spawn -> gate 1 in m, before / after, seeds 1-5 (gate-one-audit x3 and x3-after): the same
+on every row except 0230d903 seed 2: 18.2 / 5.6. All other rows are as in '## Gate 1 from the spawn' below.
+
+What the owner does: nothing new to press. On a generated course that is a closed loop, when the loop can start at the
+gate next to where he appears and still be flown through every gate the right way, gate 1 is that gate; otherwise gate 1
+stays where it was and the arrow at the screen's edge (stage X2) shows him the way to it with its distance.
+
+Not verified: no browser run of this change (left above); the turned ring of 0230d903 seed 2 was not flown in a page.
+Decision for the lead: with the gates' places AND their facing kept, the turn is provable on 1 of 33 rings of the 10
+scans (cause above). Turning more rings needs the new gate 1 and the old gate 1 re-aimed along their new legs in (yaw
+only, places kept): that changes the gates, which the stage forbids, so it is not done.
 - [x] after-run of gate-one-audit (U:/Temp/gsfpv-train3/fix3a/gate-one-audit-x3-after.json): 50 courses, gates, nearest
       and ring/open the same on all 50; turned 1 of 33 rings (0230d903 seed 2: gate 1 18.2 -> 5.6 m). Cause measured
       (three-room world, every turn of seeds 1-6 tried with checkTrack): each gate's axis is laid within 35 deg of ITS leg in;

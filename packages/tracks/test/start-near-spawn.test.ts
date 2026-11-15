@@ -7,13 +7,14 @@ import { IDENTITY, SPAWN_A, threeRooms } from './worlds';
 
 const gate = (i: number, pos: Vec3): TrackGate => ({ id: `g${i + 1}`, shape: { kind: 'ring', diameter: 1.2, tube: 0.05 }, pos, quat: [1, 0, 0, 0], direction: 'forward' });
 const same = (p: Vec3): Vec3 => p;
-const key = (g: TrackGate): string => (g.pos as number[]).join(',');
+const key = (g: TrackGate): string => (g.pos as readonly number[]).join(',');
 const d = (a: readonly number[], b: readonly number[]): number => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
 /** the cyclic successor of every gate by place: the direction of travel of a ring */
 const successors = (gs: readonly TrackGate[]): Map<string, string> => new Map(gs.map((g, i) => [key(g), key(gs[(i + 1) % gs.length]!)]));
 
 describe('startNearSpawn (pure)', () => {
-    const ring = [[0, 1, -10], [10, 1, -10], [10, 1, 0], [3, 1, 1], [0, 1, 0]].map((p, i) => gate(i, p as Vec3));
+    const places: Vec3[] = [[0, 1, -10], [10, 1, -10], [10, 1, 0], [3, 1, 1], [0, 1, 0]];
+    const ring = places.map((p, i) => gate(i, p));
     it('turns a ring to start at the gate nearest the spawn: same gates, same direction, numbered from there', () => {
         const got = startNearSpawn(ring, [3, 1, 3], same, () => true, () => 0);
         expect(got.map(key)).toEqual([ring[3]!, ring[4]!, ring[0]!, ring[1]!, ring[2]!].map(key));
@@ -46,8 +47,9 @@ describe('generateCourse on the three-room world: a closed course starts nearest
     it('another spawn gives the same gates in the same direction, only another gate 1', () => {
         // a spawn beside gate k of the course: the ring is turned to start there when the turned ring is proven whole (its
         // two changed legs clear); every course, turned or not, keeps the gates and their direction
+        // seeds 15 and 18: a turn the proof accepts (searched over seeds 1-40 on this world: 2 courses of rings turn there)
         let turned = 0;
-        for (let seed = 1; seed <= 6; seed++) {
+        for (const seed of [1, 2, 3, 15, 18]) {
             const a = generateCourse(free, walls, opts(seed, SPAWN_A));
             if (a.laps <= 1 || a.gates.length < 3) continue;
             for (let k = 1; k < a.gates.length; k++) {
