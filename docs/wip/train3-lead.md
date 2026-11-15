@@ -402,7 +402,7 @@ Gates (gates.py on the merged tree)
   numbers are in evidence/2026-11-15/train3d/scan-entry-summary.json. Third run: exit 0, typecheck, vitest, api-unittest,
   architecture, i18n, catalog, b18 (B18 PASS), leaks all PASS (U:/Temp/gsfpv-train3/int-d/gates3.log).
 
-Probes (release build of c7606bf9 exit 0, nine published wall folders in dist/walls, serve-csp 5760; summary
+Probes (release build of 9206d8ca exit 0 (= c7606bf9 plus a lead note line; release sha256 b76745f0c40b), nine published wall folders in dist/walls, serve-csp 5760; summary
 U:/Temp/gsfpv-train3/int-d/summary.txt, every probe exit 0 but r11 Tunis narrator on; evidence
 evidence/2026-11-15/train3d/)
 - Narrator off, quiet-probe Backslash on Wroclaw / Tunis: voice 0 / 0 lines and live regions 0 / 0 lines from the press to

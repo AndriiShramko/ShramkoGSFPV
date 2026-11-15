@@ -1,5 +1,5 @@
 {
- "what": "quiet-probe.mjs ENTRY=scan (the sound page's free flight, Enter) on the release build of c7606bf9, render off, http://localhost:5760/en. The full outputs (s-*.json, pic-set.json) are kept in U:/Temp/gsfpv-train3/int-d/evidence-not-in-git: their lesson keys trip the CI secret scan's generic-api-key rule.",
+ "what": "quiet-probe.mjs ENTRY=scan (the sound page's free flight, Enter) on the release build of 9206d8ca (c7606bf9 plus a lead note line), render off, http://localhost:5760/en. The full outputs (s-*.json, pic-set.json) are kept in U:/Temp/gsfpv-train3/int-d/evidence-not-in-git: their lesson keys trip the CI secret scan's generic-api-key rule.",
  "fields": "readyS: s from Enter to the page's ready; moveS: s from Enter to the craft over 0.5 m/s with W held from ready; voiced: lines with words to the voice from the start; liveLastS: the last write to a live region (s); courseS and humS: s from Shift+G to the course and to the hum of gate 1",
  "runs": [
   { "scene": "70b50d42", "setting": "narrator on", "readyS": 2.12, "moveS": 2.6, "courseS": 12.93, "humS": 12.93, "scanLoadingSaid": 1, "errors": 0 },
