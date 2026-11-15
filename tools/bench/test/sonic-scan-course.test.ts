@@ -163,6 +163,8 @@ describe('one course in the scene, the course feature\'s, in Fly by Sound too (l
         // the old design: the runner held a course of its own; now the target is the scene's course's gate 1
         expect(r.host.runner?.target() ?? null).toBeNull();
         expect(r.stage.target).toBe(shared.inUse()!.gates[0]!.id);
+        // O2.6: the hum sounds and leads to that gate (the runner's beacon was null over the scene's course: no target.hum)
+        expect(r.engine.activeCues().filter((c) => c.id === 'target.hum').length).toBe(1);
         // the course feature counts gate 1; the hum goes on to gate 2
         await r.run(120000, follow, () => (shared.inUse()?.next ?? 0) >= 1);
         expect(shared.inUse()!.next).toBe(1);
