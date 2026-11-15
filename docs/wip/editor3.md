@@ -224,9 +224,47 @@ H1 pass 2:
   'edit'; Insert until the course stops growing, then Add gate: the top bar line, digitInLine, a click after it adds
   nothing; shot editor3-full-1920.png. ED-4 step after the flight in scene(): Add gate, click at 0.85 of the height, 4 s,
   problems before/after, shot editor3-floor-add-1920.png (Wroclaw: editor3-wroclaw-floor-add-1920.png).
-- [~] left 5: U:/Temp/gsfpv-train3/editor3/h1/after.sh (detached, started 01:47): release of 2692c7c2, then run.sh twice:
-  after1 (both scenes, KBD=0) and after2 (Tunis, KBD=1, PHONE=1), each with the lock only around its probe.
-- [ ] left 6: gates.py --only vitest,architecture,i18n,b18.
+- [x] left 5 run (release of 4bedab95 = code of 2692c7c2; after1 lock 01:57:37-02:01:16, after2 02:01:19-02:05:13;
+  evidence U:/Temp/gsfpv-train3/editor3/h1/after1/e4.json and after2/e4.json). Facts:
+  - one set at a time seen: turnTool 'turn', sizeTool 'size', moveTool 'move' on both scenes. LOOKED at
+    shots/editor3-drag-1920.png (Tunis): only the Move arrows on the gate, the window closed (title "Course editor" only),
+    top bar Add gate, Undo, Redo, Save, Courses, Keys, Exit with capitals, the gate bar's 11 buttons readable.
+  - turn (the ring found by walk): Tunis quatChange 0.39 at r 190 (diagonal), movedM 0; Wroclaw 0.39 at r 40, movedM 0.
+    PROVEN on both.
+  - scale (key T, the centre box at r 0): Tunis opening 1.2 -> 1.58, Wroclaw 1.5 -> 1.94, movedM 0, quatChange 0. The
+    Wroclaw scale fault is gone (PROVEN).
+  - look on Tunis (right button 140 px): atMovedM 0.48, eye 0 (PROVEN; was 0). Keys W S D A E Q 2.4-2.53 m on both.
+  - ED-3 seen: Tunis flight steps 0-33 mode 'fly', step 34 'edit' (a crash: the edit view came back and the flight loop
+    saw it stay; Wroclaw 60 steps flown). course.next stayed 0 on both (no gate passed; camera-drone profile).
+  - ED-2 (kbd run, keyboard chosen, Tunis): W held 600 ms -> armed false, mode 'edit', the edit camera moved 2.27 m;
+    Space -> mode 'fly', armed true in 305 ms. A second Space did NOT disarm (mode 'fly', armed true after 4.3 s).
+  - ED-4 floor add (click at 0.85 of the height): gates +1 on both; Tunis problems 3 -> 6 (the new gate has problems, likely
+    red), Wroclaw problems 2 -> 2 (not red). The new gate's screen point was behind the camera (z -1) in both: the
+    added gate is placed but not in view. Shots editor3-floor-add-1920.png, editor3-wroclaw-floor-add-1920.png NOT looked at.
+  - kind button: Playwright click timed out on both (log cut at 120 chars; c0b99584 records the reason and clicks as a person).
+  - moveX: hit null on both: hitAt returned the axis '' (fixed in c0b99584: the axis is the mesh node name after ':').
+  - full course: not reached (the second Space left the drone flying, so Insert went to the flight; fullGates 20).
+  - phone 844x390: top bar one line 409 px wide at y 4; gate bar 410x42 at 354,186 (before c0b99584's new place).
+- [x] c0b99584: the gate bar sits centred BAR_CLEAR_PX 210 below the gate (above when no room, the bottom edge on a phone):
+  on 1920 it covered the X arrow's head (seen in editor3-drag-1920.png). Test editor3-gatebar flipped, with -tools, -mouse,
+  -press 21/21, NEG OK (neg_control.py ref HEAD 4bedab95, bar-place.ts), apps/fly tsc 0, tools/bench tsc 0.
+  view-mouse.ts hitAt reads the axis from the hit's meshInstances[0].node.name (PlayCanvas 2.23.2 playcanvas.mjs 121283, 121530).
+- [ ] left (next worker, in this order):
+  1. ED-2 second Space: in the mode the keyboard pilot's Space armed but did not disarm. Read apps/fly/src/devices/keyboard.ts
+     (line 5 says "Space up" in one mode, line 11 "Space arms"; editModeArm line 73-77) and controls.ts toggleArm (line 371):
+     while flying in the mode Space may be throttle; decide the disarm press (Space again is the owner's expectation) and fix
+     in keyboard.ts with a test; a6-reference after (keyboard.ts is input).
+  2. ED-4: the floor-added gate's screen point is behind the camera (z -1) and Tunis problems went 3 -> 6. Read add-place.ts
+     addPoint for a downward ray; the camera should aim at the new gate (course.ts placeAt: aim() as for duplicate). Look at
+     shots/editor3-floor-add-1920.png first.
+  3. Startup line (course.edit.opened, 4 languages) still says "drag its arrows, rings or centre box": say one set at a time
+     (Move, Turn, Size on the gate's bar).
+  4. Release build, then `OUT=U:/Temp/gsfpv-train3/editor3/h1/after3 SCENES=887f27aa,70b50d42 KBD=0 PHONE=0 bash
+     U:/Temp/gsfpv-train3/editor3/h1/run.sh` and `OUT=.../after4 SCENES=887f27aa KBD=1 PHONE=1 bash .../run.sh` (each under
+     10 min of lock): read moveX (hit axis 'x', screenPx follows 80 px), kindButton/kindClickError, full (digitInLine false,
+     gatesAfterClick unchanged), floorAdd; LOOK at editor3-drag-1920.png (bar under the gate), editor3-844.png,
+     editor3-full-1920.png.
+  5. gates.py --only vitest,architecture,i18n,b18 (not run in pass 2).
 
 Old list of pass 1 (items 1-4 done above):
 - [ ] left (next worker, in this order; stopped at the reply budget of 30):
@@ -402,6 +440,10 @@ button shows the table.
 
 ## For the lead
 
+- H1 pass 2 outside the editor folder: apps/fly/src/app/builtin/course.ts (crashHold, 3 lines: ED-3 holds the edit view
+  after a crash until a fresh arm), tools/bench/src/editor3-prove.ts, tools/bench/test/editor3-flying.test.ts and
+  editor3-gatebar.test.ts. ED-3 changes a rule: a crash in the mode's flight now returns to editing (was: flies on).
+
 - Stage E3 touches outside the editor folder: apps/fly/src/app/builtin/course.ts (top bar, Add, flying wiring, no
   ctx.pause('panel')), packages/i18n/locales/fly/course/{en,es,pl,ru}.json (5 keys), tools/bench/test/editor3-flying.test.ts
   (new), tools/bench/test/editor3-gatebar.test.ts (ids).
@@ -468,6 +510,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- H1 pass 2: about 40 replies; the most went to reading the probe's results field by field and finding PlayCanvas's
+  selection shape (hitAt's axis was always ''); a probe that asserts each hook field once (axis non-empty, tool set) in a
+  60 s smoke before the full run would have caught the '' axis and the Space disarm a run earlier.
 
 - H1: about 30 replies; the most went to reading view-mouse.ts, course.ts and the probe in slices and to a 'before' probe that
   waited on the GPU lock held by another lane (01:37 onwards), so no browser run fitted; a lock queue that says the holder
