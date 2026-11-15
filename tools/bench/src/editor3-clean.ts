@@ -168,7 +168,12 @@ async function desk(page: Page): Promise<Record<string, unknown>> {
     await pad(page, [0, 0, 0.1, 0, 0], null);
     const flyNow = await until(() => dbg(page), (d) => d?.mode === 'fly', 4000);
     await pad(page, [0, 0.9, 1, 0, 0], null);
-    const cr = await until(() => dbg(page), (d) => !!d?.crashActive, 15000);
+    let cr = await until(() => dbg(page), (d) => !!d?.crashActive, 15000);
+    // pass 3: on Wroclaw 15 s of full throttle and pitch met nothing (open sky): throttle down and full pitch into the ground
+    if (!cr?.crashActive) {
+        await pad(page, [0, 1, -1, 0, 0], null);
+        cr = await until(() => dbg(page), (d) => !!d?.crashActive, 12000);
+    }
     await pad(page, [0, 0, -1, 0, 0], null);
     out.crashSeen = { modeBefore: flyNow?.mode, crashActive: cr?.crashActive, mode: cr?.mode };
     await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
@@ -213,36 +218,35 @@ async function kbd(page: Page): Promise<Record<string, unknown>> {
     out.droneArmed = fm?.drone;
     const steps: unknown[] = [];
     const climb = process.env.CLIMB ?? '';
-    // pass 3: the gate's world height (the hook's answer); the climb key is held across steps while the drone is under it and
-    // let go only after 400 ms (a shorter Space is the disarming tap); the gate behind: turn (E); ahead: E/Q to centre, W
+    // pass 3: height first, then the way. The gate's world height is the hook's answer. Runs 1 and 2 of pass 3 measured
+    // about 4.2 m of height per second of Space held (3.8 m for about 900 ms, the climb goes on after the key; the game
+    // scheme holds the height without keys), so one press per settled second is held (gap / 4.2) s, at least 300 ms (a
+    // shorter Space is the disarming tap), at most 1 s; Shift (down) the same way. W only within 0.6 m of the gate's
+    // height; the gate behind: turn (E); ahead: E/Q to centre.
     const gateY = (out.put as { gate?: number[] } | null)?.gate?.[1] ?? null;
-    let climbAt = 0;
-    for (let i = 0; i < 80; i++) {
+    let liftAt = 0;
+    for (let i = 0; i < 90; i++) {
         const d = await dbg(page);
         const c = await course(page);
         const g = d?.gates?.[0];
         const y = d?.drone?.[1] ?? null;
-        steps.push([i, c?.next, d?.mode, (await osd()).replace(/\s+/g, ' '), y, g ? g.map((v) => Math.round(v)) : null, climbAt ? 'C' : '']);
+        steps.push([i, c?.next, d?.mode, (await osd()).replace(/\s+/g, ' '), y, g ? g.map((v) => Math.round(v)) : null]);
         if (c?.next !== nextBefore || d?.mode !== 'fly') break;
         const keys: string[] = [];
-        if (climb && gateY !== null && y !== null) {
-            const low = y < gateY - 0.2;
-            if (low && !climbAt) { await page.keyboard.down(climb); climbAt = Date.now(); }
-            else if (!low && climbAt && Date.now() - climbAt > 400) { await page.keyboard.up(climb); climbAt = 0; }
-        }
-        if (i >= 2) {
-            if (g && g[2]! > 0) {
-                const ex = (g[0]! - vp.width / 2) / (vp.width / 2);
-                if (ex > 0.1) keys.push('KeyE'); else if (ex < -0.1) keys.push('KeyQ');
-                if (Math.abs(ex) < 0.4) keys.push('KeyW');
-            } else keys.push('KeyE');
-        }
+        let hold = 250;
+        const gap = climb && gateY !== null && y !== null ? gateY - y : 0;
+        if (Date.now() - liftAt > 1000 && gap > 0.4) { keys.push(climb); hold = Math.min(1000, Math.max(300, (gap / 4.2) * 1000)); liftAt = Date.now() + hold; }
+        else if (Date.now() - liftAt > 1000 && gap < -0.5) { keys.push('ShiftLeft'); hold = Math.min(800, Math.max(150, (-gap / 4.2) * 1000)); liftAt = Date.now() + hold; }
+        if (g && g[2]! > 0) {
+            const ex = (g[0]! - vp.width / 2) / (vp.width / 2);
+            if (ex > 0.1) keys.push('KeyE'); else if (ex < -0.1) keys.push('KeyQ');
+            if (Math.abs(ex) < 0.4 && Math.abs(gap) < 0.6) keys.push('KeyW');
+        } else keys.push('KeyE');
         for (const k of keys) await page.keyboard.down(k);
-        await sleep(250);
+        await sleep(hold);
         for (const k of keys) await page.keyboard.up(k);
         await sleep(50);
     }
-    if (climbAt) { await sleep(Math.max(0, 450 - (Date.now() - climbAt))); await page.keyboard.up(climb); }
     await sleep(300);
     out.steps = steps;
     out.nextAfter = (await course(page))?.next;
