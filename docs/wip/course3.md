@@ -218,6 +218,29 @@ Stage F1-no-freeze (train 3 wave 2; the walls build is this lane's now).
 - [x] First course-path-probe run failed on both scans before Shift+G: the probe's simradio=scenario needs walls
   ("the bot scenario needs a scene with collision", app/test-modes.ts:57), the page never became ready. NOBOT=1 now
   leaves the bot out (the scripted pilot sets the craft alone).
+- [x] 1b932072: second run on Wroclaw failed at once: "Failed to execute 'postMessage' on 'Worker': function ... could
+  not be cloned" (bakeBase's option bag carries bake, onStep, stepTimeout). bake-off-thread.ts workerRequest now sends
+  data only, and a postMessage that throws builds on the page. Test added (5/5); neg_control.py --ref HEAD: NEG OK by
+  assertion (f1/neg2.log). tsc apps/fly, tools/bench: 0 errors.
+- [x] Wroclaw 70b50d42 on the release of 1b932072 (1930 files), dist/walls empty, rendering on, Shift+G, NOBOT=1,
+  GPU lock 02:08:30-02:13:11 (f1/path-70b50d42.json): walls built in the worker (where 'worker', tried 1, level 2,
+  5 cm, read 86.3 s, voxelize 33.5 s, total 119.8 s, solid 452738550); the build resolved; course 207.2 s after Shift+G,
+  24 gates; 435 line changes. Long tasks from Shift+G: 3 in all, none during the build (0-119.5 s): 1094 ms at 120.2 s,
+  4015 ms at 121.3 s, 50 ms at 125.4 s. The shown text stood still once for 4.6 s (121.3 -> 125.9 s, course "finding
+  the free space 0 %" -> "5 %"), the page did not answer the probe for at most 4.1 s: both are the 4015 ms task, which
+  falls just after the walls came in and the course started, not in the build.
+- [ ] Left: find the 4015 ms and 1094 ms main-thread tasks at the walls' arrival (suspects: session.installCollision
+  parsing 452 M solid voxels' octree, consumers of new walls; the course's walls() copy is two slices and is not it);
+  a performance profile (CDP Profiler) around 118-126 s of the same run shows it.
+- [ ] Left: "the drone stops at a wall": without the bot scenario the probe's craft was not armed: passes did not
+  register (next 0, clock 0:00.00) and no crash came (crash reason null). Next: arm the craft in INSTALL (or load the
+  scenario after the walls are in), then rerun STEPS=wroclaw and STEPS=forest.
+- [ ] Left: Forest Floor ab5efa0e course-path run (STEPS=forest; the run at 02:05 hit the postMessage bug).
+- [ ] Item 3 (no resolve in 420 s): not reproduced. Here the same scan built in 120 s with rendering on, in the worker.
+  The 420 s run (lane sonic3, 23:27) fell in the hour when this lane's audits ran with about 48 node processes on the
+  PC (Status fixes pass 2): the read step is CPU work (86 s quiet), so CPU starvation is the likely cause, not
+  measured. Whatever the cause, the step limit now ends a step after 3 x its estimate (Wroclaw level 2: 305 s) and
+  takes the next lighter step.
 
 ## Facts (measured)
 
