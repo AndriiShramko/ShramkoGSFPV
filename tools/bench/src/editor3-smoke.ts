@@ -123,14 +123,25 @@ async function scene(page: Page, id: string, log: string[]): Promise<Record<stri
     await sleep(1200);
     await page.keyboard.press('Shift+Tab');
     await sleep(1500);
-    const d1 = (await dbg(page))!;
+    let d1 = (await dbg(page))!;
     const sel0 = (await ed(page)).selected ?? -1;
     // a click on another gate on screen, away from the handles
-    const sc = d1.stand.screen;
-    const cand = d1.gates
+    const pickable = (d: Dbg): { g: number[]; i: number }[] => d.gates
         .map((g, i) => ({ g, i }))
-        .filter(({ g, i }) => i !== sel0 && (g[2] ?? 0) > 0 && g[0]! > 20 && g[0]! < vp.width - 20 && g[1]! > 20 && g[1]! < vp.height - 20 && Math.hypot(g[0]! - sc[0]!, g[1]! - sc[1]!) > 140)
+        .filter(({ g, i }) => i !== sel0 && (g[2] ?? 0) > 0 && g[0]! > 20 && g[0]! < vp.width - 20 && g[1]! > 20 && g[1]! < vp.height - 20 && Math.hypot(g[0]! - d.stand.screen[0]!, g[1]! - d.stand.screen[1]!) > 140)
         .sort((a, b) => (a.g[2] ?? 0) - (b.g[2] ?? 0));
+    let cand = pickable(d1);
+    // integration E: when the framed gate fills the view and no other gate is on screen, the view backs off (S held, the
+    // edit view's own fly key) up to four times so another gate comes into the picture
+    let backs = 0;
+    for (; backs < 4 && !cand[0]; backs++) {
+        await page.keyboard.down('KeyS'); await sleep(700); await page.keyboard.up('KeyS');
+        await sleep(600);
+        d1 = (await dbg(page))!;
+        cand = pickable(d1);
+    }
+    out.backs = backs;
+    const sc = d1.stand.screen;
     if (cand[0]) {
         const clicks: Record<string, unknown>[] = [];
         let got = { ok: false, v: {} as Ed, ms: 0 };
