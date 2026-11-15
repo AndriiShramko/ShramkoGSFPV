@@ -70,6 +70,11 @@ describe('a course of gates in a free scan flight (S3)', () => {
         expect(courseAnswer({ t: 'track', job: 4, track: null, ms: 1 }, 4)).toEqual({ ok: false, why: 'none fits' });
         expect(courseAnswer({ t: 'error', job: 4, message: 'x' }, 4)).toEqual({ ok: false, why: 'failed' });
     });
+
+    it('waits through the worker\'s progress messages for the course (sonic3 S1: they ended the ask as failed)', () => {
+        expect(courseAnswer({ t: 'progress', job: 4, step: 'free', estMs: 900 }, 4)).toBeNull();
+        expect(courseAnswer({ t: 'progress', job: 4, step: 'lay', estMs: 1500 }, 4)).toBeNull();
+    });
 });
 
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));

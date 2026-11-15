@@ -5,6 +5,20 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage S1-count-a-course (train 3 wave 3, last finishing lane):
+- [x] Merge of course3 (18e6a876) into sonic3: clean, no conflicts. apps/fly tsc 0 errors; tools/bench/test/sonic-* and
+  a6-reference: 39 files, 506 passed, 10 skipped (a6 hash unchanged).
+- [x] r11 miss record (2ca73780): for each attempt that leaves 'flying' without a pass, the last 3 s: craft in the gate's frame
+  (closest to the ring centre, the plane crossing and its side), hum bearing against the true bearing of the gate centre,
+  offset of the hum's aim point from the gate centre (line look-ahead), speed and keys held. Hook (feature.ts) gives the
+  gate's quat and shape and `aim` (runner.beaconTarget). r11 with rendering off takes no GPU lock.
+- [x] FOUND by the first counted runs (release 2ca73780, Tunis 887f27aa 3 m/s, render off and render on, logs
+  U:/Temp/gsfpv-train3/sonic3/s1/a-*.log, b-*.log): N said "making a course" and no course came in 420 s. Cause: the
+  course3 worker posts 'progress' messages before the track; sonic/course-ask.ts courseAnswer read any other message of the
+  job as 'failed' and ended the worker at the first progress message. Fix: progress is no answer. Test sonic-scan-course
+  "waits through the worker's progress messages": 6 of 6, NEG OK on the old course-ask.ts; apps/fly tsc 0 errors.
+- [ ] Counted runs again (release build first): Tunis 3, Housefly 3, Wroclaw 3; then Tunis 5, Wroclaw 5; miss records read.
+
 Stage Y2-prove (train 3 wave 2, finishing):
 - [x] Y1 LEFT 1: a course made with N over an in-place flight keeps the pilot's crash rule and bump (mode.ts ModeStart.keepRules,
   lessons.ts passes `free !== null && freeHere`), so the switch off after it starts no new life (bbb26df8). Test sonic-in-place

@@ -66,6 +66,9 @@ export function courseJob(s: CourseSource, seed: number, job: number, created: s
 /** The worker's answer to `job` as the page reads it; null for an answer to another job. */
 export function courseAnswer(m: FromCourseWorker, job: number): CourseAnswer | null {
     if (m.job !== job) return null;
+    // sonic3 S1: the worker of course3 says each step before it ('progress'); that is no answer (taken as 'failed' before, N made
+    // no course on any scan in the browser: courseMaking, then nothing)
+    if (m.t === 'progress') return null;
     if (m.t === 'track') return m.track ? { ok: true, track: m.track } : { ok: false, why: 'none fits' };
     return { ok: false, why: 'failed' };
 }
