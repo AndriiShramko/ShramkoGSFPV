@@ -29,7 +29,7 @@ describe('editor3 H2-look', () => {
     });
 
     it('in the edit view the stats card, the controller hint, the lap clock and the course line, the note of the course and the take-off prompt are hidden', () => {
-        expect(CSS).toMatch(/body:has\(\.course-editor:not\(\.ce-flying\)\) :is\(\.osd-stats, \.arm-card, \.course-hud, \.hud-note, \.gate-msg\) \{ display: none !important; \}/);
+        expect(CSS).toMatch(/body:has\(\.course-editor:not\(\.ce-flying\)\) :is\(\.osd-stats, \.arm-card, \.course-hud, \.hud-note, \.gate-msg, \.crash-toast\) \{ display: none !important; \}/);
     });
 
     it('on a phone every button of the top bar and the gate bar is a 44 px target', () => {

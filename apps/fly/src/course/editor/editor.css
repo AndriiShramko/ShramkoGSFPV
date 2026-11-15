@@ -150,7 +150,7 @@
 }
 .ce-topbar .ce-tb:hover, .ce-topbar .ce-tb:focus-visible, .ce-topbar .ce-tb[aria-pressed='true'] { border-color: #a6ff1a; }
 .ce-topbar .ce-tb[aria-pressed='true'] { background: #2a3a12; }
-.ce-topbar .ce-tb-line { color: #c9d1db; font-size: 0.85rem; padding: 0 4px; }
+.ce-topbar .ce-tb-line { color: #c9d1db; font-size: 0.85rem; padding: 0 4px; max-width: 360px; } /* 360 px: an estimate, keeps the bar off the speaker button at 1920 (H2 g) */
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
 .ce-topbar.flying .ce-tb { display: none; }
 .ce-topbar.flying { pointer-events: none; }
@@ -202,9 +202,9 @@
 .ce-size-tag[hidden] { display: none; }
 /* lane editor3 H2-look (the lead's decision): in the edit view the flight's windows are hidden: the end-of-flight stats card
    (ui/osd-stats.ts), the controller hint (ui/hud.ts arm-card), the lap clock and the course line (course/hud.ts), the
-   course's note and the take-off prompt (ui/hud.ts hud-note, gate-msg). The mode
+   course's note and the take-off prompt (ui/hud.ts hud-note, gate-msg), the crash toast (ui/crash-overlay.ts). The mode
    flag is the one the page reads (devices/keyboard.ts EDIT_MODE): back in the test flight (ce-flying) and after Exit. */
-body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud, .hud-note, .gate-msg) { display: none !important; }
+body:has(.course-editor:not(.ce-flying)) :is(.osd-stats, .arm-card, .course-hud, .hud-note, .gate-msg, .crash-toast) { display: none !important; }
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }
