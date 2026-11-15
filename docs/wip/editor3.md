@@ -5,6 +5,38 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 ## Status
 
 Stage H2-look (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
+- Pass 2 (2026-11-15, NOT finished, stopped at the reply budget):
+  - [x] H2.3 (a) code 600e08a4: editor.css hides .hud-note (course.ts flashes 'Gates: 24. Fly through gate 1') and .gate-msg
+    (ui/hud.ts take-off prompt) in the edit view too; the test regex follows; NEG OK (neg_control.py ref HEAD, editor.css).
+    Browser: in the edit view .hud-note and .gate-msg display none at 1920 and 844 (Tunis and Wroclaw); after Exit both
+    display block again (Tunis).
+  - [~] H2.4 (b) code 600e08a4: on a phone the top bar sits at top calc(--top-row-bottom + 4px), left 8px, buttons padding
+    3px 5px. Measured 844x390 (Tunis): top bar [8,82,389,134], window [400,86,780,121], gate bar [8,328,550,382], top row
+    .top-actions [428,38,828,78]: the top bar no longer covers the top row; every top bar and gate bar button 44x44 (7, 11).
+    NOT done: it now covers the scene credit .attribution [16,44,412,119] (with the Walls chip) and the 160 px handle square
+    (top~handles, Tunis [120,116,280,276], Wroclaw [122,123,282,283]); the window covers the credit too; the gate bar covers
+    the voxel panel (.wv-label, .wv-note), the OSD's bottom line and the REC button [491,310,590,350]. The phone needs one
+    layout decision: in the edit mode hide the credit, the voxel panel, the REC row and the OSD lines (smallest: add them to
+    the :has rule at max-height 500px), or move the top bar. Record U:/Temp/gsfpv-train3/editor3/h2b/look.json 'covers'.
+  - [x] H2.5 gates.py --only vitest,architecture,i18n,b18 on 600e08a4: all PASS (vitest 120 s; U:/Temp/gsfpv-gates-20261115-093834).
+  - [x] H2.6 release of 600e08a4 (build exit 0, 87 s, sha256 0d0c1844...), runs on 5802 Tunis and Wroclaw 70b50d42 (stand-in
+    walls copied into dist/walls), U:/Temp/gsfpv-train3/editor3/h2b/look.json and look-70b50d42.json:
+    Size by the x box: Tunis 1.2 -> 1.43 m, Wroclaw 1.5 -> 1.79 m, moved 0, turn 0, scale mid-drag [1.19,1,1]; centre box:
+    Tunis 1.43 -> 1.61, Wroclaw 1.79 -> 2.04, moved 0, turn 0, scale [1.13..1.14 x3]; the top bar line 'Size changed. Gate 2
+    of 24: ring|square, N m'. Edit view at 1920: nothing of the page covered by the three parts, no overlaps.
+  - left (next worker, in this order):
+    c2. The pad test flight now starts (in the flight rects the top bar is the 'flying' strip and the window is display none)
+        but it CRASHED: editor3-after-flight-1920.png shows CRASH, ALT -2.1 m and the crash card 'Crash 8.9 m/s, back 5 s
+        in 1.2 s' with Enter/R/N/Shift+F keys standing over the lower middle of the edit view after the return to edit.
+        That card is a flight window that is NOT hidden: find its class (ui/ crash card) and add it to the :has rule. The
+        probe's disarm sets throttle -1 first (as editor3-prove.ts), which drops the camera drone into the ground: disarm
+        with the sticks centred. .osd-stats never appeared (absent in flight, after disarm and after Exit), so the stats
+        card is still unproven; dbg mode read 'edit' at 3 s, the flight started later: wait up to 6 s.
+    g.  At 1920 after the flight the top bar grew to [480,8,1440,55] (its line 'Click a gate to change it. Arm your controller
+        to fly the course at once, disarm to edit again' wraps to two lines) and covers the speaker button [1404,38,1446,78].
+        Give .ce-tb-line a max-width (about 420 px, an estimate) or shorten the line.
+    b.  the phone layout decision above (H2.4).
+    d2. editor3-edit-clean-1920.png and editor3-844.png of pass 2 not looked at; editor3-after-flight-1920.png looked at (above).
 - [x] H2.0 origin/main had no new commits after the H1.0 merge 607e1cb9 (git log HEAD..origin/main empty), no merge needed.
 - [x] H2.1 code fb81ed2d: view-mouse.ts Size tool: x and y boxes (z too for a cube-frame, put(..., deep)) plus the centre
   box (axisBoxSize 0.22, axisCenterSize 0.3, axisLineThickness 0.04: estimates); pose() takes the axis pulled furthest from
@@ -1010,6 +1042,9 @@ button shows the table.
     leaves (proven). Loading the saved course again: not proven.
 
 ## Cost notes
+- editor3 H2-look pass 2: most turns went to shell quoting (a heredoc python with an apostrophe failed and a test title
+  with an apostrophe broke the parse) and to reading the probe; a probe that lists what each part covers found three new
+  faults in one run, cheaper than looking at pictures first.
 
 - H2-look: most turns went to reading the 856-line probe and PlayCanvas's ScaleGizmo, and to two failed probe runs (a 'var
   __name' init script stays local to Playwright's wrapper; a backgrounded 'cd && node &' chain left the shell elsewhere).
