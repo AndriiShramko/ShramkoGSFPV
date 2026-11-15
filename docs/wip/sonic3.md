@@ -5,6 +5,61 @@ train3 (from its main 197c2760). Design: docs/wip/sonic3-plan.md.
 
 ## Status
 
+Stage S2-switch-and-speed (train 3 wave 3):
+- [x] Release build of 37e1547f; walls 70b50d42 v1 (10 cm) and d10c5638 v1 (5 cm) copied into dist/walls.
+- [x] Probe r11 (e5969b28): turns to the open side before W (12 horizontal rays of session.collision, 40 m, estimate), records
+  the sim tick at the press and the cue and the sim's events (contact, crash, respawn, disarm) of the 400 ticks after the
+  press; the off lifts a landed craft first and closes a pause menu left up; per-run evidence names (Z5_TAG). Bench tsc 0.
+- [x] Item 1, switch off after a course made with N: the pass-3 off record read a PAUSED flight (Tunis 5.12 before and after,
+  moved 0: the pause menu of the label read was still up). With the probe fixed (runs e-*, release 37e1547f, render off,
+  U:/Temp/gsfpv-train3/sonic3/s2/e-*.json, summary s2/sum.py): Housefly 3 m/s 5.15 -> 5.15, Housefly 5 m/s 5.13 -> 5.13,
+  Tunis 3 m/s 5.15 -> 5.15, all with no new life. No session change needed: keepRules (bbb26df8) holds. Wroclaw 3: 3.5 ->
+  3.5, then a 'crash' life after the off (the pilot's own crash under the ordinary rules; no longer counted against the
+  switch). Wroclaw 5: the probe's take-off after landing ended 'stuck-flipped' (0.24 m/s), so the speed check failed on
+  the precondition.
+- [x] Item 2, Tunis switch on: with the open-side turn and the event spy, 5 of 5 switch-ons keep the speed with no life and
+  0 sim events in the 0.4 s after the press (Tunis 6.95 -> 7.67 in q, 2.23 -> 3.26 and 6.9 -> 7.87 in e; Wroclaw 7.03 ->
+  7.74, 6.9 -> 7.93; Housefly 6.99 -> 7.75, 7.05 -> 7.96); ticks against page time at the cue -51 to +68 ms (no catch-up).
+  The spawn of Tunis faces a wall 25.7 m ahead (ray, q run); pass 3's 6.63 -> 0.18 had the craft at x 25.62 at the cue, at
+  that wall. Why it had flown 22 m in the 0.23 s of page time is not measured (that run had no tick read; a stalled frame
+  that ran many ticks at once is a guess).
+- [x] Item 3, speed lessons in a browser (r12, release 37e1547f, GPU lock taken by the probe per lesson; s2/r12-*.json):
+  | Lesson | phase | attempt | gates | flight s | median / max m/s | dodges | spoken tail |
+  |---|---|---|---|---|---|---|---|
+  | speed-1 | passed | 1 | 6 | 52 | 1.5 / 1.67 | 4 | pass, fly.lesson-passed (no moved-on) |
+  | speed-2 | passed | 1 | 6 | 37 | 2.51 / 8.75 | 3 | pass, fly.lesson-passed |
+  | speed-3 | passed | 1 | 6 | 33 | 3.51 / 11.8 | 3 | pass, fly.lesson-passed |
+  | speed-4 | passed | 1 | 6 | 31 | 4.56 / 13.93 | 3 | pass, fly.lesson-passed |
+  All four counted on attempt 1. The max values over the lesson cap are single 200 ms samples (a position jump such as a
+  placement at the lesson start is a guess, not measured); 3 to 4 dodges each (stall rule fired; where not read).
+- [x] Item 4, ear-pilot table (r11 render off, Z5_FLIGHT_S 300, three chains in parallel on ports 5830 to 5832):
+  | Scan | asked m/s | N to gate 1 | course | flight s | median / max m/s | misses | highest clean |
+  |---|---|---|---|---|---|---|---|
+  | Wroclaw 70b50d42 (published 10 cm) | 3 | 24.4 s | NOT counted: at the cap, 23 of 24 gates seen, miss at g8 | 303 | 1.04 / 2.99 | 1 | |
+  | Wroclaw 70b50d42 | 5 | 25.5 s | COUNTED, 24 gates, attempt 1, best time 2 min 4 s | 127 | 4.07 / 5.0 | 0 | 5 m/s |
+  | Housefly d10c5638 (published 5 cm) | 3 | 125.3 s | COUNTED, 5 gates | 54 | 0.65 / 2.9 | 1 | |
+  | Housefly d10c5638 | 5 | 60.4 s | COUNTED, 5 gates | 63 | 1.77 / 4.99 | 1 | 5 m/s |
+  | Tunis 887f27aa | 3 | 26.2 s | NOT counted: at the cap, misses at g11 (0.9 m from the centre, did not cross the plane) | 303 | 0.87 / 2.99 | 2 | |
+  | Tunis 887f27aa | 5 | 26.8 s | NOT counted: moved on after attempt 3 (miss at g14, 0.8 m, plane not crossed) | 216 | 3.68 / 4.99 | 3 | none |
+  5 m/s is the scan free flight's cap, so 5 is the highest asked. Housefly N to gate 1 at 3 m/s took 125 s (60 s at 5): not
+  measured why.
+- [~] Item 5, screenshots: the counted runs above ran with rendering off, so their z5-<scan>-<speed>-inplace.png and -end.png
+  in U:/Temp/gsfpv-train3/shots show the HUD and gates only (z5-70b50d42-5-end.png looked at: "Counted 1 of 1", "New best
+  time: 2 minutes 4 seconds", TEST MODE render=off banner). Render-on runs not done (reply budget).
+- [ ] LEFT after S2, in this order:
+  1. Render-on counted runs for the shots (GPU lock, about 3 to 5 min each, under the 10-minute rule): Z5_RENDER=on PORT=5830
+     bash U:/Temp/gsfpv-train3/sonic3/s2/runs.sh z "70b50d42:5 d10c5638:5" (the probe takes the lock itself for render on);
+     LOOK at z5-70b50d42-5-inplace.png and -end.png, same for d10c5638, and name them z5-<scan>-inplace.png / -end.png.
+  2. Tunis: no counted course at 3 or 5. Every miss record: the craft within 0.8 to 0.9 m of the gate centre and the plane
+     not crossed in the last 3 s, hum error up to 85 to 106 deg near the gate (g11 aim offset 3 m: the gate aim's beyond
+     point). Read e-887f27aa-3.json and -5.json miss rows first; the gate aim near the plane (package src/lesson/gate-aim.ts)
+     is the suspect, a guess.
+  3. The off's take-off after landing (Wroclaw 5: 'stuck-flipped'): the probe should climb straight up first (Space alone,
+     then W); probe only.
+  4. Regression: tools/bench/src/sonic-int-review.ts r9 (lessons; takes the GPU lock), and gates.py --only
+     vitest,architecture,i18n,b18 on the head. a6-reference not needed: no flight, input or collision code changed in S2
+     (probe only).
+
 Stage S1-count-a-course (train 3 wave 3, last finishing lane):
 - [x] Merge of course3 (18e6a876) into sonic3: clean, no conflicts. apps/fly tsc 0 errors; tools/bench/test/sonic-* and
   a6-reference: 39 files, 506 passed, 10 skipped (a6 hash unchanged).
@@ -721,3 +776,4 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
   run); one script queueing every run with the next one's setup would have cut the waits to one call; the walls-built case
   should have been run first with rendering on, as the walls lane did.
 - 2026-11-15 S1 pass 3: most turns went to reading the 1388-line probe and the long status file in slices, and to waiting for runs; the batch of 5 runs (30 min) did not fit in the budget, so 2 were stopped. Cheaper: start the batch in the first reply (release build and runs detached), and keep one summary script that prints gates, miss gate, spy and switch-on in one call.
+- 2026-11-15 S2: most turns went to finding why the off and on checks failed (a paused flight, a spawn facing a wall) before any run; running three render-off chains and the r12 lessons in one detached batch made the data arrive in two waits; the render-on shots needed a second batch the budget did not hold, so a batch with render on for the 5 m/s runs from the start would have saved it.
