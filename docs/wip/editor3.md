@@ -4,6 +4,37 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage I1-gizmo (train 3, 2026-11-15):
+- [x] I1.0 merge origin/main 6999085a into editor3: 47f4d434 (no conflicts). Release build of 47f4d434's tree: exit 0
+  (U:/Temp/gsfpv-train3/editor3/i1/build-before.log); that dist is kept as U:/Temp/gsfpv-train3/editor3/i1/dist-before
+  for the before numbers.
+- [x] I1.1 code (commit below "editor3 I1: frame selected ..."):
+  - D1 course/editor/frame.ts frameGate: distance size / (2 * 1/3 * tan(vfov/2)), eye 35 deg aside of the gate's axis on the
+    view's side, 20 deg above (a dive gate lying flat: 55 deg above); fallbacks in order +35, -35, +60, -60 at that distance,
+    then nearer steps (x0.75) down to 1.5 gate sizes; a place is free when the walls ray from the gate's centre meets no wall
+    before eye + 0.3 m; none free: the view stays (__gsfpvEditMeasure().frame = {blocked: true}). Glide 400 ms (blendCam);
+    keys or look end it; a drag never moves the view. course.ts frames on every new selection (showEd, framedId) and aim()
+    (refused Save, key select) now frames too; F frames again (view-mouse onKey, stops the page's F), CAM_ROWS 'F' with
+    course.edit.cam.frame en es pl ru. Size = the opening (an estimate of the gate's largest size).
+  - D2 course/editor/handle-look.ts: px sizes (arrows 90 px with 16x10 px tips, rings 85 px radius, lines 2.5 px, size
+    cubes 12 px at 90 px, centre cube 14 px, pick tolerance 8 px); gizmo size = 100 / (0.3 * half extent px) so one gizmo
+    unit is 100 CSS px (PlayCanvas 2.23.2 _updateScale); setTheme: x (0.96,0.16,0.16), y (0.18,0.84,0.18), z (0.16,0.42,1),
+    hover and dragged yellow (1,0.86,0.08), alpha 1. Move planes off; Size shows x, y, z cubes for every kind. Tags beside the
+    handle while dragged: course.edit.moveTag (m), course.edit.turnTag (deg), sizeTag (en es pl ru).
+  - D3 course/view.ts PAINT selected bright yellow [1, 0.92, 0.25] (was magenta); the others unchanged.
+  - D4 course/editor/ring-pick.ts: a ring whose drawn minor axis is under 25 px is taken by the edit view when the pointer is
+    within 10 px of its line; turn = 0.5 deg per px of travel across the line (an estimate), snapped to 15 deg unless Ctrl.
+  - Probe hook window.__gsfpvEditMeasure(): eyeDist, gatePx (the opening along the gate's up), viewH, rings (minor px x y z),
+    parts (each shown handle mesh's page rectangle), frame. __gsfpvEditHit names an edge ring 'edge:x|y|z'.
+  - Checks: tools/bench/test/editor3-i1.test.ts 10 tests pass; NEG OK (neg_control.py ref HEAD, view-mouse.ts course.ts
+    view.ts keys.ts); editor3-*.test.ts 13 files 75 tests pass (editor3-h2look: the z cube is now always on); apps/fly and
+    tools/bench tsc 0 errors.
+- [ ] I1.2 release build of the I1 tree, then before numbers (dist-before) and after numbers on Tunis 887f27aa and Wroclaw
+  70b50d42 (published-walls stand-in): eye distance, gate px, handle rects, ring minors.
+- [ ] I1.3 browser proof (real mouse and keys, holds of at most 10 min): click select, Tab x3, F after flying away, X arrow
+  2 m, each ring 30 deg (rotation before and after), an edge-on ring, end cube and centre cube, undo each; six pictures.
+- [ ] I1.4 gates.py --only vitest,architecture,i18n,b18; status; commit.
+
 Stage H3-prove (train 3, 2026-11-15):
 - [x] H3.0 code e8d3655b: the crash toast (.crash-toast, ui/crash-overlay.ts) hidden in the edit view (H2 c2); the top bar
   line max-width 360 px (an estimate, H2 g); editor3-h2look test NEG OK (neg_control.py ref HEAD, editor.css);

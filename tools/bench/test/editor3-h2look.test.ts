@@ -13,9 +13,9 @@ const COURSE = read('apps/fly/src/app/builtin/course.ts');
 
 describe('editor3 H2-look', () => {
     it('the Size tool has a box at the end of x and y (z for a cube) and the centre box, each changing the one opening', () => {
-        // only the planes and z are off at the start; x and y stay on
-        expect(VIEW).toMatch(/for \(const a of \['yz', 'xz', 'xy', 'z'\] as const\) size\.enableShape\(a, false\)/);
-        expect(VIEW).toMatch(/this\.size\.enableShape\('z', deep\)/);
+        // only the planes are off; train 3 I1 (D2): x, y and z each have a cube at the end, for every kind of gate
+        expect(VIEW).toMatch(/for \(const a of \['yz', 'xz', 'xy'\] as const\) size\.enableShape\(a, false\)/);
+        expect(VIEW).not.toMatch(/this\.size\.enableShape\('z', deep\)/);
         // the factor is the axis pulled furthest from 1 (an axis box scales one axis only)
         expect(VIEW).toMatch(/\[sc\.x, sc\.y, sc\.z\]\.reduce/);
         // the opening in metres beside the handle while it is dragged, the top bar's line after it

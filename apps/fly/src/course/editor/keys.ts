@@ -120,6 +120,7 @@ export const KEY_ROWS: readonly { readonly caps: string; readonly labelKey: stri
 export const CAM_ROWS: readonly { readonly caps: string; readonly labelKey: string }[] = [
     { caps: 'W A S D', labelKey: 'course.edit.cam.move' },
     { caps: 'E / Q', labelKey: 'course.edit.cam.upDown' },
+    { caps: 'F', labelKey: 'course.edit.cam.frame' },
     { caps: 'Shift', labelKey: 'course.edit.cam.fast' },
     { caps: '', labelKey: 'course.edit.cam.look' },
     { caps: '', labelKey: 'course.edit.cam.wheel' },

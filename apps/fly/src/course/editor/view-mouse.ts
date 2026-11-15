@@ -3,13 +3,16 @@
 // mouse", "move around the scene with the usual W A S D, up, down". The math is pure and tested (fly-cam.ts, pick.ts,
 // drag.ts); this file only binds it to the canvas, the keys and PlayCanvas's gizmos. The mouse stays free in this mode: the
 // editor's window is one of mouse-look.ts CURSOR_WINDOWS, so no pointer lock is held.
-import { Entity, Gizmo, Quat as PcQuat, RotateGizmo, ScaleGizmo, TranslateGizmo, Vec3 as PcVec3 } from 'playcanvas';
+import { Color, Entity, Gizmo, Quat as PcQuat, RotateGizmo, ScaleGizmo, TranslateGizmo, Vec3 as PcVec3 } from 'playcanvas';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
 import { CAM_KEYS, camForward, camRay, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
 import { fromPcQuat, scaledOpening, toPcQuat, type FlownPose } from './drag';
 import { pickGate, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
+import { blendCam, FRAME_GLIDE_MS } from './frame';
+import { AXIS_RGB, gizmoSize, HANDLE_PX, units } from './handle-look';
+import { minorAxis, pickRing, ringTurnDeg, type DrawnRing, type P2 } from './ring-pick';
 
 /** a press that moves less than this before it is let go is a click, px (an estimate) */
 export const CLICK_SLOP_PX = 4;
@@ -39,6 +42,11 @@ export interface EditViewHost {
     onTool?(tool: Tool): void;
     /** H2-look: the words beside the Size handle for an opening of `m` flown metres */
     sizeText?(m: number): string;
+    /** I1 (D2): the words beside the Move and Turn handles while dragged: flown m from the start, degrees from the start */
+    moveText?(m: number): string;
+    turnText?(deg: number): string;
+    /** I1 (D1): F pressed: frame the selected gate again */
+    onFrame?(): void;
 }
 
 type Handle = TranslateGizmo | RotateGizmo | ScaleGizmo;
@@ -78,6 +86,18 @@ export class EditView {
     /** H2-look: the Size set and the opening in metres shown beside it while it is dragged */
     private readonly size: ScaleGizmo;
     private readonly tag: HTMLDivElement;
+    /** I1 (D2): the Move and Turn sets (the tags beside them while dragged) */
+    private readonly move: TranslateGizmo;
+    private readonly turn: RotateGizmo;
+    /** the stand-in's pose when a drag began (the tags say how far from it) */
+    private readonly startPos = new PcVec3();
+    private readonly startRot = new PcQuat();
+    /** I1 (D1): the glide to a framing, and the canvas size the handles were last fitted to */
+    private glide: { from: FlyCam; to: FlyCam; t0: number } | null = null;
+    private fitW = 0;
+    private fitH = 0;
+    /** I1 (D4): a ring seen edge-on taken by the edit view: its axis (0 x, 1 y, 2 z), its line's direction, the press */
+    private ring: { axis: number; tangent: P2; x: number; y: number } | null = null;
 
     constructor(host: EditViewHost, start: FlyCam) {
         this.host = host;
@@ -101,11 +121,10 @@ export class EditView {
         // gate is sized along (x and y in its plane, z too for a cube, put()) and a big box in the centre. A gate has one size
         // (its opening), so each of them changes that one number (pose() reads the axis pulled); no planes. Sizes: estimates.
         size.uniform = true;
-        for (const a of ['yz', 'xz', 'xy', 'z'] as const) size.enableShape(a, false);
-        size.axisBoxSize = 0.22;
-        size.axisCenterSize = 0.3;
-        size.axisLineThickness = 0.04;
+        for (const a of ['yz', 'xz', 'xy'] as const) size.enableShape(a, false);
         this.size = size;
+        this.move = move;
+        this.turn = turn;
         this.tag = document.createElement('div');
         this.tag.className = 'ce-size-tag';
         this.tag.hidden = true;
@@ -114,9 +133,10 @@ export class EditView {
         // PlayCanvas 2.23.2 shape names (build/playcanvas.mjs _shapes): the move handle's centre is the sphere 'xyz' (it took
         // the centre drag from the scale box in the smoke probe of E2 pass 2), the turn handle's are 'face' (f) and 'xyz'
         move.enableShape('xyz', false);
+        for (const a of ['yz', 'xz', 'xy'] as const) move.enableShape(a, false);
         turn.enableShape('face', false);
         turn.enableShape('xyz', false);
-        turn.size = 1.5;
+        this.look(move, turn, size);
         this.handles = [move, turn, size];
         this.byPress = [size, move, turn];
         for (const h of this.handles) {
@@ -124,7 +144,9 @@ export class EditView {
             h.on('transform:start', () => {
                 this.dragging = true;
                 this.dragged = true;
+                this.glide = null;
                 this.openingAtStart = this.opening;
+                this.startOf();
             });
             // G2: a move from a gizmo that still believes it drags after the button went up is not a drag of ours
             h.on('transform:move', () => {
@@ -132,6 +154,7 @@ export class EditView {
                 const p = this.pose(this.openingAtStart);
                 host.onDrag(p, false);
                 if (h === this.size) this.showTag(scaledOpening(p.opening, 1));
+                else this.showMoveTurnTag(h === this.move);
             });
             h.on('transform:end', () => {
                 this.tag.hidden = true;
@@ -161,8 +184,9 @@ export class EditView {
     /** The stand-in at the selected gate (null: no gate, the handles hidden). Not while a drag holds it. */
     put(p: FlownPose | null, gate: string | number | null = null, deep = false): void {
         if (this.dragging) return;
-        // H2-look: a cube's opening is also its depth, so its Size tool has the z box too
-        this.size.enableShape('z', deep);
+        // I1 (D2): Size shows three lines with a cube at each end (each changes the one opening); `deep` kept for the callers
+        void deep;
+        this.fit();
         this.standPose = p;
         this.tool = toolAfter(this.tool, this.toolGate, gate);
         this.toolGate = gate;
@@ -222,8 +246,142 @@ export class EditView {
 
     /** The camera put somewhere (a key selected a gate: the view goes to it). */
     setCam(c: FlyCam): void {
+        this.glide = null;
         this.cam = c;
         this.apply();
+    }
+
+    /** I1 (D1): the view glides to `c` in FRAME_GLIDE_MS (a framing); false while a drag holds the view */
+    glideTo(c: FlyCam): boolean {
+        if (this.dragging || this.suspended) return false;
+        this.glide = { from: this.cam, to: c, t0: performance.now() };
+        return true;
+    }
+
+    /** I1 (D2): the handles in CSS px whatever the canvas and the field (handle-look.ts), refitted when the canvas changes */
+    private fit(): void {
+        const w = this.canvas.clientWidth;
+        const hh = this.canvas.clientHeight;
+        if (w === this.fitW && hh === this.fitH) return;
+        this.fitW = w;
+        this.fitH = hh;
+        const cc = this.host.camera.camera as CameraComponent;
+        const k = gizmoSize((cc.horizontalFov ? w : hh) / 2);
+        for (const h of this.handles) h.size = k;
+    }
+
+    /** I1 (D2): saturated axes, yellow under the mouse and while dragged, thin lines, small tips (handle-look.ts) */
+    private look(move: TranslateGizmo, turn: RotateGizmo, size: ScaleGizmo): void {
+        const c = (v: readonly number[]): Color => new Color(v[0], v[1], v[2], 1);
+        const base = { x: c(AXIS_RGB.x), y: c(AXIS_RGB.y), z: c(AXIS_RGB.z), xyz: c(AXIS_RGB.centre), f: c(AXIS_RGB.centre) };
+        const hov = c(AXIS_RGB.hover);
+        const theme = { shapeBase: base, shapeHover: { x: hov, y: hov, z: hov, xyz: hov, f: hov }, guideBase: { x: c(AXIS_RGB.x), y: c(AXIS_RGB.y), z: c(AXIS_RGB.z) } };
+        const P = HANDLE_PX;
+        // PlayCanvas 2.23.2 TransformGizmo.setTheme (build/playcanvas.mjs 121711)
+        for (const h of [move, turn, size]) (h as unknown as { setTheme: (t: unknown) => void }).setTheme(theme);
+        move.axisLineThickness = units(P.line);
+        move.axisArrowLength = units(P.arrowLength);
+        move.axisArrowThickness = units(P.arrowWidth);
+        move.axisLineLength = units(P.moveReach - P.arrowLength);
+        move.axisLineTolerance = units(P.pickTolerance);
+        move.axisGap = 0;
+        turn.xyzRingRadius = units(P.ringRadius);
+        turn.xyzTubeRadius = units(P.line / 2);
+        turn.ringTolerance = units(P.pickTolerance);
+        size.axisLineThickness = units(P.line);
+        size.axisBoxSize = units(P.sizeBox);
+        size.axisLineLength = units(P.sizeReach - P.sizeBox);
+        size.axisCenterSize = units(P.centreBox);
+        size.axisLineTolerance = units(P.pickTolerance);
+        size.axisGap = 0;
+    }
+
+    /** the stand-in's pose at a drag's start (the tags beside the handles count from it) */
+    private startOf(): void {
+        this.startPos.copy(this.stand.getPosition());
+        this.startRot.copy(this.stand.getRotation());
+    }
+
+    /** I1 (D2): flown m moved or degrees turned beside the Move or Turn handle while dragged */
+    private showMoveTurnTag(moved: boolean): void {
+        if (moved) {
+            if (this.host.moveText) this.tagAt(this.host.moveText(this.stand.getPosition().distance(this.startPos)));
+            return;
+        }
+        const q = this.stand.getRotation();
+        const dot = Math.min(1, Math.abs(q.x * this.startRot.x + q.y * this.startRot.y + q.z * this.startRot.z + q.w * this.startRot.w));
+        if (this.host.turnText) this.tagAt(this.host.turnText((2 * Math.acos(dot) * 180) / Math.PI));
+    }
+
+    /** I1 (D4): the three turn rings as drawn on the canvas (CSS px from its corner): x, y, z */
+    private drawnRings(): DrawnRing[] {
+        const cc = this.host.camera.camera as CameraComponent;
+        const root = (this.turn as unknown as { root?: Entity }).root;
+        const r = units(HANDLE_PX.ringRadius) * (root ? root.getLocalScale().x : 0);
+        const c = this.stand.getPosition().clone();
+        const ax = [this.stand.right.clone(), this.stand.up.clone(), this.stand.forward.clone()];
+        const cs = cc.worldToScreen(c, new PcVec3());
+        return [0, 1, 2].map((i) => {
+            const u = ax[(i + 1) % 3]!;
+            const v = ax[(i + 2) % 3]!;
+            const pts: P2[] = [];
+            for (let k = 0; k < 64; k++) {
+                const t = (k / 64) * 2 * Math.PI;
+                const ct = Math.cos(t) * r;
+                const st = Math.sin(t) * r;
+                const s = cc.worldToScreen(new PcVec3(c.x + u.x * ct + v.x * st, c.y + u.y * ct + v.y * st, c.z + u.z * ct + v.z * st), new PcVec3());
+                pts.push([s.x, s.y]);
+            }
+            return { pts, minor: minorAxis(pts, [cs.x, cs.y]) };
+        });
+    }
+
+    /** I1 (D4): an edge-on ring dragged across its line turns the gate about that ring's axis (snapped unless Ctrl) */
+    private ringMove(e: PointerEvent): void {
+        const g = this.ring!;
+        let deg = ringTurnDeg(g.tangent, e.clientX - g.x, e.clientY - g.y);
+        if (this.move.snap) deg = Math.round(deg / SNAP_TURN_DEG) * SNAP_TURN_DEG;
+        const axis = g.axis === 0 ? new PcVec3(1, 0, 0) : g.axis === 1 ? new PcVec3(0, 1, 0) : new PcVec3(0, 0, 1);
+        const q = new PcQuat().copy(this.startRot).mul(new PcQuat().setFromAxisAngle(axis, deg));
+        this.stand.setRotation(q);
+        this.host.onDrag(this.pose(this.openingAtStart), false);
+        this.showMoveTurnTag(false);
+    }
+
+    /** I1, for the page probes: the edit eye's distance to the selected gate, the gate's height on the canvas (its opening
+     *  along its up, CSS px), the three rings' minor axes and each shown handle part's rectangle on the page. Read only. */
+    measure(): Record<string, unknown> | null {
+        if (!this.standPose) return null;
+        const cc = this.host.camera.camera as CameraComponent;
+        const rc = this.canvas.getBoundingClientRect();
+        const c = this.stand.getPosition().clone();
+        const up = this.stand.up.clone().mulScalar(this.opening / 2);
+        const a = cc.worldToScreen(new PcVec3().add2(c, up), new PcVec3());
+        const b = cc.worldToScreen(new PcVec3().sub2(c, up), new PcVec3());
+        const parts: { name: string; rect: number[] }[] = [];
+        type Sh = { _visible?: boolean; meshInstances?: { node: { name: string }; aabb: { getMin(): PcVec3; getMax(): PcVec3 } }[] };
+        const shapes = (this.active() as unknown as { _shapes?: Record<string, Sh> })._shapes ?? {};
+        for (const sh of Object.values(shapes)) {
+            if (sh._visible === false) continue;
+            for (const mi of sh.meshInstances ?? []) {
+                const lo = mi.aabb.getMin();
+                const hi = mi.aabb.getMax();
+                let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+                for (let k = 0; k < 8; k++) {
+                    const s = cc.worldToScreen(new PcVec3(k & 1 ? hi.x : lo.x, k & 2 ? hi.y : lo.y, k & 4 ? hi.z : lo.z), new PcVec3());
+                    x0 = Math.min(x0, s.x); y0 = Math.min(y0, s.y); x1 = Math.max(x1, s.x); y1 = Math.max(y1, s.y);
+                }
+                parts.push({ name: mi.node.name, rect: [Math.round(x0 + rc.left), Math.round(y0 + rc.top), Math.round(x1 - x0), Math.round(y1 - y0)] });
+            }
+        }
+        return {
+            eyeDist: Math.round(c.distance(new PcVec3(this.cam.pos[0], this.cam.pos[1], this.cam.pos[2])) * 100) / 100,
+            gatePx: Math.round(Math.hypot(a.x - b.x, a.y - b.y)),
+            viewH: rc.height,
+            rings: this.drawnRings().map((r) => Math.round(r.minor)),
+            glide: this.glide !== null,
+            parts
+        };
     }
 
     /** the stand-in's pose; the scale handle's factor times `opening` is the new opening */
@@ -242,16 +400,33 @@ export class EditView {
 
     /** H2-look: the opening in metres beside the Size handle while it is dragged (above right of the gate's centre) */
     private showTag(m: number): void {
+        if (this.host.sizeText) this.tagAt(this.host.sizeText(m));
+    }
+
+    private tagAt(text: string): void {
         const s = this.standScreen();
-        if (!s || !this.host.sizeText) return;
-        this.tag.textContent = this.host.sizeText(m);
+        if (!s) return;
+        this.tag.textContent = text;
         this.tag.style.left = `${Math.round(s[0] + 28)}px`;
         this.tag.style.top = `${Math.round(s[1] - 48)}px`;
         this.tag.hidden = false;
     }
 
     private onUpdate = (dt: number): void => {
-        if (this.held.size === 0 || this.suspended) return;
+        if (this.suspended) return;
+        this.fit();
+        if (this.glide) {
+            // D1: a drag in progress never moves the view; the pilot's own flight (keys, look) ends the glide
+            if (this.dragging || this.held.size > 0) this.glide = null;
+            else {
+                const t = (performance.now() - this.glide.t0) / FRAME_GLIDE_MS;
+                this.cam = blendCam(this.glide.from, this.glide.to, t);
+                if (t >= 1) this.glide = null;
+                this.apply();
+                return;
+            }
+        }
+        if (this.held.size === 0) return;
         const next = stepCam(this.cam, this.held, this.fast, dt);
         if (next !== this.cam) {
             this.cam = next;
@@ -271,7 +446,19 @@ export class EditView {
             return !!(h.enabled && sel && sel[0]);
         });
         const own = pressOwner(hits);
-        if (own < 0) return;
+        if (own < 0) {
+            // I1 (D4): no shape of the gizmo under the pointer: a turn ring seen edge-on within RING_PICK_PX is taken here
+            const rp = this.tool === 'turn' && this.turn.enabled && this.standPose ? pickRing([e.offsetX, e.offsetY], this.drawnRings()) : null;
+            if (!rp) return;
+            this.ring = { axis: rp.index, tangent: rp.tangent, x: e.clientX, y: e.clientY };
+            this.dragging = true;
+            this.dragged = true;
+            this.glide = null;
+            this.openingAtStart = this.opening;
+            this.startOf();
+            this.turn.enabled = false;
+            return;
+        }
         this.muted = this.byPress.filter((_, i) => i !== own);
         for (const h of this.muted) h.enabled = false;
     };
@@ -291,6 +478,7 @@ export class EditView {
     };
 
     private onPointerMove = (e: PointerEvent): void => {
+        if (this.ring) return this.ringMove(e);
         const p = this.press;
         if (!p || p.id !== e.pointerId || this.dragging) return;
         if (!p.look && Math.hypot(e.clientX - p.x, e.clientY - p.y) > CLICK_SLOP_PX) p.look = true;
@@ -300,6 +488,7 @@ export class EditView {
         p.lx = e.clientX;
         p.ly = e.clientY;
         if (!p.look) return;
+        this.glide = null;
         this.cam = turnCam(this.cam, dx, dy);
         this.apply();
     };
@@ -350,6 +539,10 @@ export class EditView {
             this.dragging = false;
             this.host.onDrag(this.pose(this.openingAtStart), true);
         }
+        if (this.ring) {
+            this.ring = null;
+            if (this.tool === 'turn') this.turn.enabled = true;
+        }
         this.endStale();
         const p = this.press;
         if (!p || p.id !== e.pointerId) return;
@@ -397,7 +590,15 @@ export class EditView {
             this.host.onTool?.(this.tool);
             return;
         }
+        // I1 (D1): F frames the selected gate again ('frame selected'); the page's own F (full screen) does not see it here
+        if (e.code === 'KeyF' && !this.suspended && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !this.host.typing(e.target)) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!this.dragging) this.host.onFrame?.();
+            return;
+        }
         if (this.suspended || !CAM_KEYS.has(e.code) || e.ctrlKey || e.metaKey || e.altKey || this.host.typing(e.target)) return;
+        this.glide = null;
         this.held.add(e.code);
         e.preventDefault();
     };
@@ -485,7 +686,10 @@ export class EditView {
         type Hit = { node?: { name?: string } };
         const sel = (h as unknown as { _getSelection?: (x: number, y: number) => Hit[] })._getSelection?.(x - r.left, y - r.top);
         const name = sel?.[0]?.node?.name ?? '';
-        return sel && sel[0] ? [this.tool, name.split(':')[1] ?? ''] : null;
+        if (sel && sel[0]) return [this.tool, name.split(':')[1] ?? ''];
+        // I1 (D4): an edge-on ring the edit view takes itself
+        const rp = this.tool === 'turn' ? pickRing([x - r.left, y - r.top], this.drawnRings()) : null;
+        return rp ? [this.tool, `edge:${'xyz'[rp.index]}`] : null;
     }
 
     dispose(): void {

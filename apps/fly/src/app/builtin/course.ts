@@ -33,7 +33,8 @@ import { S } from '@gsfpv/sim-core';
 import { MAX_GATES_EDIT, canSave, edit, flownCollision, marginOf, openEditor, toTrackV1, upgradeTrack } from '@gsfpv/tracks';
 import { CheckQueue, checkOnPage } from '../../course/editor/check-core';
 import type { FromCheckWorker } from '../../course/editor/check-core';
-import { aimAt, gateCamera, type GateView } from '../../course/editor/camera';
+import { gateCamera, type GateView } from '../../course/editor/camera';
+import { frameGate } from '../../course/editor/frame';
 import type { RayFn } from '../../course/editor/camera';
 import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
@@ -132,16 +133,25 @@ export const course: Feature = {
         let camTaken = { n: 0, override: true, crash: false, t: 0 };
         let crashCleared = 0;
         /** a key selected a gate: the edit camera glides to see it (stage K2's view of the gate, now as the free camera's start) */
-        const aim = (): void => {
-            if (!camView || !panel) return;
-            const w = window.innerWidth;
-            const left = panel.root.getBoundingClientRect().left;
-            const free = w > 0 ? left / w : 1;
+        // train 3 I1 (D1): the framing of the selected gate (course/editor/frame.ts) replaced the K2 aim from the paused drone
+        const aim = (): void => frameSel();
+        /** the gate the edit view was last framed on (a new selection frames again, the same one does not) */
+        let framedId: string | number | null = null;
+        /** I1 (D1): the edit view glides to the selected gate, a third of the view high, 35 degrees aside, 20 above */
+        const frameSel = (): void => {
+            if (!ed || !view || mode === 'fly') return;
+            const eg = ed.course.gates[ed.selected];
+            if (!eg) return;
+            const p = gateFlownPose(eg, flownTransform());
+            // the axis through the opening: the gate's local z turned by its pose (quat w, x, y, z)
+            const [w, x, y, z] = p.quat;
+            const axis: [number, number, number] = [2 * (x * z + w * y), 2 * (y * z - w * x), 1 - 2 * (x * x + y * y)];
             const cc = ctx.renderer.camera.camera;
-            const fov = cc?.fov ?? 115;
-            const h = cc && !cc.horizontalFov ? (2 * Math.atan(Math.tan((fov * Math.PI) / 360) * (w / Math.max(1, window.innerHeight))) * 180) / Math.PI : fov;
-            const look = aimAt(camView.eye, camView.at, free, h);
-            if (view) view.setCam(camFrom(camView.eye, look, view.cam.speed));
+            const tf = Math.tan(((cc?.fov ?? 115) * Math.PI) / 360);
+            const tanHalfV = cc && cc.horizontalFov ? (tf * Math.max(1, window.innerHeight)) / Math.max(1, window.innerWidth) : tf;
+            const f = frameGate({ centre: p.pos, axis, size: p.opening, tanHalfV, from: view.cam.pos }, camRay);
+            (edHook as { frame?: unknown }).frame = f ? { side: f.sideDeg, dist: Math.round(f.dist * 100) / 100, skipped: f.skipped } : { blocked: true };
+            if (f) view.glideTo(camFrom(f.eye, f.at, view.cam.speed));
         };
         /** the course the editing started from or was last saved as (the base of a fork or of a new version) */
         let edSource: TrackFile | null = null;
@@ -677,6 +687,11 @@ export const course: Feature = {
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
             const eg = ed.course.gates[ed.selected];
             view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null, eg?.shape.kind === 'cube-frame');
+            // I1 (D1): a new selection (a click, Tab, the bar, a gate added, a refused Save) frames that gate
+            if (eg && eg.id !== framedId) {
+                framedId = eg.id;
+                frameSel();
+            }
             edHook.open = true;
             (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
@@ -739,7 +754,10 @@ export const course: Feature = {
                 onDrag: (p, end) => dragTo(p, end),
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
                 typing: (target) => panel?.typing(target) ?? false,
-                sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) })
+                sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) }),
+                moveText: (m) => t('course.edit.moveTag', { m: m.toFixed(1) }),
+                turnText: (d) => t('course.edit.turnTag', { d: Math.round(d) }),
+                onFrame: () => frameSel()
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
@@ -747,6 +765,8 @@ export const course: Feature = {
             (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null, place: lastPlace, wrong: lastWrong, course: ed ? { gates: ed.course.gates, start: (ed.course as { start?: unknown }).start ?? null, problems: ed.problems } : null, camTaken, crashCleared, crashActive: ctx.crash.active, override: ctx.session.cameraOverride } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => unknown }).__gsfpvEditHit = (x, y) => view?.hitAt(x, y) ?? null;
+            // I1, read only: the eye's distance, the gate's height, the rings' minor axes and the handle parts' rectangles
+            (window as unknown as { __gsfpvEditMeasure?: () => unknown }).__gsfpvEditMeasure = () => (view ? { ...view.measure(), frame: (edHook as { frame?: unknown }).frame ?? null } : null);
             if (!adminLive && adminHinted()) {
                 void adminClient.resume().then((live) => {
                     adminLive = live === true;
@@ -772,6 +792,7 @@ export const course: Feature = {
             edHook.view = null;
             camForward = null;
             camView = null;
+            framedId = null;
             view?.dispose();
             view = null;
             bar?.destroy();

@@ -12,13 +12,13 @@ import type { EditPaint } from './editor/rules';
 
 type Paint = 'next' | 'later' | 'passed' | 'arrow' | EditPaint;
 /** sRGB colours (design choice, not measured): next lime, later dim teal, passed grey, arrows amber; in the editor the selected
- *  gate magenta, a failing gate red, a failing selected gate orange (stage F1-finish). */
+ *  gate bright yellow (train 3 I1, D3: the gate the handles belong to; was magenta), a failing gate red, a failing selected gate orange (stage F1-finish). */
 const PAINT: Record<Paint, [number, number, number]> = {
     next: [0.65, 1, 0.1],
     later: [0.15, 0.55, 0.55],
     passed: [0.45, 0.45, 0.45],
     arrow: [1, 0.72, 0.1],
-    selected: [1, 0.2, 1],
+    selected: [1, 0.92, 0.25],
     bad: [1, 0.08, 0.05],
     'selected-bad': [1, 0.5, 0]
 };
