@@ -351,69 +351,101 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const v1 = (await ed(page)).view;
     out.look = { eyeMovedM: r2(dist(v0?.eye, v1?.eye)), atMovedM: r2(dist(v0?.at, v1?.at)) };
 
-    // fly with the controller: arm (throttle down, start/stop), forward, read the course; then disarm
+    // G3 pass 2, the test flight. First the keyboard: Space arms in the mode, Space again is the edit view back where it was
     const eyeBefore = (await ed(page)).view?.eye;
     const tFly = await now(page);
     const nextBefore = (await hook(page))?.next;
+    const armedNow = (): Promise<boolean | null> => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.gate?.armed ?? null);
+    await page.keyboard.press('Space');
+    const k1 = await until(() => dbg(page), (d) => d?.mode === 'fly', 3000);
+    const k1Armed = await armedNow();
+    await sleep(700);
+    await page.keyboard.press('Space');
+    const k2 = await until(() => dbg(page), (d) => d?.mode === 'edit', 4000);
+    await sleep(400);
+    out.kbdFly = { space1: { mode: k1.v?.mode, ms: k1.ms, armed: k1Armed }, space2: { mode: k2.v?.mode, ms: k2.ms, armed: await armedNow() }, eyeBackM: r2(dist(eyeBefore, (await ed(page)).view?.eye)) };
+    if ((await dbg(page))?.mode !== 'edit') {
+        await pad(page, [0, 0, -1, 0, 0], 0x50);
+        await until(() => dbg(page), (d) => d?.mode === 'edit', 4000);
+    }
+    // then the pad: gate 1 (the moved gate `del`) made bigger with + so the probe's rough steering passes it (undone after)
+    const selFly = (await ed(page)).selected;
+    const open0 = (await dbg(page))?.stand.opening ?? 0;
+    let grow = 0;
+    while (grow < 30 && ((await dbg(page))?.stand.opening ?? 0) < 3.5) { await page.keyboard.press('Equal'); grow++; await sleep(60); }
+    await sleep(400);
+    const openFly = (await dbg(page))?.stand.opening ?? 0;
     await pad(page, [0, 0, -1, 0, 0], 0x50);
     await sleep(300);
     await pad(page, null, 0x50 | (1 << 2));
     await sleep(150);
     await pad(page, null, 0x50);
-    const arm = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.gate?.armed ?? null), (v) => v === true, 3000);
-    await sleep(400);
-    const dArm = await dbg(page);
-    const flight: unknown[] = [];
-    // steer at the moved gate (gate `del`) by where it is on the drone's camera: yaw keeps it in the middle, throttle at
-    // its height, pitch forward; the yaw's and the pitch's signs are found by trying (the probe does not know the pad's)
-    const W = vp.width;
-    const H = vp.height;
-    const clamp = (x: number): number => Math.max(-0.8, Math.min(0.8, x));
+    const arm = await until(armedNow, (v) => v === true, 2000);
+    // the sticks out of the centre start a camera drone's flight (it needs no arming)
     const ga = (await dbg(page))?.gates[del];
-    await pad(page, [0, 0, 0.15, 0.4, 0], null);
+    await pad(page, [0, 0, 0.1, 0.4, 0], null);
     await sleep(400);
     const gb = (await dbg(page))?.gates[del];
+    const dArm = await dbg(page);
+    const startZ = ga ? r2(ga[2]!) : null;
     const yawSign = ga && gb && ga[2]! > 0 && gb[2]! > 0 && gb[0] !== ga[0] ? (gb[0]! > ga[0]! ? 1 : -1) : 1;
-    let pitch = -0.35;
-    let z4 = -1;
-    // H2: forward only while the gate sits near the middle (a small error), slower when near; turn back when it is behind
+    const flight: unknown[] = [];
+    const W = vp.width;
+    const H = vp.height;
+    const clamp = (x: number, m = 0.8): number => Math.max(-m, Math.min(m, x));
+    // the camera looks up a little, so a gate level with the drone stands below the middle: aim it at EY_AIM (an estimate)
+    const EY_AIM = 0.15;
+    let pitch = -0.2;
+    let zPitch = -1;
+    let pitched = 0;
     let shot = false;
-    for (let i = 0; i < 110; i++) {
+    for (let i = 0; i < 150; i++) {
         const d = await dbg(page);
         const h = await hook(page);
         const g = d?.gates[del];
         flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null]);
-        if (h?.next !== nextBefore || d?.mode !== 'fly') break;
-        let yaw = 0.5;
-        let thr = 0.1;
+        if (h?.next !== nextBefore || (i > 0 && d?.mode !== 'fly')) break;
+        let yaw = 0.4;
+        let thr = 0;
         let pit = 0;
         if (g && g[2]! > 0) {
             const ex = (g[0]! - W / 2) / (W / 2);
             const ey = (g[1]! - H / 2) / (H / 2);
-            yaw = clamp(-yawSign * 1.1 * ex);
-            thr = clamp(-0.9 * ey);
-            pit = Math.abs(ex) < 0.12 && Math.abs(ey) < 0.25 ? (g[2]! > 6 ? pitch : pitch * 0.6) : 0;
-            if (i === 4) z4 = g[2]!;
-            if (i === 14 && z4 > 0 && g[2]! > z4 + 0.3) pitch = -pitch;
+            const near = g[2]! < 3;
+            yaw = clamp(-yawSign * 1.2 * ex, 0.6);
+            thr = near ? 0 : clamp(-0.6 * (ey - EY_AIM), 0.5);
+            const aligned = Math.abs(ex) < 0.15 && Math.abs(ey - EY_AIM) < 0.3;
+            pit = near ? pitch * 0.8 : aligned ? pitch : 0;
+            if (pit !== 0) {
+                if (pitched === 0) zPitch = g[2]!;
+                pitched++;
+                // the pitch's sign is found by trying: 8 pitched steps that took the gate further away flip it
+                if (pitched === 8 && g[2]! > zPitch + 0.3) pitch = -pitch;
+            }
             if (!shot && g[2]! < 6 && id !== '70b50d42') { shot = true; await page.screenshot({ path: join(SHOTS, 'editor3-flying-1920.png') }); }
         }
         await pad(page, [0, pit, thr, yaw, 0], null);
-        await sleep(250);
+        await sleep(200);
     }
     out.flyYawSign = yawSign;
     out.flyPitch = pitch;
     if (!shot && id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-flying-1920.png') });
+    const nextAfter = (await hook(page))?.next;
     await pad(page, [0, 0, -1, 0, 0], 0x50);
     await sleep(300);
     await pad(page, null, 0x50 | (1 << 2));
     await sleep(150);
     await pad(page, null, 0x50);
-    const dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
+    let dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
+    if (dis.v?.mode !== 'edit') { await page.keyboard.press('Space'); dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 4000); }
+    await sleep(500);
+    // the bigger opening is taken back step by step (Ctrl+Z), so the rest of the path works on the moved gate as it was
+    for (let n = 0; n < grow; n++) { await page.keyboard.press('Control+KeyZ'); await sleep(60); }
     await sleep(500);
     out.fly = {
-        armed: arm.v, modeArmed: dArm?.mode, handlesArmed: dArm?.handles, nextBefore, flight,
-        nextAfter: (await hook(page))?.next, laps: (await hook(page))?.laps,
-        modeAfter: dis.v?.mode, editEyeBackM: r2(dist(eyeBefore, (await ed(page)).view?.eye)),
+        selected: selFly, opening: [open0, openFly], grow, startZ, armed: arm.v, modeArmed: dArm?.mode, handlesArmed: dArm?.handles, nextBefore, flight,
+        nextAfter, laps: (await hook(page))?.laps,
+        modeAfter: dis.v?.mode, editEyeBackM: r2(dist(eyeBefore, (await ed(page)).view?.eye)), openingBack: (await dbg(page))?.stand.opening,
         topBarButtonsHidden: await page.evaluate(() => getComputedStyle(document.querySelector('[data-top="add"]') ?? document.body).display)
     };
     out.flySpan = await span(page, tFly, await now(page));
@@ -452,17 +484,39 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await page.click('[data-top="undo"]', { timeout: 3000 }).catch(() => undefined);
     await sleep(500);
     out.path = await span(page, tPath, await now(page));
-    // H2: Save on the LOCAL stand-in of /api/tracks (main() routes it; nothing leaves this PC), then the saved course again
+    // G3 pass 2: the red gates go first (the highest number first, the moved gate last) until the check finds none, then
+    // Save on the LOCAL stand-in of /api/tracks (main() routes it; nothing leaves this PC), then the saved course again
+    const removed: unknown[] = [];
+    let movedGone = false;
+    for (let i = 0; i < 14; i++) {
+        await sleep(1500);
+        const e = (await ed(page)) as Ed & { paints?: string[] };
+        if ((e.problems ?? 0) === 0) break;
+        const bad = (e.paints ?? []).map((p, j) => (p === 'bad' || p === 'selected-bad' ? j : -1)).filter((j) => j >= 0);
+        if (!bad.length) { removed.push({ problems: e.problems, noRed: true }); break; }
+        const pick = [...bad].reverse().find((j) => j !== del) ?? bad[bad.length - 1]!;
+        if (pick === del) movedGone = true;
+        for (let n = 0; n < 40 && (await ed(page)).selected !== pick; n++) {
+            await page.keyboard.press(((await ed(page)).selected ?? 0) < pick ? 'Tab' : 'Shift+Tab');
+            await sleep(80);
+        }
+        await sleep(300);
+        const how = await page.click('.ce-gatebar [data-bar="delete"]', { timeout: 3000, force: true }).then(() => 'bar').catch(async () => { await page.keyboard.press('Delete'); return 'key'; });
+        removed.push({ pick, selected: (await ed(page)).selected, problems: e.problems, red: bad.length, how });
+    }
+    out.redRemoved = { steps: removed, problems: (await ed(page)).problems, gates: (await hook(page))?.gates, movedGone };
     await page.click('[data-top="save"]', { timeout: 3000 }).catch((e) => { out.saveClickError = String(e).slice(0, 120); });
     await sleep(800);
     const nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
-    if (nameField) { await page.keyboard.type('Probe H2'); await page.keyboard.press('Enter'); }
+    if (nameField) { await page.keyboard.type('Probe G3'); await page.keyboard.press('Enter'); }
     const sv = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 20000);
     out.save = { nameField, ok: sv.ok, ms: sv.ms, saved: (sv.v as { saved?: string | null } | null)?.saved ?? null, said: ((await ed(page)).said ?? '').slice(0, 100), problem: sv.v?.problem ?? null, posts: await page.evaluate(() => (window as unknown as { __posts?: number }).__posts ?? null) };
     out.savedGatePos = movedPos?.map(r2);
     await sleep(500);
-    if ((await ed(page)).open) await page.keyboard.press('Escape');
-    out.exit = { closed: (await until(() => ed(page), (e) => !e.open, 3000)).ok };
+    // Exit: Esc; with unsaved changes the first Esc says so and a second one leaves ("The design", Enter and leave)
+    let escs = 0;
+    for (; escs < 2 && (await ed(page)).open; escs++) { await page.keyboard.press('Escape'); await sleep(900); }
+    out.exit = { closed: !(await ed(page)).open, escs, said: ((await ed(page)).said ?? '').slice(0, 100) };
     const saved = (out.save as { saved?: string | null }).saved;
     if (saved) out.reload = await reloadSaved(page, id, saved, del, movedPos);
     return out;
