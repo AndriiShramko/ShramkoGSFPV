@@ -903,6 +903,49 @@ Logs U:/Temp/gsfpv-train3/course4/c3/. Release build of 6557daf6: BUILD EXIT 0 (
    exist yet); pictures course4-room-pilot.png and course4-room-top.png, each looked at.
 6. gates.py --only vitest,architecture,i18n,b18; a6-reference (no flight code touched so far).
 
+## Status C3-every-scan pass 2
+
+Logs U:/Temp/gsfpv-train3/course4/c3p2/. Release build of 7b068fb0: BUILD EXIT 0 (c3p2/build.log; not yet served).
+- [x] item 1 measured (gate-place-audit, WalkInfo now names the refusing rule: refused.{reach,pot,turn,space,sweep,wall,
+      exit,well,proof}, stop, startFree; c3p2/wg1.json): 7a475d38 at steps 1 and 2/3 has no candidate (the spawn's fill
+      reaches 2-20 cells); at steps 0.4 and 0.3 2895-3920 candidates, and every leg from the start hit a wall at the step's
+      margin (wall 360 of 360 sweeps), start cell free radius 0.256 m. The eye band and the quality map are not the cause
+      (diag at margin 0.2 and 0.15: 1748 eye cells, c3p2/diag-m*.log). Fix (generate.ts walkCourse): a course below the
+      plan's size (k < 1) starts at the nearest cell, in steps along the free space, with a ring's free radius
+      (RING_MIN_FREE_M x k) when the spawn cell has less; k = 1 keeps its start (street tables untouched by construction).
+      7a475d38 seeds 1-3: 24 gates at step 0.4 (square 0.6 m / ring 0.48 m), proven, Save problems 0, 4.1-6.4 s.
+      Test every-scan.test.ts 'bent nook' (spawn at the end of a bent 1.0 m nook off a 5 x 1.8 x 5 m room): NEG OK against
+      generate.ts of HEAD (old: 1 gate, start in the nook). packages/tracks 135 tests passed; typecheck tracks, bench exit 0.
+      Commit 28ce609f.
+- [x] catalogue table again (gate-place-audit --seeds 3, c3p2/after2.json, code of 28ce609f) against c3/after.json: 27 of 39
+      rows identical (ms, walks left out), among them every street row at step 1 (70b50d42, 887f27aa, 0230d903, 2f1ddf5f,
+      9baef54b, ba7aa29d, eb5f51dc). Changed: 7a475d38 0 -> 24 gates (all 3 seeds); 39e63ce9 seed 3 5 -> 4 gates; 1994c65c
+      and b11e45d1 same gate count and step, other fields moved (the start cell). Every scan of the catalogue now gives a
+      course on seeds 1-3.
+- [x] item 2 measured: d10c5638 Housefly 49.1, 62.2, 112.9 s for seeds 3, 2, 1, of which reading the free space again
+      (refreeMs, new in the audit) is 0.46-0.52 s: the time goes into the tries (5-6 tries at step 2/3), not freeAtMargin.
+      Seed 1 at 112.9 s is close to FIT_BUDGET_MS 120 s. Not fixed yet.
+- [ ] items 3-6, see 'Left (C3-every-scan pass 2)'
+
+## Left (C3-every-scan pass 2)
+
+1. Housefly d10c5638: the tries take 49-113 s (refree 0.5 s). Measure inside a try where the time goes (the walk's sweeps
+   against the one-gate proof checkTrack and the final whole-course proof; time them in WalkInfo like refused) before
+   any change. Page limit FIT_BUDGET_MS 120 s, GENERATE_LIMIT_MS 150 s (course.ts:272).
+2. b11e45d1 gates 14.5-15.1 m above the first wall below: look at gate-place-map.ts's top map before calling it wrong.
+3. course.none (apps/fly/src/app/builtin/course.ts:327, locale packages/i18n/locales/fly/course/*.json course.none) must
+   lead, four locales. The generator uses the scene's spawn (course.ts:438), so 'fly elsewhere' does not help. Proposed:
+   with Scene size s > 1 the line names the key ('Press [ to fly the scan smaller, then Shift+G'); at s <= 1 every
+   catalogue scan now gives a course, so the line only meets custom scans.
+4. Page proof on a fresh release build (dist is of 7b068fb0; rebuild from the head): rooms 39e63ce9 and 7a475d38, and
+   ab5efa0e at Scene size x20, course-path-probe.mjs; pictures course4-room-pilot.png and course4-room-top.png, looked at.
+   Check in the page that the pilot is placed at the moved start (the course's start pose) on 7a475d38.
+5. gates.py --only vitest,architecture,i18n,b18; a6-reference (no flight code touched so far).
+
+Cost (course4 C3 pass 2): about 33 replies; the most went to a test world for the moved start (four geometries: the nook
+too narrow for the fill, then the plan's scale working at step 0.3 in both codes). Measuring the room's per-step
+candidate counts in one debug run first would have saved 3.
+
 Cost (course4 C3): about 30 replies; the most went to the two whole-catalogue Node runs (13 scans x 3 seeds, 6-9 min
 each) and to a test room that the free space's erosion step emptied (a room one cell high has no core cell: 0.8 and 1.0 m
 rooms gave nothing at any margin, 1.2 m works). A catalogue table runner that prints the summary would have saved 3.
