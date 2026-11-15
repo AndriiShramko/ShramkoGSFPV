@@ -4,6 +4,18 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage G3-prove (train 3 wave 3):
+- [x] G3.1 code 67c8d31e: G2 left 1 (who poses the camera after a floor add) read from the code: crashview.ts frame() (line
+  117-144) writes the chase camera every frame while a crash is active, before the features' frame work; the G2.13 pictures
+  showed "crashes 1" and the drone in a palm. course.ts editFrame now holds the edit camera every frame (view.setCam when the
+  renderer's camera is off the edit eye or the override is false) and counts it in camTaken; back to editing after a crash
+  calls ctx.clearCrash() (the page's own "back from a crash": chase camera, stats window, replay go) and counts crashCleared.
+  The writer is a reading until the run's camTaken says so. view-mouse.ts isSuspended(). Test tools/bench/test/editor3-g3.test.ts
+  3 tests, NEG OK (neg_control.py ref HEAD 60f54e59, course.ts and view-mouse.ts); editor3-g2/-g3/-flying 22/22;
+  apps/fly and tools/bench tsc 0. Probe: floorAdd records camTaken, crashCleared, crashActive, statsWindow; FULL=0 (1c2b773d).
+- [~] G3.2 release of 1c2b773d and the browser runs (U:/Temp/gsfpv-train3/editor3/g3/chain.sh: runA Tunis + Wroclaw full
+  path, runB keyboard + 844x390, one lock hold each).
+
 Stage G2-bar-space-floor (train 3 wave 3, the last finishing lane):
 - [x] G2.0 the G1 REPRO run on the old dist never got the lock (held by others 05:25-05:45 and 05:37-06:02); the
   measurement came from the new release instead (G2.5).
