@@ -549,6 +549,7 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   (52.61 s), I's 2 and Shift+V's narratorOn (17 in all); #ui announced from the switch on to Shift+V: 4 (was 7), all at 0.14 s
   (DISARMED, ANGLE, volts, THR line). Tunis: course +6.9 s, voiced the same 17, #ui 6 (was 5): "on" and "55 %" at 0.00 s and the
   same 4 HUD lines at 0.13 s. The recorder's region no longer counted (hidden). 0 page errors in both.
+- [x] gates.py --only vitest,architecture,i18n,b18 on 919714f0: all PASS (vitest 99 s; logs U:/Temp/gsfpv-gates-20261115-180537).
 - [ ] Left of QW-5 (measured, cause a guess): the HUD burst at 0.13 to 0.14 s stays. The host's lesson is null in the 0.14 s sample,
   so flightLessonOf should already answer scan-free; a guess is that the HUD writes before feature.ts's install (the mode's chunk is
   loaded by apps/fly/src/sonic/in-place.ts loadMode, after the Backslash), or that bridge.paused is true at the install sync. Next:
