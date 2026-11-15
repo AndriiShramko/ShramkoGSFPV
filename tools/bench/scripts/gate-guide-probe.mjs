@@ -145,7 +145,16 @@ try {
     const v0 = await read();
     r.gates = v0.gates;
     check('aria-hidden on the guide', v0.ariaHidden === 'true', v0.ariaHidden);
-    judge('start', v0);
+    // Y3 (lane fix3b): eye-level gates put gate 1 near the start and in front of it; then the guide hides as in the 'near'
+    // case below (nearer than 12 m, within 20 deg left/right and up/down of the view's centre) and that counts as correct
+    const b0 = bearing(v0);
+    const up0 = [v0.right[1] * v0.fwd[2] - v0.right[2] * v0.fwd[1], v0.right[2] * v0.fwd[0] - v0.right[0] * v0.fwd[2], v0.right[0] * v0.fwd[1] - v0.right[1] * v0.fwd[0]];
+    const d0 = [v0.gate[0] - v0.cam[0], v0.gate[1] - v0.cam[1], v0.gate[2] - v0.cam[2]];
+    const elev0 = (Math.atan2(Math.abs(d0[0] * up0[0] + d0[1] * up0[1] + d0[2] * up0[2]), d0[0] * v0.fwd[0] + d0[1] * v0.fwd[1] + d0[2] * v0.fwd[2]) * 180) / Math.PI;
+    if (!v0.guide.shown && !v0.guideBox && b0.dist < 12 && Math.abs(b0.deg) < 20 && elev0 < 20) {
+        r.reads.start = { ...v0, probeBearing: +b0.deg.toFixed(1), probeDist: +b0.dist.toFixed(2), probeElev: +elev0.toFixed(1) };
+        check(`start: gate 1 in view (${b0.dist.toFixed(1)} m, ${b0.deg.toFixed(1)} deg, ${elev0.toFixed(1)} deg up/down): the guide hides`, true, { shown: v0.guide.shown, inFrame: v0.guide.inFrame });
+    } else judge('start', v0);
     r.shotStart = await shot(name);
     if (above) {
         // review FX-4: the camera turned to gate 1, then pitched down 45 deg puts gate 1 above the view, so the guide goes to the top

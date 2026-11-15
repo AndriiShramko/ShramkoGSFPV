@@ -429,3 +429,18 @@ good tile (freespace.ts / generate.ts); (7) gates.py subset, a6-reference, unit 
   24 / 18 / 14, eye 22 / 18 / 12 (highest 3.35 / 2.0 / 5.0 m, one gate with no ground under it); Tunis 4.6 / 5.3 / 3.9 s,
   24 gates each, eye 24 / 22 / 23 (highest 2.55 m). Pilot views 8 m before the gate at 1.6 m: Wroclaw gate 1 and gate 6
   and Tunis gate 1 at 1.6-1.65 m above the ground, elevation -3.9 to 0.7 deg from the view's centre: in front of the eyes.
+
+## Status Y3-prove
+
+Runner U:/Temp/gsfpv-train3/fix3b/y3/run.sh (release build, gates.py subset and a6-reference before any browser, then one
+GPU hold per probe, each under 590 s; accept-fly and tracks-page take the lock themselves), server 5787, dist/walls = the
+nine published walls of U:/Temp/gsfpv-train3/walls/release (Wroclaw on its walls), Tunis on its shipped walls.
+- [x] save-check hook takes one moved gate (a copy is checked, the course in use is not changed); save-check-probe --push
+      (gate 1 pushed 0.3 m into the nearest wall must be refused, the untouched course again 0 problems) and the time from
+      Shift+G to the course; gate-guide-probe start look: gate 1 nearer than 12 m and within 20 deg of the view's centre
+      with the guide hidden counts as correct; course-path-probe colours and counts the eye band 1.2-2.0 m and exits 1 when
+      a gate of the first course is out of it by more than one 10 cm voxel or has no wall below; tsc apps/fly clean
+- [ ] runner: build, gates, a6, save-check Wroclaw and Tunis (with --push), gate-place Wroclaw and Tunis (Y2 pictures),
+      course-path both, gate-guide both, walls-store both, accept-fly B6 B7 B9-B16, tracks-page
+- [ ] pictures looked at; What the owner does; not proven
+

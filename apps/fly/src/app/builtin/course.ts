@@ -356,11 +356,15 @@ export const course: Feature = {
         };
         // lane fix3b, Y1: the Save check of the course in use, untouched, the way the edit mode's Save runs it (wallsCheck on
         // the session's walls, the flown transform, the course's own margin), plus the measured report. Read only.
-        hook.saveCheck = () => {
+        hook.saveCheck = (move) => {
             const col = ctx.session.collision;
-            const tr = run?.track;
-            if (!col || !tr) return null;
+            const tr0 = run?.track;
+            if (!col || !tr0) return null;
             const T = flownTransform();
+            // Y3: a copy with one gate moved (given in the flown frame, written back in the course frame); never the course in use
+            const tr = move
+                ? { ...tr0, gates: tr0.gates.map((g, i) => (i === move.gate ? { ...g, pos: [0, 1, 2].map((k) => ((move.pos[k] as number) - T[k + 1]!) / T[0]) as [number, number, number] } : g)) }
+                : tr0;
             const margin = marginOf(tr);
             const problems = wallsCheck(col, T, margin)(upgradeTrack(tr));
             // never measured here: the free radii every 0.25 m of one Tunis course on 5 cm walls took about 20 min in Node
