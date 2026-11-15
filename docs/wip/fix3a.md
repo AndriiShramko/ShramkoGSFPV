@@ -1286,8 +1286,25 @@ Logs U:/Temp/gsfpv-train3/course4/z2/.
       more gates starts there; proven by swapping generate.ts back: still failed). The test now asks a start in the room
       only above the last step, and at the last step that the smallest ring fits around the start. typecheck tracks 0.
 - [x] Release build of a92e37e3: BUILD EXIT 0, 1933 files (z2/build.log). It holds neither 1a nor 1b: rebuild first.
-- [ ] (2) A1 no wall cell in the gate tube, test, conifer gate gone
-- [ ] (3) A3 ladder by the flown craft
+- [x] Pass 2: release build of 5e574e35: BUILD EXIT 0, 1933 files (z2b/build.log). It holds 1a and 1b but not A3:
+      rebuild before the page proofs, then copy the published walls into dist/walls.
+- [~] (2) A1 tried and reverted (not committed). Built: over a quality map, after the gate is made in walkCourse
+      (generate.ts, before the one-gate proof), sweeper.free(pos - 8k*axis, pos + 8k*axis, opening/2*k) else refuse
+      (refused.tube), generator version 5. Test world: the eye-level street with conifers (cones 0.4-7 m, radius 1.8 m at
+      the foot) every 6 m at z +-3.5 and two in the middle (x 26, 44). Measured (vitest, z2b/dbg.log): the walk refused 65
+      candidates by the tube and stopped 'no free leg' with 0 gates (middle trees every 18 m) or 2 gates (two middle trees)
+      on seeds 1-3, while the old generator laid >= 4 gates whose tubes were ALL already clear (NEG BAD: the test passed on
+      the old code). So in that world the rule only removes gates; a refused candidate is marked used and the walk ends.
+      Next: measure the rule on Wroclaw 70b50d42 first (gate-place-map on the seed of fix3b-wroclaw-pilot-2, count gates
+      whose tube holds a wall cell, old vs new), and refuse the yaw only (try the next yaw step whose leg-in still meets
+      axisCosMin) instead of using the candidate up; build the unit world from a real blocked gate of that map.
+- [x] (3) A3 ladder by the flown craft: fit.ts courseScales(craftRadiusM) (smallest ring = RING_MIN_DRONE_DIAMETERS x
+      the craft's diameter; steps under it dropped, the craft's own step appended; craft wider than the plan: step 1 only;
+      the smallest craft keeps COURSE_SCALES). CourseOptions.craftRadiusM, CourseJob.craftRadiusM, course.ts sends
+      session.params.boundRadius. Test packages/tracks/test/craft-ladder.test.ts (6 x 3 x 6 m room, pavo20pro-3s 0.0768 m:
+      no opening under 0.6134 m) NEG OK against fit.ts of 5e574e35 (0.36 against 0.6134). fit, every-scan, scaled-scan,
+      craft-ladder: 19 passed; tsc tracks 0, tsc fly 0. Not measured: which scans lose their course for a 5 inch craft (a
+      room flown with nazgulf5v3, boundRadius 0.1864 m, now tries step 1 only); the page line for that case is not built.
 - [ ] (4) Lublin 2f1ddf5f leaves the spawn's pocket
 - [ ] (5) Housefly d10c5638 within 30 s
 - [ ] (6) b11e45d1 gates 15 m over the wall
@@ -1299,3 +1316,6 @@ Logs U:/Temp/gsfpv-train3/course4/z2/.
 Cost (course5 Z2-scans pass 1): about 28 replies for items 1a and 1b; the most went to finding which rule refused gate 1
 at x15/x20/x100 (the walk log named 'turn' but not the leg's length or height); a walk log that names the first leg's
 nearest candidate from the start (added now: nearM, nearUp) would have cut it to one run.
+Cost (course5 Z2-scans pass 2): about 30 replies; most went to the A1 unit world (three tries of a synthetic conifer street,
+none made the old generator put a gate with a blocked tube). Measuring the blocked tubes on the real Wroclaw seed first
+and building the unit world from that gate would have saved them.

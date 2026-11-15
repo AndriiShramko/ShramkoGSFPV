@@ -482,7 +482,9 @@ export const course: Feature = {
                 created: new Date().toISOString(),
                 // course4 review CU-1: Fly by Sound asks its course through this generate() too (lane onecourse); the ear
                 // pilot was measured on single upright gates only, so the competition elements are for the eyes' mode
-                elements: courseElements(ctx.sonic)
+                elements: courseElements(ctx.sonic),
+                // course5 Z2 (A3, review CU-7): the ladder's smallest gate is sized by the craft that is flown
+                craftRadiusM: s.params?.boundRadius
             };
             ensureWorker().postMessage(msg, [w.nodes.buffer, w.leaf.buffer]);
             arm(GENERATE_LIMIT_MS);

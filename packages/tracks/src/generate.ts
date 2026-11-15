@@ -110,6 +110,9 @@ export interface CourseOptions {
     /** course4 C4: compose the walk's course into competition elements (elements.ts). Off: the course is as before
      *  (the sound mode's course-ask job does not ask for them: its pilot passes single upright gates). */
     readonly elements?: boolean;
+    /** course5 Z2 (lead's decision A3, review CU-7): the flown craft's boundRadius, flown m: fitCourse's smallest gate lets
+     *  it pass (courseScales). Absent: the smallest craft of the catalogue (SMALLEST_DRONE_RADIUS_M). Not in the file. */
+    readonly craftRadiusM?: number;
     /** course4 C4: what the composition drew and placed (audits and tests) */
     readonly onElements?: (c: Composed) => void;
 }

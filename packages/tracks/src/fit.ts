@@ -9,7 +9,7 @@ import type { TrackFile, VoxelCollision } from './types';
 import { marginOf } from './check';
 import { wallsCheck } from './editor';
 import { upgradeTrack } from './format';
-import { COURSE_DEFAULTS, generateCourse } from './generate';
+import { COURSE_DEFAULTS, RING_DIAMETER_M, generateCourse } from './generate';
 import type { CourseOptions, CourseParams } from './generate';
 import { FREE_DEFAULTS, freeSpace } from './freespace';
 import type { FreeSpace, FreeSpaceOptions } from './freespace';
@@ -25,6 +25,22 @@ export const RING_MIN_DRONE_DIAMETERS = 4;
  *  1.2, 0.8, 0.48, 0.36 m. 0.6 m is about a tiny whoop's race gate (estimate). The last keeps the ring at
  *  RING_MIN_DRONE_DIAMETERS diameters of the smallest drone: 0.34 m / 1.2 m = 0.283, rounded up to 0.3. */
 export const COURSE_SCALES: readonly number[] = [1, 2 / 3, 0.4, 0.3];
+
+/**
+ * course5 Z2 (lead's decision A3, review CU-7): the ladder for the craft that is flown. Its smallest ring keeps
+ * RING_MIN_DRONE_DIAMETERS diameters of that craft (pavo20pro-3s, boundRadius 0.0768 m: 0.61 m, step 0.512; the catalogue's
+ * sizes: tools/bench/src/drone-sizes.ts). The steps under that size are left out and the craft's own size ends the ladder;
+ * a craft whose ring would be wider than the plan's flies the plan's size only (taurusx8, boundRadius 0.3175 m: the 1.2 m
+ * ring is 1.9 of its diameters, the 1.5 m square 2.4). The smallest craft keeps COURSE_SCALES as they are.
+ */
+export function courseScales(craftRadiusM: number = SMALLEST_DRONE_RADIUS_M): readonly number[] {
+    const min = Math.max(COURSE_SCALES[COURSE_SCALES.length - 1]!, (RING_MIN_DRONE_DIAMETERS * 2 * craftRadiusM) / RING_DIAMETER_M);
+    if (min >= 1) return [1];
+    const out = COURSE_SCALES.filter((s) => s >= min - 1e-9);
+    // the craft's own step, rounded up to a thousandth so its ring is never under the rule
+    if (out[out.length - 1]! - min > 1e-9) out.push(Math.ceil(min * 1000) / 1000);
+    return out;
+}
 /** derived seeds tried per scale (the page's earlier rule, lane review TR-8: 3) */
 export const SEEDS_PER_SCALE = 3;
 /** Review T2-6, ESTIMATE: the worker's time for fitCourse, under the page's GENERATE_LIMIT_MS (150 s) by room for
@@ -180,7 +196,7 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
         }
         return { track: best, short: best !== null && (best.gates.length < gatesMin || !bestOk), scale: bestScale, tried, proven: best !== null && bestOk };
     };
-    for (const scale of COURSE_SCALES) {
+    for (const scale of courseScales(opts.craftRadiusM)) {
         const params = { ...scaledParams(scale), ...(opts.params ?? {}) };
         let s = opts.seed >>> 0;
         for (let i = 0; i < SEEDS_PER_SCALE; i++) {

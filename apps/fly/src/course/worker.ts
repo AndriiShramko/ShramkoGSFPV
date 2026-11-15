@@ -25,6 +25,8 @@ export interface CourseJob {
     created: string;
     /** course4 C4: compose competition elements (tunnel, flat square, cube); the sound mode's job leaves it out */
     elements?: boolean;
+    /** course5 Z2 (A3, review CU-7): the flown craft's boundRadius, flown m: the ladder's smallest gate lets it pass */
+    craftRadiusM?: number;
 }
 
 /** T3: prove a course from the server on the pilot's own walls before it is shown (checkTrack, unmeasured, as the generator). */
@@ -83,7 +85,7 @@ scope.onmessage = (e) => {
         const make = layTries((estMs) => scope.postMessage({ t: 'progress', job: m.job, step: 'lay', estMs }), courseTryMs(m.grid.res, free.volumeM3), () => performance.now(), generateCourse);
         // lane review TR-8: a course under gatesMin is retried with derived seeds; K1.2: then at smaller sizes, and when none
         // reaches gatesMin the one with the most gates is flown (short), never nothing while one gate fits
-        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created, quality: box ? quality : undefined, spawn: m.spawn, elements: m.elements === true }, COURSE_DEFAULTS.gatesMin, make, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, (marginM) => freeAtMargin(walls, freeOpts, marginM));
+        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created, quality: box ? quality : undefined, spawn: m.spawn, elements: m.elements === true, craftRadiusM: m.craftRadiusM }, COURSE_DEFAULTS.gatesMin, make, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, (marginM) => freeAtMargin(walls, freeOpts, marginM));
         scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, proven: got.proven, ms: Math.round(performance.now() - t0) });
     } catch (err) {
         scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });
