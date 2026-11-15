@@ -485,7 +485,19 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   every frame (after the HUD wrote, acts only on a change) plus a sync at install, and liveRegionPaused(): K's 'help' hold alone
   keeps #ui quiet (its lines go to the captions, outside #ui). sonic-optin's pinned K list follows Shift+V. sonic-quiet2 and
   sonic-optin 28 passed (quiet2/w2p2-v1.log); NEG OK on live-quiet.ts against HEAD (w2p2-neg.log, the old file has no tick:
-  TypeError); tsc apps/fly 0 errors (w2p2-tsc.log). Browser recheck of (a) and (b): see below.
+  TypeError); tsc apps/fly 0 errors (w2p2-tsc.log).
+- [x] W2 pass 2 browser recheck: release of f64e6d87 exit 0 (sha256 d2043976..., quiet2/w2p2-build.log), stand-in walls in
+  dist/walls, serve-csp 5760, render off, no lock; NARRATOR=off KI=1 QUOTE=1 FLY_S=15 (quiet2/w2p2-70b50d42-off.json, -887f27aa-).
+  Wroclaw: KeyW answered at 0.57 s; course ready and hum of g1 +16.62 s after Shift+G (same sample); voiced from 0.1 s until K: 0;
+  K: 14 lines voiced, the hold ended at 55.88 s (K at 39.77); I at 57.92: "Lesson 1 of 1: Free flight in this scan. Step 2 of 2.
+  Attempt 1. Counted 0 of 1." and "Recording is off." voiced (finding (a) gone); Shift+V at 62.02: narratorOn voiced. Tunis: course
+  and hum +7.84 s, voiced until K 0, K 14, I the same two lines. #ui text announced while quiet, from the switch on to Shift+V:
+  Wroclaw 7 (was 8 + 222), Tunis 5 (was 8 + 244); 0 during K's help in both. 0 page errors.
+- [ ] Left of (b), measured, not fixed: the 7 and 5 lines are all at 0.01 to 0.11 s after Backslash ("on", "55 %", DISARMED,
+  ANGLE, volts, THR line), while the host's lesson is still null (samples: lesson null at 0.12 s, scan-free at 0.24 s), so
+  quietFlight is false then; plus the recorder's own live region (where "sonicrec-status", outside #ui) says "Not recording." at
+  0.18 s. A fix needs the in-place start to count as the free flight before the lesson is set (feature.ts, h.inPlace or the
+  Backslash path) and the recorder's region in the same rule (apps/fly/src/sonic, recorder status; file not looked up).
 - [ ] gates.py --only vitest,architecture,i18n,b18 on the W2 tree: architecture, i18n, b18 PASS; vitest FAIL 1 of 5035:
   tools/bench/test/sonic-optin.test.ts "K in the mode ... Escape N B Z I G R T U L" pins the K list of caps and does not follow N2's
   Shift+V (from W1 cb5e9272, gates were not run in W1). Fix: update that pinned list to the received one (Shift+V in place of the
