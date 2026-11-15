@@ -112,5 +112,7 @@
   "sonic.start.scanWhat": "Wolny lot nad tym skanem w rozmiarze x{size}: słyszysz jego ściany i swoją wysokość. Bez obręczy, bez zegara.",
   "sonic.key.Backslash": "ukośnik wsteczny",
   "sonic.say.inPlaceOn": "Lot na słuch jest włączony, dokładnie tam, gdzie jesteś.",
-  "sonic.say.inPlaceIntro": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. {off} wyłącza lot na słuch, {course} tworzy tutaj trasę z bramkami, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje."
+  "sonic.say.inPlaceIntro": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. {off} wyłącza lot na słuch, {course} tworzy tutaj trasę z bramkami, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje.",
+  "sonic.say.inPlaceIntroCourse": "Słyszysz ściany, gdy się do nich zbliżasz, i swoją wysokość. Buczenie prowadzi cię do następnej bramki trasy. {off} wyłącza lot na słuch, {keys} mówi wszystkie klawisze. Aby uczyć się krok po kroku, naciśnij {menu} i wybierz lekcje.",
+  "sonic.say.gateBehind": "Bramka jest za tobą."
 }

@@ -112,5 +112,7 @@
   "sonic.start.scanWhat": "Vuelo libre sobre este escaneo a tamaño x{size}: oyes sus paredes y tu altura. Sin aros, sin reloj.",
   "sonic.key.Backslash": "barra invertida",
   "sonic.say.inPlaceOn": "Fly by Sound está encendido, justo donde estás.",
-  "sonic.say.inPlaceIntro": "Oyes las paredes al acercarte a ellas, y tu altura. {off} apaga Fly by Sound, {course} crea aquí un recorrido de puertas, {keys} dice todas las teclas. Para aprender paso a paso, pulsa {menu} y elige las lecciones."
+  "sonic.say.inPlaceIntro": "Oyes las paredes al acercarte a ellas, y tu altura. {off} apaga Fly by Sound, {course} crea aquí un recorrido de puertas, {keys} dice todas las teclas. Para aprender paso a paso, pulsa {menu} y elige las lecciones.",
+  "sonic.say.inPlaceIntroCourse": "Oyes las paredes al acercarte a ellas, y tu altura. El zumbido te lleva a la siguiente puerta del recorrido. {off} apaga Fly by Sound, {keys} dice todas las teclas. Para aprender paso a paso, pulsa {menu} y elige las lecciones.",
+  "sonic.say.gateBehind": "La puerta está detrás de ti."
 }

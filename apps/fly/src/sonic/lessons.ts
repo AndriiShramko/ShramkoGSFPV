@@ -26,7 +26,7 @@
 //              on the pilot's path); 'previous' the lesson G left too, else the lesson before on the path, else the start
 //              screen. A runner moves the pilot once: a 'go' after the pass's own move (or a second 'go') changes nothing.
 // Every call into the runner goes out as the events the replay needs (the bridge's markers), so a recorded lesson re-derives.
-import { SCAN_FREE_ID, createLessonRunner, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
+import { SCAN_FREE_ID, createLessonRunner, gateCrossing, getLesson, isShippedLesson, lessonAfter, lessonBefore } from '@shramko/sonic-fpv';
 import type { DemoScene, FlightSample, LessonDef, LessonSession, Locale, Pose, Question, RunnerAction, RunnerOptions, SessionEvent, SonicObject, SonicWorld, SpeechLine } from '@shramko/sonic-fpv';
 import { lessonQuery } from '@gsfpv/scenes/sonic-link';
 import type { SonicLinkSound } from '@gsfpv/scenes/sonic-link';
@@ -38,9 +38,8 @@ import type { LessonWorld } from './lesson-world';
 import type { SonicMode } from './mode';
 import { worldPrims } from './primitives';
 import type { Prim } from './primitives';
-import { isScanCourse, scanCourseLesson, voxelCm, wallsAreCoarse } from './scan-lesson';
+import { isScanCourse, voxelCm, wallsAreCoarse } from './scan-lesson';
 import type { ScanLesson } from './scan-lesson';
-import type { CourseAnswer } from './course-ask';
 import { savedProgress, saveProgress, setCurrentLesson } from './store';
 import type { SonicHost } from './store';
 import { DEFAULT_LESSON_START_KEYS } from './key-names';
@@ -220,8 +219,6 @@ export class LessonHost {
      * does not move it; a course of gates still starts at its own first gate.
      */
     private freeHere = false;
-    /** the course flown now (S3): its "Course ready" line, said again when the course is passed and flown once more (SN-3) */
-    private ready: SpeechLine | null = null;
 
     /** True while the free flight (or its course) runs switched on in place over the pilot's own flight (in-place.ts). */
     get inPlace(): boolean {
@@ -234,7 +231,6 @@ export class LessonHost {
         this.free = lesson;
         this.freeBase = lesson;
         this.freeHere = o.here === true;
-        this.ready = null;
         return this.open(SCAN_FREE_ID);
     }
 
@@ -249,9 +245,8 @@ export class LessonHost {
     }
 
     /**
-     * N in a free scan flight (train 2, S3): a course of gates in this scan (the page's course.ask), flown by sound as a timed course
-     * (scanCourseLesson); N in it asks for another. No course (no walls, none fits, the worker failed): said, and the free flight again.
-     * False when the page asks for none (the caller goes to the menu).
+     * N in a free scan flight (lane onecourse, D3: the silent second key of Shift+G): the course feature makes the course of the
+     * scene, the one course there. False when the page has no course feature (the caller goes to the menu).
      */
     private async flyCourse(): Promise<boolean> {
         // lane onecourse (message 52, D2/D3/D5): N in the free flight is Shift+G's action: the course feature makes the one course
@@ -272,6 +267,26 @@ export class LessonHost {
         const c = this.p.course?.inUse() ?? null;
         if (!c || c.next < 0) return null;
         return c.gates[c.next] ?? null;
+    }
+
+    /** the craft's position at the last frame over the course in the scene, and the gate whose "behind you" was said */
+    private behindFrom: FlightSample['pos'] | null = null;
+    private behindSaid: string | null = null;
+
+    /**
+     * Lane onecourse (message 53, D7): the course in the scene's next gate passed beside or over it (its plane crossed forward
+     * outside its opening and its near miss) is said once, where it is ("The gate is behind you"), and the hum leads back to it.
+     * Nothing over that course says the wrong way (the course feature counts it; the runner's free flight has no track).
+     */
+    private gateBehind(gate: SonicObject | null, pos: FlightSample['pos']): void {
+        const from = this.behindFrom;
+        this.behindFrom = gate ? pos : null;
+        if (gate && this.behindSaid !== null && this.behindSaid !== gate.id) this.behindSaid = null;
+        if (!gate || !from || this.behindSaid === gate.id) return;
+        const cross = gateCrossing(gate, from, pos);
+        if (!cross || cross.inside || cross.near) return;
+        this.behindSaid = gate.id;
+        void this.p.mode.bridge.say({ key: 'sonic.say.gateBehind' }, false, { lesson: true });
     }
 
     /** the page clock when the walls build of a free flight began or last said it goes on; null when no build runs */
@@ -534,7 +549,9 @@ export class LessonHost {
         this.p.mode.bridge.events(run.step(sample, this.soundWorld));
         this.drain();
         // lane onecourse (D1): the free flight's target is the next gate of the course in the scene when it has none of its own
-        const target = run.target() ?? this.courseTarget();
+        const own = run.target();
+        const target = own ?? this.courseTarget();
+        if (!own) this.gateBehind(target, sample.pos);
         // a module-0 scene is the engine's input in place of the craft; else the craft in its world, the next gate its target
         // lane sonic-beacon: and where the target hum points (the target, or the next track point where the goal has no gate or zone)
         const input = run.demoFrame(sample.t) ?? { sample, world: this.soundWorld, target, ...(run.beaconTarget ? { beacon: run.beaconTarget() } : {}), floorY: this.floorY };
@@ -626,17 +643,6 @@ export class LessonHost {
         this.passedAt ??= now;
         if (now - this.passedAt < NEXT_AFTER_MS) return;
         this.passedAt = null;
-        // a course by sound (S3) passed: the same course again for a better time, said with its key for another; a new course
-        // only on N (review SN-3: no course was asked for without a key)
-        if (this.lesson?.id === SCAN_FREE_ID && isScanCourse(this.lesson) && this.ready) {
-            this.movedFrom = run;
-            const ready = this.ready;
-            void this.open(SCAN_FREE_ID, { keepSpeech: true }).then((ok) => {
-                if (ok) void this.p.mode.bridge.say(ready, false, { lesson: true });
-                else this.toMenu();
-            });
-            return;
-        }
         void this.advance();
     }
 

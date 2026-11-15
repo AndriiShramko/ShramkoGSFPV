@@ -52,9 +52,6 @@ import { installAttitude, installSoundPanel } from './look-panels';
 import type { Prim } from './primitives';
 import { lessonViewWorld } from './lesson-world';
 import { buildScanLesson, clearScanPrefs, forceScanPrefs, loadLessonTrack } from './scan-lesson';
-import { askCourse, randomSeed } from './course-ask';
-import { courseSpeech } from './course-speech';
-import { soundCourseSeed } from '../app/builtin/sonic-flight';
 import type { ScanLesson } from './scan-lesson';
 import { allProgress } from './store';
 import { STATUS_ORDER, sayStatus, statusBoard } from '../app/sonic-status';
@@ -577,7 +574,9 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
             if (!ok) return void showMenu();
             focusFlight();
             // train 3: a first-timer switched on in place hears the three keys he needs and the offer of the lessons, once
-            if (entry.intro) void sayLine({ key: 'sonic.say.inPlaceIntro', params: { off: capOf('flyBySound.toggle', 'Backslash'), course: capOf('course.generate', 'Shift+G'), keys: capOf('help.keys'), menu: capOf('pause.toggle', 'Escape') } }, false).catch(() => undefined);
+            // lane onecourse (D1): with a course in the scene the hum leads to it, so the intro names no key that makes one
+            const intro = ctx.hook.course?.sound?.inUse() ? 'sonic.say.inPlaceIntroCourse' : 'sonic.say.inPlaceIntro';
+            if (entry.intro) void sayLine({ key: intro, params: { off: capOf('flyBySound.toggle', 'Backslash'), course: capOf('course.generate', 'Shift+G'), keys: capOf('help.keys'), menu: capOf('pause.toggle', 'Escape') } }, false).catch(() => undefined);
         });
     } else showMenu();
     ctx.hook.sonic = (withEvents = true) => ({
