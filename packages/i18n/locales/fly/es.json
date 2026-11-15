@@ -324,7 +324,7 @@
   "bake.doneRough": "Paredes construidas en {s} s. Los choques están activados. En este escaneo las paredes son aproximadas.",
   "bake.doneNext": "Paredes construidas en {s} s. Sigue volando: se activan en tu próximo inicio.",
   "bake.keeping": "Guardándolas en este navegador…",
-  "bake.notKept": "Este navegador no pudo guardarlas: en tu próxima visita se construirán de nuevo.",
+  "bake.notKept": "Estas paredes valen solo para esta visita: la próxima vez este navegador las construye de nuevo por sí solo.",
   "bake.noRoom": "Este dispositivo se quedó sin memoria para las paredes. Cierra otras pestañas y pulsa el botón otra vez.",
   "bake.failed": "Las paredes no salieron esta vez. Pulsa el botón para construirlas de nuevo.",
   "bake.walls": "Paredes {cm} cm",
