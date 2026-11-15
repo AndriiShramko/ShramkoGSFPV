@@ -363,8 +363,8 @@ export const course: Feature = {
             const T = flownTransform();
             const margin = marginOf(tr);
             const problems = wallsCheck(col, T, margin)(upgradeTrack(tr));
-            // never measured here: the free radii every 0.25 m held the page's thread for minutes on Tunis 5 cm walls when
-            // the Save check found a problem (fix3b Y1 pass 2, hang probe); the failing legs give their ends (course frame)
+            // never measured here: the free radii every 0.25 m of one Tunis course on 5 cm walls took about 20 min in Node
+            // (fix3b Y1 pass 1, save-check-audit), the page's thread would hang; the failing legs give their ends (course frame)
             const rep = checkTrack(tr, col, T, margin, false);
             const posOf = new Map<string, readonly number[]>([['start', tr.start?.pos ?? []], ...tr.gates.map((g) => [g.id, g.pos] as [string, readonly number[]])]);
             const st = flownStart(tr, T);
