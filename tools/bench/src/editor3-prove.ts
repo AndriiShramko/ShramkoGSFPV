@@ -208,6 +208,50 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // J2: the first press after Shift+B is Save of the untouched generated course (integration C: the generator ends with
     // the Save's own check); a refusal is recorded with the check's report
     out.untouched = await saveNow(page, 'Probe J2');
+    // J2: a gate pushed into a wall (down into the floor by its Y arrow, 150 px a pull until the check counts one more
+    // problem) and Save: the refusal selects it, frames it and names it from 1; the pulls taken back by Ctrl+Z
+    {
+        for (let n = 0; n < 40 && (await ed(page)).selected !== 1; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < 1 ? 'Tab' : 'Shift+Tab'); await sleep(100); }
+        await sleep(600);
+        const k = (await ed(page)).selected ?? -1;
+        await page.click('.ce-gatebar [data-bar="move"]', { timeout: 2000, force: true }).catch(() => undefined);
+        await sleep(400);
+        const pw0 = (await ed(page)).problems ?? 0;
+        const y0 = (await dbg(page))?.stand.pos[1];
+        let pulls = 0;
+        for (let n = 0; n < 8 && ((await ed(page)).problems ?? 0) <= pw0; n++) {
+            const a = (await dbg(page))!;
+            const dir = a.axes.y;
+            const w = await walk(page, a.stand.screen, dir, 12, 'y');
+            if (!w) break;
+            await drag(page, w.x, w.y, -dir[0]! * 150, -dir[1]! * 150);
+            pulls++;
+            await sleep(1200);
+        }
+        const pushed = { selected: k, pulls, problems: [pw0, (await ed(page)).problems ?? 0], y: [y0, (await dbg(page))?.stand.pos[1]].map((v) => (typeof v === 'number' ? r2(v) : null)) };
+        const sv = await saveNow(page, 'Probe J2 wall');
+        await sleep(700);
+        const fr = (await ed(page)) as Ed & { frame?: unknown };
+        const fv = await dbg(page);
+        const line = String(sv.line ?? '');
+        out.refusalFrame = { selected: sv.selected, frame: fr.frame ?? null, gateScreen: fv?.stand.screen.map((v) => Math.round(v)) ?? null, line };
+        await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-refused-1920.png' : 'editor3-refused-1920.png') });
+        // moved out by the same arrow (up, the pulls again): a changed course, so the Save posts version 2
+        await page.click('.ce-gatebar [data-bar="move"]', { timeout: 2000, force: true }).catch(() => undefined);
+        await sleep(400);
+        for (let n = 0; n < pulls + 1 && ((await ed(page)).problems ?? 0) > pw0; n++) {
+            const a = (await dbg(page))!;
+            const w = await walk(page, a.stand.screen, a.axes.y, 12, 'y');
+            if (!w) break;
+            await drag(page, w.x, w.y, a.axes.y[0]! * 150, a.axes.y[1]! * 150);
+            await sleep(1200);
+        }
+        out.wallOut = { problems: (await ed(page)).problems ?? 0, y: (await dbg(page))?.stand.pos[1], save: await saveNow(page, 'Probe J2 out') };
+        out.wallPush = {
+            pushed, save: sv, refusedSelectsIt: !sv.saved && sv.selected === k, namesFrom1: new RegExp(`\\b${k + 1}\\b`).test(line),
+            outAgain: { problems: (await ed(page)).problems ?? 0, y: (await dbg(page))?.stand.pos[1] }
+        };
+    }
 
     // Add gate: the top bar's button, then a click on the scene in the middle of the view
     const nBefore = (await hook(page))?.gates ?? 0;
@@ -635,41 +679,6 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // H3 pass 2 (left c, f): with problems left, Save first as the pilot would; the refusal selects the wrong gate and says
     // what to do; the probe does what it says (pulls the selected gate's X and Z arrows, keeps a pull that leaves fewer
     // problems, takes back one that does not) before any delete. Records the line at 1 s and 7 s, the start and the problems.
-    // J2: a gate pushed into a wall (down into the floor by its Y arrow, 150 px a pull until the check counts one more
-    // problem) and Save: the refusal selects it, frames it and names it from 1; the pulls taken back by Ctrl+Z
-    {
-        for (let n = 0; n < 40 && (await ed(page)).selected !== 1; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < 1 ? 'Tab' : 'Shift+Tab'); await sleep(100); }
-        await sleep(600);
-        const k = (await ed(page)).selected ?? -1;
-        await page.click('.ce-gatebar [data-bar="move"]', { timeout: 2000, force: true }).catch(() => undefined);
-        await sleep(400);
-        const pw0 = (await ed(page)).problems ?? 0;
-        const y0 = (await dbg(page))?.stand.pos[1];
-        let pulls = 0;
-        for (let n = 0; n < 8 && ((await ed(page)).problems ?? 0) <= pw0; n++) {
-            const a = (await dbg(page))!;
-            const dir = a.axes.y;
-            const w = await walk(page, a.stand.screen, dir, 12, 'y');
-            if (!w) break;
-            await drag(page, w.x, w.y, -dir[0]! * 150, -dir[1]! * 150);
-            pulls++;
-            await sleep(1200);
-        }
-        const pushed = { selected: k, pulls, problems: [pw0, (await ed(page)).problems ?? 0], y: [y0, (await dbg(page))?.stand.pos[1]].map((v) => (typeof v === 'number' ? r2(v) : null)) };
-        const sv = await saveNow(page, 'Probe J2 wall');
-        await sleep(700);
-        const fr = (await ed(page)) as Ed & { frame?: unknown };
-        const fv = await dbg(page);
-        const line = String(sv.line ?? '');
-        out.refusalFrame = { selected: sv.selected, frame: fr.frame ?? null, gateScreen: fv?.stand.screen.map((v) => Math.round(v)) ?? null, line };
-        await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-refused-1920.png' : 'editor3-refused-1920.png') });
-        for (let n = 0; n < pulls; n++) { await page.keyboard.press('Control+KeyZ'); await sleep(400); }
-        await sleep(1200);
-        out.wallPush = {
-            pushed, save: sv, refusedSelectsIt: !sv.saved && sv.selected === k, namesFrom1: new RegExp(`\\b${k + 1}\\b`).test(line),
-            outAgain: { problems: (await ed(page)).problems ?? 0, y: (await dbg(page))?.stand.pos[1] }
-        };
-    }
     // J2: the untouched Save may have saved version 1 already; a later Save shows as a higher version
     const vBase = await savedVer(page);
     let earlySaved = false;

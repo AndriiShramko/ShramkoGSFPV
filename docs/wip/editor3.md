@@ -11,8 +11,37 @@ Stage J2-prove (train 3, 2026-11-15):
   refusal records hook.saveCheck(): legs with their ends, gates with freeM); gate 2 pushed into the floor by its Y arrow and
   Save (refusal selects it, frames it, names it from 1), Ctrl+Z out; a crash after the pad flight's gate (EI-5); later
   Saves seen by the version going up. tools/bench tsc exit 0.
-- [~] J2.2 chain U:/Temp/gsfpv-train3/editor3/j2/chain.sh (log chain.txt): prove Tunis and Wroclaw, clean Tunis, gizmo
-  both, accept-fly, mouse-free, tracks-page, a6, gates.
+- [x] J2.2 chain U:/Temp/gsfpv-train3/editor3/j2/chain.sh: prove on Tunis ran (lock 17:33:12-17:39:37, probe exit 0,
+  record j2/tunis/e4.json, rows j2/tunis/sum.txt). Wroclaw did not get the GPU lock within 9 min (held by another lane);
+  the chain was stopped at the reply budget, nothing after it ran. Tunis numbers (release 7f48dd05):
+  - Save of the untouched generated course, first press after Shift+B: SAVED, version 1, 0 problems, 'Saved as your course:
+    Course iffy51, version 1'. Fresh page, Courses: 1 row 'Course iffy51 gates: 24', opened 24 gates.
+  - Shift+B gate 1 selected with handles, 24 gates; Add gate 24 -> 25 at the first click; click on gate 4 selected;
+    Tab 4 -> 5 focus BODY; Shift+Tab back true; bar next/prev 2 -> 3 -> 2; X arrow 80 px = 0.3 m (82 px on screen); turn
+    ring:x 60 px 30 deg, 140 px 75 deg, edge:z 30 / 75 deg; Size centre cube 1.2 -> 2.42 m, no move, no turn; ring, square,
+    dive, cube; Copy 24 -> 25 and the cross 25 -> 24; undo/redo changed and back for move, turn, size, kind, copy, delete,
+    floor add; W A S D E Q 2.4-2.53 m a press; right button 0.46 m of the aim; F: gate at [960,540], 2.04 m, 0.33 of the
+    view; floor Add 24 -> 25 (new gate red with the reason); pad flight with gate 1 6 m ahead: course.next 0 -> 1.
+  - Crash after the gate (pitch down, throttle down): the edit view came back by itself after 1555 ms (mode edit, still
+    edit 3 s later), no crash card; the mode line read 'ARMED . ANGLE' (the fake pad's arm switch still on). crashActive was
+    never read true (the page clears it before the probe's next poll), so 'a crash' is inferred from mode fly -> edit
+    without a disarm press.
+  - Wall push (this run, pushed AFTER the other edits): gate 2 pulled 1 x 150 px down by its Y arrow, y 1.2 -> 0 m,
+    problems 2 -> 4; Save refused but the refusal selected gate 1 ('Gate 1 faces away from the way in'), framed at side
+    35 deg 2.04 m, centred [960,540]: an older problem left by the probe's earlier edits came first. The probe now (not run)
+    does the push right after the untouched Save on a clean course and moves the gate out by the same arrow, then Saves.
+  - The Save loop then refused 'the way from the start to gate 1 goes through a wall' every time (as in I3), final Save
+    not taken; Esc twice left ('The changes are not saved. Esc again leaves without saving').
+- [ ] left (next worker, in this order; the probe as of the commit that holds this line):
+  a. Run j2/chain.sh again from the Wroclaw line (Tunis prove once more for the reordered wall push: refusal selects
+     gate 2, line names 'Gate 2', framed; out by the Y arrow; Save version 2), then clean Tunis, gizmo both (each ring),
+     accept-fly, mouse-free, tracks-page, a6, gates. The release dist of 7f48dd05 is built; the probe change needs no build.
+  b. tracks-page 'E camera after Tab' and 'E paint' (lines 282-292) read the old editor: magenta pixels and a camera that
+     always moves; in the edit mode the selected gate is the yellow outline (E4) and Tab glides 0.4 s (frameSel may keep
+     the view): adapt after its first run here.
+  c. Pictures not yet looked at this stage: editor3-move/-turn/-size/-flying/-refused-1920.png of the Tunis run, and
+     -wroclaw/-edit-clean not taken.
+  d. E3 open rings (J1 left a) is still not fixed; the Tunis prove run turned ring:x and edge:z, the y ring not recorded.
 
 Stage J1-fix (train 3, 2026-11-15; NOT finished, pass 1 stopped at the reply budget):
 - [x] J1.0 merge origin/main d245d9ec (integration C) 26eb2e35: one conflict in apps/fly/src/app/builtin/course.ts
@@ -1586,6 +1615,9 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
     after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- J2-prove: about 32 replies; the most went to fitting the probe (untouched Save, wall push, crash) and to one Wroclaw
+  lock wait of 9 min that never got the lock. Cheaper: split the prove stage into one stage per scene, and do the wall
+  push right after the untouched Save from the start (an older problem otherwise answers first).
 - J1-fix pass 1: about 30 replies, stopped after the merge and the causes; the most went to finding where PlayCanvas's
 - J1 pass 2: the most turns went to reading view-mouse.ts and the 1099-line probes to find a runner; one browser run gave the
   open-ring failure late. Cheaper: run editor3-gizmo.ts (j1/gz.sh) right after the build, before any other reading.
