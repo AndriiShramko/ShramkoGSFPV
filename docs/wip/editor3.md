@@ -19,7 +19,7 @@ Stage I3-prove (train 3, 2026-11-15):
   vitest,architecture,i18n,b18 on 76ffff2c: all PASS (vitest 277 s).
   Pictures looked at: editor3-turn-1920.png and editor3-size-1920.png (Tunis), editor3-wroclaw-1920.png. Not looked at this
   pass: editor3-move-1920.png, editor3-flying-1920.png, editor3-edit-clean-1920.png (taken 13:48:45, 13:49:38, 13:31:37).
-- [ ] I3.3 left (next worker, in this order):
+- [x] I3.3 pass 1 left list (a, c, f done in I3.4; b done on Wroclaw, Tunis in I3.5 a; d explained in I3.4; e is I3.5 b):
   a. Probe editor3-prove.ts pad flight: the selected gate at that point is gate 20 (index 19, the X-arrow gate; shiftTabBack
      false on both scenes), so PutAhead moved gate 20 and course.next stayed 0; armed false, mode 'edit' at arming on both
      (150 steps 'fly' with next 0). Select gate 1 (Home or the bar's previous until index 0) before PutAhead and check why
@@ -37,13 +37,41 @@ Stage I3-prove (train 3, 2026-11-15):
      the red ring edge-on as a line (D4 takes it, turn 60 deg per 60 px drag on x). Wroclaw: a red line crosses the whole
      view (the X axis guide during or after the drag?), not looked into.
   e. Wroclaw crash in the test flight still not produced (afterCrash mode 'fly'); the crash proof is Tunis only.
-- [~] I3.4 (pass 2) probe editor3-prove.ts: cause of a and of 'Shift+Tab back' measured in the pass 1 records: the first
+- [x] I3.4 (pass 2, probe 4f86c4a7, f5d87f19, ad4d4ff1; release of 76ffff2c, app tree unchanged since) cause of a and of 'Shift+Tab back' measured in the pass 1 records: the first
   Add clicked the middle of the view, which is the framed gate 1 (D1), so nothing was added (24 -> 24), `added` was the
   selection 0 and `del` = -1; no gate has index -1, so the Tab loop ran 60 presses and stopped on index 19, and the pad
   flight steered to gates[-1] (none: it only yawed). The pad's 'armed false' is the reader (controls.gate.armed was false
   in H3 too, where course.next went 0 to 1); the flight steps were in mode 'fly'. Probe now: Add clicks the floor (0.5,
   0.85 of the view, then two more points), Shift+Tab to index 0 before PutAhead and steer to it, F measured after the view
   was flown (frameF), Save loop: Save, on a refusal delete the gate it selects, Save again (up to 22).
+  Runs (chain U:/Temp/gsfpv-train3/editor3/i3p2/chain.sh and chain2.sh, summaries by i3p2/sum.py in <run>/sum.txt): Tunis
+  887f27aa lock 14:09:12-14:13:52 and 14:18:12-14:23:45 (tunis, tunis2), Wroclaw 70b50d42 lock 14:13:56-14:18:08 and
+  14:23:49-14:28:05 (wroclaw, wroclaw2). Numbers in 'What the owner does'. In the first Tunis run page.click(force) on the
+  bar's cross deleted nothing 22 times (24 gates stayed); with a real mouse press on the cross (what lies under it:
+  bar:delete, visible) every press deleted one gate (f5d87f19). gates.py --only vitest,architecture,i18n,b18 on f5d87f19:
+  all PASS (i3p2/gates.log; ad4d4ff1 after it changes one probe line, tools/bench tsc 0 errors).
+  d explained (by reading, not a fault): the selected gate drawn orange on Tunis is the colour of a selected gate that is
+  also a problem gate, apps/fly/src/course/view.ts:23 'selected-bad' [1, 0.5, 0]; a selected gate without a problem is
+  yellow (Wroclaw, Tunis gate 1 before the floor add). Its frame is 400-700 px because the framing (D1) stands about 2 m
+  from a 1.2 m ring. Pictures looked at (Tunis unless named): editor3-move-1920.png (gate 1 yellow, small arrows, the X
+  arrow yellow after the drag), editor3-turn-1920.png and editor3-size-1920.png (gate 2 orange: it stands in a wall;
+  rings and cubes small inside the gate), editor3-wroclaw-1920.png (square yellow, arrows small), editor3-flying-1920.png
+  (flying: gate 1 green, THR line, key hints, voltage and time back), editor3-edit-clean-1920.png (pass 1, same app: no
+  flight part), editor3-f-1920.png (after F: gate 1 in the middle, about 450 of 1080 px high with its tube, 0.42).
+- [ ] I3.5 left (next worker, in this order):
+  a. Tunis Save: every course was refused down to 2 gates ('the way from the start to gate 1 goes through a wall' for each
+     gate that became gate 1; start [0.1, 2.1, 0.3] yaw 180, gate 1 [-0.857, 1.03, 19.229]; the early refusal's problems
+     gate-wall g25 freeM 6 and gate-direction g2 171.3 deg). The check is lane fix3a's. Next try in the probe: before the
+     Save loop call __gsfpvEditPutAhead(6, 1, 2.5) on gate 1 and keep it (the pad flight passed through that place, so
+     the start leg is flown free), then the Save loop. If still refused, the numbers above go to the lead.
+  b. Wroclaw crash in the test flight not produced (editor3-clean.ts, I2.7 a).
+  c. After a Move drag a thin red line crosses the whole view along the gate's X axis (editor3-move-1920.png,
+     editor3-wroclaw-1920.png). Guess, not measured: the PlayCanvas translate gizmo's axis guide stays after the drag
+     (course/editor/view-mouse.ts). Blender shows the axis line only while dragging.
+  d. frameF: __gsfpvEditView has no fov field (fovDeg null), so viewShare 0.51 assumes 60 deg; by the picture the gate
+     is about 0.42 of the view height. Add the camera's fov to the hook to measure it.
+  e. The keyboard Space in editor3-prove.ts (kbdFly) does not arm on a page whose source is the pad (mode edit 3.2 s, on
+     all runs, also H3); the keyboard flight is proven by editor3-clean.ts on a keyboard page. Not looked into.
 
 Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
 - [x] I2.0 merge origin/main 7fb0ddf7 (lead notes only): 6c4aa696. Release build of 6c4aa696's tree exit 0
@@ -1367,33 +1395,41 @@ button shows the table.
 - ArrowRight and PageUp were applied (the said line stayed "Moved", the probe's change detector could not tell); their long
   tasks were measured.
 
-## What the owner does (as of I3-prove, release of 76ffff2c, Tunis 887f27aa and Wroclaw 70b50d42, records in i3/)
+## What the owner does (as of I3-prove pass 2, release of 76ffff2c, Tunis 887f27aa and Wroclaw 70b50d42, records in i3/ and i3p2/)
 
 1. Shift+B: the same scene, gate 1 selected with the Move arrows, the top bar and the gate bar. Proven on both (24 gates).
-2. Click a gate: selected with its handles. Proven on both (gate 2; Wroclaw at the second try, the first click picked 1).
-3. Tab: the next gate (1 -> 2), focus stays on the page. Proven on both. Bar's next and previous: 6 -> 7 -> 6 on both.
-4. X arrow (Move, W key in the bar): 80 px drag moved the gate 0.3 m along X on both; Ctrl+Z / Ctrl+Y changed and back.
+2. Click a gate: selected with its handles. Proven on both (pass 1; Wroclaw at the second try).
+3. Tab: the next gate (1 -> 2), focus stays on the page; Shift+Tab back to gate 1: proven on both (pass 2). Bar's next and
+   previous: 2 -> 3 -> 2 on both.
+4. X arrow (Move, W key in the bar): 80 px drag moved gate 1 0.3 m (Tunis) / 0.4 m (Wroclaw) along X; Ctrl+Z, Ctrl+Y proven.
 5. Turn (bar or R), pull a ring: ring x 60 deg for 60 px and 135 deg for 140 px, z also turned, on both; undo/redo proven.
-6. Size (bar or T), pull the centre cube: Tunis 1.2 -> 2.28 m, Wroclaw 1.5 -> 2.94 m, no move, no turn; undo/redo proven.
+6. Size (bar or T), pull the centre cube: Wroclaw 1.5 -> 2.94 m, Tunis 1.2 -> 2.3 m, no move, no turn; undo/redo proven.
 7. Bar: ring, square, dive, cube: each changes the kind and the line says it; undo/redo proven on both.
-8. Bar: Copy: 24 -> 25 gates, the copy selected with handles; Delete (cross): 25 -> 24, the next gate selected; undo/redo
-   proven on both. Shift+Tab back to gate 1: NOT proven (shiftTabBack false on both).
-9. F frames the selected gate: not re-measured this pass (I1: gate 0.32 of the view height).
-10. Add gate on the top bar, click the floor: 24 -> 25, the new gate selected (Tunis standing 0.58 m, red: 'Gate 21 faces
-    away...'; Wroclaw 1.58 m, red); undo/redo proven. The first Add in the path did not add (left c).
-11. W A S D, E, Q fly the view 2.27-2.53 m per step on both; the right button held turns the look (0.46 m of the aim).
-12. Test flight, keyboard (gate 1 put 6 m ahead): Space armed 276 ms (Tunis) / 268 ms (Wroclaw), keys flew, course.next
-    0 -> 1 on both, a Space tap disarmed (21 ms / 281 ms), the edit view back, no flight part shown after.
-13. Test flight, pad: NOT proven this pass (the probe put gate 20 ahead and the pad did not arm, left a).
+8. Bar: Copy 24 -> 25, the copy selected; the cross 25 -> 24, the next gate selected; undo/redo proven on both.
+9. F frames the selected gate: after the view was flown the eye moved 0.3-0.49 m back to a framing, eye 2.04 m from a 1.2 m ring (Tunis), 2.55 m from a 1.5 m square (Wroclaw); the
+   gate in the middle of the view, about 0.42 of its height by editor3-f-1920.png.
+10. Add gate on the top bar, click the floor: 24 -> 25 at the first click on both (pass 2), the new gate selected and red
+    with the reason on the line; undo/redo proven.
+11. W A S D, E, Q fly the view 2.27-2.4 m per step on both; the right button held turns the look (0.46 m of the aim).
+12. Test flight, keyboard (gate 1 put 6 m ahead): Space armed 276 / 268 ms, course.next 0 -> 1 on both, a Space tap
+    disarmed, the edit view back (pass 1, editor3-clean.ts).
+13. Test flight, pad, gate 1 put 6 m ahead: course.next 0 -> 1 on both, twice each (Tunis 60-63 steps of 200 ms,
+    Wroclaw 60-61), disarm brings the edit view back (mode edit), the gate's opening back to 1.2 / 1.5 m by one Ctrl+Z.
 14. A crash in the test flight comes back to the edit view, no crash card: proven on Tunis; Wroclaw no crash produced.
-15. The flight's parts in the edit view: hint, THR line, key hints, REC, voltage, stats, crash, lap, note, gate message,
-    next-scene hint all 0 in edit, after a flight and after a crash; back after Exit (both scenes); top bar one line.
-16. Save (Ctrl+S or Save): NOT proven this pass: both refused by the check (Tunis 'the way from gate 1 to gate 2 goes
-    through a wall', Wroclaw 'Gate 2 faces away from the way in'); the refusal stays on the line and selects the gate.
-17. Fresh page, Courses, open the saved course: NOT proven this pass (nothing saved); proven in H3 pass 2 on Wroclaw.
-18. Esc says 'The changes are not saved. Esc again leaves without saving'; Esc again leaves. Proven on both.
+15. The flight's parts in the edit view: all 0 in edit, after a flight and after a crash; back after Exit; top bar one line.
+16. Save: Wroclaw proven twice: the refusal selects the gate it names, the cross on its bar deletes it, Save again;
+    after 8 deletions (24 -> 16) the top bar said 'Saved as your course: Course hg7owk, version 1. It is in Courses on
+    the top bar'. Tunis NOT proven: refused down to 2 gates, 'the way from the start to gate 1 goes through a wall'
+    (I3.5 a, the check's numbers there).
+17. Fresh page, Courses, open the saved course: Wroclaw proven twice (list 1 row 'Course hg7owk gates: 16', opened 16
+    gates, the moved gate 1 at [-2.96, 2.6, -32.7], 0 m from where it was saved). Tunis not (nothing saved).
+18. Esc with unsaved changes says 'The changes are not saved. Esc again leaves without saving'; Esc again leaves (Tunis);
+    after a Save one Esc leaves (Wroclaw).
 
 ## Cost notes
+- I3-prove pass 2: about 30 replies; the most went to waiting for four scene holds (two chains) and to the first run's
+  probe faults (a force click that deleted nothing). Cheaper: the probe's bar presses all through clickBar (a real mouse
+  press with what lies under it) from the start, and sum.py written before the first run.
 - I3-prove: about 30 replies; the most went to the 18-minute lock wait on Tunis (two tries in the chain gave up) and to
   reading the 4 records by hand. Cheaper: one summary script for e4.json and clean.json that prints the owner's-path rows,
   and a run.sh that waits for the lock as long as it takes instead of giving up after 9 minutes.
