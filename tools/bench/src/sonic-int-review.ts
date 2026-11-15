@@ -1203,6 +1203,40 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
     }
 }
 
+/**
+ * R12 (train 3 Y2): the speed lessons open and end. Each lesson of Z5_LESSONS (default speed-1..speed-4) on a fresh page: its link
+ * /en/fly/?sonic=<id>, Enter on the start screen, then the pilot of steerByHum flies it by the hum with W held (the lesson caps the
+ * speed itself) until the runner says passed, or 300 s. The seconds, attempts, the phase and the last lines go to the evidence.
+ */
+async function r12(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
+    const ids = (process.env.Z5_LESSONS ?? 'speed-1,speed-2,speed-3,speed-4').split(',').filter((x) => x !== '');
+    const shots = process.env.Z5_SHOTS ?? 'U:/Temp/gsfpv-train3/shots';
+    mkdirSync(shots, { recursive: true });
+    result.r12 = [] as object[];
+    for (const id of ids) {
+        log(`R12: lesson ${id} opened and flown by the hum`);
+        const ctx = await newContext(browser, served, prefsDoc(), null);
+        const tag = `R12 ${id}`;
+        const t0 = Date.now();
+        const page = await openLesson(ctx, served, id, tag).catch((e: Error) => { log(e.message.slice(0, 300)); return null; });
+        check(`${tag}: the lesson opens from its link with one Enter`, page !== null);
+        if (page === null) { await ctx.close(); continue; }
+        const opened = (Date.now() - t0) / 1000;
+        const lines = new Set<string>();
+        const trail: object[] = [];
+        const stats: SteerStats = { speeds: [], dodges: 0, targets: [] };
+        const tF = Date.now();
+        const end = await steerByHum(page, (p) => p.phase === 'passed', 300000, lines, trail, undefined, undefined, stats);
+        await sleep(2000);
+        await page.screenshot({ path: `${shots}/z5-${id}-end.png`, fullPage: false });
+        const spoken = spokenAfter(await events(page), 0);
+        const run = { id, openedS: opened, flightS: Math.round((Date.now() - tF) / 1000), phase: end.phase, attempt: end.attempt, gates: stats.targets.length, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-10), trail: trail.slice(-6) };
+        (result.r12 as object[]).push(run);
+        check(`${tag}: flown to its end (passed)`, end.phase === 'passed', run);
+        await ctx.close();
+    }
+}
+
 // ------------------------------------------------------------------------------------------------ main
 
 const result: Record<string, unknown> = {};
@@ -1246,6 +1280,7 @@ async function main(): Promise<void> {
         else if (which === 'r9') await r9(fresh, served);
         else if (which === 'r10') await r10(fresh, served);
         else if (which === 'r11') await r11(fresh, served);
+        else if (which === 'r12') await r12(fresh, served);
         else throw new Error(`no probe named ${which}`);
         check('no page error, no console error in any page', problems.length === 0, problems);
     } catch (e) {
