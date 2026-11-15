@@ -54,6 +54,8 @@
   "sonic.say.helpMenu": "Pulsa la tecla {key} para abrir el menú de la lección.",
   "sonic.say.helpPrevious": "Pulsa la tecla {key} para volver un paso atrás.",
   "sonic.say.helpRepeat": "Pulsa la tecla {key} para oír otra vez la tarea de este paso, con sus sonidos.",
+  "sonic.say.helpCourse": "Pulsa {key} para un circuito de puertas en esta escena. Un circuito nuevo sustituye al anterior.",
+  "sonic.key.ChordJoin": "y la tecla",
   "sonic.say.helpShare": "Pulsa la tecla {key} para copiar un enlace a esta lección y compartirlo.",
   "sonic.say.homeBack": "Menú principal de Fly by Sound. La lección {title} está guardada: Continuar te devuelve a ella.",
   "sonic.say.lessonKeys": "Siguiente, tecla {next}. Atrás, tecla {previous}. Repetir, tecla {repeat}. Menú, tecla {menu}. Menú principal, tecla {home}.",

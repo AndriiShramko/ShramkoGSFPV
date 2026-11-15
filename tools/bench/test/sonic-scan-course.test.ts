@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { analyticCollision } from '../../../packages/collision/src';
 import { Rig, SharedCourse } from './sonic-lesson-rig';
+import { KEY_HELP } from '../../../apps/fly/src/sonic/mode-keys';
+import { spokenKey } from '../../../apps/fly/src/sonic/key-names';
 import type { Control, RigScan } from './sonic-lesson-rig';
 import { parseTrack, scanFreeLesson, validateLesson, SCAN_FREE_ID } from '../../../packages/sonic-fpv/src';
 import type { SonicObject, TrackFile } from '../../../packages/sonic-fpv/src';
@@ -212,5 +214,17 @@ describe('one course in the scene, the course feature\'s, in Fly by Sound too (l
         expect(shared.made).toBe(0);
         expect(r.stage.target).toBeNull();
     }, 120000);
+
+    it('the key help names Shift+G for a course, said with the letter last ("Shift and key G"); no course line names N', () => {
+        const help = KEY_HELP.find(([line]) => line === 'sonic.say.helpCourse');
+        expect(help?.[1]).toBe('course.generate');
+        const named = (code: string): string | null => (code === 'ChordJoin' ? 'and key' : null);
+        expect(spokenKey({ cap: 'Shift+G', aria: 'Shift+G' } as never, null, named)).toBe('Shift and key G');
+        for (const loc of ['en', 'es', 'pl', 'ru']) {
+            const dict = JSON.parse(readFileSync(join(REPO, `packages/i18n/locales/fly/sonic/${loc}.json`), 'utf8')) as Record<string, string>;
+            for (const k of ['sonic.say.courseOffer', 'sonic.say.helpCourse', 'sonic.say.inPlaceIntro']) expect(dict[k], `${loc} ${k}`).not.toMatch(/(^|[^\p{L}])N([^\p{L}]|$)/u);
+            expect(dict['sonic.key.ChordJoin'], loc).toBeTruthy();
+        }
+    });
 });
 

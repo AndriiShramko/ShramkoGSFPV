@@ -83,6 +83,8 @@ export async function shareLesson(d: ShareDeps): Promise<boolean> {
 export const KEY_HELP: readonly (readonly [line: string, action: ActionId, aria?: string])[] = [
     ['sonic.say.helpMenu', 'pause.toggle', 'Escape'],
     ['help.next', 'scene.next'],
+    // lane onecourse (message 52): the one key that makes a course in every mode (the course feature's Shift+G)
+    ['sonic.say.helpCourse', 'course.generate'],
     ['sonic.say.helpPrevious', 'feedback.open'],
     ['sonic.say.helpRepeat', 'sonic.repeat'],
     // lane sonic-hints: X, from the lesson to the main menu
