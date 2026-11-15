@@ -27,6 +27,7 @@ type Dbg = {
     cam: { pos: number[]; speed: number };
     dragging: boolean;
     mode?: string;
+    tool?: string;
 };
 type Ed = { open?: boolean; selected?: number; changed?: boolean; problems?: number; said?: string; view?: { eye: number[]; at: number[] } | null };
 type Hook = { gates?: number; on?: boolean; next?: number; laps?: number; problem?: string | null; editor?: Ed };
@@ -63,6 +64,21 @@ function install(): void {
     requestAnimationFrame(tick);
 }
 
+/** H1: walk out from a screen point along a screen direction in 6 px steps (from `min` px, up to 450) with the page's
+ * __gsfpvEditHit until a shape of the shown handles is under it (its axis containing `want`); null when none */
+const walk = (p: Page, from: number[], dir: number[], min: number, want: string): Promise<{ r: number; x: number; y: number; hit: string[] } | null> => p.evaluate(([f, d, m, wa]) => {
+    const h = (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => string[] | null }).__gsfpvEditHit;
+    if (!h) return null;
+    const n = Math.hypot(d[0]!, d[1]!) || 1;
+    for (let r = m; r <= 450; r += 6) {
+        const x = f[0]! + (d[0]! / n) * r;
+        const y = f[1]! + (d[1]! / n) * r;
+        const hit = h(x, y);
+        if (hit && String(hit[1]).includes(wa)) return { r, x, y, hit };
+    }
+    return null;
+}, [from, dir, min, want] as const);
+
 const now = (p: Page): Promise<number> => p.evaluate(() => performance.now());
 /** frames per second, the longest frame gap and the longest long task between t0 and t1 (page ms) */
 const span = (p: Page, t0: number, t1: number): Promise<{ fps: number; gapMax: number; longMax: number; longs: number }> => p.evaluate(([a, b]) => {
@@ -95,17 +111,19 @@ async function drag(p: Page, x: number, y: number, dx: number, dy: number): Prom
 }
 
 /** load, choose the controller, make a course */
-async function prepare(page: Page, id: string, out: Record<string, unknown>): Promise<boolean> {
+async function prepare(page: Page, id: string, out: Record<string, unknown>, keyboard = false): Promise<boolean> {
     await page.goto(`${SITE}/en/fly/?scene=${id}&nowarn=1`);
     const r = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.status ?? null), (v) => v === 'ready' || v === 'error', 240000);
     out.ready = { ms: r.ms, status: r.v };
     if (r.v !== 'ready') return false;
     await page.waitForSelector('.screen.radio .choice', { timeout: 20000 }).catch(() => undefined);
-    await pad(page, [0, 0, 0.3, 0, 0], 0x50);
-    await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.radio?.wizard?.state?.id ?? null), (v) => v === 'check', 8000);
-    await pad(page, [0, 0, -1, 0, 0], 0x50);
-    await page.locator('[data-action=wizard-done]').click({ timeout: 8000 }).catch(() => undefined);
-    const src = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.source ?? null), (v) => v === 'gamepad', 15000);
+    if (!keyboard) {
+        await pad(page, [0, 0, 0.3, 0, 0], 0x50);
+        await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.radio?.wizard?.state?.id ?? null), (v) => v === 'check', 8000);
+        await pad(page, [0, 0, -1, 0, 0], 0x50);
+        await page.locator('[data-action=wizard-done]').click({ timeout: 8000 }).catch(() => undefined);
+    }
+    const src = await until(() => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.source ?? null), (v) => v === 'gamepad', keyboard ? 0 : 15000);
     out.controller = { source: src.v, screenGone: await page.evaluate(() => !document.querySelector('.screen.radio')) };
     if (src.v !== 'gamepad') {
         // the controller was not taken: the keyboard, so the course and the editor can still be walked
@@ -206,30 +224,35 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await page.keyboard.press('Tab');
     await until(() => ed(page), (e) => e.selected === del + 1, 2000);
     await sleep(800);
-    // a ring
+    // H1: one set of handles at a time. Turn: the gate bar's Turn button, then a ring found by walking out from the centre
+    // with __gsfpvEditHit (the radius is the one the gizmo draws), dragged along its tangent
+    await page.click('.ce-gatebar [data-bar="turn"]', { timeout: 5000 }).catch((e) => { out.turnClickError = String(e).slice(0, 120); });
+    await sleep(500);
+    out.turnTool = (await dbg(page))?.tool;
     const turns: unknown[] = [];
-    for (const [ax, across] of [['x', 'y'], ['y', 'x'], ['z', 'x']] as const) {
-        let done = false;
-        for (const rr of [130, 110, 150]) {
-            const a = (await dbg(page))!;
-            const dir = a.axes[ax];
-            const c = a.axes[across];
-            await drag(page, a.stand.screen[0]! + dir[0]! * rr, a.stand.screen[1]! + dir[1]! * rr, c[0]! * 60, c[1]! * 60);
-            const b = (await dbg(page))!;
-            const q = dist(a.stand.quat, b.stand.quat);
-            turns.push({ along: ax, r: rr, quatChange: Math.round(q * 1000) / 1000, movedM: r2(dist(a.stand.pos, b.stand.pos)) });
-            if (q > 0.01) { done = true; break; }
-        }
-        if (done) break;
+    for (const dir of [[1, 0], [0, -1], [0.71, -0.71], [-1, 0], [0, 1]]) {
+        const a = (await dbg(page))!;
+        const w = await walk(page, a.stand.screen, dir, 40, '');
+        if (!w) { turns.push({ dir, hit: null }); continue; }
+        await drag(page, w.x, w.y, -dir[1]! * 60, dir[0]! * 60);
+        const b = (await dbg(page))!;
+        const q = dist(a.stand.quat, b.stand.quat);
+        turns.push({ dir, r: w.r, hit: w.hit, quatChange: Math.round(q * 1000) / 1000, movedM: r2(dist(a.stand.pos, b.stand.pos)), opening: [r2(a.stand.opening), r2(b.stand.opening)] });
+        if (q > 0.01) break;
     }
     out.turn = turns;
-    // the centre box: the opening changes, the gate stays
+    // Size: the key T, then the centre box (walked out from the centre in case the box is not under it)
+    await page.keyboard.press('KeyT');
+    await sleep(400);
+    out.sizeTool = (await dbg(page))?.tool;
     const sc: unknown[] = [];
     for (const [dx, dy] of [[60, -60], [-60, 60], [90, 0]]) {
         const a = (await dbg(page))!;
-        await drag(page, a.stand.screen[0]!, a.stand.screen[1]!, dx!, dy!);
+        const w = await walk(page, a.stand.screen, [0.71, -0.71], 0, '');
+        if (!w) { sc.push({ drag: [dx, dy], hit: null }); continue; }
+        await drag(page, w.x, w.y, dx!, dy!);
         const b = (await dbg(page))!;
-        sc.push({ drag: [dx, dy], opening: [r2(a.stand.opening), r2(b.stand.opening)], movedM: r2(dist(a.stand.pos, b.stand.pos)) });
+        sc.push({ drag: [dx, dy], r: w.r, hit: w.hit, opening: [r2(a.stand.opening), r2(b.stand.opening)], movedM: r2(dist(a.stand.pos, b.stand.pos)), quatChange: r2(dist(a.stand.quat, b.stand.quat)) });
         if (Math.abs(a.stand.opening - b.stand.opening) > 0.01) break;
     }
     out.scale = sc;
@@ -246,16 +269,19 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await page.keyboard.press('Shift+Tab');
     await until(() => ed(page), (e) => e.selected === del, 2000);
     await sleep(800);
-    // the X arrow: the gate follows the cursor
+    // the X arrow: another gate selected sets Move (toolAfter); the arrow found along the gate's X axis
+    out.moveTool = (await dbg(page))?.tool;
     const moves: unknown[] = [];
-    for (const rr of [80, 60, 100, 45]) {
+    for (let k = 0; k < 2; k++) {
         const a = (await dbg(page))!;
         const dir = a.axes.x;
-        await drag(page, a.stand.screen[0]! + dir[0]! * rr, a.stand.screen[1]! + dir[1]! * rr, dir[0]! * 80, dir[1]! * 80);
+        const w = await walk(page, a.stand.screen, dir, 12, 'x');
+        if (!w) { moves.push({ hit: null }); continue; }
+        await drag(page, w.x, w.y, dir[0]! * 80, dir[1]! * 80);
         const b = (await dbg(page))!;
         const m = dist(a.stand.pos, b.stand.pos);
         const px = dist(a.stand.screen.slice(0, 2), b.stand.screen.slice(0, 2));
-        moves.push({ r: rr, movedM: r2(m), screenPx: Math.round(px), dragPx: 80, opening: [a.stand.opening, b.stand.opening] });
+        moves.push({ r: w.r, hit: w.hit, movedM: r2(m), screenPx: Math.round(px), dragPx: 80, opening: [a.stand.opening, b.stand.opening] });
         if (m > 0.05) break;
     }
     out.moveX = moves;
@@ -346,6 +372,22 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     };
     out.flySpan = await span(page, tFly, await now(page));
     out.path = await span(page, tPath, await now(page));
+    // ED-4: Add gate, then a click low on the view (the floor); the new gate stands over the floor and is not red
+    const fp0 = (await ed(page)).problems ?? 0;
+    const nf = (await hook(page))?.gates ?? 0;
+    await page.click('[data-top="add"]', { timeout: 5000 }).catch((e) => { out.floorAddClickError = String(e).slice(0, 120); });
+    await sleep(300);
+    await page.mouse.click(vp.width / 2, vp.height * 0.85);
+    const fa = await until(() => hook(page), (h) => (h?.gates ?? 0) === nf + 1, 3000);
+    await sleep(4000);
+    const fd = await dbg(page);
+    out.floorAdd = {
+        ok: fa.ok, gates: [nf, (await hook(page))?.gates], problems: [fp0, (await ed(page)).problems],
+        stand: fd?.stand.screen.map((v) => Math.round(v)), standPosY: fd ? r2(fd.stand.pos[1]!) : null, opening: fd ? r2(fd.stand.opening) : null,
+        said: ((await ed(page)).said ?? '').slice(0, 120),
+        line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '')
+    };
+    await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-floor-add-1920.png' : 'editor3-floor-add-1920.png') });
     // leave without saving
     await page.keyboard.press('Escape');
     await sleep(500);
@@ -365,6 +407,55 @@ async function phone(page: Page, id: string): Promise<Record<string, unknown>> {
     const bars = await page.evaluate(() => [...document.querySelectorAll('.ce-gatebar, .ce-topbar, [data-top="add"]')].map((e) => { const r = e.getBoundingClientRect(); return [e.className || e.getAttribute('data-top'), Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
     out.bars = bars;
     await page.screenshot({ path: join(SHOTS, 'editor3-844.png') });
+    return out;
+}
+
+/** H1 with the keyboard as the chosen input: ED-2 (W in the mode does not arm, Space arms and disarms) and a full course
+ * (Add gate says in words what to delete, no number) */
+async function keyboardRun(page: Page, id: string): Promise<Record<string, unknown>> {
+    const out: Record<string, unknown> = { scene: id };
+    if (!(await prepare(page, id, out, true))) return out;
+    await sleep(1500);
+    await page.keyboard.press('Shift+KeyB');
+    out.open = (await until(() => ed(page), (e) => !!e.open, 30000)).ok;
+    await sleep(1200);
+    const armed = (): Promise<boolean | null> => page.evaluate(() => (window as unknown as W).__gsfpv?.controls?.gate?.armed ?? null);
+    const c0 = (await dbg(page))?.cam.pos;
+    await page.keyboard.down('KeyW');
+    await sleep(600);
+    await page.keyboard.up('KeyW');
+    await sleep(300);
+    out.afterW = { armed: await armed(), mode: (await dbg(page))?.mode, camMovedM: r2(dist(c0, (await dbg(page))?.cam.pos)) };
+    await page.keyboard.press('Space');
+    const f1 = await until(() => dbg(page), (d) => d?.mode === 'fly', 3000);
+    out.space1 = { mode: f1.v?.mode, ms: f1.ms, armed: await armed() };
+    await sleep(800);
+    await page.keyboard.press('Space');
+    const f2 = await until(() => dbg(page), (d) => d?.mode === 'edit', 4000);
+    out.space2 = { mode: f2.v?.mode, ms: f2.ms, armed: await armed() };
+    await sleep(800);
+    // fill the course with Insert (a copy after the selected gate) until it stops growing
+    let last = (await hook(page))?.gates ?? 0;
+    let still = 0;
+    for (let i = 0; i < 90 && still < 3; i++) {
+        await page.keyboard.press('Insert');
+        await sleep(120);
+        const n = (await hook(page))?.gates ?? 0;
+        still = n === last ? still + 1 : 0;
+        last = n;
+    }
+    out.fullGates = last;
+    await page.click('[data-top="add"]', { timeout: 5000 }).catch((e) => { out.fullAddClickError = String(e).slice(0, 120); });
+    await sleep(500);
+    const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
+    const said = (await ed(page)).said ?? '';
+    await page.mouse.click(page.viewportSize()!.width / 2, page.viewportSize()!.height * 0.45);
+    await sleep(600);
+    out.full = { line, said, digitInLine: /\d/.test(line), gatesAfterClick: (await hook(page))?.gates };
+    await page.screenshot({ path: join(SHOTS, 'editor3-full-1920.png') });
+    await page.keyboard.press('Escape');
+    await sleep(400);
+    if ((await ed(page)).open) await page.keyboard.press('Escape');
     return out;
 }
 
@@ -393,6 +484,7 @@ async function main(): Promise<void> {
     };
     try {
         for (const id of SCENES) await run(id, { width: 1920, height: 1080 }, (p) => scene(p, id));
+        if (process.env.KBD !== '0') await run(`kbd-${SCENES[0]}`, { width: 1920, height: 1080 }, (p) => keyboardRun(p, SCENES[0]!));
         if (process.env.PHONE === '1') await run(`phone-${SCENES[0]}`, { width: 844, height: 390 }, (p) => phone(p, SCENES[0]!));
     } finally {
         await browser.close();

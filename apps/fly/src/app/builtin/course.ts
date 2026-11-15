@@ -116,6 +116,8 @@ export const course: Feature = {
         /** lane editor3 E3: the top bar (Add gate, Undo, Redo, Exit) and whether the drone flies inside the mode */
         let top: TopBar | null = null;
         let mode: EditMode = 'edit';
+        /** review ED-3: a crash in flight holds the edit view until the drone is seen disarmed (fly-mode.ts modeStep) */
+        let crashHold = false;
         /** the editor's state when a handle drag began (the drag is one undo step on it) */
         let dragBase: EditorState | null = null;
         let dragFrame = 0;
@@ -622,6 +624,7 @@ export const course: Feature = {
             edHook.refused = null;
             // lane editor3 E3: no pause; the flight goes on in the mode (armed: the drone's view, disarmed: the edit view)
             mode = 'edit';
+            crashHold = false;
             unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);
@@ -734,7 +737,8 @@ export const course: Feature = {
         const editFrame = (): void => {
             if (!ed) return;
             const sim = ctx.session.sim;
-            const st = modeStep(mode, !!sim?.armed, !!sim?.crashed);
+            const st = modeStep(mode, !!sim?.armed, !!sim?.crashed, crashHold);
+            crashHold = st.hold;
             if (st.change === 'to-fly') {
                 mode = 'fly';
                 // review ED-2: devices/keyboard.ts gives the flying keys back to the flight (EDIT_MODE)

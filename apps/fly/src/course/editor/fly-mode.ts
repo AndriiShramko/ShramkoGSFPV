@@ -6,22 +6,39 @@
 
 export type EditMode = 'edit' | 'fly';
 
-// Review ED-3: a crash keeps the mode it happened in. The crash drops `armed` until the respawn, and the respawn arms again
-// (respawn.keepArmed), so following `armed` through it showed the edit view for 0.5-4 s and then the drone again, and cut a
-// drag started in that window. Now the pilot keeps flying after a crash; disarming is the way back to editing (with
-// respawn.keepArmed off the respawn leaves the drone disarmed, so the edit view comes back after it).
+// Review ED-3 (train 3 wave 2, the lead's wording): after a crash the view returns to the edit camera and stays there. The
+// crash drops `armed` until the respawn, and the respawn may arm again (respawn.keepArmed); following `armed` through it
+// showed the edit view for 0.5-4 s and then the drone again. Now a crash in flight sets `hold`: the edit view stays while
+// the respawned drone is still armed, and flying again needs a fresh arm (armed seen false, then true: the switch off and
+// on, or Space twice for a keyboard pilot).
 
-/** The mode the drone's state asks for: armed flies, disarmed edits; while crashed (until the respawn) `prev` holds. */
-export function editModeOf(armed: boolean, crashed: boolean, prev: EditMode = 'edit'): EditMode {
-    if (crashed) return prev;
-    return armed ? 'fly' : 'edit';
+export interface ModeStep {
+    readonly mode: EditMode;
+    readonly change: 'to-fly' | 'to-edit' | null;
+    /** true after a crash in flight until the drone is seen disarmed */
+    readonly hold: boolean;
 }
 
-/** One frame: the mode now and the switch to make ('to-fly', 'to-edit') or null when it stays. */
-export function modeStep(prev: EditMode, armed: boolean, crashed: boolean): { mode: EditMode; change: 'to-fly' | 'to-edit' | null } {
-    const mode = editModeOf(armed, crashed, prev);
-    if (mode === prev) return { mode, change: null };
-    return { mode, change: mode === 'fly' ? 'to-fly' : 'to-edit' };
+/** One frame: the mode now, the switch to make ('to-fly', 'to-edit') or null, and the crash hold for the next frame. */
+export function modeStep(prev: EditMode, armed: boolean, crashed: boolean, hold = false): ModeStep {
+    let h = hold;
+    let mode: EditMode;
+    if (crashed) {
+        mode = 'edit';
+        if (prev === 'fly') h = true;
+    } else if (!armed) {
+        mode = 'edit';
+        h = false;
+    } else {
+        mode = h ? 'edit' : 'fly';
+    }
+    if (mode === prev) return { mode, change: null, hold: h };
+    return { mode, change: mode === 'fly' ? 'to-fly' : 'to-edit', hold: h };
+}
+
+/** The mode the drone's state asks for with no crash hold: armed flies; disarmed or crashed edits. */
+export function editModeOf(armed: boolean, crashed: boolean, prev: EditMode = 'edit'): EditMode {
+    return modeStep(prev, armed, crashed).mode;
 }
 
 /** What the edit mode's flight shows of the course: the next gate lights up, no lap time, no best lap written. */

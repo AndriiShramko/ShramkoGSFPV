@@ -114,25 +114,34 @@ describe('editor3 E3: flying inside the edit mode', () => {
     it('armed flies, disarmed edits', () => {
         expect(editModeOf(true, false)).toBe('fly');
         expect(editModeOf(false, false)).toBe('edit');
-        expect(modeStep('edit', true, false)).toEqual({ mode: 'fly', change: 'to-fly' });
-        expect(modeStep('fly', true, false)).toEqual({ mode: 'fly', change: null });
-        expect(modeStep('fly', false, false)).toEqual({ mode: 'edit', change: 'to-edit' });
+        expect(modeStep('edit', true, false)).toMatchObject({ mode: 'fly', change: 'to-fly' });
+        expect(modeStep('fly', true, false)).toMatchObject({ mode: 'fly', change: null });
+        expect(modeStep('fly', false, false)).toMatchObject({ mode: 'edit', change: 'to-edit' });
     });
 
-    it('review ED-3: a crash keeps flying through the respawn (no edit view for a moment, then the drone again)', () => {
+    it('review ED-3 (wave 2): after a crash the edit view comes back and stays until a fresh arm', () => {
         // sim.ts: the crash sets armed 0 and crashed 1; the respawn with respawn.keepArmed sets armed 1 and crashed 0
         let mode: 'edit' | 'fly' = 'fly';
-        const changes: unknown[] = [];
-        for (const [armed, crashed] of [[true, false], [false, true], [false, true], [true, false]] as const) {
-            const st = modeStep(mode, armed, crashed);
+        let hold = false;
+        const seen: string[] = [];
+        const frames: Array<readonly [boolean, boolean]> = [[true, false], [false, true], [false, true], [true, false], [true, false]];
+        for (const [armed, crashed] of frames) {
+            const st = modeStep(mode, armed, crashed, hold);
             mode = st.mode;
-            if (st.change) changes.push(st.change);
+            hold = st.hold;
+            seen.push(mode + (st.change ? ':' + st.change : ''));
         }
-        expect(changes).toEqual([]);
-        expect(mode).toBe('fly');
-        // respawn.keepArmed off: the respawn leaves the drone disarmed and the edit view comes back
-        expect(modeStep('fly', false, false)).toEqual({ mode: 'edit', change: 'to-edit' });
-        expect(modeStep('edit', false, true)).toEqual({ mode: 'edit', change: null });
+        // the crash brings the edit view at once; the re-armed respawn does not take it away
+        expect(seen).toEqual(['fly', 'edit:to-edit', 'edit', 'edit', 'edit']);
+        expect(hold).toBe(true);
+        // a fresh arm: the switch seen off, then on, flies again
+        let st = modeStep(mode, false, false, hold);
+        expect(st).toEqual({ mode: 'edit', change: null, hold: false });
+        st = modeStep(st.mode, true, false, st.hold);
+        expect(st).toEqual({ mode: 'fly', change: 'to-fly', hold: false });
+        // respawn.keepArmed off: the respawn leaves the drone disarmed and the edit view stays
+        expect(modeStep('edit', false, true)).toEqual({ mode: 'edit', change: null, hold: false });
+        expect(editModeOf(false, true, 'fly')).toBe('edit');
     });
 
     it('review ED-2: the edit mode keeps the flying keys from the keyboard source, Space arms, ce-flying gives them back', () => {
@@ -160,7 +169,7 @@ describe('editor3 E3: flying inside the edit mode', () => {
         expect(COURSE_TS).not.toMatch(/ctx\.pause\('panel'\)/);
         expect(COURSE_TS).toMatch(/ctx\.keys\.block\(\(\) => ed !== null && mode === 'edit'\)/);
         expect(COURSE_TS).toMatch(/if \(ed\) return editFrame\(\);/);
-        expect(COURSE_TS).toMatch(/modeStep\(mode, !!sim\?\.armed, !!sim\?\.crashed\)/);
+        expect(COURSE_TS).toMatch(/modeStep\(mode, !!sim\?\.armed, !!sim\?\.crashed, crashHold\);\s*crashHold = st\.hold;/);
         expect(COURSE_TS).toMatch(/if \(shows\.lapClock\) hud\.update/);
         expect(COURSE_TS).toMatch(/onPlace: \(ray\) => placeAt\(ray\)/);
     });
