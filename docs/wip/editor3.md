@@ -27,10 +27,31 @@ Stage fixes (review EI-1 to EI-7, train 3, 2026-11-15; NOT finished: the code fi
   skipped (flying, a drag, the view suspended); framedId is set only on true. Source test EI-7, NEG OK.
 - Checks: vitest tools/bench/test/editor3-* 17 files 98 tests pass; tsc --noEmit apps/fly exit 0, tools/bench exit 0.
 - [x] code fixes committed 93fca2b2; a6-reference.test.ts exit 0 (1 passed) after them.
-- [ ] left: release build; the editor chain on Wroclaw 70b50d42 and Tunis 887f27aa (editor3-prove.ts, editor3-clean.ts with
-  &probe=1) with the pictures again: check a click on gate 2 beside the framed gate 1 on Wroclaw (EI-1), Tab to a red gate
-  frames it (EI-2), the turn rings stay shown and the taken one yellow in an edge-on drag (EI-3), the mode line after a
-  crash in the test flight says DISARMED or ARMED (EI-5); then gates.py --only vitest,architecture,i18n,b18.
+- [x] pass 2 (a12de3c1, 9bf357f0): probe checks added (EI-1 click distance, EI-2 frame after the first refused Save,
+  EI-3 an edge-on ring held mid-drag, EI-5 the mode line's text after the crash); the view's debug reads the held ring.
+  Release build of a12de3c1 (exit 0, 'ring:this.ring' in the course bundle). Chain U:/Temp/gsfpv-train3/editor3/ei/
+  (chain.sh, wroclaw/e4.json, tunis/e4.json, clean/clean.json), all three probes exit 0:
+  - EI-1: Tunis: the click on gate 1 206 px from the framed gate's centre (inside the old 366 px sphere disc) selected it
+    (ok true). Wroclaw: the first gate on screen stood 879 px away and was selected; a click inside the disc was not tried
+    there.
+  - EI-2: the first refused Save framed the gate it selected: Wroclaw gate 2 side -35 deg, 4.64 m, its centre at the page
+    centre [960,540]; Tunis gate 1 side 35 deg, 4.25 m, centred. Picture shots/editor3-wroclaw-refused-1920.png looked at:
+    the ring a third of the view high, seen at an angle, the Move arrows on it. Whether those gate centres lie in a wall
+    voxel was not read.
+  - EI-3: NOT proven in a browser: the view was lowered to the gate's height (Wroclaw 0.07 m above at 2.4 m) but no point
+    out from the centre gave an 'edge:' hit, so no edge-on drag ran (edge.hit missing on both scenes). The source test
+    stands.
+  - EI-5: NOT proven: the clean probe's crash flight did not start (crashSeen modeBefore edit, crashActive false). The
+    mode line in the edit view read 'DISARMED . ANGLE' (modeText) on Tunis.
+  - gates.py --only vitest,architecture,i18n,b18: all PASS (vitest 89 s), log U:/Temp/gsfpv-train3/editor3/ei/gates.log.
+- [ ] left (fixes):
+  a. EI-3 in a browser: find why __gsfpvEditHit gives no 'edge:' at eye height (view-mouse.ts hitAt 735, ring-pick.ts
+     minorAxis / edgeTakesPress); log pickRing's result per walk step, then the mid-drag picture.
+  b. EI-5 in a browser: the clean probe's crash flight (editor3-clean.ts about line 167) stays in mode edit: arm first.
+  c. New fault seen, not chased: the Turn tool's y ring (hit at r 76 px on the diagonal) turns 0 deg with 60 and 140 px
+     drags on both scenes; the same in I3 pass 3 (i3p3/wroclaw), so not from this stage. Suspect: the probe's drag
+     direction (perpendicular to the walk, not the ellipse's tangent) or the gizmo's y ring; guess, not measured.
+  d. EI-1 on Wroclaw with a click inside the selected gate's old sphere disc (a gate within 366 px of the centre).
 
 Stage I3-prove (train 3, 2026-11-15):
 - [x] I3.0 merge origin/main b5b62d47 (lead notes only): 02b162e5. Release build of that tree started
@@ -1638,3 +1659,4 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
 - I2 pass 3: about 31 replies; the most went to three keyboard-flight runs that tuned the probe's height control and a
   10-minute GPU lock wait; logging the climb per held second in the first run (one short calibration flight) would have
   saved a run, and the gates subset run before the browser runs would have caught the stale editor3-g3 regex earlier.
+- fixes pass 2: about 28 replies; the most went to a release build started before a debug field was added (built twice) and to a 15-minute GPU lock wait; adding all probe hooks before the first build and dry-running the edge-on step's hit walk on one scene would have saved a build and left EI-3 proven.
