@@ -271,6 +271,9 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
    shiftg --reload-at in-use; evidence JSON; gates.py --only vitest,architecture,i18n,b18.
 
 ## Cost notes
+- fix3b fixes pass 2: about 32 replies; most went to the FY-5 world (console output of vitest is silenced: use
+  --silent=false --disableConsoleIntercept at once) and to two rounds of FY-3's drop rule; again one Edit refused on a file
+  read only by sed. Cheaper: Read the slice of every file to be edited, never sed it.
 - fix3b fixes: about 30 replies; most went to Edit refusals on files read only by sed (four turns) and to one
   backgrounded shell that took the cd with it; reading every file to be edited with Read first would have saved them.
 - Stage fixes: about 30 replies; code and tests took 15, four 600 s waits for the GPU lock (held by other lanes 28 min)
@@ -585,11 +588,16 @@ Logs U:/Temp/gsfpv-train3/fix3b/fixes/. Merged origin/main (two lead notes, docs
       Save check problems 0 in all 10 rows, eyeRay 24 of 24 in all 10; Tunis seeds 1-5 24 gates each, 2.9-4.2 s.
 - [x] tsc packages/tracks clean; eye-level 3 passed; packages/tracks 121 passed before the FY-6 test.
 
-Left (fixes):
-1. FY-5: a unit test world whose ring's closing leg crosses a tile under POOR_SHARE (a plaza 60 x 60 m with facades only
-   round it: its middle is poor), assert every leg incl. last->start and last->gate 1 at least POOR_SHARE and gates at least
-   gatesMin; negative control with ref c5d92269^ or 4d96c847^ (generate.ts closeAt).
-2. FY-3 rest: fit.ts end(): trim an unproven best by the gates wallsCheck names (or its longest passing prefix).
-3. Tunis page check (save-check-probe on a release build of the head, port 5780-5799) and gates.py --only
-   vitest,architecture,i18n,b18; tools/bench/test/a6-reference.test.ts is not needed (no flight code touched).
-4. FY-6: gate-place-audit with the scene's own transform (settings scale) to measure Housefly and microgreens.
+Left (fixes, after pass 2 at 929f2e23; FY-1 to FY-5 done):
+1. Page check on a release build of 929f2e23: a build was started in pass 2 (log U:/Temp/gsfpv-train3/fix3b/p2/build.log,
+   its last line 'BUILD EXIT <code>' says whether it finished; if the line is missing, build again). Then the runner of
+   y3p2 (U:/Temp/gsfpv-train3/fix3b/y3p2/run.sh) cut to: copy walls, serve on 5788, save-wroclaw and save-tunis (--push),
+   place-wroclaw and place-tunis (pilot views of the owner's path), guide-tunis; logs to U:/Temp/gsfpv-train3/fix3b/p2.
+   Then gates.py --only vitest,architecture,i18n,b18 (y3p2's run failed vitest only on tools/bench/test/app-dji-rc2.test.ts
+   'answers 60 ms late' and tools/bench/test/chrome.test.ts 'the lane switch is gone': not files of this lane).
+   a6-reference is not needed (no flight code touched).
+2. FY-6 measurement: gate-place-audit (tools/bench/src/gate-place-audit.ts:86) flies every scan at T = 1,0,0,0. The page's
+   flown transform is FlownTransform {s, t} (apps/fly/src/course/run.ts:43); where the page takes s for a scan was not found
+   yet (search apps/fly/src for the caller of new CourseRun). Housefly is d10c5638 (walls in the release stand-in); the
+   microgreens scene id is not found in the walls stand-in (U:/Temp/gsfpv-train3/walls/release has 9 scans). Add
+   --scale <s> to the audit, run Housefly at its page scale, compare eyeHi (onWalk) and gate heights with scale 1.
