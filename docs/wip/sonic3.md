@@ -41,7 +41,40 @@ Stage S1-count-a-course (train 3 wave 3, last finishing lane):
   the opening (all four distances estimates). Package test/gate-aim.test.ts 7 of 7, NEG OK on the old runner.ts; package suite
   1346 passed. Pin moved to ce07871; scanCourseLesson sets gateAim (sonic-scan-course NEG OK on the old scan-lesson.ts);
   sonic-scan-course + sonic-in-place + sonic-scan-free 22 of 22; apps/fly tsc 0 errors.
-- [ ] LEFT (pass 1 list; item 1 done above):
+- [x] Pass 2, item 3 (2c93bf48): the Housefly g2 stall had 0 dodges because the probe's stall rule compared the hum
+  directions by an unnormalised dot on the ground plane: [-0.04, -0.11, -0.99] with itself gives 0.982 < 0.995, read as a turn
+  every frame, so the rule never fired. tools/bench/src/sonic-steer.ts humTurned (normalised), test sonic-steer 2 of 2; the
+  old formula put in its place fails it by assertion (mutation control by hand: the function is new). Why the craft did not
+  move with W and Shift held is still not measured (a wall contact is a guess).
+- [x] Pass 2 counted runs (release e66f7864 = code of 2c93bf48 for the page, walls 70b50d42 v1 10 cm and d10c5638 v1 5 cm
+  in dist/walls, render off, no GPU lock, the probe's own server on 5830, Z5_FLIGHT_S 300; s1/pass2.sh, runs.sh tag d,
+  evidence U:/Temp/gsfpv-train3/sonic3/s1/d-*.json and d-*.log):
+  | Run | N to gate 1 | course | flight | median / max m/s | dodges | checks |
+  |---|---|---|---|---|---|---|
+  | Housefly d10c5638 3 m/s | 49.6 s | COUNTED pass to the end (5 gates, attempt 1; tail fly.stage x5, fly.best-time, lesson.scan-free.pass) | 56 s | 0.66 / 2.85 | 0 | 8 of 10 |
+  | Tunis 887f27aa 3 m/s | 25.8 s | NOT counted: g1 to g4 passed, then from 287 s the craft is back near the start [0, 2, 0] (48 m from g4) and jumps between y 2.1 and -0.4 every 2 s; no miss record (the attempt never left flying) | 303 s | 0.04 / 2.92 | 23 | 8 of 10 |
+  | Wroclaw 70b50d42 3 m/s | 25.2 s | NOT counted: still flying at g10 at the 300 s cap, no miss (34 gate changes in the stats list) | 303 s | 1.04 / 2.99 | 0 | 8 of 10 |
+  First counted course by sound on a real scan in a browser: Housefly at 3 m/s. The failed checks of all three: "switch on in
+  the air" (all), "course flown to its end" (Tunis, Wroclaw), "speed kept on the switch off" (Housefly: precondition, the
+  craft had landed after the pass). 5 m/s on Tunis and Wroclaw not run (budget).
+- [x] gates.py --only vitest,architecture,i18n,b18 on 2c93bf48: all four PASS (vitest 92 s), logs U:/Temp/gsfpv-gates-20261115-062247.
+- [ ] LEFT after pass 2, in this order:
+  A. Tunis 3 m/s: what puts the craft back near the start after g4 and keeps it bouncing between y 2.1 and -0.4 (trail of
+     d-887f27aa-3.json, 285 to 299 s). Guess, not measured: a crash respawn of the pilot's crash rule that goes to the course
+     start (course3 ties the course to the respawn: apps/fly/src/app/builtin/course.ts or respawn.ts, outside this lane) and
+     a crash loop at the start. Read the page's life spy (window.__lifeSpy) at that time first.
+  B. Wroclaw 3 m/s: the course does not fit in 300 s at a median of 1.04 m/s; rerun with Z5_FLIGHT_S 300 split is not
+     possible inside one probe run, so either a shorter sound course (a setting of the sound course, not the generator's
+     default) or a faster pilot; read the gate count of the course first (course.lines of d-70b50d42-3.json).
+  C. 5 m/s on Tunis and Wroclaw (NOBUILD=1 JOBS="887f27aa:5 70b50d42:5" TAG=e bash s1/pass2.sh; dist of e66f7864 is current
+     for the page code).
+  D. Pass-1 item 2 (W through the gate when the hum is loud ahead): not needed with the gate aim (the hum lies 3 m beyond the
+     gate near its plane, so it stays level ahead; Housefly passed 5 of 5 gates with 0 misses); no lesson text added.
+  E. Pass-1 items 5 (no attempt time limit in a scan course), 6 (switch on loses speed: "switch on in the air" failed on all
+     three again) and 7 (speak the course worker's progress: design ready, not built: askCourse gets an onProgress(step,
+     estMs); feature.ts courseOf.ask drives a ProgressClock(courseSteps) + SpeechPacer and says spokenLine through
+     'sonic.say.text' as app/builtin/course.ts lines 196-216 do; lessons.ts flyCourse passes the say).
+- [ ] LEFT (pass 1 list; items 1, 3, 4 (3 m/s), 8 done above):
   1. Package (branch train3) cue fix with a unit test and a negative control: the hum of a gate aims at an approach point on
      the gate's entry side (centre + normal x a distance, an estimate until measured by tools/ear-pilot.ts) while the craft is
      behind the plane or off the gate axis, and at a point beyond the gate (centre - normal x d) within about 2 m of the plane,
@@ -580,6 +613,11 @@ Stage Z4-line-space-lessons (worker 1 stopped at its reply budget, clean commits
 - a6-reference.test.ts not run: only the keymap gained a binding; flight, input devices and collision code are unchanged.
 
 ## Cost notes
+
+- 2026-11-15 S1 pass 2: the most replies went to reading the probe and the course progress code; one run batch was lost
+  because my wrapper started a server on the port the probe starts itself (read runs.sh's probe for PORT first). Starting the
+  three counted runs before writing the fix would not have helped (the fix changed the page), but a gate-aim ear-pilot run
+  in the package would have predicted the Housefly pass in seconds.
 
 - 2026-11-15 S1: most replies went to the course that never came (two batches of 7 to 11 minutes each, render off then on)
   before reading course-ask.ts against the merged worker; after any merge, a grep of the merged message types against
