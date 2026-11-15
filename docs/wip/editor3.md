@@ -41,7 +41,42 @@ Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
   by a press made while flying). course.edit.opened says so in en es pl ru. Checks: editor3-i2-space.test.ts 3 pass, NEG
   OK (neg_control.py ref HEAD, keyboard.ts); editor3-g2 (assertion moved to the tap) and editor3-i2 6 pass;
   a6-reference.test.ts pass; apps/fly and tools/bench tsc 0 errors.
-- [ ] I2.3 left (a, b, c done in I2.4), in this order:
+- [x] I2.5 (pass 2) release build of b557c043's tree exit 0 (i2/build-after.log). Tunis 887f27aa after run (cl.sh after
+  887f27aa 5801 dist kbd,desk,phone Space; lock 12:21:07-12:23:02; i2/after/clean.json, summary i2/after/sum-tunis.txt by
+  i2/sum.py). Parts table (1 shown, 0 not): hint thr keys rec volt stats crash crashToast lap note gateMsg f3:
+  - 1920 edit, refused 1 s, refused 10 s, after M, after the pad flight's disarm, after a crash, 5 s later: all 0; mode
+    line 1, top bar 1, gate bar 1. Flying in the mode: hint 1, thr 1, keys 1, volt 1 (rec 0: the REC row shows only
+    after Exit's flight). After Exit: hint 1, thr 1, keys 1, volt 1, lap 1.
+  - Top bar one line (lineCount 1) in every 1920 state, covers nothing: [630,8,660,40], refused [580,8,761,40], idle
+    [520,8,879,40], flying [788,8,344,28]. D6: the refusal ('The course was not saved this time. Press save again': the
+    local server keeps nothing) on the line at 1 s and 10.5 s (refused true), gone after M (refused false).
+  - Crash: crashActive true, then mode edit; crash card 0 after the crash and 5 s later.
+  - 844x390 edit: all flight parts 0, Walls menu 0 (voxels 0), the bars' buttons 44x44; after Exit the menu is back.
+  - Pictures looked at: editor3-edit-clean-1920.png (no flight part, gate 2 yellow, small handles, credit and 'Walls 5 cm'
+    readable), editor3-after-crash-1920.png (no crash card; mode line 'CRASH . ANGLE'; but see left b), editor3-844.png
+    (credit readable on two lines; the top bar hides 'Walls 5 cm', left a).
+  - kbd (D8): Space armed in 287 ms, Space tap disarmed in 14 ms and the edit view came back (mode edit). The gate did NOT
+    come ahead: course.next stayed 0 (left c).
+- [ ] I2.3 left, in this order (pass 2 found a to c in the run above; the old a to c are done in I2.4):
+  a. Phone: the top bar [8,82,381,52] covers the Walls chip's summary [16,79,396,40] ('summary.' in covers) and touches the
+     credit [16,44,396,75] (two lines, ends at 119). Put the top bar below the bottom of '.attribution' and
+     [data-testid=walls-box] (measure in top-bar.ts on show and on resize into a CSS variable used by the
+     (max-height 500px) rule), re-run phone, look at editor3-844.png.
+  b. After the crash the toast 'Want another place? Press N for the next scene' stands in the edit view
+     (editor3-after-crash-1920.png, bottom middle): find its class (the locale key of that text, its ui file) and add it to
+     the D5 hide list in editor.css and to editor3-i2.test.ts.
+  c. kbd: __gsfpvEditPutAhead (course.ts 772) put the gate behind the drone: put returned drone [0,2,0], gate [6,3,0]; in the
+     flight the gate's view depth went -1 to -24 while W flew 7.1 m/s, THR 28-29 %, ALT 0.0-0.1 m (Space never pressed:
+     the probe climbs only when the gate is in front). Guess, not measured: forwardOf (course/editor/keys.ts, -z forward)
+     read the sim's pose before arming, and arming puts the drone at the course start (Tunis yaw 180). Repair the probe:
+     call the hook after Space (mode fly) or put the gate from the drone's pose after arming; steer: hold Space while the
+     drone's y is under the gate's y - 0.2, E (turn) when the gate is behind, W only when it is ahead. Re-run kbd with
+     CLIMB=Space: course.next 0 to 1, Space tap back to edit.
+  d. Wroclaw 70b50d42 run (cl.sh after 70b50d42 5801 C:/dev/gsfpv-voice/dist kbd,desk,phone Space); look at
+     editor3-after-flight-1920.png (not looked at yet) and the Wroclaw pictures.
+  e. gates.py --only vitest,architecture,i18n,b18; this status and 'What the owner does' (item 9: Space held climbs, a tap
+     goes back to editing).
+- Old left list of pass 1 (a, b, c done in I2.4; d, e are d, e above):
   a. Probe fixes in editor3-clean.ts: the refusal: Ctrl+S opened the name field ('Your name' on the line), not a refusal;
      use Add gate + a floor click that gives a red gate on Tunis (H3: 'add -> red, the line names gate 2'), or the
      window's Save with a name typed; the crash: wait for mode 'fly' before the full-throttle push and then wait only
@@ -1186,6 +1221,12 @@ button shows the table.
 
 ## For the lead
 
+- I2 pass 2 outside apps/fly/src/course/editor and course.ts: apps/fly/src/devices/keyboard.ts (D8: while flying in the edit
+  mode a held Space climbs and a tap shorter than EDIT_TAP_MS 200 ms, an estimate, disarms on keyup; was: every Space press
+  disarmed, so the game scheme had no climb key there), packages/i18n/locales/fly/course/{en,es,pl,ru}.json
+  (course.edit.opened says it), tools/bench/test/editor3-g2.test.ts (its text assertion follows the tap),
+  tools/bench/test/editor3-i2-space.test.ts (new). a6-reference.test.ts passes.
+
 - H2: ED-2 second Space. A keyboard pilot (game scheme, the default) arms in the mode with Space (devices/keyboard.ts
   editModeArm), but while flying Space is the climb key (keys.ts GAME_KEYS), so a second Space cannot disarm; the game pilot
   disarms only when landed (play/game-pilot.ts arm.stop). Decision wanted: a key or a top-bar button "Back to editing" while
@@ -1274,6 +1315,9 @@ button shows the table.
 12. Esc, Esc again leaves. Proven on both.
 
 ## Cost notes
+- I2-clean pass 2: about 40 replies, stopped after the Tunis run; the most went to finding the save path (askName, the
+  window's Save) and the walls chip's DOM before the probe edits, and to the keyboard test with stubbed globals. Cheaper: a
+  probe helper that triggers a refusal and a crash in one call, shared by the editor3 probes.
 - I2-clean pass 1: about 40 replies, stopped with code a11f109d and the before run; the most went to finding the class
   names of each flight part (hud.ts, mode-chip.ts, cinema.ts, crash-overlay.ts) and the keyboard's game scheme
   (keyboard.ts, play/keys.ts, game-pilot.ts) before the first run. Cheaper: run the probe's generic leaves list first (it
