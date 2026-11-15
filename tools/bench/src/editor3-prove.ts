@@ -228,7 +228,8 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     for (const { g, i } of cand.slice(0, 3)) {
         await page.mouse.click(g[0]!, g[1]!);
         const c = await until(() => ed(page), (e) => e.selected === i, 2500);
-        clicks.push({ target: i, ok: c.ok, selected: c.v.selected });
+        // review EI-1: the click's distance in px from the selected gate's centre on the page
+        clicks.push({ target: i, ok: c.ok, selected: c.v.selected, at: [Math.round(g[0]!), Math.round(g[1]!)], px: Math.round(Math.hypot(g[0]! - d1.stand.screen[0]!, g[1]! - d1.stand.screen[1]!)) });
         if (c.ok) break;
     }
     out.click = { from: sel1, clicks };
@@ -291,6 +292,43 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     out.turn = turns;
     if (id !== '70b50d42') await page.screenshot({ path: join(SHOTS, 'editor3-turn-1920.png') });
     out.turnUndo = await undoRedo(page);
+    // review EI-3 (fixes pass 2): the view lowered (Q taps) to the gate's height, so the y ring is seen edge-on; a ring the
+    // edit view takes itself ('edge:' from __gsfpvEditHit) is pressed and held half way: the turn set must stay enabled and
+    // the held ring is read from the view's debug (ring); a picture mid-drag shows the taken ring in yellow
+    const lower: unknown[] = [];
+    for (let n = 0; n < 40; n++) {
+        const a = (await dbg(page))!;
+        const dy = a.cam.pos[1]! - a.stand.pos[1]!;
+        const dd = dist(a.cam.pos, a.stand.pos);
+        if (n % 5 === 0) lower.push([n, r2(dy), r2(dd)]);
+        if (Math.abs(dy) < 0.02 * dd) break;
+        const key = dy > 0 ? 'KeyQ' : 'KeyE';
+        await page.keyboard.down(key); await sleep(Math.min(300, Math.max(30, (Math.abs(dy) / Math.max(0.1, a.cam.speed)) * 400))); await page.keyboard.up(key);
+        await sleep(120);
+    }
+    const edge: Record<string, unknown> = { lower };
+    for (const dir of [[1, 0], [-1, 0], [0, -1], [0, 1], [0.71, -0.71], [-0.71, -0.71]]) {
+        const a = (await dbg(page))!;
+        const w = await walk(page, a.stand.screen, dir, 40, 'edge');
+        if (!w) continue;
+        edge.hit = w.hit; edge.at = [w.x, w.y]; edge.dir = dir;
+        await page.mouse.move(w.x, w.y); await sleep(150);
+        await page.mouse.down();
+        await page.mouse.move(w.x - dir[1]! * 30, w.y + dir[0]! * 30, { steps: 6 });
+        await sleep(250);
+        const mid = (await dbg(page)) as (Dbg & { sets?: unknown[][]; ring?: number | null }) | null;
+        edge.mid = { dragging: mid?.dragging, ring: mid?.ring ?? null, sets: mid?.sets ?? null, tool: mid?.tool };
+        await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-edge-drag-1920.png' : 'editor3-edge-drag-1920.png') });
+        await page.mouse.move(w.x - dir[1]! * 60, w.y + dir[0]! * 60, { steps: 6 });
+        await sleep(100);
+        await page.mouse.up(); await sleep(600);
+        const b = (await dbg(page))!;
+        const dot = Math.min(1, Math.abs(a.stand.quat.reduce((s, v, i) => s + v * (b.stand.quat[i] ?? 0), 0)));
+        edge.deg = Math.round((2 * Math.acos(dot) * 180) / Math.PI);
+        edge.undo = await undoRedo(page);
+        break;
+    }
+    out.edge = edge;
     // Size: the gate bar's Size button (the mouse road; T is its key), then the centre box
     await page.click('.ce-gatebar [data-bar="size"]', { timeout: 3000 }).catch(async () => { await page.keyboard.press('KeyT'); });
     await sleep(400);
@@ -623,6 +661,15 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         if (si.ok) { loopSaved = true; await sleep(300); removed.push({ saved: true, gates: (await hook(page))?.gates, problems: e.problems, line: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '') }); break; }
         const pick = (await ed(page)).selected ?? -1;
         const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
+        // review EI-2: the refused Save selects the red gate; after the glide (0.4 s) the hook's frame says whether the view
+        // went to it ({side, dist}) or stayed ({blocked: true}), and the selected gate's page point is near the centre
+        if (!out.refusalFrame) {
+            await sleep(700);
+            const fr = (await ed(page)) as Ed & { frame?: unknown };
+            const fv = await dbg(page);
+            out.refusalFrame = { selected: pick, frame: fr.frame ?? null, gateScreen: fv?.stand.screen ?? null, line: line.slice(0, 120) };
+            await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-refused-1920.png' : 'editor3-refused-1920.png') });
+        }
         if (pick === 0 && puts.length < 4 && /start/i.test(line)) {
             puts.push(await putGate1(line.slice(0, 90)));
             removed.push({ pick, problems: e.problems, how: 'putAhead', line: line.slice(0, 90) });

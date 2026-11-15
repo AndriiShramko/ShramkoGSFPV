@@ -713,6 +713,8 @@ export class EditView {
             fov: { deg: cc.fov, horizontal: !!cc.horizontalFov, aspect: Math.round((r.width / (r.height || 1)) * 1000) / 1000 },
             held: [...this.held],
             dragging: this.dragging,
+            // review EI-3: the edge-on ring the edit view holds (0 x, 1 y, 2 z) or null; the probe reads it mid-drag
+            ring: this.ring ? this.ring.axis : null,
             staleEnded: this.staleEnded,
             tool: this.tool,
             // lane editor3 H2: each set's own state (PlayCanvas 2.23.2 TransformGizmo fields), and a held pointer lock
