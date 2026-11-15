@@ -39,9 +39,9 @@ Stage X2-gate-one (gate 1 not in sight on Tunis seed 1)
 - [x] release build of 8fe8bba2 (1930 files); 'before' run of the check 'A look (link seed 1)' alone (new LOOK_ONLY=1 of
       tools/bench/src/tracks-page.ts): FAIL, paint on next 0 later 10 arrow 208, off: later 8 arrow 208 (24 gates, drawn
       78) (evidence/2026-11-15/fix3a/tracks-look-before.json)
-- [~] Node measurement tools/bench/src/gate-one-audit.ts (spawn as session findSpawn, course as the worker asks it,
-      seeds 1-5, nine published walls + Tunis): running detached, log U:/Temp/gsfpv-train3/fix3a/gate-one-audit.log;
-      table goes under '## Gate 1 from the spawn'
+- [x] Node measurement tools/bench/src/gate-one-audit.ts (spawn as session findSpawn, course as the worker asks it,
+      seeds 1-5, nine published walls + Tunis): table under '## Gate 1 from the spawn' (40 courses on 8 scans; 2 scans
+      not measured, reasons there)
 - [x] guide to the next gate: apps/fly/src/course/guide.ts (aimOf, placeGuide; GUIDE_NEAR_M 12, GUIDE_FRAME_SHARE 0.85,
       GUIDE_MARGIN_PX 10 are design choices, not measurements), course/hud.ts guide() and hud.css .course-guide,
       app/builtin/course.ts frame() feeds it the drawn camera, hook course.guide(); key course.hud.guide in en, es, pl, ru.
@@ -50,6 +50,33 @@ Stage X2-gate-one (gate 1 not in sight on Tunis seed 1)
 - [ ] browser proof on Tunis (link seed 1) and Wroclaw 70b50d42 (Shift+G on the published walls): four shots, numbers
 - [ ] tracks-page 'A look (link seed 1)': a gate in the frame OR the guide pointing to gate 1 on the right side
 - [ ] a6-reference, gates.py --only vitest,architecture,i18n,b18
+
+## Gate 1 from the spawn
+
+Measured by tools/bench/src/gate-one-audit.ts (Node, log U:/Temp/gsfpv-train3/fix3a/gate-one-audit.log, rows
+U:/Temp/gsfpv-train3/fix3a/gate-one-audit.json): spawn from the scan's settings camera (findSpawn), course by fitCourse
+as the worker asks it, seeds 1-5; in view = gate 1 inside the frustum of the spawn camera (115 deg horizontal, 20 deg
+uptilt, 1280x800, the prefs fallbacks; a preset may differ). Distances in m. ab5efa0e: its published walls are v2 (the
+script reads v1 only); eb5f51dc: its settings.json fetch failed (network); both not measured.
+
+| scan | seed: gates, to gate 1 m, nearest m (gate), gate 1 in spawn view, ring/open |
+|---|---|
+| 0230d903 | 1: 24, 18.2, 7.6 (g24), not in view, ring; 2: 24, 18.2, 5.6 (g24), not in view, ring; 3: 24, 22.3, 7.6 (g24), not in view, ring; 4: 24, 8.5, 8.5 (g1), in view, open; 5: 24, 20.5, 11.9 (g24), not in view, ring |
+| 1994c65c | 1: 24, 13.2, 3.4 (g24), not in view, ring; 2: 24, 18.8, 3.4 (g24), not in view, ring; 3: 24, 20.4, 4.3 (g24), not in view, ring; 4: 24, 18.6, 3.7 (g24), in view, ring; 5: 24, 17.1, 6.1 (g24), in view, ring |
+| 2f1ddf5f | 1: 16, 43.3, 41.1 (g9), not in view, ring; 2: 14, 44.2, 41.4 (g11), not in view, ring; 3: 16, 44.2, 41.3 (g10), not in view, ring; 4: 16, 44.4, 41.9 (g3), not in view, ring; 5: 16, 43.3, 41.7 (g3), not in view, ring |
+| 70b50d42 | 1: 24, 9.5, 3.5 (g24), not in view, ring; 2: 24, 10.3, 7.7 (g12), not in view, ring; 3: 24, 11, 3.5 (g24), not in view, ring; 4: 24, 18.8, 7 (g13), not in view, ring; 5: 24, 17.5, 10.2 (g10), in view, ring |
+| 9baef54b | 1: 24, 16, 4.1 (g22), in view, ring; 2: 24, 18.3, 6.6 (g23), in view, ring; 3: 24, 11.8, 11.8 (g1), not in view, open; 4: 24, 21, 20.3 (g2), in view, open; 5: 24, 17.2, 6.6 (g23), in view, ring |
+| ab5efa0e | error Error: ENOENT: no such file or directory, open 'U:\Temp\gsfp |
+| ba7aa29d | 1: 5, 11.1, 11.1 (g1), in view, ring; 2: 17, 22.6, 22.6 (g1), in view, open; 3: 19, 24.2, 11.1 (g19), in view, open; 4: 24, 13, 13 (g1), in view, open; 5: 18, 13, 13 (g1), in view, open |
+| d10c5638 | 1: 4, 13.4, 13.4 (g1), in view, open; 2: 5, 13.4, 13.4 (g1), in view, open; 3: 4, 13.4, 13.4 (g1), in view, open; 4: 4, 13.4, 13.4 (g1), in view, open; 5: 4, 13.4, 13.4 (g1), in view, open |
+| eb5f51dc | error TypeError: fetch failed |
+| 887f27aa | 1: 24, 17.2, 17.2 (g1), not in view, open; 2: 14, 14.7, 14.7 (g1), not in view, open; 3: 24, 20.1, 17.2 (g24), not in view, open; 4: 24, 12.9, 12.9 (g1), not in view, open; 5: 24, 15.4, 15.4 (g1), not in view, open |
+
+Totals: 40 courses; gate 1 in the spawn view 18; closed rings 23; the nearest gate is not gate 1 in 25.
+
+Reading: on the closed rings gate 1 is mostly out of the spawn view and the nearest gate is the last one (g24): the
+ring closes near the spawn and gate 1 leads away from it. Tunis seed 1: gate 1 17.2 m away, behind the spawn (bearing
+92 deg measured in the page).
 
 ## Measured
 

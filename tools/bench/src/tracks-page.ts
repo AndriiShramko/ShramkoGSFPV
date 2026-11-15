@@ -650,9 +650,28 @@ async function main(): Promise<void> {
         // the look: seed 1 by the course link (the generator's evidence seed), on then off in the same still view
         const a = await open(ctxA, served.site, `${SCENE}&course=g1.1`, log);
         const lk = await until(() => course(a), (h) => h?.source === 'generated' || !!h?.problem, 90000);
+        // lane fix3a X2-gate-one: gate 1 is often behind the spawn; the pilot then gets the guide (course/hud.ts) pointing to it.
+        // The guide counts only when it names gate 1 and its side is the side of the bearing the probe computes from the drawn
+        // camera's place and axes and gate 1's place (hook gatePoses).
+        await sleep(1500);
+        const gd = await a.evaluate(() => {
+            // no named function in here: tsx (esbuild keepNames) would wrap it in __name, which the page does not have
+            const g = (window as unknown as { __gsfpv: { course: { guide?: () => { shown: boolean; gate: number; side: string }; gatePoses?: () => { pos: number[] }[] }; session: { renderer: { camera: { getPosition(): { x: number; y: number; z: number }; right: { x: number; y: number; z: number }; forward: { x: number; y: number; z: number } } } } } }).__gsfpv;
+            const el = document.querySelector('[data-testid=course-guide]') as HTMLElement | null;
+            const box = el && !el.hidden && el.offsetParent !== null ? el.getBoundingClientRect() : null;
+            const cam = g.session.renderer.camera;
+            const p = cam.getPosition(), r = cam.right, f = cam.forward;
+            const gate = g.course.gatePoses?.()[0]?.pos ?? null;
+            const d = gate ? [gate[0]! - p.x, gate[1]! - p.y, gate[2]! - p.z] : null;
+            const x = d ? d[0]! * r.x + d[1]! * r.y + d[2]! * r.z : 0;
+            const z = d ? d[0]! * f.x + d[1]! * f.y + d[2]! * f.z : 0;
+            return { guide: g.course.guide?.() ?? null, cx: box ? box.left + box.width / 2 : null, vw: innerWidth, bearing: (Math.atan2(x, z) * 180) / Math.PI };
+        });
+        const pointsRight = !!gd.guide?.shown && gd.guide.gate === 0 && gd.cx !== null && gd.guide.side === (gd.bearing < 0 ? 'left' : 'right') && (gd.bearing < 0 ? gd.cx < gd.vw / 2 : gd.cx > gd.vw / 2);
         const look = await onOff(a, 'a-seed1');
         // the paint, not the whole difference: hiding the course also hides the HUD's lap block (run 4: 16495 px changed with the root detached)
-        check(`A look (link seed 1, ${lk.v?.gates} gates): >= ${MIN_PX} more pixels of the course's paint than with Shift+T`, (lk.v?.drawn ?? 0) > 0 && total(look.on) - total(look.off) >= MIN_PX, { drawn: lk.v?.drawn, ...look });
+        const painted = (lk.v?.drawn ?? 0) > 0 && total(look.on) - total(look.off) >= MIN_PX;
+        check(`A look (link seed 1, ${lk.v?.gates} gates): >= ${MIN_PX} more pixels of the course's paint than with Shift+T, or the guide points to gate 1 on its side`, painted || pointsRight, { drawn: lk.v?.drawn, painted, guide: gd, ...look });
         check('A Shift+T: drawn 0', look.drawnOff === 0, look.drawnOff);
         if (process.env.LOOK_ONLY === '1') throw new Error('LOOK_ONLY');
         const before = lk.v?.track?.id ?? null;
