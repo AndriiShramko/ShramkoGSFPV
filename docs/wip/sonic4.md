@@ -309,6 +309,37 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   flight in each setting; the setting kept and applied at once; captions by their own setting); package tests and its three
   typechecks; pin packages/sonic-fpv to the new train5 commit; tsc apps/fly; gates.py --only vitest,architecture,i18n,b18; a6-reference.
 - [ ] K1.6 the same numbers after (quiet-probe before/after, both pages, three settings).
+- [x] K1.4/K1.5 per change (stage K2 pass 1, on 6c1a140a): gates.py --only vitest,architecture,i18n,b18 all PASS (vitest 88 s;
+  logs U:/Temp/gsfpv-gates-20261115-163251); a6-reference 1 passed (U:/Temp/gsfpv-train3/quiet/k2-a6.log);
+  packages/prefs/test/migrate.test.ts 25 passed. 'Quote' is used nowhere in apps/fly/src, packages/prefs/src, packages/sonic-fpv/src. K's key help and I's status are quiet too with the narrator off: still open.
+
+### Status (stage K2-sounds-prove)
+- [x] K2.0 K1 made green first (commit 6c1a140a, see K1.3b): the stage could not build on red tests.
+- [ ] K2.1 Q4 the narrator key. Chosen: `Quote` (cap "'", aria "Quote"), when 'sonic'. Why: packages/prefs/src/keymap.ts says every
+  plain letter is bound (the free ones W A S D Q E are FLYING_CODES); Quote is bound nowhere in KEYMAP; Slash opens quick find in
+  Firefox; digits belong to a running lesson's question (sonic/digit-key.ts), and the free flight is a running lesson. Work:
+  KEYMAP entry `sonic.narrator` beside sonic.home (line about 126), label `keys.sonic.narrator` in the four fly locales,
+  packages/prefs/test/keymap.test.ts DESIGN_TABLE, tools/bench/test/app-keys.test.ts; handler in apps/fly/src/sonic/feature.ts
+  beside `ctx.keys.on('sonic.home', ...)` (line about 554): flip entry.setup.prefs.narrator through the same path the start
+  screen's check uses (start-screen.ts line about 595, `this.change({ narrator: v }, said)`), so it is saved and applied at once;
+  on: say a two-word line (new `sonic.say.narratorOn`, four locales) after the flip (bridge.quiet then answers false); off: a cue
+  only. Test in tools/bench/test/sonic-quiet.test.ts with the rig; negative control on feature.ts.
+- [ ] K2.2 Q3 the table of every line a flight can say and its sound with the narrator off (course ready chime, gate passed and
+  finish notes exist, gate behind: hum from behind plus one short sound, wrong way, crash, mode on and off). Lines to list: the
+  runner's free-flight lines (packages/sonic-fpv/src/lesson/runner.ts), apps/fly/src/sonic/course-speech.ts, host-lines.ts,
+  in-place.ts, feature.ts intro (line about 585). New sounds go in the package (C:/dev/ShramkoSonicFPV branch train5, pin in
+  packages/sonic-fpv) with an offline audio proof (level against the bar, no clipping) and the limit of sounds at once; the
+  package's voices evidence needs `pnpm listen:words` only for new spoken lines (see cost notes O1 pass 3, O2).
+- [ ] K2.3 Q5 a lesson of the list opened with the narrator off switches the narrator on for itself, says so in its first line,
+  gives the setting back at its end (quietFlight in entry.ts already keeps lessons of the list voiced; what is left is the said
+  reason and the restore of the saved value, which today never changes).
+- [ ] K2.4 Q6 one line after the first course finished by sound with the narrator on, naming the K2.1 key; a flag in the sonic
+  collection so it is never said again.
+- [ ] K2.5 Q7 captions: at most two lines, never over the course's clock block; measure the rectangles at 1920x1080, 1280x720,
+  844x390 (apps/fly/src/sonic/captions.ts and sonic.css; the clock block is the course feature's, lane editor3i/fix3b own
+  their code: place the captions, do not move the clock).
+- [ ] K2.6 browser proof on the release build, render off, Wroclaw 70b50d42 and once Tunis 887f27aa, items (1) to (7) of the
+  stage text; accept-fly B6 B7 B9 to B16; two pictures quiet-settings.png and quiet-captions.png under the lock.
 
 ### Facts K1-a (measured "before", release of 704f2043, Wroclaw 70b50d42, stand-in walls, render off; Backslash in place)
 Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READER=1, the owner's box). Same numbers in both:
@@ -360,4 +391,7 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
 - 2026-11-15 onecourse2 P1-close: most replies went to the four r11 runs (about 26 min, read one by one) and to Edit's read-before-write rule on 8 locale files; running proofs1 and proofs2 as one detached script from the start and reading all evidence with one summary script would have saved about 5 replies, so the lock proofs did not fit.
 - 2026-11-15 onecourse2 P1-close pass 2: the whole left list ran as one detached script (build, r11, proofs2, gates) with four blocking waits, about 14 replies; most of the rest went to finding the life log inside the r11 evidence (value.spy) and two b18 fails from a placeholder-rule word in this file (the second from naming it in the fix note); a one-line summary per r11 run printed by the tool itself would have saved 3 replies.
 - 2026-11-15 quiet K1 pass 1: most replies went to finding where a flight could wait (bridge, runner, lessons, mode: no explicit hold found by reading) and to the probe's setup (prefs key, stick key); the in-place measure showed no wait, so the owner's page (?sonic=scan) is still to measure. A map line "where a sound flight can hold the pilot: runner startAttempt place, bridge sequential" would have saved about 6 replies; the stage (measure, package plus simulator, tests, gates) does not fit 30 replies and should be split into measure, build and proof.
+- 2026-11-15 K2 pass 1 (quiet): most replies went to making K1's red tests green (three pinned item numbers found one run at a
+  time, a jump bound that measured the rig craft's speed) before K2 could start; K1 left red cost this stage its build budget.
+  Splitting K2 into build (Q3 to Q7) and proof (K2.6) and printing every pinned "Item n of N" failure in one run would save about 5.
 - 2026-11-15 fixes pass 3 (continuation): most replies went to measuring the r11 Shift+G failure (a new tool for the walls, then reading laps.ts and run.ts); r11's trail logging course.next with each life would have shown the restart in one read. Running the busy probe, the d7 re-run and r11 in one detached script cost one wait.
