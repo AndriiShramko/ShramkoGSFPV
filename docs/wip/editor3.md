@@ -276,7 +276,57 @@ Stage H2-prove (train 3 wave 2):
   the floor Add; each kind once from the bar; the bar's Next and Previous; Save against a stand-in of /api/tracks routed
   inside the browser context (nothing leaves the PC) and the page loaded again; the flight steers forward only when the gate
   is near the middle; the phone run reads what lies on the selected gate. tools/bench tsc 0, apps/fly tsc 0.
-- [ ] H2.2 left 1 (ED-2 second Space does not disarm a keyboard pilot in the mode's flight): see For the lead.
+- [x] H2.2 run1: release of 7fcdeb5b (no aim fix yet), the probe of cc5ccea2 (tsx read it at start), GPU lock 02:14:17-02:20:25,
+  `OUT=U:/Temp/gsfpv-train3/editor3/h2/run1 KBD=0 PHONE=1 bash U:/Temp/gsfpv-train3/editor3/h1/run.sh`, evidence
+  h2/run1/e4.json. Facts:
+  - course by Shift+G: Tunis 6 gates in 38.2 s, Wroclaw (walls stand-in) 24 gates in 25.6 s.
+  - frames: before the mode 30.1 / 30.2 fps, in the mode 30.0 / 29.9 fps, while dragging 30.0 / 30.0, longest frame gap
+    34 ms in each; the whole path: longest long task 84 ms (Tunis) and 115 ms (Wroclaw), 3 long tasks each, longest gap
+    134 / 100 ms. Under the 200 ms aim. Measured while holding the GPU lock.
+  - PROVEN on both: Add gate + click (+1 gate, the new gate selected); a click on another gate (Tunis 6, Wroclaw 17); Tab
+    (focus stays BODY); the bar's Delete (ED-1: handles true, dragging false, handles at the selected gate, bar shown);
+    Turn from the bar (tool 'turn', ring found at r 172 / 40 px, quat change 0.518, moved 0 m); Undo and Redo of the turn
+    by the top bar (undo gives the old quat, redo the turned one); Undo and Redo of the floor Add (7 -> 6 -> 7 gates);
+    the right-button look (look point moved 0.48 m, eye 0).
+  - FAULT (blocks the rest of the path): Size from the bar, the centre box under the press (hitAt 'size' at r 0), three drags:
+    opening unchanged, moved 0 on both. LOOKED at shots/editor3-size-1920.png: the edit camera looks straight up into a
+    tree, no gate on screen: the three drags turned the VIEW (the left drag on empty space looks), so the scale gizmo did not
+    take the press. In H1 (after2, key T, no Undo/Redo before it) the same drag scaled. Differences now: Size by the bar's
+    button and the top bar's Undo + Redo just before (both call showEd -> view.put()). With the gate off screen the gate bar
+    is hidden (visibility) and every later step (each kind, Next, Previous, Duplicate, Delete, the X arrow: hit null) clicked
+    the canvas: none made an undo step (each Undo after them undid the turn again).
+  - flight (fake pad, camera-drone profile, no arming): mode 'fly', 110 steps of 250 ms, course.next stayed 0 on both;
+    disarm brought the edit view back (eye 0 m off). Not a proof of a pass.
+  - floor Add (no aim fix in this build): the new gate behind the camera (z -10 Tunis, -2 Wroclaw), Tunis problems 3 -> 6.
+  - Save (local /api/tracks stand-in): the name field took the focus (ce-name), 'Probe H2' + Enter; refused: "Not saved: fix
+    the red gates first. Problems: 3. the way from gate 0 to gate 1 goes through a wall" (the generated Tunis course plus
+    the added gate had red gates). The text says "gate 0": a 0-based number shown to the pilot (see For the lead).
+  - Esc, Esc did not close the mode on either scene (exit.closed false; likely the focus in the name field: Esc gives it back
+    first).
+  - phone 844x390 (Tunis): top bar one line 409x36 at y 4, gate bar 410x42 at 58,340, both inside the screen; the selected gate
+    at 263,160 with the canvas on top (nothing covers it). editor3-844.png NOT looked at.
+- [x] H2.3 a release of cc5ccea2 was built (h2/build2.log sha cc5ccea2, dist in the worktree); its runs (h2/chain.sh) were
+  stopped in the lock queue at the reply budget (no lock taken, no result).
+- [ ] left (next worker, in this order):
+  1. The Size press after Undo/Redo. Reproduce in one short probe run on Tunis (dist of cc5ccea2 is there; rebuild only
+     if apps/fly changes): select a gate, Size by the bar, drag the centre box (expect scale), then top bar Undo + Redo,
+     drag again; and the same with the key T. Read view-mouse.ts put() and setTool(): after put() for the same gate the
+     ScaleGizmo may be re-attached without its shape (enableShape / uniform) or left muted (press-owner muted list).
+     Fix with a test in tools/bench/test/editor3-tools.test.ts and a negative control.
+  2. Probe: after each step record the camera's look point, and if the selected gate is off screen press Tab, Shift+Tab
+     (the view glides to it) before the next step, so one fault does not void the rest. Record the Size click error.
+  3. Save: the course must be clean first. Read problems before the edits; delete the red gates by the bar (or take the
+     course the save selects: Save with red gates selects the first one) until problems is 0, then Save; Esc the name
+     field once before the two Esc of exit.
+  4. Flight pass: next stays 0 with the camera drone and a steered pad. Put gate 1 (index 0) 6 m ahead of the drone's
+     spawn facing it (read the drone pose from window.__gsfpv if exposed; else Add gate with a click at the screen centre
+     right after arming and disarming at spawn), then pitch forward only.
+  5. `bash U:/Temp/gsfpv-train3/editor3/h2/chain.sh` (build, run2a both scenes, run2b Tunis KBD=1 PHONE=1, each run under
+     its own lock of at most 590 s); LOOK at editor3-move/turn/size/flying-1920.png, editor3-wroclaw-1920.png, editor3-844.png
+     and write the one-line Blender/Unity verdict for each.
+  6. mouse-free-probe, accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 on the local address, a6-reference,
+     gates.py --only vitest,architecture,i18n,b18; then "What the owner does" rewritten from the proven steps.
+  7. ED-2 second Space (For the lead) unless the lead decides.
 
 Old list of pass 1 (items 1-4 done above):
 - [ ] left (next worker, in this order; stopped at the reply budget of 30):
@@ -452,6 +502,16 @@ button shows the table.
 
 ## For the lead
 
+- H2: ED-2 second Space. A keyboard pilot (game scheme, the default) arms in the mode with Space (devices/keyboard.ts
+  editModeArm), but while flying Space is the climb key (keys.ts GAME_KEYS), so a second Space cannot disarm; the game pilot
+  disarms only when landed (play/game-pilot.ts arm.stop). Decision wanted: a key or a top-bar button "Back to editing" while
+  flying in the mode that calls the game pilot's arm.stop() (input code, outside this lane), or the edit view held like a
+  crash (fly-mode.ts hold) with Space releasing the hold. Not changed in H2.
+- H2: the save refusal says "the way from gate 0 to gate 1 goes through a wall": a 0-based gate number shown to the pilot
+  (problemsLine / the check's reason text, packages/tracks or course3's texts).
+- H2 outside the editor folder: apps/fly/src/app/builtin/course.ts placeAt (one line: aim() after Add gate),
+  packages/i18n/locales/fly/course/{en,es,pl,ru}.json (course.edit.opened rewritten), tools/bench/src/editor3-prove.ts.
+
 - H1 pass 2 outside the editor folder: apps/fly/src/app/builtin/course.ts (crashHold, 3 lines: ED-3 holds the edit view
   after a crash until a fresh arm), tools/bench/src/editor3-prove.ts, tools/bench/test/editor3-flying.test.ts and
   editor3-gatebar.test.ts. ED-3 changes a rule: a crash in the mode's flight now returns to editing (was: flies on).
@@ -522,6 +582,10 @@ button shows the table.
 8. Exit (or Esc twice) leaves; Save in the window keeps the course.
 
 ## Cost notes
+
+- H2-prove: about 32 replies; the most went to extending the probe with every step at once and then finding that one fault
+  (the Size drag turned the view) voided all later steps; a probe that re-centres the selected gate after each step, and one
+  short run on one scene before the full path, would have shown the fault and kept the rest of the evidence.
 
 - H1 pass 2: about 40 replies; the most went to reading the probe's results field by field and finding PlayCanvas's
   selection shape (hitAt's axis was always ''); a probe that asserts each hook field once (axis non-empty, tool set) in a
