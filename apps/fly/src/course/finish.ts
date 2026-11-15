@@ -9,12 +9,23 @@ import { lapClock } from './hud-clock';
  * Forest Floor ab5efa0e (gate-place-audit --scale, course4 c2 and cu logs): courses at x1, x3, x5, x10 and x30, none at
  * x15, x20, x100; at x1 every catalogue scan gives one (c3p2/after2.json). So over x10: x10; over x1 or under it: x1;
  * at x1 (a scan of the pilot's own): x2, an estimate (a larger scan has more room for the craft).
+ * Course5 review CV-4: `tried` holds the sizes that gave no course in this scene; a size already tried is not offered again
+ * (x1 and x2 would bounce without end): the next untried size of NO_COURSE_SIZES is, and null when all were tried (the
+ * page then says 'no course' without a size).
  */
-export function noCourseSize(size: number): number {
-    if (size > 10) return 10;
-    if (Math.abs(size - 1) > 1e-6) return 1;
-    return 2;
+export function noCourseSize(size: number, tried: ReadonlySet<number> = new Set()): number | null {
+    const was = (s: number): boolean => Math.abs(s - size) < 1e-6 || [...tried].some((v) => Math.abs(v - s) < 1e-6);
+    const first = size > 10 ? 10 : Math.abs(size - 1) > 1e-6 ? 1 : 2;
+    if (!was(first)) return first;
+    for (const s of NO_COURSE_SIZES) if (!was(s)) return s;
+    return null;
 }
+
+/**
+ * The sizes offered after the first one (CV-4): the Forest Floor sizes that gave a course (x1, x3, x5, x10, x30, measured
+ * above), x2 the estimate for a pilot's own scan.
+ */
+export const NO_COURSE_SIZES: readonly number[] = Object.freeze([1, 2, 3, 5, 10, 30]);
 
 /** what a gate says over it: START, FINISH, START / FINISH, or nothing */
 export type GateRole = 'start' | 'finish' | 'startFinish' | null;
@@ -115,6 +126,15 @@ export function resultsCard(lapTimes: readonly number[]): ResultsCard {
  */
 export function courseElements(sonic: unknown): boolean {
     return !sonic;
+}
+
+/**
+ * Course5 review CV-2: whether Fly by Sound may take the course in the scene. A course composed with elements (generator
+ * version '<v>.e<n>', packages/tracks generate.ts) holds tunnels and flat squares the ear pilot was not measured on, so the
+ * sound mode does not take it and offers its own Shift+G, which builds single upright gates (courseElements).
+ */
+export function soundTakes(track: { readonly generator?: { readonly version?: string } | null }): boolean {
+    return !/\.e\d+$/.test(track.generator?.version ?? '');
 }
 
 type Words = (key: string, vars?: Record<string, string | number>) => string;

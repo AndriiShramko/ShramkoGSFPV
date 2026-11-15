@@ -201,8 +201,10 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
         let s = opts.seed >>> 0;
         for (let i = 0; i < SEEDS_PER_SCALE; i++) {
             // review T2-6: with a course in hand, a try that would end past the deadline is not started (the page's
-            // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate
-            if (deadline && best && deadline.now() + longest > deadline.at) return end();
+            // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate.
+            // Course5 review CV-5: with no course in hand too, so the page shows 'no course' with its one-press Scene size
+            // instead of the watchdog's failure
+            if (deadline && deadline.now() + longest > deadline.at) return end();
             const t0 = deadline ? deadline.now() : 0;
             const t = make(freeAt(params.marginM), walls, { ...opts, seed: s & 0x7fffffff, params });
             const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);

@@ -1449,3 +1449,25 @@ Left (Z3, exact, in order):
 Cost (course5 Z3 pass 1): about 30 replies; most went to waiting for the GPU lock (two holds of other lanes, about 25
 minutes) and to two keyboard runs that failed before flying (radio screen, link seed). A probe that logs the open
 screens and the crossing point from its first version would have saved two runs.
+
+## Status course5 fixes (review CV-1 to CV-5)
+
+Logs U:/Temp/gsfpv-train3/course4/fixcv/.
+- [x] CV-1 (blocker, stands): merge of origin/main 4e6ef171 (e66fa15a). The one conflict, course.ts frame(): the lane's
+      lapEnd, splash and card kept, ended with sayLine(end.spoken, ev === 'done' ? { kind: 'fanfare' } : { kind: 'lap' }).
+      course-finish.test.ts CU-2 and sonic-quiet-w3.test.ts QW-1 (the sound lane's source check, its literal was 'line')
+      check the two-argument call. The worktree's packages/sonic-fpv was moved to main's pin 293ebae (git submodule update;
+      before it tsc fly gave 12 errors on SonicPrefs.narrator). tsc fly 0.
+- [x] CV-2 (major, stands: inUse returned any course): finish.ts soundTakes(track) is false for a generator version
+      ending '.e<n>'; hook.sound.inUse returns null for such a course, so the sound mode offers its Shift+G (single gates).
+- [x] CV-3 (major, stands): resizeTo is cleared in the session handler and dropped when the Scene size differs from the
+      size the line was said at (resizeFrom).
+- [x] CV-4 (minor, stands: x1 gave x2, x2 gave x1): noCourseSize(size, tried) skips the sizes that gave no course in this
+      scene (noCourseAt, cleared with the scene) and walks NO_COURSE_SIZES 1, 2, 3, 5, 10, 30 (the Forest Floor sizes with a
+      course, x2 an estimate); all tried gives null and the page says course.none.
+- [x] CV-5 (minor, stands): fitCourse checks its deadline with no course in hand too.
+      Tests: course-finish.test.ts 'CV-2', 'CV-3', 'CV-4' NEG OK against course.ts and finish.ts of e66fa15a (3 of 3 failed);
+      fit.test.ts 'CV-5' NEG OK against fit.ts of e66fa15a. packages/tracks + apps/fly/src/course + the 11 bench tests that
+      read course.ts: 31 files, 245 passed. tsc fly 0, tsc tracks 0.
+- [ ] Release build, page probe of CV-2 (eyes course with elements, then Fly by Sound in place: no course taken), catalogue
+      table and the two-lap proof on Wroclaw, gates.py with leaks.

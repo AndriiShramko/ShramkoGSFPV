@@ -94,6 +94,20 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(FIT_BUDGET_MS).toBeLessThan(150_000);
     });
 
+    it('course5 review CV-5: with no course in hand fitCourse also stops before a try that would end past its deadline', () => {
+        // a fake generator: no gates a try, 30 s a try on a fake clock
+        let clock = 0;
+        const empty = ((): TrackFile => {
+            clock += 30_000;
+            return { gates: [] } as unknown as TrackFile;
+        }) as unknown as typeof generateCourse;
+        const opts = { seed: 1, scene: SCENE, transform: IDENTITY, created: CREATED };
+        const r = fitCourse(free, walls, opts, COURSE_DEFAULTS.gatesMin, empty, { at: 100_000, now: () => clock });
+        expect(r.track).toBeNull();
+        expect(r.tried).toBe(3);
+        expect(clock).toBeLessThanOrEqual(100_000);
+    });
+
     it('review FY-1: a course far short of the gates the generator wanted is not taken at once; nor is a smaller scale tried while one reached gatesMin', () => {
         // a fake generator: try k gives counts[k] gates of the 24 it wanted (no proof record: counts as proven)
         const fakeOf = (counts: number[], wanted = 24) => {

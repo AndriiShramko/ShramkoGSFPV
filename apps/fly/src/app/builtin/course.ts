@@ -23,7 +23,7 @@ import type { CourseHook } from '../../course/hook';
 import { CourseRun, courseLife } from '../../course/run';
 import { CourseStage } from '../../course/view';
 import { CourseHud, lapClock } from '../../course/hud';
-import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize } from '../../course/finish';
+import { courseElements, gateRole, gateRoles, lapEnd, lapSplashMode, noCourseSize, soundTakes } from '../../course/finish';
 import { aimOf } from '../../course/guide';
 import type { GuideCamera } from '../../course/guide';
 import { coveredBy } from '../../course/cover';
@@ -278,7 +278,11 @@ export const course: Feature = {
 
         /** course4 review CU-4: the Scene size the next generate() sets first (after a 'no course fits') */
         let resizeTo: number | null = null;
-        const fail = (problem: string, text: string): void => {
+        /** course5 review CV-3: the Scene size the 'no course fits' line was said at; resizeTo holds only while it is unchanged */
+        let resizeFrom = 1;
+        /** course5 review CV-4: the Scene sizes that gave no course in this scene (cleared with the scene) */
+        const noCourseAt = new Set<number>();
+        const fail =(problem: string, text: string): void => {
             stopProgress();
             hook.problem = problem;
             reopenAfter = false; // review TK-4: a failed load or generation does not open the editor later
@@ -352,7 +356,9 @@ export const course: Feature = {
                 // and builds again (Forest Floor at x15, x20, x100 gave no course for any seed)
                 const sc = ctx.hook.scale;
                 const size = sc ? sc.size() : 1;
-                resizeTo = sc ? noCourseSize(size) : null;
+                resizeTo = sc ? noCourseSize(size, noCourseAt) : null;
+                noCourseAt.add(size);
+                resizeFrom = size;
                 const x = (v: number): string => String(Math.round(v * 100) / 100);
                 return fail(m.short ? 'too few gates' : 'nothing fits', resizeTo !== null ? t('course.noneResize', { s: x(size), to: x(resizeTo) }) : t('course.none'));
             }
@@ -460,6 +466,8 @@ export const course: Feature = {
             // course4 review CU-4: the press after 'no course fits' sets the Scene size the line named, waits until the
             // scene has it (scale.ts pending), then builds
             const sc = ctx.hook.scale;
+            // course5 review CV-3: a size the pilot changed himself since the line drops it
+            if (resizeTo !== null && sc && Math.abs(sc.size() - resizeFrom) > 1e-6) resizeTo = null;
             if (resizeTo !== null && sc && !busy) {
                 const to = resizeTo;
                 resizeTo = null;
@@ -602,7 +610,8 @@ export const course: Feature = {
         // the lap timer passes) and Shift+G's own action (D1, D2). No change event: the sound mode reads inUse() every frame (lead's
         // decision P3, review OC-6: nothing listened to it)
         hook.sound = {
-            inUse: () => (run && hook.on ? { track: run.track, next: hook.next, gates: run.gates } : null),
+            // course5 review CV-2: a course with elements is not handed to the ear pilot (soundTakes); his Shift+G builds one
+            inUse: () => (run && hook.on && soundTakes(run.track) ? { track: run.track, next: hook.next, gates: run.gates } : null),
             generate: () => generate(pressSeed())
         };
         // Shift+G makes a course in every mode, Fly by Sound too (D2): one key, one course in the scene
@@ -647,6 +656,9 @@ export const course: Feature = {
         ctx.events.on('session', () => {
             closeEdit(true);
             job++;
+            // course5 review CV-3, CV-4: a 'no course fits' size belongs to the scene it was said in
+            resizeTo = null;
+            noCourseAt.clear();
             disarm();
             busy = false;
             checking = null;

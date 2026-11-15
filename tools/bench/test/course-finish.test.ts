@@ -123,6 +123,47 @@ describe('course4 review CU-1 and CU-2: the merge seams with lane onecourse', ()
     });
 });
 
+describe('course5 review CV-2 to CV-4: the sound mode and the no-course size', () => {
+    const src = readFileSync(new URL('../../../apps/fly/src/app/builtin/course.ts', import.meta.url), 'utf8');
+
+    it('CV-2: Fly by Sound does not take a course composed with elements; it takes single-gate and older courses', () => {
+        const takes = (finish as { soundTakes?: (t: { generator?: { version?: string } | null }) => boolean }).soundTakes;
+        expect(typeof takes).toBe('function');
+        expect(takes!({ generator: { version: 'k2.q1.e2' } })).toBe(false);
+        expect(takes!({ generator: { version: 'k2.e1' } })).toBe(false);
+        expect(takes!({ generator: { version: 'k2.q1' } })).toBe(true);
+        expect(takes!({ generator: null })).toBe(true);
+        expect(takes!({})).toBe(true);
+        expect(src).toMatch(/inUse: \(\) => \(run && hook\.on && soundTakes\(run\.track\)/);
+    });
+
+    it('CV-3: the pending size of a no-course line is dropped with the scene and when the size changed since', () => {
+        const session = src.slice(src.indexOf("ctx.events.on('session'"));
+        expect(session.slice(0, session.indexOf('});'))).toMatch(/resizeTo = null;/);
+        expect(src).toMatch(/Math\.abs\(sc\.size\(\) - resizeFrom\) > 1e-6\) resizeTo = null/);
+    });
+
+    it('CV-4: a size already tried is not offered again; all tried gives no size', () => {
+        const to = (finish as { noCourseSize?: (s: number, tried?: ReadonlySet<number>) => number | null }).noCourseSize;
+        expect(to!(1, new Set([2]))).toBe(3);
+        expect(to!(2, new Set([1]))).toBe(3);
+        expect(to!(3, new Set([1, 2]))).toBe(5);
+        expect(to!(100, new Set([10]))).toBe(1);
+        expect(to!(30, new Set([1, 2, 3, 5, 10]))).toBeNull();
+        // a pilot pressing Shift+G at every offered size from x1 reaches every size once and then the end
+        const tried = new Set<number>();
+        const seen: number[] = [];
+        let s: number | null = 1;
+        while (s !== null && seen.length < 20) {
+            seen.push(s);
+            const next: number | null = to!(s, tried);
+            tried.add(s);
+            s = next;
+        }
+        expect(seen).toEqual([1, 2, 3, 5, 10, 30]);
+    });
+});
+
 describe('course5 Z1: the guide names START / FINISH on the screen (the 3D banner is 16 px wide from 60 m)', () => {
     const en = JSON.parse(readFileSync(new URL('../../../packages/i18n/locales/fly/course/en.json', import.meta.url), 'utf8')) as Record<string, string>;
     const tr = (k: string, vars?: Record<string, string | number>): string => (en[k] ?? k).replace(/\{(\w+)\}/g, (_, n: string) => String(vars?.[n] ?? ''));
