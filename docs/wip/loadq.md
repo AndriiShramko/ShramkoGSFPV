@@ -21,7 +21,7 @@ PATH for tools/bench/test/rooms-socket.test.ts, it spawns `python`).
 Stage L2-build
 - [x] 0. Release build at the start (bebb7646, dist sha256 a2d8e503..., U:/Temp/gsfpv-train3/loadq/build-l2a.log). The
   pilot's view before the change is L1 (a) (same product code); not walked again.
-- [x] 1. G1 to G4 built, unit tests and negative controls (this commit):
+- [x] 1. G1 to G4 built, unit tests and negative controls (d79b10df):
   - G1 apps/fly/src/app/detail-rule.ts drawPlan, used by apps/fly/src/app/quality.ts apply: a budget from the setting
     (builtin/drawing.ts passes from.budget === 'setting') is drawn at its splats and full render scale whatever the
     governor's step; the governor keeps counting; Quality.keeperSlow after 3 s at a lower step (estimate);
@@ -52,6 +52,8 @@ Stage L2-build
 - [ ] 5. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16; lod-view on and off on Wroclaw and Lublin 2f1ddf5f;
   governor-start; a6-reference; gates.py --only vitest,architecture,i18n,b18,leaks.
 - [ ] 6. 'What the owner does', 'not verified', every changed file under 'For the lead'. Commit.
+Left for the next run of L2 (the reply budget of this run ended after item 1): items 2 to 6 above, in that order;
+none of the new code has run in a browser yet (only typecheck and unit tests).
 
 ## Facts (measured)
 
