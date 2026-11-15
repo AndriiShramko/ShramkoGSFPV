@@ -47,6 +47,18 @@ describe('fix3b Y2: gates at eye level, none in the poor end of a street', () =>
             }
         }
     });
+
+    it('review FY-6: the eye band is used only at the plan size on a scan flown at its true size', () => {
+        const eyeOf = (transform: typeof IDENTITY, scale?: number): number => {
+            let hi = -1;
+            generateCourse(free, walls, { seed: 1, scene: SCENE, transform, created: CREATED, quality: q, params: scale ? { scale } : undefined, onWalk: (w) => (hi = w.eyeHi) });
+            return hi;
+        };
+        // control: the street at its true size gets the eye band
+        expect(eyeOf(IDENTITY)).toBeGreaterThan(0);
+        expect(eyeOf([4, 0, 0, 0] as unknown as typeof IDENTITY)).toBe(0);
+        expect(eyeOf(IDENTITY, 0.5)).toBe(0);
+    });
 });
 
 // Y3 pass 2: the page measures the height with one straight ray down; the generator's sphere also touched voxels beside the

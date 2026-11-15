@@ -140,6 +140,8 @@ export const LOW_EDGE_M = 0.3;
 export const EYE_FREE_M = 1.0;
 /** when too few cells lie in the eye band, its top is raised by this much at a time up to the dense band's top (estimate) */
 const EYE_STEP_M = 0.4;
+/** review FY-6, ESTIMATE: the scan's flown scale (transform[0]) within this of 1 counts as its true size for the eye band */
+export const EYE_SCALE_TOL = 0.2;
 /** fix3b Y2 (message 52: "at the ends of streets, where the quality is already quite bad"): no gate and no leg where the
  *  tile's quality (quality.ts near) is under this share of the scan's best quarter (estimate: before Y2 the gates of
  *  Wroclaw, Tunis and Opole stood at 0.18-0.28 of it, gate-place-audit.ts, place-before.json) */
@@ -325,7 +327,9 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     // of the best quarter's quality; the band's top is raised by the least amount when too few cells lie in it
     let eyeHi = 0;
     const eyeAt = new Map<number, { pos: Vec3; free: number }>();
-    if (Q) {
+    // review FY-6: a person's eye level means something only on a scan flown at its true size and at the plan's course size;
+    // a scaled course or a scan flown bigger or smaller (a macro scan) goes straight to the dense band
+    if (Q && k === 1 && Math.abs(s - 1) <= EYE_SCALE_TOL) {
         const rMin = EYE_FREE_M * k;
         const slack = 1; // estimate: the tile's ground against the ground under the cell (a step, a slope)
         const near: { i: number; c: Vec3; h: number; d: number; free: number }[] = [];

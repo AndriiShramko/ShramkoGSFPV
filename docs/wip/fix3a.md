@@ -271,6 +271,8 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
    shiftg --reload-at in-use; evidence JSON; gates.py --only vitest,architecture,i18n,b18.
 
 ## Cost notes
+- fix3b fixes: about 30 replies; most went to Edit refusals on files read only by sed (four turns) and to one
+  backgrounded shell that took the cd with it; reading every file to be edited with Read first would have saved them.
 - Stage fixes: about 30 replies; code and tests took 15, four 600 s waits for the GPU lock (held by other lanes 28 min)
   took the rest. Running the cheap proofs first and the tracks-page probe in a separate detached run would have left
   results instead of a killed runner.
@@ -565,4 +567,19 @@ Logs U:/Temp/gsfpv-train3/fix3b/fixes/. Merged origin/main (two lead notes, docs
 - [~] FY-3 smallest step: the worker's track message carries proven (worker.ts). Trimming an unproven best is left.
 - [x] FY-4 startNearSpawn's predicate also needs legWell(start, new gate 1).
 - [x] packages/tracks vitest 14 files 121 passed; tsc packages/tracks and apps/fly clean; tracks-review/finish 13 passed.
-- [ ] Wroclaw and Tunis table after the fix; FY-5 test; FY-6; page check on Tunis; gates.py subset.
+- [x] FY-6 generate.ts: the eye band only when k is 1 and the scan's flown scale is within EYE_SCALE_TOL 0.2 (estimate)
+      of 1; otherwise the dense band (as before Y2). Test eye-level.test.ts 'review FY-6' NEG OK (ref 4d96c847,
+      generate.ts). Housefly and microgreens not measured (the audit flies every scan at transform 1,0,0,0).
+- [x] table after 4d96c847 (gate-place-audit, fixes/after.json, Node, no lock): Wroclaw seeds 1-5 24/24/24/24/24 gates
+      (before 18/24/4/24/24), seed 1 walk '24-0c-=24' (no poor drop now), seed 3 tried 2 ('4-0c-=4' then 24, 13.7 s),
+      Save check problems 0 in all 10 rows, eyeRay 24 of 24 in all 10; Tunis seeds 1-5 24 gates each, 2.9-4.2 s.
+- [x] tsc packages/tracks clean; eye-level 3 passed; packages/tracks 121 passed before the FY-6 test.
+
+Left (fixes):
+1. FY-5: a unit test world whose ring's closing leg crosses a tile under POOR_SHARE (a plaza 60 x 60 m with facades only
+   round it: its middle is poor), assert every leg incl. last->start and last->gate 1 at least POOR_SHARE and gates at least
+   gatesMin; negative control with ref c5d92269^ or 4d96c847^ (generate.ts closeAt).
+2. FY-3 rest: fit.ts end(): trim an unproven best by the gates wallsCheck names (or its longest passing prefix).
+3. Tunis page check (save-check-probe on a release build of the head, port 5780-5799) and gates.py --only
+   vitest,architecture,i18n,b18; tools/bench/test/a6-reference.test.ts is not needed (no flight code touched).
+4. FY-6: gate-place-audit with the scene's own transform (settings scale) to measure Housefly and microgreens.
