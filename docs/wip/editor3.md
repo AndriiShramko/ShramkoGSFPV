@@ -58,9 +58,13 @@ Stage fixes3 (train 3, 2026-11-15, review EJ-1 to EJ-5 of the J stages):
      (ok); gate 11 at [1760,407] 811 px not (that point lies under the editor panel, x > 1530: the probe's aim, not the
      view); crash in the test flight: back in the edit view by itself in 15 ms, no crash card, mode line 'ARMED . ANGLE'
      (fake pad's arm switch). Size reframe: the same boxes as Tunis to the pixel, framed false (fixed in 3233a7ef). a6
-     unit test pass (1 of 1) on 3233a7ef. Chain fx3c (release of 3233a7ef, both scenes, gates) started 19:35 for the browser
-     proof of the reframe and new pictures. accept-fly, mouse-free, tracks-page: not run.
-  f. New, seen, not explained: the box of the selected gate before the size drag has its centre at y 265 of 1080 (x 964)
+     unit test pass (1 of 1) on 3233a7ef. [x] Chain fx3c (release of 3233a7ef, build exit 0, probe exit 0 on both scenes,
+     gates.py --only vitest,architecture,i18n,b18 all PASS 19:54): size drag 1.2 -> 2.42 m framed true on Tunis and on
+     Wroclaw; picture editor3-size-1920.png of Tunis (19:4x) looked at: the 2.4 m ring whole in the view, centre cube at the
+     view's centre, one red line, gate yellow. Click near the selected gate: Tunis gate 24 at 238 px, Wroclaw gate 9 at
+     200 px, both selected. Crash in the test flight: edit view back in 7 ms (Tunis) and 6 ms (Wroclaw), no crash card.
+     Wroclaw pictures of fx3c not looked at. accept-fly, mouse-free, tracks-page: not run (left for the lead's integration).
+  f. Probably the probe, not the view (after the reframe the gate stands at the view's centre in the picture): the box of the selected gate before the size drag has its centre at y 265 of 1080 (x 964)
      on both scenes, while measure() put the framed gate at [960,540] in J2. Either the framing aims below the ring's
      centre (gate centres at eye level came with integration C) or the box is taken after earlier steps moved the gate.
      Suspect: course.ts frameSel / frame.ts frameGate centre vs view-mouse.ts gateBox. Not chased.
@@ -1880,3 +1884,4 @@ Pass 2 list (the steps, unchanged by pass 3 unless named above):
   10-minute GPU lock wait; logging the climb per held second in the first run (one short calibration flight) would have
   saved a run, and the gates subset run before the browser runs would have caught the stale editor3-g3 regex earlier.
 - fixes pass 2: about 28 replies; the most went to a release build started before a debug field was added (built twice) and to a 15-minute GPU lock wait; adding all probe hooks before the first build and dry-running the edge-on step's hit walk on one scene would have saved a build and left EI-3 proven.
+- fixes3 pass 3: about 30 replies; the most went to two blocking waits per chain (build plus a lock wait made the first wait time out); the edit hook's recorded boxes made the cause one read, and a wait keyed on the chain's own line with a longer cap would have saved two replies.
