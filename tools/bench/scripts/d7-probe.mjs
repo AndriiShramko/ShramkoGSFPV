@@ -90,7 +90,16 @@ try {
     await page.waitForTimeout(8000);
     const t0 = Date.now();
     await page.keyboard.press('Shift+KeyG');
-    await page.waitForFunction(() => { const g = window.__gsfpv; const s = g.sonic && g.sonic(false); return (g.course?.gates ?? 0) > 0 && s && s.target; }, null, { timeout: 300000 });
+    // the wait logs what it reads every 10 s (pass 3: the first run timed out here with no log)
+    out.wait = [];
+    for (let k = 0; ; k++) {
+        const r = await page.evaluate(READ);
+        const ok = (r.course?.gates ?? 0) > 0 && r.sonic && r.sonic.target;
+        if (k % 20 === 0 || ok) { const w = { s: +((Date.now() - t0) / 1000).toFixed(1), course: r.course, target: r.sonic?.target ?? null, lesson: r.sonic?.lesson ?? null, phase: r.sonic?.phase ?? null, said: r.speech.slice(-4).map((e) => e.key) }; out.wait.push(w); console.log('wait', JSON.stringify(w)); save(); }
+        if (ok) break;
+        if (Date.now() - t0 > 300000) throw new Error('no course gates and sonic target within 300 s after Shift+G');
+        await page.waitForTimeout(500);
+    }
     out.course = { ...(await page.evaluate(READ)).course, madeS: +((Date.now() - t0) / 1000).toFixed(1) };
     await page.waitForTimeout(6000);
     out.install = await page.evaluate(INSTALL);

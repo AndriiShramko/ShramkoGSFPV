@@ -269,6 +269,11 @@ export class LessonHost {
         return c.gates[c.next] ?? null;
     }
 
+    /** What the hum leads to now (frame() uses the same): the runner's own target, else the next gate of the course in the scene. */
+    target(): SonicObject | null {
+        return this.runner?.target() ?? this.courseTarget();
+    }
+
     /** the craft's position at the last frame over the course in the scene, and the gate whose "behind you" was said */
     private behindFrom: FlightSample['pos'] | null = null;
     private behindSaid: string | null = null;

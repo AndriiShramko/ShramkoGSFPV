@@ -589,7 +589,8 @@ export function installSonicFlight(ctx: FlightContext, entry: SonicEntry): () =>
         question: h.pending ? { id: h.pending.id, options: h.pending.options } : null,
         engine: audio.engine.state,
         target: (() => {
-            const o = h.runner?.target();
+            // lane onecourse O2.6: the target the hum leads to, the course in the scene's next gate too (was the runner's only)
+            const o = h.target();
             return o ? { id: o.id, pos: [o.pos[0], o.pos[1], o.pos[2]] as [number, number, number], quat: [...o.quat] as number[], shape: o.shape } : null;
         })(),
         // sonic3 S1 (the miss record of sonic-int-review.ts r11): where the hum points now (the gate, or the racing line's look-ahead)
