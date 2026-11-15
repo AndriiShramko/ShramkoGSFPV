@@ -6,7 +6,38 @@ import { trackToObjects } from '@shramko/sonic-fpv';
 import type { SonicObject, TrackFile, Vec3, WorldCheckpoint } from '@shramko/sonic-fpv';
 import { S } from '@gsfpv/sim-core';
 import { LapTimer, coursePath } from '@gsfpv/tracks';
-import type { LapEvent, LapView } from '@gsfpv/tracks';
+import type { LapEvent, LapState, LapView } from '@gsfpv/tracks';
+
+/** Changes of the attempt kept for a rewind: a 24-gate course gives about 26 a lap, so this is many laps back. */
+const MARKS_MAX = 512;
+
+/** What the respawn director last decided (sim-core RespawnDecision, the fields the course reads). */
+export interface LifeDecision {
+    readonly tick: number;
+    readonly kind: 'rewind' | 'start';
+    readonly sampleTick: number | null;
+}
+
+/** The reasons of a life the respawn director decides (sim-core RespawnReason); the others are new flights. */
+const DIRECTED: readonly string[] = ['crash', 'stuck-flipped', 'stuck-wedged', 'manual-start', 'manual-rewind'];
+
+/** What a new life of the craft does to the course (CourseRun.afterLife). */
+export type CourseLife = { readonly kind: 'keep' } | { readonly kind: 'restart' } | { readonly kind: 'rewind'; readonly to: number };
+
+/**
+ * The course follows the respawn (the owner's message 51). `reason` is the new life's (AppEvents 'life'), `last` the director's
+ * decision, fresh only when made at this tick `nowTick`:
+ * - back at the start (R, a crash or a stuck craft with the respawn target 'start', a rewind with no path left): restart;
+ * - Y (manual-rewind): the course goes back to what it was at the moment the craft is put back to;
+ * - a crash or a stuck craft respawned where it was ('rewind' target): keep the lap, the next gate and the running clock;
+ * - anything else (a new flight model, the settings, the scene, the world): restart, as before.
+ */
+export function courseLife(reason: string, last: LifeDecision | null, nowTick: number): CourseLife {
+    if (!DIRECTED.includes(reason) || last === null || last.tick !== nowTick) return { kind: 'restart' };
+    if (last.kind === 'start' || last.sampleTick === null) return { kind: 'restart' };
+    if (reason === 'manual-rewind') return { kind: 'rewind', to: last.sampleTick };
+    return { kind: 'keep' };
+}
 
 /** The scene transform as the session has it: T(p) = s * p + t. */
 export interface FlownTransform { readonly s: number; readonly t: readonly number[] }
@@ -17,6 +48,8 @@ export class CourseRun {
     readonly path: readonly WorldCheckpoint[];
     private readonly timer: LapTimer;
     private prev: Vec3 | null = null;
+    /** the attempt after every change, by sim tick, oldest first (a rewind finds the one that held at its tick) */
+    private marks: { t: number; s: LapState }[] = [];
 
     /** the flown transform the gates were laid with (lane review TR-5: a rescale in flight must re-lay and re-prove them) */
     readonly placedAt: string;
@@ -28,6 +61,7 @@ export class CourseRun {
         this.gates = trackToObjects(track, { transform });
         this.path = coursePath(track, transform);
         this.timer = new LapTimer(this.gates, { laps: track.laps, bestMs });
+        this.marks = [{ t: -Infinity, s: this.timer.snapshot() }];
     }
 
     /**
@@ -38,7 +72,9 @@ export class CourseRun {
     feed(tMs: number, pos: Vec3): LapEvent | null {
         const a = this.prev;
         this.prev = [pos[0], pos[1], pos[2]];
-        return a === null ? null : this.timer.step(tMs, a, this.prev);
+        const ev = a === null ? null : this.timer.step(tMs, a, this.prev);
+        if (ev !== null) this.mark(tMs);
+        return ev;
     }
 
     /**
@@ -52,17 +88,43 @@ export class CourseRun {
 
     pause(tMs: number): void {
         this.timer.pause(tMs);
+        this.mark(tMs);
     }
 
     resume(tMs: number): void {
         this.timer.resume(tMs);
         this.prev = null;
+        this.mark(tMs);
     }
 
-    /** A respawn, a crash or the course switched off: the attempt ends; the next position starts a new line. */
+    /** R to the start, a new flight model or the course switched off: the attempt ends; the next position starts a new line. */
     reset(): void {
         this.timer.reset();
         this.prev = null;
+        this.marks = [{ t: -Infinity, s: this.timer.snapshot() }];
+    }
+
+    /**
+     * A new life of the craft (the owner's message 51: "the course progress must be tied to the respawn"), as courseLife
+     * decided it at sim tick `nowTick`: 'keep' flies on with the lap, the next gate and the running clock; 'restart' is
+     * reset(); 'rewind' puts the attempt back to what it was at tick `to`, its clock too. The jump of the craft is never a pass.
+     */
+    afterLife(l: CourseLife, nowTick: number): void {
+        this.prev = null;
+        if (l.kind === 'restart') return this.reset();
+        if (l.kind === 'keep') return;
+        let i = this.marks.length - 1;
+        while (i >= 0 && this.marks[i]!.t > l.to) i--;
+        if (i < 0) return this.reset();
+        this.timer.restore(this.marks[i]!.s, l.to, nowTick);
+        this.marks.length = i + 1;
+        this.mark(nowTick);
+    }
+
+    /** the attempt changed at `t`: kept for a later rewind (oldest dropped past MARKS_MAX) */
+    private mark(t: number): void {
+        this.marks.push({ t, s: this.timer.snapshot() });
+        if (this.marks.length > MARKS_MAX) this.marks.splice(0, this.marks.length - MARKS_MAX);
     }
 
     view(tMs?: number): LapView {
