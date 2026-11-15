@@ -4,6 +4,48 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
+- [x] I2.0 merge origin/main 7fb0ddf7 (lead notes only): 6c4aa696. Release build of 6c4aa696's tree exit 0
+  (U:/Temp/gsfpv-train3/editor3/i2/build0.log), kept as U:/Temp/gsfpv-train3/editor3/i2/dist-before.
+- [x] I2.1 code a11f109d: D5 editor.css hides also .mode-chip (the 'Stick in the centre' hint under the mode line),
+  .hud .osd.bl (THR, speed, ALT), .osd.br (key hints), .osd.tr (voltage, time), .osd-col (F3), .rec-bar, .rec-dot,
+  .rec-notice, .crash-overlay (the crash card) while the mode is open and not flying; .osd.tl (mode line) stays.
+  D6 course/editor/line-hold.ts LineHold: a refusal stays until the next key or press that started after it
+  (Event.timeStamp > the telling); what an edit did 3 s (DONE_MS, as before); top-bar.ts listens on window keydown and
+  pointerdown (capture, modifiers and repeats are no action), the line's title holds the full text; the line is one line
+  (nowrap, ellipsis, max-width 420 px). Probe hooks in course.ts: __gsfpvEditPutAhead(m, up, open) (the selected gate m
+  ahead of the drone as one drag) and drone [x, y, z] in __gsfpvEditView. Probe tools/bench/src/editor3-clean.ts (run by
+  U:/Temp/gsfpv-train3/editor3/i2/cl.sh NAME SCENE PORT DIST PARTS [CLIMB]; record i2/NAME/clean[-scene].json).
+  Checks: tools/bench/test/editor3-i2.test.ts 5 pass (fake timers: the refusal on the line at 10 s and 60 s, gone at the
+  next action); NEG OK (neg_control.py ref HEAD, top-bar.ts editor.css); apps/fly and tools/bench tsc 0 errors.
+- [x] I2.2 before run (dist-before, Tunis 887f27aa, lock 12:10:08-12:12:01, i2/before/clean.json):
+  - 1920 edit view: shown hint (mc-thr 'Stick in the centre'), THR line, key hints ('crashes 0 . R respawn'), REC row,
+    voltage and time, and the Walls chip's panel open (.wv: walls switch, voxel grid, style, opacity, export, import).
+    Top bar 660x40 with the gate line, 819x47 with the standing hint: the line is 2 lines (lineCount 2).
+  - 844x390 edit view: the same parts shown; the top bar [8,82,381x52] covers the Walls switch (button.wv-switch) and the
+    mode chip (button.mc-chip). The scene credit is '.attribution' (the probe's credit selector missed it: fix the probe).
+  - D8 measured (keyboard source, the default profile 'easy' = the game scheme, play/keys.ts GAME_KEYS): Space armed in
+    293 ms; W held 250 ms per step: speed 0.3 -> 7.1 m/s in 14 steps while the OSD said THR 28-31 % and ALT 0.0-0.1 m
+    the whole time; step 20 the mode went back to edit (a crash, guess: ran into the ground or a wall at 7 m/s); Space
+    disarm 19 ms. Cause (from the code, the number above agrees): the game scheme's only climb key is Space
+    (GAME_KEYS lift +1) and in the edit test flight Space is taken as disarm (devices/keyboard.ts onDown, isGame &&
+    Space && editModeFlying); the take-off hop (play/game.ts liftoff, TAKEOFF_HOP_M 1) did not show in ALT (0.1 m), not
+    measured why. The gate was not ahead (no hook in that build).
+- [ ] I2.3 left, in this order:
+  a. Probe fixes in editor3-clean.ts: the refusal: Ctrl+S opened the name field ('Your name' on the line), not a refusal;
+     use Add gate + a floor click that gives a red gate on Tunis (H3: 'add -> red, the line names gate 2'), or the
+     window's Save with a name typed; the crash: wait for mode 'fly' before the full-throttle push and then wait only
+     for crashActive (the run read mode 'edit' before arming took effect, so afterCrash and afterExit were taken while
+     flying); credit selector '.attribution'.
+  b. D7 editor.css (max-height 500px): hide the Walls chip's open panel (.wv inside the chip; the chip's summary
+     'Walls 5 cm' stays), keep the top bar off .wv-switch, .mc-chip (hidden now by D5) and '.attribution'.
+  c. D8 repair: in the edit test flight with the game scheme give a climb that is not Space (a decision to make:
+     Space held = climb and a short tap = disarm, or the take-off hop to the selected gate's height); then
+     a6-reference.test.ts (input code) and an editor3-i2 test with a negative control.
+  d. Release build, cl.sh after runs on Tunis and Wroclaw (kbd with the gate 6 m ahead, desk, phone), the four pictures
+     editor3-edit-clean-1920.png, editor3-after-flight-1920.png, editor3-after-crash-1920.png, editor3-844.png looked at.
+  e. gates.py --only vitest,architecture,i18n,b18; status and owner's part.
+
 Stage I1-gizmo (train 3, 2026-11-15):
 - [x] I1.0 merge origin/main 6999085a into editor3: 47f4d434 (no conflicts). Release build of 47f4d434's tree: exit 0
   (U:/Temp/gsfpv-train3/editor3/i1/build-before.log); that dist is kept as U:/Temp/gsfpv-train3/editor3/i1/dist-before
@@ -1222,6 +1264,10 @@ button shows the table.
 12. Esc, Esc again leaves. Proven on both.
 
 ## Cost notes
+- I2-clean pass 1: about 40 replies, stopped with code a11f109d and the before run; the most went to finding the class
+  names of each flight part (hud.ts, mode-chip.ts, cinema.ts, crash-overlay.ts) and the keyboard's game scheme
+  (keyboard.ts, play/keys.ts, game-pilot.ts) before the first run. Cheaper: run the probe's generic leaves list first (it
+  named every part with its class in one run), then read only the files it names.
 - I1-gizmo pass 2: about 45 replies (over budget); the most went to the two fixes the first after run showed (edge-on ring
   0 deg, grey disabled shapes) and their rebuild and second run, plus one 9-minute lock wait that gave up. Cheaper: read
   PlayCanvas's Shape.disabled and the gizmo's own pick before building D2/D4, and look at the first picture before the
