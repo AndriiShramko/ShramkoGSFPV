@@ -151,7 +151,8 @@ const busyRuns = (p) => {
 const out = [];
 for (const id of idsArg.split(',')) {
     const name = NAMES[id] || id;
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    // F4-prove: pictures at 1920 wide (VW, VH override)
+    const ctx = await browser.newContext({ viewport: { width: Number(process.env.VW || 1920), height: Number(process.env.VH || 1080) } });
     const page = await ctx.newPage();
     const r = { id, errors: [], lines: [] };
     await page.addInitScript(LONGTASKS);
@@ -183,6 +184,10 @@ for (const id of idsArg.split(',')) {
                 else r.maxSilentS = Math.max(r.maxSilentS, +(at - lastChange).toFixed(1));
             } else lastShown = null;
             for (const k of ['wallsProgress', 'box', 'courseProgress', 'note']) if (s[k] && !r.lines.some((l) => l.k === k && l.text === s[k] && l === r.lines.findLast((m) => m.k === k))) r.lines.push({ at, k, text: s[k] });
+            // F4-prove: one picture of each build's progress (walls from 20 s into its build, course 1.5 s into its own)
+            if (s.wallsProgress && !s.courseProgress && !r.shotWallsS && at >= 20) { r.shotWallsS = at; await page.screenshot({ path: `${shots}/course3-progress-walls-${name}.png` }); }
+            if (s.courseProgress && r.courseFirstS === undefined) r.courseFirstS = at;
+            if (s.courseProgress && !r.shotCourseS && at >= r.courseFirstS + 1.5) { r.shotCourseS = at; await page.screenshot({ path: `${shots}/course3-progress-course-${name}.png` }); }
             if (s.gates > 0 && s.drawn > 0) { r.courseAtS = at; break; }
             if (s.problem && !s.wallsProgress && !s.courseProgress && at > 5 && !s.gates) { r.problem = s.problem; break; }
             if (Date.now() - t0 > LIMIT_MS) { r.fail = 'timeout'; break; }
@@ -246,16 +251,43 @@ for (const id of idsArg.split(',')) {
             r.afterRespawn = [{ next: a1.next, clock: a1.clock, clockMs: clockMs(a1.clock) }, { next: a2.next, clock: a2.clock, clockMs: clockMs(a2.clock) }];
             if (r.crash.crashAt && r.crash.lifeAt) r.crash.backM = +Math.hypot(...r.crash.crashAt.map((v, i) => v - r.crash.lifeAt[i])).toFixed(1);
             await page.screenshot({ path: `${shots}/course3-${name}-respawn.png` });
+            // F4-prove: the pilot's rewind (the respawn.rewind key's action, session.rewind) 2 s after the next gate
+            // is passed must give that gate back and put the clock back to its value of that moment
+            const k = r.afterRespawn[1].next;
+            if (k >= 0 && k < poses.length - 1) {
+                const g = poses[k], z = rot(g.quat, [0, 0, 1]);
+                const a = [g.pos[0] + z[0] * 4, g.pos[1] + z[1] * 4, g.pos[2] + z[2] * 4], b = [g.pos[0] - z[0] * 3, g.pos[1] - z[1] * 3, g.pos[2] - z[2] * 3];
+                await ev(([aa, bb]) => { const cp = window.__cp, s = window.__gsfpv.session; cp.a = aa; cp.b = bb; cp.t0 = s.sim.tick; cp.v = 8; cp.mode = 'line'; }, [a, b]);
+                const s1 = await until(() => ({ mode: window.__cp.mode, next: window.__gsfpv.course.next, clock: window.__gsfpv.course.clockText() }), (v) => v.mode === 'hold', 10000, 100);
+                await page.waitForTimeout(2000);
+                const pre = await ev(READ);
+                const y = await ev(() => { window.__cp.mode = 'idle'; const s = window.__gsfpv.session; const t = s.sim.tick; s.rewind(); return { tick: t }; });
+                await page.waitForTimeout(400);
+                const post = await ev(() => ({ next: window.__gsfpv.course.next, clock: window.__gsfpv.course.clockText(), decision: window.__gsfpv.session.director.last }));
+                r.rewind = { gate: k + 1, passNext: s1.next, passClock: s1.clock, before: { next: pre.next, clock: pre.clock, clockMs: clockMs(pre.clock) },
+                    after: { next: post.next, clock: post.clock, clockMs: clockMs(post.clock) }, kind: post.decision?.kind, backTicks: post.decision && post.decision.sampleTick != null ? y.tick - post.decision.sampleTick : null };
+            }
         }
         await page.keyboard.press('KeyR');
         await page.waitForTimeout(1500);
         const ar = await ev(READ);
         r.afterR = { next: ar.next, clock: ar.clock, clockMs: clockMs(ar.clock) };
         await page.screenshot({ path: `${shots}/course3-${name}-after-r.png` });
+        // F4-prove: Shift+G three more times: gate count and span (largest ground distance between gates) of each new course
+        r.regen = [];
+        for (let i = 0; i < Number(process.env.REGEN ?? 3); i++) {
+            const seed0 = await ev(() => window.__gsfpv.course.seed);
+            const tg = Date.now();
+            await page.keyboard.press('Shift+KeyG');
+            const c = await until(() => { const c = window.__gsfpv.course; return { seed: c.seed, gates: c.gates, drawn: c.drawn }; }, (v) => v.seed !== seed0 && v.gates > 0 && v.drawn > 0, 180000, 250);
+            const ps = await ev(() => window.__gsfpv.course.gatePoses());
+            let span = 0; for (const a of ps) for (const b of ps) span = Math.max(span, Math.hypot(a.pos[0] - b.pos[0], a.pos[2] - b.pos[2]));
+            r.regen.push({ seed: c.seed, gates: ps.length, spanM: +span.toFixed(1), s: +((Date.now() - tg) / 1000).toFixed(1), yRange: ps.length ? [Math.min(...ps.map((p) => p.pos[1])), Math.max(...ps.map((p) => p.pos[1]))].map((v) => +v.toFixed(1)) : null });
+        }
     } catch (e) { r.fail = String(e).slice(0, 240); }
     out.push(r);
     writeFileSync(outFile, JSON.stringify(out, null, 1));
     await ctx.close();
 }
 await browser.close();
-for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, busy: r.profile?.map((x) => [x.atS, x.ms]), lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, afterR: r.afterR, errors: r.errors.length, fail: r.fail }));
+for (const r of out) console.log(JSON.stringify({ id: r.id, courseAtS: r.courseAtS, where: r.bake?.where, bakeS: r.bake?.ms ? Math.round(r.bake.ms.total / 1000) : null, tried: r.bake?.tried, maxSilentS: r.maxSilentS, maxReadGapS: r.maxReadGapS, longMaxMs: r.longtasks?.maxMs, longN: r.longtasks?.n, busy: r.profile?.map((x) => [x.atS, x.ms]), lines: r.lines.length, gates: r.gates, heights: r.top?.heights, passes: r.passes, before: r.beforeCrash, crash: r.crash && { reason: r.crash.reason, kind: r.crash.decision?.kind, backM: r.crash.backM }, after: r.afterRespawn, rewind: r.rewind, afterR: r.afterR, span: r.top?.spanM, regen: r.regen, shots: [r.shotWallsS, r.shotCourseS], errors: r.errors.length, fail: r.fail }));
