@@ -46,6 +46,9 @@ export const COST_KEEP = 3000;
 // region; a lesson speaks its own keys, and K still opens the card by hand)
 export const MODE_PREFS: Readonly<Record<string, unknown>> = Object.freeze({ 'crash.enabled': false, 'input.play': 'easy', 'input.howToFly': false });
 
+/** The mode pref a switch in place leaves as the pilot has it (a 'life' setting: changing it starts a new life). */
+const HERE_KEEPS = 'crash.enabled';
+
 /** What the mode needs of the page (FlightContext's parts; fakes in tests). */
 export interface ModeHost {
     readonly events: Bus<AppEvents>;
@@ -95,6 +98,8 @@ export class SonicMode {
     private longDone = false;
     /** placed by the mode itself since the last sample (a re-centre): the next touch is not this one's echo */
     private placedAt = -Infinity;
+    /** switched on in place (ModeStart.here): the flight's own rules stay */
+    private here = false;
 
     constructor(host: ModeHost) {
         this.host = host;
@@ -119,7 +124,11 @@ export class SonicMode {
         if (this.on) this.leave();
         this.on = true;
         const h = this.host;
-        for (const [id, v] of Object.entries(MODE_PREFS)) h.prefs.setSession(id, v);
+        // in place the pilot's crash setting stays: 'crash.enabled' applies as a 'life' setting (prefs defs/crash.ts, respawn.ts), so
+        // changing it starts a new life, "level and still", on the switch on and again on the switch off (measured in r11 Tunis:
+        // 5.11 m/s before Backslash off, 0 after, review SO-1/SO-4)
+        this.here = o.here === true;
+        for (const [id, v] of Object.entries(MODE_PREFS)) if (!(this.here && id === HERE_KEEPS)) h.prefs.setSession(id, v);
         // a scan lesson flies its scan at the lesson's size, walls on (the session was made with them: the entry and the
         // lesson host set them before the scan loaded; this keeps them while the mode runs)
         if (o.lesson) forceScanPrefs(h.prefs, o.lesson.world);
@@ -175,7 +184,8 @@ export class SonicMode {
         for (const off of this.offs) off();
         this.offs = [];
         const h = this.host;
-        for (const id of Object.keys(MODE_PREFS)) h.prefs.clearSession(id);
+        for (const id of Object.keys(MODE_PREFS)) if (!(this.here && id === HERE_KEEPS)) h.prefs.clearSession(id);
+        this.here = false;
         clearScanPrefs(h.prefs);
         h.setLesson(null);
         this.lessonFlight(null);

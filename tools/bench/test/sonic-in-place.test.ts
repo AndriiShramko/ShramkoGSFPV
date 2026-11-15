@@ -233,6 +233,8 @@ describe('the free flight opened in place keeps the craft where it is', () => {
         };
         expect(await r.host.openFree(free, { here: true })).toBe(true);
         expect(r.session.lifeOverrides().bump).toBeUndefined();
+        // 'crash.enabled' is a 'life' setting in the page (respawn.ts): in place the pilot's own stays (r11 Tunis: 5.11 m/s to 0)
+        expect(r.sessionPrefs.has('crash.enabled')).toBe(false);
         await r.run(60000, null, () => r.host.runner?.phase === 'flying');
         await r.run(3000, () => ({ forward: 1 }));
         const s = r.session.sim.s;

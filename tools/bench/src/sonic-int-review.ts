@@ -1021,12 +1021,12 @@ const ENTRY_EN = JSON.parse(readFileSync(join(REPO, 'packages/i18n/locales/fly/s
 /** Where the craft's position and velocity sit in the sim state (sim-core S), given to the page. */
 const POSE_IDX = [S.px, S.py, S.pz, S.vx, S.vy, S.vz];
 
-/** The pause item's text: Escape opens the menu, the item is read, Escape closes it again. */
+/** The pause item's text: P opens the pause menu (in the mode Escape opens the lesson menu: lesson-menu.ts pauseKey), the item is read, P closes it. */
 async function pauseItemText(page: Page): Promise<string | null> {
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('KeyP');
     await page.waitForSelector('.pause-menu [data-action="pause.flyBySound"]', { timeout: 10000 }).catch(() => null);
     const txt = await page.evaluate(() => document.querySelector('.pause-menu [data-action="pause.flyBySound"]')?.textContent?.trim() ?? null);
-    await page.keyboard.press('Escape');
+    await page.keyboard.press('KeyP');
     await sleep(800);
     return txt;
 }
