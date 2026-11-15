@@ -38,7 +38,33 @@ Stage H3-prove (train 3, 2026-11-15):
     course: Course bo42nq, version 1. It is in Courses on the top bar"; Esc x2 left. Fresh page: not loaded by itself (as
     decided); Courses list showed "No course is saved for this scene yet" (rows 0): a PROBE fault, most likely the H3 scene
     filter of the /api/tracks stand-in (the saved id starts 'becbec', so body.scene is not '70b50d42'); not proven.
-- [ ] left (next worker, in this order):
+- [x] H3.3 pass 2 probe 0b8e0501 (commit 'probe lists every saved course'): no app change since 176374af, so the release of
+  176374af's tree was reused. Runs U:/Temp/gsfpv-train3/editor3/h3b (lock Tunis 10:49:52-10:57:48, Wroclaw 10:59:52-11:03:49).
+  - a DONE: Wroclaw fresh page, Courses: 1 row "Course 70v9kv gates: 22", Open -> track becbec-0eca9077 v1, 22 gates, the
+    editor open, the compared gate at offM 0 (pos [33.4,7.4,9.8]).
+  - b NOT passed: keyboard flight 150 steps, course.next 0 -> 0; the probe's throttle estimate 53-65 %, the OSD ALT read
+    0.0 every step, gate 1 depth -0.9 m: the drone never left the ground under W. Cause not measured (guess: the W ramp does
+    not reach the flight in the edit mode's fly state, or the estimate is wrong; record the OSD THR next).
+  - c measured: Tunis refusal line 1 s after Save: "Not saved. The way from the start to gate 1 goes through a wall. Pull the
+    arrows of gate 1 toward the start ..."; gate 1 selected (wrong.index 0, legStart). The probe pulled X and Z of gate 1 eight
+    times (0.32-0.92 m each): problems 4 -> 4 every time (undone). Then 10+ deletes of gate 1: every new gate 1 still had
+    leg-wall from the start. Start pos [0.1,2.1,0.3] yaw 180, no start-wall problem. Points at the generator's start (lane
+    fix3a, packages/tracks generate/fit), a strong guess, not proven; not fixed here.
+  - d measured: rings tried with 60 and 140 px tangent drags. Tunis y 0/0 deg, x 0/0 deg; Wroclaw y 0/0, x 0/0, z 60/120 deg.
+    editor3-turn-1920.png: the view looks straight along the gate, so the x and y rings are drawn edge-on as lines and only
+    the facing ring turns. Fix to decide: frame a gate for Turn from an oblique view, or turn handles that are not rings.
+  - e: Tunis no second gate on screen after 4 back-offs (S+E 0.7 s each); Wroclaw click on gate 11 selects it.
+  - f measured: the refusal stays on the top bar line 6 s (top-bar.ts tell, 6000 ms timer), at 7 s it is the fly hint again.
+    Proposal: a refused line stays until the next tell. Not changed (needs a build and a browser proof).
+  - g looked at: move (Tunis gate 1 among palm fronds, handles clear), turn (x and y rings edge-on), size (white centre box,
+    green and pink boxes), wroclaw (gate before a wall, bar under it), flying (ARMED, THR 28 % ALT 3.6, gate 1 inside a palm
+    crown), 844 (top bar [8,82,381x52] over the ANGLE chip, gate bar [8,328]). The ANGLE CH5 'Stick in the centre' chip stays
+    top left in the edit view at 1920.
+  - Pad flight course.next 0 -> 1 on Tunis and Wroclaw, back to edit; Esc x2 leaves (Tunis), x1 after Save (Wroclaw).
+  - gates.py --only vitest,architecture,i18n,b18 on the probe commit: result in h3b/gates.log and the next commit message.
+- [ ] left (next worker): b (keyboard flight: record OSD THR and ALT per step), c (lane fix3a: Tunis start leg), d (turn
+  rings edge-on), f (refusal line timer), e (Tunis click target), then the walk again.
+- older left list (pass 1):
   a. editor3-prove.ts fakeTracks: drop the scene filter added in H3 (or match the scene the page sends); re-run Wroclaw to
      prove: Courses -> Open -> the moved gate where it was put.
   b. keyboardFly: before Space put the view 6 m before gate 1 facing it (S held until the gate's depth is about 6 m, the
@@ -1091,6 +1117,9 @@ button shows the table.
 12. Esc, Esc again leaves. Proven on both.
 
 ## Cost notes
+- H3-prove pass 2: about 31 replies; the most went to reading the 900-line probe in slices before the edits; the one
+  background chain (two scene holds plus gates) cost only two waits. A step list of the probe in the status file would have
+  saved three reads.
 - H3-prove: about 40 replies; the most went to the GPU lock (two 9-minute waits that both gave up, then a second
   pass) and to probe edits written without a dry run; a run.sh that keeps waiting for the lock and a 60 s dry run of
   the new probe steps (keyboard flight start, Courses list) would have saved a pass.
