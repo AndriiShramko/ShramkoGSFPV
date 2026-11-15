@@ -29,8 +29,10 @@ import type { Rng } from './rng';
 
 export const GENERATOR_NAME = 'gsfpv-course';
 export const GENERATOR_VERSION = '1';
-/** G2: a course laid over a quality map (band and spread walk); the same seed lays another course than version 1 */
-export const GENERATOR_VERSION_QUALITY = '3';
+/** G2: a course laid over a quality map (band and spread walk); the same seed lays another course than version 1.
+ *  course4 review CU-3: '4' since lane course4 C0 (gates stand over the ground: the same seed lays other gates than the
+ *  version 3 on main), so course/link.ts bestKey ('.g<major>') keeps the best laps of the two apart. */
+export const GENERATOR_VERSION_QUALITY = '4';
 
 export interface CourseParams {
     /** the proof's margin, flown m */
@@ -734,6 +736,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
     let startYaw = course.length ? nearestYaw(sub(toFlown(course[0]!.pos), startW)) : 0;
     // course4 C4: the proven course composed into elements; each element is proven with its neighbours, and the whole
     // course once more (a course that fails it keeps its single gates)
+    let composed = false;
     if (opts.elements && course.length > 0) {
         const single = course;
         const comp = composeElements({
@@ -748,6 +751,7 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
             if (checkTrack(build(comp.gates, yaw, startW, laps), walls, T, p.marginM, false, true).ok) {
                 course = comp.gates;
                 startYaw = yaw;
+                composed = true;
             }
         }
     }
@@ -760,7 +764,8 @@ function walkCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions,
         ...shell,
         generator: {
             name: GENERATOR_NAME,
-            version: generatorVersion(!!Q, startShift, !!opts.elements),
+            // course4 review CU-3: '.e1' only when the elements changed the course; an unchanged one keeps its key
+            version: generatorVersion(!!Q, startShift, composed),
             seed,
             params: {
                 marginM: p.marginM,

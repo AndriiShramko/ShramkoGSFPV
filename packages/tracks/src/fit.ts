@@ -190,8 +190,11 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             }
             s = nextSeed(s);
         }
-        // review FY-1: a proven course of at least gatesMin gates at this scale beats any course of a smaller one
-        if (best && bestOk && best.gates.length >= gatesMin) return end();
+        // review FY-1: a proven course of at least gatesMin gates at this scale beats any course of a smaller one.
+        // course4 review CU-5: below the plan's size a course under its full share does not stop the ladder: the next step
+        // is tried and the course with more gates kept (Forest Floor ab5efa0e: 10 gates at the old step 0.5, then 5-7 at the
+        // new 2/3, which stopped the ladder; c3/before.json, c3p2/after2.json). Step 1 keeps FY-1 (street tables unchanged).
+        if (best && bestOk && best.gates.length >= (scale < 1 ? fullOf(best, gatesMin) : gatesMin)) return end();
     }
     return end();
 }

@@ -8,7 +8,7 @@ import { AppBase, AppOptions, RenderComponentSystem } from '../../../apps/fly/no
 // the engine's own null device (no GPU); not in the package's index, so from the same src tree the index uses
 import { NullGraphicsDevice } from '../../../apps/fly/node_modules/playcanvas/build/playcanvas/src/platform/graphics/null/null-graphics-device.js';
 import type { TrackFile } from '@shramko/sonic-fpv';
-import { freeSpace, generateCourse } from '@gsfpv/tracks';
+import { freeSpace, generateCourse, generatorVersion } from '@gsfpv/tracks';
 import { CourseStage } from '../../../apps/fly/src/course/view';
 import { CourseRun, enoughGates } from '../../../apps/fly/src/course/run';
 import { bestKey, firstOffer } from '../../../apps/fly/src/course/link';
@@ -115,6 +115,23 @@ describe('TR-10: the best lap key names the scene, the walls and the scale', () 
         expect(bestKey(withVersion('3'), 'pavo20')).not.toBe(bestKey(withVersion('2'), 'pavo20'));
         expect(bestKey(withVersion('3.s2'), 'pavo20')).not.toBe(bestKey(withVersion('3'), 'pavo20'));
         expect(bestKey(withVersion('3.s2'), 'pavo20')).not.toBe(bestKey(withVersion('2.s2'), 'pavo20'));
+        // course4 review CU-3: this generator's courses (other gates than version 3 on main for the same seed) and a course
+        // composed of elements ('.e1') each get their own key; the turn '.s<n>' still splits a composed course
+        expect(bestKey(withVersion(generatorVersion(true, 0)), 'pavo20')).not.toBe(bestKey(withVersion('3'), 'pavo20'));
+        expect(bestKey(withVersion(generatorVersion(true, 0, true)), 'pavo20')).not.toBe(bestKey(withVersion(generatorVersion(true, 0)), 'pavo20'));
+        expect(bestKey(withVersion(generatorVersion(true, 2, true)), 'pavo20')).not.toBe(bestKey(withVersion(generatorVersion(true, 0, true)), 'pavo20'));
+        expect(bestKey(withVersion('4.e1.s2'), 'pavo20')).toContain('.e1');
+    });
+    it('CU-3: the generator marks a course .e1 only when the elements changed it', () => {
+        for (const seed of [1, 2, 3, 4, 5, 6]) {
+            const free = freeSpace(walls, { spawn: SPAWN_A });
+            const base = { seed, scene: { id: '39e63ce9', version: 1 }, transform: IDENTITY };
+            const plain = generateCourse(free, walls, base);
+            const asked = generateCourse(free, walls, { ...base, elements: true });
+            const changed = asked.gates.length !== plain.gates.length || asked.gates.some((g, i) => g.shape.kind !== plain.gates[i]?.shape.kind);
+            expect(/\.e1/.test(String(asked.generator?.version))).toBe(changed);
+            expect(String(plain.generator?.version)).not.toContain('.e1');
+        }
     });
 });
 

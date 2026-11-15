@@ -119,6 +119,13 @@ describe('fitCourse in a tiny room (4 x 3 x 4 m)', () => {
         expect(rb.track!.gates.length).toBe(6);
         expect(rb.scale).toBe(1);
         expect(b.scales).toEqual([1, 1, 1]);
+        // course4 review CU-5: below the plan's size a short course (7 of 24) does not stop the ladder; the longer one of
+        // the next step is kept, and a step that gives fewer gates does not replace it
+        const c = fakeOf([0, 0, 0, 7, 5, 7, 10, 9, 8, 6, 6, 6]);
+        const rc = fitCourse(null as never, null as never, opts, 4, c.make);
+        expect(rc.track!.gates.length).toBe(10);
+        expect(rc.scale).toBe(COURSE_SCALES[2]);
+        expect(c.scales.length).toBe(12);
     });
 
     it('lane fix3b: a course whose final proof failed is not given while the next seed gives a proven one', () => {
