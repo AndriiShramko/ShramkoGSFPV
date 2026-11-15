@@ -11,16 +11,20 @@ import { wallsCheck } from './editor';
 import { upgradeTrack } from './format';
 import { COURSE_DEFAULTS, generateCourse } from './generate';
 import type { CourseOptions, CourseParams } from './generate';
-import type { FreeSpace } from './freespace';
+import { FREE_DEFAULTS, freeSpace } from './freespace';
+import type { FreeSpace, FreeSpaceOptions } from './freespace';
+import { MARGIN_M } from './check';
 
 /** The smallest drone's size: air65-1s and meteor65pro-1s, boundRadius 0.0425 m (measured: tools/bench/src/drone-sizes.ts,
  *  the simulator's compileParams over packages/sim-core/presets). */
 export const SMALLEST_DRONE_RADIUS_M = 0.0425;
 /** The smallest ring opening, in diameters of the smallest drone (estimate: room for a whoop to miss the centre). */
 export const RING_MIN_DRONE_DIAMETERS = 4;
-/** The scales tried, largest first. The last keeps the ring (1.2 m x scale) at RING_MIN_DRONE_DIAMETERS diameters of the
- *  smallest drone: 0.34 m / 1.2 m = 0.283, rounded up to 0.3. 0.5 is the step between (estimate). */
-export const COURSE_SCALES: readonly number[] = [1, 0.5, 0.3];
+/** The scales tried, largest first: the ladder of gate sizes (course4 C3, owner's message 57: a room gets gates for a
+ *  whoop). The square's opening (SQUARE_SIDE_M x scale) steps 1.5, 1.0, 0.6, 0.45 m, the ring's (RING_DIAMETER_M x scale)
+ *  1.2, 0.8, 0.48, 0.36 m. 0.6 m is about a tiny whoop's race gate (estimate). The last keeps the ring at
+ *  RING_MIN_DRONE_DIAMETERS diameters of the smallest drone: 0.34 m / 1.2 m = 0.283, rounded up to 0.3. */
+export const COURSE_SCALES: readonly number[] = [1, 2 / 3, 0.4, 0.3];
 /** derived seeds tried per scale (the page's earlier rule, lane review TR-8: 3) */
 export const SEEDS_PER_SCALE = 3;
 /** Review T2-6, ESTIMATE: the worker's time for fitCourse, under the page's GENERATE_LIMIT_MS (150 s) by room for
@@ -57,6 +61,17 @@ export function scaledParams(scale: number, base: CourseParams = COURSE_DEFAULTS
         m3PerGate: base.m3PerGate * scale * scale * scale,
         scale
     };
+}
+
+/**
+ * course4 C3: the free space for a smaller step of the ladder: read at the step's margin, and a room counts from the
+ * plan's smallest room (minRoomM3) times the step cubed, as the gates and legs shrink by the step (the low room of
+ * every-scan.test.ts: 3.9 m3 of cells at the 0.4 step, under the plan's 8 m3).
+ */
+export function freeAtMargin(walls: VoxelCollision, opts: FreeSpaceOptions, marginM: number): FreeSpace {
+    const k = Math.min(1, marginM / MARGIN_M);
+    const U = Math.max(1, opts.unitM ?? 1);
+    return freeSpace(walls, { ...opts, marginM, minRoomM3: (opts.minRoomM3 ?? FREE_DEFAULTS.minRoomM3 * U * U * U) * k * k * k });
 }
 
 /** The next seed after `s` (the same derivation as the page's enoughGates). */
@@ -128,7 +143,18 @@ export function trimToSave(t: TrackFile, walls: VoxelCollision, transform: Scene
  * The first course of at least `gatesMin` gates over COURSE_SCALES (each with SEEDS_PER_SCALE derived seeds); at scale 1
  * the seeds and courses are exactly those of the page's enoughGates before K1.2. Else the course with the most gates.
  */
-export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, gatesMin: number = COURSE_DEFAULTS.gatesMin, make: typeof generateCourse = generateCourse, deadline: FitDeadline | null = null): FitResult {
+export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOptions, gatesMin: number = COURSE_DEFAULTS.gatesMin, make: typeof generateCourse = generateCourse, deadline: FitDeadline | null = null, refree: ((marginM: number) => FreeSpace) | null = null): FitResult {
+    // course4 C3: a smaller gate needs a smaller margin, and the free space read at the plan's margin (0.5 m) may hold no
+    // cell at all in a room (Modlinek 39e63ce9: 0 usable cells at 0.5 m, 2204 at 0.25 m; Winter Garden 7a475d38: the spawn's
+    // fill reached 2 cells at 0.5 m, 3029488 at 0.25 m; gate-place-audit --diag --margin). A step whose margin is under the
+    // free space's reads it again at that margin (refree, once per margin)
+    const frees = new Map<number, FreeSpace>();
+    const freeAt = (m: number): FreeSpace => {
+        if (!refree || !(m < free.marginM - 1e-9)) return free;
+        let f = frees.get(m);
+        if (!f) frees.set(m, (f = refree(m)));
+        return f;
+    };
     let best: TrackFile | null = null;
     let bestScale = 1;
     let bestOk = false;
@@ -151,7 +177,7 @@ export function fitCourse(free: FreeSpace, walls: VoxelCollision, opts: CourseOp
             // watchdog would end the worker and the pilot would get nothing); the longest try so far is the estimate
             if (deadline && best && deadline.now() + longest > deadline.at) return end();
             const t0 = deadline ? deadline.now() : 0;
-            const t = make(free, walls, { ...opts, seed: s & 0x7fffffff, params });
+            const t = make(freeAt(params.marginM), walls, { ...opts, seed: s & 0x7fffffff, params });
             const ok = provenCourse(t) && savesUntouched(t, walls, opts.transform);
             if (deadline) longest = Math.max(longest, deadline.now() - t0);
             tried++;

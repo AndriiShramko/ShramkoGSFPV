@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
 import { blockDims, findSphereSpawn, forEachBlock, openVoxelCollision } from '@gsfpv/collision';
 import type { VoxelCollision, VoxelMetadata } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, goodForGate, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, sceneUnitM, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, EYE_FREE_M, EYE_HI_M, FIT_BUDGET_MS, POOR_SHARE, cellCentre, clearanceM, fitCourse, freeAtMargin, goodForGate, groundBelow, qualityShare, flownCollision, freeSpace, marginOf, qualityBounds, qualityMap, sceneUnitM, upgradeTrack, wallsCheck } from '@gsfpv/tracks';
 import type { QualityMap, SceneTransform, Vec3 } from '@gsfpv/tracks';
 import { loadScene, sceneSettings } from './scenes';
 
@@ -81,7 +81,8 @@ async function main(): Promise<void> {
     const first = Number(arg('--first') ?? 1);
     const ids = existsSync(root) ? readdirSync(root).filter((d) => /^[0-9a-f]{8}$/.test(d)) : [];
     const newest = (id: string): number => Math.max(...readdirSync(join(root, id)).map((d) => /^v(\d+)$/.exec(d)).filter((m): m is RegExpExecArray => !!m).map((m) => Number(m[1])));
-    const all = [...ids.map((id) => ({ id, v: newest(id) })).map(({ id, v }) => ({ id, v, dir: join(root, id, `v${v}`) as string | null })), { id: '887f27aa', dir: null, v: 1 }];
+    const all = [...ids.map((id) => ({ id, v: newest(id) })).map(({ id, v }) => ({ id, v, dir: join(root, id, `v${v}`) as string | null })), ...['887f27aa', '39e63ce9', '7a475d38', 'b11e45d1'].map((id) => ({ id, dir: null as string | null, v: 1 }))];
+    // course4 C3: the four catalogue scans with shipped walls (catalogue collision true) are read from the CDN as the page does
     const only = arg('--scenes')?.split(',') ?? null;
     // course4 C2: --scale s flies the scan as the page does after the pilot's Scene size x s (transform s,0,0,0; spawn x s)
     const S = Number(arg('--scale') ?? 1);
@@ -100,7 +101,10 @@ async function main(): Promise<void> {
             const q = qualityMap(walls, { unitM: sceneUnitM(T as unknown as number[]) });
             const qMs = Math.round(performance.now() - tq);
             const box = qualityBounds(q, spawn);
-            const free = freeSpace(walls, { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined , unitM: sceneUnitM(T as unknown as number[]) });
+            const freeOpts = { spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(q) : undefined, unitM: sceneUnitM(T as unknown as number[]) };
+            const free = freeSpace(walls, { ...freeOpts, ...(arg('--margin') ? { marginM: Number(arg('--margin')) } : {}) });
+            // course4 C3: the page's worker reads the free space again at a smaller step's margin (--no-refree: as before C3)
+            const refree = arg('--no-refree') ? null : (marginM: number) => freeAtMargin(walls, freeOpts, marginM);
             const share = (t: number): number => (t < 0 || !(q.best > 0) ? 0 : r2(q.near[t]! / q.best));
             if (arg('--diag')) {
                 // the generator's eye-band filter (generate.ts walkCourse) counted stage by stage, scale 1
@@ -131,8 +135,21 @@ async function main(): Promise<void> {
                     if (p[1] - g - Math.min(free.cellM / 2, fr - EYE_FREE_M) <= top) c.eye++;
                 }
                 sh.sort((a, b) => a - b);
+                // course4 C3: the room's free space against the gate sizes: the largest free radius of a usable cell and
+                // the longest straight row of usable cells along x or z whose free radius is at least r
+                const [nx, ny, nz] = free.dims;
+                let maxClear = 0;
+                for (let i = 0; i < free.room.length; i++) if (free.room[i]! >= 0) { const c = clearanceM(free, i); if (c < 1e8) maxClear = Math.max(maxClear, c); }
+                const straight = (r: number): number => {
+                    let best = 0;
+                    const ok = (x: number, y: number, z: number): boolean => { const i = x + nx * (y + ny * z); return free.room[i]! >= 0 && clearanceM(free, i) >= r; };
+                    for (let z = 0; z < nz; z++) for (let y = 0; y < ny; y++) { let run = 0; for (let x = 0; x < nx; x++) { run = ok(x, y, z) ? run + 1 : 0; best = Math.max(best, run); } }
+                    for (let x = 0; x < nx; x++) for (let y = 0; y < ny; y++) { let run = 0; for (let z = 0; z < nz; z++) { run = ok(x, y, z) ? run + 1 : 0; best = Math.max(best, run); } }
+                    return r2(best * free.cellM);
+                };
+                const room = { maxClearM: r2(maxClear), straightM: Object.fromEntries([0.2, 0.4, 0.6, 1.0].map((r) => [r, straight(r)])) };
                 const spawnShare = r2(qualityShare(q, spawn));
-                console.log(JSON.stringify({ scene: s.id, diag: c, stats: free.stats, outdoor: free.outdoor, rooms: free.rooms.length, volumeM3: Math.round(free.volumeM3), box, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
+                console.log(JSON.stringify({ scene: s.id, diag: c, room, stats: free.stats, outdoor: free.outdoor, rooms: free.rooms.length, volumeM3: Math.round(free.volumeM3), box, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
                 continue;
             }
             // --seed-list a,b,c: the seeds a page run printed (y3/ev regen[].seed), instead of first..first+seeds
@@ -148,7 +165,7 @@ async function main(): Promise<void> {
                     // course4 C2: an empty walk says whether it was banded, how many gates it wanted and how far its target lay
                     walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}` : ''));
                 };
-                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, refree);
                 const ms = Math.round(performance.now() - t0);
                 const tr = got.track;
                 if (!tr) {

@@ -2,7 +2,7 @@
 // flown walls' octree, runs freeSpace and generateCourse of @gsfpv/tracks and answers the track. Measured in Node
 // (docs/wip/tracks.md, Findings): 0.7-1.4 s a course on Winter Garden, 21.5-23.9 s on 887f27aa, so never on the page's thread.
 import { VoxelCollision, FlippedVoxelCollision } from '@gsfpv/collision';
-import { COURSE_DEFAULTS, FIT_BUDGET_MS, checkTrack, fitCourse, freeSpace, generateCourse, goodForGate, marginOf, qualityBounds, qualityMap, sceneUnitM } from '@gsfpv/tracks';
+import { COURSE_DEFAULTS, FIT_BUDGET_MS, checkTrack, fitCourse, freeAtMargin, freeSpace, generateCourse, goodForGate, marginOf, qualityBounds, qualityMap, sceneUnitM } from '@gsfpv/tracks';
 import type { TrackFile } from '@shramko/sonic-fpv';
 import { FREE_SPACE_MS, courseTryMs, layTries } from './progress';
 import { metadataOf } from './grid';
@@ -74,13 +74,14 @@ scope.onmessage = (e) => {
         const quality = qualityMap(walls, { unitM: sceneUnitM(m.transform) });
         const box = qualityBounds(quality, m.spawn);
         // course4 C0: a spawn in a closed pocket of a poor scan gets the course in the well-scanned part (the guide leads there)
-        const free = freeSpace(walls, { spawn: m.spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(quality) : undefined , unitM: sceneUnitM(m.transform) });
+        const freeOpts = { spawn: m.spawn, bounds: box ?? undefined, goodAt: box ? goodForGate(quality) : undefined, unitM: sceneUnitM(m.transform) };
+        const free = freeSpace(walls, freeOpts);
         // G1-progress: every try is announced with its expected time: by the rates of progress.ts before the first, then
         // what the last try took here
         const make = layTries((estMs) => scope.postMessage({ t: 'progress', job: m.job, step: 'lay', estMs }), courseTryMs(m.grid.res, free.volumeM3), () => performance.now(), generateCourse);
         // lane review TR-8: a course under gatesMin is retried with derived seeds; K1.2: then at smaller sizes, and when none
         // reaches gatesMin the one with the most gates is flown (short), never nothing while one gate fits
-        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created, quality: box ? quality : undefined, spawn: m.spawn }, COURSE_DEFAULTS.gatesMin, make, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+        const got = fitCourse(free, walls, { seed: m.seed, scene: m.scene, transform: m.transform, created: m.created, quality: box ? quality : undefined, spawn: m.spawn }, COURSE_DEFAULTS.gatesMin, make, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, (marginM) => freeAtMargin(walls, freeOpts, marginM));
         scope.postMessage({ t: 'track', job: m.job, track: got.track, short: got.short, proven: got.proven, ms: Math.round(performance.now() - t0) });
     } catch (err) {
         scope.postMessage({ t: 'error', job: m.job, message: err instanceof Error ? err.message : String(err) });

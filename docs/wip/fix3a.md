@@ -852,3 +852,31 @@ empty and to the baseline of the true-scale tables (neg_control.py needs 'node n
 Cost (course4 C2 pass 1): about 25 replies; the most went to finding where the microgreens scan and its scale live (no
 title, no catalogue scale: the enlargement is the pilot's key) and to the audit's missing --scale; the measurement itself
 took 4 runs. Handing the id ab5efa0e and 'scale is the pilot's Scene size' in the prompt would have saved about 10 replies.
+
+## Status C3-every-scan
+
+Logs U:/Temp/gsfpv-train3/course4/c3/. Release build of 6557daf6: BUILD EXIT 0 (c3/build.log).
+- [x] catalogue (c2/catalog.json, 13 scenes) and what each is: 887f27aa Tunis old town streets (street, shipped walls);
+      39e63ce9 Modlinek Villa red room and bathroom (room, shipped walls); 7a475d38 Winter Garden, Poland (interior, a
+      glass house, shipped walls); 70b50d42 Wroclaw Cathedral and streets (street); ab5efa0e Forest Floor (macro scan,
+      the microgreens scene); d10c5638 Housefly (object, macro); 2f1ddf5f Lublin (street); ba7aa29d Opole Cathedral and
+      Old Town (street); 9baef54b University of Opole (street, campus); 0230d903 Muster Truck Show Opole (object field,
+      outdoor); eb5f51dc Laval castle (street, castle yard); 1994c65c Osada Slavotovo (outdoor village); b11e45d1 Yamato
+      Koriyama castle (outdoor, castle walls). The nine without shipped walls use the stand-in U:/Temp/gsfpv-train3/walls/
+      release; gate-place-audit now reads the four with shipped walls from the CDN.
+- [x] before (gate-place-audit.ts --seeds 3, c3/before.json, code of 6557daf6): 11 of 13 give a course for seeds 1-3;
+      39e63ce9 and 7a475d38 give none (tried 9, walks empty). The refusing rule (gate-place-audit --diag, c3/diag-before.log
+      and --margin 0.25, c3/diag-m0.25.log): freeSpace reads the scan at the plan's margin 0.5 m for every step of the
+      ladder. 39e63ce9: reachable 727 cells (0.2 m), usable 0 at 0.5 m; at 0.25 m usable 2204 (18 m3), largest free radius
+      0.9 m, longest free straight 5.8 m at radius 0.2 m, 4.8 m at 0.6 m. 7a475d38: the spawn's fill reached 2 cells at 0.5 m;
+      at 0.25 m usable 67017 (8995 m3, 20 rooms), largest free radius 5.4 m, straight 21 m at radius 1 m. Today's gate
+      sizes against that: square 1.5 m needs a free radius of 2.2 m x step, ring 1.2 m a margin of 0.5 m x step.
+- [x] built: COURSE_SCALES 1, 2/3, 0.4, 0.3 (square opening 1.5, 1.0, 0.6, 0.45 m; ring 1.2, 0.8, 0.48, 0.36 m; was 1, 0.5,
+      0.3); fitCourse reads the free space again at a smaller step's margin (refree, once per margin) through
+      freeAtMargin (margin and minRoomM3 x step cubed); the page's worker and gate-place-audit pass it. Test
+      packages/tracks/test/every-scan.test.ts 3 passed (a 5 x 1.2 x 5 m room: 0 usable cells at 0.5 m, a course of small
+      gates on seeds 1-3 that the Save check and a pilot at 3 m/s pass; threeRooms: the same digest with refree). NEG OK
+      against fit.ts of HEAD (neg_control.py). Typecheck packages/tracks, apps/fly, tools/bench exit 0; fit, scaled-scan,
+      spawn-outside tests 16 passed.
+- [~] after table (c3/after.json), true-scale tables (70b50d42, 887f27aa against c2/p2/true-head.json), page proof on two
+      rooms and the microgreens scan, pictures, gates.py, a6-reference
