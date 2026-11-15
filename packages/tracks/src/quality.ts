@@ -282,8 +282,24 @@ export function heightAbove(q: QualityMap, p: Vec3): number {
 export function groundBelow(walls: VoxelCollision, p: Vec3, maxM: number): number {
     const r = walls.voxelResolution;
     const o = { x: 0, y: 0, z: 0 };
-    for (let y = p[1]; y > p[1] - maxM; y -= r) if (walls.querySphere(p[0], y, p[2], r * 0.6, o)) return y;
-    return NaN;
+    let g = NaN;
+    for (let y = p[1]; y > p[1] - maxM; y -= r) {
+        if (walls.querySphere(p[0], y, p[2], r * 0.6, o)) {
+            g = y;
+            break;
+        }
+    }
+    if (!Number.isFinite(g)) return NaN;
+    // fix3b Y3 pass 2: the sphere also touches an edge beside the column (a sill, a rail, a sparse layer) while the straight
+    // ray falls 1.1 to 2.3 m further (gate-place-audit, page seeds: Tunis 828790525 gate 18, Wroclaw 971614346 gate 17);
+    // there the ground under the gate is not known, so the cell gets none. Five rays (the centre and a cross of 0.3 voxel)
+    // because a centre on a voxel face may go down either column
+    const s = 0.3 * r;
+    for (const [dx, dz] of [[0, 0], [-s, -s], [s, -s], [-s, s], [s, s]] as const) {
+        const hit = walls.queryRay(p[0] + dx, p[1], p[2] + dz, 0, -1, 0, maxM + r);
+        if (!hit || Math.abs(hit.y - g) > 2 * r) return NaN;
+    }
+    return g;
 }
 
 /** fix3b Y2: the tile's quality (near) as a share of the scan's best quarter, 0 outside the map */

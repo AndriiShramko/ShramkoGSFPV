@@ -48,3 +48,46 @@ describe('fix3b Y2: gates at eye level, none in the poor end of a street', () =>
         }
     });
 });
+
+// Y3 pass 2: the page measures the height with one straight ray down; the generator's sphere also touched voxels beside the
+// column, so a gate over a sparse layer (a grate, a rail) stood 1.6 m above that layer and 3.2 m above the ground under it.
+describe('fix3b Y3: the ground under a gate is the one a straight ray finds', () => {
+    /** the street of Y2, but from x 12 to 44 a pit 1.6 m deep under a grate of every other 0.2 m voxel at street level */
+    function grated() {
+        return analyticCollision([-0.4, -2, -8], [80.4, 14, 8], 0.2, (x, y, z) => {
+            if (x < 0 || x >= 80) return true;
+            const inner = z > -6 && z < 6;
+            const pit = inner && x >= 12 && x < 44;
+            if (pit) {
+                if (y < -1.6) return true;
+                if (y >= -0.2 && y < 0) return (Math.floor(x / 0.2) + Math.floor(z / 0.2)) % 2 === 0;
+                return false;
+            }
+            if (y < 0) return true;
+            if (inner) return false;
+            if (x < WELL_M) return y < 4 || x % 4 < 0.4;
+            return x % 4 < 0.4;
+        });
+    }
+    const walls = grated();
+    const q = qualityMap(walls);
+    const box = qualityBounds(q, SPAWN);
+    const free = freeSpace(walls, { spawn: SPAWN, bounds: box ?? undefined, kind: 'outdoor' });
+
+    it('a straight ray down from every gate centre meets the ground 1.2 to 2.0 m below (one voxel of slack)', () => {
+        let gates = 0;
+        for (const seed of [1, 2, 3, 4]) {
+            const t = generateCourse(free, walls, { seed, scene: SCENE, transform: IDENTITY, created: CREATED, quality: q });
+            for (const g of t.gates) {
+                const p = g.pos as unknown as Vec3;
+                const hit = walls.queryRay(p[0], p[1], p[2], 0, -1, 0, 10);
+                expect(hit).not.toBeNull();
+                const h = p[1] - hit!.y;
+                expect(h).toBeGreaterThanOrEqual(1.0);
+                expect(h).toBeLessThanOrEqual(2.2);
+                gates++;
+            }
+        }
+        expect(gates).toBeGreaterThanOrEqual(12);
+    });
+});

@@ -454,6 +454,17 @@ nine published walls of U:/Temp/gsfpv-train3/walls/release (Wroclaw on its walls
       fix3b-wroclaw-pilot-2.png (gates at eye level beside the cathedral; this view faces a shop window, not gate 6: the
       probe's turn, not the course)
 
+Pass 2
+- [x] out-of-band gates measured (tools/bench/src/gate-place-audit.ts --seed-list with the page seeds, new column hThin =
+      one straight ray down, the page probes' measure): Tunis 828790525 gate 18 sphere 1.85 m, straight ray 3.15 m; Wroclaw
+      971614346 gate 17 1.6 / 3.1 m, 1963707871 gate 8 1.7 / 3.3 m; seeds 1-2 the same (one ray found no ground). Cause:
+      quality.ts groundBelow's sphere (0.6 voxel) touched a voxel beside the column while the ground under the centre is
+      1.1-2.3 m lower; not the band top (every such gate was in the band by the sphere). Fix: groundBelow keeps a ground only
+      when five straight rays (centre and a 0.3-voxel cross) meet it within 2 voxels (2 voxels: estimate); test in
+      eye-level.test.ts (pit under a grate), NEG OK against HEAD (quality.ts); packages/tracks 14 files 120 passed, tsc clean.
+      After (y3p2/oob-after.json): 16 courses (both scenes, page seeds and 1-5), straight-ray band 16 of 16 courses, 0 gates
+      out of 1.1-2.1 m, Save check problems 0, fit 2.6-9.3 s; Wroclaw seed 1 18 gates and seed 3 4 gates (see Left).
+
 ## Measured (Y3)
 
 - Save check (save-check-probe --push, Shift+G): Wroclaw 70b50d42 published walls 10 cm: Shift+G to drawn course 8.1 s,

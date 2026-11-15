@@ -133,7 +133,9 @@ async function main(): Promise<void> {
                 console.log(JSON.stringify({ scene: s.id, diag: c, cellM: free.cellM, res: walls.voxelResolution, tileM: q.tileM, goodTiles: q.goodTiles, best: Math.round(q.best), spawnShare, goodShareQ: [0.1, 0.5, 0.9].map((f) => r2(sh[Math.floor(f * (sh.length - 1))] ?? 0)) }));
                 continue;
             }
-            for (let seed = first; seed < first + seeds; seed++) {
+            // --seed-list a,b,c: the seeds a page run printed (y3/ev regen[].seed), instead of first..first+seeds
+            const list = arg('--seed-list')?.split(',').map(Number) ?? Array.from({ length: seeds }, (_, k) => first + k);
+            for (const seed of list) {
                 const t0 = performance.now();
                 const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
                 const ms = Math.round(performance.now() - t0);
@@ -151,7 +153,9 @@ async function main(): Promise<void> {
                     const sh = g.shape as { kind: string; side?: number; bar?: number; diameter?: number; tube?: number };
                     const half = sh.kind === 'square' ? (sh.side ?? 0) / 2 + (sh.bar ?? 0) : (sh.diameter ?? 0) / 2 + (sh.tube ?? 0) / 2;
                     const gr = rayGround(walls, p);
-                    return { h: t >= 0 ? r2(p[1] - q.ground[t]!) : null, hRay: r2(p[1] - gr), low: r2(p[1] - half - gr), q: share(t), good: t >= 0 ? q.good[t] : 0, kind: sh.kind };
+                    // the page probes' measure: one thin ray straight down (collision.queryRay), not a sphere of 0.6 voxel
+                    const thin = walls.queryRay(p[0], p[1], p[2], 0, -1, 0, 80);
+                    return { h: t >= 0 ? r2(p[1] - q.ground[t]!) : null, hRay: r2(p[1] - gr), hThin: thin ? r2(p[1] - thin.y) : null, low: r2(p[1] - half - gr), q: share(t), good: t >= 0 ? q.good[t] : 0, kind: sh.kind };
                 });
                 const pts: number[][] = [(tr.start?.pos as unknown as number[]) ?? (tr.gates[0]!.pos as unknown as number[]), ...tr.gates.map((g) => g.pos as unknown as number[])];
                 if (tr.laps > 1) pts.push(pts[1]!);
@@ -190,6 +194,9 @@ async function main(): Promise<void> {
                 rows.push(row);
                 const { gateRows: _g, legRows: _l, profile: _p, ...short } = row;
                 console.log(JSON.stringify(short));
+                gates.forEach((g, k) => {
+                    if (!(g.hThin !== null && g.hThin >= 1.1 && g.hThin <= 2.1)) console.log(JSON.stringify({ outOfBand: k + 1, pos: (tr.gates[k]!.pos as unknown as number[]).map(r2), ...g }));
+                });
                 if (out) writeFileSync(out, JSON.stringify({ rows }, null, 1));
             }
         } catch (err) {
