@@ -498,7 +498,15 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   quietFlight is false then; plus the recorder's own live region (where "sonicrec-status", outside #ui) says "Not recording." at
   0.18 s. A fix needs the in-place start to count as the free flight before the lesson is set (feature.ts, h.inPlace or the
   Backslash path) and the recorder's region in the same rule (apps/fly/src/sonic, recorder status; file not looked up).
-- [ ] gates.py --only vitest,architecture,i18n,b18 on the W2 tree: architecture, i18n, b18 PASS; vitest FAIL 1 of 5035:
+- [x] gates.py --only vitest,architecture,i18n,b18 on 5a253254: all PASS (vitest 95 s; logs U:/Temp/gsfpv-gates-20261115-174544);
+  a6-reference 1 passed (quiet2/w2p2-a6.log; keymap.ts from W1).
+- [ ] Left for pass 3 (in this order): the first 0.11 s of (b) above; (1) the ear pilot to the course's end at 5 m/s narrator off
+  (sonic-int-review.ts r11: Z5_NARRATOR=off in prefsDoc, a cue set to steerByHum, count window.__utt); (2) missed gate and wrong
+  way narrator off; (5) READER=1 narrator on; (6) a lesson of the list narrator off, and left half way with X; (7) the hint once
+  (r11 narrator on); (8) r9, r11 Wroclaw Shift+G and Tunis, r12; (9) ?sonic=scan in three settings; accept-fly B6 B7 B9 to B16;
+  pause-over-course-probe; the pictures quiet-settings.png and quiet-captions.png with the caption rectangles at 1920x1080,
+  1280x720, 844x390; 'What the owner does'; 'For the lead'. N3 stays the lead's decision.
+- [x] (pass 1 record) gates on the W2 tree before the fix: architecture, i18n, b18 PASS; vitest FAIL 1 of 5035:
   tools/bench/test/sonic-optin.test.ts "K in the mode ... Escape N B Z I G R T U L" pins the K list of caps and does not follow N2's
   Shift+V (from W1 cb5e9272, gates were not run in W1). Fix: update that pinned list to the received one (Shift+V in place of the
   old cap), then re-run the gates (logs U:/Temp/gsfpv-gates-20261115-173456).
@@ -583,3 +591,6 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
   events, then the course hook, then LapTimer: the answer is CourseHook.laps, the runner sees nothing) and to Edit's read-before-edit
   on four files; a map line "course finished in Fly by Sound = CourseHook.laps rises" would have saved about 6 replies. Q7 and the
   gates did not fit; the Q7 plan is written above.
+- Lane quiet2 W2 pass 2: most replies went to reading feature.ts, the probe and the test rig in slices before the two fixes, and to
+  splitting the probe's JSON by phase with node one-liners; a quiet-summary.mjs line per phase (switch on to K, K's hold, I, after
+  Shift+V) would have saved about 4 replies. The whole proof list (1) to (9) does not fit one 30-reply pass after a fix.
