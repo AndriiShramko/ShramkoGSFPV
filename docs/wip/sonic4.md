@@ -681,3 +681,6 @@ Files U:/Temp/gsfpv-train3/quiet/before-voice.json and before-reader.json (READE
 - Lane quiet2 W2 pass 2: most replies went to reading feature.ts, the probe and the test rig in slices before the two fixes, and to
   splitting the probe's JSON by phase with node one-liners; a quiet-summary.mjs line per phase (switch on to K, K's hold, I, after
   Shift+V) would have saved about 4 replies. The whole proof list (1) to (9) does not fit one 30-reply pass after a fix.
+- Lane quiet3 X1: most replies went to the test fixtures (a captions import that needs a page, the Edit tool's read-first rule on
+  four files, one async slip); running the "before" probe detached against the existing dist while editing saved a build and
+  about 6 minutes. A fake-page helper shared by the sonic tests (document, location) would have saved 3 replies.
