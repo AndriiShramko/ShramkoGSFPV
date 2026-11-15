@@ -22,6 +22,17 @@ export function boxMeetsRow(viewW: number, boxW: number, rowLeft: number, gap = 
     return viewW / 2 + boxW / 2 + gap > rowLeft;
 }
 
+/**
+ * Whether the short note (ui/hud.ts flash, the course's lines) goes under the row and the walls box
+ * (fly.css #ui.note-crowded): when it would meet the row, and whenever the box shows a line of text,
+ * because both are centred at the same height ("Walls built in ..." under the course's first note,
+ * train 3). A note of no width (hidden) moves nowhere. Pure, so Node tests run it.
+ */
+export function noteCrowded(viewW: number, noteW: number, rowLeft: number, boxShowsText: boolean, gap = TOP_GAP): boolean {
+    if (noteW <= 0) return false;
+    return boxShowsText || boxMeetsRow(viewW, noteW, rowLeft, gap);
+}
+
 /** A box on the page, as getBoundingClientRect gives it (only the edges are read). */
 export interface Box { left: number; right: number; top: number; bottom: number }
 
@@ -74,8 +85,11 @@ export function layoutTopRow(ui: HTMLElement): void {
     // the row and the box
     const note = ui.querySelector<HTMLElement>(':scope > .hud-note');
     const noteW = note && !note.hidden && note.offsetParent !== null ? note.offsetWidth : 0;
-    const noteCrowded = !!r && r.width > 0 && boxMeetsRow(u.width, noteW, r.left - u.left);
-    if (ui.classList.contains('note-crowded') !== noteCrowded) ui.classList.toggle('note-crowded', noteCrowded);
+    // the box's own lines (status, progress, the walls note) with text in sight: the note goes under the box
+    const boxShowsText = !!b && b.height > 0 && !!box && [...box.children].some((c) => c instanceof HTMLElement && c.offsetParent !== null
+        && c.offsetHeight > 0 && (c.textContent ?? '').trim() !== '');
+    const crowdedNote = noteCrowded(u.width, noteW, r && r.width > 0 ? r.left - u.left : u.width, boxShowsText);
+    if (ui.classList.contains('note-crowded') !== crowdedNote) ui.classList.toggle('note-crowded', crowdedNote);
 }
 
 /**

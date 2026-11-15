@@ -622,6 +622,24 @@ describe('the longer top row prints over nothing', () => {
         expect(noticeUnderBox(cinema.replace(/top: max\([^;]*;/, 'top: 84px;'))).toBe(false);
     });
 
+    it('train 3: the walls lines carry the note backdrop (readable over a bright sky); control: without the rule', () => {
+        const fly = readFileSync(join(FLY, 'fly.css'), 'utf8');
+        const backdrop = (s: string) => /\.bake-status:not\(:empty\) \{[^}]*background: rgba\(0,0,0,\.6\)/.test(s);
+        expect(backdrop(fly)).toBe(true);
+        expect(backdrop(fly.replace('.bake-status:not(:empty)', '.nothing'))).toBe(false);
+    });
+
+    it('train 3: a note goes under the walls box while the box shows a line, even with the row far away', async () => {
+        const tr: Record<string, unknown> = await import('../../../apps/fly/src/ui/top-row');
+        // before train 3 only a meeting with the row moved the note
+        const rule = (tr.noteCrowded ?? ((w: number, n: number, l: number) => n > 0 && boxMeetsRow(w, n, l))) as
+            (w: number, n: number, l: number, box: boolean) => boolean;
+        expect(rule(1920, 300, 1500, true)).toBe(true);
+        expect(rule(1920, 300, 1500, false)).toBe(false);
+        expect(rule(1920, 0, 1500, true)).toBe(false);
+        expect(rule(1280, 400, 783, false)).toBe(true);
+    });
+
     it('on a phone the mode chip goes under the row of buttons, past the hint', () => {
         // 390 px: buttons 25..374 x 38..78, the pad hint 16..374 x 88..104; chip 75 x 36 under the OSD line (38)
         const row: Box = { left: 25, right: 374, top: 38, bottom: 78 };
