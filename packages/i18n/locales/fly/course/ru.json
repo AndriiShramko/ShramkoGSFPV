@@ -66,6 +66,7 @@
   "course.edit.key.turned": "Повёрнуто",
   "course.edit.key.shaped": "Форма изменена",
   "course.edit.key.sized": "Размер изменён",
+  "course.edit.sizeTag": "Проём {m} м",
   "course.edit.p.outside": "ворота {g} вне отсканированного пространства",
   "course.edit.p.startWall": "старт в стене",
   "course.edit.p.gateWall": "ворота {g} в стене",

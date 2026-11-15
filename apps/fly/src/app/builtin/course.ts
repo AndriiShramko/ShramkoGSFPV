@@ -676,7 +676,7 @@ export const course: Feature = {
             panel.status(gateLine(ed, scale()), problemsLine(ed), ed.problems.length > 0);
             panel.buttons(!edChanged && hook.source === 'generated' && hook.saved === null);
             const eg = ed.course.gates[ed.selected];
-            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null);
+            view?.put(eg ? gateFlownPose(eg, flownTransform()) : null, eg ? eg.id : null, eg?.shape.kind === 'cube-frame');
             edHook.open = true;
             (edHook as { flying?: boolean }).flying = false;
             edHook.selected = ed.selected;
@@ -738,7 +738,8 @@ export const course: Feature = {
                 onPlace: (ray) => placeAt(ray),
                 onDrag: (p, end) => dragTo(p, end),
                 onSpeed: (s) => ctx.hud.flash(t('course.edit.camSpeed', { v: s.toFixed(1) }), 1200),
-                typing: (target) => panel?.typing(target) ?? false
+                typing: (target) => panel?.typing(target) ?? false,
+                sizeText: (m) => t('course.edit.sizeTag', { m: m.toFixed(1) })
             }, camFrom([ep.x, ep.y, ep.z], [ep.x + ef.x, ep.y + ef.y, ep.z + ef.z]));
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl), dragging: () => view?.isDragging() ?? false });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
@@ -916,7 +917,9 @@ export const course: Feature = {
                 checks?.ask(st.course, flownTransform(), edMargin);
             }
             showEd();
-            if (st) say(t('course.edit.did', { what: t(ACTION_KEYS.move), gate: gateLine(st, scale()) }));
+            // H2-look: the top bar says what the drag did; after a Size drag the gate line carries the new opening in metres
+            const did = view?.tool === 'size' ? ACTION_KEYS.size : view?.tool === 'turn' ? ACTION_KEYS.turn : ACTION_KEYS.move;
+            if (st) say(t('course.edit.did', { what: t(did), gate: gateLine(st, scale()) }));
         };
         const viewForward = (): [number, number] => {
             // lane editor3 E2: the arrows follow the free edit camera

@@ -6,7 +6,7 @@
 import { Entity, Gizmo, Quat as PcQuat, RotateGizmo, ScaleGizmo, TranslateGizmo, Vec3 as PcVec3 } from 'playcanvas';
 import type { AppBase, CameraComponent, Layer } from 'playcanvas';
 import { CAM_KEYS, camForward, camRay, camTarget, stepCam, turnCam, wheelSpeed, type FlyCam } from './fly-cam';
-import { fromPcQuat, toPcQuat, type FlownPose } from './drag';
+import { fromPcQuat, scaledOpening, toPcQuat, type FlownPose } from './drag';
 import { pickGate, type Pickable, type Ray } from './pick';
 import { pressOwner } from './press-owner';
 import { toolAfter, toolOfKey, type Tool } from './bar-place';
@@ -37,6 +37,8 @@ export interface EditViewHost {
     typing(target: EventTarget | null): boolean;
     /** lane editor3 H1: a key chose another set of handles (the gate bar shows it) */
     onTool?(tool: Tool): void;
+    /** H2-look: the words beside the Size handle for an opening of `m` flown metres */
+    sizeText?(m: number): string;
 }
 
 type Handle = TranslateGizmo | RotateGizmo | ScaleGizmo;
@@ -73,6 +75,9 @@ export class EditView {
     /** lane editor3 H1: the one set of handles shown (Move when a gate gets selected) and the gate it belongs to */
     tool: Tool = 'move';
     private toolGate: string | number | null = null;
+    /** H2-look: the Size set and the opening in metres shown beside it while it is dragged */
+    private readonly size: ScaleGizmo;
+    private readonly tag: HTMLDivElement;
 
     constructor(host: EditViewHost, start: FlyCam) {
         this.host = host;
@@ -92,9 +97,19 @@ export class EditView {
         move.snapIncrement = SNAP_MOVE_M;
         turn.snapIncrement = SNAP_TURN_DEG;
         size.snapIncrement = SNAP_SCALE;
-        // a gate's size is one number (its opening): only the centre box of the scale handle, uniform
+        // lane editor3 H2-look: the Size tool reads as a scale tool of an ordinary 3D editor: a box at the end of each axis the
+        // gate is sized along (x and y in its plane, z too for a cube, put()) and a big box in the centre. A gate has one size
+        // (its opening), so each of them changes that one number (pose() reads the axis pulled); no planes. Sizes: estimates.
         size.uniform = true;
-        for (const a of ['x', 'y', 'z', 'yz', 'xz', 'xy'] as const) size.enableShape(a, false);
+        for (const a of ['yz', 'xz', 'xy', 'z'] as const) size.enableShape(a, false);
+        size.axisBoxSize = 0.22;
+        size.axisCenterSize = 0.3;
+        size.axisLineThickness = 0.04;
+        this.size = size;
+        this.tag = document.createElement('div');
+        this.tag.className = 'ce-size-tag';
+        this.tag.hidden = true;
+        document.body.appendChild(this.tag);
         // the centre belongs to the scale box: the move handle keeps its arrows and planes, the turn handle its three rings
         // PlayCanvas 2.23.2 shape names (build/playcanvas.mjs _shapes): the move handle's centre is the sphere 'xyz' (it took
         // the centre drag from the scale box in the smoke probe of E2 pass 2), the turn handle's are 'face' (f) and 'xyz'
@@ -113,9 +128,13 @@ export class EditView {
             });
             // G2: a move from a gizmo that still believes it drags after the button went up is not a drag of ours
             h.on('transform:move', () => {
-                if (this.dragging) host.onDrag(this.pose(this.openingAtStart), false);
+                if (!this.dragging) return;
+                const p = this.pose(this.openingAtStart);
+                host.onDrag(p, false);
+                if (h === this.size) this.showTag(scaledOpening(p.opening, 1));
             });
             h.on('transform:end', () => {
+                this.tag.hidden = true;
                 if (this.quietEnd) return;
                 // the drag is over before the course takes it, so put() of the new gate places the stand-in again
                 this.dragging = false;
@@ -140,8 +159,10 @@ export class EditView {
     }
 
     /** The stand-in at the selected gate (null: no gate, the handles hidden). Not while a drag holds it. */
-    put(p: FlownPose | null, gate: string | number | null = null): void {
+    put(p: FlownPose | null, gate: string | number | null = null, deep = false): void {
         if (this.dragging) return;
+        // H2-look: a cube's opening is also its depth, so its Size tool has the z box too
+        this.size.enableShape('z', deep);
         this.standPose = p;
         this.tool = toolAfter(this.tool, this.toolGate, gate);
         this.toolGate = gate;
@@ -209,12 +230,24 @@ export class EditView {
     private pose(opening: number): FlownPose {
         const p = this.stand.getPosition();
         const r = this.stand.getRotation();
-        const k = this.stand.getLocalScale().x;
+        // H2-look: an axis box scales one axis, the centre box all three: the axis pulled furthest from 1 is the factor
+        const sc = this.stand.getLocalScale();
+        const k = [sc.x, sc.y, sc.z].reduce((a, v) => (Math.abs(v - 1) > Math.abs(a - 1) ? v : a), 1);
         return { pos: [p.x, p.y, p.z], quat: fromPcQuat(r.x, r.y, r.z, r.w), opening: opening * (k > 0 ? k : 1) };
     }
 
     private apply(): void {
         this.host.onCamera(this.cam.pos, camTarget(this.cam));
+    }
+
+    /** H2-look: the opening in metres beside the Size handle while it is dragged (above right of the gate's centre) */
+    private showTag(m: number): void {
+        const s = this.standScreen();
+        if (!s || !this.host.sizeText) return;
+        this.tag.textContent = this.host.sizeText(m);
+        this.tag.style.left = `${Math.round(s[0] + 28)}px`;
+        this.tag.style.top = `${Math.round(s[1] - 48)}px`;
+        this.tag.hidden = false;
     }
 
     private onUpdate = (dt: number): void => {
@@ -310,6 +343,7 @@ export class EditView {
 
     private onUp = (e: PointerEvent): void => {
         this.unmute();
+        this.tag.hidden = true;
         // review ED-1: a handle that took the press but sent no transform:end (its own pointerup returns while it is
         // switched off) would leave `dragging` set, and put() then never places the handles on another gate
         if (this.dragging) {
@@ -432,7 +466,10 @@ export class EditView {
                 return [g.enabled, g.nodes.length, g._selectedAxis ?? '', g._hoverAxis ?? ''];
             }),
             muted: this.muted.length,
-            lock: !!document.pointerLockElement
+            lock: !!document.pointerLockElement,
+            // H2-look: the stand-in's scale per axis and the shown size tag
+            scale3: [this.stand.getLocalScale().x, this.stand.getLocalScale().y, this.stand.getLocalScale().z],
+            tag: this.tag.hidden ? null : this.tag.textContent
         };
     }
 
@@ -471,6 +508,7 @@ export class EditView {
             h.destroy();
         }
         this.stand.destroy();
+        this.tag.remove();
         const cc = this.host.camera.camera as CameraComponent | undefined;
         if (cc) cc.layers = cc.layers.filter((id) => id !== this.layer.id);
         const layers = this.host.app.scene.layers;

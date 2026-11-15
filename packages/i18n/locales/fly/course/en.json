@@ -66,6 +66,7 @@
   "course.edit.key.turned": "Turned",
   "course.edit.key.shaped": "Shape changed",
   "course.edit.key.sized": "Size changed",
+  "course.edit.sizeTag": "Opening {m} m",
   "course.edit.p.outside": "gate {g} is outside the scanned space",
   "course.edit.p.startWall": "the start is in a wall",
   "course.edit.p.gateWall": "gate {g} is in a wall",

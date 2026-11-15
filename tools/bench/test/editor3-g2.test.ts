@@ -27,7 +27,7 @@ describe('editor3 G2', () => {
         expect(view).toMatch(/addEventListener\('pointercancel', this\.onUpCapture, true\)/);
         expect(view).not.toMatch(/addEventListener\('pointerup', this\.onUp\)/);
         // a move from a gizmo that kept its axis is not a drag; a kept axis is ended on the up
-        expect(view).toMatch(/if \(this\.dragging\) host\.onDrag\(this\.pose\(this\.openingAtStart\), false\)/);
+        expect(view).toMatch(/if \(!this\.dragging\) return;\s+const p = this\.pose\(this\.openingAtStart\);\s+host\.onDrag\(p, false\)/);
         expect(view).toMatch(/this\.endStale\(\);/);
         // measured in the G2 REPRO run: the bar's place read only the Move set's nodes, so Turn or Size hid the bar
         const ss = view.slice(view.indexOf('standScreen(): '), view.indexOf('standScreen(): ') + 400);

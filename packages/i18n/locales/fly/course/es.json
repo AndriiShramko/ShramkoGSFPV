@@ -66,6 +66,7 @@
   "course.edit.key.turned": "Girada",
   "course.edit.key.shaped": "Forma cambiada",
   "course.edit.key.sized": "Tamaño cambiado",
+  "course.edit.sizeTag": "Apertura {m} m",
   "course.edit.p.outside": "la puerta {g} está fuera del espacio escaneado",
   "course.edit.p.startWall": "la salida está dentro de una pared",
   "course.edit.p.gateWall": "la puerta {g} está dentro de una pared",

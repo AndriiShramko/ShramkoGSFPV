@@ -66,6 +66,7 @@
   "course.edit.key.turned": "Obrócono",
   "course.edit.key.shaped": "Zmieniono kształt",
   "course.edit.key.sized": "Zmieniono rozmiar",
+  "course.edit.sizeTag": "Prześwit {m} m",
   "course.edit.p.outside": "bramka {g} jest poza zeskanowaną przestrzenią",
   "course.edit.p.startWall": "start jest w ścianie",
   "course.edit.p.gateWall": "bramka {g} jest w ścianie",
