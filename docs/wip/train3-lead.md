@@ -374,3 +374,102 @@ Not verified
 
 Cost notes: the longest part was waiting for the probe runs (about 55 minutes in two background scripts); a server
 check before each probe in the first script would have saved the second script and four reruns.
+
+## Integration D (the narrator setting: lanes quiet, quiet2, quiet3)
+
+Merged
+- Sound package C:/dev/ShramkoSonicFPV: branch train5 (293ebae, the narrator setting and the free flight start) merged into
+  its main with --no-ff as e334c6e; npm test 71 files passed, 1 skipped (1358 tests passed, 4 skipped); tsc -p
+  tsconfig.core.json, tsconfig.json, tsconfig.node.json all exit 0; plain push of main 878f055..e334c6e (origin/main =
+  e334c6e). Branch train4 (7678880) not merged. README.md unchanged against 878f055 (diff empty), the added lines are ASCII,
+  no model name. The two modified evidence files left uncommitted; the work tree is back on train4.
+- Simulator: lane sonic4 at 1ad74390 merged with --no-ff as c7606bf9, no conflict (course.ts merged by git: the spoken lap
+  line, the one-course interface and the guide are kept; the lane's change adds a sound kind to the lines only). Package pin
+  packages/sonic-fpv stays 293ebae: it is on the pushed main (parent of e334c6e; git branch -r --contains 293ebae lists
+  origin/main), the tree of e334c6e is the same code, so no pin commit was needed.
+- Live check narrator-off added in deploy/live-checks.sh (5eee34e5).
+
+Held back (not merged, not read): editor3 (lane editor3j), fix3a (lane course5), voxview, loadq, race, the speed design
+of lane sonic4 (package branch train4, commit 7678880).
+
+Gates (gates.py on the merged tree)
+- First run (build running beside it): typecheck, api-unittest, architecture, i18n, catalog, b18 (B18 PASS), leaks PASS;
+  vitest FAIL 1 of 5047: tools/bench/test/app-dji-rc2.test.ts 'answers 60 ms late' (rc.late 5, expected 0; real timers under
+  the build's load; the merge touches no HID or RC 2 file). The file alone: 15 of 15 passed.
+- Second run with this section and the evidence staged: all PASS but leaks (21 lines in 7 files: the lesson keys
+  'lesson.scan-free.intro.1' and the like in quiet-probe ENTRY=scan outputs match the CI scan's generic-api-key rule).
+  Those 7 files (s-*.json, pic-set.json) are kept out of git in U:/Temp/gsfpv-train3/int-d/evidence-not-in-git; their
+  numbers are in evidence/2026-11-15/train3d/scan-entry-summary.json. Third run: exit 0, typecheck, vitest, api-unittest,
+  architecture, i18n, catalog, b18 (B18 PASS), leaks all PASS (U:/Temp/gsfpv-train3/int-d/gates3.log).
+
+Probes (release build of c7606bf9 exit 0, nine published wall folders in dist/walls, serve-csp 5760; summary
+U:/Temp/gsfpv-train3/int-d/summary.txt, every probe exit 0 but r11 Tunis narrator on; evidence
+evidence/2026-11-15/train3d/)
+- Narrator off, quiet-probe Backslash on Wroclaw / Tunis: voice 0 / 0 lines and live regions 0 / 0 lines from the press to
+  10 s; the craft over 0.5 m/s 0.69 / 0.68 s after the press with W held from it; course by Shift+G ready +33.62 / +9.32 s
+  and the hum of g1 in the same sample (0 s apart); K and I spoken (17 / 17 lines in the flight, K's list and I's two
+  lines and "Narrator on." of the second Shift+V); Shift+V off then on; saved narrator false at the end; 0 page errors.
+- Ear pilot r11 narrator off at 5 m/s: Wroclaw 12 of 12 (24 gates, flown g1 to g24, laps 1, counted, 170 s; voice only
+  the engine's empty warm-up; sounds answer yes, checkpoint for the course ready, fanfare at the end), Tunis 12 of 12
+  (24 gates, 107 s, same sounds).
+- r12 narrator off speed-1: 5 of 5 (opened 1.3 s, passed at attempt 1 in 53 s, the lesson speaks, the narrator setting is
+  off again after it).
+- My screen reader speaks with the narrator on (quiet-probe READER=1, Wroclaw): voice 0, 385 writes to live regions in
+  the first 10 s, the craft moves 0.80 s after the press, course and hum +10.78 s.
+- Free flight of the sound page (ENTRY=scan) on Wroclaw / Tunis, narrator on, off and screen reader: the craft moves 0.47
+  to 0.60 s after the page is ready in all six; narrator off: voice 0 / 0, live regions only before ready (last at 0.90 /
+  0.99 s, "The scan is ready"; ready 1.68 / 1.77 s); course and hum in the same sample in all six.
+- Narrator on, as on main: r9 11 of 11; r12 9 of 9; r11 Wroclaw Shift+G 10 of 10; r11 Tunis Shift+G 9 of 10 (see Not
+  verified); onecourse-probe (render off) exit 0, one set of gates after Backslash and after Shift+G; d7-probe exit 0;
+  pause-over-course-probe pass (1920 and 844); course-path-probe Wroclaw: 24 of 24 gates in the 1.2 to 2 m band, longest
+  silence 2.6 s; accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all true against http://localhost:5760;
+  a6-reference 1 passed.
+- Captions (quiet-probe RENDER=on RECTS=1, Wroclaw, course by Shift+G): one caption of 1 row at 1920x1080, 1280x720,
+  844x390, no overlap with the course's clock block.
+
+Deploy order for the lead (git diff --stat f286dd49..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms
+packages/i18n/locales)
+- nginx: no. API: no file (release-api.sh not needed, no --locales: only packages/i18n/locales/fly/sonic and
+  fly/sonickeys changed, they ship in the static bundle). Rooms: no.
+- Ship the static release of main only.
+
+Live checks: one new check narrator-off (quiet-probe NARRATOR=off on Wroclaw: no line with words to the voice and none to
+a live region from Backslash to 10 s, the craft moves within the 2 s that W is held from the press). Read in its source:
+it presses only flight keys (Backslash, W, Shift+G), the narrator is set in the probe browser's localStorage, nothing is
+sent or saved on the server. The same check passed on the local copy (voice 0, live 0, moved at 0.69 s). Not run against
+the live site (by rule).
+
+Pictures for the lead (looked at)
+- U:/Temp/gsfpv-train3/shots/train3d-narrator-setting.png: the Settings of the sound start page, "Narrator" ticked between
+  "My screen reader speaks" and "Motor sound", its help text "Off: sounds only. In a flight nothing is spoken and nothing
+  waits for a line; the lessons keep their words." right after the label.
+- U:/Temp/gsfpv-train3/shots/train3d-captions.png: Wroclaw with a course of 24 gates; the clock block "0:00.00, Lap 1 of 1,
+  Gate 1 of 24" at the top centre and one caption row "Recording is off." under it, both readable.
+
+What the owner should try
+- On the sound page open Settings and untick "Narrator" (or in a flight press Shift+V: two notes down).
+- Open Wroclaw, press Backslash: two notes up, the craft flies at once, nothing is spoken.
+- Press Shift+G: a short chime when the course is ready and the hum of gate 1 starts with it; fly to the hum.
+- At the end of the course you hear the finish notes.
+- Press K for the keys and I for the status: they are spoken even with the narrator off.
+- Press Shift+V: "Narrator on."; press it again: two notes down, quiet again.
+- Open a lesson from the lesson list (Speed 1): it speaks; after it the narrator is off again.
+
+Not verified
+- r11 Tunis narrator on (Shift+G): 9 of 10; the switch-off check after the course failed because the craft was not
+  moving (0.36 m/s before and after, a crash life just before); the lane saw the same probe precondition fail on Tunis
+  with the narrator off (0.08 m/s). Not chased. My r11 Tunis narrator off passed 12 of 12.
+- d7-probe narrator on: after case (a) the next gate went back to gate 1 and cases (b), (c), (d) and the lap ran at
+  gate 1 (as in integration C, the probe's scripted moves). Narrator off: (lap) next 3 to 0, laps 1; the lane's
+  observation (next 3 to 0 after the backing-up case) did not repeat in this run.
+- The hint "never on the second course" was not run in a browser (r11 flies one course).
+- On Tunis the lane's lift-off before the switch-off speed check did not take the craft up (lane's run; see above).
+- No caption long enough to need the two-row clamp was shown (all captions here were one row).
+- The Narrator help text starts right after its label, not in the column of the other help texts (cosmetic).
+- No real screen reader, no human ear, no native check of the es, pl, ru words. deploy/live-checks.sh not run (by rule).
+- mouse-free-probe, tracks-page, walls-published-probe, walls-store-probe, the editor chain, centre-throttle-probe,
+  rooms-two-page, wizard-auto-check, hid-source-probe, governor-start-probe, lod-view: not run in this integration (the
+  brief's probe list for D did not name them; editor3, fix3a and laptop4 were not merged).
+
+Cost notes: most turns went to waiting for the probe script (about 75 minutes); running the gates first and the probes
+after them kept one script and no reruns, but the gates' vitest still met the build's load.

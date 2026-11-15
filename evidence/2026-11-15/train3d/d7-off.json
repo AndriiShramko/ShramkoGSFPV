@@ -1,0 +1,228 @@
+{
+ "base": "http://localhost:5760/en",
+ "scene": "70b50d42",
+ "speed": 5,
+ "cases": [
+  {
+   "name": "pass gate 1",
+   "nextBefore": 0,
+   "nextAfter": 1,
+   "lapsBefore": 0,
+   "lapsAfter": 0,
+   "lines": [],
+   "wrongWay": 0,
+   "gateBehind": 0,
+   "voiced": [],
+   "sounds": [],
+   "s": 5.6
+  },
+  {
+   "name": "(a) gate 2 missed 7 m beside, 10 m past, back, through",
+   "nextBefore": 1,
+   "nextAfter": 2,
+   "lapsBefore": 0,
+   "lapsAfter": 0,
+   "lines": [
+    {
+     "key": "sonic.say.gateBehind",
+     "text": "The gate is behind you.",
+     "s": 2.6
+    },
+    {
+     "key": "speech.end",
+     "s": 2.6
+    }
+   ],
+   "wrongWay": 0,
+   "gateBehind": 1,
+   "voiced": [],
+   "sounds": [
+    "{\"kind\":\"touch\",\"material\":\"wall\",\"dir\":null,\"speed\":4.999999999999999}",
+    "{\"kind\":\"wrong-side\"}",
+    "{\"kind\":\"touch\",\"material\":\"wall\",\"dir\":null,\"speed\":5}"
+   ],
+   "s": 13.3
+  },
+  {
+   "name": "(b) gate 3 flown over 4.5 m above, back, through",
+   "nextBefore": 2,
+   "nextAfter": 3,
+   "lapsBefore": 0,
+   "lapsAfter": 0,
+   "lines": [
+    {
+     "key": "sonic.say.gateBehind",
+     "text": "The gate is behind you.",
+     "s": 1.85
+    },
+    {
+     "key": "speech.end",
+     "s": 1.85
+    }
+   ],
+   "wrongWay": 0,
+   "gateBehind": 1,
+   "voiced": [],
+   "sounds": [
+    "{\"kind\":\"wrong-side\"}",
+    "{\"kind\":\"touch\",\"material\":\"wall\",\"dir\":null,\"speed\":5}"
+   ],
+   "s": 12.2
+  },
+  {
+   "name": "(d) 2 m past gate 3: backing up 3 s, sliding 3 s each way",
+   "nextBefore": 3,
+   "nextAfter": 3,
+   "lapsBefore": 0,
+   "lapsAfter": 0,
+   "lines": [],
+   "wrongWay": 0,
+   "gateBehind": 0,
+   "voiced": [],
+   "sounds": [
+    "{\"kind\":\"touch\",\"material\":\"wall\",\"dir\":null,\"speed\":2.0000000000000004}",
+    "{\"kind\":\"touch\",\"material\":\"wall\",\"dir\":null,\"speed\":2.0000000000000004}"
+   ],
+   "s": 11.8
+  },
+  {
+   "name": "(c) turned round on the leg 3-4, nose-first back along it 12 m",
+   "nextBefore": 3,
+   "nextAfter": 3,
+   "lapsBefore": 0,
+   "lapsAfter": 0,
+   "lines": [
+    {
+     "key": "fly.wrong-way",
+     "text": "You are flying back. Turn around.",
+     "s": 3.15
+    },
+    {
+     "key": "speech.end",
+     "s": 3.15
+    }
+   ],
+   "wrongWay": 1,
+   "gateBehind": 0,
+   "voiced": [],
+   "sounds": [
+    "{\"kind\":\"wrong-way\",\"dir\":[2.223458780240159e-16,0.008344640111802705,0.9999651828845865]}"
+   ],
+   "s": 7
+  },
+  {
+   "name": "(lap) gates 4 to N straight through, then gate 1",
+   "nextBefore": 3,
+   "nextAfter": 0,
+   "lapsBefore": 0,
+   "lapsAfter": 1,
+   "lines": [
+    {
+     "key": "sonic.say.text",
+     "text": "Best lap! 1:37.64",
+     "s": 50.25
+    }
+   ],
+   "wrongWay": 0,
+   "gateBehind": 0,
+   "voiced": [],
+   "sounds": [
+    "{\"kind\":\"touch\",\"material\":\"wall\",\"dir\":null,\"speed\":4.999999999999999}",
+    "{\"kind\":\"fanfare\"}"
+   ],
+   "s": 53.4
+  }
+ ],
+ "errors": [],
+ "prefsKey": "gsfpv.prefs.v1",
+ "wait": [
+  {
+   "s": 0,
+   "course": {
+    "on": false,
+    "seed": null,
+    "gates": 0,
+    "next": -1,
+    "laps": 0
+   },
+   "target": null,
+   "lesson": "scan-free",
+   "phase": "flying",
+   "said": [
+    "sonic.say.lessonKeysFree",
+    "sonic.say.inPlaceIntro",
+    "speech.end",
+    "sonic.say.text"
+   ]
+  },
+  {
+   "s": 10.5,
+   "course": {
+    "on": false,
+    "seed": null,
+    "gates": 0,
+    "next": -1,
+    "laps": 0
+   },
+   "target": null,
+   "lesson": "scan-free",
+   "phase": "flying",
+   "said": [
+    "speech.end",
+    "sonic.say.text",
+    "sonic.say.text",
+    "sonic.say.text"
+   ]
+  },
+  {
+   "s": 11.5,
+   "course": {
+    "on": true,
+    "seed": 767197829,
+    "gates": 24,
+    "next": 0,
+    "laps": 0
+   },
+   "target": "g1",
+   "lesson": "scan-free",
+   "phase": "flying",
+   "said": [
+    "sonic.say.text",
+    "sonic.say.text",
+    "sonic.say.text",
+    "sonic.say.text"
+   ]
+  }
+ ],
+ "course": {
+  "on": true,
+  "seed": 767197829,
+  "gates": 24,
+  "next": 0,
+  "laps": 0,
+  "madeS": 11.5
+ },
+ "saidWhileMaking": [
+  {
+   "t": 11888,
+   "key": "sonic.say.text",
+   "text": "Course: placing the gates and obstacles, step 2 of 2. Still working."
+  },
+  {
+   "t": 16256,
+   "key": "sonic.say.text",
+   "text": "Course ready: 24 gates. They appear in 3 seconds, keep flying."
+  },
+  {
+   "t": 19296,
+   "key": "sonic.say.text",
+   "text": "Gates: 24. Fly through gate 1 to start the clock. Shift and key T hide the cours"
+  }
+ ],
+ "install": {
+  "hover": 0.27743940434601666,
+  "bot": true
+ },
+ "gates": 24,
+ "leg34": 8.7
+}
