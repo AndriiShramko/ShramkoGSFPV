@@ -42,17 +42,20 @@ Stage Y1-switch-and-pins (train 3 wave 2):
   flight keeps the motors (AutoArm.keepOn in play/assist.ts). Test tools/bench/test/sonic-in-place-motors.test.ts 1 of 1,
   NEG OK on HEAD lesson-pilot.ts and assist.ts (expected -1 to be greater than 0); a6-reference, app-play, app-game,
   app-centre-throttle, sonic-mode, sonic-in-place, sonic-bump: 7 files 99 of 99; apps/fly tsc 0 errors.
-- [ ] LEFT, in this order (stage stopped at its reply budget; nothing uncommitted in either repo but the two old evidence files):
-  2. Browser: release build, then r11 Tunis (course), expect 8 of 8.
-  3. Package: words check, node tools/run-tool.mjs listen-words (Whisper, takes the GPU lock itself; SHRAMKO_LISTEN_PY must
-     name a Python with faster-whisper, check first), commit evidence/listen/VL-4-words.json; then the full package suite
-     (detached, log), expect 0 failures; then pin packages/sonic-fpv to that commit (docs/agent-map.md pin recipe), simulator
-     tests that read lessons (sonic-*.test.ts) and apps/fly tsc.
-  4. SO-9: Decisions already name the hum-attended pilot; SO-10: with the speed lessons pinned speed-4 caps 4.5 m/s, so tier 2
-     (8 m/s) is still reached by no shipped flight: drop the tier-2 sentence from For the lead or add a lesson at 8 m/s.
-  5. SO-5..7 status lines: check that Facts say only measured values (done in fixes stage; reread after the runs).
-  6. Browser: r11 on Tunis (course) and Wroclaw stand-in (rm dist/walls/70b50d42 only for the built case; Housefly d10c5638
-     for walls built), expect the two new switch checks to pass; gates.py --only vitest,architecture,i18n,b18.
+- [x] Pass 2, package: full suite on train3 a466888 (detached, y1-pkg-suite.log): 1338 passed, 1 failed (test/words.test.ts:
+  the evidence did not hear the 28 new lines), 4 skipped. Words check (node tools/run-tool.mjs listen-words,
+  SHRAMKO_LISTEN_PY=U:/venvs/shramko-listen/Scripts/python.exe; system python lacks the packages): PASS, en es pl ru 573
+  lines each, 0 over the bound 0.2, 17 of 17 key lines per language; controls fail as they should (y1-words.log). Committed
+  as package train3 30836c1; words + lesson-schedule + speed-ladder 34 of 34 after it.
+- [x] Pass 2, pin: packages/sonic-fpv -> package train3 30836c1 (local fetch, not pushed). Simulator tests that pinned 28
+  lessons follow 32 (sonic-start, sonic-lesson-keys; sonic-primitives keeps the first lesson's name for a shared world):
+  tools/bench/test/sonic-* 38 files, 504 passed, 10 skipped; apps/fly tsc 0 errors.
+- [x] SO-10: For the lead now says only what ships (every shipped flight capped at or under 5 m/s, so only the 4.5 m/s
+  reduction can be heard); the tier-2 sentence is gone. SO-9: Decisions name the hum-attended pilot (unchanged).
+- [ ] LEFT, in this order:
+  1. Browser (U:/Temp/gsfpv-train3/sonic3/y1-browser.sh: release build, then r11 Tunis 887f27aa shipped 5 m/s, Wroclaw
+     70b50d42 stand-in 5 m/s, Housefly d10c5638 walls built 3 m/s Z5_RENDER=on; port 5824): results into Facts.
+  2. gates.py --only vitest,architecture,i18n,b18 on the final commit.
 
 Stage fixes (review SO-1 to SO-10, package pin train3-fixes d341b4f, merged into train3 2e1618f):
 - [x] SO-1 stands: in place the mode applied LESSON_FLIGHT (bump 'slide') as a 'life' setting on enter and took it back on
