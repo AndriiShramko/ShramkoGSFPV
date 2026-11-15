@@ -18,9 +18,22 @@ Stage X1-walls-store
       keeps nothing and says nothing, as before); hook w.storing, w.lastStore; keys bake.keeping and bake.notKept in
       en, es, pl, ru. Unit test tools/bench/test/walls.test.ts (4 new, 23 passed); negative control with
       origin/main wallcache.ts: 3 failed by AssertionError; tsc apps/fly exit 0.
-- [~] probe: store row within N s of in-use (lastStore.ms)
-- [ ] proof runs on Wroclaw (button and --start shiftg --reload-at in-use), evidence JSON, typecheck,
-      gates.py --only vitest,architecture,i18n,b18
+- [x] probe records w.storing and w.lastStore; exit 0 also needs the build's write ok and either at most 2 s
+      (KEEP_NOTE_S, the owner's rule, not a measurement) or the line said "Keeping them in this browser" (0f27d294)
+- [x] proof on Wroclaw 70b50d42, release build of 07cc5d41, server 5780, no dist/walls, both exit 0:
+      button (evidence/2026-11-15/fix3a/walls-store-70b50d42-button-fixed.json): built 63 s, in use 74.3 s, store
+      write 645 ms, 58294590 bytes, row there 74.8 s; reload: cache, bakes 0, in use 4.3 s after open; fresh tab:
+      cache, bakes 0, 4.6 s. Shift+G with reload at in-use (...-shiftg-fixed.json): built 69 s, in use 81.4 s, write
+      343 ms; reload cache 4.3 s, fresh tab cache 4.8 s, bakes 0. Both writes under 2 s, so the keeping note did not
+      show (correct). gates.py --only vitest,architecture,i18n,b18: all PASS (vitest 162 s).
+- Negative control of the probe on the old build: not run (budget). The old-build runs of the first pass passed
+  too on a quiet PC; the probe's new 'kept' check fails on origin/main only because w.lastStore does not exist there.
+- Seen, not fixed: at the in-use look the write was still running in both runs (storing true, rows 0): queue()
+  swaps at once when the craft is parked, so the window is the write time itself (0.3 to 0.65 s measured). A reload
+  inside that window may still lose the walls; the reload of the shiftg run came in that window and still found
+  them (IndexedDB finished the transaction). A guess, not reproduced.
+- Bake time was 63 to 69 s here against 156 s in the first pass (a lighter way, line "rough"; the machine's saved
+  bake speed changes the plan). Not examined.
 
 Stage 2 (gate 1 not in sight on Tunis seed 1): not started.
 
@@ -72,3 +85,5 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
 ## Cost notes
 - X1 first pass: most turns went to the first Tunis runs (no progress output, 560 s timeout each; Tunis has shipped
   walls, so nothing to build). A one-line check of walls.source before a long run would have saved two runs.
+- X1 pass 2: a negative control by git checkout HEAD wiped an uncommitted edit (one turn lost) and a new walls line hit
+  the plain-lines test (no "could not"); commit before any file swap, and grep tools/bench/test for rules on bake.* keys first.
