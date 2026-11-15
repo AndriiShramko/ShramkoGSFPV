@@ -32,7 +32,13 @@ Stage P3-weak-budget
   remembered in localStorage `gsfpv.governor.start` keyed by device class and GPU name, the next load starts there
   (quality.ts startFrom, builtin/drawing.ts); test governor-start.test.ts 4 of 4 (NEG OK), governor.test.ts pass,
   prefs migrate and defs 43 of 43, render-pc and fly typecheck exit 0 (this commit)
-- [ ] 4. Pictures laptop3-lublin-above-0p5M-after.png and -1M-after.png (runner set `after`), Wroclaw street check (set `wro`
+- [x] 7. accept-fly B6 B7 B9 to B16 on build 8461f4c6, first line `accept-fly target: http://localhost:5741` (pages
+  /en/fly): all 10 true (log U:/Temp/gsfpv-train3/laptop3/accept-fly.log). gates.py --only vitest,architecture,i18n,b18
+  (U:/Temp/gsfpv-gates-20261115-045315): architecture, i18n, B18 PASS; vitest 2 failed of 4830 (1 file of 327), both in
+  packages/prefs/test/main-audit.test.ts: `lodmul` and `viewlodfar` (commit 66aa1609) not listed in
+  APP_URL_PARAMS_NOT_SETTINGS. Fixed in packages/prefs/src/url.ts; main-audit 12 of 12, prefs typecheck exit 0 (this
+  commit); the whole vitest gate was not run again after the fix
+- [ ] 4. (superseded by 5 to 7) Pictures laptop3-lublin-above-0p5M-after.png and -1M-after.png (runner set `after`), Wroclaw street check (set `wro`
   with MUL and TAG), accept-fly B6 B7 B9 to B16, a6-reference, gates vitest, architecture, i18n, b18; status table
 
 Left for the next worker (P3): the runner is ready (`bash run-p3.sh build`, then serve-csp dist 5741, then
