@@ -37,6 +37,13 @@ Stage I3-prove (train 3, 2026-11-15):
      the red ring edge-on as a line (D4 takes it, turn 60 deg per 60 px drag on x). Wroclaw: a red line crosses the whole
      view (the X axis guide during or after the drag?), not looked into.
   e. Wroclaw crash in the test flight still not produced (afterCrash mode 'fly'); the crash proof is Tunis only.
+- [~] I3.4 (pass 2) probe editor3-prove.ts: cause of a and of 'Shift+Tab back' measured in the pass 1 records: the first
+  Add clicked the middle of the view, which is the framed gate 1 (D1), so nothing was added (24 -> 24), `added` was the
+  selection 0 and `del` = -1; no gate has index -1, so the Tab loop ran 60 presses and stopped on index 19, and the pad
+  flight steered to gates[-1] (none: it only yawed). The pad's 'armed false' is the reader (controls.gate.armed was false
+  in H3 too, where course.next went 0 to 1); the flight steps were in mode 'fly'. Probe now: Add clicks the floor (0.5,
+  0.85 of the view, then two more points), Shift+Tab to index 0 before PutAhead and steer to it, F measured after the view
+  was flown (frameF), Save loop: Save, on a refusal delete the gate it selects, Save again (up to 22).
 
 Stage I2-clean (train 3, 2026-11-15), pass 1 stopped at the reply budget:
 - [x] I2.0 merge origin/main 7fb0ddf7 (lead notes only): 6c4aa696. Release build of 6c4aa696's tree exit 0

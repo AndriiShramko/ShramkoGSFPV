@@ -193,12 +193,22 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     // Add gate: the top bar's button, then a click on the scene in the middle of the view
     const nBefore = (await hook(page))?.gates ?? 0;
     const selBefore = (await ed(page)).selected ?? 0;
+    // I3 pass 2: the middle of the view is the framed gate 1 itself (D1), so a click there took the gate (I3 pass 1: 'Moved',
+    // 24 -> 24); the pilot clicks the floor: low on the view, then a second point left of it if the first gave no gate
     await page.click('[data-top="add"]', { timeout: 5000 }).catch(() => undefined);
     await sleep(300);
-    await page.mouse.click(vp.width / 2, vp.height * 0.45);
-    const add = await until(() => hook(page), (h) => (h?.gates ?? 0) === nBefore + 1, 3000);
-    out.add = { ok: add.ok, gates: [nBefore, add.v?.gates], selectedBefore: selBefore, selected: add.v?.editor?.selected, said: (add.v?.editor?.said ?? '').slice(0, 100) };
-    const added = add.v?.editor?.selected ?? -1;
+    const addPts: number[][] = [[0.5, 0.85], [0.3, 0.8], [0.7, 0.8]];
+    let add = { ok: false, v: await hook(page), ms: 0 };
+    const addTries: unknown[] = [];
+    for (const [fx, fy] of addPts) {
+        await page.mouse.click(vp.width * fx!, vp.height * fy!);
+        add = await until(() => hook(page), (h) => (h?.gates ?? 0) === nBefore + 1, 3000);
+        addTries.push({ at: [fx, fy], ok: add.ok, said: (add.v?.editor?.said ?? '').slice(0, 80) });
+        if (add.ok) break;
+        if (!/click the place/i.test(add.v?.editor?.said ?? '')) { await page.click('[data-top="add"]', { timeout: 3000 }).catch(() => undefined); await sleep(300); }
+    }
+    out.add = { ok: add.ok, gates: [nBefore, add.v?.gates], selectedBefore: selBefore, selected: add.v?.editor?.selected, said: (add.v?.editor?.said ?? '').slice(0, 100), tries: addTries };
+    const added = add.ok ? (add.v?.editor?.selected ?? 1) : 1;
     await sleep(1200);
 
     // a click on another gate on screen, then Tab
@@ -370,6 +380,23 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     await sleep(400);
     const v1 = (await ed(page)).view;
     out.look = { eyeMovedM: r2(dist(v0?.eye, v1?.eye)), atMovedM: r2(dist(v0?.at, v1?.at)) };
+    // I3 pass 2: F frames the selected gate again after the keys and the right button moved the view (D1): the eye moves,
+    // looks at the gate's centre, stands at a distance of a few gate sizes; viewShare = the gate's size over the view's height
+    {
+        const fa = (await dbg(page))!;
+        await page.keyboard.press('KeyF');
+        await sleep(900);
+        const fb = (await dbg(page))!;
+        const v2 = (await ed(page)).view;
+        const eyeGate = dist(v2?.eye, fb.stand.pos);
+        const fovDeg = await page.evaluate(() => (window as unknown as { __gsfpvEditView?: () => { fov?: number } }).__gsfpvEditView?.()?.fov ?? null);
+        const fov = (fovDeg ?? 60) * Math.PI / 180;
+        out.frameF = {
+            eyeMovedM: r2(dist(v1?.eye, v2?.eye)), atToGateM: r2(dist(v2?.at, fb.stand.pos)), eyeGateM: r2(eyeGate), opening: r2(fb.stand.opening),
+            fovDeg, viewShare: r2(fb.stand.opening / (2 * eyeGate * Math.tan(fov / 2))), screenBefore: fa.stand.screen.map(Math.round), screenAfter: fb.stand.screen.map(Math.round)
+        };
+        await page.screenshot({ path: join(SHOTS, id === '70b50d42' ? 'editor3-wroclaw-f-1920.png' : 'editor3-f-1920.png') });
+    }
 
     // G3 pass 2, the test flight. First the keyboard: Space arms in the mode, Space again is the edit view back where it was
     const eyeBefore = (await ed(page)).view?.eye;
@@ -389,6 +416,9 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
         await until(() => dbg(page), (d) => d?.mode === 'edit', 4000);
     }
     // then the pad: gate 1 (the moved gate `del`) made bigger with + so the probe's rough steering passes it (undone after)
+    // I3 pass 2: gate 1 (index 0) is the one flown through: Shift+Tab back to it first (pass 1 put gate 20 ahead)
+    const fi = 0;
+    for (let n = 0; n < 40 && (await ed(page)).selected !== fi; n++) { await page.keyboard.press('Shift+Tab'); await sleep(120); }
     const selFly = (await ed(page)).selected;
     const open0 = (await dbg(page))?.stand.opening ?? 0;
     // I3 (the stage's words): gate 1 placed 6 m ahead of the drone, 1 m up, opening 2.5 m, as ONE drag (one Ctrl+Z after);
@@ -411,10 +441,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const fm = await until(() => dbg(page), (d) => d?.mode === 'fly', 3000);
     await pad(page, [0, 0, 0, 0, 0], null);
     await sleep(300);
-    const ga = (await dbg(page))?.gates[del];
+    const ga = (await dbg(page))?.gates[fi];
     await pad(page, [0, 0, 0, 0.25, 0], null);
     await sleep(300);
-    const gb = (await dbg(page))?.gates[del];
+    const gb = (await dbg(page))?.gates[fi];
     await pad(page, [0, 0, 0, -0.25, 0], null);
     await sleep(300);
     await pad(page, [0, 0, 0, 0, 0], null);
@@ -434,7 +464,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     for (let i = 0; i < 150; i++) {
         const d = await dbg(page);
         const h = await hook(page);
-        const g = d?.gates[del];
+        const g = d?.gates[fi];
         flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null]);
         if (h?.next !== nextBefore || (i > 0 && d?.mode !== 'fly')) break;
         let yaw = 0.25;
@@ -558,25 +588,27 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     }
     const removed: unknown[] = [];
     let movedGone = false;
-    for (let i = 0; i < 14; i++) {
-        await sleep(1500);
+    // I3 pass 2: the pilot's way to a course the check takes: Save; a refusal selects the gate it names and says 'delete it
+    // with the cross on its bar'; the probe does that and saves again (pass 1 deleted the highest red gate and the check's
+    // first refusal, gate 2, stayed). The course's gate poses are read before each Save, so the reload compares the gate at
+    // index `cmp` as it was saved.
+    let loopSaved = false;
+    let lastPoses: (number[] | undefined)[] = [];
+    for (let i = 0; i < 22 && !earlySaved; i++) {
+        await sleep(1200);
+        const cvi = (await dbg(page)) as unknown as { course?: { gates?: { pos?: number[] }[] } } | null;
+        lastPoses = (cvi?.course?.gates ?? []).map((g) => g.pos);
         const e = (await ed(page)) as Ed & { paints?: string[] };
-        if ((e.problems ?? 0) === 0) break;
-        const bad = (e.paints ?? []).map((p, j) => (p === 'bad' || p === 'selected-bad' ? j : -1)).filter((j) => j >= 0);
-        if (!bad.length) { removed.push({ problems: e.problems, noRed: true }); break; }
-        // run C: deleting gate 1 again and again left "the way from gate 0 to gate 1" red: the same pick twice with no
-        // fewer problems means the moved gate itself is in the way, so it goes (the reload then compares the new gate 0)
-        const prev = removed[removed.length - 1] as { pick?: number; problems?: number } | undefined;
-        const stuck = !!prev && prev.pick !== del && bad.includes(del) && (e.problems ?? 0) >= (prev.problems ?? 0);
-        const pick = stuck ? del : ([...bad].reverse().find((j) => j !== del) ?? bad[bad.length - 1]!);
+        await page.click('[data-top="save"]', { timeout: 3000 }).catch(() => undefined);
+        await sleep(800);
+        if (await page.evaluate(() => document.activeElement instanceof HTMLInputElement)) { await page.keyboard.type('Probe I3'); await page.keyboard.press('Enter'); }
+        const si = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 4000);
+        if (si.ok) { loopSaved = true; removed.push({ saved: true, gates: (await hook(page))?.gates, problems: e.problems }); break; }
+        const pick = (await ed(page)).selected ?? -1;
+        const line = await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? '');
         if (pick === del) movedGone = true;
-        for (let n = 0; n < 40 && (await ed(page)).selected !== pick; n++) {
-            await page.keyboard.press(((await ed(page)).selected ?? 0) < pick ? 'Tab' : 'Shift+Tab');
-            await sleep(80);
-        }
-        await sleep(300);
         const how = await page.click('.ce-gatebar [data-bar="delete"]', { timeout: 3000, force: true }).then(() => 'bar').catch(async () => { await page.keyboard.press('Delete'); return 'key'; });
-        removed.push({ pick, selected: (await ed(page)).selected, problems: e.problems, red: bad.length, how });
+        removed.push({ pick, problems: e.problems, gates: (await hook(page))?.gates, how, line: line.slice(0, 90) });
     }
     out.redRemoved = { steps: removed, problems: (await ed(page)).problems, gates: (await hook(page))?.gates, movedGone };
     // G3 pass 3: the gate the reload compares is the one at index `cmp` right before Save (the moved gate when it stayed and
@@ -586,10 +618,10 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const cmp = Math.max(0, Math.min(del, left - 1));
     for (let n = 0; n < 60 && (await ed(page)).selected !== cmp; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < cmp ? 'Tab' : 'Shift+Tab'); await sleep(80); }
     await sleep(400);
-    const cmpPos = (await dbg(page))?.stand.pos;
+    const cmpPos = loopSaved ? lastPoses[cmp] : (await dbg(page))?.stand.pos;
     out.compare = { index: cmp, pos: cmpPos?.map(r2), isMoved: dist(cmpPos, movedPos) < 0.02, movedGone, lowerGone };
-    let nameField: string | null = 'early';
-    if (!earlySaved) {
+    let nameField: string | null = loopSaved ? 'loop' : 'early';
+    if (!earlySaved && !loopSaved) {
         await page.click('[data-top="save"]', { timeout: 3000 }).catch((e) => { out.saveClickError = String(e).slice(0, 120); });
         await sleep(800);
         nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
