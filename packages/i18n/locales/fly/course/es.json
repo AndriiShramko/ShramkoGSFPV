@@ -97,7 +97,7 @@
   "course.edit.saveMine": "Guardar como mi circuito",
   "course.edit.saveAll": "Guardar para todos",
   "course.edit.close": "Cerrar",
-  "course.edit.savedMine": "Guardado como tu circuito: {title}, versión {v}",
+  "course.edit.savedMine": "Guardado como tu circuito: {title}, versión {v}. Está en Circuitos, en la barra superior",
   "course.edit.saveRefused": "No se guardó: primero arregla las puertas rojas. {why}",
   "course.edit.allEdited": "Este circuito está cambiado: guárdalo como tu circuito con tu nombre",
   "course.edit.allDone": "Este circuito ya está guardado para todos",

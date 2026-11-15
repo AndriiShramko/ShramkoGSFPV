@@ -97,7 +97,7 @@
   "course.edit.saveMine": "Сохранить как мою трассу",
   "course.edit.saveAll": "Сохранить для всех",
   "course.edit.close": "Закрыть",
-  "course.edit.savedMine": "Сохранено как ваша трасса: {title}, версия {v}",
+  "course.edit.savedMine": "Сохранено как ваша трасса: {title}, версия {v}. Она в «Трассах» на верхней панели",
   "course.edit.saveRefused": "Не сохранено: сначала исправьте красные ворота. {why}",
   "course.edit.allEdited": "Трасса изменена: сохраните её как свою, со своим именем",
   "course.edit.allDone": "Эта трасса уже сохранена для всех",

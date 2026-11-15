@@ -97,7 +97,7 @@
   "course.edit.saveMine": "Save as my course",
   "course.edit.saveAll": "Save for everyone",
   "course.edit.close": "Close",
-  "course.edit.savedMine": "Saved as your course: {title}, version {v}",
+  "course.edit.savedMine": "Saved as your course: {title}, version {v}. It is in Courses on the top bar",
   "course.edit.saveRefused": "Not saved: fix the red gates first. {why}",
   "course.edit.allEdited": "This course is changed: save it as your course with your name",
   "course.edit.allDone": "This course is already saved for everyone",

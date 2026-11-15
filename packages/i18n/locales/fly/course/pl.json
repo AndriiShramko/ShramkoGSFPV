@@ -97,7 +97,7 @@
   "course.edit.saveMine": "Zapisz jako mój tor",
   "course.edit.saveAll": "Zapisz dla wszystkich",
   "course.edit.close": "Zamknij",
-  "course.edit.savedMine": "Zapisano jako twój tor: {title}, wersja {v}",
+  "course.edit.savedMine": "Zapisano jako twój tor: {title}, wersja {v}. Znajdziesz go w Torach na górnym pasku",
   "course.edit.saveRefused": "Nie zapisano: najpierw popraw czerwone bramki. {why}",
   "course.edit.allEdited": "Ten tor jest zmieniony: zapisz go jako swój tor ze swoim imieniem",
   "course.edit.allDone": "Ten tor jest już zapisany dla wszystkich",

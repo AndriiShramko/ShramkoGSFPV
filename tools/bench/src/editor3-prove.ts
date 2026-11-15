@@ -307,7 +307,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     out.delete2 = { gates: [nDel2, (await hook(page))?.gates], selected: (await ed(page)).selected, handles: delD?.handles, tool: delD?.tool, bar: await barShown(page), ur: await undoRedo(page) };
     // Ctrl+Z took the copy back, Ctrl+Y deleted it again: the course is as before the duplicate
     // back to gate 1 (Shift+Tab) and its X arrow
-    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) { await page.keyboard.press('Shift+Tab'); await sleep(150); }
+    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < del ? 'Tab' : 'Shift+Tab'); await sleep(150); }
     out.shiftTabBack = (await ed(page)).selected === del;
     await sleep(800);
     // the X arrow: another gate selected sets Move (toolAfter); the arrow found along the gate's X axis
@@ -531,7 +531,7 @@ async function scene(page: Page, id: string): Promise<Record<string, unknown>> {
     const nameField = await page.evaluate(() => { const a = document.activeElement; return a instanceof HTMLInputElement ? a.className || 'input' : null; });
     if (nameField) { await page.keyboard.type('Probe G3'); await page.keyboard.press('Enter'); }
     const sv = await until(() => hook(page), (h) => !!(h as { saved?: string | null } | null)?.saved, 20000);
-    out.save = { nameField, ok: sv.ok, ms: sv.ms, saved: (sv.v as { saved?: string | null } | null)?.saved ?? null, said: ((await ed(page)).said ?? '').slice(0, 100), problem: sv.v?.problem ?? null, posts: await page.evaluate(() => (window as unknown as { __posts?: number }).__posts ?? null) };
+    out.save = { nameField, ok: sv.ok, ms: sv.ms, saved: (sv.v as { saved?: string | null } | null)?.saved ?? null, said: ((await ed(page)).said ?? '').slice(0, 100), problem: sv.v?.problem ?? null, topLine: await page.evaluate(() => document.querySelector('.ce-tb-line')?.textContent ?? ''), posts: await page.evaluate(() => (window as unknown as { __posts?: number }).__posts ?? null) };
     out.savedGatePos = movedPos?.map(r2);
     await sleep(500);
     // Exit: Esc; with unsaved changes the first Esc says so and a second one leaves ("The design", Enter and leave)
@@ -554,14 +554,19 @@ async function reloadSaved(page: Page, id: string, saved: string, del: number, m
     const c = await until(() => hook(page), (h) => (h?.gates ?? 0) > 0 && !!h?.on, 30000);
     const h = c.v as (Hook & { track?: { id?: string; version?: number } | null; source?: string | null }) | null;
     out.auto = { ok: c.ok, ms: c.ms, gates: h?.gates, source: h?.source ?? null, track: h?.track ?? null };
-    if ((h?.track?.id ?? '') !== saved) {
-        // not loaded by itself: the list of the scene's courses (the window's Courses part) names it?
-        out.listText = await page.evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 300));
-        return out;
-    }
+    // H3 (the lead's decision): a saved course is not loaded by itself; the pilot opens it from Courses on the top bar
     await page.keyboard.press('Shift+KeyB');
     await until(() => ed(page), (e) => !!e.open, 30000);
-    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) { await page.keyboard.press('Shift+Tab'); await sleep(150); }
+    await sleep(800);
+    await page.click('[data-top="courses"]', { timeout: 5000 }).catch((e) => { out.coursesClickError = String(e).slice(0, 120); });
+    const rows = await until(() => page.locator('.ce-list .ce-open').count(), (n) => n > 0, 15000);
+    out.list = { rows: rows.v, ms: rows.ms, text: await page.evaluate(() => (document.querySelector('.ce-list')?.textContent ?? '').replace(/\s+/g, ' ').slice(0, 160)) };
+    if (rows.v > 0) await page.locator('.ce-list .ce-open').last().click({ timeout: 5000 }).catch((e) => { out.openClickError = String(e).slice(0, 120); });
+    const ld = await until(() => hook(page), (x) => ((x as { track?: { id?: string } | null } | null)?.track?.id ?? '') === saved, 20000);
+    out.opened = { ok: ld.ok, ms: ld.ms, track: (ld.v as { track?: unknown } | null)?.track ?? null, gates: ld.v?.gates, editorOpen: (await ed(page)).open };
+    if (!ld.ok) return out;
+    if (!(await ed(page)).open) { await page.keyboard.press('Shift+KeyB'); await until(() => ed(page), (e) => !!e.open, 30000); }
+    for (let n = 0; n < 60 && (await ed(page)).selected !== del; n++) { await page.keyboard.press(((await ed(page)).selected ?? 0) < del ? 'Tab' : 'Shift+Tab'); await sleep(150); }
     await sleep(600);
     const p = (await dbg(page))?.stand.pos;
     out.gate = { index: del, pos: p?.map(r2), savedPos: movedPos?.map(r2), offM: r2(dist(p, movedPos)) };
@@ -630,7 +635,8 @@ async function fakeTracks(ctx: import('playwright').BrowserContext): Promise<voi
             return t ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(t.body) }) : route.fulfill({ status: 404, body: '{}' });
         }
         // one scene per run reads this list, so every kept file is listed
-        const rows = [...tracks.values()].map((t) => ({
+        const sc = url.searchParams.get('scene');
+        const rows = [...tracks.values()].filter((t) => !sc || String(t.body.scene ?? sc) === sc).map((t) => ({
             id: String(t.body.id), version: t.version, title: String(t.body.title ?? ''), gates: Array.isArray(t.body.gates) ? t.body.gates.length : 0,
             lengthM: 0, created: new Date().toISOString(), up: 0, down: 0, rating: 0
         }));
@@ -682,6 +688,8 @@ async function keyboardRun(page: Page, id: string): Promise<Record<string, unkno
     const f2 = await until(() => dbg(page), (d) => d?.mode === 'edit', 4000);
     out.space2 = { mode: f2.v?.mode, ms: f2.ms, armed: await armed() };
     await sleep(800);
+    out.kbdFly = await keyboardFly(page);
+    await page.screenshot({ path: join(SHOTS, 'editor3-after-kbd-flight-1920.png') });
     // fill the course with Insert (a copy after the selected gate) until it stops growing
     let last = (await hook(page))?.gates ?? 0;
     let still = 0;
@@ -705,6 +713,56 @@ async function keyboardRun(page: Page, id: string): Promise<Record<string, unkno
     await sleep(400);
     if ((await ed(page)).open) await page.keyboard.press('Escape');
     return out;
+}
+
+/** H3: the keyboard as the pilot's source through gate 1 (made bigger, undone after): Space arms, W/S climb and sink, A/D
+ * turn, ArrowUp forward, each pressed for 120 ms per step toward the gate on screen; Space disarms. Records course.next. */
+async function keyboardFly(page: Page): Promise<Record<string, unknown>> {
+    const vp = page.viewportSize()!;
+    const idx = 0;
+    for (let n = 0; n < 40 && (await ed(page)).selected !== idx; n++) { await page.keyboard.press('Shift+Tab'); await sleep(80); }
+    let grow = 0;
+    while (grow < 30 && ((await dbg(page))?.stand.opening ?? 0) < 3.5) { await page.keyboard.press('Equal'); grow++; await sleep(60); }
+    await sleep(400);
+    const g0 = (await dbg(page))?.gates[idx];
+    const nextBefore = (await hook(page))?.next;
+    await page.keyboard.press('Space');
+    const fm = await until(() => dbg(page), (d) => d?.mode === 'fly', 4000);
+    const flight: unknown[] = [];
+    const EY_AIM = 0.15;
+    let crashed = false;
+    for (let i = 0; i < 150; i++) {
+        const d = await dbg(page);
+        const h = await hook(page);
+        const g = d?.gates[idx];
+        flight.push([i, h?.next, d?.mode, g ? g.map((v) => Math.round(v * 10) / 10) : null]);
+        if (h?.next !== nextBefore || (i > 0 && d?.mode !== 'fly')) break;
+        if ((d as unknown as { crashActive?: boolean } | null)?.crashActive) crashed = true;
+        const keys: string[] = [];
+        if (g && g[2]! > 0) {
+            const ex = (g[0]! - vp.width / 2) / (vp.width / 2);
+            const ey = (g[1]! - vp.height / 2) / (vp.height / 2);
+            if (ex > 0.1) keys.push('KeyD');
+            else if (ex < -0.1) keys.push('KeyA');
+            keys.push(ey < EY_AIM ? 'KeyW' : 'KeyS');
+            if (Math.abs(ex) < 0.3) keys.push('ArrowUp');
+        } else keys.push('KeyD');
+        for (const k of keys) await page.keyboard.down(k);
+        await sleep(120);
+        for (const k of keys) await page.keyboard.up(k);
+        await sleep(80);
+    }
+    const nextAfter = (await hook(page))?.next;
+    await page.keyboard.press('Space');
+    const dis = await until(() => dbg(page), (d) => d?.mode === 'edit', 6000);
+    await sleep(800);
+    for (let n = 0; n < grow; n++) { await page.keyboard.press('Control+KeyZ'); await sleep(60); }
+    return {
+        grow, gateAtArm: g0?.map((v) => Math.round(v * 10) / 10), nextBefore, nextAfter, passed: nextAfter !== nextBefore, modeArmed: fm.v?.mode, crashed,
+        steps: flight.length, last: flight.slice(-6), modeAfter: dis.v?.mode, ms: dis.ms,
+        statsShown: await page.evaluate(() => { const e = document.querySelector('.osd-stats'); return e ? getComputedStyle(e).display : 'absent'; }),
+        crashToast: await page.evaluate(() => { const e = document.querySelector('.crash-toast'); return e ? getComputedStyle(e).display : 'absent'; })
+    };
 }
 
 /** H2 pass 2 (REPRO=1): the Size fault of run1. One centre-box drag after each way in (the bar's Size, Undo + Redo, the key
