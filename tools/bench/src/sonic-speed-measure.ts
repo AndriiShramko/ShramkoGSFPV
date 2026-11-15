@@ -7,7 +7,7 @@
 //
 //   cd tools/bench && npx tsx src/sonic-speed-measure.ts --walls <dir with scene.voxel.json/.bin> --scene 70b50d42
 //       --spawn x,y,z [--course-seed 1] [--track file.json] [--speeds 2,5,8,12] [--seeds 1,2,3] [--line on|off]
-//       [--loudest] [--out file.json]
+//       [--loudest] [--line-near-aim <m>] [--out file.json]
 // --track caches the generated course (written when missing, read when present). The speed cap of the lesson is set to the
 // flight's speed here (assists.maxSpeedMps, as the package's ladder does): a measuring switch of this tool only.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -26,6 +26,8 @@ import { Craft, CRAFT_ACCEL_MPS2, CRAFT_CLIMB_MPS, CRAFT_YAW_DPS } from '../../.
 import { EarPilot, REACTION_MS, TURN_DPS } from '../../../packages/sonic-fpv/src/pilot/ear-pilot';
 import { DEFAULT_HEARING, Ear, type Percepts } from '../../../packages/sonic-fpv/src/pilot/perceive';
 import { buildScanLesson, scanCourseLesson } from '../../../apps/fly/src/sonic/scan-lesson';
+import { gateAim } from '../../../packages/sonic-fpv/src/lesson/gate-aim';
+import { toLocal } from '../../../packages/sonic-fpv/src/lesson/goals';
 import { REPO } from './evidence';
 
 const DT_MS = 20;
@@ -114,7 +116,7 @@ export interface FlightMeasure {
     readonly tail: object | null;
 }
 
-function flyCourse(o: { col: ReturnType<typeof openVoxelCollision>; scene: string; spawn: Vec3; track: TrackFile; speedMps: number; seed: number; line: boolean; attendHum: boolean; dict: Record<string, string> }): FlightMeasure {
+function flyCourse(o: { col: ReturnType<typeof openVoxelCollision>; scene: string; spawn: Vec3; track: TrackFile; speedMps: number; seed: number; line: boolean; attendHum: boolean; nearAimM: number; dict: Record<string, string> }): FlightMeasure {
     const { col, speedMps: v, seed } = o;
     const src = { collision: () => col as never, transform: () => ({ s: 1, t: [0, 0, 0] }) };
     const scan = buildScanLesson(o.track, { sceneId: o.scene, sceneVersion: 1, src, spawn: { pos: o.spawn, yawDeg: 0 } }, { course: true });
@@ -205,7 +207,13 @@ function flyCourse(o: { col: ReturnType<typeof openVoxelCollision>; scene: strin
         if (t > limitMs + 180_000) result ??= 'timeout';
         if (result !== null) break;
         const target = run.target() as SonicObject | null;
-        const beacon = run.beaconTarget ? run.beaconTarget() : undefined;
+        let beacon = run.beaconTarget ? run.beaconTarget() : undefined;
+        // measuring switch (--line-near-aim <m>, off by default): with the line on, the gate's aim (lesson/gate-aim.ts) takes over
+        // while the craft is on the gate's entry side within this distance of its plane; the runner drops the aim when the line is on
+        if (o.line && o.nearAimM > 0 && target && target.order !== null) {
+            const lz = toLocal(target, p)[2];
+            if (lz > 0 && lz <= o.nearAimM) beacon = gateAim(target, p);
+        }
         const plan: FramePlan = planner.plan({ sample, world, target, ...(beacon !== undefined ? { beacon } : {}), floorY: scan.floorY });
         const heard: Percepts = ear.hear(plan);
         const cmd = pilot.step(heard);
@@ -331,7 +339,7 @@ function main(): void {
         for (const v of speeds)
             for (const seed of seeds) {
                 const f0 = Date.now();
-                const m = flyCourse({ col, scene, spawn, track, speedMps: v, seed, line, attendHum: !process.argv.includes('--loudest'), dict });
+                const m = flyCourse({ col, scene, spawn, track, speedMps: v, seed, line, attendHum: !process.argv.includes('--loudest'), nearAimM: Number(arg('--line-near-aim') ?? '0'), dict });
                 flights.push(m);
                 process.stdout.write(`line ${line ? 'on' : 'off'} ${v} m/s seed ${seed}: ${m.why} gates ${m.gates}/${m.gatesTotal} t ${m.timeS} s v50 ${m.medianSpeed} streams ${m.streams.median}/${m.streams.worstSecondMean}/${m.streams.maxFrame} onsets/s ${m.onsetsPerS} words/10s ${m.wordsPer10s} lead wall ${m.lead.wall?.median}/${m.lead.wall?.min} fc ${m.lead.floorceil?.median}/${m.lead.floorceil?.min} hum spare ${m.hum.spareSMedian}/${m.hum.spareSMin} turn ${m.hum.turnNeedDpsMedian}/${m.hum.turnNeedDpsMax} brake ${m.brakeNeedMps2Max} (${((Date.now() - f0) / 1000).toFixed(0)} s)\n`);
             }

@@ -14,14 +14,14 @@ Stage V1-measure (no product change):
 - [x] V1.3 (b) where the ear pilot fails at 8 and 12 m/s (Facts V1-b).
 - [x] V1.4 (c) the same with the racing line on (Facts V1-c).
 - [x] V1.5 design from the numbers (Design).
-- [ ] V1.6 gates.py --only vitest,architecture,i18n,b18 on this branch (not run: the stage hit its reply budget).
+- [x] V1.6 gates.py --only vitest,architecture,i18n,b18 on f3c3ccae: all 4 PASS (vitest 129 s; logs U:/Temp/gsfpv-gates-20261115-115317).
+- [x] V1.8 (pass 2) cause of the line-on 2 m/s regression measured (Facts V1-d, tool sonic-line-gate-audit.ts and the switch
+  `--line-near-aim` of sonic-speed-measure.ts, off by default).
+- [x] V1.9 (pass 2) Tunis 887f27aa measured (Facts V1-e); 2-loudest pilot on Wroclaw (Facts V1-f).
 - [ ] V1.7 the browser part of the stage rule (the owner's path on Wroclaw and Tunis): V1 changed nothing a pilot sees, so the
   release build and browser walk belong to the first stage that changes the product (V2).
 
-Left (exact, for the next worker):
-1. Run gates.py --only vitest,architecture,i18n,b18 on sonic4 (the only new file is a tool; tsc of tools/bench showed no error in it).
-2. Optional cross-check of V1-b with the 2-loudest pilot: same command with `--loudest` (not run).
-3. The line-on failures at 2 m/s end on the gate frame; the cause is a guess (Facts V1-c); measure it before the line becomes the guide (V2).
+Left (exact, for the next worker): V1 is complete. V2 starts from Design; the line-on fix is Design 5 (measured in V1-d).
 
 ## Facts (measured)
 
@@ -86,6 +86,42 @@ bearing / (time to the gate - reaction).
   frame instead of entering along the gate's axis; on the package's rings-course (Z4 pass 2) it helped.
 - Nothing changes at 5 to 12 m/s: the failure is the turn radius at the gate, which the line does not touch.
 
+### V1-d: why the line makes 2 m/s fail (pass 2, measured)
+Tool `npx tsx src/sonic-line-gate-audit.ts --walls <same> --scene 70b50d42 --spawn <same> --track <track-s1|s2> --flights
+<v1 out.json> --rows`; outputs U:/Temp/gsfpv-train3/sonic4/line-audit-s1.txt, line-audit-s2.txt. Clear half size for the body:
+ring 0.44 m, square 0.58 m.
+- The guess of V1-c is false for the line itself: the smoothed line crosses every gate (48 of 48) at its centre (0 m off), from
+  the entry side, at 6.4 / 7.5 deg (median, courses 1 / 2) to the gate's axis, max 23.5 deg.
+- The pursuit chord (the craft aims at the point LINE_LOOK_S x v ahead, at least 3 m) crosses the plane inside the clear size
+  at 2 m/s at 21 and 22 of 24 gates (median 0.16 / 0.20 m off); at the six failing gates the chord is 0.10 to 0.42 m off,
+  inside. The craft itself reached the plane 0.72 to 1.61 m off the axis (frame hit). At 5 / 8 / 12 m/s the chord is outside
+  at 13-17 / 18-19 / 21-22 of 24 gates (median 0.6 / 1.3 / 1.8 to 2.1 m): the line's look-ahead in seconds cuts the
+  corners at speed.
+- Code fact: with layers.racingLine the runner returns the line's point before the gate aim (packages/sonic-fpv
+  src/lesson/runner.ts beaconTarget, lines 2001-2004 return before gateAim at 2006): the S1 fix that leads through the opening
+  near the plane is off while the line is on, and the line has no pull toward the gate's axis near the plane.
+- Test of that cause (switch `--line-near-aim 3`: the gate aim takes over on the entry side within 3 m of the plane; outputs
+  v1-wroclaw-nearaim-s1/s2.json and .log): 2 m/s course 2 counted 3 of 3 (line on without it: 0 of 3), course 1 0 of 3 but
+  gates reached 24, 20, 21 (without it: 11, 6, 10; failures at g24, g20, g21, craft 0.66 to 1.09 m off the axis). 5 to 12 m/s
+  unchanged (0 of 12, 1 or 2 gates; turn radius, V1-b).
+
+### V1-e: Tunis 887f27aa (pass 2), line off, 2 courses x 3 seeds
+Walls: the cached shipped walls C:/dev/gsfpv-v03/.cache/scenes/887f27aa (read only), spawn 0,2,0 (course audit
+887f27aa.sum), course seeds 1 and 2 (24 and 14 gates). Outputs v1-tunis-s1/s2.json and .log.
+| m/s | counted | gates median | streams median / worst second | onsets/s | words/10 s | wall lead median s |
+|---|---|---|---|---|---|---|
+| 2 | 1 of 6 (2 touch, 3 fail) | 8.5 | 6 / 7 | 19.3 | 3.98 | 1.85 |
+| 5 | 0 of 6 | 2 | 7 / 7 | 42.5 | 14.0 | 1.44 |
+| 8 | 0 of 6 | 1 | 6 / 7 | 47.9 | 38.7 | 1.50 |
+| 12 | 0 of 6 | 1.5 | 6 / 7 | 45.8 | 47.3 | 1.19 |
+- Tunis is denser than Wroclaw: one stream more (6 to 7 against 4 to 5) and twice the onsets at 2 m/s (19.3 against 10.0); the
+  ear pilot counts only 1 of 6 even at 2 m/s. Line on: 0 of 24 at all speeds (the V1-d cause; not re-run with the switch).
+
+### V1-f: Wroclaw with the 2-loudest pilot (pass 2), line off
+Outputs v1-wroclaw-loud-s1/s2.json and .log. 0 of 24 counted at every speed; gates reached 2 to 7 at 2 m/s, 1 or 2 at 5 to
+12 m/s, 11 of 24 end in a touch: without the hum always attended the pilot does not get past the first gates. The guide must
+win the mix at every speed (Design 2), not only be in it.
+
 Not comparable with the browser runs of sonic3 (Wroclaw counted at 5 m/s): those used the page's probe pilot (steerByHum reads
 the hum's bearing from the page, brakes by its own rule) and the simulator's physics; here the package's ear pilot and craft.
 
@@ -112,8 +148,11 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
 4. A brake cue: when the hum is more than 45 degrees aside (estimate) and nearer than the turn radius plus 1 s x v, the speed
    layer says "slow" (a falling tone): the failing manoeuvre of V1-b needs a slower approach, not a later turn. The ear pilot
    gets the matching rule (brake on that cue), so the measure tests the cue, not a cleverer pilot.
-5. The line as the guide at speed only after the line-on 2 m/s regression of V1-c is measured and fixed (the line must pass
-   each gate through its opening along the gate's axis); until then the gate hum stays the guide.
+5. The line as the guide at speed only with the gate aim near each gate (V1-d): in runner.ts beaconTarget the gate aim takes
+   over on the entry side within max(3 m, 0.4 s x v) of the plane (3 m measured at 2 m/s by `--line-near-aim 3`; the seconds
+   term an estimate), and the line's look-ahead at speed must keep its chord inside the opening near a gate (today 18 to 22 of
+   24 chords miss at 8 and 12 m/s): shorten the look to the gate's approach point when a gate is nearer than the look. Until
+   course 1 counts at 2 m/s with the line on, the gate hum stays the guide.
 6. Caps lift by passing, never by choice: speed lessons speed-5 to speed-8 at 6, 8, 10, 12 m/s (estimates, the steps under
    the ear pilot's measured top after V2); each opens only after a counted pass of the step before. The free flight over a scan
    (scan-free, cap 5 today) and courses by N take as cap the highest speed lesson passed, at least 5 m/s. A pilot who has not
@@ -126,10 +165,15 @@ the hum's bearing from the page, brakes by its own rule) and the simulator's phy
   the pilot's gains and the craft's limits are the package's estimates.
 - The stream count is the planner's plan, not what the engine renders (the budget acts in the planner; beds counted when not
   null, their level not checked).
-- Tunis 887f27aa not measured in V1 (Wroclaw only, as the stage asked); the 2-loudest pilot not run.
-- No browser run, no gates.py run (Left 1).
+- Tunis line-on not re-run with `--line-near-aim`; the Tunis walls are the cached shipped walls of the lead copy, their
+  version against the live release not checked.
+- No browser run (V1 changed nothing a pilot sees). gates.py ran on f3c3ccae, before the pass-2 tool and switch (tsc of
+  tools/bench: 0 errors in the two tools).
 
 ## Cost notes
 - 2026-11-15 V1: most replies went to finding the pieces for a Node scan flight (spawn, course worker steps, the runner options,
   the submodule standing at an old commit); a short agent-map line on "fly a scan course in Node" (sonic-speed-measure.ts) would
   have saved about 8 replies. The flights themselves are cheap (2 to 21 s each).
+- 2026-11-15 V1 pass 2: most replies went to finding where the line meets the gate aim (runner.ts beaconTarget) and the Tunis
+  walls on disk; a note in the agent-map naming the scene voxel cache (.cache/scenes/<id>) and the line/aim order would have
+  saved about 4 replies. Running the gates and the Tunis flights detached at the start cost no waiting.
