@@ -363,7 +363,8 @@ export const course: Feature = {
             const T = flownTransform();
             const margin = marginOf(tr);
             const problems = wallsCheck(col, T, margin)(upgradeTrack(tr));
-            const rep = checkTrack(tr, col, T, margin, true);
+            // measured (free radii, minutes on 5 cm walls) only when the Save check finds a problem
+            const rep = checkTrack(tr, col, T, margin, problems.length > 0);
             const st = flownStart(tr, T);
             const near = st ? nearestWall(col, st.pos) : null;
             const g1 = run!.gates[0];

@@ -285,6 +285,66 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
 - X3: about 30 replies; most went to the unit test (two runs found no provable turn on seeds 1-6 of the test world).
   A first Node pass that tries every turn with checkTrack over the test worlds would have shown at once that the gate
   axes refuse almost every turn, and which seeds to use.
+- fix3b Y1 pass 1: about 30 replies; most went to the page probe of the Tunis course links (three runs that hung to the
+  timeout) and to an audit whose measured report (free radii every 0.25 m) ran 20 min for one course. A first run with a
+  30 s per-step watchdog and measure only on failure would have shown both in two replies.
+
+# Lane fix3b (train 3): a generated course passes the Save check untouched
+
+Same worktree, branch fix3a. Runs and logs: U:/Temp/gsfpv-train3/fix3b/. Release build of 4e44a5bd: 1934 files,
+sha256 9e509e47..., server port 5782.
+
+## Status
+
+Stage Y1-save-check
+- [x] git fetch, merge --no-ff origin/main (10d9f249) into fix3a: d4ec7061; submodule packages/sonic-fpv updated to
+      b05aedaa (the merge's pin); tsc apps/fly and packages/tracks: no errors; packages/tracks vitest 13 files 116 passed;
+      tools/bench course and tracks tests (15 files) 79 passed; release build of 4e44a5bd done.
+- [x] read-only hook window.__gsfpv.course.saveCheck() in apps/fly/src/app/builtin/course.ts: the Save check the way
+      the edit mode runs it (editor3 builtin/course.ts and editor/check-core.ts: wallsCheck(ctx.session.collision,
+      flownTransform(), marginOf(track))(upgradeTrack(track)), raw session walls, same as the generator's worker) plus
+      transform, walls res, spawn, start, gate 1, the generator's proof flag, failing legs and gates (4e44a5bd).
+- [x] probe tools/bench/scripts/save-check-probe.mjs (ways: shiftg, g1.<seed36>; one browser per way, a row written
+      after each way; no GPU lock of its own)
+- [x] Node audit tools/bench/src/save-check-audit.ts (course as the worker makes it, then the Save check; measured
+      report only when the check finds a problem)
+- [~] (a) page on Tunis: Shift+G done (below); link seeds 1 and 2 NOT measured: the page hangs (see Measured)
+- [ ] (b) cause of the editor lane's refusal: see Measured; not reproduced on an untouched course so far
+- [ ] (c) Node table for the nine catalogue scans, seeds 1-5: only Tunis seeds 1-3 measured
+- [ ] repair (only if (a)-(c) find problems on an untouched course), unit tests with negative controls
+- [ ] table (c) again, page on Tunis three seeds, tsc, gates.py --only vitest,architecture,i18n,b18, a6-reference
+
+## Measured (Y1)
+
+- (a) Page, Tunis 887f27aa, shipped walls (walls state 'none', source 'shipped'), Shift+G, page seed 176966006: 24 gates,
+  Save check problems 0, start [0.1, 2.1, 0.3] (flown = scan, transform [1, 0, 0, 0]), gate 1 [-0.5, 3.3, 15.3], walls
+  res 0.05 m (log page-before-tunis.log; its JSON was lost to the timeout kill, fixed since).
+- (a) Page, Tunis, links g1.1 and g1.2: three runs, each stuck after the first poll at 5 s: page.evaluate did not return
+  until the 200-280 s timeout ended the run ("Target crashed" is the kill). Logs page-before-tunis-g1.1-2.log and
+  -g1.2.log. Not measured why; a guess: something on the page's thread blocks while a link course loads (fix3a's
+  gate-guide-probe ran the same link on a58510dd, before the merge of integration B). Suspect files:
+  apps/fly/src/app/builtin/course.ts link path (linkSeed, lines 82-131) or a merged feature.
+- (b) Node, Tunis shipped walls (scenes.ts), spawn [0, 2, 0], worker's fitCourse: seed 1: 24 gates, fit 2.7 s, problems
+  0, start [0.1, 2.1, 0.3], start free radius 1.44 m, nearest wall 1.55 m (margin 0.5 m), gate 1 [-0.5, 3.3, 17.1],
+  generator proof ok; seed 2: 14 gates, 4.9 s, problems 0, same start; seed 3: 24 gates, 2.9 s, problems 0, same start
+  (log audit-before-tunis.log). The start is 1.44 m clear against the 0.5 m rule, so the spawn rule is not the cause on
+  Tunis. The editor lane's refusal (docs/wip/editor3.md on branch editor3, its item c) came with 4 problems on a course
+  its probe had already changed (a floor add and gate moves before Save; problems at open were not recorded), so it is
+  not shown to be a refusal of an untouched course.
+- fitCourse time: 2.7-4.9 s per Tunis seed here, not the 804 s the editor lane saw; the measured checkTrack (free radii,
+  measure true) of one 300 m course took about 20 min on these 5 cm walls (seed 3 row), a likely source of that number.
+
+## Left (Y1)
+
+1. Page, Tunis, links g1.1 and g1.2: find why the page's thread blocks (one run with a CPU profile over CDP, or poll
+   with a timeout and read window.__gsfpv.course.progress), then the saveCheck row for both.
+2. Node: cd tools/bench && npx tsx src/save-check-audit.ts --seeds 5 --out U:/Temp/gsfpv-train3/fix3b/audit-before.json
+   (detached, log; all published walls in U:/Temp/gsfpv-train3/walls/release plus Tunis): the table of (c).
+3. If every untouched course has 0 problems: the generator already ends with the Save check (generate.ts final
+   checkTrack with exitTurns, stricter than the Save's) except that it returns the course even when proof.ok is false
+   (generate.ts line 595, fitCourse does not look at it): make fitCourse take the next seed or scale on proof false, with a
+   unit test and a negative control. The spawn rule change only if a row shows a start-wall or a start leg problem.
+4. Then the editor lane's refusal belongs to the editor's own changes (floor add, moves): one line to the lead.
 - X3 pass 2: 20 replies, most of them blocking waits (38 minutes for the GPU lock, then 16 minutes of probes); one
   runner script with all four probes and one wait per milestone was the cheap part; a lock queue with fairness would save the wait.
 - Stage fixes pass 2: 28 replies; three Wroclaw guide runs (walls built each time, 2.5-5.5 min) because the 'above' look first

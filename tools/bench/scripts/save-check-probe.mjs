@@ -17,15 +17,19 @@ if (!base || !id || !out || ways.length === 0) { console.error('usage: save-chec
 const waitS = Number((rest.find((a) => a.startsWith('--wait-s=')) ?? '--wait-s=400').slice(9));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const pick = pickBrowser({ expected: chromium.executablePath() });
-const browser = await chromium.launch({ ...pick.launch, headless: true });
 const rows = [];
+let browser = null;
 let bad = 0;
 try {
     for (const way of ways) {
         const t0 = Date.now();
+        // a fresh browser per way: a second context in one browser crashed on Tunis (Target crashed)
+        browser = await chromium.launch({ ...pick.launch, headless: true });
         const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
         const page = await ctx.newPage();
         page.on('pageerror', (e) => console.log('pageerror ' + String(e.message).slice(0, 200)));
+        page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') console.log(`console ${m.type()} ${Math.round((Date.now() - t0) / 1000)} s ${m.text().slice(0, 200)}`); });
+        page.on('crash', () => console.log(`crash ${Math.round((Date.now() - t0) / 1000)} s`));
         const row = { way };
         try {
             await page.goto(`${base}/fly/?scene=${id}${way === 'shiftg' ? '' : `&course=${way}`}&nowarn=1`);
@@ -57,10 +61,12 @@ try {
             console.log(`${way}: ERROR ${row.error}`);
         }
         rows.push(row);
-        await ctx.close();
+        writeFileSync(out, JSON.stringify({ base, id, rows }, null, 1));
+        await browser.close();
+        browser = null;
     }
 } finally {
-    await browser.close();
+    if (browser) await browser.close();
     writeFileSync(out, JSON.stringify({ base, id, rows }, null, 1));
 }
 process.exit(bad === 0 ? 0 : 1);
