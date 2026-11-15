@@ -830,7 +830,10 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         const v = (p.hum ?? []).find((h) => h.distance !== null && h.dir !== null)?.dir as [number, number, number] | undefined;
         const ahead = v !== undefined && Math.abs(v[0]) < 0.5;
         // the speed asked: W pulsed to hold the horizontal speed under speedMps (none: W held)
-        await hold('KeyW', ahead && (speedMps === undefined || speed < speedMps));
+        // Y2 pass 2: no W while the hum is steeply above or below (slope 0.3, an estimate): the craft gets to the gate's height
+        // before it reaches the gate plane; Y1/Y2 courses ended on "gate missed" at 3 and 5 m/s
+        const level = v === undefined || Math.abs(v[1]) < 0.3;
+        await hold('KeyW', ahead && level && (speedMps === undefined || speed < speedMps));
         if (held.has('KeyW') && stats) stats.speeds.push(speed);
         if (stats && p.target && stats.targets[stats.targets.length - 1] !== p.target.id) stats.targets.push(p.target.id);
         // a stall is the craft not moving AND the hum not turning (Z5 Wroclaw 5 m/s: Shift held with E froze the turn for 270 s
@@ -855,7 +858,8 @@ async function steerByHum(page: Page, done: (p: R10Probe) => boolean, ms: number
         await hold('KeyQ', v !== undefined && v[0] < -0.12);
         // height by the hum's slope: 0.08 (an estimate) is about 0.5 m at 6 m; at 0.2 the pilot of run 4 flew 1 m under gate 2 into an obstacle for 230 s
         // turn first, then the height: the keyboard reads Shift held with a letter as a chord, so Shift+E did not turn (Z5 Wroclaw)
-        await hold('Space', !turning && v !== undefined && v[1] > 0.08);
+        // Space is no chord with a letter (only Shift is), so the climb goes on while turning
+        await hold('Space', v !== undefined && v[1] > 0.08);
         await hold('ShiftLeft', !turning && v !== undefined && v[1] < -0.08);
         await sleep(60);
         p = await probe10(page);
@@ -1200,7 +1204,11 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const spoken = spokenAfter(await events(page), from);
         await page.screenshot({ path: `${shots}/z5-${scene}-${speed}-end.png`, fullPage: false });
         run.flight = { s: Math.round((Date.now() - tF) / 1000), phase: end.phase, target: end.target?.id ?? null, gates: stats.targets, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, capS, spokenTail: spoken.slice(-40), trail: trail.slice(-8) };
-        check(`${tag}: the course was flown to its end by the hum`, end.phase === 'passed' || end.phase === 'idle', run.flight);
+        // Y2 pass 2 (shots z5-*-end.png): every Y1/Y2 'passed' course ended with "Gate n was missed. Let's go on to the next lesson"
+        // (reason.gate-missed, fly.moving-on): the runner moves on after the last attempt; only a course counted without it passes
+        (run.flight as Record<string, unknown>).counted = (end.phase === 'passed' || end.phase === 'idle') && !spoken.includes('fly.moving-on');
+        (run.flight as Record<string, unknown>).misses = spoken.filter((k) => k === 'reason.gate-missed' || k === 'lesson.free-garden.retry').length;
+        check(`${tag}: the course was flown to its end by the hum and counted (no fly.moving-on)`, (run.flight as Record<string, unknown>).counted === true, run.flight);
         await r11Off(page, tag, run);
         await ctx.close();
     }
@@ -1235,7 +1243,8 @@ async function r12(browser: () => Promise<BrowserContext>, served: Served): Prom
         const spoken = spokenAfter(await events(page), 0);
         const run = { id, openedS: opened, flightS: Math.round((Date.now() - tF) / 1000), phase: end.phase, attempt: end.attempt, gates: stats.targets.length, dodges: stats.dodges, medianSpeed: Math.round(median(stats.speeds) * 100) / 100, maxSpeed: Math.round(Math.max(0, ...stats.speeds) * 100) / 100, spokenTail: spoken.slice(-10), trail: trail.slice(-6) };
         (result.r12 as object[]).push(run);
-        check(`${tag}: flown to its end (passed)`, end.phase === 'passed', run);
+        // Y2 pass 2: 'passed' also follows the last failed attempt ("Let's go on to the next lesson", fly.moving-on); only a counted pass passes
+        check(`${tag}: flown to its end and counted (passed, no fly.moving-on)`, end.phase === 'passed' && !spoken.includes('fly.moving-on'), run);
         await ctx.close();
     }
 }
