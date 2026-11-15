@@ -1513,5 +1513,35 @@ Logs U:/Temp/gsfpv-train3/mix/.
       Tests: laps.test.ts 'lane mix X2' (3 cases) NEG OK against laps.ts of HEAD 26bb9bbe; course-finish.test.ts 'lane mix X1,
       X2' (replaces CV-2) NEG OK against finish.ts and course.ts of 26bb9bbe. packages/tracks + apps/fly/src/course + 6 bench
       tests reading course.ts or the sound course + a6-reference: 26 files, 197 passed. tsc fly 0, tsc tracks 0.
-- [ ] Release build and browser proof (1) to (6), then the chain (tracks-page, course-path-probe Wroclaw and Tunis,
-      pause-over-course-probe, accept-fly B6 B7 B9-B16, sonic-int-review r9 r12, gates.py with leaks).
+- [x] sonic-int-review r11 option Z5_COURSE_FIRST=1 (tools/bench/src/sonic-int-review.ts): Shift+G in the ORDINARY flight
+      before Backslash, waits for the drawn course, records each gate's element (flat = square with vertical pass axis);
+      presses no course key in the sound mode; checks 'Fly by Sound takes the course made by eye (one set of gates, no line
+      asks for a key)' (gates equal, sonic.say.courseOffer said 0 times); flight.byKind lists 'gN:kind:ball|strict' in the
+      order the hum led. tsc bench 0. Not yet run.
+- [x] Release build of b937b66c (mix/build.log): BUILD EXIT 0, 1934 files, sha256 16677500...; dist/walls copied from
+      U:/Temp/gsfpv-train3/walls/release (10 scans). The probe commit after it changes only tools/bench (dist stays valid).
+
+## Left (M1, exact, in order; ports 5780-5799, logs U:/Temp/gsfpv-train3/mix/)
+1. Serve dist on 5784 (node tools/bench/scripts/serve-csp.mjs dist 5784). Proof (1): onecourse-probe.mjs
+   http://localhost:5784/en mix/onecourse-wro.json U:/Temp/gsfpv-train3/shots 70b50d42 mix (render off, no lock): after
+   Backslash expect target 'g3' (gate 3 of the same course), no courseOffer line, one gate set (stagePrims 0). The probe's
+   later step 'shiftG-sound' then builds a new single-gate course (X3).
+2. Proof (2) and (3): PORT=5785 Z5_SCENE=70b50d42 Z5_SPEEDS=5 Z5_COURSE_FIRST=1 node --import tsx tools/bench/src/sonic-int-review.ts r11
+   (render off: no lock; the same recipe as earlier r11 runs, check how they were started in this file's Y3 part), then the
+   same with Z5_NARRATOR=off. Read run.eyeCourse, flight.counted, flight.byKind. If a flat or cube is not counted, read
+   missRecords and the trail's closest distance to its centre and adjust SOUND_BALL_PAD_M (packages/tracks/src/laps.ts)
+   from that number; then laps.test.ts again.
+3. Proof (4): d7-probe.mjs http://localhost:5784/en mix/d7.json 70b50d42 5.
+4. Proof (5): course-keys-probe.mjs (keyboard pilot, ordinary flight) on Wroclaw seed 289710480 as run k4 (z3/keys2.sh in
+   U:/Temp/gsfpv-train3/course4/z3/, GPU lock): the flat squares counted strictly, plus one refused pass beside a flat square
+   (the probe has no such mode yet: add a 'miss the flat square once' option or record it by hand from a run's cross/half).
+5. Proof (6): course-finish-probe.mjs (U:/Temp/gsfpv-train3/course4/fixcv/page.sh is the recipe; LAPS=1) on Wroclaw,
+   picture U:/Temp/gsfpv-train3/shots/course4-finish-open.png looked at. Code reading: course.ts frame() on 'done' calls
+   hud.card(c, end.splash, ...), and hud.ts card() draws the run's time in the splash element (course-splash-time), so X4
+   is expected to hold today: not measured.
+6. Chain: tracks-page, course-path-probe Wroclaw and Tunis, pause-over-course-probe, accept-fly B6 B7 B9-B16 (SITE),
+   sonic-int-review r9 and r12, then gates.py --only vitest,architecture,i18n,b18,leaks. Write 'What the owner does'.
+
+Cost (mix M1 pass 1): about 30 replies; the most went to finding where the sound mode gets the course (lessons.ts,
+feature.ts, the engine's gate aim) and reading r11's long body. A map line 'sound target <- course.ts hook.sound.inUse ->
+lessons.ts courseTarget -> engine gateAim' in docs/agent-map.md would have saved about 5.
