@@ -370,6 +370,17 @@ Stage Y1-save-check
   after the new test failed (cells of 1.4 m free radius never sit under 2.2 m); reading freespace clearanceM before the
   first edit would have saved two replies.
 
+- fix3b Y2 pass 2: 30 replies; most went to the page probe (a new one, gate-place-probe.mjs) and the two audit waits; the
+  top map came out 346 px wide and useless for poor ends; a quality-share layer drawn in Node beside the audit would be cheaper.
+
+Left for pass 3 (Y2): (1) Opole page run (crashed at 590 s: run it alone, REGEN=0) and fix3b-opole-pilot.png;
+(2) fix3b-wroclaw-top.png and -tunis-top.png are too small and show no quality: draw the tile share (quality.ts near / best)
+in the top map, step about 0.15 m/px; look at -tunis-top.png; (3) Wroclaw page third course had a gate at 5.0 m and one with
+no ground under it, and Node seed 2 kept only 5 gates (the poor-leg drop thins it): find which drop path; (4) Wroclaw seed 3
+leg 5 at 0.08 and Tunis leg 23 at 0.14 survive the final leg check: not explained; (5) R3 no gate in leaves (Wroclaw pilot-2
+shows gate 6 beside a conifer); (6) Lublin: move the start into the well-scanned part when the spawn's free space has no
+good tile (freespace.ts / generate.ts); (7) gates.py subset, a6-reference, unit test with NEG for the final leg check.
+
 ## Status Y2-gate-places
 
 - [x] merge origin/main (b5b62d47, lead note) into fix3a: a1c0446e
@@ -383,11 +394,16 @@ Stage Y1-save-check
       0.4 m at a time only when too few cells (WalkInfo.eyeHi); eye cells need 1.0 m free radius (EYE_FREE_M, estimate)
 - [x] test packages/tracks/test/eye-level.test.ts, NEG OK against HEAD (neg_control.py, generate.ts and quality.ts);
       tsc packages/tracks clean; packages/tracks vitest 14 files 119 passed (tracks-y2.log)
-- [ ] the after table with EYE_FREE_M 1.0 (place-after1.json was run with 1.4 m and POOR_SHARE 0.25; see Measured)
-- [ ] Lublin 2f1ddf5f stays above the eye (2.8-10 m, quality 0.06): the eye band finds too few cells there; cause not measured
-- [ ] R3 (no gate in leaves): the walls hold no leaves; needs the splat positions; nothing built yet
-- [ ] page time on Wroclaw and Tunis; pictures fix3b-wroclaw-pilot(-2), -wroclaw-top, -tunis-gate1, -tunis-top, -opole-pilot
-- [ ] tsc apps/fly; gates.py --only vitest,architecture,i18n,b18; a6-reference (generator only, flight code untouched)
+- [x] after table, EYE_FREE_M 1.0 (place-after.json), then every leg of the finished course read every 1 m (LEG_STEP_M)
+      and a poor leg drops its far gate (c5d92269); table place-after2.json, numbers in Measured
+- [x] Lublin cause measured (audit --diag): the free space joined to the spawn is 900 cells of 0.8 m (span 12-13 m), none
+      of them over a good tile (spawn share 0, 19160 good tiles elsewhere): the spawn sits in a closed pocket away from the
+      well-scanned part, so the eye band gets 0 cells and the old dense-band path lays the course
+- [~] page run on release of c5d92269's code (build sha label 6281ec68 + working tree, port 5784): Wroclaw and Tunis done,
+      Opole crashed (Target crashed, timeout 590 s); pictures looked at: wroclaw-pilot, wroclaw-pilot-2, wroclaw-top, tunis-gate1
+- [ ] R3 (no gate in leaves): nothing built (walls hold no leaves; needs splat positions in the worker or the Node table)
+- [x] tsc apps/fly and packages/tracks clean; packages/tracks vitest 14 files 119 passed (after the leg change)
+- [ ] gates.py --only vitest,architecture,i18n,b18; a6-reference (generator only, flight code untouched)
 
 ## Measured (Y2)
 
@@ -403,3 +419,13 @@ Stage Y1-save-check
   (all its tiles under 0.25), so the share went to 0.15: Opole 17-18 gates at scale 0.5, all at eye level, 2.8-2.9 s;
   Wroclaw seeds 1-2 24 gates at eye level, span 138-141 m, 7.5 s. Save check problems 0 in every row with gates.
   The audit's leg samples every 1 m still find 0.12-0.13 on Wroclaw legs (the generator samples every 2 m): open.
+- place-after.json (EYE_FREE_M 1.0, legs every 2 m): Wroclaw 24 gates, eye by ray 24 of 24, centre 1.4-5.6 m (median
+  1.7-2.0), poor legs 2-4 a course (lowest share 0.04-0.11), span 46-126 m, fit 2.6-4.5 s; Opole scale 1 (not 0.5) all seeds.
+- place-after2.json (c5d92269): Wroclaw seeds 1-5 gates 24/5/20/24/24, eye by ray all, lowest gate share 0.20-0.26,
+  poor legs 0 except seed 3 leg 5 (0.08), span 35-132 m, fit 3.9-9.5 s; Tunis 24 gates all eye, poor legs 0 except seeds 2
+  and 4 leg 23 (0.14), span 103-139 m, 2.8-4.6 s; Opole 12-22 gates all eye, poor legs 0, 1.3-1.6 s; Forest Floor 8-10
+  gates scale 0.5, all eye by ray, 0.9-1.2 s; Lublin unchanged (eye 0-1, share 0.06, see Status). Save check 0 in all 25.
+- Page (place-page-wroclaw.json, place-page-tunis-opole.json): Wroclaw Shift+G to drawn course 11.3 / 13.3 / 25.1 s, gates
+  24 / 18 / 14, eye 22 / 18 / 12 (highest 3.35 / 2.0 / 5.0 m, one gate with no ground under it); Tunis 4.6 / 5.3 / 3.9 s,
+  24 gates each, eye 24 / 22 / 23 (highest 2.55 m). Pilot views 8 m before the gate at 1.6 m: Wroclaw gate 1 and gate 6
+  and Tunis gate 1 at 1.6-1.65 m above the ground, elevation -3.9 to 0.7 deg from the view's centre: in front of the eyes.
