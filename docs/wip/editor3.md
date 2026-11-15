@@ -17,7 +17,8 @@ Stage H1-tunis (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
   says "the way from the start to gate N"), new key course.edit.p.legStart in en, es, pl, ru. Test
   tools/bench/test/editor3-h1.test.ts 3 tests, NEG OK (neg_control.py ref HEAD, texts.ts, words.ts and the four locale
   files; on the old code the import of problemParts is missing, so it fails by a TypeError, not an assertion).
-  editor3-*.test.ts 10 files 56 tests pass; apps/fly tsc 0.
+  editor3-*.test.ts 10 files 56 tests pass; apps/fly tsc 0. Commit d2aa14f1. gates.py --only vitest,architecture,i18n,b18
+  on d2aa14f1: all PASS (vitest 150 s; logs U:/Temp/gsfpv-gates-20261115-083332).
 - [x] H1.2 (c) read from the G3 records (g3/runA/e4.json), not run again:
   - "No click target" on Tunis: the probe's candidate list was EMPTY (click.clicks []), i.e. no other gate stood on screen
     more than 160 px from the selected one (editor3-prove.ts 207). The page's pick was never tried on Tunis; not an
