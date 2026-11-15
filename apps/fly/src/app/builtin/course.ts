@@ -709,7 +709,7 @@ export const course: Feature = {
             bar = new GateBar(ctx.ui, { key: (p) => applyKey(p), where: () => view?.standScreen() ?? null, tool: () => view?.tool ?? 'move', setTool: (tl) => view?.setTool(tl) });
             top = new TopBar(ctx.ui, { key: (p) => applyKey(p), add: () => toggleAdd(), show: (part) => panel?.reveal(part) });
             // read only, for the page probes (tools/bench/src/editor3-smoke.ts)
-            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode } : null);
+            (window as unknown as { __gsfpvEditView?: () => unknown }).__gsfpvEditView = () => (view ? { ...view.debug(), mode, bar: bar?.debug() ?? null } : null);
             // lane editor3 H1, read only: the shown handles' shape under a page point (the probe finds the ring it presses)
             (window as unknown as { __gsfpvEditHit?: (x: number, y: number) => unknown }).__gsfpvEditHit = (x, y) => view?.hitAt(x, y) ?? null;
             if (!adminLive && adminHinted()) {

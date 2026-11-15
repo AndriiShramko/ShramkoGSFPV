@@ -89,6 +89,11 @@ export class GateBar {
         this.hidden = on;
     }
 
+    /** For the page probes (read only): the hide flag and what the last frame drew */
+    debug(): { hidden: boolean; vis: string } {
+        return { hidden: this.hidden, vis: this.root.style.visibility };
+    }
+
     private tick = (): void => {
         const tool = this.host.tool();
         if (tool !== this.shownTool) {

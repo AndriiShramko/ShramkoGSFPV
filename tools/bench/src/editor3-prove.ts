@@ -62,6 +62,24 @@ function install(): void {
     } catch { /* no long-task timing */ }
     const tick = (t: number): void => { perf.frames.push(t); if (perf.frames.length > 20000) perf.frames.splice(0, 10000); requestAnimationFrame(tick); };
     requestAnimationFrame(tick);
+    // G1: after every pointerup, the gate bar's hide flag and drawn visibility, the shown handle set and each set's
+    // [enabled, nodes, selectedAxis, hoverAxis]: right at the up, after the task, and two frames later
+    const ups: unknown[] = [];
+    (window as unknown as { __ups: unknown[] }).__ups = ups;
+    const snap = (when: string, n: number, target: string): void => {
+        const f = (window as unknown as W).__gsfpvEditView;
+        const d = (f ? f() : null) as { bar?: unknown; tool?: string; dragging?: boolean; sets?: unknown; mode?: string } | null;
+        if (d) ups.push({ n, when, target, t: Math.round(performance.now()), bar: d.bar, tool: d.tool, dragging: d.dragging, mode: d.mode, sets: d.sets });
+    };
+    let count = 0;
+    window.addEventListener('pointerup', (e) => {
+        const n = ++count;
+        const el = e.target as HTMLElement | null;
+        const target = el ? (el.closest('[data-bar]') ? `bar:${(el.closest('[data-bar]') as HTMLElement).dataset.bar}` : el.tagName) : 'none';
+        snap('up', n, target);
+        setTimeout(() => snap('task', n, target), 0);
+        requestAnimationFrame(() => requestAnimationFrame(() => snap('frame2', n, target)));
+    });
 }
 
 /** H1: walk out from a screen point along a screen direction in 6 px steps (from `min` px, up to 450) with the page's
@@ -661,6 +679,7 @@ async function sizeRepro(page: Page, id: string): Promise<Record<string, unknown
     await sizeDrag('run1-order-key');
     out.bars = bars;
     out.tries = tries;
+    out.ups = await page.evaluate(() => (window as unknown as { __ups?: unknown[] }).__ups ?? []);
     return out;
 }
 
