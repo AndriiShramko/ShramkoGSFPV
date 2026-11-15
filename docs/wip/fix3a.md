@@ -982,6 +982,30 @@ Logs U:/Temp/gsfpv-train3/course4/c4/. Release build of 05e983f8: BUILD EXIT 0 (
       square refused by space (it needs about 6 m over a gate at 1.8 m).
 - [ ] left, see 'Left (C4-elements)'
 
+Pass 2 (logs U:/Temp/gsfpv-train3/course4/c4p2/):
+- [x] gate-place-audit --elements (prints onElements drawn, placed, noSpace, noProof and the gate kinds); run
+      --scenes 70b50d42,39e63ce9,7a475d38 --seeds 10 (elements.json, elements.log), Save problems 0 in all 30 courses.
+      Elements drawn / placed (refused by space, by proof), gate 1 and an open course's last gate not drawn:
+      Wroclaw 70b50d42, 280 gates: single 47/47, square 38/38, tunnel 46/18 (16, 12), flat 26/7 (6, 13), cube 40/37 (3, 0);
+      gates ring 197, square 45, cube-frame 38. Placed shares of 197 drawn: tunnel 0.09, flat 0.04, cube 0.19, square 0.19,
+      single (with the refused) 0.49, against the design 0.2, 0.15, 0.2, 0.2, 0.25.
+      Modlinek room 39e63ce9, 62 gates: single 6/6, square 7/7, tunnel 6/2 (4, 0), flat 4/0 (4, 0), cube 7/6 (1, 0).
+      Winter Garden 7a475d38, 354 gates: single 58/58, square 48/48, tunnel 44/32 (4, 8), flat 28/18 (2, 8), cube 43/43.
+      So: the flat square never fits in Modlinek (by space), and on Wroclaw tunnels and flat squares come at under half of
+      their design share; FLAT_RISE_M and TUNNEL_GAP_M not changed (a refused element is not drawn again: see Left).
+- [x] gate-place-map --elements colours the gates by kind (ring white, square yellow, cube magenta, flat green):
+      U:/Temp/gsfpv-train3/shots/course4-elements-top.png, Wroclaw seed 1, 30 gates: a tunnel at gates 4-7, flat squares
+      9, 14, 16, cubes 2, 20, 22, 25, 28, squares 17, 18, rings the rest. Looked at: a person sees the course along the
+      street with coloured marks of each kind; the tunnel's four gates sit on top of one another at this scale.
+      (--sections none throws in the section code after the top map: not fixed, the top map is written first.)
+- [x] Fly by Sound, ear pilot (sonic-int-review.ts r11, Tunis 887f27aa, 5 m/s, render off, port 5781, release of
+      5be8164c; evidence/2026-11-15/sonic-int-review-r11-course4.json): 9 of 10 checks pass; N makes a course; the pilot
+      passed g1 to g24 in its first attempt, then the lesson said retry twice and the third attempt ended at g12 with
+      'gate missed' (FAIL 'flown to its end'). The course's gate kinds were not read (course-ask sets no elements flag:
+      single upright gates by construction).
+- [x] hook course.gatePoses gives each gate's shape (course.ts, hook.ts) for the new probe
+      tools/bench/scripts/course-elements-probe.mjs (scripted pilot that SETS the craft state, not key events).
+
 ## Left (C4-elements)
 
 1. Node table with elements on Wroclaw 70b50d42 and rooms 39e63ce9, 7a475d38, seeds 1-10: gate-place-audit has no

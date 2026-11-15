@@ -28,7 +28,7 @@ export interface CourseHook {
     /** stage G1-progress: the course's progress line now (course/progress.ts), the arrival warning, or null */
     progress?: string | null;
     /** stage G4-prove: every gate's centre and rotation (w, x, y, z), flown frame; [] without a course */
-    gatePoses?: () => { pos: number[]; quat: number[] }[];
+    gatePoses?: () => { pos: number[]; quat: number[]; shape?: Record<string, unknown> }[];
     /** stage G4-prove: the course HUD's text now (lap clock and lines), null when it is not on the page */
     clockText?: () => string | null;
     /** stage X2-gate-one: what the guide to the next gate shows now (course/hud.ts GuideState) */

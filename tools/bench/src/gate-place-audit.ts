@@ -177,7 +177,13 @@ async function main(): Promise<void> {
                     walks.push(`${w.walked}-${w.cutClose}c-${Object.entries(by).map(([k, v]) => `${v}${k}`).join('.')}=${w.kept}` + (w.walked === 0 ? ` b${x.banded ? 1 : 0} n${x.wanted} far${x.farM} band${JSON.stringify(x.band)}${why}` : ''));
                 };
                 refreeMs = 0;
-                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, refree);
+                // course4 C4: --elements composes the course as the page's Shift+G does; the last composition is kept
+                const ELEM = process.argv.includes('--elements');
+                let comp: { drawn: Record<string, number>; placed: Record<string, number>; noSpace: Record<string, number>; noProof: Record<string, number> } | null = null;
+                const onElements = (c: typeof comp): void => {
+                    comp = c;
+                };
+                const got = fitCourse(free, walls, { seed, scene: { id: s.id, version: s.v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, onWalk, ...(ELEM ? { elements: true, onElements } : {}) }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() }, refree);
                 const ms = Math.round(performance.now() - t0);
                 const tr = got.track;
                 if (!tr) {
@@ -229,7 +235,9 @@ async function main(): Promise<void> {
                     lowUnder03: gates.filter((g) => !(g.low >= 0.3)).length,
                     gateQmin: Math.min(...gates.map((g) => g.q)), legQmin: Math.min(...legs.map((l) => l.minQ)), legBadM: r2(legs.reduce((a, l) => a + l.badM, 0)),
                     layerM: prof.layerM, peakAt: r2(peak * prof.layerM), profile: prof.perTile.slice(0, Math.ceil(6 / prof.layerM)),
-                    gateRows: gates, legRows: legs
+                    gateRows: gates, legRows: legs,
+                    ...(comp ? { elements: comp } : {}),
+                    kinds: gates.reduce<Record<string, number>>((m, g) => ((m[g.kind] = (m[g.kind] ?? 0) + 1), m), {})
                 };
                 rows.push(row);
                 const { gateRows: _g, legRows: _l, profile: _p, ...short } = row;

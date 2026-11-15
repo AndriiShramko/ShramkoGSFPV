@@ -137,7 +137,7 @@ async function main(): Promise<void> {
     const res = walls.voxelResolution;
     for (const seed of (arg('--seed-list') ?? '1').split(',').map(Number)) {
         const t0 = performance.now();
-        const got = fitCourse(free, walls, { seed, scene: { id, version: v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
+        const got = fitCourse(free, walls, { seed, scene: { id, version: v }, transform: T, created: '2026-11-15T00:00:00Z', quality: box ? q : undefined, spawn, elements: process.argv.includes('--elements') }, COURSE_DEFAULTS.gatesMin, undefined, { at: t0 + FIT_BUDGET_MS, now: () => performance.now() });
         const tr = got.track;
         if (!tr) {
             console.log(JSON.stringify({ scene: id, seed, gates: 0 }));
@@ -220,8 +220,14 @@ async function main(): Promise<void> {
         if (tr.laps > 1) img.line(...P(pts[pts.length - 1]!), ...P(pts[1]!), [0, 220, 230]);
         gates.forEach((g, k) => {
             const [i, j] = P(g.p);
-            for (let a = -4; a <= 4; a++) for (let b = -4; b <= 4; b++) img.set(i + a, j + b, [255, 255, 255]);
-            img.text(i + 7, j - 7, String(k + 1), [255, 255, 255]);
+            // course4 C4: the gate's kind by colour: ring white, square yellow, cube frame magenta, lying flat green
+            const tg = tr.gates[k]!;
+            const qq = tg.quat as unknown as number[];
+            const flat = Math.max(Math.abs(2 * (qq[2]! * qq[3]! - qq[0]! * qq[1]!)), Math.abs(2 * (qq[1]! * qq[2]! - qq[3]! * qq[0]!))) > 0.9;
+            const kind = (tg.shape as { kind: string }).kind;
+            const col = flat ? [80, 255, 80] : kind === 'cube-frame' ? [255, 0, 255] : kind === 'square' ? [255, 230, 0] : [255, 255, 255];
+            for (let a = -4; a <= 4; a++) for (let b = -4; b <= 4; b++) img.set(i + a, j + b, col);
+            img.text(i + 7, j - 7, String(k + 1), col);
         });
         const [si, sj] = P(pts[0]!);
         for (let a = -5; a <= 5; a++) img.set(si + a, sj + a, [255, 0, 255]), img.set(si + a, sj - a, [255, 0, 255]);

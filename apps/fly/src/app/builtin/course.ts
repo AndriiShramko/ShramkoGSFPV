@@ -67,7 +67,8 @@ export const course: Feature = {
         let adminLive = false;
         ctx.hook.course = hook;
         // stage G4-prove: the probes read where the gates stand (flown frame) to fly through them and draw them from above
-        hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]] })) : []);
+        // course4 C4: and each gate's shape (the elements probe passes every kind)
+        hook.gatePoses = () => (run ? run.gates.map((g) => ({ pos: [g.pos[0], g.pos[1], g.pos[2]], quat: [g.quat[0], g.quat[1], g.quat[2], g.quat[3]], shape: { ...g.shape } })) : []);
         hook.guide = () => ({ ...hud.guideState });
         // lane course4: the START / FINISH banners, the number plate, the lap's splash and the results card as drawn
         hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
