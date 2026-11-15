@@ -4,6 +4,45 @@ Branch editor3 from origin/main 197c2760, worktree C:/dev/gsfpv-voice, ports 580
 
 ## Status
 
+Stage H2-look (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
+- [x] H2.0 origin/main had no new commits after the H1.0 merge 607e1cb9 (git log HEAD..origin/main empty), no merge needed.
+- [x] H2.1 code fb81ed2d: view-mouse.ts Size tool: x and y boxes (z too for a cube-frame, put(..., deep)) plus the centre
+  box (axisBoxSize 0.22, axisCenterSize 0.3, axisLineThickness 0.04: estimates); pose() takes the axis pulled furthest from
+  1 as the factor of the one opening; a tag "Opening N m" (course.edit.sizeTag en es pl ru) beside the handle while it is
+  dragged; course.ts says "Size changed. Gate N of M: ring, N m" after a Size drag (Turned after a turn). editor.css: the
+  flight windows .osd-stats, .arm-card, .course-hud hidden while .course-editor:not(.ce-flying) is in the page (CSS :has,
+  the mode flag of keyboard.ts EDIT_MODE; no file outside the lane changed); phone media: top bar and gate bar buttons 44 px.
+  Test tools/bench/test/editor3-h2look.test.ts 3 tests, NEG OK (neg_control.py, ref HEAD, all seven changed files);
+  editor3-g2 and editor3-tools regexes follow the new source; editor3-*.test.ts 12 files 65 tests pass; apps/fly and
+  tools/bench tsc 0 errors. Release build of fb81ed2d exit 0 (U:/Temp/gsfpv-train3/editor3/h2/build.log).
+- [x] H2.2 browser run (new probe tools/bench/src/editor3-look.ts, keyboard input, Tunis 887f27aa, local release on 5801,
+  record U:/Temp/gsfpv-train3/editor3/h2/look.json):
+  - 1920x1080 edit view: top bar [630,8,1290,48], gate bar [563,754,973,796], Course editor [1532,86,1912,129]; .arm-card
+    and .course-hud display none, .osd-stats absent; no overlaps among top bar, gate bar, window and a 160 px square round
+    the gate (an estimate of the handles' reach).
+  - Size by the x box: hit ['size','x'], opening 1.2 -> 1.43 m, moved 0 m, turn 0, stand scale mid-drag [1.19,1,1], tag
+    "Opening 1.4 m", top bar "Size changed. Gate 2 of 24: ring, 1.4 m". By the centre box: hit 'xyz', 1.43 -> 1.61, moved 0,
+    turn 0, scale [1.13,1.13,1.13], tag "Opening 1.6 m", line "... ring, 1.6 m". Picture editor3-size-1920.png looked at:
+    the tag stands beside the x box.
+  - 844x390: top bar [216,4,628,56], gate bar [8,328,550,382], window [400,86,780,121]; every top bar button min 44x44 (7),
+    every gate bar button 44x44 (11); no overlap among the three and the gate square. Picture editor3-844.png looked at.
+  - After Exit: .course-hud display block again (back).
+- [ ] left (next worker, in this order):
+  a. 844 picture shows two flight lines still in the edit view: "Gates: 24. Fly through gate 1 ... course" under the
+     Course editor title (NOT .course-hud, which is display none: find its element, probably the integration's note slot
+     or ui/next-hint.ts) and "Click to fly, or press W or Space to take off" (a take-off prompt of ui/hud.ts). Add both
+     classes to the editor.css :has rule, re-run editor3-look.ts.
+  b. 844: the top bar [216..628, 4..56] covers the page's top row (Share, settings, Feedback at y 40..76) and the "ANGLE"
+     chip: the probe's overlap list does not include the top row (ui/top-row.ts). Measure it, then place the top bar so it
+     does not cover them (e.g. below --top-row-bottom on the left, checked against the window at x 400).
+  c. The test flight in the probe did not start: Space with the keyboard left mode 'edit' (look.json desk.flying.mode
+     'edit'), so the stats card never appeared and editor3-after-flight-1920.png is not a picture after a flight. Use the
+     fake pad of editor3-prove.ts (install(), pad arm on button 2) for the flight and the disarm with airtime over 3 s
+     (summary-stats.ts CARD_MIN_AIRTIME_S), read .osd-stats display in the flight (shown) and after disarm (none).
+  d. Look at editor3-edit-clean-1920.png and editor3-after-flight-1920.png (taken, not looked at yet).
+  e. Wroclaw 70b50d42 run (copy U:/Temp/gsfpv-train2/walls/release/70b50d42 into dist/walls first, SCENE=70b50d42).
+  f. gates.py --only vitest,architecture,i18n,b18 on the final commit (not run in H2), commit.
+
 Stage H1-tunis (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
 - [x] H1.0 merge origin/main 78efaaaf into editor3: commit 607e1cb9 (no conflicts). apps/fly and tools/bench tsc 0 errors;
   editor3-*.test.ts 9 files 53 tests pass; release build of 607e1cb9 into dist: exit 0 (log U:/Temp/gsfpv-train3/editor3/h1/build.log).
@@ -971,6 +1010,10 @@ button shows the table.
     leaves (proven). Loading the saved course again: not proven.
 
 ## Cost notes
+
+- H2-look: most turns went to reading the 856-line probe and PlayCanvas's ScaleGizmo, and to two failed probe runs (a 'var
+  __name' init script stays local to Playwright's wrapper; a backgrounded 'cd && node &' chain left the shell elsewhere).
+  Cheaper: a shared probe helper module (open, layout, pad) so a new look probe is 60 lines, and globalThis.__name in it.
 
 - H1-tunis pass 2: about 30 replies; the code (b, c, d) took 10, the Node replica of (a) took the rest: one seed of
   fitCourse ran 804 s in Node, so a measurement of three seeds does not fit a stage; reading the page's own course through
