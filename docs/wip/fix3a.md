@@ -163,8 +163,17 @@ Stage fixes (review FX-1 to FX-5)
 - [x] tests: walls.test.ts 4 new, tracks-review TR-10 extended, start-near-spawn version checks: 66 + 4 passed;
       negative controls (neg_control.py, ref 92b4394f~1): walls NEG OK (AssertionError), link.ts NEG OK (1 failed,
       AssertionError), generate.ts NEG OK (1 failed, AssertionError). tsc apps/fly and packages/tracks: no errors.
-- [~] release build of 92b4394f (1930 files, no dist/walls); runner U:/Temp/gsfpv-train3/fix3a/fx/run.sh:
-      walls-store-probe Wroclaw (button, reload at in-use), Tunis, then tracks-page; gates.py beside it.
+- [x] release build of 92b4394f (1930 files, no dist/walls); runner U:/Temp/gsfpv-train3/fix3a/fx/run.sh, server 5784.
+      gates.py --only vitest,architecture,i18n,b18 on 92b4394f: all PASS (vitest 110 s).
+- [x] walls-store-probe Wroclaw 70b50d42, button, reload at in-use (the integrator's way), under the GPU lock, gates
+      running beside it (load): exit 0 in 302 s; kept true, cached true; reload ready 2.7 s, fresh page ready 2.6 s
+      (U:/Temp/gsfpv-train3/fix3a/fx/ev/walls-store-70b50d42-inuse.json; the build took about 4.5 min, step 2 'longer
+      than usual'). The write time (w.lastStore.ms) of this run was not read out of the JSON (budget).
+- [ ] walls-store-probe Tunis 887f27aa: started, stopped at the end of the reply budget (Tunis has shipped walls, so it
+      does not exercise the store; the first pass saw it run to its timeout). Left.
+- [ ] tracks-page probe after FX-4 and FX-5 (EVIDENCE_NAME=fix3a-fx/tracks-page, see run.sh last line): not run, the GPU
+      lock was held by other lanes from 09:49 to 10:17. Left.
+- [ ] FX-4 not seen in a browser (the guide at the top centre while the walls box shows a line). Left.
 
 ## Gate 1 from the spawn
 
@@ -242,6 +251,9 @@ Server: node tools/bench/scripts/serve-csp.mjs dist 5780, release of ca5760fd, n
    shiftg --reload-at in-use; evidence JSON; gates.py --only vitest,architecture,i18n,b18.
 
 ## Cost notes
+- Stage fixes: about 30 replies; code and tests took 15, four 600 s waits for the GPU lock (held by other lanes 28 min)
+  took the rest. Running the cheap proofs first and the tracks-page probe in a separate detached run would have left
+  results instead of a killed runner.
 - X1 first pass: most turns went to the first Tunis runs (no progress output, 560 s timeout each; Tunis has shipped
   walls, so nothing to build). A one-line check of walls.source before a long run would have saved two runs.
 - X1 pass 2: a negative control by git checkout HEAD wiped an uncommitted edit (one turn lost) and a new walls line hit
