@@ -104,8 +104,10 @@ run course-path-wroclaw locked node scripts/course-path-probe.mjs "$SITE/en" "$O
 # sonic-int-review.ts r11 presses only the keyboard of a flight (Enter on the Controls screen's keyboard choice, W, Q or E,
 # Backslash, N, Space, the arrows of the ear pilot); the sound mode fetches only static track and walls files; the course
 # made by N lives in the page; nothing is sent or saved. The check reads the named checks from the probe's evidence file,
-# so a course that is not flown to its end does not fail it. Tunis: the switch keeps the speed and starts no life
-# (Z5_QUICK: no course). Wroclaw: N makes a course and gate 1 is the hum's target (a short flight, then off).
+# so a course that is not flown to its end does not fail it. Tunis: the switch starts no life (Z5_QUICK: no course; the
+# scan has no 12 m free way near its spawn, so the probe does not judge the speed there and says so in its record).
+# Wroclaw: the switch keeps the speed and starts no life (a street: the speed is judged), N makes a course and gate 1
+# is the hum's target (a short flight, then off).
 soniccheck() {
   local tag=$1 scene=$2 quick=$3 flight=$4; shift 4
   env Z5_TAG="$tag" Z5_SCENE="$scene" Z5_SPEEDS=5 Z5_QUICK="$quick" Z5_FLIGHT_S="$flight" Z5_SHOTS="$OUT/sonic-live" \
@@ -124,7 +126,7 @@ for (const re of process.argv.slice(2)) {
 process.exit(ok ? 0 : 1);' "$f" "$@"
 }
 run sonic-in-place-tunis soniccheck tunis 887f27aa 1 60 'gives the free flight by sound' 'starts no new life and keeps the speed'
-run sonic-course-wroclaw soniccheck wroclaw 70b50d42 0 60 'gives the free flight by sound' 'N makes a course'
+run sonic-course-wroclaw soniccheck wroclaw 70b50d42 0 60 'gives the free flight by sound' 'starts no new life and keeps the speed' 'N makes a course'
 
 if [ "$FAILED" = 0 ]; then echo "LIVE CHECKS: PASS"; exit 0; fi
 echo "LIVE CHECKS: FAIL"

@@ -1210,8 +1210,8 @@ async function r11Off(page: Page, tag: string, run: Record<string, unknown>): Pr
  * (Tunis: the spawn faces a wall about 22 m ahead). Twelve horizontal rays of the scan's collision from the craft, 40 m
  * (estimate); the craft yaws with E or Q until its nose is within 12 degrees of the farthest one (8 s at most).
  */
-async function turnToOpenSide(page: Page): Promise<object> {
-    const look = (): Promise<{ fwd: number[]; rays: number[]; best: number[] | null }> => page.evaluate(() => {
+async function turnToOpenSide(page: Page, turn = true): Promise<{ ahead: number } & Record<string, unknown>> {
+    const look = (): Promise<{ fwd: number[]; rays: number[]; tubes: number[]; best: number[] | null; bestFree: number; noseRays: string[] }> => page.evaluate(() => {
         const ses = (window as unknown as { __gsfpv: { session: { sim: { s: Float64Array }; collision: { queryRay: (...a: number[]) => { x: number; y: number; z: number } | null } | null } } }).__gsfpv.session;
         const s = ses.sim.s;
         const [qw, qx, qy, qz] = [s[6] ?? 1, s[7] ?? 0, s[8] ?? 0, s[9] ?? 0];
@@ -1220,8 +1220,12 @@ async function turnToOpenSide(page: Page): Promise<object> {
         const h = Math.hypot(f[0]!, f[2]!) || 1;
         const fwd = [f[0]! / h, 0, f[2]! / h];
         const rays: number[] = [];
+        const tubes: number[] = [];
+        const noseRays: string[] = [];
         let best: number[] | null = null;
         let bestD = -1;
+        let tubeBest: number[] | null = null;
+        let tubeD = -1;
         for (let k = 0; k < 12; k++) {
             const a = (k * Math.PI) / 6;
             const d = [fwd[0]! * Math.cos(a) - fwd[2]! * Math.sin(a), 0, fwd[0]! * Math.sin(a) + fwd[2]! * Math.cos(a)];
@@ -1229,27 +1233,59 @@ async function turnToOpenSide(page: Page): Promise<object> {
             const dist = hit ? Math.hypot(hit.x - s[0]!, hit.y - s[1]!, hit.z - s[2]!) : 40;
             rays.push(Math.round(dist * 10) / 10);
             if (dist > bestD + 0.5) { bestD = dist; best = d; }
+            // lead, 2026-11-15 (the live Tunis check flew into the wall beside a doorway 4 m from the spawn in 2 of 4 runs):
+            // one ray finds a slit. The free way of a direction is the least of nine rays: the craft's line and 0.5 m to
+            // each side of it, at the craft's height and 1 and 2 m over it (estimates; the rays over the craft keep the
+            // pilot out of a doorway: with rays at the craft's height only, Tunis chose the doorway again and 3 of 3 live
+            // runs failed). A ray that starts inside or at the walls' cells reports 0 to 0.2 m (Wroclaw, 2 m over a craft
+            // at 3.2 m: the top cells of the walls): a ray over the craft with a hit nearer than 0.5 m is left out, it
+            // says what is over the craft, not what is ahead. The nose's own direction is looked at first and wins a tie.
+            let tube = dist;
+            for (const side of [-0.5, 0, 0.5]) for (const up of [0, 1, 2]) {
+                if (side === 0 && up === 0) continue;
+                const ox = s[0]! - d[2]! * side;
+                const oz = s[2]! + d[0]! * side;
+                const h2 = ses.collision?.queryRay(ox, s[1]! + up, oz, d[0]!, 0, d[2]!, 40) ?? null;
+                const d2 = h2 ? Math.hypot(h2.x - ox, h2.z - oz) : 40;
+                if (k === 0) noseRays.push(`${side}/${up}:${Math.round(d2 * 10) / 10}`);
+                if (d2 >= (up === 0 ? 0.05 : 0.5)) tube = Math.min(tube, d2);
+            }
+            tubes.push(Math.round(tube * 10) / 10);
+            if (tube > tubeD + 0.5) { tubeD = tube; tubeBest = d; }
         }
-        return { fwd, rays, best };
+        // a spawn within half a metre of a wall has no free tube in any direction: the single rays decide then, as before
+        if (tubeD >= 3) return { fwd, rays, tubes, best: tubeBest, bestFree: tubeD, noseRays };
+        return { fwd, rays, tubes: rays, best, bestFree: bestD, noseRays };
     });
     const first = await look();
+    if (!turn) return { ahead: first.tubes[0] ?? 0, tubes: first.tubes, noseRays: first.noseRays };
     const target = first.best;
+    // the way the pilot needs before W: 18 m (about 5 m of the 1.5 s of W, then 12 m: the first cue comes up to 1.7 s after
+    // the press at up to 7 m/s; estimates from the live runs of 2026-11-15), or what the scan has
+    const need = Math.min(18, first.bestFree - 1);
     let turnedS = 0;
-    if (target) {
+    if (target && (first.tubes[0] ?? 0) < need) {
         const t0 = Date.now();
+        let flips = 0;
+        let lastSide = 0;
         for (; Date.now() - t0 < 8000; ) {
             const now = await look();
             const cy = now.fwd[2]! * target[0]! - now.fwd[0]! * target[2]!;
             const dot = now.fwd[0]! * target[0]! + now.fwd[2]! * target[2]!;
-            if (dot > Math.cos((12 * Math.PI) / 180)) break;
+            // the nose is there when its own line is free for the needed way, or within 3 degrees of the target, or after it
+            // went past the target three times; short taps near the target (12 degrees was 0.85 m to the side at 4 m: the
+            // width of a doorway)
+            if (lastSide !== 0 && Math.sign(cy) !== lastSide) flips++;
+            lastSide = Math.sign(cy);
+            if ((now.tubes[0] ?? 0) >= need || dot > Math.cos((3 * Math.PI) / 180) || flips >= 3) break;
             await page.keyboard.down(cy < 0 ? 'KeyE' : 'KeyQ');
-            await sleep(60);
+            await sleep(dot > Math.cos((25 * Math.PI) / 180) ? 20 : 60);
             await page.keyboard.up(cy < 0 ? 'KeyE' : 'KeyQ');
         }
         turnedS = (Date.now() - t0) / 1000;
     }
     const last = await look();
-    return { raysBefore: first.rays, raysAfter: last.rays, turnedS };
+    return { raysBefore: first.rays, raysAfter: last.rays, tubesBefore: first.tubes, tubesAfter: last.tubes, need: Math.round(need * 10) / 10, ahead: last.tubes[0] ?? 0, turnedS };
 }
 
 async function r11(browser: () => Promise<BrowserContext>, served: Served): Promise<void> {
@@ -1280,6 +1316,13 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         const openSide = await turnToOpenSide(page);
         await page.keyboard.down('KeyW');
         await sleep(1500);
+        // lead, 2026-11-15: the free way ahead at the press (the same tube of rays). The speed at the first cue is judged only
+        // with 12 m of it (up to 1.7 s to the cue at up to 7 m/s): the check is about the switch, not about a wall 5 cm away
+        // (live Tunis: crash 2 ticks after the press in 2 of 4 runs; the scan has no 12 m free tube near its spawn: 1.1 to
+        // 5.6 m at the press in four more runs, so on Tunis the check says 'no new life' and the speed is judged on Wroclaw).
+        const pressLook = await turnToOpenSide(page, false);
+        const freeAtPress = pressLook.ahead;
+        const speedJudged = freeAtPress >= 12;
         // Y2 pass 2: pose, crashed and armed at the press and at the first cue, to tell a wall contact from a brake
         // sonic3 S2: and the sim tick (a frame that runs many ticks at once shows as ticks far over the page time)
         const craftNow = (): Promise<{ v: number; t: number; tick: number; pos: number[]; vel: number[]; crashed: number; armed: number }> => page.evaluate((i: number[]) => {
@@ -1344,11 +1387,15 @@ async function r11(browser: () => Promise<BrowserContext>, served: Served): Prom
         await sleep(500);
         const simEv = (await page.evaluate(() => (window as unknown as { __simEv?: object[] }).__simEv ?? [])) as { tick: number; type: string }[];
         const after04 = simEv.filter((e) => e.tick >= onBefore.tick && e.tick <= onBefore.tick + 400);
-        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1).filter((e) => (e as { t: number }).t <= atCue.t), livesAfterCue: livesAfter(onSpy, atCue.t + 0.001), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed, tick: onBefore.tick }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed, tick: atCue.tick, ticksOverPageMs: Math.round(atCue.tick - onBefore.tick - (atCue.t - onBefore.t)) }, openSide, simEvents04: after04.slice(0, 40), simEventsToCue: simEv.filter((e) => e.tick >= onBefore.tick && e.tick <= atCue.tick).map((e) => e.type), spy: onSpy };
+        const switchOn = { speedBefore: Math.round(onBefore.v * 100) / 100, speedAtFirstCue: Math.round(onAfter * 100) / 100, lives: livesAfter(onSpy, onBefore.t - 1).filter((e) => (e as { t: number }).t <= atCue.t), livesAfterCue: livesAfter(onSpy, atCue.t + 0.001), atPress: { pos: onBefore.pos, vel: onBefore.vel, crashed: onBefore.crashed, armed: onBefore.armed, tick: onBefore.tick }, atCue: { pos: atCue.pos, vel: atCue.vel, crashed: atCue.crashed, armed: atCue.armed, tick: atCue.tick, ticksOverPageMs: Math.round(atCue.tick - onBefore.tick - (atCue.t - onBefore.t)) }, openSide, freeAtPress, speedJudged, noseRaysAtPress: pressLook.noseRays, simEvents04: after04.slice(0, 40), simEventsToCue: simEv.filter((e) => e.tick >= onBefore.tick && e.tick <= atCue.tick).map((e) => e.type), spy: onSpy };
         const run: Record<string, unknown> = { speed, firstCue, firstLine, phases: [...phases], lesson: on?.lesson ?? null, walls: on?.walls ?? null, switchOn };
         (result.r11 as { runs: object[] }).runs.push(run);
         check(`${tag}: one press of Backslash over the ordinary flight gives the free flight by sound and a planned cue`, on !== null && firstCue !== null, run);
-        check(`${tag}: the switch on in the air starts no new life and keeps the speed (at least half; W held)`, switchOn.lives.length === 0 && onBefore.v > 0.5 && onAfter >= 0.5 * onBefore.v, switchOn);
+        // lead, 2026-11-15: without a free way ahead the pilot's blind W ends in a wall (Tunis: 3.8 to 4.3 m free at the press at
+        // 7 m/s, the sim's crash event before the cue in 7 of 7 live runs). That crash and the life after it are the pilot's,
+        // not the switch's: they do not fail the check. A life with no crash event before it still does.
+        const ownCrash = !speedJudged && switchOn.simEventsToCue.includes('crash');
+        check(`${tag}: the switch on in the air starts no new life and keeps the speed (at least half where 12 m are free ahead at the press; W held)`, (switchOn.lives.length === 0 || ownCrash) && onBefore.v > 0.5 && (!speedJudged || onAfter >= 0.5 * onBefore.v), { ...switchOn, ownCrash });
         if (on === null) { await ctx.close(); continue; }
         if (process.env.Z5_QUICK === '1') {
             // the switch only (SO-1, SO-4): no course
