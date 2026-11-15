@@ -34,7 +34,18 @@ Stage H1-tunis (train 3, 2026-11-15; NOT finished, stopped at the reply budget):
     ellipse and PlayCanvas RotateGizmo turns by the angle about the ring's axis, so a drag across the ellipse gives
     less than the 15 degree snap SNAP_TURN_DEG and rounds to 0). Measure next: record the gizmo's angle per move
     (RotateGizmo 'transform:move') with snap off.
-- [ ] left (next worker, in this order):
+- [x] H1.3 pass 2 (items b, c, d of the list below, code and unit tests; browser not yet), commit 535fde74: texts.ts
+  firstWrong (the lowest gate a problem points at; a leg points at its far gate, the start's problems at gate 1; with a
+  focus id only that gate's problems) and FIX_KEYS, keys course.edit.fix.* plus saveFix and addFix in en, es, pl, ru (a leg
+  from the start says "pull the arrows of gate N toward the start"). course.ts showWrong / refusedSave: a refused Save
+  (saveMine, saveAdmin) selects that gate, showEd + aim turn the view to it with its handles, says "Not saved. <what and
+  what to do>"; a floor add remembers its gate (addedId) and the check worker's answer on it says "The new gate is red. ..."
+  and selects it. __gsfpvEditView() also gives wrong (index, key) and course (gates, start, problems).
+  packages/tracks editor.ts 'shape': a kind pressed on a dive gate stands it up (the same kind on a dive gate only stands it
+  up; the same kind on a level gate is refused 'same' as before), one undo step. Test tools/bench/test/editor3-h1b.test.ts
+  6 tests; NEG OK twice (all six files; editor.ts alone, by AssertionError "expected false to be true"). editor3-h1b,
+  editor3-h1, packages/tracks editor.test.ts 18/18; apps/fly and packages/tracks tsc 0.
+- [ ] left (next worker, in this order; b, c, d are coded in H1.3, their browser proof is in f):
   a. Tunis measurement (a): load http://localhost:58xx/en/fly/?scene=887f27aa&nowarn=1&course=g1.<seed> for the page's
      own seed and two more (the probe's Shift+G uses randomSeed(), course.ts 942; a link seed is seedOfLink), open the
      editor, dump the full course (add the course's gates and start to __gsfpvEditView, course.ts 716) and the problems;
