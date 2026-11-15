@@ -5,7 +5,8 @@
 // Each open records walls.state/source/bakes, cacheKind, cacheMiss, the store key and its input, the store rows,
 // the walls line and the console lines about walls. --reload-at in-use: reload the moment the walls are in use
 // (the integrator's run); default 'line': when the walls line says they are built (what a pilot sees).
-// Exit 0 only when opens 2 and 3 have source 'cache', state in-use and no build ran in them (bakes 0).
+// Exit 0 only when opens 2 and 3 have source 'cache', state in-use and no build ran in them (bakes 0), and the build's
+// store write (w.lastStore) ended ok, within KEEP_NOTE_S of its start or with the walls line saying it keeps them.
 // Presses only the build action (or Shift+G). Nothing is sent or saved on a server. Takes no GPU lock (wrap it).
 //   node tools/bench/scripts/walls-store-probe.mjs <base with /en> <scene> <out.json> [--start button|shiftg|url] [--reload-at line|in-use]
 import { createRequire } from 'node:module';
@@ -20,6 +21,7 @@ const args = process.argv.slice(2);
 const opt = (name, d) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : d; };
 const [base, id, out] = args;
 if (!base || !id || !out) { console.error('usage: walls-store-probe.mjs <base with /en> <scene> <out.json> [--start button|shiftg|url] [--reload-at line|in-use]'); process.exit(2); }
+const KEEP_NOTE_S = 2;
 const start = opt('--start', 'button');
 const reloadAt = opt('--reload-at', 'line');
 const pick = pickBrowser({ expected: chromium.executablePath() });
@@ -36,7 +38,7 @@ const snap = (p) => p.evaluate(async () => {
     const persisted = await navigator.storage?.persisted?.().catch(() => null);
     return {
         state: w.state, source: w.source, bakes: w.bakes, voxelM: w.voxelM, cacheKind: w.cacheKind, cacheMiss: w.cacheMiss,
-        key: w.key, keyInput: w.keyInput, line: w.line, sizeEtag: w.size ? w.size.etag ?? null : 'no-size',
+        key: w.key, keyInput: w.keyInput, storing: w.storing ?? null, lastStore: w.lastStore ?? null, line: w.line, sizeEtag: w.size ? w.size.etag ?? null : 'no-size',
         rows: rows.map((x) => ({ key: x.key, voxelM: x.voxelM, bytesStored: x.bytesStored, stale: !!x.stale, error: x.error })),
         usageMb: est ? +(est.usage / 1048576).toFixed(1) : null, quotaMb: est ? +(est.quota / 1048576).toFixed(0) : null, persisted
     };
@@ -85,8 +87,9 @@ async function open(p, label, build) {
         const t1 = Date.now();
         while (Date.now() - t1 < 120000) {
             const s = await snap(p);
-            if (s && key && s.rows.some((x) => x.key === key)) { run.storedS = at(); break; }
-            await p.waitForTimeout(1000);
+            if (s && /Keeping them in this browser/.test(s.line || '')) run.sawKeeping = true;
+            if (s && key && s.rows.some((x) => x.key === key) && !s.storing) { run.storedS = at(); break; }
+            await p.waitForTimeout(250);
         }
     }
     run.final = await snap(p);
@@ -103,9 +106,12 @@ try {
     await open(p, 'reload', false);
     const q = await ctx.newPage();
     await open(q, 'fresh page', false);
+    const ls = r.runs[0].final && r.runs[0].final.lastStore;
+    // the owner's rule (2 s) is the limit, not a measurement: a longer write must have been said in the line
+    r.kept = reloadAt === 'in-use' ? true : !!(ls && ls.ok && (ls.ms <= KEEP_NOTE_S * 1000 || r.runs[0].sawKeeping));
     r.cached = r.runs.slice(1).every((x) => x.final && x.final.state === 'in-use' && x.final.source === 'cache' && x.final.bakes === 0);
 } catch (e) { r.error = String(e).slice(0, 400); }
 await ctx.close();
 writeFileSync(out, JSON.stringify(r, null, 1));
-console.log(JSON.stringify({ cached: !!r.cached, error: r.error }));
-process.exit(r.cached ? 0 : 1);
+console.log(JSON.stringify({ cached: !!r.cached, kept: !!r.kept, error: r.error }));
+process.exit(r.cached && r.kept ? 0 : 1);
