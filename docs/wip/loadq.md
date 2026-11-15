@@ -99,30 +99,48 @@ Stage L2-build
     After the push the engine budget was 0.5 M in the next frame; drawn 15.78 M, then 14.46 M (12 frames), 9.87 M (30),
     5.58 M (60): the engine sheds the extra splats over about 60 uncapped frames, as L1 measured.
   - Typecheck render-pc, apps/fly exit 0 after 3314a9a7; tools/bench/test/a6-reference.test.ts passes (1 test).
-- [~] 5. Checks. Done: gates.py --only vitest,architecture,i18n,b18,leaks on 11da9c15
+- [x] 5. Checks. gates.py --only vitest,architecture,i18n,b18,leaks on 11da9c15
   (U:/Temp/gsfpv-gates-20261115-224649): architecture, i18n, B18, leaks PASS; vitest 5002 passed, 14 skipped, 1 failed:
   packages/render-pc/test/lod.test.ts:124 (lodMetaProblem under 50 ms of a real timer; not this lane's file, from
   6d50b814) failed while the machine was loaded; the file alone passes 33 of 33. a6-reference passed after 3314a9a7
-  (item 4); no flight, input or collision code changed since. Not done: the browser checks below; the runner waited
-  for the GPU lock from 22:36 to 23:26 (other lanes held it) and was stopped.
+  (item 4); no flight, input or collision code changed since. The first runner (22:36 to 23:30) lost its server while
+  it waited for the lock; its governor-start and accept-fly died on ERR_CONNECTION_REFUSED. Browser checks again on a
+  fresh release build of e33208d2 (dist sha256 1d3d1f0c..., U:/Temp/gsfpv-train3/loadq/build-l2d.log, Wroclaw walls
+  stand-in in dist/walls), 23:33 to 00:15 (U:/Temp/gsfpv-train3/loadq/run-item5.sh, run-item6.sh, gov2.sh):
+  - accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against http://localhost:5820 (its first line): all 10 PASS
+    (U:/Temp/gsfpv-train3/loadq/accept-fly.log).
+  - governor-start with G6 on as shipped: FAILED all=false: W1 and S1 never stepped down under the 1.4-period
+    overload (stepAfterOverload 0, msToLowest null), so nothing was remembered. Cause measured by the setting: the
+    probe's craft sits still (input=touch, unarmed), G6 holds the still budget and by its design the governor does not
+    count frames at rest. The probe checks the governor of a flight, so it now loads with set.display.stillDetail=0
+    (tools/bench/scripts/governor-start-probe.mjs). Again: PASS all=true (weakRemembered, weakStartsThere,
+    strongRemembered, strongStartsAtTop; evidence/2026-11-15/lod-view/lq5-governor-start.json). Consequence for a
+    pilot: the step the governor remembers per device is learned in flight only, not while the craft waits at the
+    start (by design of G6).
+  - lod-view on and off, 1 M, desktop-strong, G6 off (lq6-*; score-item6-lub.txt, score-item6-wro.txt; PSNR luma over
+    the scan against laptop3's l3-lub-ref16 / l3-wro-ref16): Lublin 2f1ddf5f start 19.66 on / 19.43 off (laptop3 P2
+    19.65 / 19.44), 40 m up 20.13 / 19.77, 140 m up 19.43 / 19.47; Wroclaw 70b50d42 start 24.98 / 24.80 (laptop3 24.98
+    / 24.80), 8 m up 26.10 / 25.22. laptop3's numbers hold.
+  - The same with G6 on as shipped (lq5-*, score-item5-*.txt): the probe holds the camera still, so G6 raised the
+    detail: Lublin start 73.33 on / 32.27 off, 140 m up 57.56 / 33.54; Wroclaw start up0 69.55 / 41.05 dB. The on/off
+    gap there is the time spent at rest, not the view rule; any lod-view comparison of the view rule needs
+    set.display.stillDetail=0 in its query from now on.
+  - governor-start, typecheck (render-pc, apps/fly exit 0 after 3314a9a7; since then only a bench script and docs),
+    a6-reference (item 4) done. Servers 5820, 5821, 5822 stopped by the runners' traps (no node process of this
+    worktree left).
 - [x] 6. 'What the owner does', 'Not verified', every changed file (sections at the end) (11da9c15). The Splat budget
   help said the line is "at the bottom left"; the pictures show it under the scene credit at the top left: the four
   texts now say "under the scene's credit" (11da9c15). loadq-lowered.png looked at: the sharp street, the line
   'Detail: 6.4 of 16 M, lowered to keep the flight smooth'. loadq-network.png looked at: a black, smeared street (a few
   coarse splats), the line 'Detail: files that did not arrive: 6. Trying again'.
-Left for the next run of L2, in this order:
-1. Browser checks with the ready runner (the dist of 3314a9a7 is current: only docs and texts of the help changed since;
-   rebuild first if the help text must show: node scripts/build-release.mjs):
-   `bash U:/Temp/gsfpv-train3/loadq/run-item5.sh gov acc lod` detached (it starts serve-csp dist 5820, takes the lock
-   for governor-start itself, accept-fly and lod-view-probe take it themselves; progress in item5-progress.txt). lod:
-   Lublin 2f1ddf5f and Wroclaw 70b50d42 at 1 M on and off, scored against laptop3's references l3-lub-ref16 and
-   l3-wro-ref16 (copied into .cache/lod-view); compare with laptop3 P2 (Lublin 1 M start 19.65 on / 19.44 off, Wroclaw
-   1 M start 24.98 / 24.80). accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (first line must name localhost:5820).
-   Write the numbers into item 5, commit.
-2. Stalled files (one line, not chased): under the local HTTP/1.1 server a file that never answers blocks the load
+Stage L2 is finished. Left, for the lead (not this stage's to fix):
+1. Stalled files (one line, not chased): under the local HTTP/1.1 server a file that never answers blocks the load
    though the keeper cuts it (item 3, lq2-stall1, lq2-stall); suspect the hung XHR in the engine (playcanvas Http, not
    aborted by GSplatAssetLoader.unload) holding the browser's six connections. Not measured on HTTP/2; the line names it.
-3. gen-catalog --check is stale for the new setting display.stillDetail: the lead runs scripts/gen-catalog.ts.
+2. gen-catalog --check is stale for the new setting display.stillDetail: the lead runs scripts/gen-catalog.ts.
+3. Any bench that holds the camera still and measures the flight's detail or the governor (lod-view-probe,
+   governor-start-probe, freeze-probe) sees G6 unless its query has set.display.stillDetail=0; governor-start-probe has
+   it now, the others do not (lod-view runs above passed it through --query).
 
 ## Facts (measured)
 
@@ -347,5 +365,7 @@ measured); a setting switches it off. The line shows it: "Detail: sharpening whi
 - packages/i18n/locales/fly/detail/{en,es,pl,ru}.json (new); packages/i18n/locales/fly/drawing/{en,es,pl,ru}.json
   (Splat budget help: a hand-set number is kept; where the line is).
 - tests: packages/render-pc/test/stream-keeper.test.ts, tools/bench/test/loadq-detail.test.ts (new).
-- probe: tools/bench/scripts/loadq-probe.mjs (new). Evidence: evidence/2026-11-15/lod-view/score-lq-*.json.
+- probe: tools/bench/scripts/loadq-probe.mjs (new); tools/bench/scripts/governor-start-probe.mjs (loads with G6 off).
+  Evidence: evidence/2026-11-15/lod-view/score-lq-*.json, lq5-*.json (G6 on), lq6-*.json (G6 off),
+  score-l3-*-lq5-*.json, score-l3-*-lq6-*.json, lq5-governor-start.json.
 - For the lead to run: scripts/gen-catalog.ts (the catalogue outputs are stale for display.stillDetail).
