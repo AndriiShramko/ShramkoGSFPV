@@ -272,8 +272,10 @@ async function far() {
         }
         const st = pickStats(await page.evaluate(() => window.__gsfpv.voxels.stats()));
         const settledMs = ok ? Date.now() - s0 : -1;
-        step(`${label}: share 100 at ${full} ms, settled ${settledMs} ms, ${JSON.stringify(st)}`);
-        return { label, shareFullMs: full, settledMs, stats: st, series };
+        // voxview2: the page's memory (Chrome's performance.memory, JS heap only; the GPU buffers are not in it)
+        const memMB = await page.evaluate(() => Math.round((performance.memory?.usedJSHeapSize ?? 0) / 1048576));
+        step(`${label}: share 100 at ${full} ms, settled ${settledMs} ms, heap ${memMB} MB, ${JSON.stringify(st)}`);
+        return { label, shareFullMs: full, settledMs, memMB, stats: st, series };
     };
     const shot = async (name) => { await sleep(1500); const p = join(shots, `${name}.png`); await page.screenshot({ path: p }); step(`picture ${p}`); return p; };
     r.far = { spawn, yaw0, phases: [] };
@@ -291,8 +293,9 @@ async function far() {
         r.far.phases.push(ph);
     }
     if (phases.includes('up')) {
-        await page.evaluate(([pos, yaw]) => { window.__hold = { pos: [pos[0], pos[1] + 60, pos[2]], yaw, pitch: -40 }; }, [spawn, yaw0]);
-        const ph = await fill('60 m up', 240000);
+        const upM = Number(process.env.FAR_UP_M ?? 60);
+        await page.evaluate(([pos, yaw, m]) => { window.__hold = { pos: [pos[0], pos[1] + m, pos[2]], yaw, pitch: -40 }; }, [spawn, yaw0, upM]);
+        const ph = await fill(`${upM} m up`, 240000);
         ph.frame = await frame();
         ph.picture = await shot(`${tag}-far`);
         step(`frame ${JSON.stringify(ph.frame)}`);
