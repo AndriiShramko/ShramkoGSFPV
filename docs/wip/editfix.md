@@ -174,6 +174,10 @@ Pass 2 closed every item of the list below except the two lines marked 'still le
 
 ## Cost notes
 
+- E2 part 1 (about 40 replies): the 17-case probe run (20 min) and reading code around three causes took most; cheaper:
+  start the build and the probe run right after the first fix commit (done so) and give Courses/Keys and the heavy
+  checks (smoke, accept-fly, all gates) to a second worker from the start.
+
 - E1: most replies went to waiting for the GPU lock behind other lanes and two 8-minute cases that made no course;
   cheaper: run the laptop sizes one at a time first, with a short course timeout (120 s), and the owner's flown case
   first, which alone reproduced every symptom.
