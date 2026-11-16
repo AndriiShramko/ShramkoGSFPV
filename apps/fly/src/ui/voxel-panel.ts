@@ -42,3 +42,18 @@ export function placePanel(chip: PanelRect, viewW: number, viewH: number): Panel
     if (lower) return { left, top: null, bottom: viewH - chip.top + PANEL_GAP, width, maxHeight: room };
     return { left, top: chip.bottom + PANEL_GAP, bottom: null, width, maxHeight: room };
 }
+
+/**
+ * Lane voxview2 V7: Esc closes one thing at a time, the top one. The panel's keydown listener sits on the window in the
+ * capture phase; the edit mode (course/editor/view-mouse.ts, top-bar.ts) listens there too, so stopPropagation alone
+ * let the same Esc also leave the edit mode. stopImmediatePropagation stops the window's other listeners as well
+ * (the panel's listener is added when the scene's walls are built, before the edit mode opens).
+ */
+export function panelEsc(isOpen: () => boolean, close: () => void): (e: KeyboardEvent) => void {
+    return (e) => {
+        if (e.key !== 'Escape' || !isOpen()) return;
+        close();
+        e.stopImmediatePropagation();
+        e.preventDefault();
+    };
+}

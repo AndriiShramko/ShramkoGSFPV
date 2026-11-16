@@ -15,7 +15,7 @@ import type { BakeResult, GpuLimits, RefinePlan, SceneSize } from './bake';
 import { WallCache, keepBuilt, keepThenUse, keptLine, loadBakeSpeed, saveBakeSpeed, wallsKey, wallsSha } from './wallcache';
 import type { ImportReport, KeepResult, WallsKeyInput, WallsRow } from './wallcache';
 import { ensureWalls } from './walls-first';
-import { placePanel } from './ui/voxel-panel';
+import { panelEsc, placePanel } from './ui/voxel-panel';
 import { FREEZE_NOTE_S, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, mayFreeze, progressLine, spokenLine, wallsSteps } from './course/progress';
 import type { ProgressWhat } from './course/progress';
 
@@ -180,13 +180,8 @@ export function mountWalls(o: WallsOptions): WallsHook {
     }
     more.addEventListener('toggle', () => { if (more.open) { fold(false); placeMenu(); } });
     window.addEventListener('resize', placeMenu);
-    // Esc closes the open panel and only the panel (capture: before the app's keys see it)
-    const onEsc = (e: KeyboardEvent): void => {
-        if (e.key !== 'Escape' || !more.open) return;
-        more.open = false;
-        e.stopPropagation();
-        e.preventDefault();
-    };
+    // Esc closes the open panel and only the panel (capture: before the app's keys and the edit mode see it; V7)
+    const onEsc = panelEsc(() => more.open, () => { more.open = false; });
     window.addEventListener('keydown', onEsc, true);
     // top middle: only what needs the pilot (a build or refine button, progress, the result); empty
     // otherwise, so it covers nothing (on a phone the pad hint sits there)
