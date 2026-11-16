@@ -196,6 +196,11 @@ export class Quality {
         this.apply();
     }
 
+    /** loadq2 R3: the device class is a phone or a tablet (builtin/drawing.ts): the still rise stops at 2 times the base. */
+    touchDevice = false;
+    /** loadq2 R3: until then (performance.now) the detail line says "More detail at rest" was switched off (builtin/still.ts). */
+    stillOffUntil = 0;
+
     /** The still picture's budget in force, millions (0: none). */
     get stillBudgetMillions(): number {
         return this.stillM;

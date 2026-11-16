@@ -1,7 +1,7 @@
 // Lane loadq G1 and G2 (apps/fly/src/app/detail-rule.ts): a budget the pilot set by hand is not lowered by the frame
 // rate keeper (the governor), and the detail line's text for each state.
 import { describe, expect, it } from 'vitest';
-import { detailLine, detailState, detailVisible, drawPlan, FULL_SHOW_MS, StillRise, stillCapM, STILL_FRAME_MS } from '../../../apps/fly/src/app/detail-rule';
+import { detailLine, detailState, detailVisible, drawPlan, FULL_SHOW_MS, StillRise, stillCapM, stillTopM, STILL_FRAME_MS } from '../../../apps/fly/src/app/detail-rule';
 import type { DetailInput, StillSample } from '../../../apps/fly/src/app/detail-rule';
 
 const say = (k: string, v?: Record<string, string | number>): string => (v ? `${k} ${JSON.stringify(v)}` : k);
@@ -88,9 +88,9 @@ describe('G6: more detail while the craft is still', () => {
         expect(o.find((x) => x.t === 1000)?.boostM).toBe(0);
         expect(o.find((x) => x.t === 1010)?.boostM).toBeCloseTo(0.75, 6);
         expect(o.find((x) => x.t === 2010)?.boostM).toBeCloseTo(1.125, 6);
-        expect(r.boostM).toBeGreaterThanOrEqual(8);
+        expect(r.boostM).toBe(2); // loadq2 R3: at most 4 times the flight budget 0.5
         const capped = new StillRise();
-        run(capped, 0, 20, {}, 0.5, 4);
+        run(capped, 0, 20, {}, 2, 4);
         expect(capped.boostM).toBe(4);
     });
     it('a stick move sets the base back in the same frame', () => {
@@ -150,5 +150,44 @@ describe('loadq2 review', () => {
         expect(r.boostM).toBe(0);
         for (let now = 5000; now < 8000; now += 16) r.frame(s(now), 1, 8, true, true);
         expect(r.boostM).toBeGreaterThan(1);
+    });
+});
+
+describe('loadq2 R2-rest', () => {
+    const s = (now: number, o: Partial<StillSample> = {}): StillSample => ({ now, paused: false, speed: 0, turnDegS: 0, roll: 0, pitch: 0, yaw: 0, throttle: -1, frameMs: 16, ...o });
+    const rise = (r: StillRise, baseM: number, capM: number, touch: boolean, o: Partial<StillSample> = {}, from = 0, ms = 20000): void => {
+        for (let now = from + 16; now < from + ms; now += 16) r.frame(s(now, o), baseM, capM, true, true, touch);
+    };
+    it('R3: the still budget stops at 4 times the flight budget, 2 on a touch device, and at the memory cap', () => {
+        const d = new StillRise();
+        rise(d, 2.5, 16, false);
+        expect(d.boostM).toBe(10);
+        const t = new StillRise();
+        rise(t, 2, 16, true);
+        expect(t.boostM).toBe(4);
+        const m = new StillRise();
+        rise(m, 2.5, 4, false);
+        expect(m.boostM).toBe(4);
+        expect([stillTopM(2.5, 16, false), stillTopM(2, 16, true), stillTopM(2.5, 4, false), stillTopM(8, 4, false)]).toEqual([10, 4, 4, 8]);
+    });
+    it('R3: after a device fault the line says once that the setting was switched off', () => {
+        const i: DetailInput = { handSet: false, released: false, keeperSlow: false, step: 0, topM: 4, budgetM: 4, drawnM: 4, pending: 0, retrying: 0, givenUp: 0, filesPerSec: 0, still: false, stillOff: true };
+        expect(detailState(i)).toBe('stilloff');
+        expect(detailLine('stilloff', i, say).text).toBe('detail.stilloff');
+        expect(detailState({ ...i, stillOff: false })).toBe('hidden');
+    });
+    it('R5: the view turning or moving is a move, in a pause too', () => {
+        const p = new StillRise();
+        rise(p, 1, 16, false, { paused: true });
+        expect(p.boostM).toBeGreaterThan(1);
+        expect(p.frame(s(20100, { paused: true, viewTurnDegS: 40 }), 1, 16, true, true)).toBe(true);
+        expect(p.boostM).toBe(0);
+        rise(p, 1, 16, false, { paused: true, viewTurnDegS: 40 }, 20100, 5000);
+        expect(p.boostM).toBe(0);
+        rise(p, 1, 16, false, { paused: true, viewSpeed: 1 }, 25100, 5000);
+        expect(p.boostM).toBe(0);
+        const h = new StillRise();
+        rise(h, 1, 16, false, { viewTurnDegS: 3, viewSpeed: 0.05 });
+        expect(h.boostM).toBeGreaterThan(1);
     });
 });

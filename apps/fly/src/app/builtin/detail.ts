@@ -29,7 +29,8 @@ function input(ctx: FlightContext): DetailInput {
         troubled: s.troubled,
         givenUp: s.givenUp,
         filesPerSec: s.filesPerSec,
-        still: ctx.quality.stillBudgetMillions > 0
+        still: ctx.quality.stillBudgetMillions > 0,
+        stillOff: performance.now() < ctx.quality.stillOffUntil
     };
 }
 

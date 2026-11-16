@@ -44,7 +44,7 @@ export const FULL_SHOW_MS = 4000;
 /** Drawn at least this share of the budget counts as full for the setting; less with nothing to come: no finer level. */
 export const FULL_SHARE = 0.9;
 
-export type DetailState = 'hidden' | 'still' | 'coming' | 'full' | 'nofiner' | 'kept' | 'lowered' | 'network' | 'givenup';
+export type DetailState = 'hidden' | 'still' | 'coming' | 'full' | 'nofiner' | 'kept' | 'lowered' | 'network' | 'givenup' | 'stilloff';
 
 export interface DetailInput {
     /** the budget comes from the pilot's setting */
@@ -69,12 +69,16 @@ export interface DetailInput {
     filesPerSec: number;
     /** G6: the craft is still and the detail has risen above the base (StillRise.boostM > 0), for every pilot */
     still?: boolean;
+    /** loadq2 R3: the graphics device was lost or ran out of memory while the still budget stood; the page went back to
+     *  the flight's budget and switched "More detail at rest" off on this device (Quality.stillTurnedOff, said once) */
+    stillOff?: boolean;
 }
 
 /** The state of the line. Network trouble shows for every pilot; the rest only for a budget set by hand (G4). */
 export function detailState(i: DetailInput): DetailState {
     if (i.givenUp > 0) return 'givenup';
     if (i.retrying > 0 || (i.troubled ?? 0) > 0) return 'network';
+    if (i.stillOff === true) return 'stilloff';
     // the detail still coming in for a budget set by hand is said as such, also at rest (review LR-1: the line said
     // 'sharper while you hold still' while the scan was still loading at the start)
     if (i.handSet && !i.released && i.keeperSlow) return 'kept';
@@ -125,6 +129,7 @@ export function detailLine(s: DetailState, i: DetailInput, say: Say): DetailLine
         case 'lowered': return { text: say('detail.lowered', { drawn, top }), action: null, actionText: '' };
         case 'network': return { text: say('detail.network', { files: Math.max(i.retrying, i.troubled ?? 0) }), action: null, actionText: '' };
         case 'givenup': return { text: say('detail.givenup', { files: i.givenUp }), action: 'retry', actionText: say('detail.retry') };
+        case 'stilloff': return { text: say('detail.stilloff'), action: null, actionText: '' };
     }
 }
 
@@ -180,6 +185,22 @@ export interface StillSample {
     throttle: number;
     /** the time since the last frame, ms */
     frameMs: number;
+    /** loadq2 R5: how fast the view itself turns (deg/s) and moves (m/s): the camera, whatever turns it (the mouse look,
+     *  the course editor's camera, a stick); a turning view is a move, also in a pause */
+    viewTurnDegS?: number;
+    viewSpeed?: number;
+}
+
+/** loadq2 R3: the still budget is at most this many times the flight's budget in force (the lead's estimate). */
+export const STILL_TIMES_BASE = 4;
+/** loadq2 R3: on a touch device (the class phone or tablet) at most this many times (the lead's estimate). */
+export const STILL_TIMES_BASE_TOUCH = 2;
+/** How long the line says that "More detail at rest" was switched off after a device fault, ms (an estimate). */
+export const STILL_OFF_SHOW_MS = 10000;
+
+/** loadq2 R3: the top a still picture may rise to: the memory cap, and at most 4 (touch: 2) times the flight's budget. */
+export function stillTopM(baseM: number, capM: number, touch: boolean): number {
+    return Math.max(baseM, Math.min(capM, baseM * (touch ? STILL_TIMES_BASE_TOUCH : STILL_TIMES_BASE)));
 }
 
 /** The rule of G6: frame() once per frame; boostM is the budget a still picture draws (0: none, the base applies). */
@@ -192,11 +213,13 @@ export class StillRise {
     private frames: number[] = [];
 
     /** True when boostM changed (the caller applies it at once). */
-    frame(s: StillSample, baseM: number, capM: number, enabled: boolean, keeperCalm = true): boolean {
+    frame(s: StillSample, baseM: number, capM: number, enabled: boolean, keeperCalm = true, touch = false): boolean {
         const unpaused = this.wasPaused && !s.paused;
         this.wasPaused = s.paused;
         const off = (v: number): number => (v < 0 ? -v : v);
-        const moving = unpaused || (!s.paused && (s.speed >= STILL_SPEED_MS || s.turnDegS >= STILL_TURN_DEG_S
+        // R5: the view turning or moving is a move, paused or not
+        const viewMoving = (s.viewTurnDegS ?? 0) >= STILL_TURN_DEG_S || (s.viewSpeed ?? 0) >= STILL_SPEED_MS;
+        const moving = unpaused || viewMoving || (!s.paused && (s.speed >= STILL_SPEED_MS || s.turnDegS >= STILL_TURN_DEG_S
             || off(s.roll) >= STILL_STICK || off(s.pitch) >= STILL_STICK || off(s.yaw) >= STILL_STICK
             || (this.since > 0 && off(s.throttle - this.throttle0) >= STILL_STICK)));
         // the frame rate keeper chooses the flight's step before the detail rises (review LR-4); once risen, it is at rest
@@ -215,7 +238,7 @@ export class StillRise {
         this.lastStep = s.now;
         const cur = this.boostM > 0 ? this.boostM : baseM;
         let next = cur;
-        if (med < STILL_FRAME_MS) next = Math.min(Math.max(capM, baseM), cur * STILL_RISE);
+        if (med < STILL_FRAME_MS) next = Math.min(stillTopM(baseM, capM, touch), cur * STILL_RISE);
         else if (this.boostM > 0) next = cur / STILL_RISE;
         if (next <= baseM) next = 0;
         const changed = next !== this.boostM;

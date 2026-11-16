@@ -11,5 +11,6 @@
   "detail.retry": "Reintentar",
   "detail.still": "Detalle: más nítido mientras estás quieto ({drawn} M)",
   "set.display.stillDetail": "Más detalle en reposo",
-  "set.display.stillDetail.help": "Mientras el dron flota quieto o el vuelo está en pausa, el escaneo carga más detalle paso a paso, mientras la imagen siga lo bastante fluida para mirarla. El primer movimiento de los sticks devuelve al instante el detalle de vuelo."
+  "set.display.stillDetail.help": "Mientras el dron flota quieto o el vuelo está en pausa, el escaneo carga más detalle paso a paso, mientras la imagen siga lo bastante fluida para mirarla. El primer movimiento de los sticks devuelve al instante el detalle de vuelo.",
+  "detail.stilloff": "Detalle: vuelve el detalle de vuelo. La tarjeta gráfica se quedó sin memoria, así que «Más detalle en reposo» queda desactivado en este dispositivo"
 }

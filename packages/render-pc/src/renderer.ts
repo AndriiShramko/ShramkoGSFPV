@@ -726,6 +726,26 @@ export class SplatRenderer {
     }
 
     /** Ask every given-up file again (the detail line's Try again press); how many. */
+    /**
+     * loadq2 R3: calls back when the graphics device is lost (the engine's 'devicelost', WebGPU's device.lost) or reports
+     * that it ran out of memory (WebGPU 'uncapturederror' with a GPUOutOfMemoryError). Returns the remover.
+     */
+    onGpuTrouble(cb: (kind: 'lost' | 'memory') => void): () => void {
+        let live = true;
+        const fire = (k: 'lost' | 'memory'): void => { if (live) cb(k); };
+        const onLost = (): void => fire('lost');
+        this.device.on('devicelost', onLost);
+        type ErrorTarget = { lost?: Promise<unknown>; addEventListener?: (n: string, f: (e: Event) => void) => void; removeEventListener?: (n: string, f: (e: Event) => void) => void };
+        const w = (this.device as unknown as { wgpu?: ErrorTarget }).wgpu;
+        void w?.lost?.then(() => fire('lost'));
+        const onError = (ev: Event): void => {
+            const e = (ev as Event & { error?: { constructor?: { name?: string }; message?: string } }).error;
+            if (e && (e.constructor?.name === 'GPUOutOfMemoryError' || /out of memory/i.test(e.message ?? ''))) fire('memory');
+        };
+        w?.addEventListener?.('uncapturederror', onError);
+        return () => { live = false; this.device.off('devicelost', onLost); w?.removeEventListener?.('uncapturederror', onError); };
+    }
+
     retryFailedFiles(): number {
         return this.keeper.retryAll();
     }

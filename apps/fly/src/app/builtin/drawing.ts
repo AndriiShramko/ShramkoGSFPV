@@ -32,6 +32,8 @@ function apply(ctx: FlightContext, announce: boolean): void {
     // lane loadq G1: a budget the pilot set by hand is drawn as set (app/detail-rule.ts drawPlan)
     ctx.quality.setTopBudget(d.budgetM, d.from.budget === 'setting');
     ctx.quality.setPresetScale(d.renderScale);
+    // loadq2 R3: a phone or tablet lets the still picture rise to 2 times the flight's budget, not 4 (builtin/still.ts)
+    ctx.quality.touchDevice = d.deviceClass === 'phone' || d.deviceClass === 'tablet';
     // R32: the governor starts at the step this device settled at on its last flight (render-pc governor.ts)
     // (not on a strong desktop: there the top step stays the start, review LP-1)
     ctx.quality.startFrom(governorDeviceId(d.deviceClass, gpuName(r.gpuInfo)), governorMayStartLower(d.deviceClass));

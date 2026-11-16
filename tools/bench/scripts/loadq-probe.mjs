@@ -63,6 +63,10 @@ const UIAT = env.UIAT !== undefined ? Number(env.UIAT) : null;
 const STILLOFF = env.STILLOFF === '1';
 const PRESSAT = env.PRESSAT !== undefined ? Number(env.PRESSAT) : null;
 const MOVEAT = env.MOVEAT !== undefined ? Number(env.MOVEAT) : null;
+// loadq2 R2-rest switches: MOVELOGMS (1700: how long the move log runs after MOVEAT, ms; 3500 for 3 s per frame after the
+// push), CPU (the browser's own CPU slowdown, CDP Emulation.setCPUThrottlingRate, from the page's start; the GPU is not slowed)
+const MOVELOGMS = Number(env.MOVELOGMS || 1700);
+const CPU = Number(env.CPU || 1);
 // loadq2 switch: FLY (s after the reveal) moves the held camera along its start heading at FLYV (5) m/s for FLYSECS (60) s
 // and keeps the craft's sim speed at 2 m/s meanwhile, so the still rule sees a flight (a hook flight, not the keyboard)
 const FLY = env.FLY !== undefined ? Number(env.FLY) : null;
@@ -103,8 +107,8 @@ const UIRECTS = `(() => {
 })()`;
 const MOVELOG = `(() => {
     const h = window.__gsfpv; const s = h.session; const a = s.renderer.app; window.__mv = [];
-    const tick = () => { const sim = s.runner.sim; const v = sim.s; if (window.__mv.length === 10) v[3] += 2; window.__mv.push([performance.now(), sim.ch[0], sim.ch[1], sim.ch[2], sim.ch[3], Math.hypot(v[3], v[4], v[5]), Math.round(a.scene.gsplat.splatBudget / 1e4) / 100, a.stats.frame.gsplats]); if (window.__mv.length < 600) requestAnimationFrame(tick); };
-    requestAnimationFrame(tick); return true;
+    const tick = () => { const sim = s.runner.sim; const v = sim.s; if (window.__mv.length === 10) v[3] += 2; window.__mv.push([performance.now(), sim.ch[0], sim.ch[1], sim.ch[2], sim.ch[3], Math.hypot(v[3], v[4], v[5]), Math.round(a.scene.gsplat.splatBudget / 1e4) / 100, a.stats.frame.gsplats]); window.__mvT0 ||= (window.__mv.length === 11 ? performance.now() : 0); if (window.__mv.length < 20000 && (!window.__mvT0 || performance.now() - window.__mvT0 < 3200)) requestAnimationFrame(tick); };
+    window.__mvT0 = 0; requestAnimationFrame(tick); return true;
 })()`;
 const vw = Number(env.VW || 1920);
 const vh = Number(env.VH || 1080);
@@ -248,6 +252,7 @@ const frameMs = async (fromMs) => page.evaluate(`window.__raf.filter((x) => x[0]
 try {
     res.gpuBefore = nvidiaThermal();
     const t0 = Date.now();
+    if (CPU > 1) { const cdp = await ctx.newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU }); res.cpuRate = CPU; }
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
     let revealAt = null;
     let still = null;
@@ -299,7 +304,7 @@ try {
             await page.evaluate(MOVELOG);
             await sleep(200);
             // the craft pushed to 2 m/s in the 11th logged frame (MOVELOG): a move as the still rule sees it
-            await sleep(1500);
+            await sleep(MOVELOGMS);
             const log = await page.evaluate('window.__mv').catch(() => []);
             const moved = log.findIndex((x) => Math.abs(x[1]) >= 0.05 || Math.abs(x[2]) >= 0.05 || Math.abs(x[4]) >= 0.05 || x[5] >= 0.3);
             const back = moved < 0 ? -1 : log.findIndex((x, i) => i >= moved && x[6] <= (st.still ? st.still.baseM : 0) + 0.01);
@@ -307,6 +312,20 @@ try {
             res.move.framesToBase = moved >= 0 && back >= 0 ? back - moved : null;
             res.move.around = moved >= 0 ? log.slice(Math.max(0, moved - 2), moved + 4).map((x) => x.map((v) => r2(v))) : log.slice(0, 3);
             res.move.drawnAfter = [0, 12, 30, 60].map((k) => (log[moved + k] ? log[moved + k][7] : null));
+            // loadq2 R2-rest: per frame for 3 s after the push (the interval, the splats drawn, the budget in force)
+            if (moved >= 0) {
+                const t0m = log[moved][0];
+                const base = st.still ? st.still.baseM : null;
+                const rows = log.slice(moved).map((x, i, a) => [r2(x[0] - t0m), r2(i === 0 ? x[0] - log[moved - 1][0] : x[0] - a[i - 1][0]), x[7], x[6]]);
+                const first = rows.filter((x) => x[0] <= 1000).map((x) => x[1]);
+                const backAt = base === null ? null : rows.find((x) => x[2] <= 1.1 * base * 1e6);
+                res.move.base = base; res.move.boostM = st.still ? st.still.boostM : null;
+                res.move.first1s = { n: first.length, medMs: r2(pct(first, 0.5)), p90Ms: r2(pct(first, 0.9)), maxMs: r2(Math.max(...first)) };
+                res.move.within10pctMs = backAt ? backAt[0] : null;
+                res.move.peakBudgetM = Math.max(0, ...res.samples.map((x) => x.engineBudgetM || 0), st.engineBudgetM || 0);
+                res.move.heapMB = st.heapMB ?? null; res.move.vramMB = st.vramMB ?? null; res.move.drawnBefore = st.drawn;
+                res.move.perFrame = rows;
+            }
         }
         const since = revealAt === null ? null : (Date.now() - revealAt) / 1000;
         row.sinceReveal = since === null ? null : r2(since);

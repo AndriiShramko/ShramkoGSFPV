@@ -548,3 +548,25 @@ Stage R1-keeper
   second to the memory cap (16 M at deviceMemory 8) at the top render scale; the keeper does not judge at rest; the
   'still' line shows at rest; after the move the engine sheds the extra splats over about 60 frames (stage R2-rest
   measures what that costs); failed files are retried with pauses and stalls cut after 20 s (G3, loader.maxRetries 0).
+
+## Status (loadq2, stage R2-rest)
+
+- [x] 0. Release build: the code of HEAD f14eeedf equals 930a93d7 (git diff --stat 930a93d7 f14eeedf -- apps packages is
+  empty), so its release U:/Temp/gsfpv-train3/loadq2/dist-after-930a93d7 (with the Wroclaw walls stand-in) is the BEFORE
+  build of this stage, served on 5830. origin/main moved to b2e7a73b (course keys); not merged in this stage.
+- [x] 1. Probe switches (tools/bench/scripts/loadq-probe.mjs): CPU (CDP Emulation.setCPUThrottlingRate from the page's
+  start), MOVELOGMS (3500: the move log runs 3 s after the push), res.move.first1s (median, 90th percentile, worst frame
+  of the first second after the push), within10pctMs (time until the splats drawn are within 10 % of the flight's
+  budget), peakBudgetM, heapMB, vramMB, perFrame. Batch U:/Temp/gsfpv-train3/loadq2/rest.sh (Lublin 2f1ddf5f 140 m up
+  pitch -35 and Wroclaw street, desktop-weak 2.5 M scale 0.85 and phone 2 M scale 0.7 (the lowest class, presets.ts),
+  CPU 1 and 4, the rise on and off, push at 45 s after the reveal), runs in U:/Temp/gsfpv-train3/loadq2/rest.
+- [x] 2. R3 and R5 built (this commit): detail-rule.ts stillTopM (at most 4 times the flight's budget, 2 on a phone or
+  tablet class, never above the memory cap), StillRise.frame(touch) and the view's own turn and move (viewTurnDegS,
+  viewSpeed: a move also in a pause); still.ts reads the camera each frame and listens to renderer.onGpuTrouble (new in
+  packages/render-pc/src/renderer.ts: the engine's devicelost, WebGPU device.lost, an uncapturederror with
+  GPUOutOfMemoryError): with the still budget standing it puts the flight's budget back, stores display.stillDetail off
+  and the line says detail.stilloff for 10 s (en, es, pl, ru). Tests tools/bench/test/loadq-detail.test.ts 'loadq2
+  R2-rest' (19 pass); negative control with the detail-rule.ts of f14eeedf: 4 fail by assertion ("expected 16 to be
+  10", "expected 'hidden' to be 'stilloff'", ...). Typecheck apps/fly and render-pc exit 0.
+- [~] 3. Measurement before (running), then R4 by its order, then the table after.
+- [ ] 4. Browser: device fault, pictures, accept-fly, governor-start, lod-view, pause-over-course, gates, a6.
