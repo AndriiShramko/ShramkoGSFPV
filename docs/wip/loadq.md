@@ -398,6 +398,36 @@ Stage R1-keeper
      'upWaitMs', the after bundle has it), copied to U:/Temp/gsfpv-train3/loadq2/dist-before-3fea63e2 with the Wroclaw
      walls stand-in, the four files restored. Runs b to d: U:/Temp/gsfpv-train3/loadq2/batch.sh (before on 5820, after
      on 5821, run.sh takes one GPU lock per run), results in U:/Temp/gsfpv-train3/loadq2/runs.
+  Measured in run 2 of this stage (01:20 to 02:10, samples U:/Temp/gsfpv-train3/loadq2/runs/<label>.json, summary
+  script U:/Temp/gsfpv-train3/loadq2/sum.mjs; Wroclaw spawn, 1920x1080, untouched desktop-strong, BENCH_UNCAPPED=1, the
+  hook flight from 120 s for 60 s; frame medians are per second, from the probe's own rAF):
+  - k-before (3fea63e2): no step in 120 s at the spawn (the craft is still: G6 holds the rise, the keeper does not judge
+    at rest); in flight 0->1->2->3->4 at 121, 122, 123, 124 s while the medians were 3.0 to 7.0 ms; end: step 4, 1.5 M at
+    render scale 0.5, 1.40 M drawn; 3296 requests for 2128 distinct files.
+  - k-after (05b0c7ad): in flight down 0->1 at 123 s, 1->2 at 124 s, 2->3 at 130 s (medians 4.2 to 6.3 ms, the loader
+    queue 25 to 30 files), up at 147, 152, 157 s, down at 158 s, up at 169 s (the wait after that alternation was 11 s:
+    R2's doubled 10 s); end: step 0, 4 M, 3.88 M drawn; 3936 requests for 2240 distinct files. R1 does NOT hold in the
+    browser: 4 steps down while the frames came at 150 to 300 a second.
+  - k-after-govlog (STILLOFF=1, flight from 5 s): again a step down 0->1 at 6 s with medians 2.6 / 4.8 ms, up at 33 s.
+    Its keeper log is empty: hook.governor did not exist yet at the reveal (the probe now wraps it when it appears).
+  - Every run, before and after: the per-second 90th percentile frame is 17.2 to 18.2 ms while the median is about
+    3 ms (about one frame in ten takes about 17.8 ms). Guess, not measured: the steps down come from those frames plus
+    the loader's upload hitches while files stream (the held rule adds the interval before), more than 10 % of a
+    second's frames over 1.25 x 16.7 ms. The keeper log (GOVLOG) decides it.
+  - k-before-d30 (+30 ms CPU a frame): 3 steps down at 125 to 128 s with medians 37 to 41 ms (as it should), no
+    alternation, end step 4. k-after-d30: the probe's setFrameDelay came before the hook existed, so the delay was not
+    applied (medians 2.9 ms; kept as runs/k-after-d30-nodelay.json, 0 steps); the probe now retries it each second.
+  - k-after-drop10 (every tenth file always fails, 120 s): 858 requests for 571 distinct files, 344 failed answers
+    (about 57 failing files, about 6 requests each: the bound of the code, 1 + 5 retries); the reveal took 40.3 s; the
+    end picture timed out, so the end state is missing from the json.
+  - loadq2-line-1366 and loadq2-line-844 (16 M by hand, picture at 6 s, U:/Temp/gsfpv-train3/shots/<label>-ui.png,
+    looked at): 1366x768: credit, 'Walls 5 cm', 'Detail: 4.4 of 16 M, files to go: 121, about 21 s' under each other at
+    the top left, nothing overlaps; the text inherits .attribution font-size 12px (apps/fly/src/fly.css:129). 844x390:
+    the Detail line lies on the telemetry line 'THR 0% 0.0 m/s ALT 0.0 m' (finding LR-8 below). The scene had the
+    School block, no course: the course clock block was not on screen, not checked.
+  - governor-start-probe on the after code (scene 39e63ce9): PASS all=true
+    (evidence/2026-11-16/lod-view/loadq2-governor-start.json).
+  - Not run (the GPU lock was held by other lanes for their whole wait): k-after-drop1, k-after-16slow50.
   b. One GPU lock per run, OUT=U:/Temp/gsfpv-train3/loadq2, BENCH_UNCAPPED=1, untouched desktop-strong, SECS=180 FLY=120
      FLYSECS=60 (120 s at the spawn, then 60 s along the street): before and after, as is and with DELAY=30. Table: the
      governor step per second (govStep), asked against distinct files, drawn at the end; after: no step down while the
@@ -407,7 +437,20 @@ Stage R1-keeper
   d. After only: PILOT=16 DELAY=50 PRESSAT=25 UISTATES=kept:loadq2-kept,lowered:loadq2-lowered SECS=60 (the L2 lq2-slow50
      proof again); VW=1366 VH=768 and VW=844 VH=390 with PILOT=16 UIAT=6 SECS=15 for the line's size and overlap (look at
      each picture; course clock block not on this scene: say so).
-- [ ] 4. governor-start-probe (it loads with set.display.stillDetail=0), gates.py --only
+- [ ] 3e. LEFT for the next run, in this order (dists and scripts in U:/Temp/gsfpv-train3/loadq2: serve
+  dist-after-05b0c7ad on a port of 5820-5839, run.sh <label> <port> takes one GPU lock per run; delete a run's json
+  before running it again):
+  1. STILLOFF=1 FLY=5 FLYSECS=40 SECS=50 GOVLOG=1 run.sh k-after-govlog2: res.govlog says which judged frames the keeper
+     counted as missed at each step down (held or not, their intervals). Fix R1 in packages/render-pc/src/governor.ts
+     by what it shows, a unit test built from the measured frame sequence in
+     packages/render-pc/test/governor-loadq2.test.ts with a negative control, typecheck, release build.
+  2. On the new build: k-after again (SECS=180 FLY=120 FLYSECS=60 GOVLOG=1): no step down while the second's median is
+     under 16.7 ms; k-after-d30 (DELAY=30, same, GOVLOG=1): one step down series, no alternation.
+  3. k-after-16slow50 and k-after-drop1 (the lines in batch.sh).
+  4. LR-8: the Detail line at 844x390 over the telemetry: fix (apps/fly/src/app/builtin/detail.ts, the line's place in
+     a short window), picture loadq2-line-844 again and look at it.
+  5. Item 4 below.
+- [~] 4. governor-start-probe (it loads with set.display.stillDetail=0): PASS on the after code (above); gates.py --only
   vitest,architecture,i18n,b18,leaks, tools/bench/test/a6-reference.test.ts; status, changed files, commit.
 
 ## The rules the code had (state before loadq2)
@@ -451,6 +494,11 @@ Stage R1-keeper
 - LR-7 (doubt, not changed) drawPlan pinned draws settingBudgetM = top x (0.25 + 0.75 x display.quality): with the
   Quality slider under 1 a hand-set 16 M draws less (10 M at 0.5) while the 'coming' line says 'of 16 M'. It is the
   pilot's own slider, not a silent rule.
+- LR-8 (real, left) apps/fly/src/app/builtin/detail.ts puts the Detail line under 'Walls 5 cm' on the credit; in a
+  short window with touch sticks (844x390) the credit sits under the OSD's top line (apps/fly/src/fly.css:228) and its
+  third line falls on the telemetry 'THR 0% 0.0 m/s ALT 0.0 m' (.osd.bl, fly.css:215): a pilot on a phone on its side
+  reads two texts printed over each other (picture U:/Temp/gsfpv-train3/shots/loadq2-line-844-ui.png).
+- LR-2 (R1) measured in the browser after the fix: it does NOT hold yet (item 3, k-after, k-after-govlog); left 3e.1.
 - Retries (stream-keeper.ts): 1 request and at most 5 retries (0.5, 1, 2, 4, 8 s) a file, then given up until the
   press: at most 6 requests a failing file from the code; the browser count is item 3.
 - Where an untouched pilot's flight differs from main f286dd49 (G6 on by default): at rest the budget rises x1.5 a

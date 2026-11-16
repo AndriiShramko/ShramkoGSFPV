@@ -69,6 +69,29 @@ const FLY = env.FLY !== undefined ? Number(env.FLY) : null;
 const FLYV = Number(env.FLYV || 5);
 const FLYSECS = Number(env.FLYSECS || 60);
 const UISTATES = (env.UISTATES || '').split(',').filter(Boolean).map((x) => x.split(':'));
+// loadq2 switch: GOVLOG=1 wraps the keeper's onFrame from the reveal and records every judged frame (interval, held, the
+// interval before, missed as the keeper logged it, the step after); res.govlog has the counts and the frames around
+// each step change
+const GOVLOG = env.GOVLOG === '1';
+const GOVWRAP = `(() => {
+    const g = window.__gsfpv.governor; const o = g.onFrame.bind(g); window.__gl = [];
+    g.onFrame = (t, ex, held, st) => { const last = g.last, prev = g.prevDt, s0 = g.step, n0 = g.log.length, e0 = g.log[g.log.length - 1];
+        const r = o(t, ex, held, st); const e1 = g.log[g.log.length - 1];
+        if (e1 && e1 !== e0 && window.__gl.length < 60000) window.__gl.push([Math.round(t * 10) / 10, Math.round((t - last) * 10) / 10, held ? 1 : 0, Math.round(prev * 10) / 10, e1.missed ? 1 : 0, g.step, ex ? 1 : 0, st ? 1 : 0]);
+        return r; };
+    return { judgedPeriodMs: g.judgedPeriodMs, periodMs: g.displayPeriodMs };
+})()`;
+const GOVSUM = `(() => {
+    const L = window.__gl || []; const m = L.filter((x) => x[4]);
+    const out = { frames: L.length, missed: m.length, missedHeld: m.filter((x) => x[2]).length, held: L.filter((x) => x[2]).length,
+        missedHeldShort: m.filter((x) => x[2] && x[1] <= 20.8).length, missedDt: m.filter((x) => !x[2]).length,
+        judgedPeriodMs: window.__gsfpv.governor.judgedPeriodMs, changes: [] };
+    for (let i = 1; i < L.length; i++) if (L[i][5] !== L[i - 1][5]) {
+        const w = L.filter((x) => x[0] > L[i][0] - 1000 && x[0] <= L[i][0]);
+        out.changes.push({ t: L[i][0], from: L[i - 1][5], to: L[i][5], win: w.length, winMissed: w.filter((x) => x[4]).length, winMissedHeld: w.filter((x) => x[4] && x[2]).length, last: L.slice(Math.max(0, i - 12), i + 1).map((x) => x.slice(1, 5)) });
+    }
+    return out;
+})()`;
 const MOVELOG = `(() => {
     const h = window.__gsfpv; const s = h.session; const a = s.renderer.app; window.__mv = [];
     const tick = () => { const sim = s.runner.sim; const v = sim.s; if (window.__mv.length === 10) v[3] += 2; window.__mv.push([performance.now(), sim.ch[0], sim.ch[1], sim.ch[2], sim.ch[3], Math.hypot(v[3], v[4], v[5]), Math.round(a.scene.gsplat.splatBudget / 1e4) / 100, a.stats.frame.gsplats]); if (window.__mv.length < 600) requestAnimationFrame(tick); };
@@ -232,7 +255,18 @@ try {
             res.revealS = s;
             await page.addStyleTag({ content: '#ui.loadq-hide { visibility: hidden !important; }' }).catch(() => {});
             res.hold = await page.evaluate(HOLD(UP, PITCH)).catch((e) => ({ error: String(e.message) }));
-            if (DELAY) await page.evaluate(`window.__gsfpv.setFrameDelay(${DELAY})`).catch(() => {});
+        }
+        // the hook's setFrameDelay may come after the reveal (loadq2: one run lost its delay): asked every second until set
+        if (revealAt !== null && DELAY && !res.delaySet) {
+            res.delaySet = await page.evaluate(`typeof window.__gsfpv.setFrameDelay === 'function' ? (window.__gsfpv.setFrameDelay(${DELAY}), ${'performance.now()'}) : false`).catch(() => false);
+            if (res.delaySet) res.delaySet = r2((Date.now() - revealAt) / 1000);
+        }
+        // the keeper is on the hook after the reveal too (loadq2: the first wrap found no hook.governor)
+        if (revealAt !== null && GOVLOG && !(res.govWrap && res.govWrap.judgedPeriodMs)) {
+            res.govWrap = await page.evaluate(`window.__gsfpv.governor ? ${GOVWRAP} : { missing: true }`).catch((e) => ({ error: String(e.message).slice(0, 160) }));
+            if (res.govWrap && res.govWrap.judgedPeriodMs) res.govWrap.at = r2((Date.now() - revealAt) / 1000);
+        }
+        if (revealAt !== null && res.revealS === s) {
             if (STILLOFF) res.stillOff = await page.evaluate("JSON.stringify(window.__gsfpv.prefs.set('display.stillDetail', false))").catch((e) => String(e.message));
         }
         if (revealAt !== null && FLY !== null && !res.fly && (Date.now() - revealAt) / 1000 >= FLY) {
@@ -319,6 +353,7 @@ try {
     for (const a of ALIAS) await shot(a);
     const done = await page.evaluate(STATE).catch(() => ({}));
     res.end = done;
+    if (GOVLOG) res.govlog = await page.evaluate(GOVSUM).catch((e) => ({ error: String(e.message) }));
     // the second from which the picture stopped changing: the drawn count within 0.5 % of the end and nothing loading
     const S = res.samples.filter((x) => x.drawn !== undefined);
     let settled = null;
