@@ -16,6 +16,7 @@
   "course.none": "No course fitted the free space this time. Shift+G tries another layout",
   "course.noneResize": "No course fits this scan at Scene size x{s}. Shift+G sets x{to} and builds the course",
   "course.wallsFirst": "First the walls of this scan, then the course.",
+  "course.early": "Course: one moment, its tools are still loading.",
   "course.failed": "This course did not come out. Shift+G builds another one",
   "course.lapDone": "Lap {time}",
   "course.best": "Best lap! {time}",

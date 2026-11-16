@@ -42,6 +42,20 @@ python deploy/neighbours.py snap ".cache/nb-before-$SHA" | tail -1
 bash deploy/deploy.sh "$D/dist.tgz" "$D/SHA256SUMS" > "$D/deploy.log" 2>&1; rc=$?
 tail -6 "$D/deploy.log"
 [ "$rc" = 0 ] || { echo "STOP: deploy.sh exit $rc (whole log: $D/deploy.log)"; exit 1; }
+nbdiff() {
+  python deploy/neighbours.py diff ".cache/nb-before-$SHA" "$1" --allow gsfpv-web,gsfpv-api,gsfpv-rooms \
+    | python -c "import sys,json; d=json.load(sys.stdin); print('neighbours equal', d.get('equal'), 'problems', d.get('problems')); sys.exit(0 if d.get('equal') else 3)"
+}
 python deploy/neighbours.py snap ".cache/nb-after-$SHA" | tail -1
-python deploy/neighbours.py diff ".cache/nb-before-$SHA" ".cache/nb-after-$SHA" --allow gsfpv-web,gsfpv-api,gsfpv-rooms | python -c "import sys,json; d=json.load(sys.stdin); print('neighbours equal', d.get('equal'), 'problems', d.get('problems'))"
-node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu 2>&1 | tail -2
+nb=0; nbdiff ".cache/nb-after-$SHA" || nb=$?
+if [ "$nb" != 0 ]; then
+  # One request to a neighbour can fail by itself (2026-11-16: game.flyreelstudio.eu 200 -> -1, 200 again a minute
+  # later). Look once more before calling it a change.
+  sleep 30
+  python deploy/neighbours.py snap ".cache/nb-after2-$SHA" | tail -1
+  nb=0; nbdiff ".cache/nb-after2-$SHA" || nb=$?
+fi
+node scripts/smoke-release.mjs https://gsfpv.flyreelstudio.eu 2>&1 | tail -2; sm=${PIPESTATUS[0]}
+# The exit code says what the lines above say: a neighbour that changed or a failed smoke is not a finished release.
+[ "$nb" = 0 ] || { echo "STOP: the neighbours differ after the release (the problems are named above): look at them first"; exit 3; }
+[ "$sm" = 0 ] || { echo "STOP: the smoke checks failed (exit $sm)"; exit 4; }

@@ -1,0 +1,83 @@
+{
+ "name": "course-early",
+ "date": "2026-11-16",
+ "what": "a course key pressed before the course chunk is there (chunk held back 3 s), local release, Wroclaw 70b50d42, rendering off",
+ "before": {
+  "build": "e38ce9c9 (the stub of train 1)",
+  "key": "Shift+KeyG",
+  "featureAtPress": false,
+  "noteAfterPress": null,
+  "featureAfterMs": 3234,
+  "doneAfterMs": null,
+  "seconds": 25
+ },
+ "after": {
+  "shift-g": {
+   "base": "http://localhost:5708",
+   "key": "Shift+KeyG",
+   "chunkDelayMs": 3000,
+   "chunkAsked": 1,
+   "featureAtPress": false,
+   "noteAfterPress": "Course: one moment, its tools are still loading.",
+   "featureAfterMs": 2964,
+   "doneAfterMs": 17608,
+   "last": {
+    "feature": true,
+    "gates": 22,
+    "drawn": 76,
+    "on": true,
+    "editor": false,
+    "problem": null,
+    "progress": 0,
+    "note": "Gates: 22. Fly through START to start the clock. Shift+T hides the course"
+   },
+   "errs": []
+  },
+  "shift-b": {
+   "base": "http://localhost:5708",
+   "key": "Shift+KeyB",
+   "chunkDelayMs": 3000,
+   "chunkAsked": 1,
+   "featureAtPress": false,
+   "noteAfterPress": "Course: one moment, its tools are still loading.",
+   "featureAfterMs": 2930,
+   "doneAfterMs": 18788,
+   "last": {
+    "feature": true,
+    "gates": 20,
+    "drawn": 141,
+    "on": true,
+    "editor": true,
+    "problem": null,
+    "progress": 0,
+    "note": "Gates: 20. Fly through START to start the clock. Shift+T hides the course"
+   },
+   "errs": []
+  },
+  "no-delay": {
+   "base": "http://localhost:5708",
+   "key": "Shift+KeyG",
+   "chunkDelayMs": 1,
+   "chunkAsked": 1,
+   "featureAtPress": true,
+   "noteAfterPress": "Course: finding the free space. Step 1 of 2, 0 %. 0:00 so far, about 0:10 left.",
+   "featureAfterMs": 644,
+   "doneAfterMs": 12497,
+   "last": {
+    "feature": true,
+    "gates": 27,
+    "drawn": 118,
+    "on": true,
+    "editor": false,
+    "problem": null,
+    "progress": 0,
+    "note": "Gates: 27. Fly through START to start the clock. Shift+T hides the course"
+   },
+   "errs": []
+  }
+ },
+ "live": {
+  "release": "c1893e12",
+  "measured": "status ready at 56191 ms, Controls screen gone at 56297 ms, course feature there at 57605 ms (sampled every 20 ms); Shift+G at 56308 ms: no progress after 6 s"
+ }
+}

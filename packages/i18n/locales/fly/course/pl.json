@@ -16,6 +16,7 @@
   "course.none": "Tym razem żadna trasa nie zmieściła się w wolnej przestrzeni. Shift+G spróbuje innego układu",
   "course.noneResize": "Przy rozmiarze sceny x{s} żadna trasa nie mieści się w tym skanie. Shift+G ustawi x{to} i zbuduje trasę",
   "course.wallsFirst": "Najpierw ściany tego skanu, potem trasa.",
+  "course.early": "Trasa: chwila, jej narzędzia jeszcze się ładują.",
   "course.failed": "Ta trasa się nie zbudowała. Shift+G zbuduje inną",
   "course.lapDone": "Okrążenie {time}",
   "course.best": "Najlepsze okrążenie! {time}",
