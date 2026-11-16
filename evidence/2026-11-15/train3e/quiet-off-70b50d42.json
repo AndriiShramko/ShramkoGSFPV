@@ -1,0 +1,8593 @@
+{
+ "base": "http://localhost:5760/en",
+ "scene": "70b50d42",
+ "reader": false,
+ "narrator": "off",
+ "samples": [
+  {
+   "t": 0.01,
+   "tag": "w",
+   "phase": null,
+   "lesson": null,
+   "q": null,
+   "line": null,
+   "hum": false,
+   "target": null,
+   "speed": 0,
+   "vy": 0,
+   "pos": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": null
+  },
+  {
+   "t": 0.14,
+   "tag": "w",
+   "phase": null,
+   "lesson": null,
+   "q": null,
+   "line": null,
+   "hum": false,
+   "target": null,
+   "speed": 0,
+   "vy": 0,
+   "pos": [
+    -11.900656700134277,
+    3.1238160133361816,
+    -16.831905364990234
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": null
+  },
+  {
+   "t": 0.25,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.1367445663380963e-9,
+   "vy": -1.148691754847365e-9,
+   "pos": [
+    -11.90071018076554,
+    3.1218615680793307,
+    -16.83185748393714
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed",
+    "target.answer"
+   ]
+  },
+  {
+   "t": 0.35,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.047899484790297375,
+   "vy": 0.035397899228266035,
+   "pos": [
+    -11.899557944071283,
+    3.123479469842285,
+    -16.83178138422129
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed",
+    "target.answer"
+   ]
+  },
+  {
+   "t": 0.46,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.15335863290934468,
+   "vy": 0.05115265735036634,
+   "pos": [
+    -11.89121837461764,
+    3.128603498740114,
+    -16.831491257624833
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 0.57,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.47576063671532803,
+   "vy": 0.03660861215344874,
+   "pos": [
+    -11.854450002853334,
+    3.1341560471135534,
+    -16.830657518818718
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 0.68,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.8637422571425007,
+   "vy": 0.027394194839703477,
+   "pos": [
+    -11.788874324759215,
+    3.1373126380104557,
+    -16.828689020066996
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 0.79,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3494127045280893,
+   "vy": 0.019702811662644495,
+   "pos": [
+    -11.679929698023603,
+    3.139597437347501,
+    -16.824287995641047
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 0.89,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.5306872049597868,
+   "vy": 0.018543577639680828,
+   "pos": [
+    -11.630956620985755,
+    3.14024040268546,
+    -16.82199870260705
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.7312666238116323,
+   "vy": 0.016862525590803736,
+   "pos": [
+    -11.209458835530983,
+    3.143590533608659,
+    -16.799496651720474
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.11,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.4106888896201975,
+   "vy": 0.06368341395872724,
+   "pos": [
+    -10.90223686503119,
+    3.1474967164056245,
+    -16.78204338149357
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.21,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.010444979632611,
+   "vy": 0.11123404914105371,
+   "pos": [
+    -10.530591365771334,
+    3.156361089399805,
+    -16.760819735067397
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.floor:front-down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.32,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.464740230631316,
+   "vy": 0.14118859032741718,
+   "pos": [
+    -10.106119260795536,
+    3.169260212757844,
+    -16.736712445168216
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.floor:down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.43,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.839753010308631,
+   "vy": 0.13458988257644086,
+   "pos": [
+    -9.48597326906874,
+    3.1881264891613217,
+    -16.701754845073037
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.54,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.002026308830584,
+   "vy": 0.10451805514559584,
+   "pos": [
+    -8.994070629955196,
+    3.2001895236850766,
+    -16.67417812346908
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.65,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.10114591937109,
+   "vy": 0.06636616396870469,
+   "pos": [
+    -8.489309512574778,
+    3.2087435247772507,
+    -16.645972388067914
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.75,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.1600293423708985,
+   "vy": 0.02863492209001235,
+   "pos": [
+    -7.976774918541417,
+    3.2134457424227496,
+    -16.617400797490596
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.86,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.193523379446846,
+   "vy": -0.004038450121774006,
+   "pos": [
+    -7.459717155217428,
+    3.2146028657097974,
+    -16.588629960462377
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 1.97,
+   "tag": "w",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.2134679012271885,
+   "vy": -0.03638920569024695,
+   "pos": [
+    -6.768466460109919,
+    3.2117505947220883,
+    -16.550230579046037
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front-up",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.08,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.216473293646156,
+   "vy": -0.052522886978158705,
+   "pos": [
+    -6.247724019618831,
+    3.207236851667799,
+    -16.521341355723
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:front-up",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.19,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.2068629390949495,
+   "vy": -0.061450677151369114,
+   "pos": [
+    -5.727134353609164,
+    3.2014524167721867,
+    -16.492487121923354
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front-up",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.29,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.07421198058456,
+   "vy": -0.07359661202282428,
+   "pos": [
+    -5.2121904690770124,
+    3.194955817113114,
+    -16.463966937372426
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front-down",
+    "safety.wall:front",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.4,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.533383247961853,
+   "vy": -0.16980442456382291,
+   "pos": [
+    -4.565549143158808,
+    3.1796088561938287,
+    -16.428174374176344
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.51,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.909007527962395,
+   "vy": -0.26464367399911476,
+   "pos": [
+    -4.143583497889687,
+    3.157625393196616,
+    -16.4048280458644
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.62,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.140255171647828,
+   "vy": -0.3213981497295484,
+   "pos": [
+    -3.792302347012827,
+    3.1279302239884275,
+    -16.3853986289386
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.wall:left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.73,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.263800391799227,
+   "vy": -0.322424353983599,
+   "pos": [
+    -3.5242928263620747,
+    3.0952879365562445,
+    -16.370579089508865
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:left",
+    "safety.wall:front-left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.84,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.106640329941319,
+   "vy": -0.21672859692787944,
+   "pos": [
+    -3.3064200497855567,
+    3.0582495222625665,
+    -16.358533490063266
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.wall:front-down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 2.95,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.46671492230717465,
+   "vy": -0.10272625626752845,
+   "pos": [
+    -3.2319677530447883,
+    3.0423559831477878,
+    -16.354415460269426
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.wall:front-down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.06,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.07006090834196442,
+   "vy": -0.014641698239098834,
+   "pos": [
+    -3.2077969969110463,
+    3.0367711512733164,
+    -16.353075070027685
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:front-down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.16,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.14393152563279926,
+   "vy": 0.04015881791796697,
+   "pos": [
+    -3.212585781775997,
+    3.0383206097660107,
+    -16.353334371660665
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.27,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.2545409420478729,
+   "vy": 0.07473769232671944,
+   "pos": [
+    -3.239796145810093,
+    3.046455444313118,
+    -16.354831127653558
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.38,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.26384124358098054,
+   "vy": 0.08280948760179377,
+   "pos": [
+    -3.264794638271007,
+    3.0544372256157115,
+    -16.356208188772154
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.49,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.24267863027398806,
+   "vy": 0.08272230243941497,
+   "pos": [
+    -3.288602991883629,
+    3.062682388679866,
+    -16.357520374323688
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.6,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.20760473090687498,
+   "vy": 0.07801796842529153,
+   "pos": [
+    -3.3096423365191607,
+    3.070745452017873,
+    -16.358680349472184
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.7,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.15556073601628173,
+   "vy": 0.06765348173597042,
+   "pos": [
+    -3.331840332522142,
+    3.080532634453652,
+    -16.359904594963467
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.81,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.11984629944561549,
+   "vy": 0.058631996658868486,
+   "pos": [
+    -3.3439926788682857,
+    3.0868463221225215,
+    -16.36057501131262
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 3.92,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0896908550452791,
+   "vy": 0.04956362239742329,
+   "pos": [
+    -3.352790936797024,
+    3.0921961601346872,
+    -16.361060514947418
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.03,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.06502232387201354,
+   "vy": 0.040807363428761734,
+   "pos": [
+    -3.3589885656807974,
+    3.0967046454007847,
+    -16.36140261005025
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.14,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.04070691056711995,
+   "vy": 0.030299739342948596,
+   "pos": [
+    -3.3640775634321956,
+    3.1014445521949767,
+    -16.361683630534
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.24,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.028158747835277373,
+   "vy": 0.02364827616940518,
+   "pos": [
+    -3.366156201014808,
+    3.1041300716074005,
+    -16.361798492013023
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.35,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.019464152405959566,
+   "vy": 0.01809775211735247,
+   "pos": [
+    -3.3672453446868573,
+    3.10620417173275,
+    -16.361858738616245
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.46,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.013776279819115693,
+   "vy": 0.013629992482353762,
+   "pos": [
+    -3.367679175318675,
+    3.1077802989118863,
+    -16.361882802260883
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.57,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00932177312547158,
+   "vy": 0.0091644760325478,
+   "pos": [
+    -3.367663995649967,
+    3.10928615039416,
+    -16.361882092430363
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.67,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.007438447389765416,
+   "vy": 0.006857496999396883,
+   "pos": [
+    -3.367428273533744,
+    3.110071448503293,
+    -16.361869152370556
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.78,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.006130772148762454,
+   "vy": 0.005206685120558339,
+   "pos": [
+    -3.3671172951841775,
+    3.1106688251317287,
+    -16.36185204038992
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 4.89,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0051707411936528095,
+   "vy": 0.004132191387908193,
+   "pos": [
+    -3.366797704026842,
+    3.1111311450194292,
+    -16.361834436964955
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.004432452306667933,
+   "vy": 0.003492171439725145,
+   "pos": [
+    -3.366505070532929,
+    3.1115087836684276,
+    -16.36181830873372
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.11,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003747140211231013,
+   "vy": 0.003117009297486239,
+   "pos": [
+    -3.366182938554564,
+    3.111946432946405,
+    -16.361800545944273
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.21,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0034620424631105684,
+   "vy": 0.003069766148991921,
+   "pos": [
+    -3.3659997965163244,
+    3.112254515403014,
+    -16.361790442997957
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.32,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00335093355995913,
+   "vy": 0.0031367472985125433,
+   "pos": [
+    -3.3658618077618963,
+    3.1125642195046592,
+    -16.361782828375972
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.43,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0033703225644846416,
+   "vy": 0.003266932523243503,
+   "pos": [
+    -3.3657623777461763,
+    3.1128842725919332,
+    -16.361777339631438
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.54,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0034866218915215502,
+   "vy": 0.003453979500751229,
+   "pos": [
+    -3.36567735106472,
+    3.1133314741567006,
+    -16.361772643795963
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.65,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003585050655252352,
+   "vy": 0.003573347982275032,
+   "pos": [
+    -3.365639742621231,
+    3.113683061537587,
+    -16.36177056542029
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.75,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0036560174535671436,
+   "vy": 0.0036526031752477676,
+   "pos": [
+    -3.365617883430167,
+    3.1140447098447868,
+    -16.361769356381604
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.86,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003697991799712969,
+   "vy": 0.0036973394595379776,
+   "pos": [
+    -3.3656068772534415,
+    3.1144126932561234,
+    -16.361768746651457
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 5.97,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0036884844965016546,
+   "vy": 0.0036884844903265694,
+   "pos": [
+    -3.3656028251396535,
+    3.1149045039837673,
+    -16.361768520590807
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.07,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003631870719395819,
+   "vy": 0.003631767612941487,
+   "pos": [
+    -3.3656043604547192,
+    3.115270782146933,
+    -16.361768603973275
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.18,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003540442110362256,
+   "vy": 0.003540215039824412,
+   "pos": [
+    -3.3656078317886573,
+    3.115629696680452,
+    -16.361768794561165
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.29,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0034231403356675145,
+   "vy": 0.003422864654859745,
+   "pos": [
+    -3.3656120643123297,
+    3.115977963328105,
+    -16.361769027454674
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.39,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003280075642918846,
+   "vy": 0.003279816950152317,
+   "pos": [
+    -3.3656163656850033,
+    3.116316502941393,
+    -16.361769264377678
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.5,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0030733584998460777,
+   "vy": 0.003073169715528278,
+   "pos": [
+    -3.3656213529708827,
+    3.116735954508723,
+    -16.361769539273823
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.61,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.002909406969027997,
+   "vy": 0.002909275853733629,
+   "pos": [
+    -3.365624431210396,
+    3.117035055784882,
+    -16.361769709031066
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.72,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.002741210154175112,
+   "vy": 0.0027411273840843185,
+   "pos": [
+    -3.3656268905178215,
+    3.1173203037975252,
+    -16.36176984470541
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.82,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.002576202102481454,
+   "vy": 0.0025761539255503662,
+   "pos": [
+    -3.365628730376968,
+    3.1175860516893685,
+    -16.361769946241413
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 6.93,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0023658317135534248,
+   "vy": 0.0023658113418610874,
+   "pos": [
+    -3.365630406931948,
+    3.1179144644423937,
+    -16.361770038803122
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.04,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.002216150723569397,
+   "vy": 0.0022161413296763696,
+   "pos": [
+    -3.365631210038497,
+    3.118143414337698,
+    -16.36177008316434
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.15,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0020751403238817552,
+   "vy": 0.002075136575624846,
+   "pos": [
+    -3.3656317212062605,
+    3.118357842538932,
+    -16.36177011141561
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.26,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0019433569689440388,
+   "vy": 0.0019433557827866004,
+   "pos": [
+    -3.365632019087783,
+    3.118558616009311,
+    -16.361770127893028
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.37,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0017826023658144877,
+   "vy": 0.0017826022551426198,
+   "pos": [
+    -3.3656321930886515,
+    3.1188061028036467,
+    -16.36177013753789
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.47,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0016705742693456874,
+   "vy": 0.0016705742690322533,
+   "pos": [
+    -3.3656322198892124,
+    3.118980364930973,
+    -16.361770139041756
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.58,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.001569432042711379,
+   "vy": 0.001569431992024085,
+   "pos": [
+    -3.3656321961851763,
+    3.119142253611348,
+    -16.361770137752334
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.69,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0014768502362655287,
+   "vy": 0.0014768501275286448,
+   "pos": [
+    -3.3656321470913753,
+    3.1192929163431544,
+    -16.36177013505656
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.8,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0013885641070800312,
+   "vy": 0.0013885639735081792,
+   "pos": [
+    -3.365632087552459,
+    3.119436107596327,
+    -16.361770131780343
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 7.9,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.001281799620515607,
+   "vy": 0.0012817995007104697,
+   "pos": [
+    -3.3656320087658282,
+    3.119614887200473,
+    -16.361770127440224
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.01,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0012095546000920848,
+   "vy": 0.0012095545073350766,
+   "pos": [
+    -3.3656319573381244,
+    3.1197393886706477,
+    -16.36177012460528
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.12,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0011408329898547134,
+   "vy": 0.0011408329254614452,
+   "pos": [
+    -3.3656319145757454,
+    3.119856800799173,
+    -16.361770122247023
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.23,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0010773747258624774,
+   "vy": 0.0010773746852511177,
+   "pos": [
+    -3.3656318807763514,
+    3.1199676158144474,
+    -16.36177012038239
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.34,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0009998617175889615,
+   "vy": 0.0009998616984125317,
+   "pos": [
+    -3.365631848426023,
+    3.1201056324124528,
+    -16.36177011859698
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.44,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0009447920264340392,
+   "vy": 0.0009447920166331565,
+   "pos": [
+    -3.3656318319988068,
+    3.120202839645437,
+    -16.361770117689975
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.55,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0008931065625983358,
+   "vy": 0.0008931065581356264,
+   "pos": [
+    -3.3656318208744973,
+    3.1202946386933346,
+    -16.3617701170755
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.66,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0008443100799609328,
+   "vy": 0.0008443100782106505,
+   "pos": [
+    -3.3656318138119694,
+    3.120381438597468,
+    -16.361770116685157
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.77,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0007830040636546813,
+   "vy": 0.0007830040633110239,
+   "pos": [
+    -3.365631808847625,
+    3.1204896379002935,
+    -16.361770116410494
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.88,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0007412697169216612,
+   "vy": 0.0007412697168722353,
+   "pos": [
+    -3.3656318073232754,
+    3.1205658332697666,
+    -16.36177011632594
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 8.98,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0007010398928586954,
+   "vy": 0.0007010398928584552,
+   "pos": [
+    -3.3656318069658737,
+    3.120638580122499,
+    -16.361770116305863
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.09,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0006631374596091484,
+   "vy": 0.0006631374595857305,
+   "pos": [
+    -3.365631807299123,
+    3.120706047709854,
+    -16.36177011632397
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.2,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0006136543012452119,
+   "vy": 0.0006136543011896765,
+   "pos": [
+    -3.3656318082663246,
+    3.120791604784017,
+    -16.361770116377112
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.3,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0005805072412037057,
+   "vy": 0.0005805072411427272,
+   "pos": [
+    -3.365631809108066,
+    3.12085127769294,
+    -16.36177011642343
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.41,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0005474776210432293,
+   "vy": 0.0005474776209887876,
+   "pos": [
+    -3.3656318099101403,
+    3.120907038484412,
+    -16.361770116467614
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.52,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0005158109722071623,
+   "vy": 0.0005158109721650932,
+   "pos": [
+    -3.365631810633252,
+    3.120960730478882,
+    -16.36177011650747
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.63,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0004790525853887577,
+   "vy": 0.0004790525853634745,
+   "pos": [
+    -3.365631811396607,
+    3.1210268901051488,
+    -16.361770116549568
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.75,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0004524802898757584,
+   "vy": 0.00045248028986025435,
+   "pos": [
+    -3.3656318118276887,
+    3.1210733795062247,
+    -16.361770116573357
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.86,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0004271372341051274,
+   "vy": 0.0004271372340964209,
+   "pos": [
+    -3.3656318121488646,
+    3.1211172990397733,
+    -16.361770116591085
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 9.97,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0003956191847867951,
+   "vy": 0.00039561918478330963,
+   "pos": [
+    -3.365631812436039,
+    3.121171956418951,
+    -16.36177011660694
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.08,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0003736255848355043,
+   "vy": 0.0003736255848339781,
+   "pos": [
+    -3.3656318125705607,
+    3.1212103699708944,
+    -16.361770116614377
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.19,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00035329375483004723,
+   "vy": 0.00035329375482947965,
+   "pos": [
+    -3.365631812654063,
+    3.1212467421455727,
+    -16.36177011661899
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.3,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00032692047894422523,
+   "vy": 0.0003269204789441313,
+   "pos": [
+    -3.3656318127106055,
+    3.121292247302067,
+    -16.361770116622118
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.41,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0003073505942690765,
+   "vy": 0.00030735059426906805,
+   "pos": [
+    -3.365631812725833,
+    3.1213238850464156,
+    -16.36177011662296
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.52,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00028933619472172167,
+   "vy": 0.0002893361947217196,
+   "pos": [
+    -3.3656318127271687,
+    3.1213537359758714,
+    -16.361770116623067
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.63,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000274876953734491,
+   "vy": 0.0002748769537344758,
+   "pos": [
+    -3.365631812720514,
+    3.1213819437420462,
+    -16.36177011662271
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.73,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00025440640511508134,
+   "vy": 0.00025440640511505423,
+   "pos": [
+    -3.3656318127061473,
+    3.1214171150120147,
+    -16.361770116621823
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.84,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00024023152419786893,
+   "vy": 0.00024023152419784137,
+   "pos": [
+    -3.3656318126944207,
+    3.121441755872598,
+    -16.361770116621113
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 10.95,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00022655768619048912,
+   "vy": 0.00022655768619046573,
+   "pos": [
+    -3.365631812683479,
+    3.1214650401829003,
+    -16.361770116620402
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.06,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00021380129385854195,
+   "vy": 0.00021380129385852452,
+   "pos": [
+    -3.3656318126740143,
+    3.1214871010707377,
+    -16.361770116619912
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.17,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00019896305193508693,
+   "vy": 0.0001989630519350769,
+   "pos": [
+    -3.365631812664102,
+    3.1215145326448144,
+    -16.36177011661944
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.28,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0001877403178044667,
+   "vy": 0.00018774031780446071,
+   "pos": [
+    -3.3656318126585987,
+    3.121533813990398,
+    -16.361770116619084
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.38,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00017826682122830365,
+   "vy": 0.00017826682122830037,
+   "pos": [
+    -3.365631812654552,
+    3.1215521474137486,
+    -16.36177011661873
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.49,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00016872991006337376,
+   "vy": 0.00016872991006337216,
+   "pos": [
+    -3.365631812651709,
+    3.1215694214387866,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.6,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00015680904245657945,
+   "vy": 0.00015680904245657875,
+   "pos": [
+    -3.3656318126497995,
+    3.1215858825140783,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.7,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00014494102634496006,
+   "vy": 0.00014494102634495987,
+   "pos": [
+    -3.365631812648365,
+    3.1216060246836292,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.81,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00013896487895543344,
+   "vy": 0.0001389648789554334,
+   "pos": [
+    -3.365631812647843,
+    3.121620232219374,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 11.92,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00012959254693684292,
+   "vy": 0.00012959254693684292,
+   "pos": [
+    -3.3656318126476283,
+    3.1216335937281112,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.03,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00012156454116593746,
+   "vy": 0.00012156454116593746,
+   "pos": [
+    -3.365631812647609,
+    3.1216461797817994,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.14,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00011370960023810667,
+   "vy": 0.00011370960023810667,
+   "pos": [
+    -3.3656318126477456,
+    3.121661855708417,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.25,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00010767995869017482,
+   "vy": 0.00010767995869017482,
+   "pos": [
+    -3.365631812647904,
+    3.121672847843789,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.36,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00010146437965626239,
+   "vy": 0.00010146437965626239,
+   "pos": [
+    -3.3656318126480818,
+    3.1216832524270686,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.46,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00009681626432158128,
+   "vy": 0.00009681626432158128,
+   "pos": [
+    -3.365631812648232,
+    3.121693207540041,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.57,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00008904497967469348,
+   "vy": 0.00008904497967469348,
+   "pos": [
+    -3.365631812648409,
+    3.121705477199826,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.68,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00008465488240958304,
+   "vy": 0.00008465488240958304,
+   "pos": [
+    -3.365631812648529,
+    3.1217140954107196,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.79,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00007783823054939655,
+   "vy": 0.00007783823054939655,
+   "pos": [
+    -3.3656318126486178,
+    3.1217222479719067,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 12.9,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00007251265632214638,
+   "vy": 0.00007251265632214638,
+   "pos": [
+    -3.365631812648737,
+    3.1217323901129648,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.01,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00006809236107137129,
+   "vy": 0.00006809236107137129,
+   "pos": [
+    -3.365631812648803,
+    3.1217394617014067,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.12,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00006591552389665306,
+   "vy": 0.00006591552389665306,
+   "pos": [
+    -3.3656318126488474,
+    3.12174617078878,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.22,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00006405583638598884,
+   "vy": 0.00006405583638598884,
+   "pos": [
+    -3.3656318126488918,
+    3.1217526092653234,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.33,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00005917513515715047,
+   "vy": 0.00005917513515715047,
+   "pos": [
+    -3.365631812648951,
+    3.1217607767068523,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.44,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000055660927859360903,
+   "vy": 0.000055660927859360903,
+   "pos": [
+    -3.365631812648952,
+    3.1217665582368976,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.55,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00005491008755276208,
+   "vy": 0.00005491008755276208,
+   "pos": [
+    -3.365631812648952,
+    3.121772107027958,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.65,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00005020786430360826,
+   "vy": 0.00005020786430360826,
+   "pos": [
+    -3.365631812648952,
+    3.1217772953721257,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.76,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00004621521970654366,
+   "vy": 0.00004621521970654366,
+   "pos": [
+    -3.365631812648952,
+    3.1217821619838118,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.87,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00004194491166737282,
+   "vy": 0.00004194491166737282,
+   "pos": [
+    -3.3656318126489406,
+    3.1217879714931764,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 13.98,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000040155635718020046,
+   "vy": 0.000040155635718020046,
+   "pos": [
+    -3.3656318126488967,
+    3.12179196769739,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.09,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000037873005798087164,
+   "vy": 0.000037873005798087164,
+   "pos": [
+    -3.3656318126488523,
+    3.121795815182878,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.2,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000034704084083432544,
+   "vy": 0.000034704084083432544,
+   "pos": [
+    -3.365631812648793,
+    3.1218007867868924,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.31,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000033787460683748026,
+   "vy": 0.000033787460683748026,
+   "pos": [
+    -3.3656318126487483,
+    3.1218042588190853,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.41,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000031664002880886976,
+   "vy": 0.000031664002880886976,
+   "pos": [
+    -3.365631812648704,
+    3.1218075036071946,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.53,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00003076943289535546,
+   "vy": 0.00003076943289535546,
+   "pos": [
+    -3.3656318126486595,
+    3.1218105749582565,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.63,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000026913570966457085,
+   "vy": 0.00002691357096645708,
+   "pos": [
+    -3.3656318126486005,
+    3.121814364024017,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.74,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000024972158349951957,
+   "vy": 0.00002497215834995195,
+   "pos": [
+    -3.365631812648556,
+    3.121816998142545,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.85,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000022807987741275538,
+   "vy": 0.000022807987741275534,
+   "pos": [
+    -3.3656318126485116,
+    3.12181930223199,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 14.96,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0000210794439176544,
+   "vy": 0.000021079443917654398,
+   "pos": [
+    -3.3656318126484672,
+    3.1218214437965255,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.07,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00001807007169475059,
+   "vy": 0.000018070071694750588,
+   "pos": [
+    -3.3656318126484077,
+    3.1218241981783628,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.18,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000018358850718014313,
+   "vy": 0.00001835885071801431,
+   "pos": [
+    -3.3656318126483638,
+    3.121826020350949,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.29,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00001807068492486777,
+   "vy": 0.000018070684924867766,
+   "pos": [
+    -3.3656318126483193,
+    3.121827768815576,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.4,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00001614859454107567,
+   "vy": 0.000016148594541075665,
+   "pos": [
+    -3.36563181264826,
+    3.121830010264351,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.51,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000014227793473567907,
+   "vy": 0.0000142277934735679,
+   "pos": [
+    -3.365631812648216,
+    3.121831551469859,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.61,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00001723834526874675,
+   "vy": 0.000017238345268746743,
+   "pos": [
+    -3.3656318126481715,
+    3.1218331053502966,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.72,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00001473669680046856,
+   "vy": 0.000014736696800468552,
+   "pos": [
+    -3.3656318126481266,
+    3.1218347713321704,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.83,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000015225858736563091,
+   "vy": 0.000015225858736563084,
+   "pos": [
+    -3.365631812648082,
+    3.1218362917045646,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 15.94,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000013104899103626097,
+   "vy": 0.000013104899103626088,
+   "pos": [
+    -3.365631812648023,
+    3.1218380524940574,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.04,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000012079317953746249,
+   "vy": 0.00001207931795374624,
+   "pos": [
+    -3.3656318126479787,
+    3.1218392564958095,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.15,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000011510404920812685,
+   "vy": 0.000011510404920812676,
+   "pos": [
+    -3.3656318126479343,
+    3.121840464138249,
+    -16.361770116618672
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.26,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.003977466190437309,
+   "vy": 0.00006708559259815155,
+   "pos": [
+    -3.3655650239272368,
+    3.1218433038125295,
+    -16.36176643643429
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.37,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.11962198129904723,
+   "vy": -0.0030868229900706213,
+   "pos": [
+    -3.359606953734983,
+    3.1217267486672458,
+    -16.361438135538833
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.48,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.35913710857850056,
+   "vy": -0.010443560920832935,
+   "pos": [
+    -3.3367075145615215,
+    3.121059157806976,
+    -16.3601763332869
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.59,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.7227366242656449,
+   "vy": -0.009665069917587438,
+   "pos": [
+    -3.2834442305535374,
+    3.119966605691055,
+    -16.357241425964578
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.7,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1826252099546488,
+   "vy": 0.000518026362731766,
+   "pos": [
+    -3.188797317291975,
+    3.1194283438537,
+    -16.352026202683852
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:left",
+    "safety.wall:front-left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.8,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.9029932503729907,
+   "vy": 0.03316845131647478,
+   "pos": [
+    -2.984603599282855,
+    3.1215285339300944,
+    -16.340774744022998
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 16.91,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.4982825573172187,
+   "vy": 0.06484535776678653,
+   "pos": [
+    -2.7626530127483506,
+    3.126479447039823,
+    -16.328544848443986
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:front-down",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.02,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.10620501093519,
+   "vy": 0.09405405190140673,
+   "pos": [
+    -2.4827799156358874,
+    3.1344669849122138,
+    -16.31312331337843
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.13,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.7095685062000396,
+   "vy": 0.12287130397863401,
+   "pos": [
+    -2.1420859429669687,
+    3.1452848942944787,
+    -16.294350433454138
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.24,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.36175037466813,
+   "vy": 0.15881298224460674,
+   "pos": [
+    -1.60339626640684,
+    3.1643446581082846,
+    -16.264667617126896
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "safety.free:right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.35,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.684474354215064,
+   "vy": 0.15802319421039068,
+   "pos": [
+    -1.1507917798908383,
+    3.180390276364015,
+    -16.239728256996745
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-left",
+    "safety.wall:left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.51,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3474219650487562,
+   "vy": -0.018219670600845346,
+   "pos": [
+    -0.9151295549680547,
+    3.2113505199316936,
+    -16.118511422609007
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:left",
+    "safety.wall:back",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.63,
+   "tag": "w2",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.9848147978647146,
+   "vy": -1.5521182209858584,
+   "pos": [
+    -0.8766789311148715,
+    3.086993329704544,
+    -15.919483148874955
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:front-up",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.74,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.9692627186478235,
+   "vy": -2.7377784583843345,
+   "pos": [
+    -0.8492356068954998,
+    2.8202927183310003,
+    -15.773966496675417
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.wall:front-right",
+    "safety.floor:down",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.84,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.2621214901930697,
+   "vy": -3.0619281237475833,
+   "pos": [
+    -0.8424138794739813,
+    2.721535497105298,
+    -15.735900436668656
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.floor:down",
+    "safety.wall:front-right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 17.95,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.741382241434812,
+   "vy": -4.6308023301590975,
+   "pos": [
+    -0.8125496243303658,
+    2.081742675977445,
+    -15.560663894325693
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:down",
+    "safety.floor:front-down",
+    "safety.wall:front",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.06,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.633148163780603,
+   "vy": -5.551961465702586,
+   "pos": [
+    -0.7954307406952765,
+    1.571967237411322,
+    -15.463568845751123
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front",
+    "safety.floor:down",
+    "safety.floor:front-down",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.17,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.731867091447869,
+   "vy": 0.05434327446683376,
+   "pos": [
+    -0.7829043219005246,
+    0.9738092624927451,
+    -15.31318733959727
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-right",
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.28,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.4773485936900046,
+   "vy": -0.058071911831574126,
+   "pos": [
+    -0.7713770635478219,
+    0.9866207133293434,
+    -15.211726828902721
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:right",
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.39,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1614177508244719,
+   "vy": -0.17623291418773437,
+   "pos": [
+    -0.7607368170147266,
+    0.9464411763180184,
+    -15.040502180823134
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-right",
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.5,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.9665897713789858,
+   "vy": -0.4322931403457405,
+   "pos": [
+    -0.7616258521499185,
+    0.9316591468420649,
+    -14.943482114509868
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front-right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.6,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.24716299705531883,
+   "vy": -0.12044153573579594,
+   "pos": [
+    -0.7580280603474177,
+    0.9310028102197296,
+    -14.883287632694593
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front-right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.71,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.1096471203257374,
+   "vy": -0.08633227717380892,
+   "pos": [
+    -0.7549336588960136,
+    0.9323432839257779,
+    -14.873735435764582
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front-right",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.82,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.1297435885892339,
+   "vy": -0.12537598360704927,
+   "pos": [
+    -0.7549363433859788,
+    0.9323529107899349,
+    -14.870929176661038
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 18.93,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.12483112400597561,
+   "vy": -0.12250908704635867,
+   "pos": [
+    -0.7555537690433075,
+    0.932412918269215,
+    -14.87035000286656
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.04,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.11560999044141781,
+   "vy": -0.11168391357712773,
+   "pos": [
+    -0.7560511495694272,
+    0.9325401344232211,
+    -14.870388652339484
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.15,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.10571828484496361,
+   "vy": -0.10168712290927114,
+   "pos": [
+    -0.7560534776340584,
+    0.9326933174053885,
+    -14.870398638044346
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front-left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.25,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.09413184269742164,
+   "vy": -0.08959010107917892,
+   "pos": [
+    -0.7561612999562645,
+    0.9327816957026592,
+    -14.870478214053033
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:front-left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.36,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.08314266033031704,
+   "vy": -0.07652995858013109,
+   "pos": [
+    -0.7560404642109434,
+    0.932916760592255,
+    -14.870735246866973
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.floor:front-down",
+    "safety.floor:down",
+    "safety.floor:left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.47,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.870333277194879e-9,
+   "vy": -2.7900399295953473e-10,
+   "pos": [
+    -3.365685140460003,
+    3.119729345707657,
+    -16.36172289069527
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.58,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00016361719758461934,
+   "vy": -0.00014851027740605272,
+   "pos": [
+    -3.3656813187363506,
+    3.1196976837056445,
+    -16.361726485867724
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "safety.wall:front-left",
+    "safety.wall:front",
+    "safety.wall:left",
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.68,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00009090450983380927,
+   "vy": 0.000040193785125174265,
+   "pos": [
+    -3.365681813384466,
+    3.1196942347923615,
+    -16.36172607172835
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.79,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0001781994319246388,
+   "vy": 0.00002544669290653059,
+   "pos": [
+    -3.365691626145761,
+    3.119697477503157,
+    -16.361716764747875
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 19.9,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00020039052044639252,
+   "vy": 0.000006940776550050773,
+   "pos": [
+    -3.36571059285553,
+    3.1196995010227533,
+    -16.361698501488927
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.01,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.0001733294733227251,
+   "vy": -2.6870894287426336e-7,
+   "pos": [
+    -3.3657239915688124,
+    3.1196998469394885,
+    -16.361685505058713
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.11,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00013195633653728702,
+   "vy": -0.000002705367894670329,
+   "pos": [
+    -3.3657350545224944,
+    3.1196997059941145,
+    -16.361674729937278
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.22,
+   "tag": "on",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.00009034381195737118,
+   "vy": -0.0000031080615531451494,
+   "pos": [
+    -3.3657429642475925,
+    3.119699329912525,
+    -16.36166699920622
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.35,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000044571306751816104,
+   "vy": -0.0000032178871425905364,
+   "pos": [
+    -3.365749235817509,
+    3.1196988600571887,
+    -16.361660843127936
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.46,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.7562714396753364e-8,
+   "vy": 5.655089539578378e-9,
+   "pos": [
+    -3.3657497447953664,
+    3.1196868218169227,
+    -16.361660340876377
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.57,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.5619657819177657e-8,
+   "vy": 3.1931739698125453e-9,
+   "pos": [
+    -3.365749729996792,
+    3.119687340383494,
+    -16.36166034846723
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.67,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.6150680397149583e-11,
+   "vy": -3.505593694974323e-12,
+   "pos": [
+    -3.3657497128321126,
+    3.1196875556345285,
+    -16.361660361250554
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.78,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.8893693964616876e-11,
+   "vy": -2.687577468880757e-12,
+   "pos": [
+    -3.3657496943805754,
+    3.119687597688678,
+    -16.361660376221455
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 20.89,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 0.000003334473309883016,
+   "vy": -0.000003308673022266237,
+   "pos": [
+    -3.3657496740240593,
+    3.1196874422166316,
+    -16.36166039436091
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0747000054966861e-11,
+   "vy": -1.5604245481084065e-12,
+   "pos": [
+    -3.3657496406685405,
+    3.119686951567293,
+    -16.361660431485607
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.11,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 6.862160621764341e-12,
+   "vy": -1.4520182943675038e-12,
+   "pos": [
+    -3.3657496340410256,
+    3.11968670783184,
+    -16.361660442287985
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.21,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.075563612524312e-12,
+   "vy": -8.972324886477773e-13,
+   "pos": [
+    -3.3657496327788725,
+    3.119686544850384,
+    -16.3616604464882
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.32,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.578732209199752e-12,
+   "vy": -1.282366557271769e-12,
+   "pos": [
+    -3.3657496338377744,
+    3.1196865357315313,
+    -16.361660447534234
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.43,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.861562661893707e-12,
+   "vy": -1.3316376337369696e-12,
+   "pos": [
+    -3.365749637509356,
+    3.119686678009088,
+    -16.361660445190516
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.54,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.899429071309699e-12,
+   "vy": -6.878771682544094e-13,
+   "pos": [
+    -3.365749640997724,
+    3.1196867272633644,
+    -16.36166044128855
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.65,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.5544529266017411e-12,
+   "vy": -8.675751594375699e-13,
+   "pos": [
+    -3.365749644238791,
+    3.1196867234649144,
+    -16.361660436393848
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.76,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.8782469345930436e-12,
+   "vy": -9.601038400730246e-13,
+   "pos": [
+    -3.3657496465801713,
+    3.119686672957204,
+    -16.361660431366744
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.87,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 6.4195390803753e-12,
+   "vy": -9.737373999052508e-13,
+   "pos": [
+    -3.3657496476278066,
+    3.1196865814020973,
+    -16.36166042585201
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 21.98,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0194702972924603e-11,
+   "vy": -1.2567289171903825e-12,
+   "pos": [
+    -3.365749646748712,
+    3.119686563289572,
+    -16.36166042335808
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.08,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.217287053547854e-11,
+   "vy": -1.3976644140652883e-12,
+   "pos": [
+    -3.365749644730398,
+    3.1196865550732653,
+    -16.36166042269313
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.19,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1139860238505786e-11,
+   "vy": -1.3138695402770752e-12,
+   "pos": [
+    -3.365749641973821,
+    3.119686625877892,
+    -16.36166042382013
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.3,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.611699615021673e-12,
+   "vy": -8.198605341130123e-13,
+   "pos": [
+    -3.365749638099115,
+    3.119686669462258,
+    -16.361660427666887
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.41,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 4.231703632694185e-12,
+   "vy": -6.991059320415849e-13,
+   "pos": [
+    -3.365749635747877,
+    3.1196866607395424,
+    -16.361660431617782
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.52,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0571456381540936e-11,
+   "vy": -1.5066737235540219e-12,
+   "pos": [
+    -3.365749634283631,
+    3.119686621438845,
+    -16.361660435791983
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.63,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 9.341350719394974e-12,
+   "vy": -1.3680535999901139e-12,
+   "pos": [
+    -3.3657496338819235,
+    3.1196865827289817,
+    -16.361660439557436
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.73,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.469138151236413e-12,
+   "vy": -9.841895056791258e-13,
+   "pos": [
+    -3.3657496349083327,
+    3.1196865640098137,
+    -16.36166044304264
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.84,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.7310697726367914e-12,
+   "vy": -1.3653106801564129e-12,
+   "pos": [
+    -3.365749636540158,
+    3.1196865297361613,
+    -16.361660444102956
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 22.95,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.3047691840425228e-12,
+   "vy": -8.791120772042241e-13,
+   "pos": [
+    -3.3657496385057377,
+    3.119686563339992,
+    -16.361660443731274
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.06,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.4115081631290533e-12,
+   "vy": -9.17515147040149e-13,
+   "pos": [
+    -3.365749640405805,
+    3.1196865903594855,
+    -16.361660442081487
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.17,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.4517060625953076e-12,
+   "vy": -7.20906109964584e-13,
+   "pos": [
+    -3.365749642245456,
+    3.119686589801868,
+    -16.36166043850214
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.28,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.8114670661636175e-12,
+   "vy": -8.984264056836122e-13,
+   "pos": [
+    -3.3657496428319913,
+    3.119686565336294,
+    -16.36166043537032
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.38,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.877817136373846e-12,
+   "vy": -7.80825583335057e-13,
+   "pos": [
+    -3.3657496426647966,
+    3.1196865716914495,
+    -16.361660432382408
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.49,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 6.990536595351131e-12,
+   "vy": -9.705370346074667e-13,
+   "pos": [
+    -3.365749641856862,
+    3.11968656137981,
+    -16.361660430056556
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.6,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 9.398240251383808e-12,
+   "vy": -1.1278110352770002e-12,
+   "pos": [
+    -3.365749640122528,
+    3.1196865225026684,
+    -16.36166042838516
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.71,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 8.87224493993587e-12,
+   "vy": -1.0492209503256406e-12,
+   "pos": [
+    -3.36574963871916,
+    3.1196865246420464,
+    -16.361660428403134
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.81,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 6.357517050684878e-12,
+   "vy": -8.437617899831373e-13,
+   "pos": [
+    -3.365749637494785,
+    3.1196865431922003,
+    -16.361660429437112
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 23.92,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3270708824028351e-12,
+   "vy": -5.015659891734485e-13,
+   "pos": [
+    -3.365749636671632,
+    3.1196865468366646,
+    -16.361660431270295
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.04,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 7.67640975385229e-12,
+   "vy": -1.1391355080687799e-12,
+   "pos": [
+    -3.3657496363810115,
+    3.1196865492165107,
+    -16.361660434397926
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.15,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 8.029141275918676e-12,
+   "vy": -1.2033109142558461e-12,
+   "pos": [
+    -3.3657496367577524,
+    3.1196865557705187,
+    -16.361660436740404
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.26,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.7567972927472166e-12,
+   "vy": -6.213376338745016e-13,
+   "pos": [
+    -3.365749637518641,
+    3.119686546125486,
+    -16.361660438694848
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.37,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.916850904792279e-12,
+   "vy": -6.810088441979625e-13,
+   "pos": [
+    -3.3657496388146484,
+    3.119686512521779,
+    -16.361660440246627
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.47,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.9303529678212487e-12,
+   "vy": -6.851390082275441e-13,
+   "pos": [
+    -3.3657496397460953,
+    3.1196864952273957,
+    -16.36166044045708
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.58,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.896353648617929e-12,
+   "vy": -6.696493449416667e-13,
+   "pos": [
+    -3.3657496404502507,
+    3.119686508721474,
+    -16.361660439860373
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.69,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.8828190918631828e-12,
+   "vy": -6.579962887245619e-13,
+   "pos": [
+    -3.365749640816876,
+    3.11968651334079,
+    -16.361660438600286
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.8,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.6625422550147901e-12,
+   "vy": -8.219039767647792e-13,
+   "pos": [
+    -3.365749640726132,
+    3.1196865337097384,
+    -16.361660436289135
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 24.91,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.7249062660846187e-12,
+   "vy": -7.87133692449595e-13,
+   "pos": [
+    -3.3657496402863143,
+    3.119686538424037,
+    -16.361660434472114
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.01,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 2.948681747409719e-12,
+   "vy": -5.995400056279825e-13,
+   "pos": [
+    -3.3657496396484685,
+    3.119686529864219,
+    -16.36166043288717
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.12,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.328119749457936e-12,
+   "vy": -7.72372682787046e-13,
+   "pos": [
+    -3.36574963895124,
+    3.119686510169916,
+    -16.361660431758196
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.23,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 5.634137966789959e-12,
+   "vy": -7.875282070030193e-13,
+   "pos": [
+    -3.365749638336887,
+    3.1196864834901783,
+    -16.36166043122769
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.34,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 3.990148119550411e-12,
+   "vy": -6.451741970296406e-13,
+   "pos": [
+    -3.3657496378090794,
+    3.1196864857836895,
+    -16.361660431496908
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.45,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3909529214528778e-12,
+   "vy": -6.548150613162163e-13,
+   "pos": [
+    -3.3657496377146554,
+    3.11968649783128,
+    -16.36166043234348
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.56,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3683337051675282e-12,
+   "vy": -7.304285190693021e-13,
+   "pos": [
+    -3.365749637873641,
+    3.1196865150059594,
+    -16.361660433565934
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.66,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1612620476225945e-12,
+   "vy": -6.506681280689369e-13,
+   "pos": [
+    -3.3657496382319203,
+    3.1196865219658467,
+    -16.36166043495416
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.77,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.734444160551942e-12,
+   "vy": -6.093078071499483e-13,
+   "pos": [
+    -3.3657496388657417,
+    3.119686514795889,
+    -16.361660436680218
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.88,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.7534741132275114e-12,
+   "vy": -6.176679059303214e-13,
+   "pos": [
+    -3.3657496393318973,
+    3.119686499056427,
+    -16.36166043764174
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 25.99,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.7737847323238166e-12,
+   "vy": -6.238030597004624e-13,
+   "pos": [
+    -3.3657496396912676,
+    3.1196864777878304,
+    -16.361660438170755
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.1,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.7512213720019465e-12,
+   "vy": -6.123322729365954e-13,
+   "pos": [
+    -3.3657496398852826,
+    3.1196864683741508,
+    -16.361660438216585
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.2,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.7089779317395757e-12,
+   "vy": -5.900138662553005e-13,
+   "pos": [
+    -3.365749639853749,
+    3.1196864891838607,
+    -16.361660437575782
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.31,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2490173929455495e-12,
+   "vy": -6.583738667789823e-13,
+   "pos": [
+    -3.3657496396407316,
+    3.119686502253497,
+    -16.361660436706735
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.42,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.4943764805837657e-12,
+   "vy": -7.386107996514952e-13,
+   "pos": [
+    -3.365749639324704,
+    3.119686507385075,
+    -16.361660435670412
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.53,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.5047448864979342e-12,
+   "vy": -7.120983209304941e-13,
+   "pos": [
+    -3.36574963897555,
+    3.119686504301169,
+    -16.361660434634775
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.64,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.4683882001270142e-12,
+   "vy": -6.385566107247284e-13,
+   "pos": [
+    -3.3657496385784786,
+    3.1196864894880574,
+    -16.361660433522868
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.74,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.4299390936361116e-12,
+   "vy": -5.832253984543028e-13,
+   "pos": [
+    -3.3657496383991807,
+    3.119686473252937,
+    -16.361660433033908
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.85,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.4237401595027331e-12,
+   "vy": -6.378245126079034e-13,
+   "pos": [
+    -3.3657496383522734,
+    3.1196864613331323,
+    -16.361660432906433
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 26.96,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.391024138204542e-12,
+   "vy": -6.683481834212519e-13,
+   "pos": [
+    -3.365749638435104,
+    3.119686477026894,
+    -16.361660433134986
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.06,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3777477631097109e-12,
+   "vy": -7.141673222167819e-13,
+   "pos": [
+    -3.365749638620372,
+    3.119686488605164,
+    -16.361660433660717
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.17,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3565601265622512e-12,
+   "vy": -7.236348059427527e-13,
+   "pos": [
+    -3.365749638947545,
+    3.1196864951046055,
+    -16.361660434645223
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.28,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1549569160394148e-12,
+   "vy": -6.371289517455806e-13,
+   "pos": [
+    -3.3657496391874724,
+    3.1196864928565238,
+    -16.361660435439905
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.39,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1781255912896329e-12,
+   "vy": -5.811429301246448e-13,
+   "pos": [
+    -3.3657496393725084,
+    3.119686485221511,
+    -16.361660436151436
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.49,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.654575372702711e-12,
+   "vy": -5.768234887799187e-13,
+   "pos": [
+    -3.365749639467583,
+    3.11968647411026,
+    -16.361660436660895
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.6,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.6319831839166234e-12,
+   "vy": -5.659560659975223e-13,
+   "pos": [
+    -3.3657496394434134,
+    3.119686462298065,
+    -16.36166043694805
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.71,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.5862899646904404e-12,
+   "vy": -5.467867622320879e-13,
+   "pos": [
+    -3.365749639325784,
+    3.119686471751913,
+    -16.361660436842165
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.82,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1348902963632681e-12,
+   "vy": -6.056791510014639e-13,
+   "pos": [
+    -3.365749639154495,
+    3.119686480305951,
+    -16.361660436497477
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 27.93,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.235284042713514e-12,
+   "vy": -6.400903535781714e-13,
+   "pos": [
+    -3.365749638966903,
+    3.11968648473349,
+    -16.36166043598243
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.04,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3803556160856168e-12,
+   "vy": -6.908120742569085e-13,
+   "pos": [
+    -3.3657496387557475,
+    3.1196864837107787,
+    -16.361660435188277
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.14,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3673680995440752e-12,
+   "vy": -6.763537573933704e-13,
+   "pos": [
+    -3.365749638662702,
+    3.1196864783808524,
+    -16.361660434631194
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.25,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3822469053428835e-12,
+   "vy": -6.723010054226265e-13,
+   "pos": [
+    -3.365749638642159,
+    3.1196864703804685,
+    -16.361660434199486
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.36,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3504836837553774e-12,
+   "vy": -6.580273718506964e-13,
+   "pos": [
+    -3.3657496386924928,
+    3.1196864661851436,
+    -16.36166043394949
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.47,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3436883087574863e-12,
+   "vy": -6.791293154776954e-13,
+   "pos": [
+    -3.365749638841822,
+    3.11968646737909,
+    -16.361660433936834
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.57,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3761785764964672e-12,
+   "vy": -7.076414173428379e-13,
+   "pos": [
+    -3.365749638983055,
+    3.119686473669702,
+    -16.361660434151165
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.68,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.35211757494148e-12,
+   "vy": -7.04290568437952e-13,
+   "pos": [
+    -3.3657496391173227,
+    3.119686477065663,
+    -16.36166043450967
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.79,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2740107968410073e-12,
+   "vy": -6.713848010553145e-13,
+   "pos": [
+    -3.3657496392193424,
+    3.1196864772897888,
+    -16.36166043494845
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 28.9,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1740733783789015e-12,
+   "vy": -6.350561974518951e-13,
+   "pos": [
+    -3.3657496392718995,
+    3.1196864745880233,
+    -16.36166043539595
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.100888520347745e-12,
+   "vy": -5.973361761694057e-13,
+   "pos": [
+    -3.365749639255132,
+    3.119686469744052,
+    -16.361660435892702
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.11,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0669851014939319e-12,
+   "vy": -5.7453606833159e-13,
+   "pos": [
+    -3.3657496391858306,
+    3.119686466581124,
+    -16.361660436120374
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.22,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0568505851259674e-12,
+   "vy": -5.679970143281182e-13,
+   "pos": [
+    -3.365749639085699,
+    3.1196864623083655,
+    -16.36166043619538
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.33,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.056343432163695e-12,
+   "vy": -5.680474259614657e-13,
+   "pos": [
+    -3.3657496389759785,
+    3.119686467324513,
+    -16.36166043611706
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.43,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1263915297940538e-12,
+   "vy": -5.92923379850881e-13,
+   "pos": [
+    -3.365749638851748,
+    3.1196864712745325,
+    -16.361660435816525
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.54,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2574111307378658e-12,
+   "vy": -6.468842013201743e-13,
+   "pos": [
+    -3.365749638796171,
+    3.119686471725715,
+    -16.361660435497956
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.65,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.287220060630715e-12,
+   "vy": -6.54876692340635e-13,
+   "pos": [
+    -3.3657496387828165,
+    3.1196864701314135,
+    -16.361660435158047
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.76,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2967934306977397e-12,
+   "vy": -6.569722928004993e-13,
+   "pos": [
+    -3.3657496388112595,
+    3.1196864690943475,
+    -16.36166043484927
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.87,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.3260143613691678e-12,
+   "vy": -6.723766283080917e-13,
+   "pos": [
+    -3.3657496388995343,
+    3.1196864661095844,
+    -16.361660434559315
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 29.98,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.301523804460546e-12,
+   "vy": -6.623409476625916e-13,
+   "pos": [
+    -3.365749638983003,
+    3.119686462611498,
+    -16.361660434470554
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.08,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2866397968337006e-12,
+   "vy": -6.587549778129741e-13,
+   "pos": [
+    -3.365749639064572,
+    3.1196864639217425,
+    -16.36166043449717
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.19,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.277640051191762e-12,
+   "vy": -6.588577329387167e-13,
+   "pos": [
+    -3.3657496391283073,
+    3.1196864664676958,
+    -16.36166043462857
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.3,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2418829139947267e-12,
+   "vy": -6.473727808172757e-13,
+   "pos": [
+    -3.3657496391679276,
+    3.119686467644388,
+    -16.36166043492029
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.41,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2205064225764525e-12,
+   "vy": -6.393134049471885e-13,
+   "pos": [
+    -3.3657496391587616,
+    3.119686467600133,
+    -16.36166043517534
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.52,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.125733479104774e-12,
+   "vy": -6.007125905858409e-13,
+   "pos": [
+    -3.3657496391203336,
+    3.1196864674895792,
+    -16.36166043541776
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.62,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0902702087280347e-12,
+   "vy": -5.85872552824216e-13,
+   "pos": [
+    -3.365749639061796,
+    3.11968646598936,
+    -16.3616604356121
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.73,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0485309482382052e-12,
+   "vy": -5.642523984667102e-13,
+   "pos": [
+    -3.365749638995392,
+    3.11968646340268,
+    -16.36166043573262
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.84,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0444715021064067e-12,
+   "vy": -5.592646685284416e-13,
+   "pos": [
+    -3.36574963891674,
+    3.1196864615347333,
+    -16.361660435758257
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 30.95,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.0604447262118771e-12,
+   "vy": -5.623267023195368e-13,
+   "pos": [
+    -3.365749638878367,
+    3.1196864635033306,
+    -16.361660435680335
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.05,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1450048301305692e-12,
+   "vy": -5.958440912948174e-13,
+   "pos": [
+    -3.3657496388646044,
+    3.1196864645719975,
+    -16.36166043553717
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.16,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.1731219666965486e-12,
+   "vy": -6.060853232844872e-13,
+   "pos": [
+    -3.365749638876242,
+    3.1196864655480376,
+    -16.36166043535468
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.27,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2122979003056602e-12,
+   "vy": -6.214688535162302e-13,
+   "pos": [
+    -3.365749638923758,
+    3.11968646588357,
+    -16.361660435102632
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.38,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.219826941330984e-12,
+   "vy": -6.235537128303383e-13,
+   "pos": [
+    -3.365749638973222,
+    3.1196864647838285,
+    -16.361660434943122
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.48,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2373959310148554e-12,
+   "vy": -6.327445936664068e-13,
+   "pos": [
+    -3.3657496390236514,
+    3.1196864627712966,
+    -16.36166043483425
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.59,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": null,
+   "speed": 1.2201833565138327e-12,
+   "vy": -6.250683475438737e-13,
+   "pos": [
+    -3.3657496390657333,
+    3.119686460215721,
+    -16.361660434788792
+   ],
+   "gates": 0,
+   "next": -1,
+   "cues": [
+    "height.tone",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 31.72,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.3126960724684452e-12,
+   "vy": -6.76263514050231e-13,
+   "pos": [
+    -3.365749639098407,
+    3.1196864616307,
+    -16.361660434840502
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed",
+    "target.checkpoint"
+   ]
+  },
+  {
+   "t": 31.84,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.4244971695876046e-12,
+   "vy": -7.386298530203948e-13,
+   "pos": [
+    -3.3657496390938557,
+    3.1196864631779495,
+    -16.361660434965625
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed",
+    "target.checkpoint"
+   ]
+  },
+  {
+   "t": 31.95,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1420095340934223e-12,
+   "vy": -5.948733606134999e-13,
+   "pos": [
+    -3.3657496390710206,
+    3.1196864642654982,
+    -16.36166043510375
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed",
+    "target.checkpoint"
+   ]
+  },
+  {
+   "t": 32.06,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1182715491713849e-12,
+   "vy": -5.840960514995194e-13,
+   "pos": [
+    -3.365749639036405,
+    3.1196864643936455,
+    -16.361660435248076
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed",
+    "target.checkpoint"
+   ]
+  },
+  {
+   "t": 32.17,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0472453617507094e-12,
+   "vy": -5.542777526586648e-13,
+   "pos": [
+    -3.3657496389840733,
+    3.1196864631502694,
+    -16.361660435413345
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.27,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0413789679950735e-12,
+   "vy": -5.527633169727118e-13,
+   "pos": [
+    -3.365749638950381,
+    3.119686461448852,
+    -16.361660435492805
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.38,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.024810410644247e-12,
+   "vy": -5.434910108310817e-13,
+   "pos": [
+    -3.3657496389271446,
+    3.119686459392179,
+    -16.36166043552529
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.49,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0611089129050916e-12,
+   "vy": -5.591849554608017e-13,
+   "pos": [
+    -3.365749638918104,
+    3.119686460077005,
+    -16.36166043550821
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.6,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1081408605984417e-12,
+   "vy": -5.761464510827058e-13,
+   "pos": [
+    -3.365749638928778,
+    3.119686462020321,
+    -16.361660435418898
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.71,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.108689873311026e-12,
+   "vy": -5.747263197762768e-13,
+   "pos": [
+    -3.3657496389504247,
+    3.1196864629288847,
+    -16.36166043531936
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.81,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1303574081443025e-12,
+   "vy": -5.839288201112506e-13,
+   "pos": [
+    -3.3657496389786057,
+    3.119686463096334,
+    -16.36166043520999
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 32.92,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.147969779879469e-12,
+   "vy": -5.91184849411471e-13,
+   "pos": [
+    -3.365749639007739,
+    3.119686462545932,
+    -16.361660435107805
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.03,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1376888576483498e-12,
+   "vy": -5.846578855590983e-13,
+   "pos": [
+    -3.3657496390322907,
+    3.119686461426394,
+    -16.361660435028224
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.14,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1424419801062944e-12,
+   "vy": -5.872372683157013e-13,
+   "pos": [
+    -3.365749639051865,
+    3.119686459384758,
+    -16.36166043497212
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.24,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.146670535657668e-12,
+   "vy": -5.907518893635936e-13,
+   "pos": [
+    -3.365749639053741,
+    3.1196864593688702,
+    -16.361660434974123
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.35,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1402355923762566e-12,
+   "vy": -5.893519046311772e-13,
+   "pos": [
+    -3.365749639045129,
+    3.1196864607148798,
+    -16.361660435010972
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.46,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.1131622085170035e-12,
+   "vy": -5.773380900557593e-13,
+   "pos": [
+    -3.3657496390283987,
+    3.1196864616339037,
+    -16.361660435074803
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.57,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0732467307827242e-12,
+   "vy": -5.587578694930973e-13,
+   "pos": [
+    -3.365749638999681,
+    3.119686462011543,
+    -16.36166043518253
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.68,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.048804007305961e-12,
+   "vy": -5.469443270989246e-13,
+   "pos": [
+    -3.3657496389790964,
+    3.1196864616560562,
+    -16.361660435261943
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.79,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.067102583271496e-12,
+   "vy": -5.571995956711688e-13,
+   "pos": [
+    -3.3657496389627553,
+    3.119686460837816,
+    -16.3616604353293
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 33.9,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0250447714566694e-12,
+   "vy": -5.364276798206051e-13,
+   "pos": [
+    -3.3657496389537584,
+    3.119686459746702,
+    -16.361660435373036
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.01,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0255416161696929e-12,
+   "vy": -5.357766012322669e-13,
+   "pos": [
+    -3.3657496389542247,
+    3.1196864590357523,
+    -16.361660435388774
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.12,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0302185171372175e-12,
+   "vy": -5.363235285561206e-13,
+   "pos": [
+    -3.3657496389629253,
+    3.1196864600572516,
+    -16.361660435368332
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.22,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.059972135368406e-12,
+   "vy": -5.508354637844436e-13,
+   "pos": [
+    -3.3657496389765877,
+    3.119686460785262,
+    -16.36166043532525
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.33,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0461003006522234e-12,
+   "vy": -5.42484129960352e-13,
+   "pos": [
+    -3.3657496389922903,
+    3.1196864611183495,
+    -16.361660435267577
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.44,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0542125834347541e-12,
+   "vy": -5.451377084366598e-13,
+   "pos": [
+    -3.365749639011271,
+    3.119686460921942,
+    -16.36166043518481
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.55,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.056728669606909e-12,
+   "vy": -5.455693896997686e-13,
+   "pos": [
+    -3.365749639020978,
+    3.119686460363921,
+    -16.361660435130325
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.65,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.070739739859657e-12,
+   "vy": -5.524771523140705e-13,
+   "pos": [
+    -3.3657496390251658,
+    3.119686459596634,
+    -16.361660435091125
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  },
+  {
+   "t": 34.76,
+   "tag": "g",
+   "phase": "flying",
+   "lesson": "scan-free",
+   "q": 0,
+   "line": "sonic.say.inPlaceIntro",
+   "hum": true,
+   "target": "g1",
+   "speed": 1.0581869532732627e-12,
+   "vy": -5.461800775582855e-13,
+   "pos": [
+    -3.3657496390235684,
+    3.119686459010482,
+    -16.36166043507206
+   ],
+   "gates": 24,
+   "next": 0,
+   "cues": [
+    "target.hum",
+    "height.tone",
+    "height.target",
+    "room.bed"
+   ]
+  }
+ ],
+ "errors": [],
+ "prefsKey": "gsfpv.prefs.v1",
+ "shiftG": 20.33,
+ "courseReady": 11.39,
+ "firstHum": 11.39,
+ "humTarget": "g1",
+ "events": [
+  {
+   "t": 0,
+   "kind": "lesson",
+   "key": "open",
+   "text": ""
+  },
+  {
+   "t": 0,
+   "kind": "lesson",
+   "key": "intro",
+   "text": ""
+  },
+  {
+   "t": 2,
+   "kind": "speech",
+   "key": "lesson.scan-free.title",
+   "text": "Free flight in this scan"
+  },
+  {
+   "t": 11,
+   "kind": "speech",
+   "key": "sonic.say.lessonKeysFree",
+   "text": "Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+  },
+  {
+   "t": 15,
+   "kind": "speech",
+   "key": "sonic.say.inPlaceOn",
+   "text": "Fly by Sound is on, right where you are."
+  },
+  {
+   "t": 17,
+   "kind": "speech",
+   "key": "sonic.say.courseOffer",
+   "text": "Press Shift and key G for a course of gates in this scan."
+  },
+  {
+   "t": 18,
+   "kind": "speech",
+   "key": "speech.end",
+   "text": ""
+  },
+  {
+   "t": 18,
+   "kind": "lesson",
+   "key": "attempt-start",
+   "text": ""
+  },
+  {
+   "t": 19,
+   "kind": "speech",
+   "key": "fly.go",
+   "text": "Go."
+  },
+  {
+   "t": 20,
+   "kind": "speech",
+   "key": "sonic.say.lessonKeysFree",
+   "text": "Back, key B. Repeat, key Z. Menu, key Escape. Main menu, key X."
+  },
+  {
+   "t": 21,
+   "kind": "speech",
+   "key": "sonic.say.inPlaceIntro",
+   "text": "You hear the walls as you come near them, and your height. \\ switches Fly by Sound off, Sh"
+  },
+  {
+   "t": 22,
+   "kind": "speech",
+   "key": "speech.end",
+   "text": ""
+  },
+  {
+   "t": 20190,
+   "kind": "speech",
+   "key": "sonic.say.text",
+   "text": "Course: finding the free space, step 1 of 2. About 10 seconds left."
+  },
+  {
+   "t": 24199,
+   "kind": "speech",
+   "key": "sonic.say.text",
+   "text": "Course: placing the gates and obstacles, step 2 of 2. Still working."
+  },
+  {
+   "t": 28512,
+   "kind": "speech",
+   "key": "sonic.say.text",
+   "text": "Course ready: 24 gates. They appear in 3 seconds, keep flying."
+  },
+  {
+   "t": 31555,
+   "kind": "speech",
+   "key": "sonic.say.text",
+   "text": "Gates: 24. Fly through START to start the clock. Shift and key T hide the course"
+  }
+ ],
+ "spoken": 11,
+ "voiced": [
+  {
+   "t": 0.04,
+   "text": ""
+  }
+ ],
+ "live": [
+  {
+   "t": -3.95,
+   "where": "ui",
+   "text": "70b50d42Opening the scan0 sFly nowTry againChoose another scan",
+   "installed": false
+  },
+  {
+   "t": -3.95,
+   "where": "ui",
+   "text": "Opening the scan",
+   "installed": false
+  },
+  {
+   "t": -3.84,
+   "where": "ui",
+   "text": "Opening the scan",
+   "installed": false
+  },
+  {
+   "t": -3.75,
+   "where": "ui",
+   "text": "Opening the scan",
+   "installed": false
+  },
+  {
+   "t": -3.7,
+   "where": "ui",
+   "text": "Opening the scan",
+   "installed": false
+  },
+  {
+   "t": -3.65,
+   "where": "ui",
+   "text": "Opening the scan",
+   "installed": false
+  },
+  {
+   "t": -3.55,
+   "where": "ui",
+   "text": "Downloading the walls",
+   "installed": false
+  },
+  {
+   "t": -3.44,
+   "where": "ui",
+   "text": "Downloading the walls",
+   "installed": false
+  },
+  {
+   "t": -3.44,
+   "where": "ui",
+   "text": "Downloading the walls",
+   "installed": false
+  },
+  {
+   "t": -3.36,
+   "where": "ui",
+   "text": "Building the walls",
+   "installed": false
+  },
+  {
+   "t": -3.28,
+   "where": "ui",
+   "text": "The scan is ready",
+   "installed": false
+  },
+  {
+   "t": -3.28,
+   "where": "ui",
+   "text": "The scan is ready",
+   "installed": false
+  },
+  {
+   "t": -3.28,
+   "where": "ui",
+   "text": "The scan is ready Next: choose how you will fly.",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "Scene by its author — see the original on SuperSplat · Report this sceneWalls 10 cm ▾Walls",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "Walls 10 cm ▾Walls (collisions)onCVoxel gridVOffOver the scanVoxels onlyStyleSolid cubesWi",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "Walls 10 cm ▾",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "In use: 10 cm walls, ready for every pilot.",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "ARMTo armARMYour throttle stick is resting in the centre, so the motors cannot start the F",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "ShareFeedbackControlsPause",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "● RECF9AutoChoose a folder ▾Choose another folderForget this folderAllow saving to",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "● REC",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "Auto",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "Choose a folder ▾",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "ANGLEMACRONo self-levelling: the drone holds its attitudeANGLESelf-levelling: let go of th",
+   "installed": false
+  },
+  {
+   "t": -2.52,
+   "where": "ui",
+   "text": "Share",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "● REC",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Auto",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Choose a folder ▾",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "ControlsThe scan is ready. How will you fly?×Connect my controllerPlug the controller in w",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "ControlsThe scan is ready. How will you fly?×",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Connect my controllerPlug the controller in with a data cable and switch it on, press the ",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Radio or controller over USB (EdgeTX, DJI)EdgeTX: choose \"USB Joystick\" and switch the RF ",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Gamepad or radio as gamepadMove a stick to detect the device",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Touch sticksGood for looking around and showing friends. To learn to fly, use a radio.",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "KeyboardFly like a game: click the view to capture the mouse and move it to look, W A S D ",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "Real radios: not tested yet in this version. The wizard is tested with a simulated EdgeTX ",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "My controller is not in the listDJI controllers with a screen (such as the DJI RC 2 that c",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "TEST MODE ?render=off: logic only, the scan is not drawn",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "ui",
+   "text": "crashes 0  ·  R respawn · P pause · V voxels · C walls · H hide text · F3 screen and delay",
+   "installed": false
+  },
+  {
+   "t": -2.51,
+   "where": "gate-msg",
+   "text": "Calibrate your controls first.",
+   "installed": false
+  },
+  {
+   "t": -2.4,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -2.4,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -2.4,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -2.4,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -2.2,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -2.2,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -2.2,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -2.2,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -2.07,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -2.07,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -2.07,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -2.07,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -2.06,
+   "where": "ui",
+   "text": "on",
+   "installed": false
+  },
+  {
+   "t": -2.06,
+   "where": "ui",
+   "text": "55 %",
+   "installed": false
+  },
+  {
+   "t": -1.97,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.97,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.97,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.97,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.84,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.84,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.84,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.84,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.74,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.74,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.74,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.74,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.6,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.6,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.6,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.6,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.56,
+   "where": "ui",
+   "text": "on",
+   "installed": false
+  },
+  {
+   "t": -1.56,
+   "where": "ui",
+   "text": "55 %",
+   "installed": false
+  },
+  {
+   "t": -1.5,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.5,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.5,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.5,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.37,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.37,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.37,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.37,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.27,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.27,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.27,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.27,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.14,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.14,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.14,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.14,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -1.06,
+   "where": "ui",
+   "text": "on",
+   "installed": false
+  },
+  {
+   "t": -1.06,
+   "where": "ui",
+   "text": "55 %",
+   "installed": false
+  },
+  {
+   "t": -1.04,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -1.04,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -1.04,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -1.04,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.9,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.9,
+   "where": "ui",
+   "text": "· ACRO",
+   "installed": false
+  },
+  {
+   "t": -0.9,
+   "where": "ui",
+   "text": "12.6 V  0.7 s",
+   "installed": false
+  },
+  {
+   "t": -0.9,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.82,
+   "where": "ui",
+   "text": "● REC",
+   "installed": false
+  },
+  {
+   "t": -0.82,
+   "where": "ui",
+   "text": "Auto",
+   "installed": false
+  },
+  {
+   "t": -0.82,
+   "where": "ui",
+   "text": "Choose a folder ▾",
+   "installed": false
+  },
+  {
+   "t": -0.82,
+   "where": "ui",
+   "text": "Keyboard ·",
+   "installed": false
+  },
+  {
+   "t": -0.76,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.76,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.76,
+   "where": "ui",
+   "text": "12.6 V  0.8 s",
+   "installed": false
+  },
+  {
+   "t": -0.76,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.76,
+   "where": "ui",
+   "text": "crashes 0  ·  Space up · Shift down · K keys · F full screen · R respawn · Esc pause · H h",
+   "installed": false
+  },
+  {
+   "t": -0.76,
+   "where": "gate-msg game",
+   "text": "Click to fly, or press W or Space to take off",
+   "installed": false
+  },
+  {
+   "t": -0.72,
+   "where": "ui",
+   "text": "Keyboard. Controls",
+   "installed": false
+  },
+  {
+   "t": -0.67,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.67,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.67,
+   "where": "ui",
+   "text": "12.6 V  0.9 s",
+   "installed": false
+  },
+  {
+   "t": -0.67,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.56,
+   "where": "ui",
+   "text": "on",
+   "installed": false
+  },
+  {
+   "t": -0.56,
+   "where": "ui",
+   "text": "55 %",
+   "installed": false
+  },
+  {
+   "t": -0.54,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.54,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.54,
+   "where": "ui",
+   "text": "12.6 V  1.1 s",
+   "installed": false
+  },
+  {
+   "t": -0.54,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.4,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.4,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.4,
+   "where": "ui",
+   "text": "12.6 V  1.2 s",
+   "installed": false
+  },
+  {
+   "t": -0.4,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.27,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.27,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.27,
+   "where": "ui",
+   "text": "12.6 V  1.3 s",
+   "installed": false
+  },
+  {
+   "t": -0.27,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.17,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.17,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.17,
+   "where": "ui",
+   "text": "12.6 V  1.4 s",
+   "installed": false
+  },
+  {
+   "t": -0.17,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.07,
+   "where": "ui",
+   "text": "DISARMED",
+   "installed": false
+  },
+  {
+   "t": -0.07,
+   "where": "ui",
+   "text": "· ANGLE",
+   "installed": false
+  },
+  {
+   "t": -0.07,
+   "where": "ui",
+   "text": "12.6 V  1.5 s",
+   "installed": false
+  },
+  {
+   "t": -0.07,
+   "where": "ui",
+   "text": "THR 0%  0.0 m/s  ALT 0.0 m",
+   "installed": false
+  },
+  {
+   "t": -0.06,
+   "where": "ui",
+   "text": "on",
+   "installed": false
+  },
+  {
+   "t": -0.06,
+   "where": "ui",
+   "text": "55 %",
+   "installed": false
+  }
+ ],
+ "m4": {
+  "press": 0.002,
+  "atPress": {
+   "narrator": false,
+   "lesson": null,
+   "paused": false,
+   "installed": false,
+   "uiLive": "polite"
+  },
+  "install": 0.201,
+  "atInstall": {
+   "narrator": false,
+   "lesson": "scan-free",
+   "paused": false,
+   "installed": true,
+   "uiLive": "off"
+  },
+  "uiAttr": [
+   {
+    "t": 0.002,
+    "where": "ui",
+    "name": "aria-live",
+    "value": "off",
+    "installed": false
+   }
+  ],
+  "lines10": 0,
+  "lines": []
+ },
+ "prefsNow": {
+  "narrator": false
+ }
+}

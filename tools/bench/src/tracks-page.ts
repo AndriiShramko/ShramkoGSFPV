@@ -130,8 +130,9 @@ async function colours(png: Buffer, table: Record<string, [number, number, numbe
         { b64: png.toString('base64'), paint: table, tol: TOL, share: leftShare }
     );
 }
-/** stage K2: view.ts PAINT selected (magenta) in 8-bit sRGB, counted only while the editor is open */
-const SELECTED_PAINT: Record<string, [number, number, number]> = { selected: [255, 51, 255] };
+/** view.ts PAINT selected in 8-bit sRGB, counted only while the editor is open: train 3 E4 made it the yellow outline in every
+ *  tool ([1, 0.92, 0.25]; stage K2 had magenta) */
+const SELECTED_PAINT: Record<string, [number, number, number]> = { selected: [255, 235, 64] };
 /** the selected gate's pixels that make it "in view" (an estimate, as MIN_PX: a gate a few metres away covers thousands) */
 const MIN_SEL_PX = 200;
 const selectedPx = async (p: Page): Promise<number> => (await colours(await p.screenshot(), SELECTED_PAINT)).selected ?? 0;
@@ -283,13 +284,15 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
         // stage K2: the editor's camera looks at the selected gate on opening and after Tab (it was behind the drone before)
         const v1 = (await editorHook(p))?.view ?? null;
         const px1 = await selectedPx(p);
-        check('E camera: the selected gate in view on opening (hook view, magenta pixels on screen)', !!v1 && px1 >= MIN_SEL_PX, { view: v1, px: px1, min: MIN_SEL_PX });
+        check('E camera: the selected gate in view on opening (hook view, yellow outline pixels on screen)', !!v1 && px1 >= MIN_SEL_PX, { view: v1, px: px1, min: MIN_SEL_PX });
         await p.keyboard.press('Tab');
-        await sleep(400);
+        // train 3: the edit mode glides 0.4 s to the next gate and may keep the view when that gate already sits well inside it,
+        // so the check is the new selection and its outline on screen after the glide, not a camera that always moves
+        await sleep(900);
         const e2 = await editorHook(p);
         const px2 = await selectedPx(p);
         const camMoved = !!v1 && !!e2?.view && e2.view.at.some((x, i) => Math.abs(x - (v1.at[i] ?? 0)) > 1e-6);
-        check('E camera: after Tab the camera looks at the newly selected gate, in view', e2?.selected !== op.v?.selected && camMoved && px2 >= MIN_SEL_PX, { selected: e2?.selected, view: e2?.view, px: px2 });
+        check('E camera: after Tab the newly selected gate is in view (yellow outline on screen)', e2?.selected !== op.v?.selected && px2 >= MIN_SEL_PX, { selected: e2?.selected, view: e2?.view, moved: camMoved, px: px2 });
         await p.keyboard.press('Shift+Tab');
         await sleep(300);
         await until(() => p.evaluate(() => document.querySelectorAll('.course-editor .ce-row, .course-editor .ce-empty').length), (n) => n > 0, 10000);
@@ -424,12 +427,12 @@ async function editorFlow(browser: Browser, site: string, log: string[]): Promis
             const inside = !!lay.box && lay.box.left >= 0 && lay.box.right <= s.w + 0.5 && lay.box.top >= 0 && (lay.box.bottom <= s.h + 0.5 || lay.scrolls);
             check(`E ${s.w}x${s.h}: the window inside the view (or scrolls), no two keys overlap`, inside && lay.keys > 0 && lay.keyOverlaps === 0, lay);
             const spx = (await colours(png, SELECTED_PAINT)).selected ?? 0;
-            check(`E ${s.w}x${s.h}: the selected gate is on the screenshot (magenta pixels)`, spx >= MIN_SEL_PX, { px: spx, file: s.file });
+            check(`E ${s.w}x${s.h}: the selected gate is on the screenshot (yellow outline pixels)`, spx >= MIN_SEL_PX, { px: spx, file: s.file });
             // stage K2.6: the gate is in the part the window leaves free (left of its box), not under it
             const freeShare = lay.box ? Math.max(0, Math.min(1, lay.box.left / s.w)) : 1;
             const lpx = (await colours(png, SELECTED_PAINT, freeShare)).selected ?? 0;
             const hv = (await editorHook(p))?.view ?? null;
-            check(`E ${s.w}x${s.h}: the selected gate is left of the window (magenta pixels there, at least half of them)`, lpx >= MIN_SEL_PX && lpx * 2 >= spx, { px: lpx, all: spx, windowLeft: lay.box?.left, free: hv?.free, look: hv?.look });
+            check(`E ${s.w}x${s.h}: the selected gate is left of the window (yellow outline pixels there, at least half of them)`, lpx >= MIN_SEL_PX && lpx * 2 >= spx, { px: lpx, all: spx, windowLeft: lay.box?.left, free: hv?.free, look: hv?.look });
             // stage F1-finish: the HUD's top buttons are not under the window, the save buttons are in its visible part unscrolled
             const reach = await p.evaluate(() => {
                 const w = document.querySelector('.course-editor') as HTMLElement | null;

@@ -37,7 +37,11 @@ describe('the editor key table', () => {
         const f: [number, number] = [0, -1];
         expect(editorKey({ code: 'Tab', shiftKey: true }, f)).toEqual({ edit: { kind: 'select-step', step: -1 } });
         expect(editorKey({ code: 'PageUp' }, f)).toEqual({ edit: { kind: 'move', axis: 1, steps: 1 } });
-        expect(editorKey({ code: 'KeyQ' }, f)).toEqual({ edit: { kind: 'turn', steps: -1 } });
+        // lane editor3 E2: Q and E are the edit camera's down and up now, [ and ] turn the gate
+        expect(editorKey({ code: 'BracketLeft' }, f)).toEqual({ edit: { kind: 'turn', steps: -1 } });
+        expect(editorKey({ code: 'BracketRight' }, f)).toEqual({ edit: { kind: 'turn', steps: 1 } });
+        expect(editorKey({ code: 'KeyQ' }, f)).toBeNull();
+        expect(editorKey({ code: 'KeyE' }, f)).toBeNull();
         expect(editorKey({ code: 'Digit3' }, f)).toEqual({ edit: { kind: 'dive' } });
         expect(editorKey({ code: 'Equal' }, f)).toEqual({ edit: { kind: 'size', steps: 1 } });
         expect(editorKey({ code: 'Insert' }, f)).toEqual({ edit: { kind: 'insert' } });
@@ -47,7 +51,7 @@ describe('the editor key table', () => {
         expect(editorKey({ code: 'Enter' }, f)).toEqual({ cmd: 'save-mine' });
         expect(editorKey({ code: 'Escape' }, f)).toEqual({ cmd: 'exit' });
         for (const code of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'KeyT']) expect(editorKey({ code }, f), code).toBeNull();
-        expect(editorKey({ code: 'KeyQ', altKey: true }, f)).toBeNull();
+        expect(editorKey({ code: 'BracketLeft', altKey: true }, f)).toBeNull();
     });
 
     it('every button of the window stands for a key the table knows', () => {

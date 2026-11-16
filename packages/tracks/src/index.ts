@@ -6,6 +6,7 @@ export * from './occupancy';
 export * from './freespace';
 export * from './quality';
 export * from './generate';
+export * from './elements';
 export * from './fit';
 export * from './path';
 export * from './laps';

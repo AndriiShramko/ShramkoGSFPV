@@ -3,7 +3,7 @@
  "schemaVersion": 2,
  "defaultDrone": "pavo20pro-3s",
  "counts": {
-  "settings": 75,
+  "settings": 76,
   "groups": 11,
   "drones": 9,
   "modes": 3,
@@ -574,6 +574,27 @@
        "advanced": false,
        "preset": false,
        "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "course.lapSplash",
+       "label": "Lap time on screen",
+       "help": "When a lap ends its time shows large at the top of the view for a moment, green when it beats your best lap.",
+       "type": "enum",
+       "default": "Large",
+       "range": "Large / Small / Off",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Large",
+        "Small",
+        "Off"
+       ],
        "shown": [
         "settings"
        ]
@@ -2711,6 +2732,27 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "course.lapSplash",
+       "label": "Tiempo de vuelta en pantalla",
+       "help": "Al terminar una vuelta, su tiempo aparece un momento en grande arriba de la vista, en verde si mejora tu mejor vuelta.",
+       "type": "enum",
+       "default": "Grande",
+       "range": "Grande / Peque\u00f1o / Desactivado",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Grande",
+        "Peque\u00f1o",
+        "Desactivado"
+       ],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -4845,6 +4887,27 @@
        "shown": [
         "settings"
        ]
+      },
+      {
+       "id": "course.lapSplash",
+       "label": "Czas okr\u0105\u017cenia na ekranie",
+       "help": "Po okr\u0105\u017ceniu jego czas pojawia si\u0119 na chwil\u0119 du\u017cymi cyframi u g\u00f3ry widoku, na zielono, gdy bije twoje najlepsze okr\u0105\u017cenie.",
+       "type": "enum",
+       "default": "Du\u017cy",
+       "range": "Du\u017cy / Ma\u0142y / Wy\u0142\u0105czony",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "Du\u017cy",
+        "Ma\u0142y",
+        "Wy\u0142\u0105czony"
+       ],
+       "shown": [
+        "settings"
+       ]
       }
      ]
     },
@@ -6976,6 +7039,27 @@
        "advanced": false,
        "preset": false,
        "options": [],
+       "shown": [
+        "settings"
+       ]
+      },
+      {
+       "id": "course.lapSplash",
+       "label": "\u0412\u0440\u0435\u043c\u044f \u043a\u0440\u0443\u0433\u0430 \u043d\u0430 \u044d\u043a\u0440\u0430\u043d\u0435",
+       "help": "\u041a\u043e\u0433\u0434\u0430 \u043a\u0440\u0443\u0433 \u043f\u0440\u043e\u0439\u0434\u0435\u043d, \u0435\u0433\u043e \u0432\u0440\u0435\u043c\u044f \u043d\u0430 \u043c\u0438\u0433 \u043f\u043e\u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u043a\u0440\u0443\u043f\u043d\u043e \u0432\u0432\u0435\u0440\u0445\u0443 \u044d\u043a\u0440\u0430\u043d\u0430, \u0437\u0435\u043b\u0451\u043d\u044b\u043c, \u0435\u0441\u043b\u0438 \u044d\u0442\u043e \u0432\u0430\u0448 \u043b\u0443\u0447\u0448\u0438\u0439 \u043a\u0440\u0443\u0433.",
+       "type": "enum",
+       "default": "\u041a\u0440\u0443\u043f\u043d\u043e",
+       "range": "\u041a\u0440\u0443\u043f\u043d\u043e / \u041c\u0435\u043b\u043a\u043e / \u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u043e",
+       "scope": "global",
+       "apply": "live",
+       "keys": [],
+       "advanced": false,
+       "preset": false,
+       "options": [
+        "\u041a\u0440\u0443\u043f\u043d\u043e",
+        "\u041c\u0435\u043b\u043a\u043e",
+        "\u0412\u044b\u043a\u043b\u044e\u0447\u0435\u043d\u043e"
+       ],
        "shown": [
         "settings"
        ]
