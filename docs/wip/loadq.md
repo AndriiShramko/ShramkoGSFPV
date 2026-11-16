@@ -691,10 +691,21 @@ Stage R1-keeper
 - [x] 3g. a1-api-check on 2b60ef51: pass, 71 members checked, no problems (U:/Temp/gsfpv-train3/loadq2/a1.log; it reads
   playcanvas.d.ts; renderer.ts reads device.wgpu through a cast, which this check does not see). a6-reference pass (1
   test). Typecheck render-pc and apps/fly exit 0.
-- [~] 4. Browser checks on release eb3f6a95 (U:/Temp/gsfpv-train3/loadq2/checks.sh, port 5835; the help text commit
-  2b60ef51 is locales only and not in that build): accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16, governor-start-probe,
-  lod-view on and off with set.display.stillDetail=0 (Lublin, 1 M), freeze-probe, pause-over-course-probe; then gates.py
-  --only vitest,architecture,i18n,b18,leaks.
+- [x] 4. Browser checks on release eb3f6a95 (U:/Temp/gsfpv-train3/loadq2/checks.sh, port 5835, 05:53 to 06:07; the help
+  text commit 2b60ef51 is locales only and not in that build):
+  - accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 against http://localhost:5835: all 10 PASS
+    (U:/Temp/gsfpv-train3/loadq2/accept-fly-r2.log, evidence/2026-11-16/b-fly-b*.json).
+  - governor-start-probe (scene 39e63ce9): PASS all=true (evidence/2026-11-16/lod-view/loadq2-r2-governor-start.json).
+  - lod-view Lublin 1 M desktop-strong with set.display.stillDetail=0, on / off, PSNR luma over the scan against
+    l3-lub-ref16: start 19.66 / 19.43, 40 m up 20.14 / 19.77, 140 m up 19.43 / 19.47 dB: lane loadq's lq6 numbers
+    (19.66 / 19.43, 20.13 / 19.77, 19.43 / 19.47) hold (evidence/2026-11-16/lod-view/lq7-lub-1-*.json,
+    U:/Temp/gsfpv-train3/loadq2/score-lq7-lub.txt).
+  - freeze-probe (it reports, it has no verdict): after the reveal 1728 frames, median 33.3 ms (the display paced at 30
+    Hz), 90th percentile 33.5, worst 66.7 ms; the longest gap 366.6 ms before the reveal (U:/Temp/gsfpv-train3/loadq2/freeze-r2.json).
+  - pause-over-course-probe: pass true, 1920 and 844 (U:/Temp/gsfpv-train3/loadq2/pause-over-course-r2.json).
+  - gates.py --only vitest,architecture,i18n,b18,leaks on 0b9489de with Python 3.11 on PATH: all PASS (vitest 96 s;
+    U:/Temp/gsfpv-gates-20261116-060703). a6-reference pass, typecheck render-pc and apps/fly exit 0 (3g).
+  Stage R2-rest finished.
 
 ## loadq2: what was done about each finding
 
