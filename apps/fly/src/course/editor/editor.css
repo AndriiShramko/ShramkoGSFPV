@@ -163,8 +163,10 @@
     text-overflow: ellipsis;
 }
 .ce-topbar .ce-tb-line.refused { color: #ffb347; }
-.ce-topbar.flying .ce-tb { display: none; }
+/* lane editfix E2: while the course is flown in the mode, Exit stays on the bar and takes a click (no dead end) */
+.ce-topbar.flying .ce-tb:not([data-top='exit']) { display: none; }
 .ce-topbar.flying { pointer-events: none; }
+.ce-topbar.flying .ce-tb[data-top='exit'] { pointer-events: auto; }
 
 /* lane editor3 E4.6: the window's title is a button that only does something on a phone (a drawer, below) */
 .course-editor .ce-drawer {

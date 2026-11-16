@@ -45,7 +45,7 @@ import { EditView } from '../../course/editor/view-mouse';
 import { GateBar } from '../../course/editor/gate-bar';
 import { TopBar } from '../../course/editor/top-bar';
 import { ADD_RAY_M, addAction, addFacing, addLift, addPoint, facingFrom } from '../../course/editor/add-place';
-import { flyShows, modeStep, type EditMode } from '../../course/editor/fly-mode';
+import { flyShows, modeStep, openStep, type EditMode } from '../../course/editor/fly-mode';
 import type { Ray } from '../../course/editor/pick';
 import { camFrom } from '../../course/editor/fly-cam';
 import { gateFlownPose, placeGate, placeInState, type FlownPose } from '../../course/editor/drag';
@@ -906,7 +906,10 @@ export const course: Feature = {
             edHook.refused = null;
             // lane editor3 E3: no pause; the flight goes on in the mode (armed: the drone's view, disarmed: the edit view)
             mode = 'edit';
-            crashHold = false;
+            // lane editfix E2: opened in the air, the mode shows the edit view, not the flight (fly-mode.ts openStep)
+            const os = openStep(!!ctx.session.sim?.armed);
+            crashHold = os.hold;
+            if (os.respawn) ctx.session.respawnStart();
             unblock = ctx.keys.block(() => ed !== null && mode === 'edit');
             panel = new EditorPanel(ctx.ui, { key: (p) => applyKey(p), saveMine: (n, ti) => void saveMine(n, ti), saveAll: () => void saveAll(), saveAdmin: (ti) => void saveAdmin(ti), vote: (id, v) => void vote(id, v), open: (id) => openRow(id) });
             panel.defaults('', run.track.title);

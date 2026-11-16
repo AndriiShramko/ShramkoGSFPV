@@ -21,6 +21,13 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   (right drag on the handles moves the gate) found; probe: COURSE_MS, rightDragEmpty, Controls screen scrolled by the
   wheel on short views (commit of this line).
 - [x] E1.5 gates.py --only vitest,architecture,i18n,b18,leaks: all PASS (vitest 117 s), logs U:/Temp/gsfpv-gates-20261116-121259.
+- [x] E2.1 the three causes repaired (commit of this line): 1 course.ts openEdit takes fly-mode.ts openStep(armed) (hold set,
+  armed drone to the start), editor.css keeps Exit clickable while flying, the flying line names Space and the controller
+  (en es pl ru); 2 top-bar.ts clears a held line on pointerup, not pointerdown; 3 view-mouse.ts gizmos take the left
+  button only (HANDLE_BUTTONS, in place: PlayCanvas 2.23.2 has a getter only). Test tools/bench/test/editfix-e2.test.ts
+  6 tests, NEG OK (all 6 fail on origin/main files); editor3-*.test.ts + it: 122 passed; tsc apps/fly exit 0.
+- [ ] E2.2 release build; probe over all cases of E1 (fly cases must now open in mode edit); pictures editfix-after-*.
+- [ ] E2.3 editor3-smoke Wroclaw and Tunis; accept-fly B6 B7 B9-B16; a6-reference; all gates; live check edit-mouse-wroclaw.
 
 ## The cause (measured)
 

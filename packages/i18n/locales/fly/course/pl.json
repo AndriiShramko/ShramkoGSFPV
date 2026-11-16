@@ -139,7 +139,7 @@
   "course.edit.bar.addHint": "Kliknij miejsce nowej bramki (Esc: bez nowej bramki)",
   "course.edit.bar.duplicate": "powiel bramkę",
   "course.edit.flyHint": "Kliknij bramkę, by ją zmienić. Uzbrój kontroler, by od razu przelecieć tor, rozbrój, by znowu edytować",
-  "course.edit.flying": "Lecisz swoim torem ze zmianami. Rozbrój, by znowu edytować",
+  "course.edit.flying": "Lecisz swoim torem ze zmianami. Stuknij Spację albo wyłącz kontroler, by znowu edytować",
   "course.edit.selected": "Wybrano",
   "course.edit.bar.save": "Zapisz",
   "course.edit.bar.courses": "Tory",

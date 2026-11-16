@@ -139,7 +139,7 @@
   "course.edit.bar.addHint": "Haz clic en el lugar de la nueva puerta (Esc: sin puerta nueva)",
   "course.edit.bar.duplicate": "duplicar la puerta",
   "course.edit.flyHint": "Haz clic en una puerta para cambiarla. Arma tu mando para volar el circuito al momento, desarma para editar de nuevo",
-  "course.edit.flying": "Vuelas tu circuito con los cambios. Desarma para editar de nuevo",
+  "course.edit.flying": "Vuelas tu circuito con los cambios. Toca Espacio o apaga el mando para editar de nuevo",
   "course.edit.selected": "Seleccionada",
   "course.edit.bar.save": "Guardar",
   "course.edit.bar.courses": "Circuitos",

@@ -20,6 +20,8 @@ export const CLICK_SLOP_PX = 4;
 export const SNAP_MOVE_M = 0.1;
 export const SNAP_TURN_DEG = 15;
 export const SNAP_SCALE = 0.1;
+/** lane editfix E2: the buttons the handles take (left only); the right button is the look everywhere */
+export const HANDLE_BUTTONS: readonly [boolean, boolean, boolean] = [true, false, false];
 
 export interface EditViewHost {
     readonly app: AppBase;
@@ -113,6 +115,10 @@ export class EditView {
         const move = new TranslateGizmo(cc, this.layer);
         const turn = new RotateGizmo(cc, this.layer);
         const size = new ScaleGizmo(cc, this.layer);
+        // lane editfix E2: the PlayCanvas default [true, true, true] let a right drag that began on the handles move the gate
+        // instead of turning the view (E1 cause 3). PlayCanvas 2.23.2 has only a getter that returns the array it reads
+        // (Gizmo._mouseButtons, checked by the button of each pointerdown), so it is changed in place
+        for (const g of [move, turn, size]) g.mouseButtons.splice(0, 3, ...HANDLE_BUTTONS);
         move.coordSpace = 'local';
         turn.coordSpace = 'local';
         size.coordSpace = 'local';

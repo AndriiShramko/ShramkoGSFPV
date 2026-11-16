@@ -57,7 +57,8 @@ describe('editor3 I2 the top bar line (D6)', () => {
 
     it('the bar clears a refusal on the next key or press and keeps the line to one line', () => {
         expect(TOP).toMatch(/addEventListener\('keydown', this\.onAct, true\)/);
-        expect(TOP).toMatch(/addEventListener\('pointerdown', this\.onAct, true\)/);
+        // lane editfix E2: the press clears it when let go (pointerup), so the buttons do not move under it
+        expect(TOP).toMatch(/addEventListener\('pointerup', this\.onAct, true\)/);
         expect(TOP).toMatch(/this\.line\.title = text/);
         expect(TOP).not.toMatch(/6000/);
         const rule = /\.ce-topbar \.ce-tb-line \{([^}]*)\}/.exec(CSS)?.[1] ?? '';

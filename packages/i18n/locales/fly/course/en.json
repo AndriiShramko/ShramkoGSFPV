@@ -139,7 +139,7 @@
   "course.edit.bar.addHint": "Click the place for the new gate (Esc: no new gate)",
   "course.edit.bar.duplicate": "duplicate the gate",
   "course.edit.flyHint": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
-  "course.edit.flying": "Flying your course with the changes. Disarm to edit again",
+  "course.edit.flying": "Flying your course with the changes. Tap Space or switch the controller off to edit again",
   "course.edit.selected": "Selected",
   "course.edit.bar.save": "Save",
   "course.edit.bar.courses": "Courses",
