@@ -324,7 +324,7 @@ res.log = log.slice(0, 40);
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, JSON.stringify(res, null, 1));
 mkdirSync(SHOTS, { recursive: true });
-if (shot) writeFileSync(join(SHOTS, `editfix-${fails.length ? 'before' : 'run'}-${name}.png`), shot);
+if (shot) writeFileSync(join(SHOTS, `editfix-${env.SHOTTAG || (fails.length ? 'before' : 'run')}-${name}.png`), shot);
 const brief = Object.entries(res.steps).map(([k, v]) => `${k}:${v.ok ? 'ok' : 'FAIL'}`).join(' ');
 console.log(`${name}: ${brief} mode=${res.open?.mode} lock=${res.open?.lock} ${res.error ?? ''}`);
 await browser.close();

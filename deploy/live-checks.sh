@@ -212,6 +212,14 @@ console.log("open", open, "selected by a click (information)", sel, "moved by an
 process.exit(open && moved && closed ? 0 : 1);' "$OUT/live-edit.json"
 }
 run edit-mode-wroclaw locked editlive
+# Lane editfix (docs/wip/editfix.md): the owner's path into the edit mode with the mouse, on a laptop-like screen (1536x730,
+# device scale 1.25): Controls closed by a click, a click into the scene takes the pointer lock, take-off, Shift+G, Shift+B;
+# then the view moved by keys, a right drag and the wheel, a click selects a gate, Add gate and a click on the scene (the
+# gate lives in the page), the top bar's other buttons, Exit. edit-mouse-probe.mjs on an address that is not localhost
+# skips Save and every window row whose words save, send, vote, report, publish, create or go to the admin (source lines
+# 275-289); nothing is stored on the server. The check: the probe's exit 0 (every step had its effect).
+editmouse() { node scripts/edit-mouse-probe.mjs "$SITE/en" 70b50d42 1536x730 1.25 0 en live-mouse "$OUT/edit-mouse-wroclaw.json"; }
+run edit-mouse-wroclaw locked editmouse
 # Fly by Sound over a course made in the ordinary flight (lane mix, sonic-int-review.ts r11 with Z5_COURSE_FIRST=1: Shift+G
 # in the ordinary flight, then Backslash; the same keys as soniccheck above, nothing sent or saved; rendering off, no lock).
 # The check: the sound mode takes that course (one set of gates) and the hum has a target.
