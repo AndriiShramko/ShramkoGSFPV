@@ -201,6 +201,14 @@ export class Quality {
         return this.stillM;
     }
 
+    /**
+     * The keeper has chosen this flight's step (FrameGovernor.calm): the still rise waits for it (review LR-4), so a weak
+     * device that waits at the start still finds its flight's step first.
+     */
+    get keeperCalm(): boolean {
+        return this.cinemaOn || this.governor.calm(this.renderer.frameTime);
+    }
+
     /** Once per frame, first: the simulated overload (tests), then the governor's step. */
     frame(now: number): void {
         if (this.frameDelay > 0) { const end = now + this.frameDelay; while (performance.now() < end) { /* simulated overload */ } }
@@ -217,7 +225,9 @@ export class Quality {
         // display period of 9-13 ms, which made every on-time frame "missed" (docs/wip/v08-c.md)
         // G6: the slower frames of a still picture are chosen, not missed: the keeper does not count them
         const still = this.stillM > 0;
-        if (!this.cinemaOn && !still && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
+        // the governor is told of the rest, so the first frames after a move are judged as a whole window (review LR-3)
+        if (still) this.governor.rest(this.renderer.frameTime);
+        else if (!this.cinemaOn && this.governor.onFrame(this.renderer.frameTime, this.renderer.frameAfterSkip, held, streamed)) this.apply();
         this.lastNow = now;
         if (this.governor.step === 0) this.lowSince = 0;
         else if (this.lowSince === 0) this.lowSince = now;

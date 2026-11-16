@@ -75,6 +75,10 @@ export interface DetailInput {
 export function detailState(i: DetailInput): DetailState {
     if (i.givenUp > 0) return 'givenup';
     if (i.retrying > 0 || (i.troubled ?? 0) > 0) return 'network';
+    // the detail still coming in for a budget set by hand is said as such, also at rest (review LR-1: the line said
+    // 'sharper while you hold still' while the scan was still loading at the start)
+    if (i.handSet && !i.released && i.keeperSlow) return 'kept';
+    if (i.handSet && i.pending > 0 && !(i.released && i.step > 0 && i.budgetM < i.topM)) return 'coming';
     if (i.still === true) return 'still';
     if (!i.handSet) return 'hidden';
     if (!i.released && i.keeperSlow) return 'kept';
@@ -188,14 +192,15 @@ export class StillRise {
     private frames: number[] = [];
 
     /** True when boostM changed (the caller applies it at once). */
-    frame(s: StillSample, baseM: number, capM: number, enabled: boolean): boolean {
+    frame(s: StillSample, baseM: number, capM: number, enabled: boolean, keeperCalm = true): boolean {
         const unpaused = this.wasPaused && !s.paused;
         this.wasPaused = s.paused;
         const off = (v: number): number => (v < 0 ? -v : v);
         const moving = unpaused || (!s.paused && (s.speed >= STILL_SPEED_MS || s.turnDegS >= STILL_TURN_DEG_S
             || off(s.roll) >= STILL_STICK || off(s.pitch) >= STILL_STICK || off(s.yaw) >= STILL_STICK
             || (this.since > 0 && off(s.throttle - this.throttle0) >= STILL_STICK)));
-        if (!enabled || moving) return this.reset(s);
+        // the frame rate keeper chooses the flight's step before the detail rises (review LR-4); once risen, it is at rest
+        if (!enabled || moving || (this.boostM === 0 && !keeperCalm)) return this.reset(s);
         if (this.since === 0) {
             this.since = s.now;
             this.lastStep = s.now;

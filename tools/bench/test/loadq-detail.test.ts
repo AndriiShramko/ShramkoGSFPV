@@ -135,3 +135,20 @@ describe('G6: more detail while the craft is still', () => {
         expect(detailLine('still', i, say).text).toBe('detail.still {"drawn":"2.5"}');
     });
 });
+
+describe('loadq2 review', () => {
+    const base: DetailInput = { handSet: true, released: false, keeperSlow: false, step: 0, topM: 16, budgetM: 16, drawnM: 0.5, pending: 141, retrying: 0, givenUp: 0, filesPerSec: 4.5, still: true };
+    it('LR-1: a hand-set budget still loading at rest says the files to go, not "sharper while you hold still"', () => {
+        expect(detailState(base)).toBe('coming');
+        expect(detailState({ ...base, pending: 0, drawnM: 15.6 })).toBe('still');
+        expect(detailState({ ...base, handSet: false })).toBe('still');
+    });
+    it('LR-4: the detail does not rise before the frame rate keeper has chosen the step of the flight', () => {
+        const r = new StillRise();
+        const s = (now: number): StillSample => ({ now, paused: false, speed: 0, turnDegS: 0, roll: 0, pitch: 0, yaw: 0, throttle: -1, frameMs: 16 });
+        for (let now = 16; now < 5000; now += 16) r.frame(s(now), 1, 8, true, false);
+        expect(r.boostM).toBe(0);
+        for (let now = 5000; now < 8000; now += 16) r.frame(s(now), 1, 8, true, true);
+        expect(r.boostM).toBeGreaterThan(1);
+    });
+});

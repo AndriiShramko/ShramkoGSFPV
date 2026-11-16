@@ -373,3 +373,67 @@ measured); a setting switches it off. The line shows it: "Detail: sharpening whi
   Evidence: evidence/2026-11-15/lod-view/score-lq-*.json, lq5-*.json (G6 on), lq6-*.json (G6 off),
   score-l3-*-lq5-*.json, score-l3-*-lq6-*.json, lq5-governor-start.json.
 - For the lead to run: scripts/gen-catalog.ts (the catalogue outputs are stale for display.stillDetail).
+
+# Part loadq2 (train 3): independent review of lane loadq, the keeper's rules R1 and R2
+
+Same worktree and branch, ports 5820-5839, runs and logs under U:/Temp/gsfpv-train3/loadq2.
+
+## Status (loadq2)
+
+Stage R1-keeper
+- [x] 0. Merge origin/main c1893e12 (3fea63e2; one conflict, the settings count in packages/prefs/test/defs.test.ts: 84
+  with course.lapSplash and display.stillDetail, prefs tests 247 pass); submodule packages/sonic-fpv moved to main's
+  pin 293ebaea (without it apps/fly did not typecheck); typecheck of apps/fly and render-pc exit 0.
+- [x] 1. Review findings (below, LR-1 to LR-7) and the rules today (R1, R2 below).
+- [x] 2. R1, R2 and the real findings built with unit tests and negative controls (this commit).
+- [ ] 3. Browser, Wroclaw 70b50d42, before and after: spawn 120 s and street flight, uncapped and +30 ms; retry counts;
+  hand-set 16 M proof; the line at 1366x768 and 844x390.
+- [ ] 4. governor-start-probe, gates.py --only vitest,architecture,i18n,b18,leaks, a6-reference.
+
+## The rules the code had (state before loadq2)
+
+- R1: packages/render-pc/src/governor.ts onFrame (line 204 at ef46486f): `missed = held || dt > 1.25 * period`, the
+  period the 5th percentile of the last 30 s of intervals. No floor: with the frame rate free the learned period was
+  2.5 ms and every tenth frame of 17.8 ms stepped a hand-set 16 M to 6 M at scale 0.5 within 4 s (L1, lq-wro-16unc).
+  A held frame (the GPU queue) counted as missed whatever the interval.
+- R2: governor.ts onFrame (line 225 at ef46486f): a step up after every 5 s with at most 1 % missed frames, a step down
+  after 1 s with more than 10 %; nothing remembers an alternation. L1 lq-wro-16live: 16 -> 12 M at 49 s, up 54, down
+  57, up 62, down 67, up 72 s; 2816 requests for 2000 files.
+
+## Findings (loadq2 review of f286dd49...ef46486f and governor.ts)
+
+- LR-1 (real, fixed) apps/fly/src/app/detail-rule.ts detailState: 'still' ranked above 'coming'. The craft is still at
+  the start while the scan loads, so a pilot who set 16 M by hand read 'Detail: sharper while you hold still' while
+  141 files were still to come: a wrong cause. Test tools/bench/test/loadq-detail.test.ts 'LR-1' (old code: "expected
+  'still' to be 'coming'"). Now a hand-set budget with files to come says 'coming' at rest too.
+- LR-2 (real, fixed) R1 above. MIN_JUDGED_PERIOD_MS = 1000/60 (the lead's estimate); a held frame is missed only when
+  it and the interval before it together pass 1.25 judged periods (a 144 Hz screen showing 72 pictures a second is
+  smooth). Tests packages/render-pc/test/governor-loadq2.test.ts 'R1' (old code: steps down, 4 changes).
+- LR-3 (real, fixed) governor.ts onFrame: after a gap over 1 s (a tab switch, and with G6 every rest: Quality did not
+  feed the governor at rest) the next judged frames formed the whole down window, so one late frame (ratio 1 of 1)
+  stepped the detail down. With G6 every move after rest begins with the extra splats being shed (about 60 frames, L2
+  measured): the keeper stepped down after each rest. Test 'LR-3 ... one late frame right after a gap' (old code:
+  "expected [ { t: 8066.7, step: 1 } ] to deeply equal []"). Now FrameGovernor.rest(t) (Quality calls it each frame
+  at rest) and a gap restart the down window: a step down needs a whole second of judged frames after it.
+- LR-4 (real, fixed) apps/fly/src/app/builtin/still.ts with detail-rule.ts StillRise: the rise began 1 s after the craft
+  was still, whatever the keeper had judged; at rest the keeper counts nothing. A weak device waiting at the start
+  never had its frames judged: governor-start-probe failed with G6 on (L2 item 5: stepAfterOverload 0), so its flight
+  began at the top step and spent its first seconds stepping down. Now the rise waits for FrameGovernor.calm (the
+  keeper judges, a whole down window since its last change and no step down due; off or at the lowest step: calm).
+  Test 'LR-4' (old code: "expected 5.0625 to be +0"). The step remembered for the next load is still learned in
+  flight only (needs 10 s of judged frames with no streaming): a doubt, not changed.
+- LR-5 (real, fixed) R2 above. FrameGovernor.upWaitMs: a step down within FLAP_MS 10 s of a step up doubles it (5 s at
+  the start) up to MAX_UP_WAIT_MS 120 s; a step up that held UP_HELD_MS 60 s puts it back (estimates of the lead).
+  Tests 'R2' (old code: waits [5,5,5,5,5,5,5] against [5,10,20,40,80,120,120]).
+- LR-6 (doubt, not changed) the 'still' state shows for an untouched pilot (G4 said such a pilot sees only the network
+  line): the line appears after each hover of more than 1 s and hides at the move (ticked every 0.5 s). Not measured
+  as a flicker in a browser.
+- LR-7 (doubt, not changed) drawPlan pinned draws settingBudgetM = top x (0.25 + 0.75 x display.quality): with the
+  Quality slider under 1 a hand-set 16 M draws less (10 M at 0.5) while the 'coming' line says 'of 16 M'. It is the
+  pilot's own slider, not a silent rule.
+- Retries (stream-keeper.ts): 1 request and at most 5 retries (0.5, 1, 2, 4, 8 s) a file, then given up until the
+  press: at most 6 requests a failing file from the code; the browser count is item 3.
+- Where an untouched pilot's flight differs from main f286dd49 (G6 on by default): at rest the budget rises x1.5 a
+  second to the memory cap (16 M at deviceMemory 8) at the top render scale; the keeper does not judge at rest; the
+  'still' line shows at rest; after the move the engine sheds the extra splats over about 60 frames (stage R2-rest
+  measures what that costs); failed files are retried with pauses and stalls cut after 20 s (G3, loader.maxRetries 0).

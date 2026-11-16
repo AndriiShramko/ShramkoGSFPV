@@ -27,7 +27,7 @@ export const still: Feature = {
             const frameMs = last > 0 ? now - last : 0;
             last = now;
             const sample = { now, paused, speed, turnDegS: turn, roll: ch[0], pitch: ch[1], yaw: ch[3], throttle: ch[2], frameMs };
-            if (rule.frame(sample, ctx.quality.baseBudgetMillions, capM, enabled() && !ctx.quality.cinema)) {
+            if (rule.frame(sample, ctx.quality.baseBudgetMillions, capM, enabled() && !ctx.quality.cinema, ctx.quality.keeperCalm)) {
                 ctx.quality.setStillBudget(rule.boostM);
             }
         });
