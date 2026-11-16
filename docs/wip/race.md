@@ -19,8 +19,19 @@ Stage R1-share:
   last, the room's own course sent back, a lap on another course sent: each 1 failure. Also OK: rooms-race-off,
   rooms-race-page, rooms-race (7, with PYTHON=py: this PC has no `python` on PATH), sonic-int-lazy; tsc of apps/fly;
   check-architecture ok.
-- [ ] R1.3 Measure on Wroclaw 70b50d42 with two pages (what B has after A presses Shift+G; what goes over the socket on
+- [~] R1.3 Measure on Wroclaw 70b50d42 with two pages (what B has after A presses Shift+G; what goes over the socket on
   a lap) and check the reason train 2 left the race off by a run.
+- [~] R1.3/R1.4 run (this run, 2026-11-16): merged origin/main 77ab3948 (docs and scripts only; apps/fly tsc clean).
+  Probe tools/bench/src/rooms-board.ts (commits d34cc4e6, 0f9de506, a57d4cce): three pages on SCENE (default 70b50d42),
+  join by 9 (join9: presses 9 while the state is neither joined nor joining), A Shift+G, B follows, each page is put
+  through its gates (+Z side to -Z side, packages/tracks laps.ts), C joins late, B Shift+G again; socket frames of kinds
+  course, blap, board, welcome recorded with sizes; its own cap 570 s under the GPU lock. Walls stand-in copied into
+  dist/walls (70b50d42 and manifest.json of U:/Temp/gsfpv-train2/walls/release); dist is still the build of 8dfbaa63.
+  Result (log U:/Temp/gsfpv-train3/race/rooms-board-3.log, evidence/2026-11-16/rooms-board.json, not committed): FAIL.
+  waitReady returned after 9.5 s, but neither page reached the room in 200 s each (meet aIn false, bIn false; join
+  phase 413 s), so the run hit its cap before any course. Not measured yet: why 9 does not join on the big scan (the
+  probe did not record r.state while it pressed; a guess, not checked: the rooms feature or its key waits for the scan
+  to finish streaming, or 9 pressed during joining toggles).
 - [ ] R1.4 Proof with two pages and a late third (page A makes a course, B has the same gates: count and places equal;
   a keyboard pilot on each flies a lap: each page holds both laps within 1 s; C joins late and gets the course and the
   laps; a new course on B replaces A's and clears the laps). Read `window.__gsfpv.rooms.board` and
@@ -35,7 +46,7 @@ Stage R1-share:
   U:/Temp/gsfpv-train3/race/build-r1.log); a next run with HEAD still at the status commit after 8dfbaa63 (only this
   file changed) may serve it as it is.
 
-Left for R1 (exact, in this order): R1.3 the measurement on Wroclaw 70b50d42 with two pages (walls stand-in
+Left for R1 (exact, in this order): (0) in rooms-board.ts join9, record r.state, r.problem and r.said each 3 s and the page's scan progress, then run it on 70b50d42 once to see why 9 does not join on the big scan (fix only what the record shows; if the cause is outside apps/fly/src/rooms, stop and report blocked with the file); R1.3 the measurement on Wroclaw 70b50d42 with two pages (walls stand-in
 U:/Temp/gsfpv-train2/walls/release/70b50d42 served as docs/wip/walls.md says), including one run of the old race to check
 the train 2 reason; then R1.4 the two-page proof above. Not verified yet: anything in a browser; whether the course
 feature's `generate` on page B gives the same gates as on page A on the big scan (the seed's promise; R1.4 checks count
