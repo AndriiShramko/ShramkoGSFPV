@@ -16,6 +16,7 @@ import { WallCache, keepBuilt, keepThenUse, keptLine, loadBakeSpeed, saveBakeSpe
 import type { ImportReport, KeepResult, WallsKeyInput, WallsRow } from './wallcache';
 import { ensureWalls } from './walls-first';
 import { placePanel } from './ui/voxel-panel';
+import { closeTop, panelHead } from './ui/panel-head';
 import { FREEZE_NOTE_S, PROGRESS_TICK_MS, ProgressClock, SpeechPacer, mayFreeze, progressLine, spokenLine, wallsSteps } from './course/progress';
 import type { ProgressWhat } from './course/progress';
 
@@ -153,19 +154,17 @@ export function mountWalls(o: WallsOptions): WallsHook {
             h('button', { type: 'button', class: 'btn', 'data-action': 'walls-import', onclick: () => file.click() }, t('bake.store.import')),
             h('button', { type: 'button', class: 'btn', 'data-action': 'walls-clear', onclick: () => void clearStore() }, t('bake.store.clear'))),
         file);
-    const foldBtn = h('button', { type: 'button', class: 'walls-head-btn', 'data-action': 'voxpanel-fold', 'aria-expanded': 'true', onclick: () => fold(!body.hidden) }) as HTMLButtonElement;
-    const closeBtn = h('button', { type: 'button', class: 'walls-head-btn', 'data-action': 'voxpanel-close', 'aria-label': t('voxels.panel.close'), title: t('voxels.panel.close'), onclick: () => { more.open = false; } }, '×');
-    const menu = h('div', { class: 'walls-menu', role: 'dialog', 'aria-label': t('voxels.panel.title'), 'data-testid': 'walls-panel' },
-        h('div', { class: 'walls-head' }, h('div', { class: 'walls-title' }, t('voxels.panel.title')), foldBtn, closeBtn),
-        body);
+    // seam c of integration F: the header is uiaudit's panelHead (ui/panel-head.ts, decision U1), so this panel looks
+    // and closes like every other; data-panel lets closeTop find its cross; the probes' data-action names stay
+    const head = panelHead(t('voxels.panel.title'), { close: t('voxels.panel.close'), key: 'Esc', collapse: t('voxels.panel.fold'), expand: t('voxels.panel.unfold') }, () => { more.open = false; }, (f) => { body.hidden = f; });
+    head.head.classList.add('walls-head');
+    head.close.dataset.action = 'voxpanel-close';
+    if (head.fold) head.fold.dataset.action = 'voxpanel-fold';
+    const menu = h('div', { class: 'walls-menu', role: 'dialog', 'aria-label': t('voxels.panel.title'), 'data-testid': 'walls-panel', 'data-panel': 'walls' }, head.head, body);
     const more = h('details', { 'data-testid': 'walls-more' }, summary, menu) as HTMLDetailsElement;
     function fold(on: boolean): void {
         body.hidden = on;
-        foldBtn.textContent = on ? '+' : '−';
-        foldBtn.setAttribute('aria-expanded', on ? 'false' : 'true');
-        const label = t(on ? 'voxels.panel.unfold' : 'voxels.panel.fold');
-        foldBtn.setAttribute('aria-label', label);
-        foldBtn.title = label;
+        head.setFolded(on);
     }
     fold(false);
     function placeMenu(): void {
@@ -180,10 +179,11 @@ export function mountWalls(o: WallsOptions): WallsHook {
     }
     more.addEventListener('toggle', () => { if (more.open) { fold(false); placeMenu(); } });
     window.addEventListener('resize', placeMenu);
-    // Esc closes the open panel and only the panel (capture: before the app's keys see it)
+    // Esc with the panel open closes the top panel and nothing else (capture: before the app's keys and the edit mode
+    // see it). ONE mechanism: closeTop picks the top [data-panel] or .panel by z-index, as pause.ts does in a pause.
     const onEsc = (e: KeyboardEvent): void => {
         if (e.key !== 'Escape' || !more.open) return;
-        more.open = false;
+        if (!closeTop(document)) more.open = false;
         e.stopPropagation();
         e.preventDefault();
     };

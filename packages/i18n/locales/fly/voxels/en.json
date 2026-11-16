@@ -8,5 +8,6 @@
   "voxels.panel.title": "Walls and voxels",
   "voxels.panel.fold": "Fold the panel",
   "voxels.panel.unfold": "Unfold the panel",
-  "voxels.panel.close": "Close"
+  "voxels.panel.close": "Close",
+  "voxels.legendOff": "Hide the voxel grid"
 }

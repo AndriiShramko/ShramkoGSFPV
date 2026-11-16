@@ -8,5 +8,6 @@
   "voxels.panel.title": "Paredes y vóxeles",
   "voxels.panel.fold": "Plegar el panel",
   "voxels.panel.unfold": "Desplegar el panel",
-  "voxels.panel.close": "Cerrar"
+  "voxels.panel.close": "Cerrar",
+  "voxels.legendOff": "Ocultar la cuadrícula de vóxeles"
 }

@@ -3,6 +3,7 @@
 // Everything applies at once; C and V do the same from the keyboard (main.ts).
 import { h } from './dom';
 import { t } from '../i18n';
+import { panelHead } from './panel-head';
 import { VOXEL_MODES, VOXEL_STYLES } from '../voxels';
 import type { VoxelController, VoxelMode, VoxelStyle } from '../voxels';
 
@@ -118,7 +119,13 @@ export function wallsVoxelsControls(v: VoxelController, walls: WallsSwitch, id: 
 export function voxelLegend(parent: HTMLElement, v: VoxelController): HTMLElement {
     const main = h('div', { class: 'vl-main' });
     const sub = h('div', { class: 'vl-sub' });
-    const chip = h('div', { class: 'voxel-legend', 'data-testid': 'voxel-legend', hidden: true, 'aria-hidden': 'true' }, h('span', { class: 'vl-dot', 'aria-hidden': 'true' }), h('div', {}, main, sub));
+    // seam c of integration F (uiaudit fault 2): the legend's cross is uiaudit's (panelHead's .panel-x) and switches the
+    // grid off, the same as V through its modes to off. No data-panel: the legend shows the whole time the grid is on, so
+    // Esc over it would switch the grid off instead of pausing; Esc stays the pause key here, the cross and V close it.
+    const x = panelHead('', { close: t('voxels.legendOff') }, () => v.setMode('off')).close;
+    x.classList.add('vl-x');
+    x.dataset.action = 'voxel-legend-off';
+    const chip = h('div', { class: 'voxel-legend', 'data-testid': 'voxel-legend', hidden: true }, h('span', { class: 'vl-dot', 'aria-hidden': 'true' }), h('div', { class: 'vl-text' }, main, sub), x);
     parent.append(chip);
     const render = (): void => {
         const s = v.stats();

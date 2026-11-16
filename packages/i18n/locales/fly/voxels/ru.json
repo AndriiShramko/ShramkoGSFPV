@@ -8,5 +8,6 @@
   "voxels.panel.title": "Стены и воксели",
   "voxels.panel.fold": "Свернуть панель",
   "voxels.panel.unfold": "Развернуть панель",
-  "voxels.panel.close": "Закрыть"
+  "voxels.panel.close": "Закрыть",
+  "voxels.legendOff": "Скрыть сетку вокселей"
 }

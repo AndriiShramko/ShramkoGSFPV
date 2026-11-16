@@ -8,5 +8,6 @@
   "voxels.panel.title": "Ściany i woksele",
   "voxels.panel.fold": "Zwiń panel",
   "voxels.panel.unfold": "Rozwiń panel",
-  "voxels.panel.close": "Zamknij"
+  "voxels.panel.close": "Zamknij",
+  "voxels.legendOff": "Ukryj siatkę wokseli"
 }
