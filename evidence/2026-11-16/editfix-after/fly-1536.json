@@ -14,7 +14,7 @@
  "fly": true,
  "query": "",
  "live": false,
- "date": "2026-11-16T11:23:17.859Z",
+ "date": "2026-11-16T11:50:55.302Z",
  "steps": {
   "open": {
    "ok": true,
@@ -42,7 +42,7 @@
     },
     {
      "by": "KeyE",
-     "moved": 4.15
+     "moved": 3.96
     },
     {
      "by": "KeyQ",
@@ -81,28 +81,28 @@
   },
   "b.select": {
    "ok": true,
-   "candidates": 2,
+   "candidates": 1,
    "from": 0,
-   "picked": 2,
-   "gatesOnScreen": 3
+   "picked": 1,
+   "gatesOnScreen": 2
   },
   "c.add": {
    "ok": true,
    "gates": [
-    34,
-    35
+    26,
+    27
    ],
    "newGate": [
-    790,
-    399,
-    2.11
+    791,
+    400,
+    2.1
    ],
    "inView": true,
-   "line": "The new gate is red. Gate 4 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
-   "said": "The new gate is red. Gate 4 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+   "line": "The new gate is red. Gate 3 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "said": "The new gate is red. Gate 3 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
   },
   "d.controls": {
-   "ok": false,
+   "ok": true,
    "top": [
     {
      "id": "undo",
@@ -110,7 +110,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "undo. Gate 3 of 34: ring, 1.2 m",
+     "line": "undo. Gate 2 of 26: ring, 1.2 m",
      "panel": [
       1148,
       86,
@@ -124,7 +124,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "redo. Gate 4 of 35: ring, 1.2 m",
+     "line": "redo. Gate 3 of 27: ring, 1.2 m",
      "panel": [
       1148,
       86,
@@ -148,8 +148,8 @@
     },
     {
      "id": "courses",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -162,8 +162,8 @@
     },
     {
      "id": "keys",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -180,7 +180,7 @@
      "n": 0,
      "text": "Course editor",
      "act": "",
-     "effect": false,
+     "effect": true,
      "disabled": false,
      "title": "",
      "under": null
@@ -412,7 +412,7 @@
     },
     {
      "n": 26,
-     "text": "Course b5ndnq",
+     "text": "Course he5mml",
      "act": "",
      "effect": true,
      "disabled": false,
@@ -545,10 +545,10 @@
    ]
   },
   {
-   "label": "gate.2",
+   "label": "gate.1",
    "at": [
-    1040,
-    520
+    124,
+    612
    ],
    "lockBefore": null,
    "under": "CANVAS#view",
@@ -566,8 +566,8 @@
     "CANVAS#view"
    ],
    "effect": {
-    "selected": 2,
-    "want": 2
+    "selected": 1,
+    "want": 1
    }
   },
   {
@@ -728,7 +728,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=courses]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "top.keys",
@@ -755,7 +755,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=keys]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.0",
@@ -773,7 +773,7 @@
    "clickBubbled": [
     "HTML"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.1",
@@ -1292,7 +1292,7 @@
    "label": "win.20",
    "at": [
     1427,
-    354
+    355
    ],
    "lockBefore": null,
    "under": "SPAN",
@@ -1373,7 +1373,7 @@
    "label": "win.23",
    "at": [
     1249,
-    458
+    459
    ],
    "lockBefore": null,
    "under": "SPAN",
@@ -1400,7 +1400,7 @@
    "label": "win.24",
    "at": [
     1427,
-    458
+    459
    ],
    "lockBefore": null,
    "under": "SPAN",
@@ -1537,7 +1537,7 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 3261
+  "ms": 3189
  },
  "afterControls": {
   "open": false,
@@ -1563,6 +1563,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1598,16 +1599,16 @@
    "armed": true,
    "crashed": false,
    "throttlePct": 29,
-   "speed": 0.1400155192887195,
-   "altitude": 7.906155283129493,
+   "speed": 0.14427049839672612,
+   "altitude": 7.901379210204206,
    "crashes": 0
   },
   "lock": "CANVAS#view"
  },
  "course": {
   "ok": true,
-  "ms": 13102,
-  "gates": 34,
+  "ms": 12088,
+  "gates": 26,
   "problem": null
  },
  "open": {
@@ -1630,26 +1631,26 @@
   "hud": {
    "armed": true,
    "crashed": false,
-   "throttlePct": 28,
-   "speed": 2.3121433484445166e-10,
-   "altitude": -0.0019955324807261476,
+   "throttlePct": 27,
+   "speed": 1.8760932275215062e-10,
+   "altitude": -0.001988886718473637,
    "crashes": 0
   },
   "windows": [],
-  "gatesN": 34,
+  "gatesN": 26,
   "selected": 0,
   "override": true
  },
  "final": {
   "open": false,
-  "selected": 3,
+  "selected": 2,
   "changed": true,
-  "said": "Not saved. Gate 4 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+  "said": "Not saved. Gate 3 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
   "flying": false,
   "refused": null,
   "mode": null,
   "gatesN": null,
-  "courseGates": 34,
+  "courseGates": 26,
   "courseOn": true,
   "problem": null,
   "cam": null,
@@ -1663,6 +1664,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1677,16 +1679,14 @@
   "hud": {
    "armed": true,
    "crashed": false,
-   "throttlePct": 29,
-   "speed": 5.25639048036085e-11,
-   "altitude": -0.0019999999882052144,
+   "throttlePct": 22,
+   "speed": 2.5750405594230108e-9,
+   "altitude": -0.001999999421602894,
    "crashes": 0
   },
   "active": "BODY.flying"
  },
- "fails": [
-  "d.controls"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",

@@ -14,7 +14,7 @@
  "fly": false,
  "query": "",
  "live": false,
- "date": "2026-11-16T11:27:33.719Z",
+ "date": "2026-11-16T11:55:03.071Z",
  "steps": {
   "open": {
    "ok": true,
@@ -26,7 +26,7 @@
    "moves": [
     {
      "by": "KeyW",
-     "moved": 4.15
+     "moved": 3.96
     },
     {
      "by": "KeyS",
@@ -81,28 +81,28 @@
   },
   "b.select": {
    "ok": true,
-   "candidates": 6,
+   "candidates": 1,
    "from": 0,
-   "picked": 19,
-   "gatesOnScreen": 7
+   "picked": 3,
+   "gatesOnScreen": 2
   },
   "c.add": {
    "ok": true,
    "gates": [
-    36,
-    37
+    21,
+    22
    ],
    "newGate": [
-    830,
-    582,
-    2.22
+    858,
+    571,
+    2.12
    ],
    "inView": true,
-   "line": "The new gate is red. The way from gate 21 to gate 22 goes through a wall. Pull the arrows of gate 21 until the straight way between them is clear, or delete it with the cross on its bar.",
-   "said": "The new gate is red. The way from gate 21 to gate 22 goes through a wall. Pull the arrows of gate 21 until the straight way between them is clear, or delete it "
+   "line": "Add gate. Gate 5 of 22: ring, 1.2 m",
+   "said": "Add gate. Gate 5 of 22: ring, 1.2 m"
   },
   "d.controls": {
-   "ok": false,
+   "ok": true,
    "top": [
     {
      "id": "undo",
@@ -110,7 +110,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "undo. Gate 20 of 36: ring, 1.2 m",
+     "line": "undo. Gate 4 of 21: ring, 1.2 m",
      "panel": [
       1532,
       86,
@@ -124,7 +124,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "redo. Gate 21 of 37: ring, 1.2 m",
+     "line": "redo. Gate 5 of 22: ring, 1.2 m",
      "panel": [
       1532,
       86,
@@ -148,8 +148,8 @@
     },
     {
      "id": "courses",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -162,8 +162,8 @@
     },
     {
      "id": "keys",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -337,7 +337,7 @@
     },
     {
      "n": 26,
-     "text": "Course ijbqo7",
+     "text": "Course b6xgiz",
      "act": "",
      "skipped": "gone"
     },
@@ -469,10 +469,10 @@
    ]
   },
   {
-   "label": "gate.19",
+   "label": "gate.3",
    "at": [
-    470,
-    353
+    726,
+    364
    ],
    "lockBefore": null,
    "under": "CANVAS#view",
@@ -490,14 +490,14 @@
     "CANVAS#view"
    ],
    "effect": {
-    "selected": 19,
-    "want": 19
+    "selected": 3,
+    "want": 3
    }
   },
   {
    "label": "top.add",
    "at": [
-    674,
+    677,
     28
    ],
    "lockBefore": null,
@@ -549,7 +549,7 @@
   {
    "label": "top.undo",
    "at": [
-    636,
+    746,
     28
    ],
    "lockBefore": null,
@@ -576,7 +576,7 @@
   {
    "label": "top.redo",
    "at": [
-    813,
+    817,
     28
    ],
    "lockBefore": null,
@@ -603,7 +603,7 @@
   {
    "label": "top.save",
    "at": [
-    874,
+    877,
     28
    ],
    "lockBefore": null,
@@ -652,7 +652,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=courses]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "top.keys",
@@ -679,7 +679,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=keys]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.0",
@@ -771,7 +771,7 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 3267
+  "ms": 4442
  },
  "afterControls": {
   "open": false,
@@ -797,6 +797,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    1080,
@@ -821,8 +822,8 @@
  "lockAfterClick": "CANVAS#view",
  "course": {
   "ok": true,
-  "ms": 30297,
-  "gates": 36,
+  "ms": 14103,
+  "gates": 21,
   "problem": null
  },
  "open": {
@@ -851,20 +852,20 @@
    "crashes": 0
   },
   "windows": [],
-  "gatesN": 36,
+  "gatesN": 21,
   "selected": 0,
   "override": true
  },
  "final": {
   "open": false,
-  "selected": 20,
+  "selected": 4,
   "changed": true,
   "said": "The changes are not saved. Esc again leaves without saving",
   "flying": false,
   "refused": null,
   "mode": null,
   "gatesN": null,
-  "courseGates": 36,
+  "courseGates": 21,
   "courseOn": true,
   "problem": null,
   "cam": null,
@@ -878,6 +879,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    1080,
@@ -899,9 +901,7 @@
   },
   "active": "BODY.flying"
  },
- "fails": [
-  "d.controls"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",

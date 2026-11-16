@@ -14,7 +14,7 @@
  "fly": false,
  "query": "&set.display.deviceClass=desktop-weak&set.display.scale=0.7",
  "live": false,
- "date": "2026-11-16T11:42:47.672Z",
+ "date": "2026-11-16T12:08:59.286Z",
  "steps": {
   "open": {
    "ok": true,
@@ -26,7 +26,7 @@
    "moves": [
     {
      "by": "KeyW",
-     "moved": 4.53
+     "moved": 3.96
     },
     {
      "by": "KeyS",
@@ -38,7 +38,7 @@
     },
     {
      "by": "KeyA",
-     "moved": 3.96
+     "moved": 4.15
     },
     {
      "by": "KeyE",
@@ -46,7 +46,7 @@
     },
     {
      "by": "KeyQ",
-     "moved": 3.96
+     "moved": 4.15
     },
     {
      "by": "rightDrag",
@@ -81,28 +81,28 @@
   },
   "b.select": {
    "ok": true,
-   "candidates": 7,
+   "candidates": 1,
    "from": 0,
-   "picked": 18,
-   "gatesOnScreen": 8
+   "picked": 9,
+   "gatesOnScreen": 2
   },
   "c.add": {
    "ok": true,
    "gates": [
-    36,
-    37
+    20,
+    21
    ],
    "newGate": [
-    658,
-    327,
-    2.15
+    656,
+    325,
+    2.2
    ],
    "inView": true,
-   "line": "The new gate is red. Gate 20 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
-   "said": "The new gate is red. Gate 20 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+   "line": "The new gate is red. Gate 11 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "said": "The new gate is red. Gate 11 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
   },
   "d.controls": {
-   "ok": false,
+   "ok": true,
    "top": [
     {
      "id": "undo",
@@ -110,7 +110,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "undo. Gate 19 of 36: ring, 1.2 m",
+     "line": "undo. Gate 10 of 20: ring, 1.2 m",
      "panel": [
       892,
       86,
@@ -124,7 +124,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "redo. Gate 20 of 37: ring, 1.2 m",
+     "line": "redo. Gate 11 of 21: ring, 1.2 m",
      "panel": [
       892,
       86,
@@ -148,8 +148,8 @@
     },
     {
      "id": "courses",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -162,8 +162,8 @@
     },
     {
      "id": "keys",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -180,7 +180,7 @@
      "n": 0,
      "text": "Course editor",
      "act": "",
-     "effect": false,
+     "effect": true,
      "disabled": false,
      "title": "",
      "under": null
@@ -412,7 +412,7 @@
     },
     {
      "n": 26,
-     "text": "Course gk6h2y",
+     "text": "Course 6g6rtt",
      "act": "",
      "effect": true,
      "disabled": false,
@@ -547,10 +547,10 @@
    ]
   },
   {
-   "label": "gate.18",
+   "label": "gate.9",
    "at": [
-    351,
-    238
+    270,
+    255
    ],
    "lockBefore": null,
    "under": "CANVAS#view",
@@ -568,8 +568,8 @@
     "CANVAS#view"
    ],
    "effect": {
-    "selected": 18,
-    "want": 18
+    "selected": 9,
+    "want": 9
    }
   },
   {
@@ -730,7 +730,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=courses]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "top.keys",
@@ -757,7 +757,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=keys]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.0",
@@ -775,7 +775,7 @@
    "clickBubbled": [
     "HTML"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.1",
@@ -1503,7 +1503,7 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 4086
+  "ms": 4074
  },
  "controlsBelowFold": {
   "y": 687,
@@ -1534,6 +1534,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1632,
    759,
@@ -1558,13 +1559,13 @@
  "lockAfterClick": "CANVAS#view",
  "course": {
   "ok": true,
-  "ms": 11091,
-  "gates": 36,
+  "ms": 15152,
+  "gates": 20,
   "problem": null
  },
  "open": {
   "ok": true,
-  "ms": 6,
+  "ms": 4,
   "mode": "edit",
   "flying": false,
   "lock": null,
@@ -1588,20 +1589,20 @@
    "crashes": 0
   },
   "windows": [],
-  "gatesN": 36,
+  "gatesN": 20,
   "selected": 0,
   "override": true
  },
  "final": {
   "open": false,
-  "selected": 19,
+  "selected": 10,
   "changed": true,
-  "said": "Not saved. Gate 20 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+  "said": "Not saved. Gate 11 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
   "flying": false,
   "refused": null,
   "mode": null,
   "gatesN": null,
-  "courseGates": 36,
+  "courseGates": 20,
   "courseOn": true,
   "problem": null,
   "cam": null,
@@ -1615,6 +1616,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1632,
    759,
@@ -1638,9 +1640,7 @@
   },
   "active": "BODY.flying"
  },
- "fails": [
-  "d.controls"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",

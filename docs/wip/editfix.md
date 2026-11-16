@@ -35,10 +35,48 @@ His laptop: Windows, RTX, 144 Hz, Chrome, keyboard and mouse, layouts ru/pl/en.
   (class ce-shown, SHOWN_MS 1200 = an estimate, a second press starts it again), panel.ts reveal() lights the key table
   or the course list, editor.css draws a green outline and a fading background (no animation under reduced motion); the
   probe's SNAP has 'shown' and SIG counts it. editfix-e2.test.ts 8 passed, NEG OK (the 2 new tests fail on HEAD 47b9a030
-  files); tsc apps/fly exit 0. Left: release build and cases base-1920, lap-1536 again.
-- [ ] E2.5 editor3-smoke.ts on Wroclaw 70b50d42 and Tunis 887f27aa; accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE
-  local, first line names it); typecheck of all touched packages; gates.py without --only (exit 0); status 'What the
-  owner does' and 'For the lead' final.
+  files); tsc apps/fly exit 0. Release build of e1c78781 (exit 0, sha256 ed87ef4e...), walls stand-ins in dist/walls,
+  serve-csp 5820: the probe over all 17 cases of E1's table: 17 of 17 pass every step (open, a, b, c, d, e), mode edit,
+  pointer lock null at open (U:/Temp/gsfpv-train3/editfix/runs-after.log from '=== e24', evidence editfix-after/).
+- [x] E2.5 on the release of e1c78781: editor3-smoke.ts SCENES=70b50d42,887f27aa exit 0 (Tunis: course, 34 gates in
+  3697 ms; log U:/Temp/gsfpv-train3/editfix/smoke.log); accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 all PASS, exit 0,
+  first line 'accept-fly target: http://localhost:5820' (accept-fly.log); gates.py without --only: all 8 PASS, exit 0
+  (logs U:/Temp/gsfpv-gates-20261116-125108); tsc apps/fly exit 0; a6-reference passed in E2.3 (no flight, input or
+  collision file changed since).
+- [x] E2.6 measured: a keyboard pilot's motors do NOT stop by themselves after Shift+B in the air. fly-1536.json 'final'
+  (after the whole path and Exit): hud armed true, throttle 22 %, altitude -0.002 m. game.ts 450 'resting' needs Shift
+  held (keys.lift < 0). The comment in fly-mode.ts that said otherwise is corrected. Not fixed (see Left after E2).
+
+## Left after E2
+
+- After Shift+B in the air the drone waits at the start with motors on (ARMED in the corner). The mode stays 'edit'
+  (hold), so editing works; to fly again a keyboard pilot needs Space twice (disarm, arm) by the hold rule. Smallest
+  fix, not made (flight code, needs a6-reference): in course.ts openEdit, when os.respawn, also stop the arm (game-pilot
+  arm.stop) so one Space flies again. Guess, not measured: whether Space while armed disarms for the keyboard pilot.
+
+## What the owner does
+
+1. Opens a scan (Wroclaw), clicks into the scene, flies with Space and W. 2. Presses Shift+B (any layout): the drone goes
+back to the start, the cursor is free, the bar at the top shows Add gate, Undo, Redo, Save, Courses, Keys, Exit.
+3. W A S D move the view (E up, Q down), the right mouse button held turns it, the wheel changes the speed. 4. A click on a
+gate selects it (its handles and the tool bar under it show). 5. Add gate, then a click in the scene: a new gate stands
+there. 6. Courses or Keys: the window shows that part with a green outline for a moment. 7. Exit or Esc: back to flying.
+
+## Not verified
+
+The owner's laptop was not used. A real touch screen, a real 144 Hz panel and a real Windows display scale were only
+emulated in headless Chrome. The live check edit-mouse-wroclaw was not run against the live site (by the task).
+
+## For the lead
+
+Files changed on branch editfix (page only, plus the probe, a test and the live check): apps/fly/src/app/builtin/course.ts,
+apps/fly/src/course/editor/{fly-mode.ts, top-bar.ts, view-mouse.ts, editor.css, panel.ts, flash.ts (new)},
+locales of the flying line (en es pl ru), tools/bench/scripts/edit-mouse-probe.mjs, tools/bench/test/editfix-e2.test.ts, tools/bench/test/editor3-i2.test.ts,
+deploy/live-checks.sh (check edit-mouse-wroclaw: the probe presses nothing that saves, sends or creates; Save is skipped
+when LIVE, window controls matching save/vote/send/report/admin/publish/create are skipped). No server or API change.
+Pictures looked at in pass 2: editfix-after-lap-1536.png (a person sees the bar, the selected START gate with its
+handles and tool bar, DISARMED in the corner), editfix-after-base-1920.png (the bar and the line 'Editor open...' over
+the cathedral, ARMED in the corner, no gate in that view). The other 15 pictures of the after run were not looked at.
 
 ## After E2 (Wroclaw 70b50d42, local release of ad2d4e2e, 17 cases)
 
@@ -175,6 +213,10 @@ Pass 2 closed every item of the list below except the two lines marked 'still le
 - Not verified: a real touch screen, a real 144 Hz panel, a real Windows display scale (all emulated in headless Chrome).
 
 ## Cost notes
+
+- E2 pass 2 (about 25 replies): the 17-case probe and the heavy checks (smoke, accept-fly) ran in the background
+  while the gates ran, which saved most of the waiting; the most turns went to waits on those runs; cheaper: one script
+  that runs build, cases, smoke and accept-fly in a row with one log, started right after the fix commit.
 
 - E2 part 1 (about 40 replies): the 17-case probe run (20 min) and reading code around three causes took most; cheaper:
   start the build and the probe run right after the first fix commit (done so) and give Courses/Keys and the heavy

@@ -53,7 +53,8 @@ export function editModeOf(armed: boolean, crashed: boolean, prev: EditMode = 'e
  * Exit do nothing, the menu bar hangs at the top"): Shift+B pressed while the drone flies opened the mode in its flight
  * (modeStep: armed and no hold gives 'fly'), so the edit view never showed. The mode opens on the edit view: the hold is set
  * as after a crash (flying again needs a fresh arm), and an armed drone goes back to the start so it does not fall while he
- * edits (a keyboard pilot's motors stop there by themselves, game-pilot.ts landed).
+ * edits. Measured (edit-mouse-probe fly-1536, 'final'): the motors do NOT stop by themselves at the start (game.ts landed
+ * needs Shift held), the drone stays armed at about 22 % throttle on the ground (docs/wip/editfix.md, E2.5).
  */
 export interface OpenStep {
     readonly hold: boolean;

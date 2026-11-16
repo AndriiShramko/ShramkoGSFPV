@@ -14,7 +14,7 @@
  "fly": false,
  "query": "",
  "live": false,
- "date": "2026-11-16T11:39:02.982Z",
+ "date": "2026-11-16T12:05:10.657Z",
  "steps": {
   "open": {
    "ok": true,
@@ -26,7 +26,7 @@
    "moves": [
     {
      "by": "KeyW",
-     "moved": 4.34
+     "moved": 3.96
     },
     {
      "by": "KeyS",
@@ -42,11 +42,11 @@
     },
     {
      "by": "KeyE",
-     "moved": 3.96
+     "moved": 4.15
     },
     {
      "by": "KeyQ",
-     "moved": 4.15
+     "moved": 3.96
     },
     {
      "by": "rightDrag",
@@ -81,28 +81,28 @@
   },
   "b.select": {
    "ok": true,
-   "candidates": 7,
+   "candidates": 4,
    "from": 0,
-   "picked": 13,
-   "gatesOnScreen": 8
+   "picked": 26,
+   "gatesOnScreen": 6
   },
   "c.add": {
    "ok": true,
    "gates": [
-    27,
-    28
+    29,
+    30
    ],
    "newGate": [
-    774,
-    417,
-    2.32
+    786,
+    401,
+    2.17
    ],
    "inView": true,
-   "line": "The new gate is red. Gate 15 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
-   "said": "The new gate is red. Gate 15 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+   "line": "The new gate is red. Gate 28 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "said": "The new gate is red. Gate 28 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
   },
   "d.controls": {
-   "ok": false,
+   "ok": true,
    "top": [
     {
      "id": "undo",
@@ -110,7 +110,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "undo. Gate 14 of 27: cube, 1.2 m",
+     "line": "undo. Gate 27 of 29: ring, 1.2 m",
      "panel": [
       1148,
       86,
@@ -124,7 +124,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "redo. Gate 15 of 28: cube, 1.2 m",
+     "line": "redo. Gate 28 of 30: ring, 1.2 m",
      "panel": [
       1148,
       86,
@@ -148,8 +148,8 @@
     },
     {
      "id": "courses",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -162,8 +162,8 @@
     },
     {
      "id": "keys",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -180,7 +180,7 @@
      "n": 0,
      "text": "Course editor",
      "act": "",
-     "effect": false,
+     "effect": true,
      "disabled": false,
      "title": "",
      "under": null
@@ -412,7 +412,7 @@
     },
     {
      "n": 26,
-     "text": "Course dl9mqi",
+     "text": "Course 63sic3",
      "act": "",
      "effect": true,
      "disabled": false,
@@ -545,10 +545,10 @@
    ]
   },
   {
-   "label": "gate.13",
+   "label": "gate.26",
    "at": [
-    436,
-    229
+    104,
+    235
    ],
    "lockBefore": null,
    "under": "CANVAS#view",
@@ -566,14 +566,14 @@
     "CANVAS#view"
    ],
    "effect": {
-    "selected": 13,
-    "want": 13
+    "selected": 26,
+    "want": 26
    }
   },
   {
    "label": "top.add",
    "at": [
-    479,
+    482,
     28
    ],
    "lockBefore": null,
@@ -652,7 +652,7 @@
   {
    "label": "top.redo",
    "at": [
-    619,
+    621,
     28
    ],
    "lockBefore": null,
@@ -679,7 +679,7 @@
   {
    "label": "top.save",
    "at": [
-    679,
+    682,
     28
    ],
    "lockBefore": null,
@@ -728,7 +728,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=courses]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "top.keys",
@@ -755,7 +755,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=keys]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.0",
@@ -773,7 +773,7 @@
    "clickBubbled": [
     "HTML"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.1",
@@ -1130,7 +1130,7 @@
    "label": "win.14",
    "at": [
     1427,
-    261
+    260
    ],
    "lockBefore": null,
    "under": "BUTTON.ce-key",
@@ -1537,7 +1537,7 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 4075
+  "ms": 4093
  },
  "afterControls": {
   "open": false,
@@ -1563,6 +1563,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1609,6 +1610,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1632,7 +1634,7 @@
  },
  "open": {
   "ok": true,
-  "ms": 10456,
+  "ms": 8233,
   "mode": "edit",
   "flying": false,
   "lock": null,
@@ -1640,8 +1642,8 @@
   "topClass": "ce-topbar interactive",
   "topLine": "Editor open. W A S D move the view, E up, Q down, hold the right mouse button to look around, the wheel sets the speed. Click a gate: it carries one set of handles at a time, chosen by Move, Turn or Size on the bar under it (or M, R, T); pull them with the mouse. Space or your controller's arm switch flies the course (hold Space to climb); a short Space or the switch again goes back to editing. Esc leaves",
   "canvas": [
-   1344,
-   639,
+   1632,
+   776,
    1536,
    730
   ],
@@ -1656,20 +1658,20 @@
    "crashes": 0
   },
   "windows": [],
-  "gatesN": 27,
+  "gatesN": 29,
   "selected": 0,
   "override": true
  },
  "final": {
   "open": false,
-  "selected": 14,
+  "selected": 27,
   "changed": true,
-  "said": "Not saved. Gate 15 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+  "said": "Not saved. Gate 28 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
   "flying": false,
   "refused": null,
   "mode": null,
   "gatesN": null,
-  "courseGates": 27,
+  "courseGates": 29,
   "courseOn": true,
   "problem": null,
   "cam": null,
@@ -1683,6 +1685,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1704,9 +1707,7 @@
   },
   "active": "BODY.flying"
  },
- "fails": [
-  "d.controls"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",

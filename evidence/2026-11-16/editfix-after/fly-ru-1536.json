@@ -14,7 +14,7 @@
  "fly": true,
  "query": "",
  "live": false,
- "date": "2026-11-16T11:24:36.443Z",
+ "date": "2026-11-16T11:52:14.928Z",
  "steps": {
   "open": {
    "ok": true,
@@ -34,7 +34,7 @@
     },
     {
      "by": "KeyD",
-     "moved": 3.96
+     "moved": 4.15
     },
     {
      "by": "KeyA",
@@ -81,28 +81,28 @@
   },
   "b.select": {
    "ok": true,
-   "candidates": 4,
+   "candidates": 11,
    "from": 0,
-   "picked": 14,
-   "gatesOnScreen": 5
+   "picked": 2,
+   "gatesOnScreen": 12
   },
   "c.add": {
    "ok": true,
    "gates": [
-    25,
-    26
+    34,
+    35
    ],
    "newGate": [
-    774,
-    419,
-    2.31
+    749,
+    406,
+    2.14
    ],
    "inView": true,
-   "line": "The new gate is red. Gate 16 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
-   "said": "The new gate is red. Gate 16 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+   "line": "The new gate is red. Gate 4 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "said": "The new gate is red. Gate 4 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
   },
   "d.controls": {
-   "ok": false,
+   "ok": true,
    "top": [
     {
      "id": "undo",
@@ -110,7 +110,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "undo. Gate 15 of 25: cube, 1.2 m",
+     "line": "undo. Gate 3 of 34: ring, 1.2 m",
      "panel": [
       1148,
       86,
@@ -124,7 +124,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "redo. Gate 16 of 26: cube, 1.2 m",
+     "line": "redo. Gate 4 of 35: ring, 1.2 m",
      "panel": [
       1148,
       86,
@@ -148,8 +148,8 @@
     },
     {
      "id": "courses",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -162,8 +162,8 @@
     },
     {
      "id": "keys",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -180,7 +180,7 @@
      "n": 0,
      "text": "Course editor",
      "act": "",
-     "effect": false,
+     "effect": true,
      "disabled": false,
      "title": "",
      "under": null
@@ -412,7 +412,7 @@
     },
     {
      "n": 26,
-     "text": "Course obfzbb",
+     "text": "Course idvfzl",
      "act": "",
      "effect": true,
      "disabled": false,
@@ -545,10 +545,10 @@
    ]
   },
   {
-   "label": "gate.14",
+   "label": "gate.2",
    "at": [
-    440,
-    294
+    295,
+    303
    ],
    "lockBefore": null,
    "under": "CANVAS#view",
@@ -566,14 +566,14 @@
     "CANVAS#view"
    ],
    "effect": {
-    "selected": 14,
-    "want": 14
+    "selected": 2,
+    "want": 2
    }
   },
   {
    "label": "top.add",
    "at": [
-    479,
+    485,
     28
    ],
    "lockBefore": null,
@@ -652,7 +652,7 @@
   {
    "label": "top.redo",
    "at": [
-    619,
+    625,
     28
    ],
    "lockBefore": null,
@@ -679,7 +679,7 @@
   {
    "label": "top.save",
    "at": [
-    679,
+    685,
     28
    ],
    "lockBefore": null,
@@ -728,7 +728,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=courses]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "top.keys",
@@ -755,7 +755,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=keys]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.0",
@@ -773,7 +773,7 @@
    "clickBubbled": [
     "HTML"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.1",
@@ -1537,7 +1537,7 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 4150
+  "ms": 5305
  },
  "afterControls": {
   "open": false,
@@ -1563,6 +1563,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1598,16 +1599,16 @@
    "armed": true,
    "crashed": false,
    "throttlePct": 29,
-   "speed": 0.14673409247690877,
-   "altitude": 7.850065670865135,
+   "speed": 0.15510546129476746,
+   "altitude": 7.926012492259298,
    "crashes": 0
   },
   "lock": "CANVAS#view"
  },
  "course": {
   "ok": true,
-  "ms": 26218,
-  "gates": 25,
+  "ms": 22210,
+  "gates": 34,
   "problem": null
  },
  "open": {
@@ -1631,25 +1632,25 @@
    "armed": true,
    "crashed": false,
    "throttlePct": 28,
-   "speed": 1.9207826955671487e-7,
-   "altitude": -0.0019931233628733835,
+   "speed": 5.258149073176022e-11,
+   "altitude": -0.0019922311023652384,
    "crashes": 0
   },
   "windows": [],
-  "gatesN": 25,
+  "gatesN": 34,
   "selected": 0,
   "override": true
  },
  "final": {
   "open": false,
-  "selected": 15,
+  "selected": 3,
   "changed": true,
-  "said": "Not saved. Gate 16 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+  "said": "Not saved. Gate 4 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
   "flying": false,
   "refused": null,
   "mode": null,
   "gatesN": null,
-  "courseGates": 25,
+  "courseGates": 34,
   "courseOn": true,
   "problem": null,
   "cam": null,
@@ -1663,6 +1664,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    913,
@@ -1677,16 +1679,14 @@
   "hud": {
    "armed": true,
    "crashed": false,
-   "throttlePct": 26,
-   "speed": 9.668132702952009e-10,
-   "altitude": -0.001999999782625217,
+   "throttlePct": 29,
+   "speed": 5.228366823937249e-11,
+   "altitude": -0.0019999999880901953,
    "crashes": 0
   },
   "active": "BODY.flying"
  },
- "fails": [
-  "d.controls"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",

@@ -14,7 +14,7 @@
  "fly": false,
  "query": "",
  "live": false,
- "date": "2026-11-16T11:32:12.755Z",
+ "date": "2026-11-16T11:58:17.128Z",
  "steps": {
   "open": {
    "ok": true,
@@ -26,7 +26,7 @@
    "moves": [
     {
      "by": "KeyW",
-     "moved": 3.96
+     "moved": 4.34
     },
     {
      "by": "KeyS",
@@ -81,28 +81,28 @@
   },
   "b.select": {
    "ok": true,
-   "candidates": 9,
+   "candidates": 8,
    "from": 0,
-   "picked": 9,
-   "gatesOnScreen": 10
+   "picked": 4,
+   "gatesOnScreen": 9
   },
   "c.add": {
    "ok": true,
    "gates": [
-    21,
-    22
+    25,
+    26
    ],
    "newGate": [
-    552,
-    279,
-    2.44
+    554,
+    284,
+    2.38
    ],
    "inView": true,
-   "line": "The new gate is red. Gate 11 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
-   "said": "The new gate is red. Gate 11 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
+   "line": "The new gate is red. Gate 6 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
+   "said": "The new gate is red. Gate 6 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from."
   },
   "d.controls": {
-   "ok": false,
+   "ok": true,
    "top": [
     {
      "id": "undo",
@@ -110,7 +110,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "undo. Gate 10 of 21: ring, 1.2 m",
+     "line": "undo. Gate 5 of 25: square, 1.2 m",
      "panel": [
       653,
       86,
@@ -124,7 +124,7 @@
      "effect": true,
      "disabled": false,
      "title": "",
-     "line": "redo. Gate 11 of 22: ring, 1.2 m",
+     "line": "redo. Gate 6 of 26: square, 1.2 m",
      "panel": [
       653,
       86,
@@ -148,8 +148,8 @@
     },
     {
      "id": "courses",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -162,8 +162,8 @@
     },
     {
      "id": "keys",
-     "ok": false,
-     "effect": false,
+     "ok": true,
+     "effect": true,
      "disabled": false,
      "title": "",
      "line": "Click a gate to change it. Arm your controller to fly the course at once, disarm to edit again",
@@ -180,7 +180,7 @@
      "n": 0,
      "text": "Course editor",
      "act": "",
-     "effect": false,
+     "effect": true,
      "disabled": false,
      "title": "",
      "under": null
@@ -412,7 +412,7 @@
     },
     {
      "n": 26,
-     "text": "Course oodlb6",
+     "text": "Course pmyo3k",
      "act": "",
      "effect": true,
      "disabled": false,
@@ -547,10 +547,10 @@
    ]
   },
   {
-   "label": "gate.9",
+   "label": "gate.4",
    "at": [
-    322,
-    179
+    150,
+    144
    ],
    "lockBefore": null,
    "under": "CANVAS#view",
@@ -568,8 +568,8 @@
     "CANVAS#view"
    ],
    "effect": {
-    "selected": 9,
-    "want": 9
+    "selected": 4,
+    "want": 4
    }
   },
   {
@@ -730,7 +730,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=courses]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "top.keys",
@@ -757,7 +757,7 @@
    "clickBubbled": [
     "BUTTON.ce-tb[top=keys]"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.0",
@@ -775,7 +775,7 @@
    "clickBubbled": [
     "HTML"
    ],
-   "effect": false
+   "effect": true
   },
   {
    "label": "win.1",
@@ -1186,7 +1186,7 @@
    "label": "win.20",
    "at": [
     932,
-    122
+    121
    ],
    "lockBefore": null,
    "under": "SPAN",
@@ -1267,7 +1267,7 @@
    "label": "win.23",
    "at": [
     754,
-    226
+    225
    ],
    "lockBefore": null,
    "under": "SPAN",
@@ -1294,7 +1294,7 @@
    "label": "win.24",
    "at": [
     932,
-    226
+    225
    ],
    "lockBefore": null,
    "under": "SPAN",
@@ -1431,7 +1431,7 @@
  ],
  "ready": {
   "status": "ready",
-  "ms": 3260
+  "ms": 4087
  },
  "controlsBelowFold": {
   "y": 687,
@@ -1462,6 +1462,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    870,
@@ -1486,8 +1487,8 @@
  "lockAfterClick": "CANVAS#view",
  "course": {
   "ok": true,
-  "ms": 25207,
-  "gates": 21,
+  "ms": 12099,
+  "gates": 25,
   "problem": null
  },
  "open": {
@@ -1516,20 +1517,20 @@
    "crashes": 0
   },
   "windows": [],
-  "gatesN": 21,
+  "gatesN": 25,
   "selected": 0,
   "override": true
  },
  "final": {
   "open": false,
-  "selected": 11,
+  "selected": 6,
   "changed": true,
-  "said": "Not saved. Gate 12 stands in a wall. Pull its arrows to move it out into the open, or delete it with the cross on its bar.",
+  "said": "Not saved. Gate 7 faces away from the way in. Press Turn on its bar and pull a ring until it faces the way you come from.",
   "flying": false,
   "refused": null,
   "mode": null,
   "gatesN": null,
-  "courseGates": 21,
+  "courseGates": 25,
   "courseOn": true,
   "problem": null,
   "cam": null,
@@ -1543,6 +1544,7 @@
   "panelClass": null,
   "panelBox": null,
   "panelScroll": null,
+  "shown": null,
   "canvas": [
    1920,
    870,
@@ -1566,9 +1568,7 @@
   },
   "active": "BODY.flying"
  },
- "fails": [
-  "d.controls"
- ],
+ "fails": [],
  "log": [
   "console: Failed to load resource: the server responded with a status of 404 (Not Found)",
   "console: Failed to load resource: the server responded with a status of 403 ()",
