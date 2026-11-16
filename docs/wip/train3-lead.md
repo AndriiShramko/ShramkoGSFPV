@@ -174,6 +174,8 @@ script that prints a short result table at its end would have saved about 5 turn
 
 ### Gates
 - S1 (after the merges and the catalogue, 85f8f92b): all 8 gates pass.
+- S2 (seams, on 2849ab79): architecture, i18n, B18 PASS; vitest subset 44 files 284 tests; typecheck apps/fly.
+- S4 (on 10ec0309, the code of the final head): all 8 pass (typecheck, vitest 402 files 5287 tests pass, api-unittest, architecture, i18n, catalog, B18 PASS, leaks). The shell of a queued run needs PATH=/c/Users/andri/AppData/Local/Programs/Python/Python311:$PATH for the gates.
 
 ### Merged
 - sonic3 head 2cea7293 as eccb1f34 (--no-ff, no conflicts; git merged fly/sonic locales and sonic-int-lazy.test.ts by
@@ -523,6 +525,8 @@ Status (integration E, workers 1 and 2; finished):
 
 ### Gates
 - S1 (after the merges and the catalogue, 85f8f92b): all 8 gates pass.
+- S2 (seams, on 2849ab79): architecture, i18n, B18 PASS; vitest subset 44 files 284 tests; typecheck apps/fly.
+- S4 (on 10ec0309, the code of the final head): all 8 pass (typecheck, vitest 402 files 5287 tests pass, api-unittest, architecture, i18n, catalog, B18 PASS, leaks). The shell of a queued run needs PATH=/c/Users/andri/AppData/Local/Programs/Python/Python311:$PATH for the gates.
 
 ### Merged
 - fix3a 601a1151 with --no-ff: 44d76fce (no conflict). START / FINISH gate with banner, number plates, lit next gate, lap
@@ -657,10 +661,77 @@ that undoes each ring before the next would have saved one 11-minute run.
 - [x] S3 re-runs (run2.sh, run3.sh; summary2.txt, summary3.txt both ALLDONE): build with ce3b2b61: int3f-clock-shot at 844x390 pass (clock 633,287 195x15; cross 581,258 44x44; REC row from y 310; clock over controls: none, cross over controls: none); picture train3f-clock-844.png looked at (the cross's left edge touches the right end of the take-off prompt 'Click to fly...', which shows only before take-off; not a control of the REC row). course-finish-probe after the repair: exit 0, Wroclaw 38 gates, 3 laps, 114 gate passes, 0 crashes, first gate at 10.15 s (evidence course-finish-70b50d42.json). Build with c4d0706c: ui-audit-probe --only voxel-legend,walls-menu at 844x390, 390x844, 1366x768, 1280x720: the legend's cross is no longer covered at any size (legend at y 134 on the two small sizes), the walls menu fits and scrolls (844x390: 16,109 280x273), faults left only 'controls-first' (first-visit radio screen, also in uiaudit's own table). VR-8 at 390x844 is NOT shown: the full ui-audit run's 'course-editor' entry at 390x844 measured a 70x18 element at 44,14 (in view), not the gate bar (at 844x390 it measured the gate bar 151,328 542x54, in view); goes under Not verified in S4.
 - [x] S3 finished.
 - [x] S4 live checks (this commit): deploy/live-checks.sh gets voxels-alone-wroclaw, voxel-panel-wroclaw, detail-line-wroclaw, pause-rise-lublin (each probe's source read: no Save, Send or Create; the checkers' node parts were run against the S3 evidence with the probes stubbed: all four exit 0). Not run against the live site.
-- [ ] S4 the other parts of this section, gates on the final head
+- [x] S4 the other parts of this section (Merged, Held back, Probes, Deploy order for the lead, Live checks, Pictures for the lead, What the owner should try, Not verified, Cost notes): this commit.
+- [x] S4 all 8 gates on 10ec0309 (the code of the final head; after it only this note changed): pass, logs U:/Temp/gsfpv-gates-20261116-080815. On the final head b18, i18n, architecture and catalog run again: pass.
+- [x] S4 finished. Nothing pushed (queue rule: the lead pushes).
 
 ### Gates
 - S1 (after the merges and the catalogue, 85f8f92b): all 8 gates pass.
+- S2 (seams, on 2849ab79): architecture, i18n, B18 PASS; vitest subset 44 files 284 tests; typecheck apps/fly.
+- S4 (on 10ec0309, the code of the final head): all 8 pass (typecheck, vitest 402 files 5287 tests pass, api-unittest, architecture, i18n, catalog, B18 PASS, leaks). The shell of a queued run needs PATH=/c/Users/andri/AppData/Local/Programs/Python/Python311:$PATH for the gates.
 
 ### Merged
-- uiaudit d8808c4c, voxview bd69a86c (with voxview2), loadq 1b12f179 (with loadq2). None held back.
+- uiaudit d8808c4c as 6fb07c4a: every panel of the page has one header (title, fold button, 44 px cross), Esc closes the top one, the opening key closes it.
+- voxview bd69a86c (holds voxview2 and a merge of main c1893e12) as 48ff85f3: one depth for the voxels and the scene's things, voxels alone draw the whole scene, the walls and voxel panel.
+- loadq 1b12f179 (holds loadq2) as d101e23d: a hand-set detail is kept, the line 'Detail: ...', failed files asked again, more detail in a pause (display.stillDetail), the keeper's floor.
+- All three --no-ff, no conflicts. Seams on top: 85f8f92b (catalogue), 2e170086 and c4d0706c (panels, seam c), 9d0fcac8 and ce3b2b61 (clock, seam d), 2849ab79 (VR-7), 10ec0309 (live checks). Every lane ended clean; no lane's proof failed in a part the brief names.
+
+### Held back
+- None.
+
+### Probes
+Build of 95eae428 with the nine published wall folders copied into dist/walls/, served by serve-csp on http://localhost:5880 (summary U:/Temp/gsfpv-train3/train3f/summary.txt; re-runs summary2.txt on a build with ce3b2b61, summary3.txt on a build with c4d0706c). Evidence: evidence/2026-11-16/train3f/.
+- accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16: 10 of 10 pass, first line names http://localhost:5880.
+- mouse-free-probe: 78 PASS, then stops with a TimeoutError at the rooms entry (no rooms service locally; known; voxview2 reported 78 PASS, uiaudit reported the same stop).
+- tracks-page: 24 of 26 (fails: 'no take-off prompt under the editor' and the click on Save for everyone timing out); main was 24 of 26 before this integration.
+- course-path-probe Wroclaw 70b50d42: 47 of 47 gates in the eye band. gate-guide-probe Wroclaw: 3 of 3. editor3-smoke Wroclaw: pass, 37 gates. pause-over-course-probe: 8 of 8. walls-published-probe: pass. governor-start-probe (under the lock): pass (weak remembered and starts there, strong starts at the top). course-early-probe (Shift+KeyG): exit 0. sonic-int-review r9: 11 of 11. centre-throttle-probe all: pass. wizard-auto-check: pass (no errors). a6-reference: hash held (on 85f8f92b, 95eae428 and ce3b2b61).
+- lod-view-probe (seam b): Lublin 2f1ddf5f on: active, 0 missing, 97 calls; off: not active, penalty 5. Wroclaw on: active, 0 missing, 89 calls; off: not active, penalty 5.
+- loadq-probe: Wroclaw with 16 M set by hand: kept, the line reads 'Detail: full for your setting' at the end. Lublin desktop-weak from 140 m up: flight 2.40 to 2.45 M drawn at a 2.5 M budget; in the pause 9.89 M at a 10 M budget (4 times); after Continue the budget is 2.5 M from the first frame, the count drawn falls 9.89, 7.22, 5.76 M in the next frames, 4.01 M at 1.8 s and 2.79 M about 10 s later. First second after the pause: median frame 33.2 ms, p90 34.7 ms, longest 49.9 ms.
+- Seam e, int3f-keepers-probe (new, tools/bench/scripts/int3f-keepers-probe.mjs): voxels alone on Wroclaw for 60 s: the splat keeper 0 changes (step 0 all the time), the voxel near-detail keeper 0 changes (100 % all the time); no alternation, no step down.
+- voxview depth probe on Wroclaw: pass. voxview2-probe Wroclaw: 1643 chunks, share 100, 0 frames of 400 with a missing depth copy; Esc with the panel open closes only the panel in a flight, a pause and the edit mode.
+- voxview panel probe (--panel) at 1366x768, 1280x720, 844x390, 390x844: in view, cross on top, closed by the cross and by Esc at all four. At 844x390 the menu is at 16,109 280x273 and scrolls.
+- uiaudit panel probe (ui-audit-probe.mjs) at 1366x768, 1280x720, 844x390, 390x844: exit 0 at all four; the only fault left is 'controls-first' (the first-visit radio screen; also in uiaudit's own table).
+- Seam d: int3f-clock-shot at 844x390 on the build with ce3b2b61: clock block 633,287 195x15, its cross 581,258 44x44, REC row from y 310; nothing under the block or the cross. course-finish-probe after the repair: exit 0, Wroclaw 38 gates, 3 laps, 114 gate passes, 0 crashes, first gate at 10.15 s.
+- Not run: the rc2 bridge probes (port 47310 belongs to the owner's helper).
+
+### Deploy order for the lead
+- git diff --stat b2e7a73b..HEAD -- deploy/nginx.conf deploy/compose.yml apps/api apps/rooms packages/i18n/locales: only packages/i18n/locales/fly/** (course, detail, drawing, the top fly files, voxels; 20 files). These are built into the page.
+- nginx: no. API (release-api.sh): no files, no --locales (no bot or mail locale changed). Rooms: no. Walls (release-walls.sh): no; the published walls of the nine scans were served from the local dist/walls and walls-published-probe passed with them.
+- So: push main, wait for CI, then bash deploy/ship.sh <head of main>, then the live checks below.
+
+### Live checks
+- Added to deploy/live-checks.sh, not run: voxels-alone-wroclaw (voxview2-probe: share of chunks 100, no missing depth copy, Esc closes only the panel in a flight, a pause and the edit mode), voxel-panel-wroclaw (voxview-depth-probe --panel: at four sizes in view, cross on top, closes by the cross and by Esc; rendering off), detail-line-wroclaw (loadq-probe with 16 M written into the probe browser's own prefs: a line 'Detail: ...' is shown), pause-rise-lublin (loadq-probe, Lublin desktop-weak 140 m up, P at 25 s, Continue at 45 s: drawn in the pause above 1.5 times the flight's, budget back at the flight's within 2 s, the count drawn falling).
+- Each probe's source was read: none presses Save, Send or Create, nothing is stored on the server. The checkers' node parts were run against this integration's evidence with the probes stubbed: all four exit 0.
+- Seam b for the checks already there: none of them pauses and then reads a count, a frame time or a picture, so none got set.display.stillDetail=0.
+- To run only these: LIVE_ONLY=voxels-alone-wroclaw,voxel-panel-wroclaw,detail-line-wroclaw,pause-rise-lublin bash deploy/live-checks.sh <outdir>
+
+### Pictures for the lead
+- U:/Temp/gsfpv-train3/shots/train3f-voxels-start.png: voxels alone on Wroclaw after Shift+G, the START gate (1) with its chevrons in front of the cyan voxel walls, the whole street drawn; the voxel legend says 100 % drawn to 230 m and has its cross.
+- U:/Temp/gsfpv-train3/shots/train3f-voxel-panel-844.png: at 844x390 the panel 'Walls and voxels' with its fold button and 44 px cross under the 'Walls 10 cm' caption; while open it lies over the left stick and the left part of the REC button (a popup that closes by its cross or Esc).
+- U:/Temp/gsfpv-train3/shots/train3f-detail-line.png: at 1366x768 on Wroclaw the scene credit, the 'Walls 10 cm' caption and below it 'Detail: 4.3 of 16 M, files to go: 119, about 17 s'; nothing overlaps.
+- U:/Temp/gsfpv-train3/shots/train3f-rest-lublin.png: Lublin from 140 m up on the weak class in a pause after the rise (9.89 M drawn against 2.45 M in the flight): the old town sharp to the far edge of the scan.
+- U:/Temp/gsfpv-train3/shots/train3f-clock-844.png: at 844x390 the course clock above the REC row, its cross clear of REC and Auto (the cross's left edge touches the end of the take-off prompt, which shows only before take-off).
+
+### What the owner should try
+- Open Wroclaw, press Shift+G, then V until the legend at the top right reads 'Voxels only' (or pick Voxels only in the walls panel): the whole street is drawn, the START gate stands in front of the walls.
+- Click the caption 'Walls 10 cm' under the scene credit: the panel 'Walls and voxels' opens with a header; close it by its cross, open it again and close it by Esc (Esc closes only the panel, the flight does not pause).
+- With the voxel grid on, the legend at the top right has a cross: it switches the grid off.
+- Open Settings, Keys list, Share or the report form: each has a cross at the top right; Esc closes the top one; the key that opened it closes it.
+- Set the Splat budget to 16 M on Wroclaw: under the walls caption a line 'Detail: ... of 16 M, files to go ...' counts up to the 16 M, and the setting stays at 16 M.
+- Fly high over Lublin and press P: in the pause the picture gets sharper; press P again and fly on: the detail goes back to the flight's.
+- On a phone held sideways (844x390) start a course with Shift+G or the course button: the clock sits above REC, Auto and Choose a folder.
+
+### Not verified
+- VR-8: the gate bar at 390x844 in the edit view was not measured (the probe's 'course-editor' entry at that size found a 70x18 element, not the gate bar; at 844x390 the gate bar was 151,328 542x54 in view).
+- After Continue the budget is the flight's at once, but the count drawn falls slowly: 4.01 M of 2.5 M at 1.8 s, 2.79 M about 10 s later (Lublin, desktop-weak).
+- Going on after a pause costs the first moments on a slow CPU (loadq2: 2.9 to 8.2 times the median frame); the setting's help says so.
+- A gate behind a wall of the scan shows through the wall over the scan (decision V5; voxels alone are right).
+- Fly by Sound's two panels drawn by the sound package have no cross (uiaudit fault 3; the package is not touched here).
+- In a flight the engine asks again for files that did not fail (1224 re-asks in loadq2's run).
+- mouse-free-probe's rooms entry and another pilot's drone in the voxel view (no rooms service locally).
+- tracks-page 24 of 26 as on main; walls-store on Tunis on live not run here.
+- No weak device, no phone and no person took part; all runs on this PC's RTX 4090, headless, with emulated classes.
+- The four new live checks were not run against the live site.
+
+### Cost notes
+- Integration F took four queued runs (S1 to S4). The longest parts were the S3 runners (36 entries in three summaries, GPU work in holds of at most 10 minutes) and the gates (three full runs of about 8 minutes).
