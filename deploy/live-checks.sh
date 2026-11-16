@@ -31,8 +31,10 @@ trap '[ "$HELD" = 1 ] && rmdir "$LOCK" 2>/dev/null' EXIT
 FAILED=0
 
 # run <name> <command...>: the whole output into <outdir>/<name>.log, one line on the terminal
+# LIVE_ONLY=name1,name2: only the named checks run (a repaired check is run again without the other twenty)
 run() {
   local name=$1; shift
+  if [ -n "${LIVE_ONLY:-}" ]; then case ",$LIVE_ONLY," in *",$name,"*) ;; *) return 0;; esac; fi
   "$@" > "$OUT/$name.log" 2>&1
   local rc=$?
   if [ $rc -eq 0 ]; then echo "$name PASS"; else echo "$name FAIL (exit $rc, see $OUT/$name.log)"; FAILED=1; fi
@@ -101,6 +103,9 @@ done
 # walls, the gates along the street, regenerations, a crash with respawn keeps the next gate.
 # Train 3 integration C (lane fix3b): the probe also measures each gate centre's height over the first wall below it; the
 # check names the band of the first course and wants every centre in 1.2 to 2.0 m (+-0.1 m, one 10 cm voxel).
+# Release b2e7a73b (2026-11-16): the first course held a flat square at 4.1 m and this check called it out of the band;
+# a flat square stands up to 2.5 m over the gate before it (packages/tracks/src/elements.ts FLAT_RISE_M; the probe's own
+# line counts it so), so its band here is 1.2 to 4.5 m (+-0.1 m).
 cpband() {
   node scripts/course-path-probe.mjs "$SITE/en" "$OUT/course-path-$1.json" "$OUT" "$1"
   local rc=$?
@@ -108,9 +113,11 @@ cpband() {
 const rows = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
 let ok = true;
 for (const r of [].concat(rows)) {
-  const h = ((r.top && r.top.heights) || []).filter((v) => v !== null);
-  const off = h.filter((v) => v < 1.1 || v > 2.1).length;
-  console.log(r.id, "first course gates", h.length, "band", h.length ? [Math.min(...h).toFixed(2), Math.max(...h).toFixed(2)] : null, "out of 1.2-2.0 (+-0.1)", off);
+  const all = (r.top && r.top.heights) || [];
+  const flat = (r.top && r.top.flat) || [];
+  const h = all.filter((v) => v !== null);
+  const off = all.filter((v, k) => v !== null && (v < 1.1 || v > (flat[k] ? 4.6 : 2.1))).length;
+  console.log(r.id, "first course gates", h.length, "flat squares", flat.filter(Boolean).length, "band", h.length ? [Math.min(...h).toFixed(2), Math.max(...h).toFixed(2)] : null, "out of 1.2-2.0 (+-0.1; a flat square up to 4.5)", off);
   ok = ok && h.length > 0 && off === 0;
 }
 process.exit(ok ? 0 : 1);' "$OUT/course-path-$1.json" && [ $rc -eq 0 ]
