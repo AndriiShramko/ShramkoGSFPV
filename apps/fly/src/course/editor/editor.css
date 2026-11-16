@@ -232,6 +232,13 @@ body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd
 @media (max-height: 500px) {
     body:has(.course-editor:not(.ce-flying)) [data-testid='walls-more'] > :not(summary) { display: none !important; }
 }
+/* lane uiaudit (fault c of A2 run 2), a phone held upright (390 px): the gate bar wraps inside the view (gate-bar.ts
+   barPlace reads its offsetWidth and keeps it in), and the window starts under the top bar (52 px: a 44 px button,
+   its padding and border) instead of over Undo, Redo and Exit */
+@media (max-width: 520px) {
+    .ce-gatebar { max-width: calc(100vw - 16px); flex-wrap: wrap; box-sizing: border-box; }
+    .course-editor { top: calc(var(--top-row-bottom, 78px) + 60px); }
+}
 @media (max-height: 480px) {
     .course-editor { font-size: 0.75rem; padding: 6px 8px; }
     .ce-keys { grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); }

@@ -109,6 +109,7 @@ const measure = (scope) => page.evaluate((scope) => {
     const closers = [];
     for (const e of scopeEl.querySelectorAll('button, [role=button], summary, a')) {
         if (!vis(e)) continue;
+        if (e.matches('a[href^=http]')) continue; // a link to another site (Share's X network) is not a close control
         const text = (e.textContent ?? '').trim().replace(/\s+/g, ' ');
         const hay = `${text} ${e.getAttribute('aria-label') ?? ''} ${e.getAttribute('title') ?? ''} ${e.getAttribute('data-action') ?? ''} ${typeof e.className === 'string' ? e.className : ''}`;
         if (!(e.matches('summary') || CLOSE.test(hay) || SYMBOL_X.test(text))) continue;
@@ -133,6 +134,7 @@ const measure = (scope) => page.evaluate((scope) => {
     const noName = [], symbolOnly = [], tinyTargets = [];
     for (const e of root.querySelectorAll('button, [role=button], [role=switch], [role=radio], input:not([type=hidden]), select, textarea, a, summary')) {
         if (!vis(e)) continue;
+        if (e.closest('[aria-hidden=true]') && e.getAttribute('tabindex') === '-1') continue; // a hidden twin of a labelled field (settings sr-range)
         const nm = accName(e); const text = (e.textContent ?? '').trim();
         const id = `${e.tagName.toLowerCase()}${e.getAttribute('data-action') ? '[' + e.getAttribute('data-action') + ']' : ''}`;
         if (!nm) noName.push(`${id}${e.id ? '#' + e.id : ''}${e.getAttribute('type') ? '(' + e.getAttribute('type') + ')' : ''}.${(e.className || '').toString().split(' ')[0]}`);
@@ -276,7 +278,7 @@ if (!only || only.some((n) => !n.startsWith('sonic'))) {
     await panel('rooms', { how: '9', open: key('Digit9'), again: key('Digit9') });
     await panel('frame-stats', { how: 'F3', open: key('F3'), again: key('F3') });
     await panel('recording', { how: 'F9', open: key('F9'), again: key('F9'), wait: 2000 });
-    await panel('course', { how: 'Shift+G', open: key('Shift+KeyG'), again: key('Shift+KeyT'), wait: render ? 25000 : 4000 });
+    await panel('course', { how: 'Shift+G builds, Shift+T shows or hides', open: key('Shift+KeyG'), again: key('Shift+KeyT'), sel: '[data-testid=course-hud]', wait: render ? 25000 : 4000 });
     await panel('course-editor', { how: 'Shift+B', open: key('Shift+KeyB'), again: key('Shift+KeyB'), wait: render ? 6000 : 2500 });
     // the pause menu's items that open a window
     let items = [];
