@@ -231,6 +231,10 @@ body:has(.course-editor:not(.ce-flying)) :is(.mode-chip, .hud .osd.bl, .hud .osd
    chip's summary line ('Walls 5 cm') stays; back in the test flight and after Exit */
 @media (max-height: 500px) {
     body:has(.course-editor:not(.ce-flying)) [data-testid='walls-more'] > :not(summary) { display: none !important; }
+    /* integration F (voxview2 VR-7, the owner's rule 'no control that does nothing'): the line stays as words, not as a
+       button: no click, no button shape, no triangle */
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary'] { pointer-events: none; border-color: transparent; background: none; list-style: none; }
+    body:has(.course-editor:not(.ce-flying)) [data-testid='walls-summary']::-webkit-details-marker { display: none; }
 }
 /* lane uiaudit (fault c of A2 run 2), a phone held upright (390 px): the gate bar wraps inside the view (gate-bar.ts
    barPlace reads its offsetWidth and keeps it in), and the window starts under the top bar (52 px: a 44 px button,
