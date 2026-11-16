@@ -88,7 +88,7 @@ async function join9(p: Page, members: number, name: string): Promise<boolean> {
     const t0 = Date.now();
     while (Date.now() - t0 < JOIN_MS) {
         const s = await ev<Any>(p, `return { st: r ? r.state : 'none', problem: r ? r.problem : null, said: r ? r.said.slice(-3) : [], members: r ? r.members.length : 0,
-            status: h.status ?? null, dialog: !!document.querySelector('#ui .screen, #ui .panel, dialog[open]'), panel: (document.querySelector('#ui .panel') || {}).className || null };`).catch((e) => ({ st: 'none', err: String(e).slice(0, 120) }));
+            status: h.status ?? null, dialog: !!document.querySelector('#ui .screen, #ui .panel, dialog[open]'), panel: (document.querySelector('#ui .panel') || {}).className || null };`).catch((e): Any => ({ st: 'none', err: String(e).slice(0, 120) }));
         let pressed = false;
         if (s.st === 'joined' && s.members >= members) { joinTrace.push({ name, t: Date.now() - t0, ...s }); return true; }
         if (s.st !== 'joined' && s.st !== 'connecting') { await p.keyboard.press('Digit9'); pressed = true; }
