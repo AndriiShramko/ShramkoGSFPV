@@ -106,6 +106,10 @@ async function open(L: Launched, url: string): Promise<Page> {
 }
 
 async function main(): Promise<void> {
+    // R1.3: two runs ended with exit 0 and no line after the lock was taken: say where the process left
+    process.on('beforeExit', () => console.log('beforeExit: the event loop emptied', Date.now()));
+    process.on('exit', (c) => console.log('exit', c, Date.now()));
+    const step = (s: string): void => console.log('step', s, Date.now());
     if (!existsSync(join(DIST, 'release.json'))) throw new Error('dist/release.json is missing: run node scripts/build-release.mjs first');
     if (!existsSync(join(DIST, 'walls', SCENE))) throw new Error(`dist/walls/${SCENE} is missing: copy the walls stand-in first`);
     const out: Any = { scene: SCENE, gpuLock: LOCK };
@@ -113,11 +117,13 @@ async function main(): Promise<void> {
     const browsers: Launched[] = [];
     let pass = false;
     await lock();
+    step('locked');
     const t00 = Date.now();
     const cap = setTimeout(() => { out.error = `run cap ${RUN_MS} ms`; for (const L of browsers) void L.browser.close().catch(() => undefined); }, RUN_MS);
     try {
         const rig = await startRoomsRig(DIST);
         rigs.push(rig);
+        step('rig ' + rig.origin);
         const url = `${rig.origin}/en/fly/?scene=${SCENE}&simradio=open&nowarn=1`;
         const LA = await launch();
         const LB = await launch();
@@ -126,6 +132,7 @@ async function main(): Promise<void> {
         const fa = watchSocket(LA.page); const fb = watchSocket(LB.page);
         const [A, B] = await Promise.all([open(LA, url), open(LB, url)]);
         out.loadMs = Date.now() - t00;
+        step('loaded');
         const aIn = await join9(A, 1, 'A');
         const bIn = await join9(B, 2, 'B');
         out.joinMs = Date.now() - t00;
@@ -209,16 +216,18 @@ async function main(): Promise<void> {
         out.error = (out.error ? out.error + ' / ' : '') + String((e as Error).stack ?? e).slice(0, 1500);
     } finally {
         clearTimeout(cap);
-        for (const L of browsers) await L.browser.close().catch(() => undefined);
-        for (const r of rigs) await r.stop().catch(() => undefined);
+        // R1.3: the lock goes first and each close gets 10 s; the report is written here, so a JOIN_ONLY return writes it too
         unlock();
+        const within = (x: Promise<unknown>): Promise<unknown> => Promise.race([x.catch(() => undefined), new Promise((r) => setTimeout(r, 10000))]);
+        for (const L of browsers) await within(L.browser.close());
+        for (const r of rigs) await within(r.stop());
+        out.runMs = Date.now() - t00;
+        const file = writeEvidence('rooms-board', out);
+        console.log(JSON.stringify({ pass, checks: out.checks, follow: out.follow, lapLagMs: out.lapLagMs, flight: out.flight && { a: { ...out.flight.a, nexts: undefined }, b: { ...out.flight.b, nexts: undefined } }, runMs: out.runMs, error: out.error }));
+        if (out.joinTrace) console.log(out.joinTrace.map((x: Any) => `${x.name} ${x.t} ${x.st} p=${x.pressed ? 1 : 0} m=${x.members} dlg=${x.dialog ? 1 : 0} ${x.panel ?? ''} prob=${x.problem ?? ''} said=${(x.said ?? []).join('|')} ${x.err ?? ''}`).join(String.fromCharCode(10)));
+        console.log(`evidence ${file}`);
+        process.exitCode = pass ? 0 : 1;
     }
-    out.runMs = Date.now() - t00;
-    const file = writeEvidence('rooms-board', out);
-    console.log(JSON.stringify({ pass, checks: out.checks, follow: out.follow, lapLagMs: out.lapLagMs, flight: out.flight && { a: { ...out.flight.a, nexts: undefined }, b: { ...out.flight.b, nexts: undefined } }, runMs: out.runMs, error: out.error }));
-    if (out.joinTrace) console.log(out.joinTrace.map((x: Any) => `${x.name} ${x.t} ${x.st} p=${x.pressed ? 1 : 0} m=${x.members} dlg=${x.dialog ? 1 : 0} ${x.panel ?? ''} prob=${x.problem ?? ''} said=${(x.said ?? []).join('|')} ${x.err ?? ''}`).join(String.fromCharCode(10)));
-    console.log(`evidence ${file}`);
-    process.exitCode = pass ? 0 : 1;
 }
 
 if (process.argv[1] && /rooms-board\.ts$/.test(process.argv[1].replace(/\\/g, '/'))) await main();

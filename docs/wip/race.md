@@ -46,11 +46,25 @@ Stage R1-share:
   U:/Temp/gsfpv-train3/race/build-r1.log); a next run with HEAD still at the status commit after 8dfbaa63 (only this
   file changed) may serve it as it is.
 
-Left for R1 (exact, in this order): (0) in rooms-board.ts join9, record r.state, r.problem and r.said each 3 s and the page's scan progress, then run it on 70b50d42 once to see why 9 does not join on the big scan (fix only what the record shows; if the cause is outside apps/fly/src/rooms, stop and report blocked with the file); R1.3 the measurement on Wroclaw 70b50d42 with two pages (walls stand-in
-U:/Temp/gsfpv-train2/walls/release/70b50d42 served as docs/wip/walls.md says), including one run of the old race to check
-the train 2 reason; then R1.4 the two-page proof above. Not verified yet: anything in a browser; whether the course
-feature's `generate` on page B gives the same gates as on page A on the big scan (the seed's promise; R1.4 checks count
-and places).
+- [x] R1.3 item (0) (this commit; probe commits 7ed70c93, 4f90e7f9, ac1c20a0): rooms-board.ts records each page's state,
+  problem, said and open panel every 3 s while 9 is pressed (JOIN_ONLY=1 JOIN_MS=<ms> stops after the meeting). Two probe
+  faults fixed: join9 waited on a state 'joining' that does not exist (the hook's states are off, connecting, joined,
+  lost: apps/fly/src/rooms/hook.ts), and a JOIN_ONLY return skipped the report (it is now written in finally; the lock
+  is let go first; each close gets 10 s). Run on 70b50d42 (log U:/Temp/gsfpv-train3/race/rooms-board-join5.log,
+  evidence/2026-11-16/rooms-board.json not committed): both pages loaded in 9 s; on both, the first 9 opened the rooms
+  panel ('panel interactive') and the state stayed 'off' for 60 s, problem null, said empty; further 9s are ignored
+  while the panel is up (keys.ts: 9 waits while a dialog is up). So 9 took ninePress 'join', then joinOpen
+  (apps/fly/src/app/builtin/rooms.ts:404) opened the panel instead of joining. A guess, not checked: on the local rig
+  askCatalog() answers true with a list that has no 70b50d42 (the rig has no SuperSplat catalogue proxy), so the
+  "scan outside the catalogue" branch (review RM-7) opens the panel; on the live site the catalogue has Wroclaw.
+
+Left for R1 (exact, in this order): (1) check the guess above in one run: record askCatalog's answer (the catalogue
+order the page holds) on the rig; if it holds, make the probe join the way rooms-two-page.ts does (A presses
+[data-action=rooms-create] in the panel, B and C open A's link), not by changing builtin/rooms.ts (outside this lane);
+(2) R1.3 the measurement on Wroclaw 70b50d42 with two pages, including one run of the old race to check the train 2
+reason; (3) R1.4 the two-page proof above; (4) gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks at the
+final commit. Not verified yet: anything of the room's course or laps in a browser; whether page B's generate gives the
+same gates as page A on the big scan.
 
 Why train 2 left the race off (docs/wip/rooms2.md, Q2 runs 2 and 3, not yet re-checked by a run here): rooms-race.ts
 moved each craft along race.path on the real scan's course g1.438779389 (9 gates) and both pages passed gates 0 and 1,
