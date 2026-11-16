@@ -67,6 +67,7 @@ const MOVEAT = env.MOVEAT !== undefined ? Number(env.MOVEAT) : null;
 // push), CPU (the browser's own CPU slowdown, CDP Emulation.setCPUThrottlingRate, from the page's start; the GPU is not slowed)
 const MOVELOGMS = Number(env.MOVELOGMS || 1700);
 const CPU = Number(env.CPU || 1);
+const FAULTAT = env.FAULTAT !== undefined ? Number(env.FAULTAT) : null;
 // loadq2 switch: FLY (s after the reveal) moves the held camera along its start heading at FLYV (5) m/s for FLYSECS (60) s
 // and keeps the craft's sim speed at 2 m/s meanwhile, so the still rule sees a flight (a hook flight, not the keyboard)
 const FLY = env.FLY !== undefined ? Number(env.FLY) : null;
@@ -298,6 +299,19 @@ try {
             await sleep(1500);
             const after = await page.evaluate(STATE).catch(() => ({}));
             res.press = { at: r2((Date.now() - revealAt) / 1000), ok, before, after: { state: after.detail && after.detail.state, text: after.detail && after.detail.text, govM: after.govM, engineBudgetM: after.engineBudgetM, scale: after.renderScale } };
+        }
+        // loadq2 R3 switch FAULTAT (s after the reveal): the WebGPU device reports an out-of-memory error (a synthetic
+        // GPUUncapturedErrorEvent with a GPUOutOfMemoryError on the engine's device), then the still state, the budget, the
+        // setting and the detail line 1.5 s later
+        if (revealAt !== null && FAULTAT !== null && !res.fault && (Date.now() - revealAt) / 1000 >= FAULTAT) {
+            const before = { still: st.still, engineBudgetM: st.engineBudgetM };
+            const sent = await page.evaluate("(() => { const w = window.__gsfpv.session.renderer.app.graphicsDevice.wgpu; if (!w) return 'no wgpu'; w.dispatchEvent(new GPUUncapturedErrorEvent('uncapturederror', { error: new GPUOutOfMemoryError('loadq2 probe') })); return 'sent'; })()").catch((e) => String(e.message).slice(0, 160));
+            await sleep(1500);
+            const after = await page.evaluate(STATE).catch(() => ({}));
+            const setting = await page.evaluate("window.__gsfpv.prefs.get('display.stillDetail')").catch(() => null);
+            const stored = await page.evaluate("Object.keys(localStorage).filter((k) => localStorage.getItem(k).includes('stillDetail')).map((k) => k + '=' + localStorage.getItem(k).slice(0, 300))").catch(() => null);
+            res.fault = { at: r2((Date.now() - revealAt) / 1000), sent, before, after: { still: after.still, engineBudgetM: after.engineBudgetM, detail: after.detail && { state: after.detail.state, shown: after.detail.shown, text: after.detail.text } }, setting, stored };
+            await page.screenshot({ path: `U:/Temp/gsfpv-train3/shots/${label}-fault.png` });
         }
         if (revealAt !== null && MOVEAT !== null && !res.move && (Date.now() - revealAt) / 1000 >= MOVEAT) {
             res.move = { at: r2((Date.now() - revealAt) / 1000), still: st.still };

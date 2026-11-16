@@ -568,5 +568,50 @@ Stage R1-keeper
   and the line says detail.stilloff for 10 s (en, es, pl, ru). Tests tools/bench/test/loadq-detail.test.ts 'loadq2
   R2-rest' (19 pass); negative control with the detail-rule.ts of f14eeedf: 4 fail by assertion ("expected 16 to be
   10", "expected 'hidden' to be 'stilloff'", ...). Typecheck apps/fly and render-pc exit 0.
-- [~] 3. Measurement before (running), then R4 by its order, then the table after.
-- [ ] 4. Browser: device fault, pictures, accept-fly, governor-start, lod-view, pause-over-course, gates, a6.
+- [x] 2b. Probe switch FAULTAT (s after the reveal: a synthetic GPUUncapturedErrorEvent with a GPUOutOfMemoryError on the
+  engine's WebGPU device, then the still state, budget, setting, stored keys and the detail line 1.5 s later, picture
+  <label>-fault.png in the shots dir). Release build of 17e5304a (sha256 3a8c22d1..., U:/Temp/gsfpv-train3/loadq2/build-r2.log),
+  copy with the Wroclaw walls stand-in in U:/Temp/gsfpv-train3/loadq2/dist-after-17e5304a.
+- [~] 3. Measurement BEFORE (dist-after-930a93d7). Done 2 of 16 runs (the GPU lock was shared with other lanes: about 12
+  minutes a run). Lublin 2f1ddf5f 140 m up, desktop-weak (2.5 M, scale 0.85), CPU 1, push at 45 s:
+  - rise ON: the rise reached 16 M (the memory cap; 6.4 times the flight's 2.5 M); 15.78 M drawn before the push; JS heap
+    325 MB; vramMB null (the engine's count is not readable). First second after the push: 127 frames, median 2.5 ms,
+    90th percentile 19.8 ms, worst 31.9 ms; drawn 15.8 M at the push, 12.5 M after 10 frames, 9.1 M after 80 frames
+    (0.63 s), 3.6 M after 2.35 s; within 10 % of 2.5 M after 3088 ms.
+  - rise OFF: see runs/r-before-lub-desktop-weak-c1-off.json (move.first1s), and the table below when the rest is run.
+  - Cause of the slow shedding, from the engine source (playcanvas 2.23.2 build/playcanvas.mjs applyLodChanges, read,
+    not measured): a node keeps its fine file until its coarser file is resident; files unused for cooldownTicks (100)
+    update ticks are unloaded, so at rest the flight's coarse files are dropped and after the move are loaded again, 2
+    at a time (maxConcurrentLoads 2). The engine's cooldown entries cannot be shortened once set
+    (updateCooldownTick counts down what was set), so raising app.scene.gsplat.cooldownTicks during rest would keep the
+    files for good: not built. Whether R4 holds is decided by the table (worst frame 31.9 ms on is within off + 50 ms
+    if off's worst is above -18 ms, i.e. always; the median rule needs the off run).
+- [ ] LEFT for the next run, in this order:
+  1. Serve U:/Temp/gsfpv-train3/loadq2/dist-after-930a93d7 on 5830 and run U:/Temp/gsfpv-train3/loadq2/rest.sh before
+     5830 (RUNS=U:/Temp/gsfpv-train3/loadq2/rest is set by the script's caller: export it; run.sh skips labels with a
+     json). 14 runs left: lub desktop-weak c4 on/off, lub phone c1/c4 on/off, wro desktop-weak and phone c1/c4 on/off.
+     Run it detached with a log and wait with one blocking command per 9 minutes, or as the first thing of the run.
+  2. The table (median, 90th percentile, worst of the first second after the push, on against off; within10pctMs;
+     peakBudgetM; heapMB) from res.move of each json. R4 holds when on median <= 1.25 x off median and on worst <=
+     off worst + 50 ms. If it fails: the order of R4 (shed in the move frame: engine source says it needs the coarse files
+     resident, see above; else a smaller cap or a 33 ms frame bound at rest; else rise only in a pause and say so in
+     set.display.stillDetail.help in en, es, pl, ru).
+  3. Serve dist-after-17e5304a on 5831 and run U:/Temp/gsfpv-train3/loadq2/rest-after.sh (it waits for ALLDONE in
+     rest-before.out; remove that wait line when the before runs were run another way): the 8 rise-on runs after R3, a
+     flight picture with the rise off, the device fault (FAULTAT=40), the line at 1366x768. Pictures: copy
+     .cache/lod-view/r-after-lub-desktop-weak-c1-on-t40.png to U:/Temp/gsfpv-train3/shots/loadq2-rest-weak.png and
+     ...-c1-off-t40.png to loadq2-flight-weak.png; shots/r-after-line-ui.png to loadq2-line.png; look at each.
+  4. R5 measured in the browser: the app has no mouse look in a pause outside the course editor's camera (not this
+     lane's folder); the probe holds the camera (cameraOverride), so the rise in the after runs shows a still view
+     still rises; check boostM > base in r-after-*.json.
+  5. accept-fly B6 B7 B9 B10 B11 B12 B13 B14 B15 B16 (SITE=http://localhost:5831/en), governor-start-probe, lod-view on
+     and off with set.display.stillDetail=0, freeze-probe if present, pause-over-course-probe, typecheck, gates.py
+     --only vitest,architecture,i18n,b18,leaks (Python 3.11 on PATH, see R1-keeper item 4), a6-reference.
+  6. In this part: the findings with what was done, 'What the owner does' (item 5: the rise stops at 4 times the flight's
+     detail, 2 on a phone; a graphics card that runs short of memory switches it off and the line says so), not
+     verified, changed files, 'For the lead': which benches load with set.display.stillDetail=0.
+- Files changed in R2-rest so far: apps/fly/src/app/detail-rule.ts, apps/fly/src/app/builtin/still.ts,
+  apps/fly/src/app/builtin/detail.ts, apps/fly/src/app/builtin/drawing.ts, apps/fly/src/app/quality.ts,
+  packages/render-pc/src/renderer.ts (onGpuTrouble), packages/i18n/locales/fly/detail/{en,es,pl,ru}.json,
+  tools/bench/test/loadq-detail.test.ts, tools/bench/scripts/loadq-probe.mjs, docs/wip/loadq.md.
+- Not checked yet: a1-api-check for renderer.ts onGpuTrouble (it reads device.wgpu, an engine field, through a cast).
