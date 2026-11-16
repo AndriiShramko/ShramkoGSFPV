@@ -62,7 +62,9 @@ Stage R1-share:
   askCatalog() answers true with a list that has no 70b50d42 (the rig has no SuperSplat catalogue proxy), so the
   "scan outside the catalogue" branch (review RM-7) opens the panel; on the live site the catalogue has Wroclaw.
 
-- [~] R1 final checks: tsc of apps/fly clean at cd965f14; gates and a6-reference at the final commit (next entry).
+- [x] R1 final checks at 976be4e8: tsc of apps/fly clean; gates.py --only vitest,api-unittest,architecture,i18n,b18,leaks
+  all PASS (vitest 139 s, api-unittest 231 s; log U:/Temp/gsfpv-train3/race/gates-r1c.log); a6-reference,
+  rooms-board.test.ts and sonic-int-lazy.test.ts 13 of 13 OK. Stage R1-share done; next stage R2-board.
 
 Why train 2 left the race off (docs/wip/rooms2.md, Q2 runs 2 and 3; not re-run here: the race is off in the build): rooms-race.ts
 moved each craft along race.path on the real scan's course g1.438779389 (9 gates) and both pages passed gates 0 and 1,
