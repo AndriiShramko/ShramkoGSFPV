@@ -17,6 +17,8 @@ export interface CourseHook {
     sound?: CourseForSound;
     /** the course is shown and timed now (Shift+T, the pause menu) */
     on: boolean;
+    /** lane race, L1: build the room's course here as the pilot's own (a seed of the generator, or a saved course) */
+    adopt?: (c: { seed: number } | { id: string; version: number }) => void;
     /** where the course came from; 'none': this scene has no course in this tab */
     source: 'none' | 'generated' | 'server';
     /** the track's id and version; null without a course */

@@ -35,6 +35,8 @@ import { PoseClock, simPose } from '../../rooms/pose';
 import { RemoteStage } from '../../rooms/remote-stage';
 import type { RemoteDraw } from '../../rooms/remote-stage';
 import { RoomSocket } from '../../rooms/socket';
+import { RoomBoard, type CourseLook } from '../../rooms/board';
+import { parseCourse } from '../../rooms/race';
 import { roomKeys, welcomeLine } from '../../rooms/keys';
 import { dialogOpen } from '../../devices/keyboard';
 import { NameTags } from '../../rooms/tags';
@@ -208,6 +210,12 @@ export const rooms: Feature = {
                 ctx.hud.flash(text, 6000);
             };
             let race: RacePage | null = null;
+            // lane race, L1 and L2: the room's course and its board of best laps (rooms/board.ts)
+            const board = new RoomBoard(() => sock.slot);
+            let asked: string | null = null;
+            const showBoard = (): void => {
+                h.board = { course: board.course, rows: board.rows.map((r) => ({ ...r })), sent: board.sent, adopting: board.adopting };
+            };
             const sock = new RoomSocket({ url: socketUrl(location), room, nick, hostKey: hk }, {
                 state: (s) => {
                     h.state = s;
@@ -233,6 +241,16 @@ export const rooms: Feature = {
                     void enter(w.room);
                     if (w.vote) onVote(w.vote);
                     if (w.race) race?.onMsg(w.race);
+                    board.onBoard(w.board ?? { type: 'board', course: null, rows: [] });
+                    showBoard();
+                },
+                board: (m) => {
+                    board.onBoard(m);
+                    showBoard();
+                },
+                blap: (m) => {
+                    board.onLap(m);
+                    showBoard();
                 },
                 vote: onVote,
                 race: (m) => race?.onMsg(m),
@@ -299,6 +317,20 @@ export const rooms: Feature = {
                     }
                 }
                 if (inRoom) race?.frame(now);
+                if (sock.state === 'joined') {
+                    const look = ctx.hook.course as (CourseLook & { adopt?: (c: { seed: number } | { id: string; version: number }) => void }) | undefined;
+                    // the room's course is built here once the course feature is there to build it
+                    const want = board.adopting;
+                    if (want && asked !== want && look?.adopt) {
+                        asked = want;
+                        const ref = parseCourse(want);
+                        if (ref) look.adopt(ref.kind === 'seed' ? { seed: ref.seed } : { id: ref.id, version: ref.version });
+                    }
+                    const step = board.look(look);
+                    if (step?.kind === 'course') sock.course(step.course);
+                    else if (step?.kind === 'lap') sock.blap(step.course, step.n, step.ms);
+                    if (step) showBoard();
+                }
                 stage.show(draw);
                 others = named;
                 h.remotes = seen;
@@ -322,6 +354,7 @@ export const rooms: Feature = {
                     unalign();
                     race?.dispose();
                     h.race = null;
+                    h.board = null;
                     sock.leave();
                     stage.show([]);
                     tags.update([], false);

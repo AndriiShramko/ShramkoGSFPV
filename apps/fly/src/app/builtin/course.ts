@@ -92,6 +92,8 @@ export const course: Feature = {
         // lane course4: the START / FINISH banners, the number plate, the lap's splash and the results card as drawn
         hook.look = () => ({ ...stage.look, roles: [...stage.look.roles] });
         hook.splash = () => ({ ...hud.splashState });
+        // lane race, L1: the room's course is built here as if this pilot made it (rooms/board.ts calls it via the hook)
+        hook.adopt = (c) => ('seed' in c ? generate(c.seed >>> 0) : void loadServer(0, true, c));
         hook.clockText = () => document.querySelector('[data-testid=course-hud]')?.textContent?.trim() ?? null;
         const stage = new CourseStage(ctx.renderer);
         const hud = new CourseHud(ctx.ui);

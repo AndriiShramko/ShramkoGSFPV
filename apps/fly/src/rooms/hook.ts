@@ -2,6 +2,7 @@
 // hook, window.__gsfpv.rooms. The page probes of the lane and of the integration stage read only this. Owner: lane rooms;
 // it may add fields, it does not rename or drop these.
 import type { RaceRow } from './race';
+import type { BoardRow } from './board';
 
 export interface RoomsHook {
     /** off: no room; lost: the connection went and the page is trying again */
@@ -34,6 +35,8 @@ export interface RoomsHook {
     roomScene?: string | null;
     /** added by lane rooms2, stage Q2: the room's race as this page sees it; null outside a room */
     race?: RaceHook | null;
+    /** added by lane race: the room's course and its board of best laps (rooms/board.ts); null outside a room */
+    board?: { course: string | null; rows: readonly BoardRow[]; sent: number; adopting: string | null } | null;
 }
 
 /** The race of the room on this page (apps/fly/src/rooms/race-page.ts). */
