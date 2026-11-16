@@ -216,8 +216,7 @@ async function main(): Promise<void> {
     out.runMs = Date.now() - t00;
     const file = writeEvidence('rooms-board', out);
     console.log(JSON.stringify({ pass, checks: out.checks, follow: out.follow, lapLagMs: out.lapLagMs, flight: out.flight && { a: { ...out.flight.a, nexts: undefined }, b: { ...out.flight.b, nexts: undefined } }, runMs: out.runMs, error: out.error }));
-    if (out.joinTrace) console.log(out.joinTrace.map((x: Any) => `${x.name} ${x.t} ${x.st} p=${x.pressed ? 1 : 0} m=${x.members} dlg=${x.dialog ? 1 : 0} ${x.panel ?? ''} prob=${x.problem ?? ''} said=${(x.said ?? []).join('|')} ${x.err ?? ''}`).join('
-'));
+    if (out.joinTrace) console.log(out.joinTrace.map((x: Any) => `${x.name} ${x.t} ${x.st} p=${x.pressed ? 1 : 0} m=${x.members} dlg=${x.dialog ? 1 : 0} ${x.panel ?? ''} prob=${x.problem ?? ''} said=${(x.said ?? []).join('|')} ${x.err ?? ''}`).join(String.fromCharCode(10)));
     console.log(`evidence ${file}`);
     process.exitCode = pass ? 0 : 1;
 }
