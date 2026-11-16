@@ -393,11 +393,11 @@ Stage R1-keeper
 - [~] 3. Browser runs. Done: the release build of 05b0c7ad (the AFTER code; sha256 in
   U:/Temp/gsfpv-train3/loadq2/build-before.log, a copy with the Wroclaw walls stand-in in
   U:/Temp/gsfpv-train3/loadq2/dist-after-05b0c7ad). Left, in this order:
-  a. BEFORE build: put the files of 3fea63e2 in place (git show 3fea63e2:<f> > <f> for packages/render-pc/src/governor.ts,
-     apps/fly/src/app/quality.ts, apps/fly/src/app/detail-rule.ts, apps/fly/src/app/builtin/still.ts), run
-     node scripts/build-release.mjs detached with a log (about 7 min; edit nothing meanwhile), copy dist to
-     U:/Temp/gsfpv-train3/loadq2/dist-before-3fea63e2 with dist/walls/70b50d42 from U:/Temp/gsfpv-train2/walls/release,
-     then git checkout HEAD -- those four files. Serve before on 5820 and after on 5821 (serve-csp.mjs <dir> <port>).
+  a. [x] BEFORE build: the four files of 3fea63e2 (governor.ts, quality.ts, detail-rule.ts, builtin/still.ts) in place,
+     release build (sha256 531a4818..., U:/Temp/gsfpv-train3/loadq2/build-before-3fea.log; the bundle has no
+     'upWaitMs', the after bundle has it), copied to U:/Temp/gsfpv-train3/loadq2/dist-before-3fea63e2 with the Wroclaw
+     walls stand-in, the four files restored. Runs b to d: U:/Temp/gsfpv-train3/loadq2/batch.sh (before on 5820, after
+     on 5821, run.sh takes one GPU lock per run), results in U:/Temp/gsfpv-train3/loadq2/runs.
   b. One GPU lock per run, OUT=U:/Temp/gsfpv-train3/loadq2, BENCH_UNCAPPED=1, untouched desktop-strong, SECS=180 FLY=120
      FLYSECS=60 (120 s at the spawn, then 60 s along the street): before and after, as is and with DELAY=30. Table: the
      governor step per second (govStep), asked against distinct files, drawn at the end; after: no step down while the
