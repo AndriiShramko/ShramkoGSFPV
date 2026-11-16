@@ -373,21 +373,30 @@ into dist/walls, 9 scans). Logs and JSON under U:/Temp/gsfpv-train2/voxview2/, p
   selected ring in yellow with the move handles (red, green, blue arrows) over voxel walls, the edit bar below and
   the top bar, no legend under the editor window. voxview2-lublin.png (release c2de1b6c, R7; the plan change of R7b
   does not touch an eye inside the grid): the land from 140 m to the edge of the view, one black band without voxels.
-- [~] R9 Release 80435898 in dist, port 5745. accept-fly (SITE=http://localhost:5745, without /en: the harness adds
+- [x] R9 Release 80435898 in dist, port 5745. accept-fly (SITE=http://localhost:5745, without /en: the harness adds
   the language itself; two runs with SITE=.../en failed at "page did not become ready" on /en/en/fly/, cause read and
   checked with a 9-link load diagnostic, all ready in 10 s) B6 B7 B9 B10 B11 B12 B13 B14 B15 B16: 10 PASS
   (U:/Temp/gsfpv-train2/voxview2/accept-r9c.log; evidence files under evidence/2026-11-16 left untracked).
   gates.py --only vitest,architecture,i18n,b18,leaks (U:/Temp/gsfpv-gates-20261116-032309): all 5 PASS (vitest 148 s;
   b18 after commit 7bc3d843). a6-reference 1 passed. Typecheck apps/fly, packages/render-pc, packages/collision 0
   errors each.
-LEFT (voxview2, exact, in this order):
-- [ ] R9 rest: On the release 80435898 in dist (stand-in walls already in dist/walls; serve with node
-  tools/bench/scripts/serve-csp.mjs dist 5745): accept-fly B6 B7 B9-B16 (SITE=http://localhost:5745/en, npx tsx
-  tools/bench/src/accept-fly.ts, takes the GPU lock itself), tools/bench/scripts/pause-over-course-probe.mjs,
-  mouse-free-probe.mjs (rooms entry fails locally: known), tools/bench/src/editor3-smoke.ts,
-  walls-published-probe.mjs (read each one's head for its lock), typecheck apps/fly, packages/render-pc,
-  packages/collision, gates.py --only vitest,architecture,i18n,b18,leaks, tools/bench/test/a6-reference.test.ts.
-- [ ] R10 Frame time on Wroclaw with the view off, branch against main (BENCH_UNCAPPED=1).
+  Page probes on the same release (GPU lock 04:07:52-04:10:24 and 04:19:22-04:21:28):
+  pause-over-course-probe (Tunis 887f27aa, 1920 and 844 wide): pass true, all checks PASS (pause-r9.json).
+  mouse-free-probe: 78 PASS, 0 FAIL over helper, keyB, menu, pause, settings, radio, courseKey, courseMenu, drones,
+  scenes, ceiling; the rooms entry stopped waiting for the rooms control (no rooms service locally: known)
+  (mouse-free-r9.log). walls-published-probe 70b50d42, ab5efa0e, d10c5638: 3 pass, published walls 200, no build in
+  the browser (walls-pub-r9.json). editor3-smoke (SITE=http://localhost:5745) on Tunis and Wroclaw: course 34 and 16
+  gates, edit mode open with the selected gate and its handles, 6 of 6 keys move the eye, scale, move and undo act,
+  the gate bar visible, exit closes (e2s/voxview2-e2s.json). The console lines in its log are the CDN's 403/404
+  answers to the version lookups of settings.json and meta.json (the scene loads).
+- [x] R10 Frame time with the voxel view off, Wroclaw 70b50d42, course on (Shift+G), the spawn eye, 3 s of frames,
+  BENCH_UNCAPPED=1, voxview-depth-probe --far with FAR_PHASES=none (it measures only 'the scan alone'), alternating
+  the branch release 80435898 (port 5745) and a release of main c1893e12 (the main this branch merged; built in a
+  temporary worktree, removed after), GPU lock 04:21:57-04:24:05: branch 5.5 / 18.0 ms and 5.0 / 17.7 ms (mean / p95),
+  main 5.2 / 17.8 ms and 5.2 / 17.9 ms (r10-*.json). No difference beyond the run-to-run spread (0.5 ms): the voxel
+  work costs nothing in the ordinary flight (VR-4 measured).
+
+Stage V1-review is finished: no item left.
 
 ### Findings (voxview2)
 
@@ -408,7 +417,7 @@ LEFT (voxview2, exact, in this order):
   with 146 of 146 missing. A pilot sees the voxels paint over every gate for those frames (a flicker after each edit).
 - VR-3 (no fault, code read): the gates, banners, plates and chevrons are opaque unlit materials (course/view.ts
   214-250: no blend, no alpha test), so a full depth copy of them hides exactly what they cover.
-- VR-4 (no fault by code read; frame time not yet measured, R10): with the voxel view off the overlay is not made
+- VR-4 (no fault: code read, and measured in R10, branch 5.0-5.5 ms against main 5.2 ms with the view off): with the voxel view off the overlay is not made
   (apps/fly/src/voxels.ts:366, made on the first switch on); after a switch off both layers are disabled and the copies
   dropped (voxel-overlay.ts:253-258); update() syncs only while the voxel layer is on.
 - VR-5 (to be seen in voxview2-edit.png): the edit mode's handles are PlayCanvas gizmos in their own layer
@@ -432,3 +441,39 @@ LEFT (voxview2, exact, in this order):
   in R7b (the whole view searches the whole grid), unit test with negative control.
 - Doubt D-1 (not shown): a gate hidden behind voxel walls has the guide chip at the top pointing to it (a DOM element,
   always on top); nothing else leads to it. Not measured whether the chip is visible in the edit mode.
+
+### What the owner does (voxview2; replaces nothing above that still holds)
+
+- Voxels alone (V until the line says voxels only, or the walls chip's menu): the gates, the START gate with its banner
+  and number plates, the lit next gate, flat squares, cubes and tunnels stand inside the voxels as one space: a gate
+  behind a voxel wall is hidden by that wall, a gate in front of it is drawn over it. This now also holds in the frame
+  a gate changes: after a move in the edit mode, after Tab to the next gate and when the lit gate changes (VR-2).
+- Climbing high in voxels alone keeps the whole scene drawn, also on a small scan such as Housefly (VR-9).
+- In the edit mode the voxel legend at the top right is hidden, so the editor's window no longer lies over it (VR-6);
+  back in the test flight it shows again.
+- Esc closes the voxel panel first when it is open; the next Esc does what it did before (pause, or leaving the edit
+  mode). Measured, nothing changed for it (VR-1).
+- Over the scan (voxels on top of the scan, and with the voxels off) a gate that stands behind a wall of the scan
+  shows through that wall. This is how the scan is drawn today and it stays so in this train (decision V5): to see
+  which gates are really behind a wall, switch to voxels alone.
+
+### Not verified (voxview2)
+
+- No weak device was used: every frame time is from this PC (BENCH_UNCAPPED=1, headless). The keeper that lowers the
+  near detail on slow frames was not seen acting on a real slow frame.
+- Another pilot's drone (V6) was not flown: no rooms service locally. Whether its items are in the World layer (and so get depth
+  copies) was not read in this stage.
+- On Tunis the over-the-scan pictures gave 0 sample points (the gate was not told apart from the scan), so V5 there
+  is not measured; voxels alone on Tunis was measured (R8).
+- At 844x390 in the edit view the walls chip opens nothing (VR-7) and at 390x844 the gate bar is wider than the view
+  (VR-8): both lie in the editor's files, handed to the lead, not changed.
+- Doubt D-1: whether the guide chip leads to a gate hidden behind voxels in the edit mode was not measured.
+- The black band in the Lublin picture from 140 m was not compared with the scan (guess: ground without walls).
+
+### Files changed by voxview2 (git diff --name-only e47427ca HEAD, without evidence/)
+
+apps/fly/src/fly.css, packages/collision/src/overlay.ts, packages/collision/test/voxview2-whole-far.test.ts,
+packages/render-pc/src/voxel-depth.ts, packages/render-pc/src/voxel-overlay.ts,
+packages/render-pc/test/voxview2-depth-sync.test.ts, tools/bench/scripts/voxview-depth-probe.mjs,
+tools/bench/scripts/voxview2-probe.mjs, tools/bench/test/voxview2-legend.test.ts, docs/wip/voxview.md.
+Nothing in the generator, packages/tracks, apps/fly/src/course/editor, apps/fly/src/sonic or apps/fly/src/rooms.
