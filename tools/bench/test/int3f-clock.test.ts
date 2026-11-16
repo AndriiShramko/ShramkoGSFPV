@@ -12,4 +12,9 @@ describe('course clock block and the REC row on a short view (seam d)', () => {
         const hit = blocks.some((b) => /\.rec-bar:not\(\[hidden\]\)\)[^{]*\.course-hud\s*\{[^}]*bottom:\s*calc\(var\(--cinema-top/.test(b));
         expect(hit).toBe(true);
     });
+    it('on a short view the cross hangs from the block bottom upwards, so it stays above the REC row', () => {
+        const blocks = [...css.matchAll(/@media \(max-height: 500px\) \{([\s\S]*?)\n\}/g)].map((m) => m[1]!);
+        const hit = blocks.some((b) => /\.course-hud-x\s*\{[^}]*top:\s*auto;[^}]*bottom:\s*0/.test(b));
+        expect(hit).toBe(true);
+    });
 });

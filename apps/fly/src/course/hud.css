@@ -166,11 +166,13 @@
 .course-hud .course-hud-x::before { content: '\00d7'; }
 /* a short view: the block sits at the right edge, so its cross goes to the block's left, inside the view */
 @media (max-height: 500px) {
-    .course-hud .course-hud-x { left: auto; right: 100%; margin: 0 8px 0 0; }
+    .course-hud .course-hud-x { left: auto; right: 100%; margin: 0 8px 0 0; top: auto; bottom: 0; }
 }
 /* integration F seam d (lane uiaudit's finding): at 844x390 the block at the bottom right lay over the REC row's
    'Choose a folder' and its cross touched 'Auto'. While the REC row shows, the block stands above it: --cinema-top is the
-   distance from the bottom edge to the top of the REC row (or of a low credit line), kept by app/builtin/cinema.ts. */
+   distance from the bottom edge to the top of the REC row (or of a low credit line), kept by app/builtin/cinema.ts.
+   The cross (44 px, taller than a one-line block) hangs from the block's bottom upwards there, so it stays above the row
+   (measured by tools/bench/scripts/int3f-clock-shot.mjs: hanging from the top it reached 'REC' and 'Auto'). */
 @media (max-height: 500px) {
     #ui:has(.rec-bar:not([hidden])) .course-hud { bottom: calc(var(--cinema-top, 96px) + 8px); }
 }
